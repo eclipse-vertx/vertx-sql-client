@@ -1,0 +1,21 @@
+= Cheatsheets
+
+[[PgClientOptions]]
+== PgClientOptions
+
+++++
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[database]]`database`|`String`|-
+|[[host]]`host`|`String`|-
+|[[password]]`password`|`String`|-
+|[[poolsize]]`poolsize`|`Number (int)`|-
+|[[port]]`port`|`Number (int)`|-
+|[[username]]`username`|`String`|-
+|===
+
