@@ -35,7 +35,7 @@ public class PgClientImpl implements PgClient {
     builder.username(options.getUsername());
     builder.password(options.getPassword());
     builder.poolSize(options.getPoolsize());
-    builder.pipeline(true);
+    builder.pipeline(options.isPipelined());
 
     ConnectionPoolBuilder.PoolProperties props;
     try {

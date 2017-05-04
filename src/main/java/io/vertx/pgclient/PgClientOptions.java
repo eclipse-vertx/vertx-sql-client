@@ -15,6 +15,7 @@ public class PgClientOptions {
   private String username = "user";
   private String password = "pass";
   private int poolsize = 20;
+  private boolean pipelined = false;
 
   public PgClientOptions() {
   }
@@ -74,6 +75,15 @@ public class PgClientOptions {
 
   public PgClientOptions setPoolsize(int poolsize) {
     this.poolsize = poolsize;
+    return this;
+  }
+
+  public boolean isPipelined() {
+    return pipelined;
+  }
+
+  public PgClientOptions setPipelined(boolean pipelined) {
+    this.pipelined = pipelined;
     return this;
   }
 }
