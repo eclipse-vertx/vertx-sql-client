@@ -14,7 +14,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.ContextImpl;
 import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.impl.NetClientBase;
 import io.vertx.core.net.impl.SSLHelper;
 import io.vertx.core.spi.metrics.TCPMetrics;
@@ -35,7 +34,7 @@ public class PostgresClientImpl extends NetClientBase<DbConnection> implements P
   final int pipeliningLimit;
 
   public PostgresClientImpl(Vertx vertx, PostgresClientOptions options) {
-    super((VertxInternal) vertx, new NetClientOptions(), true);
+    super((VertxInternal) vertx, options, true);
     host = options.getHost();
     port = options.getPort();
     database = options.getDatabase();
