@@ -173,4 +173,26 @@ public class PipeliningTest {
       conn.close();
     }));
   }
+
+  @Test
+  public void testPool(TestContext ctx) {
+    int num = 1000;
+    Async async = ctx.async(num);
+    PostgresClient client = PostgresClient.create(vertx, options);
+    client.createPool(4, ctx.asyncAssertSuccess(pool -> {
+      for (int i = 0;i < num;i++) {
+        pool.execute("SELECT id, randomnumber from WORLD", ar -> {
+          if (ar.succeeded()) {
+            Result result = ar.result();
+            ctx.assertEquals(0, result.getUpdatedRows());
+            ctx.assertEquals(10000, result.size());
+          } else {
+            ctx.assertEquals("closed", ar.cause().getMessage());
+          }
+          async.countDown();
+        });
+      }
+      pool.close();
+    }));
+  }
 }

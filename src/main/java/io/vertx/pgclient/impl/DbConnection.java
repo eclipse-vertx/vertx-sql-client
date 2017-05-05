@@ -55,11 +55,13 @@ public class DbConnection extends ConnectionBase {
   }
 
   final PostgresConnection conn = new PostgresConnection() {
+
     public void execute(String sql, Handler<AsyncResult<Result>> resultHandler) {
+      Command cmd = new Command(sql, resultHandler);
       if (Vertx.currentContext() == context) {
-        doExecute(sql, resultHandler);
+        doExecute(cmd);
       } else {
-        context.runOnContext(v -> doExecute(sql, resultHandler));
+        context.runOnContext(v -> doExecute(cmd));
       }
     }
     @Override
@@ -83,17 +85,16 @@ public class DbConnection extends ConnectionBase {
     }
   }
 
-  private void doExecute(String sql, Handler<AsyncResult<Result>> resultHandler) {
+  void doExecute(Command cmd) {
     if (status == Status.CONNECTED) {
-      Command cmd = new Command(sql, resultHandler);
       if (inflight.size() < client.pipeliningLimit) {
         inflight.add(cmd);
-        writeToChannel(new Query(sql));
+        writeToChannel(new Query(cmd.sql));
       } else {
         pending.add(cmd);
       }
     } else {
-      resultHandler.handle(Future.failedFuture("Connection not open " + status));
+      cmd.onError("Connection not open " + status);
     }
   }
 

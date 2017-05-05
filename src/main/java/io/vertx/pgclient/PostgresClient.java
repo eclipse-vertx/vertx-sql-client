@@ -14,5 +14,7 @@ public interface PostgresClient {
     return new PostgresClientImpl(vertx, options);
   }
 
-  void connect(Handler<AsyncResult<PostgresConnection>> connectHandler);
+  void connect(Handler<AsyncResult<PostgresConnection>> completionHandler);
+
+  void createPool(int size, Handler<AsyncResult<PostgresConnectionPool>> completionHandler);
 }

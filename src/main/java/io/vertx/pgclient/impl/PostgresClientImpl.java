@@ -20,12 +20,14 @@ import io.vertx.core.spi.metrics.TCPMetrics;
 import io.vertx.pgclient.PostgresClient;
 import io.vertx.pgclient.PostgresClientOptions;
 import io.vertx.pgclient.PostgresConnection;
+import io.vertx.pgclient.PostgresConnectionPool;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 public class PostgresClientImpl extends NetClientBase<DbConnection> implements PostgresClient {
 
+  final VertxInternal vertx;
   final String host;
   final int port;
   final String database;
@@ -35,22 +37,23 @@ public class PostgresClientImpl extends NetClientBase<DbConnection> implements P
 
   public PostgresClientImpl(Vertx vertx, PostgresClientOptions options) {
     super((VertxInternal) vertx, options, true);
-    host = options.getHost();
-    port = options.getPort();
-    database = options.getDatabase();
-    username = options.getUsername();
-    password = options.getPassword();
-    pipeliningLimit = options.getPipeliningLimit();
+    this.host = options.getHost();
+    this.port = options.getPort();
+    this.database = options.getDatabase();
+    this.username = options.getUsername();
+    this.password = options.getPassword();
+    this.pipeliningLimit = options.getPipeliningLimit();
+    this.vertx = (VertxInternal) vertx;
   }
 
-  public void connect(Handler<AsyncResult<PostgresConnection>> connectHandler) {
+  public void connect(Handler<AsyncResult<PostgresConnection>> completionHandler) {
     doConnect(port, host, null, ar -> {
       if (ar.succeeded()) {
         DbConnection conn = ar.result();
-        conn.handler = connectHandler;
+        conn.handler = completionHandler;
         conn.writeToChannel(new StartupMessage(username, database));
       } else {
-        connectHandler.handle(Future.failedFuture(ar.cause()));
+        completionHandler.handle(Future.failedFuture(ar.cause()));
       }
     });
   }
@@ -58,6 +61,12 @@ public class PostgresClientImpl extends NetClientBase<DbConnection> implements P
   @Override
   protected DbConnection createConnection(VertxInternal vertxInternal, Channel channel, String s, int i, ContextImpl context, SSLHelper sslHelper, TCPMetrics tcpMetrics) {
     return new DbConnection(this, vertxInternal, channel, context);
+  }
+
+  @Override
+  public void createPool(int size, Handler<AsyncResult<PostgresConnectionPool>> completionHandler) {
+    PostgresConnectionPoolImpl pool = new PostgresConnectionPoolImpl(this);
+    pool.connect(size, completionHandler);
   }
 
   @Override
