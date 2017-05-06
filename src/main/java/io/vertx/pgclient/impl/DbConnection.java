@@ -159,11 +159,10 @@ public class DbConnection extends ConnectionBase {
       ErrorResponse error = (ErrorResponse) msg;
       result = null;
       rowDesc = null;
-      System.out.println(error.getMessage());
       inflight.poll().onError(error.getMessage());
       check();
     } else {
-      System.out.println("got message " + msg);
+      System.out.println("Unhandled message " + msg);
     }
   }
 
