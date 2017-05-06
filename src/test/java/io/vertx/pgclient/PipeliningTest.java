@@ -192,9 +192,10 @@ public class PipeliningTest {
     int num = 1000;
     Async async = ctx.async(num);
     PostgresClient client = PostgresClient.create(vertx, options);
-    client.createPool(4, ctx.asyncAssertSuccess(pool -> {
-      for (int i = 0;i < num;i++) {
-        pool.execute("SELECT id, randomnumber from WORLD", ar -> {
+    PostgresConnectionPool pool = client.createPool(4);
+    for (int i = 0;i < num;i++) {
+      pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+        conn.execute("SELECT id, randomnumber from WORLD", ar -> {
           if (ar.succeeded()) {
             Result result = ar.result();
             ctx.assertEquals(0, result.getUpdatedRows());
@@ -202,10 +203,10 @@ public class PipeliningTest {
           } else {
             ctx.assertEquals("closed", ar.cause().getMessage());
           }
+          conn.close();
           async.countDown();
         });
-      }
-      pool.close();
-    }));
+      }));
+    }
   }
 }

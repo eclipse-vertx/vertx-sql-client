@@ -64,9 +64,8 @@ public class PostgresClientImpl extends NetClientBase<DbConnection> implements P
   }
 
   @Override
-  public void createPool(int size, Handler<AsyncResult<PostgresConnectionPool>> completionHandler) {
-    PostgresConnectionPoolImpl pool = new PostgresConnectionPoolImpl(this);
-    pool.connect(size, completionHandler);
+  public PostgresConnectionPool createPool(int size) {
+    return new PostgresConnectionPoolImpl(this, size);
   }
 
   @Override

@@ -8,7 +8,7 @@ import io.vertx.core.Handler;
  */
 public interface PostgresConnectionPool {
 
-  void execute(String sql, Handler<AsyncResult<Result>> resultHandler);
+  void getConnection(Handler<AsyncResult<PostgresConnection>> handler);
 
   void close();
 
