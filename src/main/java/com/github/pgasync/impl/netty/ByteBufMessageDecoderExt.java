@@ -52,6 +52,7 @@ public class ByteBufMessageDecoderExt extends ByteBufMessageDecoder {
         out.add(decoder.read(buffer));
         in.skipBytes(buffer.position());
       } else {
+        System.out.println("UNKNOWN decoder " + id);
         in.skipBytes(length - 4);
       }
     } catch (Throwable t) {
