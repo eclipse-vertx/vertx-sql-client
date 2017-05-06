@@ -1,6 +1,13 @@
 package io.vertx.pgclient;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -16,6 +23,7 @@ import ru.yandex.qatools.embed.postgresql.config.AbstractPostgresConfig;
 import ru.yandex.qatools.embed.postgresql.config.PostgresConfig;
 
 import java.io.File;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static ru.yandex.qatools.embed.postgresql.distribution.Version.V9_5_0;
 
@@ -209,4 +217,142 @@ public class PipeliningTest {
       }));
     }
   }
+
+  @Test
+  public void testTx(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    client.connect(ctx.asyncAssertSuccess(conn -> {
+      conn.execute("BEGIN", ctx.asyncAssertSuccess(result1 -> {
+        ctx.assertEquals(0, result1.getUpdatedRows());
+        ctx.assertEquals(0, result1.size());
+        conn.execute("COMMIT", ctx.asyncAssertSuccess(result2 -> {
+          async.complete();
+        }));
+      }));
+    }));
+  }
+
+/*
+  @Test
+  public void testServerUpdate(TestContext ctx) {
+
+    ctx.async();
+
+    PostgresClient client = PostgresClient.create(vertx, options);
+    PostgresConnectionPool pool = client.createPool(1);
+    HttpServer server = vertx.createHttpServer();
+    server.requestHandler(req -> {
+      new Update(pool).handle(req);
+    });
+    server.listen(8080, ctx.asyncAssertSuccess());
+
+
+  }
+
+  class Update {
+
+    boolean failed;
+    JsonArray worlds = new JsonArray();
+    PostgresConnectionPool pool;
+
+    public Update(PostgresConnectionPool pool) {
+      this.pool = pool;
+    }
+
+    public void handle(HttpServerRequest req) {
+      HttpServerResponse resp = req.response();
+      final int queries = getQueries(req);
+
+      pool.getConnection(ar1 -> {
+        if (ar1.succeeded()) {
+          PostgresConnection conn = ar1.result();
+
+          int[] ids = new int[queries];
+          Row[] rows = new Row[queries];
+          for (int i = 0; i < queries; i++) {
+            int index = i;
+            int id = randomWorld();
+            ids[i] = id;
+            conn.execute("SELECT id, randomnumber from WORLD where id = " + id, ar2 -> {
+              if (!failed) {
+                if (ar2.failed()) {
+                  failed = true;
+                  resp.setStatusCode(500).end(ar2.cause().getMessage());
+                  conn.close();
+                  return;
+                }
+                rows[index] = ar2.result().get(0);
+              }
+            });
+          }
+
+          conn.execute("BEGIN", ar2 -> {
+            if (!failed) {
+              if (ar2.failed()) {
+                failed = true;
+                resp.setStatusCode(500).end(ar2.cause().getMessage());
+                conn.close();
+              }
+
+              for (int i = 0;i < queries;i++) {
+                int index = i;
+                int randomNumber = randomWorld();
+
+                conn.execute("UPDATE world SET randomnumber = " + randomNumber + " WHERE id = " + ids[i], ar4 -> {
+                  if (!failed) {
+                    if (ar4.failed()) {
+                      failed = true;
+                      resp.setStatusCode(500).end(ar4.cause().getMessage());
+                      conn.close();
+                      return;
+                    }
+                    Row row = rows[index];
+                    worlds.add(new JsonObject().put("id", "" + row.get(0)).put("randomNumber", "" + randomNumber));
+                  }
+                });
+              }
+
+              conn.execute("COMMIT", ar5 -> {
+                if (!failed) {
+                  if (ar5.failed()) {
+                    failed = true;
+                    resp.setStatusCode(500).end(ar5.cause().getMessage());
+                    conn.close();
+                    return;
+                  }
+                  conn.close();
+                  resp
+                    .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                    .end(Json.encode(worlds.encode()));
+                }
+              });
+            }
+          });
+        } else {
+          resp.setStatusCode(500).end(ar1.cause().getMessage());
+        }
+      });
+    }
+
+    int getQueries(HttpServerRequest request) {
+      String param = request.getParam("queries");
+
+      if (param == null) {
+        return 1;
+      }
+      try {
+        int parsedValue = Integer.parseInt(param);
+        return Math.min(500, Math.max(1, parsedValue));
+      } catch (NumberFormatException e) {
+        return 1;
+      }
+    }
+
+    private int randomWorld() {
+      return 1 + ThreadLocalRandom.current().nextInt(10000);
+    }
+  }
+*/
+
 }
