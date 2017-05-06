@@ -4,7 +4,7 @@ import com.github.pgasync.impl.io.AuthenticationDecoder;
 import com.github.pgasync.impl.io.CommandCompleteDecoder;
 import com.github.pgasync.impl.io.DataRowDecoder;
 import com.github.pgasync.impl.io.Decoder;
-import com.github.pgasync.impl.io.ErrorResponseDecoder;
+import com.github.pgasync.impl.io.ErrorResponseDecoderExt;
 import com.github.pgasync.impl.io.NotificationResponseDecoder;
 import com.github.pgasync.impl.io.ReadyForQueryDecoder;
 import com.github.pgasync.impl.io.RowDescriptionDecoder;
@@ -25,7 +25,7 @@ public class ByteBufMessageDecoderExt extends ByteBufMessageDecoder {
   static final Map<Byte,Decoder<?>> DECODERS = new HashMap<>();
   static {
     for (Decoder<?> decoder : new Decoder<?>[] {
-      new ErrorResponseDecoder(),
+      new ErrorResponseDecoderExt(),
       new AuthenticationDecoder(),
       new ReadyForQueryDecoder(),
       new RowDescriptionDecoder(),
