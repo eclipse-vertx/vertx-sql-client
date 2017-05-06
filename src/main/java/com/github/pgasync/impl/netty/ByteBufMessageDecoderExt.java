@@ -9,7 +9,6 @@ import com.github.pgasync.impl.io.NotificationResponseDecoder;
 import com.github.pgasync.impl.io.ReadyForQueryDecoder;
 import com.github.pgasync.impl.io.RowDescriptionDecoder;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.nio.ByteBuffer;
