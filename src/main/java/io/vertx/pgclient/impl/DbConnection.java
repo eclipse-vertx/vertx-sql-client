@@ -146,10 +146,13 @@ public class DbConnection extends ConnectionBase {
       result.add(row);
     } else if (msg.getClass() == CommandComplete.class) {
       CommandComplete complete = (CommandComplete) msg;
-      result.setUpdatedRows(complete.getUpdatedRows());
       Result r = result;
       result = null;
       rowDesc = null;
+      if (r == null) {
+        r = new Result();
+      }
+      r.setUpdatedRows(complete.getUpdatedRows());
       inflight.poll().onSuccess(r);
       check();
     } else if (msg.getClass() == ErrorResponse.class) {

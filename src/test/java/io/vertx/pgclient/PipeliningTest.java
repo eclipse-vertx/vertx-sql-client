@@ -127,6 +127,19 @@ public class PipeliningTest {
   }
 
   @Test
+  public void testUpdate(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    client.connect(ctx.asyncAssertSuccess(conn -> {
+      conn.execute("UPDATE world SET randomnumber = 10 WHERE id = 0", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getUpdatedRows());
+        ctx.assertEquals(0, result.size());
+        async.complete();
+      }));
+    }));
+  }
+
+  @Test
   public void testClose(TestContext ctx) {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
