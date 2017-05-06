@@ -40,28 +40,29 @@ public class ByteBufMessageDecoderExt extends ByteBufMessageDecoder {
 
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-    if (in.readableBytes() < 5) {
-      return;
-    }
-
-    byte id = in.readByte();
-    int length = in.readInt();
-
-    Decoder<?> decoder = DECODERS.get(id);
-    try {
-      if (decoder != null) {
-        ByteBuffer buffer = in.nioBuffer();
-        Object read = decoder.read(buffer);
-        previous = read;
-        out.add(read);
-        in.skipBytes(buffer.position());
-      } else {
-        System.out.println("UNKNOWN decoder " + id + " " + previous);
-        in.skipBytes(length - 4);
+    if (in.readableBytes() >= 5) {
+      byte id = in.getByte(0);
+      int length = in.getInt(1);
+      if (in.readableBytes() >= length + 1) {
+        in.readByte(); // Skip
+        length = in.readInt(); // Skip
+        Decoder<?> decoder = DECODERS.get(id);
+        try {
+          if (decoder != null) {
+            ByteBuffer buffer = in.nioBuffer();
+            Object read = decoder.read(buffer);
+            previous = read;
+            out.add(read);
+            in.skipBytes(buffer.position());
+          } else {
+//            System.out.println("UNKNOWN decoder " + id + " " + previous);
+            in.skipBytes(length - 4);
+          }
+        } catch (Throwable t) {
+          // broad catch as otherwise the exception is silently dropped
+          ctx.fireExceptionCaught(t);
+        }
       }
-    } catch (Throwable t) {
-      // broad catch as otherwise the exception is silently dropped
-      ctx.fireExceptionCaught(t);
     }
   }
 }
