@@ -35,8 +35,6 @@ public class ByteBufMessageDecoderExt extends ByteBufMessageDecoder {
     }
   }
 
-  private Object previous;
-
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
     if (in.readableBytes() >= 5) {
@@ -49,12 +47,9 @@ public class ByteBufMessageDecoderExt extends ByteBufMessageDecoder {
         try {
           if (decoder != null) {
             ByteBuffer buffer = in.nioBuffer();
-            Object read = decoder.read(buffer);
-            previous = read;
-            out.add(read);
+            out.add(decoder.read(buffer));
             in.skipBytes(buffer.position());
           } else {
-//            System.out.println("UNKNOWN decoder " + id + " " + previous);
             in.skipBytes(length - 4);
           }
         } catch (Throwable t) {
