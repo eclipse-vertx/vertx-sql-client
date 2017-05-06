@@ -159,6 +159,7 @@ public class DbConnection extends ConnectionBase {
       ErrorResponse error = (ErrorResponse) msg;
       result = null;
       rowDesc = null;
+      System.out.println(error.getMessage());
       inflight.poll().onError(error.getMessage());
       check();
     } else {
