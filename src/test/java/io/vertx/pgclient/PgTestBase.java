@@ -29,14 +29,19 @@ import static ru.yandex.qatools.embed.postgresql.distribution.Version.V9_5_0;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 @RunWith(VertxUnitRunner.class)
-public class PipeliningTest {
+public abstract class PgTestBase {
 
   private static final String LIST_TABLES = "SELECT table_schema,table_name FROM information_schema.tables ORDER BY table_schema,table_name";
   private static final String CURRENT_DB = "SELECT current_database()";
 
   private static PostgresProcess process;
-  private Vertx vertx;
-  private static PostgresClientOptions options = new PostgresClientOptions();
+  static PostgresClientOptions options = new PostgresClientOptions();
+  Vertx vertx;
+  BiConsumer<PostgresClient, Handler<AsyncResult<PostgresConnection>>> connector;
+
+  public PgTestBase(BiConsumer<PostgresClient, Handler<AsyncResult<PostgresConnection>>> connector) {
+    this.connector = connector;
+  }
 
   @BeforeClass
   public static void startPg() throws Exception {
@@ -67,12 +72,11 @@ public class PipeliningTest {
     vertx.close(ctx.asyncAssertSuccess());
   }
 
-
   @Test
   public void testConnect(TestContext ctx) {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       async.complete();
     }));
   }
@@ -81,7 +85,7 @@ public class PipeliningTest {
   public void testQuery(TestContext ctx) {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.execute("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(0, result.getUpdatedRows());
         ctx.assertEquals(10000, result.size());
@@ -100,7 +104,7 @@ public class PipeliningTest {
     int num = 1000;
     Async async = ctx.async(num + 1);
     PostgresClient client = PostgresClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       for (int i = 0;i < num;i++) {
         conn.execute("SELECT id, randomnumber from WORLD", ar -> {
           if (ar.succeeded()) {
@@ -125,7 +129,7 @@ public class PipeliningTest {
   public void testQueryError(TestContext ctx) {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.execute("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(err -> {
         async.complete();
       }));
@@ -136,7 +140,7 @@ public class PipeliningTest {
   public void testUpdate(TestContext ctx) {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.execute("UPDATE world SET randomnumber = 10 WHERE id = 0", ctx.asyncAssertSuccess(result -> {
 //        ctx.assertEquals(1, result.getUpdatedRows());
         ctx.assertEquals(0, result.size());
@@ -149,7 +153,7 @@ public class PipeliningTest {
   public void testClose(TestContext ctx) {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.closeHandler(v -> {
         async.complete();
       });
@@ -169,7 +173,7 @@ public class PipeliningTest {
     });
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
       PostgresClient client = PostgresClient.create(vertx, new PostgresClientOptions(options).setPort(8080).setHost("localhost"));
-      client.connect(ctx.asyncAssertSuccess(conn -> {
+      connector.accept(client, ctx.asyncAssertSuccess(conn -> {
         conn.closeHandler(v2 -> {
           async.complete();
         });
@@ -179,18 +183,6 @@ public class PipeliningTest {
 
   @Test
   public void testProtocolError(TestContext ctx) {
-    testProtocolError(ctx, PostgresClient::connect);
-  }
-
-  @Test
-  public void testProtocolErrorPooled(TestContext ctx) {
-    testProtocolError(ctx, (client, handler) -> {
-      PostgresConnectionPool pool = client.createPool(1);
-      pool.getConnection(handler);
-    });
-  }
-
-  private void testProtocolError(TestContext ctx, BiConsumer<PostgresClient, Handler<AsyncResult<PostgresConnection>>> connector) {
     Async async = ctx.async();
     ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
     CompletableFuture<Void> connected = new CompletableFuture<>();
@@ -227,7 +219,7 @@ public class PipeliningTest {
   public void testCloseWithQueryInProgress(TestContext ctx) {
     Async async = ctx.async(2);
     PostgresClient client = PostgresClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.execute("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(2, async.count());
         ctx.assertEquals(0, result.getUpdatedRows());
@@ -246,7 +238,7 @@ public class PipeliningTest {
   public void testCloseWithErrorInProgress(TestContext ctx) {
     Async async = ctx.async(2);
     PostgresClient client = PostgresClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.execute("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(err -> {
         ctx.assertEquals(2, async.count());
         async.countDown();
@@ -260,33 +252,10 @@ public class PipeliningTest {
   }
 
   @Test
-  public void testPool(TestContext ctx) {
-    int num = 1000;
-    Async async = ctx.async(num);
-    PostgresClient client = PostgresClient.create(vertx, options);
-    PostgresConnectionPool pool = client.createPool(4);
-    for (int i = 0;i < num;i++) {
-      pool.getConnection(ctx.asyncAssertSuccess(conn -> {
-        conn.execute("SELECT id, randomnumber from WORLD", ar -> {
-          if (ar.succeeded()) {
-            Result result = ar.result();
-            ctx.assertEquals(0, result.getUpdatedRows());
-            ctx.assertEquals(10000, result.size());
-          } else {
-            ctx.assertEquals("closed", ar.cause().getMessage());
-          }
-          conn.close();
-          async.countDown();
-        });
-      }));
-    }
-  }
-
-  @Test
   public void testTx(TestContext ctx) {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.execute("BEGIN", ctx.asyncAssertSuccess(result1 -> {
         ctx.assertEquals(0, result1.getUpdatedRows());
         ctx.assertEquals(0, result1.size());
