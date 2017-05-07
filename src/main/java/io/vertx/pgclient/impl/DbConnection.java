@@ -56,8 +56,8 @@ public class DbConnection extends ConnectionBase {
 
   final PostgresConnection conn = new PostgresConnection() {
 
-    public void execute(String sql, Handler<AsyncResult<Result>> resultHandler) {
-      Command cmd = new Command(sql, resultHandler);
+    public void execute(String sql, Handler<AsyncResult<Result>> handler) {
+      Command cmd = new Command(sql, handler);
       if (Vertx.currentContext() == context) {
         doExecute(cmd);
       } else {
@@ -67,6 +67,10 @@ public class DbConnection extends ConnectionBase {
     @Override
     public void closeHandler(Handler<Void> handler) {
       DbConnection.this.closeHandler(handler);
+    }
+    @Override
+    public void exceptionHandler(Handler<Throwable> handler) {
+      DbConnection.this.exceptionHandler(handler);
     }
     @Override
     public void close() {
@@ -177,6 +181,12 @@ public class DbConnection extends ConnectionBase {
       }
     }
     super.handleClosed();
+  }
+
+  @Override
+  protected synchronized void handleException(Throwable t) {
+    super.handleException(t);
+    close();
   }
 
   private void check() {

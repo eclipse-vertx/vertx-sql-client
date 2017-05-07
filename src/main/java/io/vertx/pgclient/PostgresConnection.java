@@ -8,7 +8,9 @@ import io.vertx.core.Handler;
  */
 public interface PostgresConnection {
 
-  void execute(String sql, Handler<AsyncResult<Result>> resultHandler);
+  void exceptionHandler(Handler<Throwable> handler);
+
+  void execute(String sql, Handler<AsyncResult<Result>> handler);
 
   void closeHandler(Handler<Void> handler);
 

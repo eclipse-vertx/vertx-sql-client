@@ -1,6 +1,7 @@
 package io.vertx.pgclient;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerRequest;
@@ -23,7 +24,9 @@ import ru.yandex.qatools.embed.postgresql.config.AbstractPostgresConfig;
 import ru.yandex.qatools.embed.postgresql.config.PostgresConfig;
 
 import java.io.File;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static ru.yandex.qatools.embed.postgresql.distribution.Version.V9_5_0;
 
@@ -43,7 +46,7 @@ public class PipeliningTest {
   @BeforeClass
   public static void startPg() throws Exception {
     PostgresStarter<PostgresExecutable, PostgresProcess> runtime = PostgresStarter.getDefaultInstance();
-    PostgresConfig config = new PostgresConfig(V9_5_0, new AbstractPostgresConfig.Net(),
+    PostgresConfig config = new PostgresConfig(V9_5_0, new AbstractPostgresConfig.Net("localhost", 8081),
       new AbstractPostgresConfig.Storage("postgres"), new AbstractPostgresConfig.Timeout(),
       new AbstractPostgresConfig.Credentials("postgres", "postgres"));
     PostgresExecutable exec = runtime.prepare(config);
@@ -156,6 +159,59 @@ public class PipeliningTest {
         async.complete();
       });
       conn.close();
+    }));
+  }
+
+  @Test
+  public void testDisconnectAbruptly(TestContext ctx) {
+    Async async = ctx.async();
+    ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
+    proxy.proxyHandler(conn -> {
+      vertx.setTimer(200, id -> {
+        conn.close();
+      });
+      conn.connect();
+    });
+    proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
+      PostgresClient client = PostgresClient.create(vertx, options.setPort(8080).setHost("localhost"));
+      client.connect(ctx.asyncAssertSuccess(conn -> {
+        conn.closeHandler(v2 -> {
+          async.complete();
+        });
+      }));
+    }));
+  }
+
+  @Test
+  public void testProtocolError(TestContext ctx) {
+    Async async = ctx.async();
+    ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
+    CompletableFuture<Void> connected = new CompletableFuture<>();
+    proxy.proxyHandler(conn -> {
+      connected.thenAccept(v -> {
+        Buffer bogusMsg = Buffer.buffer();
+        bogusMsg.appendByte((byte) 'R'); // Authentication
+        bogusMsg.appendInt(0);
+        bogusMsg.appendInt(1);
+        bogusMsg.setInt(1, bogusMsg.length() - 1);
+        conn.clientSocket().write(bogusMsg);
+      });
+      conn.connect();
+    });
+    proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
+      PostgresClient client = PostgresClient.create(vertx, options.setPort(8080).setHost("localhost"));
+      client.connect(ctx.asyncAssertSuccess(conn -> {
+        AtomicInteger count = new AtomicInteger();
+        conn.exceptionHandler(err -> {
+          ctx.assertEquals(err.getClass(), UnsupportedOperationException.class);
+          count.incrementAndGet();
+        });
+        conn.closeHandler(v -> {
+          ctx.assertEquals(1, count.get());
+          async.complete();
+        });
+        connected.complete(null);
+      }));
     }));
   }
 

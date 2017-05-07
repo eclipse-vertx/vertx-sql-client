@@ -79,8 +79,12 @@ class PostgresConnectionPoolImpl implements PostgresConnectionPool {
     }
 
     @Override
-    public void execute(String sql, Handler<AsyncResult<Result>> resultHandler) {
-      conn.execute(sql, resultHandler);
+    public void execute(String sql, Handler<AsyncResult<Result>> handler) {
+      conn.execute(sql, handler);
+    }
+
+    @Override
+    public void exceptionHandler(Handler<Throwable> handler) {
     }
 
     @Override
