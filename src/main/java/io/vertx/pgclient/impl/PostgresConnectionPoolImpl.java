@@ -19,7 +19,7 @@ class PostgresConnectionPoolImpl implements PostgresConnectionPool {
 
   private final PostgresClientImpl client;
   private final Context context;
-  private final ArrayDeque<PostgresConnection> available = new ArrayDeque<>();
+  private final ArrayDeque<Holder> available = new ArrayDeque<>();
   private final ArrayDeque<Waiter> waiters = new ArrayDeque<>();
   private final int maxSize;
   private int connCount;
@@ -56,11 +56,11 @@ class PostgresConnectionPoolImpl implements PostgresConnectionPool {
   public void getConnection(Handler<AsyncResult<PostgresConnection>> handler) {
     Context current = Vertx.currentContext();
     if (current == context) {
-      PostgresConnection conn = available.poll();
-      if (conn != null) {
-        handler.handle(Future.succeededFuture(new Proxy(conn)));
+      Holder holder = available.poll();
+      if (holder != null) {
+        handler.handle(Future.succeededFuture(holder.createProxy()));
       } else if (connCount < maxSize) {
-        openConnection(handler);
+        openConnection(handler, current);
       } else {
         waiters.add(new Waiter(handler, current));
       }
@@ -69,55 +69,105 @@ class PostgresConnectionPoolImpl implements PostgresConnectionPool {
     }
   }
 
-  private class Proxy implements PostgresConnection {
+  private class Holder {
 
-    final PostgresConnection conn;
-    final AtomicBoolean closed = new AtomicBoolean();
+    private final PostgresConnection conn;
+    private boolean failed;
+    private volatile Handler<Throwable> exceptionHandler;
+    private volatile Handler<Void> closeHandler;
 
-    public Proxy(PostgresConnection conn) {
+    private Holder(PostgresConnection conn) {
       this.conn = conn;
+      conn.exceptionHandler(err -> {
+        failed = true;
+        Handler<Throwable> handler = exceptionHandler;
+        if (handler != null) {
+          handler.handle(err);
+        }
+      });
+      conn.closeHandler(v -> {
+        Handler<Void> handler = closeHandler;
+        removeFromPool();
+        if (handler != null) {
+          handler.handle(null);
+        }
+      });
     }
 
-    @Override
-    public void execute(String sql, Handler<AsyncResult<Result>> handler) {
-      conn.execute(sql, handler);
-    }
-
-    @Override
-    public void exceptionHandler(Handler<Throwable> handler) {
-    }
-
-    @Override
-    public void closeHandler(Handler<Void> handler) {
-      throw new UnsupportedOperationException("todo");
-    }
-
-    @Override
-    public void close() {
-      if (closed.compareAndSet(false, true)) {
-        returnToPool(conn);
+    private void proxyClosed() {
+      if (Vertx.currentContext() == context) {
+        if (!failed) {
+          returnToPool(this);
+        }
+      } else {
+        context.runOnContext(v -> proxyClosed());
       }
+    }
+
+    PostgresConnection createProxy() {
+      return new PostgresConnection() {
+        final AtomicBoolean closed = new AtomicBoolean();
+
+        @Override
+        public void execute(String sql, Handler<AsyncResult<Result>> handler) {
+          if (!closed.get()) {
+            conn.execute(sql, handler);
+          }
+        }
+
+        @Override
+        public void exceptionHandler(Handler<Throwable> handler) {
+          if (!closed.get()) {
+            exceptionHandler = handler;
+          }
+        }
+
+        @Override
+        public void closeHandler(Handler<Void> handler) {
+          if (!closed.get()) {
+            closeHandler = handler;
+          }
+        }
+
+        @Override
+        public void close() {
+          if (closed.compareAndSet(false, true)) {
+            closeHandler = null;
+            exceptionHandler = null;
+            proxyClosed();
+          }
+        }
+      };
     }
   }
 
-  private void openConnection(Handler<AsyncResult<PostgresConnection>> handler) {
+  private void openConnection(Handler<AsyncResult<PostgresConnection>> handler, Context handlerContext) {
     connCount++;
     client.connect(ar -> {
       if (ar.succeeded()) {
-        handler.handle(Future.succeededFuture(new Proxy(ar.result())));
+        PostgresConnection conn = ar.result();
+        handler.handle(Future.succeededFuture(new Holder(conn).createProxy()));
       } else {
         // number of retry should be bounded
-        openConnection(handler);
+        openConnection(handler, handlerContext);
       }
     });
   }
 
-  private void returnToPool(PostgresConnection conn) {
+  private void removeFromPool() {
+    connCount--;
     Waiter waiter = waiters.poll();
     if (waiter != null) {
-      waiter.use(new Proxy(conn));
+      openConnection(waiter.handler, waiter.context);
+    }
+  }
+
+  private void returnToPool(Holder holder) {
+    Waiter waiter = waiters.poll();
+    if (waiter != null) {
+      waiter.use(holder.createProxy());
     } else {
-      available.add(conn);
+      available.add(holder);
     }
   }
 

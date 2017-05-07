@@ -25,6 +25,19 @@ public class PostgresClientOptions extends NetClientOptions {
   private String password = "pass";
   private int pipeliningLimit = 256;
 
+  public PostgresClientOptions() {
+  }
+
+  public PostgresClientOptions(PostgresClientOptions other) {
+    super(other);
+    host = other.host;
+    port = other.port;
+    database = other.database;
+    username = other.username;
+    password = other.password;
+    pipeliningLimit = other.pipeliningLimit;
+  }
+
   public String getHost() {
     return host;
   }
