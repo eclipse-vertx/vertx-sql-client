@@ -60,6 +60,7 @@ class PostgresConnectionPoolImpl implements PostgresConnectionPool {
       if (holder != null) {
         handler.handle(Future.succeededFuture(holder.createProxy()));
       } else if (connCount < maxSize) {
+        connCount++;
         openConnection(handler, current);
       } else {
         waiters.add(new Waiter(handler, current));
@@ -142,14 +143,19 @@ class PostgresConnectionPoolImpl implements PostgresConnectionPool {
   }
 
   private void openConnection(Handler<AsyncResult<PostgresConnection>> handler, Context handlerContext) {
-    connCount++;
     client.connect(ar -> {
+      Future<PostgresConnection> result;
       if (ar.succeeded()) {
         PostgresConnection conn = ar.result();
-        handler.handle(Future.succeededFuture(new Holder(conn).createProxy()));
+        result = Future.succeededFuture(new Holder(conn).createProxy());
       } else {
-        // number of retry should be bounded
-        openConnection(handler, handlerContext);
+        result = Future.failedFuture(ar.cause());
+        connCount--;
+      }
+      if (Vertx.currentContext() == handlerContext) {
+        handler.handle(result);
+      } else {
+        handlerContext.runOnContext(v -> handler.handle(result));
       }
     });
   }
