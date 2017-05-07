@@ -161,6 +161,12 @@ public class DbConnection extends ConnectionBase {
       check();
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
+      if (handler != null) {
+        handler.handle(Future.failedFuture(error.getMessage()));
+        handler = null;
+        close();
+        return;
+      }
       result = null;
       rowDesc = null;
       inflight.poll().onError(error.getMessage());

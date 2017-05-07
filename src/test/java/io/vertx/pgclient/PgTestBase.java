@@ -82,6 +82,15 @@ public abstract class PgTestBase {
   }
 
   @Test
+  public void testConnectError(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, new PostgresClientOptions(options).setPassword("incorrect"));
+    connector.accept(client, ctx.asyncAssertFailure(conn -> {
+      async.complete();
+    }));
+  }
+
+  @Test
   public void testQuery(TestContext ctx) {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
