@@ -161,10 +161,11 @@ class PostgresConnectionPoolImpl implements PostgresConnectionPool {
   }
 
   private void removeFromPool() {
-    connCount--;
     Waiter waiter = waiters.poll();
     if (waiter != null) {
       openConnection(waiter.handler, waiter.context);
+    } else {
+      connCount--;
     }
   }
 
