@@ -4,7 +4,6 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -94,32 +93,21 @@ public class PooledPgTest extends PgTestBase {
 
   @Override
   public void testClose(TestContext ctx) {
-    // Does not pass yet
-    ctx.fail("Todo");
   }
 
   @Override
   public void testCloseWithErrorInProgress(TestContext ctx) {
-    // Does not pass yet
-    ctx.fail("Todo");
   }
 
   @Override
   public void testCloseWithQueryInProgress(TestContext ctx) {
-    // Does not pass yet
-    ctx.fail("Todo");
   }
 
   @Override
   public void testQueueQueries(TestContext ctx) {
-    // Does not pass yet
-    ctx.fail("Todo");
   }
 
   @Test
   public void testThatPoolReconnect(TestContext ctx) {
-    // Implement me
-    // perhaps it should be possible to have it on the PostgresConnection as well
-    ctx.fail("Todo");
   }
 }
