@@ -1,5 +1,6 @@
 package io.vertx.pgclient;
 
+import io.netty.handler.codec.DecoderException;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -23,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 
-import static ru.yandex.qatools.embed.postgresql.distribution.Version.V9_5_0;
+import static ru.yandex.qatools.embed.postgresql.distribution.Version.*;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -212,7 +213,7 @@ public abstract class PgTestBase {
       connector.accept(client, ctx.asyncAssertSuccess(conn -> {
         AtomicInteger count = new AtomicInteger();
         conn.exceptionHandler(err -> {
-          ctx.assertEquals(err.getClass(), UnsupportedOperationException.class);
+          ctx.assertEquals(err.getClass(), DecoderException.class);
           count.incrementAndGet();
         });
         conn.closeHandler(v -> {
