@@ -31,12 +31,12 @@ public class PgMessageDecoder extends ByteToMessageDecoder {
   private static final byte COMMAND_COMPLETE = 'C';
   private static final byte PARAMETER_STATUS = 'S';
   private static final byte READY_FOR_QUERY = 'Z';
-  private static final byte PARAMETER_DESC_MSG_ID = 't';
+  private static final byte PARAMETER_DESCRIPTION = 't';
   private static final byte ROW_DESCRIPTION = 'T';
   private static final byte DATA_ROW = 'D';
-  private static final byte PORTAL_SUSPENDED_MSG_ID = 's';
-  private static final byte NO_DATA_MSG_ID = 'n';
-  private static final byte EMPTY_QUERY_MSG_ID = 'I';
+  private static final byte PORTAL_SUSPENDED = 's';
+  private static final byte NO_DATA = 'n';
+  private static final byte EMPTY_QUERY_RESPONSE = 'I';
   private static final byte PARSE_COMPLETE = '1';
   private static final byte BIND_COMPLETE = '2';
   private static final byte CLOSE_COMPLETE = '3';
