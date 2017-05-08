@@ -7,6 +7,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.ContextImpl;
 import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.metrics.impl.DummyVertxMetrics;
 import io.vertx.core.net.impl.ConnectionBase;
 import io.vertx.core.spi.metrics.NetworkMetrics;
 import io.vertx.pgclient.PostgresConnection;
@@ -146,6 +147,9 @@ public class DbConnection extends ConnectionBase {
           case VARCHAR:
             row.add(new String(data, UTF_8));
             break;
+          case TEXT:
+            row.add(new String(data, UTF_8));
+            break;
           default:
             System.out.println("unsupported " + type);
             break;
@@ -218,7 +222,7 @@ public class DbConnection extends ConnectionBase {
 
   @Override
   public NetworkMetrics metrics() {
-    return null;
+    return new DummyVertxMetrics.DummyDatagramMetrics();
   }
 
   @Override
