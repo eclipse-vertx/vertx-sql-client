@@ -69,320 +69,336 @@ public class PgMessageDecoder extends ByteToMessageDecoder {
   private static final byte DATA_TYPE = 'd';
   private static final byte CONSTRAINT = 'n';
 
+  private enum State {
+    HEADER,
+    BODY
+  }
+
+  private State state = State.HEADER;
+  private byte id;
+  private int length;
+
   @Override
-  protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf in, List<Object> out) throws Exception {
-
-    if (in.readableBytes() == 0) {
-      return;
-    }
-
-    int BACKEND_MESSAGE_TYPE = in.readByte();
-    int BACKEND_MESSAGE_LENGTH = in.readInt();
-
-    switch (BACKEND_MESSAGE_TYPE) {
-      case ERROR_RESPONSE: {
-        ErrorResponseMessage error = new ErrorResponseMessage();
-        byte errorType;
-        while ((errorType = in.readByte()) != 0) {
-          switch (errorType) {
-            case SEVERITY:
-              error.setSeverity(readCString(in, UTF_8));
-              break;
-
-            case CODE:
-              error.setCode(readCString(in, UTF_8));
-              break;
-
-            case MESSAGE:
-              error.setMessage(readCString(in, UTF_8));
-              break;
-
-            case DETAIL:
-              error.setDetail(readCString(in, UTF_8));
-              break;
-
-            case HINT:
-              error.setHint(readCString(in, UTF_8));
-              break;
-
-            case POSITION:
-              error.setPosition(readCString(in, UTF_8));
-              break;
-
-            case WHERE:
-              error.setWhere(readCString(in, UTF_8));
-              break;
-
-            case FILE:
-              error.setFile(readCString(in, UTF_8));
-              break;
-
-            case LINE:
-              error.setLine(readCString(in, UTF_8));
-              break;
-
-            case ROUTINE:
-              error.setRoutine(readCString(in, UTF_8));
-              break;
-
-            case SCHEMA:
-              error.setSchema(readCString(in, UTF_8));
-              break;
-
-            case TABLE:
-              error.setTable(readCString(in, UTF_8));
-              break;
-
-            case COLUMN:
-              error.setColumn(readCString(in, UTF_8));
-              break;
-
-            case DATA_TYPE:
-              error.setDataType(readCString(in, UTF_8));
-              break;
-
-            case CONSTRAINT:
-              error.setConstraint(readCString(in, UTF_8));
-              break;
-
-            default:
-              readCString(in, UTF_8);
-              break;
-          }
+  protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+    switch (state) {
+      case HEADER:
+        if (in.readableBytes() < 5) {
+          return;
         }
-        out.add(error);
-        break;
-      }
-      case NOTICE_RESPONSE: {
-        NoticeResponseMessage notice = new NoticeResponseMessage();
-        byte noticeType;
-        while ((noticeType = in.readByte()) != 0) {
-          switch (noticeType) {
-            case SEVERITY:
-              notice.setSeverity(readCString(in, UTF_8));
-              break;
-
-            case CODE:
-              notice.setCode(readCString(in, UTF_8));
-              break;
-
-            case MESSAGE:
-              notice.setMessage(readCString(in, UTF_8));
-              break;
-
-            case DETAIL:
-              notice.setDetail(readCString(in, UTF_8));
-              break;
-
-            case HINT:
-              notice.setHint(readCString(in, UTF_8));
-              break;
-
-            case POSITION:
-              notice.setPosition(readCString(in, UTF_8));
-              break;
-
-            case WHERE:
-              notice.setWhere(readCString(in, UTF_8));
-              break;
-
-            case FILE:
-              notice.setFile(readCString(in, UTF_8));
-              break;
-
-            case LINE:
-              notice.setLine(readCString(in, UTF_8));
-              break;
-
-            case ROUTINE:
-              notice.setRoutine(readCString(in, UTF_8));
-              break;
-
-            case SCHEMA:
-              notice.setSchema(readCString(in, UTF_8));
-              break;
-
-            case TABLE:
-              notice.setTable(readCString(in, UTF_8));
-              break;
-
-            case COLUMN:
-              notice.setColumn(readCString(in, UTF_8));
-              break;
-
-            case DATA_TYPE:
-              notice.setDataType(readCString(in, UTF_8));
-              break;
-
-            case CONSTRAINT:
-              notice.setConstraint(readCString(in, UTF_8));
-              break;
-
-            default:
-              readCString(in, UTF_8);
-              break;
-          }
+        id = in.readByte();
+        length = in.readInt() - 4;
+        state = State.BODY;
+      case BODY:
+        if (in.readableBytes() < length) {
+          return;
         }
-        out.add(notice);
-        break;
-      }
-      case AUTHENTICATION: {
-        int AUTHENTICATION_TYPE = in.readInt();
-        switch (AUTHENTICATION_TYPE) {
-          case AUTHENTICATION_OK: {
-            out.add(new AuthenticationOkMessage());
+        ByteBuf data = in.readBytes(length);
+        state = State.HEADER;
+        switch (id) {
+          case ERROR_RESPONSE: {
+            ErrorResponseMessage error = new ErrorResponseMessage();
+            byte errorType;
+            while ((errorType = data.readByte()) != 0) {
+              switch (errorType) {
+                case SEVERITY:
+                  error.setSeverity(readCString(data, UTF_8));
+                  break;
+
+                case CODE:
+                  error.setCode(readCString(data, UTF_8));
+                  break;
+
+                case MESSAGE:
+                  error.setMessage(readCString(data, UTF_8));
+                  break;
+
+                case DETAIL:
+                  error.setDetail(readCString(data, UTF_8));
+                  break;
+
+                case HINT:
+                  error.setHint(readCString(data, UTF_8));
+                  break;
+
+                case POSITION:
+                  error.setPosition(readCString(data, UTF_8));
+                  break;
+
+                case WHERE:
+                  error.setWhere(readCString(data, UTF_8));
+                  break;
+
+                case FILE:
+                  error.setFile(readCString(data, UTF_8));
+                  break;
+
+                case LINE:
+                  error.setLine(readCString(data, UTF_8));
+                  break;
+
+                case ROUTINE:
+                  error.setRoutine(readCString(data, UTF_8));
+                  break;
+
+                case SCHEMA:
+                  error.setSchema(readCString(data, UTF_8));
+                  break;
+
+                case TABLE:
+                  error.setTable(readCString(data, UTF_8));
+                  break;
+
+                case COLUMN:
+                  error.setColumn(readCString(data, UTF_8));
+                  break;
+
+                case DATA_TYPE:
+                  error.setDataType(readCString(data, UTF_8));
+                  break;
+
+                case CONSTRAINT:
+                  error.setConstraint(readCString(data, UTF_8));
+                  break;
+
+                default:
+                  readCString(data, UTF_8);
+                  break;
+              }
+            }
+            out.add(error);
+            break;
+          }
+          case NOTICE_RESPONSE: {
+            NoticeResponseMessage notice = new NoticeResponseMessage();
+            byte noticeType;
+            while ((noticeType = data.readByte()) != 0) {
+              switch (noticeType) {
+                case SEVERITY:
+                  notice.setSeverity(readCString(data, UTF_8));
+                  break;
+
+                case CODE:
+                  notice.setCode(readCString(data, UTF_8));
+                  break;
+
+                case MESSAGE:
+                  notice.setMessage(readCString(data, UTF_8));
+                  break;
+
+                case DETAIL:
+                  notice.setDetail(readCString(data, UTF_8));
+                  break;
+
+                case HINT:
+                  notice.setHint(readCString(data, UTF_8));
+                  break;
+
+                case POSITION:
+                  notice.setPosition(readCString(data, UTF_8));
+                  break;
+
+                case WHERE:
+                  notice.setWhere(readCString(data, UTF_8));
+                  break;
+
+                case FILE:
+                  notice.setFile(readCString(data, UTF_8));
+                  break;
+
+                case LINE:
+                  notice.setLine(readCString(data, UTF_8));
+                  break;
+
+                case ROUTINE:
+                  notice.setRoutine(readCString(data, UTF_8));
+                  break;
+
+                case SCHEMA:
+                  notice.setSchema(readCString(data, UTF_8));
+                  break;
+
+                case TABLE:
+                  notice.setTable(readCString(data, UTF_8));
+                  break;
+
+                case COLUMN:
+                  notice.setColumn(readCString(data, UTF_8));
+                  break;
+
+                case DATA_TYPE:
+                  notice.setDataType(readCString(data, UTF_8));
+                  break;
+
+                case CONSTRAINT:
+                  notice.setConstraint(readCString(data, UTF_8));
+                  break;
+
+                default:
+                  readCString(data, UTF_8);
+                  break;
+              }
+            }
+            out.add(notice);
+            break;
+          }
+          case AUTHENTICATION: {
+            int AUTHENTICATION_TYPE = data.readInt();
+            switch (AUTHENTICATION_TYPE) {
+              case AUTHENTICATION_OK: {
+                out.add(new AuthenticationOkMessage());
+              }
+              break;
+              case AUTHENTICATION_MD5_PASSWORD: {
+                byte[] salt = new byte[4];
+                data.readBytes(salt);
+                out.add(new AuthenticationMD5PasswordMessage(salt));
+              }
+              break;
+              case AUTHENTICATION_CLEARTEXT_PASSWORD: {
+                out.add(new AuthenticationClearTextPasswordMessage());
+              }
+              break;
+              case AUTHENTICATION_KERBEROS_V5:
+              case AUTHENTICATION_SCM_CREDENTIAL:
+              case AUTHENTICATION_GSS:
+              case AUTHENTICATION_GSS_CONTINUE:
+              case AUTHENTICATION_SSPI:
+              default:
+                throw new UnsupportedOperationException("Authentication type is not supported in the client");
+            }
           }
           break;
-          case AUTHENTICATION_MD5_PASSWORD: {
-            byte[] salt = new byte[4];
-            in.readBytes(salt);
-            out.add(new AuthenticationMD5PasswordMessage(salt));
+          case READY_FOR_QUERY: {
+            out.add(new ReadyForQueryMessage());
           }
           break;
-          case AUTHENTICATION_CLEARTEXT_PASSWORD: {
-            out.add(new AuthenticationClearTextPasswordMessage());
+          case ROW_DESCRIPTION: {
+            int columnNo = data.readUnsignedShort();
+            Column[] columns = new Column[columnNo];
+            for (int c = 0; c < columnNo; ++c) {
+              String name = readCString(data, UTF_8);
+              int relationId = data.readInt();
+              short relationAttributeNo = (short) data.readUnsignedShort();
+              int type = data.readInt();
+              short typeLength = data.readShort();
+              int typeModifier = data.readInt();
+              short format = (short)data.readUnsignedShort();
+              Column column = new Column(name,
+                ColumnType.get(type),
+                ColumnFormat.get(format),
+                typeLength,
+                relationId,
+                relationAttributeNo,
+                typeModifier);
+              columns[c] = column;
+            }
+            out.add(new RowDescriptionMessage(columns));
           }
           break;
-          case AUTHENTICATION_KERBEROS_V5:
-          case AUTHENTICATION_SCM_CREDENTIAL:
-          case AUTHENTICATION_GSS:
-          case AUTHENTICATION_GSS_CONTINUE:
-          case AUTHENTICATION_SSPI:
-          default:
-            throw new UnsupportedOperationException("Authentication type is not supported in the client");
-        }
-      }
-      break;
-      case READY_FOR_QUERY: {
-        out.add(new ReadyForQueryMessage());
-      }
-      break;
-      case ROW_DESCRIPTION: {
-        int columnNo = in.readUnsignedShort();
-        Column[] columns = new Column[columnNo];
-        for (int c = 0; c < columnNo; ++c) {
-          String name = readCString(in, UTF_8);
-          int relationId = in.readInt();
-          short relationAttributeNo = (short) in.readUnsignedShort();
-          int type = in.readInt();
-          short typeLength = in.readShort();
-          int typeModifier = in.readInt();
-          short format = (short)in.readUnsignedShort();
-          Column column = new Column(name,
-            ColumnType.get(type),
-            ColumnFormat.get(format),
-            typeLength,
-            relationId,
-            relationAttributeNo,
-            typeModifier);
-          columns[c] = column;
-        }
-        out.add(new RowDescriptionMessage(columns));
-      }
-      break;
-      case DATA_ROW: {
-        byte[][] values = new byte[in.readShort()][];
-        for (int i = 0; i < values.length; i++) {
-          int length = in.readInt();
-          if (length != -1) {
-            values[i] = new byte[length];
-            in.readBytes(values[i]);
-          } else {
-            values[i] = null;
+          case DATA_ROW: {
+            byte[][] values = new byte[data.readShort()][];
+            for (int i = 0; i < values.length; i++) {
+              int length = data.readInt();
+              if (length != -1) {
+                values[i] = new byte[length];
+                data.readBytes(values[i]);
+              } else {
+                values[i] = null;
+              }
+            }
+            out.add(new DataRowMessage(values));
           }
+          break;
+          case COMMAND_COMPLETE: {
+            String tag = readCString(data, UTF_8);
+            String[] parts = tag.split(" ");
+            String command = parts[0];
+            int rowsAffected = 0;
+            switch (command) {
+              case "INSERT":
+                if (parts.length == 3) {
+                  rowsAffected = Integer.parseInt(parts[2]);
+                } else {
+                  throw new IOException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
+                }
+                break;
+              case "SELECT":
+                if (parts.length == 2) {
+                  rowsAffected = 0;
+                } else {
+                  throw new IOException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
+                }
+                break;
+              case "UPDATE":
+              case "DELETE":
+              case "MOVE":
+              case "FETCH":
+                if (parts.length == 2) {
+                  rowsAffected = Integer.parseInt(parts[1]);
+                } else {
+                  throw new IOException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
+                }
+                break;
+              case "COPY":
+                if (parts.length == 1) {
+                } else if (parts.length == 2) {
+                  rowsAffected = Integer.parseInt(parts[1]);
+                } else {
+                  throw new IOException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
+                }
+                break;
+              case "CREATE":
+              case "DROP":
+              case "ALTER":
+              case "DECLARE":
+              case "CLOSE":
+                if (parts.length == 2) {
+                  command += " " + parts[1];
+                  rowsAffected = 0;
+                } else if (parts.length == 3) {
+                  command += " " + parts[1] + " " + parts[2];
+                  rowsAffected = 0;
+                } else if (parts.length == 4) {
+                  command += " " + parts[1] + " " + parts[2] + " " + parts[3];
+                  rowsAffected = 0;
+                } else {
+                  throw new IOException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
+                }
+                break;
+              case "PREPARE":
+                if (parts.length == 2) {
+                } else {
+                  throw new IOException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
+                }
+                break;
+
+              case "COMMIT":
+                if (parts.length == 1 || parts.length == 2) {
+                } else {
+                  throw new IOException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
+                }
+                break;
+
+              case "ROLLBACK":
+                if (parts.length == 1 || parts.length == 2) {
+                } else {
+                  throw new IOException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
+                }
+                break;
+
+              case "DEALLOCATE":
+              case "TRUNCATE":
+              case "LOCK":
+              case "GRANT":
+              case "REVOKE":
+                break;
+              default:
+                rowsAffected = 0;
+            }
+            out.add(new CommandCompleteMessage(command, rowsAffected));
+          }
+          break;
         }
-        out.add(new DataRowMessage(values));
-      }
-      break;
-      case COMMAND_COMPLETE: {
-        String tag = readCString(in, UTF_8);
-        String[] parts = tag.split(" ");
-        String command = parts[0];
-        int rowsAffected = 0;
-        switch (command) {
-          case "INSERT":
-            if (parts.length == 3) {
-              rowsAffected = Integer.parseInt(parts[2]);
-            } else {
-              throw new IOException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
-            }
-            break;
-          case "SELECT":
-            if (parts.length == 2) {
-              rowsAffected = 0;
-            } else {
-              throw new IOException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
-            }
-            break;
-          case "UPDATE":
-          case "DELETE":
-          case "MOVE":
-          case "FETCH":
-            if (parts.length == 2) {
-              rowsAffected = Integer.parseInt(parts[1]);
-            } else {
-              throw new IOException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
-            }
-            break;
-          case "COPY":
-            if (parts.length == 1) {
-            } else if (parts.length == 2) {
-              rowsAffected = Integer.parseInt(parts[1]);
-            } else {
-              throw new IOException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
-            }
-            break;
-          case "CREATE":
-          case "DROP":
-          case "ALTER":
-          case "DECLARE":
-          case "CLOSE":
-            if (parts.length == 2) {
-              command += " " + parts[1];
-              rowsAffected = 0;
-            } else if (parts.length == 3) {
-              command += " " + parts[1] + " " + parts[2];
-              rowsAffected = 0;
-            } else if (parts.length == 4) {
-              command += " " + parts[1] + " " + parts[2] + " " + parts[3];
-              rowsAffected = 0;
-            } else {
-              throw new IOException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
-            }
-            break;
-          case "PREPARE":
-            if (parts.length == 2) {
-            } else {
-              throw new IOException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
-            }
-            break;
-
-          case "COMMIT":
-            if (parts.length == 1 || parts.length == 2) {
-            } else {
-              throw new IOException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
-            }
-            break;
-
-          case "ROLLBACK":
-            if (parts.length == 1 || parts.length == 2) {
-            } else {
-              throw new IOException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
-            }
-            break;
-
-          case "DEALLOCATE":
-          case "TRUNCATE":
-          case "LOCK":
-          case "GRANT":
-          case "REVOKE":
-            break;
-          default:
-            rowsAffected = 0;
-        }
-        out.add(new CommandCompleteMessage(command, rowsAffected));
-      }
-      break;
     }
   }
 }
