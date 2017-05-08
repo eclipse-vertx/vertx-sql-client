@@ -1,16 +1,5 @@
 package io.vertx.pgclient.impl;
 
-import com.github.pgasync.impl.Oid;
-import com.github.pgasync.impl.message.Authentication;
-import com.github.pgasync.impl.message.CommandComplete;
-import com.github.pgasync.impl.message.DataRow;
-import com.github.pgasync.impl.message.ErrorResponse;
-import com.github.pgasync.impl.message.Message;
-import com.github.pgasync.impl.message.PasswordMessage;
-import com.github.pgasync.impl.message.Query;
-import com.github.pgasync.impl.message.ReadyForQuery;
-import com.github.pgasync.impl.message.RowDescription;
-import com.github.pgasync.impl.message.Terminate;
 import io.netty.channel.Channel;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -23,11 +12,25 @@ import io.vertx.core.spi.metrics.NetworkMetrics;
 import io.vertx.pgclient.PostgresConnection;
 import io.vertx.pgclient.Result;
 import io.vertx.pgclient.Row;
+import io.vertx.pgclient.codec.Message;
+import io.vertx.pgclient.codec.decoder.Column;
+import io.vertx.pgclient.codec.decoder.ColumnType;
+import io.vertx.pgclient.codec.decoder.message.AuthenticationClearTextPasswordMessage;
+import io.vertx.pgclient.codec.decoder.message.AuthenticationMD5PasswordMessage;
+import io.vertx.pgclient.codec.decoder.message.AuthenticationOkMessage;
+import io.vertx.pgclient.codec.decoder.message.CommandCompleteMessage;
+import io.vertx.pgclient.codec.decoder.message.DataRowMessage;
+import io.vertx.pgclient.codec.decoder.message.ErrorResponseMessage;
+import io.vertx.pgclient.codec.decoder.message.ReadyForQueryMessage;
+import io.vertx.pgclient.codec.decoder.message.RowDescriptionMessage;
+import io.vertx.pgclient.codec.encoder.message.PasswordMessage;
+import io.vertx.pgclient.codec.encoder.message.QueryMessage;
+import io.vertx.pgclient.codec.encoder.message.TerminateMessage;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.charset.StandardCharsets.*;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -44,7 +47,7 @@ public class DbConnection extends ConnectionBase {
   private final ArrayDeque<Command> pending = new ArrayDeque<>();
   final PostgresClientImpl client;
   Handler<AsyncResult<PostgresConnection>> handler;
-  private RowDescription rowDesc;
+  private RowDescriptionMessage rowDesc;
   private Result result;
   private Status status = Status.CONNECTED;
 
@@ -93,7 +96,7 @@ public class DbConnection extends ConnectionBase {
     if (status == Status.CONNECTED) {
       if (inflight.size() < client.pipeliningLimit) {
         inflight.add(cmd);
-        writeToChannel(new Query(cmd.sql));
+        writeToChannel(new QueryMessage(cmd.sql));
       } else {
         pending.add(cmd);
       }
@@ -111,26 +114,27 @@ public class DbConnection extends ConnectionBase {
   }
 
   void handleMessage(Message msg) {
-    if (msg.getClass() == Authentication.class) {
-      Authentication auth = (Authentication) msg;
-      if (auth.isAuthenticationOk()) {
-        handler.handle(Future.succeededFuture(conn));
-        handler = null;
-      } else {
-        writeToChannel(new PasswordMessage(client.username, client.password, auth.getMd5Salt()));
-      }
-    } else if (msg.getClass() == ReadyForQuery.class) {
+
+    if (msg.getClass() == AuthenticationMD5PasswordMessage.class) {
+      AuthenticationMD5PasswordMessage authMD5 = (AuthenticationMD5PasswordMessage) msg;
+      writeToChannel(new PasswordMessage(client.username, client.password, authMD5.getSalt()));
+    } else if (msg.getClass() == AuthenticationClearTextPasswordMessage.class) {
+      writeToChannel(new PasswordMessage(client.username, client.password, null));
+    } else if (msg.getClass() == AuthenticationOkMessage.class) {
+      handler.handle(Future.succeededFuture(conn));
+      handler = null;
+    } else if (msg.getClass() == ReadyForQueryMessage.class) {
       // Ready for query
-    } else if (msg.getClass() == RowDescription.class) {
-      rowDesc = (RowDescription) msg;
+    } else if (msg.getClass() == RowDescriptionMessage.class) {
+      rowDesc = (RowDescriptionMessage) msg;
       result = new Result();
-    } else if (msg.getClass() == DataRow.class) {
-      DataRow dataRow = (DataRow) msg;
-      RowDescription.ColumnDescription[] columns = rowDesc.getColumns();
+    } else if (msg.getClass() == DataRowMessage.class) {
+      DataRowMessage dataRow = (DataRowMessage) msg;
+      Column[] columns = rowDesc.getColumns();
       Row row = new Row();
       for (int i = 0; i < columns.length; i++) {
-        RowDescription.ColumnDescription columnDesc = columns[i];
-        Oid type = columnDesc.getType();
+        Column columnDesc = columns[i];
+        ColumnType type = columnDesc.getType();
         byte[] data = dataRow.getValue(i);
         switch (type) {
           case INT4:
@@ -148,19 +152,19 @@ public class DbConnection extends ConnectionBase {
         }
       }
       result.add(row);
-    } else if (msg.getClass() == CommandComplete.class) {
-      CommandComplete complete = (CommandComplete) msg;
+    } else if (msg.getClass() == CommandCompleteMessage.class) {
+      CommandCompleteMessage complete = (CommandCompleteMessage) msg;
       Result r = result;
       result = null;
       rowDesc = null;
       if (r == null) {
         r = new Result();
       }
-      r.setUpdatedRows(complete.getUpdatedRows());
+      r.setUpdatedRows(complete.getRowsAffected());
       inflight.poll().onSuccess(r);
       check();
-    } else if (msg.getClass() == ErrorResponse.class) {
-      ErrorResponse error = (ErrorResponse) msg;
+    } else if (msg.getClass() == ErrorResponseMessage.class) {
+      ErrorResponseMessage error = (ErrorResponseMessage) msg;
       if (handler != null) {
         handler.handle(Future.failedFuture(error.getMessage()));
         handler = null;
@@ -199,14 +203,14 @@ public class DbConnection extends ConnectionBase {
     switch (status) {
       case CLOSING:
         if (inflight.isEmpty()) {
-          writeToChannel(Terminate.INSTANCE);
+          writeToChannel(new TerminateMessage());
         }
         break;
       case CONNECTED:
         Command cmd = pending.poll();
         if (cmd != null) {
           inflight.add(cmd);
-          writeToChannel(new Query(cmd.sql));
+          writeToChannel(new QueryMessage(cmd.sql));
         }
         break;
     }

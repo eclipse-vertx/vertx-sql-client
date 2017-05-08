@@ -1,9 +1,5 @@
 package io.vertx.pgclient.impl;
 
-import com.github.pgasync.impl.message.Message;
-import com.github.pgasync.impl.message.StartupMessage;
-import com.github.pgasync.impl.netty.ByteBufMessageDecoderExt;
-import com.github.pgasync.impl.netty.ByteBufMessageEncoder;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPipeline;
@@ -21,6 +17,10 @@ import io.vertx.pgclient.PostgresClient;
 import io.vertx.pgclient.PostgresClientOptions;
 import io.vertx.pgclient.PostgresConnection;
 import io.vertx.pgclient.PostgresConnectionPool;
+import io.vertx.pgclient.codec.Message;
+import io.vertx.pgclient.codec.decoder.PgMessageDecoder;
+import io.vertx.pgclient.codec.encoder.PgMessageEncoder;
+import io.vertx.pgclient.codec.encoder.message.StartupMessage;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -76,8 +76,8 @@ public class PostgresClientImpl extends NetClientBase<DbConnection> implements P
   @Override
   protected void initChannel(ChannelPipeline channelPipeline) {
     channelPipeline.addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 1, 4, -4, 0, true));
-    channelPipeline.addLast(new ByteBufMessageDecoderExt());
-    channelPipeline.addLast(new ByteBufMessageEncoder());
+    channelPipeline.addLast(new PgMessageDecoder());
+    channelPipeline.addLast(new PgMessageEncoder());
   }
 
   @Override

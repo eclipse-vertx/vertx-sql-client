@@ -53,12 +53,6 @@
     </dependency>
 
     <dependency>
-      <groupId>com.github.alaisi.pgasync</groupId>
-      <artifactId>postgres-async-driver</artifactId>
-      <version>0.9</version>
-    </dependency>
-
-    <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-codegen</artifactId>
       <scope>provided</scope>
