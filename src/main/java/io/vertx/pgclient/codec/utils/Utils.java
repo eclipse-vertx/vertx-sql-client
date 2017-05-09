@@ -12,4 +12,10 @@ public class Utils {
     buffer.readBytes(bytes);
     return new String(bytes, 0, bytes.length - 1, charset);
   }
+
+  public static void writeCString(ByteBuf buffer, String input, Charset charset) {
+    buffer.writeBytes(input.getBytes(charset));
+    buffer.writeByte(0);
+  }
+
 }
