@@ -9,7 +9,8 @@ import io.vertx.pgclient.codec.encoder.message.QueryMessage;
 import io.vertx.pgclient.codec.encoder.message.StartupMessage;
 import io.vertx.pgclient.codec.encoder.message.TerminateMessage;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static io.vertx.pgclient.codec.utils.Utils.*;
+import static java.nio.charset.StandardCharsets.*;
 
 
 /**
@@ -24,18 +25,21 @@ public class PgMessageEncoder extends MessageToByteEncoder<Message> {
     if (message.getClass() == StartupMessage.class) {
 
       StartupMessage startup = (StartupMessage) message;
+
       out.writeInt(0);
+      // protocol version
       out.writeShort(3);
       out.writeShort(0);
-      for (String s : new String[]{
-        "user", startup.getUsername(),
-        "database", startup.getDatabase(),
-        "application_name", "vertx-pg-client",
-        "client_encoding", "utf8"}) {
-        byte[] params = s.getBytes(UTF_8);
-        out.writeBytes(params);
-        out.writeByte(0);
-      }
+
+      writeCString(out, "user", UTF_8);
+      writeCString(out, startup.getUsername(), UTF_8);
+      writeCString(out, "database", UTF_8);
+      writeCString(out, startup.getDatabase(), UTF_8);
+      writeCString(out, "application_name", UTF_8);
+      writeCString(out, "vertx-pg-client", UTF_8);
+      writeCString(out, "client_encoding", UTF_8);
+      writeCString(out, "utf8", UTF_8);
+
       out.writeByte(0);
       out.setInt(0, out.writerIndex());
 
