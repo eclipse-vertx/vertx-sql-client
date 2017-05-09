@@ -12,6 +12,10 @@ import io.vertx.pgclient.codec.encoder.message.TerminateMessage;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 
+/**
+ * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
+ */
+
 public class PgMessageEncoder extends MessageToByteEncoder<Message> {
 
   @Override
@@ -40,7 +44,7 @@ public class PgMessageEncoder extends MessageToByteEncoder<Message> {
       PasswordMessage password = (PasswordMessage) message;
       out.writeByte('p');
       out.writeInt(0);
-      out.writeBytes(password.getPasswordHash() != null ? password.getPasswordHash() : password.getPassword().getBytes());
+      out.writeBytes(password.getPasswordHash() != null ? password.getPasswordHash() : password.getPassword());
       out.writeByte(0);
       out.setInt(1, out.writerIndex() - 1);
 
