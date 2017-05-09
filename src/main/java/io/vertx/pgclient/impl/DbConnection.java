@@ -16,6 +16,7 @@ import io.vertx.pgclient.Row;
 import io.vertx.pgclient.codec.Message;
 import io.vertx.pgclient.codec.decoder.Column;
 import io.vertx.pgclient.codec.decoder.ColumnType;
+import io.vertx.pgclient.codec.decoder.TransactionStatus;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationClearTextPasswordMessage;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationMD5PasswordMessage;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationOkMessage;
@@ -126,6 +127,7 @@ public class DbConnection extends ConnectionBase {
       handler = null;
     } else if (msg.getClass() == ReadyForQueryMessage.class) {
       // Ready for query
+      TransactionStatus status = ((ReadyForQueryMessage) msg).getTransactionStatus();
     } else if (msg.getClass() == RowDescriptionMessage.class) {
       rowDesc = (RowDescriptionMessage) msg;
       result = new Result();
