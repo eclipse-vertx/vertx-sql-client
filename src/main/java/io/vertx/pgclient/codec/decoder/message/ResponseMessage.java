@@ -5,6 +5,14 @@ import io.vertx.pgclient.codec.Message;
 
 import java.util.Objects;
 
+/**
+ *
+ * A common response message for PostgreSQL
+ * <a href="https://www.postgresql.org/docs/9.5/static/protocol-error-fields.html">Error and Notice Message Fields</a>
+ *
+ * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
+ */
+
 public class ResponseMessage implements Message {
 
   private String severity;
@@ -13,6 +21,8 @@ public class ResponseMessage implements Message {
   private String detail;
   private String hint;
   private String position;
+  private String internalPosition;
+  private String internalQuery;
   private String where;
   private String file;
   private String line;
@@ -143,6 +153,24 @@ public class ResponseMessage implements Message {
     this.constraint = constraint;
   }
 
+
+  public String getInternalPosition() {
+    return internalPosition;
+  }
+
+  public void setInternalPosition(String internalPosition) {
+    this.internalPosition = internalPosition;
+  }
+
+  public String getInternalQuery() {
+    return internalQuery;
+  }
+
+  public void setInternalQuery(String internalQuery) {
+    this.internalQuery = internalQuery;
+  }
+
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -154,6 +182,8 @@ public class ResponseMessage implements Message {
       Objects.equals(detail, that.detail) &&
       Objects.equals(hint, that.hint) &&
       Objects.equals(position, that.position) &&
+      Objects.equals(internalPosition, that.internalPosition) &&
+      Objects.equals(internalQuery, that.internalQuery) &&
       Objects.equals(where, that.where) &&
       Objects.equals(file, that.file) &&
       Objects.equals(line, that.line) &&
@@ -167,28 +197,31 @@ public class ResponseMessage implements Message {
 
   @Override
   public int hashCode() {
-    return Objects.hash(severity, code, message, detail, hint, position, where, file, line, routine, schema, table, column, dataType, constraint);
+    return Objects.hash(severity, code, message, detail, hint, position, internalPosition, internalQuery, where, file,
+      line, routine, schema, table, column, dataType, constraint);
   }
+
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder("ResponseMessage{");
-    sb.append("severity='").append(severity).append('\'');
-    sb.append(", code='").append(code).append('\'');
-    sb.append(", message='").append(message).append('\'');
-    sb.append(", detail='").append(detail).append('\'');
-    sb.append(", hint='").append(hint).append('\'');
-    sb.append(", position='").append(position).append('\'');
-    sb.append(", where='").append(where).append('\'');
-    sb.append(", file='").append(file).append('\'');
-    sb.append(", line='").append(line).append('\'');
-    sb.append(", routine='").append(routine).append('\'');
-    sb.append(", schema='").append(schema).append('\'');
-    sb.append(", table='").append(table).append('\'');
-    sb.append(", column='").append(column).append('\'');
-    sb.append(", dataType='").append(dataType).append('\'');
-    sb.append(", constraint='").append(constraint).append('\'');
-    sb.append('}');
-    return sb.toString();
+    return "ResponseMessage{" +
+      "severity='" + severity + '\'' +
+      ", code='" + code + '\'' +
+      ", message='" + message + '\'' +
+      ", detail='" + detail + '\'' +
+      ", hint='" + hint + '\'' +
+      ", position='" + position + '\'' +
+      ", internalPosition='" + internalPosition + '\'' +
+      ", internalQuery='" + internalQuery + '\'' +
+      ", where='" + where + '\'' +
+      ", file='" + file + '\'' +
+      ", line='" + line + '\'' +
+      ", routine='" + routine + '\'' +
+      ", schema='" + schema + '\'' +
+      ", table='" + table + '\'' +
+      ", column='" + column + '\'' +
+      ", dataType='" + dataType + '\'' +
+      ", constraint='" + constraint + '\'' +
+      '}';
   }
 }

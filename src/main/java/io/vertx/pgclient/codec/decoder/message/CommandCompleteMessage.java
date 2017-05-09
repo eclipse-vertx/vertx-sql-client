@@ -5,6 +5,10 @@ import io.vertx.pgclient.codec.Message;
 
 import java.util.Objects;
 
+/**
+ * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
+ */
+
 public class CommandCompleteMessage implements Message {
 
   private final String command;
@@ -37,13 +41,12 @@ public class CommandCompleteMessage implements Message {
     return Objects.hash(command, rowsAffected);
   }
 
-
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder("CommandCompleteMessage{");
-    sb.append("command='").append(command).append('\'');
-    sb.append(", rowsAffected=").append(rowsAffected);
-    sb.append('}');
-    return sb.toString();
+    return "CommandCompleteMessage{" +
+      "command='" + command + '\'' +
+      ", rowsAffected=" + rowsAffected +
+      '}';
   }
+
 }

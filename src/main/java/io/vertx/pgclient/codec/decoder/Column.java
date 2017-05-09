@@ -2,6 +2,10 @@ package io.vertx.pgclient.codec.decoder;
 
 import java.util.Objects;
 
+/**
+ * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
+ */
+
 public class Column {
   private final String name;
   private final ColumnType type;
@@ -69,15 +73,14 @@ public class Column {
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder("Column{");
-    sb.append("name='").append(name).append('\'');
-    sb.append(", type=").append(type);
-    sb.append(", format=").append(format);
-    sb.append(", relationId=").append(relationId);
-    sb.append(", relationAttributeNo=").append(relationAttributeNo);
-    sb.append(", length=").append(length);
-    sb.append(", typeModifier=").append(typeModifier);
-    sb.append('}');
-    return sb.toString();
+    return "Column{" +
+      "name='" + name + '\'' +
+      ", type=" + type +
+      ", format=" + format +
+      ", relationId=" + relationId +
+      ", relationAttributeNo=" + relationAttributeNo +
+      ", length=" + length +
+      ", typeModifier=" + typeModifier +
+      '}';
   }
 }
