@@ -2,6 +2,11 @@ package io.vertx.pgclient.codec.encoder.message;
 
 import io.vertx.pgclient.codec.Message;
 
+import java.util.Objects;
+
+/**
+ * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
+ */
 
 public class StartupMessage implements Message {
 
@@ -19,5 +24,28 @@ public class StartupMessage implements Message {
 
   public String getDatabase() {
     return database;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    StartupMessage that = (StartupMessage) o;
+    return Objects.equals(username, that.username) &&
+      Objects.equals(database, that.database);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(username, database);
+  }
+
+
+  @Override
+  public String toString() {
+    return "StartupMessage{" +
+      "username='" + username + '\'' +
+      ", database='" + database + '\'' +
+      '}';
   }
 }
