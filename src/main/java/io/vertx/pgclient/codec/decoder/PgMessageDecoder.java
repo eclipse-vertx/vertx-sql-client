@@ -3,7 +3,6 @@ package io.vertx.pgclient.codec.decoder;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
-import io.netty.handler.codec.DecoderException;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationClearTextPasswordMessage;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationMD5PasswordMessage;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationOkMessage;
@@ -15,7 +14,6 @@ import io.vertx.pgclient.codec.decoder.message.ReadyForQueryMessage;
 import io.vertx.pgclient.codec.decoder.message.ResponseMessage;
 import io.vertx.pgclient.codec.decoder.message.RowDescriptionMessage;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static io.vertx.pgclient.codec.utils.Utils.*;
@@ -250,113 +248,53 @@ public class PgMessageDecoder extends ByteToMessageDecoder {
   private void decodeCommandComplete(ByteBuf data, List<Object> out) {
 
     final String INSERT = "INSERT";
-    final String SELECT = "SELECT";
-    final String UPDATE = "UPDATE";
     final String DELETE = "DELETE";
+    final String UPDATE = "UPDATE";
+    final String SELECT = "SELECT";
     final String MOVE = "MOVE";
     final String FETCH = "FETCH";
     final String COPY = "COPY";
-    final String CREATE = "CREATE";
-    final String DROP = "DROP";
-    final String ALTER = "ALTER";
-    final String DECLARE = "DECLARE";
-    final String CLOSE = "CLOSE";
-    final String PREPARE = "PREPARE";
-    final String COMMIT = "COMMIT";
-    final String ROLLBACK = "ROLLBACK";
-    final String DEALLOCATE = "DEALLOCATE";
-    final String TRUNCATE = "TRUNCATE";
-    final String LOCK = "LOCK";
-    final String GRANT = "GRANT";
-    final String REVOKE = "REVOKE";
 
+    final byte SPACE = 32;
 
-    String tag = readCString(data, UTF_8);
-    String[] parts = tag.split(" ");
-    String command = parts[0];
     int rowsAffected = 0;
-    switch (command) {
-      case INSERT:
-        if (parts.length == 3) {
-          rowsAffected = Integer.parseInt(parts[2]);
-        } else {
-          throw new DecoderException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
-        }
-        break;
-      case SELECT:
-        if (parts.length == 2) {
-          rowsAffected = 0;
-        } else {
-          throw new DecoderException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
-        }
-        break;
-      case UPDATE:
-      case DELETE:
-      case MOVE:
-      case FETCH:
-        if (parts.length == 2) {
-          rowsAffected = Integer.parseInt(parts[1]);
-        } else {
-          throw new DecoderException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
-        }
-        break;
-      case COPY:
-        if (parts.length == 1) {
-        } else if (parts.length == 2) {
-          rowsAffected = Integer.parseInt(parts[1]);
-        } else {
-          throw new DecoderException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
-        }
-        break;
-      case CREATE:
-      case DROP:
-      case ALTER:
-      case DECLARE:
-      case CLOSE:
-        if (parts.length == 2) {
-          command += " " + parts[1];
-          rowsAffected = 0;
-        } else if (parts.length == 3) {
-          command += " " + parts[1] + " " + parts[2];
-          rowsAffected = 0;
-        } else if (parts.length == 4) {
-          command += " " + parts[1] + " " + parts[2] + " " + parts[3];
-          rowsAffected = 0;
-        } else {
-          throw new DecoderException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
-        }
-        break;
-      case PREPARE:
-        if (parts.length == 2) {
-        } else {
-          throw new DecoderException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
-        }
-        break;
 
-      case COMMIT:
-        if (parts.length == 1 || parts.length == 2) {
-        } else {
-          throw new DecoderException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
-        }
-        break;
+    // read no. of spaces in the buffer
+    final int spaceCount = readSpaceCount(data);
 
-      case ROLLBACK:
-        if (parts.length == 1 || parts.length == 2) {
-        } else {
-          throw new DecoderException("error parsing command tag: " + command + " (" + Arrays.toString(parts) + ")");
-        }
-        break;
+    int spaceIndex = data.indexOf(data.readerIndex(), data.writerIndex(), SPACE);
 
-      case DEALLOCATE:
-      case TRUNCATE:
-      case LOCK:
-      case GRANT:
-      case REVOKE:
-        break;
+    switch (spaceCount) {
+      case 0: {
+        out.add(new CommandCompleteMessage(data.toString(UTF_8), rowsAffected));
+      }
+      break;
+      case 1: {
+        String command = data.retainedSlice(data.readerIndex(),  spaceIndex).toString(UTF_8);
+        switch (command) {
+          case SELECT: {
+            out.add(new CommandCompleteMessage(command, rowsAffected));
+          }
+          break;
+          case UPDATE:
+          case DELETE:
+          case MOVE:
+          case FETCH:
+          case COPY: {
+            rowsAffected = Integer.parseInt
+              (data.retainedSlice(spaceIndex, data.writerIndex() - spaceIndex).toString(UTF_8).trim());
+            out.add(new CommandCompleteMessage(command, rowsAffected));
+          }
+          break;
+          default:
+          break;
+        }
+      }
+      break;
       default:
-        rowsAffected = 0;
+        // ignore
+        break;
     }
-    out.add(new CommandCompleteMessage(command, rowsAffected));
   }
 
   private void decodeRowDescription(ByteBuf data, List<Object> out) {
