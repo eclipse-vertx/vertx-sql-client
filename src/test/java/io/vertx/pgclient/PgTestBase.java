@@ -179,6 +179,7 @@ public abstract class PgTestBase {
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.execute("DELETE FROM Fortune where id = 6", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.getUpdatedRows());
+        ctx.assertEquals(0, result.size());
         async.complete();
       }));
     }));
