@@ -282,7 +282,7 @@ public class PgMessageDecoder extends ByteToMessageDecoder {
           case FETCH:
           case COPY: {
             rowsAffected = Integer.parseInt
-              (data.retainedSlice(spaceIndex, data.writerIndex() - spaceIndex).toString(UTF_8).trim());
+              (data.retainedSlice(spaceIndex + 1, data.writerIndex() - spaceIndex - 2).toString(UTF_8));
             out.add(new CommandCompleteMessage(command, rowsAffected));
           }
           break;
@@ -291,8 +291,28 @@ public class PgMessageDecoder extends ByteToMessageDecoder {
         }
       }
       break;
+      case 2: {
+        String command = data.retainedSlice(data.readerIndex(),  spaceIndex).toString(UTF_8);
+        switch (command) {
+          case INSERT: {
+            ByteBuf otherByteBuf = data.retainedSlice(spaceIndex + 1, data.writerIndex() - spaceIndex - 2);
+            int otherSpace = otherByteBuf.indexOf(otherByteBuf.readerIndex(), otherByteBuf.writerIndex(), SPACE);
+            // we may need to send the oid in the message
+            ByteBuf oidBuf = otherByteBuf.retainedSlice(0, otherSpace);
+            ByteBuf affectedRowsByteBuf = otherByteBuf.retainedSlice(otherSpace + 1,
+              otherByteBuf.writerIndex() - otherSpace - 1);
+            rowsAffected = Integer.parseInt(affectedRowsByteBuf.toString(UTF_8));
+            out.add(new CommandCompleteMessage(command, rowsAffected));
+          }
+          break;
+          default:
+            // ignore other SQL commands
+            break;
+        }
+      }
+      break;
       default:
-        // ignore
+        // ignore other SQL commands
         break;
     }
   }
