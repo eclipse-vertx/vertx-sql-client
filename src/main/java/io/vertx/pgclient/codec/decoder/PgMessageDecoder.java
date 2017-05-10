@@ -3,6 +3,7 @@ package io.vertx.pgclient.codec.decoder;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import io.netty.util.ByteProcessor;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationClearTextPasswordMessage;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationMD5PasswordMessage;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationOkMessage;
@@ -260,7 +261,7 @@ public class PgMessageDecoder extends ByteToMessageDecoder {
     int rowsAffected = 0;
 
     // read no. of spaces in the buffer
-    final int spaceCount = readSpaceCount(data);
+    final int spaceCount = data.forEachByte(ByteProcessor.FIND_NON_NUL);
 
     int spaceIndex = data.indexOf(data.readerIndex(), data.writerIndex(), SPACE);
 
