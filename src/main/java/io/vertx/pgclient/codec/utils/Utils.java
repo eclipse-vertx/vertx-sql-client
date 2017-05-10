@@ -18,4 +18,15 @@ public class Utils {
     buffer.writeByte(0);
   }
 
+  public static int readSpaceCount(ByteBuf buffer) {
+    final byte SPACE = 32;
+    int spaceCount = 0;
+    for (int i = 0; i < buffer.readableBytes(); i++) {
+      if(buffer.getByte(i) == SPACE) {
+        spaceCount++;
+      }
+    }
+    return spaceCount;
+  }
+
 }
