@@ -151,9 +151,34 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("UPDATE world SET randomnumber = 10 WHERE id = 0", ctx.asyncAssertSuccess(result -> {
-//        ctx.assertEquals(1, result.getUpdatedRows());
+      conn.execute("UPDATE Fortune SET message = 'Whatever' WHERE id = 9", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getUpdatedRows());
         ctx.assertEquals(0, result.size());
+        async.complete();
+      }));
+    }));
+  }
+
+  @Test
+  public void testInsert(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.execute("INSERT INTO Fortune (id, message) VALUES (13, 'Whatever')", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getUpdatedRows());
+        ctx.assertEquals(0, result.size());
+        async.complete();
+      }));
+    }));
+  }
+
+  @Test
+  public void testDelete(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.execute("DELETE FROM Fortune where id = 6", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getUpdatedRows());
         async.complete();
       }));
     }));
