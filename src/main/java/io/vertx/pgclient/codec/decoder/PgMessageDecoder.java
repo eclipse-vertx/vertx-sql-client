@@ -14,6 +14,7 @@ import io.vertx.pgclient.codec.decoder.message.ReadyForQueryMessage;
 import io.vertx.pgclient.codec.decoder.message.ResponseMessage;
 import io.vertx.pgclient.codec.decoder.message.RowDescriptionMessage;
 
+import java.nio.charset.Charset;
 import java.util.List;
 
 import static io.vertx.pgclient.codec.utils.Utils.*;
@@ -48,61 +49,51 @@ public class PgMessageDecoder extends ByteToMessageDecoder {
   private static final byte CLOSE_COMPLETE = '3';
   private static final byte FUNCTION_RESULT = 'V';
 
-  private enum State {
-    HEADER,
-    BODY
-  }
-
-  private State state = State.HEADER;
-  private byte id;
-  private int length;
-
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-    switch (state) {
-      case HEADER:
-        if (in.readableBytes() < 5) {
-          return;
-        }
-        id = in.readByte();
-        length = in.readInt() - 4;
-        state = State.BODY;
-      case BODY:
-        if (in.readableBytes() < length) {
-          return;
-        }
-        ByteBuf data = in.readBytes(length);
-        state = State.HEADER;
-        switch (id) {
-          case ERROR_RESPONSE: {
-            decodeErrorOrNotice(new ErrorResponseMessage(), data, out);
+
+    if (in.readableBytes() >= 5) {
+      byte id = in.getByte(0);
+      int length = in.getInt(1);
+      int beginIdx = in.readerIndex();
+      int endIdx = beginIdx + length + 1;
+      if (in.writerIndex() >= endIdx) {
+        try {
+          in.readerIndex(beginIdx + 5);
+          switch (id) {
+            case ERROR_RESPONSE: {
+              decodeErrorOrNotice(new ErrorResponseMessage(), in, out);
+              break;
+            }
+            case NOTICE_RESPONSE: {
+              decodeErrorOrNotice(new NoticeResponseMessage(), in, out);
+              break;
+            }
+            case AUTHENTICATION: {
+              decodeAuthentication(in, out);
+            }
+            break;
+            case READY_FOR_QUERY: {
+              decodeReadyForQuery(in, out);
+            }
+            break;
+            case ROW_DESCRIPTION: {
+              decodeRowDescription(in, out);
+            }
+            break;
+            case DATA_ROW: {
+              decodeDataRow(in, out);
+            }
+            break;
+            case COMMAND_COMPLETE: {
+              decodeCommandComplete(in, out);
+            }
             break;
           }
-          case NOTICE_RESPONSE: {
-            decodeErrorOrNotice(new NoticeResponseMessage(), data, out);
-            break;
-          }
-          case AUTHENTICATION: {
-            decodeAuthentication(data, out);
-          }
-          break;
-          case READY_FOR_QUERY: {
-            decodeReadyForQuery(data, out);
-          }
-          break;
-          case ROW_DESCRIPTION: {
-            decodeRowDescription(data, out);
-          }
-          break;
-          case DATA_ROW: {
-            decodeDataRow(data, out);
-          }
-          break;
-          case COMMAND_COMPLETE: {
-            decodeCommandComplete(data, out);
-          }
-          break;
+        } finally {
+          in.readerIndex(endIdx);
         }
+      }
     }
   }
 
@@ -263,6 +254,7 @@ public class PgMessageDecoder extends ByteToMessageDecoder {
     final int spaceCount = readSpaceCount(data);
 
     int spaceIndex = data.indexOf(data.readerIndex(), data.writerIndex(), SPACE);
+    int prefixLen = spaceIndex - data.readerIndex();
 
     switch (spaceCount) {
       case 0: {
@@ -270,7 +262,7 @@ public class PgMessageDecoder extends ByteToMessageDecoder {
       }
       break;
       case 1: {
-        String command = data.retainedSlice(data.readerIndex(),  spaceIndex).toString(UTF_8);
+        String command = data.retainedSlice(data.readerIndex(), prefixLen).toString(UTF_8);
         switch (command) {
           case SELECT: {
             out.add(new CommandCompleteMessage(command, rowsAffected));
@@ -292,7 +284,7 @@ public class PgMessageDecoder extends ByteToMessageDecoder {
       }
       break;
       case 2: {
-        String command = data.retainedSlice(data.readerIndex(),  spaceIndex).toString(UTF_8);
+        String command = data.retainedSlice(data.readerIndex(), prefixLen).toString(UTF_8);
         switch (command) {
           case INSERT: {
             ByteBuf otherByteBuf = data.retainedSlice(spaceIndex + 1, data.writerIndex() - spaceIndex - 2);
