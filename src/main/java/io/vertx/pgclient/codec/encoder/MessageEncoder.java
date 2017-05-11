@@ -14,6 +14,9 @@ import static java.nio.charset.StandardCharsets.*;
 
 
 /**
+ *
+ * Encoder for <a href="https://www.postgresql.org/docs/9.5/static/protocol.html">PostgreSQL protocol</a>
+ *
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
