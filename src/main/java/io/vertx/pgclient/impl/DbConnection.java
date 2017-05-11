@@ -14,20 +14,20 @@ import io.vertx.pgclient.PostgresConnection;
 import io.vertx.pgclient.Result;
 import io.vertx.pgclient.Row;
 import io.vertx.pgclient.codec.Message;
-import io.vertx.pgclient.codec.decoder.Column;
-import io.vertx.pgclient.codec.decoder.ColumnType;
-import io.vertx.pgclient.codec.decoder.TransactionStatus;
-import io.vertx.pgclient.codec.decoder.message.AuthenticationClearTextPasswordMessage;
-import io.vertx.pgclient.codec.decoder.message.AuthenticationMD5PasswordMessage;
-import io.vertx.pgclient.codec.decoder.message.AuthenticationOkMessage;
-import io.vertx.pgclient.codec.decoder.message.CommandCompleteMessage;
-import io.vertx.pgclient.codec.decoder.message.DataRowMessage;
-import io.vertx.pgclient.codec.decoder.message.ErrorResponseMessage;
-import io.vertx.pgclient.codec.decoder.message.ReadyForQueryMessage;
-import io.vertx.pgclient.codec.decoder.message.RowDescriptionMessage;
+import io.vertx.pgclient.codec.decoder.message.Column;
+import io.vertx.pgclient.codec.decoder.message.ColumnType;
+import io.vertx.pgclient.codec.decoder.message.TransactionStatus;
+import io.vertx.pgclient.codec.decoder.message.AuthenticationClearTextPassword;
+import io.vertx.pgclient.codec.decoder.message.AuthenticationMD5Password;
+import io.vertx.pgclient.codec.decoder.message.AuthenticationOk;
+import io.vertx.pgclient.codec.decoder.message.CommandComplete;
+import io.vertx.pgclient.codec.decoder.message.DataRow;
+import io.vertx.pgclient.codec.decoder.message.ErrorResponse;
+import io.vertx.pgclient.codec.decoder.message.ReadyForQuery;
+import io.vertx.pgclient.codec.decoder.message.RowDescription;
 import io.vertx.pgclient.codec.encoder.message.PasswordMessage;
-import io.vertx.pgclient.codec.encoder.message.QueryMessage;
-import io.vertx.pgclient.codec.encoder.message.TerminateMessage;
+import io.vertx.pgclient.codec.encoder.message.Query;
+import io.vertx.pgclient.codec.encoder.message.Terminate;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -49,7 +49,7 @@ public class DbConnection extends ConnectionBase {
   private final ArrayDeque<Command> pending = new ArrayDeque<>();
   final PostgresClientImpl client;
   Handler<AsyncResult<PostgresConnection>> handler;
-  private RowDescriptionMessage rowDesc;
+  private RowDescription rowDesc;
   private Result result;
   private Status status = Status.CONNECTED;
 
@@ -98,7 +98,7 @@ public class DbConnection extends ConnectionBase {
     if (status == Status.CONNECTED) {
       if (inflight.size() < client.pipeliningLimit) {
         inflight.add(cmd);
-        writeToChannel(new QueryMessage(cmd.sql));
+        writeToChannel(new Query(cmd.sql));
       } else {
         pending.add(cmd);
       }
@@ -117,22 +117,22 @@ public class DbConnection extends ConnectionBase {
 
   void handleMessage(Message msg) {
 
-    if (msg.getClass() == AuthenticationMD5PasswordMessage.class) {
-      AuthenticationMD5PasswordMessage authMD5 = (AuthenticationMD5PasswordMessage) msg;
+    if (msg.getClass() == AuthenticationMD5Password.class) {
+      AuthenticationMD5Password authMD5 = (AuthenticationMD5Password) msg;
       writeToChannel(new PasswordMessage(client.username, client.password, authMD5.getSalt()));
-    } else if (msg.getClass() == AuthenticationClearTextPasswordMessage.class) {
+    } else if (msg.getClass() == AuthenticationClearTextPassword.class) {
       writeToChannel(new PasswordMessage(client.username, client.password, null));
-    } else if (msg.getClass() == AuthenticationOkMessage.class) {
+    } else if (msg.getClass() == AuthenticationOk.class) {
       handler.handle(Future.succeededFuture(conn));
       handler = null;
-    } else if (msg.getClass() == ReadyForQueryMessage.class) {
+    } else if (msg.getClass() == ReadyForQuery.class) {
       // Ready for query
-      TransactionStatus status = ((ReadyForQueryMessage) msg).getTransactionStatus();
-    } else if (msg.getClass() == RowDescriptionMessage.class) {
-      rowDesc = (RowDescriptionMessage) msg;
+      TransactionStatus status = ((ReadyForQuery) msg).getTransactionStatus();
+    } else if (msg.getClass() == RowDescription.class) {
+      rowDesc = (RowDescription) msg;
       result = new Result();
-    } else if (msg.getClass() == DataRowMessage.class) {
-      DataRowMessage dataRow = (DataRowMessage) msg;
+    } else if (msg.getClass() == DataRow.class) {
+      DataRow dataRow = (DataRow) msg;
       Column[] columns = rowDesc.getColumns();
       Row row = new Row();
       for (int i = 0; i < columns.length; i++) {
@@ -158,8 +158,8 @@ public class DbConnection extends ConnectionBase {
         }
       }
       result.add(row);
-    } else if (msg.getClass() == CommandCompleteMessage.class) {
-      CommandCompleteMessage complete = (CommandCompleteMessage) msg;
+    } else if (msg.getClass() == CommandComplete.class) {
+      CommandComplete complete = (CommandComplete) msg;
       Result r = result;
       result = null;
       rowDesc = null;
@@ -169,8 +169,8 @@ public class DbConnection extends ConnectionBase {
       r.setUpdatedRows(complete.getRowsAffected());
       inflight.poll().onSuccess(r);
       check();
-    } else if (msg.getClass() == ErrorResponseMessage.class) {
-      ErrorResponseMessage error = (ErrorResponseMessage) msg;
+    } else if (msg.getClass() == ErrorResponse.class) {
+      ErrorResponse error = (ErrorResponse) msg;
       if (handler != null) {
         handler.handle(Future.failedFuture(error.getMessage()));
         handler = null;
@@ -209,14 +209,14 @@ public class DbConnection extends ConnectionBase {
     switch (status) {
       case CLOSING:
         if (inflight.isEmpty()) {
-          writeToChannel(new TerminateMessage());
+          writeToChannel(new Terminate());
         }
         break;
       case CONNECTED:
         Command cmd = pending.poll();
         if (cmd != null) {
           inflight.add(cmd);
-          writeToChannel(new QueryMessage(cmd.sql));
+          writeToChannel(new Query(cmd.sql));
         }
         break;
     }

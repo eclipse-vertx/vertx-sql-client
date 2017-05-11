@@ -8,11 +8,11 @@ import java.util.Arrays;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class AuthenticationMD5PasswordMessage implements Message {
+public class AuthenticationMD5Password implements Message {
 
   private final byte[] salt;
 
-  public AuthenticationMD5PasswordMessage(byte[] salt) {
+  public AuthenticationMD5Password(byte[] salt) {
     this.salt = salt;
   }
 
@@ -24,7 +24,7 @@ public class AuthenticationMD5PasswordMessage implements Message {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    AuthenticationMD5PasswordMessage that = (AuthenticationMD5PasswordMessage) o;
+    AuthenticationMD5Password that = (AuthenticationMD5Password) o;
     return Arrays.equals(salt, that.salt);
   }
 
@@ -35,7 +35,7 @@ public class AuthenticationMD5PasswordMessage implements Message {
 
   @Override
   public String toString() {
-    return "AuthenticationMD5PasswordMessage{" +
+    return "AuthenticationMD5Password{" +
       "salt=" + Arrays.toString(salt) +
       '}';
   }

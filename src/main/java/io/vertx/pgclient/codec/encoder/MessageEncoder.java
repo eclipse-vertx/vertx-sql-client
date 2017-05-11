@@ -5,9 +5,9 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.vertx.pgclient.codec.Message;
 import io.vertx.pgclient.codec.encoder.message.PasswordMessage;
-import io.vertx.pgclient.codec.encoder.message.QueryMessage;
+import io.vertx.pgclient.codec.encoder.message.Query;
 import io.vertx.pgclient.codec.encoder.message.StartupMessage;
-import io.vertx.pgclient.codec.encoder.message.TerminateMessage;
+import io.vertx.pgclient.codec.encoder.message.Terminate;
 
 import static io.vertx.pgclient.codec.utils.Utils.*;
 import static java.nio.charset.StandardCharsets.*;
@@ -53,16 +53,16 @@ public class MessageEncoder extends MessageToByteEncoder<Message> {
       out.setInt(1, out.writerIndex() - 1);
 
 
-    } else if(message.getClass() == QueryMessage.class) {
+    } else if(message.getClass() == Query.class) {
 
-      QueryMessage query = (QueryMessage) message;
+      Query query = (Query) message;
       out.writeByte('Q');
       out.writeInt(0);
       out.writeBytes(query.getQuery().getBytes(UTF_8));
       out.writeByte(0);
       out.setInt(1, out.writerIndex() - 1);
 
-    } else if(message.getClass() == TerminateMessage.class) {
+    } else if(message.getClass() == Terminate.class) {
 
       out.writeByte('X');
       out.writeInt(4);

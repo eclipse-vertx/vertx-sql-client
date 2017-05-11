@@ -6,10 +6,10 @@ import io.vertx.pgclient.codec.Message;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class AuthenticationClearTextPasswordMessage implements Message {
+public class AuthenticationOk implements Message {
 
   @Override
   public String toString() {
-    return "AuthenticationClearTextPasswordMessage{}";
+    return "AuthenticationOk{}";
   }
 }

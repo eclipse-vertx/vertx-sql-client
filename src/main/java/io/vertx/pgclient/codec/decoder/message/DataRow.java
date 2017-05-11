@@ -8,11 +8,11 @@ import java.util.Arrays;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class DataRowMessage implements Message {
+public class DataRow implements Message {
 
   final byte[][] values;
 
-  public DataRowMessage(byte[][] values) {
+  public DataRow(byte[][] values) {
     this.values = values;
   }
   public byte[] getValue(int i) {
@@ -23,7 +23,7 @@ public class DataRowMessage implements Message {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    DataRowMessage that = (DataRowMessage) o;
+    DataRow that = (DataRow) o;
     return Arrays.equals(values, that.values);
   }
 
@@ -35,7 +35,7 @@ public class DataRowMessage implements Message {
 
   @Override
   public String toString() {
-    return "DataRowMessage{" +
+    return "DataRow{" +
       "values=" + Arrays.toString(values) +
       '}';
   }

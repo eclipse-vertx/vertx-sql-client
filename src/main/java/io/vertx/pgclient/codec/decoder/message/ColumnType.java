@@ -1,4 +1,4 @@
-package io.vertx.pgclient.codec.decoder;
+package io.vertx.pgclient.codec.decoder.message;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>

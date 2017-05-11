@@ -9,11 +9,11 @@ import io.vertx.pgclient.codec.Message;
 
 import java.util.Objects;
 
-public class QueryMessage implements Message {
+public class Query implements Message {
 
   final String sql;
 
-  public QueryMessage(String sql) {
+  public Query(String sql) {
     this.sql = sql;
   }
 
@@ -25,7 +25,7 @@ public class QueryMessage implements Message {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    QueryMessage that = (QueryMessage) o;
+    Query that = (Query) o;
     return Objects.equals(sql, that.sql);
   }
 
@@ -37,7 +37,7 @@ public class QueryMessage implements Message {
 
   @Override
   public String toString() {
-    return "QueryMessage{" +
+    return "Query{" +
       "sql='" + sql + '\'' +
       '}';
   }

@@ -1,4 +1,4 @@
-package io.vertx.pgclient.codec.decoder;
+package io.vertx.pgclient.codec.decoder.message;
 
 import java.util.Objects;
 
@@ -7,6 +7,7 @@ import java.util.Objects;
  */
 
 public class Column {
+
   private final String name;
   private final ColumnType type;
   private final ColumnFormat format;
@@ -14,6 +15,7 @@ public class Column {
   private final short relationAttributeNo;
   private final short length;
   private final int typeModifier;
+
   public Column(String name, ColumnType type, ColumnFormat format, short length, int relationId, short relationAttributeNo, int typeModifier) {
     this.name = name;
     this.type = type;

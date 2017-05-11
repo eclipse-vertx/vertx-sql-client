@@ -3,16 +3,20 @@ package io.vertx.pgclient.codec.decoder;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
-import io.vertx.pgclient.codec.decoder.message.AuthenticationClearTextPasswordMessage;
-import io.vertx.pgclient.codec.decoder.message.AuthenticationMD5PasswordMessage;
-import io.vertx.pgclient.codec.decoder.message.AuthenticationOkMessage;
-import io.vertx.pgclient.codec.decoder.message.CommandCompleteMessage;
-import io.vertx.pgclient.codec.decoder.message.DataRowMessage;
-import io.vertx.pgclient.codec.decoder.message.ErrorResponseMessage;
-import io.vertx.pgclient.codec.decoder.message.NoticeResponseMessage;
-import io.vertx.pgclient.codec.decoder.message.ReadyForQueryMessage;
-import io.vertx.pgclient.codec.decoder.message.ResponseMessage;
-import io.vertx.pgclient.codec.decoder.message.RowDescriptionMessage;
+import io.vertx.pgclient.codec.decoder.message.AuthenticationClearTextPassword;
+import io.vertx.pgclient.codec.decoder.message.AuthenticationMD5Password;
+import io.vertx.pgclient.codec.decoder.message.AuthenticationOk;
+import io.vertx.pgclient.codec.decoder.message.Column;
+import io.vertx.pgclient.codec.decoder.message.ColumnFormat;
+import io.vertx.pgclient.codec.decoder.message.ColumnType;
+import io.vertx.pgclient.codec.decoder.message.CommandComplete;
+import io.vertx.pgclient.codec.decoder.message.DataRow;
+import io.vertx.pgclient.codec.decoder.message.ErrorResponse;
+import io.vertx.pgclient.codec.decoder.message.NoticeResponse;
+import io.vertx.pgclient.codec.decoder.message.ReadyForQuery;
+import io.vertx.pgclient.codec.decoder.message.Response;
+import io.vertx.pgclient.codec.decoder.message.RowDescription;
+import io.vertx.pgclient.codec.decoder.message.TransactionStatus;
 
 import java.util.List;
 
@@ -61,11 +65,11 @@ public class MessageDecoder extends ByteToMessageDecoder {
           in.readerIndex(beginIdx + 5);
           switch (id) {
             case ERROR_RESPONSE: {
-              decodeErrorOrNotice(new ErrorResponseMessage(), in, out);
+              decodeErrorOrNotice(new ErrorResponse(), in, out);
               break;
             }
             case NOTICE_RESPONSE: {
-              decodeErrorOrNotice(new NoticeResponseMessage(), in, out);
+              decodeErrorOrNotice(new NoticeResponse(), in, out);
               break;
             }
             case AUTHENTICATION: {
@@ -96,7 +100,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
     }
   }
 
-  private void decodeErrorOrNotice(ResponseMessage responseMessage, ByteBuf data, List<Object> out) {
+  private void decodeErrorOrNotice(Response response, ByteBuf data, List<Object> out) {
 
     final byte SEVERITY = 'S';
     final byte CODE = 'C';
@@ -123,71 +127,71 @@ public class MessageDecoder extends ByteToMessageDecoder {
       switch (type) {
 
         case SEVERITY:
-          responseMessage.setSeverity(readCString(data, UTF_8));
+          response.setSeverity(readCString(data, UTF_8));
           break;
 
         case CODE:
-          responseMessage.setCode(readCString(data, UTF_8));
+          response.setCode(readCString(data, UTF_8));
           break;
 
         case MESSAGE:
-          responseMessage.setMessage(readCString(data, UTF_8));
+          response.setMessage(readCString(data, UTF_8));
           break;
 
         case DETAIL:
-          responseMessage.setDetail(readCString(data, UTF_8));
+          response.setDetail(readCString(data, UTF_8));
           break;
 
         case HINT:
-          responseMessage.setHint(readCString(data, UTF_8));
+          response.setHint(readCString(data, UTF_8));
           break;
 
         case INTERNAL_POSITION:
-          responseMessage.setInternalPosition(readCString(data, UTF_8));
+          response.setInternalPosition(readCString(data, UTF_8));
           break;
 
         case INTERNAL_QUERY:
-          responseMessage.setInternalQuery(readCString(data, UTF_8));
+          response.setInternalQuery(readCString(data, UTF_8));
           break;
 
         case POSITION:
-          responseMessage.setPosition(readCString(data, UTF_8));
+          response.setPosition(readCString(data, UTF_8));
           break;
 
         case WHERE:
-          responseMessage.setWhere(readCString(data, UTF_8));
+          response.setWhere(readCString(data, UTF_8));
           break;
 
         case FILE:
-          responseMessage.setFile(readCString(data, UTF_8));
+          response.setFile(readCString(data, UTF_8));
           break;
 
         case LINE:
-          responseMessage.setLine(readCString(data, UTF_8));
+          response.setLine(readCString(data, UTF_8));
           break;
 
         case ROUTINE:
-          responseMessage.setRoutine(readCString(data, UTF_8));
+          response.setRoutine(readCString(data, UTF_8));
           break;
 
         case SCHEMA:
-          responseMessage.setSchema(readCString(data, UTF_8));
+          response.setSchema(readCString(data, UTF_8));
           break;
 
         case TABLE:
-          responseMessage.setTable(readCString(data, UTF_8));
+          response.setTable(readCString(data, UTF_8));
           break;
 
         case COLUMN:
-          responseMessage.setColumn(readCString(data, UTF_8));
+          response.setColumn(readCString(data, UTF_8));
           break;
 
         case DATA_TYPE:
-          responseMessage.setDataType(readCString(data, UTF_8));
+          response.setDataType(readCString(data, UTF_8));
           break;
 
         case CONSTRAINT:
-          responseMessage.setConstraint(readCString(data, UTF_8));
+          response.setConstraint(readCString(data, UTF_8));
           break;
 
         default:
@@ -195,7 +199,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
           break;
       }
     }
-    out.add(responseMessage);
+    out.add(response);
   }
 
   private void decodeAuthentication(ByteBuf data, List<Object> out) {
@@ -212,17 +216,17 @@ public class MessageDecoder extends ByteToMessageDecoder {
     int AUTHENTICATION_TYPE = data.readInt();
     switch (AUTHENTICATION_TYPE) {
       case AUTHENTICATION_OK: {
-        out.add(new AuthenticationOkMessage());
+        out.add(new AuthenticationOk());
       }
       break;
       case AUTHENTICATION_MD5_PASSWORD: {
         byte[] salt = new byte[4];
         data.readBytes(salt);
-        out.add(new AuthenticationMD5PasswordMessage(salt));
+        out.add(new AuthenticationMD5Password(salt));
       }
       break;
       case AUTHENTICATION_CLEARTEXT_PASSWORD: {
-        out.add(new AuthenticationClearTextPasswordMessage());
+        out.add(new AuthenticationClearTextPassword());
       }
       break;
       case AUTHENTICATION_KERBEROS_V5:
@@ -253,7 +257,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
     int prefixLen = spaceIdx1 - data.readerIndex();
 
     if (spaceIdx1 == -1) {
-      out.add(new CommandCompleteMessage(data.toString(UTF_8), rowsAffected));
+      out.add(new CommandComplete(data.toString(UTF_8), rowsAffected));
       return;
     }
 
@@ -262,7 +266,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
       String command = data.retainedSlice(data.readerIndex(), prefixLen).toString(UTF_8);
       switch (command) {
         case SELECT: {
-          out.add(new CommandCompleteMessage(command, rowsAffected));
+          out.add(new CommandComplete(command, rowsAffected));
         }
         break;
         case UPDATE:
@@ -272,7 +276,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
         case COPY: {
           rowsAffected = Integer.parseInt
             (data.retainedSlice(spaceIdx1 + 1, data.writerIndex() - spaceIdx1 - 2).toString(UTF_8));
-          out.add(new CommandCompleteMessage(command, rowsAffected));
+          out.add(new CommandComplete(command, rowsAffected));
         }
         break;
         default:
@@ -290,7 +294,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
         ByteBuf affectedRowsByteBuf = otherByteBuf.retainedSlice(otherSpace + 1,
           otherByteBuf.writerIndex() - otherSpace - 1);
         rowsAffected = Integer.parseInt(affectedRowsByteBuf.toString(UTF_8));
-        out.add(new CommandCompleteMessage(command, rowsAffected));
+        out.add(new CommandComplete(command, rowsAffected));
       }
       break;
       default:
@@ -319,7 +323,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
         typeModifier);
       columns[c] = column;
     }
-    out.add(new RowDescriptionMessage(columns));
+    out.add(new RowDescription(columns));
   }
 
   private void decodeDataRow(ByteBuf data, List<Object> out) {
@@ -333,7 +337,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
         values[i] = null;
       }
     }
-    out.add(new DataRowMessage(values));
+    out.add(new DataRow(values));
   }
 
   private void decodeReadyForQuery(ByteBuf data, List<Object> out) {
@@ -346,15 +350,15 @@ public class MessageDecoder extends ByteToMessageDecoder {
 
     switch (STATUS_TYPE) {
       case NOT_BLOCK: {
-        out.add(new ReadyForQueryMessage(TransactionStatus.NOT_BLOCK));
+        out.add(new ReadyForQuery(TransactionStatus.NOT_BLOCK));
       }
       break;
       case BLOCK: {
-        out.add(new ReadyForQueryMessage(TransactionStatus.BLOCK));
+        out.add(new ReadyForQuery(TransactionStatus.BLOCK));
       }
       break;
       case FAILED: {
-        out.add(new ReadyForQueryMessage(TransactionStatus.FAILED));
+        out.add(new ReadyForQuery(TransactionStatus.FAILED));
       }
       break;
       default:

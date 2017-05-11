@@ -6,10 +6,10 @@ import io.vertx.pgclient.codec.Message;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class TerminateMessage implements Message {
+public class Terminate implements Message {
 
   @Override
   public String toString() {
-    return "TerminateMessage{}";
+    return "Terminate{}";
   }
 }

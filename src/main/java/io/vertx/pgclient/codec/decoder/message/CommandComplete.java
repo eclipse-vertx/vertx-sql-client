@@ -9,12 +9,12 @@ import java.util.Objects;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class CommandCompleteMessage implements Message {
+public class CommandComplete implements Message {
 
   private final String command;
   private final int rowsAffected;
 
-  public CommandCompleteMessage(String command, int rowsAffected) {
+  public CommandComplete(String command, int rowsAffected) {
     this.command = command;
     this.rowsAffected = rowsAffected;
   }
@@ -31,7 +31,7 @@ public class CommandCompleteMessage implements Message {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    CommandCompleteMessage that = (CommandCompleteMessage) o;
+    CommandComplete that = (CommandComplete) o;
     return Objects.equals(command, that.command) &&
       Objects.equals(rowsAffected, that.rowsAffected);
   }
@@ -43,7 +43,7 @@ public class CommandCompleteMessage implements Message {
 
   @Override
   public String toString() {
-    return "CommandCompleteMessage{" +
+    return "CommandComplete{" +
       "command='" + command + '\'' +
       ", rowsAffected=" + rowsAffected +
       '}';

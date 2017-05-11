@@ -1,13 +1,12 @@
 package io.vertx.pgclient.codec.decoder.message;
 
 import io.vertx.pgclient.codec.Message;
-import io.vertx.pgclient.codec.decoder.TransactionStatus;
 
 import java.util.Objects;
 
 /**
  *
- * Every ReadyForQueryMessage returned from the backend has transaction status that would be one of the following
+ * Every ReadyForQuery returned from the backend has transaction status that would be one of the following
  *
  * NOT_BLOCK : Not in a transaction block
  * BLOCK : In transaction block
@@ -17,11 +16,11 @@ import java.util.Objects;
  *
  */
 
-public class ReadyForQueryMessage implements Message {
+public class ReadyForQuery implements Message {
 
   private final TransactionStatus transactionStatus;
 
-  public ReadyForQueryMessage(TransactionStatus transactionStatus) {
+  public ReadyForQuery(TransactionStatus transactionStatus) {
     this.transactionStatus = transactionStatus;
   }
 
@@ -33,7 +32,7 @@ public class ReadyForQueryMessage implements Message {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    ReadyForQueryMessage that = (ReadyForQueryMessage) o;
+    ReadyForQuery that = (ReadyForQuery) o;
     return transactionStatus == that.transactionStatus;
   }
 
@@ -45,7 +44,7 @@ public class ReadyForQueryMessage implements Message {
 
   @Override
   public String toString() {
-    return "ReadyForQueryMessage{" +
+    return "ReadyForQuery{" +
       "transactionStatus=" + transactionStatus +
       '}';
   }

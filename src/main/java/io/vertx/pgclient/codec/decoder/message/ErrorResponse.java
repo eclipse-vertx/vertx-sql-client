@@ -4,11 +4,11 @@ package io.vertx.pgclient.codec.decoder.message;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class NoticeResponseMessage extends ResponseMessage {
+public class ErrorResponse extends Response {
 
   @Override
   public String toString() {
-    return "NoticeResponseMessage{" +
+    return "ErrorResponse{" +
       "severity='" + getSeverity() + '\'' +
       ", code='" + getCode() + '\'' +
       ", message='" + getMessage() + '\'' +

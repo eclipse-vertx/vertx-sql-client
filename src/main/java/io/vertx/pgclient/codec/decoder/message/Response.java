@@ -13,7 +13,7 @@ import java.util.Objects;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class ResponseMessage implements Message {
+public class Response implements Message {
 
   private String severity;
   private String code;
@@ -175,7 +175,7 @@ public class ResponseMessage implements Message {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    ResponseMessage that = (ResponseMessage) o;
+    Response that = (Response) o;
     return Objects.equals(severity, that.severity) &&
       Objects.equals(code, that.code) &&
       Objects.equals(message, that.message) &&
@@ -204,7 +204,7 @@ public class ResponseMessage implements Message {
 
   @Override
   public String toString() {
-    return "ResponseMessage{" +
+    return "Response{" +
       "severity='" + severity + '\'' +
       ", code='" + code + '\'' +
       ", message='" + message + '\'' +
