@@ -20,6 +20,11 @@ import io.vertx.pgclient.codec.decoder.message.TransactionStatus;
 
 import java.util.List;
 
+import static io.vertx.pgclient.codec.decoder.message.type.AuthenticationType.*;
+import static io.vertx.pgclient.codec.decoder.message.type.CommandCompleteType.*;
+import static io.vertx.pgclient.codec.decoder.message.type.ErrorOrNoticeType.*;
+import static io.vertx.pgclient.codec.decoder.message.type.MessageType.*;
+import static io.vertx.pgclient.codec.decoder.message.type.TransactionStatusType.*;
 import static io.vertx.pgclient.codec.utils.Utils.*;
 import static java.nio.charset.StandardCharsets.*;
 
@@ -31,26 +36,6 @@ import static java.nio.charset.StandardCharsets.*;
  */
 
 public class MessageDecoder extends ByteToMessageDecoder {
-
-  // Backend message id
-  private static final byte BACKEND_KEY_DATA = 'K';
-  private static final byte AUTHENTICATION = 'R';
-  private static final byte ERROR_RESPONSE = 'E';
-  private static final byte NOTICE_RESPONSE = 'N';
-  private static final byte NOTIFICATION_RESPONSE = 'A';
-  private static final byte COMMAND_COMPLETE = 'C';
-  private static final byte PARAMETER_STATUS = 'S';
-  private static final byte READY_FOR_QUERY = 'Z';
-  private static final byte PARAMETER_DESCRIPTION = 't';
-  private static final byte ROW_DESCRIPTION = 'T';
-  private static final byte DATA_ROW = 'D';
-  private static final byte PORTAL_SUSPENDED = 's';
-  private static final byte NO_DATA = 'n';
-  private static final byte EMPTY_QUERY_RESPONSE = 'I';
-  private static final byte PARSE_COMPLETE = '1';
-  private static final byte BIND_COMPLETE = '2';
-  private static final byte CLOSE_COMPLETE = '3';
-  private static final byte FUNCTION_RESULT = 'V';
 
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
@@ -101,24 +86,6 @@ public class MessageDecoder extends ByteToMessageDecoder {
   }
 
   private void decodeErrorOrNotice(Response response, ByteBuf data, List<Object> out) {
-
-    final byte SEVERITY = 'S';
-    final byte CODE = 'C';
-    final byte MESSAGE = 'M';
-    final byte DETAIL = 'D';
-    final byte HINT = 'H';
-    final byte POSITION = 'P';
-    final byte INTERNAL_POSITION = 'p';
-    final byte INTERNAL_QUERY = 'q';
-    final byte WHERE = 'W';
-    final byte FILE = 'F';
-    final byte LINE = 'L';
-    final byte ROUTINE = 'R';
-    final byte SCHEMA = 's';
-    final byte TABLE = 't';
-    final byte COLUMN = 'c';
-    final byte DATA_TYPE = 'd';
-    final byte CONSTRAINT = 'n';
 
     byte type;
 
@@ -204,50 +171,33 @@ public class MessageDecoder extends ByteToMessageDecoder {
 
   private void decodeAuthentication(ByteBuf data, List<Object> out) {
 
-    final int AUTHENTICATION_OK = 0;
-    final int AUTHENTICATION_KERBEROS_V5 = 2;
-    final int AUTHENTICATION_CLEARTEXT_PASSWORD = 3;
-    final int AUTHENTICATION_MD5_PASSWORD = 5;
-    final int AUTHENTICATION_SCM_CREDENTIAL = 6;
-    final int AUTHENTICATION_GSS = 7;
-    final int AUTHENTICATION_GSS_CONTINUE = 8;
-    final int AUTHENTICATION_SSPI = 9;
-
-    int AUTHENTICATION_TYPE = data.readInt();
-    switch (AUTHENTICATION_TYPE) {
-      case AUTHENTICATION_OK: {
+    int type = data.readInt();
+    switch (type) {
+      case OK: {
         out.add(new AuthenticationOk());
       }
       break;
-      case AUTHENTICATION_MD5_PASSWORD: {
+      case MD5_PASSWORD: {
         byte[] salt = new byte[4];
         data.readBytes(salt);
         out.add(new AuthenticationMD5Password(salt));
       }
       break;
-      case AUTHENTICATION_CLEARTEXT_PASSWORD: {
+      case CLEARTEXT_PASSWORD: {
         out.add(new AuthenticationClearTextPassword());
       }
       break;
-      case AUTHENTICATION_KERBEROS_V5:
-      case AUTHENTICATION_SCM_CREDENTIAL:
-      case AUTHENTICATION_GSS:
-      case AUTHENTICATION_GSS_CONTINUE:
-      case AUTHENTICATION_SSPI:
+      case KERBEROS_V5:
+      case SCM_CREDENTIAL:
+      case GSS:
+      case GSS_CONTINUE:
+      case SSPI:
       default:
         throw new UnsupportedOperationException("Authentication type is not supported in the client");
     }
   }
 
   private void decodeCommandComplete(ByteBuf data, List<Object> out) {
-
-    final String INSERT = "INSERT";
-    final String DELETE = "DELETE";
-    final String UPDATE = "UPDATE";
-    final String SELECT = "SELECT";
-    final String MOVE = "MOVE";
-    final String FETCH = "FETCH";
-    final String COPY = "COPY";
 
     final byte SPACE = 32;
 
@@ -342,13 +292,9 @@ public class MessageDecoder extends ByteToMessageDecoder {
 
   private void decodeReadyForQuery(ByteBuf data, List<Object> out) {
 
-    final byte NOT_BLOCK = 'I';
-    final byte BLOCK = 'T';
-    final byte FAILED = 'E';
+    byte type = data.readByte();
 
-    byte STATUS_TYPE = data.readByte();
-
-    switch (STATUS_TYPE) {
+    switch (type) {
       case NOT_BLOCK: {
         out.add(new ReadyForQuery(TransactionStatus.NOT_BLOCK));
       }
