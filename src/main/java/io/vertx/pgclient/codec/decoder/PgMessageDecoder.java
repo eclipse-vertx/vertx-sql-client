@@ -250,57 +250,48 @@ public class PgMessageDecoder extends ByteToMessageDecoder {
 
     int rowsAffected = 0;
 
-    // read no. of spaces in the buffer
-    final int spaceCount = readSpaceCount(data);
+    int spaceIdx1 = data.indexOf(data.readerIndex(), data.writerIndex(), SPACE);
+    int prefixLen = spaceIdx1 - data.readerIndex();
 
-    int spaceIndex = data.indexOf(data.readerIndex(), data.writerIndex(), SPACE);
-    int prefixLen = spaceIndex - data.readerIndex();
+    if (spaceIdx1 == -1) {
+      out.add(new CommandCompleteMessage(data.toString(UTF_8), rowsAffected));
+      return;
+    }
 
-    switch (spaceCount) {
-      case 0: {
-        out.add(new CommandCompleteMessage(data.toString(UTF_8), rowsAffected));
-      }
-      break;
-      case 1: {
-        String command = data.retainedSlice(data.readerIndex(), prefixLen).toString(UTF_8);
-        switch (command) {
-          case SELECT: {
-            out.add(new CommandCompleteMessage(command, rowsAffected));
-          }
-          break;
-          case UPDATE:
-          case DELETE:
-          case MOVE:
-          case FETCH:
-          case COPY: {
-            rowsAffected = Integer.parseInt
-              (data.retainedSlice(spaceIndex + 1, data.writerIndex() - spaceIndex - 2).toString(UTF_8));
-            out.add(new CommandCompleteMessage(command, rowsAffected));
-          }
-          break;
-          default:
-          break;
+    int spaceIdx2 = data.indexOf(spaceIdx1 + 1, data.writerIndex(), SPACE);
+    if (spaceIdx2 == -1) {
+      String command = data.retainedSlice(data.readerIndex(), prefixLen).toString(UTF_8);
+      switch (command) {
+        case SELECT: {
+          out.add(new CommandCompleteMessage(command, rowsAffected));
         }
-      }
-      break;
-      case 2: {
-        String command = data.retainedSlice(data.readerIndex(), prefixLen).toString(UTF_8);
-        switch (command) {
-          case INSERT: {
-            ByteBuf otherByteBuf = data.retainedSlice(spaceIndex + 1, data.writerIndex() - spaceIndex - 2);
-            int otherSpace = otherByteBuf.indexOf(otherByteBuf.readerIndex(), otherByteBuf.writerIndex(), SPACE);
-            // we may need to send the oid in the message
-            ByteBuf oidBuf = otherByteBuf.retainedSlice(0, otherSpace);
-            ByteBuf affectedRowsByteBuf = otherByteBuf.retainedSlice(otherSpace + 1,
-              otherByteBuf.writerIndex() - otherSpace - 1);
-            rowsAffected = Integer.parseInt(affectedRowsByteBuf.toString(UTF_8));
-            out.add(new CommandCompleteMessage(command, rowsAffected));
-          }
-          break;
-          default:
-            // ignore other SQL commands
-            break;
+        break;
+        case UPDATE:
+        case DELETE:
+        case MOVE:
+        case FETCH:
+        case COPY: {
+          rowsAffected = Integer.parseInt
+            (data.retainedSlice(spaceIdx1 + 1, data.writerIndex() - spaceIdx1 - 2).toString(UTF_8));
+          out.add(new CommandCompleteMessage(command, rowsAffected));
         }
+        break;
+        default:
+          break;
+      }
+    }
+
+    String command = data.retainedSlice(data.readerIndex(), prefixLen).toString(UTF_8);
+    switch (command) {
+      case INSERT: {
+        ByteBuf otherByteBuf = data.retainedSlice(spaceIdx1 + 1, data.writerIndex() - spaceIdx1 - 2);
+        int otherSpace = otherByteBuf.indexOf(otherByteBuf.readerIndex(), otherByteBuf.writerIndex(), SPACE);
+        // we may need to send the oid in the message
+        ByteBuf oidBuf = otherByteBuf.retainedSlice(0, otherSpace);
+        ByteBuf affectedRowsByteBuf = otherByteBuf.retainedSlice(otherSpace + 1,
+          otherByteBuf.writerIndex() - otherSpace - 1);
+        rowsAffected = Integer.parseInt(affectedRowsByteBuf.toString(UTF_8));
+        out.add(new CommandCompleteMessage(command, rowsAffected));
       }
       break;
       default:
