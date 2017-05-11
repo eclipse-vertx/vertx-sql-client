@@ -39,6 +39,10 @@ public class MessageEncoder extends MessageToByteEncoder<Message> {
       writeCString(out, "vertx-pg-client", UTF_8);
       writeCString(out, "client_encoding", UTF_8);
       writeCString(out, "utf8", UTF_8);
+      writeCString(out, "DateStyle", UTF_8);
+      writeCString(out, "ISO", UTF_8);
+      writeCString(out, "extra_float_digits", UTF_8);
+      writeCString(out, "2", UTF_8);
 
       out.writeByte(0);
       out.setInt(0, out.writerIndex());
