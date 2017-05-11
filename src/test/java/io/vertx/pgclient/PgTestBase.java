@@ -83,10 +83,21 @@ public abstract class PgTestBase {
   }
 
   @Test
-  public void testConnectError(TestContext ctx) {
+  public void testConnectWrongPassword(TestContext ctx) {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, new PostgresClientOptions(options).setPassword("incorrect"));
     connector.accept(client, ctx.asyncAssertFailure(conn -> {
+      ctx.assertEquals("password authentication failed for user \"postgres\"", conn.getMessage());
+      async.complete();
+    }));
+  }
+
+  @Test
+  public void testConnectWrongUsername(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, new PostgresClientOptions(options).setUsername("vertx"));
+    connector.accept(client, ctx.asyncAssertFailure(conn -> {
+      ctx.assertEquals("password authentication failed for user \"vertx\"", conn.getMessage());
       async.complete();
     }));
   }
