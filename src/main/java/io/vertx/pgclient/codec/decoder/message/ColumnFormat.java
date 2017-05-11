@@ -6,7 +6,7 @@ package io.vertx.pgclient.codec.decoder.message;
 
 public enum ColumnFormat {
   TEXT((short)0),
-  BAINARY((short)1),
+  BINARY((short)1),
   UNKNOWN((short)-1);
   final short id;
   ColumnFormat(short id) {
