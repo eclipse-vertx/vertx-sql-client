@@ -17,7 +17,7 @@ import static java.nio.charset.StandardCharsets.*;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class PgMessageEncoder extends MessageToByteEncoder<Message> {
+public class MessageEncoder extends MessageToByteEncoder<Message> {
 
   @Override
   protected void encode(ChannelHandlerContext ctx, Message message, ByteBuf out) throws Exception {

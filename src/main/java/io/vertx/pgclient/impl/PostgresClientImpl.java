@@ -18,8 +18,8 @@ import io.vertx.pgclient.PostgresClientOptions;
 import io.vertx.pgclient.PostgresConnection;
 import io.vertx.pgclient.PostgresConnectionPool;
 import io.vertx.pgclient.codec.Message;
-import io.vertx.pgclient.codec.decoder.PgMessageDecoder;
-import io.vertx.pgclient.codec.encoder.PgMessageEncoder;
+import io.vertx.pgclient.codec.decoder.MessageDecoder;
+import io.vertx.pgclient.codec.encoder.MessageEncoder;
 import io.vertx.pgclient.codec.encoder.message.StartupMessage;
 
 /**
@@ -76,8 +76,8 @@ public class PostgresClientImpl extends NetClientBase<DbConnection> implements P
   @Override
   protected void initChannel(ChannelPipeline channelPipeline) {
     channelPipeline.addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 1, 4, -4, 0, true));
-    channelPipeline.addLast(new PgMessageDecoder());
-    channelPipeline.addLast(new PgMessageEncoder());
+    channelPipeline.addLast(new MessageDecoder());
+    channelPipeline.addLast(new MessageEncoder());
   }
 
   @Override

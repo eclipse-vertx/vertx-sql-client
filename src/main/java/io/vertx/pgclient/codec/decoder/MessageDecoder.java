@@ -14,7 +14,6 @@ import io.vertx.pgclient.codec.decoder.message.ReadyForQueryMessage;
 import io.vertx.pgclient.codec.decoder.message.ResponseMessage;
 import io.vertx.pgclient.codec.decoder.message.RowDescriptionMessage;
 
-import java.nio.charset.Charset;
 import java.util.List;
 
 import static io.vertx.pgclient.codec.utils.Utils.*;
@@ -27,7 +26,7 @@ import static java.nio.charset.StandardCharsets.*;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class PgMessageDecoder extends ByteToMessageDecoder {
+public class MessageDecoder extends ByteToMessageDecoder {
 
   // Backend message id
   private static final byte BACKEND_KEY_DATA = 'K';
