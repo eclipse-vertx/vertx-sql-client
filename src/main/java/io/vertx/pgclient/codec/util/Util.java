@@ -1,11 +1,11 @@
-package io.vertx.pgclient.codec.utils;
+package io.vertx.pgclient.codec.util;
 
 import io.netty.buffer.ByteBuf;
 
 import java.nio.charset.Charset;
 
 
-public class Utils {
+public class Util {
 
   public static String readCString(ByteBuf buffer, Charset charset) {
     byte[] bytes = new byte[buffer.bytesBefore((byte) 0) + 1];

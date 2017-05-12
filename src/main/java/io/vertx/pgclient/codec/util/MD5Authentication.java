@@ -1,4 +1,4 @@
-package io.vertx.pgclient.codec.utils;
+package io.vertx.pgclient.codec.util;
 
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import java.security.MessageDigest;
