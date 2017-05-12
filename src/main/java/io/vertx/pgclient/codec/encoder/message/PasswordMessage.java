@@ -1,7 +1,7 @@
 package io.vertx.pgclient.codec.encoder.message;
 
 import io.vertx.pgclient.codec.Message;
-import io.vertx.pgclient.codec.utils.MD5Authentication;
+import io.vertx.pgclient.codec.util.MD5Authentication;
 
 import java.util.Arrays;
 import java.util.Objects;

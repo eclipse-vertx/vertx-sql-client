@@ -9,7 +9,7 @@ import io.vertx.pgclient.codec.encoder.message.Query;
 import io.vertx.pgclient.codec.encoder.message.StartupMessage;
 import io.vertx.pgclient.codec.encoder.message.Terminate;
 
-import static io.vertx.pgclient.codec.utils.Utils.*;
+import static io.vertx.pgclient.codec.util.Util.*;
 import static java.nio.charset.StandardCharsets.*;
 
 

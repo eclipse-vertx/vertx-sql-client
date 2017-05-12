@@ -25,7 +25,7 @@ import static io.vertx.pgclient.codec.decoder.message.type.CommandCompleteType.*
 import static io.vertx.pgclient.codec.decoder.message.type.ErrorOrNoticeType.*;
 import static io.vertx.pgclient.codec.decoder.message.type.MessageType.*;
 import static io.vertx.pgclient.codec.decoder.message.type.ReadyForQueryTransactionStatusType.*;
-import static io.vertx.pgclient.codec.utils.Utils.*;
+import static io.vertx.pgclient.codec.util.Util.*;
 import static java.nio.charset.StandardCharsets.*;
 
 /**
