@@ -1,6 +1,10 @@
 package io.vertx.pgclient.codec.decoder.message;
 
 /**
+ *
+ * PostgreSQL <a href="https://github.com/postgres/postgres/blob/master/src/include/catalog/pg_type.h">object
+ * identifiers (OIDs)</a> for column data types
+ *
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
