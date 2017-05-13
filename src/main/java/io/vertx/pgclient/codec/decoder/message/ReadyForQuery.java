@@ -8,8 +8,8 @@ import java.util.Objects;
  *
  * Every ReadyForQuery returned from the backend has transaction status that would be one of the following
  *
- * NOT_BLOCK : Not in a transaction block
- * BLOCK : In transaction block
+ * IDLE : Not in a transaction block
+ * ACTIVE : In transaction block
  * FAILED : Failed transaction block (queries will be rejected until block is ended)
  *
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
