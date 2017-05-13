@@ -5,7 +5,7 @@ package io.vertx.pgclient.codec.decoder.message.type;
  */
 
 public class ReadyForQueryTransactionStatusType {
-  public static final byte NOT_BLOCK = 'I';
-  public static final byte BLOCK = 'T';
+  public static final byte IDLE = 'I';
+  public static final byte ACTIVE = 'T';
   public static final byte FAILED = 'E';
 }
