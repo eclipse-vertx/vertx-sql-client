@@ -11,16 +11,10 @@ import java.util.Objects;
 
 public class PasswordMessage implements Message {
 
-  final String text;
   final String hash;
 
   public PasswordMessage(String username, String password, byte[] salt) {
-    this.hash = salt != null ? MD5Authentication.encode(username, password, salt) : null;
-    this.text = password;
-  }
-
-  public String getText() {
-    return text;
+    this.hash = salt != null ? MD5Authentication.encode(username, password, salt) : password;
   }
 
   public String getHash() {
@@ -32,21 +26,19 @@ public class PasswordMessage implements Message {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     PasswordMessage that = (PasswordMessage) o;
-    return Objects.equals(text, that.text) &&
-      Objects.equals(hash, that.hash);
+    return Objects.equals(hash, that.hash);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(text, hash);
+    return Objects.hash(hash);
   }
-
 
   @Override
   public String toString() {
     return "PasswordMessage{" +
-      "text='" + text + '\'' +
-      ", hash='" + hash + '\'' +
+      "hash='" + hash + '\'' +
       '}';
   }
+
 }

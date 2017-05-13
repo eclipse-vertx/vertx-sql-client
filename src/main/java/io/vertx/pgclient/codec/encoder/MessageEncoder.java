@@ -76,7 +76,7 @@ public class MessageEncoder extends MessageToByteEncoder<Message> {
     PasswordMessage password = (PasswordMessage) message;
     out.writeByte(PASSWORD_MESSAGE);
     out.writeInt(0);
-    out.writeCharSequence(password.getHash() != null ? password.getHash() : password.getText(), UTF_8);
+    out.writeCharSequence(password.getHash(), UTF_8);
     out.writeByte(0);
     out.setInt(1, out.writerIndex() - 1);
   }
