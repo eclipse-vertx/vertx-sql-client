@@ -9,6 +9,7 @@ import io.vertx.pgclient.codec.encoder.message.Query;
 import io.vertx.pgclient.codec.encoder.message.StartupMessage;
 import io.vertx.pgclient.codec.encoder.message.Terminate;
 
+import static io.vertx.pgclient.codec.encoder.message.type.MessageType.*;
 import static io.vertx.pgclient.codec.util.Util.*;
 import static java.nio.charset.StandardCharsets.*;
 
@@ -27,55 +28,72 @@ public class MessageEncoder extends MessageToByteEncoder<Message> {
 
     if (message.getClass() == StartupMessage.class) {
 
-      StartupMessage startup = (StartupMessage) message;
-
-      out.writeInt(0);
-      // protocol version
-      out.writeShort(3);
-      out.writeShort(0);
-
-      writeCString(out, "user", UTF_8);
-      writeCString(out, startup.getUsername(), UTF_8);
-      writeCString(out, "database", UTF_8);
-      writeCString(out, startup.getDatabase(), UTF_8);
-      writeCString(out, "application_name", UTF_8);
-      writeCString(out, "vertx-pg-client", UTF_8);
-      writeCString(out, "client_encoding", UTF_8);
-      writeCString(out, "utf8", UTF_8);
-      writeCString(out, "DateStyle", UTF_8);
-      writeCString(out, "ISO", UTF_8);
-      writeCString(out, "extra_float_digits", UTF_8);
-      writeCString(out, "2", UTF_8);
-
-      out.writeByte(0);
-      out.setInt(0, out.writerIndex());
+      encodeStartupMessage(message, out);
 
     } else if (message.getClass() == PasswordMessage.class) {
 
-      PasswordMessage password = (PasswordMessage) message;
-      out.writeByte('p');
-      out.writeInt(0);
-      out.writeBytes(password.getPasswordHash() != null ? password.getPasswordHash() : password.getPassword());
-      out.writeByte(0);
-      out.setInt(1, out.writerIndex() - 1);
-
+      encodePasswordMessage(message, out);
 
     } else if(message.getClass() == Query.class) {
 
-      Query query = (Query) message;
-      out.writeByte('Q');
-      out.writeInt(0);
-      out.writeBytes(query.getQuery().getBytes(UTF_8));
-      out.writeByte(0);
-      out.setInt(1, out.writerIndex() - 1);
+      encodeQuery(message, out);
 
     } else if(message.getClass() == Terminate.class) {
 
-      out.writeByte('X');
-      out.writeInt(4);
+      encodeTerminate(out);
 
     }
 
   }
+
+  private void encodeStartupMessage(Message message, ByteBuf out) {
+
+    StartupMessage startup = (StartupMessage) message;
+
+    out.writeInt(0);
+    // protocol version
+    out.writeShort(3);
+    out.writeShort(0);
+
+    writeCString(out, "user", UTF_8);
+    writeCString(out, startup.getUsername(), UTF_8);
+    writeCString(out, "database", UTF_8);
+    writeCString(out, startup.getDatabase(), UTF_8);
+    writeCString(out, "application_name", UTF_8);
+    writeCString(out, "vertx-pg-client", UTF_8);
+    writeCString(out, "client_encoding", UTF_8);
+    writeCString(out, "utf8", UTF_8);
+    writeCString(out, "DateStyle", UTF_8);
+    writeCString(out, "ISO", UTF_8);
+    writeCString(out, "extra_float_digits", UTF_8);
+    writeCString(out, "2", UTF_8);
+
+    out.writeByte(0);
+    out.setInt(0, out.writerIndex());
+  }
+
+  private void encodePasswordMessage(Message message, ByteBuf out) {
+    PasswordMessage password = (PasswordMessage) message;
+    out.writeByte(PASSWORD_MESSAGE);
+    out.writeInt(0);
+    out.writeCharSequence(password.getHash() != null ? password.getHash() : password.getText(), UTF_8);
+    out.writeByte(0);
+    out.setInt(1, out.writerIndex() - 1);
+  }
+
+  private void encodeQuery(Message message, ByteBuf out) {
+    Query query = (Query) message;
+    out.writeByte(QUERY);
+    out.writeInt(0);
+    out.writeCharSequence(query.getQuery(), UTF_8);
+    out.writeByte(0);
+    out.setInt(1, out.writerIndex() - 1);
+  }
+
+  private void encodeTerminate(ByteBuf out) {
+    out.writeByte(TERMINATE);
+    out.writeInt(4);
+  }
+
 }
 
