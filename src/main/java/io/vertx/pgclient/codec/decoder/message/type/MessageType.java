@@ -1,6 +1,11 @@
 package io.vertx.pgclient.codec.decoder.message.type;
 
+import io.vertx.pgclient.codec.decoder.MessageDecoder;
+
 /**
+ *
+ * Backend message types for {@link MessageDecoder}
+ *
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
