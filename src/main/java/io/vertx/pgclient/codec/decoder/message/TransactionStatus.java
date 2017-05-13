@@ -7,7 +7,7 @@ package io.vertx.pgclient.codec.decoder.message;
  */
 
 public enum TransactionStatus {
-  NOT_BLOCK,
-  BLOCK,
+  IDLE,
+  ACTIVE,
   FAILED
 }
