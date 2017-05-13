@@ -3,7 +3,6 @@ package io.vertx.pgclient.codec.encoder.message;
 import io.vertx.pgclient.codec.Message;
 import io.vertx.pgclient.codec.util.MD5Authentication;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -12,43 +11,42 @@ import java.util.Objects;
 
 public class PasswordMessage implements Message {
 
-  final byte[] password;
-  final byte[] passwordHash;
+  final String text;
+  final String hash;
 
   public PasswordMessage(String username, String password, byte[] salt) {
-    this.passwordHash = salt != null ? MD5Authentication.encode(username, password, salt).getBytes() : null;
-    this.password = password.getBytes();
+    this.hash = salt != null ? MD5Authentication.encode(username, password, salt) : null;
+    this.text = password;
   }
 
-  public byte[] getPassword() {
-    return password;
+  public String getText() {
+    return text;
   }
 
-  public byte[] getPasswordHash() {
-    return passwordHash;
+  public String getHash() {
+    return hash;
   }
-
 
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     PasswordMessage that = (PasswordMessage) o;
-    return Arrays.equals(password, that.password) &&
-      Arrays.equals(passwordHash, that.passwordHash);
+    return Objects.equals(text, that.text) &&
+      Objects.equals(hash, that.hash);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(password, passwordHash);
+    return Objects.hash(text, hash);
   }
 
 
   @Override
   public String toString() {
     return "PasswordMessage{" +
-      "password=" + Arrays.toString(password) +
-      ", passwordHash=" + Arrays.toString(passwordHash) +
+      "text='" + text + '\'' +
+      ", hash='" + hash + '\'' +
       '}';
   }
 }
