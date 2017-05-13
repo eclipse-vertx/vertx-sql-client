@@ -254,16 +254,16 @@ public class MessageDecoder extends ByteToMessageDecoder {
   }
 
   private void decodeRowDescription(ByteBuf in, List<Object> out) {
-    int columnNo = in.readUnsignedShort();
+    short columnNo = in.readShort();
     Column[] columns = new Column[columnNo];
-    for (int c = 0; c < columnNo; ++c) {
+    for (short c = 0; c < columnNo; ++c) {
       String name = readCString(in, UTF_8);
       int relationId = in.readInt();
-      short relationAttributeNo = (short) in.readUnsignedShort();
+      short relationAttributeNo = in.readShort();
       int type = in.readInt();
       short typeLength = in.readShort();
       int typeModifier = in.readInt();
-      short format = (short)in.readUnsignedShort();
+      short format = in.readShort();
       Column column = new Column(name,
         ColumnType.get(type),
         ColumnFormat.get(format),
@@ -277,8 +277,8 @@ public class MessageDecoder extends ByteToMessageDecoder {
   }
 
   private void decodeDataRow(ByteBuf in, List<Object> out) {
-    byte[][] values = new byte[in.readUnsignedShort()][];
-    for (int c = 0; c < values.length; ++c) {
+    byte[][] values = new byte[in.readShort()][];
+    for (short c = 0; c < values.length; ++c) {
       int length = in.readInt();
       if (length != -1) {
         values[c] = new byte[length];
