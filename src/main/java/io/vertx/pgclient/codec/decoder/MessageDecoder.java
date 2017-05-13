@@ -85,93 +85,93 @@ public class MessageDecoder extends ByteToMessageDecoder {
     }
   }
 
-  private void decodeErrorOrNotice(Response response, ByteBuf data, List<Object> out) {
+  private void decodeErrorOrNotice(Response response, ByteBuf in, List<Object> out) {
 
     byte type;
 
-    while ((type = data.readByte()) != 0) {
+    while ((type = in.readByte()) != 0) {
 
       switch (type) {
 
         case SEVERITY:
-          response.setSeverity(readCString(data, UTF_8));
+          response.setSeverity(readCString(in, UTF_8));
           break;
 
         case CODE:
-          response.setCode(readCString(data, UTF_8));
+          response.setCode(readCString(in, UTF_8));
           break;
 
         case MESSAGE:
-          response.setMessage(readCString(data, UTF_8));
+          response.setMessage(readCString(in, UTF_8));
           break;
 
         case DETAIL:
-          response.setDetail(readCString(data, UTF_8));
+          response.setDetail(readCString(in, UTF_8));
           break;
 
         case HINT:
-          response.setHint(readCString(data, UTF_8));
+          response.setHint(readCString(in, UTF_8));
           break;
 
         case INTERNAL_POSITION:
-          response.setInternalPosition(readCString(data, UTF_8));
+          response.setInternalPosition(readCString(in, UTF_8));
           break;
 
         case INTERNAL_QUERY:
-          response.setInternalQuery(readCString(data, UTF_8));
+          response.setInternalQuery(readCString(in, UTF_8));
           break;
 
         case POSITION:
-          response.setPosition(readCString(data, UTF_8));
+          response.setPosition(readCString(in, UTF_8));
           break;
 
         case WHERE:
-          response.setWhere(readCString(data, UTF_8));
+          response.setWhere(readCString(in, UTF_8));
           break;
 
         case FILE:
-          response.setFile(readCString(data, UTF_8));
+          response.setFile(readCString(in, UTF_8));
           break;
 
         case LINE:
-          response.setLine(readCString(data, UTF_8));
+          response.setLine(readCString(in, UTF_8));
           break;
 
         case ROUTINE:
-          response.setRoutine(readCString(data, UTF_8));
+          response.setRoutine(readCString(in, UTF_8));
           break;
 
         case SCHEMA:
-          response.setSchema(readCString(data, UTF_8));
+          response.setSchema(readCString(in, UTF_8));
           break;
 
         case TABLE:
-          response.setTable(readCString(data, UTF_8));
+          response.setTable(readCString(in, UTF_8));
           break;
 
         case COLUMN:
-          response.setColumn(readCString(data, UTF_8));
+          response.setColumn(readCString(in, UTF_8));
           break;
 
         case DATA_TYPE:
-          response.setDataType(readCString(data, UTF_8));
+          response.setDataType(readCString(in, UTF_8));
           break;
 
         case CONSTRAINT:
-          response.setConstraint(readCString(data, UTF_8));
+          response.setConstraint(readCString(in, UTF_8));
           break;
 
         default:
-          readCString(data, UTF_8);
+          readCString(in, UTF_8);
           break;
       }
     }
     out.add(response);
   }
 
-  private void decodeAuthentication(ByteBuf data, List<Object> out) {
+  private void decodeAuthentication(ByteBuf in, List<Object> out) {
 
-    int type = data.readInt();
+    int type = in.readInt();
     switch (type) {
       case OK: {
         out.add(new AuthenticationOk());
@@ -179,7 +179,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
       break;
       case MD5_PASSWORD: {
         byte[] salt = new byte[4];
-        data.readBytes(salt);
+        in.readBytes(salt);
         out.add(new AuthenticationMD5Password(salt));
       }
       break;
@@ -197,23 +197,23 @@ public class MessageDecoder extends ByteToMessageDecoder {
     }
   }
 
-  private void decodeCommandComplete(ByteBuf data, List<Object> out) {
+  private void decodeCommandComplete(ByteBuf in, List<Object> out) {
 
     final byte SPACE = 32;
 
     int rowsAffected = 0;
 
-    int spaceIdx1 = data.indexOf(data.readerIndex(), data.writerIndex(), SPACE);
-    int prefixLen = spaceIdx1 - data.readerIndex();
+    int spaceIdx1 = in.indexOf(in.readerIndex(), in.writerIndex(), SPACE);
+    int prefixLen = spaceIdx1 - in.readerIndex();
 
     if (spaceIdx1 == -1) {
-      out.add(new CommandComplete(data.toString(UTF_8), rowsAffected));
+      out.add(new CommandComplete(in.toString(UTF_8), rowsAffected));
       return;
     }
 
-    int spaceIdx2 = data.indexOf(spaceIdx1 + 1, data.writerIndex(), SPACE);
+    int spaceIdx2 = in.indexOf(spaceIdx1 + 1, in.writerIndex(), SPACE);
     if (spaceIdx2 == -1) {
-      String command = data.retainedSlice(data.readerIndex(), prefixLen).toString(UTF_8);
+      String command = in.retainedSlice(in.readerIndex(), prefixLen).toString(UTF_8);
       switch (command) {
         case SELECT: {
           out.add(new CommandComplete(command, rowsAffected));
@@ -225,7 +225,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
         case FETCH:
         case COPY: {
           rowsAffected = Integer.parseInt
-            (data.retainedSlice(spaceIdx1 + 1, data.writerIndex() - spaceIdx1 - 2).toString(UTF_8));
+            (in.retainedSlice(spaceIdx1 + 1, in.writerIndex() - spaceIdx1 - 2).toString(UTF_8));
           out.add(new CommandComplete(command, rowsAffected));
         }
         break;
@@ -234,10 +234,10 @@ public class MessageDecoder extends ByteToMessageDecoder {
       }
     }
 
-    String command = data.retainedSlice(data.readerIndex(), prefixLen).toString(UTF_8);
+    String command = in.retainedSlice(in.readerIndex(), prefixLen).toString(UTF_8);
     switch (command) {
       case INSERT: {
-        ByteBuf otherByteBuf = data.retainedSlice(spaceIdx1 + 1, data.writerIndex() - spaceIdx1 - 2);
+        ByteBuf otherByteBuf = in.retainedSlice(spaceIdx1 + 1, in.writerIndex() - spaceIdx1 - 2);
         int otherSpace = otherByteBuf.indexOf(otherByteBuf.readerIndex(), otherByteBuf.writerIndex(), SPACE);
         // we may need to send the oid in the message
         ByteBuf oidBuf = otherByteBuf.retainedSlice(0, otherSpace);
@@ -253,17 +253,17 @@ public class MessageDecoder extends ByteToMessageDecoder {
     }
   }
 
-  private void decodeRowDescription(ByteBuf data, List<Object> out) {
-    int columnNo = data.readUnsignedShort();
+  private void decodeRowDescription(ByteBuf in, List<Object> out) {
+    int columnNo = in.readUnsignedShort();
     Column[] columns = new Column[columnNo];
     for (int c = 0; c < columnNo; ++c) {
-      String name = readCString(data, UTF_8);
-      int relationId = data.readInt();
-      short relationAttributeNo = (short) data.readUnsignedShort();
-      int type = data.readInt();
-      short typeLength = data.readShort();
-      int typeModifier = data.readInt();
-      short format = (short)data.readUnsignedShort();
+      String name = readCString(in, UTF_8);
+      int relationId = in.readInt();
+      short relationAttributeNo = (short) in.readUnsignedShort();
+      int type = in.readInt();
+      short typeLength = in.readShort();
+      int typeModifier = in.readInt();
+      short format = (short)in.readUnsignedShort();
       Column column = new Column(name,
         ColumnType.get(type),
         ColumnFormat.get(format),
@@ -276,31 +276,31 @@ public class MessageDecoder extends ByteToMessageDecoder {
     out.add(new RowDescription(columns));
   }
 
-  private void decodeDataRow(ByteBuf data, List<Object> out) {
-    byte[][] values = new byte[data.readShort()][];
-    for (int i = 0; i < values.length; i++) {
-      int length = data.readInt();
+  private void decodeDataRow(ByteBuf in, List<Object> out) {
+    byte[][] values = new byte[in.readUnsignedShort()][];
+    for (int c = 0; c < values.length; ++c) {
+      int length = in.readInt();
       if (length != -1) {
-        values[i] = new byte[length];
-        data.readBytes(values[i]);
+        values[c] = new byte[length];
+        in.readBytes(values[c]);
       } else {
-        values[i] = null;
+        values[c] = null;
       }
     }
     out.add(new DataRow(values));
   }
 
-  private void decodeReadyForQuery(ByteBuf data, List<Object> out) {
+  private void decodeReadyForQuery(ByteBuf in, List<Object> out) {
 
-    byte type = data.readByte();
+    byte type = in.readByte();
 
     switch (type) {
-      case NOT_BLOCK: {
-        out.add(new ReadyForQuery(TransactionStatus.NOT_BLOCK));
+      case IDLE: {
+        out.add(new ReadyForQuery(TransactionStatus.IDLE));
       }
       break;
-      case BLOCK: {
-        out.add(new ReadyForQuery(TransactionStatus.BLOCK));
+      case ACTIVE: {
+        out.add(new ReadyForQuery(TransactionStatus.ACTIVE));
       }
       break;
       case FAILED: {
