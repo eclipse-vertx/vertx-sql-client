@@ -14,17 +14,16 @@ import io.vertx.pgclient.PostgresConnection;
 import io.vertx.pgclient.Result;
 import io.vertx.pgclient.Row;
 import io.vertx.pgclient.codec.Message;
-import io.vertx.pgclient.codec.decoder.message.Column;
-import io.vertx.pgclient.codec.decoder.message.ColumnType;
-import io.vertx.pgclient.codec.decoder.message.TransactionStatus;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationClearTextPassword;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationMD5Password;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationOk;
+import io.vertx.pgclient.codec.decoder.message.Column;
 import io.vertx.pgclient.codec.decoder.message.CommandComplete;
 import io.vertx.pgclient.codec.decoder.message.DataRow;
 import io.vertx.pgclient.codec.decoder.message.ErrorResponse;
 import io.vertx.pgclient.codec.decoder.message.ReadyForQuery;
 import io.vertx.pgclient.codec.decoder.message.RowDescription;
+import io.vertx.pgclient.codec.decoder.message.TransactionStatus;
 import io.vertx.pgclient.codec.encoder.message.PasswordMessage;
 import io.vertx.pgclient.codec.encoder.message.Query;
 import io.vertx.pgclient.codec.encoder.message.Terminate;
@@ -32,6 +31,7 @@ import io.vertx.pgclient.codec.encoder.message.Terminate;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 
+import static io.vertx.pgclient.codec.decoder.message.ColumnType.*;
 import static java.nio.charset.StandardCharsets.*;
 
 /**
@@ -137,7 +137,7 @@ public class DbConnection extends ConnectionBase {
       Row row = new Row();
       for (int i = 0; i < columns.length; i++) {
         Column columnDesc = columns[i];
-        ColumnType type = columnDesc.getType();
+        int type = columnDesc.getType();
         byte[] data = dataRow.getValue(i);
         switch (type) {
           case INT4:

@@ -7,8 +7,6 @@ import io.vertx.pgclient.codec.decoder.message.AuthenticationClearTextPassword;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationMD5Password;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationOk;
 import io.vertx.pgclient.codec.decoder.message.Column;
-import io.vertx.pgclient.codec.decoder.message.ColumnFormat;
-import io.vertx.pgclient.codec.decoder.message.ColumnType;
 import io.vertx.pgclient.codec.decoder.message.CommandComplete;
 import io.vertx.pgclient.codec.decoder.message.DataRow;
 import io.vertx.pgclient.codec.decoder.message.ErrorResponse;
@@ -264,13 +262,15 @@ public class MessageDecoder extends ByteToMessageDecoder {
       short typeLength = in.readShort();
       int typeModifier = in.readInt();
       short format = in.readShort();
-      Column column = new Column(name,
-        ColumnType.get(type),
-        ColumnFormat.get(format),
+      Column column = new Column(
+        name,
+        type,
+        format,
         typeLength,
         relationId,
         relationAttributeNo,
-        typeModifier);
+        typeModifier
+      );
       columns[c] = column;
     }
     out.add(new RowDescription(columns));
