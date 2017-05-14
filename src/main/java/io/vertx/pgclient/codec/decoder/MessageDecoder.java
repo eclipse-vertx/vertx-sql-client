@@ -94,75 +94,75 @@ public class MessageDecoder extends ByteToMessageDecoder {
       switch (type) {
 
         case SEVERITY:
-          response.setSeverity(readCString(in, UTF_8));
+          response.setSeverity(readCStringUTF8(in));
           break;
 
         case CODE:
-          response.setCode(readCString(in, UTF_8));
+          response.setCode(readCStringUTF8(in));
           break;
 
         case MESSAGE:
-          response.setMessage(readCString(in, UTF_8));
+          response.setMessage(readCStringUTF8(in));
           break;
 
         case DETAIL:
-          response.setDetail(readCString(in, UTF_8));
+          response.setDetail(readCStringUTF8(in));
           break;
 
         case HINT:
-          response.setHint(readCString(in, UTF_8));
+          response.setHint(readCStringUTF8(in));
           break;
 
         case INTERNAL_POSITION:
-          response.setInternalPosition(readCString(in, UTF_8));
+          response.setInternalPosition(readCStringUTF8(in));
           break;
 
         case INTERNAL_QUERY:
-          response.setInternalQuery(readCString(in, UTF_8));
+          response.setInternalQuery(readCStringUTF8(in));
           break;
 
         case POSITION:
-          response.setPosition(readCString(in, UTF_8));
+          response.setPosition(readCStringUTF8(in));
           break;
 
         case WHERE:
-          response.setWhere(readCString(in, UTF_8));
+          response.setWhere(readCStringUTF8(in));
           break;
 
         case FILE:
-          response.setFile(readCString(in, UTF_8));
+          response.setFile(readCStringUTF8(in));
           break;
 
         case LINE:
-          response.setLine(readCString(in, UTF_8));
+          response.setLine(readCStringUTF8(in));
           break;
 
         case ROUTINE:
-          response.setRoutine(readCString(in, UTF_8));
+          response.setRoutine(readCStringUTF8(in));
           break;
 
         case SCHEMA:
-          response.setSchema(readCString(in, UTF_8));
+          response.setSchema(readCStringUTF8(in));
           break;
 
         case TABLE:
-          response.setTable(readCString(in, UTF_8));
+          response.setTable(readCStringUTF8(in));
           break;
 
         case COLUMN:
-          response.setColumn(readCString(in, UTF_8));
+          response.setColumn(readCStringUTF8(in));
           break;
 
         case DATA_TYPE:
-          response.setDataType(readCString(in, UTF_8));
+          response.setDataType(readCStringUTF8(in));
           break;
 
         case CONSTRAINT:
-          response.setConstraint(readCString(in, UTF_8));
+          response.setConstraint(readCStringUTF8(in));
           break;
 
         default:
-          readCString(in, UTF_8);
+          readCStringUTF8(in);
           break;
       }
     }
@@ -257,7 +257,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
     short columnNo = in.readShort();
     Column[] columns = new Column[columnNo];
     for (short c = 0; c < columnNo; ++c) {
-      String name = readCString(in, UTF_8);
+      String name = readCStringUTF8(in);
       int relationId = in.readInt();
       short relationAttributeNo = in.readShort();
       int type = in.readInt();
