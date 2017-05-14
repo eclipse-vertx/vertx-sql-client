@@ -1,16 +1,5 @@
 package io.vertx.pgclient.impl;
 
-import com.github.pgasync.impl.Oid;
-import com.github.pgasync.impl.message.Authentication;
-import com.github.pgasync.impl.message.CommandComplete;
-import com.github.pgasync.impl.message.DataRow;
-import com.github.pgasync.impl.message.ErrorResponse;
-import com.github.pgasync.impl.message.Message;
-import com.github.pgasync.impl.message.PasswordMessage;
-import com.github.pgasync.impl.message.Query;
-import com.github.pgasync.impl.message.ReadyForQuery;
-import com.github.pgasync.impl.message.RowDescription;
-import com.github.pgasync.impl.message.Terminate;
 import io.netty.channel.Channel;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -18,16 +7,32 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.ContextImpl;
 import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.metrics.impl.DummyVertxMetrics;
 import io.vertx.core.net.impl.ConnectionBase;
 import io.vertx.core.spi.metrics.NetworkMetrics;
 import io.vertx.pgclient.PostgresConnection;
 import io.vertx.pgclient.Result;
 import io.vertx.pgclient.Row;
+import io.vertx.pgclient.codec.Message;
+import io.vertx.pgclient.codec.decoder.message.Column;
+import io.vertx.pgclient.codec.decoder.message.ColumnType;
+import io.vertx.pgclient.codec.decoder.message.TransactionStatus;
+import io.vertx.pgclient.codec.decoder.message.AuthenticationClearTextPassword;
+import io.vertx.pgclient.codec.decoder.message.AuthenticationMD5Password;
+import io.vertx.pgclient.codec.decoder.message.AuthenticationOk;
+import io.vertx.pgclient.codec.decoder.message.CommandComplete;
+import io.vertx.pgclient.codec.decoder.message.DataRow;
+import io.vertx.pgclient.codec.decoder.message.ErrorResponse;
+import io.vertx.pgclient.codec.decoder.message.ReadyForQuery;
+import io.vertx.pgclient.codec.decoder.message.RowDescription;
+import io.vertx.pgclient.codec.encoder.message.PasswordMessage;
+import io.vertx.pgclient.codec.encoder.message.Query;
+import io.vertx.pgclient.codec.encoder.message.Terminate;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.charset.StandardCharsets.*;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -111,26 +116,28 @@ public class DbConnection extends ConnectionBase {
   }
 
   void handleMessage(Message msg) {
-    if (msg.getClass() == Authentication.class) {
-      Authentication auth = (Authentication) msg;
-      if (auth.isAuthenticationOk()) {
-        handler.handle(Future.succeededFuture(conn));
-        handler = null;
-      } else {
-        writeToChannel(new PasswordMessage(client.username, client.password, auth.getMd5Salt()));
-      }
+
+    if (msg.getClass() == AuthenticationMD5Password.class) {
+      AuthenticationMD5Password authMD5 = (AuthenticationMD5Password) msg;
+      writeToChannel(new PasswordMessage(client.username, client.password, authMD5.getSalt()));
+    } else if (msg.getClass() == AuthenticationClearTextPassword.class) {
+      writeToChannel(new PasswordMessage(client.username, client.password, null));
+    } else if (msg.getClass() == AuthenticationOk.class) {
+      handler.handle(Future.succeededFuture(conn));
+      handler = null;
     } else if (msg.getClass() == ReadyForQuery.class) {
       // Ready for query
+      TransactionStatus status = ((ReadyForQuery) msg).getTransactionStatus();
     } else if (msg.getClass() == RowDescription.class) {
       rowDesc = (RowDescription) msg;
       result = new Result();
     } else if (msg.getClass() == DataRow.class) {
       DataRow dataRow = (DataRow) msg;
-      RowDescription.ColumnDescription[] columns = rowDesc.getColumns();
+      Column[] columns = rowDesc.getColumns();
       Row row = new Row();
       for (int i = 0; i < columns.length; i++) {
-        RowDescription.ColumnDescription columnDesc = columns[i];
-        Oid type = columnDesc.getType();
+        Column columnDesc = columns[i];
+        ColumnType type = columnDesc.getType();
         byte[] data = dataRow.getValue(i);
         switch (type) {
           case INT4:
@@ -140,6 +147,9 @@ public class DbConnection extends ConnectionBase {
             row.add(new String(data));
             break;
           case VARCHAR:
+            row.add(new String(data, UTF_8));
+            break;
+          case TEXT:
             row.add(new String(data, UTF_8));
             break;
           default:
@@ -156,7 +166,7 @@ public class DbConnection extends ConnectionBase {
       if (r == null) {
         r = new Result();
       }
-      r.setUpdatedRows(complete.getUpdatedRows());
+      r.setUpdatedRows(complete.getRowsAffected());
       inflight.poll().onSuccess(r);
       check();
     } else if (msg.getClass() == ErrorResponse.class) {
@@ -199,7 +209,7 @@ public class DbConnection extends ConnectionBase {
     switch (status) {
       case CLOSING:
         if (inflight.isEmpty()) {
-          writeToChannel(Terminate.INSTANCE);
+          writeToChannel(new Terminate());
         }
         break;
       case CONNECTED:
@@ -214,7 +224,7 @@ public class DbConnection extends ConnectionBase {
 
   @Override
   public NetworkMetrics metrics() {
-    return null;
+    return new DummyVertxMetrics.DummyDatagramMetrics();
   }
 
   @Override
