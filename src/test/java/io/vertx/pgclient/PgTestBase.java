@@ -511,13 +511,13 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT '17:55:04.90512+03'::TIMETZ",
+      conn.execute("SELECT '17:55:04.90512+03:07'::TIMETZ",
         ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(0, result.getUpdatedRows());
         ctx.assertEquals(1, result.size());
         ctx.assertNotNull(result.get(0).get(0));
         OffsetTime offsetTime = (OffsetTime) result.get(0).get(0);
-        ctx.assertEquals(OffsetTime.parse("17:55:04.90512+03", TIMETZ_FORMAT), offsetTime);
+        ctx.assertEquals(OffsetTime.parse("17:55:04.90512+03:07", TIMETZ_FORMAT), offsetTime);
         ctx.assertEquals(21, offsetTime.toString().length());
         async.complete();
       }));
