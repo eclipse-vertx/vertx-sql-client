@@ -18,6 +18,7 @@ import io.vertx.pgclient.codec.decoder.message.AuthenticationClearTextPassword;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationMD5Password;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationOk;
 import io.vertx.pgclient.codec.decoder.message.Column;
+import io.vertx.pgclient.codec.decoder.message.ColumnFormat;
 import io.vertx.pgclient.codec.decoder.message.CommandComplete;
 import io.vertx.pgclient.codec.decoder.message.DataRow;
 import io.vertx.pgclient.codec.decoder.message.ErrorResponse;
@@ -28,10 +29,18 @@ import io.vertx.pgclient.codec.encoder.message.PasswordMessage;
 import io.vertx.pgclient.codec.encoder.message.Query;
 import io.vertx.pgclient.codec.encoder.message.Terminate;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 
 import static io.vertx.pgclient.codec.decoder.message.ColumnType.*;
+import static io.vertx.pgclient.codec.formatter.DateTimeFormatter.*;
+import static io.vertx.pgclient.codec.formatter.TimeFormatter.*;
 import static java.nio.charset.StandardCharsets.*;
 
 /**
@@ -107,12 +116,73 @@ public class DbConnection extends ConnectionBase {
     }
   }
 
-  private int toInt(byte[] data) {
-    int value = 0;
-    for (int i = data.length - 1;i >= 0;i--) {
-      value = 10 * value + data[i] - '0';
+  private void handleText(int type, byte[] data, Row row) {
+    if(data == null) {
+      row.add(null);
+      return;
     }
-    return value;
+    switch (type) {
+      case BOOL:
+        if(data[0] == 't') {
+          row.add(true);
+        } else {
+          row.add(false);
+        }
+        break;
+      case INT2:
+        row.add(Short.parseShort(new String(data, UTF_8)));
+        break;
+      case INT4:
+        row.add(Integer.parseInt(new String(data, UTF_8)));
+        break;
+      case INT8:
+        row.add(Long.parseLong(new String(data, UTF_8)));
+        break;
+      case FLOAT4:
+        row.add(Float.parseFloat(new String(data, UTF_8)));
+        break;
+      case FLOAT8:
+        row.add(Double.parseDouble(new String(data, UTF_8)));
+        break;
+      case NUMERIC:
+        row.add(new BigDecimal(new String(data, UTF_8)));
+        break;
+      case CHAR:
+        row.add((char)data[0]);
+        break;
+      case BPCHAR:
+      case VARCHAR:
+      case NAME:
+      case TEXT:
+        row.add(new String(data, UTF_8));
+        break;
+      case UUID:
+        row.add(java.util.UUID.fromString(new String(data, UTF_8)));
+        break;
+      case DATE:
+        row.add(LocalDate.parse(new String(data, UTF_8)));
+        break;
+      case TIME:
+        row.add(LocalTime.parse(new String(data, UTF_8)));
+        break;
+      case TIMETZ:
+        row.add(OffsetTime.parse(new String(data, UTF_8), TIMETZ_FORMAT));
+        break;
+      case TIMESTAMP:
+        row.add(LocalDateTime.parse(new String(data, UTF_8), TIMESTAMP_FORMAT));
+        break;
+      case TIMESTAMPTZ:
+        row.add(OffsetDateTime.parse(new String(data, UTF_8), TIMESTAMPTZ_FORMAT));
+        break;
+      default:
+        System.out.println("unsupported " + type);
+        break;
+    }
+  }
+
+  // For extended query
+  private void handleBinary(int type, byte[] data, Row row) {
+
   }
 
   void handleMessage(Message msg) {
@@ -137,24 +207,18 @@ public class DbConnection extends ConnectionBase {
       Row row = new Row();
       for (int i = 0; i < columns.length; i++) {
         Column columnDesc = columns[i];
+        short format = columnDesc.getFormat();
         int type = columnDesc.getType();
         byte[] data = dataRow.getValue(i);
-        switch (type) {
-          case INT4:
-            row.add(toInt(data));
-            break;
-          case NAME:
-            row.add(new String(data));
-            break;
-          case VARCHAR:
-            row.add(new String(data, UTF_8));
-            break;
-          case TEXT:
-            row.add(new String(data, UTF_8));
-            break;
-          default:
-            System.out.println("unsupported " + type);
-            break;
+        switch (format) {
+          case ColumnFormat.TEXT: {
+            handleText(type, data, row);
+          }
+          break;
+          case ColumnFormat.BINARY: {
+            handleBinary(type, data, row);
+          }
+          break;
         }
       }
       result.add(row);
