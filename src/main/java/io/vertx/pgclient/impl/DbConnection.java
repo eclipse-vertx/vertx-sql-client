@@ -121,58 +121,61 @@ public class DbConnection extends ConnectionBase {
       row.add(null);
       return;
     }
+    if(type == CHAR) {
+      row.add((char)data[0]);
+      return;
+    }
+    if(type == BOOL) {
+      if(data[0] == 't') {
+        row.add(true);
+      } else {
+        row.add(false);
+      }
+      return;
+    }
+    String value = new String(data, UTF_8);
     switch (type) {
-      case BOOL:
-        if(data[0] == 't') {
-          row.add(true);
-        } else {
-          row.add(false);
-        }
-        break;
       case INT2:
-        row.add(Short.parseShort(new String(data, UTF_8)));
+        row.add(Short.parseShort(value));
         break;
       case INT4:
-        row.add(Integer.parseInt(new String(data, UTF_8)));
+        row.add(Integer.parseInt(value));
         break;
       case INT8:
-        row.add(Long.parseLong(new String(data, UTF_8)));
+        row.add(Long.parseLong(value));
         break;
       case FLOAT4:
-        row.add(Float.parseFloat(new String(data, UTF_8)));
+        row.add(Float.parseFloat(value));
         break;
       case FLOAT8:
-        row.add(Double.parseDouble(new String(data, UTF_8)));
+        row.add(Double.parseDouble(value));
         break;
       case NUMERIC:
-        row.add(new BigDecimal(new String(data, UTF_8)));
-        break;
-      case CHAR:
-        row.add((char)data[0]);
+        row.add(new BigDecimal(value));
         break;
       case BPCHAR:
       case VARCHAR:
       case NAME:
       case TEXT:
-        row.add(new String(data, UTF_8));
+        row.add(value);
         break;
       case UUID:
-        row.add(java.util.UUID.fromString(new String(data, UTF_8)));
+        row.add(java.util.UUID.fromString(value));
         break;
       case DATE:
-        row.add(LocalDate.parse(new String(data, UTF_8)));
+        row.add(LocalDate.parse(value));
         break;
       case TIME:
-        row.add(LocalTime.parse(new String(data, UTF_8)));
+        row.add(LocalTime.parse(value));
         break;
       case TIMETZ:
-        row.add(OffsetTime.parse(new String(data, UTF_8), TIMETZ_FORMAT));
+        row.add(OffsetTime.parse(value, TIMETZ_FORMAT));
         break;
       case TIMESTAMP:
-        row.add(LocalDateTime.parse(new String(data, UTF_8), TIMESTAMP_FORMAT));
+        row.add(LocalDateTime.parse(value, TIMESTAMP_FORMAT));
         break;
       case TIMESTAMPTZ:
-        row.add(OffsetDateTime.parse(new String(data, UTF_8), TIMESTAMPTZ_FORMAT));
+        row.add(OffsetDateTime.parse(value, TIMESTAMPTZ_FORMAT));
         break;
       default:
         System.out.println("unsupported " + type);
