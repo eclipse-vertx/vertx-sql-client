@@ -5,7 +5,7 @@ import io.vertx.pgclient.codec.Message;
 import java.util.Objects;
 
 /**
- *
+ * <p>
  * This message informs the frontend about the current (initial) setting of backend parameters.
  * The frontend can ignore this message, or record the settings for its future use.
  * The frontend should not respond to this message, but should continue listening for a {@link ReadyForQuery} message.

@@ -7,6 +7,7 @@ import java.util.Objects;
 
 /**
  *
+ * <p>
  * A common response message for PostgreSQL
  * <a href="https://www.postgresql.org/docs/9.5/static/protocol-error-fields.html">Error and Notice Message Fields</a>
  *

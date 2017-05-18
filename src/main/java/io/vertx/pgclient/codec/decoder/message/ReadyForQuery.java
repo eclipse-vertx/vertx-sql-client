@@ -7,11 +7,15 @@ import java.util.Objects;
 
 /**
  *
+ * <p>
  * The frontend can issue commands. Every message returned from the backend has transaction status
  * that would be one of the following
  *
+ * <p>
  * IDLE : Not in a transaction block
+ * <p>
  * ACTIVE : In transaction block
+ * <p>
  * FAILED : Failed transaction block (queries will be rejected until block is ended)
  *
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
