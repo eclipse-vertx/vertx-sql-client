@@ -11,14 +11,14 @@ import java.util.Arrays;
 public class ParameterDescription implements Message {
 
   // OIDs
-  private final int[] parameterDataTypes;
+  private final int[] paramDataTypes;
 
-  public ParameterDescription(int[] parameterDataTypes) {
-    this.parameterDataTypes = parameterDataTypes;
+  public ParameterDescription(int[] paramDataTypes) {
+    this.paramDataTypes = paramDataTypes;
   }
 
-  public int[] getParameterDataTypes() {
-    return parameterDataTypes;
+  public int[] getParamDataTypes() {
+    return paramDataTypes;
   }
 
   @Override
@@ -26,19 +26,19 @@ public class ParameterDescription implements Message {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     ParameterDescription that = (ParameterDescription) o;
-    return Arrays.equals(parameterDataTypes, that.parameterDataTypes);
+    return Arrays.equals(paramDataTypes, that.paramDataTypes);
   }
 
   @Override
   public int hashCode() {
-    return Arrays.hashCode(parameterDataTypes);
+    return Arrays.hashCode(paramDataTypes);
   }
 
 
   @Override
   public String toString() {
     return "ParameterDescription{" +
-      "parameterDataTypes=" + Arrays.toString(parameterDataTypes) +
+      "paramDataTypes=" + Arrays.toString(paramDataTypes) +
       '}';
   }
 }
