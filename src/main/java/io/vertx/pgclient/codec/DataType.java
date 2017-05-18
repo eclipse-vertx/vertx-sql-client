@@ -1,14 +1,14 @@
-package io.vertx.pgclient.codec.decoder.message;
+package io.vertx.pgclient.codec;
 
 /**
  *
  * PostgreSQL <a href="https://github.com/postgres/postgres/blob/master/src/include/catalog/pg_type.h">object
- * identifiers (OIDs)</a> for column data types
+ * identifiers (OIDs)</a> for data types
  *
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class ColumnType {
+public class DataType {
   // 1 byte
   public static final int BOOL = 16;
   public static final int BOOL_ARRAY = 1000;

@@ -3,18 +3,28 @@ package io.vertx.pgclient.codec.decoder;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import io.vertx.pgclient.codec.Column;
+import io.vertx.pgclient.codec.TransactionStatus;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationClearTextPassword;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationMD5Password;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationOk;
-import io.vertx.pgclient.codec.decoder.message.Column;
+import io.vertx.pgclient.codec.decoder.message.BackendKeyData;
+import io.vertx.pgclient.codec.decoder.message.BindComplete;
+import io.vertx.pgclient.codec.decoder.message.CloseComplete;
 import io.vertx.pgclient.codec.decoder.message.CommandComplete;
 import io.vertx.pgclient.codec.decoder.message.DataRow;
+import io.vertx.pgclient.codec.decoder.message.EmptyQueryResponse;
 import io.vertx.pgclient.codec.decoder.message.ErrorResponse;
+import io.vertx.pgclient.codec.decoder.message.NoData;
 import io.vertx.pgclient.codec.decoder.message.NoticeResponse;
+import io.vertx.pgclient.codec.decoder.message.NotificationResponse;
+import io.vertx.pgclient.codec.decoder.message.ParameterDescription;
+import io.vertx.pgclient.codec.decoder.message.ParameterStatus;
+import io.vertx.pgclient.codec.decoder.message.ParseComplete;
 import io.vertx.pgclient.codec.decoder.message.ReadyForQuery;
 import io.vertx.pgclient.codec.decoder.message.Response;
 import io.vertx.pgclient.codec.decoder.message.RowDescription;
-import io.vertx.pgclient.codec.decoder.message.TransactionStatus;
+import io.vertx.pgclient.codec.encoder.message.PortalSuspended;
 
 import java.util.List;
 
@@ -73,6 +83,46 @@ public class MessageDecoder extends ByteToMessageDecoder {
             break;
             case COMMAND_COMPLETE: {
               decodeCommandComplete(in, out);
+            }
+            break;
+            case EMPTY_QUERY_RESPONSE: {
+              decodeEmptyQueryResponse(out);
+            }
+            break;
+            case PARSE_COMPLETE: {
+              decodeParseComplete(out);
+            }
+            break;
+            case BIND_COMPLETE: {
+              decodeBindComplete(out);
+            }
+            break;
+            case CLOSE_COMPLETE: {
+              decodeCloseComplete(out);
+            }
+            break;
+            case NO_DATA: {
+              decodeNoData(out);
+            }
+            break;
+            case PORTAL_SUSPENDED: {
+              decodePortalSuspended(out);
+            }
+            break;
+            case PARAMETER_DESCRIPTION: {
+              decodeParameterDescription(in, out);
+            }
+            break;
+            case PARAMETER_STATUS: {
+              decodeParameterStatus(in, out);
+            }
+            break;
+            case BACKEND_KEY_DATA: {
+              decodeBackendKeyData(in, out);
+            }
+            break;
+            case NOTIFICATION_RESPONSE: {
+              decodeNotificationResponse(in, out);
             }
             break;
           }
@@ -310,5 +360,49 @@ public class MessageDecoder extends ByteToMessageDecoder {
       default:
         break;
     }
+  }
+
+  private void decodeParseComplete(List<Object> out) {
+    out.add(new ParseComplete());
+  }
+
+  private void decodeBindComplete(List<Object> out) {
+    out.add(new BindComplete());
+  }
+
+  private void decodeCloseComplete(List<Object> out) {
+    out.add(new CloseComplete());
+  }
+
+  private void decodeNoData(List<Object> out) {
+    out.add(new NoData());
+  }
+
+  private void decodePortalSuspended(List<Object> out) {
+    out.add(new PortalSuspended());
+  }
+
+  private void decodeParameterDescription(ByteBuf in, List<Object> out) {
+    int[] paramDataTypes = new int[in.readShort()];
+    for (short c = 0; c < paramDataTypes.length; ++c) {
+      paramDataTypes[c] = in.readInt();
+    }
+    out.add(new ParameterDescription(paramDataTypes));
+  }
+
+  private void decodeParameterStatus(ByteBuf in, List<Object> out) {
+    out.add(new ParameterStatus(readCStringUTF8(in), readCStringUTF8(in)));
+  }
+
+  private void decodeEmptyQueryResponse(List<Object> out) {
+    out.add(new EmptyQueryResponse());
+  }
+
+  private void decodeBackendKeyData(ByteBuf in, List<Object> out) {
+    out.add(new BackendKeyData(in.readInt(), in.readInt()));
+  }
+
+  private void decodeNotificationResponse(ByteBuf in, List<Object> out) {
+    out.add(new NotificationResponse(in.readInt(), readCStringUTF8(in), readCStringUTF8(in)));
   }
 }

@@ -1,4 +1,4 @@
-package io.vertx.pgclient.codec.decoder.message;
+package io.vertx.pgclient.codec;
 
 /**
  *

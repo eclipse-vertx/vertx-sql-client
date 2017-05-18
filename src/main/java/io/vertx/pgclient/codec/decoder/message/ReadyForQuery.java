@@ -1,12 +1,14 @@
 package io.vertx.pgclient.codec.decoder.message;
 
 import io.vertx.pgclient.codec.Message;
+import io.vertx.pgclient.codec.TransactionStatus;
 
 import java.util.Objects;
 
 /**
  *
- * Every ReadyForQuery returned from the backend has transaction status that would be one of the following
+ * The frontend can issue commands. Every message returned from the backend has transaction status
+ * that would be one of the following
  *
  * IDLE : Not in a transaction block
  * ACTIVE : In transaction block
