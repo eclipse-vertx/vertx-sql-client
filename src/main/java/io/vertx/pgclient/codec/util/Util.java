@@ -7,6 +7,7 @@ import io.vertx.core.json.JsonObject;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -83,6 +84,7 @@ public class Util {
         param.getClass() == OffsetTime.class ||
         param.getClass() == LocalDateTime.class ||
         param.getClass() == OffsetDateTime.class ||
+        param.getClass() == Instant.class ||
         param.getClass() == JsonObject.class ||
         param.getClass() == JsonArray.class ||
         param.getClass() == UUID.class
