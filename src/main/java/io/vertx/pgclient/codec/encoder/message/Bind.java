@@ -1,11 +1,22 @@
 package io.vertx.pgclient.codec.encoder.message;
 
 import io.vertx.pgclient.codec.Message;
+import io.vertx.pgclient.codec.decoder.message.BindComplete;
+import io.vertx.pgclient.codec.decoder.message.ErrorResponse;
 
 import java.util.Arrays;
 import java.util.Objects;
 
 /**
+ *
+ * <p>
+ * The message gives the name of the prepared statement, the name of portal,
+ * and the values to use for any parameter values present in the prepared statement.
+ * The supplied parameter set must match those needed by the prepared statement.
+ *
+ * <p>
+ * The response is either {@link BindComplete} or {@link ErrorResponse}.
+ *
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 

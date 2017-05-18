@@ -1,10 +1,18 @@
 package io.vertx.pgclient.codec.encoder.message;
 
 import io.vertx.pgclient.codec.Message;
+import io.vertx.pgclient.codec.decoder.message.ErrorResponse;
+import io.vertx.pgclient.codec.decoder.message.ParseComplete;
 
 import java.util.Objects;
 
 /**
+ * <p>
+ * The message contains a textual SQL query string.
+ *
+ * <p>
+ * The response is either {@link ParseComplete} or {@link ErrorResponse}
+ *
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 

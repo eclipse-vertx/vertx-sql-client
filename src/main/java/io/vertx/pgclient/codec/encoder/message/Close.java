@@ -1,10 +1,20 @@
 package io.vertx.pgclient.codec.encoder.message;
 
 import io.vertx.pgclient.codec.Message;
+import io.vertx.pgclient.codec.decoder.message.CloseComplete;
+import io.vertx.pgclient.codec.decoder.message.ErrorResponse;
 
 import java.util.Objects;
 
 /**
+ *
+ * <p>
+ * The message closes an existing prepared statement or portal and releases resources.
+ * Note that closing a prepared statement implicitly closes any open portals that were constructed from that statement.
+ *
+ * <p>
+ * The response is either {@link CloseComplete} or {@link ErrorResponse}
+ *
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
