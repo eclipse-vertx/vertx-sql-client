@@ -10,6 +10,7 @@ import io.vertx.pgclient.PostgresConnectionPool;
 import io.vertx.pgclient.Result;
 
 import java.util.ArrayDeque;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -113,6 +114,13 @@ class PostgresConnectionPoolImpl implements PostgresConnectionPool {
         public void execute(String sql, Handler<AsyncResult<Result>> handler) {
           if (!closed.get()) {
             conn.execute(sql, handler);
+          }
+        }
+
+        @Override
+        public void execute(String sql, List<Object> params, Handler<AsyncResult<Result>> handler) {
+          if (!closed.get()) {
+            conn.execute(sql, params, handler);
           }
         }
 

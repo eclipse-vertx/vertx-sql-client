@@ -1,5 +1,6 @@
 package io.vertx.pgclient.impl;
 
+
 import io.netty.channel.Channel;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -7,26 +8,44 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.ContextImpl;
 import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.metrics.impl.DummyVertxMetrics;
 import io.vertx.core.net.impl.ConnectionBase;
 import io.vertx.core.spi.metrics.NetworkMetrics;
 import io.vertx.pgclient.PostgresConnection;
 import io.vertx.pgclient.Result;
 import io.vertx.pgclient.Row;
+import io.vertx.pgclient.codec.Column;
+import io.vertx.pgclient.codec.DataFormat;
 import io.vertx.pgclient.codec.Message;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationClearTextPassword;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationMD5Password;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationOk;
-import io.vertx.pgclient.codec.decoder.message.Column;
-import io.vertx.pgclient.codec.decoder.message.ColumnFormat;
+import io.vertx.pgclient.codec.decoder.message.BackendKeyData;
+import io.vertx.pgclient.codec.decoder.message.BindComplete;
+import io.vertx.pgclient.codec.decoder.message.CloseComplete;
 import io.vertx.pgclient.codec.decoder.message.CommandComplete;
 import io.vertx.pgclient.codec.decoder.message.DataRow;
+import io.vertx.pgclient.codec.decoder.message.EmptyQueryResponse;
 import io.vertx.pgclient.codec.decoder.message.ErrorResponse;
+import io.vertx.pgclient.codec.decoder.message.NoData;
+import io.vertx.pgclient.codec.decoder.message.NotificationResponse;
+import io.vertx.pgclient.codec.decoder.message.ParameterDescription;
+import io.vertx.pgclient.codec.decoder.message.ParameterStatus;
+import io.vertx.pgclient.codec.decoder.message.ParseComplete;
 import io.vertx.pgclient.codec.decoder.message.ReadyForQuery;
 import io.vertx.pgclient.codec.decoder.message.RowDescription;
-import io.vertx.pgclient.codec.decoder.message.TransactionStatus;
+import io.vertx.pgclient.codec.TransactionStatus;
+import io.vertx.pgclient.codec.encoder.message.Bind;
+import io.vertx.pgclient.codec.encoder.message.Close;
+import io.vertx.pgclient.codec.encoder.message.Describe;
+import io.vertx.pgclient.codec.encoder.message.Execute;
+import io.vertx.pgclient.codec.encoder.message.Parse;
 import io.vertx.pgclient.codec.encoder.message.PasswordMessage;
+import io.vertx.pgclient.codec.encoder.message.PortalSuspended;
 import io.vertx.pgclient.codec.encoder.message.Query;
+import io.vertx.pgclient.codec.encoder.message.Sync;
 import io.vertx.pgclient.codec.encoder.message.Terminate;
 
 import java.math.BigDecimal;
@@ -37,10 +56,12 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.List;
 
-import static io.vertx.pgclient.codec.decoder.message.ColumnType.*;
+import static io.vertx.pgclient.codec.DataType.*;
 import static io.vertx.pgclient.codec.formatter.DateTimeFormatter.*;
 import static io.vertx.pgclient.codec.formatter.TimeFormatter.*;
+import static io.vertx.pgclient.codec.util.Util.*;
 import static java.nio.charset.StandardCharsets.*;
 
 /**
@@ -70,14 +91,27 @@ public class DbConnection extends ConnectionBase {
 
   final PostgresConnection conn = new PostgresConnection() {
 
+
+    @Override
     public void execute(String sql, Handler<AsyncResult<Result>> handler) {
-      Command cmd = new Command(sql, handler);
+      Command cmd = new QueryCommand(sql, handler);
       if (Vertx.currentContext() == context) {
         doExecute(cmd);
       } else {
         context.runOnContext(v -> doExecute(cmd));
       }
     }
+
+    @Override
+    public void execute(String sql, List<Object> params, Handler<AsyncResult<Result>> handler) {
+      Command cmd = new ExtendedQueryCommand(sql , params, handler);
+      if (Vertx.currentContext() == context) {
+        doExecute(cmd);
+      } else {
+        context.runOnContext(v -> doExecute(cmd));
+      }
+    }
+
     @Override
     public void closeHandler(Handler<Void> handler) {
       DbConnection.this.closeHandler(handler);
@@ -107,7 +141,11 @@ public class DbConnection extends ConnectionBase {
     if (status == Status.CONNECTED) {
       if (inflight.size() < client.pipeliningLimit) {
         inflight.add(cmd);
-        writeToChannel(new Query(cmd.sql));
+        if(cmd.getClass() == QueryCommand.class) {
+          executeQuery((QueryCommand) cmd);
+        } else if (cmd.getClass() == ExtendedQueryCommand.class) {
+          executeExtendedQuery((ExtendedQueryCommand) cmd);
+        }
       } else {
         pending.add(cmd);
       }
@@ -122,7 +160,7 @@ public class DbConnection extends ConnectionBase {
       return;
     }
     if(type == CHAR) {
-      row.add((char)data[0]);
+      row.add((char) data[0]);
       return;
     }
     if(type == BOOL) {
@@ -177,13 +215,20 @@ public class DbConnection extends ConnectionBase {
       case TIMESTAMPTZ:
         row.add(OffsetDateTime.parse(value, TIMESTAMPTZ_FORMAT));
         break;
+      case JSON:
+      case JSONB:
+        if(value.charAt(0)== '{') {
+          row.add(new JsonObject(value));
+        } else {
+          row.add(new JsonArray(value));
+        }
+        break;
       default:
         System.out.println("unsupported " + type);
         break;
     }
   }
 
-  // For extended query
   private void handleBinary(int type, byte[] data, Row row) {
 
   }
@@ -201,6 +246,26 @@ public class DbConnection extends ConnectionBase {
     } else if (msg.getClass() == ReadyForQuery.class) {
       // Ready for query
       TransactionStatus status = ((ReadyForQuery) msg).getTransactionStatus();
+    } else if (msg.getClass() == ParseComplete.class) {
+
+    } else if (msg.getClass() == BindComplete.class) {
+
+    } else if (msg.getClass() == CloseComplete.class) {
+
+    } else if (msg.getClass() == EmptyQueryResponse.class) {
+
+    } else if (msg.getClass() == ParameterDescription.class) {
+
+    } else if (msg.getClass() == BackendKeyData.class) {
+
+    } else if (msg.getClass() == NotificationResponse.class) {
+
+    } else if (msg.getClass() == ParameterStatus.class) {
+
+    } else if (msg.getClass() == PortalSuspended.class) {
+      // if an Execute message's rowsLimit was reached
+    } else if (msg.getClass() == NoData.class) {
+
     } else if (msg.getClass() == RowDescription.class) {
       rowDesc = (RowDescription) msg;
       result = new Result();
@@ -210,16 +275,16 @@ public class DbConnection extends ConnectionBase {
       Row row = new Row();
       for (int i = 0; i < columns.length; i++) {
         Column columnDesc = columns[i];
-        short format = columnDesc.getFormat();
-        int type = columnDesc.getType();
+        short dataFormat = columnDesc.getDataFormat();
+        int dataType = columnDesc.getDataType();
         byte[] data = dataRow.getValue(i);
-        switch (format) {
-          case ColumnFormat.TEXT: {
-            handleText(type, data, row);
+        switch (dataFormat) {
+          case DataFormat.TEXT: {
+            handleText(dataType, data, row);
           }
           break;
-          case ColumnFormat.BINARY: {
-            handleBinary(type, data, row);
+          case DataFormat.BINARY: {
+            handleBinary(dataType, data, row);
           }
           break;
         }
@@ -259,8 +324,8 @@ public class DbConnection extends ConnectionBase {
     for (ArrayDeque<Command> q : Arrays.asList(inflight, pending)) {
       Command cmd;
       while ((cmd = q.poll()) != null) {
-        Command t = cmd;
-        context.runOnContext(v -> t.onError("closed"));
+        Command c = cmd;
+        context.runOnContext(v -> c.onError("closed"));
       }
     }
     super.handleClosed();
@@ -283,10 +348,29 @@ public class DbConnection extends ConnectionBase {
         Command cmd = pending.poll();
         if (cmd != null) {
           inflight.add(cmd);
-          writeToChannel(new Query(cmd.sql));
+          if(cmd.getClass() == QueryCommand.class) {
+            executeQuery((QueryCommand) cmd);
+          } else if (cmd.getClass() == ExtendedQueryCommand.class) {
+            executeExtendedQuery((ExtendedQueryCommand) cmd);
+          }
         }
         break;
     }
+  }
+
+  void executeQuery(QueryCommand cmd) {
+    writeToChannel(new Query(cmd.getSql()));
+  }
+
+  void executeExtendedQuery(ExtendedQueryCommand cmd) {
+    // Arbitrary statement name
+    String stmt = java.util.UUID.randomUUID().toString();
+    writeToChannel(new Parse(cmd.getSql()).setStatement(stmt));
+    writeToChannel(new Bind(paramValues(cmd.getParams())).setStatement(stmt).setPortal(stmt));
+    writeToChannel(new Describe().setStatement(stmt).setPortal(stmt));
+    writeToChannel(new Execute().setStatement(stmt).setPortal(stmt).setRowLimit(0));
+    writeToChannel(new Close().setStatement(stmt).setPortal(stmt));
+    writeToChannel(new Sync());
   }
 
   @Override
