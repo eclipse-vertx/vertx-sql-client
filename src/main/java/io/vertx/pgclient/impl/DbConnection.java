@@ -19,6 +19,7 @@ import io.vertx.pgclient.Row;
 import io.vertx.pgclient.codec.Column;
 import io.vertx.pgclient.codec.DataFormat;
 import io.vertx.pgclient.codec.Message;
+import io.vertx.pgclient.codec.TransactionStatus;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationClearTextPassword;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationMD5Password;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationOk;
@@ -36,7 +37,6 @@ import io.vertx.pgclient.codec.decoder.message.ParameterStatus;
 import io.vertx.pgclient.codec.decoder.message.ParseComplete;
 import io.vertx.pgclient.codec.decoder.message.ReadyForQuery;
 import io.vertx.pgclient.codec.decoder.message.RowDescription;
-import io.vertx.pgclient.codec.TransactionStatus;
 import io.vertx.pgclient.codec.encoder.message.Bind;
 import io.vertx.pgclient.codec.encoder.message.Close;
 import io.vertx.pgclient.codec.encoder.message.Describe;
@@ -368,7 +368,7 @@ public class DbConnection extends ConnectionBase {
     writeToChannel(new Parse(cmd.getSql()).setStatement(stmt));
     writeToChannel(new Bind(paramValues(cmd.getParams())).setStatement(stmt).setPortal(stmt));
     writeToChannel(new Describe().setStatement(stmt).setPortal(stmt));
-    writeToChannel(new Execute().setStatement(stmt).setPortal(stmt).setRowLimit(0));
+    writeToChannel(new Execute().setStatement(stmt).setPortal(stmt).setRowCount(0));
     writeToChannel(new Close().setStatement(stmt).setPortal(stmt));
     writeToChannel(new Sync());
   }

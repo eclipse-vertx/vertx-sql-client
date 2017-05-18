@@ -154,7 +154,7 @@ public class MessageEncoder extends MessageToByteEncoder<Message> {
     out.writeByte(EXECUTE);
     out.writeInt(0);
     Util.writeCStringUTF8(out, execute.getStatement() != null ? execute.getStatement() : "");
-    out.writeInt(execute.getRowLimit()); // Zero denotes "no limit" maybe for ReadStream<Row>
+    out.writeInt(execute.getRowCount()); // Zero denotes "no limit" maybe for ReadStream<Row>
     out.setInt(1, out.writerIndex() - 1);
   }
 
