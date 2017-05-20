@@ -124,7 +124,8 @@ public class DbConnection extends ConnectionBase {
     }
 
     @Override
-    public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Handler<AsyncResult<Result>> handler) {
+    public void prepareAndExecute(String sql, Object param1, Object param2, Object param3,
+                                  Handler<AsyncResult<Result>> handler) {
       Command cmd = new ExtendedQueryCommand(sql , Arrays.asList(param1, param2, param3), handler);
       if (Vertx.currentContext() == context) {
         doExecute(cmd);
@@ -134,7 +135,8 @@ public class DbConnection extends ConnectionBase {
     }
 
     @Override
-    public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4, Handler<AsyncResult<Result>> handler) {
+    public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4,
+                                  Handler<AsyncResult<Result>> handler) {
       Command cmd = new ExtendedQueryCommand(sql , Arrays.asList(param1, param2, param3, param4), handler);
       if (Vertx.currentContext() == context) {
         doExecute(cmd);
@@ -144,7 +146,8 @@ public class DbConnection extends ConnectionBase {
     }
 
     @Override
-    public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4, Object param5, Handler<AsyncResult<Result>> handler) {
+    public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4, Object param5,
+                                  Handler<AsyncResult<Result>> handler) {
       Command cmd = new ExtendedQueryCommand(sql , Arrays.asList(param1, param2, param3, param4, param5), handler);
       if (Vertx.currentContext() == context) {
         doExecute(cmd);
@@ -154,7 +157,8 @@ public class DbConnection extends ConnectionBase {
     }
 
     @Override
-    public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4, Object param5, Object param6, Handler<AsyncResult<Result>> handler) {
+    public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4, Object param5,
+                                  Object param6, Handler<AsyncResult<Result>> handler) {
       Command cmd = new ExtendedQueryCommand(sql , Arrays.asList(param1, param2, param3, param4, param5, param6), handler);
       if (Vertx.currentContext() == context) {
         doExecute(cmd);
