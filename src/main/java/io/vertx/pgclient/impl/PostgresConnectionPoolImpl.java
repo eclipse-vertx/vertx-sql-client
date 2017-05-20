@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
+ * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 class PostgresConnectionPoolImpl implements PostgresConnectionPool {
 
@@ -118,9 +119,55 @@ class PostgresConnectionPoolImpl implements PostgresConnectionPool {
         }
 
         @Override
-        public void execute(String sql, List<Object> params, Handler<AsyncResult<Result>> handler) {
+        public void prepareAndExecute(String sql, Object param, Handler<AsyncResult<Result>> handler) {
           if (!closed.get()) {
-            conn.execute(sql, params, handler);
+            conn.prepareAndExecute(sql, param, handler);
+          }
+        }
+
+        @Override
+        public void prepareAndExecute(String sql, Object param1, Object param2, Handler<AsyncResult<Result>> handler) {
+          if (!closed.get()) {
+            conn.prepareAndExecute(sql, param1, param2, handler);
+          }
+        }
+
+        @Override
+        public void prepareAndExecute(String sql, Object param1, Object param2, Object param3,
+                                      Handler<AsyncResult<Result>> handler) {
+          if (!closed.get()) {
+            conn.prepareAndExecute(sql, param1, param2, param3, handler);
+          }
+        }
+
+        @Override
+        public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4,
+                                      Handler<AsyncResult<Result>> handler) {
+          if (!closed.get()) {
+            conn.prepareAndExecute(sql, param1, param2, param3, param4, handler);
+          }
+        }
+
+        @Override
+        public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4,
+                                      Object param5, Handler<AsyncResult<Result>> handler) {
+          if (!closed.get()) {
+            conn.prepareAndExecute(sql, param1, param2, param3, param4, param5, handler);
+          }
+        }
+
+        @Override
+        public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4,
+                                      Object param5, Object param6, Handler<AsyncResult<Result>> handler) {
+          if (!closed.get()) {
+            conn.prepareAndExecute(sql, param1, param2, param3, param4, param5, param6, handler);
+          }
+        }
+
+        @Override
+        public void prepareAndExecute(String sql, List<Object> params, Handler<AsyncResult<Result>> handler) {
+          if (!closed.get()) {
+            conn.prepareAndExecute(sql, params, handler);
           }
         }
 

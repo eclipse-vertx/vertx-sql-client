@@ -18,6 +18,7 @@ import io.vertx.pgclient.Result;
 import io.vertx.pgclient.Row;
 import io.vertx.pgclient.codec.Column;
 import io.vertx.pgclient.codec.DataFormat;
+import io.vertx.pgclient.codec.DataType;
 import io.vertx.pgclient.codec.Message;
 import io.vertx.pgclient.codec.TransactionStatus;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationClearTextPassword;
@@ -35,6 +36,7 @@ import io.vertx.pgclient.codec.decoder.message.NotificationResponse;
 import io.vertx.pgclient.codec.decoder.message.ParameterDescription;
 import io.vertx.pgclient.codec.decoder.message.ParameterStatus;
 import io.vertx.pgclient.codec.decoder.message.ParseComplete;
+import io.vertx.pgclient.codec.decoder.message.PortalSuspended;
 import io.vertx.pgclient.codec.decoder.message.ReadyForQuery;
 import io.vertx.pgclient.codec.decoder.message.RowDescription;
 import io.vertx.pgclient.codec.encoder.message.Bind;
@@ -43,7 +45,6 @@ import io.vertx.pgclient.codec.encoder.message.Describe;
 import io.vertx.pgclient.codec.encoder.message.Execute;
 import io.vertx.pgclient.codec.encoder.message.Parse;
 import io.vertx.pgclient.codec.encoder.message.PasswordMessage;
-import io.vertx.pgclient.codec.encoder.message.PortalSuspended;
 import io.vertx.pgclient.codec.encoder.message.Query;
 import io.vertx.pgclient.codec.encoder.message.Sync;
 import io.vertx.pgclient.codec.encoder.message.Terminate;
@@ -82,6 +83,8 @@ public class DbConnection extends ConnectionBase {
   private RowDescription rowDesc;
   private Result result;
   private Status status = Status.CONNECTED;
+  private final String UTF8 = "UTF8";
+  private String CLIENT_ENCODING;
 
   public DbConnection(PostgresClientImpl client, VertxInternal vertx, Channel channel, ContextImpl context) {
     super(vertx, channel, context);
@@ -90,8 +93,6 @@ public class DbConnection extends ConnectionBase {
   }
 
   final PostgresConnection conn = new PostgresConnection() {
-
-
     @Override
     public void execute(String sql, Handler<AsyncResult<Result>> handler) {
       Command cmd = new QueryCommand(sql, handler);
@@ -103,8 +104,8 @@ public class DbConnection extends ConnectionBase {
     }
 
     @Override
-    public void execute(String sql, List<Object> params, Handler<AsyncResult<Result>> handler) {
-      Command cmd = new ExtendedQueryCommand(sql , params, handler);
+    public void prepareAndExecute(String sql, Object param, Handler<AsyncResult<Result>> handler) {
+      Command cmd = new ExtendedQueryCommand(sql , Arrays.asList(param), handler);
       if (Vertx.currentContext() == context) {
         doExecute(cmd);
       } else {
@@ -112,6 +113,65 @@ public class DbConnection extends ConnectionBase {
       }
     }
 
+    @Override
+    public void prepareAndExecute(String sql, Object param1, Object param2, Handler<AsyncResult<Result>> handler) {
+      Command cmd = new ExtendedQueryCommand(sql , Arrays.asList(param1, param2), handler);
+      if (Vertx.currentContext() == context) {
+        doExecute(cmd);
+      } else {
+        context.runOnContext(v -> doExecute(cmd));
+      }
+    }
+
+    @Override
+    public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Handler<AsyncResult<Result>> handler) {
+      Command cmd = new ExtendedQueryCommand(sql , Arrays.asList(param1, param2, param3), handler);
+      if (Vertx.currentContext() == context) {
+        doExecute(cmd);
+      } else {
+        context.runOnContext(v -> doExecute(cmd));
+      }
+    }
+
+    @Override
+    public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4, Handler<AsyncResult<Result>> handler) {
+      Command cmd = new ExtendedQueryCommand(sql , Arrays.asList(param1, param2, param3, param4), handler);
+      if (Vertx.currentContext() == context) {
+        doExecute(cmd);
+      } else {
+        context.runOnContext(v -> doExecute(cmd));
+      }
+    }
+
+    @Override
+    public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4, Object param5, Handler<AsyncResult<Result>> handler) {
+      Command cmd = new ExtendedQueryCommand(sql , Arrays.asList(param1, param2, param3, param4, param5), handler);
+      if (Vertx.currentContext() == context) {
+        doExecute(cmd);
+      } else {
+        context.runOnContext(v -> doExecute(cmd));
+      }
+    }
+
+    @Override
+    public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4, Object param5, Object param6, Handler<AsyncResult<Result>> handler) {
+      Command cmd = new ExtendedQueryCommand(sql , Arrays.asList(param1, param2, param3, param4, param5, param6), handler);
+      if (Vertx.currentContext() == context) {
+        doExecute(cmd);
+      } else {
+        context.runOnContext(v -> doExecute(cmd));
+      }
+    }
+
+    @Override
+    public void prepareAndExecute(String sql, List<Object> params, Handler<AsyncResult<Result>> handler) {
+      Command cmd = new ExtendedQueryCommand(sql , params, handler);
+      if (Vertx.currentContext() == context) {
+        doExecute(cmd);
+      } else {
+        context.runOnContext(v -> doExecute(cmd));
+      }
+    }
     @Override
     public void closeHandler(Handler<Void> handler) {
       DbConnection.this.closeHandler(handler);
@@ -154,7 +214,7 @@ public class DbConnection extends ConnectionBase {
     }
   }
 
-  private void handleText(int type, byte[] data, Row row) {
+  private void handleText(DataType type, byte[] data, Row row) {
     if(data == null) {
       row.add(null);
       return;
@@ -229,7 +289,7 @@ public class DbConnection extends ConnectionBase {
     }
   }
 
-  private void handleBinary(int type, byte[] data, Row row) {
+  private void handleBinary(DataType type, byte[] data, Row row) {
 
   }
 
@@ -241,8 +301,8 @@ public class DbConnection extends ConnectionBase {
     } else if (msg.getClass() == AuthenticationClearTextPassword.class) {
       writeToChannel(new PasswordMessage(client.username, client.password, null));
     } else if (msg.getClass() == AuthenticationOk.class) {
-      handler.handle(Future.succeededFuture(conn));
-      handler = null;
+//      handler.handle(Future.succeededFuture(conn));
+//      handler = null;
     } else if (msg.getClass() == ReadyForQuery.class) {
       // Ready for query
       TransactionStatus status = ((ReadyForQuery) msg).getTransactionStatus();
@@ -257,11 +317,22 @@ public class DbConnection extends ConnectionBase {
     } else if (msg.getClass() == ParameterDescription.class) {
 
     } else if (msg.getClass() == BackendKeyData.class) {
-
+      // The final phase before returning the connection
+      // We should make sure we are supporting only UTF8
+      // https://www.postgresql.org/docs/9.5/static/multibyte.html#MULTIBYTE-CHARSET-SUPPORTED
+      if(!CLIENT_ENCODING.equals(UTF8)) {
+        handler.handle(Future.failedFuture(CLIENT_ENCODING + " is not supported in the client only " + UTF8));
+      } else {
+        handler.handle(Future.succeededFuture(conn));
+      }
+      handler = null;
     } else if (msg.getClass() == NotificationResponse.class) {
 
     } else if (msg.getClass() == ParameterStatus.class) {
-
+      ParameterStatus paramStatus = (ParameterStatus) msg;
+      if(paramStatus.getKey().equals("client_encoding")) {
+        CLIENT_ENCODING = paramStatus.getValue();
+      }
     } else if (msg.getClass() == PortalSuspended.class) {
       // if an Execute message's rowsLimit was reached
     } else if (msg.getClass() == NoData.class) {
@@ -275,15 +346,15 @@ public class DbConnection extends ConnectionBase {
       Row row = new Row();
       for (int i = 0; i < columns.length; i++) {
         Column columnDesc = columns[i];
-        short dataFormat = columnDesc.getDataFormat();
-        int dataType = columnDesc.getDataType();
+        DataFormat dataFormat = columnDesc.getDataFormat();
+        DataType dataType = columnDesc.getDataType();
         byte[] data = dataRow.getValue(i);
         switch (dataFormat) {
-          case DataFormat.TEXT: {
+          case TEXT: {
             handleText(dataType, data, row);
           }
           break;
-          case DataFormat.BINARY: {
+          case BINARY: {
             handleBinary(dataType, data, row);
           }
           break;
@@ -341,7 +412,7 @@ public class DbConnection extends ConnectionBase {
     switch (status) {
       case CLOSING:
         if (inflight.isEmpty()) {
-          writeToChannel(new Terminate());
+          writeToChannel(Terminate.INSTANCE);
         }
         break;
       case CONNECTED:
@@ -370,7 +441,7 @@ public class DbConnection extends ConnectionBase {
     writeToChannel(new Describe().setStatement(stmt).setPortal(stmt));
     writeToChannel(new Execute().setStatement(stmt).setPortal(stmt).setRowCount(0));
     writeToChannel(new Close().setStatement(stmt).setPortal(stmt));
-    writeToChannel(new Sync());
+    writeToChannel(Sync.INSTANCE);
   }
 
   @Override
