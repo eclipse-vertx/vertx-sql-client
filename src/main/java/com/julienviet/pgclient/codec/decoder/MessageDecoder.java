@@ -1,40 +1,40 @@
 package com.julienviet.pgclient.codec.decoder;
 
 import com.julienviet.pgclient.codec.Column;
+import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.DataType;
+import com.julienviet.pgclient.codec.TransactionStatus;
 import com.julienviet.pgclient.codec.decoder.message.AuthenticationClearTextPassword;
 import com.julienviet.pgclient.codec.decoder.message.AuthenticationMD5Password;
+import com.julienviet.pgclient.codec.decoder.message.AuthenticationOk;
 import com.julienviet.pgclient.codec.decoder.message.BackendKeyData;
 import com.julienviet.pgclient.codec.decoder.message.BindComplete;
 import com.julienviet.pgclient.codec.decoder.message.CloseComplete;
+import com.julienviet.pgclient.codec.decoder.message.CommandComplete;
 import com.julienviet.pgclient.codec.decoder.message.DataRow;
+import com.julienviet.pgclient.codec.decoder.message.EmptyQueryResponse;
+import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
 import com.julienviet.pgclient.codec.decoder.message.NoData;
 import com.julienviet.pgclient.codec.decoder.message.NoticeResponse;
+import com.julienviet.pgclient.codec.decoder.message.NotificationResponse;
 import com.julienviet.pgclient.codec.decoder.message.ParameterDescription;
 import com.julienviet.pgclient.codec.decoder.message.ParameterStatus;
 import com.julienviet.pgclient.codec.decoder.message.ParseComplete;
+import com.julienviet.pgclient.codec.decoder.message.PortalSuspended;
 import com.julienviet.pgclient.codec.decoder.message.ReadyForQuery;
 import com.julienviet.pgclient.codec.decoder.message.Response;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
-import com.julienviet.pgclient.codec.decoder.message.type.CommandCompleteType;
-import com.julienviet.pgclient.codec.decoder.message.type.MessageType;
 import com.julienviet.pgclient.codec.util.Util;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
-import com.julienviet.pgclient.codec.DataFormat;
-import com.julienviet.pgclient.codec.TransactionStatus;
-import com.julienviet.pgclient.codec.decoder.message.AuthenticationOk;
-import com.julienviet.pgclient.codec.decoder.message.CommandComplete;
-import com.julienviet.pgclient.codec.decoder.message.EmptyQueryResponse;
-import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
-import com.julienviet.pgclient.codec.decoder.message.NotificationResponse;
-import com.julienviet.pgclient.codec.decoder.message.PortalSuspended;
 
 import java.util.List;
 
 import static com.julienviet.pgclient.codec.decoder.message.type.AuthenticationType.*;
+import static com.julienviet.pgclient.codec.decoder.message.type.CommandCompleteType.*;
 import static com.julienviet.pgclient.codec.decoder.message.type.ErrorOrNoticeType.*;
+import static com.julienviet.pgclient.codec.decoder.message.type.MessageType.*;
 import static java.nio.charset.StandardCharsets.*;
 
 /**
@@ -58,71 +58,71 @@ public class MessageDecoder extends ByteToMessageDecoder {
         try {
           in.readerIndex(beginIdx + 5);
           switch (id) {
-            case MessageType.ERROR_RESPONSE: {
+            case ERROR_RESPONSE: {
               decodeErrorOrNotice(ErrorResponse.INSTANCE, in, out);
               break;
             }
-            case MessageType.NOTICE_RESPONSE: {
+            case NOTICE_RESPONSE: {
               decodeErrorOrNotice(NoticeResponse.INSTANCE, in, out);
               break;
             }
-            case MessageType.AUTHENTICATION: {
+            case AUTHENTICATION: {
               decodeAuthentication(in, out);
             }
             break;
-            case MessageType.READY_FOR_QUERY: {
+            case READY_FOR_QUERY: {
               decodeReadyForQuery(in, out);
             }
             break;
-            case MessageType.ROW_DESCRIPTION: {
+            case ROW_DESCRIPTION: {
               decodeRowDescription(in, out);
             }
             break;
-            case MessageType.DATA_ROW: {
+            case DATA_ROW: {
               decodeDataRow(in, out);
             }
             break;
-            case MessageType.COMMAND_COMPLETE: {
+            case COMMAND_COMPLETE: {
               decodeCommandComplete(in, out);
             }
             break;
-            case MessageType.EMPTY_QUERY_RESPONSE: {
+            case EMPTY_QUERY_RESPONSE: {
               decodeEmptyQueryResponse(out);
             }
             break;
-            case MessageType.PARSE_COMPLETE: {
+            case PARSE_COMPLETE: {
               decodeParseComplete(out);
             }
             break;
-            case MessageType.BIND_COMPLETE: {
+            case BIND_COMPLETE: {
               decodeBindComplete(out);
             }
             break;
-            case MessageType.CLOSE_COMPLETE: {
+            case CLOSE_COMPLETE: {
               decodeCloseComplete(out);
             }
             break;
-            case MessageType.NO_DATA: {
+            case NO_DATA: {
               decodeNoData(out);
             }
             break;
-            case MessageType.PORTAL_SUSPENDED: {
+            case PORTAL_SUSPENDED: {
               decodePortalSuspended(out);
             }
             break;
-            case MessageType.PARAMETER_DESCRIPTION: {
+            case PARAMETER_DESCRIPTION: {
               decodeParameterDescription(in, out);
             }
             break;
-            case MessageType.PARAMETER_STATUS: {
+            case PARAMETER_STATUS: {
               decodeParameterStatus(in, out);
             }
             break;
-            case MessageType.BACKEND_KEY_DATA: {
+            case BACKEND_KEY_DATA: {
               decodeBackendKeyData(in, out);
             }
             break;
-            case MessageType.NOTIFICATION_RESPONSE: {
+            case NOTIFICATION_RESPONSE: {
               decodeNotificationResponse(in, out);
             }
             break;
@@ -264,15 +264,15 @@ public class MessageDecoder extends ByteToMessageDecoder {
     if (spaceIdx2 == -1) {
       String command = in.retainedSlice(in.readerIndex(), prefixLen).toString(UTF_8);
       switch (command) {
-        case CommandCompleteType.SELECT: {
+        case SELECT: {
           out.add(new CommandComplete(command, rowsAffected));
         }
         break;
-        case CommandCompleteType.UPDATE:
-        case CommandCompleteType.DELETE:
-        case CommandCompleteType.MOVE:
-        case CommandCompleteType.FETCH:
-        case CommandCompleteType.COPY: {
+        case UPDATE:
+        case DELETE:
+        case MOVE:
+        case FETCH:
+        case COPY: {
           rowsAffected = Integer.parseInt
             (in.retainedSlice(spaceIdx1 + 1, in.writerIndex() - spaceIdx1 - 2).toString(UTF_8));
           out.add(new CommandComplete(command, rowsAffected));
@@ -285,7 +285,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
 
     String command = in.retainedSlice(in.readerIndex(), prefixLen).toString(UTF_8);
     switch (command) {
-      case CommandCompleteType.INSERT: {
+      case INSERT: {
         ByteBuf otherByteBuf = in.retainedSlice(spaceIdx1 + 1, in.writerIndex() - spaceIdx1 - 2);
         int otherSpace = otherByteBuf.indexOf(otherByteBuf.readerIndex(), otherByteBuf.writerIndex(), SPACE);
         // we may need to send the oid in the message
