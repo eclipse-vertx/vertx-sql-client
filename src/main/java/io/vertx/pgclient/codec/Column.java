@@ -1,4 +1,4 @@
-package io.vertx.pgclient.codec.decoder.message;
+package io.vertx.pgclient.codec;
 
 import java.util.Objects;
 
@@ -9,32 +9,33 @@ import java.util.Objects;
 public class Column {
 
   private final String name;
-  private final int type;
-  private final short format;
   private final int relationId;
+  private final DataType dataType;
+  private final DataFormat dataFormat;
   private final short relationAttributeNo;
   private final short length;
   private final int typeModifier;
 
-  public Column(String name, int type, short format, short length, int relationId, short relationAttributeNo, int typeModifier) {
+  public Column(String name,  int relationId, short relationAttributeNo, DataType dataType, short length, int typeModifier, DataFormat dataFormat) {
     this.name = name;
-    this.type = type;
-    this.format = format;
+    this.dataType = dataType;
+    this.dataFormat = dataFormat;
     this.length = length;
     this.relationId = relationId;
     this.relationAttributeNo = relationAttributeNo;
     this.typeModifier = typeModifier;
   }
+
   public String getName() {
     return name;
   }
 
-  public int getType() {
-    return type;
+  public DataType getDataType() {
+    return dataType;
   }
 
-  public short getFormat() {
-    return format;
+  public DataFormat getDataFormat() {
+    return dataFormat;
   }
 
   public int getRelationId() {
@@ -53,32 +54,32 @@ public class Column {
     return typeModifier;
   }
 
-
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Column column = (Column) o;
-    return type == column.type &&
-      format == column.format &&
-      relationId == column.relationId &&
+    return relationId == column.relationId &&
       relationAttributeNo == column.relationAttributeNo &&
       length == column.length &&
       typeModifier == column.typeModifier &&
-      Objects.equals(name, column.name);
+      Objects.equals(name, column.name) &&
+      dataType == column.dataType &&
+      dataFormat == column.dataFormat;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, type, format, relationId, relationAttributeNo, length, typeModifier);
+    return Objects.hash(name, dataType, dataFormat, relationId, relationAttributeNo, length, typeModifier);
   }
+
 
   @Override
   public String toString() {
     return "Column{" +
       "name='" + name + '\'' +
-      ", type=" + type +
-      ", format=" + format +
+      ", dataType=" + dataType +
+      ", dataFormat=" + dataFormat +
       ", relationId=" + relationId +
       ", relationAttributeNo=" + relationAttributeNo +
       ", length=" + length +

@@ -5,6 +5,8 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -111,18 +113,6 @@ public abstract class PgTestBase {
     }));
   }
 
-  // This is important to prevent the test database use current machine time zone
-  @Test
-  public void testSetTimeZone(TestContext ctx) {
-    Async async = ctx.async();
-    PostgresClient client = PostgresClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SET TIMEZONE = 'Asia/Kuwait'", ctx.asyncAssertSuccess(result -> {
-        async.complete();
-      }));
-    }));
-  }
-
   @Test
   public void testQuery(TestContext ctx) {
     Async async = ctx.async();
@@ -212,6 +202,18 @@ public abstract class PgTestBase {
       conn.execute("DELETE FROM Fortune where id = 6", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.getUpdatedRows());
         ctx.assertEquals(0, result.size());
+        async.complete();
+      }));
+    }));
+  }
+
+  // This is important to prevent the test database use current machine time zone
+  @Test
+  public void testSetTimeZone(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.execute("SET TIMEZONE = 'Asia/Kuwait'", ctx.asyncAssertSuccess(result -> {
         async.complete();
       }));
     }));
@@ -359,15 +361,15 @@ public abstract class PgTestBase {
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.execute("SELECT 'VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X & VERT.X'::NAME",
         ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(0, result.getUpdatedRows());
-        ctx.assertEquals(1, result.size());
-        ctx.assertNotNull(result.get(0).get(0));
-        String name = (String) result.get(0).get(0);
-        ctx.assertEquals("VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X ", name);
-        // must be 63 length
-        ctx.assertEquals(63, name.length());
-        async.complete();
-      }));
+          ctx.assertEquals(0, result.getUpdatedRows());
+          ctx.assertEquals(1, result.size());
+          ctx.assertNotNull(result.get(0).get(0));
+          String name = (String) result.get(0).get(0);
+          ctx.assertEquals("VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X ", name);
+          // must be 63 length
+          ctx.assertEquals(63, name.length());
+          async.complete();
+        }));
     }));
   }
 
@@ -513,14 +515,14 @@ public abstract class PgTestBase {
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.execute("SELECT '17:55:04.90512+03:07'::TIMETZ",
         ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(0, result.getUpdatedRows());
-        ctx.assertEquals(1, result.size());
-        ctx.assertNotNull(result.get(0).get(0));
-        OffsetTime offsetTime = (OffsetTime) result.get(0).get(0);
-        ctx.assertEquals(OffsetTime.parse("17:55:04.90512+03:07", TIMETZ_FORMAT), offsetTime);
-        ctx.assertEquals(21, offsetTime.toString().length());
-        async.complete();
-      }));
+          ctx.assertEquals(0, result.getUpdatedRows());
+          ctx.assertEquals(1, result.size());
+          ctx.assertNotNull(result.get(0).get(0));
+          OffsetTime offsetTime = (OffsetTime) result.get(0).get(0);
+          ctx.assertEquals(OffsetTime.parse("17:55:04.90512+03:07", TIMETZ_FORMAT), offsetTime);
+          ctx.assertEquals(21, offsetTime.toString().length());
+          async.complete();
+        }));
     }));
   }
 
@@ -548,14 +550,237 @@ public abstract class PgTestBase {
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.execute("SELECT '2017-05-14 22:35:58.237666-03'::TIMESTAMPTZ",
         ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(0, result.getUpdatedRows());
-        ctx.assertEquals(1, result.size());
-        ctx.assertNotNull(result.get(0).get(0));
-        OffsetDateTime offsetDateTime = (OffsetDateTime) result.get(0).get(0);
-        ctx.assertEquals(OffsetDateTime.parse("2017-05-15 04:35:58.237666+03", TIMESTAMPTZ_FORMAT), offsetDateTime);
-        ctx.assertEquals(32, offsetDateTime.toString().length());
-        async.complete();
-      }));
+          ctx.assertEquals(0, result.getUpdatedRows());
+          ctx.assertEquals(1, result.size());
+          ctx.assertNotNull(result.get(0).get(0));
+          OffsetDateTime offsetDateTime = (OffsetDateTime) result.get(0).get(0);
+          ctx.assertEquals(OffsetDateTime.parse("2017-05-15 04:35:58.237666+03", TIMESTAMPTZ_FORMAT), offsetDateTime);
+          ctx.assertEquals(32, offsetDateTime.toString().length());
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testJsonbObjectTextDataType(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.execute("SELECT '{\"str\":\"blah\", \"int\" : 1, \"float\" :" +
+          " 3.5, \"object\": {}, \"array\" : []}'::JSONB",
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(0, result.getUpdatedRows());
+          ctx.assertEquals(1, result.size());
+          ctx.assertNotNull(result.get(0).get(0));
+          JsonObject jsonObject = (JsonObject) result.get(0).get(0);
+          ctx.assertEquals(new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" :" +
+            " 3.5, \"object\": {}, \"array\" : []}"), jsonObject);
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testJsonbArrayTextDataType(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.execute("SELECT '[1,true,null,9.5,\"Hi\"]'::JSONB",
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(0, result.getUpdatedRows());
+          ctx.assertEquals(1, result.size());
+          ctx.assertNotNull(result.get(0).get(0));
+          JsonArray jsonArray = (JsonArray) result.get(0).get(0);
+          ctx.assertEquals(new JsonArray("[1,true,null,9.5,\"Hi\"]"), jsonArray);
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testJsonObjectTextDataType(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.execute("SELECT '{\"str\":\"blah\", \"int\" : 1, \"float\" :" +
+          " 3.5, \"object\": {}, \"array\" : []}'::JSON",
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(0, result.getUpdatedRows());
+          ctx.assertEquals(1, result.size());
+          ctx.assertNotNull(result.get(0).get(0));
+          JsonObject jsonObject = (JsonObject) result.get(0).get(0);
+          ctx.assertEquals(new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" :" +
+            " 3.5, \"object\": {}, \"array\" : []}"), jsonObject);
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testJsonArrayTextDataType(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.execute("SELECT '[1,true,null,9.5,\"Hi\"]'::JSON",
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(0, result.getUpdatedRows());
+          ctx.assertEquals(1, result.size());
+          ctx.assertNotNull(result.get(0).get(0));
+          JsonArray jsonArray = (JsonArray) result.get(0).get(0);
+          ctx.assertEquals(new JsonArray("[1,true,null,9.5,\"Hi\"]"), jsonArray);
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testExtendedSelect(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.prepareAndExecute("SELECT id, message FROM Fortune WHERE id=$1 AND message =$2",
+        5,
+        "A computer program does what you tell it to do, not what you want it to do.",
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(0, result.getUpdatedRows());
+          ctx.assertEquals(1, result.size());
+          ctx.assertNotNull(result.get(0).get(0));
+          ctx.assertNotNull(result.get(0).get(1));
+          ctx.assertEquals(5, result.get(0).get(0));
+          ctx.assertEquals("A computer program does what you tell it to do, not what you want it to do.",
+            result.get(0).get(1));
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testExtendedInsert(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.prepareAndExecute("INSERT INTO Fortune (id, message) VALUES ($1, $2)",
+        20, "Hello",
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.getUpdatedRows());
+          ctx.assertEquals(0, result.size());
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testExtendedUpdate(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.prepareAndExecute("UPDATE Fortune SET message = $1 WHERE id = $2",
+        "Whatever",
+        20,
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.getUpdatedRows());
+          ctx.assertEquals(0, result.size());
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testExtendedDelete(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.prepareAndExecute("DELETE FROM Fortune where id = $1", 7,
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.getUpdatedRows());
+          ctx.assertEquals(0, result.size());
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testExtendedParam1(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.prepareAndExecute("SELECT * FROM Fortune WHERE id=$1", 1,
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(0, result.getUpdatedRows());
+          ctx.assertEquals(1, result.size());
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testExtendedParam2(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.prepareAndExecute("SELECT * FROM Fortune WHERE id=$1 OR id=$2", 1, 8,
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(0, result.getUpdatedRows());
+          ctx.assertEquals(2, result.size());
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testExtendedParam3(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.prepareAndExecute("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3", 1, 8, 4,
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(0, result.getUpdatedRows());
+          ctx.assertEquals(3, result.size());
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testExtendedParam4(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.prepareAndExecute("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4", 1, 8, 4, 11,
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(0, result.getUpdatedRows());
+          ctx.assertEquals(4, result.size());
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testExtendedParam5(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.prepareAndExecute("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5", 1, 8, 4, 11, 2,
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(0, result.getUpdatedRows());
+          ctx.assertEquals(5, result.size());
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testExtendedParam6(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.prepareAndExecute("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6",
+        1, 8, 4, 11, 2, 9,
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(0, result.getUpdatedRows());
+          ctx.assertEquals(6, result.size());
+          async.complete();
+        }));
     }));
   }
 
@@ -582,7 +807,8 @@ public abstract class PgTestBase {
       conn.connect();
     });
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
-      PostgresClient client = PostgresClient.create(vertx, new PostgresClientOptions(options).setPort(8080).setHost("localhost"));
+      PostgresClient client = PostgresClient.create(vertx, new PostgresClientOptions(options)
+        .setPort(8080).setHost("localhost"));
       connector.accept(client, ctx.asyncAssertSuccess(conn -> {
         conn.closeHandler(v2 -> {
           async.complete();
@@ -609,7 +835,8 @@ public abstract class PgTestBase {
       conn.connect();
     });
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
-      PostgresClient client = PostgresClient.create(vertx, new PostgresClientOptions(options).setPort(8080).setHost("localhost"));
+      PostgresClient client = PostgresClient.create(vertx, new PostgresClientOptions(options)
+        .setPort(8080).setHost("localhost"));
       connector.accept(client, ctx.asyncAssertSuccess(conn -> {
         AtomicInteger count = new AtomicInteger();
         conn.exceptionHandler(err -> {

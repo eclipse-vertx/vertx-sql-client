@@ -6,6 +6,10 @@ package io.vertx.pgclient.codec.decoder.message;
 
 public class ErrorResponse extends Response {
 
+  public static final ErrorResponse INSTANCE = new ErrorResponse();
+
+  private ErrorResponse() {}
+
   @Override
   public String toString() {
     return "ErrorResponse{" +

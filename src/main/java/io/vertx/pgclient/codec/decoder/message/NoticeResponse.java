@@ -6,6 +6,10 @@ package io.vertx.pgclient.codec.decoder.message;
 
 public class NoticeResponse extends Response {
 
+  public static final NoticeResponse INSTANCE = new NoticeResponse();
+
+  private NoticeResponse() {}
+
   @Override
   public String toString() {
     return "NoticeResponse{" +

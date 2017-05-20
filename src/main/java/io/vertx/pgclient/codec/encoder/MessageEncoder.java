@@ -5,14 +5,11 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.vertx.pgclient.codec.Message;
-import io.vertx.pgclient.codec.encoder.message.PasswordMessage;
-import io.vertx.pgclient.codec.encoder.message.Query;
-import io.vertx.pgclient.codec.encoder.message.StartupMessage;
-import io.vertx.pgclient.codec.encoder.message.Terminate;
+import io.vertx.pgclient.codec.encoder.message.*;
 import io.vertx.pgclient.codec.util.Util;
 
 import static io.vertx.pgclient.codec.encoder.message.type.MessageType.*;
-import static io.vertx.pgclient.codec.util.Util.writeCString;
+import static io.vertx.pgclient.codec.util.Util.*;
 import static java.nio.charset.StandardCharsets.*;
 
 
@@ -46,6 +43,18 @@ public class MessageEncoder extends MessageToByteEncoder<Message> {
       encodeQuery(message, out);
     } else if(message.getClass() == Terminate.class) {
       encodeTerminate(out);
+    } else if(message.getClass() == Parse.class) {
+      encodeParse(message , out);
+    } else if(message.getClass() == Bind.class) {
+      encodeBind(message , out);
+    } else if(message.getClass() == Describe.class) {
+      encodeDescribe(message , out);
+    } else if(message.getClass() == Execute.class) {
+      encodeExecute(message , out);
+    } else if(message.getClass() == Close.class) {
+      encodeClose(message , out);
+    } else if(message.getClass() == Sync.class) {
+      encodeSync(out);
     }
   }
 
@@ -93,6 +102,73 @@ public class MessageEncoder extends MessageToByteEncoder<Message> {
 
   private void encodeTerminate(ByteBuf out) {
     out.writeByte(TERMINATE);
+    out.writeInt(4);
+  }
+
+  private void encodeParse(Message message, ByteBuf out) {
+    Parse parse = (Parse) message;
+    out.writeByte(PARSE);
+    out.writeInt(0);
+    Util.writeCStringUTF8(out, parse.getStatement() != null ? parse.getStatement() : "");
+    Util.writeCStringUTF8(out, parse.getQuery());
+    out.writeShort(0); // no parameter data types (OIDs)
+    out.setInt(1, out.writerIndex() - 1);
+  }
+
+  private void encodeBind(Message message, ByteBuf out) {
+    Bind bind = (Bind) message;
+    byte[][] paramValues = bind.getParamValues();
+    out.writeByte(BIND);
+    out.writeInt(0);
+    Util.writeCStringUTF8(out, bind.getPortal() != null ? bind.getPortal() : "");
+    Util.writeCStringUTF8(out, bind.getStatement() != null ? bind.getStatement() : "");
+    out.writeShort(0);
+    // Parameter values
+    out.writeShort(paramValues.length);
+    for (int c = 0; c < paramValues.length; ++c) {
+      if (paramValues[c] == null) {
+        // NULL value
+        out.writeInt(-1);
+      } else {
+        // Not NULL value
+        out.writeInt(paramValues[c].length);
+        out.writeBytes(paramValues[c]);
+      }
+    }
+    // TEXT format
+    out.writeShort(0);
+    out.setInt(1, out.writerIndex() - 1);
+  }
+
+  private void encodeDescribe(Message message, ByteBuf out) {
+    Describe describe = (Describe) message;
+    out.writeByte(DESCRIBE);
+    out.writeInt(0);
+    out.writeByte('S'); // 'S' to describe a prepared statement or 'P' to describe a portal
+    Util.writeCStringUTF8(out, describe.getStatement() != null ? describe.getStatement() : "");
+    out.setInt(1, out.writerIndex() - 1);
+  }
+
+  private void encodeExecute(Message message, ByteBuf out) {
+    Execute execute = (Execute) message;
+    out.writeByte(EXECUTE);
+    out.writeInt(0);
+    Util.writeCStringUTF8(out, execute.getStatement() != null ? execute.getStatement() : "");
+    out.writeInt(execute.getRowCount()); // Zero denotes "no limit" maybe for ReadStream<Row>
+    out.setInt(1, out.writerIndex() - 1);
+  }
+
+  private void encodeClose(Message message, ByteBuf out) {
+    Close close = (Close) message;
+    out.writeByte(CLOSE);
+    out.writeInt(0);
+    out.writeByte('S'); // 'S' to close a prepared statement or 'P' to close a portal
+    Util.writeCStringUTF8(out, close.getStatement() != null ? close.getStatement() : "");
+    out.setInt(1, out.writerIndex() - 1);
+  }
+
+  private void encodeSync(ByteBuf out) {
+    out.writeByte(SYNC);
     out.writeInt(4);
   }
 }

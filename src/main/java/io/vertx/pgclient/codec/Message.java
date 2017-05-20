@@ -6,5 +6,4 @@ package io.vertx.pgclient.codec;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public interface Message {
-}
+public interface Message {}
