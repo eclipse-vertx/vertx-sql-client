@@ -23,10 +23,11 @@
     <version>10</version>
   </parent>
 
+  <groupId>com.julienviet</groupId>
   <artifactId>vertx-pg-client</artifactId>
   <version>3.4.2-SNAPSHOT</version>
 
-  <name>Vert.x Postgres Client</name>
+  <name>Postgres Client for Eclipse Vert.x</name>
 
   <properties>
     <stack.version>3.4.2-SNAPSHOT</stack.version>
