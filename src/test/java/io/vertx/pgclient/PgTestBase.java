@@ -28,14 +28,13 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
-import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 
 import static io.vertx.pgclient.codec.formatter.DateTimeFormatter.*;
-import static io.vertx.pgclient.codec.formatter.TimeFormatter.TIMETZ_FORMAT;
+import static io.vertx.pgclient.codec.formatter.TimeFormatter.*;
 import static ru.yandex.qatools.embed.postgresql.distribution.Version.*;
 
 /**
@@ -639,8 +638,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.prepareAndExecute("SELECT id, message FROM Fortune WHERE id=$1 AND message =$2", Arrays.asList(5,
-        "A computer program does what you tell it to do, not what you want it to do."),
+      conn.prepareAndExecute("SELECT id, message FROM Fortune WHERE id=$1 AND message =$2",
+        5,
+        "A computer program does what you tell it to do, not what you want it to do.",
         ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(0, result.getUpdatedRows());
           ctx.assertEquals(1, result.size());
@@ -659,7 +659,8 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.prepareAndExecute("INSERT INTO Fortune (id, message) VALUES ($1, $2)", Arrays.asList(20, "Hello"),
+      conn.prepareAndExecute("INSERT INTO Fortune (id, message) VALUES ($1, $2)",
+        20, "Hello",
         ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.getUpdatedRows());
           ctx.assertEquals(0, result.size());
@@ -673,7 +674,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.prepareAndExecute("UPDATE Fortune SET message = $1 WHERE id = $2", Arrays.asList("Whatever", 20),
+      conn.prepareAndExecute("UPDATE Fortune SET message = $1 WHERE id = $2",
+        "Whatever",
+        20,
         ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.getUpdatedRows());
           ctx.assertEquals(0, result.size());
@@ -687,7 +690,7 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.prepareAndExecute("DELETE FROM Fortune where id = $1", Arrays.asList(7),
+      conn.prepareAndExecute("DELETE FROM Fortune where id = $1", 7,
         ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.getUpdatedRows());
           ctx.assertEquals(0, result.size());
@@ -804,7 +807,8 @@ public abstract class PgTestBase {
       conn.connect();
     });
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
-      PostgresClient client = PostgresClient.create(vertx, new PostgresClientOptions(options).setPort(8080).setHost("localhost"));
+      PostgresClient client = PostgresClient.create(vertx, new PostgresClientOptions(options)
+        .setPort(8080).setHost("localhost"));
       connector.accept(client, ctx.asyncAssertSuccess(conn -> {
         conn.closeHandler(v2 -> {
           async.complete();
@@ -831,7 +835,8 @@ public abstract class PgTestBase {
       conn.connect();
     });
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
-      PostgresClient client = PostgresClient.create(vertx, new PostgresClientOptions(options).setPort(8080).setHost("localhost"));
+      PostgresClient client = PostgresClient.create(vertx, new PostgresClientOptions(options)
+        .setPort(8080).setHost("localhost"));
       connector.accept(client, ctx.asyncAssertSuccess(conn -> {
         AtomicInteger count = new AtomicInteger();
         conn.exceptionHandler(err -> {
