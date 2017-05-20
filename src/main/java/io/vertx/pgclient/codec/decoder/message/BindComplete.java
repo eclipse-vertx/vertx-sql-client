@@ -8,6 +8,10 @@ import io.vertx.pgclient.codec.Message;
 
 public class BindComplete implements Message {
 
+  public static final BindComplete INSTANCE = new BindComplete();
+
+  private BindComplete(){}
+
   @Override
   public String toString() {
     return "BindComplete{}";

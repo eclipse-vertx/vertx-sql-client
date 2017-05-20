@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static java.nio.charset.StandardCharsets.*;
-import static javax.xml.bind.DatatypeConverter.printHexBinary;
+import static javax.xml.bind.DatatypeConverter.*;
 
 
 public class Util {
@@ -60,8 +60,10 @@ public class Util {
   }
 
   public static byte[][] paramValues(List<Object> parameters) {
+    if(parameters.size() > 100)
+      throw new IllegalStateException("params size must be <= 100");
     byte[][] params = new byte[parameters.size()][];
-    for (short c = 0; c < parameters.size(); ++c) {
+    for (int c = 0; c < parameters.size(); ++c) {
       Object param = parameters.get(c);
       if(param == null) {
         params[c] = null;

@@ -9,6 +9,10 @@ import io.vertx.pgclient.codec.Message;
 
 public class NoData implements Message {
 
+  public static final NoData INSTANCE = new NoData();
+
+  private NoData(){}
+
   @Override
   public String toString() {
     return "NoData{}";

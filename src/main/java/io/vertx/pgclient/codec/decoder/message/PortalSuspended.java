@@ -1,7 +1,7 @@
-package io.vertx.pgclient.codec.encoder.message;
+package io.vertx.pgclient.codec.decoder.message;
 
 import io.vertx.pgclient.codec.Message;
-import io.vertx.pgclient.codec.decoder.message.CommandComplete;
+import io.vertx.pgclient.codec.encoder.message.Execute;
 
 /**
  *
@@ -14,6 +14,10 @@ import io.vertx.pgclient.codec.decoder.message.CommandComplete;
  */
 
 public class PortalSuspended implements Message {
+
+  public static final PortalSuspended INSTANCE = new PortalSuspended();
+
+  private PortalSuspended () {}
 
   @Override
   public String toString() {

@@ -4,6 +4,7 @@ import io.vertx.pgclient.codec.Message;
 import io.vertx.pgclient.codec.decoder.message.CommandComplete;
 import io.vertx.pgclient.codec.decoder.message.EmptyQueryResponse;
 import io.vertx.pgclient.codec.decoder.message.ErrorResponse;
+import io.vertx.pgclient.codec.decoder.message.PortalSuspended;
 import io.vertx.pgclient.codec.decoder.message.ReadyForQuery;
 import io.vertx.pgclient.codec.decoder.message.RowDescription;
 

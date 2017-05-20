@@ -8,6 +8,10 @@ import io.vertx.pgclient.codec.Message;
 
 public class AuthenticationClearTextPassword implements Message {
 
+  public static final AuthenticationClearTextPassword INSTANCE = new AuthenticationClearTextPassword();
+
+  private AuthenticationClearTextPassword(){}
+
   @Override
   public String toString() {
     return "AuthenticationClearTextPassword{}";

@@ -8,6 +8,10 @@ import io.vertx.pgclient.codec.Message;
 
 public class CloseComplete implements Message {
 
+  public static final CloseComplete INSTANCE = new CloseComplete();
+
+  private CloseComplete() {}
+
   @Override
   public String toString() {
     return "CloseComplete{}";

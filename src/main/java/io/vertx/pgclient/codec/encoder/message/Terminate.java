@@ -13,6 +13,10 @@ import io.vertx.pgclient.codec.Message;
 
 public class Terminate implements Message {
 
+  public static final Terminate INSTANCE = new Terminate();
+
+  private Terminate() {}
+
   @Override
   public String toString() {
     return "Terminate{}";

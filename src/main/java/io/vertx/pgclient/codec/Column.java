@@ -9,14 +9,14 @@ import java.util.Objects;
 public class Column {
 
   private final String name;
-  private final int dataType;
-  private final short dataFormat;
   private final int relationId;
+  private final DataType dataType;
+  private final DataFormat dataFormat;
   private final short relationAttributeNo;
   private final short length;
   private final int typeModifier;
 
-  public Column(String name, int dataType, short dataFormat, short length, int relationId, short relationAttributeNo, int typeModifier) {
+  public Column(String name,  int relationId, short relationAttributeNo, DataType dataType, short length, int typeModifier, DataFormat dataFormat) {
     this.name = name;
     this.dataType = dataType;
     this.dataFormat = dataFormat;
@@ -25,15 +25,16 @@ public class Column {
     this.relationAttributeNo = relationAttributeNo;
     this.typeModifier = typeModifier;
   }
+
   public String getName() {
     return name;
   }
 
-  public int getDataType() {
+  public DataType getDataType() {
     return dataType;
   }
 
-  public short getDataFormat() {
+  public DataFormat getDataFormat() {
     return dataFormat;
   }
 
@@ -53,25 +54,25 @@ public class Column {
     return typeModifier;
   }
 
-
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Column column = (Column) o;
-    return dataType == column.dataType &&
-      dataFormat == column.dataFormat &&
-      relationId == column.relationId &&
+    return relationId == column.relationId &&
       relationAttributeNo == column.relationAttributeNo &&
       length == column.length &&
       typeModifier == column.typeModifier &&
-      Objects.equals(name, column.name);
+      Objects.equals(name, column.name) &&
+      dataType == column.dataType &&
+      dataFormat == column.dataFormat;
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(name, dataType, dataFormat, relationId, relationAttributeNo, length, typeModifier);
   }
+
 
   @Override
   public String toString() {

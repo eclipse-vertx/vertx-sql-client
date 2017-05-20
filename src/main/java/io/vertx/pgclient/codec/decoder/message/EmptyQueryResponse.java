@@ -12,6 +12,10 @@ import io.vertx.pgclient.codec.Message;
 
 public class EmptyQueryResponse implements Message {
 
+  public static final EmptyQueryResponse INSTANCE = new EmptyQueryResponse();
+
+  private EmptyQueryResponse() {}
+
   @Override
   public String toString() {
     return "EmptyQueryResponse{}";

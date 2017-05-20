@@ -26,6 +26,10 @@ import io.vertx.pgclient.codec.decoder.message.ReadyForQuery;
 
 public class Sync implements Message {
 
+  public static final Sync INSTANCE = new Sync();
+
+  private Sync() {}
+
   @Override
   public String toString() {
     return "Sync{}";

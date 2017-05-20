@@ -11,6 +11,10 @@ import io.vertx.pgclient.codec.Message;
 
 public class AuthenticationOk implements Message {
 
+  public static final AuthenticationOk INSTANCE = new AuthenticationOk();
+
+  private AuthenticationOk() {}
+
   @Override
   public String toString() {
     return "AuthenticationOk{}";

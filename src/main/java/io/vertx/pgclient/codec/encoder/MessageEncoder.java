@@ -125,7 +125,7 @@ public class MessageEncoder extends MessageToByteEncoder<Message> {
     out.writeShort(0);
     // Parameter values
     out.writeShort(paramValues.length);
-    for (short c = 0; c < paramValues.length; ++c) {
+    for (int c = 0; c < paramValues.length; ++c) {
       if (paramValues[c] == null) {
         // NULL value
         out.writeInt(-1);

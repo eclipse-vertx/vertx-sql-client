@@ -4,6 +4,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.vertx.pgclient.codec.Column;
+import io.vertx.pgclient.codec.DataFormat;
+import io.vertx.pgclient.codec.DataType;
 import io.vertx.pgclient.codec.TransactionStatus;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationClearTextPassword;
 import io.vertx.pgclient.codec.decoder.message.AuthenticationMD5Password;
@@ -21,10 +23,10 @@ import io.vertx.pgclient.codec.decoder.message.NotificationResponse;
 import io.vertx.pgclient.codec.decoder.message.ParameterDescription;
 import io.vertx.pgclient.codec.decoder.message.ParameterStatus;
 import io.vertx.pgclient.codec.decoder.message.ParseComplete;
+import io.vertx.pgclient.codec.decoder.message.PortalSuspended;
 import io.vertx.pgclient.codec.decoder.message.ReadyForQuery;
 import io.vertx.pgclient.codec.decoder.message.Response;
 import io.vertx.pgclient.codec.decoder.message.RowDescription;
-import io.vertx.pgclient.codec.encoder.message.PortalSuspended;
 
 import java.util.List;
 
@@ -32,7 +34,6 @@ import static io.vertx.pgclient.codec.decoder.message.type.AuthenticationType.*;
 import static io.vertx.pgclient.codec.decoder.message.type.CommandCompleteType.*;
 import static io.vertx.pgclient.codec.decoder.message.type.ErrorOrNoticeType.*;
 import static io.vertx.pgclient.codec.decoder.message.type.MessageType.*;
-import static io.vertx.pgclient.codec.decoder.message.type.ReadyForQueryTransactionStatusType.*;
 import static io.vertx.pgclient.codec.util.Util.*;
 import static java.nio.charset.StandardCharsets.*;
 
@@ -58,11 +59,11 @@ public class MessageDecoder extends ByteToMessageDecoder {
           in.readerIndex(beginIdx + 5);
           switch (id) {
             case ERROR_RESPONSE: {
-              decodeErrorOrNotice(new ErrorResponse(), in, out);
+              decodeErrorOrNotice(ErrorResponse.INSTANCE, in, out);
               break;
             }
             case NOTICE_RESPONSE: {
-              decodeErrorOrNotice(new NoticeResponse(), in, out);
+              decodeErrorOrNotice(NoticeResponse.INSTANCE, in, out);
               break;
             }
             case AUTHENTICATION: {
@@ -222,7 +223,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
     int type = in.readInt();
     switch (type) {
       case OK: {
-        out.add(new AuthenticationOk());
+        out.add(AuthenticationOk.INSTANCE);
       }
       break;
       case MD5_PASSWORD: {
@@ -232,7 +233,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
       }
       break;
       case CLEARTEXT_PASSWORD: {
-        out.add(new AuthenticationClearTextPassword());
+        out.add(AuthenticationClearTextPassword.INSTANCE);
       }
       break;
       case KERBEROS_V5:
@@ -302,24 +303,16 @@ public class MessageDecoder extends ByteToMessageDecoder {
   }
 
   private void decodeRowDescription(ByteBuf in, List<Object> out) {
-    short columnNo = in.readShort();
-    Column[] columns = new Column[columnNo];
-    for (short c = 0; c < columnNo; ++c) {
-      String name = readCStringUTF8(in);
-      int relationId = in.readInt();
-      short relationAttributeNo = in.readShort();
-      int type = in.readInt();
-      short typeLength = in.readShort();
-      int typeModifier = in.readInt();
-      short format = in.readShort();
+    Column[] columns = new Column[in.readUnsignedShort()];
+    for (int c = 0; c < columns.length; ++c) {
       Column column = new Column(
-        name,
-        type,
-        format,
-        typeLength,
-        relationId,
-        relationAttributeNo,
-        typeModifier
+        readCStringUTF8(in),
+        in.readInt(),
+        in.readShort(),
+        DataType.valueOf(in.readInt()),
+        in.readShort(),
+        in.readInt(),
+        DataFormat.valueOf(in.readUnsignedShort())
       );
       columns[c] = column;
     }
@@ -327,8 +320,8 @@ public class MessageDecoder extends ByteToMessageDecoder {
   }
 
   private void decodeDataRow(ByteBuf in, List<Object> out) {
-    byte[][] values = new byte[in.readShort()][];
-    for (short c = 0; c < values.length; ++c) {
+    byte[][] values = new byte[in.readUnsignedShort()][];
+    for (int c = 0; c < values.length; ++c) {
       int length = in.readInt();
       if (length != -1) {
         values[c] = new byte[length];
@@ -341,50 +334,32 @@ public class MessageDecoder extends ByteToMessageDecoder {
   }
 
   private void decodeReadyForQuery(ByteBuf in, List<Object> out) {
-
-    byte type = in.readByte();
-
-    switch (type) {
-      case IDLE: {
-        out.add(new ReadyForQuery(TransactionStatus.IDLE));
-      }
-      break;
-      case ACTIVE: {
-        out.add(new ReadyForQuery(TransactionStatus.ACTIVE));
-      }
-      break;
-      case FAILED: {
-        out.add(new ReadyForQuery(TransactionStatus.FAILED));
-      }
-      break;
-      default:
-        break;
-    }
+    out.add(new ReadyForQuery(TransactionStatus.valueOf(in.readByte())));
   }
 
   private void decodeParseComplete(List<Object> out) {
-    out.add(new ParseComplete());
+    out.add(ParseComplete.INSTANCE);
   }
 
   private void decodeBindComplete(List<Object> out) {
-    out.add(new BindComplete());
+    out.add(BindComplete.INSTANCE);
   }
 
   private void decodeCloseComplete(List<Object> out) {
-    out.add(new CloseComplete());
+    out.add(CloseComplete.INSTANCE);
   }
 
   private void decodeNoData(List<Object> out) {
-    out.add(new NoData());
+    out.add(NoData.INSTANCE);
   }
 
   private void decodePortalSuspended(List<Object> out) {
-    out.add(new PortalSuspended());
+    out.add(PortalSuspended.INSTANCE);
   }
 
   private void decodeParameterDescription(ByteBuf in, List<Object> out) {
-    int[] paramDataTypes = new int[in.readShort()];
-    for (short c = 0; c < paramDataTypes.length; ++c) {
+    int[] paramDataTypes = new int[in.readUnsignedShort()];
+    for (int c = 0; c < paramDataTypes.length; ++c) {
       paramDataTypes[c] = in.readInt();
     }
     out.add(new ParameterDescription(paramDataTypes));
@@ -395,7 +370,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
   }
 
   private void decodeEmptyQueryResponse(List<Object> out) {
-    out.add(new EmptyQueryResponse());
+    out.add(EmptyQueryResponse.INSTANCE);
   }
 
   private void decodeBackendKeyData(ByteBuf in, List<Object> out) {

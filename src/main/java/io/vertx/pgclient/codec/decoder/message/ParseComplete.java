@@ -8,6 +8,10 @@ import io.vertx.pgclient.codec.Message;
 
 public class ParseComplete implements Message {
 
+  public static final ParseComplete INSTANCE = new ParseComplete();
+
+  private ParseComplete() {}
+
   @Override
   public String toString() {
     return "ParseComplete{}";
