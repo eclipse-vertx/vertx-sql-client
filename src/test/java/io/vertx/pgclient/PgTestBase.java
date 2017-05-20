@@ -639,7 +639,7 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT id, message FROM Fortune WHERE id=$1 AND message =$2", Arrays.asList(5,
+      conn.prepareAndExecute("SELECT id, message FROM Fortune WHERE id=$1 AND message =$2", Arrays.asList(5,
         "A computer program does what you tell it to do, not what you want it to do."),
         ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(0, result.getUpdatedRows());
@@ -659,7 +659,7 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("INSERT INTO Fortune (id, message) VALUES ($1, $2)", Arrays.asList(20, "Hello"),
+      conn.prepareAndExecute("INSERT INTO Fortune (id, message) VALUES ($1, $2)", Arrays.asList(20, "Hello"),
         ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.getUpdatedRows());
           ctx.assertEquals(0, result.size());
@@ -673,7 +673,7 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("UPDATE Fortune SET message = $1 WHERE id = $2", Arrays.asList("Whatever", 20),
+      conn.prepareAndExecute("UPDATE Fortune SET message = $1 WHERE id = $2", Arrays.asList("Whatever", 20),
         ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.getUpdatedRows());
           ctx.assertEquals(0, result.size());
@@ -687,10 +687,95 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("DELETE FROM Fortune where id = $1", Arrays.asList(7),
+      conn.prepareAndExecute("DELETE FROM Fortune where id = $1", Arrays.asList(7),
         ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.getUpdatedRows());
           ctx.assertEquals(0, result.size());
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testExtendedParam1(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.prepareAndExecute("SELECT * FROM Fortune WHERE id=$1", 1,
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(0, result.getUpdatedRows());
+          ctx.assertEquals(1, result.size());
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testExtendedParam2(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.prepareAndExecute("SELECT * FROM Fortune WHERE id=$1 OR id=$2", 1, 8,
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(0, result.getUpdatedRows());
+          ctx.assertEquals(2, result.size());
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testExtendedParam3(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.prepareAndExecute("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3", 1, 8, 4,
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(0, result.getUpdatedRows());
+          ctx.assertEquals(3, result.size());
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testExtendedParam4(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.prepareAndExecute("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4", 1, 8, 4, 11,
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(0, result.getUpdatedRows());
+          ctx.assertEquals(4, result.size());
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testExtendedParam5(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.prepareAndExecute("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5", 1, 8, 4, 11, 2,
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(0, result.getUpdatedRows());
+          ctx.assertEquals(5, result.size());
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testExtendedParam6(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.prepareAndExecute("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6",
+        1, 8, 4, 11, 2, 9,
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(0, result.getUpdatedRows());
+          ctx.assertEquals(6, result.size());
           async.complete();
         }));
     }));
