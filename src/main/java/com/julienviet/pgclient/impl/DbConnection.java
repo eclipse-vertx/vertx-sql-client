@@ -96,9 +96,9 @@ public class DbConnection extends ConnectionBase {
     public void execute(String sql, Handler<AsyncResult<Result>> handler) {
       Command cmd = new QueryCommand(sql, handler);
       if (Vertx.currentContext() == context) {
-        doExecute(cmd);
+        schedule(cmd);
       } else {
-        context.runOnContext(v -> doExecute(cmd));
+        context.runOnContext(v -> schedule(cmd));
       }
     }
 
@@ -106,9 +106,9 @@ public class DbConnection extends ConnectionBase {
     public void prepareAndExecute(String sql, Object param, Handler<AsyncResult<Result>> handler) {
       Command cmd = new ExtendedQueryCommand(sql , Arrays.asList(param), handler);
       if (Vertx.currentContext() == context) {
-        doExecute(cmd);
+        schedule(cmd);
       } else {
-        context.runOnContext(v -> doExecute(cmd));
+        context.runOnContext(v -> schedule(cmd));
       }
     }
 
@@ -116,9 +116,9 @@ public class DbConnection extends ConnectionBase {
     public void prepareAndExecute(String sql, Object param1, Object param2, Handler<AsyncResult<Result>> handler) {
       Command cmd = new ExtendedQueryCommand(sql , Arrays.asList(param1, param2), handler);
       if (Vertx.currentContext() == context) {
-        doExecute(cmd);
+        schedule(cmd);
       } else {
-        context.runOnContext(v -> doExecute(cmd));
+        context.runOnContext(v -> schedule(cmd));
       }
     }
 
@@ -127,9 +127,9 @@ public class DbConnection extends ConnectionBase {
                                   Handler<AsyncResult<Result>> handler) {
       Command cmd = new ExtendedQueryCommand(sql , Arrays.asList(param1, param2, param3), handler);
       if (Vertx.currentContext() == context) {
-        doExecute(cmd);
+        schedule(cmd);
       } else {
-        context.runOnContext(v -> doExecute(cmd));
+        context.runOnContext(v -> schedule(cmd));
       }
     }
 
@@ -138,9 +138,9 @@ public class DbConnection extends ConnectionBase {
                                   Handler<AsyncResult<Result>> handler) {
       Command cmd = new ExtendedQueryCommand(sql , Arrays.asList(param1, param2, param3, param4), handler);
       if (Vertx.currentContext() == context) {
-        doExecute(cmd);
+        schedule(cmd);
       } else {
-        context.runOnContext(v -> doExecute(cmd));
+        context.runOnContext(v -> schedule(cmd));
       }
     }
 
@@ -149,9 +149,9 @@ public class DbConnection extends ConnectionBase {
                                   Handler<AsyncResult<Result>> handler) {
       Command cmd = new ExtendedQueryCommand(sql , Arrays.asList(param1, param2, param3, param4, param5), handler);
       if (Vertx.currentContext() == context) {
-        doExecute(cmd);
+        schedule(cmd);
       } else {
-        context.runOnContext(v -> doExecute(cmd));
+        context.runOnContext(v -> schedule(cmd));
       }
     }
 
@@ -160,9 +160,9 @@ public class DbConnection extends ConnectionBase {
                                   Object param6, Handler<AsyncResult<Result>> handler) {
       Command cmd = new ExtendedQueryCommand(sql , Arrays.asList(param1, param2, param3, param4, param5, param6), handler);
       if (Vertx.currentContext() == context) {
-        doExecute(cmd);
+        schedule(cmd);
       } else {
-        context.runOnContext(v -> doExecute(cmd));
+        context.runOnContext(v -> schedule(cmd));
       }
     }
 
@@ -170,9 +170,9 @@ public class DbConnection extends ConnectionBase {
     public void prepareAndExecute(String sql, List<Object> params, Handler<AsyncResult<Result>> handler) {
       Command cmd = new ExtendedQueryCommand(sql , params, handler);
       if (Vertx.currentContext() == context) {
-        doExecute(cmd);
+        schedule(cmd);
       } else {
-        context.runOnContext(v -> doExecute(cmd));
+        context.runOnContext(v -> schedule(cmd));
       }
     }
     @Override
@@ -200,20 +200,24 @@ public class DbConnection extends ConnectionBase {
     }
   }
 
-  void doExecute(Command cmd) {
+  void schedule(Command cmd) {
     if (status == Status.CONNECTED) {
       if (inflight.size() < client.pipeliningLimit) {
-        inflight.add(cmd);
-        if(cmd.getClass() == QueryCommand.class) {
-          executeQuery((QueryCommand) cmd);
-        } else if (cmd.getClass() == ExtendedQueryCommand.class) {
-          executeExtendedQuery((ExtendedQueryCommand) cmd);
-        }
+        execute(cmd);
       } else {
         pending.add(cmd);
       }
     } else {
       cmd.onError("Connection not open " + status);
+    }
+  }
+
+  void execute(Command cmd) {
+    inflight.add(cmd);
+    if(cmd.getClass() == QueryCommand.class) {
+      executeQuery((QueryCommand) cmd);
+    } else if (cmd.getClass() == ExtendedQueryCommand.class) {
+      executeExtendedQuery((ExtendedQueryCommand) cmd);
     }
   }
 
@@ -311,12 +315,7 @@ public class DbConnection extends ConnectionBase {
       TransactionStatus status = ((ReadyForQuery) msg).getTransactionStatus();
       Command cmd = pending.poll();
       if (cmd != null) {
-        inflight.add(cmd);
-        if(cmd.getClass() == QueryCommand.class) {
-          executeQuery((QueryCommand) cmd);
-        } else if (cmd.getClass() == ExtendedQueryCommand.class) {
-          executeExtendedQuery((ExtendedQueryCommand) cmd);
-        }
+        execute(cmd);
       }
     } else if (msg.getClass() == ParseComplete.class) {
 
