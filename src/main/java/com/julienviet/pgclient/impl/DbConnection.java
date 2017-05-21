@@ -107,71 +107,50 @@ public class DbConnection extends ConnectionBase {
 
     @Override
     public void prepareAndExecute(String sql, Object param, Handler<AsyncResult<Result>> handler) {
-      Command cmd = new ExtendedQueryCommand(sql , Arrays.asList(param), handler);
-      if (Vertx.currentContext() == context) {
-        schedule(cmd);
-      } else {
-        context.runOnContext(v -> schedule(cmd));
-      }
+      prepareAndExecute(sql, Arrays.asList(param), handler);
     }
 
     @Override
     public void prepareAndExecute(String sql, Object param1, Object param2, Handler<AsyncResult<Result>> handler) {
-      Command cmd = new ExtendedQueryCommand(sql , Arrays.asList(param1, param2), handler);
-      if (Vertx.currentContext() == context) {
-        schedule(cmd);
-      } else {
-        context.runOnContext(v -> schedule(cmd));
-      }
+      prepareAndExecute(sql, Arrays.asList(param1, param2), handler);
     }
 
     @Override
     public void prepareAndExecute(String sql, Object param1, Object param2, Object param3,
                                   Handler<AsyncResult<Result>> handler) {
-      Command cmd = new ExtendedQueryCommand(sql , Arrays.asList(param1, param2, param3), handler);
-      if (Vertx.currentContext() == context) {
-        schedule(cmd);
-      } else {
-        context.runOnContext(v -> schedule(cmd));
-      }
+      prepareAndExecute(sql, Arrays.asList(param1, param2, param3), handler);
     }
 
     @Override
     public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4,
                                   Handler<AsyncResult<Result>> handler) {
-      Command cmd = new ExtendedQueryCommand(sql , Arrays.asList(param1, param2, param3, param4), handler);
-      if (Vertx.currentContext() == context) {
-        schedule(cmd);
-      } else {
-        context.runOnContext(v -> schedule(cmd));
-      }
+      prepareAndExecute(sql, Arrays.asList(param1, param2, param3, param4), handler);
     }
 
     @Override
     public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4, Object param5,
                                   Handler<AsyncResult<Result>> handler) {
-      Command cmd = new ExtendedQueryCommand(sql , Arrays.asList(param1, param2, param3, param4, param5), handler);
-      if (Vertx.currentContext() == context) {
-        schedule(cmd);
-      } else {
-        context.runOnContext(v -> schedule(cmd));
-      }
+      prepareAndExecute(sql, Arrays.asList(param1, param2, param3, param4, param5), handler);
     }
 
     @Override
     public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4, Object param5,
                                   Object param6, Handler<AsyncResult<Result>> handler) {
-      Command cmd = new ExtendedQueryCommand(sql , Arrays.asList(param1, param2, param3, param4, param5, param6), handler);
-      if (Vertx.currentContext() == context) {
-        schedule(cmd);
-      } else {
-        context.runOnContext(v -> schedule(cmd));
-      }
+      prepareAndExecute(sql, Arrays.asList(param1, param2, param3, param4, param5, param6), handler);
     }
 
     @Override
     public void prepareAndExecute(String sql, List<Object> params, Handler<AsyncResult<Result>> handler) {
-      Command cmd = new ExtendedQueryCommand(sql , params, handler);
+      Command cmd = new BatchExecuteCommand(sql, true, "", params) {
+        @Override
+        public void onSuccess(Result result) {
+          handler.handle(Future.succeededFuture(result));
+        }
+        @Override
+        public void onError(String message) {
+          handler.handle(Future.failedFuture(message));
+        }
+      };
       if (Vertx.currentContext() == context) {
         schedule(cmd);
       } else {
@@ -260,8 +239,6 @@ public class DbConnection extends ConnectionBase {
     inflight.add(cmd);
     if(cmd.getClass() == QueryCommand.class) {
       executeQuery((QueryCommand) cmd);
-    } else if (cmd.getClass() == ExtendedQueryCommand.class) {
-      executeExtendedQuery((ExtendedQueryCommand) cmd);
     } else if (cmd instanceof BatchExecuteCommand) {
       executeBindDescribeExecute((BatchExecuteCommand) cmd);
     }
@@ -464,17 +441,6 @@ public class DbConnection extends ConnectionBase {
 
   void executeQuery(QueryCommand cmd) {
     writeToChannel(new Query(cmd.getSql()));
-  }
-
-  void executeExtendedQuery(ExtendedQueryCommand cmd) {
-    // Arbitrary statement name
-    String stmt = java.util.UUID.randomUUID().toString();
-    writeToChannel(new Parse(cmd.getSql()).setStatement(stmt));
-    writeToChannel(new Bind(Util.paramValues(cmd.getParams())).setStatement(stmt).setPortal(stmt));
-    writeToChannel(new Describe().setStatement(stmt).setPortal(stmt));
-    writeToChannel(new Execute().setStatement(stmt).setPortal(stmt).setRowCount(0));
-    writeToChannel(new Close().setStatement(stmt).setPortal(stmt));
-    writeToChannel(Sync.INSTANCE);
   }
 
   void executeBindDescribeExecute(BatchExecuteCommand cmd) {
