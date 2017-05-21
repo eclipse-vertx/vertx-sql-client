@@ -196,7 +196,7 @@ public class DbConnection extends ConnectionBase {
   private void doClose() {
     if (status == Status.CONNECTED) {
       status = Status.CLOSING;
-      check();
+      writeToChannel(Terminate.INSTANCE);
     }
   }
 
@@ -309,6 +309,15 @@ public class DbConnection extends ConnectionBase {
     } else if (msg.getClass() == ReadyForQuery.class) {
       // Ready for query
       TransactionStatus status = ((ReadyForQuery) msg).getTransactionStatus();
+      Command cmd = pending.poll();
+      if (cmd != null) {
+        inflight.add(cmd);
+        if(cmd.getClass() == QueryCommand.class) {
+          executeQuery((QueryCommand) cmd);
+        } else if (cmd.getClass() == ExtendedQueryCommand.class) {
+          executeExtendedQuery((ExtendedQueryCommand) cmd);
+        }
+      }
     } else if (msg.getClass() == ParseComplete.class) {
 
     } else if (msg.getClass() == BindComplete.class) {
@@ -374,7 +383,6 @@ public class DbConnection extends ConnectionBase {
       }
       r.setUpdatedRows(complete.getRowsAffected());
       inflight.poll().onSuccess(r);
-      check();
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
       if (handler != null) {
@@ -386,7 +394,6 @@ public class DbConnection extends ConnectionBase {
       result = null;
       rowDesc = null;
       inflight.poll().onError(error.getMessage());
-      check();
     } else {
       System.out.println("Unhandled message " + msg);
     }
@@ -409,27 +416,6 @@ public class DbConnection extends ConnectionBase {
   protected synchronized void handleException(Throwable t) {
     super.handleException(t);
     close();
-  }
-
-  private void check() {
-    switch (status) {
-      case CLOSING:
-        if (inflight.isEmpty()) {
-          writeToChannel(Terminate.INSTANCE);
-        }
-        break;
-      case CONNECTED:
-        Command cmd = pending.poll();
-        if (cmd != null) {
-          inflight.add(cmd);
-          if(cmd.getClass() == QueryCommand.class) {
-            executeQuery((QueryCommand) cmd);
-          } else if (cmd.getClass() == ExtendedQueryCommand.class) {
-            executeExtendedQuery((ExtendedQueryCommand) cmd);
-          }
-        }
-        break;
-    }
   }
 
   void executeQuery(QueryCommand cmd) {
