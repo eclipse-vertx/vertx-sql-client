@@ -4,19 +4,25 @@ package com.julienviet.pgclient.impl;
 import com.julienviet.pgclient.PostgresBatch;
 import com.julienviet.pgclient.PostgresConnection;
 import com.julienviet.pgclient.PreparedStatement;
+import com.julienviet.pgclient.Result;
 import com.julienviet.pgclient.Row;
 import com.julienviet.pgclient.codec.Column;
+import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.DataType;
+import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.TransactionStatus;
 import com.julienviet.pgclient.codec.decoder.message.AuthenticationClearTextPassword;
 import com.julienviet.pgclient.codec.decoder.message.AuthenticationMD5Password;
+import com.julienviet.pgclient.codec.decoder.message.AuthenticationOk;
 import com.julienviet.pgclient.codec.decoder.message.BackendKeyData;
 import com.julienviet.pgclient.codec.decoder.message.BindComplete;
 import com.julienviet.pgclient.codec.decoder.message.CloseComplete;
 import com.julienviet.pgclient.codec.decoder.message.CommandComplete;
 import com.julienviet.pgclient.codec.decoder.message.DataRow;
+import com.julienviet.pgclient.codec.decoder.message.EmptyQueryResponse;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
 import com.julienviet.pgclient.codec.decoder.message.NoData;
+import com.julienviet.pgclient.codec.decoder.message.NotificationResponse;
 import com.julienviet.pgclient.codec.decoder.message.ParameterDescription;
 import com.julienviet.pgclient.codec.decoder.message.ParameterStatus;
 import com.julienviet.pgclient.codec.decoder.message.ParseComplete;
@@ -24,11 +30,13 @@ import com.julienviet.pgclient.codec.decoder.message.PortalSuspended;
 import com.julienviet.pgclient.codec.decoder.message.ReadyForQuery;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
 import com.julienviet.pgclient.codec.encoder.message.Bind;
+import com.julienviet.pgclient.codec.encoder.message.Describe;
 import com.julienviet.pgclient.codec.encoder.message.Execute;
 import com.julienviet.pgclient.codec.encoder.message.Parse;
 import com.julienviet.pgclient.codec.encoder.message.PasswordMessage;
 import com.julienviet.pgclient.codec.encoder.message.Query;
 import com.julienviet.pgclient.codec.encoder.message.Sync;
+import com.julienviet.pgclient.codec.encoder.message.Terminate;
 import com.julienviet.pgclient.codec.formatter.DateTimeFormatter;
 import com.julienviet.pgclient.codec.formatter.TimeFormatter;
 import com.julienviet.pgclient.codec.util.Util;
@@ -44,15 +52,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.metrics.impl.DummyVertxMetrics;
 import io.vertx.core.net.impl.ConnectionBase;
 import io.vertx.core.spi.metrics.NetworkMetrics;
-import com.julienviet.pgclient.Result;
-import com.julienviet.pgclient.codec.DataFormat;
-import com.julienviet.pgclient.codec.Message;
-import com.julienviet.pgclient.codec.decoder.message.AuthenticationOk;
-import com.julienviet.pgclient.codec.decoder.message.EmptyQueryResponse;
-import com.julienviet.pgclient.codec.decoder.message.NotificationResponse;
-import com.julienviet.pgclient.codec.encoder.message.Close;
-import com.julienviet.pgclient.codec.encoder.message.Describe;
-import com.julienviet.pgclient.codec.encoder.message.Terminate;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -447,9 +446,9 @@ public class DbConnection extends ConnectionBase {
     if (cmd.sql != null) {
       writeToChannel(new Parse(cmd.sql).setStatement(cmd.stmt));
     }
-    writeToChannel(new Bind(Util.paramValues(cmd.params)).setStatement(cmd.stmt).setPortal(""));
+    writeToChannel(new Bind(Util.paramValues(cmd.params)).setStatement(cmd.stmt));
     writeToChannel(new Describe().setStatement(cmd.stmt));
-    writeToChannel(new Execute().setStatement("" /* this is a bug! */).setRowCount(0).setPortal(""));
+    writeToChannel(new Execute().setRowCount(0));
     if (cmd.sync) {
       writeToChannel(Sync.INSTANCE);
     }
