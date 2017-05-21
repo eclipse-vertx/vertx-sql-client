@@ -36,13 +36,9 @@ import java.util.Objects;
 
 public class Execute implements Message {
 
-  private String statement;
   private String portal;
   private int rowCount;
 
-  public String getStatement() {
-    return statement;
-  }
 
   public String getPortal() {
     return portal;
@@ -50,11 +46,6 @@ public class Execute implements Message {
 
   public int getRowCount() {
     return rowCount;
-  }
-
-  public Execute setStatement(String statement) {
-    this.statement = statement;
-    return this;
   }
 
   public Execute setPortal(String portal) {
@@ -73,20 +64,18 @@ public class Execute implements Message {
     if (o == null || getClass() != o.getClass()) return false;
     Execute execute = (Execute) o;
     return rowCount == execute.rowCount &&
-      Objects.equals(statement, execute.statement) &&
       Objects.equals(portal, execute.portal);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(statement, portal, rowCount);
+    return Objects.hash(portal, rowCount);
   }
 
 
   @Override
   public String toString() {
     return "Execute{" +
-      "statement='" + statement + '\'' +
       ", portal='" + portal + '\'' +
       ", rowCount=" + rowCount +
       '}';
