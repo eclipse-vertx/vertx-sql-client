@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -548,16 +549,18 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT '2017-05-14 22:35:58.237666-03'::TIMESTAMPTZ",
-        ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(0, result.getUpdatedRows());
-          ctx.assertEquals(1, result.size());
-          ctx.assertNotNull(result.get(0).get(0));
-          OffsetDateTime offsetDateTime = (OffsetDateTime) result.get(0).get(0);
-          ctx.assertEquals(OffsetDateTime.parse("2017-05-15 04:35:58.237666+03", DateTimeFormatter.TIMESTAMPTZ_FORMAT), offsetDateTime);
-          ctx.assertEquals(32, offsetDateTime.toString().length());
-          async.complete();
-        }));
+      conn.execute("SET TIME ZONE 'UTC'", ctx.asyncAssertSuccess(v -> {
+        conn.execute("SELECT '2017-05-14 22:35:58.237666-03'::TIMESTAMPTZ",
+          ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(0, result.getUpdatedRows());
+            ctx.assertEquals(1, result.size());
+            ctx.assertNotNull(result.get(0).get(0));
+            OffsetDateTime offsetDateTime = (OffsetDateTime) result.get(0).get(0);
+            ctx.assertEquals(OffsetDateTime.parse("2017-05-15 01:35:58.237666+00", DateTimeFormatter.TIMESTAMPTZ_FORMAT), offsetDateTime);
+            ctx.assertEquals(27, offsetDateTime.toString().length());
+            async.complete();
+          }));
+      }));
     }));
   }
 
