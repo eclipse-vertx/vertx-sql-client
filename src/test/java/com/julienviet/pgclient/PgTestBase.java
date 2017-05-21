@@ -785,6 +785,33 @@ public abstract class PgTestBase {
   }
 
   @Test
+  public void testBatchSelect(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      PostgresBatch batch = PostgresBatch.batch();
+      batch.add(5, "A computer program does what you tell it to do, not what you want it to do.");
+      batch.add(5, "A computer program does what you tell it to do, not what you want it to do.");
+      batch.add(5, "A computer program does what you tell it to do, not what you want it to do.");
+      PreparedStatement prepared = conn.prepare("SELECT id, message FROM Fortune WHERE id=$1 AND message =$2");
+      prepared.execute(batch, ctx.asyncAssertSuccess(results -> {
+        ctx.assertEquals(3, results.size());
+        for (int i = 0;i < 3;i++) {
+          Result result = results.get(i);
+          ctx.assertEquals(0, result.getUpdatedRows());
+          ctx.assertEquals(1, result.size());
+          ctx.assertNotNull(result.get(0).get(0));
+          ctx.assertNotNull(result.get(0).get(1));
+          ctx.assertEquals(5, result.get(0).get(0));
+          ctx.assertEquals("A computer program does what you tell it to do, not what you want it to do.",
+            result.get(0).get(1));
+        }
+        async.complete();
+      }));
+    }));
+  }
+
+  @Test
   public void testClose(TestContext ctx) {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);

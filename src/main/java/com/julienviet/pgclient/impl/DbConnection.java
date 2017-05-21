@@ -1,7 +1,9 @@
 package com.julienviet.pgclient.impl;
 
 
+import com.julienviet.pgclient.PostgresBatch;
 import com.julienviet.pgclient.PostgresConnection;
+import com.julienviet.pgclient.PreparedStatement;
 import com.julienviet.pgclient.Row;
 import com.julienviet.pgclient.codec.Column;
 import com.julienviet.pgclient.codec.DataType;
@@ -59,6 +61,7 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -191,6 +194,47 @@ public class DbConnection extends ConnectionBase {
         context.runOnContext(v -> doClose());
       }
     }
+
+    @Override
+    public PreparedStatement prepare(String sql) {
+      return new PreparedStatement() {
+
+        String stmt;
+
+        @Override
+        public void execute(PostgresBatch batch, Handler<AsyncResult<List<Result>>> resultHandler) {
+          if (Vertx.currentContext() == context) {
+            boolean parse;
+            if (stmt == null) {
+              parse = true;
+              stmt = java.util.UUID.randomUUID().toString();
+            } else {
+              parse = false;
+            }
+            BatchImpl batchImpl = (BatchImpl) batch;
+            ArrayList<Result> results = new ArrayList<>();
+            for (int i = 0;i < batchImpl.values.size();i++) {
+              schedule(new BatchExecuteCommand(parse ? sql : null, i + 1 == batchImpl.values.size(), stmt, batchImpl.values.get(i)) {
+                @Override
+                public void onSuccess(Result result) {
+                  results.add(result);
+                  if (results.size() == batchImpl.values.size()) {
+                    resultHandler.handle(Future.succeededFuture(results));
+                  }
+                }
+                @Override
+                public void onError(String message) {
+                  throw new UnsupportedOperationException("Not yet implemented");
+                }
+              });
+              parse = false;
+            }
+          } else {
+            context.runOnContext(v -> execute(batch, resultHandler));
+          }
+        }
+      };
+    }
   };
 
   private void doClose() {
@@ -218,6 +262,8 @@ public class DbConnection extends ConnectionBase {
       executeQuery((QueryCommand) cmd);
     } else if (cmd.getClass() == ExtendedQueryCommand.class) {
       executeExtendedQuery((ExtendedQueryCommand) cmd);
+    } else if (cmd instanceof BatchExecuteCommand) {
+      executeBindDescribeExecute((BatchExecuteCommand) cmd);
     }
   }
 
@@ -301,7 +347,6 @@ public class DbConnection extends ConnectionBase {
   }
 
   void handleMessage(Message msg) {
-
     if (msg.getClass() == AuthenticationMD5Password.class) {
       AuthenticationMD5Password authMD5 = (AuthenticationMD5Password) msg;
       writeToChannel(new PasswordMessage(client.username, client.password, authMD5.getSalt()));
@@ -430,6 +475,18 @@ public class DbConnection extends ConnectionBase {
     writeToChannel(new Execute().setStatement(stmt).setPortal(stmt).setRowCount(0));
     writeToChannel(new Close().setStatement(stmt).setPortal(stmt));
     writeToChannel(Sync.INSTANCE);
+  }
+
+  void executeBindDescribeExecute(BatchExecuteCommand cmd) {
+    if (cmd.sql != null) {
+      writeToChannel(new Parse(cmd.sql).setStatement(cmd.stmt));
+    }
+    writeToChannel(new Bind(Util.paramValues(cmd.params)).setStatement(cmd.stmt).setPortal(""));
+    writeToChannel(new Describe().setStatement(cmd.stmt));
+    writeToChannel(new Execute().setStatement("" /* this is a bug! */).setRowCount(0).setPortal(""));
+    if (cmd.sync) {
+      writeToChannel(Sync.INSTANCE);
+    }
   }
 
   @Override

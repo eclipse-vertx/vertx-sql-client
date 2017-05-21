@@ -33,6 +33,8 @@ public interface PostgresConnection {
 
   void prepareAndExecute(String sql, List<Object> params, Handler<AsyncResult<Result>> handler);
 
+  PreparedStatement prepare(String sql);
+
   void closeHandler(Handler<Void> handler);
 
   void close();

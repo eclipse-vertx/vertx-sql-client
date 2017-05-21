@@ -1,6 +1,7 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PostgresConnectionPool;
+import com.julienviet.pgclient.PreparedStatement;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -183,6 +184,11 @@ class PostgresConnectionPoolImpl implements PostgresConnectionPool {
           if (!closed.get()) {
             closeHandler = handler;
           }
+        }
+
+        @Override
+        public PreparedStatement prepare(String sql) {
+          throw new UnsupportedOperationException("Implement me");
         }
 
         @Override
