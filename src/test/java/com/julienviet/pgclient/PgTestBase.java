@@ -1,7 +1,5 @@
 package com.julienviet.pgclient;
 
-import com.julienviet.pgclient.codec.formatter.DateTimeFormatter;
-import com.julienviet.pgclient.codec.formatter.TimeFormatter;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -30,12 +28,13 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
-import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 
+import static com.julienviet.pgclient.codec.formatter.DateTimeFormatter.*;
+import static com.julienviet.pgclient.codec.formatter.TimeFormatter.*;
 import static ru.yandex.qatools.embed.postgresql.distribution.Version.*;
 
 /**
@@ -95,7 +94,17 @@ public abstract class PgTestBase {
   }
 
   @Test
-  public void testConnectWrongPassword(TestContext ctx) {
+  public void testConnectInvalidDatabase(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, new PostgresClientOptions(options).setDatabase("blah_db"));
+    connector.accept(client, ctx.asyncAssertFailure(conn -> {
+      ctx.assertEquals("database \"blah_db\" does not exist", conn.getMessage());
+      async.complete();
+    }));
+  }
+
+  @Test
+  public void testConnectInvalidPassword(TestContext ctx) {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, new PostgresClientOptions(options).setPassword("incorrect"));
     connector.accept(client, ctx.asyncAssertFailure(conn -> {
@@ -105,7 +114,7 @@ public abstract class PgTestBase {
   }
 
   @Test
-  public void testConnectWrongUsername(TestContext ctx) {
+  public void testConnectInvalidUsername(TestContext ctx) {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, new PostgresClientOptions(options).setUsername("vertx"));
     connector.accept(client, ctx.asyncAssertFailure(conn -> {
@@ -203,18 +212,6 @@ public abstract class PgTestBase {
       conn.execute("DELETE FROM Fortune where id = 6", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.getUpdatedRows());
         ctx.assertEquals(0, result.size());
-        async.complete();
-      }));
-    }));
-  }
-
-  // This is important to prevent the test database use current machine time zone
-  @Test
-  public void testSetTimeZone(TestContext ctx) {
-    Async async = ctx.async();
-    PostgresClient client = PostgresClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SET TIMEZONE = 'Asia/Kuwait'", ctx.asyncAssertSuccess(result -> {
         async.complete();
       }));
     }));
@@ -520,7 +517,7 @@ public abstract class PgTestBase {
           ctx.assertEquals(1, result.size());
           ctx.assertNotNull(result.get(0).get(0));
           OffsetTime offsetTime = (OffsetTime) result.get(0).get(0);
-          ctx.assertEquals(OffsetTime.parse("17:55:04.90512+03:07", TimeFormatter.TIMETZ_FORMAT), offsetTime);
+          ctx.assertEquals(OffsetTime.parse("17:55:04.90512+03:07", TIMETZ_FORMAT), offsetTime);
           ctx.assertEquals(21, offsetTime.toString().length());
           async.complete();
         }));
@@ -537,7 +534,7 @@ public abstract class PgTestBase {
         ctx.assertEquals(1, result.size());
         ctx.assertNotNull(result.get(0).get(0));
         LocalDateTime localDateTime = (LocalDateTime) result.get(0).get(0);
-        ctx.assertEquals(LocalDateTime.parse("2017-05-14 19:35:58.237666", DateTimeFormatter.TIMESTAMP_FORMAT), localDateTime);
+        ctx.assertEquals(LocalDateTime.parse("2017-05-14 19:35:58.237666", TIMESTAMP_FORMAT), localDateTime);
         ctx.assertEquals(26, localDateTime.toString().length());
         async.complete();
       }));
@@ -556,7 +553,7 @@ public abstract class PgTestBase {
             ctx.assertEquals(1, result.size());
             ctx.assertNotNull(result.get(0).get(0));
             OffsetDateTime offsetDateTime = (OffsetDateTime) result.get(0).get(0);
-            ctx.assertEquals(OffsetDateTime.parse("2017-05-15 01:35:58.237666+00", DateTimeFormatter.TIMESTAMPTZ_FORMAT), offsetDateTime);
+            ctx.assertEquals(OffsetDateTime.parse("2017-05-15 01:35:58.237666+00", TIMESTAMPTZ_FORMAT), offsetDateTime);
             ctx.assertEquals(27, offsetDateTime.toString().length());
             async.complete();
           }));
