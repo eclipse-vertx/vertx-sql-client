@@ -806,7 +806,9 @@ public abstract class PgTestBase {
           ctx.assertEquals("A computer program does what you tell it to do, not what you want it to do.",
             result.get(0).get(1));
         }
-        async.complete();
+        prepared.close(ctx.asyncAssertSuccess(result -> {
+          async.complete();
+        }));
       }));
     }));
   }

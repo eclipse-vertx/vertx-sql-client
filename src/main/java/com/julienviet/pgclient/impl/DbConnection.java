@@ -30,6 +30,7 @@ import com.julienviet.pgclient.codec.decoder.message.PortalSuspended;
 import com.julienviet.pgclient.codec.decoder.message.ReadyForQuery;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
 import com.julienviet.pgclient.codec.encoder.message.Bind;
+import com.julienviet.pgclient.codec.encoder.message.Close;
 import com.julienviet.pgclient.codec.encoder.message.Describe;
 import com.julienviet.pgclient.codec.encoder.message.Execute;
 import com.julienviet.pgclient.codec.encoder.message.Parse;
@@ -177,7 +178,13 @@ public class DbConnection extends ConnectionBase {
     public PreparedStatement prepare(String sql) {
       return new PreparedStatement() {
 
+        boolean closed;
         String stmt;
+
+        @Override
+        public String name() {
+          return stmt;
+        }
 
         @Override
         public void execute(PostgresBatch batch, Handler<AsyncResult<List<Result>>> resultHandler) {
@@ -185,7 +192,7 @@ public class DbConnection extends ConnectionBase {
             boolean parse;
             if (stmt == null) {
               parse = true;
-              stmt = java.util.UUID.randomUUID().toString();
+              stmt = java.util.UUID.randomUUID().toString().replace('-', '_');
             } else {
               parse = false;
             }
@@ -209,6 +216,31 @@ public class DbConnection extends ConnectionBase {
             }
           } else {
             context.runOnContext(v -> execute(batch, resultHandler));
+          }
+        }
+
+        @Override
+        public void close() {
+          close(ar -> {});
+        }
+
+        @Override
+        public void close(Handler<AsyncResult<Void>> completionHandler) {
+          if (Vertx.currentContext() == context) {
+            if (closed) {
+              completionHandler.handle(Future.failedFuture("Already closed"));
+            } else {
+              closed = true;
+              if (stmt == null) {
+                completionHandler.handle(Future.succeededFuture());
+              } else {
+                schedule(new CloseStatementCommand(stmt, completionHandler));
+              }
+            }
+          } else {
+            context.runOnContext(v -> {
+              close(completionHandler);
+            });
           }
         }
       };
@@ -240,6 +272,8 @@ public class DbConnection extends ConnectionBase {
       executeQuery((QueryCommand) cmd);
     } else if (cmd instanceof BatchExecuteCommand) {
       executeBindDescribeExecute((BatchExecuteCommand) cmd);
+    } else if (cmd instanceof CloseStatementCommand) {
+      executeCloseStatement((CloseStatementCommand) cmd);
     }
   }
 
@@ -343,7 +377,7 @@ public class DbConnection extends ConnectionBase {
     } else if (msg.getClass() == BindComplete.class) {
 
     } else if (msg.getClass() == CloseComplete.class) {
-
+      inflight.poll().onSuccess(null);
     } else if (msg.getClass() == EmptyQueryResponse.class) {
 
     } else if (msg.getClass() == ParameterDescription.class) {
@@ -452,6 +486,11 @@ public class DbConnection extends ConnectionBase {
     if (cmd.sync) {
       writeToChannel(Sync.INSTANCE);
     }
+  }
+
+  void executeCloseStatement(CloseStatementCommand cmd) {
+    writeToChannel(new Close().setStatement(cmd.stmt));
+    writeToChannel(Sync.INSTANCE);
   }
 
   @Override
