@@ -162,7 +162,7 @@ public class MessageEncoder extends MessageToByteEncoder<Message> {
     Execute execute = (Execute) message;
     out.writeByte(EXECUTE);
     out.writeInt(0);
-    Util.writeCStringUTF8(out, execute.getStatement() != null ? execute.getStatement() : "");
+    Util.writeCStringUTF8(out, execute.getPortal() != null ? execute.getPortal() : "");
     out.writeInt(execute.getRowCount()); // Zero denotes "no limit" maybe for ReadStream<Row>
     out.setInt(1, out.writerIndex() - 1);
   }
