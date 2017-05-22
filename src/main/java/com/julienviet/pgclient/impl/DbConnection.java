@@ -98,11 +98,7 @@ public class DbConnection extends ConnectionBase {
     @Override
     public void execute(String sql, Handler<AsyncResult<Result>> handler) {
       Command cmd = new QueryCommand(sql, handler);
-      if (Vertx.currentContext() == context) {
-        schedule(cmd);
-      } else {
-        context.runOnContext(v -> schedule(cmd));
-      }
+      schedule(cmd);
     }
 
     @Override
@@ -151,11 +147,7 @@ public class DbConnection extends ConnectionBase {
           handler.handle(Future.failedFuture(message));
         }
       };
-      if (Vertx.currentContext() == context) {
-        schedule(cmd);
-      } else {
-        context.runOnContext(v -> schedule(cmd));
-      }
+      schedule(cmd);
     }
     @Override
     public void closeHandler(Handler<Void> handler) {
@@ -167,11 +159,7 @@ public class DbConnection extends ConnectionBase {
     }
     @Override
     public void close() {
-      if (Vertx.currentContext() == context) {
-        doClose();
-      } else {
-        context.runOnContext(v -> doClose());
-      }
+      doClose();
     }
 
     @Override
@@ -248,21 +236,29 @@ public class DbConnection extends ConnectionBase {
   };
 
   private void doClose() {
-    if (status == Status.CONNECTED) {
-      status = Status.CLOSING;
-      writeToChannel(Terminate.INSTANCE);
+    if (Vertx.currentContext() == context) {
+      if (status == Status.CONNECTED) {
+        status = Status.CLOSING;
+        writeToChannel(Terminate.INSTANCE);
+      }
+    } else {
+      context.runOnContext(v -> doClose());
     }
   }
 
   void schedule(Command cmd) {
-    if (status == Status.CONNECTED) {
-      if (inflight.size() < client.pipeliningLimit) {
-        execute(cmd);
+    if (Vertx.currentContext() == context) {
+      if (status == Status.CONNECTED) {
+        if (inflight.size() < client.pipeliningLimit) {
+          execute(cmd);
+        } else {
+          pending.add(cmd);
+        }
       } else {
-        pending.add(cmd);
+        cmd.onError("Connection not open " + status);
       }
     } else {
-      cmd.onError("Connection not open " + status);
+      context.runOnContext(v -> schedule(cmd));
     }
   }
 
