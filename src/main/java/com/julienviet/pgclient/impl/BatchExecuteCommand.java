@@ -1,7 +1,5 @@
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.Result;
-
 import java.util.List;
 
 /**
@@ -10,15 +8,13 @@ import java.util.List;
 public abstract class BatchExecuteCommand implements Command {
 
 
-  final String sql;
+  final PreparedStatementImpl ps;
   final boolean sync;
-  final String stmt;
   final List<Object> params;
 
-  public BatchExecuteCommand(String sql, boolean sync, String stmt, List<Object> params) {
-    this.sql = sql;
+  public BatchExecuteCommand(PreparedStatementImpl ps, boolean sync, List<Object> params) {
+    this.ps = ps;
     this.sync = sync;
-    this.stmt = stmt;
     this.params = params;
   }
 }

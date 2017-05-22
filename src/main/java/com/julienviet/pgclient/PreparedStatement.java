@@ -10,8 +10,6 @@ import java.util.List;
  */
 public interface PreparedStatement {
 
-  String name();
-
   void execute(PostgresBatch batch, Handler<AsyncResult<List<Result>>> resultHandler);
 
   void close();

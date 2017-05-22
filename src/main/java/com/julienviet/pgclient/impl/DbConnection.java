@@ -1,9 +1,7 @@
 package com.julienviet.pgclient.impl;
 
 
-import com.julienviet.pgclient.PostgresBatch;
 import com.julienviet.pgclient.PostgresConnection;
-import com.julienviet.pgclient.PreparedStatement;
 import com.julienviet.pgclient.Result;
 import com.julienviet.pgclient.Row;
 import com.julienviet.pgclient.codec.Column;
@@ -61,9 +59,7 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import static java.nio.charset.StandardCharsets.*;
 
@@ -94,148 +90,9 @@ public class DbConnection extends ConnectionBase {
     this.client = client;
   }
 
-  final PostgresConnection conn = new PostgresConnection() {
-    @Override
-    public void execute(String sql, Handler<AsyncResult<Result>> handler) {
-      Command cmd = new QueryCommand(sql, handler);
-      schedule(cmd);
-    }
+  final PostgresConnection conn = new PostgresConnectionImpl(this);
 
-    @Override
-    public void prepareAndExecute(String sql, Object param, Handler<AsyncResult<Result>> handler) {
-      prepareAndExecute(sql, Arrays.asList(param), handler);
-    }
-
-    @Override
-    public void prepareAndExecute(String sql, Object param1, Object param2, Handler<AsyncResult<Result>> handler) {
-      prepareAndExecute(sql, Arrays.asList(param1, param2), handler);
-    }
-
-    @Override
-    public void prepareAndExecute(String sql, Object param1, Object param2, Object param3,
-                                  Handler<AsyncResult<Result>> handler) {
-      prepareAndExecute(sql, Arrays.asList(param1, param2, param3), handler);
-    }
-
-    @Override
-    public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4,
-                                  Handler<AsyncResult<Result>> handler) {
-      prepareAndExecute(sql, Arrays.asList(param1, param2, param3, param4), handler);
-    }
-
-    @Override
-    public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4, Object param5,
-                                  Handler<AsyncResult<Result>> handler) {
-      prepareAndExecute(sql, Arrays.asList(param1, param2, param3, param4, param5), handler);
-    }
-
-    @Override
-    public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4, Object param5,
-                                  Object param6, Handler<AsyncResult<Result>> handler) {
-      prepareAndExecute(sql, Arrays.asList(param1, param2, param3, param4, param5, param6), handler);
-    }
-
-    @Override
-    public void prepareAndExecute(String sql, List<Object> params, Handler<AsyncResult<Result>> handler) {
-      Command cmd = new BatchExecuteCommand(sql, true, "", params) {
-        @Override
-        public void onSuccess(Result result) {
-          handler.handle(Future.succeededFuture(result));
-        }
-        @Override
-        public void onError(String message) {
-          handler.handle(Future.failedFuture(message));
-        }
-      };
-      schedule(cmd);
-    }
-    @Override
-    public void closeHandler(Handler<Void> handler) {
-      DbConnection.this.closeHandler(handler);
-    }
-    @Override
-    public void exceptionHandler(Handler<Throwable> handler) {
-      DbConnection.this.exceptionHandler(handler);
-    }
-    @Override
-    public void close() {
-      doClose();
-    }
-
-    @Override
-    public PreparedStatement prepare(String sql) {
-      return new PreparedStatement() {
-
-        boolean closed;
-        String stmt;
-
-        @Override
-        public String name() {
-          return stmt;
-        }
-
-        @Override
-        public void execute(PostgresBatch batch, Handler<AsyncResult<List<Result>>> resultHandler) {
-          if (Vertx.currentContext() == context) {
-            boolean parse;
-            if (stmt == null) {
-              parse = true;
-              stmt = java.util.UUID.randomUUID().toString().replace('-', '_');
-            } else {
-              parse = false;
-            }
-            BatchImpl batchImpl = (BatchImpl) batch;
-            ArrayList<Result> results = new ArrayList<>();
-            for (int i = 0;i < batchImpl.values.size();i++) {
-              schedule(new BatchExecuteCommand(parse ? sql : null, i + 1 == batchImpl.values.size(), stmt, batchImpl.values.get(i)) {
-                @Override
-                public void onSuccess(Result result) {
-                  results.add(result);
-                  if (results.size() == batchImpl.values.size()) {
-                    resultHandler.handle(Future.succeededFuture(results));
-                  }
-                }
-                @Override
-                public void onError(String message) {
-                  throw new UnsupportedOperationException("Not yet implemented");
-                }
-              });
-              parse = false;
-            }
-          } else {
-            context.runOnContext(v -> execute(batch, resultHandler));
-          }
-        }
-
-        @Override
-        public void close() {
-          close(ar -> {});
-        }
-
-        @Override
-        public void close(Handler<AsyncResult<Void>> completionHandler) {
-          if (Vertx.currentContext() == context) {
-            if (closed) {
-              completionHandler.handle(Future.failedFuture("Already closed"));
-            } else {
-              closed = true;
-              if (stmt == null) {
-                completionHandler.handle(Future.succeededFuture());
-              } else {
-                schedule(new CloseStatementCommand(stmt, completionHandler));
-              }
-            }
-          } else {
-            context.runOnContext(v -> {
-              close(completionHandler);
-            });
-          }
-        }
-      };
-    }
-  };
-
-  private void doClose() {
+  void doClose() {
     if (Vertx.currentContext() == context) {
       if (status == Status.CONNECTED) {
         status = Status.CLOSING;
@@ -263,13 +120,13 @@ public class DbConnection extends ConnectionBase {
   }
 
   void execute(Command cmd) {
-    inflight.add(cmd);
     if(cmd.getClass() == QueryCommand.class) {
       executeQuery((QueryCommand) cmd);
     } else if (cmd instanceof BatchExecuteCommand) {
       executeBindDescribeExecute((BatchExecuteCommand) cmd);
     } else if (cmd instanceof CloseStatementCommand) {
-      executeCloseStatement((CloseStatementCommand) cmd);
+      CloseStatementCommand close = (CloseStatementCommand) cmd;
+      executeCloseStatement(close);
     }
   }
 
@@ -469,15 +326,19 @@ public class DbConnection extends ConnectionBase {
   }
 
   void executeQuery(QueryCommand cmd) {
+    inflight.add(cmd);
     writeToChannel(new Query(cmd.getSql()));
   }
 
   void executeBindDescribeExecute(BatchExecuteCommand cmd) {
-    if (cmd.sql != null) {
-      writeToChannel(new Parse(cmd.sql).setStatement(cmd.stmt));
+    inflight.add(cmd);
+    PreparedStatementImpl ps = cmd.ps;
+    if (!ps.parsed) {
+      ps.parsed = true;
+      writeToChannel(new Parse(ps.sql).setStatement(ps.stmt));
     }
-    writeToChannel(new Bind(Util.paramValues(cmd.params)).setStatement(cmd.stmt));
-    writeToChannel(new Describe().setStatement(cmd.stmt));
+    writeToChannel(new Bind(Util.paramValues(cmd.params)).setStatement(ps.stmt));
+    writeToChannel(new Describe().setStatement(ps.stmt));
     writeToChannel(new Execute().setRowCount(0));
     if (cmd.sync) {
       writeToChannel(Sync.INSTANCE);
@@ -485,8 +346,14 @@ public class DbConnection extends ConnectionBase {
   }
 
   void executeCloseStatement(CloseStatementCommand cmd) {
-    writeToChannel(new Close().setStatement(cmd.stmt));
-    writeToChannel(Sync.INSTANCE);
+    PreparedStatementImpl ps = cmd.ps;
+    if (ps.parsed) {
+      inflight.add(cmd);
+      writeToChannel(new Close().setStatement(ps.stmt));
+      writeToChannel(Sync.INSTANCE);
+    } else {
+      handler.handle(Future.succeededFuture());
+    }
   }
 
   @Override
@@ -498,4 +365,5 @@ public class DbConnection extends ConnectionBase {
   protected void handleInterestedOpsChanged() {
 
   }
+
 }

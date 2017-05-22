@@ -10,11 +10,11 @@ import io.vertx.core.Handler;
  */
 public class CloseStatementCommand implements Command {
 
-  final String stmt;
+  final PreparedStatementImpl ps;
   final Handler<AsyncResult<Void>> handler;
 
-  public CloseStatementCommand(String stmt, Handler<AsyncResult<Void>> handler) {
-    this.stmt = stmt;
+  public CloseStatementCommand(PreparedStatementImpl ps, Handler<AsyncResult<Void>> handler) {
+    this.ps = ps;
     this.handler = handler;
   }
 
