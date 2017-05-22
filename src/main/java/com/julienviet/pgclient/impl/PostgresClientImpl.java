@@ -21,6 +21,8 @@ import com.julienviet.pgclient.PostgresConnection;
 import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.decoder.MessageDecoder;
 import com.julienviet.pgclient.codec.encoder.message.StartupMessage;
+import io.vertx.ext.sql.SQLClient;
+import io.vertx.ext.sql.SQLConnection;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -61,6 +63,30 @@ public class PostgresClientImpl extends NetClientBase<DbConnection> implements P
         completionHandler.handle(Future.failedFuture(ar1.cause()));
       }
     });
+  }
+
+  @Override
+  public SQLClient getConnection(Handler<AsyncResult<SQLConnection>> handler) {
+    doConnect(port, host, null, ar1 -> {
+      if (ar1.succeeded()) {
+        DbConnection conn = ar1.result();
+        conn.init(username, database, ar2 -> {
+          if (ar2.succeeded()) {
+            handler.handle(Future.succeededFuture(new PostgresSQLConnection(ar2.result())));
+          } else {
+            handler.handle(Future.failedFuture(ar2.cause()));
+          }
+        });
+      } else {
+        handler.handle(Future.failedFuture(ar1.cause()));
+      }
+    });
+    return this;
+  }
+
+  @Override
+  public void close(Handler<AsyncResult<Void>> handler) {
+    throw new UnsupportedOperationException("Implement me");
   }
 
   @Override
