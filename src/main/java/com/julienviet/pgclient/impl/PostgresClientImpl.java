@@ -47,13 +47,18 @@ public class PostgresClientImpl extends NetClientBase<DbConnection> implements P
   }
 
   public void connect(Handler<AsyncResult<PostgresConnection>> completionHandler) {
-    doConnect(port, host, null, ar -> {
-      if (ar.succeeded()) {
-        DbConnection conn = ar.result();
-        conn.handler = completionHandler;
-        conn.writeToChannel(new StartupMessage(username, database));
+    doConnect(port, host, null, ar1 -> {
+      if (ar1.succeeded()) {
+        DbConnection conn = ar1.result();
+        conn.init(username, database, ar2 -> {
+          if (ar2.succeeded()) {
+            completionHandler.handle(Future.succeededFuture(new PostgresConnectionImpl(ar2.result())));
+          } else {
+            completionHandler.handle(Future.failedFuture(ar2.cause()));
+          }
+        });
       } else {
-        completionHandler.handle(Future.failedFuture(ar.cause()));
+        completionHandler.handle(Future.failedFuture(ar1.cause()));
       }
     });
   }

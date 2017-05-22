@@ -34,6 +34,7 @@ import com.julienviet.pgclient.codec.encoder.message.Execute;
 import com.julienviet.pgclient.codec.encoder.message.Parse;
 import com.julienviet.pgclient.codec.encoder.message.PasswordMessage;
 import com.julienviet.pgclient.codec.encoder.message.Query;
+import com.julienviet.pgclient.codec.encoder.message.StartupMessage;
 import com.julienviet.pgclient.codec.encoder.message.Sync;
 import com.julienviet.pgclient.codec.encoder.message.Terminate;
 import com.julienviet.pgclient.codec.formatter.DateTimeFormatter;
@@ -77,7 +78,6 @@ public class DbConnection extends ConnectionBase {
   private final ArrayDeque<Command> inflight = new ArrayDeque<>();
   private final ArrayDeque<Command> pending = new ArrayDeque<>();
   final PostgresClientImpl client;
-  Handler<AsyncResult<PostgresConnection>> handler;
   private RowDescription rowDesc;
   private Result result;
   private Status status = Status.CONNECTED;
@@ -91,6 +91,10 @@ public class DbConnection extends ConnectionBase {
   }
 
   final PostgresConnection conn = new PostgresConnectionImpl(this);
+
+  void init(String username, String database, Handler<AsyncResult<DbConnection>> completionHandler) {
+    execute(new StartupCommand(username, database, completionHandler));
+  }
 
   void doClose() {
     if (Vertx.currentContext() == context) {
@@ -125,8 +129,9 @@ public class DbConnection extends ConnectionBase {
     } else if (cmd instanceof BatchExecuteCommand) {
       executeBindDescribeExecute((BatchExecuteCommand) cmd);
     } else if (cmd instanceof CloseStatementCommand) {
-      CloseStatementCommand close = (CloseStatementCommand) cmd;
-      executeCloseStatement(close);
+      executeCloseStatement((CloseStatementCommand) cmd);
+    } else if (cmd instanceof StartupCommand) {
+      executeStartup((StartupCommand) cmd);
     }
   }
 
@@ -240,11 +245,10 @@ public class DbConnection extends ConnectionBase {
       // We should make sure we are supporting only UTF8
       // https://www.postgresql.org/docs/9.5/static/multibyte.html#MULTIBYTE-CHARSET-SUPPORTED
       if(!CLIENT_ENCODING.equals(UTF8)) {
-        handler.handle(Future.failedFuture(CLIENT_ENCODING + " is not supported in the client only " + UTF8));
+        inflight.poll().onError(CLIENT_ENCODING + " is not supported in the client only " + UTF8);
       } else {
-        handler.handle(Future.succeededFuture(conn));
+        inflight.poll().onSuccess(this);
       }
-      handler = null;
     } else if (msg.getClass() == NotificationResponse.class) {
 
     } else if (msg.getClass() == ParameterStatus.class) {
@@ -292,12 +296,14 @@ public class DbConnection extends ConnectionBase {
       inflight.poll().onSuccess(r);
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
+/*
       if (handler != null) {
         handler.handle(Future.failedFuture(error.getMessage()));
         handler = null;
         close();
         return;
       }
+*/
       result = null;
       rowDesc = null;
       inflight.poll().onError(error.getMessage());
@@ -352,8 +358,13 @@ public class DbConnection extends ConnectionBase {
       writeToChannel(new Close().setStatement(ps.stmt));
       writeToChannel(Sync.INSTANCE);
     } else {
-      handler.handle(Future.succeededFuture());
+      cmd.onSuccess(null);
     }
+  }
+
+  void executeStartup(StartupCommand cmd) {
+    inflight.add(cmd);
+    writeToChannel(new StartupMessage(cmd.username, cmd.database));
   }
 
   @Override
