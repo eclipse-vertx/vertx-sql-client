@@ -9,7 +9,7 @@ import com.julienviet.pgclient.Result;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
-public class QueryCommand implements Command {
+public class QueryCommand implements Command<Result> {
 
   private final String sql;
   final Handler<AsyncResult<Result>> handler;

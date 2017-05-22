@@ -8,7 +8,7 @@ import io.vertx.core.Handler;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class CloseStatementCommand implements Command {
+public class CloseStatementCommand implements Command<Void> {
 
   final PreparedStatementImpl ps;
   final Handler<AsyncResult<Void>> handler;
@@ -19,7 +19,7 @@ public class CloseStatementCommand implements Command {
   }
 
   @Override
-  public void onSuccess(Result result) {
+  public void onSuccess(Void result) {
     handler.handle(Future.succeededFuture());
   }
 

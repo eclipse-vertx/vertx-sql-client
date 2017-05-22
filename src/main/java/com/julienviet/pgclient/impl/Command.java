@@ -1,12 +1,10 @@
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.Result;
-
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
-public interface Command {
-  void onSuccess(Result result);
+public interface Command<T> {
+  void onSuccess(T result);
   void onError(String message);
 }
