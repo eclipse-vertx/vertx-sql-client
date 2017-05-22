@@ -7,7 +7,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -31,23 +30,7 @@ class PreparedStatementImpl implements PreparedStatement {
   @Override
   public void execute(PostgresBatch batch, Handler<AsyncResult<List<Result>>> resultHandler) {
     BatchImpl batchImpl = (BatchImpl) batch;
-    ArrayList<Result> results = new ArrayList<>();
-    for (int i = 0; i < batchImpl.values.size(); i++) {
-      conn.schedule(new BatchExecuteCommand(this, i + 1 == batchImpl.values.size(), batchImpl.values.get(i)) {
-        @Override
-        public void onSuccess(Result result) {
-          results.add(result);
-          if (results.size() == batchImpl.values.size()) {
-            resultHandler.handle(Future.succeededFuture(results));
-          }
-        }
-
-        @Override
-        public void onError(String message) {
-          throw new UnsupportedOperationException("Not yet implemented");
-        }
-      });
-    }
+    conn.schedule(new PreparedQueryCommand(this, batchImpl.values, resultHandler));
   }
 
   @Override

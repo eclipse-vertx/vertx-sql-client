@@ -52,7 +52,7 @@ public class PostgresClientImpl extends NetClientBase<DbConnection> implements P
     doConnect(port, host, null, ar1 -> {
       if (ar1.succeeded()) {
         DbConnection conn = ar1.result();
-        conn.init(username, database, ar2 -> {
+        conn.init(username, password, database, ar2 -> {
           if (ar2.succeeded()) {
             completionHandler.handle(Future.succeededFuture(new PostgresConnectionImpl(ar2.result())));
           } else {
@@ -70,7 +70,7 @@ public class PostgresClientImpl extends NetClientBase<DbConnection> implements P
     doConnect(port, host, null, ar1 -> {
       if (ar1.succeeded()) {
         DbConnection conn = ar1.result();
-        conn.init(username, database, ar2 -> {
+        conn.init(username, password, database, ar2 -> {
           if (ar2.succeeded()) {
             handler.handle(Future.succeededFuture(new PostgresSQLConnection(ar2.result())));
           } else {

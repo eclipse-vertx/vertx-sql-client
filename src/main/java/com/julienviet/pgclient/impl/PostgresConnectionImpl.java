@@ -4,10 +4,10 @@ import com.julienviet.pgclient.PostgresConnection;
 import com.julienviet.pgclient.PreparedStatement;
 import com.julienviet.pgclient.Result;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -22,7 +22,7 @@ class PostgresConnectionImpl implements PostgresConnection {
 
   @Override
   public void execute(String sql, Handler<AsyncResult<Result>> handler) {
-    Command cmd = new QueryCommand(sql, handler);
+    CommandBase cmd = new QueryCommand(sql, handler);
     dbConnection.schedule(cmd);
   }
 
@@ -63,17 +63,9 @@ class PostgresConnectionImpl implements PostgresConnection {
   @Override
   public void prepareAndExecute(String sql, List<Object> params, Handler<AsyncResult<Result>> handler) {
     PreparedStatementImpl ps = new PreparedStatementImpl(dbConnection, sql, "");
-    Command cmd = new BatchExecuteCommand(ps, true, params) {
-      @Override
-      public void onSuccess(Result result) {
-        handler.handle(Future.succeededFuture(result));
-      }
-
-      @Override
-      public void onError(String message) {
-        handler.handle(Future.failedFuture(message));
-      }
-    };
+    CommandBase cmd = new PreparedQueryCommand(ps, Collections.singletonList(params), ar -> {
+      handler.handle(ar.map(results -> results.get(0)));
+    });
     dbConnection.schedule(cmd);
   }
 
