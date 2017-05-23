@@ -6,7 +6,7 @@ import com.julienviet.pgclient.codec.encoder.message.Query;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import com.julienviet.pgclient.Result;
+import io.vertx.ext.sql.ResultSet;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -15,9 +15,9 @@ import com.julienviet.pgclient.Result;
 class QueryCommand extends QueryCommandBase {
 
   private final String sql;
-  private final Handler<AsyncResult<Result>> handler;
+  private final Handler<AsyncResult<ResultSet>> handler;
 
-  QueryCommand(String sql, Handler<AsyncResult<Result>> handler) {
+  QueryCommand(String sql, Handler<AsyncResult<ResultSet>> handler) {
     this.handler = handler;
     this.sql = sql;
   }
@@ -38,7 +38,7 @@ class QueryCommand extends QueryCommandBase {
   }
 
   @Override
-  void handleResult(Result result) {
+  void handleResult(ResultSet result) {
     handler.handle(Future.succeededFuture(result));
   }
 
