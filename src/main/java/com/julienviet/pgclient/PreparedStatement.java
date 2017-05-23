@@ -2,6 +2,7 @@ package com.julienviet.pgclient;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.ext.sql.ResultSet;
 
 import java.util.List;
 
@@ -10,7 +11,7 @@ import java.util.List;
  */
 public interface PreparedStatement {
 
-  void execute(PostgresBatch batch, Handler<AsyncResult<List<Result>>> resultHandler);
+  void execute(PostgresBatch batch, Handler<AsyncResult<List<ResultSet>>> resultHandler);
 
   void close();
 
