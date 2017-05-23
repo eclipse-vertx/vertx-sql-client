@@ -1,7 +1,5 @@
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.Result;
-import com.julienviet.pgclient.Row;
 import com.julienviet.pgclient.codec.Column;
 import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.DataType;
@@ -10,10 +8,9 @@ import com.julienviet.pgclient.codec.decoder.message.CommandComplete;
 import com.julienviet.pgclient.codec.decoder.message.DataRow;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
-import com.julienviet.pgclient.codec.formatter.DateTimeFormatter;
-import com.julienviet.pgclient.codec.formatter.TimeFormatter;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.sql.ResultSet;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -21,8 +18,14 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.util.ArrayList;
+import java.util.List;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static com.julienviet.pgclient.codec.DataType.*;
+import static com.julienviet.pgclient.codec.decoder.message.type.CommandCompleteType.*;
+import static com.julienviet.pgclient.codec.formatter.DateTimeFormatter.*;
+import static com.julienviet.pgclient.codec.formatter.TimeFormatter.*;
+import static java.nio.charset.StandardCharsets.*;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -31,46 +34,55 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 abstract class QueryCommandBase extends CommandBase {
 
   private RowDescription rowDesc;
-  private Result result;
+  private ResultSet resultSet;
+  private List<String> columnNames;
+  private List<JsonArray> results;
 
   @Override
   public boolean handleMessage(Message msg) {
     if (msg.getClass() == RowDescription.class) {
       rowDesc = (RowDescription) msg;
-      result = new Result();
+      resultSet = new ResultSet();
+      results = new ArrayList<>();
       return false;
     } else if (msg.getClass() == DataRow.class) {
       DataRow dataRow = (DataRow) msg;
       Column[] columns = rowDesc.getColumns();
-      Row row = new Row();
+      columnNames = new ArrayList<>(columns.length);
+      JsonArray crow = new JsonArray();
       for (int i = 0; i < columns.length; i++) {
         Column columnDesc = columns[i];
+        columnNames.add(columnDesc.getName());
         DataFormat dataFormat = columnDesc.getDataFormat();
         DataType dataType = columnDesc.getDataType();
         byte[] data = dataRow.getValue(i);
         switch (dataFormat) {
           case TEXT: {
-            handleText(dataType, data, row);
+            handleText(dataType, data, crow);
           }
           break;
           case BINARY: {
-            handleBinary(dataType, data, row);
+            handleBinary(dataType, data, crow);
           }
           break;
         }
       }
-      result.add(row);
+      // vertx common
+      results.add(crow);
+      resultSet.setColumnNames(columnNames);
+      resultSet.setResults(results);
       return false;
     } else if (msg.getClass() == CommandComplete.class) {
       CommandComplete complete = (CommandComplete) msg;
-      Result r = result;
-      result = null;
       rowDesc = null;
-      if (r == null) {
-        r = new Result();
+      if(complete.getCommand().equals(SELECT)) {
+        ResultSet r = resultSet;
+        resultSet = null;
+        if (r == null) {
+          r = new ResultSet();
+        }
+        handleResult(r);
       }
-      r.setUpdatedRows(complete.getRowsAffected());
-      handleResult(r);
       return false;
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
@@ -81,16 +93,20 @@ abstract class QueryCommandBase extends CommandBase {
     }
   }
 
-  private void handleText(DataType type, byte[] data, Row row) {
+  private void handleBinary(DataType dataType, byte[] d, JsonArray crow) {
+
+  }
+
+  private void handleText(DataType type, byte[] data, JsonArray row) {
     if(data == null) {
-      row.add(null);
+      row.addNull();
       return;
     }
-    if(type == DataType.CHAR) {
+    if(type == CHAR) {
       row.add((char) data[0]);
       return;
     }
-    if(type == DataType.BOOL) {
+    if(type == BOOL) {
       if(data[0] == 't') {
         row.add(true);
       } else {
@@ -116,16 +132,13 @@ abstract class QueryCommandBase extends CommandBase {
         row.add(Double.parseDouble(value));
         break;
       case NUMERIC:
-        row.add(new BigDecimal(value));
-        break;
-      case BPCHAR:
-      case VARCHAR:
-      case NAME:
-      case TEXT:
-        row.add(value);
-        break;
-      case UUID:
-        row.add(java.util.UUID.fromString(value));
+        BigDecimal big = new BigDecimal(value);
+        if (big.scale() == 0) {
+          row.add(big.toBigInteger());
+        } else {
+          // we might loose precision here
+          row.add(big.doubleValue());
+        }
         break;
       case DATE:
         row.add(LocalDate.parse(value));
@@ -134,13 +147,13 @@ abstract class QueryCommandBase extends CommandBase {
         row.add(LocalTime.parse(value));
         break;
       case TIMETZ:
-        row.add(OffsetTime.parse(value, TimeFormatter.TIMETZ_FORMAT));
+        row.add(OffsetTime.parse(value, TIMETZ_FORMAT));
         break;
       case TIMESTAMP:
-        row.add(LocalDateTime.parse(value, DateTimeFormatter.TIMESTAMP_FORMAT));
+        row.add(LocalDateTime.parse(value, TIMESTAMP_FORMAT));
         break;
       case TIMESTAMPTZ:
-        row.add(OffsetDateTime.parse(value, DateTimeFormatter.TIMESTAMPTZ_FORMAT));
+        row.add(OffsetDateTime.parse(value, TIMESTAMPTZ_FORMAT));
         break;
       case JSON:
       case JSONB:
@@ -150,17 +163,18 @@ abstract class QueryCommandBase extends CommandBase {
           row.add(new JsonArray(value));
         }
         break;
+      case BPCHAR:
+      case VARCHAR:
+      case NAME:
+      case TEXT:
+      case UUID:
       default:
-        System.out.println("unsupported " + type);
+        row.add(value);
         break;
     }
   }
 
-  private void handleBinary(DataType type, byte[] data, Row row) {
-
-  }
-
-  abstract void handleResult(Result result);
+  abstract void handleResult(ResultSet resultSet);
 
   abstract void fail(Throwable cause);
 }
