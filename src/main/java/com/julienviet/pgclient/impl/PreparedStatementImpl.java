@@ -2,10 +2,10 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PostgresBatch;
 import com.julienviet.pgclient.PreparedStatement;
-import com.julienviet.pgclient.Result;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.ext.sql.ResultSet;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,7 +28,7 @@ class PreparedStatementImpl implements PreparedStatement {
   }
 
   @Override
-  public void execute(PostgresBatch batch, Handler<AsyncResult<List<Result>>> resultHandler) {
+  public void execute(PostgresBatch batch, Handler<AsyncResult<List<ResultSet>>> resultHandler) {
     BatchImpl batchImpl = (BatchImpl) batch;
     conn.schedule(new PreparedQueryCommand(this, batchImpl.values, resultHandler));
   }
