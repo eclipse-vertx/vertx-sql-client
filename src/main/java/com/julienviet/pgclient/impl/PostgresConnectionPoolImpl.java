@@ -1,5 +1,6 @@
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.PostgresConnection;
 import com.julienviet.pgclient.PostgresConnectionPool;
 import com.julienviet.pgclient.PreparedStatement;
 import io.vertx.core.AsyncResult;
@@ -7,8 +8,8 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import com.julienviet.pgclient.PostgresConnection;
-import com.julienviet.pgclient.Result;
+import io.vertx.ext.sql.ResultSet;
+import io.vertx.ext.sql.UpdateResult;
 
 import java.util.ArrayDeque;
 import java.util.List;
@@ -113,60 +114,123 @@ class PostgresConnectionPoolImpl implements PostgresConnectionPool {
         final AtomicBoolean closed = new AtomicBoolean();
 
         @Override
-        public void execute(String sql, Handler<AsyncResult<Result>> handler) {
+        public void execute(String sql, Handler<AsyncResult<ResultSet>> handler) {
           if (!closed.get()) {
             conn.execute(sql, handler);
           }
         }
 
         @Override
-        public void prepareAndExecute(String sql, Object param, Handler<AsyncResult<Result>> handler) {
+        public void update(String sql, Handler<AsyncResult<UpdateResult>> handler) {
+          if (!closed.get()) {
+            conn.update(sql, handler);
+          }
+        }
+
+        @Override
+        public void query(String sql, Handler<AsyncResult<ResultSet>> handler) {
+          if (!closed.get()) {
+            conn.query(sql, handler);
+          }
+        }
+
+        @Override
+        public void prepareAndQuery(String sql, Object param, Handler<AsyncResult<ResultSet>> handler) {
+          if (!closed.get()) {
+            conn.prepareAndQuery(sql, param, handler);
+          }
+        }
+
+        @Override
+        public void prepareAndQuery(String sql, Object param1, Object param2, Handler<AsyncResult<ResultSet>> handler) {
+          if (!closed.get()) {
+            conn.prepareAndQuery(sql, param1, param2, handler);
+          }
+        }
+
+        @Override
+        public void prepareAndQuery(String sql, Object param1, Object param2, Object param3,
+                                    Handler<AsyncResult<ResultSet>> handler) {
+          if (!closed.get()) {
+            conn.prepareAndQuery(sql, param1, param2, param3, handler);
+          }
+        }
+
+        @Override
+        public void prepareAndQuery(String sql, Object param1, Object param2, Object param3, Object param4,
+                                    Handler<AsyncResult<ResultSet>> handler) {
+          if (!closed.get()) {
+            conn.prepareAndQuery(sql, param1, param2, param3, param4, handler);
+          }
+        }
+
+        @Override
+        public void prepareAndQuery(String sql, Object param1, Object param2, Object param3, Object param4,
+                                    Object param5, Handler<AsyncResult<ResultSet>> handler) {
+          if (!closed.get()) {
+            conn.prepareAndQuery(sql, param1, param2, param3, param4, param5, handler);
+          }
+        }
+
+        @Override
+        public void prepareAndQuery(String sql, Object param1, Object param2, Object param3, Object param4,
+                                    Object param5, Object param6, Handler<AsyncResult<ResultSet>> handler) {
+          if (!closed.get()) {
+            conn.prepareAndQuery(sql, param1, param2, param3, param4, param5, param6, handler);
+          }
+        }
+
+        @Override
+        public void prepareAndQuery(String sql, List<Object> params, Handler<AsyncResult<ResultSet>> handler) {
+          if (!closed.get()) {
+            conn.prepareAndQuery(sql, params, handler);
+          }
+        }
+
+        @Override
+        public void prepareAndExecute(String sql, Object param, Handler<AsyncResult<UpdateResult>> handler) {
           if (!closed.get()) {
             conn.prepareAndExecute(sql, param, handler);
           }
         }
 
         @Override
-        public void prepareAndExecute(String sql, Object param1, Object param2, Handler<AsyncResult<Result>> handler) {
+        public void prepareAndExecute(String sql, Object param1, Object param2, Handler<AsyncResult<UpdateResult>> handler) {
           if (!closed.get()) {
             conn.prepareAndExecute(sql, param1, param2, handler);
           }
         }
 
         @Override
-        public void prepareAndExecute(String sql, Object param1, Object param2, Object param3,
-                                      Handler<AsyncResult<Result>> handler) {
+        public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Handler<AsyncResult<UpdateResult>> handler) {
           if (!closed.get()) {
             conn.prepareAndExecute(sql, param1, param2, param3, handler);
           }
         }
 
         @Override
-        public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4,
-                                      Handler<AsyncResult<Result>> handler) {
+        public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4, Handler<AsyncResult<UpdateResult>> handler) {
           if (!closed.get()) {
             conn.prepareAndExecute(sql, param1, param2, param3, param4, handler);
           }
         }
 
         @Override
-        public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4,
-                                      Object param5, Handler<AsyncResult<Result>> handler) {
+        public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4, Object param5, Handler<AsyncResult<UpdateResult>> handler) {
           if (!closed.get()) {
             conn.prepareAndExecute(sql, param1, param2, param3, param4, param5, handler);
           }
         }
 
         @Override
-        public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4,
-                                      Object param5, Object param6, Handler<AsyncResult<Result>> handler) {
+        public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4, Object param5, Object param6, Handler<AsyncResult<UpdateResult>> handler) {
           if (!closed.get()) {
             conn.prepareAndExecute(sql, param1, param2, param3, param4, param5, param6, handler);
           }
         }
 
         @Override
-        public void prepareAndExecute(String sql, List<Object> params, Handler<AsyncResult<Result>> handler) {
+        public void prepareAndExecute(String sql, List<Object> params, Handler<AsyncResult<UpdateResult>> handler) {
           if (!closed.get()) {
             conn.prepareAndExecute(sql, params, handler);
           }
