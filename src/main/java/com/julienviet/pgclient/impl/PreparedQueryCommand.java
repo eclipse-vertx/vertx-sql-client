@@ -1,6 +1,5 @@
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.Result;
 import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.decoder.message.BindComplete;
 import com.julienviet.pgclient.codec.decoder.message.NoData;
@@ -16,6 +15,7 @@ import com.julienviet.pgclient.codec.util.Util;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.ext.sql.ResultSet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,10 +28,10 @@ class PreparedQueryCommand extends QueryCommandBase {
 
   final PreparedStatementImpl ps;
   final List<List<Object>> paramsList;
-  final Handler<AsyncResult<List<Result>>> handler;
-  private ArrayList<Result> results;
+  final Handler<AsyncResult<List<ResultSet>>> handler;
+  private ArrayList<ResultSet> results;
 
-  PreparedQueryCommand(PreparedStatementImpl ps, List<List<Object>> paramsList, Handler<AsyncResult<List<Result>>> handler) {
+  PreparedQueryCommand(PreparedStatementImpl ps, List<List<Object>> paramsList, Handler<AsyncResult<List<ResultSet>>> handler) {
     this.ps = ps;
     this.paramsList = paramsList;
     this.handler = handler;
@@ -72,7 +72,7 @@ class PreparedQueryCommand extends QueryCommandBase {
   }
 
   @Override
-  void handleResult(Result result) {
+  void handleResult(ResultSet result) {
     results.add(result);
   }
 
