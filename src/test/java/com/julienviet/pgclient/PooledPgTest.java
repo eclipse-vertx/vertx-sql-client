@@ -92,6 +92,10 @@ public class PooledPgTest extends PgTestBase {
   }
 
   @Override
+  public void testBatchSelect(TestContext ctx) {
+  }
+
+  @Override
   public void testClose(TestContext ctx) {
   }
 
