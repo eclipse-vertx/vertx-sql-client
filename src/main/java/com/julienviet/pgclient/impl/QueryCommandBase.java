@@ -44,15 +44,18 @@ abstract class QueryCommandBase extends CommandBase {
       rowDesc = (RowDescription) msg;
       resultSet = new ResultSet();
       results = new ArrayList<>();
+      Column[] columns = rowDesc.getColumns();
+      columnNames = new ArrayList<>(columns.length);
+      for (Column columnDesc : columns) {
+        columnNames.add(columnDesc.getName());
+      }
       return false;
     } else if (msg.getClass() == DataRow.class) {
       DataRow dataRow = (DataRow) msg;
-      Column[] columns = rowDesc.getColumns();
-      columnNames = new ArrayList<>(columns.length);
       JsonArray row = new JsonArray();
+      Column[] columns = rowDesc.getColumns();
       for (int i = 0; i < columns.length; i++) {
         Column columnDesc = columns[i];
-        columnNames.add(columnDesc.getName());
         DataFormat dataFormat = columnDesc.getDataFormat();
         DataType dataType = columnDesc.getDataType();
         byte[] data = dataRow.getValue(i);
