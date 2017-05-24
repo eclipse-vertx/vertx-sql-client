@@ -440,9 +440,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT '17:55:04.905120'::TIME", ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT '17:55:04.90512'::TIME", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.getNumRows());
-        ctx.assertEquals("17:55:04.905120", result.getResults().get(0).getValue(0));
+        ctx.assertEquals("17:55:04.90512", result.getResults().get(0).getString(0));
         async.complete();
       }));
     }));

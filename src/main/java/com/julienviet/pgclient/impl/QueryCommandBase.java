@@ -13,9 +13,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.sql.ResultSet;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
@@ -27,7 +25,7 @@ import static com.julienviet.pgclient.codec.decoder.message.type.CommandComplete
 import static com.julienviet.pgclient.codec.formatter.DateTimeFormatter.*;
 import static com.julienviet.pgclient.codec.formatter.TimeFormatter.*;
 import static java.nio.charset.StandardCharsets.*;
-import static javax.xml.bind.DatatypeConverter.parseHexBinary;
+import static javax.xml.bind.DatatypeConverter.*;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -142,12 +140,6 @@ abstract class QueryCommandBase extends CommandBase {
           row.add(big.doubleValue());
         }
         break;
-      case DATE:
-        row.add(LocalDate.parse(value).toString());
-        break;
-      case TIME:
-        row.add(LocalTime.parse(value).toString());
-        break;
       case TIMETZ:
         row.add(OffsetTime.parse(value, TIMETZ_FORMAT).toString());
         break;
@@ -173,6 +165,8 @@ abstract class QueryCommandBase extends CommandBase {
       case NAME:
       case TEXT:
       case UUID:
+      case DATE:
+      case TIME:
       default:
         row.add(value);
         break;
