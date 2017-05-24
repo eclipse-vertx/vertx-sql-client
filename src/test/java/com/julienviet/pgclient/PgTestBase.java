@@ -134,6 +134,27 @@ public abstract class PgTestBase {
   }
 
   @Test
+  public void testMultipleQuery(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT id, randomnumber from WORLD LIMIT 1;SELECT id, randomnumber from WORLD LIMIT 1", ctx.asyncAssertSuccess(result -> {
+        for (int i = 0;i < 2;i++) {
+          ctx.assertEquals(1, result.getNumRows());
+          for (int j = 0; j < 1; j++) {
+            ctx.assertEquals(2, result.getResults().get(j).size());
+            ctx.assertTrue(result.getResults().get(j).getValue(0) instanceof Integer);
+            ctx.assertTrue(result.getResults().get(j).getValue(1) instanceof Integer);
+          }
+          result = result.getNext();
+        }
+        ctx.assertNull(result);
+        async.complete();
+      }));
+    }));
+  }
+
+  @Test
   public void testQueueQueries(TestContext ctx) {
     int num = 1000;
     Async async = ctx.async(num + 1);
@@ -847,9 +868,9 @@ public abstract class PgTestBase {
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.query("BEGIN", ctx.asyncAssertSuccess(result1 -> {
-        ctx.assertEquals(0, result1.getNumRows());
-        ctx.assertEquals(0, result1.getResults().size());
+        ctx.assertNotNull(result1);
         conn.query("COMMIT", ctx.asyncAssertSuccess(result2 -> {
+          ctx.assertNotNull(result2);
           async.complete();
         }));
       }));

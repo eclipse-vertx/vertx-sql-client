@@ -16,6 +16,8 @@ class QueryCommand extends QueryCommandBase {
 
   private final String sql;
   private final Handler<AsyncResult<ResultSet>> handler;
+  private ResultSet result;
+  private boolean completed;
 
   QueryCommand(String sql, Handler<AsyncResult<ResultSet>> handler) {
     this.handler = handler;
@@ -31,6 +33,10 @@ class QueryCommand extends QueryCommandBase {
   @Override
   public boolean handleMessage(Message msg) {
     if (msg.getClass() == ReadyForQuery.class) {
+      if (!completed) {
+        completed = true;
+        handler.handle(Future.succeededFuture(result));
+      }
       return true;
     } else {
       return super.handleMessage(msg);
@@ -38,13 +44,24 @@ class QueryCommand extends QueryCommandBase {
   }
 
   @Override
-  void handleResult(ResultSet result) {
-    handler.handle(Future.succeededFuture(result));
+  void handleResult(ResultSet next) {
+    if (result == null) {
+      result = next;
+    } else {
+      ResultSet current = result;
+      while (current.getNext() != null) {
+        current = current.getNext();
+      }
+      current.setNext(next);
+    }
   }
 
   @Override
   void fail(Throwable cause) {
-    handler.handle(Future.failedFuture(cause));
+    if (!completed) {
+      completed = true;
+      handler.handle(Future.failedFuture(cause));
+    }
   }
 
   public String getSql() {

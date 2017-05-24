@@ -74,14 +74,12 @@ abstract class QueryCommandBase extends CommandBase {
     } else if (msg.getClass() == CommandComplete.class) {
       CommandComplete complete = (CommandComplete) msg;
       rowDesc = null;
-      if(complete.getCommand().equals(SELECT)) {
-        ResultSet r = resultSet;
-        resultSet = null;
-        if (r == null) {
-          r = new ResultSet();
-        }
-        handleResult(r);
+      ResultSet r = resultSet;
+      resultSet = null;
+      if (r == null) {
+        r = new ResultSet();
       }
+      handleResult(r);
       return false;
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
