@@ -49,7 +49,7 @@ abstract class QueryCommandBase extends CommandBase {
       DataRow dataRow = (DataRow) msg;
       Column[] columns = rowDesc.getColumns();
       columnNames = new ArrayList<>(columns.length);
-      JsonArray crow = new JsonArray();
+      JsonArray row = new JsonArray();
       for (int i = 0; i < columns.length; i++) {
         Column columnDesc = columns[i];
         columnNames.add(columnDesc.getName());
@@ -58,17 +58,16 @@ abstract class QueryCommandBase extends CommandBase {
         byte[] data = dataRow.getValue(i);
         switch (dataFormat) {
           case TEXT: {
-            handleText(dataType, data, crow);
+            handleText(dataType, data, row);
           }
           break;
           case BINARY: {
-            handleBinary(dataType, data, crow);
+            handleBinary(dataType, data, row);
           }
           break;
         }
       }
-      // vertx common
-      results.add(crow);
+      results.add(row);
       resultSet.setColumnNames(columnNames);
       resultSet.setResults(results);
       return false;
@@ -93,7 +92,7 @@ abstract class QueryCommandBase extends CommandBase {
     }
   }
 
-  private void handleBinary(DataType dataType, byte[] d, JsonArray crow) {
+  private void handleBinary(DataType dataType, byte[] d, JsonArray row) {
 
   }
 
