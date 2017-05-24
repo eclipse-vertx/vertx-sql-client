@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -141,19 +142,19 @@ abstract class QueryCommandBase extends CommandBase {
         }
         break;
       case DATE:
-        row.add(LocalDate.parse(value));
+        row.add(LocalDate.parse(value).toString());
         break;
       case TIME:
-        row.add(LocalTime.parse(value));
+        row.add(LocalTime.parse(value).toString());
         break;
       case TIMETZ:
-        row.add(OffsetTime.parse(value, TIMETZ_FORMAT));
+        row.add(OffsetTime.parse(value, TIMETZ_FORMAT).toString());
         break;
       case TIMESTAMP:
-        row.add(LocalDateTime.parse(value, TIMESTAMP_FORMAT));
+        row.add(LocalDateTime.parse(value, TIMESTAMP_FORMAT).toInstant(ZoneOffset.UTC));
         break;
       case TIMESTAMPTZ:
-        row.add(OffsetDateTime.parse(value, TIMESTAMPTZ_FORMAT));
+        row.add(OffsetDateTime.parse(value, TIMESTAMPTZ_FORMAT).toInstant());
         break;
       case JSON:
       case JSONB:
