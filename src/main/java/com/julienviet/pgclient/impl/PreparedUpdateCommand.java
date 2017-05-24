@@ -15,23 +15,24 @@ import com.julienviet.pgclient.codec.util.Util;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.ext.sql.ResultSet;
+import io.vertx.ext.sql.UpdateResult;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
+ * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-class PreparedQueryCommand extends QueryCommandBase {
+
+class PreparedUpdateCommand extends UpdateCommandBase {
 
 
   final PreparedStatementImpl ps;
   final List<List<Object>> paramsList;
-  final Handler<AsyncResult<List<ResultSet>>> handler;
-  private ArrayList<ResultSet> results;
+  final Handler<AsyncResult<List<UpdateResult>>> handler;
+  private ArrayList<UpdateResult> results;
 
-  PreparedQueryCommand(PreparedStatementImpl ps, List<List<Object>> paramsList, Handler<AsyncResult<List<ResultSet>>> handler) {
+  PreparedUpdateCommand(PreparedStatementImpl ps, List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
     this.ps = ps;
     this.paramsList = paramsList;
     this.handler = handler;
@@ -72,7 +73,7 @@ class PreparedQueryCommand extends QueryCommandBase {
   }
 
   @Override
-  void handleResult(ResultSet result) {
+  void handleResult(UpdateResult result) {
     results.add(result);
   }
 

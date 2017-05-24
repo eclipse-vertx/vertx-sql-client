@@ -10,3 +10,9 @@ before_install:
 script:
 - set -e
 - bash .travis.deploy.artifacts.sh
+notifications:
+  email:
+    recipients:
+      - emad.albloushi@gmail.com
+    on_success: always
+    on_failure: always

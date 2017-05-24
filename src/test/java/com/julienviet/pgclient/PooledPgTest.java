@@ -1,5 +1,6 @@
 package com.julienviet.pgclient;
 
+import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
@@ -26,11 +27,10 @@ public class PooledPgTest extends PgTestBase {
     PostgresConnectionPool pool = client.createPool(4);
     for (int i = 0;i < num;i++) {
       pool.getConnection(ctx.asyncAssertSuccess(conn -> {
-        conn.execute("SELECT id, randomnumber from WORLD", ar -> {
+        conn.query("SELECT id, randomnumber from WORLD", ar -> {
           if (ar.succeeded()) {
-            Result result = ar.result();
-            ctx.assertEquals(0, result.getUpdatedRows());
-            ctx.assertEquals(10000, result.size());
+            ResultSet result = ar.result();
+            ctx.assertEquals(10000, result.getNumRows());
           } else {
             ctx.assertEquals("closed", ar.cause().getMessage());
           }
@@ -56,9 +56,9 @@ public class PooledPgTest extends PgTestBase {
       pool.getConnection(ctx.asyncAssertSuccess(conn1 -> {
         proxyConn.get().close();
         conn1.closeHandler(v2 -> {
-          conn1.execute("never-executer", ctx.asyncAssertFailure(err -> {
+          conn1.query("never-executer", ctx.asyncAssertFailure(err -> {
             pool.getConnection(ctx.asyncAssertSuccess(conn2 -> {
-              conn2.execute("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(v3 -> {
+              conn2.query("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(v3 -> {
                 async.complete();
               }));
             }));
@@ -84,7 +84,7 @@ public class PooledPgTest extends PgTestBase {
         proxyConn.get().close();
       }));
       pool.getConnection(ctx.asyncAssertSuccess(conn -> {
-        conn.execute("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(v2 -> {
+        conn.query("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(v2 -> {
           async.complete();
         }));
       }));
@@ -114,4 +114,5 @@ public class PooledPgTest extends PgTestBase {
   @Test
   public void testThatPoolReconnect(TestContext ctx) {
   }
+
 }

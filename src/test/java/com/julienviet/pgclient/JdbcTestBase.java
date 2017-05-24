@@ -13,15 +13,13 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import static ru.yandex.qatools.embed.postgresql.distribution.Version.*;
-
 public class JdbcTestBase extends TestCase {
 
   Connection con;
 
   protected void setUp() throws Exception {
     PostgresStarter<PostgresExecutable, PostgresProcess> runtime = PostgresStarter.getDefaultInstance();
-    PostgresConfig config = new PostgresConfig(V9_5_0, new AbstractPostgresConfig.Net("localhost", 8083),
+    PostgresConfig config = new PostgresConfig(() -> "9.5.0-1", new AbstractPostgresConfig.Net("localhost", 8083),
       new AbstractPostgresConfig.Storage("postgres"), new AbstractPostgresConfig.Timeout(),
       new AbstractPostgresConfig.Credentials("postgres", "postgres"));
     PostgresExecutable exec = runtime.prepare(config);

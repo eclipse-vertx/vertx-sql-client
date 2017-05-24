@@ -7,6 +7,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -22,24 +23,17 @@ import ru.yandex.qatools.embed.postgresql.config.AbstractPostgresConfig;
 import ru.yandex.qatools.embed.postgresql.config.PostgresConfig;
 
 import java.io.File;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
-import java.util.UUID;
+import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 
-import static com.julienviet.pgclient.codec.formatter.DateTimeFormatter.*;
-import static com.julienviet.pgclient.codec.formatter.TimeFormatter.*;
-import static ru.yandex.qatools.embed.postgresql.distribution.Version.*;
+import static java.nio.charset.StandardCharsets.*;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
+
 @RunWith(VertxUnitRunner.class)
 public abstract class PgTestBase {
 
@@ -58,15 +52,14 @@ public abstract class PgTestBase {
   @BeforeClass
   public static void startPg() throws Exception {
     PostgresStarter<PostgresExecutable, PostgresProcess> runtime = PostgresStarter.getDefaultInstance();
-    PostgresConfig config = new PostgresConfig(V9_5_0, new AbstractPostgresConfig.Net("localhost", 8081),
+    PostgresConfig config = new PostgresConfig(() -> "9.5.0-1", new AbstractPostgresConfig.Net("localhost", 8081),
       new AbstractPostgresConfig.Storage("postgres"), new AbstractPostgresConfig.Timeout(),
       new AbstractPostgresConfig.Credentials("postgres", "postgres"));
     PostgresExecutable exec = runtime.prepare(config);
     process = exec.start();
     // File f1 = new File("src/test/resources/create-postgres-database.sql");
     // process.importFromFile(f1);
-    File f2 = new File("src/test/resources/create-postgres.sql");
-    process.importFromFile(f2);
+    process.importFromFile(new File("src/test/resources/create-postgres.sql"));
     options.setHost(process.getConfig().net().host());
     options.setPort(process.getConfig().net().port());
     options.setUsername("postgres");
@@ -128,13 +121,12 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(0, result.getUpdatedRows());
-        ctx.assertEquals(10000, result.size());
-        for (int i = 0;i < 10000;i++) {
-          ctx.assertEquals(2, result.get(i).size());
-          ctx.assertTrue(result.get(i).get(0) instanceof Integer);
-          ctx.assertTrue(result.get(i).get(1) instanceof Integer);
+      conn.query("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(10000, result.getNumRows());
+        for (int i = 0; i < 10000; i++) {
+          ctx.assertEquals(2, result.getResults().get(i).size());
+          ctx.assertTrue(result.getResults().get(i).getValue(0) instanceof Integer);
+          ctx.assertTrue(result.getResults().get(i).getValue(1) instanceof Integer);
         }
         async.complete();
       }));
@@ -148,11 +140,10 @@ public abstract class PgTestBase {
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       for (int i = 0;i < num;i++) {
-        conn.execute("SELECT id, randomnumber from WORLD", ar -> {
+        conn.query("SELECT id, randomnumber from WORLD", ar -> {
           if (ar.succeeded()) {
-            Result result = ar.result();
-            ctx.assertEquals(0, result.getUpdatedRows());
-            ctx.assertEquals(10000, result.size());
+            ResultSet result = ar.result();
+            ctx.assertEquals(10000, result.getNumRows());
           } else {
             ctx.assertEquals("closed", ar.cause().getMessage());
           }
@@ -172,7 +163,7 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(err -> {
+      conn.query("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(err -> {
         async.complete();
       }));
     }));
@@ -183,9 +174,8 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("UPDATE Fortune SET message = 'Whatever' WHERE id = 9", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getUpdatedRows());
-        ctx.assertEquals(0, result.size());
+      conn.update("UPDATE Fortune SET message = 'Whatever' WHERE id = 9", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getUpdated());
         async.complete();
       }));
     }));
@@ -196,9 +186,8 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("INSERT INTO Fortune (id, message) VALUES (13, 'Whatever')", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getUpdatedRows());
-        ctx.assertEquals(0, result.size());
+      conn.update("INSERT INTO Fortune (id, message) VALUES (13, 'Whatever')", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getUpdated());
         async.complete();
       }));
     }));
@@ -209,9 +198,8 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("DELETE FROM Fortune where id = 6", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getUpdatedRows());
-        ctx.assertEquals(0, result.size());
+      conn.update("DELETE FROM Fortune where id = 6", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getUpdated());
         async.complete();
       }));
     }));
@@ -222,10 +210,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT null", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(0, result.getUpdatedRows());
-        ctx.assertEquals(1, result.size());
-        ctx.assertNull(result.get(0).get(0));
+      conn.query("SELECT null", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getNumRows());
+        ctx.assertNull(result.getResults().get(0).getValue(0));
         async.complete();
       }));
     }));
@@ -236,11 +223,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT true", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(0, result.getUpdatedRows());
-        ctx.assertEquals(1, result.size());
-        ctx.assertNotNull(result.get(0).get(0));
-        ctx.assertEquals(true, result.get(0).get(0));
+      conn.query("SELECT true", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getNumRows());
+        ctx.assertEquals(true, result.getResults().get(0).getBoolean(0));
         async.complete();
       }));
     }));
@@ -251,11 +236,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT false", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(0, result.getUpdatedRows());
-        ctx.assertEquals(1, result.size());
-        ctx.assertNotNull(result.get(0).get(0));
-        ctx.assertEquals(false, result.get(0).get(0));
+      conn.query("SELECT false", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getNumRows());
+        ctx.assertEquals(false, result.getResults().get(0).getBoolean(0));
         async.complete();
       }));
     }));
@@ -266,11 +249,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT 32767::INT2", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(0, result.getUpdatedRows());
-        ctx.assertEquals(1, result.size());
-        ctx.assertNotNull(result.get(0).get(0));
-        ctx.assertEquals((short)32767, result.get(0).get(0));
+      conn.query("SELECT 32767::INT2", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getNumRows());
+        ctx.assertEquals((short)32767, result.getResults().get(0).getValue(0));
         async.complete();
       }));
     }));
@@ -281,11 +262,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT 2147483647::INT4", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(0, result.getUpdatedRows());
-        ctx.assertEquals(1, result.size());
-        ctx.assertNotNull(result.get(0).get(0));
-        ctx.assertEquals(2147483647, result.get(0).get(0));
+      conn.query("SELECT 2147483647::INT4", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getNumRows());
+        ctx.assertEquals(2147483647, result.getResults().get(0).getInteger(0));
         async.complete();
       }));
     }));
@@ -296,11 +275,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT 9223372036854775807::INT8", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(0, result.getUpdatedRows());
-        ctx.assertEquals(1, result.size());
-        ctx.assertNotNull(result.get(0).get(0));
-        ctx.assertEquals(9223372036854775807L, result.get(0).get(0));
+      conn.query("SELECT 9223372036854775807::INT8", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getNumRows());
+        ctx.assertEquals(9223372036854775807L, result.getResults().get(0).getLong(0));
         async.complete();
       }));
     }));
@@ -311,11 +288,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT 3.4028235E38::FLOAT4", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(0, result.getUpdatedRows());
-        ctx.assertEquals(1, result.size());
-        ctx.assertNotNull(result.get(0).get(0));
-        ctx.assertEquals(3.4028235E38f, result.get(0).get(0));
+      conn.query("SELECT 3.4028235E38::FLOAT4", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getNumRows());
+        ctx.assertEquals(3.4028235E38f, result.getResults().get(0).getFloat(0));
         async.complete();
       }));
     }));
@@ -326,11 +301,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT 1.7976931348623157E308::FLOAT8", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(0, result.getUpdatedRows());
-        ctx.assertEquals(1, result.size());
-        ctx.assertNotNull(result.get(0).get(0));
-        ctx.assertEquals(1.7976931348623157E308d, result.get(0).get(0));
+      conn.query("SELECT 1.7976931348623157E308::FLOAT8", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getNumRows());
+        ctx.assertEquals(1.7976931348623157E308d, result.getResults().get(0).getDouble(0));
         async.complete();
       }));
     }));
@@ -341,12 +314,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT 919.999999999999999999999999999999999999::NUMERIC", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(0, result.getUpdatedRows());
-        ctx.assertEquals(1, result.size());
-        ctx.assertNotNull(result.get(0).get(0));
-        BigDecimal numeric = (BigDecimal) result.get(0).get(0);
-        ctx.assertEquals(new BigDecimal("919.999999999999999999999999999999999999"), numeric);
+      conn.query("SELECT 919.999999999999999999999999999999999999::NUMERIC", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getNumRows());
+        ctx.assertEquals(920.0, result.getResults().get(0).getDouble(0));
         async.complete();
       }));
     }));
@@ -357,12 +327,10 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT 'VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X & VERT.X'::NAME",
+      conn.query("SELECT 'VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X & VERT.X'::NAME",
         ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(0, result.getUpdatedRows());
-          ctx.assertEquals(1, result.size());
-          ctx.assertNotNull(result.get(0).get(0));
-          String name = (String) result.get(0).get(0);
+          ctx.assertEquals(1, result.getNumRows());
+          String name = result.getResults().get(0).getString(0);
           ctx.assertEquals("VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X ", name);
           // must be 63 length
           ctx.assertEquals(63, name.length());
@@ -376,11 +344,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT 'pgClient'::CHAR(15)", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(0, result.getUpdatedRows());
-        ctx.assertEquals(1, result.size());
-        ctx.assertNotNull(result.get(0).get(0));
-        String bpchar = (String) result.get(0).get(0);
+      conn.query("SELECT 'pgClient'::CHAR(15)", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getNumRows());
+        String bpchar = result.getResults().get(0).getString(0);
         ctx.assertEquals("pgClient       ", bpchar);
         ctx.assertEquals(15, bpchar.length());
         async.complete();
@@ -393,11 +359,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT 'V'::CHAR", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(0, result.getUpdatedRows());
-        ctx.assertEquals(1, result.size());
-        ctx.assertNotNull(result.get(0).get(0));
-        String sbpchar = (String) result.get(0).get(0);
+      conn.query("SELECT 'V'::CHAR", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getNumRows());
+        String sbpchar = result.getResults().get(0).getString(0);
         ctx.assertEquals("V", sbpchar);
         ctx.assertEquals(1, sbpchar.length());
         async.complete();
@@ -410,11 +374,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT 'X'::\"char\"", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(0, result.getUpdatedRows());
-        ctx.assertEquals(1, result.size());
-        ctx.assertNotNull(result.get(0).get(0));
-        char character = (char) result.get(0).get(0);
+      conn.query("SELECT 'X'::\"char\"", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getNumRows());
+        char character = (char) result.getResults().get(0).getValue(0);
         ctx.assertEquals('X', character);
         async.complete();
       }));
@@ -426,13 +388,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT 'pgClient'::VARCHAR(15)", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(0, result.getUpdatedRows());
-        ctx.assertEquals(1, result.size());
-        ctx.assertNotNull(result.get(0).get(0));
-        String varchar = (String) result.get(0).get(0);
-        ctx.assertEquals("pgClient", varchar);
-        ctx.assertEquals(8, varchar.length());
+      conn.query("SELECT 'pgClient'::VARCHAR(15)", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getNumRows());
+        ctx.assertEquals("pgClient", result.getResults().get(0).getString(0));
         async.complete();
       }));
     }));
@@ -443,13 +401,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT 'Vert.x PostgreSQL Client'::TEXT", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(0, result.getUpdatedRows());
-        ctx.assertEquals(1, result.size());
-        ctx.assertNotNull(result.get(0).get(0));
-        String text = (String) result.get(0).get(0);
-        ctx.assertEquals("Vert.x PostgreSQL Client", text);
-        ctx.assertEquals(24, text.length());
+      conn.query("SELECT 'Vert.x PostgreSQL Client'::TEXT", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getNumRows());
+        ctx.assertEquals("Vert.x PostgreSQL Client", result.getResults().get(0).getString(0));
         async.complete();
       }));
     }));
@@ -460,13 +414,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT '50867d3d-0098-4f61-bd31-9309ebf53475'::UUID", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(0, result.getUpdatedRows());
-        ctx.assertEquals(1, result.size());
-        ctx.assertNotNull(result.get(0).get(0));
-        UUID uuid = (UUID) result.get(0).get(0);
-        ctx.assertEquals(UUID.fromString("50867d3d-0098-4f61-bd31-9309ebf53475"), uuid);
-        ctx.assertEquals(36, uuid.toString().length());
+      conn.query("SELECT '50867d3d-0098-4f61-bd31-9309ebf53475'::UUID", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getNumRows());
+        ctx.assertEquals("50867d3d-0098-4f61-bd31-9309ebf53475", result.getResults().get(0).getString(0));
         async.complete();
       }));
     }));
@@ -477,13 +427,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT '1981-05-30'::DATE", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(0, result.getUpdatedRows());
-        ctx.assertEquals(1, result.size());
-        ctx.assertNotNull(result.get(0).get(0));
-        LocalDate localDate = (LocalDate) result.get(0).get(0);
-        ctx.assertEquals(LocalDate.parse("1981-05-30"), localDate);
-        ctx.assertEquals(10, localDate.toString().length());
+      conn.query("SELECT '1981-05-30'::DATE", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getNumRows());
+        ctx.assertEquals("1981-05-30", result.getResults().get(0).getString(0));
         async.complete();
       }));
     }));
@@ -494,13 +440,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT '17:55:04.905120'::TIME", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(0, result.getUpdatedRows());
-        ctx.assertEquals(1, result.size());
-        ctx.assertNotNull(result.get(0).get(0));
-        LocalTime localTime = (LocalTime) result.get(0).get(0);
-        ctx.assertEquals(LocalTime.parse("17:55:04.905120"), localTime);
-        ctx.assertEquals(15, localTime.toString().length());
+      conn.query("SELECT '17:55:04.90512'::TIME", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getNumRows());
+        ctx.assertEquals("17:55:04.90512", result.getResults().get(0).getString(0));
         async.complete();
       }));
     }));
@@ -511,14 +453,10 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT '17:55:04.90512+03:07'::TIMETZ",
+      conn.query("SELECT '17:55:04.90512+03:07'::TIMETZ",
         ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(0, result.getUpdatedRows());
-          ctx.assertEquals(1, result.size());
-          ctx.assertNotNull(result.get(0).get(0));
-          OffsetTime offsetTime = (OffsetTime) result.get(0).get(0);
-          ctx.assertEquals(OffsetTime.parse("17:55:04.90512+03:07", TIMETZ_FORMAT), offsetTime);
-          ctx.assertEquals(21, offsetTime.toString().length());
+          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals("17:55:04.905120+03:07", result.getResults().get(0).getString(0));
           async.complete();
         }));
     }));
@@ -529,13 +467,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT '2017-05-14 19:35:58.237666'::TIMESTAMP", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(0, result.getUpdatedRows());
-        ctx.assertEquals(1, result.size());
-        ctx.assertNotNull(result.get(0).get(0));
-        LocalDateTime localDateTime = (LocalDateTime) result.get(0).get(0);
-        ctx.assertEquals(LocalDateTime.parse("2017-05-14 19:35:58.237666", TIMESTAMP_FORMAT), localDateTime);
-        ctx.assertEquals(26, localDateTime.toString().length());
+      conn.query("SELECT '2017-05-14 19:35:58.237666'::TIMESTAMP", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getNumRows());
+        ctx.assertEquals(Instant.parse("2017-05-14T19:35:58.237666Z"), result.getResults().get(0).getInstant(0));
         async.complete();
       }));
     }));
@@ -546,15 +480,11 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SET TIME ZONE 'UTC'", ctx.asyncAssertSuccess(v -> {
-        conn.execute("SELECT '2017-05-14 22:35:58.237666-03'::TIMESTAMPTZ",
+      conn.query("SET TIME ZONE 'UTC'", ctx.asyncAssertSuccess(v -> {
+        conn.query("SELECT '2017-05-14 22:35:58.237666-03'::TIMESTAMPTZ",
           ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(0, result.getUpdatedRows());
-            ctx.assertEquals(1, result.size());
-            ctx.assertNotNull(result.get(0).get(0));
-            OffsetDateTime offsetDateTime = (OffsetDateTime) result.get(0).get(0);
-            ctx.assertEquals(OffsetDateTime.parse("2017-05-15 01:35:58.237666+00", TIMESTAMPTZ_FORMAT), offsetDateTime);
-            ctx.assertEquals(27, offsetDateTime.toString().length());
+            ctx.assertEquals(1, result.getNumRows());
+            ctx.assertEquals(Instant.parse("2017-05-15T01:35:58.237666Z"), result.getResults().get(0).getInstant(0));
             async.complete();
           }));
       }));
@@ -566,13 +496,11 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT '{\"str\":\"blah\", \"int\" : 1, \"float\" :" +
+      conn.query("SELECT '{\"str\":\"blah\", \"int\" : 1, \"float\" :" +
           " 3.5, \"object\": {}, \"array\" : []}'::JSONB",
         ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(0, result.getUpdatedRows());
-          ctx.assertEquals(1, result.size());
-          ctx.assertNotNull(result.get(0).get(0));
-          JsonObject jsonObject = (JsonObject) result.get(0).get(0);
+          ctx.assertEquals(1, result.getNumRows());
+          JsonObject jsonObject = result.getResults().get(0).getJsonObject(0);
           ctx.assertEquals(new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" :" +
             " 3.5, \"object\": {}, \"array\" : []}"), jsonObject);
           async.complete();
@@ -585,12 +513,10 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT '[1,true,null,9.5,\"Hi\"]'::JSONB",
+      conn.query("SELECT '[1,true,null,9.5,\"Hi\"]'::JSONB",
         ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(0, result.getUpdatedRows());
-          ctx.assertEquals(1, result.size());
-          ctx.assertNotNull(result.get(0).get(0));
-          JsonArray jsonArray = (JsonArray) result.get(0).get(0);
+          ctx.assertEquals(1, result.getNumRows());
+          JsonArray jsonArray = result.getResults().get(0).getJsonArray(0);
           ctx.assertEquals(new JsonArray("[1,true,null,9.5,\"Hi\"]"), jsonArray);
           async.complete();
         }));
@@ -602,13 +528,11 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT '{\"str\":\"blah\", \"int\" : 1, \"float\" :" +
+      conn.query("SELECT '{\"str\":\"blah\", \"int\" : 1, \"float\" :" +
           " 3.5, \"object\": {}, \"array\" : []}'::JSON",
         ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(0, result.getUpdatedRows());
-          ctx.assertEquals(1, result.size());
-          ctx.assertNotNull(result.get(0).get(0));
-          JsonObject jsonObject = (JsonObject) result.get(0).get(0);
+          ctx.assertEquals(1, result.getNumRows());
+          JsonObject jsonObject = result.getResults().get(0).getJsonObject(0);
           ctx.assertEquals(new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" :" +
             " 3.5, \"object\": {}, \"array\" : []}"), jsonObject);
           async.complete();
@@ -621,13 +545,26 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT '[1,true,null,9.5,\"Hi\"]'::JSON",
+      conn.query("SELECT '[1,true,null,9.5,\"Hi\"]'::JSON",
         ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(0, result.getUpdatedRows());
-          ctx.assertEquals(1, result.size());
-          ctx.assertNotNull(result.get(0).get(0));
-          JsonArray jsonArray = (JsonArray) result.get(0).get(0);
+          ctx.assertEquals(1, result.getNumRows());
+          JsonArray jsonArray = result.getResults().get(0).getJsonArray(0);
           ctx.assertEquals(new JsonArray("[1,true,null,9.5,\"Hi\"]"), jsonArray);
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testByteaTextDataType(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT '12345678910'::BYTEA",
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.getNumRows());
+          byte[] bytea = result.getResults().get(0).getBinary(0);
+          ctx.assertEquals("12345678910", new String(bytea, UTF_8));
           async.complete();
         }));
     }));
@@ -638,17 +575,16 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.prepareAndExecute("SELECT id, message FROM Fortune WHERE id=$1 AND message =$2",
+      conn.prepareAndQuery("SELECT id, message FROM Fortune WHERE id=$1 AND message =$2",
         5,
         "A computer program does what you tell it to do, not what you want it to do.",
         ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(0, result.getUpdatedRows());
-          ctx.assertEquals(1, result.size());
-          ctx.assertNotNull(result.get(0).get(0));
-          ctx.assertNotNull(result.get(0).get(1));
-          ctx.assertEquals(5, result.get(0).get(0));
+          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertNotNull(result.getResults().get(0).getValue(0));
+          ctx.assertNotNull(result.getResults().get(0).getValue(1));
+          ctx.assertEquals(5, result.getResults().get(0).getValue(0));
           ctx.assertEquals("A computer program does what you tell it to do, not what you want it to do.",
-            result.get(0).get(1));
+            result.getResults().get(0).getValue(1));
           async.complete();
         }));
     }));
@@ -662,8 +598,7 @@ public abstract class PgTestBase {
       conn.prepareAndExecute("INSERT INTO Fortune (id, message) VALUES ($1, $2)",
         20, "Hello",
         ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.getUpdatedRows());
-          ctx.assertEquals(0, result.size());
+          ctx.assertEquals(1, result.getUpdated());
           async.complete();
         }));
     }));
@@ -678,8 +613,7 @@ public abstract class PgTestBase {
         "Whatever",
         20,
         ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.getUpdatedRows());
-          ctx.assertEquals(0, result.size());
+          ctx.assertEquals(1, result.getUpdated());
           async.complete();
         }));
     }));
@@ -692,8 +626,7 @@ public abstract class PgTestBase {
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.prepareAndExecute("DELETE FROM Fortune where id = $1", 7,
         ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.getUpdatedRows());
-          ctx.assertEquals(0, result.size());
+          ctx.assertEquals(1, result.getUpdated());
           async.complete();
         }));
     }));
@@ -704,10 +637,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.prepareAndExecute("SELECT * FROM Fortune WHERE id=$1", 1,
+      conn.prepareAndQuery("SELECT * FROM Fortune WHERE id=$1", 1,
         ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(0, result.getUpdatedRows());
-          ctx.assertEquals(1, result.size());
+          ctx.assertEquals(1, result.getNumRows());
           async.complete();
         }));
     }));
@@ -718,10 +650,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.prepareAndExecute("SELECT * FROM Fortune WHERE id=$1 OR id=$2", 1, 8,
+      conn.prepareAndQuery("SELECT * FROM Fortune WHERE id=$1 OR id=$2", 1, 8,
         ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(0, result.getUpdatedRows());
-          ctx.assertEquals(2, result.size());
+          ctx.assertEquals(2, result.getNumRows());
           async.complete();
         }));
     }));
@@ -732,10 +663,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.prepareAndExecute("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3", 1, 8, 4,
+      conn.prepareAndQuery("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3", 1, 8, 4,
         ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(0, result.getUpdatedRows());
-          ctx.assertEquals(3, result.size());
+          ctx.assertEquals(3, result.getNumRows());
           async.complete();
         }));
     }));
@@ -746,10 +676,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.prepareAndExecute("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4", 1, 8, 4, 11,
+      conn.prepareAndQuery("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4", 1, 8, 4, 11,
         ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(0, result.getUpdatedRows());
-          ctx.assertEquals(4, result.size());
+          ctx.assertEquals(4, result.getNumRows());
           async.complete();
         }));
     }));
@@ -760,10 +689,9 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.prepareAndExecute("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5", 1, 8, 4, 11, 2,
+      conn.prepareAndQuery("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5", 1, 8, 4, 11, 2,
         ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(0, result.getUpdatedRows());
-          ctx.assertEquals(5, result.size());
+          ctx.assertEquals(5, result.getNumRows());
           async.complete();
         }));
     }));
@@ -774,11 +702,10 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.prepareAndExecute("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6",
+      conn.prepareAndQuery("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6",
         1, 8, 4, 11, 2, 9,
         ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(0, result.getUpdatedRows());
-          ctx.assertEquals(6, result.size());
+          ctx.assertEquals(6, result.getNumRows());
           async.complete();
         }));
     }));
@@ -797,14 +724,12 @@ public abstract class PgTestBase {
       prepared.execute(batch, ctx.asyncAssertSuccess(results -> {
         ctx.assertEquals(3, results.size());
         for (int i = 0;i < 3;i++) {
-          Result result = results.get(i);
-          ctx.assertEquals(0, result.getUpdatedRows());
-          ctx.assertEquals(1, result.size());
-          ctx.assertNotNull(result.get(0).get(0));
-          ctx.assertNotNull(result.get(0).get(1));
-          ctx.assertEquals(5, result.get(0).get(0));
-          ctx.assertEquals("A computer program does what you tell it to do, not what you want it to do.",
-            result.get(0).get(1));
+          ResultSet result = results.get(i);
+          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertNotNull(result.getResults().get(0).getValue(0));
+          ctx.assertNotNull(result.getResults().get(0).getValue(1));
+          ctx.assertEquals(5, result.getResults().get(0).getValue(0));
+          ctx.assertEquals("A computer program does what you tell it to do, not what you want it to do.", result.getResults().get(0).getValue(1));
         }
         prepared.close(ctx.asyncAssertSuccess(result -> {
           async.complete();
@@ -886,10 +811,9 @@ public abstract class PgTestBase {
     Async async = ctx.async(2);
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(2, async.count());
-        ctx.assertEquals(0, result.getUpdatedRows());
-        ctx.assertEquals(10000, result.size());
+        ctx.assertEquals(10000, result.getNumRows());
         async.countDown();
       }));
       conn.closeHandler(v -> {
@@ -905,7 +829,7 @@ public abstract class PgTestBase {
     Async async = ctx.async(2);
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(err -> {
+      conn.query("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(err -> {
         ctx.assertEquals(2, async.count());
         async.countDown();
       }));
@@ -922,10 +846,10 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.execute("BEGIN", ctx.asyncAssertSuccess(result1 -> {
-        ctx.assertEquals(0, result1.getUpdatedRows());
-        ctx.assertEquals(0, result1.size());
-        conn.execute("COMMIT", ctx.asyncAssertSuccess(result2 -> {
+      conn.query("BEGIN", ctx.asyncAssertSuccess(result1 -> {
+        ctx.assertEquals(0, result1.getNumRows());
+        ctx.assertEquals(0, result1.getResults().size());
+        conn.query("COMMIT", ctx.asyncAssertSuccess(result2 -> {
           async.complete();
         }));
       }));
