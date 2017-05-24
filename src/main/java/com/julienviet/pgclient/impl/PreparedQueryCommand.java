@@ -15,6 +15,7 @@ import com.julienviet.pgclient.codec.util.Util;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
 import io.vertx.ext.sql.ResultSet;
 
 import java.util.ArrayList;
@@ -30,12 +31,23 @@ class PreparedQueryCommand extends QueryCommandBase {
   final List<List<Object>> paramsList;
   final Handler<AsyncResult<List<ResultSet>>> handler;
   private ArrayList<ResultSet> results;
+  private ResultSet result;
 
   PreparedQueryCommand(PreparedStatementImpl ps, List<List<Object>> paramsList, Handler<AsyncResult<List<ResultSet>>> handler) {
     this.ps = ps;
     this.paramsList = paramsList;
     this.handler = handler;
     this.results = new ArrayList<>(paramsList.size()); // Should reuse the paramsList for this as it's already allocated
+  }
+
+  @Override
+  void handleDescription(List<String> columnNames) {
+    result = new ResultSet().setColumnNames(columnNames).setResults(new ArrayList<>());
+  }
+
+  @Override
+  void handleRow(JsonArray row) {
+    result.getResults().add(row);
   }
 
   @Override
@@ -72,8 +84,9 @@ class PreparedQueryCommand extends QueryCommandBase {
   }
 
   @Override
-  void handleResult(ResultSet result) {
+  void handleComplete() {
     results.add(result);
+    result = null;
   }
 
   @Override

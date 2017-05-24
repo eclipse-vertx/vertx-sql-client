@@ -6,7 +6,11 @@ import com.julienviet.pgclient.codec.encoder.message.Query;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
 import io.vertx.ext.sql.ResultSet;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -17,6 +21,7 @@ class QueryCommand extends QueryCommandBase {
   private final String sql;
   private final Handler<AsyncResult<ResultSet>> handler;
   private ResultSet result;
+  private ResultSet current;
   private boolean completed;
 
   QueryCommand(String sql, Handler<AsyncResult<ResultSet>> handler) {
@@ -44,16 +49,23 @@ class QueryCommand extends QueryCommandBase {
   }
 
   @Override
-  void handleResult(ResultSet next) {
-    if (result == null) {
-      result = next;
-    } else {
-      ResultSet current = result;
-      while (current.getNext() != null) {
-        current = current.getNext();
-      }
+  void handleDescription(List<String> columnNames) {
+    ResultSet next = new ResultSet().setColumnNames(columnNames).setResults(new ArrayList<>());
+    if (current != null) {
       current.setNext(next);
+      current = next;
+    } else {
+      result = current = next;
     }
+  }
+
+  @Override
+  void handleRow(JsonArray row) {
+    current.getResults().add(row);
+  }
+
+  @Override
+  void handleComplete() {
   }
 
   @Override

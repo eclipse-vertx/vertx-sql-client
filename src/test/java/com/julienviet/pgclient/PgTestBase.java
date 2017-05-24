@@ -868,9 +868,9 @@ public abstract class PgTestBase {
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.query("BEGIN", ctx.asyncAssertSuccess(result1 -> {
-        ctx.assertNotNull(result1);
+        ctx.assertNull(result1);
         conn.query("COMMIT", ctx.asyncAssertSuccess(result2 -> {
-          ctx.assertNotNull(result2);
+          ctx.assertNull(result2);
           async.complete();
         }));
       }));

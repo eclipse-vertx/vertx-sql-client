@@ -10,7 +10,6 @@ import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.sql.ResultSet;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.julienviet.pgclient.codec.DataType.*;
-import static com.julienviet.pgclient.codec.decoder.message.type.CommandCompleteType.*;
 import static com.julienviet.pgclient.codec.formatter.DateTimeFormatter.*;
 import static com.julienviet.pgclient.codec.formatter.TimeFormatter.*;
 import static java.nio.charset.StandardCharsets.*;
@@ -34,21 +32,17 @@ import static javax.xml.bind.DatatypeConverter.*;
 abstract class QueryCommandBase extends CommandBase {
 
   private RowDescription rowDesc;
-  private ResultSet resultSet;
-  private List<String> columnNames;
-  private List<JsonArray> results;
 
   @Override
   public boolean handleMessage(Message msg) {
     if (msg.getClass() == RowDescription.class) {
       rowDesc = (RowDescription) msg;
-      resultSet = new ResultSet();
-      results = new ArrayList<>();
       Column[] columns = rowDesc.getColumns();
-      columnNames = new ArrayList<>(columns.length);
+      List<String> columnNames = new ArrayList<>(columns.length);
       for (Column columnDesc : columns) {
         columnNames.add(columnDesc.getName());
       }
+      handleDescription(columnNames);
       return false;
     } else if (msg.getClass() == DataRow.class) {
       DataRow dataRow = (DataRow) msg;
@@ -70,19 +64,11 @@ abstract class QueryCommandBase extends CommandBase {
           break;
         }
       }
-      results.add(row);
-      resultSet.setColumnNames(columnNames);
-      resultSet.setResults(results);
+      handleRow(row);
       return false;
     } else if (msg.getClass() == CommandComplete.class) {
-      CommandComplete complete = (CommandComplete) msg;
       rowDesc = null;
-      ResultSet r = resultSet;
-      resultSet = null;
-      if (r == null) {
-        r = new ResultSet();
-      }
-      handleResult(r);
+      handleComplete();
       return false;
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
@@ -173,7 +159,11 @@ abstract class QueryCommandBase extends CommandBase {
     }
   }
 
-  abstract void handleResult(ResultSet resultSet);
+  abstract void handleDescription(List<String> columnNames);
+
+  abstract void handleRow(JsonArray row);
+
+  abstract void handleComplete();
 
   abstract void fail(Throwable cause);
 }
