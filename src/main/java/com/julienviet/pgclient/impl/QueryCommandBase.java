@@ -27,6 +27,7 @@ import static com.julienviet.pgclient.codec.decoder.message.type.CommandComplete
 import static com.julienviet.pgclient.codec.formatter.DateTimeFormatter.*;
 import static com.julienviet.pgclient.codec.formatter.TimeFormatter.*;
 import static java.nio.charset.StandardCharsets.*;
+import static javax.xml.bind.DatatypeConverter.parseHexBinary;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -163,6 +164,9 @@ abstract class QueryCommandBase extends CommandBase {
         } else {
           row.add(new JsonArray(value));
         }
+        break;
+      case BYTEA:
+        row.add(parseHexBinary(new String(data, 2, data.length - 2, UTF_8)));
         break;
       case BPCHAR:
       case VARCHAR:
