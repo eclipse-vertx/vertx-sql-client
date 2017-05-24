@@ -28,6 +28,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 
+import static java.nio.charset.StandardCharsets.*;
+
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
@@ -548,6 +550,21 @@ public abstract class PgTestBase {
           ctx.assertEquals(1, result.getNumRows());
           JsonArray jsonArray = result.getResults().get(0).getJsonArray(0);
           ctx.assertEquals(new JsonArray("[1,true,null,9.5,\"Hi\"]"), jsonArray);
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testByteaTextDataType(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT '12345678910'::BYTEA",
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.getNumRows());
+          byte[] bytea = result.getResults().get(0).getBinary(0);
+          ctx.assertEquals("12345678910", new String(bytea, UTF_8));
           async.complete();
         }));
     }));
