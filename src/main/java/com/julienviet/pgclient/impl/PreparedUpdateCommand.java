@@ -80,6 +80,7 @@ class PreparedUpdateCommand extends UpdateCommandBase {
 
   @Override
   void fail(Throwable cause) {
+    cause.printStackTrace();
     throw new UnsupportedOperationException("Not yet implemented");
   }
 }

@@ -6,6 +6,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.ext.sql.ResultSet;
+import io.vertx.ext.sql.UpdateResult;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,9 +29,9 @@ class PreparedStatementImpl implements PreparedStatement {
   }
 
   @Override
-  public void execute(PostgresBatch batch, Handler<AsyncResult<List<ResultSet>>> resultHandler) {
+  public void execute(PostgresBatch batch, Handler<AsyncResult<List<UpdateResult>>> resultHandler) {
     BatchImpl batchImpl = (BatchImpl) batch;
-    conn.schedule(new PreparedQueryCommand(this, batchImpl.values, resultHandler));
+    conn.schedule(new PreparedUpdateCommand(this, batchImpl.values, resultHandler));
   }
 
   @Override

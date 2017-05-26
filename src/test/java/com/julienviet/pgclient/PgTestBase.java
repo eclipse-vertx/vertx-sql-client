@@ -10,6 +10,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.sql.TransactionIsolation;
+import io.vertx.ext.sql.UpdateResult;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -735,24 +736,20 @@ public abstract class PgTestBase {
   }
 
   @Test
-  public void testBatchSelect(TestContext ctx) {
+  public void testBatchUpdate(TestContext ctx) {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       PostgresBatch batch = PostgresBatch.batch();
-      batch.add(5, "A computer program does what you tell it to do, not what you want it to do.");
-      batch.add(5, "A computer program does what you tell it to do, not what you want it to do.");
-      batch.add(5, "A computer program does what you tell it to do, not what you want it to do.");
-      PreparedStatement prepared = conn.prepare("SELECT id, message FROM Fortune WHERE id=$1 AND message =$2");
+      batch.add("val0", 1);
+      batch.add("val1", 2);
+      batch.add("var2", 3);
+      PreparedStatement prepared = conn.prepare("UPDATE Fortune SET message=$1 WHERE id=$2");
       prepared.execute(batch, ctx.asyncAssertSuccess(results -> {
         ctx.assertEquals(3, results.size());
         for (int i = 0;i < 3;i++) {
-          ResultSet result = results.get(i);
-          ctx.assertEquals(1, result.getNumRows());
-          ctx.assertNotNull(result.getResults().get(0).getValue(0));
-          ctx.assertNotNull(result.getResults().get(0).getValue(1));
-          ctx.assertEquals(5, result.getResults().get(0).getValue(0));
-          ctx.assertEquals("A computer program does what you tell it to do, not what you want it to do.", result.getResults().get(0).getValue(1));
+          UpdateResult result = results.get(i);
+          ctx.assertEquals(1, result.getUpdated());
         }
         prepared.close(ctx.asyncAssertSuccess(result -> {
           async.complete();
