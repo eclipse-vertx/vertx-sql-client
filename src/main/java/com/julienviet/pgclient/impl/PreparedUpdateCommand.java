@@ -11,7 +11,6 @@ import com.julienviet.pgclient.codec.encoder.message.Describe;
 import com.julienviet.pgclient.codec.encoder.message.Execute;
 import com.julienviet.pgclient.codec.encoder.message.Parse;
 import com.julienviet.pgclient.codec.encoder.message.Sync;
-import com.julienviet.pgclient.codec.util.Util;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -19,6 +18,8 @@ import io.vertx.ext.sql.UpdateResult;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.julienviet.pgclient.codec.util.Util.*;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
@@ -46,7 +47,7 @@ class PreparedUpdateCommand extends UpdateCommandBase {
       conn.writeToChannel(new Parse(ps.sql).setStatement(ps.stmt));
     }
     for (List<Object> params : paramsList) {
-      conn.writeToChannel(new Bind(Util.paramValues(params)).setStatement(ps.stmt));
+      conn.writeToChannel(new Bind().setParamValues(paramValues(params)).setStatement(ps.stmt));
       conn.writeToChannel(new Describe().setStatement(ps.stmt));
       conn.writeToChannel(new Execute().setRowCount(0));
     }
