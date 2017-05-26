@@ -15,6 +15,10 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.ext.sql.TransactionIsolation;
 
+import java.util.EnumMap;
+
+import static io.vertx.ext.sql.TransactionIsolation.*;
+
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
@@ -22,33 +26,21 @@ import io.vertx.ext.sql.TransactionIsolation;
 class PreparedTxUpdateCommand extends TxUpdateCommandBase {
 
   final Handler<AsyncResult<Void>> handler;
-  private TransactionIsolation isolation;
+  final TransactionIsolation isolation;
+  final EnumMap<TransactionIsolation, String> txMap = new EnumMap<>(TransactionIsolation.class);
 
   PreparedTxUpdateCommand(TransactionIsolation isolation, Handler<AsyncResult<Void>> handler) {
     this.isolation = isolation;
     this.handler = handler;
+    txMap.put(READ_COMMITTED, "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED");
+    txMap.put(REPEATABLE_READ, "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL REPEATABLE READ");
+    txMap.put(READ_UNCOMMITTED, "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ UNCOMMITTED");
+    txMap.put(SERIALIZABLE, "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL SERIALIZABLE");
   }
 
   @Override
   boolean exec(DbConnection conn) {
-    switch (isolation) {
-      case READ_COMMITTED:{
-        conn.writeToChannel(new Parse("SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED"));
-      }
-      break;
-      case REPEATABLE_READ:{
-        conn.writeToChannel(new Parse("SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL REPEATABLE READ"));
-      }
-      break;
-      case READ_UNCOMMITTED: {
-        conn.writeToChannel(new Parse("SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ UNCOMMITTED"));
-      }
-      break;
-      case SERIALIZABLE:{
-        conn.writeToChannel(new Parse("SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL SERIALIZABLE"));
-      }
-      break;
-    }
+    conn.writeToChannel(new Parse(txMap.get(isolation)));
     conn.writeToChannel(new Bind());
     conn.writeToChannel(new Execute().setRowCount(1));
     conn.writeToChannel(Sync.INSTANCE);
