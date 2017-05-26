@@ -1,7 +1,7 @@
 package com.julienviet.pgclient.codec.encoder.message;
 
-import com.julienviet.pgclient.codec.decoder.message.BindComplete;
 import com.julienviet.pgclient.codec.Message;
+import com.julienviet.pgclient.codec.decoder.message.BindComplete;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
 
 import java.util.Arrays;
@@ -24,10 +24,21 @@ public class Bind implements Message {
 
   private String statement;
   private String portal;
-  private final byte[][] paramValues;
+  private byte[][] paramValues;
+  private int[] paramFormats;
 
-  public Bind(byte[][] paramValues) {
+  public Bind setParamValues(byte[][] paramValues) {
     this.paramValues = paramValues;
+    return this;
+  }
+
+  public Bind setParamFormats(int[] paramFormats) {
+    this.paramFormats = paramFormats;
+    return this;
+  }
+
+  public int[] getParamFormats() {
+    return paramFormats;
   }
 
   public Bind setStatement(String statement) {
@@ -59,13 +70,15 @@ public class Bind implements Message {
     Bind bind = (Bind) o;
     return Objects.equals(statement, bind.statement) &&
       Objects.equals(portal, bind.portal) &&
-      Arrays.equals(paramValues, bind.paramValues);
+      Arrays.equals(paramValues, bind.paramValues) &&
+      Arrays.equals(paramFormats, bind.paramFormats);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(statement, portal, paramValues);
+    return Objects.hash(statement, portal, paramValues, paramFormats);
   }
+
 
   @Override
   public String toString() {
@@ -73,7 +86,7 @@ public class Bind implements Message {
       "statement='" + statement + '\'' +
       ", portal='" + portal + '\'' +
       ", paramValues=" + Arrays.toString(paramValues) +
+      ", paramFormats=" + Arrays.toString(paramFormats) +
       '}';
   }
-
 }
