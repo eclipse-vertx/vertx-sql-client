@@ -23,7 +23,7 @@ import static com.julienviet.pgclient.codec.DataType.*;
 import static com.julienviet.pgclient.codec.formatter.DateTimeFormatter.*;
 import static com.julienviet.pgclient.codec.formatter.TimeFormatter.*;
 import static java.nio.charset.StandardCharsets.*;
-import static javax.xml.bind.DatatypeConverter.*;
+import static javax.xml.bind.DatatypeConverter.parseHexBinary;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -100,6 +100,10 @@ abstract class QueryCommandBase extends CommandBase {
       }
       return;
     }
+    if(type == BYTEA) {
+      row.add(parseHexBinary(new String(data, 2, data.length - 2, UTF_8)));
+      return;
+    }
     String value = new String(data, UTF_8);
     switch (type) {
       case INT2:
@@ -142,9 +146,6 @@ abstract class QueryCommandBase extends CommandBase {
         } else {
           row.add(new JsonArray(value));
         }
-        break;
-      case BYTEA:
-        row.add(parseHexBinary(new String(data, 2, data.length - 2, UTF_8)));
         break;
       case BPCHAR:
       case VARCHAR:
