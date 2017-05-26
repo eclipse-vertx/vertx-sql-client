@@ -116,35 +116,69 @@ public class MessageEncoder extends MessageToByteEncoder<Message> {
 
   private void encodeParse(Message message, ByteBuf out) {
     Parse parse = (Parse) message;
+    int[] paramDataTypes = parse.getParamDataTypes();
     out.writeByte(PARSE);
     out.writeInt(0);
-    Util.writeCStringUTF8(out, parse.getStatement() != null ? parse.getStatement() : "");
+    if(parse.getStatement() == null) {
+      out.writeByte(0);
+    } else {
+      Util.writeCStringUTF8(out, parse.getStatement());
+    }
     Util.writeCStringUTF8(out, parse.getQuery());
-    out.writeShort(0); // no parameter data types (OIDs)
+    // no parameter data types (OIDs)
+    if(paramDataTypes == null) {
+      out.writeShort(0);
+    } else {
+      // Parameter data types (OIDs)
+      out.writeShort(paramDataTypes.length);
+      for (int c = 0; c < paramDataTypes.length; ++c) {
+        out.writeInt(paramDataTypes[c]);
+      }
+    }
     out.setInt(1, out.writerIndex() - 1);
   }
 
   private void encodeBind(Message message, ByteBuf out) {
     Bind bind = (Bind) message;
     byte[][] paramValues = bind.getParamValues();
+    int[] paramFormats = bind.getParamFormats();
     out.writeByte(BIND);
     out.writeInt(0);
-    Util.writeCStringUTF8(out, bind.getPortal() != null ? bind.getPortal() : "");
-    Util.writeCStringUTF8(out, bind.getStatement() != null ? bind.getStatement() : "");
-    out.writeShort(0);
-    // Parameter values
-    out.writeShort(paramValues.length);
-    for (int c = 0; c < paramValues.length; ++c) {
-      if (paramValues[c] == null) {
-        // NULL value
-        out.writeInt(-1);
-      } else {
-        // Not NULL value
-        out.writeInt(paramValues[c].length);
-        out.writeBytes(paramValues[c]);
+    if(bind.getPortal() == null) {
+      out.writeByte(0);
+    } else {
+      Util.writeCStringUTF8(out, bind.getPortal());
+    }
+    if(bind.getStatement() == null) {
+      out.writeByte(0);
+    } else {
+      Util.writeCStringUTF8(out, bind.getStatement());
+    }
+    if(paramValues == null) {
+      // No parameter formats
+      out.writeShort(0);
+      // No parameter values
+      out.writeShort(0);
+    } else {
+      // Parameter formats
+      out.writeShort(paramValues.length);
+      for (int c = 0; c < paramValues.length; ++c) {
+        // for now each format is TEXT
+        out.writeShort(0);
+      }
+      out.writeShort(paramValues.length);
+      for (int c = 0; c < paramValues.length; ++c) {
+        if (paramValues[c] == null) {
+          // NULL value
+          out.writeInt(-1);
+        } else {
+          // Not NULL value
+          out.writeInt(paramValues[c].length);
+          out.writeBytes(paramValues[c]);
+        }
       }
     }
-    // TEXT format
+    // Result columns are all in TEXT format
     out.writeShort(0);
     out.setInt(1, out.writerIndex() - 1);
   }
