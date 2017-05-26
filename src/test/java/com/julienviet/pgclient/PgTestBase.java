@@ -8,6 +8,8 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.sql.ResultSet;
+import io.vertx.ext.sql.SQLConnection;
+import io.vertx.ext.sql.TransactionIsolation;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -875,6 +877,161 @@ public abstract class PgTestBase {
         }));
       }));
     }));
+  }
+
+  @Test
+  public void testSQLConnection(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    client.getConnection(c -> {
+      SQLConnection conn = c.result();
+      conn.query("SELECT 1", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getNumRows());
+        async.complete();
+      }));
+    });
+  }
+
+  @Test
+  public void testSelectForQueryWithParams(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    client.getConnection(c -> {
+      SQLConnection conn = c.result();
+      conn.queryWithParams("SELECT * FROM Fortune WHERE id=$1", new JsonArray().add(1) ,
+        ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getNumRows());
+        async.complete();
+      }));
+    });
+  }
+
+  @Test
+  public void testInsertForUpdateWithParams(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    client.getConnection(c -> {
+      SQLConnection conn = c.result();
+      conn.updateWithParams("INSERT INTO Fortune (id, message) VALUES ($1, $2)", new JsonArray().add(1234).add("Yes!"),
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.getUpdated());
+          async.complete();
+        }));
+    });
+  }
+
+  @Test
+  public void testUpdateForUpdateWithParams(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    client.getConnection(c -> {
+      SQLConnection conn = c.result();
+      conn.updateWithParams("UPDATE Fortune SET message = $1 WHERE id = $2", new JsonArray().add("Hello").add(1),
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.getUpdated());
+          async.complete();
+        }));
+    });
+  }
+
+  @Test
+  public void testDeleteForUpdateWithParams(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    client.getConnection(c -> {
+      SQLConnection conn = c.result();
+      conn.updateWithParams("DELETE FROM Fortune WHERE id = $1", new JsonArray().add(3),
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.getUpdated());
+          async.complete();
+        }));
+    });
+  }
+
+  @Test
+  public void testGetDefaultTx(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    client.getConnection(c -> {
+      SQLConnection conn = c.result();
+      conn.getTransactionIsolation(ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(TransactionIsolation.READ_COMMITTED, result);
+        async.complete();
+      }));
+    });
+  }
+
+  @Test
+  public void testSetUnsupportedTx(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    client.getConnection(c -> {
+      SQLConnection conn = c.result();
+      conn.setTransactionIsolation(TransactionIsolation.NONE, ctx.asyncAssertFailure(result -> {
+        ctx.assertEquals("None transaction isolation is not supported", result.getMessage());
+        async.complete();
+      }));
+    });
+  }
+
+  @Test
+  public void testSetAndGetReadUncommittedTx(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    client.getConnection(c -> {
+      SQLConnection conn = c.result();
+      conn.setTransactionIsolation(TransactionIsolation.READ_UNCOMMITTED, ctx.asyncAssertSuccess(result -> {
+        conn.getTransactionIsolation(ctx.asyncAssertSuccess(res -> {
+          ctx.assertEquals(TransactionIsolation.READ_UNCOMMITTED, res);
+          async.complete();
+        }));
+      }));
+    });
+  }
+
+  @Test
+  public void testSetAndGetReadCommittedTx(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    client.getConnection(c -> {
+      SQLConnection conn = c.result();
+      conn.setTransactionIsolation(TransactionIsolation.READ_COMMITTED, ctx.asyncAssertSuccess(result -> {
+        conn.getTransactionIsolation(ctx.asyncAssertSuccess(res -> {
+          ctx.assertEquals(TransactionIsolation.READ_COMMITTED, res);
+          async.complete();
+        }));
+      }));
+    });
+  }
+
+  @Test
+  public void testSetAndGetRepeatableReadTx(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    client.getConnection(c -> {
+      SQLConnection conn = c.result();
+      conn.setTransactionIsolation(TransactionIsolation.REPEATABLE_READ, ctx.asyncAssertSuccess(result -> {
+        conn.getTransactionIsolation(ctx.asyncAssertSuccess(res -> {
+          ctx.assertEquals(TransactionIsolation.REPEATABLE_READ, res);
+          async.complete();
+        }));
+      }));
+    });
+  }
+
+  @Test
+  public void testSetAndGetSerializableTx(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    client.getConnection(c -> {
+      SQLConnection conn = c.result();
+      conn.setTransactionIsolation(TransactionIsolation.SERIALIZABLE, ctx.asyncAssertSuccess(result -> {
+        conn.getTransactionIsolation(ctx.asyncAssertSuccess(res -> {
+          ctx.assertEquals(TransactionIsolation.SERIALIZABLE, res);
+          async.complete();
+        }));
+      }));
+    });
   }
 
 /*
