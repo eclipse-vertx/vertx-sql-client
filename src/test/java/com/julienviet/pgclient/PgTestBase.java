@@ -740,18 +740,18 @@ public abstract class PgTestBase {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      PostgresBatch batch = PostgresBatch.batch();
+      PreparedStatement ps = conn.prepare("UPDATE Fortune SET message=$1 WHERE id=$2");
+      Batch batch = ps.batch();
       batch.add("val0", 1);
       batch.add("val1", 2);
       batch.add("var2", 3);
-      PreparedStatement prepared = conn.prepare("UPDATE Fortune SET message=$1 WHERE id=$2");
-      prepared.execute(batch, ctx.asyncAssertSuccess(results -> {
+      batch.execute(ctx.asyncAssertSuccess(results -> {
         ctx.assertEquals(3, results.size());
         for (int i = 0;i < 3;i++) {
           UpdateResult result = results.get(i);
           ctx.assertEquals(1, result.getUpdated());
         }
-        prepared.close(ctx.asyncAssertSuccess(result -> {
+        ps.close(ctx.asyncAssertSuccess(result -> {
           async.complete();
         }));
       }));

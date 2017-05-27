@@ -1,11 +1,10 @@
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.PostgresBatch;
+import com.julienviet.pgclient.Batch;
 import com.julienviet.pgclient.PreparedStatement;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
 
 import java.util.List;
@@ -16,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 class PreparedStatementImpl implements PreparedStatement {
 
-  private final DbConnection conn;
+  final DbConnection conn;
   final String sql;
   final AtomicBoolean closed = new AtomicBoolean();
   boolean parsed;
@@ -29,9 +28,8 @@ class PreparedStatementImpl implements PreparedStatement {
   }
 
   @Override
-  public void execute(PostgresBatch batch, Handler<AsyncResult<List<UpdateResult>>> resultHandler) {
-    BatchImpl batchImpl = (BatchImpl) batch;
-    conn.schedule(new PreparedUpdateCommand(this, batchImpl.values, resultHandler));
+  public Batch batch() {
+    return new BatchImpl(this);
   }
 
   @Override
