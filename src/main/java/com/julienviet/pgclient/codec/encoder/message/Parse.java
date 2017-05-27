@@ -4,6 +4,7 @@ import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
 import com.julienviet.pgclient.codec.decoder.message.ParseComplete;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -20,9 +21,20 @@ public class Parse implements Message {
 
   private final String query;
   private String statement;
+  private int[] paramDataTypes;
 
   public Parse(String query) {
     this.query = query;
+  }
+
+  public Parse setStatement(String statement) {
+    this.statement = statement;
+    return this;
+  }
+
+  public Parse setParamDataTypes(int[] paramDataTypes) {
+    this.paramDataTypes = paramDataTypes;
+    return this;
   }
 
   public String getStatement() {
@@ -33,11 +45,10 @@ public class Parse implements Message {
     return query;
   }
 
-
-  public Parse setStatement(String statement) {
-    this.statement = statement;
-    return this;
+  public int[] getParamDataTypes() {
+    return paramDataTypes;
   }
+
 
   @Override
   public boolean equals(Object o) {
@@ -45,12 +56,13 @@ public class Parse implements Message {
     if (o == null || getClass() != o.getClass()) return false;
     Parse parse = (Parse) o;
     return Objects.equals(query, parse.query) &&
-      Objects.equals(statement, parse.statement);
+      Objects.equals(statement, parse.statement) &&
+      Arrays.equals(paramDataTypes, parse.paramDataTypes);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(query, statement);
+    return Objects.hash(query, statement, paramDataTypes);
   }
 
 
@@ -59,6 +71,7 @@ public class Parse implements Message {
     return "Parse{" +
       "query='" + query + '\'' +
       ", statement='" + statement + '\'' +
+      ", paramDataTypes=" + Arrays.toString(paramDataTypes) +
       '}';
   }
 }

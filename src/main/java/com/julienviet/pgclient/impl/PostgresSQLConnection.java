@@ -1,20 +1,26 @@
 package com.julienviet.pgclient.impl;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.sql.SQLRowStream;
 import io.vertx.ext.sql.TransactionIsolation;
 import io.vertx.ext.sql.UpdateResult;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 public class PostgresSQLConnection implements SQLConnection {
+
+  private static final Logger log = LoggerFactory.getLogger(PostgresSQLConnection.class);
 
   private final DbConnection conn;
 
@@ -23,7 +29,7 @@ public class PostgresSQLConnection implements SQLConnection {
   }
 
   @Override
-  public SQLConnection setAutoCommit(boolean b, Handler<AsyncResult<Void>> handler) {
+  public SQLConnection setAutoCommit(boolean autoCommit, Handler<AsyncResult<Void>> handler) {
     throw new UnsupportedOperationException();
   }
 
@@ -34,17 +40,23 @@ public class PostgresSQLConnection implements SQLConnection {
 
   @Override
   public SQLConnection query(String s, Handler<AsyncResult<ResultSet>> handler) {
-    throw new UnsupportedOperationException();
+    conn.schedule(new QueryCommand(s, handler));
+    return this;
   }
 
   @Override
-  public SQLConnection queryStream(String s, Handler<AsyncResult<SQLRowStream>> handler) {
+  public SQLConnection queryStream(String sql, Handler<AsyncResult<SQLRowStream>> handler) {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public SQLConnection queryWithParams(String s, JsonArray jsonArray, Handler<AsyncResult<ResultSet>> handler) {
-    throw new UnsupportedOperationException();
+    PreparedStatementImpl ps = new PreparedStatementImpl(conn, s, "");
+    CommandBase cmd = new PreparedQueryCommand(ps, Collections.singletonList(jsonArray.getList()), ar -> {
+      handler.handle(ar.map(results -> results.get(0)));
+    });
+    conn.schedule(cmd);
+    return this;
   }
 
   @Override
@@ -54,12 +66,17 @@ public class PostgresSQLConnection implements SQLConnection {
 
   @Override
   public SQLConnection update(String s, Handler<AsyncResult<UpdateResult>> handler) {
-    throw new UnsupportedOperationException();
+    conn.schedule(new UpdateCommand(s, handler));
+    return this;
   }
 
   @Override
-  public SQLConnection updateWithParams(String s, JsonArray jsonArray, Handler<AsyncResult<UpdateResult>> handler) {
-    throw new UnsupportedOperationException();
+  public SQLConnection updateWithParams(String sql, JsonArray jsonArray, Handler<AsyncResult<UpdateResult>> handler) {
+    PreparedStatementImpl ps = new PreparedStatementImpl(conn, sql, "");
+    conn.schedule(new PreparedUpdateCommand(ps, Collections.singletonList(jsonArray.getList()), ar -> {
+      handler.handle(ar.map(results -> results.get(0)));
+    }));
+    return this;
   }
 
   @Override
@@ -68,7 +85,7 @@ public class PostgresSQLConnection implements SQLConnection {
   }
 
   @Override
-  public SQLConnection callWithParams(String s, JsonArray jsonArray, JsonArray jsonArray1, Handler<AsyncResult<ResultSet>> handler) {
+  public SQLConnection callWithParams(String s, JsonArray jsonArray, JsonArray out, Handler<AsyncResult<ResultSet>> handler) {
     throw new UnsupportedOperationException();
   }
 
@@ -113,12 +130,18 @@ public class PostgresSQLConnection implements SQLConnection {
   }
 
   @Override
-  public SQLConnection setTransactionIsolation(TransactionIsolation transactionIsolation, Handler<AsyncResult<Void>> handler) {
-    throw new UnsupportedOperationException();
+  public SQLConnection setTransactionIsolation(TransactionIsolation isolation, Handler<AsyncResult<Void>> handler) {
+    if(isolation == TransactionIsolation.NONE) {
+      handler.handle(Future.failedFuture("None transaction isolation is not supported"));
+    } else {
+      conn.schedule(new PreparedTxUpdateCommand(isolation, handler));
+    }
+    return this;
   }
 
   @Override
   public SQLConnection getTransactionIsolation(Handler<AsyncResult<TransactionIsolation>> handler) {
-    throw new UnsupportedOperationException();
+    conn.schedule(new PreparedTxQueryCommand(handler));
+    return this;
   }
 }

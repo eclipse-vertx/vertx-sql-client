@@ -4,6 +4,7 @@ package com.julienviet.pgclient;
 import org.junit.Test;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -11,12 +12,6 @@ public class JdbcTest extends JdbcTestBase {
 
   @Test
   public void testInsertBatch() throws SQLException {
-
-    Statement stmt = con.createStatement();
-
-    stmt.execute("BEGIN");
-
-    assertEquals(false, stmt.isClosed());
 
     PreparedStatement ps = con.prepareStatement("INSERT INTO Fortune (id, message) VALUES (?, ?)");
 
@@ -32,6 +27,7 @@ public class JdbcTest extends JdbcTestBase {
     ps.setString(2, "World");
     ps.addBatch();
 
+    ps.executeBatch();
 
     assertEquals(-1, ps.getUpdateCount());
 
@@ -39,19 +35,33 @@ public class JdbcTest extends JdbcTestBase {
 
     assertEquals(true, ps.isClosed());
 
-    stmt.execute("COMMIT");
-
-    stmt.close();
-
-    assertEquals(true, stmt.isClosed());
   }
 
   @Test
-  public void testInsertPreparedStmt() throws SQLException {
-    PreparedStatement ps = con.prepareStatement("INSERT INTO Fortune (id, message) VALUES (?, ?)");
-    ps.setInt(1,3000);
-    ps.setString(2, "Hello INSERT");
-    assertEquals(false , ps.execute());
+  public void testInsertPreparedStmtWithId() throws SQLException {
+    PreparedStatement ps = con.prepareStatement("INSERT INTO Fortune (id , message) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
+    ps.setInt(1, 9000);
+    ps.setString(2, "Hello World");
+    assertEquals(1, ps.executeUpdate());
+    ResultSet re = ps.getGeneratedKeys();
+    re.next();
+    assertEquals(9000, re.getInt(1));
+    assertEquals("Hello World", re.getString(2));
+    ps.close();
+  }
+
+  @Test
+  public void testUpdatePreparedStmtWithId() throws SQLException {
+    con.setAutoCommit(false);
+    PreparedStatement ps = con.prepareStatement("UPDATE Fortune SET message = ? WHERE id = ?", Statement.RETURN_GENERATED_KEYS);
+    ps.setString(1, "Hello World");
+    ps.setInt(2, 1);
+    assertEquals(1, ps.executeUpdate());
+    con.commit();
+    ResultSet re = ps.getGeneratedKeys();
+    re.next();
+    assertEquals(1, re.getInt(1));
+    assertEquals("Hello World", re.getString(2));
     ps.close();
   }
 }

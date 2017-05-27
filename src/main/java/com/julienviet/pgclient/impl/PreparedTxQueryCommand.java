@@ -14,43 +14,25 @@ import com.julienviet.pgclient.codec.encoder.message.Sync;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.ext.sql.UpdateResult;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.julienviet.pgclient.codec.util.Util.*;
+import io.vertx.ext.sql.TransactionIsolation;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-class PreparedUpdateCommand extends UpdateCommandBase {
+public class PreparedTxQueryCommand extends TxQueryCommandBase {
 
-
-  final PreparedStatementImpl ps;
-  final List<List<Object>> paramsList;
-  final Handler<AsyncResult<List<UpdateResult>>> handler;
-  private ArrayList<UpdateResult> results;
-
-  PreparedUpdateCommand(PreparedStatementImpl ps, List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
-    this.ps = ps;
-    this.paramsList = paramsList;
+  private final Handler<AsyncResult<TransactionIsolation>> handler;
+  public PreparedTxQueryCommand(Handler<AsyncResult<TransactionIsolation>> handler) {
     this.handler = handler;
-    this.results = new ArrayList<>(paramsList.size()); // Should reuse the paramsList for this as it's already allocated
   }
 
   @Override
   boolean exec(DbConnection conn) {
-    if (!ps.parsed) {
-      ps.parsed = true;
-      conn.writeToChannel(new Parse(ps.sql).setStatement(ps.stmt));
-    }
-    for (List<Object> params : paramsList) {
-      conn.writeToChannel(new Bind().setParamValues(paramValues(params)).setStatement(ps.stmt));
-      conn.writeToChannel(new Describe().setStatement(ps.stmt));
-      conn.writeToChannel(new Execute().setRowCount(0));
-    }
+    conn.writeToChannel(new Parse("SHOW TRANSACTION ISOLATION LEVEL"));
+    conn.writeToChannel(new Bind());
+    conn.writeToChannel(new Describe());
+    conn.writeToChannel(new Execute().setRowCount(0));
     conn.writeToChannel(Sync.INSTANCE);
     return true;
   }
@@ -58,7 +40,6 @@ class PreparedUpdateCommand extends UpdateCommandBase {
   @Override
   public boolean handleMessage(Message msg) {
     if (msg.getClass() == ReadyForQuery.class) {
-      handler.handle(Future.succeededFuture(results));
       return true;
     } else if (msg.getClass() == ParameterDescription.class) {
       return false;
@@ -74,12 +55,12 @@ class PreparedUpdateCommand extends UpdateCommandBase {
   }
 
   @Override
-  void handleResult(UpdateResult result) {
-    results.add(result);
+  void handleResult(TransactionIsolation isolation) {
+    handler.handle(Future.succeededFuture(isolation));
   }
 
   @Override
   void fail(Throwable cause) {
-    throw new UnsupportedOperationException("Not yet implemented");
+    handler.handle(Future.failedFuture(cause));
   }
 }

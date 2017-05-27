@@ -57,7 +57,7 @@ class PreparedQueryCommand extends QueryCommandBase {
       conn.writeToChannel(new Parse(ps.sql).setStatement(ps.stmt));
     }
     for (List<Object> params : paramsList) {
-      conn.writeToChannel(new Bind(Util.paramValues(params)).setStatement(ps.stmt));
+      conn.writeToChannel(new Bind().setParamValues(Util.paramValues(params)).setStatement(ps.stmt));
       conn.writeToChannel(new Describe().setStatement(ps.stmt));
       conn.writeToChannel(new Execute().setRowCount(0));
     }
