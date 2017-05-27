@@ -736,6 +736,22 @@ public abstract class PgTestBase {
   }
 
   @Test
+  public void testPreparedQuery(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      PreparedStatement ps = conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6");
+      Query query = ps.query(1, 8, 4, 11, 2, 9);
+      query.execute(ctx.asyncAssertSuccess(results -> {
+        ctx.assertEquals(6, results.getNumRows());
+        ps.close(ctx.asyncAssertSuccess(result -> {
+          async.complete();
+        }));
+      }));
+    }));
+  }
+
+  @Test
   public void testBatchUpdate(TestContext ctx) {
     Async async = ctx.async();
     PostgresClient client = PostgresClient.create(vertx, options);

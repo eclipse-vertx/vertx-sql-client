@@ -73,9 +73,7 @@ class PostgresConnectionImpl implements PostgresConnection {
   @Override
   public void prepareAndQuery(String sql, List<Object> params, Handler<AsyncResult<ResultSet>> handler) {
     PreparedStatementImpl ps = new PreparedStatementImpl(dbConnection, sql, "");
-    CommandBase cmd = new PreparedQueryCommand(ps, Collections.singletonList(params), ar -> {
-      handler.handle(ar.map(results -> results.get(0)));
-    });
+    CommandBase cmd = new PreparedQueryCommand(ps, params, handler);
     dbConnection.schedule(cmd);
   }
 

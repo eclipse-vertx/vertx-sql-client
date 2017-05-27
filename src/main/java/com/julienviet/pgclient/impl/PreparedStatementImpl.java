@@ -2,11 +2,14 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.Batch;
 import com.julienviet.pgclient.PreparedStatement;
+import com.julienviet.pgclient.Query;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.ext.sql.UpdateResult;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -25,6 +28,46 @@ class PreparedStatementImpl implements PreparedStatement {
     this.conn = conn;
     this.sql = sql;
     this.stmt = stmt;
+  }
+
+  @Override
+  public Query query() {
+    return new QueryImpl(this, Collections.emptyList());
+  }
+
+  @Override
+  public Query query(Object param1) {
+    return new QueryImpl(this, Collections.singletonList(param1));
+  }
+
+  @Override
+  public Query query(Object param1, Object param2) {
+    return new QueryImpl(this, Arrays.asList(param1, param2));
+  }
+
+  @Override
+  public Query query(Object param1, Object param2, Object param3) {
+    return new QueryImpl(this, Arrays.asList(param1, param2, param3));
+  }
+
+  @Override
+  public Query query(Object param1, Object param2, Object param3, Object param4) {
+    return new QueryImpl(this, Arrays.asList(param1, param2, param3, param4));
+  }
+
+  @Override
+  public Query query(Object param1, Object param2, Object param3, Object param4, Object param5) {
+    return new QueryImpl(this, Arrays.asList(param1, param2, param3, param4, param5));
+  }
+
+  @Override
+  public Query query(Object param1, Object param2, Object param3, Object param4, Object param5, Object param6) {
+    return new QueryImpl(this, Arrays.asList(param1, param2, param3, param4, param5, param6));
+  }
+
+  @Override
+  public Query query(List<Object> params) {
+    return new QueryImpl(this, params);
   }
 
   @Override

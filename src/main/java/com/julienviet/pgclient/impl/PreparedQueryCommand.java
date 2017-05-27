@@ -28,16 +28,14 @@ class PreparedQueryCommand extends QueryCommandBase {
 
 
   final PreparedStatementImpl ps;
-  final List<List<Object>> paramsList;
-  final Handler<AsyncResult<List<ResultSet>>> handler;
-  private ArrayList<ResultSet> results;
+  final List<Object> params;
+  final Handler<AsyncResult<ResultSet>> handler;
   private ResultSet result;
 
-  PreparedQueryCommand(PreparedStatementImpl ps, List<List<Object>> paramsList, Handler<AsyncResult<List<ResultSet>>> handler) {
+  PreparedQueryCommand(PreparedStatementImpl ps, List<Object> params, Handler<AsyncResult<ResultSet>> handler) {
     this.ps = ps;
-    this.paramsList = paramsList;
+    this.params = params;
     this.handler = handler;
-    this.results = new ArrayList<>(paramsList.size()); // Should reuse the paramsList for this as it's already allocated
   }
 
   @Override
@@ -56,11 +54,9 @@ class PreparedQueryCommand extends QueryCommandBase {
       ps.parsed = true;
       conn.writeToChannel(new Parse(ps.sql).setStatement(ps.stmt));
     }
-    for (List<Object> params : paramsList) {
-      conn.writeToChannel(new Bind().setParamValues(Util.paramValues(params)).setStatement(ps.stmt));
-      conn.writeToChannel(new Describe().setStatement(ps.stmt));
-      conn.writeToChannel(new Execute().setRowCount(0));
-    }
+    conn.writeToChannel(new Bind().setParamValues(Util.paramValues(params)).setStatement(ps.stmt));
+    conn.writeToChannel(new Describe().setStatement(ps.stmt));
+    conn.writeToChannel(new Execute().setRowCount(0));
     conn.writeToChannel(Sync.INSTANCE);
     return true;
   }
@@ -68,7 +64,7 @@ class PreparedQueryCommand extends QueryCommandBase {
   @Override
   public boolean handleMessage(Message msg) {
     if (msg.getClass() == ReadyForQuery.class) {
-      handler.handle(Future.succeededFuture(results));
+      handler.handle(Future.succeededFuture(result));
       return true;
     } else if (msg.getClass() == ParameterDescription.class) {
       return false;
@@ -85,8 +81,6 @@ class PreparedQueryCommand extends QueryCommandBase {
 
   @Override
   void handleComplete() {
-    results.add(result);
-    result = null;
   }
 
   @Override
