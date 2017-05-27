@@ -18,7 +18,7 @@ public class QueryImpl implements Query {
 
   final PreparedStatementImpl ps;
   final List<Object> params;
-  private int limit;
+  private int fetch;
   private int status;
   private String portal;
 
@@ -28,8 +28,8 @@ public class QueryImpl implements Query {
   }
 
   @Override
-  public Query limit(int limit) {
-    this.limit = limit;
+  public Query fetch(int size) {
+    this.fetch = size;
     return this;
   }
 
@@ -53,11 +53,11 @@ public class QueryImpl implements Query {
     };
     if (status == READY) {
       status = IN_PROGRESS;
-      portal = limit > 0 ? UUID.randomUUID().toString() : "";
-      ps.conn.schedule(new PreparedQueryCommand(ps, params, limit, portal, false, completionHandler));
+      portal = fetch > 0 ? UUID.randomUUID().toString() : "";
+      ps.conn.schedule(new PreparedQueryCommand(ps, params, fetch, portal, false, completionHandler));
     } else {
       status = IN_PROGRESS;
-      ps.conn.schedule(new PreparedQueryCommand(ps, params, limit, portal, true, completionHandler));
+      ps.conn.schedule(new PreparedQueryCommand(ps, params, fetch, portal, true, completionHandler));
     }
   }
 }

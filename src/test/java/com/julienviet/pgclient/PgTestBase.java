@@ -760,7 +760,7 @@ public abstract class PgTestBase {
       conn.query("BEGIN", ctx.asyncAssertSuccess(v -> {
         PreparedStatement ps = conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6");
         Query query = ps.query(1, 8, 4, 11, 2, 9);
-        query.limit(4);
+        query.fetch(4);
         query.execute(ctx.asyncAssertSuccess(results -> {
           ctx.assertEquals(4, results.getNumRows());
           ctx.assertFalse(results.isComplete());

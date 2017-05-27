@@ -18,7 +18,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
-import io.vertx.ext.sql.ResultSet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +30,7 @@ class PreparedQueryCommand extends QueryCommandBase {
 
   final PreparedStatementImpl ps;
   final List<Object> params;
-  final int limit;
+  final int fetch;
   final Handler<AsyncResult<PgResultSet>> handler;
   private PgResultSet result;
   private final String portal;
@@ -41,11 +40,11 @@ class PreparedQueryCommand extends QueryCommandBase {
   PreparedQueryCommand(PreparedStatementImpl ps, List<Object> params, Handler<AsyncResult<PgResultSet>> handler) {
     this(ps, params, 0, "", false, handler);
   }
-  PreparedQueryCommand(PreparedStatementImpl ps, List<Object> params, int limit, String portal, boolean suspended, Handler<AsyncResult<PgResultSet>> handler) {
+  PreparedQueryCommand(PreparedStatementImpl ps, List<Object> params, int fetch, String portal, boolean suspended, Handler<AsyncResult<PgResultSet>> handler) {
     this.ps = ps;
     this.params = params;
     this.handler = handler;
-    this.limit = limit;
+    this.fetch = fetch;
     this.portal = portal;
     this.suspended = suspended;
   }
@@ -73,7 +72,7 @@ class PreparedQueryCommand extends QueryCommandBase {
       // Needed for now, later see how to remove it
       conn.writeToChannel(new Describe().setPortal(portal));
     }
-    conn.writeToChannel(new Execute().setPortal(portal).setRowCount(limit));
+    conn.writeToChannel(new Execute().setPortal(portal).setRowCount(fetch));
     conn.writeToChannel(Sync.INSTANCE);
     return true;
   }

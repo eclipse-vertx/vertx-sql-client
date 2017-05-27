@@ -13,7 +13,7 @@ import io.vertx.ext.sql.ResultSet;
 public interface Query {
 
   @Fluent
-  Query limit(int limit);
+  Query fetch(int size);
 
   void execute(Handler<AsyncResult<PgResultSet>> handler);
 
