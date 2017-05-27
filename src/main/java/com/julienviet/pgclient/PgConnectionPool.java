@@ -6,9 +6,9 @@ import io.vertx.core.Handler;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public interface PostgresConnectionPool {
+public interface PgConnectionPool {
 
-  void getConnection(Handler<AsyncResult<PostgresConnection>> handler);
+  void getConnection(Handler<AsyncResult<PgConnection>> handler);
 
   void close();
 

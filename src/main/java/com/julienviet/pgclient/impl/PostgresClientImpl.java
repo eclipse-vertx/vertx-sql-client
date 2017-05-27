@@ -1,8 +1,8 @@
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.PostgresClient;
-import com.julienviet.pgclient.PostgresClientOptions;
-import com.julienviet.pgclient.PostgresConnectionPool;
+import com.julienviet.pgclient.PgClient;
+import com.julienviet.pgclient.PgClientOptions;
+import com.julienviet.pgclient.PgConnectionPool;
 import com.julienviet.pgclient.codec.encoder.MessageEncoder;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.Channel;
@@ -17,17 +17,16 @@ import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.impl.NetClientBase;
 import io.vertx.core.net.impl.SSLHelper;
 import io.vertx.core.spi.metrics.TCPMetrics;
-import com.julienviet.pgclient.PostgresConnection;
+import com.julienviet.pgclient.PgConnection;
 import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.decoder.MessageDecoder;
-import com.julienviet.pgclient.codec.encoder.message.StartupMessage;
 import io.vertx.ext.sql.SQLClient;
 import io.vertx.ext.sql.SQLConnection;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class PostgresClientImpl extends NetClientBase<DbConnection> implements PostgresClient {
+public class PostgresClientImpl extends NetClientBase<DbConnection> implements PgClient {
 
   final VertxInternal vertx;
   final String host;
@@ -37,7 +36,7 @@ public class PostgresClientImpl extends NetClientBase<DbConnection> implements P
   final String password;
   final int pipeliningLimit;
 
-  public PostgresClientImpl(Vertx vertx, PostgresClientOptions options) {
+  public PostgresClientImpl(Vertx vertx, PgClientOptions options) {
     super((VertxInternal) vertx, options, true);
     this.host = options.getHost();
     this.port = options.getPort();
@@ -48,7 +47,7 @@ public class PostgresClientImpl extends NetClientBase<DbConnection> implements P
     this.vertx = (VertxInternal) vertx;
   }
 
-  public void connect(Handler<AsyncResult<PostgresConnection>> completionHandler) {
+  public void connect(Handler<AsyncResult<PgConnection>> completionHandler) {
     doConnect(port, host, null, ar1 -> {
       if (ar1.succeeded()) {
         DbConnection conn = ar1.result();
@@ -95,7 +94,7 @@ public class PostgresClientImpl extends NetClientBase<DbConnection> implements P
   }
 
   @Override
-  public PostgresConnectionPool createPool(int size) {
+  public PgConnectionPool createPool(int size) {
     return new PostgresConnectionPoolImpl(this, size);
   }
 

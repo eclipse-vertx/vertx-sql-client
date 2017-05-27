@@ -6,6 +6,6 @@ package com.julienviet.pgclient;
 public class PgTest extends PgTestBase {
 
   public PgTest() {
-    super(PostgresClient::connect);
+    super(PgClient::connect);
   }
 }

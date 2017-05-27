@@ -1,8 +1,8 @@
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.PostgresConnection;
-import com.julienviet.pgclient.PostgresConnectionPool;
-import com.julienviet.pgclient.PreparedStatement;
+import com.julienviet.pgclient.PgConnection;
+import com.julienviet.pgclient.PgConnectionPool;
+import com.julienviet.pgclient.PgPreparedStatement;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-class PostgresConnectionPoolImpl implements PostgresConnectionPool {
+class PostgresConnectionPoolImpl implements PgConnectionPool {
 
   private final PostgresClientImpl client;
   private final Context context;
@@ -30,15 +30,15 @@ class PostgresConnectionPoolImpl implements PostgresConnectionPool {
 
   private static class Waiter {
 
-    private final Handler<AsyncResult<PostgresConnection>> handler;
+    private final Handler<AsyncResult<PgConnection>> handler;
     private final Context context;
 
-    Waiter(Handler<AsyncResult<PostgresConnection>> handler, Context context) {
+    Waiter(Handler<AsyncResult<PgConnection>> handler, Context context) {
       this.handler = handler;
       this.context = context;
     }
 
-    void use(PostgresConnection conn) {
+    void use(PgConnection conn) {
       Context current = Vertx.currentContext();
       if (current == context) {
         handler.handle(Future.succeededFuture(conn));
@@ -57,7 +57,7 @@ class PostgresConnectionPoolImpl implements PostgresConnectionPool {
   }
 
   @Override
-  public void getConnection(Handler<AsyncResult<PostgresConnection>> handler) {
+  public void getConnection(Handler<AsyncResult<PgConnection>> handler) {
     Context current = Vertx.currentContext();
     if (current == context) {
       Holder holder = available.poll();
@@ -76,12 +76,12 @@ class PostgresConnectionPoolImpl implements PostgresConnectionPool {
 
   private class Holder {
 
-    private final PostgresConnection conn;
+    private final PgConnection conn;
     private boolean failed;
     private volatile Handler<Throwable> exceptionHandler;
     private volatile Handler<Void> closeHandler;
 
-    private Holder(PostgresConnection conn) {
+    private Holder(PgConnection conn) {
       this.conn = conn;
       conn.exceptionHandler(err -> {
         failed = true;
@@ -109,8 +109,8 @@ class PostgresConnectionPoolImpl implements PostgresConnectionPool {
       }
     }
 
-    PostgresConnection createProxy() {
-      return new PostgresConnection() {
+    PgConnection createProxy() {
+      return new PgConnection() {
         final AtomicBoolean closed = new AtomicBoolean();
 
         @Override
@@ -251,7 +251,7 @@ class PostgresConnectionPoolImpl implements PostgresConnectionPool {
         }
 
         @Override
-        public PreparedStatement prepare(String sql) {
+        public PgPreparedStatement prepare(String sql) {
           throw new UnsupportedOperationException("Implement me");
         }
 
@@ -267,11 +267,11 @@ class PostgresConnectionPoolImpl implements PostgresConnectionPool {
     }
   }
 
-  private void openConnection(Handler<AsyncResult<PostgresConnection>> handler, Context handlerContext) {
+  private void openConnection(Handler<AsyncResult<PgConnection>> handler, Context handlerContext) {
     client.connect(ar -> {
-      Future<PostgresConnection> result;
+      Future<PgConnection> result;
       if (ar.succeeded()) {
-        PostgresConnection conn = ar.result();
+        PgConnection conn = ar.result();
         result = Future.succeededFuture(new Holder(conn).createProxy());
       } else {
         result = Future.failedFuture(ar.cause());

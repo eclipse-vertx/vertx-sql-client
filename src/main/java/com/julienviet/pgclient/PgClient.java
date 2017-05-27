@@ -9,13 +9,13 @@ import io.vertx.ext.sql.SQLClient;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public interface PostgresClient extends SQLClient {
+public interface PgClient extends SQLClient {
 
-  static PostgresClient create(Vertx vertx, PostgresClientOptions options) {
+  static PgClient create(Vertx vertx, PgClientOptions options) {
     return new PostgresClientImpl(vertx, options);
   }
 
-  void connect(Handler<AsyncResult<PostgresConnection>> completionHandler);
+  void connect(Handler<AsyncResult<PgConnection>> completionHandler);
 
-  PostgresConnectionPool createPool(int size);
+  PgConnectionPool createPool(int size);
 }

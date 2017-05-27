@@ -12,7 +12,7 @@ import java.util.List;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public interface PostgresConnection {
+public interface PgConnection {
 
   void exceptionHandler(Handler<Throwable> handler);
 
@@ -56,7 +56,7 @@ public interface PostgresConnection {
 
   void prepareAndExecute(String sql, List<Object> params, Handler<AsyncResult<UpdateResult>> handler);
 
-  PreparedStatement prepare(String sql);
+  PgPreparedStatement prepare(String sql);
 
   void closeHandler(Handler<Void> handler);
 

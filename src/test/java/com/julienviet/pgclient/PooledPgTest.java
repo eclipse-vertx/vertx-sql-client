@@ -14,7 +14,7 @@ public class PooledPgTest extends PgTestBase {
 
   public PooledPgTest() {
     super((client, handler) -> {
-      PostgresConnectionPool pool = client.createPool(1);
+      PgConnectionPool pool = client.createPool(1);
       pool.getConnection(handler);
     });
   }
@@ -23,8 +23,8 @@ public class PooledPgTest extends PgTestBase {
   public void testPool(TestContext ctx) {
     int num = 1000;
     Async async = ctx.async(num);
-    PostgresClient client = PostgresClient.create(vertx, options);
-    PostgresConnectionPool pool = client.createPool(4);
+    PgClient client = PgClient.create(vertx, options);
+    PgConnectionPool pool = client.createPool(4);
     for (int i = 0;i < num;i++) {
       pool.getConnection(ctx.asyncAssertSuccess(conn -> {
         conn.query("SELECT id, randomnumber from WORLD", ar -> {
@@ -51,8 +51,8 @@ public class PooledPgTest extends PgTestBase {
       conn.connect();
     });
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
-      PostgresClient client = PostgresClient.create(vertx, new PostgresClientOptions(options).setPort(8080).setHost("localhost"));
-      PostgresConnectionPool pool = client.createPool(1);
+      PgClient client = PgClient.create(vertx, new PgClientOptions(options).setPort(8080).setHost("localhost"));
+      PgConnectionPool pool = client.createPool(1);
       pool.getConnection(ctx.asyncAssertSuccess(conn1 -> {
         proxyConn.get().close();
         conn1.closeHandler(v2 -> {
@@ -78,8 +78,8 @@ public class PooledPgTest extends PgTestBase {
       conn.connect();
     });
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
-      PostgresClient client = PostgresClient.create(vertx, new PostgresClientOptions(options).setPort(8080).setHost("localhost"));
-      PostgresConnectionPool pool = client.createPool(1);
+      PgClient client = PgClient.create(vertx, new PgClientOptions(options).setPort(8080).setHost("localhost"));
+      PgConnectionPool pool = client.createPool(1);
       pool.getConnection(ctx.asyncAssertSuccess(conn -> {
         proxyConn.get().close();
       }));

@@ -4,16 +4,15 @@ import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.ext.sql.ResultSet;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 @VertxGen
-public interface Query {
+public interface PgQuery {
 
   @Fluent
-  Query fetch(int size);
+  PgQuery fetch(int size);
 
   void execute(Handler<AsyncResult<PgResultSet>> handler);
 

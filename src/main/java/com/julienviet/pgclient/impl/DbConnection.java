@@ -1,11 +1,10 @@
 package com.julienviet.pgclient.impl;
 
 
-import com.julienviet.pgclient.PostgresConnection;
+import com.julienviet.pgclient.PgConnection;
 import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.encoder.message.Terminate;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -41,7 +40,7 @@ public class DbConnection extends ConnectionBase {
     this.client = client;
   }
 
-  final PostgresConnection conn = new PostgresConnectionImpl(this);
+  final PgConnection conn = new PostgresConnectionImpl(this);
 
   void init(String username, String password, String database, Handler<AsyncResult<DbConnection>> completionHandler) {
     schedule(new StartupCommand(username, password, database, completionHandler));

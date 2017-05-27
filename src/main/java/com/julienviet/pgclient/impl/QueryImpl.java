@@ -1,7 +1,7 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgResultSet;
-import com.julienviet.pgclient.Query;
+import com.julienviet.pgclient.PgQuery;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -12,7 +12,7 @@ import java.util.UUID;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class QueryImpl implements Query {
+public class QueryImpl implements PgQuery {
 
   private static final int READY = 0, IN_PROGRESS = 1, SUSPENDED = 2;
 
@@ -28,7 +28,7 @@ public class QueryImpl implements Query {
   }
 
   @Override
-  public Query fetch(int size) {
+  public PgQuery fetch(int size) {
     this.fetch = size;
     return this;
   }

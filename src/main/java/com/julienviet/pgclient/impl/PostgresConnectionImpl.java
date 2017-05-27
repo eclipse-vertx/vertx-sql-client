@@ -1,7 +1,7 @@
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.PostgresConnection;
-import com.julienviet.pgclient.PreparedStatement;
+import com.julienviet.pgclient.PgConnection;
+import com.julienviet.pgclient.PgPreparedStatement;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class PostgresConnectionImpl implements PostgresConnection {
+class PostgresConnectionImpl implements PgConnection {
   private DbConnection dbConnection;
 
   public PostgresConnectionImpl(DbConnection dbConnection) {
@@ -139,7 +139,7 @@ class PostgresConnectionImpl implements PostgresConnection {
   }
 
   @Override
-  public PreparedStatement prepare(String sql) {
+  public PgPreparedStatement prepare(String sql) {
     return new PreparedStatementImpl(dbConnection, sql, java.util.UUID.randomUUID().toString());
   }
 }
