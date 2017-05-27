@@ -1,10 +1,12 @@
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.PgResultSet;
 import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.decoder.message.BindComplete;
 import com.julienviet.pgclient.codec.decoder.message.NoData;
 import com.julienviet.pgclient.codec.decoder.message.ParameterDescription;
 import com.julienviet.pgclient.codec.decoder.message.ParseComplete;
+import com.julienviet.pgclient.codec.decoder.message.PortalSuspended;
 import com.julienviet.pgclient.codec.decoder.message.ReadyForQuery;
 import com.julienviet.pgclient.codec.encoder.message.Bind;
 import com.julienviet.pgclient.codec.encoder.message.Describe;
@@ -29,18 +31,28 @@ class PreparedQueryCommand extends QueryCommandBase {
 
   final PreparedStatementImpl ps;
   final List<Object> params;
-  final Handler<AsyncResult<ResultSet>> handler;
-  private ResultSet result;
+  final int limit;
+  final Handler<AsyncResult<PgResultSet>> handler;
+  private PgResultSet result;
+  private final String portal;
+  private final boolean suspended;
+  private Throwable failure;
 
-  PreparedQueryCommand(PreparedStatementImpl ps, List<Object> params, Handler<AsyncResult<ResultSet>> handler) {
+  PreparedQueryCommand(PreparedStatementImpl ps, List<Object> params, Handler<AsyncResult<PgResultSet>> handler) {
+    this(ps, params, 0, "", false, handler);
+  }
+  PreparedQueryCommand(PreparedStatementImpl ps, List<Object> params, int limit, String portal, boolean suspended, Handler<AsyncResult<PgResultSet>> handler) {
     this.ps = ps;
     this.params = params;
     this.handler = handler;
+    this.limit = limit;
+    this.portal = portal;
+    this.suspended = suspended;
   }
 
   @Override
   void handleDescription(List<String> columnNames) {
-    result = new ResultSet().setColumnNames(columnNames).setResults(new ArrayList<>());
+    result = new PgResultSet().setComplete(true).setColumnNames(columnNames).setResults(new ArrayList<>());
   }
 
   @Override
@@ -54,9 +66,14 @@ class PreparedQueryCommand extends QueryCommandBase {
       ps.parsed = true;
       conn.writeToChannel(new Parse(ps.sql).setStatement(ps.stmt));
     }
-    conn.writeToChannel(new Bind().setParamValues(Util.paramValues(params)).setStatement(ps.stmt));
-    conn.writeToChannel(new Describe().setStatement(ps.stmt));
-    conn.writeToChannel(new Execute().setRowCount(0));
+    if (!suspended) {
+      conn.writeToChannel(new Bind().setParamValues(Util.paramValues(params)).setPortal(portal).setStatement(ps.stmt));
+      conn.writeToChannel(new Describe().setStatement(ps.stmt));
+    } else {
+      // Needed for now, later see how to remove it
+      conn.writeToChannel(new Describe().setPortal(portal));
+    }
+    conn.writeToChannel(new Execute().setPortal(portal).setRowCount(limit));
     conn.writeToChannel(Sync.INSTANCE);
     return true;
   }
@@ -64,8 +81,15 @@ class PreparedQueryCommand extends QueryCommandBase {
   @Override
   public boolean handleMessage(Message msg) {
     if (msg.getClass() == ReadyForQuery.class) {
-      handler.handle(Future.succeededFuture(result));
+      if (failure != null) {
+        handler.handle(Future.failedFuture(failure));
+      } else {
+        handler.handle(Future.succeededFuture(result));
+      }
       return true;
+    } else if (msg.getClass() == PortalSuspended.class) {
+      result.setComplete(false);
+      return false;
     } else if (msg.getClass() == ParameterDescription.class) {
       return false;
     } else if (msg.getClass() == NoData.class) {
@@ -85,6 +109,6 @@ class PreparedQueryCommand extends QueryCommandBase {
 
   @Override
   void fail(Throwable cause) {
-    throw new UnsupportedOperationException("Not yet implemented");
+    failure = cause;
   }
 }

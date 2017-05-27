@@ -3,6 +3,7 @@ package com.julienviet.pgclient.impl;
 import com.julienviet.pgclient.PostgresConnection;
 import com.julienviet.pgclient.PreparedStatement;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
@@ -73,7 +74,13 @@ class PostgresConnectionImpl implements PostgresConnection {
   @Override
   public void prepareAndQuery(String sql, List<Object> params, Handler<AsyncResult<ResultSet>> handler) {
     PreparedStatementImpl ps = new PreparedStatementImpl(dbConnection, sql, "");
-    CommandBase cmd = new PreparedQueryCommand(ps, params, handler);
+    CommandBase cmd = new PreparedQueryCommand(ps, params, ar -> {
+      if (ar.succeeded()) {
+        handler.handle(Future.succeededFuture(ar.result()));
+      } else {
+        handler.handle(Future.failedFuture(ar.cause()));
+      }
+    });
     dbConnection.schedule(cmd);
   }
 

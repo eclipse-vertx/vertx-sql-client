@@ -751,6 +751,32 @@ public abstract class PgTestBase {
     }));
   }
 
+  // Need to test partial query close or abortion ?
+  @Test
+  public void testPreparedPartialQuery(TestContext ctx) {
+    Async async = ctx.async();
+    PostgresClient client = PostgresClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.query("BEGIN", ctx.asyncAssertSuccess(v -> {
+        PreparedStatement ps = conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6");
+        Query query = ps.query(1, 8, 4, 11, 2, 9);
+        query.limit(4);
+        query.execute(ctx.asyncAssertSuccess(results -> {
+          ctx.assertEquals(4, results.getNumRows());
+          ctx.assertFalse(results.isComplete());
+          query.execute(ctx.asyncAssertSuccess(results2 -> {
+            ctx.assertNotNull(results2.getColumnNames());
+            ctx.assertEquals(2, results2.getNumRows());
+            ctx.assertTrue(results2.isComplete());
+            ps.close(ctx.asyncAssertSuccess(v2 -> {
+              async.complete();
+            }));
+          }));
+        }));
+      }));
+    }));
+  }
+
   @Test
   public void testBatchUpdate(TestContext ctx) {
     Async async = ctx.async();
@@ -760,10 +786,9 @@ public abstract class PgTestBase {
       Batch batch = ps.batch();
       batch.add("val0", 1);
       batch.add("val1", 2);
-      batch.add("var2", 3);
       batch.execute(ctx.asyncAssertSuccess(results -> {
-        ctx.assertEquals(3, results.size());
-        for (int i = 0;i < 3;i++) {
+        ctx.assertEquals(2, results.size());
+        for (int i = 0;i < 2;i++) {
           UpdateResult result = results.get(i);
           ctx.assertEquals(1, result.getUpdated());
         }

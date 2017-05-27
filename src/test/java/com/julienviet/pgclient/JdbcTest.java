@@ -64,4 +64,22 @@ public class JdbcTest extends JdbcTestBase {
     assertEquals("Hello World", re.getString(2));
     ps.close();
   }
+
+  @Test
+  public void testCursor() throws SQLException {
+
+    con.setAutoCommit(false);
+
+    Statement ps = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+
+    ps.setFetchSize(3);
+
+    ResultSet rs = ps.executeQuery("SELECT * FROM Fortune");
+    int count = 0;
+    while (rs.next()) {
+      count++;
+    }
+    System.out.println("got result " + count);
+
+  }
 }

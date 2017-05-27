@@ -5,6 +5,7 @@ import com.julienviet.pgclient.PostgresConnection;
 import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.encoder.message.Terminate;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -120,4 +121,11 @@ public class DbConnection extends ConnectionBase {
 
   }
 
+/*
+  @Override
+  public synchronized ChannelFuture writeToChannel(Object obj) {
+    System.out.println("Sending " + obj);
+    return super.writeToChannel(obj);
+  }
+*/
 }

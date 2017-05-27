@@ -13,10 +13,8 @@ import io.vertx.ext.sql.ResultSet;
 public interface Query {
 
   @Fluent
-  Query setLimit(int limit);
+  Query limit(int limit);
 
-  boolean done();
-
-  void execute(Handler<AsyncResult<ResultSet>> handler);
+  void execute(Handler<AsyncResult<PgResultSet>> handler);
 
 }

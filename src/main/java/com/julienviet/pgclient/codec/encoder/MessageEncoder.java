@@ -187,8 +187,16 @@ public class MessageEncoder extends MessageToByteEncoder<Message> {
     Describe describe = (Describe) message;
     out.writeByte(DESCRIBE);
     out.writeInt(0);
-    out.writeByte('S'); // 'S' to describe a prepared statement or 'P' to describe a portal
-    Util.writeCStringUTF8(out, describe.getStatement() != null ? describe.getStatement() : "");
+    if (describe.getStatement() != null) {
+      out.writeByte('S');
+      Util.writeCStringUTF8(out, describe.getStatement());
+    } else if (describe.getPortal() != null) {
+      out.writeByte('P');
+      Util.writeCStringUTF8(out, describe.getPortal());
+    } else {
+      out.writeByte('S');
+      Util.writeCStringUTF8(out, "");
+    }
     out.setInt(1, out.writerIndex() - 1);
   }
 
