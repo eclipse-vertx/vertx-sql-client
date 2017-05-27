@@ -101,12 +101,12 @@ public class PostgresSQLConnection implements SQLConnection {
 
   @Override
   public SQLConnection commit(Handler<AsyncResult<Void>> handler) {
-    return this;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public SQLConnection rollback(Handler<AsyncResult<Void>> handler) {
-    return this;
+    throw new UnsupportedOperationException();
   }
 
   @Override
