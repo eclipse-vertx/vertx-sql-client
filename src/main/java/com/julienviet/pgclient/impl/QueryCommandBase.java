@@ -8,6 +8,7 @@ import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.decoder.message.CommandComplete;
 import com.julienviet.pgclient.codec.decoder.message.DataRow;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
+import com.julienviet.pgclient.codec.decoder.message.ReadyForQuery;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -32,18 +33,26 @@ import static javax.xml.bind.DatatypeConverter.parseHexBinary;
 
 abstract class QueryCommandBase extends CommandBase {
 
+  protected final QueryResultHandler handler;
   private RowDescription rowDesc;
+
+  public QueryCommandBase(QueryResultHandler handler) {
+    this.handler = handler;
+  }
 
   @Override
   public boolean handleMessage(Message msg) {
-    if (msg.getClass() == RowDescription.class) {
+    if (msg.getClass() == ReadyForQuery.class) {
+      handler.end();
+      return true;
+    } else if (msg.getClass() == RowDescription.class) {
       rowDesc = (RowDescription) msg;
       Column[] columns = rowDesc.getColumns();
       List<String> columnNames = new ArrayList<>(columns.length);
       for (Column columnDesc : columns) {
         columnNames.add(columnDesc.getName());
       }
-      handleDescription(columnNames);
+      handler.beginResult(columnNames);
       return false;
     } else if (msg.getClass() == DataRow.class) {
       DataRow dataRow = (DataRow) msg;
@@ -65,11 +74,11 @@ abstract class QueryCommandBase extends CommandBase {
           break;
         }
       }
-      handleRow(row);
+      handler.handleRow(row);
       return false;
     } else if (msg.getClass() == CommandComplete.class) {
       rowDesc = null;
-      handleComplete();
+      handler.endResult(false);
       return false;
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
@@ -81,7 +90,6 @@ abstract class QueryCommandBase extends CommandBase {
   }
 
   private void handleBinary(DataType dataType, byte[] d, JsonArray row) {
-
   }
 
   private void handleText(DataType type, byte[] data, JsonArray row) {
@@ -161,11 +169,8 @@ abstract class QueryCommandBase extends CommandBase {
     }
   }
 
-  abstract void handleDescription(List<String> columnNames);
-
-  abstract void handleRow(JsonArray row);
-
-  abstract void handleComplete();
-
-  abstract void fail(Throwable cause);
+  @Override
+  void fail(Throwable cause) {
+    handler.fail(cause);
+  }
 }

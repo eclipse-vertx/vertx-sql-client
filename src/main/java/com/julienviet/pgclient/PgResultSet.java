@@ -13,7 +13,9 @@ import java.util.List;
 @DataObject
 public class PgResultSet extends ResultSet {
 
-  private boolean complete;
+  private static final boolean DEFAULT_COMPLETE = true;
+
+  private boolean complete = DEFAULT_COMPLETE;
 
   public PgResultSet() {
   }

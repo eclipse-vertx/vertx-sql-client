@@ -40,7 +40,7 @@ public class PostgresSQLConnection implements SQLConnection {
 
   @Override
   public SQLConnection query(String s, Handler<AsyncResult<ResultSet>> handler) {
-    conn.schedule(new QueryCommand(s, handler));
+    conn.schedule(new QueryCommand(s, new ResultSetBuilder(handler)));
     return this;
   }
 
@@ -52,9 +52,9 @@ public class PostgresSQLConnection implements SQLConnection {
   @Override
   public SQLConnection queryWithParams(String s, JsonArray jsonArray, Handler<AsyncResult<ResultSet>> handler) {
     PreparedStatementImpl ps = new PreparedStatementImpl(conn, s, "");
-    CommandBase cmd = new PreparedQueryCommand(ps, jsonArray.getList(), ar -> {
+    CommandBase cmd = new PreparedQueryCommand(ps, jsonArray.getList(), new PreparedQueryResultHandler(ar -> {
       handler.handle(ar.map(results -> results));
-    });
+    }));
     conn.schedule(cmd);
     return this;
   }

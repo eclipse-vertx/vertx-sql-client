@@ -24,7 +24,7 @@ class PostgresConnectionImpl implements PgConnection {
 
   @Override
   public void execute(String sql, Handler<AsyncResult<ResultSet>> handler) {
-    dbConnection.schedule(new QueryCommand(sql, handler));
+    dbConnection.schedule(new QueryCommand(sql, new ResultSetBuilder(handler)));
   }
 
   @Override
@@ -34,7 +34,7 @@ class PostgresConnectionImpl implements PgConnection {
 
   @Override
   public void query(String sql, Handler<AsyncResult<ResultSet>> handler) {
-    dbConnection.schedule(new QueryCommand(sql, handler));
+    dbConnection.schedule(new QueryCommand(sql, new ResultSetBuilder(handler)));
   }
 
   @Override
@@ -74,13 +74,13 @@ class PostgresConnectionImpl implements PgConnection {
   @Override
   public void prepareAndQuery(String sql, List<Object> params, Handler<AsyncResult<ResultSet>> handler) {
     PreparedStatementImpl ps = new PreparedStatementImpl(dbConnection, sql, "");
-    CommandBase cmd = new PreparedQueryCommand(ps, params, ar -> {
+    CommandBase cmd = new PreparedQueryCommand(ps, params, new PreparedQueryResultHandler(ar -> {
       if (ar.succeeded()) {
         handler.handle(Future.succeededFuture(ar.result()));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
       }
-    });
+    }));
     dbConnection.schedule(cmd);
   }
 

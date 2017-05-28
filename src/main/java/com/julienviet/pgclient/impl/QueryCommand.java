@@ -19,13 +19,9 @@ import java.util.List;
 class QueryCommand extends QueryCommandBase {
 
   private final String sql;
-  private final Handler<AsyncResult<ResultSet>> handler;
-  private ResultSet result;
-  private ResultSet current;
-  private boolean completed;
 
-  QueryCommand(String sql, Handler<AsyncResult<ResultSet>> handler) {
-    this.handler = handler;
+  QueryCommand(String sql, QueryResultHandler handler) {
+    super(handler);
     this.sql = sql;
   }
 
@@ -33,47 +29,6 @@ class QueryCommand extends QueryCommandBase {
   boolean exec(DbConnection conn) {
     conn.writeToChannel(new Query(sql));
     return true;
-  }
-
-  @Override
-  public boolean handleMessage(Message msg) {
-    if (msg.getClass() == ReadyForQuery.class) {
-      if (!completed) {
-        completed = true;
-        handler.handle(Future.succeededFuture(result));
-      }
-      return true;
-    } else {
-      return super.handleMessage(msg);
-    }
-  }
-
-  @Override
-  void handleDescription(List<String> columnNames) {
-    ResultSet next = new ResultSet().setColumnNames(columnNames).setResults(new ArrayList<>());
-    if (current != null) {
-      current.setNext(next);
-      current = next;
-    } else {
-      result = current = next;
-    }
-  }
-
-  @Override
-  void handleRow(JsonArray row) {
-    current.getResults().add(row);
-  }
-
-  @Override
-  void handleComplete() {
-  }
-
-  @Override
-  void fail(Throwable cause) {
-    if (!completed) {
-      completed = true;
-      handler.handle(Future.failedFuture(cause));
-    }
   }
 
   public String getSql() {
