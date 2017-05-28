@@ -1,7 +1,5 @@
 package com.julienviet.pgclient;
 
-import de.flapdoodle.embed.process.config.IRuntimeConfig;
-import de.flapdoodle.embed.process.distribution.IVersion;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -17,17 +15,11 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
-import ru.yandex.qatools.embed.postgresql.config.RuntimeConfigBuilder;
 
-import java.io.File;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -41,42 +33,16 @@ import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
  */
 
 @RunWith(VertxUnitRunner.class)
-public abstract class PgConnectionTestBase {
+public abstract class PgConnectionTestBase extends PgTestBase {
 
   private static final String LIST_TABLES = "SELECT table_schema,table_name FROM information_schema.tables ORDER BY table_schema,table_name";
   private static final String CURRENT_DB = "SELECT current_database()";
 
-  private static EmbeddedPostgres postgres;
-  static PgClientOptions options = new PgClientOptions();
   Vertx vertx;
   BiConsumer<PgClient, Handler<AsyncResult<PgConnection>>> connector;
 
   public PgConnectionTestBase(BiConsumer<PgClient, Handler<AsyncResult<PgConnection>>> connector) {
     this.connector = connector;
-  }
-
-  @BeforeClass
-  public static void startPg() throws Exception {
-    IRuntimeConfig config;
-    File target = new File(System.getProperty("target.dir"));
-    if (target.exists() && target.isDirectory()) {
-      config = EmbeddedPostgres.cachedRuntimeConfig(target.toPath());
-    } else {
-      config = EmbeddedPostgres.defaultRuntimeConfig();
-    }
-    postgres = new EmbeddedPostgres(V9_6);
-    postgres.start(config, "localhost", 8081, "postgres", "postgres", "postgres", Collections.emptyList());
-    postgres.getProcess().get().importFromFile(new File("src/test/resources/create-postgres.sql"));
-    options.setHost("localhost");
-    options.setPort(8081);
-    options.setUsername("postgres");
-    options.setPassword("postgres");
-    options.setDatabase("postgres");
-  }
-
-  @AfterClass
-  public static void stopPg() throws Exception {
-    postgres.stop();
   }
 
   @Before
