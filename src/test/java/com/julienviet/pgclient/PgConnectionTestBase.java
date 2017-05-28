@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.time.Instant;
+import java.util.LinkedList;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -707,78 +708,6 @@ public abstract class PgConnectionTestBase extends PgTestBase {
           ctx.assertEquals(6, result.getNumRows());
           async.complete();
         }));
-    }));
-  }
-
-  @Test
-  public void testPreparedQuery(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      PgPreparedStatement ps = conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6");
-      PgQuery query = ps.query(1, 8, 4, 11, 2, 9);
-      query.execute(ctx.asyncAssertSuccess(results -> {
-        ctx.assertEquals(6, results.getNumRows());
-        ps.close(ctx.asyncAssertSuccess(result -> {
-          async.complete();
-        }));
-      }));
-    }));
-  }
-
-  @Test
-  public void testPreparedQueryParseError(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      PgPreparedStatement ps = conn.prepare("invalid");
-      PgQuery query = ps.query(1, 8, 4, 11, 2, 9);
-      query.execute(ctx.asyncAssertFailure(err -> {
-        PgException pgErr = (PgException) err;
-        ctx.assertEquals(ErrorCodes.syntax_error, pgErr.getCode());
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testPreparedQueryBindError(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      PgPreparedStatement ps = conn.prepare("SELECT * FROM Fortune WHERE id=$1");
-      PgQuery query = ps.query("invalid-id");
-      query.execute(ctx.asyncAssertFailure(err -> {
-        PgException pgErr = (PgException) err;
-        ctx.assertEquals(ErrorCodes.invalid_text_representation, pgErr.getCode());
-        async.complete();
-      }));
-    }));
-  }
-
-  // Need to test partial query close or abortion ?
-  @Test
-  public void testPreparedPartialQuery(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("BEGIN", ctx.asyncAssertSuccess(v -> {
-        PgPreparedStatement ps = conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6");
-        PgQuery query = ps.query(1, 8, 4, 11, 2, 9);
-        query.fetch(4);
-        query.execute(ctx.asyncAssertSuccess(results -> {
-          ctx.assertEquals(4, results.getNumRows());
-          ctx.assertFalse(results.isComplete());
-          query.execute(ctx.asyncAssertSuccess(results2 -> {
-            ctx.assertNotNull(results2.getColumnNames());
-            ctx.assertEquals(2, results2.getNumRows());
-            ctx.assertTrue(results2.isComplete());
-            ps.close(ctx.asyncAssertSuccess(v2 -> {
-              async.complete();
-            }));
-          }));
-        }));
-      }));
     }));
   }
 

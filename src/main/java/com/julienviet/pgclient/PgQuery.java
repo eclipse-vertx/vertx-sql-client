@@ -16,4 +16,8 @@ public interface PgQuery {
 
   void execute(Handler<AsyncResult<PgResultSet>> handler);
 
+  void close();
+
+  void close(Handler<AsyncResult<Void>> completionHandler);
+
 }
