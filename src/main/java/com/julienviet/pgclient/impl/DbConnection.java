@@ -58,15 +58,14 @@ public class DbConnection extends ConnectionBase {
   }
 
   void schedule(CommandBase cmd) {
-    if (Vertx.currentContext() == context) {
-      if (status == Status.CONNECTED) {
-        pending.add(cmd);
-        checkPending();
-      } else {
-        cmd.fail(new VertxException("Connection not open " + status));
-      }
+    if (Vertx.currentContext() != context) {
+      throw new IllegalStateException();
+    }
+    if (status == Status.CONNECTED) {
+      pending.add(cmd);
+      checkPending();
     } else {
-      context.runOnContext(v -> schedule(cmd));
+      cmd.fail(new VertxException("Connection not open " + status));
     }
   }
 
