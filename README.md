@@ -1,4 +1,4 @@
-# Postgres client for Eclipse Vert.x
+# Async Postgres client for Eclipse Vert.x
 
 [![Build Status](https://travis-ci.org/vietj/vertx-pg-client.svg?branch=master)](https://travis-ci.org/vietj/vertx-pg-client)
 
