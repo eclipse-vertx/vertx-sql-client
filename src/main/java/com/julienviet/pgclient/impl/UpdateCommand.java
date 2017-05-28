@@ -23,9 +23,8 @@ class UpdateCommand extends UpdateCommandBase {
   }
 
   @Override
-  boolean exec(DbConnection conn) {
+  void exec(DbConnection conn) {
     conn.writeToChannel(new Query(sql));
-    return true;
   }
 
   @Override

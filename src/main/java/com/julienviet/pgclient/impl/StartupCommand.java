@@ -36,10 +36,9 @@ class StartupCommand extends CommandBase {
   }
 
   @Override
-  boolean exec(DbConnection c) {
+  void exec(DbConnection c) {
     conn = c;
     c.writeToChannel(new StartupMessage(username, database));
-    return true;
   }
 
   @Override

@@ -13,7 +13,7 @@ abstract class CommandBase {
     return false;
   }
 
-  abstract boolean exec(DbConnection conn);
+  abstract void exec(DbConnection conn);
 
   abstract void fail(Throwable err);
 

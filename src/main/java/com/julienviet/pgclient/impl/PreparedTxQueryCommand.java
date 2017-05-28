@@ -28,13 +28,12 @@ public class PreparedTxQueryCommand extends TxQueryCommandBase {
   }
 
   @Override
-  boolean exec(DbConnection conn) {
+  void exec(DbConnection conn) {
     conn.writeToChannel(new Parse("SHOW TRANSACTION ISOLATION LEVEL"));
     conn.writeToChannel(new Bind());
     conn.writeToChannel(new Describe());
     conn.writeToChannel(new Execute().setRowCount(0));
     conn.writeToChannel(Sync.INSTANCE);
-    return true;
   }
 
   @Override

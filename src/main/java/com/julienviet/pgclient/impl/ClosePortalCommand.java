@@ -23,10 +23,9 @@ class ClosePortalCommand extends CommandBase {
   }
 
   @Override
-  boolean exec(DbConnection conn) {
+  void exec(DbConnection conn) {
     conn.writeToChannel(new Close().setPortal(portal));
     conn.writeToChannel(Sync.INSTANCE);
-    return true;
   }
 
   @Override

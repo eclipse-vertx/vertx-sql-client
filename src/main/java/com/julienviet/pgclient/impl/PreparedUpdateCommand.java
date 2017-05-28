@@ -49,7 +49,7 @@ class PreparedUpdateCommand extends UpdateCommandBase {
   }
 
   @Override
-  boolean exec(DbConnection conn) {
+  void exec(DbConnection conn) {
     if (parse) {
       conn.writeToChannel(new Parse(sql).setStatement(stmt));
     }
@@ -59,7 +59,6 @@ class PreparedUpdateCommand extends UpdateCommandBase {
       conn.writeToChannel(new Execute().setRowCount(0));
     }
     conn.writeToChannel(Sync.INSTANCE);
-    return true;
   }
 
   @Override

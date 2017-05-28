@@ -23,10 +23,9 @@ class CloseStatementCommand extends CommandBase {
   }
 
   @Override
-  boolean exec(DbConnection conn) {
+  void exec(DbConnection conn) {
     conn.writeToChannel(new Close().setStatement(stmt));
     conn.writeToChannel(Sync.INSTANCE);
-    return true;
   }
 
   @Override

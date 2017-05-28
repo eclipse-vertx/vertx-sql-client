@@ -54,7 +54,7 @@ class PreparedQueryCommand extends QueryCommandBase {
   }
 
   @Override
-  boolean exec(DbConnection conn) {
+  void exec(DbConnection conn) {
     if (parse) {
       conn.writeToChannel(new Parse(sql).setStatement(stmt));
     }
@@ -67,7 +67,6 @@ class PreparedQueryCommand extends QueryCommandBase {
     }
     conn.writeToChannel(new Execute().setPortal(portal).setRowCount(fetch));
     conn.writeToChannel(Sync.INSTANCE);
-    return true;
   }
 
   @Override

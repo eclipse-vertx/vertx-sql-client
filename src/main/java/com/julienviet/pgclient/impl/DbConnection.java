@@ -72,9 +72,8 @@ public class DbConnection extends ConnectionBase {
   private void checkPending() {
     CommandBase cmd;
     while (inflight.size() < client.pipeliningLimit && (cmd = pending.poll()) != null) {
-      if (cmd.exec(this)) {
-        inflight.add(cmd);
-      }
+      cmd.exec(this);
+      inflight.add(cmd);
     }
   }
 
