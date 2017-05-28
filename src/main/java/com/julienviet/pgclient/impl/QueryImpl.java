@@ -54,10 +54,10 @@ public class QueryImpl implements PgQuery {
     if (status == READY) {
       status = IN_PROGRESS;
       portal = fetch > 0 ? UUID.randomUUID().toString() : "";
-      ps.conn.schedule(new PreparedQueryCommand(ps, params, fetch, portal, false, new PreparedQueryResultHandler(completionHandler)));
+      ps.execute(params, fetch, portal, false, new PreparedQueryResultHandler(completionHandler));
     } else {
       status = IN_PROGRESS;
-      ps.conn.schedule(new PreparedQueryCommand(ps, params, fetch, portal, true, new PreparedQueryResultHandler(completionHandler)));
+      ps.execute(params, fetch, portal, true, new PreparedQueryResultHandler(completionHandler));
     }
   }
 }

@@ -22,33 +22,45 @@ import java.util.List;
 class PreparedQueryCommand extends QueryCommandBase {
 
 
-  final PreparedStatementImpl ps;
+  final boolean parse;
+  final String sql;
   final List<Object> params;
   final int fetch;
+  final String stmt;
   private final String portal;
   private final boolean suspended;
 
-  PreparedQueryCommand(PreparedStatementImpl ps, List<Object> params, QueryResultHandler handler) {
-    this(ps, params, 0, "", false, handler);
+  PreparedQueryCommand(String sql,
+                       List<Object> params,
+                       QueryResultHandler handler) {
+    this(true, sql, params, 0, "", "", false, handler);
   }
-  PreparedQueryCommand(PreparedStatementImpl ps, List<Object> params, int fetch, String portal, boolean suspended, QueryResultHandler handler) {
+  PreparedQueryCommand(boolean parse,
+                       String sql,
+                       List<Object> params,
+                       int fetch,
+                       String stmt,
+                       String portal,
+                       boolean suspended,
+                       QueryResultHandler handler) {
     super(handler);
-    this.ps = ps;
+    this.parse = parse;
+    this.sql = sql;
     this.params = params;
     this.fetch = fetch;
+    this.stmt = stmt;
     this.portal = portal;
     this.suspended = suspended;
   }
 
   @Override
   boolean exec(DbConnection conn) {
-    if (!ps.parsed) {
-      ps.parsed = true;
-      conn.writeToChannel(new Parse(ps.sql).setStatement(ps.stmt));
+    if (parse) {
+      conn.writeToChannel(new Parse(sql).setStatement(stmt));
     }
     if (!suspended) {
-      conn.writeToChannel(new Bind().setParamValues(Util.paramValues(params)).setPortal(portal).setStatement(ps.stmt));
-      conn.writeToChannel(new Describe().setStatement(ps.stmt));
+      conn.writeToChannel(new Bind().setParamValues(Util.paramValues(params)).setPortal(portal).setStatement(stmt));
+      conn.writeToChannel(new Describe().setStatement(stmt));
     } else {
       // Needed for now, later see how to remove it
       conn.writeToChannel(new Describe().setPortal(portal));

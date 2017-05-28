@@ -6,6 +6,7 @@ import com.julienviet.pgclient.PgQuery;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.ext.sql.UpdateResult;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 class PreparedStatementImpl implements PgPreparedStatement {
 
-  final DbConnection conn;
+  private final DbConnection conn;
   final String sql;
   final AtomicBoolean closed = new AtomicBoolean();
   boolean parsed;
@@ -78,6 +79,32 @@ class PreparedStatementImpl implements PgPreparedStatement {
   public void close() {
     close(ar -> {
     });
+  }
+
+  void execute(List<Object> params,
+               int fetch,
+               String portal,
+               boolean suspended,
+               QueryResultHandler handler) {
+    boolean parse;
+    if (!parsed) {
+      parsed = true;
+      parse = true;
+    } else {
+      parse = false;
+    }
+    conn.schedule(new PreparedQueryCommand(parse, sql, params, fetch, stmt, portal, suspended, handler));
+  }
+
+  void update(List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
+    boolean parse;
+    if (!parsed) {
+      parsed = true;
+      parse = true;
+    } else {
+      parse = false;
+    }
+    conn.schedule(new PreparedUpdateCommand(parse, sql, stmt, paramsList, handler));
   }
 
   @Override

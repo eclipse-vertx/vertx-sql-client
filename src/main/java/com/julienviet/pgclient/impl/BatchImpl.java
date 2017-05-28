@@ -60,6 +60,6 @@ public class BatchImpl implements PgBatch {
 
   @Override
   public void execute(Handler<AsyncResult<List<UpdateResult>>> resultHandler) {
-    ps.conn.schedule(new PreparedUpdateCommand(ps, values, resultHandler));
+    ps.update(values, resultHandler);
   }
 }

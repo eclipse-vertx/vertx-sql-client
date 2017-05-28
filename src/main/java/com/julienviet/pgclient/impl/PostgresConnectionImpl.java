@@ -73,15 +73,13 @@ class PostgresConnectionImpl implements PgConnection {
 
   @Override
   public void prepareAndQuery(String sql, List<Object> params, Handler<AsyncResult<ResultSet>> handler) {
-    PreparedStatementImpl ps = new PreparedStatementImpl(dbConnection, sql, "");
-    CommandBase cmd = new PreparedQueryCommand(ps, params, new PreparedQueryResultHandler(ar -> {
+    dbConnection.schedule(new PreparedQueryCommand(sql, params, new PreparedQueryResultHandler(ar -> {
       if (ar.succeeded()) {
         handler.handle(Future.succeededFuture(ar.result()));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
       }
-    }));
-    dbConnection.schedule(cmd);
+    })));
   }
 
   @Override
@@ -116,8 +114,7 @@ class PostgresConnectionImpl implements PgConnection {
 
   @Override
   public void prepareAndExecute(String sql, List<Object> params, Handler<AsyncResult<UpdateResult>> handler) {
-    PreparedStatementImpl ps = new PreparedStatementImpl(dbConnection, sql, "");
-    CommandBase cmd = new PreparedUpdateCommand(ps, Collections.singletonList(params), ar -> {
+    CommandBase cmd = new PreparedUpdateCommand(sql, Collections.singletonList(params), ar -> {
       handler.handle(ar.map(results -> results.get(0)));
     });
     dbConnection.schedule(cmd);

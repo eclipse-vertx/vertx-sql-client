@@ -28,13 +28,21 @@ import static com.julienviet.pgclient.codec.util.Util.*;
 class PreparedUpdateCommand extends UpdateCommandBase {
 
 
-  final PreparedStatementImpl ps;
+  final boolean parse;
+  final String sql;
+  final String stmt;
   final List<List<Object>> paramsList;
   final Handler<AsyncResult<List<UpdateResult>>> handler;
   private ArrayList<UpdateResult> results;
 
-  PreparedUpdateCommand(PreparedStatementImpl ps, List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
-    this.ps = ps;
+  PreparedUpdateCommand(String sql, List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
+    this(true, sql, "", paramsList, handler);
+  }
+
+  PreparedUpdateCommand(boolean parse, String sql, String stmt, List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
+    this.parse = parse;
+    this.sql = sql;
+    this.stmt = stmt;
     this.paramsList = paramsList;
     this.handler = handler;
     this.results = new ArrayList<>(paramsList.size()); // Should reuse the paramsList for this as it's already allocated
@@ -42,13 +50,12 @@ class PreparedUpdateCommand extends UpdateCommandBase {
 
   @Override
   boolean exec(DbConnection conn) {
-    if (!ps.parsed) {
-      ps.parsed = true;
-      conn.writeToChannel(new Parse(ps.sql).setStatement(ps.stmt));
+    if (parse) {
+      conn.writeToChannel(new Parse(sql).setStatement(stmt));
     }
     for (List<Object> params : paramsList) {
-      conn.writeToChannel(new Bind().setParamValues(paramValues(params)).setStatement(ps.stmt));
-      conn.writeToChannel(new Describe().setStatement(ps.stmt));
+      conn.writeToChannel(new Bind().setParamValues(paramValues(params)).setStatement(stmt));
+      conn.writeToChannel(new Describe().setStatement(stmt));
       conn.writeToChannel(new Execute().setRowCount(0));
     }
     conn.writeToChannel(Sync.INSTANCE);
