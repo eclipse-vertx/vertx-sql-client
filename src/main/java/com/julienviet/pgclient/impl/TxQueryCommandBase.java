@@ -1,5 +1,6 @@
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.PgException;
 import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.decoder.message.CommandComplete;
 import com.julienviet.pgclient.codec.decoder.message.DataRow;
@@ -47,7 +48,7 @@ abstract class TxQueryCommandBase extends CommandBase {
       return false;
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
-      fail(new RuntimeException(error.getMessage()));
+      fail(new PgException(error));
       return false;
     } else {
       return super.handleMessage(msg);

@@ -726,6 +726,36 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     }));
   }
 
+  @Test
+  public void testPreparedQueryParseError(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient client = PgClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      PgPreparedStatement ps = conn.prepare("invalid");
+      PgQuery query = ps.query(1, 8, 4, 11, 2, 9);
+      query.execute(ctx.asyncAssertFailure(err -> {
+        PgException pgErr = (PgException) err;
+        ctx.assertEquals(ErrorCodes.syntax_error, pgErr.getCode());
+        async.complete();
+      }));
+    }));
+  }
+
+  @Test
+  public void testPreparedQueryBindError(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient client = PgClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      PgPreparedStatement ps = conn.prepare("SELECT * FROM Fortune WHERE id=$1");
+      PgQuery query = ps.query("invalid-id");
+      query.execute(ctx.asyncAssertFailure(err -> {
+        PgException pgErr = (PgException) err;
+        ctx.assertEquals(ErrorCodes.invalid_text_representation, pgErr.getCode());
+        async.complete();
+      }));
+    }));
+  }
+
   // Need to test partial query close or abortion ?
   @Test
   public void testPreparedPartialQuery(TestContext ctx) {

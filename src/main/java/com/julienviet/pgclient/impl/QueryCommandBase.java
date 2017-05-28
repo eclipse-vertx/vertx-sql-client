@@ -1,5 +1,6 @@
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.PgException;
 import com.julienviet.pgclient.codec.Column;
 import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.DataType;
@@ -72,7 +73,7 @@ abstract class QueryCommandBase extends CommandBase {
       return false;
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
-      fail(new RuntimeException(error.getMessage()));
+      fail(new PgException(error));
       return false;
     } else {
       return super.handleMessage(msg);

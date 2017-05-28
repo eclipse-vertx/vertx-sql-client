@@ -1,5 +1,6 @@
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.PgException;
 import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.decoder.message.AuthenticationClearTextPassword;
 import com.julienviet.pgclient.codec.decoder.message.AuthenticationMD5Password;
@@ -64,7 +65,7 @@ class StartupCommand extends CommandBase {
       return false;
     }  else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
-      handler.handle(Future.failedFuture(error.getMessage()));
+      handler.handle(Future.failedFuture(new PgException(error)));
       return true;
     } else if (msg.getClass() == ReadyForQuery.class) {
       // The final phase before returning the connection

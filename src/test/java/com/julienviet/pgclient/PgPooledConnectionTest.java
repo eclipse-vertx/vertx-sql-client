@@ -92,6 +92,14 @@ public class PgPooledConnectionTest extends PgConnectionTestBase {
   }
 
   @Override
+  public void testPreparedQueryBindError(TestContext ctx) {
+  }
+
+  @Override
+  public void testPreparedQueryParseError(TestContext ctx) {
+  }
+
+  @Override
   public void testPreparedPartialQuery(TestContext ctx) {
   }
 
