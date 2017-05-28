@@ -10,9 +10,9 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class PooledPgTest extends PgTestBase {
+public class PgPooledConnectionTest extends PgConnectionTestBase {
 
-  public PooledPgTest() {
+  public PgPooledConnectionTest() {
     super((client, handler) -> {
       PgConnectionPool pool = client.createPool(1);
       pool.getConnection(handler);

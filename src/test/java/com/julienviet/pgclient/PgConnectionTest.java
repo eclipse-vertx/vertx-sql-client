@@ -3,9 +3,9 @@ package com.julienviet.pgclient;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class PgTest extends PgTestBase {
+public class PgConnectionTest extends PgConnectionTestBase {
 
-  public PgTest() {
+  public PgConnectionTest() {
     super(PgClient::connect);
   }
 }
