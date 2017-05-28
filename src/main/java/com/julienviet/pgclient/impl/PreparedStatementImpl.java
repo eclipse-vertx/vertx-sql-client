@@ -110,7 +110,7 @@ class PreparedStatementImpl implements PgPreparedStatement {
   @Override
   public void close(Handler<AsyncResult<Void>> completionHandler) {
     if (closed.compareAndSet(false, true)) {
-      conn.schedule(new CloseStatementCommand(this, completionHandler));
+      conn.schedule(new CloseStatementCommand(stmt, completionHandler));
     } else {
       completionHandler.handle(Future.failedFuture("Already closed"));
     }

@@ -14,22 +14,18 @@ import io.vertx.core.Handler;
  */
 class CloseStatementCommand extends CommandBase {
 
-  final PreparedStatementImpl ps;
+  final String stmt;
   final Handler<AsyncResult<Void>> handler;
 
-  public CloseStatementCommand(PreparedStatementImpl ps, Handler<AsyncResult<Void>> handler) {
-    this.ps = ps;
+  public CloseStatementCommand(String stmt, Handler<AsyncResult<Void>> handler) {
+    this.stmt = stmt;
     this.handler = handler;
   }
 
   @Override
   boolean exec(DbConnection conn) {
-    if (ps.parsed) {
-      conn.writeToChannel(new Close().setStatement(ps.stmt));
-      conn.writeToChannel(Sync.INSTANCE);
-    } else {
-      handler.handle(Future.succeededFuture());
-    }
+    conn.writeToChannel(new Close().setStatement(stmt));
+    conn.writeToChannel(Sync.INSTANCE);
     return true;
   }
 
