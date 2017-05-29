@@ -105,6 +105,7 @@ public class DbConnection extends ConnectionBase {
   @Override
   protected synchronized void handleException(Throwable t) {
     super.handleException(t);
+//    t.printStackTrace();
     close();
   }
 

@@ -48,89 +48,96 @@ public class MessageDecoder extends ByteToMessageDecoder {
 
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-
-    if (in.readableBytes() >= 5) {
-      byte id = in.getByte(0);
-      int length = in.getInt(1);
-      int beginIdx = in.readerIndex();
-      int endIdx = beginIdx + length + 1;
-      if (in.writerIndex() >= endIdx) {
-        try {
-          in.readerIndex(beginIdx + 5);
-          switch (id) {
-            case ERROR_RESPONSE: {
-              decodeErrorOrNotice(ErrorResponse.INSTANCE, in, out);
-              break;
-            }
-            case NOTICE_RESPONSE: {
-              decodeErrorOrNotice(NoticeResponse.INSTANCE, in, out);
-              break;
-            }
-            case AUTHENTICATION: {
-              decodeAuthentication(in, out);
-            }
-            break;
-            case READY_FOR_QUERY: {
-              decodeReadyForQuery(in, out);
-            }
-            break;
-            case ROW_DESCRIPTION: {
-              decodeRowDescription(in, out);
-            }
-            break;
-            case DATA_ROW: {
-              decodeDataRow(in, out);
-            }
-            break;
-            case COMMAND_COMPLETE: {
-              decodeCommandComplete(in, out);
-            }
-            break;
-            case EMPTY_QUERY_RESPONSE: {
-              decodeEmptyQueryResponse(out);
-            }
-            break;
-            case PARSE_COMPLETE: {
-              decodeParseComplete(out);
-            }
-            break;
-            case BIND_COMPLETE: {
-              decodeBindComplete(out);
-            }
-            break;
-            case CLOSE_COMPLETE: {
-              decodeCloseComplete(out);
-            }
-            break;
-            case NO_DATA: {
-              decodeNoData(out);
-            }
-            break;
-            case PORTAL_SUSPENDED: {
-              decodePortalSuspended(out);
-            }
-            break;
-            case PARAMETER_DESCRIPTION: {
-              decodeParameterDescription(in, out);
-            }
-            break;
-            case PARAMETER_STATUS: {
-              decodeParameterStatus(in, out);
-            }
-            break;
-            case BACKEND_KEY_DATA: {
-              decodeBackendKeyData(in, out);
-            }
-            break;
-            case NOTIFICATION_RESPONSE: {
-              decodeNotificationResponse(in, out);
-            }
-            break;
-          }
-        } finally {
-          in.readerIndex(endIdx);
-        }
+    while (true) {
+      if (in.readableBytes() < 5) {
+        break;
       }
+      int beginIdx = in.readerIndex();
+      byte id = in.getByte(beginIdx);
+      int length = in.getInt(beginIdx + 1);
+      int endIdx = beginIdx + length + 1;
+      if (in.writerIndex() < endIdx) {
+        break;
+      }
+      ByteBuf buff = in.slice(beginIdx + 5, length - 4);
+      in.readerIndex(endIdx);
+      decodeMessage(id, buff, out);
+    }
+  }
+
+  private void decodeMessage(byte id, ByteBuf in, List<Object> out) {
+    try {
+      switch (id) {
+        case ERROR_RESPONSE: {
+          decodeErrorOrNotice(ErrorResponse.INSTANCE, in, out);
+          break;
+        }
+        case NOTICE_RESPONSE: {
+          decodeErrorOrNotice(NoticeResponse.INSTANCE, in, out);
+          break;
+        }
+        case AUTHENTICATION: {
+          decodeAuthentication(in, out);
+        }
+        break;
+        case READY_FOR_QUERY: {
+          decodeReadyForQuery(in, out);
+        }
+        break;
+        case ROW_DESCRIPTION: {
+          decodeRowDescription(in, out);
+        }
+        break;
+        case DATA_ROW: {
+          decodeDataRow(in, out);
+        }
+        break;
+        case COMMAND_COMPLETE: {
+          decodeCommandComplete(in, out);
+        }
+        break;
+        case EMPTY_QUERY_RESPONSE: {
+          decodeEmptyQueryResponse(out);
+        }
+        break;
+        case PARSE_COMPLETE: {
+          decodeParseComplete(out);
+        }
+        break;
+        case BIND_COMPLETE: {
+          decodeBindComplete(out);
+        }
+        break;
+        case CLOSE_COMPLETE: {
+          decodeCloseComplete(out);
+        }
+        break;
+        case NO_DATA: {
+          decodeNoData(out);
+        }
+        break;
+        case PORTAL_SUSPENDED: {
+          decodePortalSuspended(out);
+        }
+        break;
+        case PARAMETER_DESCRIPTION: {
+          decodeParameterDescription(in, out);
+        }
+        break;
+        case PARAMETER_STATUS: {
+          decodeParameterStatus(in, out);
+        }
+        break;
+        case BACKEND_KEY_DATA: {
+          decodeBackendKeyData(in, out);
+        }
+        break;
+        case NOTIFICATION_RESPONSE: {
+          decodeNotificationResponse(in, out);
+        }
+        break;
+      }
+    } finally {
     }
   }
 
