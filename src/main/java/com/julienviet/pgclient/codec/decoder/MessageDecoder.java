@@ -262,7 +262,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
 
     int spaceIdx2 = in.indexOf(spaceIdx1 + 1, in.writerIndex(), SPACE);
     if (spaceIdx2 == -1) {
-      String command = in.retainedSlice(in.readerIndex(), prefixLen).toString(UTF_8);
+      String command = in.toString(in.readerIndex(), prefixLen, UTF_8);
       switch (command) {
         case SELECT: {
           out.add(new CommandComplete(command, rowsAffected));
@@ -274,7 +274,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
         case FETCH:
         case COPY: {
           rowsAffected = Integer.parseInt
-            (in.retainedSlice(spaceIdx1 + 1, in.writerIndex() - spaceIdx1 - 2).toString(UTF_8));
+            (in.toString(spaceIdx1 + 1, in.writerIndex() - spaceIdx1 - 2, UTF_8));
           out.add(new CommandComplete(command, rowsAffected));
         }
         break;
@@ -283,16 +283,17 @@ public class MessageDecoder extends ByteToMessageDecoder {
       }
     }
 
-    String command = in.retainedSlice(in.readerIndex(), prefixLen).toString(UTF_8);
+    String command = in.toString(in.readerIndex(), prefixLen, UTF_8);
     switch (command) {
       case INSERT: {
-        ByteBuf otherByteBuf = in.retainedSlice(spaceIdx1 + 1, in.writerIndex() - spaceIdx1 - 2);
+        // Todo try to remove this slice operation
+        ByteBuf otherByteBuf = in.slice(spaceIdx1 + 1, in.writerIndex() - spaceIdx1 - 2);
         int otherSpace = otherByteBuf.indexOf(otherByteBuf.readerIndex(), otherByteBuf.writerIndex(), SPACE);
         // we may need to send the oid in the message
-        ByteBuf oidBuf = otherByteBuf.retainedSlice(0, otherSpace);
-        ByteBuf affectedRowsByteBuf = otherByteBuf.retainedSlice(otherSpace + 1,
-          otherByteBuf.writerIndex() - otherSpace - 1);
-        rowsAffected = Integer.parseInt(affectedRowsByteBuf.toString(UTF_8));
+//        ByteBuf oidBuf = otherByteBuf.slice(0, otherSpace);
+        String affectedRowsByteBuf = otherByteBuf.toString(otherSpace + 1,
+          otherByteBuf.writerIndex() - otherSpace - 1, UTF_8);
+        rowsAffected = Integer.parseInt(affectedRowsByteBuf);
         out.add(new CommandComplete(command, rowsAffected));
       }
       break;
