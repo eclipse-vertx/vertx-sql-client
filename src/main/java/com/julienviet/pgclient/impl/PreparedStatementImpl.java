@@ -113,7 +113,7 @@ class PreparedStatementImpl implements PgPreparedStatement {
 
   @Override
   public PgBatch batch() {
-    return new BatchImpl(this);
+    return new PgBatchImpl(this);
   }
 
   @Override

@@ -13,12 +13,12 @@ import java.util.List;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class BatchImpl implements PgBatch {
+public class PgBatchImpl implements PgBatch {
 
   private final PreparedStatementImpl ps;
   private final ArrayList<List<Object>> values = new ArrayList<>();
 
-  BatchImpl(PreparedStatementImpl ps) {
+  PgBatchImpl(PreparedStatementImpl ps) {
     this.ps = ps;
   }
 
