@@ -19,9 +19,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-class PostgresConnectionPoolImpl implements PgConnectionPool {
+class PgConnectionPoolImpl implements PgConnectionPool {
 
-  private final PostgresClientImpl client;
+  private final PgClientImpl client;
   private final Context context;
   private final ArrayDeque<Holder> available = new ArrayDeque<>();
   private final ArrayDeque<Waiter> waiters = new ArrayDeque<>();
@@ -50,7 +50,7 @@ class PostgresConnectionPoolImpl implements PgConnectionPool {
     }
   }
 
-  PostgresConnectionPoolImpl(PostgresClientImpl client, int maxSize) {
+  PgConnectionPoolImpl(PgClientImpl client, int maxSize) {
     this.context = client.vertx.getOrCreateContext();
     this.client = client;
     this.maxSize = maxSize;

@@ -31,16 +31,16 @@ public class DbConnection extends ConnectionBase {
 
   private final ArrayDeque<CommandBase> inflight = new ArrayDeque<>();
   private final ArrayDeque<CommandBase> pending = new ArrayDeque<>();
-  final PostgresClientImpl client;
+  final PgClientImpl client;
   private Status status = Status.CONNECTED;
 
-  public DbConnection(PostgresClientImpl client, VertxInternal vertx, Channel channel, ContextImpl context) {
+  public DbConnection(PgClientImpl client, VertxInternal vertx, Channel channel, ContextImpl context) {
     super(vertx, channel, context);
 
     this.client = client;
   }
 
-  final PgConnection conn = new PostgresConnectionImpl(this);
+  final PgConnection conn = new PgConnectionImpl(this);
 
   void init(String username, String password, String database, Handler<AsyncResult<DbConnection>> completionHandler) {
     schedule(new StartupCommand(username, password, database, completionHandler));

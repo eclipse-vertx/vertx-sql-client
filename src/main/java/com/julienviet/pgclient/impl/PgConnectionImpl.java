@@ -15,10 +15,10 @@ import java.util.List;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class PostgresConnectionImpl implements PgConnection {
+class PgConnectionImpl implements PgConnection {
   private DbConnection dbConnection;
 
-  public PostgresConnectionImpl(DbConnection dbConnection) {
+  public PgConnectionImpl(DbConnection dbConnection) {
     this.dbConnection = dbConnection;
   }
 
@@ -137,6 +137,6 @@ class PostgresConnectionImpl implements PgConnection {
 
   @Override
   public PgPreparedStatement prepare(String sql) {
-    return new PreparedStatementImpl(dbConnection, sql, java.util.UUID.randomUUID().toString());
+    return new PgPreparedStatementImpl(dbConnection, sql, java.util.UUID.randomUUID().toString());
   }
 }
