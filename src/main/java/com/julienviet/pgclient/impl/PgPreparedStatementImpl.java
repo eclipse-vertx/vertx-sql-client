@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class PreparedStatementImpl implements PgPreparedStatement {
+class PgPreparedStatementImpl implements PgPreparedStatement {
 
   private final DbConnection conn;
   final String sql;
@@ -25,7 +25,7 @@ class PreparedStatementImpl implements PgPreparedStatement {
   boolean parsed;
   final String stmt;
 
-  PreparedStatementImpl(DbConnection conn, String sql, String stmt) {
+  PgPreparedStatementImpl(DbConnection conn, String sql, String stmt) {
     this.conn = conn;
     this.sql = sql;
     this.stmt = stmt;

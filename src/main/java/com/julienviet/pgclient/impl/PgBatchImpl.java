@@ -15,10 +15,10 @@ import java.util.List;
  */
 public class PgBatchImpl implements PgBatch {
 
-  private final PreparedStatementImpl ps;
+  private final PgPreparedStatementImpl ps;
   private final ArrayList<List<Object>> values = new ArrayList<>();
 
-  PgBatchImpl(PreparedStatementImpl ps) {
+  PgBatchImpl(PgPreparedStatementImpl ps) {
     this.ps = ps;
   }
 

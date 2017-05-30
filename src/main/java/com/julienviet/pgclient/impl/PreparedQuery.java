@@ -18,7 +18,7 @@ public class PreparedQuery implements PgQuery, PgRowStream {
 
   private static final int READY = 0, IN_PROGRESS = 1, SUSPENDED = 2;
 
-  final PreparedStatementImpl ps;
+  final PgPreparedStatementImpl ps;
   final List<Object> params;
   private int fetch;
   private int status;
@@ -29,7 +29,7 @@ public class PreparedQuery implements PgQuery, PgRowStream {
   private Handler<Void> resultSetClosedHandler;
 
 
-  PreparedQuery(PreparedStatementImpl ps, List<Object> params) {
+  PreparedQuery(PgPreparedStatementImpl ps, List<Object> params) {
     this.ps = ps;
     this.params = params;
   }

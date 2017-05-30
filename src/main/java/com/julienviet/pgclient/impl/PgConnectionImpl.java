@@ -137,6 +137,6 @@ class PgConnectionImpl implements PgConnection {
 
   @Override
   public PgPreparedStatement prepare(String sql) {
-    return new PreparedStatementImpl(dbConnection, sql, java.util.UUID.randomUUID().toString());
+    return new PgPreparedStatementImpl(dbConnection, sql, java.util.UUID.randomUUID().toString());
   }
 }
