@@ -15,10 +15,10 @@ import java.util.List;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class PostgresConnectionImpl implements PgConnection {
+class PgConnectionImpl implements PgConnection {
   private DbConnection dbConnection;
 
-  public PostgresConnectionImpl(DbConnection dbConnection) {
+  public PgConnectionImpl(DbConnection dbConnection) {
     this.dbConnection = dbConnection;
   }
 

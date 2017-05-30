@@ -2,12 +2,14 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgClient;
 import com.julienviet.pgclient.PgClientOptions;
+import com.julienviet.pgclient.PgConnection;
 import com.julienviet.pgclient.PgConnectionPool;
+import com.julienviet.pgclient.codec.Message;
+import com.julienviet.pgclient.codec.decoder.MessageDecoder;
 import com.julienviet.pgclient.codec.encoder.MessageEncoder;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPipeline;
-import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -17,16 +19,13 @@ import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.impl.NetClientBase;
 import io.vertx.core.net.impl.SSLHelper;
 import io.vertx.core.spi.metrics.TCPMetrics;
-import com.julienviet.pgclient.PgConnection;
-import com.julienviet.pgclient.codec.Message;
-import com.julienviet.pgclient.codec.decoder.MessageDecoder;
 import io.vertx.ext.sql.SQLClient;
 import io.vertx.ext.sql.SQLConnection;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class PostgresClientImpl extends NetClientBase<DbConnection> implements PgClient {
+public class PgClientImpl extends NetClientBase<DbConnection> implements PgClient {
 
   final VertxInternal vertx;
   final String host;
@@ -36,7 +35,7 @@ public class PostgresClientImpl extends NetClientBase<DbConnection> implements P
   final String password;
   final int pipeliningLimit;
 
-  public PostgresClientImpl(Vertx vertx, PgClientOptions options) {
+  public PgClientImpl(Vertx vertx, PgClientOptions options) {
     super((VertxInternal) vertx, options, true);
     this.host = options.getHost();
     this.port = options.getPort();
@@ -53,7 +52,7 @@ public class PostgresClientImpl extends NetClientBase<DbConnection> implements P
         DbConnection conn = ar1.result();
         conn.init(username, password, database, ar2 -> {
           if (ar2.succeeded()) {
-            completionHandler.handle(Future.succeededFuture(new PostgresConnectionImpl(ar2.result())));
+            completionHandler.handle(Future.succeededFuture(new PgConnectionImpl(ar2.result())));
           } else {
             completionHandler.handle(Future.failedFuture(ar2.cause()));
           }
@@ -95,7 +94,7 @@ public class PostgresClientImpl extends NetClientBase<DbConnection> implements P
 
   @Override
   public PgConnectionPool createPool(int size) {
-    return new PostgresConnectionPoolImpl(this, size);
+    return new PgConnectionPoolImpl(this, size);
   }
 
   @Override

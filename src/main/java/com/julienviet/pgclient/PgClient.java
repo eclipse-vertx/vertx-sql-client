@@ -3,7 +3,7 @@ package com.julienviet.pgclient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import com.julienviet.pgclient.impl.PostgresClientImpl;
+import com.julienviet.pgclient.impl.PgClientImpl;
 import io.vertx.ext.sql.SQLClient;
 
 /**
@@ -12,7 +12,7 @@ import io.vertx.ext.sql.SQLClient;
 public interface PgClient extends SQLClient {
 
   static PgClient create(Vertx vertx, PgClientOptions options) {
-    return new PostgresClientImpl(vertx, options);
+    return new PgClientImpl(vertx, options);
   }
 
   void connect(Handler<AsyncResult<PgConnection>> completionHandler);
