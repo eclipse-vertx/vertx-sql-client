@@ -1,5 +1,7 @@
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.PgBatch;
+import com.julienviet.pgclient.PgPreparedStatement;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -15,6 +17,7 @@ import io.vertx.ext.sql.UpdateResult;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -145,13 +148,34 @@ public class PostgresSQLConnection implements SQLConnection {
   }
 
   @Override
-  public SQLConnection batch(List<String> list, Handler<AsyncResult<List<Integer>>> handler) {
+  public SQLConnection batch(List<String> sqlStatements, Handler<AsyncResult<List<Integer>>> handler) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public SQLConnection batchWithParams(String s, List<JsonArray> list, Handler<AsyncResult<List<Integer>>> handler) {
-    throw new UnsupportedOperationException();
+  public SQLConnection batchWithParams(String sql, List<JsonArray> paramsList, Handler<AsyncResult<List<Integer>>> handler) {
+    beginTxIfNeeded(tx -> {
+      if(tx.failed()) {
+        handler.handle(Future.failedFuture(tx.cause()));
+      } else {
+        PgPreparedStatement ps = new PgPreparedStatementImpl(conn, sql, java.util.UUID.randomUUID().toString());
+        PgBatch batch = ps.batch();
+        for (JsonArray params: paramsList) {
+          batch.add(params.getList());
+        }
+        batch.execute(re -> {
+          if (re.failed()) {
+            handler.handle(Future.failedFuture(re.cause()));
+          } else {
+            handler.handle(Future.succeededFuture(re.result()
+              .stream()
+              .map(UpdateResult::getUpdated)
+              .collect(Collectors.toList())));
+          }
+        });
+      }
+    });
+    return this;
   }
 
   @Override
