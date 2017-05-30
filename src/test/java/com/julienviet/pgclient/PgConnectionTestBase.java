@@ -1092,7 +1092,9 @@ public abstract class PgConnectionTestBase extends PgTestBase {
           for (Integer i: res) {
             ctx.assertEquals(1, i);
           }
-        async.complete();
+          conn.close(ctx.asyncAssertSuccess(x -> {
+            async.complete();
+          }));
       }));
     });
   }
