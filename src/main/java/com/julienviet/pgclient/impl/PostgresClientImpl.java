@@ -105,7 +105,6 @@ public class PostgresClientImpl extends NetClientBase<DbConnection> implements P
 
   @Override
   protected void initChannel(ChannelPipeline channelPipeline) {
-    channelPipeline.addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 1, 4, -4, 0, true));
     channelPipeline.addLast(new MessageDecoder());
     channelPipeline.addLast(new MessageEncoder());
   }

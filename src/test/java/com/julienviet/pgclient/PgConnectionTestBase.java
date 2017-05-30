@@ -852,13 +852,12 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   public void testSQLConnection(TestContext ctx) {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
-    client.getConnection(c -> {
-      SQLConnection conn = c.result();
+    client.getConnection(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT 1", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.getNumRows());
         async.complete();
       }));
-    });
+    }));
   }
 
   @Test
