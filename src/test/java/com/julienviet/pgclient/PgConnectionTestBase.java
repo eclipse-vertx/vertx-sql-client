@@ -20,6 +20,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -1067,6 +1069,34 @@ public abstract class PgConnectionTestBase extends PgTestBase {
       }));
     });
   }
+
+  @Test
+  public void testBatchWithParams(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient client = PgClient.create(vertx, options);
+    client.getConnection(c -> {
+      SQLConnection conn = c.result();
+      JsonArray one = new JsonArray();
+      one.add(7000);
+      one.add("7000 VALUE");
+      JsonArray two = new JsonArray();
+      two.add(8000);
+      two.add("8000 VALUE");
+      JsonArray three = new JsonArray();
+      three.add(9000);
+      three.add("9000 VALUE");
+      List<JsonArray> params = Arrays.asList(one, two, three);
+      conn.batchWithParams("INSERT INTO Fortune (id, message) values ($1, $2)", params,
+        ctx.asyncAssertSuccess(res -> {
+          ctx.assertEquals(3, res.size());
+          for (Integer i: res) {
+            ctx.assertEquals(1, i);
+          }
+        async.complete();
+      }));
+    });
+  }
+
 
 //  @Test
 //  public void testTxDeleteAndFailedCommit(TestContext ctx) {
