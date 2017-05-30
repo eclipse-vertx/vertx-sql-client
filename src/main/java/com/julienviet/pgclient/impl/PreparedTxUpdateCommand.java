@@ -27,7 +27,7 @@ class PreparedTxUpdateCommand extends TxUpdateCommandBase {
 
   final Handler<AsyncResult<Void>> handler;
   final TransactionIsolation isolation;
-  final EnumMap<TransactionIsolation, String> txMap = new EnumMap<>(TransactionIsolation.class);
+  static final EnumMap<TransactionIsolation, String> txMap = new EnumMap<>(TransactionIsolation.class);
 
   PreparedTxUpdateCommand(TransactionIsolation isolation, Handler<AsyncResult<Void>> handler) {
     this.isolation = isolation;
