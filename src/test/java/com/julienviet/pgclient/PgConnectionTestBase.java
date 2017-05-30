@@ -20,14 +20,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.time.Instant;
-import java.util.LinkedList;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 
 import static java.nio.charset.StandardCharsets.*;
-
-import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -1005,6 +1002,104 @@ public abstract class PgConnectionTestBase extends PgTestBase {
       }));
     });
   }
+
+  @Test
+  public void testTxInsertAndRollback(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient client = PgClient.create(vertx, options);
+    client.getConnection(c -> {
+      SQLConnection conn = c.result();
+      conn.setAutoCommit(false, ctx.asyncAssertSuccess(a -> {
+        conn.updateWithParams("INSERT INTO Fortune (id, message) VALUES ($1, $2)", new JsonArray().add(1981).add("EMAD"),
+          ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.getUpdated());
+            conn.rollback(ctx.asyncAssertSuccess(r -> {
+              conn.queryWithParams("SELECT * FROM Fortune WHERE id = $1", new JsonArray().add(1981), ctx.asyncAssertSuccess(s -> {
+                ctx.assertEquals(0, s.getNumRows());
+                async.complete();
+              }));
+            }));
+          }));
+      }));
+    });
+  }
+
+  @Test
+  public void testTxUpdateAndRollback(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient client = PgClient.create(vertx, options);
+    client.getConnection(c -> {
+      SQLConnection conn = c.result();
+      conn.setAutoCommit(false, ctx.asyncAssertSuccess(a -> {
+        conn.updateWithParams("UPDATE Fortune SET message = $1 WHERE id = $2", new JsonArray().add("NOT UPDATED").add(10),
+          ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.getUpdated());
+            conn.rollback(ctx.asyncAssertSuccess(r -> {
+              conn.queryWithParams("SELECT message FROM Fortune WHERE id = $1", new JsonArray().add(10),
+                ctx.asyncAssertSuccess(s -> {
+                ctx.assertEquals("Computers make very fast, very accurate mistakes.", s.getResults().get(0).getString(0));
+                async.complete();
+              }));
+            }));
+          }));
+      }));
+    });
+  }
+
+  @Test
+  public void testTxDeleteAndRollback(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient client = PgClient.create(vertx, options);
+    client.getConnection(c -> {
+      SQLConnection conn = c.result();
+      conn.setAutoCommit(false, ctx.asyncAssertSuccess(a -> {
+        conn.updateWithParams("DELETE FROM Fortune WHERE id = $1", new JsonArray().add(11),
+          ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.getUpdated());
+            conn.rollback(ctx.asyncAssertSuccess(r -> {
+              conn.queryWithParams("SELECT message FROM Fortune WHERE id = $1", new JsonArray().add(11),
+                ctx.asyncAssertSuccess(s -> {
+                  ctx.assertEquals("<script>alert(\"This should not be displayed in a browser alert box.\");</script>",
+                    s.getResults().get(0).getString(0));
+                  async.complete();
+                }));
+            }));
+          }));
+      }));
+    });
+  }
+
+//  @Test
+//  public void testTxDeleteAndFailedCommit(TestContext ctx) {
+//    Async async = ctx.async();
+//    PgClient client = PgClient.create(vertx, options);
+//    client.getConnection(c -> {
+//      SQLConnection conn = c.result();
+//      conn.updateWithParams("DELETE FROM Fortune WHERE id = $1", new JsonArray().add(11),
+//        ctx.asyncAssertSuccess(result -> {
+//          conn.commit(ctx.asyncAssertFailure(e -> {
+//            ctx.assertEquals("Not in transaction currently", e.getMessage());
+//            async.complete();
+//          }));
+//        }));
+//    });
+//  }
+//
+//  @Test
+//  public void testTxDeleteAndFailedRollback(TestContext ctx) {
+//    Async async = ctx.async();
+//    PgClient client = PgClient.create(vertx, options);
+//    client.getConnection(c -> {
+//      SQLConnection conn = c.result();
+//      conn.updateWithParams("DELETE FROM Fortune WHERE id = $1", new JsonArray().add(11),
+//        ctx.asyncAssertSuccess(result -> {
+//          conn.rollback(ctx.asyncAssertFailure(e -> {
+//            ctx.assertEquals("Not in transaction currently", e.getMessage());
+//            async.complete();
+//          }));
+//        }));
+//    });
+//  }
 
 /*
   @Test
