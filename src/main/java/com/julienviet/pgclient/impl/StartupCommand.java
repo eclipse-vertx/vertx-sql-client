@@ -38,17 +38,17 @@ class StartupCommand extends CommandBase {
   @Override
   void exec(DbConnection c) {
     conn = c;
-    c.writeToChannel(new StartupMessage(username, database));
+    c.writeMessage(new StartupMessage(username, database));
   }
 
   @Override
   public boolean handleMessage(Message msg) {
     if (msg.getClass() == AuthenticationMD5Password.class) {
       AuthenticationMD5Password authMD5 = (AuthenticationMD5Password) msg;
-      conn.writeToChannel(new PasswordMessage(username, password, authMD5.getSalt()));
+      conn.writeMessage(new PasswordMessage(username, password, authMD5.getSalt()));
       return false;
     } else if (msg.getClass() == AuthenticationClearTextPassword.class) {
-      conn.writeToChannel(new PasswordMessage(username, password, null));
+      conn.writeMessage(new PasswordMessage(username, password, null));
       return false;
     } else if (msg.getClass() == AuthenticationOk.class) {
 //      handler.handle(Future.succeededFuture(conn));

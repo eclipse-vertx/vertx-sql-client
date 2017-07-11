@@ -51,14 +51,14 @@ class PreparedUpdateCommand extends UpdateCommandBase {
   @Override
   void exec(DbConnection conn) {
     if (parse) {
-      conn.writeToChannel(new Parse(sql).setStatement(stmt));
+      conn.writeMessage(new Parse(sql).setStatement(stmt));
     }
     for (List<Object> params : paramsList) {
-      conn.writeToChannel(new Bind().setParamValues(paramValues(params)).setStatement(stmt));
-      conn.writeToChannel(new Describe().setStatement(stmt));
-      conn.writeToChannel(new Execute().setRowCount(0));
+      conn.writeMessage(new Bind().setParamValues(paramValues(params)).setStatement(stmt));
+      conn.writeMessage(new Describe().setStatement(stmt));
+      conn.writeMessage(new Execute().setRowCount(0));
     }
-    conn.writeToChannel(Sync.INSTANCE);
+    conn.writeMessage(Sync.INSTANCE);
   }
 
   @Override

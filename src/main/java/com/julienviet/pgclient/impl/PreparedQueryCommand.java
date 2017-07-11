@@ -6,7 +6,6 @@ import com.julienviet.pgclient.codec.decoder.message.NoData;
 import com.julienviet.pgclient.codec.decoder.message.ParameterDescription;
 import com.julienviet.pgclient.codec.decoder.message.ParseComplete;
 import com.julienviet.pgclient.codec.decoder.message.PortalSuspended;
-import com.julienviet.pgclient.codec.decoder.message.ReadyForQuery;
 import com.julienviet.pgclient.codec.encoder.message.Bind;
 import com.julienviet.pgclient.codec.encoder.message.Describe;
 import com.julienviet.pgclient.codec.encoder.message.Execute;
@@ -56,17 +55,17 @@ class PreparedQueryCommand extends QueryCommandBase {
   @Override
   void exec(DbConnection conn) {
     if (parse) {
-      conn.writeToChannel(new Parse(sql).setStatement(stmt));
+      conn.writeMessage(new Parse(sql).setStatement(stmt));
     }
     if (!suspended) {
-      conn.writeToChannel(new Bind().setParamValues(Util.paramValues(params)).setPortal(portal).setStatement(stmt));
-      conn.writeToChannel(new Describe().setStatement(stmt));
+      conn.writeMessage(new Bind().setParamValues(Util.paramValues(params)).setPortal(portal).setStatement(stmt));
+      conn.writeMessage(new Describe().setStatement(stmt));
     } else {
       // Needed for now, later see how to remove it
-      conn.writeToChannel(new Describe().setPortal(portal));
+      conn.writeMessage(new Describe().setPortal(portal));
     }
-    conn.writeToChannel(new Execute().setPortal(portal).setRowCount(fetch));
-    conn.writeToChannel(Sync.INSTANCE);
+    conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
+    conn.writeMessage(Sync.INSTANCE);
   }
 
   @Override

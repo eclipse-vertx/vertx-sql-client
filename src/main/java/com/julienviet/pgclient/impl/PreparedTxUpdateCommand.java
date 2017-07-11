@@ -37,10 +37,10 @@ class PreparedTxUpdateCommand extends TxUpdateCommandBase {
 
   @Override
   void exec(DbConnection conn) {
-    conn.writeToChannel(new Parse(txMap.get(isolation)));
-    conn.writeToChannel(new Bind());
-    conn.writeToChannel(new Execute().setRowCount(1));
-    conn.writeToChannel(Sync.INSTANCE);
+    conn.writeMessage(new Parse(txMap.get(isolation)));
+    conn.writeMessage(new Bind());
+    conn.writeMessage(new Execute().setRowCount(1));
+    conn.writeMessage(Sync.INSTANCE);
   }
 
   @Override

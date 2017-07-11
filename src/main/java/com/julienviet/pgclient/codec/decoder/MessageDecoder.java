@@ -60,8 +60,11 @@ public class MessageDecoder extends ByteToMessageDecoder {
         break;
       }
       ByteBuf buff = in.slice(beginIdx + 5, length - 4);
-      decodeMessage(id, buff, out);
-      in.readerIndex(endIdx);
+      try {
+        decodeMessage(id, buff, out);
+      } finally {
+        in.readerIndex(endIdx);
+      }
     }
   }
 

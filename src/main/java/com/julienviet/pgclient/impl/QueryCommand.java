@@ -17,7 +17,7 @@ class QueryCommand extends QueryCommandBase {
 
   @Override
   void exec(DbConnection conn) {
-    conn.writeToChannel(new Query(sql));
+    conn.writeMessage(new Query(sql));
   }
 
   public String getSql() {
