@@ -8,6 +8,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
+import io.vertx.ext.sql.SQLOptions;
 import io.vertx.ext.sql.SQLRowStream;
 import io.vertx.ext.sql.TransactionIsolation;
 import io.vertx.ext.sql.UpdateResult;
@@ -26,6 +27,11 @@ public class PostgresSQLConnection implements SQLConnection {
 
   public PostgresSQLConnection(DbConnection conn) {
     this.conn = conn;
+  }
+
+  @Override
+  public SQLConnection setOptions(SQLOptions options) {
+    return null;
   }
 
   @Override
