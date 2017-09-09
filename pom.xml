@@ -30,9 +30,7 @@
   <name>Postgres Client for Eclipse Vert.x</name>
 
   <properties>
-    <stack.version>3.5.0-SNAPSHOT</stack.version>
-    <termd.version>1.1.2</termd.version>
-    <codegen.rxjava.deprecated>true</codegen.rxjava.deprecated>
+    <stack.version>3.5.0.Beta1</stack.version>
   </properties>
 
   <dependencyManagement>
