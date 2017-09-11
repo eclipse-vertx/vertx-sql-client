@@ -18,12 +18,19 @@ import io.vertx.core.net.TrustOptions;
  */
 public class PgClientOptions extends NetClientOptions {
 
-  private String host = "localhost";
-  private int port = 5432;
-  private String database = "db";
-  private String username = "user";
-  private String password = "pass";
-  private int pipeliningLimit = 256;
+  public static final int DEFAULT_PIPELINING_LIMIT = 256;
+  public static final String DEFAULT_HOST = "localhost";
+  public static int DEFAULT_PORT = 5432;
+  public static final String DEFAULT_DATABASE = "db";
+  public static final String DEFAULT_USERNAME = "user";
+  public static final String DEFAULT_PASSWORD = "pass";
+
+  private String host = DEFAULT_HOST;
+  private int port = DEFAULT_PORT;
+  private String database = DEFAULT_DATABASE;
+  private String username = DEFAULT_USERNAME;
+  private String password = DEFAULT_PASSWORD;
+  private int pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
 
   public PgClientOptions() {
   }
