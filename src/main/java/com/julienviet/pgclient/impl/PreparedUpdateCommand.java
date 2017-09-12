@@ -34,6 +34,7 @@ class PreparedUpdateCommand extends UpdateCommandBase {
   final List<List<Object>> paramsList;
   final Handler<AsyncResult<List<UpdateResult>>> handler;
   private ArrayList<UpdateResult> results;
+  private Throwable failure;
 
   PreparedUpdateCommand(String sql, List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
     this(true, sql, "", paramsList, handler);
@@ -66,7 +67,11 @@ class PreparedUpdateCommand extends UpdateCommandBase {
   public void handleMessage(Message msg) {
     if (msg.getClass() == ReadyForQuery.class) {
       doneHandler.handle(null);
-      handler.handle(Future.succeededFuture(results));
+      if (failure != null) {
+        handler.handle(Future.failedFuture(failure));
+      } else {
+        handler.handle(Future.succeededFuture(results));
+      }
     } else if (msg.getClass() == ParameterDescription.class) {
     } else if (msg.getClass() == NoData.class) {
     } else if (msg.getClass() == ParseComplete.class) {
@@ -83,7 +88,6 @@ class PreparedUpdateCommand extends UpdateCommandBase {
 
   @Override
   void fail(Throwable cause) {
-    cause.printStackTrace();
-    throw new UnsupportedOperationException("Not yet implemented");
+    failure = cause;
   }
 }

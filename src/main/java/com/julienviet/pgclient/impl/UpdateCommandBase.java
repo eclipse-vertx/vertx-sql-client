@@ -25,7 +25,6 @@ abstract class UpdateCommandBase extends CommandBase {
       handleResult(updateResult);
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
-      doneHandler.handle(null);
       fail(new PgException(error));
     } else {
       super.handleMessage(msg);

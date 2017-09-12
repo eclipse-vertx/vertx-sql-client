@@ -20,14 +20,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.time.Instant;
-import java.util.LinkedList;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 
 import static java.nio.charset.StandardCharsets.*;
-
-import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -729,6 +727,27 @@ public abstract class PgConnectionTestBase extends PgTestBase {
         ps.close(ctx.asyncAssertSuccess(result -> {
           async.complete();
         }));
+      }));
+    }));
+  }
+
+  private static int randomWorld() {
+    return 1 + ThreadLocalRandom.current().nextInt(10000);
+  }
+
+  @Test
+  public void testBatchUpdateError(TestContext ctx) throws Exception {
+    Async async = ctx.async();
+    PgClient client = PgClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      int id = randomWorld();
+      PgPreparedStatement worldUpdate = conn.prepare("INSERT INTO World (id, randomnumber) VALUES ($1, $2)");
+      PgBatch batch = worldUpdate.batch();
+      batch.add(id, 3);
+      batch.execute(ctx.asyncAssertFailure(err -> {
+        PgException expected = (PgException) err;
+        ctx.assertEquals("23505", expected.getCode());
+        async.complete();
       }));
     }));
   }
