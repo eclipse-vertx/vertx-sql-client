@@ -24,11 +24,13 @@ class PreparedStatementImpl implements PgPreparedStatement {
   final AtomicBoolean closed = new AtomicBoolean();
   boolean parsed;
   final String stmt;
+  final boolean cached;
 
-  PreparedStatementImpl(DbConnection conn, String sql, String stmt) {
+  PreparedStatementImpl(DbConnection conn, String sql, String stmt, boolean cached) {
     this.conn = conn;
     this.sql = sql;
     this.stmt = stmt;
+    this.cached = cached;
   }
 
   @Override
@@ -150,7 +152,9 @@ class PreparedStatementImpl implements PgPreparedStatement {
 
   @Override
   public void close(Handler<AsyncResult<Void>> completionHandler) {
-    if (closed.compareAndSet(false, true)) {
+    if (cached) {
+      completionHandler.handle(Future.succeededFuture());
+    } else if (closed.compareAndSet(false, true)) {
       conn.schedule(new CloseStatementCommand(stmt, completionHandler));
     } else {
       completionHandler.handle(Future.failedFuture("Already closed"));

@@ -144,13 +144,13 @@ class PostgresConnectionImpl implements PgConnection {
   @Override
   public PgPreparedStatement prepare(String sql) {
     if (psCache != null) {
-      return psCache.computeIfAbsent(sql, this::createPreparedStatement);
+      return psCache.computeIfAbsent(sql, this::createCachedPreparedStatement);
     } else {
-      return createPreparedStatement(sql);
+      return new PreparedStatementImpl(dbConnection, sql, UUID.randomUUID().toString(), false);
     }
   }
 
-  private PreparedStatementImpl createPreparedStatement(String sql) {
-    return new PreparedStatementImpl(dbConnection, sql, UUID.randomUUID().toString());
+  private PreparedStatementImpl createCachedPreparedStatement(String sql) {
+    return new PreparedStatementImpl(dbConnection, sql, UUID.randomUUID().toString(), true);
   }
 }

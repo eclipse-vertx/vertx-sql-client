@@ -33,12 +33,14 @@ class PostgresConnectionPoolImpl implements PgConnectionPool {
   private interface Bilto {
     void acquire(Context current, Handler<AsyncResult<Proxy>> handler);
     void release(Proxy holder);
+    void close();
   }
 
   private class Exclusive implements Bilto {
 
     private final ArrayDeque<Waiter> waiters = new ArrayDeque<>();
     private final int maxSize;
+    private final Set<PgConnection> all = new HashSet<>();
     private final ArrayDeque<PgConnection> available = new ArrayDeque<>();
     private int connCount;
 
@@ -52,12 +54,20 @@ class PostgresConnectionPoolImpl implements PgConnectionPool {
       check();
     }
 
+    @Override
+    public void close() {
+      for (PgConnection conn : new ArrayList<>(all)) {
+        conn.close();
+      }
+    }
+
     private void doAcq(Handler<AsyncResult<Proxy>> handler) {
       if (available.size() > 0) {
         PgConnection conn = available.poll();
         Proxy proxy = new Proxy(conn);
         conn.exceptionHandler(proxy::handleException);
         conn.closeHandler(v -> {
+          all.remove(conn);
           connCount--;
           check();
           proxy.handleClosed();
@@ -68,7 +78,9 @@ class PostgresConnectionPoolImpl implements PgConnectionPool {
           connCount++;
           client.connect(ar -> {
             if (ar.succeeded()) {
-              available.add(ar.result());
+              PgConnection conn = ar.result();
+              all.add(conn);
+              available.add(conn);
               doAcq(handler);
             } else {
               handler.handle(Future.failedFuture(ar.cause()));
@@ -76,6 +88,8 @@ class PostgresConnectionPoolImpl implements PgConnectionPool {
           });
         }
       }
+
+
     }
 
     private void check() {
@@ -105,14 +119,21 @@ class PostgresConnectionPoolImpl implements PgConnectionPool {
   private class Multiplexed implements Bilto {
 
     final Set<Proxy> proxies = new HashSet<>();
-    private PgConnection the;
+    private PgConnection shared;
     private boolean connecting;
     private ArrayDeque<Waiter> waiters = new ArrayDeque<>();
 
     @Override
+    public void close() {
+      if (shared != null) {
+        shared.close();
+      }
+    }
+
+    @Override
     public void acquire(Context current, Handler<AsyncResult<Proxy>> handler) {
-      if (the != null) {
-        Proxy proxy = new Proxy(the);
+      if (shared != null) {
+        Proxy proxy = new Proxy(shared);
         proxies.add(proxy);
         handler.handle(Future.succeededFuture(proxy));
       } else {
@@ -123,12 +144,14 @@ class PostgresConnectionPoolImpl implements PgConnectionPool {
             connecting = false;
             if (ar.succeeded()) {
               PgConnection conn = ar.result();
+              shared = conn;
               conn.exceptionHandler(err -> {
                 for (Proxy proxy : new ArrayList<>(proxies)) {
                   proxy.handleException(err);
                 }
               });
               conn.closeHandler(v -> {
+                shared = null;
                 conn.exceptionHandler(null);
                 conn.closeHandler(null);
                 ArrayList<Proxy> list = new ArrayList<>(proxies);
@@ -245,148 +268,183 @@ class PostgresConnectionPoolImpl implements PgConnectionPool {
       }
     }
 
+    private void checkClosed() {
+      if (closed.get()) {
+        throw new IllegalStateException("Connection closed");
+      }
+    }
+
     @Override
     public void execute(String sql, Handler<AsyncResult<ResultSet>> handler) {
-      if (!closed.get()) {
-        conn.execute(sql, handler);
+      if (closed.get()) {
+        handler.handle(Future.failedFuture("Connection closed"));
+        return;
       }
+      conn.execute(sql, handler);
     }
 
     @Override
     public void update(String sql, Handler<AsyncResult<UpdateResult>> handler) {
-      if (!closed.get()) {
-        conn.update(sql, handler);
+      if (closed.get()) {
+        handler.handle(Future.failedFuture("Connection closed"));
+        return;
       }
+      conn.update(sql, handler);
     }
 
     @Override
     public void query(String sql, Handler<AsyncResult<ResultSet>> handler) {
-      if (!closed.get()) {
-        conn.query(sql, handler);
-      } else {
+      if (closed.get()) {
         handler.handle(Future.failedFuture("Connection closed"));
+        return;
       }
+      conn.query(sql, handler);
     }
 
     @Override
     public void prepareAndQuery(String sql, Object param, Handler<AsyncResult<ResultSet>> handler) {
-      if (!closed.get()) {
-        conn.prepareAndQuery(sql, param, handler);
+      if (closed.get()) {
+        handler.handle(Future.failedFuture("Connection closed"));
+        return;
       }
+      conn.prepareAndQuery(sql, param, handler);
     }
 
     @Override
     public void prepareAndQuery(String sql, Object param1, Object param2, Handler<AsyncResult<ResultSet>> handler) {
-      if (!closed.get()) {
-        conn.prepareAndQuery(sql, param1, param2, handler);
+      if (closed.get()) {
+        handler.handle(Future.failedFuture("Connection closed"));
+        return;
       }
+      conn.prepareAndQuery(sql, param1, param2, handler);
     }
 
     @Override
     public void prepareAndQuery(String sql, Object param1, Object param2, Object param3,
                                 Handler<AsyncResult<ResultSet>> handler) {
-      if (!closed.get()) {
-        conn.prepareAndQuery(sql, param1, param2, param3, handler);
+      if (closed.get()) {
+        handler.handle(Future.failedFuture("Connection closed"));
+        return;
       }
+      conn.prepareAndQuery(sql, param1, param2, param3, handler);
     }
 
     @Override
     public void prepareAndQuery(String sql, Object param1, Object param2, Object param3, Object param4,
                                 Handler<AsyncResult<ResultSet>> handler) {
-      if (!closed.get()) {
-        conn.prepareAndQuery(sql, param1, param2, param3, param4, handler);
+      if (closed.get()) {
+        handler.handle(Future.failedFuture("Connection closed"));
+        return;
       }
+      conn.prepareAndQuery(sql, param1, param2, param3, param4, handler);
     }
 
     @Override
     public void prepareAndQuery(String sql, Object param1, Object param2, Object param3, Object param4,
                                 Object param5, Handler<AsyncResult<ResultSet>> handler) {
-      if (!closed.get()) {
-        conn.prepareAndQuery(sql, param1, param2, param3, param4, param5, handler);
+      if (closed.get()) {
+        handler.handle(Future.failedFuture("Connection closed"));
+        return;
       }
+      conn.prepareAndQuery(sql, param1, param2, param3, param4, param5, handler);
     }
 
     @Override
     public void prepareAndQuery(String sql, Object param1, Object param2, Object param3, Object param4,
                                 Object param5, Object param6, Handler<AsyncResult<ResultSet>> handler) {
-      if (!closed.get()) {
-        conn.prepareAndQuery(sql, param1, param2, param3, param4, param5, param6, handler);
+      if (closed.get()) {
+        handler.handle(Future.failedFuture("Connection closed"));
+        return;
       }
+      conn.prepareAndQuery(sql, param1, param2, param3, param4, param5, param6, handler);
     }
 
     @Override
     public void prepareAndQuery(String sql, List<Object> params, Handler<AsyncResult<ResultSet>> handler) {
-      if (!closed.get()) {
-        conn.prepareAndQuery(sql, params, handler);
+      if (closed.get()) {
+        handler.handle(Future.failedFuture("Connection closed"));
+        return;
       }
+      conn.prepareAndQuery(sql, params, handler);
     }
 
     @Override
     public void prepareAndExecute(String sql, Object param, Handler<AsyncResult<UpdateResult>> handler) {
-      if (!closed.get()) {
-        conn.prepareAndExecute(sql, param, handler);
+      if (closed.get()) {
+        handler.handle(Future.failedFuture("Connection closed"));
+        return;
       }
+      conn.prepareAndExecute(sql, param, handler);
     }
 
     @Override
     public void prepareAndExecute(String sql, Object param1, Object param2, Handler<AsyncResult<UpdateResult>> handler) {
-      if (!closed.get()) {
-        conn.prepareAndExecute(sql, param1, param2, handler);
+      if (closed.get()) {
+        handler.handle(Future.failedFuture("Connection closed"));
+        return;
       }
+      conn.prepareAndExecute(sql, param1, param2, handler);
     }
 
     @Override
     public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Handler<AsyncResult<UpdateResult>> handler) {
-      if (!closed.get()) {
-        conn.prepareAndExecute(sql, param1, param2, param3, handler);
+      if (closed.get()) {
+        handler.handle(Future.failedFuture("Connection closed"));
+        return;
       }
+      conn.prepareAndExecute(sql, param1, param2, param3, handler);
     }
 
     @Override
     public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4, Handler<AsyncResult<UpdateResult>> handler) {
-      if (!closed.get()) {
-        conn.prepareAndExecute(sql, param1, param2, param3, param4, handler);
+      if (closed.get()) {
+        handler.handle(Future.failedFuture("Connection closed"));
+        return;
       }
+      conn.prepareAndExecute(sql, param1, param2, param3, param4, handler);
     }
 
     @Override
     public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4, Object param5, Handler<AsyncResult<UpdateResult>> handler) {
-      if (!closed.get()) {
-        conn.prepareAndExecute(sql, param1, param2, param3, param4, param5, handler);
+      if (closed.get()) {
+        handler.handle(Future.failedFuture("Connection closed"));
+        return;
       }
+      conn.prepareAndExecute(sql, param1, param2, param3, param4, param5, handler);
     }
 
     @Override
     public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4, Object param5, Object param6, Handler<AsyncResult<UpdateResult>> handler) {
-      if (!closed.get()) {
-        conn.prepareAndExecute(sql, param1, param2, param3, param4, param5, param6, handler);
+      if (closed.get()) {
+        handler.handle(Future.failedFuture("Connection closed"));
+        return;
       }
+      conn.prepareAndExecute(sql, param1, param2, param3, param4, param5, param6, handler);
     }
 
     @Override
     public void prepareAndExecute(String sql, List<Object> params, Handler<AsyncResult<UpdateResult>> handler) {
-      if (!closed.get()) {
-        conn.prepareAndExecute(sql, params, handler);
+      if (closed.get()) {
+        handler.handle(Future.failedFuture("Connection closed"));
+        return;
       }
+      conn.prepareAndExecute(sql, params, handler);
     }
 
     @Override
     public void exceptionHandler(Handler<Throwable> handler) {
-      if (!closed.get()) {
-        exceptionHandler = handler;
-      }
+      exceptionHandler = handler;
     }
 
     @Override
     public void closeHandler(Handler<Void> handler) {
-      if (!closed.get()) {
-        closeHandler = handler;
-      }
+      closeHandler = handler;
     }
 
     @Override
     public PgPreparedStatement prepare(String sql) {
-      throw new UnsupportedOperationException("Implement me");
+      checkClosed();
+      return conn.prepare(sql);
     }
 
     @Override
@@ -399,6 +457,5 @@ class PostgresConnectionPoolImpl implements PgConnectionPool {
 
   @Override
   public void close() {
-    throw new UnsupportedOperationException();
   }
 }
