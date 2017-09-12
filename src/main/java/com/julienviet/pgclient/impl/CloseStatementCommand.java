@@ -16,6 +16,7 @@ class CloseStatementCommand extends CommandBase {
 
   final String stmt;
   final Handler<AsyncResult<Void>> handler;
+  private Handler<Void> doneHandler;
 
   public CloseStatementCommand(String stmt, Handler<AsyncResult<Void>> handler) {
     this.stmt = stmt;
@@ -23,20 +24,20 @@ class CloseStatementCommand extends CommandBase {
   }
 
   @Override
-  void exec(DbConnection conn) {
+  void exec(DbConnection conn, Handler<Void> handler) {
+    doneHandler = handler;
     conn.writeMessage(new Close().setStatement(stmt));
     conn.writeMessage(Sync.INSTANCE);
   }
 
   @Override
-  public boolean handleMessage(Message msg) {
+  public void handleMessage(Message msg) {
     if (msg.getClass() == CloseComplete.class) {
       handler.handle(Future.succeededFuture());
-      return false;
     } else if (msg.getClass() == ReadyForQuery.class) {
-      return true;
+      doneHandler.handle(null);
     } else {
-      return super.handleMessage(msg);
+      super.handleMessage(msg);
     }
   }
 

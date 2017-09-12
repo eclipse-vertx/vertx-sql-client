@@ -95,7 +95,10 @@ public class DbConnection {
   private void checkPending() {
     CommandBase cmd;
     while (inflight.size() < client.pipeliningLimit && (cmd = pending.poll()) != null) {
-      cmd.exec(this);
+      cmd.exec(this, v -> {
+        inflight.poll();
+        checkPending();
+      });
       inflight.add(cmd);
     }
   }
@@ -104,10 +107,7 @@ public class DbConnection {
     Message pgMsg = (Message) msg;
     CommandBase cmd = inflight.peek();
     if (cmd != null) {
-      if (cmd.handleMessage(pgMsg)) {
-        inflight.poll();
-        checkPending();
-      }
+      cmd.handleMessage(pgMsg);
     } else {
       System.out.println("Uh oh, no inflight command for " + msg);
     }

@@ -27,6 +27,7 @@ class StartupCommand extends CommandBase {
   final String database;
   private String CLIENT_ENCODING;
   private DbConnection conn;
+  private Handler<Void> doneHandler;
 
   StartupCommand(String username, String password, String database, Handler<AsyncResult<DbConnection>> handler) {
     this.username = username;
@@ -36,36 +37,32 @@ class StartupCommand extends CommandBase {
   }
 
   @Override
-  void exec(DbConnection c) {
+  void exec(DbConnection c, Handler<Void> handler) {
     conn = c;
+    doneHandler = handler;
     c.writeMessage(new StartupMessage(username, database));
   }
 
   @Override
-  public boolean handleMessage(Message msg) {
+  public void handleMessage(Message msg) {
     if (msg.getClass() == AuthenticationMD5Password.class) {
       AuthenticationMD5Password authMD5 = (AuthenticationMD5Password) msg;
       conn.writeMessage(new PasswordMessage(username, password, authMD5.getSalt()));
-      return false;
     } else if (msg.getClass() == AuthenticationClearTextPassword.class) {
       conn.writeMessage(new PasswordMessage(username, password, null));
-      return false;
     } else if (msg.getClass() == AuthenticationOk.class) {
 //      handler.handle(Future.succeededFuture(conn));
 //      handler = null;
-      return false;
     } else if (msg.getClass() == ParameterStatus.class) {
       ParameterStatus paramStatus = (ParameterStatus) msg;
       if(paramStatus.getKey().equals("client_encoding")) {
         CLIENT_ENCODING = paramStatus.getValue();
       }
-      return false;
     } else if (msg.getClass() == BackendKeyData.class) {
-      return false;
     }  else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
       handler.handle(Future.failedFuture(new PgException(error)));
-      return true;
+      doneHandler.handle(null);
     } else if (msg.getClass() == ReadyForQuery.class) {
       // The final phase before returning the connection
       // We should make sure we are supporting only UTF8
@@ -77,9 +74,9 @@ class StartupCommand extends CommandBase {
         fut = Future.succeededFuture(conn);
       }
       handler.handle(fut);
-      return true;
+      doneHandler.handle(null);
     } else {
-      return super.handleMessage(msg);
+      super.handleMessage(msg);
     }
   }
 

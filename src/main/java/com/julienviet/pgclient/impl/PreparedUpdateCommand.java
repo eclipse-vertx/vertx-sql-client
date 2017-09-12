@@ -49,7 +49,8 @@ class PreparedUpdateCommand extends UpdateCommandBase {
   }
 
   @Override
-  void exec(DbConnection conn) {
+  void exec(DbConnection conn, Handler<Void> handler) {
+    doneHandler = handler;
     if (parse) {
       conn.writeMessage(new Parse(sql).setStatement(stmt));
     }
@@ -62,20 +63,16 @@ class PreparedUpdateCommand extends UpdateCommandBase {
   }
 
   @Override
-  public boolean handleMessage(Message msg) {
+  public void handleMessage(Message msg) {
     if (msg.getClass() == ReadyForQuery.class) {
       handler.handle(Future.succeededFuture(results));
-      return true;
+      doneHandler.handle(null);
     } else if (msg.getClass() == ParameterDescription.class) {
-      return false;
     } else if (msg.getClass() == NoData.class) {
-      return false;
     } else if (msg.getClass() == ParseComplete.class) {
-      return false;
     } else if (msg.getClass() == BindComplete.class) {
-      return false;
     } else {
-      return super.handleMessage(msg);
+      super.handleMessage(msg);
     }
   }
 

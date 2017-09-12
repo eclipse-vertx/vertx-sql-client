@@ -23,12 +23,14 @@ import io.vertx.ext.sql.TransactionIsolation;
 public class PreparedTxQueryCommand extends TxQueryCommandBase {
 
   private final Handler<AsyncResult<TransactionIsolation>> handler;
+
   public PreparedTxQueryCommand(Handler<AsyncResult<TransactionIsolation>> handler) {
     this.handler = handler;
   }
 
   @Override
-  void exec(DbConnection conn) {
+  void exec(DbConnection conn, Handler<Void> handler) {
+    doneHandler = handler;
     conn.writeMessage(new Parse("SHOW TRANSACTION ISOLATION LEVEL"));
     conn.writeMessage(new Bind());
     conn.writeMessage(new Describe());
@@ -37,19 +39,15 @@ public class PreparedTxQueryCommand extends TxQueryCommandBase {
   }
 
   @Override
-  public boolean handleMessage(Message msg) {
+  public void handleMessage(Message msg) {
     if (msg.getClass() == ReadyForQuery.class) {
-      return true;
+      doneHandler.handle(null);
     } else if (msg.getClass() == ParameterDescription.class) {
-      return false;
     } else if (msg.getClass() == NoData.class) {
-      return false;
     } else if (msg.getClass() == ParseComplete.class) {
-      return false;
     } else if (msg.getClass() == BindComplete.class) {
-      return false;
     } else {
-      return super.handleMessage(msg);
+      super.handleMessage(msg);
     }
   }
 

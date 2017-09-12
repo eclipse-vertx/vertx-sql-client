@@ -1,6 +1,7 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.codec.Message;
+import io.vertx.core.Handler;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -8,12 +9,11 @@ import com.julienviet.pgclient.codec.Message;
 
 abstract class CommandBase {
 
-  public boolean handleMessage(Message msg) {
+  public void handleMessage(Message msg) {
     System.out.println(getClass().getSimpleName() + " should handle message " + msg);
-    return false;
   }
 
-  abstract void exec(DbConnection conn);
+  abstract void exec(DbConnection conn, Handler<Void> handler);
 
   abstract void fail(Throwable err);
 

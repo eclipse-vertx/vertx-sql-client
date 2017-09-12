@@ -36,7 +36,8 @@ class PreparedTxUpdateCommand extends TxUpdateCommandBase {
   }
 
   @Override
-  void exec(DbConnection conn) {
+  void exec(DbConnection conn, Handler<Void> handler) {
+    doneHandler = handler;
     conn.writeMessage(new Parse(txMap.get(isolation)));
     conn.writeMessage(new Bind());
     conn.writeMessage(new Execute().setRowCount(1));
@@ -44,19 +45,15 @@ class PreparedTxUpdateCommand extends TxUpdateCommandBase {
   }
 
   @Override
-  public boolean handleMessage(Message msg) {
+  public void handleMessage(Message msg) {
     if (msg.getClass() == ReadyForQuery.class) {
-      return true;
+      doneHandler.handle(null);
     } else if (msg.getClass() == ParameterDescription.class) {
-      return false;
     } else if (msg.getClass() == NoData.class) {
-      return false;
     } else if (msg.getClass() == ParseComplete.class) {
-      return false;
     } else if (msg.getClass() == BindComplete.class) {
-      return false;
     } else {
-      return super.handleMessage(msg);
+      super.handleMessage(msg);
     }
   }
 

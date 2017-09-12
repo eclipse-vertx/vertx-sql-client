@@ -10,6 +10,7 @@ import com.julienviet.pgclient.codec.decoder.message.DataRow;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
 import com.julienviet.pgclient.codec.decoder.message.ReadyForQuery;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
+import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -35,16 +36,17 @@ abstract class QueryCommandBase extends CommandBase {
 
   protected final QueryResultHandler handler;
   private RowDescription rowDesc;
+  protected Handler<Void> doneHandler;
 
   public QueryCommandBase(QueryResultHandler handler) {
     this.handler = handler;
   }
 
   @Override
-  public boolean handleMessage(Message msg) {
+  public void handleMessage(Message msg) {
     if (msg.getClass() == ReadyForQuery.class) {
       handler.end();
-      return true;
+      doneHandler.handle(null);
     } else if (msg.getClass() == RowDescription.class) {
       rowDesc = (RowDescription) msg;
       Column[] columns = rowDesc.getColumns();
@@ -53,7 +55,6 @@ abstract class QueryCommandBase extends CommandBase {
         columnNames.add(columnDesc.getName());
       }
       handler.beginResult(columnNames);
-      return false;
     } else if (msg.getClass() == DataRow.class) {
       DataRow dataRow = (DataRow) msg;
       JsonArray row = new JsonArray();
@@ -75,17 +76,15 @@ abstract class QueryCommandBase extends CommandBase {
         }
       }
       handler.handleRow(row);
-      return false;
     } else if (msg.getClass() == CommandComplete.class) {
       rowDesc = null;
       handler.endResult(false);
-      return false;
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
       fail(new PgException(error));
-      return false;
+      doneHandler.handle(null);
     } else {
-      return super.handleMessage(msg);
+      super.handleMessage(msg);
     }
   }
 

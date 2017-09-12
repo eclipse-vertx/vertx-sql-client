@@ -12,6 +12,7 @@ import com.julienviet.pgclient.codec.encoder.message.Execute;
 import com.julienviet.pgclient.codec.encoder.message.Parse;
 import com.julienviet.pgclient.codec.encoder.message.Sync;
 import com.julienviet.pgclient.codec.util.Util;
+import io.vertx.core.Handler;
 
 import java.util.List;
 
@@ -53,7 +54,8 @@ class PreparedQueryCommand extends QueryCommandBase {
   }
 
   @Override
-  void exec(DbConnection conn) {
+  void exec(DbConnection conn, Handler<Void> handler) {
+    doneHandler = handler;
     if (parse) {
       conn.writeMessage(new Parse(sql).setStatement(stmt));
     }
@@ -69,20 +71,15 @@ class PreparedQueryCommand extends QueryCommandBase {
   }
 
   @Override
-  public boolean handleMessage(Message msg) {
+  public void handleMessage(Message msg) {
     if (msg.getClass() == PortalSuspended.class) {
       handler.endResult(true);
-      return false;
     } else if (msg.getClass() == ParameterDescription.class) {
-      return false;
     } else if (msg.getClass() == NoData.class) {
-      return false;
     } else if (msg.getClass() == ParseComplete.class) {
-      return false;
     } else if (msg.getClass() == BindComplete.class) {
-      return false;
     } else {
-      return super.handleMessage(msg);
+      super.handleMessage(msg);
     }
   }
 }

@@ -23,16 +23,17 @@ class UpdateCommand extends UpdateCommandBase {
   }
 
   @Override
-  void exec(DbConnection conn) {
+  void exec(DbConnection conn, Handler<Void> handler) {
+    doneHandler = handler;
     conn.writeMessage(new Query(sql));
   }
 
   @Override
-  public boolean handleMessage(Message msg) {
+  public void handleMessage(Message msg) {
     if (msg.getClass() == ReadyForQuery.class) {
-      return true;
+      doneHandler.handle(null);
     } else {
-      return super.handleMessage(msg);
+      super.handleMessage(msg);
     }
   }
 

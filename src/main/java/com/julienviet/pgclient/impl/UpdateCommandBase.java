@@ -4,6 +4,7 @@ import com.julienviet.pgclient.PgException;
 import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.decoder.message.CommandComplete;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
+import io.vertx.core.Handler;
 import io.vertx.ext.sql.UpdateResult;
 
 /**
@@ -13,21 +14,21 @@ import io.vertx.ext.sql.UpdateResult;
 abstract class UpdateCommandBase extends CommandBase {
 
   private UpdateResult updateResult;
+  protected Handler<Void> doneHandler;
 
   @Override
-  public boolean handleMessage(Message msg) {
+  public void handleMessage(Message msg) {
     if (msg.getClass() == CommandComplete.class) {
       CommandComplete complete = (CommandComplete) msg;
       updateResult = new UpdateResult();
       updateResult.setUpdated(complete.getRowsAffected());
       handleResult(updateResult);
-      return false;
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
+      doneHandler.handle(null);
       fail(new PgException(error));
-      return false;
     } else {
-      return super.handleMessage(msg);
+      super.handleMessage(msg);
     }
   }
 

@@ -6,6 +6,7 @@ import com.julienviet.pgclient.codec.decoder.message.CommandComplete;
 import com.julienviet.pgclient.codec.decoder.message.DataRow;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
+import io.vertx.core.Handler;
 import io.vertx.ext.sql.TransactionIsolation;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -17,15 +18,14 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 abstract class TxQueryCommandBase extends CommandBase {
 
   private String value;
+  protected Handler<Void> doneHandler;
 
   @Override
-  public boolean handleMessage(Message msg) {
+  public void handleMessage(Message msg) {
     if (msg.getClass() == RowDescription.class) {
-      return false;
     } else if (msg.getClass() == DataRow.class) {
       DataRow dataRow = (DataRow) msg;
       value = new String(dataRow.getValue(0), UTF_8);
-      return false;
     } else if (msg.getClass() == CommandComplete.class) {
       switch (value) {
         case "read committed": {
@@ -45,13 +45,12 @@ abstract class TxQueryCommandBase extends CommandBase {
         }
         break;
       }
-      return false;
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
+      doneHandler.handle(null);
       fail(new PgException(error));
-      return false;
     } else {
-      return super.handleMessage(msg);
+      super.handleMessage(msg);
     }
   }
 
