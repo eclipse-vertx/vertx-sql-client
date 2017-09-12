@@ -11,15 +11,21 @@ import io.vertx.ext.sql.UpdateResult;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 class PostgresConnectionImpl implements PgConnection {
-  private DbConnection dbConnection;
 
-  public PostgresConnectionImpl(DbConnection dbConnection) {
+  private DbConnection dbConnection;
+  private final Map<String, PgPreparedStatement> psCache;
+
+  public PostgresConnectionImpl(DbConnection dbConnection, boolean cachePreparedStatements) {
     this.dbConnection = dbConnection;
+    this.psCache = cachePreparedStatements ? new ConcurrentHashMap<>() : null;
   }
 
   @Override
@@ -137,6 +143,14 @@ class PostgresConnectionImpl implements PgConnection {
 
   @Override
   public PgPreparedStatement prepare(String sql) {
-    return new PreparedStatementImpl(dbConnection, sql, java.util.UUID.randomUUID().toString());
+    if (psCache != null) {
+      return psCache.computeIfAbsent(sql, this::createPreparedStatement);
+    } else {
+      return createPreparedStatement(sql);
+    }
+  }
+
+  private PreparedStatementImpl createPreparedStatement(String sql) {
+    return new PreparedStatementImpl(dbConnection, sql, UUID.randomUUID().toString());
   }
 }

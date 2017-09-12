@@ -23,12 +23,16 @@ public class PgClientOptions extends NetClientOptions {
   public static final String DEFAULT_DATABASE = "db";
   public static final String DEFAULT_USERNAME = "user";
   public static final String DEFAULT_PASSWORD = "pass";
+  public static final boolean DEFAULT_CACHE_PREPARED_STATEMENTS = false;
+  public static final int DEFAULT_PIPELINING_LIMIT = 256;
 
   private String host = DEFAULT_HOST;
   private int port = DEFAULT_PORT;
   private String database = DEFAULT_DATABASE;
   private String username = DEFAULT_USERNAME;
   private String password = DEFAULT_PASSWORD;
+  private boolean cachePreparedStatements = DEFAULT_CACHE_PREPARED_STATEMENTS;
+  private int pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
 
   public PgClientOptions() {
   }
@@ -260,5 +264,26 @@ public class PgClientOptions extends NetClientOptions {
   @Override
   public PgClientOptions setOpenSslEngineOptions(OpenSSLEngineOptions sslEngineOptions) {
     return (PgClientOptions) super.setOpenSslEngineOptions(sslEngineOptions);
+  }
+
+  public int getPipeliningLimit() {
+    return pipeliningLimit;
+  }
+
+  public PgClientOptions setPipeliningLimit(int pipeliningLimit) {
+    if (pipeliningLimit < 1) {
+      throw new IllegalArgumentException();
+    }
+    this.pipeliningLimit = pipeliningLimit;
+    return this;
+  }
+
+  public boolean getCachePreparedStatements() {
+    return cachePreparedStatements;
+  }
+
+  public PgClientOptions setCachePreparedStatements(boolean cachePreparedStatements) {
+    this.cachePreparedStatements = cachePreparedStatements;
+    return this;
   }
 }

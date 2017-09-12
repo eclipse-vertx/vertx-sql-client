@@ -2,7 +2,6 @@ package com.julienviet.pgclient.impl;
 
 
 import com.julienviet.pgclient.PgConnection;
-import com.julienviet.pgclient.PgConnectionOptions;
 import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.decoder.MessageDecoder;
 import com.julienviet.pgclient.codec.encoder.MessageEncoder;
@@ -30,7 +29,6 @@ public class DbConnection {
 
   }
 
-  private final int pipeliningLimit;
   private final NetSocketInternal socket;
   private final ArrayDeque<CommandBase> inflight = new ArrayDeque<>();
   private final ArrayDeque<CommandBase> pending = new ArrayDeque<>();
@@ -39,16 +37,15 @@ public class DbConnection {
   private Status status = Status.CONNECTED;
   private Handler<Void> closeHandler;
   private Handler<Throwable> exceptionHandler;
+  private final PgConnection conn;
 
   public DbConnection(PostgresClientImpl client,
-                      NetSocketInternal socket, ContextImpl context, PgConnectionOptions options) {
+                      NetSocketInternal socket, ContextImpl context) {
     this.socket = socket;
     this.client = client;
     this.context = context;
-    this.pipeliningLimit = options.getPipeliningLimit();
+    this.conn = new PostgresConnectionImpl(this, client.cachePreparedStatements);
   }
-
-  final PgConnection conn = new PostgresConnectionImpl(this);
 
   void init(String username, String password, String database, Handler<AsyncResult<DbConnection>> completionHandler) {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
@@ -97,7 +94,7 @@ public class DbConnection {
 
   private void checkPending() {
     CommandBase cmd;
-    while (inflight.size() < pipeliningLimit && (cmd = pending.poll()) != null) {
+    while (inflight.size() < client.pipeliningLimit && (cmd = pending.poll()) != null) {
       cmd.exec(this, v -> {
         inflight.poll();
         checkPending();
