@@ -8,7 +8,6 @@ import io.vertx.core.Handler;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -29,56 +28,25 @@ class PostgresConnectionImpl implements PgConnection {
   }
 
   @Override
-  public void execute(String sql, Handler<AsyncResult<ResultSet>> handler) {
+  public PgConnection execute(String sql, Handler<AsyncResult<ResultSet>> handler) {
     dbConnection.schedule(new QueryCommand(sql, new ResultSetBuilder(handler)));
+    return this;
   }
 
   @Override
-  public void update(String sql, Handler<AsyncResult<UpdateResult>> handler) {
+  public PgConnection update(String sql, Handler<AsyncResult<UpdateResult>> handler) {
     dbConnection.schedule(new UpdateCommand(sql, handler));
+    return this;
   }
 
   @Override
-  public void query(String sql, Handler<AsyncResult<ResultSet>> handler) {
+  public PgConnection query(String sql, Handler<AsyncResult<ResultSet>> handler) {
     dbConnection.schedule(new QueryCommand(sql, new ResultSetBuilder(handler)));
+    return this;
   }
 
   @Override
-  public void prepareAndQuery(String sql, Object param, Handler<AsyncResult<ResultSet>> handler) {
-    prepareAndQuery(sql, Arrays.asList(param), handler);
-  }
-
-  @Override
-  public void prepareAndQuery(String sql, Object param1, Object param2, Handler<AsyncResult<ResultSet>> handler) {
-    prepareAndQuery(sql, Arrays.asList(param1, param2), handler);
-  }
-
-  @Override
-  public void prepareAndQuery(String sql, Object param1, Object param2, Object param3,
-                              Handler<AsyncResult<ResultSet>> handler) {
-    prepareAndQuery(sql, Arrays.asList(param1, param2, param3), handler);
-  }
-
-  @Override
-  public void prepareAndQuery(String sql, Object param1, Object param2, Object param3, Object param4,
-                              Handler<AsyncResult<ResultSet>> handler) {
-    prepareAndQuery(sql, Arrays.asList(param1, param2, param3, param4), handler);
-  }
-
-  @Override
-  public void prepareAndQuery(String sql, Object param1, Object param2, Object param3, Object param4, Object param5,
-                              Handler<AsyncResult<ResultSet>> handler) {
-    prepareAndQuery(sql, Arrays.asList(param1, param2, param3, param4, param5), handler);
-  }
-
-  @Override
-  public void prepareAndQuery(String sql, Object param1, Object param2, Object param3, Object param4, Object param5,
-                              Object param6, Handler<AsyncResult<ResultSet>> handler) {
-    prepareAndQuery(sql, Arrays.asList(param1, param2, param3, param4, param5, param6), handler);
-  }
-
-  @Override
-  public void prepareAndQuery(String sql, List<Object> params, Handler<AsyncResult<ResultSet>> handler) {
+  public PgConnection prepareAndQuery(String sql, List<Object> params, Handler<AsyncResult<ResultSet>> handler) {
     dbConnection.schedule(new PreparedQueryCommand(sql, params, new PreparedQueryResultHandler(ar -> {
       if (ar.succeeded()) {
         handler.handle(Future.succeededFuture(ar.result()));
@@ -86,54 +54,28 @@ class PostgresConnectionImpl implements PgConnection {
         handler.handle(Future.failedFuture(ar.cause()));
       }
     })));
+    return this;
   }
 
   @Override
-  public void prepareAndExecute(String sql, Object param, Handler<AsyncResult<UpdateResult>> handler) {
-    prepareAndExecute(sql, Arrays.asList(param), handler);
-  }
-
-  @Override
-  public void prepareAndExecute(String sql, Object param1, Object param2, Handler<AsyncResult<UpdateResult>> handler) {
-    prepareAndExecute(sql, Arrays.asList(param1, param2), handler);
-  }
-
-  @Override
-  public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Handler<AsyncResult<UpdateResult>> handler) {
-    prepareAndExecute(sql, Arrays.asList(param1, param2, param3), handler);
-  }
-
-  @Override
-  public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4, Handler<AsyncResult<UpdateResult>> handler) {
-    prepareAndExecute(sql, Arrays.asList(param1, param2, param3, param4), handler);
-  }
-
-  @Override
-  public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4, Object param5, Handler<AsyncResult<UpdateResult>> handler) {
-    prepareAndExecute(sql, Arrays.asList(param1, param2, param3, param4, param5), handler);
-  }
-
-  @Override
-  public void prepareAndExecute(String sql, Object param1, Object param2, Object param3, Object param4, Object param5, Object param6, Handler<AsyncResult<UpdateResult>> handler) {
-    prepareAndExecute(sql, Arrays.asList(param1, param2, param3, param4, param5, param6), handler);
-  }
-
-  @Override
-  public void prepareAndExecute(String sql, List<Object> params, Handler<AsyncResult<UpdateResult>> handler) {
+  public PgConnection prepareAndExecute(String sql, List<Object> params, Handler<AsyncResult<UpdateResult>> handler) {
     CommandBase cmd = new PreparedUpdateCommand(sql, Collections.singletonList(params), ar -> {
       handler.handle(ar.map(results -> results.get(0)));
     });
     dbConnection.schedule(cmd);
+    return this;
   }
 
   @Override
-  public void closeHandler(Handler<Void> handler) {
+  public PgConnection closeHandler(Handler<Void> handler) {
     dbConnection.closeHandler(handler);
+    return this;
   }
 
   @Override
-  public void exceptionHandler(Handler<Throwable> handler) {
+  public PgConnection exceptionHandler(Handler<Throwable> handler) {
     dbConnection.exceptionHandler(handler);
+    return this;
   }
 
   @Override

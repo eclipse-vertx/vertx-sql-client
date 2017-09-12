@@ -3,6 +3,8 @@ package com.julienviet.pgclient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -10,35 +12,63 @@ import java.util.List;
  */
 public interface PgPreparedStatement {
 
-  PgQuery query();
+  default PgQuery query() {
+    return query(Collections.emptyList());
+  }
 
-  PgQuery query(Object param1);
+  default PgQuery query(Object param1) {
+    return query(Collections.singletonList(param1));
+  }
 
-  PgQuery query(Object param1, Object param2);
+  default PgQuery query(Object param1, Object param2) {
+    return query(Arrays.asList(param1, param2));
+  }
 
-  PgQuery query(Object param1, Object param2, Object param3);
+  default PgQuery query(Object param1, Object param2, Object param3) {
+    return query(Arrays.asList(param1, param2, param3));
+  }
 
-  PgQuery query(Object param1, Object param2, Object param3, Object param4);
+  default PgQuery query(Object param1, Object param2, Object param3, Object param4) {
+    return query(Arrays.asList(param1, param2, param3, param4));
+  }
 
-  PgQuery query(Object param1, Object param2, Object param3, Object param4, Object param5);
+  default PgQuery query(Object param1, Object param2, Object param3, Object param4, Object param5) {
+    return query(Arrays.asList(param1, param2, param3, param4, param5));
+  }
 
-  PgQuery query(Object param1, Object param2, Object param3, Object param4, Object param5, Object param6);
+  default PgQuery query(Object param1, Object param2, Object param3, Object param4, Object param5, Object param6) {
+    return query(Arrays.asList(param1, param2, param3, param4, param5, param6));
+  }
 
   PgQuery query(List<Object> params);
 
-  PgRowStream queryStream();
+  default PgRowStream queryStream() {
+    return queryStream(Collections.emptyList());
+  }
 
-  PgRowStream queryStream(Object param1);
+  default PgRowStream queryStream(Object param1) {
+    return queryStream(Collections.singletonList(param1));
+  }
 
-  PgRowStream queryStream(Object param1, Object param2);
+  default PgRowStream queryStream(Object param1, Object param2) {
+    return queryStream(Arrays.asList(param1, param2));
+  }
 
-  PgRowStream queryStream(Object param1, Object param2, Object param3);
+  default PgRowStream queryStream(Object param1, Object param2, Object param3) {
+    return queryStream(Arrays.asList(param1, param2, param3));
+  }
 
-  PgRowStream queryStream(Object param1, Object param2, Object param3, Object param4);
+  default PgRowStream queryStream(Object param1, Object param2, Object param3, Object param4) {
+    return queryStream(Arrays.asList(param1, param2, param3, param4));
+  }
 
-  PgRowStream queryStream(Object param1, Object param2, Object param3, Object param4, Object param5);
+  default PgRowStream queryStream(Object param1, Object param2, Object param3, Object param4, Object param5) {
+    return queryStream(Arrays.asList(param1, param2, param3, param4, param5));
+  }
 
-  PgRowStream queryStream(Object param1, Object param2, Object param3, Object param4, Object param5, Object param6);
+  default PgRowStream queryStream(Object param1, Object param2, Object param3, Object param4, Object param5, Object param6) {
+    return queryStream(Arrays.asList(param1, param2, param3, param4, param5, param6));
+  }
 
   PgRowStream queryStream(List<Object> params);
 

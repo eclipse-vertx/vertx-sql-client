@@ -29,36 +29,6 @@ public class BatchImpl implements PgBatch {
   }
 
   @Override
-  public PgBatch add(Object param1) {
-    return add(Collections.singletonList(param1));
-  }
-
-  @Override
-  public PgBatch add(Object param1, Object param2) {
-    return add(Arrays.asList(param1, param2));
-  }
-
-  @Override
-  public PgBatch add(Object param1, Object param2, Object param3) {
-    return add(Arrays.asList(param1, param2, param3));
-  }
-
-  @Override
-  public PgBatch add(Object param1, Object param2, Object param3, Object param4) {
-    return add(Arrays.asList(param1, param2, param3, param4));
-  }
-
-  @Override
-  public PgBatch add(Object param1, Object param2, Object param3, Object param4, Object param5) {
-    return add(Arrays.asList(param1, param2, param3, param4, param5));
-  }
-
-  @Override
-  public PgBatch add(Object param1, Object param2, Object param3, Object param4, Object param5, Object param6) {
-    return add(Arrays.asList(param1, param2, param3, param4, param5, param6));
-  }
-
-  @Override
   public void execute(Handler<AsyncResult<List<UpdateResult>>> resultHandler) {
     ps.update(values, resultHandler);
   }
