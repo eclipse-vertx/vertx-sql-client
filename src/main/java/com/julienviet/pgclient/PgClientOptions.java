@@ -18,7 +18,6 @@ import io.vertx.core.net.TrustOptions;
  */
 public class PgClientOptions extends NetClientOptions {
 
-  public static final int DEFAULT_PIPELINING_LIMIT = 256;
   public static final String DEFAULT_HOST = "localhost";
   public static int DEFAULT_PORT = 5432;
   public static final String DEFAULT_DATABASE = "db";
@@ -30,7 +29,6 @@ public class PgClientOptions extends NetClientOptions {
   private String database = DEFAULT_DATABASE;
   private String username = DEFAULT_USERNAME;
   private String password = DEFAULT_PASSWORD;
-  private int pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
 
   public PgClientOptions() {
   }
@@ -42,7 +40,6 @@ public class PgClientOptions extends NetClientOptions {
     database = other.database;
     username = other.username;
     password = other.password;
-    pipeliningLimit = other.pipeliningLimit;
   }
 
   public String getHost() {
@@ -87,18 +84,6 @@ public class PgClientOptions extends NetClientOptions {
 
   public PgClientOptions setPassword(String password) {
     this.password = password;
-    return this;
-  }
-
-  public int getPipeliningLimit() {
-    return pipeliningLimit;
-  }
-
-  public PgClientOptions setPipeliningLimit(int pipeliningLimit) {
-    if (pipeliningLimit < 1) {
-      throw new IllegalArgumentException();
-    }
-    this.pipeliningLimit = pipeliningLimit;
     return this;
   }
 

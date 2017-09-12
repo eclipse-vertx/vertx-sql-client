@@ -45,8 +45,8 @@ abstract class QueryCommandBase extends CommandBase {
   @Override
   public void handleMessage(Message msg) {
     if (msg.getClass() == ReadyForQuery.class) {
-      handler.end();
       doneHandler.handle(null);
+      handler.end();
     } else if (msg.getClass() == RowDescription.class) {
       rowDesc = (RowDescription) msg;
       Column[] columns = rowDesc.getColumns();
@@ -81,8 +81,8 @@ abstract class QueryCommandBase extends CommandBase {
       handler.endResult(false);
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
-      fail(new PgException(error));
       doneHandler.handle(null);
+      fail(new PgException(error));
     } else {
       super.handleMessage(msg);
     }

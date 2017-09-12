@@ -61,8 +61,8 @@ class StartupCommand extends CommandBase {
     } else if (msg.getClass() == BackendKeyData.class) {
     }  else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
-      handler.handle(Future.failedFuture(new PgException(error)));
       doneHandler.handle(null);
+      handler.handle(Future.failedFuture(new PgException(error)));
     } else if (msg.getClass() == ReadyForQuery.class) {
       // The final phase before returning the connection
       // We should make sure we are supporting only UTF8
@@ -73,8 +73,8 @@ class StartupCommand extends CommandBase {
       } else {
         fut = Future.succeededFuture(conn);
       }
-      handler.handle(fut);
       doneHandler.handle(null);
+      handler.handle(fut);
     } else {
       super.handleMessage(msg);
     }

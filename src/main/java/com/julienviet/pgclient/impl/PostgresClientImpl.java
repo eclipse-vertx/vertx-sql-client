@@ -2,6 +2,7 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgClient;
 import com.julienviet.pgclient.PgClientOptions;
+import com.julienviet.pgclient.PgConnectionOptions;
 import com.julienviet.pgclient.PgConnectionPool;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -19,6 +20,7 @@ import io.vertx.ext.sql.SQLConnection;
  */
 public class PostgresClientImpl implements PgClient {
 
+  private static final PgConnectionOptions DEFAULT_OPTIONS = new PgConnectionOptions();
   final NetClient client;
   final VertxInternal vertx;
   final String host;
@@ -26,7 +28,6 @@ public class PostgresClientImpl implements PgClient {
   final String database;
   final String username;
   final String password;
-  final int pipeliningLimit;
 
   public PostgresClientImpl(Vertx vertx, PgClientOptions options) {
     this.host = options.getHost();
@@ -34,7 +35,6 @@ public class PostgresClientImpl implements PgClient {
     this.database = options.getDatabase();
     this.username = options.getUsername();
     this.password = options.getPassword();
-    this.pipeliningLimit = options.getPipeliningLimit();
     this.vertx = (VertxInternal) vertx;
     this.client = vertx.createNetClient();
   }
@@ -44,11 +44,17 @@ public class PostgresClientImpl implements PgClient {
     client.close();
   }
 
+  @Override
   public void connect(Handler<AsyncResult<PgConnection>> completionHandler) {
+    connect(DEFAULT_OPTIONS, completionHandler);
+  }
+
+  @Override
+  public void connect(PgConnectionOptions options, Handler<AsyncResult<PgConnection>> completionHandler) {
     client.connect(port, host, null, ar1 -> {
       if (ar1.succeeded()) {
         NetSocketInternal socket = (NetSocketInternal) ar1.result();
-        DbConnection conn = new DbConnection(this, vertx, socket, vertx.getOrCreateContext());
+        DbConnection conn = new DbConnection(this, socket, vertx.getOrCreateContext(), options);
         conn.init(username, password, database, ar2 -> {
           if (ar2.succeeded()) {
             completionHandler.handle(Future.succeededFuture(new PostgresConnectionImpl(ar2.result())));
@@ -67,7 +73,7 @@ public class PostgresClientImpl implements PgClient {
     client.connect(port, host, null, ar1 -> {
       if (ar1.succeeded()) {
         NetSocketInternal socket = (NetSocketInternal) ar1.result();
-        DbConnection conn = new DbConnection(this, vertx, socket, vertx.getOrCreateContext());
+        DbConnection conn = new DbConnection(this, socket, vertx.getOrCreateContext(), DEFAULT_OPTIONS);
         conn.init(username, password, database, ar2 -> {
           if (ar2.succeeded()) {
             handler.handle(Future.succeededFuture(new PostgresSQLConnection(ar2.result())));

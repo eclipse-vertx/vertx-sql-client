@@ -2,6 +2,7 @@ package com.julienviet.pgclient.impl;
 
 
 import com.julienviet.pgclient.PgConnection;
+import com.julienviet.pgclient.PgConnectionOptions;
 import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.decoder.MessageDecoder;
 import com.julienviet.pgclient.codec.encoder.MessageEncoder;
@@ -14,7 +15,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.VertxException;
 import io.vertx.core.impl.ContextImpl;
 import io.vertx.core.impl.NetSocketInternal;
-import io.vertx.core.impl.VertxInternal;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -30,6 +30,7 @@ public class DbConnection {
 
   }
 
+  private final int pipeliningLimit;
   private final NetSocketInternal socket;
   private final ArrayDeque<CommandBase> inflight = new ArrayDeque<>();
   private final ArrayDeque<CommandBase> pending = new ArrayDeque<>();
@@ -39,10 +40,12 @@ public class DbConnection {
   private Handler<Void> closeHandler;
   private Handler<Throwable> exceptionHandler;
 
-  public DbConnection(PostgresClientImpl client, VertxInternal vertx, NetSocketInternal socket, ContextImpl context) {
+  public DbConnection(PostgresClientImpl client,
+                      NetSocketInternal socket, ContextImpl context, PgConnectionOptions options) {
     this.socket = socket;
     this.client = client;
     this.context = context;
+    this.pipeliningLimit = options.getPipeliningLimit();
   }
 
   final PgConnection conn = new PostgresConnectionImpl(this);
@@ -94,7 +97,7 @@ public class DbConnection {
 
   private void checkPending() {
     CommandBase cmd;
-    while (inflight.size() < client.pipeliningLimit && (cmd = pending.poll()) != null) {
+    while (inflight.size() < pipeliningLimit && (cmd = pending.poll()) != null) {
       cmd.exec(this, v -> {
         inflight.poll();
         checkPending();

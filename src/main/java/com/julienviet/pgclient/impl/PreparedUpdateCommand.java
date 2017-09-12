@@ -65,8 +65,8 @@ class PreparedUpdateCommand extends UpdateCommandBase {
   @Override
   public void handleMessage(Message msg) {
     if (msg.getClass() == ReadyForQuery.class) {
-      handler.handle(Future.succeededFuture(results));
       doneHandler.handle(null);
+      handler.handle(Future.succeededFuture(results));
     } else if (msg.getClass() == ParameterDescription.class) {
     } else if (msg.getClass() == NoData.class) {
     } else if (msg.getClass() == ParseComplete.class) {

@@ -15,6 +15,8 @@ public interface PgClient extends SQLClient {
     return new PostgresClientImpl(vertx, options);
   }
 
+  void connect(PgConnectionOptions options, Handler<AsyncResult<PgConnection>> completionHandler);
+
   void connect(Handler<AsyncResult<PgConnection>> completionHandler);
 
   PgConnectionPool createPool(int size);
