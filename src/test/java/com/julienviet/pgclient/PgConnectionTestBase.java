@@ -180,6 +180,22 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   }
 
   @Test
+  public void testUpdateError(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient client = PgClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.update("INSERT INTO Fortune (id, message) VALUES (1, 'Duplicate')", ctx.asyncAssertFailure(err -> {
+        ctx.assertEquals("23505", ((PgException) err).getCode());
+        conn.query("SELECT 1000", ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1000, result.getResults().get(0).getInteger(0));
+          async.complete();
+        }));
+      }));
+    }));
+  }
+
+  @Test
   public void testInsert(TestContext ctx) {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
@@ -745,9 +761,12 @@ public abstract class PgConnectionTestBase extends PgTestBase {
       PgBatch batch = worldUpdate.batch();
       batch.add(id, 3);
       batch.execute(ctx.asyncAssertFailure(err -> {
-        PgException expected = (PgException) err;
-        ctx.assertEquals("23505", expected.getCode());
-        async.complete();
+        ctx.assertEquals("23505", ((PgException) err).getCode());
+        conn.query("SELECT 1000", ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1000, result.getResults().get(0).getInteger(0));
+          async.complete();
+        }));
       }));
     }));
   }
