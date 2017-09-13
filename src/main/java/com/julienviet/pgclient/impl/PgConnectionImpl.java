@@ -25,7 +25,6 @@ import io.vertx.core.Handler;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -76,8 +75,8 @@ class PgConnectionImpl implements PgConnection {
 
   @Override
   public PgConnection prepareAndExecute(String sql, List<Object> params, Handler<AsyncResult<UpdateResult>> handler) {
-    CommandBase cmd = new PreparedUpdateCommand(sql, Collections.singletonList(params), ar -> {
-      handler.handle(ar.map(results -> results.get(0)));
+    CommandBase cmd = new PreparedUpdateWithParamsCommand(sql, params, ar -> {
+      handler.handle(ar.map(results -> results));
     });
     dbConnection.schedule(cmd);
     return this;
