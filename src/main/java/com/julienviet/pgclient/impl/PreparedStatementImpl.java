@@ -20,6 +20,7 @@ package com.julienviet.pgclient.impl;
 import com.julienviet.pgclient.PgBatch;
 import com.julienviet.pgclient.PgPreparedStatement;
 import com.julienviet.pgclient.PgQuery;
+import com.julienviet.pgclient.PgUpdate;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -53,6 +54,16 @@ class PreparedStatementImpl implements PgPreparedStatement {
   }
 
   @Override
+  public PgUpdate update(List<Object> params) {
+    return new PreparedUpdateWithParams(this, params);
+  }
+
+  @Override
+  public PgUpdate update() {
+    return new PreparedUpdate(this);
+  }
+
+  @Override
   public PgBatch batch() {
     return new BatchImpl(this);
   }
@@ -78,7 +89,7 @@ class PreparedStatementImpl implements PgPreparedStatement {
     conn.schedule(new PreparedQueryCommand(parse, sql, params, fetch, stmt, portal, suspended, handler));
   }
 
-  void update(List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
+  void batch(List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
     boolean parse;
     if (!parsed) {
       parsed = true;
@@ -86,7 +97,15 @@ class PreparedStatementImpl implements PgPreparedStatement {
     } else {
       parse = false;
     }
-    conn.schedule(new PreparedUpdateCommand(parse, sql, stmt, paramsList, handler));
+    conn.schedule(new PreparedBatchWithParamsCommand(parse, sql, stmt, paramsList, handler));
+  }
+
+  void update(Handler<AsyncResult<UpdateResult>> handler) {
+    conn.schedule(new PreparedUpdateCommand(sql, handler));
+  }
+
+  void update(List<Object> params, Handler<AsyncResult<UpdateResult>> handler) {
+    conn.schedule(new PreparedUpdateWithParamsCommand(sql, params, handler));
   }
 
   @Override
