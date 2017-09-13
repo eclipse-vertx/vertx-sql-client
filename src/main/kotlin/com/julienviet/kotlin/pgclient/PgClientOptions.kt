@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2017 Julien Viet
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package com.julienviet.kotlin.pgclient
 
 import com.julienviet.pgclient.PgClientOptions
@@ -13,45 +30,45 @@ import io.vertx.core.net.ProxyOptions
  * A function providing a DSL for building [com.julienviet.pgclient.PgClientOptions] objects.
  *
  *
- * @param cachePreparedStatements 
- * @param connectTimeout 
- * @param crlPaths 
- * @param crlValues 
- * @param database 
- * @param enabledCipherSuites 
- * @param enabledSecureTransportProtocols 
- * @param host 
- * @param hostnameVerificationAlgorithm 
- * @param idleTimeout 
- * @param jdkSslEngineOptions 
- * @param keyStoreOptions 
- * @param localAddress 
- * @param logActivity 
- * @param metricsName 
- * @param openSslEngineOptions 
- * @param password 
- * @param pemKeyCertOptions 
- * @param pemTrustOptions 
- * @param pfxKeyCertOptions 
- * @param pfxTrustOptions 
- * @param pipeliningLimit 
- * @param port 
- * @param proxyOptions 
- * @param receiveBufferSize 
- * @param reconnectAttempts 
- * @param reconnectInterval 
- * @param reuseAddress 
- * @param sendBufferSize 
- * @param soLinger 
- * @param ssl 
- * @param tcpKeepAlive 
- * @param tcpNoDelay 
- * @param trafficClass 
- * @param trustAll 
- * @param trustStoreOptions 
- * @param useAlpn 
- * @param usePooledBuffers 
- * @param username 
+ * @param cachePreparedStatements
+ * @param connectTimeout
+ * @param crlPaths
+ * @param crlValues
+ * @param database
+ * @param enabledCipherSuites
+ * @param enabledSecureTransportProtocols
+ * @param host
+ * @param hostnameVerificationAlgorithm
+ * @param idleTimeout
+ * @param jdkSslEngineOptions
+ * @param keyStoreOptions
+ * @param localAddress
+ * @param logActivity
+ * @param metricsName
+ * @param openSslEngineOptions
+ * @param password
+ * @param pemKeyCertOptions
+ * @param pemTrustOptions
+ * @param pfxKeyCertOptions
+ * @param pfxTrustOptions
+ * @param pipeliningLimit
+ * @param port
+ * @param proxyOptions
+ * @param receiveBufferSize
+ * @param reconnectAttempts
+ * @param reconnectInterval
+ * @param reuseAddress
+ * @param sendBufferSize
+ * @param soLinger
+ * @param ssl
+ * @param tcpKeepAlive
+ * @param tcpNoDelay
+ * @param trafficClass
+ * @param trustAll
+ * @param trustStoreOptions
+ * @param useAlpn
+ * @param usePooledBuffers
+ * @param username
  *
  * <p/>
  * NOTE: This function has been automatically generated from the [com.julienviet.pgclient.PgClientOptions original] using Vert.x codegen.
