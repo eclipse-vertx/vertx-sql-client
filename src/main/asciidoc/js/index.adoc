@@ -1,0 +1,247 @@
+= Postgres Client for Eclipse Vert.x
+
+== Using the client
+
+To use Postgres Client for Vert.x add the following dependency to the _dependencies_ section of your build descriptor:
+
+* Maven (in your `pom.xml`):
+
+[source,xml,subs="+attributes"]
+----
+<dependency>
+  <groupId>com.julienviet</groupId>
+  <artifactId>vertx-pg-client</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+</dependency>
+----
+
+* Gradle (in your `build.gradle` file):
+
+[source,groovy,subs="+attributes"]
+----
+dependencies {
+  compile 'com.julienviet:vertx-pg-client:1.0.0-SNAPSHOT'
+}
+----
+
+== Connecting to a database
+
+You can use the client to connect to the database and interact with it.
+
+[source,js]
+----
+var PgClient = require("vertx-pg-client-js/pg_client");
+
+var client = PgClient.create(vertx, {
+  "port" : 5432,
+  "host" : "the-host",
+  "database" : "the-db",
+  "username" : "user",
+  "password" : "secret"
+});
+
+client.connect(function (res, res_err) {
+  if (res_err == null) {
+
+    // Connected
+    var conn = res;
+
+    conn.query("SELECT * FROM USERS", function (ar, ar_err) {
+
+      if (ar_err == null) {
+
+        // Use result set
+        var rs = ar;
+      } else {
+        console.log("It failed");
+      }
+
+      // Close the connection
+      conn.close();
+    });
+  } else {
+    console.log("Could not connect " + res_err);
+  }
+});
+
+----
+
+You can create a pool of connection to obtain a connection instead:
+
+[source,js]
+----
+var PgClient = require("vertx-pg-client-js/pg_client");
+
+var client = PgClient.create(vertx, {
+  "port" : 5432,
+  "host" : "the-host",
+  "database" : "the-db",
+  "username" : "user",
+  "password" : "secret"
+});
+
+var pool = client.createPool({
+  "maxSize" : 20
+});
+
+pool.getConnection(function (res, res_err) {
+  if (res_err == null) {
+
+    // Obtained a connection
+    var conn = res;
+
+    conn.query("SELECT * FROM USERS", function (ar, ar_err) {
+
+      if (ar_err == null) {
+
+        // Use result set
+        var rs = ar;
+      } else {
+        console.log("It failed");
+      }
+
+      // Return the connection to the pool
+      conn.close();
+    });
+  } else {
+    console.log("Could not obtain a connection " + res_err);
+  }
+});
+
+----
+
+When you are done with the pool, you should close it:
+
+[source,js]
+----
+
+// Close the pool and the connection it maintains
+pool.close();
+
+----
+
+== Prepared statements
+
+Prepared statements can be created and managed by the application.
+
+The `sql` string can refer to parameters by position, using $1, $2, etc...
+
+[source,js]
+----
+var preparedStatement = conn.prepare("SELECT * FROM USERS WHERE user_id=$1");
+
+// Create a query : bind parameters
+var query = preparedStatement.query("julien");
+
+// Execute query
+query.execute(function (res, res_err) {
+  if (res_err == null) {
+
+    // Get result
+    var result = res;
+  } else {
+    console.log("Query failed " + res_err);
+  }
+});
+
+----
+
+When you are done with the prepared statement, you should close it:
+
+[source,js]
+----
+preparedStatement.close();
+
+----
+
+NOTE: when you close the connection, you don't need to close its prepared statements
+
+By default the query will fetch all results, you can override this and define a maximum fetch size.
+
+[source,js]
+----
+var preparedStatement = conn.prepare("SELECT * FROM USERS");
+
+// Create a query : bind parameters
+var query = preparedStatement.query();
+
+// Get at most 100 rows
+query.fetch(100);
+
+// Execute query
+query.execute(function (res, res_err) {
+  if (res_err == null) {
+
+    // Get result
+    var result = res;
+
+    //
+    if (query.completed()) {
+      // We are done
+    } else {
+
+      // Fetch 100 more
+      query.execute(function (res2, res2_err) {
+        // And the beat goes on...
+      });
+    }
+  } else {
+    console.log("Query failed " + res_err);
+  }
+});
+
+----
+
+When a query is not completed you can call `link:../../jsdoc/module-vertx-pg-client-js_pg_query-PgQuery.html#close[close]` to release
+the query result in progress:
+
+[source,js]
+----
+var preparedStatement = conn.prepare("SELECT * FROM USERS");
+
+// Create a query : bind parameters
+var query = preparedStatement.query();
+
+// Get at most 100 rows
+query.fetch(100);
+
+// Execute query
+query.execute(function (res, res_err) {
+  if (res_err == null) {
+
+    // Get result
+    var result = res;
+
+    // Close the query
+    query.close();
+  } else {
+    console.log("Query failed " + res_err);
+  }
+});
+
+----
+
+Prepared statements can also be used to batch operations in a very efficient manner:
+
+[source,js]
+----
+var preparedStatement = conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)");
+
+// Create a query : bind parameters
+var batch = preparedStatement.batch();
+
+// Add commands to the batch
+batch.add("julien", "Julien Viet");
+batch.add("emad", "Emad Alblueshi");
+
+batch.execute(function (res, res_err) {
+  if (res_err == null) {
+
+    // Process results
+    var results = res;
+  } else {
+    console.log("Batch failed " + res_err);
+  }
+});
+
+----

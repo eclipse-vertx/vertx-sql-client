@@ -1,10 +1,10 @@
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.PgResultSet;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
+import io.vertx.ext.sql.ResultSet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,11 +14,11 @@ import java.util.List;
  */
 public class PreparedQueryResultHandler implements QueryResultHandler {
 
-  private PgResultSet result;
+  private ResultSet result;
   private boolean suspended;
-  private final Handler<AsyncResult<PgResultSet>> handler;
+  private final Handler<AsyncResult<ResultSet>> handler;
 
-  public PreparedQueryResultHandler(Handler<AsyncResult<PgResultSet>> handler) {
+  public PreparedQueryResultHandler(Handler<AsyncResult<ResultSet>> handler) {
     this.handler = handler;
   }
 
@@ -28,7 +28,7 @@ public class PreparedQueryResultHandler implements QueryResultHandler {
 
   @Override
   public void beginResult(List<String> columnNames) {
-    result = new PgResultSet().setColumnNames(columnNames).setResults(new ArrayList<>());
+    result = new ResultSet().setColumnNames(columnNames).setResults(new ArrayList<>());
   }
 
   @Override

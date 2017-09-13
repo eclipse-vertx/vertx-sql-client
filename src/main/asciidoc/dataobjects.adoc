@@ -68,23 +68,3 @@
 |[[mode]]`mode`|`link:enums.html#PoolingMode[PoolingMode]`|-
 |===
 
-[[PgResultSet]]
-== PgResultSet
-
-++++
-++++
-'''
-
-[cols=">25%,^25%,50%"]
-[frame="topbot"]
-|===
-^|Name | Type ^| Description
-|[[columnNames]]`columnNames`|`Array of String`|-
-|[[next]]`next`|`link:dataobjects.html#ResultSet[ResultSet]`|-
-|[[numColumns]]`numColumns`|`Number (int)`|-
-|[[numRows]]`numRows`|`Number (int)`|-
-|[[output]]`output`|`Json array`|-
-|[[results]]`results`|`Array of Json array`|-
-|[[rows]]`rows`|`Array of Json object`|-
-|===
-

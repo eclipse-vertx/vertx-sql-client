@@ -4,6 +4,7 @@ import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.ext.sql.ResultSet;
 
 /**
  * The binding of a {@link PgPreparedStatement} and a set of parameters that can be executed once.
@@ -48,7 +49,7 @@ public interface PgQuery {
    *
    * @param handler the handler to call back
    */
-  void execute(Handler<AsyncResult<PgResultSet>> handler);
+  void execute(Handler<AsyncResult<ResultSet>> handler);
 
   /**
    * When the query is managing a cursor, the corresponding resources is released. You don't need

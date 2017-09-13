@@ -1,0 +1,247 @@
+= Postgres Client for Eclipse Vert.x
+
+== Using the client
+
+To use Postgres Client for Vert.x add the following dependency to the _dependencies_ section of your build descriptor:
+
+* Maven (in your `pom.xml`):
+
+[source,xml,subs="+attributes"]
+----
+<dependency>
+  <groupId>com.julienviet</groupId>
+  <artifactId>vertx-pg-client</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+</dependency>
+----
+
+* Gradle (in your `build.gradle` file):
+
+[source,groovy,subs="+attributes"]
+----
+dependencies {
+  compile 'com.julienviet:vertx-pg-client:1.0.0-SNAPSHOT'
+}
+----
+
+== Connecting to a database
+
+You can use the client to connect to the database and interact with it.
+
+[source,ruby]
+----
+require 'vertx-pg-client/pg_client'
+
+client = VertxPgClient::PgClient.create(vertx, {
+  'port' => 5432,
+  'host' => "the-host",
+  'database' => "the-db",
+  'username' => "user",
+  'password' => "secret"
+})
+
+client.connect() { |res_err,res|
+  if (res_err == nil)
+
+    # Connected
+    conn = res
+
+    conn.query("SELECT * FROM USERS") { |ar_err,ar|
+
+      if (ar_err == nil)
+
+        # Use result set
+        rs = ar
+      else
+        puts "It failed"
+      end
+
+      # Close the connection
+      conn.close()
+    }
+  else
+    puts "Could not connect #{res_err}"
+  end
+}
+
+----
+
+You can create a pool of connection to obtain a connection instead:
+
+[source,ruby]
+----
+require 'vertx-pg-client/pg_client'
+
+client = VertxPgClient::PgClient.create(vertx, {
+  'port' => 5432,
+  'host' => "the-host",
+  'database' => "the-db",
+  'username' => "user",
+  'password' => "secret"
+})
+
+pool = client.create_pool({
+  'maxSize' => 20
+})
+
+pool.get_connection() { |res_err,res|
+  if (res_err == nil)
+
+    # Obtained a connection
+    conn = res
+
+    conn.query("SELECT * FROM USERS") { |ar_err,ar|
+
+      if (ar_err == nil)
+
+        # Use result set
+        rs = ar
+      else
+        puts "It failed"
+      end
+
+      # Return the connection to the pool
+      conn.close()
+    }
+  else
+    puts "Could not obtain a connection #{res_err}"
+  end
+}
+
+----
+
+When you are done with the pool, you should close it:
+
+[source,ruby]
+----
+
+# Close the pool and the connection it maintains
+pool.close()
+
+----
+
+== Prepared statements
+
+Prepared statements can be created and managed by the application.
+
+The `sql` string can refer to parameters by position, using $1, $2, etc...
+
+[source,ruby]
+----
+preparedStatement = conn.prepare("SELECT * FROM USERS WHERE user_id=$1")
+
+# Create a query : bind parameters
+query = preparedStatement.query("julien")
+
+# Execute query
+query.execute() { |res_err,res|
+  if (res_err == nil)
+
+    # Get result
+    result = res
+  else
+    puts "Query failed #{res_err}"
+  end
+}
+
+----
+
+When you are done with the prepared statement, you should close it:
+
+[source,ruby]
+----
+preparedStatement.close()
+
+----
+
+NOTE: when you close the connection, you don't need to close its prepared statements
+
+By default the query will fetch all results, you can override this and define a maximum fetch size.
+
+[source,ruby]
+----
+preparedStatement = conn.prepare("SELECT * FROM USERS")
+
+# Create a query : bind parameters
+query = preparedStatement.query()
+
+# Get at most 100 rows
+query.fetch(100)
+
+# Execute query
+query.execute() { |res_err,res|
+  if (res_err == nil)
+
+    # Get result
+    result = res
+
+    #
+    if (query.completed?())
+      # We are done
+    else
+
+      # Fetch 100 more
+      query.execute() { |res2_err,res2|
+        # And the beat goes on...
+      }
+    end
+  else
+    puts "Query failed #{res_err}"
+  end
+}
+
+----
+
+When a query is not completed you can call `link:../../yardoc/VertxPgClient/PgQuery.html#close-instance_method[close]` to release
+the query result in progress:
+
+[source,ruby]
+----
+preparedStatement = conn.prepare("SELECT * FROM USERS")
+
+# Create a query : bind parameters
+query = preparedStatement.query()
+
+# Get at most 100 rows
+query.fetch(100)
+
+# Execute query
+query.execute() { |res_err,res|
+  if (res_err == nil)
+
+    # Get result
+    result = res
+
+    # Close the query
+    query.close()
+  else
+    puts "Query failed #{res_err}"
+  end
+}
+
+----
+
+Prepared statements can also be used to batch operations in a very efficient manner:
+
+[source,ruby]
+----
+preparedStatement = conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)")
+
+# Create a query : bind parameters
+batch = preparedStatement.batch()
+
+# Add commands to the batch
+batch.add("julien", "Julien Viet")
+batch.add("emad", "Emad Alblueshi")
+
+batch.execute() { |res_err,res|
+  if (res_err == nil)
+
+    # Process results
+    results = res
+  else
+    puts "Batch failed #{res_err}"
+  end
+}
+
+----
