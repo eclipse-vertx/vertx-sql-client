@@ -13,10 +13,6 @@ import java.util.List;
 @DataObject
 public class PgResultSet extends ResultSet {
 
-  private static final boolean DEFAULT_COMPLETE = true;
-
-  private boolean complete = DEFAULT_COMPLETE;
-
   public PgResultSet() {
   }
 
@@ -52,12 +48,4 @@ public class PgResultSet extends ResultSet {
     return (PgResultSet) super.setNext(next);
   }
 
-  public boolean isComplete() {
-    return complete;
-  }
-
-  public PgResultSet setComplete(boolean complete) {
-    this.complete = complete;
-    return this;
-  }
 }

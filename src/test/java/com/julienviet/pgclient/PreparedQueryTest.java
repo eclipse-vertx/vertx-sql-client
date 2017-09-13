@@ -126,13 +126,17 @@ public class PreparedQueryTest extends PgTestBase {
         PgPreparedStatement ps = conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6");
         PgQuery query = ps.query(1, 8, 4, 11, 2, 9);
         query.fetch(4);
+        ctx.assertFalse(query.inProgress());
+        ctx.assertFalse(query.completed());
         query.execute(ctx.asyncAssertSuccess(results -> {
           ctx.assertEquals(4, results.getNumRows());
-          ctx.assertFalse(results.isComplete());
+          ctx.assertTrue(query.inProgress());
+          ctx.assertFalse(query.completed());
           query.execute(ctx.asyncAssertSuccess(results2 -> {
             ctx.assertNotNull(results2.getColumnNames());
             ctx.assertEquals(2, results2.getNumRows());
-            ctx.assertTrue(results2.isComplete());
+            ctx.assertFalse(query.inProgress());
+            ctx.assertTrue(query.completed());
             ps.close(ctx.asyncAssertSuccess(v2 -> {
               async.complete();
             }));
@@ -180,8 +184,11 @@ public class PreparedQueryTest extends PgTestBase {
         query.fetch(4);
         query.execute(ctx.asyncAssertSuccess(results -> {
           ctx.assertEquals(4, results.getNumRows());
-          ctx.assertFalse(results.isComplete());
+          ctx.assertTrue(query.inProgress());
+          ctx.assertFalse(query.completed());
           query.close(ctx.asyncAssertSuccess(v1 -> {
+            ctx.assertFalse(query.inProgress());
+            ctx.assertTrue(query.completed());
             ps.close(ctx.asyncAssertSuccess(v2 -> {
               async.complete();
             }));

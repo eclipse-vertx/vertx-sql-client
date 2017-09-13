@@ -15,10 +15,15 @@ import java.util.List;
 public class PreparedQueryResultHandler implements QueryResultHandler {
 
   private PgResultSet result;
+  private boolean suspended;
   private final Handler<AsyncResult<PgResultSet>> handler;
 
   public PreparedQueryResultHandler(Handler<AsyncResult<PgResultSet>> handler) {
     this.handler = handler;
+  }
+
+  public boolean suspended() {
+    return suspended;
   }
 
   @Override
@@ -33,7 +38,7 @@ public class PreparedQueryResultHandler implements QueryResultHandler {
 
   @Override
   public void endResult(boolean suspended) {
-    result.setComplete(!suspended);
+    this.suspended = suspended;
     handler.handle(Future.succeededFuture(result));
   }
 

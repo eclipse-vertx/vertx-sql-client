@@ -10,13 +10,14 @@ import io.vertx.ext.sql.SQLRowStream;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 public class PreparedQuery implements PgQuery, SQLRowStream {
 
-  private static final int READY = 0, IN_PROGRESS = 1, SUSPENDED = 2;
+  private static final int READY = 0, PENDING = 1, IN_PROGRESS = 2, COMPLETED = 3;
 
   final PreparedStatementImpl ps;
   final List<Object> params;
@@ -27,7 +28,7 @@ public class PreparedQuery implements PgQuery, SQLRowStream {
   private Handler<Void> endHandler;
   private Handler<Throwable> exceptionHandler;
   private Handler<Void> resultSetClosedHandler;
-
+  private final AtomicBoolean closed = new AtomicBoolean();
 
   PreparedQuery(PreparedStatementImpl ps, List<Object> params) {
     this.ps = ps;
@@ -36,8 +37,21 @@ public class PreparedQuery implements PgQuery, SQLRowStream {
 
   @Override
   public PreparedQuery fetch(int size) {
+    if (size < 0) {
+      throw new IllegalArgumentException("Fetch size must be 0 (disabled) or a positive number");
+    }
     this.fetch = size;
     return this;
+  }
+
+  @Override
+  public boolean inProgress() {
+    return status == IN_PROGRESS;
+  }
+
+  @Override
+  public boolean completed() {
+    return status == COMPLETED;
   }
 
   @Override
@@ -46,8 +60,8 @@ public class PreparedQuery implements PgQuery, SQLRowStream {
   }
 
   private void execute(QueryResultHandler handler) {
-    if (status == IN_PROGRESS) {
-      throw new IllegalStateException();
+    if (closed.get()) {
+      throw new IllegalStateException("Query closed");
     }
     QueryResultHandler adapter = new QueryResultHandler() {
       @Override
@@ -60,12 +74,12 @@ public class PreparedQuery implements PgQuery, SQLRowStream {
       }
       @Override
       public void endResult(boolean suspended) {
-        status = suspended ? SUSPENDED : READY;
+        status = suspended ? IN_PROGRESS : COMPLETED;
         handler.endResult(suspended);
       }
       @Override
       public void fail(Throwable cause) {
-        status = READY;
+        status = COMPLETED;
         handler.fail(cause);
       }
       @Override
@@ -73,13 +87,20 @@ public class PreparedQuery implements PgQuery, SQLRowStream {
         handler.end();
       }
     };
-    if (status == READY) {
-      status = IN_PROGRESS;
-      portal = fetch > 0 ? UUID.randomUUID().toString() : "";
-      ps.execute(params, fetch, portal, false, adapter);
-    } else {
-      status = IN_PROGRESS;
-      ps.execute(params, fetch, portal, true, adapter);
+    switch (status) {
+      case READY:
+        status = PENDING;
+        portal = fetch > 0 ? UUID.randomUUID().toString() : "";
+        ps.execute(params, fetch, portal, false, adapter);
+        break;
+      case IN_PROGRESS:
+        status = PENDING;
+        ps.execute(params, fetch, portal, true, adapter);
+        break;
+      case PENDING:
+        throw new IllegalStateException("Query in progress");
+      case COMPLETED:
+        throw new IllegalStateException("Already executed");
     }
   }
 
@@ -146,8 +167,26 @@ public class PreparedQuery implements PgQuery, SQLRowStream {
 
   @Override
   public void close(Handler<AsyncResult<Void>> completionHandler) {
-    if (status == IN_PROGRESS) {
-      ps.closePortal(portal, completionHandler);
+    if (closed.compareAndSet(false, true)) {
+      switch (status) {
+        case READY:
+          status = COMPLETED;
+          completionHandler.handle(Future.succeededFuture());
+          break;
+        case IN_PROGRESS:
+          status = COMPLETED;
+          ps.closePortal(portal, completionHandler);
+          break;
+        case PENDING:
+          ps.closePortal(portal, ar -> {
+            status = COMPLETED;
+            completionHandler.handle(ar);
+          });
+          break;
+        case COMPLETED:
+          completionHandler.handle(Future.succeededFuture());
+          break;
+      }
     } else {
       completionHandler.handle(Future.succeededFuture());
     }
