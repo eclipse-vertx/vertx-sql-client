@@ -32,7 +32,6 @@ import io.vertx.ext.sql.UpdateResult;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -316,26 +315,6 @@ class PgConnectionPoolImpl implements PgConnectionPool {
         return this;
       }
       conn.query(sql, handler);
-      return this;
-    }
-
-    @Override
-    public PgConnection prepareAndQuery(String sql, List<Object> params, Handler<AsyncResult<ResultSet>> handler) {
-      if (closed.get()) {
-        handler.handle(Future.failedFuture("Connection closed"));
-        return this;
-      }
-      conn.prepareAndQuery(sql, params, handler);
-      return this;
-    }
-
-    @Override
-    public PgConnection prepareAndExecute(String sql, List<Object> params, Handler<AsyncResult<UpdateResult>> handler) {
-      if (closed.get()) {
-        handler.handle(Future.failedFuture("Connection closed"));
-        return this;
-      }
-      conn.prepareAndExecute(sql, params, handler);
       return this;
     }
 

@@ -20,12 +20,10 @@ package com.julienviet.pgclient.impl;
 import com.julienviet.pgclient.PgConnection;
 import com.julienviet.pgclient.PgPreparedStatement;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,27 +56,6 @@ class PgConnectionImpl implements PgConnection {
   @Override
   public PgConnection query(String sql, Handler<AsyncResult<ResultSet>> handler) {
     dbConnection.schedule(new QueryCommand(sql, new ResultSetBuilder(handler)));
-    return this;
-  }
-
-  @Override
-  public PgConnection prepareAndQuery(String sql, List<Object> params, Handler<AsyncResult<ResultSet>> handler) {
-    dbConnection.schedule(new PreparedQueryWithParamsCommand(sql, params, new PreparedQueryResultHandler(ar -> {
-      if (ar.succeeded()) {
-        handler.handle(Future.succeededFuture(ar.result()));
-      } else {
-        handler.handle(Future.failedFuture(ar.cause()));
-      }
-    })));
-    return this;
-  }
-
-  @Override
-  public PgConnection prepareAndExecute(String sql, List<Object> params, Handler<AsyncResult<UpdateResult>> handler) {
-    CommandBase cmd = new PreparedUpdateWithParamsCommand(sql, params, ar -> {
-      handler.handle(ar.map(results -> results));
-    });
-    dbConnection.schedule(cmd);
     return this;
   }
 
