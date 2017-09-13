@@ -33,50 +33,35 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.ext.sql.UpdateResult;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.julienviet.pgclient.codec.util.Util.*;
-
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
 class PreparedUpdateCommand extends UpdateCommandBase {
 
-
   final boolean parse;
   final String sql;
-  final String stmt;
-  final List<List<Object>> paramsList;
-  final Handler<AsyncResult<List<UpdateResult>>> handler;
-  private ArrayList<UpdateResult> results;
-  private Throwable failure;
+  final Handler<AsyncResult<UpdateResult>> handler;
 
-  PreparedUpdateCommand(String sql, List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
-    this(true, sql, "", paramsList, handler);
+  PreparedUpdateCommand(String sql, Handler<AsyncResult<UpdateResult>> handler) {
+    this(true, sql, handler);
   }
 
-  PreparedUpdateCommand(boolean parse, String sql, String stmt, List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
+  PreparedUpdateCommand(boolean parse, String sql, Handler<AsyncResult<UpdateResult>> handler) {
     this.parse = parse;
     this.sql = sql;
-    this.stmt = stmt;
-    this.paramsList = paramsList;
     this.handler = handler;
-    this.results = new ArrayList<>(paramsList.size()); // Should reuse the paramsList for this as it's already allocated
   }
 
   @Override
   void exec(DbConnection conn, Handler<Void> handler) {
     doneHandler = handler;
     if (parse) {
-      conn.writeMessage(new Parse(sql).setStatement(stmt));
+      conn.writeMessage(new Parse(sql));
     }
-    for (List<Object> params : paramsList) {
-      conn.writeMessage(new Bind().setParamValues(paramValues(params)).setStatement(stmt));
-      conn.writeMessage(new Describe().setStatement(stmt));
-      conn.writeMessage(new Execute().setRowCount(0));
-    }
+    conn.writeMessage(new Bind());
+    conn.writeMessage(new Describe());
+    conn.writeMessage(new Execute().setRowCount(0));
     conn.writeMessage(Sync.INSTANCE);
   }
 
@@ -84,11 +69,6 @@ class PreparedUpdateCommand extends UpdateCommandBase {
   public void handleMessage(Message msg) {
     if (msg.getClass() == ReadyForQuery.class) {
       doneHandler.handle(null);
-      if (failure != null) {
-        handler.handle(Future.failedFuture(failure));
-      } else {
-        handler.handle(Future.succeededFuture(results));
-      }
     } else if (msg.getClass() == ParameterDescription.class) {
     } else if (msg.getClass() == NoData.class) {
     } else if (msg.getClass() == ParseComplete.class) {
@@ -100,11 +80,11 @@ class PreparedUpdateCommand extends UpdateCommandBase {
 
   @Override
   void handleResult(UpdateResult result) {
-    results.add(result);
+    handler.handle(Future.succeededFuture(result));
   }
 
   @Override
   void fail(Throwable cause) {
-    failure = cause;
+    handler.handle(Future.failedFuture(cause));
   }
 }
