@@ -11,7 +11,7 @@ To use Postgres Client for Vert.x add the following dependency to the _dependenc
 <dependency>
   <groupId>com.julienviet</groupId>
   <artifactId>vertx-pg-client</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>0.3.0</version>
 </dependency>
 ----
 
@@ -20,7 +20,7 @@ To use Postgres Client for Vert.x add the following dependency to the _dependenc
 [source,groovy,subs="+attributes"]
 ----
 dependencies {
-  compile 'com.julienviet:vertx-pg-client:1.0.0-SNAPSHOT'
+  compile 'com.julienviet:vertx-pg-client:0.3.0'
 }
 ----
 
