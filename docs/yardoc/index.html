@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>
+  File: README
+  
+    &mdash; Documentation by YARD 0.8.7.6
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  hasFrames = window.top.frames.main ? true : false;
+  relpath = '';
+  framesUrl = "frames.html#!file.README.html";
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="header">
+      <div id="menu">
+  
+    <a href="_index.html">Index</a> &raquo; 
+    <span class="title">File: README</span>
+  
+
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+      Class List
+    </a>
+  
+    <a class="full_list_link" id="method_list_link"
+        href="method_list.html">
+      Method List
+    </a>
+  
+    <a class="full_list_link" id="file_list_link"
+        href="file_list.html">
+      File List
+    </a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+
+    <iframe id="search_frame"></iframe>
+
+    <div id="content"><div id='filecontents'>
+<h1 id="label-Async+Postgres+client+for+Eclipse+Vert.x">Async Postgres client for Eclipse Vert.x</h1>
+
+<p><a href="https://travis-ci.org/vietj/vertx-pg-client"><img
+src="https://travis-ci.org/vietj/vertx-pg-client.svg?branch=master"></a></p>
+
+<h2 id="label-What+for+-3F">What for ?</h2>
+
+<p><a href="http://vertx.io">Vert.x 3.5.0.Beta1</a></p>
+
+<h2 id="label-Using+Postgres+Client">Using Postgres Client</h2>
+
+<p>To use the client, add the following dependency to the
+<em>dependencies</em> section of your build descriptor:</p>
+<ul><li>
+<p>Maven (in your <code>pom.xml</code>):</p>
+</li></ul>
+
+<pre class="code ruby"><code class="ruby">&lt;dependency&gt;
+  &lt;groupId&gt;com.julienviet&lt;/groupId&gt;
+  &lt;artifactId&gt;vertx-pg-client&lt;/artifactId&gt;
+  &lt;version&gt;0.3.0&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+<ul><li>
+<p>Gradle (in your <code>build.gradle</code> file):</p>
+</li></ul>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_dependencies'>dependencies</span> <span class='lbrace'>{</span>
+  <span class='id identifier rubyid_compile'>compile</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>com.julienviet:vertx-pg-client:0.30</span><span class='tstring_end'>&#39;</span></span>
+<span class='rbrace'>}</span>
+</code></pre>
+
+<p>Use Postgres from Vert.x:</p>
+
+<pre class="code ruby"><code class="ruby">PgClient client = PgClient.create(vertx, new PgClientOptions()
+  .setPort(5432)
+  .setHost(&quot;the-host&quot;)
+  .setDatabase(&quot;the-db&quot;)
+  .setUsername(&quot;user&quot;)
+  .setPassword(&quot;secret&quot;)
+);
+
+client.connect(res -&gt; {
+  if (res.succeeded()) {
+
+    // Connected
+    PgConnection conn = res.result();
+
+    conn.query(&quot;SELECT * FROM USERS&quot;, ar -&gt; {
+
+      if (ar.succeeded()) {
+
+        // Use result set
+        ResultSet rs = ar.result();
+      } else {
+        System.out.println(&quot;It failed&quot;);
+      }
+
+      // Close the connection
+      conn.close();
+    });
+  } else {
+    System.out.println(&quot;Could not connect &quot; + res.cause());
+  }
+});</code></pre>
+
+<h2 id="label-Web-site+docs">Web-site docs</h2>
+<ul><li>
+<p><a
+href="http://www.julienviet.com/vertx-pg-client/guide/java/index.html">Java
+docs</a></p>
+</li><li>
+<p><a
+href="http://www.julienviet.com/vertx-pg-client/guide/groovy/index.html">Groovy
+docs</a></p>
+</li><li>
+<p><a
+href="http://www.julienviet.com/vertx-pg-client/guide/ruby/index.html">Ruby
+docs</a></p>
+</li><li>
+<p><a
+href="http://www.julienviet.com/vertx-pg-client/guide/js/index.html">JavaScript
+docs</a></p>
+</li></ul>
+
+<h2 id="label-Snapshots">Snapshots</h2>
+
+<p>Snapshots are deploy in Sonatype OSS repository: <a
+href="https://oss.sonatype.org/content/repositories/snapshots/com/julienviet/vertx-pg-client">oss.sonatype.org/content/repositories/snapshots/com/julienviet/vertx-pg-client</a>/</p>
+
+<h2 id="label-License">License</h2>
+
+<p>Apache License - Version 2.0</p>
+
+<h2 id="label-Publishing+docs">Publishing docs</h2>
+<ul><li>
+<p>mvn package -Pdocs</p>
+</li><li>
+<p>cp -r target/docs docs/</p>
+</li><li>
+<p>mv docs/vertx-pg-client docs/guide</p>
+</li></ul>
+</div></div>
+
+    <div id="footer">
+  Generated on Wed Sep 13 15:18:06 2017 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.8.7.6 (ruby-2.3.1).
+</div>
+
+  </body>
+</html>
