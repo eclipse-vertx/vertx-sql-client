@@ -1,5 +1,7 @@
 package com.julienviet.pgclient;
 
+import io.vertx.codegen.annotations.GenIgnore;
+import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
@@ -12,6 +14,7 @@ import java.util.List;
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
+@VertxGen
 public interface PgPreparedStatement {
 
   /**
@@ -88,6 +91,7 @@ public interface PgPreparedStatement {
    * @param params the list of arguments
    * @return create a query from this statement with a variable list of arguments
    */
+  @GenIgnore
   PgQuery query(List<Object> params);
 
   /**

@@ -1,6 +1,7 @@
 package com.julienviet.pgclient;
 
 import io.vertx.codegen.annotations.Fluent;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -116,6 +117,7 @@ public interface PgBatch {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
+  @GenIgnore
   PgBatch add(List<Object> params);
 
   /**

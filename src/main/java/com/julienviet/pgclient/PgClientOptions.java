@@ -1,6 +1,8 @@
 package com.julienviet.pgclient;
 
+import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.JdkSSLEngineOptions;
 import io.vertx.core.net.JksOptions;
 import io.vertx.core.net.KeyCertOptions;
@@ -16,6 +18,7 @@ import io.vertx.core.net.TrustOptions;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
+@DataObject(generateConverter = true)
 public class PgClientOptions extends NetClientOptions {
 
   public static final String DEFAULT_HOST = "localhost";
@@ -37,6 +40,11 @@ public class PgClientOptions extends NetClientOptions {
   public PgClientOptions() {
   }
 
+  public PgClientOptions(JsonObject json) {
+    super(json);
+    PgClientOptionsConverter.fromJson(json, this);
+  }
+
   public PgClientOptions(PgClientOptions other) {
     super(other);
     host = other.host;
@@ -44,6 +52,7 @@ public class PgClientOptions extends NetClientOptions {
     database = other.database;
     username = other.username;
     password = other.password;
+    pipeliningLimit = other.pipeliningLimit;
   }
 
   public String getHost() {

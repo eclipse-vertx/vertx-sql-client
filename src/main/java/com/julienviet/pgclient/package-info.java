@@ -30,7 +30,7 @@
  *
  */
 
-@ModuleGen(name = "vertx-pg-client", groupPackage = "io.vertx")
+@ModuleGen(name = "vertx-pg-client", groupPackage = "com.julienviet")
 package com.julienviet.pgclient;
 
 import io.vertx.codegen.annotations.ModuleGen;

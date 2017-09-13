@@ -1,16 +1,19 @@
 package com.julienviet.pgclient;
 
+import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import com.julienviet.pgclient.impl.PostgresClientImpl;
 import io.vertx.ext.sql.SQLClient;
+import io.vertx.ext.sql.SQLConnection;
 
 /**
  * The entry point for interacting with a Postgres database.
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
+@VertxGen
 public interface PgClient extends SQLClient {
 
   /**
@@ -41,5 +44,8 @@ public interface PgClient extends SQLClient {
    * @return the connection pool
    */
   PgConnectionPool createPool(PgPoolOptions options);
+
+  @Override
+  PgClient getConnection(Handler<AsyncResult<SQLConnection>> handler);
 
 }

@@ -1,6 +1,8 @@
 package com.julienviet.pgclient;
 
 import io.vertx.codegen.annotations.Fluent;
+import io.vertx.codegen.annotations.GenIgnore;
+import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.ext.sql.ResultSet;
@@ -16,6 +18,7 @@ import java.util.List;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
+@VertxGen
 public interface PgConnection {
 
   // for multiple sql statements
@@ -63,6 +66,7 @@ public interface PgConnection {
     return prepareAndQuery(sql, Arrays.asList(param1, param2, param3, param4, param5, param6), handler);
   }
 
+  @GenIgnore
   @Fluent
   PgConnection prepareAndQuery(String sql, List<Object> params, Handler<AsyncResult<ResultSet>> handler);
 
@@ -96,10 +100,10 @@ public interface PgConnection {
     return prepareAndExecute(sql, Arrays.asList(param1, param2, param3, param4, param5, param6), handler);
   }
 
+  @GenIgnore
   @Fluent
   PgConnection prepareAndExecute(String sql, List<Object> params, Handler<AsyncResult<UpdateResult>> handler);
 
-  @Fluent
   PgPreparedStatement prepare(String sql);
 
   @Fluent

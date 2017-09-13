@@ -67,7 +67,7 @@ public class PostgresClientImpl implements PgClient {
   }
 
   @Override
-  public SQLClient getConnection(Handler<AsyncResult<SQLConnection>> handler) {
+  public PgClient getConnection(Handler<AsyncResult<SQLConnection>> handler) {
     client.connect(port, host, null, ar1 -> {
       if (ar1.succeeded()) {
         NetSocketInternal socket = (NetSocketInternal) ar1.result();
