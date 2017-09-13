@@ -1060,6 +1060,34 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     });
   }
 
+  @Test
+  public void testPgUpdate(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient client = PgClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      PgPreparedStatement ps = conn.prepare("UPDATE Fortune SET message = 'PgClient Rocks!' WHERE id = 2");
+      PgUpdate update = ps.update();
+      update.execute(ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getUpdated());
+        async.complete();
+      }));
+    }));
+  }
+
+  @Test
+  public void testPgUpdateWithParams(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient client = PgClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      PgPreparedStatement ps = conn.prepare("UPDATE Fortune SET message = $1 WHERE id = $2");
+      PgUpdate update = ps.update("PgClient Rocks Again!!", 2);
+      update.execute(ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getUpdated());
+        async.complete();
+      }));
+    }));
+  }
+
 /*
   @Test
   public void testServerUpdate(TestContext ctx) {

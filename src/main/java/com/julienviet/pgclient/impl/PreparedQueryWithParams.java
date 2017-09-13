@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class PreparedQuery implements PgQuery, SQLRowStream {
+public class PreparedQueryWithParams implements PgQuery, SQLRowStream {
 
   private static final int READY = 0, PENDING = 1, IN_PROGRESS = 2, COMPLETED = 3;
 
@@ -47,13 +47,13 @@ public class PreparedQuery implements PgQuery, SQLRowStream {
   private Handler<Void> resultSetClosedHandler;
   private final AtomicBoolean closed = new AtomicBoolean();
 
-  PreparedQuery(PreparedStatementImpl ps, List<Object> params) {
+  PreparedQueryWithParams(PreparedStatementImpl ps, List<Object> params) {
     this.ps = ps;
     this.params = params;
   }
 
   @Override
-  public PreparedQuery fetch(int size) {
+  public PreparedQueryWithParams fetch(int size) {
     if (size < 0) {
       throw new IllegalArgumentException("Fetch size must be 0 (disabled) or a positive number");
     }
@@ -143,7 +143,7 @@ public class PreparedQuery implements PgQuery, SQLRowStream {
     Handler<Void> _endHandler = endHandler;
     Handler<Throwable> _exceptionHandler = exceptionHandler;
     Handler<Void> _resultSetClosedHandler = resultSetClosedHandler;
-    PreparedQuery.this.execute(new QueryResultHandler() {
+    PreparedQueryWithParams.this.execute(new QueryResultHandler() {
       @Override
       public void beginResult(List<String> columnNames) {
       }

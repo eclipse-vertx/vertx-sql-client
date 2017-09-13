@@ -17,7 +17,7 @@
 
 package com.julienviet.pgclient;
 
-import com.julienviet.pgclient.impl.PreparedQuery;
+import com.julienviet.pgclient.impl.PreparedQueryWithParams;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.sql.SQLRowStream;
@@ -35,7 +35,7 @@ import java.util.LinkedList;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 @RunWith(VertxUnitRunner.class)
-public class PreparedQueryTest extends PgTestBase {
+public class PreparedQueryWithParamsTest extends PgTestBase {
 
   Vertx vertx;
 
@@ -170,7 +170,7 @@ public class PreparedQueryTest extends PgTestBase {
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("BEGIN", ctx.asyncAssertSuccess(begin -> {
         PgPreparedStatement ps = conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6");
-        PreparedQuery stream = (PreparedQuery) ps.query(1, 8, 4, 11, 2, 9);
+        PreparedQueryWithParams stream = (PreparedQueryWithParams) ps.query(1, 8, 4, 11, 2, 9);
         stream.fetch(4);
         LinkedList<JsonArray> results = new LinkedList<>();
         stream.handler(results::add);
@@ -222,7 +222,7 @@ public class PreparedQueryTest extends PgTestBase {
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("BEGIN", ctx.asyncAssertSuccess(begin -> {
         PgPreparedStatement ps = conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6");
-        PreparedQuery stream = (PreparedQuery) ps.query(1, 8, 4, 11, 2, 9);
+        PreparedQueryWithParams stream = (PreparedQueryWithParams) ps.query(1, 8, 4, 11, 2, 9);
         stream.fetch(4);
         LinkedList<JsonArray> results = new LinkedList<>();
         stream.handler(results::add);
