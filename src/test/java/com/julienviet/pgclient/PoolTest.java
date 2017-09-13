@@ -13,7 +13,7 @@ public class PoolTest extends PoolTestBase {
 
   @Override
   protected PgConnectionPool createPool(PgClient client, int size) {
-    return client.createPool(size);
+    return client.createPool(new PgPoolOptions().setMaxSize(size));
   }
 
   @Test

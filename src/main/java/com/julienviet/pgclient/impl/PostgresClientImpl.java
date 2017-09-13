@@ -3,6 +3,7 @@ package com.julienviet.pgclient.impl;
 import com.julienviet.pgclient.PgClient;
 import com.julienviet.pgclient.PgClientOptions;
 import com.julienviet.pgclient.PgConnectionPool;
+import com.julienviet.pgclient.PgPoolOptions;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -91,12 +92,7 @@ public class PostgresClientImpl implements PgClient {
   }
 
   @Override
-  public PgConnectionPool createPool(int size) {
-    return new PostgresConnectionPoolImpl(this, size, false);
-  }
-
-  @Override
-  public PgConnectionPool createMultiplexedPool() {
-    return new PostgresConnectionPoolImpl(this, 1, true);
+  public PgConnectionPool createPool(PgPoolOptions options) {
+    return new PostgresConnectionPoolImpl(this, options.getMaxSize(), options.getMode());
   }
 }

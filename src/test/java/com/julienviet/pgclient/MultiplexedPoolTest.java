@@ -9,7 +9,7 @@ public class MultiplexedPoolTest extends PoolTestBase {
 
   @Override
   protected PgConnectionPool createPool(PgClient client, int size) {
-    return client.createMultiplexedPool();
+    return client.createPool(new PgPoolOptions().setMode(PoolingMode.STATEMENT).setMaxSize(1));
   }
 
   @Override

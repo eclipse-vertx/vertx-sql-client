@@ -3,6 +3,7 @@ package com.julienviet.pgclient.impl;
 import com.julienviet.pgclient.PgConnection;
 import com.julienviet.pgclient.PgConnectionPool;
 import com.julienviet.pgclient.PgPreparedStatement;
+import com.julienviet.pgclient.PoolingMode;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -28,15 +29,15 @@ class PostgresConnectionPoolImpl implements PgConnectionPool {
 
   private final PostgresClientImpl client;
   private final Context context;
-  private final Bilto available;
+  private final PoolingStrategy available;
 
-  private interface Bilto {
+  private interface PoolingStrategy {
     void acquire(Context current, Handler<AsyncResult<Proxy>> handler);
     void release(Proxy holder);
     void close();
   }
 
-  private class Exclusive implements Bilto {
+  private class ConnectionPooling implements PoolingStrategy {
 
     private final ArrayDeque<Waiter> waiters = new ArrayDeque<>();
     private final int maxSize;
@@ -44,7 +45,7 @@ class PostgresConnectionPoolImpl implements PgConnectionPool {
     private final ArrayDeque<PgConnection> available = new ArrayDeque<>();
     private int connCount;
 
-    public Exclusive(int maxSize) {
+    public ConnectionPooling(int maxSize) {
       this.maxSize = maxSize;
     }
 
@@ -116,7 +117,7 @@ class PostgresConnectionPoolImpl implements PgConnectionPool {
     }
   }
 
-  private class Multiplexed implements Bilto {
+  private class StatementPooling implements PoolingStrategy {
 
     final Set<Proxy> proxies = new HashSet<>();
     private PgConnection shared;
@@ -215,16 +216,13 @@ class PostgresConnectionPoolImpl implements PgConnectionPool {
     }
   }
 
-  PostgresConnectionPoolImpl(PostgresClientImpl client, int maxSize, boolean multiplexed) {
+  PostgresConnectionPoolImpl(PostgresClientImpl client, int maxSize, PoolingMode mode) {
     if (maxSize < 1) {
       throw new IllegalArgumentException("Pool max size must be > 0");
     }
-    if (multiplexed && maxSize > 1) {
-      throw new IllegalArgumentException();
-    }
     this.context = client.vertx.getOrCreateContext();
     this.client = client;
-    this.available = multiplexed ? new Multiplexed() : new Exclusive(maxSize);
+    this.available = mode == PoolingMode.STATEMENT ? new StatementPooling() : new ConnectionPooling(maxSize);
   }
 
   @Override

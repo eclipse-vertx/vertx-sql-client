@@ -10,7 +10,7 @@ public class PgPooledConnectionTest extends PgConnectionTestBase {
 
   public PgPooledConnectionTest() {
     super((client, handler) -> {
-      PgConnectionPool pool = client.createPool(1);
+      PgConnectionPool pool = client.createPool(new PgPoolOptions().setMaxSize(1));
       pool.getConnection(handler);
     });
   }
