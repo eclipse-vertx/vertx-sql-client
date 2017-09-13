@@ -23,8 +23,6 @@ import io.vertx.core.Handler;
 import io.vertx.ext.sql.UpdateResult;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -47,6 +45,6 @@ public class BatchImpl implements PgBatch {
 
   @Override
   public void execute(Handler<AsyncResult<List<UpdateResult>>> resultHandler) {
-    ps.update(values, resultHandler);
+    ps.batch(values, resultHandler);
   }
 }
