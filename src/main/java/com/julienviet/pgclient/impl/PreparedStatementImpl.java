@@ -86,7 +86,7 @@ class PreparedStatementImpl implements PgPreparedStatement {
     } else {
       parse = false;
     }
-    conn.schedule(new PreparedQueryCommand(parse, sql, params, fetch, stmt, portal, suspended, handler));
+    conn.schedule(new PreparedQueryWithParamsCommand(parse, sql, params, fetch, stmt, portal, suspended, handler));
   }
 
   void batch(List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {

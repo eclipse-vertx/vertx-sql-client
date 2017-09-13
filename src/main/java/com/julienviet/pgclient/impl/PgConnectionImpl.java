@@ -63,7 +63,7 @@ class PgConnectionImpl implements PgConnection {
 
   @Override
   public PgConnection prepareAndQuery(String sql, List<Object> params, Handler<AsyncResult<ResultSet>> handler) {
-    dbConnection.schedule(new PreparedQueryCommand(sql, params, new PreparedQueryResultHandler(ar -> {
+    dbConnection.schedule(new PreparedQueryWithParamsCommand(sql, params, new PreparedQueryResultHandler(ar -> {
       if (ar.succeeded()) {
         handler.handle(Future.succeededFuture(ar.result()));
       } else {
