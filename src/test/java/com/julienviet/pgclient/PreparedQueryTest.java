@@ -1,7 +1,9 @@
 package com.julienviet.pgclient;
 
+import com.julienviet.pgclient.impl.PreparedQuery;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
+import io.vertx.ext.sql.SQLRowStream;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -52,7 +54,7 @@ public class PreparedQueryTest extends PgTestBase {
     PgClient client = PgClient.create(vertx, options);
     client.connect(ctx.asyncAssertSuccess(conn -> {
       PgPreparedStatement ps = conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6");
-      PgRowStream stream = ps.queryStream(1, 8, 4, 11, 2, 9);
+      SQLRowStream stream = (SQLRowStream) ps.query(1, 8, 4, 11, 2, 9);
       LinkedList<JsonArray> results = new LinkedList<>();
       stream.handler(results::add);
       stream.exceptionHandler(ctx::fail);
@@ -62,7 +64,7 @@ public class PreparedQueryTest extends PgTestBase {
           async.complete();
         }));
       });
-      stream.execute();
+      stream.moreResults();
     }));
   }
 
@@ -87,7 +89,7 @@ public class PreparedQueryTest extends PgTestBase {
     PgClient client = PgClient.create(vertx, options);
     client.connect(ctx.asyncAssertSuccess(conn -> {
       PgPreparedStatement ps = conn.prepare("invalid");
-      PgRowStream stream = ps.queryStream(1, 8, 4, 11, 2, 9);
+      SQLRowStream stream = (SQLRowStream) ps.query(1, 8, 4, 11, 2, 9);
       stream.handler(row -> ctx.fail());
       stream.endHandler(v -> ctx.fail());
       stream.exceptionHandler(err -> {
@@ -95,7 +97,7 @@ public class PreparedQueryTest extends PgTestBase {
         ctx.assertEquals(ErrorCodes.syntax_error, pgErr.getCode());
         async.complete();
       });
-      stream.execute();
+      stream.moreResults();
     }));
   }
 
@@ -147,7 +149,7 @@ public class PreparedQueryTest extends PgTestBase {
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("BEGIN", ctx.asyncAssertSuccess(begin -> {
         PgPreparedStatement ps = conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6");
-        PgRowStream stream = ps.queryStream(1, 8, 4, 11, 2, 9);
+        PreparedQuery stream = (PreparedQuery) ps.query(1, 8, 4, 11, 2, 9);
         stream.fetch(4);
         LinkedList<JsonArray> results = new LinkedList<>();
         stream.handler(results::add);
@@ -162,7 +164,7 @@ public class PreparedQueryTest extends PgTestBase {
             async.complete();
           }));
         });
-        stream.execute();
+        stream.moreResults();
       }));
     }));
   }
@@ -196,7 +198,7 @@ public class PreparedQueryTest extends PgTestBase {
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("BEGIN", ctx.asyncAssertSuccess(begin -> {
         PgPreparedStatement ps = conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6");
-        PgRowStream stream = ps.queryStream(1, 8, 4, 11, 2, 9);
+        PreparedQuery stream = (PreparedQuery) ps.query(1, 8, 4, 11, 2, 9);
         stream.fetch(4);
         LinkedList<JsonArray> results = new LinkedList<>();
         stream.handler(results::add);
@@ -210,7 +212,7 @@ public class PreparedQueryTest extends PgTestBase {
           }));
         });
         stream.endHandler(v -> ctx.fail());
-        stream.execute();
+        stream.moreResults();
       }));
     }));
   }

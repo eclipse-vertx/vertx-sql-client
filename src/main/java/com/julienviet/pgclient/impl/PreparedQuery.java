@@ -2,11 +2,11 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgResultSet;
 import com.julienviet.pgclient.PgQuery;
-import com.julienviet.pgclient.PgRowStream;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
+import io.vertx.ext.sql.SQLRowStream;
 
 import java.util.List;
 import java.util.UUID;
@@ -14,7 +14,7 @@ import java.util.UUID;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class PreparedQuery implements PgQuery, PgRowStream {
+public class PreparedQuery implements PgQuery, SQLRowStream {
 
   private static final int READY = 0, IN_PROGRESS = 1, SUSPENDED = 2;
 
@@ -94,7 +94,7 @@ public class PreparedQuery implements PgQuery, PgRowStream {
   }
 
   @Override
-  public PgRowStream resultSetClosedHandler(Handler<Void> handler) {
+  public SQLRowStream resultSetClosedHandler(Handler<Void> handler) {
     resultSetClosedHandler = handler;
     return this;
   }
@@ -154,35 +154,30 @@ public class PreparedQuery implements PgQuery, PgRowStream {
   }
 
   @Override
-  public PgRowStream exceptionHandler(Handler<Throwable> handler) {
+  public SQLRowStream exceptionHandler(Handler<Throwable> handler) {
     exceptionHandler = handler;
     return this;
   }
 
   @Override
-  public PgRowStream handler(Handler<JsonArray> handler) {
+  public SQLRowStream handler(Handler<JsonArray> handler) {
     rowHandler = handler;
     return this;
   }
 
   @Override
-  public PgRowStream pause() {
+  public SQLRowStream pause() {
     return this;
   }
 
   @Override
-  public PgRowStream resume() {
+  public SQLRowStream resume() {
     return this;
   }
 
   @Override
-  public PgRowStream endHandler(Handler<Void> handler) {
+  public SQLRowStream endHandler(Handler<Void> handler) {
     endHandler = handler;
     return this;
-  }
-
-  @Override
-  public void execute() {
-    moreResults();
   }
 }

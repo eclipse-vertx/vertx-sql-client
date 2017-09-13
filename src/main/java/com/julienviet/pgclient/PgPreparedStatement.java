@@ -42,6 +42,7 @@ public interface PgPreparedStatement {
 
   PgQuery query(List<Object> params);
 
+/*
   default PgRowStream queryStream() {
     return queryStream(Collections.emptyList());
   }
@@ -71,6 +72,7 @@ public interface PgPreparedStatement {
   }
 
   PgRowStream queryStream(List<Object> params);
+*/
 
   PgBatch batch();
 
