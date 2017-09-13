@@ -42,9 +42,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-class PostgresConnectionPoolImpl implements PgConnectionPool {
+class PgConnectionPoolImpl implements PgConnectionPool {
 
-  private final PostgresClientImpl client;
+  private final PgClientImpl client;
   private final Context context;
   private final PoolingStrategy available;
 
@@ -233,7 +233,7 @@ class PostgresConnectionPoolImpl implements PgConnectionPool {
     }
   }
 
-  PostgresConnectionPoolImpl(PostgresClientImpl client, int maxSize, PoolingMode mode) {
+  PgConnectionPoolImpl(PgClientImpl client, int maxSize, PoolingMode mode) {
     if (maxSize < 1) {
       throw new IllegalArgumentException("Pool max size must be > 0");
     }

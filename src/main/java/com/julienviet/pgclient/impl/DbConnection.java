@@ -49,19 +49,19 @@ public class DbConnection {
   private final NetSocketInternal socket;
   private final ArrayDeque<CommandBase> inflight = new ArrayDeque<>();
   private final ArrayDeque<CommandBase> pending = new ArrayDeque<>();
-  final PostgresClientImpl client;
+  final PgClientImpl client;
   private final Context context;
   private Status status = Status.CONNECTED;
   private Handler<Void> closeHandler;
   private Handler<Throwable> exceptionHandler;
   private final PgConnection conn;
 
-  public DbConnection(PostgresClientImpl client,
+  public DbConnection(PgClientImpl client,
                       NetSocketInternal socket, ContextImpl context) {
     this.socket = socket;
     this.client = client;
     this.context = context;
-    this.conn = new PostgresConnectionImpl(this, client.cachePreparedStatements);
+    this.conn = new PgConnectionImpl(this, client.cachePreparedStatements);
   }
 
   void init(String username, String password, String database, Handler<AsyncResult<DbConnection>> completionHandler) {

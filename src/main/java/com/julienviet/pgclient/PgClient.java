@@ -21,7 +21,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import com.julienviet.pgclient.impl.PostgresClientImpl;
+import com.julienviet.pgclient.impl.PgClientImpl;
 import io.vertx.ext.sql.SQLClient;
 import io.vertx.ext.sql.SQLConnection;
 
@@ -41,7 +41,7 @@ public interface PgClient extends SQLClient {
    * @return the client
    */
   static PgClient create(Vertx vertx, PgClientOptions options) {
-    return new PostgresClientImpl(vertx, options);
+    return new PgClientImpl(vertx, options);
   }
 
   /**

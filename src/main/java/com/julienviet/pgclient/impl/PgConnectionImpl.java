@@ -34,12 +34,12 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class PostgresConnectionImpl implements PgConnection {
+class PgConnectionImpl implements PgConnection {
 
   private DbConnection dbConnection;
   private final Map<String, PgPreparedStatement> psCache;
 
-  public PostgresConnectionImpl(DbConnection dbConnection, boolean cachePreparedStatements) {
+  public PgConnectionImpl(DbConnection dbConnection, boolean cachePreparedStatements) {
     this.dbConnection = dbConnection;
     this.psCache = cachePreparedStatements ? new ConcurrentHashMap<>() : null;
   }
