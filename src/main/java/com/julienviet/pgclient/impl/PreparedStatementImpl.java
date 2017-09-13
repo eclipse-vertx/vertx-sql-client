@@ -50,7 +50,7 @@ class PreparedStatementImpl implements PgPreparedStatement {
 
   @Override
   public PgQuery query(List<Object> params) {
-    return new PreparedQueryWithParams(this, params);
+    return new PreparedQuery(this, params);
   }
 
   @Override
