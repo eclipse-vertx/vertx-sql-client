@@ -6,6 +6,11 @@
 
 [Vert.x 3.5.0.Beta1](http://vertx.io)
 
+## Why ?
+
+_PgClient_ provides a simple API close to Postgres while focusing on performance and low
+overhead.
+
 ## Using Postgres Client
 
 To use the client, add the following dependency to the _dependencies_ section of your build descriptor:
