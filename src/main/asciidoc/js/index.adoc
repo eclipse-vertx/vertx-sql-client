@@ -221,6 +221,40 @@ query.execute(function (res, res_err) {
 
 ----
 
+Prepared statements can also be used for update operations
+
+[source,js]
+----
+
+var preparedStatement = conn.prepare("UPDATE USERS SET name=$1 WHERE id=$2");
+
+// Create an update : bind parameters
+var update = preparedStatement.update(2, "EMAD ALBLUESHI");
+
+update.execute(function (res, res_err) {
+  if (res_err == null) {
+    // Process results
+    var result = res;
+  } else {
+    console.log("Update failed " + res_err);
+  }
+
+});
+
+// Or fluently
+preparedStatement.update(1, "JULIEN VIET").execute(function (res, res_err) {
+  if (res_err == null) {
+    // Process results
+    var result = res;
+  } else {
+    console.log("Update failed " + res_err);
+  }
+
+});
+
+----
+
+
 Prepared statements can also be used to batch operations in a very efficient manner:
 
 [source,js]

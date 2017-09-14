@@ -32,11 +32,13 @@ import io.vertx.ext.sql.UpdateResult;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 /**
- * Todo : handle timeout when borrowing a connection
+ * Todo : handle timeout when acquiring a connection
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
@@ -48,14 +50,50 @@ class PgPoolImpl implements PgPool {
   private final PoolingStrategy available;
 
   private interface PoolingStrategy {
-    void acquire(Context current, Handler<AsyncResult<Proxy>> handler);
-    void release(Proxy holder);
+    void acquire(Holder holder);
+    void release(Holder holder);
     void close();
+  }
+
+  private interface Holder extends Handler<AsyncResult<PgConnection>> {
+
+    Context context();
+
+    void handleClosed();
+
+    void handleException(Throwable err);
+
+    default void use(PgConnection conn) {
+      Context current = Vertx.currentContext();
+      Context context = context();
+      if (current == context) {
+        handle(Future.succeededFuture(conn));
+      } else {
+        context.runOnContext(v -> {
+          use(conn);
+        });
+      }
+    }
+
+    default void fail(Throwable err) {
+      Context current = Vertx.currentContext();
+      Context context = context();
+      if (current == context) {
+        handle(Future.failedFuture(err));
+      } else {
+        context.runOnContext(v -> {
+          fail(err);
+        });
+      }
+    }
+
+    PgConnection connection();
+
   }
 
   private class ConnectionPooling implements PoolingStrategy {
 
-    private final ArrayDeque<Waiter> waiters = new ArrayDeque<>();
+    private final ArrayDeque<Holder> waiters = new ArrayDeque<>();
     private final int maxSize;
     private final Set<PgConnection> all = new HashSet<>();
     private final ArrayDeque<PgConnection> available = new ArrayDeque<>();
@@ -66,8 +104,8 @@ class PgPoolImpl implements PgPool {
     }
 
     @Override
-    public void acquire(Context current, Handler<AsyncResult<Proxy>> handler) {
-      waiters.add(new Waiter(handler, current));
+    public void acquire(Holder holder) {
+      waiters.add(holder);
       check();
     }
 
@@ -78,18 +116,10 @@ class PgPoolImpl implements PgPool {
       }
     }
 
-    private void doAcq(Handler<AsyncResult<Proxy>> handler) {
+    private void doAcq(Handler<AsyncResult<PgConnection>> handler) {
       if (available.size() > 0) {
         PgConnection conn = available.poll();
-        Proxy proxy = new Proxy(conn);
-        conn.exceptionHandler(proxy::handleException);
-        conn.closeHandler(v -> {
-          all.remove(conn);
-          connCount--;
-          check();
-          proxy.handleClosed();
-        });
-        handler.handle(Future.succeededFuture(proxy));
+        handler.handle(Future.succeededFuture(conn));
       } else {
         if (connCount < maxSize) {
           connCount++;
@@ -105,24 +135,39 @@ class PgPoolImpl implements PgPool {
           });
         }
       }
-
-
     }
 
     private void check() {
       if (waiters.size() > 0) {
         doAcq(ar -> {
           if (ar.succeeded()) {
-            Waiter waiter = waiters.poll();
-            waiter.use(ar.result());
+            PgConnection conn = ar.result();
+            Holder waiter = waiters.poll();
+            conn.exceptionHandler(waiter::handleException);
+            conn.closeHandler(v -> {
+              all.remove(conn);
+              connCount--;
+              check();
+              waiter.handleClosed();
+            });
+            waiter.use(conn);
           } else {
-            Waiter waiter;
+            Holder waiter;
             while ((waiter = waiters.poll()) != null) {
               waiter.fail(ar.cause());
             }
           }
         });
       }
+    }
+
+    @Override
+    public void release(Holder holder) {
+      PgConnection conn = holder.connection();
+      conn.closeHandler(null);
+      conn.exceptionHandler(null);
+      available.add(conn);
+      check();
     }
 
     public void release(Proxy proxy) {
@@ -135,10 +180,10 @@ class PgPoolImpl implements PgPool {
 
   private class StatementPooling implements PoolingStrategy {
 
-    final Set<Proxy> proxies = new HashSet<>();
+    final Set<Holder> proxies = new HashSet<>();
     private PgConnection shared;
     private boolean connecting;
-    private ArrayDeque<Waiter> waiters = new ArrayDeque<>();
+    private ArrayDeque<Holder> waiters = new ArrayDeque<>();
 
     @Override
     public void close() {
@@ -148,13 +193,12 @@ class PgPoolImpl implements PgPool {
     }
 
     @Override
-    public void acquire(Context current, Handler<AsyncResult<Proxy>> handler) {
+    public void acquire(Holder holder) {
       if (shared != null) {
-        Proxy proxy = new Proxy(shared);
-        proxies.add(proxy);
-        handler.handle(Future.succeededFuture(proxy));
+        proxies.add(holder);
+        holder.use(shared);
       } else {
-        waiters.add(new Waiter(handler, current));
+        waiters.add(holder);
         if (!connecting) {
           connecting = true;
           client.connect(ar -> {
@@ -163,7 +207,7 @@ class PgPoolImpl implements PgPool {
               PgConnection conn = ar.result();
               shared = conn;
               conn.exceptionHandler(err -> {
-                for (Proxy proxy : new ArrayList<>(proxies)) {
+                for (Holder proxy : new ArrayList<>(proxies)) {
                   proxy.handleException(err);
                 }
               });
@@ -171,20 +215,19 @@ class PgPoolImpl implements PgPool {
                 shared = null;
                 conn.exceptionHandler(null);
                 conn.closeHandler(null);
-                ArrayList<Proxy> list = new ArrayList<>(proxies);
+                ArrayList<Holder> list = new ArrayList<>(proxies);
                 proxies.clear();
-                for (Proxy proxy : list) {
+                for (Holder proxy : list) {
                   proxy.handleClosed();
                 }
               });
-              Waiter waiter;
+              Holder waiter;
               while ((waiter = waiters.poll()) != null) {
-                Proxy proxy = new Proxy(conn);
-                proxies.add(proxy);
-                waiter.use(proxy);
+                proxies.add(waiter);
+                waiter.use(conn);
               }
             } else {
-              Waiter waiter;
+              Holder waiter;
               while ((waiter = waiters.poll()) != null) {
                 waiter.fail(ar.cause());
               }
@@ -194,8 +237,9 @@ class PgPoolImpl implements PgPool {
       }
     }
 
-    public void release(Proxy proxy) {
-      proxies.remove(proxy);
+    @Override
+    public void release(Holder holder) {
+      proxies.remove(holder);
     }
   }
 
@@ -245,37 +289,51 @@ class PgPoolImpl implements PgPool {
   public void getConnection(Handler<AsyncResult<PgConnection>> handler) {
     Context current = Vertx.currentContext();
     if (current == context) {
-      available.acquire(current, ar -> {
-        if (ar.succeeded()) {
-          handler.handle(Future.succeededFuture(ar.result()));
-        } else {
-          handler.handle(Future.failedFuture(ar.cause()));
-        }
-      });
+      Proxy proxy = new Proxy(current, handler);
+      available.acquire(proxy);
     } else {
       context.runOnContext(v -> getConnection(handler));
     }
   }
 
-  private class Proxy implements PgConnection {
+  private class Proxy implements PgConnection, Holder {
 
-    final PgConnection conn;
-    final AtomicBoolean closed = new AtomicBoolean();
+    private final Context context;
+    private final Handler<AsyncResult<PgConnection>> handler;
+    private PgConnection conn;
+    private final AtomicBoolean closed = new AtomicBoolean();
     private volatile Handler<Throwable> exceptionHandler;
     private volatile Handler<Void> closeHandler;
 
-    private Proxy(PgConnection conn) {
-      this.conn = conn;
+    private Proxy(Context context, Handler<AsyncResult<PgConnection>> handler) {
+      this.context = context;
+      this.handler = handler;
     }
 
-    void handleException(Throwable err) {
+    public void handleException(Throwable err) {
       Handler<Throwable> handler = this.exceptionHandler;
       if (!closed.get() && handler != null) {
         handler.handle(err);
       }
     }
 
-    void handleClosed() {
+    @Override
+    public Context context() {
+      return context;
+    }
+
+    @Override
+    public PgConnection connection() {
+      return conn;
+    }
+
+    @Override
+    public void handle(AsyncResult<PgConnection> event) {
+      conn = event.result();
+      handler.handle(event.map(this));
+    }
+
+    public void handleClosed() {
       Handler<Void> handler = this.closeHandler;
       if (closed.compareAndSet(false, true) && handler != null) {
         handler.handle(null);
@@ -289,6 +347,24 @@ class PgPoolImpl implements PgPool {
     }
 
     @Override
+    public void query(String sql, List<Object> params, Handler<AsyncResult<ResultSet>> handler) {
+      if (closed.get()) {
+        handler.handle(Future.failedFuture("Connection closed"));
+        return;
+      }
+      conn.query(sql, handler);
+    }
+
+    @Override
+    public void update(String sql, List<Object> params, Handler<AsyncResult<UpdateResult>> handler) {
+      if (closed.get()) {
+        handler.handle(Future.failedFuture("Connection closed"));
+        return;
+      }
+      conn.update(sql, handler);
+    }
+
+    @Override
     public PgConnection execute(String sql, Handler<AsyncResult<ResultSet>> handler) {
       if (closed.get()) {
         handler.handle(Future.failedFuture("Connection closed"));
@@ -299,23 +375,21 @@ class PgPoolImpl implements PgPool {
     }
 
     @Override
-    public PgConnection update(String sql, Handler<AsyncResult<UpdateResult>> handler) {
+    public void update(String sql, Handler<AsyncResult<UpdateResult>> handler) {
       if (closed.get()) {
         handler.handle(Future.failedFuture("Connection closed"));
-        return this;
+        return;
       }
       conn.update(sql, handler);
-      return this;
     }
 
     @Override
-    public PgConnection query(String sql, Handler<AsyncResult<ResultSet>> handler) {
+    public void query(String sql, Handler<AsyncResult<ResultSet>> handler) {
       if (closed.get()) {
         handler.handle(Future.failedFuture("Connection closed"));
-        return this;
+        return;
       }
       conn.query(sql, handler);
-      return this;
     }
 
     @Override
@@ -341,6 +415,93 @@ class PgPoolImpl implements PgPool {
       if (closed.compareAndSet(false, true)) {
         available.release(this);
       }
+    }
+  }
+
+  private class Foo<T> implements Holder {
+
+    final Context context;
+    final Handler<AsyncResult<T>> handler;
+    final Function<PgConnection, Future<T>> f;
+
+    private Foo(Context context, Handler<AsyncResult<T>> handler, Function<PgConnection, Future<T>> f) {
+      this.context = context;
+      this.handler = handler;
+      this.f = f;
+    }
+
+    private PgConnection conn;
+
+    @Override
+    public Context context() {
+      return context;
+    }
+
+    @Override
+    public void handleClosed() {
+    }
+
+    @Override
+    public void handleException(Throwable err) {
+    }
+
+    @Override
+    public PgConnection connection() {
+      return conn;
+    }
+
+    @Override
+    public void handle(AsyncResult<PgConnection> event) {
+      if (event.succeeded()) {
+        conn = event.result();
+        Future<T> fut = f.apply(conn);
+        fut.setHandler(ar -> {
+          available.release(this);
+          handler.handle(ar);
+        });
+      } else {
+        handler.handle(Future.failedFuture(event.cause()));
+      }
+    }
+  }
+
+  @Override
+  public void query(String sql, Handler<AsyncResult<ResultSet>> handler) {
+    Context current = Vertx.currentContext();
+    if (current == context) {
+      available.acquire(new Foo<>(current, handler, conn -> Future.future(f -> conn.query(sql, f))));
+    } else {
+      context.runOnContext(v -> query(sql, handler));
+    }
+  }
+
+  @Override
+  public void update(String sql, Handler<AsyncResult<UpdateResult>> handler) {
+    Context current = Vertx.currentContext();
+    if (current == context) {
+      available.acquire(new Foo<>(current, handler, conn -> Future.future(f -> conn.update(sql, f))));
+    } else {
+      context.runOnContext(v -> update(sql, handler));
+    }
+  }
+
+  @Override
+  public void query(String sql, List<Object> params, Handler<AsyncResult<ResultSet>> handler) {
+    Context current = Vertx.currentContext();
+    if (current == context) {
+      available.acquire(new Foo<>(current, handler, conn -> Future.future(f -> conn.query(sql, params, f))));
+    } else {
+      context.runOnContext(v -> query(sql, params, handler));
+    }
+  }
+
+  @Override
+  public void update(String sql, List<Object> params, Handler<AsyncResult<UpdateResult>> handler) {
+    Context current = Vertx.currentContext();
+    if (current == context) {
+      available.acquire(new Foo<>(current, handler, conn -> Future.future(f -> conn.update(sql, params, f))));
+    } else {
+      context.runOnContext(v -> update(sql, params, handler));
     }
   }
 

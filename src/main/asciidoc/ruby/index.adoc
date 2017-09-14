@@ -221,6 +221,40 @@ query.execute() { |res_err,res|
 
 ----
 
+Prepared statements can also be used for update operations
+
+[source,ruby]
+----
+
+preparedStatement = conn.prepare("UPDATE USERS SET name=$1 WHERE id=$2")
+
+# Create an update : bind parameters
+update = preparedStatement.update(2, "EMAD ALBLUESHI")
+
+update.execute() { |res_err,res|
+  if (res_err == nil)
+    # Process results
+    result = res
+  else
+    puts "Update failed #{res_err}"
+  end
+
+}
+
+# Or fluently
+preparedStatement.update(1, "JULIEN VIET").execute() { |res_err,res|
+  if (res_err == nil)
+    # Process results
+    result = res
+  else
+    puts "Update failed #{res_err}"
+  end
+
+}
+
+----
+
+
 Prepared statements can also be used to batch operations in a very efficient manner:
 
 [source,ruby]

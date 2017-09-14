@@ -31,16 +31,10 @@ import io.vertx.ext.sql.UpdateResult;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 @VertxGen
-public interface PgConnection {
+public interface PgConnection extends PgDatabase {
 
   @Fluent
   PgConnection execute(String sql, Handler<AsyncResult<ResultSet>> handler);
-
-  @Fluent
-  PgConnection query(String sql, Handler<AsyncResult<ResultSet>> handler);
-
-  @Fluent
-  PgConnection update(String sql, Handler<AsyncResult<UpdateResult>> handler);
 
   PgPreparedStatement prepare(String sql);
 

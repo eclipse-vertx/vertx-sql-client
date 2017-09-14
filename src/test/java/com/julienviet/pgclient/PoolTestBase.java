@@ -19,6 +19,7 @@ package com.julienviet.pgclient;
 
 import io.vertx.core.Vertx;
 import io.vertx.ext.sql.ResultSet;
+import io.vertx.ext.sql.UpdateResult;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -68,6 +69,82 @@ public abstract class PoolTestBase extends PgTestBase {
           async.countDown();
         });
       }));
+    }
+  }
+
+  @Test
+  public void testQuery(TestContext ctx) {
+    int num = 1000;
+    Async async = ctx.async(num);
+    PgClient client = PgClient.create(vertx, options);
+    PgPool pool = createPool(client, 4);
+    for (int i = 0;i < num;i++) {
+      pool.query("SELECT id, randomnumber from WORLD", ar -> {
+        if (ar.succeeded()) {
+          ResultSet result = ar.result();
+          ctx.assertEquals(10000, result.getNumRows());
+        } else {
+          ctx.assertEquals("closed", ar.cause().getMessage());
+        }
+        async.countDown();
+      });
+    }
+  }
+
+  @Test
+  public void testQueryWithParams(TestContext ctx) {
+    int num = 1000;
+    Async async = ctx.async(num);
+    PgClient client = PgClient.create(vertx, options);
+    PgPool pool = createPool(client, 4);
+    for (int i = 0;i < num;i++) {
+      pool.query("SELECT id, randomnumber from WORLD where id=$1", i + 1, ar -> {
+        if (ar.succeeded()) {
+          ResultSet result = ar.result();
+          ctx.assertEquals(1, result.getNumRows());
+        } else {
+          ctx.assertEquals("closed", ar.cause().getMessage());
+        }
+        async.countDown();
+      });
+    }
+  }
+
+  @Test
+  public void testUpdate(TestContext ctx) {
+    int num = 1000;
+    Async async = ctx.async(num);
+    PgClient client = PgClient.create(vertx, options);
+    PgPool pool = createPool(client, 4);
+    for (int i = 0;i < num;i++) {
+      pool.update("UPDATE Fortune SET message = 'Whatever' WHERE id = 9", ar -> {
+        if (ar.succeeded()) {
+          UpdateResult result = ar.result();
+          ctx.assertEquals(1, result.getUpdated());
+        } else {
+          ctx.assertEquals("closed", ar.cause().getMessage());
+        }
+        async.countDown();
+      });
+    }
+  }
+
+  @Test
+  public void testUpdateWithParams(TestContext ctx) {
+    int num = 1000;
+    Async async = ctx.async(num);
+    PgClient client = PgClient.create(vertx, options);
+    PgPool pool = createPool(client, 4);
+    for (int i = 0;i < num;i++) {
+      pool.update("UPDATE Fortune SET message = 'Whatever' WHERE id = $1", 9, ar -> {
+        if (ar.succeeded()) {
+          UpdateResult result = ar.result();
+          ctx.assertEquals(1, result.getUpdated());
+        } else {
+          ctx.assertEquals("closed", ar.cause().getMessage());
+        }
+        async.countDown();
+      });
     }
   }
 

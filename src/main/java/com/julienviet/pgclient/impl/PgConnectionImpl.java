@@ -19,11 +19,14 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgConnection;
 import com.julienviet.pgclient.PgPreparedStatement;
+import com.julienviet.pgclient.PgQuery;
+import com.julienviet.pgclient.PgUpdate;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,15 +51,35 @@ class PgConnectionImpl implements PgConnection {
   }
 
   @Override
-  public PgConnection update(String sql, Handler<AsyncResult<UpdateResult>> handler) {
-    dbConnection.schedule(new UpdateCommand(sql, handler));
-    return this;
+  public void query(String sql, Handler<AsyncResult<ResultSet>> handler) {
+    dbConnection.schedule(new QueryCommand(sql, new ResultSetBuilder(handler)));
   }
 
   @Override
-  public PgConnection query(String sql, Handler<AsyncResult<ResultSet>> handler) {
-    dbConnection.schedule(new QueryCommand(sql, new ResultSetBuilder(handler)));
-    return this;
+  public void update(String sql, Handler<AsyncResult<UpdateResult>> handler) {
+    dbConnection.schedule(new UpdateCommand(sql, handler));
+  }
+
+  @Override
+  public void query(String sql, List<Object> params, Handler<AsyncResult<ResultSet>> handler) {
+    PgPreparedStatement preparedStatement = prepare(sql);
+    PgQuery query = preparedStatement.query(params);
+    query.execute(ar -> {
+      // Should only close if we don't use anonymous prepared statement or caching
+      preparedStatement.close();
+      handler.handle(ar);
+    });
+  }
+
+  @Override
+  public void update(String sql, List<Object> params, Handler<AsyncResult<UpdateResult>> handler) {
+    PgPreparedStatement preparedStatement = prepare(sql);
+    PgUpdate update = preparedStatement.update(params);
+    update.execute(ar -> {
+      // Should only close if we don't use anonymous prepared statement or caching
+      preparedStatement.close();
+      handler.handle(ar);
+    });
   }
 
   @Override

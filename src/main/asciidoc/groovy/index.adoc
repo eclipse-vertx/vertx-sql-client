@@ -219,6 +219,40 @@ query.execute({ res ->
 
 ----
 
+Prepared statements can also be used for update operations
+
+[source,groovy]
+----
+
+def preparedStatement = conn.prepare("UPDATE USERS SET name=$1 WHERE id=$2")
+
+// Create an update : bind parameters
+def update = preparedStatement.update(2, "EMAD ALBLUESHI")
+
+update.execute({ res ->
+  if (res.succeeded()) {
+    // Process results
+    def result = res.result()
+  } else {
+    println("Update failed ${res.cause()}")
+  }
+
+})
+
+// Or fluently
+preparedStatement.update(1, "JULIEN VIET").execute({ res ->
+  if (res.succeeded()) {
+    // Process results
+    def result = res.result()
+  } else {
+    println("Update failed ${res.cause()}")
+  }
+
+})
+
+----
+
+
 Prepared statements can also be used to batch operations in a very efficient manner:
 
 [source,groovy]
