@@ -24,12 +24,16 @@ import io.vertx.ext.sql.UpdateResult;
 
 import java.util.List;
 
-public class PreparedUpdateWithParams implements PgUpdate {
+/**
+ * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
+ */
+
+public class PgUpdateImpl implements PgUpdate {
 
   final PreparedStatementImpl ps;
   final List<Object> params;
 
-  PreparedUpdateWithParams(PreparedStatementImpl ps, List<Object> params) {
+  PgUpdateImpl(PreparedStatementImpl ps, List<Object> params) {
     this.ps = ps;
     this.params = params;
   }
