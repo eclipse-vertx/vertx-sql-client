@@ -67,7 +67,7 @@ public class PostgresSQLConnection implements SQLConnection {
 
   @Override
   public SQLConnection queryWithParams(String s, JsonArray jsonArray, Handler<AsyncResult<ResultSet>> handler) {
-    CommandBase cmd = new PreparedQueryWithParamsCommand(s, jsonArray.getList(), new PreparedQueryResultHandler(ar -> {
+    CommandBase cmd = new PreparedQueryCommand(s, jsonArray.getList(), new PreparedQueryResultHandler(ar -> {
       handler.handle(ar.map(results -> results));
     }));
     conn.schedule(cmd);
@@ -87,7 +87,7 @@ public class PostgresSQLConnection implements SQLConnection {
 
   @Override
   public SQLConnection updateWithParams(String sql, JsonArray jsonArray, Handler<AsyncResult<UpdateResult>> handler) {
-    conn.schedule(new PreparedUpdateWithParamsCommand(sql, jsonArray.getList(), ar -> {
+    conn.schedule(new PreparedUpdateCommand(sql, jsonArray.getList(), ar -> {
       handler.handle(ar.map(results -> results));
     }));
     return this;
