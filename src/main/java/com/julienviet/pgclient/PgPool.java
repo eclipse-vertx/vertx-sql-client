@@ -27,7 +27,7 @@ import io.vertx.core.Handler;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 @VertxGen
-public interface PgConnectionPool {
+public interface PgPool {
 
   /**
    * Obtain a connection from the pool.

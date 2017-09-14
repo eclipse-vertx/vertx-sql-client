@@ -18,7 +18,7 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgConnection;
-import com.julienviet.pgclient.PgConnectionPool;
+import com.julienviet.pgclient.PgPool;
 import com.julienviet.pgclient.PgPreparedStatement;
 import com.julienviet.pgclient.PoolingMode;
 import io.vertx.core.AsyncResult;
@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-class PgConnectionPoolImpl implements PgConnectionPool {
+class PgPoolImpl implements PgPool {
 
   private final PgClientImpl client;
   private final Context context;
@@ -232,7 +232,7 @@ class PgConnectionPoolImpl implements PgConnectionPool {
     }
   }
 
-  PgConnectionPoolImpl(PgClientImpl client, int maxSize, PoolingMode mode) {
+  PgPoolImpl(PgClientImpl client, int maxSize, PoolingMode mode) {
     if (maxSize < 1) {
       throw new IllegalArgumentException("Pool max size must be > 0");
     }

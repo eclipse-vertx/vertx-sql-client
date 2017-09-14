@@ -47,14 +47,14 @@ public abstract class PoolTestBase extends PgTestBase {
     vertx.close(ctx.asyncAssertSuccess());
   }
 
-  protected abstract PgConnectionPool createPool(PgClient client, int size);
+  protected abstract PgPool createPool(PgClient client, int size);
 
   @Test
   public void testPool(TestContext ctx) {
     int num = 1000;
     Async async = ctx.async(num);
     PgClient client = PgClient.create(vertx, options);
-    PgConnectionPool pool = createPool(client, 4);
+    PgPool pool = createPool(client, 4);
     for (int i = 0;i < num;i++) {
       pool.getConnection(ctx.asyncAssertSuccess(conn -> {
         conn.query("SELECT id, randomnumber from WORLD", ar -> {
@@ -82,7 +82,7 @@ public abstract class PoolTestBase extends PgTestBase {
     });
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
       PgClient client = PgClient.create(vertx, new PgClientOptions(options).setPort(8080).setHost("localhost"));
-      PgConnectionPool pool = createPool(client, 1);
+      PgPool pool = createPool(client, 1);
       pool.getConnection(ctx.asyncAssertSuccess(conn1 -> {
         proxyConn.get().close();
         conn1.closeHandler(v2 -> {

@@ -20,7 +20,7 @@ package com.julienviet.pgclient.impl;
 import com.julienviet.pgclient.PgClient;
 import com.julienviet.pgclient.PgClientOptions;
 import com.julienviet.pgclient.PgConnection;
-import com.julienviet.pgclient.PgConnectionPool;
+import com.julienviet.pgclient.PgPool;
 import com.julienviet.pgclient.PgPoolOptions;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -108,7 +108,7 @@ public class PgClientImpl implements PgClient {
   }
 
   @Override
-  public PgConnectionPool createPool(PgPoolOptions options) {
-    return new PgConnectionPoolImpl(this, options.getMaxSize(), options.getMode());
+  public PgPool createPool(PgPoolOptions options) {
+    return new PgPoolImpl(this, options.getMaxSize(), options.getMode());
   }
 }

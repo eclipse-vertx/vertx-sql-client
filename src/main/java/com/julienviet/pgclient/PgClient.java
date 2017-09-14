@@ -60,7 +60,7 @@ public interface PgClient extends SQLClient {
    * @param options the options for creating the pool
    * @return the connection pool
    */
-  PgConnectionPool createPool(PgPoolOptions options);
+  PgPool createPool(PgPoolOptions options);
 
   @Override
   PgClient getConnection(Handler<AsyncResult<SQLConnection>> handler);
