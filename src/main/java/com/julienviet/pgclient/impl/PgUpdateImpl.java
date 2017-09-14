@@ -15,41 +15,32 @@
  *
  */
 
-package com.julienviet.pgclient;
+package com.julienviet.pgclient.impl;
 
-import io.vertx.codegen.annotations.Fluent;
-import io.vertx.codegen.annotations.VertxGen;
+import com.julienviet.pgclient.PgUpdate;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
- * A connection to Postgres.
- *
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-@VertxGen
-public interface PgConnection {
 
-  @Fluent
-  PgConnection execute(String sql, Handler<AsyncResult<ResultSet>> handler);
+public class PgUpdateImpl implements PgUpdate {
 
-  @Fluent
-  PgConnection query(String sql, Handler<AsyncResult<ResultSet>> handler);
+  final PreparedStatementImpl ps;
+  final List<Object> params;
 
-  @Fluent
-  PgConnection update(String sql, Handler<AsyncResult<UpdateResult>> handler);
+  PgUpdateImpl(PreparedStatementImpl ps, List<Object> params) {
+    this.ps = ps;
+    this.params = params;
+  }
 
-  PgPreparedStatement prepare(String sql);
-
-  @Fluent
-  PgConnection exceptionHandler(Handler<Throwable> handler);
-
-  @Fluent
-  PgConnection closeHandler(Handler<Void> handler);
-
-  void close();
-
+  @Override
+  public void execute(Handler<AsyncResult<UpdateResult>> handler) {
+    ps.update(Collections.singletonList(params), ar -> handler.handle(ar.map(results -> results.get(0))));
+  }
 }

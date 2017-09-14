@@ -17,39 +17,25 @@
 
 package com.julienviet.pgclient;
 
-import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
 
 /**
- * A connection to Postgres.
+ * The binding of a {@link PgPreparedStatement} and a set of parameters that can be executed once.
  *
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
+
 @VertxGen
-public interface PgConnection {
-
-  @Fluent
-  PgConnection execute(String sql, Handler<AsyncResult<ResultSet>> handler);
-
-  @Fluent
-  PgConnection query(String sql, Handler<AsyncResult<ResultSet>> handler);
-
-  @Fluent
-  PgConnection update(String sql, Handler<AsyncResult<UpdateResult>> handler);
-
-  PgPreparedStatement prepare(String sql);
-
-  @Fluent
-  PgConnection exceptionHandler(Handler<Throwable> handler);
-
-  @Fluent
-  PgConnection closeHandler(Handler<Void> handler);
-
-  void close();
-
+public interface PgUpdate {
+  /**
+   * Executes the query, the {@code handler} will be called when the update result is available or
+   * if an error occurs.
+   * <p/>
+   *
+   * @param handler the handler to call back
+   */
+  void execute(Handler<AsyncResult<UpdateResult>> handler);
 }

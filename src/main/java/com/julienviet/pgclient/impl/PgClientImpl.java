@@ -19,7 +19,8 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgClient;
 import com.julienviet.pgclient.PgClientOptions;
-import com.julienviet.pgclient.PgConnectionPool;
+import com.julienviet.pgclient.PgConnection;
+import com.julienviet.pgclient.PgPool;
 import com.julienviet.pgclient.PgPoolOptions;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -28,14 +29,12 @@ import io.vertx.core.Vertx;
 import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.NetClient;
-import com.julienviet.pgclient.PgConnection;
-import io.vertx.ext.sql.SQLClient;
 import io.vertx.ext.sql.SQLConnection;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class PostgresClientImpl implements PgClient {
+public class PgClientImpl implements PgClient {
 
   final NetClient client;
   final VertxInternal vertx;
@@ -47,7 +46,7 @@ public class PostgresClientImpl implements PgClient {
   final boolean cachePreparedStatements;
   final int pipeliningLimit;
 
-  public PostgresClientImpl(Vertx vertx, PgClientOptions options) {
+  public PgClientImpl(Vertx vertx, PgClientOptions options) {
     this.host = options.getHost();
     this.port = options.getPort();
     this.database = options.getDatabase();
@@ -72,7 +71,7 @@ public class PostgresClientImpl implements PgClient {
         DbConnection conn = new DbConnection(this, socket, vertx.getOrCreateContext());
         conn.init(username, password, database, ar2 -> {
           if (ar2.succeeded()) {
-            completionHandler.handle(Future.succeededFuture(new PostgresConnectionImpl(ar2.result(), cachePreparedStatements)));
+            completionHandler.handle(Future.succeededFuture(new PgConnectionImpl(ar2.result(), cachePreparedStatements)));
           } else {
             completionHandler.handle(Future.failedFuture(ar2.cause()));
           }
@@ -109,7 +108,7 @@ public class PostgresClientImpl implements PgClient {
   }
 
   @Override
-  public PgConnectionPool createPool(PgPoolOptions options) {
-    return new PostgresConnectionPoolImpl(this, options.getMaxSize(), options.getMode());
+  public PgPool createPool(PgPoolOptions options) {
+    return new PgPoolImpl(this, options.getMaxSize(), options.getMode());
   }
 }

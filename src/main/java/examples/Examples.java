@@ -21,10 +21,11 @@ import com.julienviet.pgclient.PgBatch;
 import com.julienviet.pgclient.PgClient;
 import com.julienviet.pgclient.PgClientOptions;
 import com.julienviet.pgclient.PgConnection;
-import com.julienviet.pgclient.PgConnectionPool;
+import com.julienviet.pgclient.PgPool;
 import com.julienviet.pgclient.PgPoolOptions;
 import com.julienviet.pgclient.PgPreparedStatement;
 import com.julienviet.pgclient.PgQuery;
+import com.julienviet.pgclient.PgUpdate;
 import io.vertx.core.Vertx;
 import io.vertx.docgen.Source;
 import io.vertx.ext.sql.ResultSet;
@@ -83,7 +84,7 @@ public class Examples {
       .setPassword("secret")
     );
 
-    PgConnectionPool pool = client.createPool(new PgPoolOptions().setMaxSize(20));
+    PgPool pool = client.createPool(new PgPoolOptions().setMaxSize(20));
 
     pool.getConnection(res -> {
       if (res.succeeded()) {
@@ -110,7 +111,7 @@ public class Examples {
     });
   }
 
-  public void ex3(PgConnectionPool pool) {
+  public void ex3(PgPool pool) {
 
     // Close the pool and the connection it maintains
     pool.close();
@@ -195,6 +196,35 @@ public class Examples {
   }
 
   public void ex8(PgConnection conn) {
+
+    PgPreparedStatement preparedStatement = conn.prepare("UPDATE USERS SET name=$1 WHERE id=$2");
+
+    // Create an update : bind parameters
+    PgUpdate update = preparedStatement.update(2, "EMAD ALBLUESHI");
+
+    update.execute(res -> {
+      if(res.succeeded()) {
+        // Process results
+        UpdateResult result = res.result();
+      } else {
+        System.out.println("Update failed " + res.cause());
+      }
+
+    });
+
+    // Or fluently
+    preparedStatement.update(1, "JULIEN VIET").execute(res -> {
+      if(res.succeeded()) {
+        // Process results
+        UpdateResult result = res.result();
+      } else {
+        System.out.println("Update failed " + res.cause());
+      }
+
+    });
+  }
+
+  public void ex9(PgConnection conn) {
     PgPreparedStatement preparedStatement = conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)");
 
     // Create a query : bind parameters

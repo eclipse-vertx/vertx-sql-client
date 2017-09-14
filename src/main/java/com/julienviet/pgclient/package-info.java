@@ -100,11 +100,19 @@
  * {@link examples.Examples#ex7}
  * ----
  *
- * Prepared statements can also be used to batch operations in a very efficient manner:
+ * Prepared statements can also be used for update operations
  *
  * [source,$lang]
  * ----
  * {@link examples.Examples#ex8}
+ * ----
+ *
+ *
+ * Prepared statements can also be used to batch operations in a very efficient manner:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#ex9}
  * ----
  */
 @Document(fileName = "index.adoc")

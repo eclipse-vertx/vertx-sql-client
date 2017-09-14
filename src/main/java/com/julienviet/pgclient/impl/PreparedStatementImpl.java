@@ -20,6 +20,7 @@ package com.julienviet.pgclient.impl;
 import com.julienviet.pgclient.PgBatch;
 import com.julienviet.pgclient.PgPreparedStatement;
 import com.julienviet.pgclient.PgQuery;
+import com.julienviet.pgclient.PgUpdate;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -49,7 +50,12 @@ class PreparedStatementImpl implements PgPreparedStatement {
 
   @Override
   public PgQuery query(List<Object> params) {
-    return new PreparedQuery(this, params);
+    return new PgQueryImpl(this, params);
+  }
+
+  @Override
+  public PgUpdate update(List<Object> params) {
+    return new PgUpdateImpl(this, params);
   }
 
   @Override

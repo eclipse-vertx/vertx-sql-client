@@ -18,7 +18,7 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgConnection;
-import com.julienviet.pgclient.PgConnectionPool;
+import com.julienviet.pgclient.PgPool;
 import com.julienviet.pgclient.PgPreparedStatement;
 import com.julienviet.pgclient.PoolingMode;
 import io.vertx.core.AsyncResult;
@@ -32,7 +32,6 @@ import io.vertx.ext.sql.UpdateResult;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -42,9 +41,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-class PostgresConnectionPoolImpl implements PgConnectionPool {
+class PgPoolImpl implements PgPool {
 
-  private final PostgresClientImpl client;
+  private final PgClientImpl client;
   private final Context context;
   private final PoolingStrategy available;
 
@@ -233,7 +232,7 @@ class PostgresConnectionPoolImpl implements PgConnectionPool {
     }
   }
 
-  PostgresConnectionPoolImpl(PostgresClientImpl client, int maxSize, PoolingMode mode) {
+  PgPoolImpl(PgClientImpl client, int maxSize, PoolingMode mode) {
     if (maxSize < 1) {
       throw new IllegalArgumentException("Pool max size must be > 0");
     }
@@ -316,26 +315,6 @@ class PostgresConnectionPoolImpl implements PgConnectionPool {
         return this;
       }
       conn.query(sql, handler);
-      return this;
-    }
-
-    @Override
-    public PgConnection prepareAndQuery(String sql, List<Object> params, Handler<AsyncResult<ResultSet>> handler) {
-      if (closed.get()) {
-        handler.handle(Future.failedFuture("Connection closed"));
-        return this;
-      }
-      conn.prepareAndQuery(sql, params, handler);
-      return this;
-    }
-
-    @Override
-    public PgConnection prepareAndExecute(String sql, List<Object> params, Handler<AsyncResult<UpdateResult>> handler) {
-      if (closed.get()) {
-        handler.handle(Future.failedFuture("Connection closed"));
-        return this;
-      }
-      conn.prepareAndExecute(sql, params, handler);
       return this;
     }
 

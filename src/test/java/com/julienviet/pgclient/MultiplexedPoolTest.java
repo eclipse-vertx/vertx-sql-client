@@ -25,7 +25,7 @@ import io.vertx.ext.unit.TestContext;
 public class MultiplexedPoolTest extends PoolTestBase {
 
   @Override
-  protected PgConnectionPool createPool(PgClient client, int size) {
+  protected PgPool createPool(PgClient client, int size) {
     return client.createPool(new PgPoolOptions().setMode(PoolingMode.STATEMENT).setMaxSize(1));
   }
 
