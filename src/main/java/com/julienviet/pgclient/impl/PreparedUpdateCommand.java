@@ -33,23 +33,32 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.ext.sql.UpdateResult;
 
+import java.util.List;
+
+import static com.julienviet.pgclient.codec.util.Util.*;
+
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
 class PreparedUpdateCommand extends UpdateCommandBase {
 
+
   final boolean parse;
   final String sql;
+  final String stmt;
+  final List<Object> params;
   final Handler<AsyncResult<UpdateResult>> handler;
 
-  PreparedUpdateCommand(String sql, Handler<AsyncResult<UpdateResult>> handler) {
-    this(true, sql, handler);
+  PreparedUpdateCommand(String sql, List<Object> params, Handler<AsyncResult<UpdateResult>> handler) {
+    this(true, sql, "", params, handler);
   }
 
-  PreparedUpdateCommand(boolean parse, String sql, Handler<AsyncResult<UpdateResult>> handler) {
+  PreparedUpdateCommand(boolean parse, String sql, String stmt, List<Object> params, Handler<AsyncResult<UpdateResult>> handler) {
     this.parse = parse;
     this.sql = sql;
+    this.stmt = stmt;
+    this.params = params;
     this.handler = handler;
   }
 
@@ -57,10 +66,10 @@ class PreparedUpdateCommand extends UpdateCommandBase {
   void exec(DbConnection conn, Handler<Void> handler) {
     doneHandler = handler;
     if (parse) {
-      conn.writeMessage(new Parse(sql));
+      conn.writeMessage(new Parse(sql).setStatement(stmt));
     }
-    conn.writeMessage(new Bind());
-    conn.writeMessage(new Describe());
+    conn.writeMessage(new Bind().setParamValues(paramValues(params)).setStatement(stmt));
+    conn.writeMessage(new Describe().setStatement(stmt));
     conn.writeMessage(new Execute().setRowCount(0));
     conn.writeMessage(Sync.INSTANCE);
   }
