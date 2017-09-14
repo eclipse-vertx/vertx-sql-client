@@ -42,7 +42,7 @@ import static com.julienviet.pgclient.codec.util.Util.*;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-class PreparedBatchWithParamsCommand extends UpdateCommandBase {
+class PreparedBatchCommand extends UpdateCommandBase {
 
 
   final boolean parse;
@@ -53,11 +53,11 @@ class PreparedBatchWithParamsCommand extends UpdateCommandBase {
   private ArrayList<UpdateResult> results;
   private Throwable failure;
 
-  PreparedBatchWithParamsCommand(String sql, List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
+  PreparedBatchCommand(String sql, List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
     this(true, sql, "", paramsList, handler);
   }
 
-  PreparedBatchWithParamsCommand(boolean parse, String sql, String stmt, List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
+  PreparedBatchCommand(boolean parse, String sql, String stmt, List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
     this.parse = parse;
     this.sql = sql;
     this.stmt = stmt;
