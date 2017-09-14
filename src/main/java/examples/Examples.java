@@ -21,7 +21,7 @@ import com.julienviet.pgclient.PgBatch;
 import com.julienviet.pgclient.PgClient;
 import com.julienviet.pgclient.PgClientOptions;
 import com.julienviet.pgclient.PgConnection;
-import com.julienviet.pgclient.PgConnectionPool;
+import com.julienviet.pgclient.PgPool;
 import com.julienviet.pgclient.PgPoolOptions;
 import com.julienviet.pgclient.PgPreparedStatement;
 import com.julienviet.pgclient.PgQuery;
@@ -83,7 +83,7 @@ public class Examples {
       .setPassword("secret")
     );
 
-    PgConnectionPool pool = client.createPool(new PgPoolOptions().setMaxSize(20));
+    PgPool pool = client.createPool(new PgPoolOptions().setMaxSize(20));
 
     pool.getConnection(res -> {
       if (res.succeeded()) {
@@ -110,7 +110,7 @@ public class Examples {
     });
   }
 
-  public void ex3(PgConnectionPool pool) {
+  public void ex3(PgPool pool) {
 
     // Close the pool and the connection it maintains
     pool.close();
