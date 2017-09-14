@@ -921,7 +921,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   }
 
   @Test
-  public void testPgUpdate(TestContext ctx) {
+  public void testPreparedUpdate(TestContext ctx) {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
@@ -940,7 +940,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   }
 
   @Test
-  public void testPgUpdateWithParams(TestContext ctx) {
+  public void testPreparedUpdateWithParams(TestContext ctx) {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
