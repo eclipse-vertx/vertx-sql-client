@@ -50,17 +50,12 @@ class PreparedStatementImpl implements PgPreparedStatement {
 
   @Override
   public PgQuery query(List<Object> params) {
-    return new PreparedQuery(this, params);
+    return new PgQueryImpl(this, params);
   }
 
   @Override
   public PgUpdate update(List<Object> params) {
-    return new PreparedUpdateWithParams(this, params);
-  }
-
-  @Override
-  public PgUpdate update() {
-    return new PreparedUpdate(this);
+    return new PgUpdateImpl(this, params);
   }
 
   @Override
@@ -86,7 +81,7 @@ class PreparedStatementImpl implements PgPreparedStatement {
     } else {
       parse = false;
     }
-    conn.schedule(new PreparedQueryWithParamsCommand(parse, sql, params, fetch, stmt, portal, suspended, handler));
+    conn.schedule(new PreparedQueryCommand(parse, sql, params, fetch, stmt, portal, suspended, handler));
   }
 
   void batch(List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
@@ -97,15 +92,11 @@ class PreparedStatementImpl implements PgPreparedStatement {
     } else {
       parse = false;
     }
-    conn.schedule(new PreparedBatchWithParamsCommand(parse, sql, stmt, paramsList, handler));
-  }
-
-  void update(Handler<AsyncResult<UpdateResult>> handler) {
-    conn.schedule(new PreparedUpdateCommand(sql, handler));
+    conn.schedule(new PreparedBatchCommand(parse, sql, stmt, paramsList, handler));
   }
 
   void update(List<Object> params, Handler<AsyncResult<UpdateResult>> handler) {
-    conn.schedule(new PreparedUpdateWithParamsCommand(sql, params, handler));
+    conn.schedule(new PreparedUpdateCommand(sql, params, handler));
   }
 
   @Override
