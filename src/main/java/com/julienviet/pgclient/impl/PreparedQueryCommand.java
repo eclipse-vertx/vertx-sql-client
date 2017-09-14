@@ -36,7 +36,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class PreparedQueryWithParamsCommand extends QueryCommandBase {
+class PreparedQueryCommand extends QueryCommandBase {
 
 
   final boolean parse;
@@ -47,19 +47,19 @@ class PreparedQueryWithParamsCommand extends QueryCommandBase {
   private final String portal;
   private final boolean suspended;
 
-  PreparedQueryWithParamsCommand(String sql,
-                                 List<Object> params,
-                                 QueryResultHandler handler) {
+  PreparedQueryCommand(String sql,
+                       List<Object> params,
+                       QueryResultHandler handler) {
     this(true, sql, params, 0, "", "", false, handler);
   }
-  PreparedQueryWithParamsCommand(boolean parse,
-                                 String sql,
-                                 List<Object> params,
-                                 int fetch,
-                                 String stmt,
-                                 String portal,
-                                 boolean suspended,
-                                 QueryResultHandler handler) {
+  PreparedQueryCommand(boolean parse,
+                       String sql,
+                       List<Object> params,
+                       int fetch,
+                       String stmt,
+                       String portal,
+                       boolean suspended,
+                       QueryResultHandler handler) {
     super(handler);
     this.parse = parse;
     this.sql = sql;
