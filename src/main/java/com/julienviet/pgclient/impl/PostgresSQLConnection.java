@@ -29,6 +29,7 @@ import io.vertx.ext.sql.SQLRowStream;
 import io.vertx.ext.sql.TransactionIsolation;
 import io.vertx.ext.sql.UpdateResult;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -87,8 +88,8 @@ public class PostgresSQLConnection implements SQLConnection {
 
   @Override
   public SQLConnection updateWithParams(String sql, JsonArray jsonArray, Handler<AsyncResult<UpdateResult>> handler) {
-    conn.schedule(new PreparedUpdateCommand(sql, jsonArray.getList(), ar -> {
-      handler.handle(ar.map(results -> results));
+    conn.schedule(new PreparedUpdateCommand(sql, Collections.singletonList(jsonArray.getList()), ar -> {
+      handler.handle(ar.map(results -> results.get(0)));
     }));
     return this;
   }

@@ -84,7 +84,7 @@ class PreparedStatementImpl implements PgPreparedStatement {
     conn.schedule(new PreparedQueryCommand(parse, sql, params, fetch, stmt, portal, suspended, handler));
   }
 
-  void batch(List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
+  void update(List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
     boolean parse;
     if (!parsed) {
       parsed = true;
@@ -92,11 +92,7 @@ class PreparedStatementImpl implements PgPreparedStatement {
     } else {
       parse = false;
     }
-    conn.schedule(new PreparedBatchCommand(parse, sql, stmt, paramsList, handler));
-  }
-
-  void update(List<Object> params, Handler<AsyncResult<UpdateResult>> handler) {
-    conn.schedule(new PreparedUpdateCommand(sql, params, handler));
+    conn.schedule(new PreparedUpdateCommand(parse, sql, stmt, paramsList, handler));
   }
 
   @Override

@@ -22,6 +22,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.ext.sql.UpdateResult;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -40,6 +41,6 @@ public class PgUpdateImpl implements PgUpdate {
 
   @Override
   public void execute(Handler<AsyncResult<UpdateResult>> handler) {
-    ps.update(params, handler);
+    ps.update(Collections.singletonList(params), ar -> handler.handle(ar.map(results -> results.get(0))));
   }
 }
