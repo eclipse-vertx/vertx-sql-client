@@ -929,7 +929,12 @@ public abstract class PgConnectionTestBase extends PgTestBase {
       PgUpdate update = ps.update();
       update.execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.getUpdated());
-        async.complete();
+        conn.prepare("SELECT message FROM Fortune WHERE id = 2")
+          .query()
+          .execute(ctx.asyncAssertSuccess(r -> {
+            ctx.assertEquals("PgClient Rocks!", r.getRows().get(0).getValue("message"));
+            async.complete();
+          }));
       }));
     }));
   }
@@ -943,7 +948,12 @@ public abstract class PgConnectionTestBase extends PgTestBase {
       PgUpdate update = ps.update("PgClient Rocks Again!!", 2);
       update.execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.getUpdated());
-        async.complete();
+        conn.prepare("SELECT message FROM Fortune WHERE id = $1")
+          .query(2)
+          .execute(ctx.asyncAssertSuccess(r -> {
+            ctx.assertEquals("PgClient Rocks Again!!", r.getRows().get(0).getValue("message"));
+            async.complete();
+        }));
       }));
     }));
   }
