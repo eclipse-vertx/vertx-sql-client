@@ -958,6 +958,43 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     }));
   }
 
+  @Test
+  public void testUpdateReturning(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient client = PgClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      conn.update("INSERT INTO Fortune (id, message) VALUES (96782, 'OK 2') RETURNING *",
+        ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getUpdated());
+        ctx.assertEquals(96782, result.getKeys().getValue(0));
+        ctx.assertEquals("OK 2", result.getKeys().getValue(1));
+        async.complete();
+      }));
+    }));
+  }
+
+  @Test
+  public void testPreparedUpdateReturning(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient client = PgClient.create(vertx, options);
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      PgPreparedStatement ps = conn.prepare("INSERT INTO Fortune (id, message) VALUES (5498, 'OK') RETURNING *");
+      PgUpdate update = ps.update();
+      update.execute(ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.getUpdated());
+        System.out.println(result.getKeys());
+        ctx.assertEquals(5498, result.getKeys().getValue(0));
+        ctx.assertEquals("OK", result.getKeys().getValue(1));
+        conn.prepare("SELECT message FROM Fortune WHERE id = $1")
+          .query(5498)
+          .execute(ctx.asyncAssertSuccess(r -> {
+            ctx.assertEquals("OK", r.getRows().get(0).getValue("message"));
+            async.complete();
+          }));
+      }));
+    }));
+  }
+
 /*
   @Test
   public void testServerUpdate(TestContext ctx) {
