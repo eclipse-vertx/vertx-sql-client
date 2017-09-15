@@ -18,12 +18,14 @@
 package com.julienviet.pgclient.codec.encoder;
 
 import com.julienviet.pgclient.codec.encoder.message.Bind;
+import com.julienviet.pgclient.codec.encoder.message.CancelRequest;
 import com.julienviet.pgclient.codec.encoder.message.Close;
 import com.julienviet.pgclient.codec.encoder.message.Describe;
 import com.julienviet.pgclient.codec.encoder.message.Execute;
 import com.julienviet.pgclient.codec.encoder.message.Parse;
 import com.julienviet.pgclient.codec.encoder.message.PasswordMessage;
 import com.julienviet.pgclient.codec.encoder.message.Query;
+import com.julienviet.pgclient.codec.encoder.message.SSLRequest;
 import com.julienviet.pgclient.codec.encoder.message.StartupMessage;
 import com.julienviet.pgclient.codec.encoder.message.Sync;
 import com.julienviet.pgclient.codec.encoder.message.Terminate;
@@ -81,6 +83,10 @@ public class MessageEncoder extends MessageToByteEncoder<Message> {
       encodeClose(message , out);
     } else if(message.getClass() == Sync.class) {
       encodeSync(out);
+    } else if(message.getClass() == SSLRequest.class) {
+      encodeSSLRequest(message, out);
+    } else if(message.getClass() == CancelRequest.class) {
+      encodeCancelRequest(message, out);
     }
   }
 
@@ -238,6 +244,22 @@ public class MessageEncoder extends MessageToByteEncoder<Message> {
   private void encodeSync(ByteBuf out) {
     out.writeByte(SYNC);
     out.writeInt(4);
+  }
+
+  private void encodeSSLRequest(Message message, ByteBuf out) {
+    SSLRequest sslRequest = (SSLRequest) message;
+    out.writeInt(0);
+    out.writeInt(sslRequest.getCode());
+    out.setInt(0, out.writerIndex());
+  }
+
+  private void encodeCancelRequest(Message message, ByteBuf out) {
+    CancelRequest cancelRequest = (CancelRequest) message;
+    out.writeInt(0);
+    out.writeInt(cancelRequest.getCode());
+    out.writeInt(cancelRequest.getProcessId());
+    out.writeInt(cancelRequest.getSecretKey());
+    out.setInt(0, out.writerIndex());
   }
 }
 
