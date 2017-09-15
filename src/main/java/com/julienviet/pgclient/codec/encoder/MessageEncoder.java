@@ -250,6 +250,7 @@ public class MessageEncoder extends MessageToByteEncoder<Message> {
     SSLRequest sslRequest = (SSLRequest) message;
     out.writeInt(0);
     out.writeInt(sslRequest.getCode());
+//    out.writeInt(0x12345679);
     out.setInt(0, out.writerIndex());
   }
 

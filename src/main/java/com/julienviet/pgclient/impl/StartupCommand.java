@@ -26,7 +26,9 @@ import com.julienviet.pgclient.codec.decoder.message.BackendKeyData;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
 import com.julienviet.pgclient.codec.decoder.message.ParameterStatus;
 import com.julienviet.pgclient.codec.decoder.message.ReadyForQuery;
+import com.julienviet.pgclient.codec.decoder.message.SSLResponse;
 import com.julienviet.pgclient.codec.encoder.message.PasswordMessage;
+import com.julienviet.pgclient.codec.encoder.message.SSLRequest;
 import com.julienviet.pgclient.codec.encoder.message.StartupMessage;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -39,6 +41,7 @@ class StartupCommand extends CommandBase {
 
   private static final String UTF8 = "UTF8";
   private final Handler<AsyncResult<DbConnection>> handler;
+  final boolean ssl;
   final String username;
   final String password;
   final String database;
@@ -46,23 +49,37 @@ class StartupCommand extends CommandBase {
   private DbConnection conn;
   private Handler<Void> doneHandler;
 
-  StartupCommand(String username, String password, String database, Handler<AsyncResult<DbConnection>> handler) {
+  StartupCommand(String username, String password, String database, boolean ssl, Handler<AsyncResult<DbConnection>> handler) {
     this.username = username;
     this.password = password;
     this.database = database;
     this.handler = handler;
+    this.ssl = ssl;
   }
 
   @Override
   void exec(DbConnection c, Handler<Void> handler) {
     conn = c;
     doneHandler = handler;
-    c.writeMessage(new StartupMessage(username, database));
+    if (ssl) {
+      c.writeMessage(new SSLRequest());
+    } else {
+      c.writeMessage(new StartupMessage(username, database));
+    }
   }
 
   @Override
   public void handleMessage(Message msg) {
-    if (msg.getClass() == AuthenticationMD5Password.class) {
+    if (msg.getClass() == SSLResponse.class) {
+      SSLResponse resp = (SSLResponse) msg;
+      if (resp.isOk()) {
+        
+
+      } else {
+        doneHandler.handle(null);
+        handler.handle(Future.failedFuture(new RuntimeException("Could not start SSL session")));
+      }
+    } else if (msg.getClass() == AuthenticationMD5Password.class) {
       AuthenticationMD5Password authMD5 = (AuthenticationMD5Password) msg;
       conn.writeMessage(new PasswordMessage(username, password, authMD5.getSalt()));
     } else if (msg.getClass() == AuthenticationClearTextPassword.class) {

@@ -71,7 +71,7 @@ public class DbConnection {
     socket.closeHandler(this::handleClosed);
     socket.exceptionHandler(this::handleException);
     socket.messageHandler(this::handleMessage);
-    schedule(new StartupCommand(username, password, database, completionHandler));
+    schedule(new StartupCommand(username, password, database, client.ssl, completionHandler));
   }
 
   void closeHandler(Handler<Void> handler) {

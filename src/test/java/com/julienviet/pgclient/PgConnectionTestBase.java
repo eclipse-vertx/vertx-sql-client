@@ -974,6 +974,15 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     }));
   }
 
+  @Test
+  public void testSSL(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient client = PgClient.create(vertx, options.setSsl(true));
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+
+    }));
+  }
+
 /*
   @Test
   public void testServerUpdate(TestContext ctx) {

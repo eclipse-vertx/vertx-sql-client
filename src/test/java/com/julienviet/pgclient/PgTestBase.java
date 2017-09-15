@@ -18,12 +18,22 @@
 package com.julienviet.pgclient;
 
 import de.flapdoodle.embed.process.config.IRuntimeConfig;
+import de.flapdoodle.embed.process.config.io.ProcessOutput;
+import de.flapdoodle.embed.process.distribution.Distribution;
+import de.flapdoodle.embed.process.runtime.ICommandLinePostProcessor;
+import de.flapdoodle.embed.process.store.IArtifactStore;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 
 import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
 
@@ -45,9 +55,49 @@ public abstract class PgTestBase {
     } else {
       config = EmbeddedPostgres.defaultRuntimeConfig();
     }
+
+    // SSL
+    File sslKey = new File("src/test/resources/tls/server.key");
+    Files.setPosixFilePermissions(sslKey.toPath(), Collections.singleton(PosixFilePermission.OWNER_READ));
+    File sslCrt = new File("src/test/resources/tls/server.crt");
+
     postgres = new EmbeddedPostgres(V9_6);
-    postgres.start(config, "localhost", 8081, "postgres", "postgres", "postgres", Collections.emptyList());
-    postgres.getProcess().get().importFromFile(new File("src/test/resources/create-postgres.sql"));
+    IRuntimeConfig sslConfig = new IRuntimeConfig() {
+      @Override
+      public ProcessOutput getProcessOutput() {
+        return config.getProcessOutput();
+      }
+      @Override
+      public ICommandLinePostProcessor getCommandLinePostProcessor() {
+        ICommandLinePostProcessor commandLinePostProcessor = config.getCommandLinePostProcessor();
+        return (distribution, args) -> {
+          List<String> result = commandLinePostProcessor.process(distribution, args);
+          if (result.get(0).endsWith("postgres")) {
+            result = new ArrayList<>(result);
+            result.add("--ssl=on");
+            result.add("--ssl_cert_file=" + sslCrt.getAbsolutePath());
+            result.add("--ssl_key_file=" + sslKey.getAbsolutePath());
+          }
+          return result;
+        };
+      }
+      @Override
+      public IArtifactStore getArtifactStore() {
+        return config.getArtifactStore();
+      }
+      @Override
+      public boolean isDaemonProcess() {
+        return config.isDaemonProcess();
+      }
+    };
+    PgTestBase.postgres.start(sslConfig,
+      "localhost",
+      8081,
+      "postgres",
+      "postgres",
+      "postgres",
+      Collections.emptyList());
+    PgTestBase.postgres.getProcess().get().importFromFile(new File("src/test/resources/create-postgres.sql"));
     options.setHost("localhost");
     options.setPort(8081);
     options.setUsername("postgres");

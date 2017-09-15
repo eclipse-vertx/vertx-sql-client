@@ -29,6 +29,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.NetClient;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.ext.sql.SQLConnection;
 
 /**
@@ -40,6 +41,7 @@ public class PgClientImpl implements PgClient {
   final VertxInternal vertx;
   final String host;
   final int port;
+  final boolean ssl;
   final String database;
   final String username;
   final String password;
@@ -47,13 +49,17 @@ public class PgClientImpl implements PgClient {
   final int pipeliningLimit;
 
   public PgClientImpl(Vertx vertx, PgClientOptions options) {
+
+    NetClientOptions netOptions = new NetClientOptions();
+
+    this.ssl = options.isSsl();
     this.host = options.getHost();
     this.port = options.getPort();
     this.database = options.getDatabase();
     this.username = options.getUsername();
     this.password = options.getPassword();
     this.vertx = (VertxInternal) vertx;
-    this.client = vertx.createNetClient();
+    this.client = vertx.createNetClient(netOptions);
     this.cachePreparedStatements = options.getCachePreparedStatements();
     this.pipeliningLimit = options.getPipeliningLimit();
   }
