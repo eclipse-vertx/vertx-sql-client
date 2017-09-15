@@ -51,10 +51,10 @@ abstract class UpdateCommandBase extends CommandBase {
       rowDesc = (RowDescription) msg;
     } else if (msg.getClass() == DataRow.class) {
       DataRow dataRow = (DataRow) msg;
-      JsonArray row = new JsonArray();
+      JsonArray keys = new JsonArray();
       Column[] columns = rowDesc.getColumns();
-      handleRow(columns, dataRow, row);
-      updateResult.setKeys(row);
+      handleRow(columns, dataRow, keys);
+      updateResult.setKeys(keys);
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
       fail(new PgException(error));
