@@ -45,4 +45,6 @@ public class MessageType {
   public static final byte BIND_COMPLETE = '2';
   public static final byte CLOSE_COMPLETE = '3';
   public static final byte FUNCTION_RESULT = 'V';
+  public static final byte SSL_YES = 'S';
+  public static final byte SSL_NO = 'N';
 }
