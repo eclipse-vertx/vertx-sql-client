@@ -41,6 +41,7 @@ import com.julienviet.pgclient.codec.decoder.message.PortalSuspended;
 import com.julienviet.pgclient.codec.decoder.message.ReadyForQuery;
 import com.julienviet.pgclient.codec.decoder.message.Response;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
+import com.julienviet.pgclient.codec.decoder.message.SSLResponse;
 import com.julienviet.pgclient.codec.util.Util;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -66,6 +67,19 @@ public class MessageDecoder extends ByteToMessageDecoder {
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
     while (true) {
+      if (in.readableBytes() == 1) {
+        switch (in.getByte(0)) {
+          case SSL_YES: {
+            out.add(new SSLResponse(true));
+            break;
+          }
+          case SSL_NO: {
+            out.add(new SSLResponse(false));
+            break;
+          }
+        }
+        break;
+      }
       if (in.readableBytes() < 5) {
         break;
       }
