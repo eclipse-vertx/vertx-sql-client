@@ -67,9 +67,8 @@ public class MessageDecoder extends ByteToMessageDecoder {
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
     while (true) {
-      if (in.readableBytes() < 5) {
-        byte sslResponse = in.getByte(0);
-        switch (sslResponse) {
+      if (in.readableBytes() == 1) {
+        switch (in.getByte(0)) {
           case SSL_YES: {
             out.add(new SSLResponse(true));
             break;
@@ -79,6 +78,9 @@ public class MessageDecoder extends ByteToMessageDecoder {
             break;
           }
         }
+        break;
+      }
+      if (in.readableBytes() < 5) {
         break;
       }
       int beginIdx = in.readerIndex();
