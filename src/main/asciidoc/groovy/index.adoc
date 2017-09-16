@@ -277,3 +277,43 @@ batch.execute({ res ->
 })
 
 ----
+
+== Using SSL/TLS
+
+To configure the client to use SSL connection, you can configure the `link:../../apidocs/com/julienviet/pgclient/PgClient.html[PgClient]`
+like a Vert.x `NetClient`.
+
+[source,groovy]
+----
+
+def client = PgClient.create(vertx, [
+  port:5432,
+  host:"the-host",
+  database:"the-db",
+  username:"user",
+  password:"secret",
+  ssl:true,
+  pemTrustOptions:[
+    certPaths:[
+      "/path/to/cert.pem"
+    ]
+  ]
+])
+
+client.connect({ res ->
+  if (res.succeeded()) {
+    // Connected with SSL
+  } else {
+    println("Could not connect ${res.cause()}")
+  }
+})
+
+----
+
+More information can be found in the http://vertx.io/docs/vertx-core/java/#ssl[Vert.x documentation].
+
+== Using a proxy
+
+You can also configure the client to use an HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy.
+
+More information can be found in the http://vertx.io/docs/vertx-core/java/#_using_a_proxy_for_client_connections[Vert.x documentation].

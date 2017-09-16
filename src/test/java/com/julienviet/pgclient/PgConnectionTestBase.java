@@ -24,6 +24,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.sql.TransactionIsolation;
@@ -36,6 +37,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.net.ssl.SSLHandshakeException;
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
@@ -720,7 +722,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
       connector.accept(client, ctx.asyncAssertSuccess(conn -> {
         AtomicInteger count = new AtomicInteger();
         conn.exceptionHandler(err -> {
-          ctx.assertEquals(err.getClass(), DecoderException.class);
+          ctx.assertEquals(err.getClass(), UnsupportedOperationException.class);
           count.incrementAndGet();
         });
         conn.closeHandler(v -> {
@@ -975,15 +977,36 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   }
 
   @Test
-  public void testSSL(TestContext ctx) {
+  public void testTLS(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options.setSsl(true));
+    PgClient client = PgClient.create(vertx, new PgClientOptions(options).setSsl(true).setPemTrustOptions(new PemTrustOptions().addCertPath("/Users/julien/java/vertx-pg-client/src/test/resources/tls/server.crt")));
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-
+      ctx.assertTrue(conn.isSSL());
+      async.complete();
     }));
   }
 
-/*
+  @Test
+  public void testTLSTrustAll(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient client = PgClient.create(vertx, new PgClientOptions(options).setSsl(true).setTrustAll(true));
+    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
+      ctx.assertTrue(conn.isSSL());
+      async.complete();
+    }));
+  }
+
+  @Test
+  public void testTLSInvalidCertificate(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient client = PgClient.create(vertx, new PgClientOptions(options).setSsl(true));
+    connector.accept(client, ctx.asyncAssertFailure(err -> {
+      ctx.assertEquals(err.getClass(), SSLHandshakeException.class);
+      async.complete();
+    }));
+  }
+
+  /*
   @Test
   public void testServerUpdate(TestContext ctx) {
 

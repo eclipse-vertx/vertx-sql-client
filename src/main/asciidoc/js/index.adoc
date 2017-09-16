@@ -279,3 +279,44 @@ batch.execute(function (res, res_err) {
 });
 
 ----
+
+== Using SSL/TLS
+
+To configure the client to use SSL connection, you can configure the `link:../../jsdoc/module-vertx-pg-client-js_pg_client-PgClient.html[PgClient]`
+like a Vert.x `NetClient`.
+
+[source,js]
+----
+var PgClient = require("vertx-pg-client-js/pg_client");
+
+var client = PgClient.create(vertx, {
+  "port" : 5432,
+  "host" : "the-host",
+  "database" : "the-db",
+  "username" : "user",
+  "password" : "secret",
+  "ssl" : true,
+  "pemTrustOptions" : {
+    "certPaths" : [
+      "/path/to/cert.pem"
+    ]
+  }
+});
+
+client.connect(function (res, res_err) {
+  if (res_err == null) {
+    // Connected with SSL
+  } else {
+    console.log("Could not connect " + res_err);
+  }
+});
+
+----
+
+More information can be found in the http://vertx.io/docs/vertx-core/java/#ssl[Vert.x documentation].
+
+== Using a proxy
+
+You can also configure the client to use an HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy.
+
+More information can be found in the http://vertx.io/docs/vertx-core/java/#_using_a_proxy_for_client_connections[Vert.x documentation].

@@ -19,7 +19,6 @@ package com.julienviet.pgclient;
 
 import de.flapdoodle.embed.process.config.IRuntimeConfig;
 import de.flapdoodle.embed.process.config.io.ProcessOutput;
-import de.flapdoodle.embed.process.distribution.Distribution;
 import de.flapdoodle.embed.process.runtime.ICommandLinePostProcessor;
 import de.flapdoodle.embed.process.store.IArtifactStore;
 import org.junit.AfterClass;
@@ -30,9 +29,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
@@ -57,9 +54,9 @@ public abstract class PgTestBase {
     }
 
     // SSL
-    File sslKey = new File("src/test/resources/tls/server.key");
+    File sslKey = new File(PgTestBase.class.getClassLoader().getResource("tls/server.key").toURI());
     Files.setPosixFilePermissions(sslKey.toPath(), Collections.singleton(PosixFilePermission.OWNER_READ));
-    File sslCrt = new File("src/test/resources/tls/server.crt");
+    File sslCrt = new File(PgTestBase.class.getClassLoader().getResource("tls/server.crt").toURI());
 
     postgres = new EmbeddedPostgres(V9_6);
     IRuntimeConfig sslConfig = new IRuntimeConfig() {

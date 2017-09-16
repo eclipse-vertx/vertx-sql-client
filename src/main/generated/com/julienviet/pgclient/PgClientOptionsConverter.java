@@ -45,9 +45,6 @@ public class PgClientOptionsConverter {
     if (json.getValue("port") instanceof Number) {
       obj.setPort(((Number)json.getValue("port")).intValue());
     }
-    if (json.getValue("ssl") instanceof Boolean) {
-      obj.setSsl((Boolean)json.getValue("ssl"));
-    }
     if (json.getValue("username") instanceof String) {
       obj.setUsername((String)json.getValue("username"));
     }
@@ -66,7 +63,6 @@ public class PgClientOptionsConverter {
     }
     json.put("pipeliningLimit", obj.getPipeliningLimit());
     json.put("port", obj.getPort());
-    json.put("ssl", obj.isSsl());
     if (obj.getUsername() != null) {
       json.put("username", obj.getUsername());
     }

@@ -27,10 +27,15 @@ import java.util.Objects;
 
 public class SSLRequest implements Message {
 
+  public static final SSLRequest INSTANCE = new SSLRequest();
+
   private final int code = 80877103;
 
   public int getCode() {
     return code;
+  }
+
+  private SSLRequest() {
   }
 
   @Override

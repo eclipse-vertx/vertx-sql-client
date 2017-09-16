@@ -71,14 +71,15 @@ public class MessageDecoder extends ByteToMessageDecoder {
         switch (in.getByte(0)) {
           case SSL_YES: {
             out.add(new SSLResponse(true));
-            break;
+            in.readerIndex(in.readerIndex() + 1);
+            return;
           }
           case SSL_NO: {
             out.add(new SSLResponse(false));
-            break;
+            in.readerIndex(in.readerIndex() + 1);
+            return;
           }
         }
-        break;
       }
       if (in.readableBytes() < 5) {
         break;

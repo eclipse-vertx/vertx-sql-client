@@ -114,6 +114,25 @@
  * ----
  * {@link examples.Examples#ex9}
  * ----
+ *
+ * == Using SSL/TLS
+ *
+ * To configure the client to use SSL connection, you can configure the {@link com.julienviet.pgclient.PgClient}
+ * like a Vert.x {@code NetClient}.
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#ex10}
+ * ----
+ *
+ * More information can be found in the http://vertx.io/docs/vertx-core/java/#ssl[Vert.x documentation].
+ *
+ * == Using a proxy
+ *
+ * You can also configure the client to use an HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy.
+ *
+ * More information can be found in the http://vertx.io/docs/vertx-core/java/#_using_a_proxy_for_client_connections[Vert.x documentation].
+ *
  */
 @Document(fileName = "index.adoc")
 @ModuleGen(name = "vertx-pg-client", groupPackage = "com.julienviet")

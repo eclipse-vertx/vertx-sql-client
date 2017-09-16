@@ -45,6 +45,11 @@ class PgConnectionImpl implements PgConnection {
   }
 
   @Override
+  public boolean isSSL() {
+    return dbConnection.isSsl();
+  }
+
+  @Override
   public PgConnection execute(String sql, Handler<AsyncResult<ResultSet>> handler) {
     dbConnection.schedule(new QueryCommand(sql, new ResultSetBuilder(handler)));
     return this;

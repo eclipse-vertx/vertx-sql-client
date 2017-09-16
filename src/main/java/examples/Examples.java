@@ -27,6 +27,7 @@ import com.julienviet.pgclient.PgPreparedStatement;
 import com.julienviet.pgclient.PgQuery;
 import com.julienviet.pgclient.PgUpdate;
 import io.vertx.core.Vertx;
+import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
@@ -241,6 +242,27 @@ public class Examples {
         List<UpdateResult> results = res.result();
       } else {
         System.out.println("Batch failed " + res.cause());
+      }
+    });
+  }
+
+  public void ex10(Vertx vertx) {
+
+    PgClient client = PgClient.create(vertx, new PgClientOptions()
+      .setPort(5432)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUsername("user")
+      .setPassword("secret")
+      .setSsl(true)
+      .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/cert.pem"))
+    );
+
+    client.connect(res -> {
+      if (res.succeeded()) {
+        // Connected with SSL
+      } else {
+        System.out.println("Could not connect " + res.cause());
       }
     });
   }

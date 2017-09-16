@@ -35,21 +35,23 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 /**
+ * Initialize the connection so it can be used to interact with the database.
+ *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class StartupCommand extends CommandBase {
+class InitCommand extends CommandBase {
 
   private static final String UTF8 = "UTF8";
   private final Handler<AsyncResult<DbConnection>> handler;
-  final boolean ssl;
   final String username;
   final String password;
   final String database;
+  final boolean ssl;
   private String CLIENT_ENCODING;
   private DbConnection conn;
   private Handler<Void> doneHandler;
 
-  StartupCommand(String username, String password, String database, boolean ssl, Handler<AsyncResult<DbConnection>> handler) {
+  InitCommand(String username, String password, String database, boolean ssl, Handler<AsyncResult<DbConnection>> handler) {
     this.username = username;
     this.password = password;
     this.database = database;
@@ -62,7 +64,7 @@ class StartupCommand extends CommandBase {
     conn = c;
     doneHandler = handler;
     if (ssl) {
-      c.writeMessage(new SSLRequest());
+      c.writeMessage(SSLRequest.INSTANCE);
     } else {
       c.writeMessage(new StartupMessage(username, database));
     }
@@ -71,13 +73,15 @@ class StartupCommand extends CommandBase {
   @Override
   public void handleMessage(Message msg) {
     if (msg.getClass() == SSLResponse.class) {
-      SSLResponse resp = (SSLResponse) msg;
-      if (resp.isOk()) {
-        
-
+      SSLResponse sslResponse = (SSLResponse) msg;
+      if (sslResponse.isOk()) {
+        conn.upgradeToSSL(v -> {
+          conn.writeMessage(new StartupMessage(username, password));
+        });
       } else {
+        // This case is not tested as our test db is configured for SSL
         doneHandler.handle(null);
-        handler.handle(Future.failedFuture(new RuntimeException("Could not start SSL session")));
+        handler.handle(Future.failedFuture(new RuntimeException("Postgres does not handle SSL")));
       }
     } else if (msg.getClass() == AuthenticationMD5Password.class) {
       AuthenticationMD5Password authMD5 = (AuthenticationMD5Password) msg;

@@ -26,10 +26,12 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
+import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.sql.SQLConnection;
 
 /**
@@ -50,7 +52,10 @@ public class PgClientImpl implements PgClient {
 
   public PgClientImpl(Vertx vertx, PgClientOptions options) {
 
-    NetClientOptions netOptions = new NetClientOptions();
+    NetClientOptions netClientOptions = new NetClientOptions(options);
+
+    // Make sure ssl=false as we will use STARTLS
+    netClientOptions.setSsl(false);
 
     this.ssl = options.isSsl();
     this.host = options.getHost();
@@ -59,7 +64,7 @@ public class PgClientImpl implements PgClient {
     this.username = options.getUsername();
     this.password = options.getPassword();
     this.vertx = (VertxInternal) vertx;
-    this.client = vertx.createNetClient(netOptions);
+    this.client = vertx.createNetClient(netClientOptions);
     this.cachePreparedStatements = options.getCachePreparedStatements();
     this.pipeliningLimit = options.getPipeliningLimit();
   }

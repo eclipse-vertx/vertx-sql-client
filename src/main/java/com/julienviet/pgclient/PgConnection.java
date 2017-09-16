@@ -44,6 +44,8 @@ public interface PgConnection extends PgDatabase {
   @Fluent
   PgConnection closeHandler(Handler<Void> handler);
 
+  boolean isSSL();
+
   void close();
 
 }

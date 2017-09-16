@@ -24,6 +24,7 @@ import com.julienviet.pgclient.codec.decoder.MessageDecoder;
 import com.julienviet.pgclient.codec.encoder.MessageEncoder;
 import com.julienviet.pgclient.codec.encoder.message.Terminate;
 import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.DecoderException;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
@@ -71,7 +72,15 @@ public class DbConnection {
     socket.closeHandler(this::handleClosed);
     socket.exceptionHandler(this::handleException);
     socket.messageHandler(this::handleMessage);
-    schedule(new StartupCommand(username, password, database, client.ssl, completionHandler));
+    schedule(new InitCommand(username, password, database, client.ssl, completionHandler));
+  }
+
+  boolean isSsl() {
+    return socket.isSsl();
+  }
+
+  void upgradeToSSL(Handler<Void> handler) {
+    socket.upgradeToSsl(handler);
   }
 
   void closeHandler(Handler<Void> handler) {
@@ -130,26 +139,43 @@ public class DbConnection {
     }
   }
 
-  private void handleClosed(Void v1) {
-    status = Status.CLOSED;
-    for (ArrayDeque<CommandBase> q : Arrays.asList(inflight, pending)) {
-      CommandBase cmd;
-      while ((cmd = q.poll()) != null) {
-        CommandBase c = cmd;
-        context.runOnContext(v2 -> c.fail(new VertxException("closed")));
-      }
-    }
-    Handler<Void> handler = this.closeHandler;
-    if (handler != null) {
-      context.runOnContext(handler);
-    }
+  private void handleClosed(Void v) {
+    doClose(null);
   }
 
   private synchronized void handleException(Throwable t) {
-    Handler<Throwable> handler = this.exceptionHandler;
-    if (handler != null) {
-      handler.handle(t);
+    if (t instanceof DecoderException) {
+      DecoderException err = (DecoderException) t;
+      t = err.getCause();
     }
-    socket.close();
+    doClose(t);
+  }
+
+  private void doClose(Throwable t) {
+    if (status != Status.CLOSED) {
+      status = Status.CLOSED;
+      if (t != null) {
+        synchronized (this) {
+          Handler<Throwable> handler = this.exceptionHandler;
+          if (handler != null) {
+            context.runOnContext(v -> {
+              handler.handle(t);
+            });
+          }
+        }
+      }
+      Throwable cause = t == null ? new VertxException("closed") : t;
+      for (ArrayDeque<CommandBase> q : Arrays.asList(inflight, pending)) {
+        CommandBase cmd;
+        while ((cmd = q.poll()) != null) {
+          CommandBase c = cmd;
+          context.runOnContext(v2 -> c.fail(cause));
+        }
+      }
+      Handler<Void> handler = this.closeHandler;
+      if (handler != null) {
+        context.runOnContext(handler);
+      }
+    }
   }
 }

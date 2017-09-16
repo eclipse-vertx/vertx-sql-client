@@ -414,6 +414,12 @@ class PgPoolImpl implements PgPool {
     }
 
     @Override
+    public boolean isSSL() {
+      checkClosed();
+      return conn.isSSL();
+    }
+
+    @Override
     public void close() {
       if (closed.compareAndSet(false, true)) {
         available.release(this);
