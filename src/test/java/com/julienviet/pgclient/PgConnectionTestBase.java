@@ -661,6 +661,22 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   }
 
   @Test
+  public void testDisconnectAbruptlyDuringStartup(TestContext ctx) {
+    Async async = ctx.async();
+    ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
+    proxy.proxyHandler(conn -> {
+      conn.clientSocket().handler(buff -> {
+        conn.clientSocket().close();
+      });
+    });
+    proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
+      PgClient client = PgClient.create(vertx, new PgClientOptions(options)
+        .setPort(8080).setHost("localhost"));
+      connector.accept(client, ctx.asyncAssertFailure(err -> async.complete()));
+    }));
+  }
+
+  @Test
   public void testDisconnectAbruptly(TestContext ctx) {
     Async async = ctx.async();
     ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
