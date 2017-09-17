@@ -30,7 +30,7 @@ import java.util.Set;
  */
 class StatementPooling implements PgPoolImpl.PoolingStrategy {
 
-  private final Set<PgPoolImpl.Holder> proxies = new HashSet<>();
+  private final Set<PgPoolImpl.Holder> holders = new HashSet<>();
   private PgConnection shared;
   private boolean connecting;
   private ArrayDeque<PgPoolImpl.Holder> waiters = new ArrayDeque<>();
@@ -50,7 +50,7 @@ class StatementPooling implements PgPoolImpl.PoolingStrategy {
   @Override
   public void acquire(PgPoolImpl.Holder holder) {
     if (shared != null) {
-      proxies.add(holder);
+      holders.add(holder);
       holder.complete(shared);
     } else {
       waiters.add(holder);
@@ -62,7 +62,7 @@ class StatementPooling implements PgPoolImpl.PoolingStrategy {
             PgConnection conn = ar.result();
             shared = conn;
             conn.exceptionHandler(err -> {
-              for (PgPoolImpl.Holder proxy : new ArrayList<>(proxies)) {
+              for (PgPoolImpl.Holder proxy : new ArrayList<>(holders)) {
                 proxy.handleException(err);
               }
             });
@@ -70,15 +70,15 @@ class StatementPooling implements PgPoolImpl.PoolingStrategy {
               shared = null;
               conn.exceptionHandler(null);
               conn.closeHandler(null);
-              ArrayList<PgPoolImpl.Holder> list = new ArrayList<>(proxies);
-              proxies.clear();
+              ArrayList<PgPoolImpl.Holder> list = new ArrayList<>(holders);
+              holders.clear();
               for (PgPoolImpl.Holder proxy : list) {
                 proxy.handleClosed();
               }
             });
             PgPoolImpl.Holder waiter;
             while ((waiter = waiters.poll()) != null) {
-              proxies.add(waiter);
+              holders.add(waiter);
               waiter.complete(conn);
             }
           } else {
@@ -94,6 +94,6 @@ class StatementPooling implements PgPoolImpl.PoolingStrategy {
 
   @Override
   public void release(PgPoolImpl.Holder holder) {
-    proxies.remove(holder);
+    holders.remove(holder);
   }
 }
