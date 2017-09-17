@@ -22,16 +22,15 @@ import com.julienviet.pgclient.PgClientOptions;
 import com.julienviet.pgclient.PgConnection;
 import com.julienviet.pgclient.PgPool;
 import com.julienviet.pgclient.PgPoolOptions;
+import com.julienviet.pgclient.impl.pool.PgPoolImpl;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
-import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.sql.SQLConnection;
 
 /**
@@ -120,6 +119,6 @@ public class PgClientImpl implements PgClient {
 
   @Override
   public PgPool createPool(PgPoolOptions options) {
-    return new PgPoolImpl(this, options.getMaxSize(), options.getMode());
+    return new PgPoolImpl(vertx.getOrCreateContext(), this, options.getMaxSize(), options.getMode());
   }
 }
