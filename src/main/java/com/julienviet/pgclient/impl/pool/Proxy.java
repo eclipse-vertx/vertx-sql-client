@@ -40,12 +40,12 @@ class Proxy implements PgConnection, PgPoolImpl.Holder {
   private final AtomicBoolean closed = new AtomicBoolean();
   private volatile Handler<Throwable> exceptionHandler;
   private volatile Handler<Void> closeHandler;
-  private PgPoolImpl.PoolingStrategy pooling;
+  private PgPoolImpl pool;
 
-  Proxy(PgPoolImpl.PoolingStrategy pooling, Context context, Handler<AsyncResult<PgConnection>> handler) {
+  Proxy(PgPoolImpl pool, Context context, Handler<AsyncResult<PgConnection>> handler) {
+    this.pool = pool;
     this.context = context;
     this.handler = handler;
-    this.pooling = pooling;
   }
 
   public void handleException(Throwable err) {
@@ -157,7 +157,7 @@ class Proxy implements PgConnection, PgPoolImpl.Holder {
   @Override
   public void close() {
     if (closed.compareAndSet(false, true)) {
-      pooling.release(this);
+      pool.close(this);
     }
   }
 }

@@ -92,7 +92,7 @@ class ConnectionPooling implements PgPoolImpl.PoolingStrategy {
             check();
             waiter.handleClosed();
           });
-          waiter.use(conn);
+          waiter.complete(conn);
         } else {
           PgPoolImpl.Holder waiter;
           while ((waiter = waiters.poll()) != null) {

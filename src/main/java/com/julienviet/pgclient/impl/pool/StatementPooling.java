@@ -51,7 +51,7 @@ class StatementPooling implements PgPoolImpl.PoolingStrategy {
   public void acquire(PgPoolImpl.Holder holder) {
     if (shared != null) {
       proxies.add(holder);
-      holder.use(shared);
+      holder.complete(shared);
     } else {
       waiters.add(holder);
       if (!connecting) {
@@ -79,7 +79,7 @@ class StatementPooling implements PgPoolImpl.PoolingStrategy {
             PgPoolImpl.Holder waiter;
             while ((waiter = waiters.poll()) != null) {
               proxies.add(waiter);
-              waiter.use(conn);
+              waiter.complete(conn);
             }
           } else {
             PgPoolImpl.Holder waiter;

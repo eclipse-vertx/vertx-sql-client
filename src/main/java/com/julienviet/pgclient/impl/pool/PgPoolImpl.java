@@ -60,14 +60,14 @@ public class PgPoolImpl implements PgPool {
 
     void handleException(Throwable err);
 
-    default void use(PgConnection conn) {
+    default void complete(PgConnection conn) {
       Context current = Vertx.currentContext();
       Context context = context();
       if (current == context) {
         handle(Future.succeededFuture(conn));
       } else {
         context.runOnContext(v -> {
-          use(conn);
+          complete(conn);
         });
       }
     }
@@ -88,36 +88,12 @@ public class PgPoolImpl implements PgPool {
 
   }
 
-  private static class Waiter {
-
-    private final Handler<AsyncResult<Proxy>> handler;
-    private final Context context;
-
-    Waiter(Handler<AsyncResult<Proxy>> handler, Context context) {
-      this.handler = handler;
-      this.context = context;
-    }
-
-    void use(Proxy conn) {
-      Context current = Vertx.currentContext();
-      if (current == context) {
-        handler.handle(Future.succeededFuture(conn));
-      } else {
-        context.runOnContext(v -> {
-          use(conn);
-        });
-      }
-    }
-
-    void fail(Throwable err) {
-      Context current = Vertx.currentContext();
-      if (current == context) {
-        handler.handle(Future.failedFuture(err));
-      } else {
-        context.runOnContext(v -> {
-          fail(err);
-        });
-      }
+  void close(Proxy proxy) {
+    Context current = Vertx.currentContext();
+    if (current == context) {
+      pooling.release(proxy);
+    } else {
+      context.runOnContext(v -> pooling.release(proxy));
     }
   }
 
@@ -133,7 +109,7 @@ public class PgPoolImpl implements PgPool {
   public void getConnection(Handler<AsyncResult<PgConnection>> handler) {
     Context current = Vertx.currentContext();
     if (current == context) {
-      Proxy proxy = new Proxy(pooling, current, handler);
+      Proxy proxy = new Proxy(this, current, handler);
       pooling.acquire(proxy);
     } else {
       context.runOnContext(v -> getConnection(handler));
