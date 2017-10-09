@@ -4,7 +4,7 @@
 
 ## What for ?
 
-[Vert.x 3.5.0.Beta1](http://vertx.io)
+[Vert.x 3.5.0](http://vertx.io)
 
 ## Why ?
 
