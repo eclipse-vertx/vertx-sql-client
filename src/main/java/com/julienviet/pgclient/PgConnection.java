@@ -46,6 +46,9 @@ public interface PgConnection extends PgDatabase {
 
   boolean isSSL();
 
+  /**
+   * Close the current connection after all the pending commands have been processed.
+   */
   void close();
 
 }

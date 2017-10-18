@@ -23,11 +23,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.sql.ResultSet;
-import io.vertx.ext.sql.SQLConnection;
-import io.vertx.ext.sql.SQLRowStream;
-import io.vertx.ext.sql.TransactionIsolation;
-import io.vertx.ext.sql.UpdateResult;
+import io.vertx.ext.sql.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -43,6 +39,11 @@ public class PostgresSQLConnection implements SQLConnection {
 
   public PostgresSQLConnection(DbConnection conn) {
     this.conn = conn;
+  }
+
+  @Override
+  public SQLConnection setOptions(SQLOptions options) {
+    return this;
   }
 
   @Override

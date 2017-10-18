@@ -99,7 +99,9 @@ public class DbConnection {
     if (Vertx.currentContext() == context) {
       if (status == Status.CONNECTED) {
         status = Status.CLOSING;
-        socket.writeMessage(Terminate.INSTANCE);
+        // Append directly since schedule checks the status and won't enqueue the command
+        pending.add(CloseConnectionCommand.INSTANCE);
+        checkPending();
       }
     } else {
       context.runOnContext(v -> doClose());
@@ -121,11 +123,11 @@ public class DbConnection {
   private void checkPending() {
     CommandBase cmd;
     while (inflight.size() < client.pipeliningLimit && (cmd = pending.poll()) != null) {
+      inflight.add(cmd);
       cmd.exec(this, v -> {
         inflight.poll();
         checkPending();
       });
-      inflight.add(cmd);
     }
   }
 
