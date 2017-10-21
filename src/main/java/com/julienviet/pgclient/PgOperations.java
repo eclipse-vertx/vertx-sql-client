@@ -29,10 +29,12 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * Defines the operations with a Postgres DB.
+ *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 @VertxGen
-public interface PgDatabase {
+public interface PgOperations {
 
   /**
    */

@@ -42,11 +42,6 @@ public class PostgresSQLConnection implements SQLConnection {
   }
 
   @Override
-  public SQLConnection setOptions(SQLOptions options) {
-    return this;
-  }
-
-  @Override
   public SQLConnection setAutoCommit(boolean autoCommit, Handler<AsyncResult<Void>> handler) {
     throw new UnsupportedOperationException();
   }
