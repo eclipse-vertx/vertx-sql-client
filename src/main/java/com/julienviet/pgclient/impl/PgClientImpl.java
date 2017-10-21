@@ -92,7 +92,6 @@ public class PgClientImpl implements PgClient {
     });
   }
 
-  @Override
   public PgClient getConnection(Handler<AsyncResult<SQLConnection>> handler) {
     client.connect(port, host, null, ar1 -> {
       if (ar1.succeeded()) {
@@ -110,11 +109,6 @@ public class PgClientImpl implements PgClient {
       }
     });
     return this;
-  }
-
-  @Override
-  public void close(Handler<AsyncResult<Void>> handler) {
-    throw new UnsupportedOperationException("Implement me");
   }
 
   @Override

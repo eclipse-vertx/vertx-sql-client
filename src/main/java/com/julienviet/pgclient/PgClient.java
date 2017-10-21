@@ -31,7 +31,7 @@ import io.vertx.ext.sql.SQLConnection;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 @VertxGen
-public interface PgClient extends SQLClient {
+public interface PgClient {
 
   /**
    * Create a client.
@@ -62,7 +62,8 @@ public interface PgClient extends SQLClient {
    */
   PgPool createPool(PgPoolOptions options);
 
-  @Override
-  PgClient getConnection(Handler<AsyncResult<SQLConnection>> handler);
-
+  /**
+   * Close the client.
+   */
+  void close();
 }

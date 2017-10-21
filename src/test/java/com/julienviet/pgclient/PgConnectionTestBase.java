@@ -17,6 +17,7 @@
 
 package com.julienviet.pgclient;
 
+import com.julienviet.pgclient.impl.PgClientImpl;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -787,7 +788,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   @Test
   public void testSQLConnection(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
+    PgClientImpl client = (PgClientImpl) PgClient.create(vertx, options);
     client.getConnection(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT 1", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.getNumRows());
@@ -799,7 +800,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   @Test
   public void testSelectForQueryWithParams(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
+    PgClientImpl client = (PgClientImpl) PgClient.create(vertx, options);
     client.getConnection(c -> {
       SQLConnection conn = c.result();
       conn.queryWithParams("SELECT * FROM Fortune WHERE id=$1", new JsonArray().add(1) ,
@@ -813,7 +814,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   @Test
   public void testInsertForUpdateWithParams(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
+    PgClientImpl client = (PgClientImpl) PgClient.create(vertx, options);
     client.getConnection(c -> {
       SQLConnection conn = c.result();
       conn.updateWithParams("INSERT INTO Fortune (id, message) VALUES ($1, $2)", new JsonArray().add(1234).add("Yes!"),
@@ -827,7 +828,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   @Test
   public void testUpdateForUpdateWithParams(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
+    PgClientImpl client = (PgClientImpl) PgClient.create(vertx, options);
     client.getConnection(c -> {
       SQLConnection conn = c.result();
       conn.updateWithParams("UPDATE Fortune SET message = $1 WHERE id = $2", new JsonArray().add("Hello").add(1),
@@ -841,7 +842,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   @Test
   public void testDeleteForUpdateWithParams(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
+    PgClientImpl client = (PgClientImpl) PgClient.create(vertx, options);
     client.getConnection(c -> {
       SQLConnection conn = c.result();
       conn.updateWithParams("DELETE FROM Fortune WHERE id = $1", new JsonArray().add(3),
@@ -855,7 +856,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   @Test
   public void testGetDefaultTx(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
+    PgClientImpl client = (PgClientImpl) PgClient.create(vertx, options);
     client.getConnection(c -> {
       SQLConnection conn = c.result();
       conn.getTransactionIsolation(ctx.asyncAssertSuccess(result -> {
@@ -868,7 +869,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   @Test
   public void testSetUnsupportedTx(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
+    PgClientImpl client = (PgClientImpl) PgClient.create(vertx, options);
     client.getConnection(c -> {
       SQLConnection conn = c.result();
       conn.setTransactionIsolation(TransactionIsolation.NONE, ctx.asyncAssertFailure(result -> {
@@ -881,7 +882,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   @Test
   public void testSetAndGetReadUncommittedTx(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
+    PgClientImpl client = (PgClientImpl) PgClient.create(vertx, options);
     client.getConnection(c -> {
       SQLConnection conn = c.result();
       conn.setTransactionIsolation(TransactionIsolation.READ_UNCOMMITTED, ctx.asyncAssertSuccess(result -> {
@@ -896,7 +897,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   @Test
   public void testSetAndGetReadCommittedTx(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
+    PgClientImpl client = (PgClientImpl) PgClient.create(vertx, options);
     client.getConnection(c -> {
       SQLConnection conn = c.result();
       conn.setTransactionIsolation(TransactionIsolation.READ_COMMITTED, ctx.asyncAssertSuccess(result -> {
@@ -911,7 +912,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   @Test
   public void testSetAndGetRepeatableReadTx(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
+    PgClientImpl client = (PgClientImpl) PgClient.create(vertx, options);
     client.getConnection(c -> {
       SQLConnection conn = c.result();
       conn.setTransactionIsolation(TransactionIsolation.REPEATABLE_READ, ctx.asyncAssertSuccess(result -> {
@@ -926,7 +927,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   @Test
   public void testSetAndGetSerializableTx(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
+    PgClientImpl client = (PgClientImpl) PgClient.create(vertx, options);
     client.getConnection(c -> {
       SQLConnection conn = c.result();
       conn.setTransactionIsolation(TransactionIsolation.SERIALIZABLE, ctx.asyncAssertSuccess(result -> {
