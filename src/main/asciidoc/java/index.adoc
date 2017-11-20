@@ -44,7 +44,7 @@ client.connect(res -> {
     // Connected
     PgConnection conn = res.result();
 
-    conn.query("SELECT * FROM USERS", ar -> {
+    conn.query("SELECT * FROM USERS").execute(ar -> {
 
       if (ar.succeeded()) {
 
@@ -83,7 +83,7 @@ pool.getConnection(res -> {
     // Obtained a connection
     PgConnection conn = res.result();
 
-    conn.query("SELECT * FROM USERS", ar -> {
+    conn.query("SELECT * FROM USERS").execute(ar -> {
 
       if (ar.succeeded()) {
 
@@ -150,31 +150,15 @@ By default the query will fetch all results, you can override this and define a 
 PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS");
 
 // Create a query : bind parameters
-PgQuery query = preparedStatement.query();
+PgQuery query = preparedStatement.query()
+  .fetch(100); // Get at most 100 rows at a time
 
-// Get at most 100 rows
-query.fetch(100);
-
-// Execute query
-query.execute(res -> {
-  if (res.succeeded()) {
-
-    // Get result
-    ResultSet result = res.result();
-
-    //
-    if (query.completed()) {
-      // We are done
-    } else {
-
-      // Fetch 100 more
-      query.execute(res2 -> {
-        // And the beat goes on...
-      });
-    }
-  } else {
-    System.out.println("Query failed " + res.cause());
-  }
+query.endHandler(v -> {
+  // We are done
+}).exceptionHandler(err -> {
+  System.out.println("Query failed " + err);
+}).handler(result -> {
+  // Get results
 });
 ----
 

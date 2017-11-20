@@ -15,31 +15,25 @@
  *
  */
 
-package com.julienviet.pgclient.impl;
+package com.julienviet.pgclient.impl.pool;
 
-import com.julienviet.pgclient.codec.encoder.message.Query;
+import com.julienviet.pgclient.impl.Connection;
+import com.julienviet.pgclient.impl.ConnectionHolder;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
 /**
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
+ * A connection pool.
  */
+public interface ConnectionPool {
 
-class QueryCommand extends QueryCommandBase {
+  /**
+   * Acquire a connection
+   *
+   * @param holder the waiter for the connection
+   */
+  void acquire(Handler<AsyncResult<Connection>> holder);
 
-  private final String sql;
+  void close();
 
-  QueryCommand(String sql, QueryResultHandler handler) {
-    super(handler);
-    this.sql = sql;
-  }
-
-  @Override
-  void exec(DbConnection conn, Handler<Void> handler) {
-    doneHandler = handler;
-    conn.writeMessage(new Query(sql));
-  }
-
-  public String getSql() {
-    return sql;
-  }
 }

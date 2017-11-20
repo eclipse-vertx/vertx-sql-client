@@ -29,15 +29,12 @@ import io.vertx.core.Handler;
 
 abstract class TxUpdateCommandBase extends CommandBase {
 
-  protected Handler<Void> doneHandler;
-
   @Override
   public void handleMessage(Message msg) {
     if (msg.getClass() == CommandComplete.class) {
       handleResult(null);
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
-      doneHandler.handle(null);
       fail(new RuntimeException(new PgException(error)));
     } else {
       super.handleMessage(msg);

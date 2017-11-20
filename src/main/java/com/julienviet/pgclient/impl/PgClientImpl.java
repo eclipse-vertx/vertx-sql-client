@@ -22,7 +22,6 @@ import com.julienviet.pgclient.PgClientOptions;
 import com.julienviet.pgclient.PgConnection;
 import com.julienviet.pgclient.PgPool;
 import com.julienviet.pgclient.PgPoolOptions;
-import com.julienviet.pgclient.impl.pool.PgPoolImpl;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -31,7 +30,6 @@ import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
-import io.vertx.ext.sql.SQLConnection;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -73,42 +71,27 @@ public class PgClientImpl implements PgClient {
     client.close();
   }
 
-  @Override
-  public void connect(Handler<AsyncResult<PgConnection>> completionHandler) {
-    client.connect(port, host, null, ar1 -> {
-      if (ar1.succeeded()) {
-        NetSocketInternal socket = (NetSocketInternal) ar1.result();
-        DbConnection conn = new DbConnection(this, socket, vertx.getOrCreateContext());
-        conn.init(username, password, database, ar2 -> {
-          if (ar2.succeeded()) {
-            completionHandler.handle(Future.succeededFuture(new PgConnectionImpl(ar2.result(), cachePreparedStatements)));
-          } else {
-            completionHandler.handle(Future.failedFuture(ar2.cause()));
-          }
-        });
+  public void _connect(Handler<AsyncResult<Connection>> completionHandler) {
+    client.connect(port, host, null, ar -> {
+      if (ar.succeeded()) {
+        NetSocketInternal socket = (NetSocketInternal) ar.result();
+        NetConnection conn = new NetConnection(this, socket, vertx.getOrCreateContext());
+        conn.init(username, password, database, completionHandler);
       } else {
-        completionHandler.handle(Future.failedFuture(ar1.cause()));
+        completionHandler.handle(Future.failedFuture(ar.cause()));
       }
     });
   }
 
-  public PgClient getConnection(Handler<AsyncResult<SQLConnection>> handler) {
-    client.connect(port, host, null, ar1 -> {
-      if (ar1.succeeded()) {
-        NetSocketInternal socket = (NetSocketInternal) ar1.result();
-        DbConnection conn = new DbConnection(this, socket, vertx.getOrCreateContext());
-        conn.init(username, password, database, ar2 -> {
-          if (ar2.succeeded()) {
-            handler.handle(Future.succeededFuture(new PostgresSQLConnection(ar2.result())));
-          } else {
-            handler.handle(Future.failedFuture(ar2.cause()));
-          }
-        });
-      } else {
-        handler.handle(Future.failedFuture(ar1.cause()));
-      }
-    });
-    return this;
+  @Override
+  public void connect(Handler<AsyncResult<PgConnection>> completionHandler) {
+    _connect(ar ->
+      completionHandler.handle(ar.map(conn -> {
+        PgConnectionImpl p = new PgConnectionImpl(((NetConnection)conn).context, conn);
+        conn.init(p);
+        return p;
+      })))
+    ;
   }
 
   @Override

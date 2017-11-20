@@ -17,10 +17,8 @@
 
 package com.julienviet.pgclient;
 
-import com.julienviet.pgclient.impl.PgQueryImpl;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
-import io.vertx.ext.sql.SQLRowStream;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -29,7 +27,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -71,9 +72,8 @@ public class PgQueryImplTest extends PgTestBase {
     PgClient client = PgClient.create(vertx, options);
     client.connect(ctx.asyncAssertSuccess(conn -> {
       PgPreparedStatement ps = conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6");
-      SQLRowStream stream = (SQLRowStream) ps.query(1, 8, 4, 11, 2, 9);
+      PgQuery stream = ps.query(1, 8, 4, 11, 2, 9);
       LinkedList<JsonArray> results = new LinkedList<>();
-      stream.handler(results::add);
       stream.exceptionHandler(ctx::fail);
       stream.endHandler(v -> {
         ctx.assertEquals(6, results.size());
@@ -81,7 +81,7 @@ public class PgQueryImplTest extends PgTestBase {
           async.complete();
         }));
       });
-      stream.moreResults();
+      stream.handler(rs -> results.addAll(rs.getResults()));
     }));
   }
 
@@ -106,15 +106,14 @@ public class PgQueryImplTest extends PgTestBase {
     PgClient client = PgClient.create(vertx, options);
     client.connect(ctx.asyncAssertSuccess(conn -> {
       PgPreparedStatement ps = conn.prepare("invalid");
-      SQLRowStream stream = (SQLRowStream) ps.query(1, 8, 4, 11, 2, 9);
-      stream.handler(row -> ctx.fail());
+      PgQuery stream = ps.query(1, 8, 4, 11, 2, 9);
       stream.endHandler(v -> ctx.fail());
       stream.exceptionHandler(err -> {
         PgException pgErr = (PgException) err;
         ctx.assertEquals(ErrorCodes.syntax_error, pgErr.getCode());
         async.complete();
       });
-      stream.moreResults();
+      stream.handler(row -> ctx.fail());
     }));
   }
 
@@ -139,26 +138,21 @@ public class PgQueryImplTest extends PgTestBase {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
     client.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("BEGIN", ctx.asyncAssertSuccess(begin -> {
+      conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
         PgPreparedStatement ps = conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6");
         PgQuery query = ps.query(1, 8, 4, 11, 2, 9);
         query.fetch(4);
-        ctx.assertFalse(query.inProgress());
-        ctx.assertFalse(query.completed());
-        query.execute(ctx.asyncAssertSuccess(results -> {
-          ctx.assertEquals(4, results.getNumRows());
-          ctx.assertTrue(query.inProgress());
-          ctx.assertFalse(query.completed());
-          query.execute(ctx.asyncAssertSuccess(results2 -> {
-            ctx.assertNotNull(results2.getColumnNames());
-            ctx.assertEquals(2, results2.getNumRows());
-            ctx.assertFalse(query.inProgress());
-            ctx.assertTrue(query.completed());
-            ps.close(ctx.asyncAssertSuccess(v2 -> {
-              async.complete();
-            }));
-          }));
-        }));
+        List<ResultSet> results = new ArrayList<>();
+        query.endHandler(v -> {
+          ctx.assertEquals(2, results.size());
+          ctx.assertEquals(4, results.get(0).getNumRows());
+          ctx.assertEquals(2, results.get(1).getNumRows());
+          async.complete();
+        });
+        query.handler(result -> {
+          ctx.assertNotNull(result.getColumnNames());
+          results.add(result);
+        });
       }));
     }));
   }
@@ -168,24 +162,21 @@ public class PgQueryImplTest extends PgTestBase {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
     client.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("BEGIN", ctx.asyncAssertSuccess(begin -> {
+      conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
         PgPreparedStatement ps = conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6");
-        PgQueryImpl stream = (PgQueryImpl) ps.query(1, 8, 4, 11, 2, 9);
+        PgQuery stream = ps.query(1, 8, 4, 11, 2, 9);
         stream.fetch(4);
-        LinkedList<JsonArray> results = new LinkedList<>();
-        stream.handler(results::add);
+        LinkedList<ResultSet> results = new LinkedList<>();
         stream.exceptionHandler(ctx::fail);
-        stream.resultSetClosedHandler(v -> {
-          ctx.assertEquals(4, results.size());
-          stream.moreResults();
-        });
         stream.endHandler(v -> {
-          ctx.assertEquals(6, results.size());
+          ctx.assertEquals(2, results.size());
+          ctx.assertEquals(4, results.get(0).getNumRows());
+          ctx.assertEquals(2, results.get(1).getNumRows());
           ps.close(ctx.asyncAssertSuccess(result -> {
             async.complete();
           }));
         });
-        stream.moreResults();
+        stream.handler(results::add);
       }));
     }));
   }
@@ -195,17 +186,13 @@ public class PgQueryImplTest extends PgTestBase {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
     client.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("BEGIN", ctx.asyncAssertSuccess(begin -> {
+      conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
         PgPreparedStatement ps = conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6");
         PgQuery query = ps.query(1, 8, 4, 11, 2, 9);
         query.fetch(4);
         query.execute(ctx.asyncAssertSuccess(results -> {
           ctx.assertEquals(4, results.getNumRows());
-          ctx.assertTrue(query.inProgress());
-          ctx.assertFalse(query.completed());
           query.close(ctx.asyncAssertSuccess(v1 -> {
-            ctx.assertFalse(query.inProgress());
-            ctx.assertTrue(query.completed());
             ps.close(ctx.asyncAssertSuccess(v2 -> {
               async.complete();
             }));
@@ -220,23 +207,23 @@ public class PgQueryImplTest extends PgTestBase {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
     client.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("BEGIN", ctx.asyncAssertSuccess(begin -> {
+      conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
         PgPreparedStatement ps = conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6");
-        PgQueryImpl stream = (PgQueryImpl) ps.query(1, 8, 4, 11, 2, 9);
+        PgQuery stream = ps.query(1, 8, 4, 11, 2, 9);
         stream.fetch(4);
-        LinkedList<JsonArray> results = new LinkedList<>();
-        stream.handler(results::add);
+        AtomicInteger results = new AtomicInteger();
+        AtomicInteger completions = new AtomicInteger();
         stream.exceptionHandler(ctx::fail);
-        stream.resultSetClosedHandler(v -> {
-          ctx.assertEquals(4, results.size());
+        stream.endHandler(v -> completions.incrementAndGet());
+        stream.handler(result -> {
+          ctx.assertEquals(4, results.addAndGet(result.getNumRows()));
           stream.close(ctx.asyncAssertSuccess(v1 -> {
+            ctx.assertEquals(1, completions.get());
             ps.close(ctx.asyncAssertSuccess(v2 -> {
               async.complete();
             }));
           }));
         });
-        stream.endHandler(v -> ctx.fail());
-        stream.moreResults();
       }));
     }));
   }

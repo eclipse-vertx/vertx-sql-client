@@ -31,7 +31,6 @@ import io.vertx.ext.sql.UpdateResult;
 abstract class UpdateCommandBase extends CommandBase {
 
   private UpdateResult updateResult;
-  protected Handler<Void> doneHandler;
 
   @Override
   public void handleMessage(Message msg) {

@@ -22,7 +22,6 @@ import com.julienviet.pgclient.codec.decoder.message.BindComplete;
 import com.julienviet.pgclient.codec.decoder.message.NoData;
 import com.julienviet.pgclient.codec.decoder.message.ParameterDescription;
 import com.julienviet.pgclient.codec.decoder.message.ParseComplete;
-import com.julienviet.pgclient.codec.decoder.message.ReadyForQuery;
 import com.julienviet.pgclient.codec.encoder.message.Bind;
 import com.julienviet.pgclient.codec.encoder.message.Describe;
 import com.julienviet.pgclient.codec.encoder.message.Execute;
@@ -35,6 +34,7 @@ import io.vertx.ext.sql.UpdateResult;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static com.julienviet.pgclient.codec.util.Util.*;
 
@@ -51,7 +51,6 @@ class PreparedUpdateCommand extends UpdateCommandBase {
   final List<List<Object>> paramsList;
   final Handler<AsyncResult<List<UpdateResult>>> handler;
   private ArrayList<UpdateResult> results;
-  private Throwable failure;
 
   PreparedUpdateCommand(String sql, List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
     this(true, sql, "", paramsList, handler);
@@ -67,14 +66,35 @@ class PreparedUpdateCommand extends UpdateCommandBase {
   }
 
   @Override
-  void exec(DbConnection conn, Handler<Void> handler) {
-    doneHandler = handler;
-    if (parse) {
-      conn.writeMessage(new Parse(sql).setStatement(stmt));
+  void exec(NetConnection conn) {
+    boolean p;
+    String s;
+    if (stmt == null) {
+      if (conn.psCache != null) {
+        s = conn.psCache.get(sql);
+        if (s == null) {
+          p = true;
+          s = UUID.randomUUID().toString();
+          conn.psCache.put(sql, s);
+        } else {
+          p = false;
+        }
+      } else {
+        s = "";
+        p = true;
+      }
+    } else {
+      p = parse;
+      s = stmt;
+    }
+
+
+    if (p) {
+      conn.writeMessage(new Parse(sql).setStatement(s));
     }
     for (List<Object> params : paramsList) {
-      conn.writeMessage(new Bind().setParamValues(paramValues(params)).setStatement(stmt));
-      conn.writeMessage(new Describe().setStatement(stmt));
+      conn.writeMessage(new Bind().setParamValues(paramValues(params)).setStatement(s));
+      conn.writeMessage(new Describe().setStatement(s));
       conn.writeMessage(new Execute().setRowCount(0));
     }
     conn.writeMessage(Sync.INSTANCE);
@@ -82,14 +102,7 @@ class PreparedUpdateCommand extends UpdateCommandBase {
 
   @Override
   public void handleMessage(Message msg) {
-    if (msg.getClass() == ReadyForQuery.class) {
-      doneHandler.handle(null);
-      if (failure != null) {
-        handler.handle(Future.failedFuture(failure));
-      } else {
-        handler.handle(Future.succeededFuture(results));
-      }
-    } else if (msg.getClass() == ParameterDescription.class) {
+    if (msg.getClass() == ParameterDescription.class) {
     } else if (msg.getClass() == NoData.class) {
     } else if (msg.getClass() == ParseComplete.class) {
     } else if (msg.getClass() == BindComplete.class) {
@@ -101,10 +114,13 @@ class PreparedUpdateCommand extends UpdateCommandBase {
   @Override
   void handleResult(UpdateResult result) {
     results.add(result);
+    if (results.size() == paramsList.size()) {
+      handler.handle(Future.succeededFuture(results));
+    }
   }
 
   @Override
   void fail(Throwable cause) {
-    failure = cause;
+    handler.handle(Future.failedFuture(cause));
   }
 }

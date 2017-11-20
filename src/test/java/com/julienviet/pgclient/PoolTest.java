@@ -49,7 +49,7 @@ public class PoolTest extends PoolTestBase {
         proxyConn.get().close();
       }));
       pool.getConnection(ctx.asyncAssertSuccess(conn -> {
-        conn.query("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(v2 -> {
+        conn.query("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(v2 -> {
           async.complete();
         }));
       }));

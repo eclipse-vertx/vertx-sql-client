@@ -29,14 +29,14 @@ import com.julienviet.pgclient.codec.encoder.message.Execute;
 import com.julienviet.pgclient.codec.encoder.message.Parse;
 import com.julienviet.pgclient.codec.encoder.message.Sync;
 import com.julienviet.pgclient.codec.util.Util;
-import io.vertx.core.Handler;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class PreparedQueryCommand extends QueryCommandBase {
+class ExtendedQueryCommand extends QueryCommandBase {
 
 
   final boolean parse;
@@ -47,12 +47,12 @@ class PreparedQueryCommand extends QueryCommandBase {
   private final String portal;
   private final boolean suspended;
 
-  PreparedQueryCommand(String sql,
+  ExtendedQueryCommand(String sql,
                        List<Object> params,
                        QueryResultHandler handler) {
     this(true, sql, params, 0, "", "", false, handler);
   }
-  PreparedQueryCommand(boolean parse,
+  ExtendedQueryCommand(boolean parse,
                        String sql,
                        List<Object> params,
                        int fetch,
@@ -71,14 +71,35 @@ class PreparedQueryCommand extends QueryCommandBase {
   }
 
   @Override
-  void exec(DbConnection conn, Handler<Void> handler) {
-    doneHandler = handler;
-    if (parse) {
-      conn.writeMessage(new Parse(sql).setStatement(stmt));
+  void exec(NetConnection conn) {
+    boolean p;
+    String s;
+    if (stmt == null) {
+      if (conn.psCache != null) {
+        s = conn.psCache.get(sql);
+        if (s == null) {
+          p = true;
+          s = UUID.randomUUID().toString();
+          conn.psCache.put(sql, s);
+        } else {
+          p = false;
+        }
+      } else {
+        s = "";
+        p = true;
+      }
+    } else {
+      p = parse;
+      s = stmt;
+    }
+
+    //
+    if (p) {
+      conn.writeMessage(new Parse(sql).setStatement(s));
     }
     if (!suspended) {
-      conn.writeMessage(new Bind().setParamValues(Util.paramValues(params)).setPortal(portal).setStatement(stmt));
-      conn.writeMessage(new Describe().setStatement(stmt));
+      conn.writeMessage(new Bind().setParamValues(Util.paramValues(params)).setPortal(portal).setStatement(s));
+      conn.writeMessage(new Describe().setStatement(s));
     } else {
       // Needed for now, later see how to remove it
       conn.writeMessage(new Describe().setPortal(portal));

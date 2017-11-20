@@ -46,7 +46,7 @@ client.connect(function (res, res_err) {
     // Connected
     var conn = res;
 
-    conn.query("SELECT * FROM USERS", function (ar, ar_err) {
+    conn.query("SELECT * FROM USERS").execute(function (ar, ar_err) {
 
       if (ar_err == null) {
 
@@ -90,7 +90,7 @@ pool.getConnection(function (res, res_err) {
     // Obtained a connection
     var conn = res;
 
-    conn.query("SELECT * FROM USERS", function (ar, ar_err) {
+    conn.query("SELECT * FROM USERS").execute(function (ar, ar_err) {
 
       if (ar_err == null) {
 
@@ -163,31 +163,14 @@ By default the query will fetch all results, you can override this and define a 
 var preparedStatement = conn.prepare("SELECT * FROM USERS");
 
 // Create a query : bind parameters
-var query = preparedStatement.query();
+var query = preparedStatement.query().fetch(100);
 
-// Get at most 100 rows
-query.fetch(100);
-
-// Execute query
-query.execute(function (res, res_err) {
-  if (res_err == null) {
-
-    // Get result
-    var result = res;
-
-    //
-    if (query.completed()) {
-      // We are done
-    } else {
-
-      // Fetch 100 more
-      query.execute(function (res2, res2_err) {
-        // And the beat goes on...
-      });
-    }
-  } else {
-    console.log("Query failed " + res_err);
-  }
+query.endHandler(function (v) {
+  // We are done
+}).exceptionHandler(function (err) {
+  console.log("Query failed " + err);
+}).handler(function (result) {
+  // Get results
 });
 
 ----

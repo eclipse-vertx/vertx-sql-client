@@ -18,39 +18,23 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.codec.encoder.message.Query;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.ext.sql.UpdateResult;
 
 /**
- * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
+ * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
-class UpdateCommand extends UpdateCommandBase {
+class SimpleQueryCommand extends QueryCommandBase {
 
   private final String sql;
-  private final Handler<AsyncResult<UpdateResult>> handler;
 
-  UpdateCommand(String sql, Handler<AsyncResult<UpdateResult>> handler) {
-    this.handler = handler;
+  SimpleQueryCommand(String sql, QueryResultHandler handler) {
+    super(handler);
     this.sql = sql;
   }
 
   @Override
   void exec(NetConnection conn) {
     conn.writeMessage(new Query(sql));
-  }
-
-  @Override
-  void handleResult(UpdateResult result) {
-    handler.handle(Future.succeededFuture(result));
-  }
-
-
-  @Override
-  void fail(Throwable cause) {
-    handler.handle(Future.failedFuture(cause));
   }
 
   public String getSql() {

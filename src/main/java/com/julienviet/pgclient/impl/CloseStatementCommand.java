@@ -19,7 +19,6 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.decoder.message.CloseComplete;
-import com.julienviet.pgclient.codec.decoder.message.ReadyForQuery;
 import com.julienviet.pgclient.codec.encoder.message.Close;
 import com.julienviet.pgclient.codec.encoder.message.Sync;
 import io.vertx.core.AsyncResult;
@@ -33,7 +32,6 @@ class CloseStatementCommand extends CommandBase {
 
   final String stmt;
   final Handler<AsyncResult<Void>> handler;
-  private Handler<Void> doneHandler;
 
   public CloseStatementCommand(String stmt, Handler<AsyncResult<Void>> handler) {
     this.stmt = stmt;
@@ -41,8 +39,7 @@ class CloseStatementCommand extends CommandBase {
   }
 
   @Override
-  void exec(DbConnection conn, Handler<Void> handler) {
-    doneHandler = handler;
+  void exec(NetConnection conn) {
     conn.writeMessage(new Close().setStatement(stmt));
     conn.writeMessage(Sync.INSTANCE);
   }
@@ -51,8 +48,6 @@ class CloseStatementCommand extends CommandBase {
   public void handleMessage(Message msg) {
     if (msg.getClass() == CloseComplete.class) {
       handler.handle(Future.succeededFuture());
-    } else if (msg.getClass() == ReadyForQuery.class) {
-      doneHandler.handle(null);
     } else {
       super.handleMessage(msg);
     }

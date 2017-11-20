@@ -17,11 +17,11 @@
 
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.ResultSet;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
-import io.vertx.ext.sql.ResultSet;
 
 import java.util.ArrayList;
 import java.util.List;

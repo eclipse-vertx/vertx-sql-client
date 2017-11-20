@@ -17,15 +17,13 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.PgBatch;
-import com.julienviet.pgclient.PgPreparedStatement;
-import com.julienviet.pgclient.PgQuery;
-import com.julienviet.pgclient.PgUpdate;
+import com.julienviet.pgclient.*;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.ext.sql.UpdateResult;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -34,23 +32,26 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 class PreparedStatementImpl implements PgPreparedStatement {
 
-  private final DbConnection conn;
+  private final Connection conn;
   final String sql;
   final AtomicBoolean closed = new AtomicBoolean();
   boolean parsed;
   final String stmt;
-  final boolean cached;
 
-  PreparedStatementImpl(DbConnection conn, String sql, String stmt, boolean cached) {
+  PreparedStatementImpl(Connection conn, String sql, String stmt) {
     this.conn = conn;
     this.sql = sql;
     this.stmt = stmt;
-    this.cached = cached;
+  }
+
+  @Override
+  public PgQuery query() {
+    return new PreparedQueryImpl(this, Collections.emptyList());
   }
 
   @Override
   public PgQuery query(List<Object> params) {
-    return new PgQueryImpl(this, params);
+    return new PreparedQueryImpl(this, params);
   }
 
   @Override
@@ -81,7 +82,7 @@ class PreparedStatementImpl implements PgPreparedStatement {
     } else {
       parse = false;
     }
-    conn.schedule(new PreparedQueryCommand(parse, sql, params, fetch, stmt, portal, suspended, handler));
+    conn.schedule(new ExtendedQueryCommand(parse, sql, params, fetch, stmt, portal, suspended, handler));
   }
 
   void update(List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
@@ -97,10 +98,12 @@ class PreparedStatementImpl implements PgPreparedStatement {
 
   @Override
   public void close(Handler<AsyncResult<Void>> completionHandler) {
-    if (cached) {
-      completionHandler.handle(Future.succeededFuture());
-    } else if (closed.compareAndSet(false, true)) {
-      conn.schedule(new CloseStatementCommand(stmt, completionHandler));
+    if (closed.compareAndSet(false, true)) {
+      if (stmt != null) {
+        conn.schedule(new CloseStatementCommand(stmt, completionHandler));
+      } else {
+        completionHandler.handle(Future.succeededFuture());
+      }
     } else {
       completionHandler.handle(Future.failedFuture("Already closed"));
     }

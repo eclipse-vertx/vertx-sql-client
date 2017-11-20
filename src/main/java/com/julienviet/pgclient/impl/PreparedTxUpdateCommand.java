@@ -22,7 +22,6 @@ import com.julienviet.pgclient.codec.decoder.message.BindComplete;
 import com.julienviet.pgclient.codec.decoder.message.NoData;
 import com.julienviet.pgclient.codec.decoder.message.ParameterDescription;
 import com.julienviet.pgclient.codec.decoder.message.ParseComplete;
-import com.julienviet.pgclient.codec.decoder.message.ReadyForQuery;
 import com.julienviet.pgclient.codec.encoder.message.Bind;
 import com.julienviet.pgclient.codec.encoder.message.Execute;
 import com.julienviet.pgclient.codec.encoder.message.Parse;
@@ -53,8 +52,7 @@ class PreparedTxUpdateCommand extends TxUpdateCommandBase {
   }
 
   @Override
-  void exec(DbConnection conn, Handler<Void> handler) {
-    doneHandler = handler;
+  void exec(NetConnection conn) {
     conn.writeMessage(new Parse(txMap.get(isolation)));
     conn.writeMessage(new Bind());
     conn.writeMessage(new Execute().setRowCount(1));
@@ -63,9 +61,7 @@ class PreparedTxUpdateCommand extends TxUpdateCommandBase {
 
   @Override
   public void handleMessage(Message msg) {
-    if (msg.getClass() == ReadyForQuery.class) {
-      doneHandler.handle(null);
-    } else if (msg.getClass() == ParameterDescription.class) {
+    if (msg.getClass() == ParameterDescription.class) {
     } else if (msg.getClass() == NoData.class) {
     } else if (msg.getClass() == ParseComplete.class) {
     } else if (msg.getClass() == BindComplete.class) {

@@ -17,11 +17,11 @@
 
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.ResultSet;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
-import io.vertx.ext.sql.ResultSet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,8 +44,8 @@ public class ResultSetBuilder implements QueryResultHandler {
   public void beginResult(List<String> columnNames) {
     ResultSet next = new ResultSet().setColumnNames(columnNames).setResults(new ArrayList<>());
     if (current != null) {
-      current.setNext(next);
-      current = next;
+      // current.setNext(next);
+      // current = next;
     } else {
       result = current = next;
     }

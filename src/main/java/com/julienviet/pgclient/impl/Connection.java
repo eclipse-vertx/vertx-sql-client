@@ -15,27 +15,22 @@
  *
  */
 
-package com.julienviet.pgclient;
+package com.julienviet.pgclient.impl;
 
-import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.ext.sql.UpdateResult;
 
-/**
- * The binding of a {@link PgPreparedStatement} and a set of parameters that can be executed once.
- *
- * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
- */
+public interface Connection {
 
-@VertxGen
-public interface PgUpdate {
-  /**
-   * Executes the query, the {@code handler} will be called when the update result is available or
-   * if an error occurs.
-   * <p/>
-   *
-   * @param handler the handler to call back
-   */
-  void execute(Handler<AsyncResult<UpdateResult>> handler);
+  void init(ConnectionHolder holder);
+
+  boolean isSsl();
+
+  default void schedule(CommandBase cmd) {
+    schedule(cmd, null);
+  }
+
+  void schedule(CommandBase cmd, Handler<Void> completionHandler);
+
+  void close(ConnectionHolder holder);
+
 }

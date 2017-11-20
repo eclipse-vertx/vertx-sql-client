@@ -17,12 +17,9 @@
 
 package com.julienviet.pgclient.impl;
 
-
-import com.julienviet.pgclient.PgConnection;
 import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.decoder.MessageDecoder;
 import com.julienviet.pgclient.codec.encoder.MessageEncoder;
-import com.julienviet.pgclient.codec.encoder.message.Terminate;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.AsyncResult;
@@ -33,13 +30,13 @@ import io.vertx.core.VertxException;
 import io.vertx.core.impl.ContextImpl;
 import io.vertx.core.impl.NetSocketInternal;
 
-import java.util.ArrayDeque;
-import java.util.Arrays;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class DbConnection {
+public class NetConnection implements Connection {
 
   enum Status {
 
@@ -51,21 +48,21 @@ public class DbConnection {
   private final ArrayDeque<CommandBase> inflight = new ArrayDeque<>();
   private final ArrayDeque<CommandBase> pending = new ArrayDeque<>();
   final PgClientImpl client;
-  private final Context context;
+  final Context context;
   private Status status = Status.CONNECTED;
-  private Handler<Void> closeHandler;
-  private Handler<Throwable> exceptionHandler;
-  private final PgConnection conn;
+  private ConnectionHolder holder;
+  final Map<String, String> psCache;
 
-  public DbConnection(PgClientImpl client,
-                      NetSocketInternal socket, ContextImpl context) {
+  public NetConnection(PgClientImpl client,
+                       NetSocketInternal socket,
+                       ContextImpl context) {
     this.socket = socket;
     this.client = client;
     this.context = context;
-    this.conn = new PgConnectionImpl(this, client.cachePreparedStatements);
+    this.psCache = client.cachePreparedStatements ? new ConcurrentHashMap<>() : null;
   }
 
-  void init(String username, String password, String database, Handler<AsyncResult<DbConnection>> completionHandler) {
+  void init(String username, String password, String database, Handler<AsyncResult<Connection>> completionHandler) {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     pipeline.addBefore("handler", "decoder", new MessageDecoder());
     pipeline.addBefore("handler", "encoder", new MessageEncoder());
@@ -75,7 +72,7 @@ public class DbConnection {
     schedule(new InitCommand(username, password, database, client.ssl, completionHandler));
   }
 
-  boolean isSsl() {
+  public boolean isSsl() {
     return socket.isSsl();
   }
 
@@ -83,19 +80,17 @@ public class DbConnection {
     socket.upgradeToSsl(handler);
   }
 
-  void closeHandler(Handler<Void> handler) {
-    closeHandler = handler;
-  }
-
-  void exceptionHandler(Handler<Throwable> handler) {
-    exceptionHandler = handler;
+  @Override
+  public void init(ConnectionHolder holder) {
+    this.holder = holder;
   }
 
   void writeMessage(Message cmd) {
     socket.writeMessage(cmd);
   }
 
-  void doClose() {
+  @Override
+  public void close(ConnectionHolder holder) {
     if (Vertx.currentContext() == context) {
       if (status == Status.CONNECTED) {
         status = Status.CLOSING;
@@ -104,16 +99,27 @@ public class DbConnection {
         checkPending();
       }
     } else {
-      context.runOnContext(v -> doClose());
+      context.runOnContext(v -> close(holder));
     }
   }
 
-  void schedule(CommandBase cmd) {
+  public void schedule(CommandBase cmd) {
+    schedule(cmd, null);
+  }
+
+  public void schedule(CommandBase cmd, Handler<Void> completionHandler) {
     if (Vertx.currentContext() != context) {
       throw new IllegalStateException();
     }
     if (status == Status.CONNECTED) {
       pending.add(cmd);
+      cmd.completionHandler = v -> {
+        inflight.poll();
+        if (completionHandler != null) {
+          completionHandler.handle(null);
+        }
+        checkPending();
+      };
       checkPending();
     } else {
       cmd.fail(new VertxException("Connection not open " + status));
@@ -124,10 +130,7 @@ public class DbConnection {
     CommandBase cmd;
     while (inflight.size() < client.pipeliningLimit && (cmd = pending.poll()) != null) {
       inflight.add(cmd);
-      cmd.exec(this, v -> {
-        inflight.poll();
-        checkPending();
-      });
+      cmd.exec(this);
     }
   }
 
@@ -142,7 +145,7 @@ public class DbConnection {
   }
 
   private void handleClosed(Void v) {
-    doClose(null);
+    handleClose(null);
   }
 
   private synchronized void handleException(Throwable t) {
@@ -150,19 +153,16 @@ public class DbConnection {
       DecoderException err = (DecoderException) t;
       t = err.getCause();
     }
-    doClose(t);
+    handleClose(t);
   }
 
-  private void doClose(Throwable t) {
+  private void handleClose(Throwable t) {
     if (status != Status.CLOSED) {
       status = Status.CLOSED;
       if (t != null) {
         synchronized (this) {
-          Handler<Throwable> handler = this.exceptionHandler;
-          if (handler != null) {
-            context.runOnContext(v -> {
-              handler.handle(t);
-            });
+          if (holder != null) {
+            holder.handleException(t);
           }
         }
       }
@@ -171,12 +171,11 @@ public class DbConnection {
         CommandBase cmd;
         while ((cmd = q.poll()) != null) {
           CommandBase c = cmd;
-          context.runOnContext(v2 -> c.fail(cause));
+          context.runOnContext(v -> c.fail(cause));
         }
       }
-      Handler<Void> handler = this.closeHandler;
-      if (handler != null) {
-        context.runOnContext(handler);
+      if (holder != null) {
+        holder.handleClosed();
       }
     }
   }

@@ -18,222 +18,100 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgQuery;
+import com.julienviet.pgclient.ResultSet;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
-import io.vertx.ext.sql.ResultSet;
-import io.vertx.ext.sql.SQLRowStream;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
- */
-public class PgQueryImpl implements PgQuery, SQLRowStream {
+public class PgQueryImpl implements PgQuery, QueryResultHandler {
 
-  private static final int READY = 0, PENDING = 1, IN_PROGRESS = 2, COMPLETED = 3;
-
-  final PreparedStatementImpl ps;
-  final List<Object> params;
-  private int fetch;
-  private int status;
-  private String portal;
-  private Handler<JsonArray> rowHandler;
-  private Handler<Void> endHandler;
+  private final Handler<CommandBase> execHandler;
+  private final String sql;
+  private Handler<ResultSet> resultHandler;
   private Handler<Throwable> exceptionHandler;
-  private Handler<Void> resultSetClosedHandler;
-  private final AtomicBoolean closed = new AtomicBoolean();
+  private Handler<Void> endHandler;
+  private ResultSet resultSet;
 
-  PgQueryImpl(PreparedStatementImpl ps, List<Object> params) {
-    this.ps = ps;
-    this.params = params;
+  public PgQueryImpl(String sql, Handler<CommandBase> execHandler) {
+    this.execHandler = execHandler;
+    this.sql = sql;
   }
 
   @Override
-  public PgQueryImpl fetch(int size) {
-    if (size < 0) {
-      throw new IllegalArgumentException("Fetch size must be 0 (disabled) or a positive number");
-    }
-    this.fetch = size;
+  public PgQuery fetch(int size) {
     return this;
-  }
-
-  @Override
-  public boolean inProgress() {
-    return status == IN_PROGRESS;
-  }
-
-  @Override
-  public boolean completed() {
-    return status == COMPLETED;
-  }
-
-  @Override
-  public void execute(Handler<AsyncResult<ResultSet>> handler) {
-    execute(new PreparedQueryResultHandler(handler));
-  }
-
-  private void execute(QueryResultHandler handler) {
-    if (closed.get()) {
-      throw new IllegalStateException("Query closed");
-    }
-    QueryResultHandler adapter = new QueryResultHandler() {
-      @Override
-      public void beginResult(List<String> columnNames) {
-        handler.beginResult(columnNames);
-      }
-      @Override
-      public void handleRow(JsonArray row) {
-        handler.handleRow(row);
-      }
-      @Override
-      public void endResult(boolean suspended) {
-        status = suspended ? IN_PROGRESS : COMPLETED;
-        handler.endResult(suspended);
-      }
-      @Override
-      public void fail(Throwable cause) {
-        status = COMPLETED;
-        handler.fail(cause);
-      }
-      @Override
-      public void end() {
-        handler.end();
-      }
-    };
-    switch (status) {
-      case READY:
-        status = PENDING;
-        portal = fetch > 0 ? UUID.randomUUID().toString() : "";
-        ps.execute(params, fetch, portal, false, adapter);
-        break;
-      case IN_PROGRESS:
-        status = PENDING;
-        ps.execute(params, fetch, portal, true, adapter);
-        break;
-      case PENDING:
-        throw new IllegalStateException("Query in progress");
-      case COMPLETED:
-        throw new IllegalStateException("Already executed");
-    }
-  }
-
-  @Override
-  public int column(String s) {
-    return 0;
-  }
-
-  @Override
-  public List<String> columns() {
-    return null;
-  }
-
-  @Override
-  public SQLRowStream resultSetClosedHandler(Handler<Void> handler) {
-    resultSetClosedHandler = handler;
-    return this;
-  }
-
-  @Override
-  public void moreResults() {
-    Handler<JsonArray> _rowHandler = rowHandler;
-    Handler<Void> _endHandler = endHandler;
-    Handler<Throwable> _exceptionHandler = exceptionHandler;
-    Handler<Void> _resultSetClosedHandler = resultSetClosedHandler;
-    PgQueryImpl.this.execute(new QueryResultHandler() {
-      @Override
-      public void beginResult(List<String> columnNames) {
-      }
-      @Override
-      public void handleRow(JsonArray row) {
-        if (_rowHandler != null) {
-          _rowHandler.handle(row);
-        }
-      }
-      @Override
-      public void endResult(boolean suspended) {
-        if (suspended) {
-          if (_resultSetClosedHandler != null) {
-            _resultSetClosedHandler.handle(null);
-          }
-        } else {
-          if (_endHandler != null) {
-            _endHandler.handle(null);
-          }
-        }
-      }
-      @Override
-      public void fail(Throwable cause) {
-        if (_exceptionHandler != null) {
-          _exceptionHandler.handle(cause);
-        }
-      }
-      @Override
-      public void end() {
-      }
-    });
-  }
-
-  @Override
-  public void close() {
-    close(ar -> {});
   }
 
   @Override
   public void close(Handler<AsyncResult<Void>> completionHandler) {
-    if (closed.compareAndSet(false, true)) {
-      switch (status) {
-        case READY:
-          status = COMPLETED;
-          completionHandler.handle(Future.succeededFuture());
-          break;
-        case IN_PROGRESS:
-          status = COMPLETED;
-          ps.closePortal(portal, completionHandler);
-          break;
-        case PENDING:
-          ps.closePortal(portal, ar -> {
-            status = COMPLETED;
-            completionHandler.handle(ar);
-          });
-          break;
-        case COMPLETED:
-          completionHandler.handle(Future.succeededFuture());
-          break;
-      }
-    } else {
-      completionHandler.handle(Future.succeededFuture());
-    }
+
   }
 
   @Override
-  public SQLRowStream exceptionHandler(Handler<Throwable> handler) {
+  public PgQuery exceptionHandler(Handler<Throwable> handler) {
     exceptionHandler = handler;
     return this;
   }
 
   @Override
-  public SQLRowStream handler(Handler<JsonArray> handler) {
-    rowHandler = handler;
+  public PgQuery handler(Handler<ResultSet> handler) {
+    resultHandler = handler;
+    execHandler.handle(new SimpleQueryCommand(sql, this));
     return this;
   }
 
   @Override
-  public SQLRowStream pause() {
+  public PgQuery pause() {
     return this;
   }
 
   @Override
-  public SQLRowStream resume() {
+  public PgQuery resume() {
     return this;
   }
 
   @Override
-  public SQLRowStream endHandler(Handler<Void> handler) {
+  public PgQuery endHandler(Handler<Void> handler) {
     endHandler = handler;
     return this;
   }
+
+  @Override
+  public void beginResult(List<String> columnNames) {
+    this.resultSet = new ResultSet().setColumnNames(columnNames).setResults(new ArrayList<>());
+  }
+
+  @Override
+  public void handleRow(JsonArray row) {
+    resultSet.getResults().add(row);
+  }
+
+  @Override
+  public void endResult(boolean suspended) {
+    Handler<ResultSet> handler = resultHandler;
+    if (handler != null) {
+      handler.handle(resultSet);
+    }
+    resultSet = null;
+  }
+
+  @Override
+  public void fail(Throwable cause) {
+    Handler<Throwable> handler = exceptionHandler;
+    if (handler != null) {
+      handler.handle(cause);
+    }
+  }
+
+  @Override
+  public void end() {
+    Handler<Void> handler = endHandler;
+    if (handler != null) {
+      handler.handle(null);
+    }
+  }
+
 }

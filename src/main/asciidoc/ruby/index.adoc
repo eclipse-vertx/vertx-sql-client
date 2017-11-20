@@ -46,7 +46,7 @@ client.connect() { |res_err,res|
     # Connected
     conn = res
 
-    conn.query("SELECT * FROM USERS") { |ar_err,ar|
+    conn.query("SELECT * FROM USERS").execute() { |ar_err,ar|
 
       if (ar_err == nil)
 
@@ -90,7 +90,7 @@ pool.get_connection() { |res_err,res|
     # Obtained a connection
     conn = res
 
-    conn.query("SELECT * FROM USERS") { |ar_err,ar|
+    conn.query("SELECT * FROM USERS").execute() { |ar_err,ar|
 
       if (ar_err == nil)
 
@@ -163,31 +163,14 @@ By default the query will fetch all results, you can override this and define a 
 preparedStatement = conn.prepare("SELECT * FROM USERS")
 
 # Create a query : bind parameters
-query = preparedStatement.query()
+query = preparedStatement.query().fetch(100)
 
-# Get at most 100 rows
-query.fetch(100)
-
-# Execute query
-query.execute() { |res_err,res|
-  if (res_err == nil)
-
-    # Get result
-    result = res
-
-    #
-    if (query.completed?())
-      # We are done
-    else
-
-      # Fetch 100 more
-      query.execute() { |res2_err,res2|
-        # And the beat goes on...
-      }
-    end
-  else
-    puts "Query failed #{res_err}"
-  end
+query.end_handler() { |v|
+  # We are done
+}.exception_handler() { |err|
+  puts "Query failed #{err}"
+}.handler() { |result|
+  # Get results
 }
 
 ----

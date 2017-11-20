@@ -35,7 +35,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 abstract class TxQueryCommandBase extends CommandBase {
 
   private String value;
-  protected Handler<Void> doneHandler;
 
   @Override
   public void handleMessage(Message msg) {
@@ -64,7 +63,6 @@ abstract class TxQueryCommandBase extends CommandBase {
       }
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
-      doneHandler.handle(null);
       fail(new PgException(error));
     } else {
       super.handleMessage(msg);

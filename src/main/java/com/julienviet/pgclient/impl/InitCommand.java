@@ -42,16 +42,15 @@ import io.vertx.core.Handler;
 class InitCommand extends CommandBase {
 
   private static final String UTF8 = "UTF8";
-  private final Handler<AsyncResult<DbConnection>> handler;
+  private final Handler<AsyncResult<Connection>> handler;
   final String username;
   final String password;
   final String database;
   final boolean ssl;
   private String CLIENT_ENCODING;
-  private DbConnection conn;
-  private Handler<Void> doneHandler;
+  private NetConnection conn;
 
-  InitCommand(String username, String password, String database, boolean ssl, Handler<AsyncResult<DbConnection>> handler) {
+  InitCommand(String username, String password, String database, boolean ssl, Handler<AsyncResult<Connection>> handler) {
     this.username = username;
     this.password = password;
     this.database = database;
@@ -60,9 +59,8 @@ class InitCommand extends CommandBase {
   }
 
   @Override
-  void exec(DbConnection c, Handler<Void> handler) {
+  void exec(NetConnection c) {
     conn = c;
-    doneHandler = handler;
     if (ssl) {
       c.writeMessage(SSLRequest.INSTANCE);
     } else {
@@ -80,7 +78,7 @@ class InitCommand extends CommandBase {
         });
       } else {
         // This case is not tested as our test db is configured for SSL
-        doneHandler.handle(null);
+        completionHandler.handle(null);
         handler.handle(Future.failedFuture(new RuntimeException("Postgres does not handle SSL")));
       }
     } else if (msg.getClass() == AuthenticationMD5Password.class) {
@@ -99,19 +97,19 @@ class InitCommand extends CommandBase {
     } else if (msg.getClass() == BackendKeyData.class) {
     }  else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
-      doneHandler.handle(null);
+      completionHandler.handle(null);
       handler.handle(Future.failedFuture(new PgException(error)));
     } else if (msg.getClass() == ReadyForQuery.class) {
       // The final phase before returning the connection
       // We should make sure we are supporting only UTF8
       // https://www.postgresql.org/docs/9.5/static/multibyte.html#MULTIBYTE-CHARSET-SUPPORTED
-      Future<DbConnection> fut;
+      Future<Connection> fut;
       if(!CLIENT_ENCODING.equals(UTF8)) {
         fut = Future.failedFuture(CLIENT_ENCODING + " is not supported in the client only " + UTF8);
       } else {
         fut = Future.succeededFuture(conn);
       }
-      doneHandler.handle(null);
+      completionHandler.handle(null);
       handler.handle(fut);
     } else {
       super.handleMessage(msg);

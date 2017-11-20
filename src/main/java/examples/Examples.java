@@ -17,19 +17,10 @@
 
 package examples;
 
-import com.julienviet.pgclient.PgBatch;
-import com.julienviet.pgclient.PgClient;
-import com.julienviet.pgclient.PgClientOptions;
-import com.julienviet.pgclient.PgConnection;
-import com.julienviet.pgclient.PgPool;
-import com.julienviet.pgclient.PgPoolOptions;
-import com.julienviet.pgclient.PgPreparedStatement;
-import com.julienviet.pgclient.PgQuery;
-import com.julienviet.pgclient.PgUpdate;
+import com.julienviet.pgclient.*;
 import io.vertx.core.Vertx;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
-import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
 
 import java.util.List;
@@ -56,7 +47,7 @@ public class Examples {
         // Connected
         PgConnection conn = res.result();
 
-        conn.query("SELECT * FROM USERS", ar -> {
+        conn.query("SELECT * FROM USERS").execute(ar -> {
 
           if (ar.succeeded()) {
 
@@ -93,7 +84,7 @@ public class Examples {
         // Obtained a connection
         PgConnection conn = res.result();
 
-        conn.query("SELECT * FROM USERS", ar -> {
+        conn.query("SELECT * FROM USERS").execute(ar -> {
 
           if (ar.succeeded()) {
 
@@ -144,31 +135,15 @@ public class Examples {
     PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS");
 
     // Create a query : bind parameters
-    PgQuery query = preparedStatement.query();
+    PgQuery query = preparedStatement.query()
+      .fetch(100); // Get at most 100 rows at a time
 
-    // Get at most 100 rows
-    query.fetch(100);
-
-    // Execute query
-    query.execute(res -> {
-      if (res.succeeded()) {
-
-        // Get result
-        ResultSet result = res.result();
-
-        //
-        if (query.completed()) {
-          // We are done
-        } else {
-
-          // Fetch 100 more
-          query.execute(res2 -> {
-            // And the beat goes on...
-          });
-        }
-      } else {
-        System.out.println("Query failed " + res.cause());
-      }
+    query.endHandler(v -> {
+      // We are done
+    }).exceptionHandler(err -> {
+      System.out.println("Query failed " + err);
+    }).handler(result -> {
+      // Get results
     });
   }
 

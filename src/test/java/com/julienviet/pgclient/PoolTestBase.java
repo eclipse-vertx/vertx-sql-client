@@ -18,7 +18,6 @@
 package com.julienviet.pgclient;
 
 import io.vertx.core.Vertx;
-import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -58,7 +57,7 @@ public abstract class PoolTestBase extends PgTestBase {
     PgPool pool = createPool(client, 4);
     for (int i = 0;i < num;i++) {
       pool.getConnection(ctx.asyncAssertSuccess(conn -> {
-        conn.query("SELECT id, randomnumber from WORLD", ar -> {
+        conn.query("SELECT id, randomnumber from WORLD").execute(ar -> {
           if (ar.succeeded()) {
             ResultSet result = ar.result();
             ctx.assertEquals(10000, result.getNumRows());
@@ -79,7 +78,7 @@ public abstract class PoolTestBase extends PgTestBase {
     PgClient client = PgClient.create(vertx, options);
     PgPool pool = createPool(client, 4);
     for (int i = 0;i < num;i++) {
-      pool.query("SELECT id, randomnumber from WORLD", ar -> {
+      pool.query("SELECT id, randomnumber from WORLD").execute(ar -> {
         if (ar.succeeded()) {
           ResultSet result = ar.result();
           ctx.assertEquals(10000, result.getNumRows());
@@ -98,7 +97,7 @@ public abstract class PoolTestBase extends PgTestBase {
     PgClient client = PgClient.create(vertx, options);
     PgPool pool = createPool(client, 4);
     for (int i = 0;i < num;i++) {
-      pool.query("SELECT id, randomnumber from WORLD where id=$1", i + 1, ar -> {
+      pool.preparedQuery("SELECT id, randomnumber from WORLD where id=$1", i + 1, ar -> {
         if (ar.succeeded()) {
           ResultSet result = ar.result();
           ctx.assertEquals(1, result.getNumRows());
@@ -136,7 +135,7 @@ public abstract class PoolTestBase extends PgTestBase {
     PgClient client = PgClient.create(vertx, options);
     PgPool pool = createPool(client, 4);
     for (int i = 0;i < num;i++) {
-      pool.update("UPDATE Fortune SET message = 'Whatever' WHERE id = $1", 9, ar -> {
+      pool.preparedUpdate("UPDATE Fortune SET message = 'Whatever' WHERE id = $1", 9, ar -> {
         if (ar.succeeded()) {
           UpdateResult result = ar.result();
           ctx.assertEquals(1, result.getUpdated());
@@ -163,9 +162,9 @@ public abstract class PoolTestBase extends PgTestBase {
       pool.getConnection(ctx.asyncAssertSuccess(conn1 -> {
         proxyConn.get().close();
         conn1.closeHandler(v2 -> {
-          conn1.query("never-executer", ctx.asyncAssertFailure(err -> {
+          conn1.query("never-executer").execute(ctx.asyncAssertFailure(err -> {
             pool.getConnection(ctx.asyncAssertSuccess(conn2 -> {
-              conn2.query("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(v3 -> {
+              conn2.query("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(v3 -> {
                 async.complete();
               }));
             }));

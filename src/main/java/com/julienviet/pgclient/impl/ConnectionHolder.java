@@ -17,21 +17,12 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.codec.encoder.message.Terminate;
+public interface ConnectionHolder {
 
-class CloseConnectionCommand extends CommandBase {
+  Connection connection();
 
-  static final CloseConnectionCommand INSTANCE = new CloseConnectionCommand();
+  void handleClosed();
 
-  private CloseConnectionCommand() {
-  }
+  void handleException(Throwable err);
 
-  @Override
-  void exec(NetConnection conn) {
-    conn.writeMessage(Terminate.INSTANCE);
-  }
-
-  @Override
-  void fail(Throwable err) {
-  }
 }

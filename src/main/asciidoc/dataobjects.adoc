@@ -68,3 +68,41 @@
 |[[mode]]`mode`|`link:enums.html#PoolingMode[PoolingMode]`|-
 |===
 
+[[ResultSet]]
+== ResultSet
+
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[columnNames]]`columnNames`|`Array of String`|
++++
+Get the column names
++++
+|[[numColumns]]`numColumns`|`Number (int)`|
++++
+Return the number of columns in the result set
++++
+|[[numRows]]`numRows`|`Number (int)`|
++++
+Return the number of rows in the result set
++++
+|[[output]]`output`|`Json array`|
++++
+Get the registered outputs
++++
+|[[results]]`results`|`Array of Json array`|
++++
+Get the results
++++
+|[[rows]]`rows`|`Array of Json object`|
++++
+Get the rows - each row represented as a JsonObject where the keys are the column names and the values are
+ the column values.
+ <p>
+ Beware that it's legal for a query result in SQL to contain duplicate column names, in which case one will
+ overwrite the other if using this method. If that's the case use link instead.
++++
+|===
+

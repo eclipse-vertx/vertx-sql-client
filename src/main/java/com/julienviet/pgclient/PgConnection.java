@@ -21,7 +21,6 @@ import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.ext.sql.ResultSet;
 
 /**
  * A connection to Postgres.
@@ -32,8 +31,7 @@ import io.vertx.ext.sql.ResultSet;
 @VertxGen
 public interface PgConnection extends PgOperations {
 
-  @Fluent
-  PgConnection execute(String sql, Handler<AsyncResult<ResultSet>> handler);
+  void execute(String sql, Handler<AsyncResult<ResultSet>> handler);
 
   PgPreparedStatement prepare(String sql);
 

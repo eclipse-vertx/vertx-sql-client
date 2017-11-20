@@ -17,103 +17,86 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.PgConnection;
-import com.julienviet.pgclient.PgPreparedStatement;
-import com.julienviet.pgclient.PgQuery;
-import com.julienviet.pgclient.PgUpdate;
+import com.julienviet.pgclient.*;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
 import io.vertx.core.Handler;
-import io.vertx.ext.sql.ResultSet;
-import io.vertx.ext.sql.UpdateResult;
 
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class PgConnectionImpl implements PgConnection {
+public class PgConnectionImpl extends PgOperationsImpl implements PgConnection, ConnectionHolder {
 
-  private DbConnection dbConnection;
-  private final Map<String, PgPreparedStatement> psCache;
+  private final Context context;
+  public final Connection conn;
+  private volatile Handler<Throwable> exceptionHandler;
+  private volatile Handler<Void> closeHandler;
 
-  public PgConnectionImpl(DbConnection dbConnection, boolean cachePreparedStatements) {
-    this.dbConnection = dbConnection;
-    this.psCache = cachePreparedStatements ? new ConcurrentHashMap<>() : null;
+  public PgConnectionImpl(Context context, Connection conn) {
+    this.context = context;
+    this.conn = conn;
+  }
+
+  @Override
+  public Connection connection() {
+    return conn;
+  }
+
+  @Override
+  public void handleClosed() {
+    Handler<Void> handler = closeHandler;
+    if (handler != null) {
+      context.runOnContext(handler);
+    }
+  }
+
+  @Override
+  protected void schedule(CommandBase cmd) {
+    conn.schedule(cmd);
+  }
+
+  @Override
+  public void handleException(Throwable err) {
+    Handler<Throwable> handler = exceptionHandler;
+    if (handler != null) {
+      context.runOnContext(v -> {
+        handler.handle(err);
+      });
+    }
   }
 
   @Override
   public boolean isSSL() {
-    return dbConnection.isSsl();
+    return conn.isSsl();
   }
 
   @Override
-  public PgConnection execute(String sql, Handler<AsyncResult<ResultSet>> handler) {
-    dbConnection.schedule(new QueryCommand(sql, new ResultSetBuilder(handler)));
-    return this;
-  }
-
-  @Override
-  public void query(String sql, Handler<AsyncResult<ResultSet>> handler) {
-    dbConnection.schedule(new QueryCommand(sql, new ResultSetBuilder(handler)));
-  }
-
-  @Override
-  public void update(String sql, Handler<AsyncResult<UpdateResult>> handler) {
-    dbConnection.schedule(new UpdateCommand(sql, handler));
-  }
-
-  @Override
-  public void query(String sql, List<Object> params, Handler<AsyncResult<ResultSet>> handler) {
-    PgPreparedStatement preparedStatement = prepare(sql);
-    PgQuery query = preparedStatement.query(params);
-    query.execute(ar -> {
-      // Should only close if we don't use anonymous prepared statement or caching
-      preparedStatement.close();
-      handler.handle(ar);
-    });
-  }
-
-  @Override
-  public void update(String sql, List<Object> params, Handler<AsyncResult<UpdateResult>> handler) {
-    PgPreparedStatement preparedStatement = prepare(sql);
-    PgUpdate update = preparedStatement.update(params);
-    update.execute(ar -> {
-      // Should only close if we don't use anonymous prepared statement or caching
-      preparedStatement.close();
-      handler.handle(ar);
-    });
+  public void execute(String sql, Handler<AsyncResult<ResultSet>> handler) {
+    conn.schedule(new SimpleQueryCommand(sql, new ResultSetBuilder(handler)));
   }
 
   @Override
   public PgConnection closeHandler(Handler<Void> handler) {
-    dbConnection.closeHandler(handler);
+    closeHandler = handler;
     return this;
   }
 
   @Override
   public PgConnection exceptionHandler(Handler<Throwable> handler) {
-    dbConnection.exceptionHandler(handler);
+    exceptionHandler = handler;
     return this;
   }
 
   @Override
   public void close() {
-    dbConnection.doClose();
+    conn.close(this);
   }
 
   @Override
   public PgPreparedStatement prepare(String sql) {
-    if (psCache != null) {
-      return psCache.computeIfAbsent(sql, this::createCachedPreparedStatement);
-    } else {
-      return new PreparedStatementImpl(dbConnection, sql, UUID.randomUUID().toString(), false);
-    }
-  }
-
-  private PreparedStatementImpl createCachedPreparedStatement(String sql) {
-    return new PreparedStatementImpl(dbConnection, sql, UUID.randomUUID().toString(), true);
+    // todo : should somehow try to reuse existing cache or make it automatic ? (I think we can)
+    return new PreparedStatementImpl(conn, sql, UUID.randomUUID().toString());
   }
 }

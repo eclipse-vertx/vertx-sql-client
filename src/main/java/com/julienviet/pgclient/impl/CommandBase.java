@@ -18,19 +18,26 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.codec.Message;
+import com.julienviet.pgclient.codec.decoder.message.ReadyForQuery;
 import io.vertx.core.Handler;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
-abstract class CommandBase {
+public abstract class CommandBase {
+
+  protected Handler<Void> completionHandler;
 
   public void handleMessage(Message msg) {
-    System.out.println(getClass().getSimpleName() + " should handle message " + msg);
+    if (msg.getClass() == ReadyForQuery.class) {
+      completionHandler.handle(null);
+    } else {
+      System.out.println(getClass().getSimpleName() + " should handle message " + msg);
+    }
   }
 
-  abstract void exec(DbConnection conn, Handler<Void> handler);
+  abstract void exec(NetConnection conn);
 
   abstract void fail(Throwable err);
 
