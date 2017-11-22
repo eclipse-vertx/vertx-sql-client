@@ -39,7 +39,7 @@ class CloseStatementCommand extends CommandBase {
   }
 
   @Override
-  void exec(NetConnection conn) {
+  void exec(SocketConnection conn) {
     conn.writeMessage(new Close().setStatement(stmt));
     conn.writeMessage(Sync.INSTANCE);
   }

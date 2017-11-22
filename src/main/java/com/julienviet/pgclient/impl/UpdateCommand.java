@@ -38,7 +38,7 @@ class UpdateCommand extends UpdateCommandBase {
   }
 
   @Override
-  void exec(NetConnection conn) {
+  void exec(SocketConnection conn) {
     conn.writeMessage(new Query(sql));
   }
 

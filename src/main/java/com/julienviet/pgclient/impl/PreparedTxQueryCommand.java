@@ -45,7 +45,7 @@ public class PreparedTxQueryCommand extends TxQueryCommandBase {
   }
 
   @Override
-  void exec(NetConnection conn) {
+  void exec(SocketConnection conn) {
     conn.writeMessage(new Parse("SHOW TRANSACTION ISOLATION LEVEL"));
     conn.writeMessage(new Bind());
     conn.writeMessage(new Describe());

@@ -39,7 +39,7 @@ class ClosePortalCommand extends CommandBase {
   }
 
   @Override
-  void exec(NetConnection conn) {
+  void exec(SocketConnection conn) {
     conn.writeMessage(new Close().setPortal(portal));
     conn.writeMessage(Sync.INSTANCE);
   }

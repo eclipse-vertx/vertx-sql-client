@@ -52,7 +52,7 @@ class PreparedTxUpdateCommand extends TxUpdateCommandBase {
   }
 
   @Override
-  void exec(NetConnection conn) {
+  void exec(SocketConnection conn) {
     conn.writeMessage(new Parse(txMap.get(isolation)));
     conn.writeMessage(new Bind());
     conn.writeMessage(new Execute().setRowCount(1));

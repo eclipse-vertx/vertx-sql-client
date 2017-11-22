@@ -27,7 +27,7 @@ class CloseConnectionCommand extends CommandBase {
   }
 
   @Override
-  void exec(NetConnection conn) {
+  void exec(SocketConnection conn) {
     conn.writeMessage(Terminate.INSTANCE);
   }
 

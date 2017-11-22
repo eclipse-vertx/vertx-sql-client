@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class NetConnection implements Connection {
+public class SocketConnection implements Connection {
 
   enum Status {
 
@@ -53,9 +53,9 @@ public class NetConnection implements Connection {
   private ConnectionHolder holder;
   final Map<String, String> psCache;
 
-  public NetConnection(PgClientImpl client,
-                       NetSocketInternal socket,
-                       ContextImpl context) {
+  public SocketConnection(PgClientImpl client,
+                          NetSocketInternal socket,
+                          ContextImpl context) {
     this.socket = socket;
     this.client = client;
     this.context = context;

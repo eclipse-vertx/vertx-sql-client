@@ -48,7 +48,7 @@ class InitCommand extends CommandBase {
   final String database;
   final boolean ssl;
   private String CLIENT_ENCODING;
-  private NetConnection conn;
+  private SocketConnection conn;
 
   InitCommand(String username, String password, String database, boolean ssl, Handler<AsyncResult<Connection>> handler) {
     this.username = username;
@@ -59,7 +59,7 @@ class InitCommand extends CommandBase {
   }
 
   @Override
-  void exec(NetConnection c) {
+  void exec(SocketConnection c) {
     conn = c;
     if (ssl) {
       c.writeMessage(SSLRequest.INSTANCE);

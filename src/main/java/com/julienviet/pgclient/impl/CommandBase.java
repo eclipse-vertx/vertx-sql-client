@@ -37,7 +37,7 @@ public abstract class CommandBase {
     }
   }
 
-  abstract void exec(NetConnection conn);
+  abstract void exec(SocketConnection conn);
 
   abstract void fail(Throwable err);
 

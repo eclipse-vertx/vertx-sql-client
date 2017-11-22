@@ -71,7 +71,7 @@ class ExtendedQueryCommand extends QueryCommandBase {
   }
 
   @Override
-  void exec(NetConnection conn) {
+  void exec(SocketConnection conn) {
     boolean p;
     String s;
     if (stmt == null) {

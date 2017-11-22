@@ -75,7 +75,7 @@ public class PgClientImpl implements PgClient {
     client.connect(port, host, null, ar -> {
       if (ar.succeeded()) {
         NetSocketInternal socket = (NetSocketInternal) ar.result();
-        NetConnection conn = new NetConnection(this, socket, vertx.getOrCreateContext());
+        SocketConnection conn = new SocketConnection(this, socket, vertx.getOrCreateContext());
         conn.init(username, password, database, completionHandler);
       } else {
         completionHandler.handle(Future.failedFuture(ar.cause()));
@@ -87,7 +87,7 @@ public class PgClientImpl implements PgClient {
   public void connect(Handler<AsyncResult<PgConnection>> completionHandler) {
     _connect(ar ->
       completionHandler.handle(ar.map(conn -> {
-        PgConnectionImpl p = new PgConnectionImpl(((NetConnection)conn).context, conn);
+        PgConnectionImpl p = new PgConnectionImpl(((SocketConnection)conn).context, conn);
         conn.init(p);
         return p;
       })))

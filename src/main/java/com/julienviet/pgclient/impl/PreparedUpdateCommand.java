@@ -66,7 +66,7 @@ class PreparedUpdateCommand extends UpdateCommandBase {
   }
 
   @Override
-  void exec(NetConnection conn) {
+  void exec(SocketConnection conn) {
     boolean p;
     String s;
     if (stmt == null) {
