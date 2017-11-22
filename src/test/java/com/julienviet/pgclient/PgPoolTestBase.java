@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 @RunWith(VertxUnitRunner.class)
-public abstract class PoolTestBase extends PgTestBase {
+public abstract class PgPoolTestBase extends PgTestBase {
 
   Vertx vertx;
 

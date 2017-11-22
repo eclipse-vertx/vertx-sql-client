@@ -22,7 +22,7 @@ import io.vertx.ext.unit.TestContext;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class MultiplexedPoolTest extends PoolTestBase {
+public class StatementPgPoolTest extends PgPoolTestBase {
 
   @Override
   protected PgPool createPool(PgClient client, int size) {

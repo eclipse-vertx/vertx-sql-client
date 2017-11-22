@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class PoolTest extends PoolTestBase {
+public class PgPoolTest extends PgPoolTestBase {
 
   @Override
   protected PgPool createPool(PgClient client, int size) {
