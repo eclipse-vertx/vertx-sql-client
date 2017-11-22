@@ -15,7 +15,7 @@
  *
  */
 
-package com.julienviet.pgclient.impl.pool;
+package com.julienviet.pgclient.impl.provider;
 
 import com.julienviet.pgclient.impl.Connection;
 import com.julienviet.pgclient.impl.ConnectionHolder;
@@ -32,7 +32,7 @@ import java.util.function.Consumer;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class SharedConnectionPool implements ConnectionPool {
+public class SharedConnectionProvider implements ConnectionProvider {
 
   private final Set<ConnectionHolder> holders = new HashSet<>();
   private ConnectionProxy shared;
@@ -40,7 +40,7 @@ public class SharedConnectionPool implements ConnectionPool {
   private ArrayDeque<Future<Connection>> waiters = new ArrayDeque<>();
   private Consumer<Handler<AsyncResult<Connection>>> connector;
 
-  public SharedConnectionPool(Consumer<Handler<AsyncResult<Connection>>> connector) {
+  public SharedConnectionProvider(Consumer<Handler<AsyncResult<Connection>>> connector) {
     this.connector = connector;
   }
 
@@ -67,14 +67,22 @@ public class SharedConnectionPool implements ConnectionPool {
             shared = new ConnectionProxy(conn) {
               @Override
               public void init(ConnectionHolder holder) {
+                if (holders.contains(holder)) {
+                  throw new IllegalStateException();
+                }
                 holders.add(holder);
               }
               @Override
               public void close(ConnectionHolder holder) {
-                holders.remove(holder);
+                if (!holders.remove(holder)) {
+                  throw new IllegalStateException();
+                }
               }
               @Override
               public void handleClosed() {
+                if (shared == null) {
+                  throw new IllegalStateException();
+                }
                 shared = null;
                 ArrayList<ConnectionHolder> copy = new ArrayList<>(holders);
                 holders.clear();

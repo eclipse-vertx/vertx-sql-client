@@ -18,9 +18,9 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.*;
-import com.julienviet.pgclient.impl.pool.ConcurrentConnectionPool;
-import com.julienviet.pgclient.impl.pool.ConnectionPool;
-import com.julienviet.pgclient.impl.pool.SharedConnectionPool;
+import com.julienviet.pgclient.impl.provider.ConnectionPoolProvider;
+import com.julienviet.pgclient.impl.provider.ConnectionProvider;
+import com.julienviet.pgclient.impl.provider.SharedConnectionProvider;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -39,21 +39,21 @@ import io.vertx.core.Vertx;
 public class PgPoolImpl extends PgOperationsImpl implements PgPool {
 
   private final Context context;
-  private final ConnectionPool pool;
+  private final ConnectionProvider provider;
 
   public PgPoolImpl(Context context, PgClientImpl client, int maxSize, PoolingMode mode) {
     if (maxSize < 1) {
       throw new IllegalArgumentException("Pool max size must be > 0");
     }
     this.context = context;
-    this.pool = mode == PoolingMode.STATEMENT ? new SharedConnectionPool(client::_connect) : new ConcurrentConnectionPool(client::_connect, maxSize);
+    this.provider = mode == PoolingMode.STATEMENT ? new SharedConnectionProvider(client::_connect) : new ConnectionPoolProvider(client::_connect, maxSize);
   }
 
   @Override
   public void getConnection(Handler<AsyncResult<PgConnection>> handler) {
     Context current = Vertx.currentContext();
     if (current == context) {
-      pool.acquire(new ConnectionWaiter(handler));
+      provider.acquire(new ConnectionWaiter(handler));
     } else {
       context.runOnContext(v -> getConnection(handler));
     }
@@ -63,7 +63,7 @@ public class PgPoolImpl extends PgOperationsImpl implements PgPool {
   protected void schedule(CommandBase cmd) {
     Context current = Vertx.currentContext();
     if (current == context) {
-      pool.acquire(new CommandWaiter(cmd));
+      provider.acquire(new CommandWaiter(cmd));
     } else {
       context.runOnContext(v -> schedule(cmd));
     }
@@ -130,6 +130,6 @@ public class PgPoolImpl extends PgOperationsImpl implements PgPool {
 
   @Override
   public void close() {
-    pool.close();
+    provider.close();
   }
 }

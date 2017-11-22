@@ -15,7 +15,7 @@
  *
  */
 
-package com.julienviet.pgclient.impl.pool;
+package com.julienviet.pgclient.impl.provider;
 
 import com.julienviet.pgclient.impl.Connection;
 import com.julienviet.pgclient.impl.ConnectionHolder;
@@ -30,7 +30,7 @@ import java.util.function.Consumer;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class ConcurrentConnectionPool implements ConnectionPool {
+public class ConnectionPoolProvider implements ConnectionProvider {
 
   private final Consumer<Handler<AsyncResult<Connection>>> connector;
   private final int maxSize;
@@ -39,7 +39,7 @@ public class ConcurrentConnectionPool implements ConnectionPool {
   private final ArrayDeque<PooledConnection> available = new ArrayDeque<>();
   private int size;
 
-  public ConcurrentConnectionPool(Consumer<Handler<AsyncResult<Connection>>> connector, int maxSize) {
+  public ConnectionPoolProvider(Consumer<Handler<AsyncResult<Connection>>> connector, int maxSize) {
     this.maxSize = maxSize;
     this.connector = connector;
   }
@@ -61,24 +61,23 @@ public class ConcurrentConnectionPool implements ConnectionPool {
 
     private ConnectionHolder holder;
 
-    public PooledConnection(Connection conn) {
+    PooledConnection(Connection conn) {
       super(conn);
     }
 
     @Override
     public void init(ConnectionHolder holder) {
+      if (this.holder != null) {
+        throw new IllegalStateException();
+      }
       this.holder = holder;
     }
 
     @Override
     public void close(ConnectionHolder holder) {
-                /*
-                Context current = Vertx.currentContext();
-                if (current == context) {
-                  pooling.release(proxy);
-                } else {
-                  context.runOnContext(v -> pooling.release(proxy));
-                }*/
+      if (holder != this.holder) {
+        throw new IllegalStateException();
+      }
       this.holder = null;
       available.add(this);
       check();
@@ -86,13 +85,18 @@ public class ConcurrentConnectionPool implements ConnectionPool {
 
     @Override
     public void handleClosed() {
-      all.remove(this);
-      available.remove(this);
-      size--;
-      if (holder != null) {
-        holder.handleClosed();
+      if (all.remove(this)) {
+        size--;
+        if (holder != null) {
+          available.remove(this);
+        }
+        if (holder != null) {
+          holder.handleClosed();
+        }
+        check();
+      } else {
+        throw new IllegalStateException();
       }
-      check();
     }
 
     @Override

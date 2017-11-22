@@ -15,25 +15,39 @@
  *
  */
 
-package com.julienviet.pgclient.impl.pool;
+package com.julienviet.pgclient.provider;
 
+import com.julienviet.pgclient.impl.CommandBase;
 import com.julienviet.pgclient.impl.Connection;
 import com.julienviet.pgclient.impl.ConnectionHolder;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
-/**
- * A connection pool.
- */
-public interface ConnectionPool {
+class SimpleConnection implements Connection {
 
-  /**
-   * Acquire a connection
-   *
-   * @param holder the waiter for the connection
-   */
-  void acquire(Handler<AsyncResult<Connection>> holder);
+  ConnectionHolder holder;
+  int closed;
 
-  void close();
+  @Override
+  public void init(ConnectionHolder holder) {
+    this.holder = holder;
+  }
 
+  @Override
+  public boolean isSsl() {
+    return false;
+  }
+
+  @Override
+  public void schedule(CommandBase cmd, Handler<Void> completionHandler) {
+
+  }
+
+  @Override
+  public void close(ConnectionHolder holder) {
+    closed++;
+  }
+
+  void close() {
+    holder.handleClosed();
+  }
 }

@@ -15,42 +15,62 @@
  *
  */
 
-package com.julienviet.pgclient.impl.pool;
+package com.julienviet.pgclient.provider;
 
-import com.julienviet.pgclient.impl.CommandBase;
 import com.julienviet.pgclient.impl.Connection;
 import com.julienviet.pgclient.impl.ConnectionHolder;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
-import java.util.HashSet;
-import java.util.Set;
+class SimpleHolder implements ConnectionHolder, Handler<AsyncResult<Connection>> {
 
-abstract class ConnectionProxy implements Connection, ConnectionHolder {
+  private Connection conn;
+  private Throwable acquireFailure;
+  private int closed;
 
-  private final Connection conn;
+  SimpleHolder() {
+  }
 
-  ConnectionProxy(Connection conn) {
-    this.conn = conn;
+  int closed() {
+    return closed;
+  }
+
+  boolean isConnected() {
+    return conn != null;
+  }
+
+  boolean isComplete() {
+    return conn != null || acquireFailure != null;
+  }
+
+  void init() {
+    conn.init(this);
+  }
+
+  @Override
+  public void handle(AsyncResult<Connection> ar) {
+    if (ar.succeeded()) {
+      conn = ar.result();
+    } else {
+      acquireFailure = ar.cause();
+    }
   }
 
   @Override
   public Connection connection() {
-    return this;
+    return conn;
   }
 
   @Override
-  public boolean isSsl() {
-    return conn.isSsl();
+  public void handleClosed() {
+    closed++;
   }
 
   @Override
-  public void schedule(CommandBase cmd, Handler<Void> completionHandler) {
-    conn.schedule(cmd, completionHandler);
+  public void handleException(Throwable err) {
+
   }
 
-  /**
-   * Close the underlying connection
-   */
   void close() {
     conn.close(this);
   }
