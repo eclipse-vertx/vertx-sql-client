@@ -17,6 +17,7 @@
 
 package com.julienviet.pgclient.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.julienviet.pgclient.PgException;
 import com.julienviet.pgclient.codec.Column;
 import com.julienviet.pgclient.codec.DataFormat;
@@ -27,10 +28,11 @@ import com.julienviet.pgclient.codec.decoder.message.DataRow;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
 import com.julienviet.pgclient.codec.decoder.message.ReadyForQuery;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
-import io.vertx.core.Handler;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -43,7 +45,7 @@ import static com.julienviet.pgclient.codec.DataType.*;
 import static com.julienviet.pgclient.codec.formatter.DateTimeFormatter.*;
 import static com.julienviet.pgclient.codec.formatter.TimeFormatter.*;
 import static java.nio.charset.StandardCharsets.*;
-import static javax.xml.bind.DatatypeConverter.parseHexBinary;
+import static javax.xml.bind.DatatypeConverter.*;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -164,19 +166,27 @@ abstract class QueryCommandBase extends CommandBase {
         break;
       case JSON:
       case JSONB:
-        if(value.charAt(0)== '{') {
+        if(value.indexOf('{') != -1) {
           row.add(new JsonObject(value));
-        } else {
+        } else if(value.indexOf('[') != -1) {
           row.add(new JsonArray(value));
+        } else {
+          try {
+            JsonNode jsonNode = Json.mapper.readTree(value);
+            if (jsonNode.isNumber()) {
+              row.add(jsonNode.numberValue());
+            } else if(jsonNode.isBoolean()) {
+              row.add(jsonNode.booleanValue());
+            } else if(jsonNode.isTextual()) {
+              row.add(jsonNode.textValue());
+            } else {
+              row.addNull();
+            }
+          } catch (IOException e) {
+            // do nothing
+          }
         }
         break;
-      case BPCHAR:
-      case VARCHAR:
-      case NAME:
-      case TEXT:
-      case UUID:
-      case DATE:
-      case TIME:
       default:
         row.add(value);
         break;
