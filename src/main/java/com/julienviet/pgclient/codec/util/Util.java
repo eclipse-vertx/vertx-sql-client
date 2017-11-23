@@ -17,10 +17,14 @@
 
 package com.julienviet.pgclient.codec.util;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.julienviet.pgclient.codec.DataType;
 import io.netty.buffer.ByteBuf;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
@@ -30,9 +34,13 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
+import static com.julienviet.pgclient.codec.DataType.*;
+import static com.julienviet.pgclient.codec.formatter.DateTimeFormatter.*;
+import static com.julienviet.pgclient.codec.formatter.TimeFormatter.TIMETZ_FORMAT;
 import static java.nio.charset.StandardCharsets.*;
 import static javax.xml.bind.DatatypeConverter.*;
 
@@ -114,6 +122,95 @@ public class Util {
       }
     }
     return params;
+  }
+
+  public static void decodeBinary(DataType dataType, byte[] data, JsonArray row) {
+    // not yet implemented
+  }
+
+  public static void decodeText(DataType type, byte[] data, JsonArray row) {
+    if(data == null) {
+      row.addNull();
+      return;
+    }
+    if(type == CHAR) {
+      row.add((char) data[0]);
+      return;
+    }
+    if(type == BOOL) {
+      if(data[0] == 't') {
+        row.add(true);
+      } else {
+        row.add(false);
+      }
+      return;
+    }
+    if(type == BYTEA) {
+      row.add(parseHexBinary(new String(data, 2, data.length - 2, UTF_8)));
+      return;
+    }
+    String value = new String(data, UTF_8);
+    switch (type) {
+      case INT2:
+        row.add(Short.parseShort(value));
+        break;
+      case INT4:
+        row.add(Integer.parseInt(value));
+        break;
+      case INT8:
+        row.add(Long.parseLong(value));
+        break;
+      case FLOAT4:
+        row.add(Float.parseFloat(value));
+        break;
+      case FLOAT8:
+        row.add(Double.parseDouble(value));
+        break;
+      case NUMERIC:
+        BigDecimal big = new BigDecimal(value);
+        if (big.scale() == 0) {
+          row.add(big.toBigInteger());
+        } else {
+          // we might loose precision here
+          row.add(big.doubleValue());
+        }
+        break;
+      case TIMETZ:
+        row.add(OffsetTime.parse(value, TIMETZ_FORMAT).toString());
+        break;
+      case TIMESTAMP:
+        row.add(LocalDateTime.parse(value, TIMESTAMP_FORMAT).toInstant(ZoneOffset.UTC));
+        break;
+      case TIMESTAMPTZ:
+        row.add(OffsetDateTime.parse(value, TIMESTAMPTZ_FORMAT).toInstant());
+        break;
+      case JSON:
+      case JSONB:
+        if(value.indexOf('{') != -1) {
+          row.add(new JsonObject(value));
+        } else if(value.indexOf('[') != -1) {
+          row.add(new JsonArray(value));
+        } else {
+          try {
+            JsonNode jsonNode = Json.mapper.readTree(value);
+            if (jsonNode.isNumber()) {
+              row.add(jsonNode.numberValue());
+            } else if(jsonNode.isBoolean()) {
+              row.add(jsonNode.booleanValue());
+            } else if(jsonNode.isTextual()) {
+              row.add(jsonNode.textValue());
+            } else {
+              row.addNull();
+            }
+          } catch (IOException e) {
+            // do nothing
+          }
+        }
+        break;
+      default:
+        row.add(value);
+        break;
+    }
   }
 
 }
