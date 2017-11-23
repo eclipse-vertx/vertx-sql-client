@@ -24,8 +24,13 @@ import com.julienviet.pgclient.codec.decoder.message.CommandComplete;
 import com.julienviet.pgclient.codec.decoder.message.EmptyQueryResponse;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
+import com.julienviet.pgclient.codec.encoder.OutboundMessage;
+import com.julienviet.pgclient.codec.util.Util;
+import io.netty.buffer.ByteBuf;
 
 import java.util.Objects;
+
+import static com.julienviet.pgclient.codec.encoder.message.type.MessageType.QUERY;
 
 /**
  * <p>
@@ -39,7 +44,7 @@ import java.util.Objects;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class Query implements Message {
+public class Query implements OutboundMessage {
 
   final String sql;
 
@@ -60,10 +65,17 @@ public class Query implements Message {
   }
 
   @Override
+  public void encode(ByteBuf out) {
+    out.writeByte(QUERY);
+    out.writeInt(0);
+    Util.writeCStringUTF8(out, getQuery());
+    out.setInt(1, out.writerIndex() - 1);
+  }
+
+  @Override
   public int hashCode() {
     return Objects.hash(sql);
   }
-
 
   @Override
   public String toString() {

@@ -20,9 +20,14 @@ package com.julienviet.pgclient.codec.encoder.message;
 import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
 import com.julienviet.pgclient.codec.decoder.message.ParseComplete;
+import com.julienviet.pgclient.codec.encoder.OutboundMessage;
+import com.julienviet.pgclient.codec.util.Util;
+import io.netty.buffer.ByteBuf;
 
 import java.util.Arrays;
 import java.util.Objects;
+
+import static com.julienviet.pgclient.codec.encoder.message.type.MessageType.PARSE;
 
 /**
  * <p>
@@ -34,7 +39,7 @@ import java.util.Objects;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class Parse implements Message {
+public class Parse implements OutboundMessage {
 
   private final String query;
   private String statement;
@@ -77,11 +82,38 @@ public class Parse implements Message {
       Arrays.equals(paramDataTypes, parse.paramDataTypes);
   }
 
+  private static void encode(String statement, String query, int[] paramDataTypes, ByteBuf out) {
+    int pos = out.writerIndex();
+    out.writeByte(PARSE);
+    out.writeInt(0);
+    if(statement == null) {
+      out.writeByte(0);
+    } else {
+      Util.writeCStringUTF8(out, statement);
+    }
+    Util.writeCStringUTF8(out, query);
+    // no parameter data types (OIDs)
+    if(paramDataTypes == null) {
+      out.writeShort(0);
+    } else {
+      // Parameter data types (OIDs)
+      out.writeShort(paramDataTypes.length);
+      for (int paramDataType : paramDataTypes) {
+        out.writeInt(paramDataType);
+      }
+    }
+    out.setInt(pos + 1, out.writerIndex() - pos - 1);
+  }
+
+  @Override
+  public void encode(ByteBuf out) {
+    encode(statement, query, paramDataTypes, out);
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(query, statement, paramDataTypes);
   }
-
 
   @Override
   public String toString() {

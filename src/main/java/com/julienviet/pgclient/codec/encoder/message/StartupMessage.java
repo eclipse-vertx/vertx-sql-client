@@ -18,14 +18,33 @@
 package com.julienviet.pgclient.codec.encoder.message;
 
 import com.julienviet.pgclient.codec.Message;
+import com.julienviet.pgclient.codec.encoder.OutboundMessage;
+import com.julienviet.pgclient.codec.util.Util;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 
 import java.util.Objects;
+
+import static com.julienviet.pgclient.codec.encoder.message.type.MessageType.TERMINATE;
+import static com.julienviet.pgclient.codec.util.Util.writeCString;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class StartupMessage implements Message {
+public class StartupMessage implements OutboundMessage {
+
+  private static final ByteBuf BUFF_USER = Unpooled.copiedBuffer("user", UTF_8).asReadOnly();
+  private static final ByteBuf BUFF_DATABASE = Unpooled.copiedBuffer("database", UTF_8).asReadOnly();
+  private static final ByteBuf BUFF_APPLICATION_NAME = Unpooled.copiedBuffer("application_name", UTF_8).asReadOnly();
+  private static final ByteBuf BUFF_VERTX_PG_CLIENT = Unpooled.copiedBuffer("vertx-pg-client", UTF_8).asReadOnly();
+  private static final ByteBuf BUFF_CLIENT_ENCODING = Unpooled.copiedBuffer("client_encoding", UTF_8).asReadOnly();
+  private static final ByteBuf BUFF_UTF8 = Unpooled.copiedBuffer("utf8", UTF_8).asReadOnly();
+  private static final ByteBuf BUFF_DATE_STYLE = Unpooled.copiedBuffer("DateStyle", UTF_8).asReadOnly();
+  private static final ByteBuf BUFF_ISO = Unpooled.copiedBuffer("ISO", UTF_8).asReadOnly();
+  private static final ByteBuf BUFF_EXTRA_FLOAT_DIGITS = Unpooled.copiedBuffer("extra_float_digits", UTF_8).asReadOnly();
+  private static final ByteBuf BUFF_2 = Unpooled.copiedBuffer("2", UTF_8).asReadOnly();
 
   final String username;
   final String database;
@@ -53,10 +72,36 @@ public class StartupMessage implements Message {
   }
 
   @Override
+  public void encode(ByteBuf out) {
+
+    int pos = out.writerIndex();
+
+    out.writeInt(0);
+    // protocol version
+    out.writeShort(3);
+    out.writeShort(0);
+
+    writeCString(out, BUFF_USER);
+    Util.writeCStringUTF8(out, username);
+    writeCString(out, BUFF_DATABASE);
+    Util.writeCStringUTF8(out, database);
+    writeCString(out, BUFF_APPLICATION_NAME);
+    writeCString(out, BUFF_VERTX_PG_CLIENT);
+    writeCString(out, BUFF_CLIENT_ENCODING);
+    writeCString(out, BUFF_UTF8);
+    writeCString(out, BUFF_DATE_STYLE);
+    writeCString(out, BUFF_ISO);
+    writeCString(out, BUFF_EXTRA_FLOAT_DIGITS);
+    writeCString(out, BUFF_2);
+
+    out.writeByte(0);
+    out.setInt(pos, out.writerIndex() - pos);
+  }
+
+  @Override
   public int hashCode() {
     return Objects.hash(username, database);
   }
-
 
   @Override
   public String toString() {

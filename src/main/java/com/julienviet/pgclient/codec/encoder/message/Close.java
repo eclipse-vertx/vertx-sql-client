@@ -20,8 +20,13 @@ package com.julienviet.pgclient.codec.encoder.message;
 import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.decoder.message.CloseComplete;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
+import com.julienviet.pgclient.codec.encoder.OutboundMessage;
+import com.julienviet.pgclient.codec.util.Util;
+import io.netty.buffer.ByteBuf;
 
 import java.util.Objects;
+
+import static com.julienviet.pgclient.codec.encoder.message.type.MessageType.CLOSE;
 
 /**
  *
@@ -35,7 +40,7 @@ import java.util.Objects;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class Close implements Message {
+public class Close implements OutboundMessage {
 
   private String statement;
   private String portal;
@@ -70,10 +75,19 @@ public class Close implements Message {
   }
 
   @Override
+  public void encode(ByteBuf out) {
+    int pos = out.writerIndex();
+    out.writeByte(CLOSE);
+    out.writeInt(0);
+    out.writeByte('S'); // 'S' to close a prepared statement or 'P' to close a portal
+    Util.writeCStringUTF8(out, statement != null ? statement : "");
+    out.setInt(pos + 1, out.writerIndex() - pos - 1);
+  }
+
+  @Override
   public int hashCode() {
     return Objects.hash(statement, portal);
   }
-
 
   @Override
   public String toString() {

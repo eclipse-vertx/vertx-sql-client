@@ -21,6 +21,10 @@ import com.julienviet.pgclient.codec.decoder.message.ReadyForQuery;
 import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.TransactionStatus;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
+import com.julienviet.pgclient.codec.encoder.OutboundMessage;
+import io.netty.buffer.ByteBuf;
+
+import static com.julienviet.pgclient.codec.encoder.message.type.MessageType.SYNC;
 
 /**
  *
@@ -41,11 +45,17 @@ import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class Sync implements Message {
+public class Sync implements OutboundMessage {
 
   public static final Sync INSTANCE = new Sync();
 
   private Sync() {}
+
+  @Override
+  public void encode(ByteBuf out) {
+    out.writeByte(SYNC);
+    out.writeInt(4);
+  }
 
   @Override
   public String toString() {

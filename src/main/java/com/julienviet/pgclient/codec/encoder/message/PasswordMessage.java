@@ -17,16 +17,21 @@
 
 package com.julienviet.pgclient.codec.encoder.message;
 
+import com.julienviet.pgclient.codec.encoder.OutboundMessage;
 import com.julienviet.pgclient.codec.util.MD5Authentication;
 import com.julienviet.pgclient.codec.Message;
+import com.julienviet.pgclient.codec.util.Util;
+import io.netty.buffer.ByteBuf;
 
 import java.util.Objects;
+
+import static com.julienviet.pgclient.codec.encoder.message.type.MessageType.PASSWORD_MESSAGE;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class PasswordMessage implements Message {
+public class PasswordMessage implements OutboundMessage {
 
   final String hash;
 
@@ -44,6 +49,15 @@ public class PasswordMessage implements Message {
     if (o == null || getClass() != o.getClass()) return false;
     PasswordMessage that = (PasswordMessage) o;
     return Objects.equals(hash, that.hash);
+  }
+
+  @Override
+  public void encode(ByteBuf out) {
+    int pos = out.writerIndex();
+    out.writeByte(PASSWORD_MESSAGE);
+    out.writeInt(0);
+    Util.writeCStringUTF8(out, hash);
+    out.setInt(pos + 1, out.writerIndex() - pos- 1);
   }
 
   @Override

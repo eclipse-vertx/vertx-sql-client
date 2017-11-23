@@ -24,8 +24,13 @@ import com.julienviet.pgclient.codec.decoder.message.EmptyQueryResponse;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
 import com.julienviet.pgclient.codec.decoder.message.PortalSuspended;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
+import com.julienviet.pgclient.codec.encoder.OutboundMessage;
+import com.julienviet.pgclient.codec.util.Util;
+import io.netty.buffer.ByteBuf;
 
 import java.util.Objects;
+
+import static com.julienviet.pgclient.codec.encoder.message.type.MessageType.EXECUTE;
 
 /**
  *
@@ -51,7 +56,7 @@ import java.util.Objects;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class Execute implements Message {
+public class Execute implements OutboundMessage {
 
   private String portal;
   private int rowCount;
@@ -84,11 +89,24 @@ public class Execute implements Message {
       Objects.equals(portal, execute.portal);
   }
 
+  private static void encode(String portal, int rowCount, ByteBuf out) {
+    int pos = out.writerIndex();
+    out.writeByte(EXECUTE);
+    out.writeInt(0);
+    Util.writeCStringUTF8(out, portal != null ? portal : "");
+    out.writeInt(rowCount); // Zero denotes "no limit" maybe for ReadStream<Row>
+    out.setInt(pos + 1, out.writerIndex() - pos - 1);
+  }
+
+  @Override
+  public void encode(ByteBuf out) {
+    encode(portal, rowCount, out);
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(portal, rowCount);
   }
-
 
   @Override
   public String toString() {

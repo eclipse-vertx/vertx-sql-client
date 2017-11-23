@@ -28,7 +28,6 @@ import com.julienviet.pgclient.codec.encoder.message.Describe;
 import com.julienviet.pgclient.codec.encoder.message.Execute;
 import com.julienviet.pgclient.codec.encoder.message.Parse;
 import com.julienviet.pgclient.codec.encoder.message.Sync;
-import com.julienviet.pgclient.codec.util.Util;
 
 import java.util.List;
 import java.util.UUID;
@@ -76,25 +75,25 @@ class ExtendedQueryCommand extends QueryCommandBase {
     boolean p;
     String s;
     if (conn.psCache != null) {
-      s = conn.psCache.get(sql);
-      if (s == null) {
+      String cached = conn.psCache.get(sql);
+      if (cached == null) {
         p = true;
         s = UUID.randomUUID().toString();
         conn.psCache.put(sql, s);
       } else {
         p = false;
+        s = cached;
       }
     } else {
       p = parse;
       s = stmt;
     }
 
-    //
     if (p) {
       conn.writeMessage(new Parse(sql).setStatement(s));
     }
     if (!suspended) {
-      conn.writeMessage(new Bind().setParamValues(Util.paramValues(params)).setPortal(portal).setStatement(s));
+      conn.writeMessage(new Bind().setParamValues(params).setPortal(portal).setStatement(s));
       conn.writeMessage(new Describe().setStatement(s));
     } else {
       // Needed for now, later see how to remove it

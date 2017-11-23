@@ -18,6 +18,8 @@
 package com.julienviet.pgclient.codec.encoder.message;
 
 import com.julienviet.pgclient.codec.Message;
+import com.julienviet.pgclient.codec.encoder.OutboundMessage;
+import io.netty.buffer.ByteBuf;
 
 import java.util.Objects;
 
@@ -25,7 +27,7 @@ import java.util.Objects;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class SSLRequest implements Message {
+public class SSLRequest implements OutboundMessage {
 
   public static final SSLRequest INSTANCE = new SSLRequest();
 
@@ -47,10 +49,18 @@ public class SSLRequest implements Message {
   }
 
   @Override
+  public void encode(ByteBuf out) {
+    int pos = out.writerIndex();
+    out.writeInt(0);
+    out.writeInt(code);
+//    out.writeInt(0x12345679);
+    out.setInt(pos, out.writerIndex() - pos);
+  }
+
+  @Override
   public int hashCode() {
     return Objects.hash(code);
   }
-
 
   @Override
   public String toString() {

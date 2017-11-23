@@ -15,37 +15,20 @@
  *
  */
 
-package com.julienviet.pgclient.codec.encoder.message;
+package com.julienviet.pgclient.codec.encoder;
 
-import com.julienviet.pgclient.codec.Message;
-import com.julienviet.pgclient.codec.encoder.OutboundMessage;
 import io.netty.buffer.ByteBuf;
 
-import static com.julienviet.pgclient.codec.encoder.message.type.MessageType.TERMINATE;
-
 /**
- *
- * <p>
- * This message immediately closes the connection. On receipt of this message,
- * the backend closes the connection and terminates.
+ * An interface that should be implemented for decoding and encoding messages
  *
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class Terminate implements OutboundMessage {
+public interface OutboundMessage {
 
-  public static final Terminate INSTANCE = new Terminate();
 
-  private Terminate() {}
+  void encode(ByteBuf out);
 
-  @Override
-  public void encode(ByteBuf out) {
-    out.writeByte(TERMINATE);
-    out.writeInt(4);
-  }
 
-  @Override
-  public String toString() {
-    return "Terminate{}";
-  }
 }

@@ -20,6 +20,7 @@ package com.julienviet.pgclient.impl;
 import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.decoder.MessageDecoder;
 import com.julienviet.pgclient.codec.encoder.MessageEncoder;
+import com.julienviet.pgclient.codec.encoder.OutboundMessage;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.AsyncResult;
@@ -85,8 +86,15 @@ public class SocketConnection implements Connection {
     this.holder = holder;
   }
 
-  void writeMessage(Message cmd) {
-    socket.writeMessage(cmd);
+  private boolean cork = false;
+  private ArrayDeque<OutboundMessage> outbound = new ArrayDeque<>();
+
+  void writeMessage(OutboundMessage cmd) {
+    if (cork) {
+      outbound.add(cmd);
+    } else {
+      socket.writeMessage(cmd);
+    }
   }
 
   @Override
@@ -130,7 +138,20 @@ public class SocketConnection implements Connection {
     CommandBase cmd;
     while (inflight.size() < client.pipeliningLimit && (cmd = pending.poll()) != null) {
       inflight.add(cmd);
+      cork = true;
       cmd.exec(this);
+      if (outbound.size() == 1) {
+        socket.writeMessage(outbound.poll());
+      } else {
+        OutboundMessage msg = out -> {
+          OutboundMessage msg1;
+          while ((msg1 = outbound.poll()) != null) {
+            msg1.encode(out);
+          }
+        };
+        socket.writeMessage(msg);
+      }
+      cork = false;
     }
   }
 

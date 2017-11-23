@@ -20,9 +20,15 @@ package com.julienviet.pgclient.codec.encoder.message;
 import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.decoder.message.BindComplete;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
+import com.julienviet.pgclient.codec.encoder.OutboundMessage;
+import com.julienviet.pgclient.codec.util.Util;
+import io.netty.buffer.ByteBuf;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+
+import static com.julienviet.pgclient.codec.encoder.message.type.MessageType.BIND;
 
 /**
  *
@@ -37,14 +43,14 @@ import java.util.Objects;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class Bind implements Message {
+public class Bind implements OutboundMessage {
 
   private String statement;
   private String portal;
-  private byte[][] paramValues;
+  private List<Object> paramValues;
   private int[] paramFormats;
 
-  public Bind setParamValues(byte[][] paramValues) {
+  public Bind setParamValues(List<Object> paramValues) {
     this.paramValues = paramValues;
     return this;
   }
@@ -76,7 +82,7 @@ public class Bind implements Message {
     return portal;
   }
 
-  public byte[][] getParamValues() {
+  public List<Object> getParamValues() {
     return paramValues;
   }
 
@@ -87,7 +93,7 @@ public class Bind implements Message {
     Bind bind = (Bind) o;
     return Objects.equals(statement, bind.statement) &&
       Objects.equals(portal, bind.portal) &&
-      Arrays.equals(paramValues, bind.paramValues) &&
+      Objects.equals(paramValues, bind.paramValues) &&
       Arrays.equals(paramFormats, bind.paramFormats);
   }
 
@@ -96,13 +102,61 @@ public class Bind implements Message {
     return Objects.hash(statement, portal, paramValues, paramFormats);
   }
 
+  private static void encode(String portal, String statement, List<Object> paramValues, ByteBuf out) {
+    int pos = out.writerIndex();
+    out.writeByte(BIND);
+    out.writeInt(0);
+    if(portal == null) {
+      out.writeByte(0);
+    } else {
+      Util.writeCStringUTF8(out, portal);
+    }
+    if(statement == null) {
+      out.writeByte(0);
+    } else {
+      Util.writeCStringUTF8(out, statement);
+    }
+    if(paramValues == null) {
+      // No parameter formats
+      out.writeShort(0);
+      // No parameter values
+      out.writeShort(0);
+    } else {
+      byte[][] foobar = Util.paramValues(paramValues);
+      // Parameter formats
+      out.writeShort(foobar.length);
+      for (int c = 0; c < foobar.length; ++c) {
+        // for now each format is TEXT
+        out.writeShort(0);
+      }
+      out.writeShort(foobar.length);
+      for (int c = 0; c < foobar.length; ++c) {
+        if (foobar[c] == null) {
+          // NULL value
+          out.writeInt(-1);
+        } else {
+          // Not NULL value
+          out.writeInt(foobar[c].length);
+          out.writeBytes(foobar[c]);
+        }
+      }
+    }
+    // Result columns are all in TEXT format
+    out.writeShort(0);
+    out.setInt(pos + 1, out.writerIndex() - pos - 1);
+  }
+
+  @Override
+  public void encode(ByteBuf out) {
+    encode(portal, statement, paramValues, out);
+  }
 
   @Override
   public String toString() {
     return "Bind{" +
       "statement='" + statement + '\'' +
       ", portal='" + portal + '\'' +
-      ", paramValues=" + Arrays.toString(paramValues) +
+      ", paramValues=" + paramValues +
       ", paramFormats=" + Arrays.toString(paramFormats) +
       '}';
   }

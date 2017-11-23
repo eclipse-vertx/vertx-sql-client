@@ -18,6 +18,8 @@
 package com.julienviet.pgclient.codec.encoder.message;
 
 import com.julienviet.pgclient.codec.Message;
+import com.julienviet.pgclient.codec.encoder.OutboundMessage;
+import io.netty.buffer.ByteBuf;
 
 import java.util.Objects;
 
@@ -25,7 +27,7 @@ import java.util.Objects;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class CancelRequest implements Message {
+public class CancelRequest implements OutboundMessage {
 
   private final int code = 80877102;
   private final int processId;
@@ -60,10 +62,19 @@ public class CancelRequest implements Message {
   }
 
   @Override
+  public void encode(ByteBuf out) {
+    int pos = out.writerIndex();
+    out.writeInt(0);
+    out.writeInt(code);
+    out.writeInt(processId);
+    out.writeInt(secretKey);
+    out.setInt(pos, out.writerIndex() - pos);
+  }
+
+  @Override
   public int hashCode() {
     return Objects.hash(code, processId, secretKey);
   }
-
 
   @Override
   public String toString() {

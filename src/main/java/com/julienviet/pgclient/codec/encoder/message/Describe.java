@@ -22,8 +22,13 @@ import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
 import com.julienviet.pgclient.codec.decoder.message.NoData;
 import com.julienviet.pgclient.codec.decoder.message.ParameterDescription;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
+import com.julienviet.pgclient.codec.encoder.OutboundMessage;
+import com.julienviet.pgclient.codec.util.Util;
+import io.netty.buffer.ByteBuf;
 
 import java.util.Objects;
+
+import static com.julienviet.pgclient.codec.encoder.message.type.MessageType.DESCRIBE;
 
 /**
  *
@@ -51,7 +56,7 @@ import java.util.Objects;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class Describe implements Message {
+public class Describe implements OutboundMessage {
 
   private String statement;
   private String portal;
@@ -83,11 +88,32 @@ public class Describe implements Message {
       Objects.equals(portal, describe.portal);
   }
 
+  private static void encode(String statement, String portal, ByteBuf out) {
+    int pos = out.writerIndex();
+    out.writeByte(DESCRIBE);
+    out.writeInt(0);
+    if (statement != null) {
+      out.writeByte('S');
+      Util.writeCStringUTF8(out, statement);
+    } else if (portal != null) {
+      out.writeByte('P');
+      Util.writeCStringUTF8(out, portal);
+    } else {
+      out.writeByte('S');
+      Util.writeCStringUTF8(out, "");
+    }
+    out.setInt(pos + 1, out.writerIndex() - pos- 1);
+  }
+
+  @Override
+  public void encode(ByteBuf out) {
+    encode(statement, portal, out);
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(statement, portal);
   }
-
 
   @Override
   public String toString() {
