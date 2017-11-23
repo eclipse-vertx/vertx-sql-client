@@ -22,7 +22,6 @@ import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.ext.sql.UpdateResult;
 
 import java.util.Arrays;
 import java.util.Collections;

@@ -21,7 +21,6 @@ import com.julienviet.pgclient.*;
 import io.vertx.core.Vertx;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
-import io.vertx.ext.sql.UpdateResult;
 
 import java.util.List;
 

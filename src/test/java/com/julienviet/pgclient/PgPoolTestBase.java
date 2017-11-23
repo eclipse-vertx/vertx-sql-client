@@ -18,7 +18,6 @@
 package com.julienviet.pgclient;
 
 import io.vertx.core.Vertx;
-import io.vertx.ext.sql.UpdateResult;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;

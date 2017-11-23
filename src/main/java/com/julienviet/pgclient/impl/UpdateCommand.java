@@ -17,11 +17,11 @@
 
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.UpdateResult;
 import com.julienviet.pgclient.codec.encoder.message.Query;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.ext.sql.UpdateResult;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>

@@ -22,8 +22,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import com.julienviet.pgclient.impl.PgClientImpl;
-import io.vertx.ext.sql.SQLClient;
-import io.vertx.ext.sql.SQLConnection;
 
 /**
  * The entry point for interacting with a Postgres database.

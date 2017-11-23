@@ -18,11 +18,10 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgException;
+import com.julienviet.pgclient.UpdateResult;
 import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.decoder.message.CommandComplete;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
-import io.vertx.core.Handler;
-import io.vertx.ext.sql.UpdateResult;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>

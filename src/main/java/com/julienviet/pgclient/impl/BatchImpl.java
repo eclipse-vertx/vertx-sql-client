@@ -18,9 +18,9 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgBatch;
+import com.julienviet.pgclient.UpdateResult;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.ext.sql.UpdateResult;
 
 import java.util.ArrayList;
 import java.util.List;

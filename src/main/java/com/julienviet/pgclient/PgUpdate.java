@@ -20,7 +20,6 @@ package com.julienviet.pgclient;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.ext.sql.UpdateResult;
 
 /**
  * The binding of a {@link PgPreparedStatement} and a set of parameters that can be executed once.

@@ -106,3 +106,21 @@ Get the rows - each row represented as a JsonObject where the keys are the colum
 +++
 |===
 
+[[UpdateResult]]
+== UpdateResult
+
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[keys]]`keys`|`Json array`|
++++
+Get any generated keys
++++
+|[[updated]]`updated`|`Number (int)`|
++++
+Get the number of rows updated
++++
+|===
+
