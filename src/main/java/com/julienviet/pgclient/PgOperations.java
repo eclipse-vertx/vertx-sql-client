@@ -37,6 +37,12 @@ public interface PgOperations {
   PgQuery query(String sql);
 
   /**
+   */
+  default void preparedQuery(String sql, Handler<AsyncResult<ResultSet>> handler) {
+    preparedQuery(sql, Collections.emptyList(), handler);
+  }
+
+  /**
    * @param param1 the first argument of the query
    */
   default void preparedQuery(String sql, Object param1, Handler<AsyncResult<ResultSet>> handler) {

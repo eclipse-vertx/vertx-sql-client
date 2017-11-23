@@ -21,12 +21,18 @@ import de.flapdoodle.embed.process.config.IRuntimeConfig;
 import de.flapdoodle.embed.process.config.io.ProcessOutput;
 import de.flapdoodle.embed.process.runtime.ICommandLinePostProcessor;
 import de.flapdoodle.embed.process.store.IArtifactStore;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
 
 import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,22 +47,35 @@ import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
 public abstract class PgTestBase {
 
   private static EmbeddedPostgres postgres;
-  static PgClientOptions options = new PgClientOptions();
+  static PgClientOptions options;
 
   @BeforeClass
-  public static void startPg() throws Exception {
+  public static void before() throws Exception {
+    options = startPg();
+  }
+
+  @AfterClass
+  public static void after() throws Exception {
+    stopPg();
+  }
+
+  public synchronized static PgClientOptions startPg() throws Exception {
+    if (postgres != null) {
+      throw new IllegalStateException();
+    }
     IRuntimeConfig config;
-    File target = new File(System.getProperty("target.dir"));
-    if (target.exists() && target.isDirectory()) {
-      config = EmbeddedPostgres.cachedRuntimeConfig(target.toPath());
+    String a = System.getProperty("target.dir");
+    File targetDir;
+    if (a != null && (targetDir = new File(a)).exists() && targetDir.isDirectory()) {
+      config = EmbeddedPostgres.cachedRuntimeConfig(targetDir.toPath());
     } else {
       config = EmbeddedPostgres.defaultRuntimeConfig();
     }
 
     // SSL
-    File sslKey = new File(PgTestBase.class.getClassLoader().getResource("tls/server.key").toURI());
+    File sslKey = getResourceAsFile("tls/server.key");
     Files.setPosixFilePermissions(sslKey.toPath(), Collections.singleton(PosixFilePermission.OWNER_READ));
-    File sslCrt = new File(PgTestBase.class.getClassLoader().getResource("tls/server.crt").toURI());
+    File sslCrt = getResourceAsFile("tls/server.crt");
 
     postgres = new EmbeddedPostgres(V9_6);
     IRuntimeConfig sslConfig = new IRuntimeConfig() {
@@ -94,16 +113,33 @@ public abstract class PgTestBase {
       "postgres",
       "postgres",
       Collections.emptyList());
-    PgTestBase.postgres.getProcess().get().importFromFile(new File("src/test/resources/create-postgres.sql"));
+    File setupFile = getResourceAsFile("create-postgres.sql");
+    PgTestBase.postgres.getProcess().get().importFromFile(setupFile);
+    PgClientOptions options = new PgClientOptions();
     options.setHost("localhost");
     options.setPort(8081);
     options.setUsername("postgres");
     options.setPassword("postgres");
     options.setDatabase("postgres");
+    return options;
   }
 
-  @AfterClass
-  public static void stopPg() throws Exception {
-    postgres.stop();
+  public synchronized static void stopPg() throws Exception {
+    if (postgres != null) {
+      try {
+        postgres.stop();
+      } finally {
+        postgres = null;
+      }
+    }
+  }
+
+  private static File getResourceAsFile(String name) throws Exception {
+    InputStream in = PgTestBase.class.getClassLoader().getResourceAsStream(name);
+    Path path = Files.createTempFile("pg-client", ".tmp");
+    Files.copy(in, path, StandardCopyOption.REPLACE_EXISTING);
+    File file = path.toFile();
+    file.deleteOnExit();
+    return file;
   }
 }
