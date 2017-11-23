@@ -19,10 +19,9 @@ package com.julienviet.pgclient.impl.provider;
 
 import com.julienviet.pgclient.impl.CommandBase;
 import com.julienviet.pgclient.impl.Connection;
-import com.julienviet.pgclient.impl.ConnectionHolder;
 import io.vertx.core.Handler;
 
-abstract class ConnectionProxy implements Connection, ConnectionHolder {
+abstract class ConnectionProxy implements Connection, Connection.Holder {
 
   private final Connection conn;
 

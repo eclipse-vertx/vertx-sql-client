@@ -50,7 +50,7 @@ public class SocketConnection implements Connection {
   final PgClientImpl client;
   final Context context;
   private Status status = Status.CONNECTED;
-  private ConnectionHolder holder;
+  private Holder holder;
   final Map<String, String> psCache;
 
   public SocketConnection(PgClientImpl client,
@@ -81,7 +81,7 @@ public class SocketConnection implements Connection {
   }
 
   @Override
-  public void init(ConnectionHolder holder) {
+  public void init(Holder holder) {
     this.holder = holder;
   }
 
@@ -90,7 +90,7 @@ public class SocketConnection implements Connection {
   }
 
   @Override
-  public void close(ConnectionHolder holder) {
+  public void close(Holder holder) {
     if (Vertx.currentContext() == context) {
       if (status == Status.CONNECTED) {
         status = Status.CLOSING;

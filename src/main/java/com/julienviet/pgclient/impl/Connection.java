@@ -21,7 +21,7 @@ import io.vertx.core.Handler;
 
 public interface Connection {
 
-  void init(ConnectionHolder holder);
+  void init(Holder holder);
 
   boolean isSsl();
 
@@ -31,6 +31,15 @@ public interface Connection {
 
   void schedule(CommandBase cmd, Handler<Void> completionHandler);
 
-  void close(ConnectionHolder holder);
+  void close(Holder holder);
 
+  interface Holder {
+
+    Connection connection();
+
+    void handleClosed();
+
+    void handleException(Throwable err);
+
+  }
 }

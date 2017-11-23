@@ -19,16 +19,15 @@ package com.julienviet.pgclient.provider;
 
 import com.julienviet.pgclient.impl.CommandBase;
 import com.julienviet.pgclient.impl.Connection;
-import com.julienviet.pgclient.impl.ConnectionHolder;
 import io.vertx.core.Handler;
 
 class SimpleConnection implements Connection {
 
-  ConnectionHolder holder;
+  Holder holder;
   int closed;
 
   @Override
-  public void init(ConnectionHolder holder) {
+  public void init(Holder holder) {
     this.holder = holder;
   }
 
@@ -43,7 +42,7 @@ class SimpleConnection implements Connection {
   }
 
   @Override
-  public void close(ConnectionHolder holder) {
+  public void close(Holder holder) {
     closed++;
   }
 

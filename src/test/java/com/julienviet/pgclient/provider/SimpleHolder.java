@@ -18,11 +18,10 @@
 package com.julienviet.pgclient.provider;
 
 import com.julienviet.pgclient.impl.Connection;
-import com.julienviet.pgclient.impl.ConnectionHolder;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
-class SimpleHolder implements ConnectionHolder, Handler<AsyncResult<Connection>> {
+class SimpleHolder implements Connection.Holder, Handler<AsyncResult<Connection>> {
 
   private Connection conn;
   private Throwable acquireFailure;

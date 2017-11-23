@@ -18,7 +18,6 @@
 package com.julienviet.pgclient.impl.provider;
 
 import com.julienviet.pgclient.impl.Connection;
-import com.julienviet.pgclient.impl.ConnectionHolder;
 import io.vertx.core.*;
 
 import java.util.ArrayDeque;
@@ -59,14 +58,14 @@ public class ConnectionPoolProvider implements ConnectionProvider {
 
   class PooledConnection extends ConnectionProxy {
 
-    private ConnectionHolder holder;
+    private Holder holder;
 
     PooledConnection(Connection conn) {
       super(conn);
     }
 
     @Override
-    public void init(ConnectionHolder holder) {
+    public void init(Holder holder) {
       if (this.holder != null) {
         throw new IllegalStateException();
       }
@@ -74,7 +73,7 @@ public class ConnectionPoolProvider implements ConnectionProvider {
     }
 
     @Override
-    public void close(ConnectionHolder holder) {
+    public void close(Holder holder) {
       if (holder != this.holder) {
         throw new IllegalStateException();
       }

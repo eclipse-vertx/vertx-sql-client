@@ -18,7 +18,6 @@
 package com.julienviet.pgclient.impl.provider;
 
 import com.julienviet.pgclient.impl.Connection;
-import com.julienviet.pgclient.impl.ConnectionHolder;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -34,7 +33,7 @@ import java.util.function.Consumer;
  */
 public class SharedConnectionProvider implements ConnectionProvider {
 
-  private final Set<ConnectionHolder> holders = new HashSet<>();
+  private final Set<Connection.Holder> holders = new HashSet<>();
   private ConnectionProxy shared;
   private boolean connecting;
   private ArrayDeque<Future<Connection>> waiters = new ArrayDeque<>();
@@ -66,14 +65,14 @@ public class SharedConnectionProvider implements ConnectionProvider {
             Connection conn = ar.result();
             shared = new ConnectionProxy(conn) {
               @Override
-              public void init(ConnectionHolder holder) {
+              public void init(Holder holder) {
                 if (holders.contains(holder)) {
                   throw new IllegalStateException();
                 }
                 holders.add(holder);
               }
               @Override
-              public void close(ConnectionHolder holder) {
+              public void close(Holder holder) {
                 if (!holders.remove(holder)) {
                   throw new IllegalStateException();
                 }
@@ -84,15 +83,15 @@ public class SharedConnectionProvider implements ConnectionProvider {
                   throw new IllegalStateException();
                 }
                 shared = null;
-                ArrayList<ConnectionHolder> copy = new ArrayList<>(holders);
+                ArrayList<Holder> copy = new ArrayList<>(holders);
                 holders.clear();
-                for (ConnectionHolder holder : copy) {
+                for (Holder holder : copy) {
                   holder.handleClosed();
                 }
               }
               @Override
               public void handleException(Throwable err) {
-                for (ConnectionHolder holder : new ArrayList<>(holders)) {
+                for (Holder holder : new ArrayList<>(holders)) {
                   holder.handleException(err);
                 }
               }

@@ -27,7 +27,7 @@ import java.util.UUID;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class PgConnectionImpl extends PgOperationsImpl implements PgConnection, ConnectionHolder {
+public class PgConnectionImpl extends PgOperationsImpl implements PgConnection, Connection.Holder {
 
   private final Context context;
   public final Connection conn;

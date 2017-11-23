@@ -69,7 +69,7 @@ public class PgPoolImpl extends PgOperationsImpl implements PgPool {
     }
   }
 
-  private class CommandWaiter implements ConnectionHolder, Handler<AsyncResult<Connection>> {
+  private class CommandWaiter implements Connection.Holder, Handler<AsyncResult<Connection>> {
 
     private final CommandBase cmd;
     private Connection conn;
