@@ -142,7 +142,7 @@ public class SocketConnection implements Connection {
     if (inflight.size() < lowWaterMark) {
       CommandBase cmd;
       cork = true;
-      while (inflight.size() < lowWaterMark + highWaterMark && (cmd = pending.poll()) != null) {
+      while (inflight.size() < highWaterMark && (cmd = pending.poll()) != null) {
         inflight.add(cmd);
         cmd.exec(this);
       }

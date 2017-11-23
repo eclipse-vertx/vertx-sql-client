@@ -43,6 +43,12 @@ public class SimpleBenchmark extends BenchmarkBase {
   @Param("postgres")
   String password;
 
+  @Param("1")
+  int pipeliningLimit;
+
+  @Param("0")
+  int writeBatchSize;
+
   Vertx vertx;
   PgClient client;
   PgPool pool;
@@ -57,9 +63,13 @@ public class SimpleBenchmark extends BenchmarkBase {
       .setUsername(username)
       .setPassword(password)
       .setCachePreparedStatements(true)
-      .setPipeliningLimit(16)
+      .setPipeliningLimit(pipeliningLimit)
+      .setWriteBatchSize(writeBatchSize)
     );
-    pool = client.createPool(new PgPoolOptions().setMode(PoolingMode.STATEMENT));
+    pool = client.createPool(new PgPoolOptions()
+      .setMode(PoolingMode.STATEMENT)
+      .setMaxSize(8)
+    );
   }
 
   @TearDown
@@ -86,6 +96,27 @@ public class SimpleBenchmark extends BenchmarkBase {
 
   @Benchmark
   public void pooledConnectionPreparedQuery(Blackhole blackhole) throws Exception {
+    CompletableFuture<ResultSet> latch = new CompletableFuture<>();
+    pool.getConnection(ar1 -> {
+      if (ar1.succeeded()) {
+        PgConnection conn = ar1.result();
+        conn.preparedQuery("SELECT id, randomnumber from WORLD", ar2 -> {
+          conn.close();
+          if (ar2.succeeded()) {
+            latch.complete(ar2.result());
+          } else {
+            latch.completeExceptionally(ar2.cause());
+          }
+        });
+      } else {
+        latch.completeExceptionally(ar1.cause());
+      }
+    });
+    blackhole.consume(latch.get());
+  }
+
+  @Benchmark
+  public void pooledConnectionPreparedStatementQuery(Blackhole blackhole) throws Exception {
     CompletableFuture<ResultSet> latch = new CompletableFuture<>();
     pool.getConnection(ar1 -> {
       if (ar1.succeeded()) {

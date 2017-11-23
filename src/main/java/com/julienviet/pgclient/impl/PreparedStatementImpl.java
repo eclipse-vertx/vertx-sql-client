@@ -82,6 +82,7 @@ class PreparedStatementImpl implements PgPreparedStatement {
       parse = false;
     }
     conn.schedule(new ExtendedQueryCommand(parse, sql, params, fetch, stmt, portal, suspended, handler));
+    // conn.schedule(new ExtendedQueryCommand(sql, params, handler));
   }
 
   void update(List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {

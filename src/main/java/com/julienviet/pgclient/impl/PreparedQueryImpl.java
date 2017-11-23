@@ -71,14 +71,17 @@ public class PreparedQueryImpl implements PgQuery, QueryResultHandler {
     }
     return this;
   }
+
   @Override
   public PgQuery pause() {
     return this;
   }
+
   @Override
   public PgQuery resume() {
     return this;
   }
+
   @Override
   public PgQuery endHandler(Handler<Void> handler) {
     endHandler = handler;
@@ -125,7 +128,12 @@ public class PreparedQueryImpl implements PgQuery, QueryResultHandler {
       }
     }
   }
-
+/*
+  @Override
+  public void execute(Handler<AsyncResult<ResultSet>> handler) {
+    ps.execute(params, fetch, portal, true, new PreparedQueryResultHandler(handler));
+  }
+*/
   @Override
   public void handleRow(JsonArray row) {
     result.getResults().add(row);

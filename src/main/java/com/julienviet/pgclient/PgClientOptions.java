@@ -147,7 +147,7 @@ public class PgClientOptions extends NetClientOptions {
   }
 
   public PgClientOptions setWriteBatchSize(int writeBatchSize) {
-    if (writeBatchSize < 1) {
+    if (writeBatchSize < 0) {
       throw new IllegalArgumentException();
     }
     this.writeBatchSize = writeBatchSize;
