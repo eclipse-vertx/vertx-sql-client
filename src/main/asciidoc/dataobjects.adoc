@@ -50,6 +50,7 @@
 |[[useAlpn]]`useAlpn`|`Boolean`|-
 |[[usePooledBuffers]]`usePooledBuffers`|`Boolean`|-
 |[[username]]`username`|`String`|-
+|[[writeBatchSize]]`writeBatchSize`|`Number (int)`|-
 |===
 
 [[PgPoolOptions]]

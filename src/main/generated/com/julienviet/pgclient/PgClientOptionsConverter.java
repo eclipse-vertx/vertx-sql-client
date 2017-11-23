@@ -48,6 +48,9 @@ public class PgClientOptionsConverter {
     if (json.getValue("username") instanceof String) {
       obj.setUsername((String)json.getValue("username"));
     }
+    if (json.getValue("writeBatchSize") instanceof Number) {
+      obj.setWriteBatchSize(((Number)json.getValue("writeBatchSize")).intValue());
+    }
   }
 
   public static void toJson(PgClientOptions obj, JsonObject json) {
@@ -66,5 +69,6 @@ public class PgClientOptionsConverter {
     if (obj.getUsername() != null) {
       json.put("username", obj.getUsername());
     }
+    json.put("writeBatchSize", obj.getWriteBatchSize());
   }
 }

@@ -46,6 +46,7 @@ public class PgClientImpl implements PgClient {
   final String password;
   final boolean cachePreparedStatements;
   final int pipeliningLimit;
+  final int writeBatchSize;
 
   public PgClientImpl(Vertx vertx, PgClientOptions options) {
 
@@ -64,6 +65,7 @@ public class PgClientImpl implements PgClient {
     this.client = vertx.createNetClient(netClientOptions);
     this.cachePreparedStatements = options.getCachePreparedStatements();
     this.pipeliningLimit = options.getPipeliningLimit();
+    this.writeBatchSize = options.getWriteBatchSize();
   }
 
   @Override

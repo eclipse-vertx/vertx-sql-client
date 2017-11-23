@@ -66,10 +66,11 @@ public class Query implements OutboundMessage {
 
   @Override
   public void encode(ByteBuf out) {
+    int pos = out.writerIndex();
     out.writeByte(QUERY);
     out.writeInt(0);
     Util.writeCStringUTF8(out, getQuery());
-    out.setInt(1, out.writerIndex() - 1);
+    out.setInt(pos + 1, out.writerIndex() - pos - 1);
   }
 
   @Override

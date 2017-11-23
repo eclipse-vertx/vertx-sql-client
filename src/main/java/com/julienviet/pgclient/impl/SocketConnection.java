@@ -48,11 +48,13 @@ public class SocketConnection implements Connection {
   private final NetSocketInternal socket;
   private final ArrayDeque<CommandBase> inflight = new ArrayDeque<>();
   private final ArrayDeque<CommandBase> pending = new ArrayDeque<>();
-  final PgClientImpl client;
+  private final PgClientImpl client;
   final Context context;
   private Status status = Status.CONNECTED;
   private Holder holder;
   final Map<String, String> psCache;
+  private final int lowWaterMark;
+  private final int highWaterMark;
 
   public SocketConnection(PgClientImpl client,
                           NetSocketInternal socket,
@@ -61,6 +63,8 @@ public class SocketConnection implements Connection {
     this.client = client;
     this.context = context;
     this.psCache = client.cachePreparedStatements ? new ConcurrentHashMap<>() : null;
+    this.lowWaterMark = client.pipeliningLimit;
+    this.highWaterMark = client.pipeliningLimit + client.writeBatchSize;
   }
 
   void init(String username, String password, String database, Handler<AsyncResult<Connection>> completionHandler) {
@@ -135,21 +139,27 @@ public class SocketConnection implements Connection {
   }
 
   private void checkPending() {
-    CommandBase cmd;
-    while (inflight.size() < client.pipeliningLimit && (cmd = pending.poll()) != null) {
-      inflight.add(cmd);
+    if (inflight.size() < lowWaterMark) {
+      CommandBase cmd;
       cork = true;
-      cmd.exec(this);
-      if (outbound.size() == 1) {
-        socket.writeMessage(outbound.poll());
-      } else {
-        OutboundMessage msg = out -> {
-          OutboundMessage msg1;
-          while ((msg1 = outbound.poll()) != null) {
-            msg1.encode(out);
-          }
-        };
-        socket.writeMessage(msg);
+      while (inflight.size() < lowWaterMark + highWaterMark && (cmd = pending.poll()) != null) {
+        inflight.add(cmd);
+        cmd.exec(this);
+      }
+      switch (outbound.size()) {
+        case 0:
+          break;
+        case 1:
+          socket.writeMessage(outbound.poll());
+          break;
+        default:
+          OutboundMessage msg = out -> {
+            OutboundMessage msg1;
+            while ((msg1 = outbound.poll()) != null) {
+              msg1.encode(out);
+            }
+          };
+          socket.writeMessage(msg);
       }
       cork = false;
     }

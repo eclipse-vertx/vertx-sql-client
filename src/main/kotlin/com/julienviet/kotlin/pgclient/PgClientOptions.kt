@@ -52,6 +52,7 @@ import io.vertx.core.net.ProxyOptions
  * @param useAlpn 
  * @param usePooledBuffers 
  * @param username 
+ * @param writeBatchSize 
  *
  * <p/>
  * NOTE: This function has been automatically generated from the [com.julienviet.pgclient.PgClientOptions original] using Vert.x codegen.
@@ -95,7 +96,8 @@ fun PgClientOptions(
   trustStoreOptions: io.vertx.core.net.JksOptions? = null,
   useAlpn: Boolean? = null,
   usePooledBuffers: Boolean? = null,
-  username: String? = null): PgClientOptions = com.julienviet.pgclient.PgClientOptions().apply {
+  username: String? = null,
+  writeBatchSize: Int? = null): PgClientOptions = com.julienviet.pgclient.PgClientOptions().apply {
 
   if (cachePreparedStatements != null) {
     this.setCachePreparedStatements(cachePreparedStatements)
@@ -221,6 +223,9 @@ fun PgClientOptions(
   }
   if (username != null) {
     this.setUsername(username)
+  }
+  if (writeBatchSize != null) {
+    this.setWriteBatchSize(writeBatchSize)
   }
 }
 
