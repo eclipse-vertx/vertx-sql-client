@@ -69,19 +69,14 @@ class PreparedUpdateCommand extends UpdateCommandBase {
   void exec(SocketConnection conn) {
     boolean p;
     String s;
-    if (stmt == null) {
-      if (conn.psCache != null) {
-        s = conn.psCache.get(sql);
-        if (s == null) {
-          p = true;
-          s = UUID.randomUUID().toString();
-          conn.psCache.put(sql, s);
-        } else {
-          p = false;
-        }
-      } else {
-        s = "";
+    if (conn.psCache != null) {
+      s = conn.psCache.get(sql);
+      if (s == null) {
         p = true;
+        s = UUID.randomUUID().toString();
+        conn.psCache.put(sql, s);
+      } else {
+        p = false;
       }
     } else {
       p = parse;

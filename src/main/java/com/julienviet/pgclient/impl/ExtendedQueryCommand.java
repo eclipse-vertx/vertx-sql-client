@@ -52,6 +52,7 @@ class ExtendedQueryCommand extends QueryCommandBase {
                        QueryResultHandler handler) {
     this(true, sql, params, 0, "", "", false, handler);
   }
+
   ExtendedQueryCommand(boolean parse,
                        String sql,
                        List<Object> params,
@@ -74,19 +75,14 @@ class ExtendedQueryCommand extends QueryCommandBase {
   void exec(SocketConnection conn) {
     boolean p;
     String s;
-    if (stmt == null) {
-      if (conn.psCache != null) {
-        s = conn.psCache.get(sql);
-        if (s == null) {
-          p = true;
-          s = UUID.randomUUID().toString();
-          conn.psCache.put(sql, s);
-        } else {
-          p = false;
-        }
-      } else {
-        s = "";
+    if (conn.psCache != null) {
+      s = conn.psCache.get(sql);
+      if (s == null) {
         p = true;
+        s = UUID.randomUUID().toString();
+        conn.psCache.put(sql, s);
+      } else {
+        p = false;
       }
     } else {
       p = parse;

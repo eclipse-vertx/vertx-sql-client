@@ -33,15 +33,19 @@ class CloseStatementCommand extends CommandBase {
   final String stmt;
   final Handler<AsyncResult<Void>> handler;
 
-  public CloseStatementCommand(String stmt, Handler<AsyncResult<Void>> handler) {
+  CloseStatementCommand(String stmt, Handler<AsyncResult<Void>> handler) {
     this.stmt = stmt;
     this.handler = handler;
   }
 
   @Override
   void exec(SocketConnection conn) {
-    conn.writeMessage(new Close().setStatement(stmt));
-    conn.writeMessage(Sync.INSTANCE);
+    if (conn.psCache == null) {
+      conn.writeMessage(new Close().setStatement(stmt));
+      conn.writeMessage(Sync.INSTANCE);
+    } else {
+      completionHandler.handle(null);
+    }
   }
 
   @Override
