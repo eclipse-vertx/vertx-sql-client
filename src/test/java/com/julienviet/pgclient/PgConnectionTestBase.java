@@ -589,7 +589,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT ' true '::JSONB, ' false '::JSONB, ' null '::JSONB, ' 7.502 '::JSONB, ' 8 '::JSONB").execute(
+      conn.query("SELECT ' true '::JSONB, ' false '::JSONB, ' null '::JSONB, ' 7.502 '::JSONB, ' 8 '::JSONB, '\" Really Awesome! \"'::JSONB").execute(
         ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.getNumRows());
           ctx.assertEquals(true, result.getResults().get(0).getBoolean(0));
@@ -599,6 +599,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
           ctx.assertEquals(7.502d, result.getResults().get(0).getDouble(3));
           ctx.assertEquals(8, result.getResults().get(0).getInteger(4));
           ctx.assertEquals(8L, result.getResults().get(0).getLong(4));
+          ctx.assertEquals(" Really Awesome! ", result.getResults().get(0).getString(5));
           async.complete();
         }));
     }));
@@ -609,7 +610,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT ' true '::JSON, ' false '::JSON, ' null '::JSON, ' 7.502 '::JSON, ' 8 '::JSON").execute(
+      conn.query("SELECT ' true '::JSON, ' false '::JSON, ' null '::JSON, ' 7.502 '::JSON, ' 8 '::JSON, '\" Really Awesome! \"'::JSON").execute(
         ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.getNumRows());
           ctx.assertEquals(true, result.getResults().get(0).getBoolean(0));
@@ -619,6 +620,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
           ctx.assertEquals(7.502d, result.getResults().get(0).getDouble(3));
           ctx.assertEquals(8, result.getResults().get(0).getInteger(4));
           ctx.assertEquals(8L, result.getResults().get(0).getLong(4));
+          ctx.assertEquals(" Really Awesome! ", result.getResults().get(0).getString(5));
           async.complete();
         }));
     }));
