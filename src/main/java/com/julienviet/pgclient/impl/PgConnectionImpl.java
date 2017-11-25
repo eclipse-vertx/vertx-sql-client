@@ -97,6 +97,6 @@ public class PgConnectionImpl extends PgOperationsImpl implements PgConnection, 
   @Override
   public PgPreparedStatement prepare(String sql) {
     // todo : should somehow try to reuse existing cache or make it automatic ? (I think we can)
-    return new PreparedStatementImpl(conn, sql, UUID.randomUUID().toString());
+    return new PgPreparedStatementImpl(conn, sql, UUID.randomUUID().toString());
   }
 }

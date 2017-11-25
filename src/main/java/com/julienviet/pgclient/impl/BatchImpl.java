@@ -30,10 +30,10 @@ import java.util.List;
  */
 public class BatchImpl implements PgBatch {
 
-  private final PreparedStatementImpl ps;
+  private final PgPreparedStatementImpl ps;
   private final ArrayList<List<Object>> values = new ArrayList<>();
 
-  BatchImpl(PreparedStatementImpl ps) {
+  BatchImpl(PgPreparedStatementImpl ps) {
     this.ps = ps;
   }
 

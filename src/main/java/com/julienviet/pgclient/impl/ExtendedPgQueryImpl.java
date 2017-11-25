@@ -31,9 +31,9 @@ import java.util.UUID;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class PreparedQueryImpl implements PgQuery, QueryResultHandler {
+public class ExtendedPgQueryImpl implements PgQuery, QueryResultHandler {
 
-  private final PreparedStatementImpl ps;
+  private final PgPreparedStatementImpl ps;
   private final List<Object> params;
   private int fetch;
 
@@ -46,7 +46,7 @@ public class PreparedQueryImpl implements PgQuery, QueryResultHandler {
   private boolean completed;
   private boolean closed;
 
-  PreparedQueryImpl(PreparedStatementImpl ps, List<Object> params) {
+  ExtendedPgQueryImpl(PgPreparedStatementImpl ps, List<Object> params) {
     this.ps = ps;
     this.params = params;
   }
@@ -95,7 +95,7 @@ public class PreparedQueryImpl implements PgQuery, QueryResultHandler {
   }
 
   @Override
-  public PreparedQueryImpl fetch(int size) {
+  public ExtendedPgQueryImpl fetch(int size) {
     if (size < 0) {
       throw new IllegalArgumentException("Fetch size must be 0 (disabled) or a positive number");
     }

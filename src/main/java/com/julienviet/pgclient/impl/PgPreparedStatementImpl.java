@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class PreparedStatementImpl implements PgPreparedStatement {
+class PgPreparedStatementImpl implements PgPreparedStatement {
 
   private final Connection conn;
   final String sql;
@@ -37,7 +37,7 @@ class PreparedStatementImpl implements PgPreparedStatement {
   boolean parsed;
   final String stmt;
 
-  PreparedStatementImpl(Connection conn, String sql, String stmt) {
+  PgPreparedStatementImpl(Connection conn, String sql, String stmt) {
     this.conn = conn;
     this.sql = sql;
     this.stmt = stmt;
@@ -45,12 +45,12 @@ class PreparedStatementImpl implements PgPreparedStatement {
 
   @Override
   public PgQuery query() {
-    return new PreparedQueryImpl(this, Collections.emptyList());
+    return new ExtendedPgQueryImpl(this, Collections.emptyList());
   }
 
   @Override
   public PgQuery query(List<Object> params) {
-    return new PreparedQueryImpl(this, params);
+    return new ExtendedPgQueryImpl(this, params);
   }
 
   @Override

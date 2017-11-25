@@ -33,7 +33,7 @@ public abstract class PgOperationsImpl implements PgOperations {
 
   @Override
   public PgQuery query(String sql) {
-    return new PgQueryImpl(sql, this::schedule);
+    return new SimplePgQueryImpl(sql, this::schedule);
   }
 
   @Override

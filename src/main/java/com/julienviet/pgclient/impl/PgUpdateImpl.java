@@ -31,10 +31,10 @@ import java.util.List;
 
 public class PgUpdateImpl implements PgUpdate {
 
-  final PreparedStatementImpl ps;
+  final PgPreparedStatementImpl ps;
   final List<Object> params;
 
-  PgUpdateImpl(PreparedStatementImpl ps, List<Object> params) {
+  PgUpdateImpl(PgPreparedStatementImpl ps, List<Object> params) {
     this.ps = ps;
     this.params = params;
   }

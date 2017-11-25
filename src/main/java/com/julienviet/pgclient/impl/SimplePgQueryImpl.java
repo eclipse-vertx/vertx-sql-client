@@ -26,7 +26,7 @@ import io.vertx.core.json.JsonArray;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PgQueryImpl implements PgQuery, QueryResultHandler {
+public class SimplePgQueryImpl implements PgQuery, QueryResultHandler {
 
   private final Handler<CommandBase> execHandler;
   private final String sql;
@@ -35,7 +35,7 @@ public class PgQueryImpl implements PgQuery, QueryResultHandler {
   private Handler<Void> endHandler;
   private ResultSet resultSet;
 
-  public PgQueryImpl(String sql, Handler<CommandBase> execHandler) {
+  public SimplePgQueryImpl(String sql, Handler<CommandBase> execHandler) {
     this.execHandler = execHandler;
     this.sql = sql;
   }
