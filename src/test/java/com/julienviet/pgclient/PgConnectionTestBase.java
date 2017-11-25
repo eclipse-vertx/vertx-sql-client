@@ -589,11 +589,13 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT '12345678910'::BYTEA").execute(
+      conn.query("SELECT '12345678910'::BYTEA, '\u00DE\u00AD\u00BE\u00EF'::BYTEA").execute(
         ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.getNumRows());
-          byte[] bytea = result.getResults().get(0).getBinary(0);
-          ctx.assertEquals("12345678910", new String(bytea, UTF_8));
+          byte[] bytea1 = result.getResults().get(0).getBinary(0);
+          byte[] bytea2 = result.getResults().get(0).getBinary(1);
+          ctx.assertEquals("12345678910", new String(bytea1, UTF_8));
+          ctx.assertEquals("\u00DE\u00AD\u00BE\u00EF", new String(bytea2, UTF_8));
           async.complete();
         }));
     }));

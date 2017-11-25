@@ -369,13 +369,11 @@ public class MessageDecoder extends ByteToMessageDecoder {
     for (int c = 0; c < values.length; ++c) {
       int length = in.readInt();
       if (length != -1) {
-        byte[] b = new byte[length];
-        in.readBytes(b);
         Column desc = columns[c];
         if (desc.getDataFormat() == DataFormat.TEXT) {
-          values[c] = desc.getDataType().decodeText(b);
+          values[c] = desc.getDataType().decodeText(length, in);
         } else {
-          values[c] = desc.getDataType().decodeBinary(b);
+          values[c] = desc.getDataType().decodeBinary(length, in);
         }
       } else {
         values[c] = null;

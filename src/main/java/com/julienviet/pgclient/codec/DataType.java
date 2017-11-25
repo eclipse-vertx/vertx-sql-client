@@ -17,12 +17,14 @@
 
 package com.julienviet.pgclient.codec;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
@@ -31,8 +33,6 @@ import java.time.ZoneOffset;
 import static com.julienviet.pgclient.codec.formatter.DateTimeFormatter.TIMESTAMPTZ_FORMAT;
 import static com.julienviet.pgclient.codec.formatter.DateTimeFormatter.TIMESTAMP_FORMAT;
 import static com.julienviet.pgclient.codec.formatter.TimeFormatter.TIMETZ_FORMAT;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static javax.xml.bind.DatatypeConverter.parseHexBinary;
 
 /**
  * PostgreSQL <a href="https://github.com/postgres/postgres/blob/master/src/include/catalog/pg_type.h">object
@@ -45,8 +45,8 @@ public enum DataType {
   // 1 byte
   BOOL(16) {
     @Override
-    public Object decodeText(byte[] data) {
-      if(data[0] == 't') {
+    public Object decodeText(int len, ByteBuf buff) {
+      if(buff.readByte() == 't') {
         return Boolean.TRUE;
       } else {
         return Boolean.FALSE;
@@ -57,54 +57,55 @@ public enum DataType {
   // 2 bytes
   INT2(21) {
     @Override
-    public Object decodeText(byte[] data) {
-      // Optimize that
-      return Short.parseShort(new String(data, UTF_8));
+    public Object decodeText(int len, ByteBuf buff) {
+      return (short)DataType.decodeInt(len, buff);
     }
   },
   INT2_ARRAY(1005),
   // 4 bytes
   INT4(23) {
     @Override
-    public Object decodeText(byte[] data) {
-      // Optimize that
-      return Integer.parseInt(new String(data, UTF_8));
+    public Object decodeText(int len, ByteBuf buff) {
+      return (int)DataType.decodeInt(len, buff);
     }
   },
   INT4_ARRAY(1007),
   // 8 bytes
   INT8(20) {
     @Override
-    public Object decodeText(byte[] data) {
-      // Optimize that
-      return Long.parseLong(new String(data, UTF_8));
+    public Object decodeText(int len, ByteBuf buff) {
+      return DataType.decodeInt(len, buff);
     }
   },
   INT8_ARRAY(1016),
   // 4 bytes single-precision floating point number
   FLOAT4(700) {
     @Override
-    public Object decodeText(byte[] data) {
-      // Optimize that
-      return Float.parseFloat(new String(data, UTF_8));
+    public Object decodeText(int len, ByteBuf buff) {
+      // Todo optimize that
+      CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
+      return Float.parseFloat(cs.toString());
     }
   },
   FLOAT4_ARRAY(1021),
   // 8 bytes double-precision floating point number
   FLOAT8(701) {
     @Override
-    public Object decodeText(byte[] data) {
-      // Optimize that
-      return Double.parseDouble(new String(data, UTF_8));
+    public Object decodeText(int len, ByteBuf buff) {
+      // Todo optimize that
+      CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
+      return Double.parseDouble(cs.toString());
     }
   },
   FLOAT8_ARRAY(1022),
   // User specified precision
   NUMERIC(1700) {
     @Override
-    public Object decodeText(byte[] data) {
-      // Optimize that
-      BigDecimal big = new BigDecimal(new String(data, UTF_8));
+    public Object decodeText(int len, ByteBuf buff) {
+      // Todo optimize that
+      CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
+      BigDecimal big = new BigDecimal(cs.toString());
+      // julien : that does not seem consistent to either return a Double or BigInteger
       if (big.scale() == 0) {
         return big.toBigInteger();
       } else {
@@ -126,8 +127,8 @@ public enum DataType {
   // Single length character
   CHAR(18) {
     @Override
-    public Object decodeText(byte[] data) {
-      return (char) data[0];
+    public Object decodeText(int len, ByteBuf buff) {
+      return (char)buff.readByte();
     }
   },
   CHAR_ARRAY(1002),
@@ -152,24 +153,27 @@ public enum DataType {
   // 12 bytes time of day (no date) with time zone
   TIMETZ(1266) {
     @Override
-    public Object decodeText(byte[] data) {
-      return OffsetTime.parse(new String(data, UTF_8), TIMETZ_FORMAT).toString();
+    public Object decodeText(int len, ByteBuf buff) {
+      CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
+      return OffsetTime.parse(cs, TIMETZ_FORMAT).toString(); // julien: why toString ?
     }
   },
   TIMETZ_ARRAY(1270),
   // 8 bytes date and time without time zone
   TIMESTAMP(1114) {
     @Override
-    public Object decodeText(byte[] data) {
-      return LocalDateTime.parse(new String(data, UTF_8), TIMESTAMP_FORMAT).toInstant(ZoneOffset.UTC);
+    public Object decodeText(int len, ByteBuf buff) {
+      CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
+      return LocalDateTime.parse(cs, TIMESTAMP_FORMAT).toInstant(ZoneOffset.UTC);
     }
   },
   TIMESTAMP_ARRAY(1115),
   // 8 bytes date and time with time zone
   TIMESTAMPTZ(1184) {
     @Override
-    public Object decodeText(byte[] data) {
-      return OffsetDateTime.parse(new String(data, UTF_8), TIMESTAMPTZ_FORMAT).toInstant();
+    public Object decodeText(int len, ByteBuf buff) {
+      CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
+      return OffsetDateTime.parse(cs, TIMESTAMPTZ_FORMAT).toInstant();
     }
   },
   TIMESTAMPTZ_ARRAY(1185),
@@ -179,8 +183,24 @@ public enum DataType {
   // 1 or 4 bytes plus the actual binary string
   BYTEA(17) {
     @Override
-    public Object decodeText(byte[] data) {
-      return parseHexBinary(new String(data, 2, data.length - 2, UTF_8));
+    public Object decodeText(int len, ByteBuf buff) {
+      buff.readByte(); // \
+      buff.readByte(); // x
+      len = (len - 2) / 2;
+      byte[] bytes = new byte[len];
+      for (int i = 0;i < len;i++) {
+        byte b0 = decodeHexChar(buff.readByte());
+        byte b1 = decodeHexChar(buff.readByte());
+        bytes[i] = (byte)(b0 * 16 + b1);
+      }
+      return bytes;
+    }
+    private byte decodeHexChar(byte b) {
+      if (b >= '0' && b <= '9') {
+        return (byte)(b - '0');
+      } else {
+        return (byte)(b - 'a' + 10);
+      }
     }
   },
   BYTEA_ARRAY(1001),
@@ -198,16 +218,20 @@ public enum DataType {
   // Text JSON
   JSON(114) {
     @Override
-    public Object decodeText(byte[] data) {
-      return decodeJson(data);
+    public Object decodeText(int len, ByteBuf buff) {
+      // Try to do without the intermediary String
+      CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
+      return decodeJson(cs.toString());
     }
   },
   // Binary JSON
   JSONB(3802) {
     @Override
-    public Object decodeText(byte[] data) {
+    public Object decodeText(int len, ByteBuf buff) {
       // Not sure this is correct
-      return decodeJson(data);
+      // Try to do without the intermediary String
+      CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
+      return decodeJson(cs.toString());
     }
   },
   // XML
@@ -224,8 +248,15 @@ public enum DataType {
   VOID(2278),
   UNKNOWN(705);
 
-  public static Object decodeJson(byte[] data) {
-    String value = new String(data, UTF_8);
+  private static long decodeInt(int len, ByteBuf buff) {
+    long value = 0;
+    for (int i = 0;i < len;i++) {
+      value = value * 10 + (buff.readUnsignedByte() -'0');
+    }
+    return value;
+  }
+
+  private static Object decodeJson(String value) {
     if(value.charAt(0)== '{') {
       return new JsonObject(value);
     } else {
@@ -251,9 +282,15 @@ public enum DataType {
     return value != null ? value : DataType.UNKNOWN;
   }
 
-  public Object decodeText(byte[] data) {
+  public Object decodeText(int len, ByteBuf buff) {
     // Default best effort implementation
-    return new String(data, UTF_8);
+    return buff.readCharSequence(len, StandardCharsets.UTF_8).toString();
+  }
+
+  public Object decodeBinary(int len, ByteBuf buff) {
+    byte[] data = new byte[len];
+    buff.readBytes(data);
+    return decodeBinary(data);
   }
 
   public Object decodeBinary(byte[] data) {
