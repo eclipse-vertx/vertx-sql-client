@@ -17,6 +17,9 @@
 
 package com.julienviet.pgclient.codec;
 
+import io.netty.util.collection.IntObjectHashMap;
+import io.netty.util.collection.IntObjectMap;
+
 /**
  * PostgreSQL <a href="https://github.com/postgres/postgres/blob/master/src/include/catalog/pg_type.h">object
  * identifiers (OIDs)</a> for data types
@@ -119,16 +122,22 @@ public enum DataType {
   OID_ARRAY(1028),
   VOID(2278),
   UNKNOWN(705);
-  final int id;
+
+  static IntObjectMap<DataType> oidToDataType = new IntObjectHashMap<>();
+
+  static {
+    for (DataType type : values()) {
+      oidToDataType.put(type.id, type);
+    }
+  }
+
+  private final int id;
   DataType(int id) {
     this.id = id;
   }
+
   public static DataType valueOf(int id) {
-    for (DataType type : values()) {
-      if (type.id == id) {
-        return type;
-      }
-    }
-    return DataType.UNKNOWN;
+    DataType value = oidToDataType.get(id);
+    return value != null ? value : DataType.UNKNOWN;
   }
 }
