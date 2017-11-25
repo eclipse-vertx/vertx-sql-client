@@ -16,13 +16,11 @@
  */
 
 package com.julienviet.pgclient.codec.encoder.message;
-import com.julienviet.pgclient.codec.decoder.message.DataRow;
 import com.julienviet.pgclient.codec.decoder.message.NoticeResponse;
 import com.julienviet.pgclient.codec.decoder.message.ReadyForQuery;
 import com.julienviet.pgclient.codec.decoder.message.CommandComplete;
 import com.julienviet.pgclient.codec.decoder.message.EmptyQueryResponse;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
-import com.julienviet.pgclient.codec.decoder.message.RowDescription;
 import com.julienviet.pgclient.codec.encoder.OutboundMessage;
 import com.julienviet.pgclient.codec.util.Util;
 import io.netty.buffer.ByteBuf;

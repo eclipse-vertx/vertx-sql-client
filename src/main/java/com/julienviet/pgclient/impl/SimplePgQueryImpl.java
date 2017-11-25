@@ -21,10 +21,6 @@ import com.julienviet.pgclient.PgQuery;
 import com.julienviet.pgclient.ResultSet;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.json.JsonArray;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class SimplePgQueryImpl implements PgQuery, QueryResultHandler {
 
@@ -33,7 +29,6 @@ public class SimplePgQueryImpl implements PgQuery, QueryResultHandler {
   private Handler<ResultSet> resultHandler;
   private Handler<Throwable> exceptionHandler;
   private Handler<Void> endHandler;
-  private ResultSet resultSet;
 
   public SimplePgQueryImpl(String sql, Handler<CommandBase> execHandler) {
     this.execHandler = execHandler;
@@ -80,22 +75,11 @@ public class SimplePgQueryImpl implements PgQuery, QueryResultHandler {
   }
 
   @Override
-  public void beginResult(List<String> columnNames) {
-    this.resultSet = new ResultSet().setColumnNames(columnNames).setResults(new ArrayList<>());
-  }
-
-  @Override
-  public void handleRow(JsonArray row) {
-    resultSet.getResults().add(row);
-  }
-
-  @Override
-  public void endResult(boolean suspended) {
+  public void result(ResultSet result, boolean suspended) {
     Handler<ResultSet> handler = resultHandler;
     if (handler != null) {
-      handler.handle(resultSet);
+      handler.handle(result);
     }
-    resultSet = null;
   }
 
   @Override

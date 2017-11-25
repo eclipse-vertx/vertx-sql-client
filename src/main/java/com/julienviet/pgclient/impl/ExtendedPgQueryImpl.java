@@ -22,9 +22,7 @@ import com.julienviet.pgclient.ResultSet;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.json.JsonArray;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,7 +40,6 @@ public class ExtendedPgQueryImpl implements PgQuery, QueryResultHandler {
   private Handler<Void> endHandler;
 
   private String portal;
-  private ResultSet result;
   private boolean completed;
   private boolean closed;
 
@@ -104,18 +101,11 @@ public class ExtendedPgQueryImpl implements PgQuery, QueryResultHandler {
   }
 
   @Override
-  public void beginResult(List<String> columnNames) {
-    this.result = new ResultSet().setColumnNames(columnNames).setResults(new ArrayList<>());
-  }
-
-  @Override
-  public void endResult(boolean suspended) {
+  public void result(ResultSet result, boolean suspended) {
     if (closed) {
       return;
     }
-    ResultSet tmp = result;
-    result = null;
-    callHandler(resultHandler, tmp);
+    callHandler(resultHandler, result);
     if (closed) {
       return;
     }
@@ -134,10 +124,6 @@ public class ExtendedPgQueryImpl implements PgQuery, QueryResultHandler {
     ps.execute(params, fetch, portal, true, new PreparedQueryResultHandler(handler));
   }
 */
-  @Override
-  public void handleRow(JsonArray row) {
-    result.getResults().add(row);
-  }
 
   @Override
   public void end() {

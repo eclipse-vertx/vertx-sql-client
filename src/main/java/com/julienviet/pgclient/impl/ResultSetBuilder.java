@@ -21,10 +21,6 @@ import com.julienviet.pgclient.ResultSet;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.json.JsonArray;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -41,23 +37,8 @@ public class ResultSetBuilder implements QueryResultHandler {
   }
 
   @Override
-  public void beginResult(List<String> columnNames) {
-    ResultSet next = new ResultSet().setColumnNames(columnNames).setResults(new ArrayList<>());
-    if (current != null) {
-      // current.setNext(next);
-      // current = next;
-    } else {
-      result = current = next;
-    }
-  }
-
-  @Override
-  public void handleRow(JsonArray row) {
-    current.getResults().add(row);
-  }
-
-  @Override
-  public void endResult(boolean suspended) {
+  public void result(ResultSet result, boolean suspended) {
+    this.result = result;
   }
 
   @Override

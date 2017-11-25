@@ -18,6 +18,7 @@
 package com.julienviet.pgclient.codec.decoder.message;
 
 
+import com.julienviet.pgclient.ResultSet;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
 
 import java.util.Objects;
@@ -30,10 +31,16 @@ public class CommandComplete implements InboundMessage {
 
   private final String command;
   private final int rowsAffected;
+  private final ResultSet resultSet;
 
-  public CommandComplete(String command, int rowsAffected) {
+  public CommandComplete(String command, int rowsAffected, ResultSet resultSet) {
     this.command = command;
     this.rowsAffected = rowsAffected;
+    this.resultSet = resultSet;
+  }
+
+  public ResultSet getResultSet() {
+    return resultSet;
   }
 
   public String getCommand() {

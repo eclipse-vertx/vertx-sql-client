@@ -21,17 +21,12 @@ import com.julienviet.pgclient.ResultSet;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.json.JsonArray;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 public class PreparedQueryResultHandler implements QueryResultHandler {
 
-  private ResultSet result;
   private boolean suspended;
   private final Handler<AsyncResult<ResultSet>> handler;
 
@@ -44,17 +39,7 @@ public class PreparedQueryResultHandler implements QueryResultHandler {
   }
 
   @Override
-  public void beginResult(List<String> columnNames) {
-    result = new ResultSet().setColumnNames(columnNames).setResults(new ArrayList<>());
-  }
-
-  @Override
-  public void handleRow(JsonArray row) {
-    result.getResults().add(row);
-  }
-
-  @Override
-  public void endResult(boolean suspended) {
+  public void result(ResultSet result, boolean suspended) {
     this.suspended = suspended;
     handler.handle(Future.succeededFuture(result));
   }

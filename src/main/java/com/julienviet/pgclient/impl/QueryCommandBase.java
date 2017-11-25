@@ -18,19 +18,9 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgException;
-import com.julienviet.pgclient.codec.Column;
-import com.julienviet.pgclient.codec.DataFormat;
-import com.julienviet.pgclient.codec.DataType;
+import com.julienviet.pgclient.ResultSet;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
-import com.julienviet.pgclient.codec.decoder.message.CommandComplete;
-import com.julienviet.pgclient.codec.decoder.message.DataRow;
-import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
-import com.julienviet.pgclient.codec.decoder.message.ReadyForQuery;
-import com.julienviet.pgclient.codec.decoder.message.RowDescription;
-import io.vertx.core.json.JsonArray;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.julienviet.pgclient.codec.decoder.message.*;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -39,7 +29,6 @@ import java.util.List;
 abstract class QueryCommandBase extends CommandBase {
 
   protected final QueryResultHandler handler;
-  private RowDescription rowDesc;
 
   public QueryCommandBase(QueryResultHandler handler) {
     this.handler = handler;
@@ -50,30 +39,9 @@ abstract class QueryCommandBase extends CommandBase {
     if (msg.getClass() == ReadyForQuery.class) {
       super.handleMessage(msg);
       handler.end();
-    } else if (msg.getClass() == RowDescription.class) {
-      rowDesc = (RowDescription) msg;
-      Column[] columns = rowDesc.getColumns();
-      List<String> columnNames = new ArrayList<>(columns.length);
-      for (Column columnDesc : columns) {
-        columnNames.add(columnDesc.getName());
-      }
-      handler.beginResult(columnNames);
-    } else if (msg.getClass() == DataRow.class) {
-      DataRow dataRow = (DataRow) msg;
-      JsonArray row = new JsonArray();
-      Column[] columns = rowDesc.getColumns();
-      for (int i = 0; i < columns.length; i++) {
-        Object data = dataRow.getValue(i);
-        if (data == null) {
-          row.addNull();
-        } else {
-          row.add(data);
-        }
-      }
-      handler.handleRow(row);
     } else if (msg.getClass() == CommandComplete.class) {
-      rowDesc = null;
-      handler.endResult(false);
+      CommandComplete complete = (CommandComplete) msg;
+      handler.result(complete.getResultSet(), false);
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
       fail(new PgException(error));

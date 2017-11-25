@@ -17,6 +17,7 @@
 
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.ResultSet;
 import io.vertx.core.json.JsonArray;
 
 import java.util.List;
@@ -26,11 +27,7 @@ import java.util.List;
  */
 public interface QueryResultHandler {
 
-  void beginResult(List<String> columnNames);
-
-  void handleRow(JsonArray row);
-
-  void endResult(boolean suspended);
+  void result(ResultSet result, boolean suspended);
 
   void fail(Throwable cause);
 

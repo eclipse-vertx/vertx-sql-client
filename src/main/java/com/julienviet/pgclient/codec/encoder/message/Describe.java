@@ -20,7 +20,6 @@ package com.julienviet.pgclient.codec.encoder.message;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
 import com.julienviet.pgclient.codec.decoder.message.NoData;
 import com.julienviet.pgclient.codec.decoder.message.ParameterDescription;
-import com.julienviet.pgclient.codec.decoder.message.RowDescription;
 import com.julienviet.pgclient.codec.encoder.OutboundMessage;
 import com.julienviet.pgclient.codec.util.Util;
 import io.netty.buffer.ByteBuf;
