@@ -17,13 +17,13 @@
 
 package com.julienviet.pgclient.codec.decoder.message;
 
-import com.julienviet.pgclient.codec.Message;
+import com.julienviet.pgclient.codec.decoder.InboundMessage;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class CloseComplete implements Message {
+public class CloseComplete implements InboundMessage {
 
   public static final CloseComplete INSTANCE = new CloseComplete();
 

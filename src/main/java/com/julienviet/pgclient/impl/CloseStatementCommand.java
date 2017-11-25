@@ -17,7 +17,7 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.codec.Message;
+import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.message.CloseComplete;
 import com.julienviet.pgclient.codec.encoder.message.Close;
 import com.julienviet.pgclient.codec.encoder.message.Sync;
@@ -49,7 +49,7 @@ class CloseStatementCommand extends CommandBase {
   }
 
   @Override
-  public void handleMessage(Message msg) {
+  public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == CloseComplete.class) {
       handler.handle(Future.succeededFuture());
     } else {

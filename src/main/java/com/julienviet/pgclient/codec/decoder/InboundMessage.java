@@ -15,7 +15,7 @@
  *
  */
 
-package com.julienviet.pgclient.codec;
+package com.julienviet.pgclient.codec.decoder;
 
 /**
  * An interface that should be implemented for decoding and encoding messages
@@ -23,4 +23,4 @@ package com.julienviet.pgclient.codec;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public interface Message {}
+public interface InboundMessage {}

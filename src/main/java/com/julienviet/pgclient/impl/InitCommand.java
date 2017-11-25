@@ -18,7 +18,7 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgException;
-import com.julienviet.pgclient.codec.Message;
+import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.message.AuthenticationClearTextPassword;
 import com.julienviet.pgclient.codec.decoder.message.AuthenticationMD5Password;
 import com.julienviet.pgclient.codec.decoder.message.AuthenticationOk;
@@ -69,7 +69,7 @@ class InitCommand extends CommandBase {
   }
 
   @Override
-  public void handleMessage(Message msg) {
+  public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == SSLResponse.class) {
       SSLResponse sslResponse = (SSLResponse) msg;
       if (sslResponse.isOk()) {

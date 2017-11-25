@@ -17,7 +17,7 @@
 
 package com.julienviet.pgclient.codec.decoder.message;
 
-import com.julienviet.pgclient.codec.Message;
+import com.julienviet.pgclient.codec.decoder.InboundMessage;
 
 /**
  *
@@ -26,7 +26,7 @@ import com.julienviet.pgclient.codec.Message;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class AuthenticationOk implements Message {
+public class AuthenticationOk implements InboundMessage {
 
   public static final AuthenticationOk INSTANCE = new AuthenticationOk();
 

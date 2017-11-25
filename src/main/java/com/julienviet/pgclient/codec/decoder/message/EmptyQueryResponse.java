@@ -17,7 +17,7 @@
 
 package com.julienviet.pgclient.codec.decoder.message;
 
-import com.julienviet.pgclient.codec.Message;
+import com.julienviet.pgclient.codec.decoder.InboundMessage;
 
 /**
  *
@@ -27,7 +27,7 @@ import com.julienviet.pgclient.codec.Message;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class EmptyQueryResponse implements Message {
+public class EmptyQueryResponse implements InboundMessage {
 
   public static final EmptyQueryResponse INSTANCE = new EmptyQueryResponse();
 

@@ -18,7 +18,7 @@
 package com.julienviet.pgclient.codec.decoder.message;
 
 import com.julienviet.pgclient.codec.encoder.message.Execute;
-import com.julienviet.pgclient.codec.Message;
+import com.julienviet.pgclient.codec.decoder.InboundMessage;
 
 /**
  *
@@ -30,7 +30,7 @@ import com.julienviet.pgclient.codec.Message;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class PortalSuspended implements Message {
+public class PortalSuspended implements InboundMessage {
 
   public static final PortalSuspended INSTANCE = new PortalSuspended();
 

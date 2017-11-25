@@ -18,7 +18,7 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.UpdateResult;
-import com.julienviet.pgclient.codec.Message;
+import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.message.BindComplete;
 import com.julienviet.pgclient.codec.decoder.message.NoData;
 import com.julienviet.pgclient.codec.decoder.message.ParameterDescription;
@@ -35,8 +35,6 @@ import io.vertx.core.Handler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import static com.julienviet.pgclient.codec.util.Util.*;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
@@ -96,7 +94,7 @@ class PreparedUpdateCommand extends UpdateCommandBase {
   }
 
   @Override
-  public void handleMessage(Message msg) {
+  public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == ParameterDescription.class) {
     } else if (msg.getClass() == NoData.class) {
     } else if (msg.getClass() == ParseComplete.class) {

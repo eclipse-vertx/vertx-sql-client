@@ -17,7 +17,7 @@
 
 package com.julienviet.pgclient.codec.decoder.message;
 
-import com.julienviet.pgclient.codec.Message;
+import com.julienviet.pgclient.codec.decoder.InboundMessage;
 
 import java.util.Objects;
 
@@ -25,7 +25,7 @@ import java.util.Objects;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class NotificationResponse implements Message {
+public class NotificationResponse implements InboundMessage {
 
   private final int processId;
   private final String channel;

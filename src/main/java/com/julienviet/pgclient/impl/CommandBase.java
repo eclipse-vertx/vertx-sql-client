@@ -17,7 +17,7 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.codec.Message;
+import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.message.ReadyForQuery;
 import io.vertx.core.Handler;
 
@@ -29,7 +29,7 @@ public abstract class CommandBase {
 
   protected Handler<Void> completionHandler;
 
-  public void handleMessage(Message msg) {
+  public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == ReadyForQuery.class) {
       completionHandler.handle(null);
     } else {

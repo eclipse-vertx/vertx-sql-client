@@ -19,7 +19,6 @@ package com.julienviet.pgclient.codec.encoder.message;
 
 import com.julienviet.pgclient.codec.encoder.OutboundMessage;
 import com.julienviet.pgclient.codec.util.MD5Authentication;
-import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.util.Util;
 import io.netty.buffer.ByteBuf;
 

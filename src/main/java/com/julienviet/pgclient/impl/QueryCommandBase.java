@@ -21,13 +21,12 @@ import com.julienviet.pgclient.PgException;
 import com.julienviet.pgclient.codec.Column;
 import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.DataType;
-import com.julienviet.pgclient.codec.Message;
+import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.message.CommandComplete;
 import com.julienviet.pgclient.codec.decoder.message.DataRow;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
 import com.julienviet.pgclient.codec.decoder.message.ReadyForQuery;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
-import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -59,7 +58,7 @@ abstract class QueryCommandBase extends CommandBase {
   }
 
   @Override
-  public void handleMessage(Message msg) {
+  public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == ReadyForQuery.class) {
       super.handleMessage(msg);
       handler.end();

@@ -17,7 +17,7 @@
 
 package com.julienviet.pgclient.codec.decoder.message;
 
-import com.julienviet.pgclient.codec.Message;
+import com.julienviet.pgclient.codec.decoder.InboundMessage;
 
 import java.util.Objects;
 
@@ -32,7 +32,7 @@ import java.util.Objects;
  *
  */
 
-public class BackendKeyData implements Message {
+public class BackendKeyData implements InboundMessage {
 
   private final int processId;
   private final int secretKey;

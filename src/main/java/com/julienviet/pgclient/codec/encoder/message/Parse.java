@@ -17,7 +17,6 @@
 
 package com.julienviet.pgclient.codec.encoder.message;
 
-import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
 import com.julienviet.pgclient.codec.decoder.message.ParseComplete;
 import com.julienviet.pgclient.codec.encoder.OutboundMessage;

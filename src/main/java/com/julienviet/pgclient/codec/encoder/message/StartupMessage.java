@@ -17,7 +17,6 @@
 
 package com.julienviet.pgclient.codec.encoder.message;
 
-import com.julienviet.pgclient.codec.Message;
 import com.julienviet.pgclient.codec.encoder.OutboundMessage;
 import com.julienviet.pgclient.codec.util.Util;
 import io.netty.buffer.ByteBuf;
@@ -25,7 +24,6 @@ import io.netty.buffer.Unpooled;
 
 import java.util.Objects;
 
-import static com.julienviet.pgclient.codec.encoder.message.type.MessageType.TERMINATE;
 import static com.julienviet.pgclient.codec.util.Util.writeCString;
 import static java.nio.charset.StandardCharsets.UTF_8;
 

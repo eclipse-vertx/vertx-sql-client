@@ -17,7 +17,7 @@
 
 package com.julienviet.pgclient.codec.decoder.message;
 
-import com.julienviet.pgclient.codec.Message;
+import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.TransactionStatus;
 
 import java.util.Objects;
@@ -39,7 +39,7 @@ import java.util.Objects;
  *
  */
 
-public class ReadyForQuery implements Message {
+public class ReadyForQuery implements InboundMessage {
 
   private final TransactionStatus transactionStatus;
 

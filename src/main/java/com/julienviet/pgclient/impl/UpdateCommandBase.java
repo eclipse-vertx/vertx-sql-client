@@ -19,7 +19,7 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgException;
 import com.julienviet.pgclient.UpdateResult;
-import com.julienviet.pgclient.codec.Message;
+import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.message.CommandComplete;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
 
@@ -32,7 +32,7 @@ abstract class UpdateCommandBase extends CommandBase {
   private UpdateResult updateResult;
 
   @Override
-  public void handleMessage(Message msg) {
+  public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == CommandComplete.class) {
       CommandComplete complete = (CommandComplete) msg;
       updateResult = new UpdateResult();

@@ -17,7 +17,7 @@
 
 package com.julienviet.pgclient.codec.decoder.message;
 
-import com.julienviet.pgclient.codec.Message;
+import com.julienviet.pgclient.codec.decoder.InboundMessage;
 
 import java.util.Arrays;
 
@@ -25,7 +25,7 @@ import java.util.Arrays;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class DataRow implements Message {
+public class DataRow implements InboundMessage {
 
   final byte[][] values;
 

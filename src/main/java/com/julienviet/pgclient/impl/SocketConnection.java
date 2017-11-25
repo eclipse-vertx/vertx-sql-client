@@ -17,7 +17,7 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.codec.Message;
+import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.MessageDecoder;
 import com.julienviet.pgclient.codec.encoder.MessageEncoder;
 import com.julienviet.pgclient.codec.encoder.OutboundMessage;
@@ -166,7 +166,7 @@ public class SocketConnection implements Connection {
   }
 
   private void handleMessage(Object msg) {
-    Message pgMsg = (Message) msg;
+    InboundMessage pgMsg = (InboundMessage) msg;
     CommandBase cmd = inflight.peek();
     if (cmd != null) {
       cmd.handleMessage(pgMsg);
