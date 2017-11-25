@@ -19,6 +19,20 @@ package com.julienviet.pgclient.codec;
 
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.ZoneOffset;
+
+import static com.julienviet.pgclient.codec.formatter.DateTimeFormatter.TIMESTAMPTZ_FORMAT;
+import static com.julienviet.pgclient.codec.formatter.DateTimeFormatter.TIMESTAMP_FORMAT;
+import static com.julienviet.pgclient.codec.formatter.TimeFormatter.TIMETZ_FORMAT;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static javax.xml.bind.DatatypeConverter.parseHexBinary;
 
 /**
  * PostgreSQL <a href="https://github.com/postgres/postgres/blob/master/src/include/catalog/pg_type.h">object
@@ -29,25 +43,76 @@ import io.netty.util.collection.IntObjectMap;
 
 public enum DataType {
   // 1 byte
-  BOOL(16),
+  BOOL(16) {
+    @Override
+    public Object decodeText(byte[] data) {
+      if(data[0] == 't') {
+        return Boolean.TRUE;
+      } else {
+        return Boolean.FALSE;
+      }
+    }
+  },
   BOOL_ARRAY(1000),
   // 2 bytes
-  INT2(21),
+  INT2(21) {
+    @Override
+    public Object decodeText(byte[] data) {
+      // Optimize that
+      return Short.parseShort(new String(data, UTF_8));
+    }
+  },
   INT2_ARRAY(1005),
   // 4 bytes
-  INT4(23),
+  INT4(23) {
+    @Override
+    public Object decodeText(byte[] data) {
+      // Optimize that
+      return Integer.parseInt(new String(data, UTF_8));
+    }
+  },
   INT4_ARRAY(1007),
   // 8 bytes
-  INT8(20),
+  INT8(20) {
+    @Override
+    public Object decodeText(byte[] data) {
+      // Optimize that
+      return Long.parseLong(new String(data, UTF_8));
+    }
+  },
   INT8_ARRAY(1016),
   // 4 bytes single-precision floating point number
-  FLOAT4(700),
+  FLOAT4(700) {
+    @Override
+    public Object decodeText(byte[] data) {
+      // Optimize that
+      return Float.parseFloat(new String(data, UTF_8));
+    }
+  },
   FLOAT4_ARRAY(1021),
   // 8 bytes double-precision floating point number
-  FLOAT8(701),
+  FLOAT8(701) {
+    @Override
+    public Object decodeText(byte[] data) {
+      // Optimize that
+      return Double.parseDouble(new String(data, UTF_8));
+    }
+  },
   FLOAT8_ARRAY(1022),
   // User specified precision
-  NUMERIC(1700),
+  NUMERIC(1700) {
+    @Override
+    public Object decodeText(byte[] data) {
+      // Optimize that
+      BigDecimal big = new BigDecimal(new String(data, UTF_8));
+      if (big.scale() == 0) {
+        return big.toBigInteger();
+      } else {
+        // we might loose precision here
+        return big.doubleValue();
+      }
+    }
+  },
   NUMERIC_ARRAY(1231),
   // 8 bytes double
   MONEY(790),
@@ -59,7 +124,12 @@ public enum DataType {
   VARBIT(1562),
   VARBIT_ARRAY(1563),
   // Single length character
-  CHAR(18),
+  CHAR(18) {
+    @Override
+    public Object decodeText(byte[] data) {
+      return (char) data[0];
+    }
+  },
   CHAR_ARRAY(1002),
   // Limited length string
   VARCHAR(1043),
@@ -80,19 +150,39 @@ public enum DataType {
   TIME(1083),
   TIME_ARRAY(1183),
   // 12 bytes time of day (no date) with time zone
-  TIMETZ(1266),
+  TIMETZ(1266) {
+    @Override
+    public Object decodeText(byte[] data) {
+      return OffsetTime.parse(new String(data, UTF_8), TIMETZ_FORMAT).toString();
+    }
+  },
   TIMETZ_ARRAY(1270),
   // 8 bytes date and time without time zone
-  TIMESTAMP(1114),
+  TIMESTAMP(1114) {
+    @Override
+    public Object decodeText(byte[] data) {
+      return LocalDateTime.parse(new String(data, UTF_8), TIMESTAMP_FORMAT).toInstant(ZoneOffset.UTC);
+    }
+  },
   TIMESTAMP_ARRAY(1115),
   // 8 bytes date and time with time zone
-  TIMESTAMPTZ(1184),
+  TIMESTAMPTZ(1184) {
+    @Override
+    public Object decodeText(byte[] data) {
+      return OffsetDateTime.parse(new String(data, UTF_8), TIMESTAMPTZ_FORMAT).toInstant();
+    }
+  },
   TIMESTAMPTZ_ARRAY(1185),
   // 16 bytes time interval
   INTERVAL(1186),
   INTERVAL_ARRAY(1187),
   // 1 or 4 bytes plus the actual binary string
-  BYTEA(17),
+  BYTEA(17) {
+    @Override
+    public Object decodeText(byte[] data) {
+      return parseHexBinary(new String(data, 2, data.length - 2, UTF_8));
+    }
+  },
   BYTEA_ARRAY(1001),
   // 6 bytes MAC address (XX:XX:XX:XX:XX:XX)
   MACADDR(829),
@@ -106,9 +196,20 @@ public enum DataType {
   UUID(2950),
   UUID_ARRAY(2951),
   // Text JSON
-  JSON(114),
+  JSON(114) {
+    @Override
+    public Object decodeText(byte[] data) {
+      return decodeJson(data);
+    }
+  },
   // Binary JSON
-  JSONB(3802),
+  JSONB(3802) {
+    @Override
+    public Object decodeText(byte[] data) {
+      // Not sure this is correct
+      return decodeJson(data);
+    }
+  },
   // XML
   XML(142),
   XML_ARRAY(143),
@@ -122,6 +223,15 @@ public enum DataType {
   OID_ARRAY(1028),
   VOID(2278),
   UNKNOWN(705);
+
+  public static Object decodeJson(byte[] data) {
+    String value = new String(data, UTF_8);
+    if(value.charAt(0)== '{') {
+      return new JsonObject(value);
+    } else {
+      return new JsonArray(value);
+    }
+  }
 
   static IntObjectMap<DataType> oidToDataType = new IntObjectHashMap<>();
 
@@ -139,5 +249,15 @@ public enum DataType {
   public static DataType valueOf(int id) {
     DataType value = oidToDataType.get(id);
     return value != null ? value : DataType.UNKNOWN;
+  }
+
+  public Object decodeText(byte[] data) {
+    // Default best effort implementation
+    return new String(data, UTF_8);
+  }
+
+  public Object decodeBinary(byte[] data) {
+    // Not implemented
+    return null;
   }
 }
