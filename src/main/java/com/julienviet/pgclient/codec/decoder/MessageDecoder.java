@@ -119,14 +119,15 @@ public class MessageDecoder extends ByteToMessageDecoder {
       }
       break;
       case ROW_DESCRIPTION: {
-        decodeRowDescription(in, out);
+        columns = decodeRowDescription(in, out);
       }
       break;
       case DATA_ROW: {
-        decodeDataRow(in, out);
+        decodeDataRow(in, out, columns);
       }
       break;
       case COMMAND_COMPLETE: {
+        columns = null;
         decodeCommandComplete(in, out);
       }
       break;
@@ -151,6 +152,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
       }
       break;
       case PORTAL_SUSPENDED: {
+        columns = null;
         decodePortalSuspended(out);
       }
       break;
@@ -342,7 +344,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
     }
   }
 
-  private void decodeRowDescription(ByteBuf in, List<Object> out) {
+  private Column[] decodeRowDescription(ByteBuf in, List<Object> out) {
     Column[] columns = new Column[in.readUnsignedShort()];
     for (int c = 0; c < columns.length; ++c) {
       Column column = new Column(
@@ -357,15 +359,24 @@ public class MessageDecoder extends ByteToMessageDecoder {
       columns[c] = column;
     }
     out.add(new RowDescription(columns));
+    return columns;
   }
 
-  private void decodeDataRow(ByteBuf in, List<Object> out) {
-    byte[][] values = new byte[in.readUnsignedShort()][];
+  private Column[] columns;
+
+  private void decodeDataRow(ByteBuf in, List<Object> out, Column[] columns) {
+    Object[] values = new Object[in.readUnsignedShort()];
     for (int c = 0; c < values.length; ++c) {
       int length = in.readInt();
       if (length != -1) {
-        values[c] = new byte[length];
-        in.readBytes(values[c]);
+        byte[] b = new byte[length];
+        in.readBytes(b);
+        Column desc = columns[c];
+        if (desc.getDataFormat() == DataFormat.TEXT) {
+          values[c] = desc.getDataType().decodeText(b);
+        } else {
+          values[c] = desc.getDataType().decodeBinary(b);
+        }
       } else {
         values[c] = null;
       }

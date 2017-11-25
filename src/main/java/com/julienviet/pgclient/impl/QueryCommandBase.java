@@ -63,23 +63,11 @@ abstract class QueryCommandBase extends CommandBase {
       JsonArray row = new JsonArray();
       Column[] columns = rowDesc.getColumns();
       for (int i = 0; i < columns.length; i++) {
-        Column columnDesc = columns[i];
-        DataFormat dataFormat = columnDesc.getDataFormat();
-        DataType dataType = columnDesc.getDataType();
-        byte[] data = dataRow.getValue(i);
-        switch (dataFormat) {
-          case TEXT: {
-            if(data == null) {
-              row.addNull();
-            } else {
-              row.add(dataType.decodeText(data));
-            }
-            break;
-          }
-          case BINARY: {
-            row.add(dataType.decodeBinary(data));
-          }
-          break;
+        Object data = dataRow.getValue(i);
+        if (data == null) {
+          row.addNull();
+        } else {
+          row.add(data);
         }
       }
       handler.handleRow(row);

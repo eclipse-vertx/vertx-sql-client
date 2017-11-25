@@ -27,12 +27,12 @@ import java.util.Arrays;
 
 public class DataRow implements InboundMessage {
 
-  final byte[][] values;
+  final Object[] values;
 
-  public DataRow(byte[][] values) {
+  public DataRow(Object[] values) {
     this.values = values;
   }
-  public byte[] getValue(int i) {
+  public Object getValue(int i) {
     return values[i];
   }
 
@@ -48,7 +48,6 @@ public class DataRow implements InboundMessage {
   public int hashCode() {
     return Arrays.hashCode(values);
   }
-
 
   @Override
   public String toString() {
