@@ -66,7 +66,7 @@ public enum DataType {
   INT4(23) {
     @Override
     public Object decodeText(int len, ByteBuf buff) {
-      return (int)DataType.decodeInt(len, buff);
+      return (int)DataType.decodeInt(len, buff); // HOT
     }
   },
   INT4_ARRAY(1007),
@@ -251,7 +251,7 @@ public enum DataType {
   private static long decodeInt(int len, ByteBuf buff) {
     long value = 0;
     for (int i = 0;i < len;i++) {
-      value = value * 10 + (buff.readUnsignedByte() -'0');
+      value = value * 10 + (buff.readUnsignedByte() -'0'); // HOT
     }
     return value;
   }

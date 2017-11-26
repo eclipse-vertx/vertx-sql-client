@@ -115,7 +115,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
       break;
       case DATA_ROW: {
         JsonArray result = decodeDataRow(in, columns);
-        resultSet.getResults().add(result);
+        resultSet.getResults().add(result); // HOT (TLAB)
       }
       break;
       case COMMAND_COMPLETE: {
@@ -357,7 +357,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
 
   private JsonArray decodeDataRow(ByteBuf in, Column[] columns) {
     int len = in.readUnsignedShort();
-    JsonArray values = new JsonArray(new ArrayList(16));
+    JsonArray values = new JsonArray(new ArrayList(16)); // HOT
     for (int c = 0; c < len; ++c) {
       int length = in.readInt();
       if (length != -1) {
