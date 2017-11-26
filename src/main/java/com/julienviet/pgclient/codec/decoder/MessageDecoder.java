@@ -49,6 +49,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
 
   private Column[] columns;
   private ResultSet resultSet;
+  private DataFormat dataFormat = DataFormat.TEXT;
 
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
@@ -90,6 +91,9 @@ public class MessageDecoder extends ByteToMessageDecoder {
     switch (id) {
       case ERROR_RESPONSE: {
         decodeErrorOrNotice(ErrorResponse.INSTANCE, in, out);
+        columns = null;
+        resultSet = null;
+        dataFormat = DataFormat.TEXT;
         break;
       }
       case NOTICE_RESPONSE: {
@@ -122,6 +126,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
         decodeCommandComplete(in, out);
         columns = null;
         resultSet = null;
+        dataFormat = DataFormat.TEXT;
       }
       break;
       case EMPTY_QUERY_RESPONSE: {
@@ -134,6 +139,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
       break;
       case BIND_COMPLETE: {
         decodeBindComplete(out);
+        dataFormat = DataFormat.BINARY;
       }
       break;
       case CLOSE_COMPLETE: {
@@ -148,6 +154,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
         decodePortalSuspended(out);
         columns = null;
         resultSet = null;
+        dataFormat = DataFormat.TEXT;
       }
       break;
       case PARAMETER_DESCRIPTION: {
@@ -341,14 +348,21 @@ public class MessageDecoder extends ByteToMessageDecoder {
   private Column[] decodeRowDescription(ByteBuf in) {
     Column[] columns = new Column[in.readUnsignedShort()];
     for (int c = 0; c < columns.length; ++c) {
+      String fieldName = Util.readCStringUTF8(in);
+      int tableOID = in.readInt();
+      short columnAttributeNumber = in.readShort();
+      int typeOID = in.readInt();
+      short typeSize = in.readShort();
+      int typeModifier = in.readInt();
+      int textOrBinary = in.readUnsignedShort(); // Useless for now
       Column column = new Column(
-        Util.readCStringUTF8(in),
-        in.readInt(),
-        in.readShort(),
-        DataType.valueOf(in.readInt()),
-        in.readShort(),
-        in.readInt(),
-        DataFormat.valueOf(in.readUnsignedShort())
+        fieldName,
+        tableOID,
+        columnAttributeNumber,
+        DataType.valueOf(typeOID),
+        typeSize,
+        typeModifier,
+        DataFormat.valueOf(textOrBinary)
       );
       columns[c] = column;
     }
@@ -363,7 +377,11 @@ public class MessageDecoder extends ByteToMessageDecoder {
       if (length != -1) {
         Column desc = columns[c];
         Object value;
-        if (desc.getDataFormat() == DataFormat.TEXT) {
+        // Need to use data format sincer RowDescription is useless
+        // "The format code being used for the field. Currently will be zero (text) or one (binary).
+        // In a RowDescription returned from the statement variant of Describe,
+        // the format code is not yet known and will always be zero."
+        if (dataFormat == DataFormat.TEXT) {
           value = desc.getDataType().decodeText(length, in);
         } else {
           value = desc.getDataType().decodeBinary(length, in);

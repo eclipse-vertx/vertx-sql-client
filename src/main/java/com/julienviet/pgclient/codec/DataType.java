@@ -68,6 +68,10 @@ public enum DataType {
     public Object decodeText(int len, ByteBuf buff) {
       return (int)DataType.decodeInt(len, buff); // HOT
     }
+    @Override
+    public Object decodeBinary(int len, ByteBuf buff) {
+      return buff.readInt();
+    }
   },
   INT4_ARRAY(1007),
   // 8 bytes
@@ -133,7 +137,12 @@ public enum DataType {
   },
   CHAR_ARRAY(1002),
   // Limited length string
-  VARCHAR(1043),
+  VARCHAR(1043) {
+    @Override
+    public Object decodeBinary(int len, ByteBuf buff) {
+      return decodeText(len, buff);
+    }
+  },
   VARCHAR_ARRAY(1015),
   // Limited blank padded length string
   BPCHAR(1042),
@@ -294,7 +303,6 @@ public enum DataType {
   }
 
   public Object decodeBinary(byte[] data) {
-    // Not implemented
-    return null;
+    throw new UnsupportedOperationException("DataType " + name() + " has not implemented binary decoding");
   }
 }

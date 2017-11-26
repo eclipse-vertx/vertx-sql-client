@@ -93,8 +93,8 @@ class ExtendedQueryCommand extends QueryCommandBase {
       conn.writeMessage(new Parse(sql).setStatement(s));
     }
     if (!suspended) {
-      conn.writeMessage(new Bind().setParamValues(params).setPortal(portal).setStatement(s));
       conn.writeMessage(new Describe().setStatement(s));
+      conn.writeMessage(new Bind().setParamValues(params).setPortal(portal).setStatement(s));
     } else {
       // Needed for now, later see how to remove it
       conn.writeMessage(new Describe().setPortal(portal));

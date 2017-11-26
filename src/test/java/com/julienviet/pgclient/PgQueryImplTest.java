@@ -51,6 +51,25 @@ public class PgQueryImplTest extends PgTestBase {
   }
 
   @Test
+  public void testQuery1Param(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient client = PgClient.create(vertx, options);
+    client.connect(ctx.asyncAssertSuccess(conn -> {
+      PgPreparedStatement ps = conn.prepare("SELECT * FROM Fortune WHERE id=$1");
+      PgQuery query = ps.query(1);
+      query.execute(ctx.asyncAssertSuccess(results -> {
+        ctx.assertEquals(1, results.getNumRows());
+        JsonArray row = results.getResults().get(0);
+        ctx.assertEquals(1, row.getInteger(0));
+        ctx.assertEquals("fortune: No such file or directory", row.getString(1));
+        ps.close(ctx.asyncAssertSuccess(ar -> {
+          async.complete();
+        }));
+      }));
+    }));
+  }
+
+  @Test
   public void testQuery(TestContext ctx) {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
