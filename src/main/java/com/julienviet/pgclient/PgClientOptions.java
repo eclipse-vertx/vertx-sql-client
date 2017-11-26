@@ -44,8 +44,7 @@ public class PgClientOptions extends NetClientOptions {
   public static final String DEFAULT_USERNAME = "user";
   public static final String DEFAULT_PASSWORD = "pass";
   public static final boolean DEFAULT_CACHE_PREPARED_STATEMENTS = false;
-  public static final int DEFAULT_PIPELINING_LIMIT = 16;
-  public static final int DEFAULT_WRITE_BATCH_SIZE = 16;
+  public static final int DEFAULT_PIPELINING_LIMIT = 256;
 
   private String host = DEFAULT_HOST;
   private int port = DEFAULT_PORT;
@@ -54,7 +53,6 @@ public class PgClientOptions extends NetClientOptions {
   private String password = DEFAULT_PASSWORD;
   private boolean cachePreparedStatements = DEFAULT_CACHE_PREPARED_STATEMENTS;
   private int pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
-  private int writeBatchSize = DEFAULT_WRITE_BATCH_SIZE;
 
   public PgClientOptions() {
     super();
@@ -73,7 +71,6 @@ public class PgClientOptions extends NetClientOptions {
     username = other.username;
     password = other.password;
     pipeliningLimit = other.pipeliningLimit;
-    writeBatchSize = other.writeBatchSize;
   }
 
   public String getHost() {
@@ -139,18 +136,6 @@ public class PgClientOptions extends NetClientOptions {
 
   public PgClientOptions setCachePreparedStatements(boolean cachePreparedStatements) {
     this.cachePreparedStatements = cachePreparedStatements;
-    return this;
-  }
-
-  public int getWriteBatchSize() {
-    return writeBatchSize;
-  }
-
-  public PgClientOptions setWriteBatchSize(int writeBatchSize) {
-    if (writeBatchSize < 0) {
-      throw new IllegalArgumentException();
-    }
-    this.writeBatchSize = writeBatchSize;
     return this;
   }
 

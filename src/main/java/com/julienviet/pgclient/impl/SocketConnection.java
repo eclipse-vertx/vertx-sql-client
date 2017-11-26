@@ -53,8 +53,7 @@ public class SocketConnection implements Connection {
   private Status status = Status.CONNECTED;
   private Holder holder;
   final Map<String, String> psCache;
-  private final int lowWaterMark;
-  private final int highWaterMark;
+  private final int pipeliningLimit;
 
   public SocketConnection(PgClientImpl client,
                           NetSocketInternal socket,
@@ -63,8 +62,7 @@ public class SocketConnection implements Connection {
     this.client = client;
     this.context = context;
     this.psCache = client.cachePreparedStatements ? new ConcurrentHashMap<>() : null;
-    this.lowWaterMark = client.pipeliningLimit;
-    this.highWaterMark = client.pipeliningLimit + client.writeBatchSize;
+    this.pipeliningLimit = client.pipeliningLimit;
   }
 
   void init(String username, String password, String database, Handler<AsyncResult<Connection>> completionHandler) {
@@ -139,29 +137,29 @@ public class SocketConnection implements Connection {
   }
 
   private void checkPending() {
-    if (inflight.size() < lowWaterMark) {
+    if (inflight.size() < pipeliningLimit) {
       CommandBase cmd;
-      cork = true;
-      while (inflight.size() < highWaterMark && (cmd = pending.poll()) != null) {
+      while (inflight.size() < pipeliningLimit && (cmd = pending.poll()) != null) {
+        cork = true;
         inflight.add(cmd);
         cmd.exec(this);
+        switch (outbound.size()) {
+          case 0:
+            break;
+          case 1:
+            socket.writeMessage(outbound.poll());
+            break;
+          default:
+            OutboundMessage msg = out -> {
+              OutboundMessage msg1;
+              while ((msg1 = outbound.poll()) != null) {
+                msg1.encode(out);
+              }
+            };
+            socket.writeMessage(msg);
+        }
+        cork = false;
       }
-      switch (outbound.size()) {
-        case 0:
-          break;
-        case 1:
-          socket.writeMessage(outbound.poll());
-          break;
-        default:
-          OutboundMessage msg = out -> {
-            OutboundMessage msg1;
-            while ((msg1 = outbound.poll()) != null) {
-              msg1.encode(out);
-            }
-          };
-          socket.writeMessage(msg);
-      }
-      cork = false;
     }
   }
 

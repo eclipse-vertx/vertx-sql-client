@@ -46,9 +46,6 @@ public class SimpleBenchmark extends BenchmarkBase {
   @Param("1")
   int pipeliningLimit;
 
-  @Param("0")
-  int writeBatchSize;
-
   Vertx vertx;
   PgClient client;
   PgPool pool;
@@ -64,7 +61,6 @@ public class SimpleBenchmark extends BenchmarkBase {
       .setPassword(password)
       .setCachePreparedStatements(true)
       .setPipeliningLimit(pipeliningLimit)
-      .setWriteBatchSize(writeBatchSize)
     );
     pool = client.createPool(new PgPoolOptions()
       .setMode(PoolingMode.STATEMENT)
