@@ -17,70 +17,22 @@
 
 package com.julienviet.pgclient;
 
-import io.vertx.core.Vertx;
-import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadLocalRandom;
 
-@State(Scope.Benchmark)
 @Threads(8)
-public class SimpleBenchmark extends BenchmarkBase {
-
-  @Param("localhost")
-  String host;
-
-  @Param("8081")
-  int port;
-
-  @Param("postgres")
-  String database;
-
-  @Param("postgres")
-  String username;
-
-  @Param("postgres")
-  String password;
-
-  @Param("1")
-  int pipeliningLimit;
-
-  Vertx vertx;
-  PgClient client;
-  PgPool pool;
-
-  @Setup
-  public void setup() throws Exception {
-    vertx = Vertx.vertx();
-    client = PgClient.create(vertx, new PgClientOptions()
-      .setHost(host)
-      .setPort(port)
-      .setDatabase(database)
-      .setUsername(username)
-      .setPassword(password)
-      .setCachePreparedStatements(true)
-      .setPipeliningLimit(pipeliningLimit)
-    );
-    pool = client.createPool(new PgPoolOptions()
-      .setMode(PoolingMode.STATEMENT)
-      .setMaxSize(8)
-    );
-  }
-
-  @TearDown
-  public void tearDown() throws Exception {
-    CountDownLatch latch = new CountDownLatch(1);
-    vertx.close(ar -> {
-      latch.countDown();
-    });
-    latch.await();
-  }
+public class SingleSelectBenchmark extends PgBenchmarkBase {
 
   @Benchmark
   public void poolPreparedQuery(Blackhole blackhole) throws Exception {
     CompletableFuture<ResultSet> latch = new CompletableFuture<>();
-    pool.preparedQuery("SELECT id, randomnumber from WORLD", ar -> {
+    pool.preparedQuery("SELECT id, randomnumber from WORLD where id=$1", 1, ar -> {
       if (ar.succeeded()) {
         latch.complete(ar.result());
       } else {
@@ -96,7 +48,7 @@ public class SimpleBenchmark extends BenchmarkBase {
     pool.getConnection(ar1 -> {
       if (ar1.succeeded()) {
         PgConnection conn = ar1.result();
-        conn.preparedQuery("SELECT id, randomnumber from WORLD", ar2 -> {
+        conn.preparedQuery("SELECT id, randomnumber from WORLD where id=$1", 1, ar2 -> {
           conn.close();
           if (ar2.succeeded()) {
             latch.complete(ar2.result());
@@ -117,8 +69,8 @@ public class SimpleBenchmark extends BenchmarkBase {
     pool.getConnection(ar1 -> {
       if (ar1.succeeded()) {
         PgConnection conn = ar1.result();
-        PgPreparedStatement ps = conn.prepare("SELECT id, randomnumber from WORLD");
-        PgQuery query = ps.query();
+        PgPreparedStatement ps = conn.prepare("SELECT id, randomnumber from WORLD where id=$1");
+        PgQuery query = ps.query(1);
         query.execute(ar2 -> {
           conn.close();
           if (ar2.succeeded()) {
