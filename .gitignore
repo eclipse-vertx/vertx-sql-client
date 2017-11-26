@@ -13,6 +13,7 @@ out
 *.iml
 *.ipr
 *.iws
+*.jfr
 test-output
 Scratch.java
 ScratchTest.java
