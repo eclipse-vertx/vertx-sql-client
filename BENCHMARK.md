@@ -40,3 +40,7 @@ instead we should do:
 ### Parameter binary encoding
 
 Just encode them in binary it's more efficient and we don't need intermediate strings.
+
+### Row decoding
+
+Investigate plugability of row decoder that can operate on `@DataObject` directly. 
