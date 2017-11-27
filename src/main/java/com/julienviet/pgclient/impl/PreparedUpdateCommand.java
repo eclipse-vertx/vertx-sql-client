@@ -18,6 +18,7 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.UpdateResult;
+import com.julienviet.pgclient.codec.decoder.DecodeContext;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.message.BindComplete;
 import com.julienviet.pgclient.codec.decoder.message.NoData;
@@ -55,6 +56,7 @@ class PreparedUpdateCommand extends UpdateCommandBase {
 
   @Override
   void exec(SocketConnection conn) {
+    conn.decodeQueue.add(new DecodeContext(false, null, null));
     if (ps.stmt.length() == 0) {
       conn.writeMessage(new Parse(ps.sql).setStatement(""));
     }

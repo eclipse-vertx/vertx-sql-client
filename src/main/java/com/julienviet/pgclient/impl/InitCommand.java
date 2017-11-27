@@ -18,6 +18,7 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgException;
+import com.julienviet.pgclient.codec.decoder.DecodeContext;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.message.AuthenticationClearTextPassword;
 import com.julienviet.pgclient.codec.decoder.message.AuthenticationMD5Password;
@@ -61,6 +62,7 @@ class InitCommand extends CommandBase {
   @Override
   void exec(SocketConnection c) {
     conn = c;
+    conn.decodeQueue.add(new DecodeContext(false, null, null));
     if (ssl) {
       c.writeMessage(SSLRequest.INSTANCE);
     } else {

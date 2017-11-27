@@ -18,9 +18,10 @@
 package com.julienviet.pgclient.codec.decoder.message;
 
 
-import com.julienviet.pgclient.ResultSet;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
+import io.vertx.core.json.JsonArray;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -31,10 +32,16 @@ public class CommandComplete implements InboundMessage {
 
   private final String command;
   private final int rowsAffected;
+  private final List<JsonArray> rows;
 
-  public CommandComplete(String command, int rowsAffected) {
+  public CommandComplete(String command, int rowsAffected, List<JsonArray> rows) {
     this.command = command;
     this.rowsAffected = rowsAffected;
+    this.rows = rows;
+  }
+
+  public List<JsonArray> getRows() {
+    return rows;
   }
 
   public String getCommand() {

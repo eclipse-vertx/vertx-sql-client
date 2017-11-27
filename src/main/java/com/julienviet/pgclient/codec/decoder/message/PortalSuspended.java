@@ -20,6 +20,9 @@ package com.julienviet.pgclient.codec.decoder.message;
 import com.julienviet.pgclient.ResultSet;
 import com.julienviet.pgclient.codec.encoder.message.Execute;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
+import io.vertx.core.json.JsonArray;
+
+import java.util.List;
 
 /**
  *
@@ -33,9 +36,14 @@ import com.julienviet.pgclient.codec.decoder.InboundMessage;
 
 public class PortalSuspended implements InboundMessage {
 
-  public static PortalSuspended INSTANCE = new PortalSuspended();
+  private final List<JsonArray> rows;
 
-  private PortalSuspended() {
+  public PortalSuspended(List<JsonArray> rows) {
+    this.rows = rows;
+  }
+
+  public List<JsonArray> getRows() {
+    return rows;
   }
 
   @Override

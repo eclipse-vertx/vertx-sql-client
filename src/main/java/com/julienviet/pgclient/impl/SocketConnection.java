@@ -17,6 +17,7 @@
 
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.codec.decoder.DecodeContext;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.MessageDecoder;
 import com.julienviet.pgclient.codec.encoder.MessageEncoder;
@@ -55,6 +56,7 @@ public class SocketConnection implements Connection {
   private Holder holder;
   final Map<String, CompletableFuture<PreparedStatement>> psCache;
   private final int pipeliningLimit;
+  final Deque<DecodeContext> decodeQueue = new ArrayDeque<>();
 
   public SocketConnection(PgClientImpl client,
                           NetSocketInternal socket,
@@ -68,7 +70,7 @@ public class SocketConnection implements Connection {
 
   void init(String username, String password, String database, Handler<AsyncResult<Connection>> completionHandler) {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
-    pipeline.addBefore("handler", "decoder", new MessageDecoder());
+    pipeline.addBefore("handler", "decoder", new MessageDecoder(decodeQueue));
     pipeline.addBefore("handler", "encoder", new MessageEncoder());
     socket.closeHandler(this::handleClosed);
     socket.exceptionHandler(this::handleException);
@@ -166,6 +168,7 @@ public class SocketConnection implements Connection {
 
   private void handleMessage(Object msg) {
     InboundMessage pgMsg = (InboundMessage) msg;
+    // System.out.println("<-- " + msg);
     CommandBase cmd = inflight.peek();
     if (cmd != null) {
       cmd.handleMessage(pgMsg);

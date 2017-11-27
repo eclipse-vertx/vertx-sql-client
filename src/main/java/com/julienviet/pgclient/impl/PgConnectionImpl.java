@@ -63,6 +63,8 @@ public class PgConnectionImpl extends PgOperationsImpl implements PgConnection, 
       context.runOnContext(v -> {
         handler.handle(err);
       });
+    } else {
+      err.printStackTrace();
     }
   }
 

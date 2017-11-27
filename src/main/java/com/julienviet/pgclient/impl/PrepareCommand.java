@@ -18,6 +18,7 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgException;
+import com.julienviet.pgclient.codec.decoder.DecodeContext;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.message.*;
 import com.julienviet.pgclient.codec.encoder.message.Describe;
@@ -50,6 +51,7 @@ public class PrepareCommand extends CommandBase {
 
   @Override
   void exec(SocketConnection conn) {
+    conn.decodeQueue.add(new DecodeContext(false, null, null));
     cache = conn.psCache;
     if (cache != null) {
       CompletableFuture<PreparedStatement> cached = cache.get(sql);

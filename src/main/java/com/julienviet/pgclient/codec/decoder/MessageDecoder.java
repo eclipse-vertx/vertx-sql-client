@@ -26,7 +26,10 @@ import com.julienviet.pgclient.codec.util.Util;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import io.vertx.core.json.JsonArray;
 
+import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 
 import static com.julienviet.pgclient.codec.decoder.message.type.AuthenticationType.*;
@@ -43,6 +46,14 @@ import static java.nio.charset.StandardCharsets.*;
  */
 
 public class MessageDecoder extends ByteToMessageDecoder {
+
+  private final Deque<DecodeContext> decodeQueue;
+  private RowDescription rowDesc;
+  private List<JsonArray> rows = new ArrayList<>();
+
+  public MessageDecoder(Deque<DecodeContext> decodeQueue) {
+    this.decodeQueue = decodeQueue;
+  }
 
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
@@ -96,20 +107,28 @@ public class MessageDecoder extends ByteToMessageDecoder {
       break;
       case READY_FOR_QUERY: {
         decodeReadyForQuery(in, out);
+        DecodeContext decodeCtx = decodeQueue.poll();
+        if (decodeCtx == null) {
+          throw new AssertionError(); // For debugging purposes
+        }
       }
       break;
       case ROW_DESCRIPTION: {
         Column[] columns = decodeRowDescription(in);
-        out.add(new RowDescription(columns));
+        rowDesc = new RowDescription(columns);
+        out.add(rowDesc);
       }
       break;
       case DATA_ROW: {
-        byte[][] result = decodeDataRow(in);
-        out.add(new DataRow(result));
+        DecodeContext decodeCtx = decodeQueue.peek();
+        RowDescription desc = decodeCtx.peekDesc ? rowDesc : decodeCtx.rowDesc;
+        JsonArray row = decodeDataRow(in, desc, decodeCtx.dataFormat);
+        rows.add(row);
       }
       break;
       case COMMAND_COMPLETE: {
-        decodeCommandComplete(in, out);
+        decodeCommandComplete(in, rows, out);
+        rows = new ArrayList<>();
       }
       break;
       case EMPTY_QUERY_RESPONSE: {
@@ -133,7 +152,8 @@ public class MessageDecoder extends ByteToMessageDecoder {
       }
       break;
       case PORTAL_SUSPENDED: {
-        decodePortalSuspended(out);
+        decodePortalSuspended(out, rows);
+        rows = new ArrayList<>();
       }
       break;
       case PARAMETER_DESCRIPTION: {
@@ -267,7 +287,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
     }
   }
 
-  private void decodeCommandComplete(ByteBuf in, List<Object> out) {
+  private void decodeCommandComplete(ByteBuf in, List<JsonArray> rows, List<Object> out) {
 
     final byte SPACE = 32;
 
@@ -277,7 +297,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
     int prefixLen = spaceIdx1 - in.readerIndex();
 
     if (spaceIdx1 == -1) {
-      out.add(new CommandComplete(in.toString(UTF_8), rowsAffected));
+      out.add(new CommandComplete(in.toString(UTF_8), rowsAffected, rows));
       return;
     }
 
@@ -286,7 +306,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
       String command = in.toString(in.readerIndex(), prefixLen, UTF_8);
       switch (command) {
         case SELECT: {
-          out.add(new CommandComplete(command, rowsAffected));
+          out.add(new CommandComplete(command, rowsAffected, rows));
         }
         break;
         case UPDATE:
@@ -296,7 +316,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
         case COPY: {
           rowsAffected = Integer.parseInt
             (in.toString(spaceIdx1 + 1, in.writerIndex() - spaceIdx1 - 2, UTF_8));
-          out.add(new CommandComplete(command, rowsAffected));
+          out.add(new CommandComplete(command, rowsAffected, rows));
         }
         break;
         default:
@@ -315,7 +335,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
         String affectedRowsByteBuf = otherByteBuf.toString(otherSpace + 1,
           otherByteBuf.writerIndex() - otherSpace - 1, UTF_8);
         rowsAffected = Integer.parseInt(affectedRowsByteBuf);
-        out.add(new CommandComplete(command, rowsAffected));
+        out.add(new CommandComplete(command, rowsAffected, rows));
       }
       break;
       default:
@@ -348,20 +368,26 @@ public class MessageDecoder extends ByteToMessageDecoder {
     return columns;
   }
 
-  private byte[][] decodeDataRow(ByteBuf in) {
+  private JsonArray decodeDataRow(ByteBuf in, RowDescription rowDesc, DataFormat format) {
     int len = in.readUnsignedShort();
-    byte[][] values = new byte[len][];
+    JsonArray row = new JsonArray(new ArrayList(len));
     for (int c = 0; c < len; ++c) {
       int length = in.readInt();
       if (length != -1) {
-        byte[] b = new byte[length];
-        in.readBytes(b);
-        values[c] = b;
+        Column columnDesc = rowDesc.getColumns()[c];
+        DataType dataType = columnDesc.getDataType();
+        Object decoded;
+        if (format == DataFormat.TEXT) {
+          decoded = dataType.decodeText(length, in);
+        } else {
+          decoded = dataType.decodeBinary(length, in);
+        }
+        row.add(decoded);
       } else {
-        //values.addNull();
+        row.addNull();
       }
     }
-    return values;
+    return row;
   }
 
   private void decodeReadyForQuery(ByteBuf in, List<Object> out) {
@@ -384,8 +410,8 @@ public class MessageDecoder extends ByteToMessageDecoder {
     out.add(NoData.INSTANCE);
   }
 
-  private void decodePortalSuspended(List<Object> out) {
-    out.add(PortalSuspended.INSTANCE);
+  private void decodePortalSuspended(List<Object> out, List<JsonArray> rows) {
+    out.add(new PortalSuspended(rows));
   }
 
   private void decodeParameterDescription(ByteBuf in, List<Object> out) {
