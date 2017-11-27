@@ -11,13 +11,14 @@ public class PgDataTypeBinaryTest extends PgDataTypeBase {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn
-        .prepare("SELECT \"Boolean\" FROM \"NumericDataType\" WHERE \"Boolean\" = $1")
-        .query(Boolean.TRUE).execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        ctx.assertEquals(Boolean.TRUE, result.getResults().get(0).getBoolean(0));
-        async.complete();
-      }));
+      conn.prepare("SELECT \"Boolean\" FROM \"NumericDataType\" WHERE \"Boolean\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.query(Boolean.TRUE).execute(ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.getNumRows());
+            ctx.assertEquals(Boolean.TRUE, result.getResults().get(0).getBoolean(0));
+            async.complete();
+          }));
+        }));
     }));
   }
 
@@ -26,13 +27,14 @@ public class PgDataTypeBinaryTest extends PgDataTypeBase {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn
-        .prepare("SELECT \"Short\" FROM \"NumericDataType\" WHERE \"Short\" = $1")
-        .query(Short.MAX_VALUE).execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        ctx.assertEquals(Short.MAX_VALUE, result.getResults().get(0).getValue(0));
-        async.complete();
-      }));
+      conn.prepare("SELECT \"Short\" FROM \"NumericDataType\" WHERE \"Short\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.query(Short.MAX_VALUE).execute(ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.getNumRows());
+            ctx.assertEquals(Short.MAX_VALUE, result.getResults().get(0).getValue(0));
+            async.complete();
+          }));
+        }));
     }));
   }
 
@@ -41,13 +43,14 @@ public class PgDataTypeBinaryTest extends PgDataTypeBase {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn
-        .prepare("SELECT \"Integer\" FROM \"NumericDataType\" WHERE \"Integer\" = $1")
-        .query(Integer.MAX_VALUE).execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        ctx.assertEquals(Integer.MAX_VALUE, result.getResults().get(0).getInteger(0));
-        async.complete();
-      }));
+      conn.prepare("SELECT \"Integer\" FROM \"NumericDataType\" WHERE \"Integer\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.query(Integer.MAX_VALUE).execute(ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.getNumRows());
+            ctx.assertEquals(Integer.MAX_VALUE, result.getResults().get(0).getInteger(0));
+            async.complete();
+          }));
+        }));
     }));
   }
 
@@ -56,13 +59,14 @@ public class PgDataTypeBinaryTest extends PgDataTypeBase {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn
-        .prepare("SELECT \"Long\" FROM \"NumericDataType\" WHERE \"Long\" = $1")
-        .query(Long.MAX_VALUE).execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        ctx.assertEquals(Long.MAX_VALUE, result.getResults().get(0).getLong(0));
-        async.complete();
-      }));
+      conn.prepare("SELECT \"Long\" FROM \"NumericDataType\" WHERE \"Long\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.query(Long.MAX_VALUE).execute(ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.getNumRows());
+            ctx.assertEquals(Long.MAX_VALUE, result.getResults().get(0).getLong(0));
+            async.complete();
+          }));
+        }));
     }));
   }
 
@@ -71,13 +75,14 @@ public class PgDataTypeBinaryTest extends PgDataTypeBase {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn
-        .prepare("SELECT \"Float\" FROM \"NumericDataType\" WHERE \"Float\" = $1")
-        .query(Float.MAX_VALUE).execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        ctx.assertEquals(Float.MAX_VALUE, result.getResults().get(0).getFloat(0));
-        async.complete();
-      }));
+      conn.prepare("SELECT \"Float\" FROM \"NumericDataType\" WHERE \"Float\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.query(Float.MAX_VALUE).execute(ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.getNumRows());
+            ctx.assertEquals(Float.MAX_VALUE, result.getResults().get(0).getFloat(0));
+            async.complete();
+          }));
+        }));
     }));
   }
 
@@ -86,13 +91,14 @@ public class PgDataTypeBinaryTest extends PgDataTypeBase {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn
-        .prepare("SELECT \"Double\" FROM \"NumericDataType\" WHERE \"Double\" = $1")
-        .query(Double.MAX_VALUE).execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        ctx.assertEquals(Double.MAX_VALUE, result.getResults().get(0).getDouble(0));
-        async.complete();
-      }));
+      conn.prepare("SELECT \"Double\" FROM \"NumericDataType\" WHERE \"Double\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.query(Double.MAX_VALUE).execute(ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.getNumRows());
+            ctx.assertEquals(Double.MAX_VALUE, result.getResults().get(0).getDouble(0));
+            async.complete();
+          }));
+        }));
     }));
   }
 }
