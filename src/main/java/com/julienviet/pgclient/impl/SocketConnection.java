@@ -130,9 +130,6 @@ public class SocketConnection implements Connection {
           psCache.put(prepareCmd.sql, fut);
           cmd = new PrepareCommand(prepareCmd.sql, UUID.randomUUID().toString(), ar -> {
             prepareCmd.fut.handle(ar);
-            if (completionHandler != null) {
-              completionHandler.handle(null);
-            }
             if (ar.succeeded()) {
               fut.complete(ar.result());
             } else {
