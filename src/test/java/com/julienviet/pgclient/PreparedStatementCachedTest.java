@@ -17,10 +17,36 @@
 
 package com.julienviet.pgclient;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
+import org.junit.Test;
+
 public class PreparedStatementCachedTest extends PreparedStatementTestBase {
 
   @Override
   protected PgClientOptions options() {
     return new PgClientOptions(options).setCachePreparedStatements(true);
   }
+
+  @Test
+  public void testConcurrent(TestContext ctx) {
+    client.connect(ctx.asyncAssertSuccess(conn -> {
+      for (int i = 0;i < 10;i++) {
+        int val = i;
+        Async async = ctx.async();
+        conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
+          PgQuery query = ps.query(1);
+          query.execute(ctx.asyncAssertSuccess(results -> {
+            ctx.assertEquals(1, results.getNumRows());
+            JsonArray row = results.getResults().get(0);
+            ctx.assertEquals(1, row.getInteger(0));
+            ctx.assertEquals("fortune: No such file or directory", row.getString(1));
+            async.complete();
+          }));
+        }));
+      }
+    }));
+  }
+
 }

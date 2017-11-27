@@ -20,7 +20,7 @@ package com.julienviet.pgclient.impl;
 import com.julienviet.pgclient.codec.decoder.message.ParameterDescription;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
 
-class PreparedStatement {
+public class PreparedStatement {
 
   final String sql;
   final String stmt;

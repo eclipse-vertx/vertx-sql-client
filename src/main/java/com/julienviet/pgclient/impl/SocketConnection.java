@@ -24,11 +24,7 @@ import com.julienviet.pgclient.codec.encoder.MessageEncoder;
 import com.julienviet.pgclient.codec.encoder.OutboundMessage;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxException;
+import io.vertx.core.*;
 import io.vertx.core.impl.ContextImpl;
 import io.vertx.core.impl.NetSocketInternal;
 
@@ -54,7 +50,7 @@ public class SocketConnection implements Connection {
   final Context context;
   private Status status = Status.CONNECTED;
   private Holder holder;
-  final Map<String, CompletableFuture<PreparedStatement>> psCache;
+  private final Map<String, CompletableFuture<PreparedStatement>> psCache;
   private final int pipeliningLimit;
   final Deque<DecodeContext> decodeQueue = new ArrayDeque<>();
 
@@ -125,6 +121,34 @@ public class SocketConnection implements Connection {
       throw new IllegalStateException();
     }
     if (status == Status.CONNECTED) {
+
+      if (cmd instanceof PrepareCommand && psCache != null) {
+        PrepareCommand prepareCmd = (PrepareCommand) cmd;
+        CompletableFuture<PreparedStatement> psFut = psCache.get(prepareCmd.sql);
+        if (psFut == null) {
+          CompletableFuture<PreparedStatement> fut = new CompletableFuture<>();
+          psCache.put(prepareCmd.sql, fut);
+          cmd = new PrepareCommand(prepareCmd.sql, UUID.randomUUID().toString(), ar -> {
+            prepareCmd.fut.handle(ar);
+            if (ar.succeeded()) {
+              fut.complete(ar.result());
+            } else {
+              psCache.remove(prepareCmd.sql, fut);
+              fut.completeExceptionally(ar.cause());
+            }
+          });
+        } else {
+          psFut.whenComplete((ps, err) -> {
+            if (err == null) {
+              prepareCmd.fut.complete(ps);
+            } else {
+              prepareCmd.fut.fail(err);
+            }
+          });
+          return;
+        }
+      }
+
       pending.add(cmd);
       cmd.completionHandler = v -> {
         inflight.poll();

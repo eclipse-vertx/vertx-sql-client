@@ -38,7 +38,7 @@ class SimpleConnection implements Connection {
 
   @Override
   public void schedule(CommandBase cmd, Handler<Void> completionHandler) {
-
+    throw new UnsupportedOperationException();
   }
 
   @Override
