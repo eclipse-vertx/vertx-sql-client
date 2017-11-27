@@ -22,8 +22,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
 
-import java.util.List;
-
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
@@ -109,6 +107,7 @@ public class Examples {
   }
 
   public void ex4(PgConnection conn) {
+    /*
     PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS WHERE user_id=$1");
 
     // Create a query : bind parameters
@@ -124,6 +123,7 @@ public class Examples {
         System.out.println("Query failed " + res.cause());
       }
     });
+    */
   }
 
   public void ex5(PgPreparedStatement preparedStatement) {
@@ -131,6 +131,7 @@ public class Examples {
   }
 
   public void ex6(PgConnection conn) {
+    /*
     PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS");
 
     // Create a query : bind parameters
@@ -144,9 +145,11 @@ public class Examples {
     }).handler(result -> {
       // Get results
     });
+    */
   }
 
   public void ex7(PgConnection conn) {
+    /*
     PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS");
 
     // Create a query : bind parameters
@@ -168,10 +171,11 @@ public class Examples {
         System.out.println("Query failed " + res.cause());
       }
     });
+    */
   }
 
   public void ex8(PgConnection conn) {
-
+    /*
     PgPreparedStatement preparedStatement = conn.prepare("UPDATE USERS SET name=$1 WHERE id=$2");
 
     // Create an update : bind parameters
@@ -197,9 +201,11 @@ public class Examples {
       }
 
     });
+    */
   }
 
   public void ex9(PgConnection conn) {
+    /*
     PgPreparedStatement preparedStatement = conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)");
 
     // Create a query : bind parameters
@@ -218,6 +224,7 @@ public class Examples {
         System.out.println("Batch failed " + res.cause());
       }
     });
+    */
   }
 
   public void ex10(Vertx vertx) {

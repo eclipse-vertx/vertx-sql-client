@@ -17,7 +17,6 @@
 
 package com.julienviet.pgclient.codec.decoder;
 
-import com.julienviet.pgclient.ResultSet;
 import com.julienviet.pgclient.codec.Column;
 import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.DataType;
@@ -27,9 +26,7 @@ import com.julienviet.pgclient.codec.util.Util;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
-import io.vertx.core.json.JsonArray;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.julienviet.pgclient.codec.decoder.message.type.AuthenticationType.*;
@@ -46,10 +43,6 @@ import static java.nio.charset.StandardCharsets.*;
  */
 
 public class MessageDecoder extends ByteToMessageDecoder {
-
-  private Column[] columns;
-  private ResultSet resultSet;
-  private DataFormat dataFormat = DataFormat.TEXT;
 
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
@@ -91,9 +84,6 @@ public class MessageDecoder extends ByteToMessageDecoder {
     switch (id) {
       case ERROR_RESPONSE: {
         decodeErrorOrNotice(ErrorResponse.INSTANCE, in, out);
-        columns = null;
-        resultSet = null;
-        dataFormat = DataFormat.TEXT;
         break;
       }
       case NOTICE_RESPONSE: {
@@ -109,24 +99,17 @@ public class MessageDecoder extends ByteToMessageDecoder {
       }
       break;
       case ROW_DESCRIPTION: {
-        columns = decodeRowDescription(in);
-        ArrayList<String> columnNames = new ArrayList<>(columns.length);
-        for (Column column : columns) {
-          columnNames.add(column.getName());
-        }
-        resultSet = new ResultSet().setColumnNames(columnNames).setResults(new ArrayList<>());
+        Column[] columns = decodeRowDescription(in);
+        out.add(new RowDescription(columns));
       }
       break;
       case DATA_ROW: {
-        JsonArray result = decodeDataRow(in, columns);
-        resultSet.getResults().add(result); // HOT (TLAB)
+        byte[][] result = decodeDataRow(in);
+        out.add(new DataRow(result));
       }
       break;
       case COMMAND_COMPLETE: {
         decodeCommandComplete(in, out);
-        columns = null;
-        resultSet = null;
-        dataFormat = DataFormat.TEXT;
       }
       break;
       case EMPTY_QUERY_RESPONSE: {
@@ -139,7 +122,6 @@ public class MessageDecoder extends ByteToMessageDecoder {
       break;
       case BIND_COMPLETE: {
         decodeBindComplete(out);
-        dataFormat = DataFormat.BINARY;
       }
       break;
       case CLOSE_COMPLETE: {
@@ -152,9 +134,6 @@ public class MessageDecoder extends ByteToMessageDecoder {
       break;
       case PORTAL_SUSPENDED: {
         decodePortalSuspended(out);
-        columns = null;
-        resultSet = null;
-        dataFormat = DataFormat.TEXT;
       }
       break;
       case PARAMETER_DESCRIPTION: {
@@ -298,7 +277,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
     int prefixLen = spaceIdx1 - in.readerIndex();
 
     if (spaceIdx1 == -1) {
-      out.add(new CommandComplete(in.toString(UTF_8), rowsAffected, null));
+      out.add(new CommandComplete(in.toString(UTF_8), rowsAffected));
       return;
     }
 
@@ -307,7 +286,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
       String command = in.toString(in.readerIndex(), prefixLen, UTF_8);
       switch (command) {
         case SELECT: {
-          out.add(new CommandComplete(command, rowsAffected, resultSet));
+          out.add(new CommandComplete(command, rowsAffected));
         }
         break;
         case UPDATE:
@@ -317,7 +296,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
         case COPY: {
           rowsAffected = Integer.parseInt
             (in.toString(spaceIdx1 + 1, in.writerIndex() - spaceIdx1 - 2, UTF_8));
-          out.add(new CommandComplete(command, rowsAffected, null));
+          out.add(new CommandComplete(command, rowsAffected));
         }
         break;
         default:
@@ -336,7 +315,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
         String affectedRowsByteBuf = otherByteBuf.toString(otherSpace + 1,
           otherByteBuf.writerIndex() - otherSpace - 1, UTF_8);
         rowsAffected = Integer.parseInt(affectedRowsByteBuf);
-        out.add(new CommandComplete(command, rowsAffected, null));
+        out.add(new CommandComplete(command, rowsAffected));
       }
       break;
       default:
@@ -345,7 +324,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
     }
   }
 
-  private Column[] decodeRowDescription(ByteBuf in) {
+  private Column[]  decodeRowDescription(ByteBuf in) {
     Column[] columns = new Column[in.readUnsignedShort()];
     for (int c = 0; c < columns.length; ++c) {
       String fieldName = Util.readCStringUTF8(in);
@@ -369,26 +348,17 @@ public class MessageDecoder extends ByteToMessageDecoder {
     return columns;
   }
 
-  private JsonArray decodeDataRow(ByteBuf in, Column[] columns) {
+  private byte[][] decodeDataRow(ByteBuf in) {
     int len = in.readUnsignedShort();
-    JsonArray values = new JsonArray(new ArrayList(16)); // HOT
+    byte[][] values = new byte[len][];
     for (int c = 0; c < len; ++c) {
       int length = in.readInt();
       if (length != -1) {
-        Column desc = columns[c];
-        Object value;
-        // Need to use data format sincer RowDescription is useless
-        // "The format code being used for the field. Currently will be zero (text) or one (binary).
-        // In a RowDescription returned from the statement variant of Describe,
-        // the format code is not yet known and will always be zero."
-        if (dataFormat == DataFormat.TEXT) {
-          value = desc.getDataType().decodeText(length, in);
-        } else {
-          value = desc.getDataType().decodeBinary(length, in);
-        }
-        values.add(value);
+        byte[] b = new byte[length];
+        in.readBytes(b);
+        values[c] = b;
       } else {
-        values.addNull();
+        //values.addNull();
       }
     }
     return values;
@@ -415,7 +385,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
   }
 
   private void decodePortalSuspended(List<Object> out) {
-    out.add(new PortalSuspended(resultSet));
+    out.add(PortalSuspended.INSTANCE);
   }
 
   private void decodeParameterDescription(ByteBuf in, List<Object> out) {

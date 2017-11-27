@@ -117,21 +117,7 @@ The `sql` string can refer to parameters by position, using $1, $2, etc...
 
 [source,java]
 ----
-PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS WHERE user_id=$1");
 
-// Create a query : bind parameters
-PgQuery query = preparedStatement.query("julien");
-
-// Execute query
-query.execute(res -> {
-  if (res.succeeded()) {
-
-    // Get result
-    ResultSet result = res.result();
-  } else {
-    System.out.println("Query failed " + res.cause());
-  }
-});
 ----
 
 When you are done with the prepared statement, you should close it:
@@ -147,19 +133,7 @@ By default the query will fetch all results, you can override this and define a 
 
 [source,java]
 ----
-PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS");
 
-// Create a query : bind parameters
-PgQuery query = preparedStatement.query()
-  .fetch(100); // Get at most 100 rows at a time
-
-query.endHandler(v -> {
-  // We are done
-}).exceptionHandler(err -> {
-  System.out.println("Query failed " + err);
-}).handler(result -> {
-  // Get results
-});
 ----
 
 When a query is not completed you can call `link:../../apidocs/com/julienviet/pgclient/PgQuery.html#close--[close]` to release
@@ -167,58 +141,14 @@ the query result in progress:
 
 [source,java]
 ----
-PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS");
 
-// Create a query : bind parameters
-PgQuery query = preparedStatement.query();
-
-// Get at most 100 rows
-query.fetch(100);
-
-// Execute query
-query.execute(res -> {
-  if (res.succeeded()) {
-
-    // Get result
-    ResultSet result = res.result();
-
-    // Close the query
-    query.close();
-  } else {
-    System.out.println("Query failed " + res.cause());
-  }
-});
 ----
 
 Prepared statements can also be used for update operations
 
 [source,java]
 ----
-PgPreparedStatement preparedStatement = conn.prepare("UPDATE USERS SET name=$1 WHERE id=$2");
 
-// Create an update : bind parameters
-PgUpdate update = preparedStatement.update(2, "EMAD ALBLUESHI");
-
-update.execute(res -> {
-  if(res.succeeded()) {
-    // Process results
-    UpdateResult result = res.result();
-  } else {
-    System.out.println("Update failed " + res.cause());
-  }
-
-});
-
-// Or fluently
-preparedStatement.update(1, "JULIEN VIET").execute(res -> {
-  if(res.succeeded()) {
-    // Process results
-    UpdateResult result = res.result();
-  } else {
-    System.out.println("Update failed " + res.cause());
-  }
-
-});
 ----
 
 
@@ -226,24 +156,7 @@ Prepared statements can also be used to batch operations in a very efficient man
 
 [source,java]
 ----
-PgPreparedStatement preparedStatement = conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)");
 
-// Create a query : bind parameters
-PgBatch batch = preparedStatement.batch();
-
-// Add commands to the batch
-batch.add("julien", "Julien Viet");
-batch.add("emad", "Emad Alblueshi");
-
-batch.execute(res -> {
-  if (res.succeeded()) {
-
-    // Process results
-    List<UpdateResult> results = res.result();
-  } else {
-    System.out.println("Batch failed " + res.cause());
-  }
-});
 ----
 
 == Using SSL/TLS

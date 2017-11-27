@@ -20,9 +20,8 @@ package com.julienviet.pgclient.impl;
 import com.julienviet.pgclient.*;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
-
-import java.util.UUID;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -95,8 +94,13 @@ public class PgConnectionImpl extends PgOperationsImpl implements PgConnection, 
   }
 
   @Override
-  public PgPreparedStatement prepare(String sql) {
-    // todo : should somehow try to reuse existing cache or make it automatic ? (I think we can)
-    return new PgPreparedStatementImpl(conn, sql, UUID.randomUUID().toString());
+  public void prepare(String sql, Handler<AsyncResult<PgPreparedStatement>> handler) {
+    conn.schedule(new PrepareCommand(sql, ar -> {
+      if (ar.succeeded()) {
+        handler.handle(Future.succeededFuture(new PgPreparedStatementImpl(conn, ar.result())));
+      } else {
+        handler.handle(Future.failedFuture(ar.cause()));
+      }
+    }));
   }
 }

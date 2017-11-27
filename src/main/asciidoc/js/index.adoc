@@ -128,21 +128,23 @@ The `sql` string can refer to parameters by position, using $1, $2, etc...
 
 [source,js]
 ----
-var preparedStatement = conn.prepare("SELECT * FROM USERS WHERE user_id=$1");
+/*
+PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS WHERE user_id=$1");
 
 // Create a query : bind parameters
-var query = preparedStatement.query("julien");
+PgQuery query = preparedStatement.query("julien");
 
 // Execute query
-query.execute(function (res, res_err) {
-  if (res_err == null) {
+query.execute(res -> {
+  if (res.succeeded()) {
 
     // Get result
-    var result = res;
+    ResultSet result = res.result();
   } else {
-    console.log("Query failed " + res_err);
+    System.out.println("Query failed " + res.cause());
   }
 });
+*/
 
 ----
 
@@ -160,18 +162,21 @@ By default the query will fetch all results, you can override this and define a 
 
 [source,js]
 ----
-var preparedStatement = conn.prepare("SELECT * FROM USERS");
+/*
+PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS");
 
 // Create a query : bind parameters
-var query = preparedStatement.query().fetch(100);
+PgQuery query = preparedStatement.query()
+  .fetch(100); // Get at most 100 rows at a time
 
-query.endHandler(function (v) {
+query.endHandler(v -> {
   // We are done
-}).exceptionHandler(function (err) {
-  console.log("Query failed " + err);
-}).handler(function (result) {
+}).exceptionHandler(err -> {
+  System.out.println("Query failed " + err);
+}).handler(result -> {
   // Get results
 });
+*/
 
 ----
 
@@ -180,27 +185,29 @@ the query result in progress:
 
 [source,js]
 ----
-var preparedStatement = conn.prepare("SELECT * FROM USERS");
+/*
+PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS");
 
 // Create a query : bind parameters
-var query = preparedStatement.query();
+PgQuery query = preparedStatement.query();
 
 // Get at most 100 rows
 query.fetch(100);
 
 // Execute query
-query.execute(function (res, res_err) {
-  if (res_err == null) {
+query.execute(res -> {
+  if (res.succeeded()) {
 
     // Get result
-    var result = res;
+    ResultSet result = res.result();
 
     // Close the query
     query.close();
   } else {
-    console.log("Query failed " + res_err);
+    System.out.println("Query failed " + res.cause());
   }
 });
+*/
 
 ----
 
@@ -208,32 +215,33 @@ Prepared statements can also be used for update operations
 
 [source,js]
 ----
-
-var preparedStatement = conn.prepare("UPDATE USERS SET name=$1 WHERE id=$2");
+/*
+PgPreparedStatement preparedStatement = conn.prepare("UPDATE USERS SET name=$1 WHERE id=$2");
 
 // Create an update : bind parameters
-var update = preparedStatement.update(2, "EMAD ALBLUESHI");
+PgUpdate update = preparedStatement.update(2, "EMAD ALBLUESHI");
 
-update.execute(function (res, res_err) {
-  if (res_err == null) {
+update.execute(res -> {
+  if(res.succeeded()) {
     // Process results
-    var result = res;
+    UpdateResult result = res.result();
   } else {
-    console.log("Update failed " + res_err);
+    System.out.println("Update failed " + res.cause());
   }
 
 });
 
 // Or fluently
-preparedStatement.update(1, "JULIEN VIET").execute(function (res, res_err) {
-  if (res_err == null) {
+preparedStatement.update(1, "JULIEN VIET").execute(res -> {
+  if(res.succeeded()) {
     // Process results
-    var result = res;
+    UpdateResult result = res.result();
   } else {
-    console.log("Update failed " + res_err);
+    System.out.println("Update failed " + res.cause());
   }
 
 });
+*/
 
 ----
 
@@ -242,24 +250,26 @@ Prepared statements can also be used to batch operations in a very efficient man
 
 [source,js]
 ----
-var preparedStatement = conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)");
+/*
+PgPreparedStatement preparedStatement = conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)");
 
 // Create a query : bind parameters
-var batch = preparedStatement.batch();
+PgBatch batch = preparedStatement.batch();
 
 // Add commands to the batch
 batch.add("julien", "Julien Viet");
 batch.add("emad", "Emad Alblueshi");
 
-batch.execute(function (res, res_err) {
-  if (res_err == null) {
+batch.execute(res -> {
+  if (res.succeeded()) {
 
     // Process results
-    var results = res;
+    List<UpdateResult> results = res.result();
   } else {
-    console.log("Batch failed " + res_err);
+    System.out.println("Batch failed " + res.cause());
   }
 });
+*/
 
 ----
 
