@@ -18,6 +18,8 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.UpdateResult;
+import com.julienviet.pgclient.codec.DataFormat;
+import com.julienviet.pgclient.codec.decoder.DecodeContext;
 import com.julienviet.pgclient.codec.encoder.message.Query;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -39,6 +41,7 @@ class UpdateCommand extends UpdateCommandBase {
 
   @Override
   void exec(SocketConnection conn) {
+    conn.decodeQueue.add(new DecodeContext(true, null, DataFormat.TEXT));
     conn.writeMessage(new Query(sql));
   }
 

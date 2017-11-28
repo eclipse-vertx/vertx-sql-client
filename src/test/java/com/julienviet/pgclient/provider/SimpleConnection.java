@@ -19,7 +19,11 @@ package com.julienviet.pgclient.provider;
 
 import com.julienviet.pgclient.impl.CommandBase;
 import com.julienviet.pgclient.impl.Connection;
+import com.julienviet.pgclient.impl.PreparedStatement;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+
+import java.util.function.Function;
 
 class SimpleConnection implements Connection {
 
@@ -38,7 +42,12 @@ class SimpleConnection implements Connection {
 
   @Override
   public void schedule(CommandBase cmd, Handler<Void> completionHandler) {
+    throw new UnsupportedOperationException();
+  }
 
+  @Override
+  public void schedulePrepared(String sql, Function<AsyncResult<PreparedStatement>, CommandBase> supplier, Handler<Void> completionHandler) {
+    throw new UnsupportedOperationException();
   }
 
   @Override

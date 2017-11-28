@@ -36,13 +36,17 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 @RunWith(VertxUnitRunner.class)
-public class PgQueryImplTest extends PgTestBase {
+public abstract class PreparedStatementTestBase extends PgTestBase {
 
   Vertx vertx;
+  PgClient client;
+
+  protected abstract PgClientOptions options();
 
   @Before
   public void setup() {
     vertx = Vertx.vertx();
+    client = PgClient.create(vertx, options());
   }
 
   @After
@@ -53,7 +57,6 @@ public class PgQueryImplTest extends PgTestBase {
   @Test
   public void testQuery1Param(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
         PgQuery query = ps.query(1);
@@ -73,7 +76,6 @@ public class PgQueryImplTest extends PgTestBase {
   @Test
   public void testQuery(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6", ctx.asyncAssertSuccess(ps -> {
         PgQuery query = ps.query(1, 8, 4, 11, 2, 9);
@@ -90,7 +92,6 @@ public class PgQueryImplTest extends PgTestBase {
   @Test
   public void testQueryStream(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6", ctx.asyncAssertSuccess(ps -> {
         PgQuery stream = ps.query(1, 8, 4, 11, 2, 9);
@@ -110,7 +111,6 @@ public class PgQueryImplTest extends PgTestBase {
   @Test
   public void testQueryParseError(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare("invalid", ctx.asyncAssertFailure(err -> {
         PgException pgErr = (PgException) err;
@@ -123,7 +123,6 @@ public class PgQueryImplTest extends PgTestBase {
   @Test
   public void testQueryBindError(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
         PgQuery query = ps.query("invalid-id");
@@ -140,7 +139,6 @@ public class PgQueryImplTest extends PgTestBase {
   @Test
   public void testQueryCursor(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
         conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6", ctx.asyncAssertSuccess(ps -> {
@@ -165,7 +163,6 @@ public class PgQueryImplTest extends PgTestBase {
   @Test
   public void testQueryStreamCursor(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
         conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6", ctx.asyncAssertSuccess(ps -> {
@@ -190,7 +187,6 @@ public class PgQueryImplTest extends PgTestBase {
   @Test
   public void testQueryCloseCursor(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
         conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6", ctx.asyncAssertSuccess(ps -> {
@@ -212,7 +208,6 @@ public class PgQueryImplTest extends PgTestBase {
   @Test
   public void testQueryStreamCloseCursor(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
         conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6", ctx.asyncAssertSuccess(ps -> {

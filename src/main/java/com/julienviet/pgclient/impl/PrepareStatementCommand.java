@@ -18,6 +18,7 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgException;
+import com.julienviet.pgclient.codec.decoder.DecodeContext;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.message.*;
 import com.julienviet.pgclient.codec.encoder.message.Describe;
@@ -27,67 +28,26 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
+public class PrepareStatementCommand extends CommandBase {
 
-public class PrepareCommand extends CommandBase {
-
-  private final String sql;
-  private final Handler<AsyncResult<PreparedStatement>> handler;
-  private String statement;
-  private CompletableFuture<PreparedStatement> cf;
-  private Map<String, CompletableFuture<PreparedStatement>> cache;
+  final String sql;
+  private final String statement;
   private ParameterDescription parameterDesc;
   private RowDescription rowDesc;
-  private Future<PreparedStatement> fut;
+  final Future<PreparedStatement> fut;
 
-  PrepareCommand(String sql, Handler<AsyncResult<PreparedStatement>> handler) {
+  PrepareStatementCommand(String sql, String statement, Handler<AsyncResult<PreparedStatement>> handler) {
     this.sql = sql;
-    this.handler = handler;
-    this.fut= Future.future();
+    this.statement = statement;
+    this.fut= Future.<PreparedStatement>future().setHandler(handler);
   }
 
   @Override
   void exec(SocketConnection conn) {
-    cache = conn.psCache;
-    if (cache != null) {
-      CompletableFuture<PreparedStatement> cached = cache.get(sql);
-      if (cached == null) {
-        cached = new CompletableFuture<>();
-        cache.put(sql, cached);
-        statement = UUID.randomUUID().toString();
-        cf = cached;
-      } else {
-        cached.whenComplete((ps, err) -> {
-          if (err == null) {
-            handler.handle(Future.succeededFuture(ps));
-          } else {
-            handler.handle(Future.failedFuture(err));
-          }
-        });
-        return;
-      }
-    } else {
-      cf = new CompletableFuture<>();
-      statement = "";
-    }
+    conn.decodeQueue.add(new DecodeContext(false, null, null));
     conn.writeMessage(new Parse(sql).setStatement(statement));
     conn.writeMessage(new Describe().setStatement(statement));
     conn.writeMessage(Sync.INSTANCE);
-    fut.setHandler(ar -> {
-      handler.handle(ar);
-      if (cf != null) {
-        if (ar.succeeded()) {
-          cf.complete(ar.result());
-        } else {
-          if (cache != null) {
-            cache.remove(sql, cf);
-          }
-          cf.completeExceptionally(ar.cause());
-        }
-      }
-    });
   }
 
   @Override

@@ -15,22 +15,20 @@
  *
  */
 
-package com.julienviet.pgclient.impl;
+package com.julienviet.pgclient.codec.decoder;
 
-import com.julienviet.pgclient.codec.decoder.message.ParameterDescription;
+import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
 
-public class PreparedStatement {
+public class DecodeContext {
 
-  final String sql;
-  final String stmt;
-  final ParameterDescription paramDesc;
+  final boolean peekDesc;
   final RowDescription rowDesc;
+  final DataFormat dataFormat;
 
-  public PreparedStatement(String sql, String stmt, ParameterDescription paramDesc, RowDescription rowDesc) {
-    this.sql = sql;
-    this.stmt = stmt;
-    this.paramDesc = paramDesc;
+  public DecodeContext(boolean peekDesc, RowDescription rowDesc, DataFormat dataFormat) {
+    this.peekDesc = peekDesc;
     this.rowDesc = rowDesc;
+    this.dataFormat = dataFormat;
   }
 }

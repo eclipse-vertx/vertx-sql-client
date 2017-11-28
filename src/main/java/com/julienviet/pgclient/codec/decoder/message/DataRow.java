@@ -17,14 +17,8 @@
 
 package com.julienviet.pgclient.codec.decoder.message;
 
-import com.julienviet.pgclient.codec.Column;
-import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.vertx.core.json.JsonArray;
-
-import java.util.Arrays;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
@@ -32,13 +26,14 @@ import java.util.Arrays;
 
 public class DataRow implements InboundMessage {
 
-  final byte[][] values;
+  final JsonArray values;
 
-  public DataRow(byte[][] values) {
+  public DataRow(JsonArray values) {
     this.values = values;
   }
-  public Object getValue(int i) {
-    return values[i];
+
+  public JsonArray getValues() {
+    return values;
   }
 
   @Override
@@ -46,44 +41,18 @@ public class DataRow implements InboundMessage {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     DataRow that = (DataRow) o;
-    return Arrays.equals(values, that.values);
-  }
-
-  public JsonArray decode(RowDescription desc, DataFormat format) {
-    JsonArray array = new JsonArray();
-    for (int i = 0;i < values.length;i++) {
-      byte[] value = values[i];
-      if (value == null) {
-        array.addNull();
-      } else {
-        Column column = desc.getColumns()[i];
-        ByteBuf bb = Unpooled.copiedBuffer(value);
-        Object decoded;
-        if (format == DataFormat.TEXT) {
-          decoded = column.getDataType().decodeText(value.length, bb);
-        } else {
-          decoded = column.getDataType().decodeBinary(value.length, bb);
-        }
-        if(decoded != null) {
-          array.add(decoded);
-        } else {
-          array.addNull();
-        }
-
-      }
-    }
-    return array;
+    return values.equals(that.values);
   }
 
   @Override
   public int hashCode() {
-    return Arrays.hashCode(values);
+    return values.hashCode();
   }
 
   @Override
   public String toString() {
     return "DataRow{" +
-      "values=" + Arrays.toString(values) +
+      "values=" + values.encode() +
       '}';
   }
 }

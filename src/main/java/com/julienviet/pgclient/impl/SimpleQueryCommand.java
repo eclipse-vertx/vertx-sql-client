@@ -19,6 +19,7 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.ResultSet;
 import com.julienviet.pgclient.codec.DataFormat;
+import com.julienviet.pgclient.codec.decoder.DecodeContext;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
 import com.julienviet.pgclient.codec.encoder.message.Query;
@@ -40,14 +41,14 @@ class SimpleQueryCommand extends QueryCommandBase {
 
   @Override
   void exec(SocketConnection conn) {
+    conn.decodeQueue.add(new DecodeContext(true, null, DataFormat.TEXT));
     conn.writeMessage(new Query(sql));
   }
 
   @Override
   public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == RowDescription.class) {
-      rowDesc = (RowDescription) msg;
-      dataFormat = DataFormat.TEXT;
+      RowDescription rowDesc = (RowDescription) msg;
       resultSet = new ResultSet().setResults(new ArrayList<>()).setColumnNames(rowDesc.getColumnNames());
     } else {
       super.handleMessage(msg);

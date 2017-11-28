@@ -17,23 +17,20 @@
 
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.codec.decoder.DecodeContext;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.MessageDecoder;
 import com.julienviet.pgclient.codec.encoder.MessageEncoder;
 import com.julienviet.pgclient.codec.encoder.OutboundMessage;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxException;
+import io.vertx.core.*;
 import io.vertx.core.impl.ContextImpl;
 import io.vertx.core.impl.NetSocketInternal;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -53,8 +50,9 @@ public class SocketConnection implements Connection {
   final Context context;
   private Status status = Status.CONNECTED;
   private Holder holder;
-  final Map<String, CompletableFuture<PreparedStatement>> psCache;
+  private final Map<String, CachedPreparedStatement> psCache;
   private final int pipeliningLimit;
+  final Deque<DecodeContext> decodeQueue = new ArrayDeque<>();
 
   public SocketConnection(PgClientImpl client,
                           NetSocketInternal socket,
@@ -68,12 +66,34 @@ public class SocketConnection implements Connection {
 
   void init(String username, String password, String database, Handler<AsyncResult<Connection>> completionHandler) {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
-    pipeline.addBefore("handler", "decoder", new MessageDecoder());
+    pipeline.addBefore("handler", "decoder", new MessageDecoder(decodeQueue));
     pipeline.addBefore("handler", "encoder", new MessageEncoder());
     socket.closeHandler(this::handleClosed);
     socket.exceptionHandler(this::handleException);
     socket.messageHandler(this::handleMessage);
     schedule(new InitCommand(username, password, database, client.ssl, completionHandler));
+  }
+
+  class CachedPreparedStatement implements Handler<AsyncResult<PreparedStatement>> {
+
+    final Future<PreparedStatement> fut = Future.<PreparedStatement>future().setHandler(this);
+    final ArrayDeque<Handler<AsyncResult<PreparedStatement>>> waiters = new ArrayDeque<>();
+
+    void get(Handler<AsyncResult<PreparedStatement>> handler) {
+      if (fut.isComplete()) {
+        handler.handle(fut);
+      } else {
+        waiters.add(handler);
+      }
+    }
+
+    @Override
+    public void handle(AsyncResult<PreparedStatement> event) {
+      Handler<AsyncResult<PreparedStatement>> waiter;
+      while ((waiter = waiters.poll()) != null) {
+        waiter.handle(fut);
+      }
+    }
   }
 
   public boolean isSsl() {
@@ -112,6 +132,50 @@ public class SocketConnection implements Connection {
     } else {
       context.runOnContext(v -> close(holder));
     }
+  }
+
+  @Override
+  public void schedulePrepared(String sql, Function<AsyncResult<PreparedStatement>, CommandBase> supplier, Handler<Void> completionHandler) {
+    Function<AsyncResult<PreparedStatement>, CommandBase> f;
+    String statement;
+    if (psCache != null) {
+      CachedPreparedStatement cached = psCache.get(sql);
+      if (cached == null) {
+        statement = UUID.randomUUID().toString();
+        cached = new CachedPreparedStatement();
+        Future<PreparedStatement> fut = cached.fut;
+        psCache.put(sql, cached);
+        f = ar -> {
+          fut.handle(ar);
+          return supplier.apply(ar);
+        };
+      } else {
+        cached.get(ar -> {
+          CommandBase next = supplier.apply(ar);
+          if (next != null) {
+            schedule(next, completionHandler);
+          } else {
+            if (completionHandler != null) {
+              completionHandler.handle(null);
+            }
+          }
+        });
+        return;
+      }
+    } else {
+      statement = "";
+      f = supplier;
+    }
+    schedule(new PrepareStatementCommand(sql, statement, ar -> {
+      CommandBase command = f.apply(ar);
+      if (command != null) {
+        schedule(command, completionHandler);
+      } else {
+        if (completionHandler != null) {
+          completionHandler.handle(null);
+        }
+      }
+    }));
   }
 
   public void schedule(CommandBase cmd) {
@@ -166,6 +230,7 @@ public class SocketConnection implements Connection {
 
   private void handleMessage(Object msg) {
     InboundMessage pgMsg = (InboundMessage) msg;
+    // System.out.println("<-- " + msg);
     CommandBase cmd = inflight.peek();
     if (cmd != null) {
       cmd.handleMessage(pgMsg);

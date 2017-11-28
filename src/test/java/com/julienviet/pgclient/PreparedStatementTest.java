@@ -15,22 +15,12 @@
  *
  */
 
-package com.julienviet.pgclient.impl;
+package com.julienviet.pgclient;
 
-import com.julienviet.pgclient.codec.decoder.message.ParameterDescription;
-import com.julienviet.pgclient.codec.decoder.message.RowDescription;
+public class PreparedStatementTest extends PreparedStatementTestBase {
 
-public class PreparedStatement {
-
-  final String sql;
-  final String stmt;
-  final ParameterDescription paramDesc;
-  final RowDescription rowDesc;
-
-  public PreparedStatement(String sql, String stmt, ParameterDescription paramDesc, RowDescription rowDesc) {
-    this.sql = sql;
-    this.stmt = stmt;
-    this.paramDesc = paramDesc;
-    this.rowDesc = rowDesc;
+  @Override
+  protected PgClientOptions options() {
+    return new PgClientOptions(options).setCachePreparedStatements(false);
   }
 }

@@ -17,6 +17,7 @@
 
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.codec.decoder.DecodeContext;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.message.CloseComplete;
 import com.julienviet.pgclient.codec.encoder.message.Close;
@@ -40,6 +41,7 @@ class ClosePortalCommand extends CommandBase {
 
   @Override
   void exec(SocketConnection conn) {
+    conn.decodeQueue.add(new DecodeContext(false, null, null));
     conn.writeMessage(new Close().setPortal(portal));
     conn.writeMessage(Sync.INSTANCE);
   }

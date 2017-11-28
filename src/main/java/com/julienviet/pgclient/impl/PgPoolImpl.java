@@ -27,6 +27,8 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 
+import java.util.function.Function;
+
 /**
  * Todo :
  *
@@ -60,23 +62,57 @@ public class PgPoolImpl extends PgOperationsImpl implements PgPool {
   }
 
   @Override
+  protected void schedulePrepared(String sql, Function<AsyncResult<PreparedStatement>, CommandBase> supplier) {
+    Context current = Vertx.currentContext();
+    if (current == context) {
+      provider.acquire(new CommandWaiter() {
+        @Override
+        protected void onSuccess(Connection conn) {
+          conn.schedulePrepared(sql, supplier, v -> {
+            conn.close(this);
+          });
+        }
+        @Override
+        protected void onFailure(Throwable cause) {
+          CommandBase cmd = supplier.apply(Future.failedFuture(cause));
+          if (cmd != null) {
+            cmd.fail(cause);
+          }
+        }
+      });
+    } else {
+      context.runOnContext(v -> schedulePrepared(sql, supplier));
+    }
+  }
+
+  @Override
   protected void schedule(CommandBase cmd) {
     Context current = Vertx.currentContext();
     if (current == context) {
-      provider.acquire(new CommandWaiter(cmd));
+      provider.acquire(new CommandWaiter() {
+        @Override
+        protected void onSuccess(Connection conn) {
+          conn.schedule(cmd, v -> {
+            conn.close(this);
+          });
+        }
+        @Override
+        protected void onFailure(Throwable cause) {
+          cmd.fail(cause);
+        }
+      });
     } else {
       context.runOnContext(v -> schedule(cmd));
     }
   }
 
-  private class CommandWaiter implements Connection.Holder, Handler<AsyncResult<Connection>> {
+  private abstract class CommandWaiter implements Connection.Holder, Handler<AsyncResult<Connection>> {
 
-    private final CommandBase cmd;
     private Connection conn;
 
-    private CommandWaiter(CommandBase cmd) {
-      this.cmd = cmd;
-    }
+    protected abstract void onSuccess(Connection conn);
+
+    protected abstract void onFailure(Throwable cause);
 
     @Override
     public void handle(AsyncResult<Connection> ar) {
@@ -84,11 +120,9 @@ public class PgPoolImpl extends PgOperationsImpl implements PgPool {
         Connection conn = ar.result();
         this.conn = conn;
         conn.init(this);
-        conn.schedule(cmd, v -> {
-          conn.close(this);
-        });
+        onSuccess(conn);
       } else {
-        throw new UnsupportedOperationException("Handle me gracefully");
+        onFailure(ar.cause());
       }
     }
 
@@ -105,7 +139,6 @@ public class PgPoolImpl extends PgOperationsImpl implements PgPool {
       return conn;
     }
   }
-
 
   private class ConnectionWaiter implements Handler<AsyncResult<Connection>> {
 

@@ -173,4 +173,7 @@ public interface PgOperations {
   @GenIgnore
   void preparedUpdate(String sql, List<Object> params, Handler<AsyncResult<UpdateResult>> handler);
 
+  @GenIgnore
+  void preparedBatchUpdate(String sql, List<List<Object>> list, Handler<AsyncResult<UpdateResult>> handler);
+
 }

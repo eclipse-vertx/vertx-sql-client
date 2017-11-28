@@ -19,11 +19,8 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgException;
 import com.julienviet.pgclient.ResultSet;
-import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.message.*;
-
-import java.util.ArrayList;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -32,9 +29,7 @@ import java.util.ArrayList;
 abstract class QueryCommandBase extends CommandBase {
 
   protected final QueryResultHandler handler;
-  protected RowDescription rowDesc;
   protected ResultSet resultSet;
-  protected DataFormat dataFormat;
 
   public QueryCommandBase(QueryResultHandler handler) {
     this.handler = handler;
@@ -45,10 +40,14 @@ abstract class QueryCommandBase extends CommandBase {
     if (msg.getClass() == ReadyForQuery.class) {
       super.handleMessage(msg);
       handler.end();
-    } else if (msg.getClass() == DataRow.class) {
+    } /* else if (msg.getClass() == DataRow.class) {
       DataRow dataRow = (DataRow) msg;
-      resultSet.getResults().add(dataRow.decode(rowDesc, dataFormat));
-    } else if (msg.getClass() == CommandComplete.class) {
+      resultSet.getResults().add(dataRow.getValues());
+    } */ else if (msg.getClass() == CommandComplete.class) {
+      CommandComplete complete = (CommandComplete) msg;
+      if (resultSet != null) {
+        resultSet.setResults(complete.getRows());
+      }
       handler.result(resultSet, false);
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
