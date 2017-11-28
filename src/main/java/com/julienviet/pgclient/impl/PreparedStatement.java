@@ -19,17 +19,21 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.codec.decoder.message.ParameterDescription;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+
+import java.nio.charset.StandardCharsets;
 
 public class PreparedStatement {
 
   final String sql;
-  final String stmt;
+  final ByteBuf statement;
   final ParameterDescription paramDesc;
   final RowDescription rowDesc;
 
-  public PreparedStatement(String sql, String stmt, ParameterDescription paramDesc, RowDescription rowDesc) {
+  public PreparedStatement(String sql, String statement, ParameterDescription paramDesc, RowDescription rowDesc) {
     this.sql = sql;
-    this.stmt = stmt;
+    this.statement = statement != null ? Unpooled.copiedBuffer(statement, StandardCharsets.UTF_8).writeByte(0).asReadOnly() : null;
     this.paramDesc = paramDesc;
     this.rowDesc = rowDesc;
   }

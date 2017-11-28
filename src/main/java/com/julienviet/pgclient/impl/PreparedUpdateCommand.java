@@ -21,8 +21,6 @@ import com.julienviet.pgclient.UpdateResult;
 import com.julienviet.pgclient.codec.decoder.DecodeContext;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.message.BindComplete;
-import com.julienviet.pgclient.codec.decoder.message.NoData;
-import com.julienviet.pgclient.codec.decoder.message.ParameterDescription;
 import com.julienviet.pgclient.codec.decoder.message.ParseComplete;
 import com.julienviet.pgclient.codec.encoder.message.Bind;
 import com.julienviet.pgclient.codec.encoder.message.Execute;
@@ -57,11 +55,11 @@ class PreparedUpdateCommand extends UpdateCommandBase {
   @Override
   void exec(SocketConnection conn) {
     conn.decodeQueue.add(new DecodeContext(false, null, null));
-    if (ps.stmt.length() == 0) {
+    if (ps.statement == null) {
       conn.writeMessage(new Parse(ps.sql).setStatement(""));
     }
     for (List<Object> params : paramsList) {
-      conn.writeMessage(new Bind().setParamValues(params).setDataTypes(ps.paramDesc.getParamDataTypes()).setStatement(ps.stmt));
+      conn.writeMessage(new Bind().setParamValues(params).setDataTypes(ps.paramDesc.getParamDataTypes()).setStatement(ps.statement));
       conn.writeMessage(new Execute().setRowCount(0));
     }
     conn.writeMessage(Sync.INSTANCE);

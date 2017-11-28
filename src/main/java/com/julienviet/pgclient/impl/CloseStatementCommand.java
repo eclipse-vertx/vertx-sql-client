@@ -38,7 +38,7 @@ class CloseStatementCommand extends CommandBase {
   void exec(SocketConnection conn) {
     /*
     if (conn.psCache == null) {
-      conn.writeMessage(new Close().setStatement(stmt));
+      conn.writeMessage(new Close().setStatement(statement));
       conn.writeMessage(Sync.INSTANCE);
     } else {
     }

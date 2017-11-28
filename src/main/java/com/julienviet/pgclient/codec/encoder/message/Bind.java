@@ -45,7 +45,7 @@ import static com.julienviet.pgclient.codec.encoder.message.type.MessageType.BIN
 
 public class Bind implements OutboundMessage {
 
-  private String statement;
+  private ByteBuf statement;
   private String portal;
   private List<Object> paramValues;
   private DataType[] dataTypes;
@@ -77,7 +77,7 @@ public class Bind implements OutboundMessage {
     return paramFormats;
   }
 
-  public Bind setStatement(String statement) {
+  public Bind setStatement(ByteBuf statement) {
     this.statement = statement;
     return this;
   }
@@ -87,7 +87,7 @@ public class Bind implements OutboundMessage {
     return this;
   }
 
-  public String getStatement() {
+  public ByteBuf getStatement() {
     return statement;
   }
 
@@ -115,7 +115,7 @@ public class Bind implements OutboundMessage {
     return Objects.hash(statement, portal, paramValues, paramFormats);
   }
 
-  private static void encode(String portal, String statement, List<Object> paramValues, DataType<?>[] dataTypes, ByteBuf out) {
+  private static void encode(String portal, ByteBuf statement, List<Object> paramValues, DataType<?>[] dataTypes, ByteBuf out) {
     int pos = out.writerIndex();
     out.writeByte(BIND);
     out.writeInt(0);
@@ -124,10 +124,10 @@ public class Bind implements OutboundMessage {
     } else {
       Util.writeCStringUTF8(out, portal);
     }
-    if(statement == null) {
+    if (statement == null) {
       out.writeByte(0);
     } else {
-      Util.writeCStringUTF8(out, statement);
+      out.writeBytes(statement, 0, statement.readableBytes());
     }
     if(paramValues == null) {
       // No parameter formats

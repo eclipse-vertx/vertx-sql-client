@@ -53,6 +53,7 @@ public class SocketConnection implements Connection {
   private final Map<String, CachedPreparedStatement> psCache;
   private final int pipeliningLimit;
   final Deque<DecodeContext> decodeQueue = new ArrayDeque<>();
+  private int psSeq;
 
   public SocketConnection(PgClientImpl client,
                           NetSocketInternal socket,
@@ -141,7 +142,7 @@ public class SocketConnection implements Connection {
     if (psCache != null) {
       CachedPreparedStatement cached = psCache.get(sql);
       if (cached == null) {
-        statement = UUID.randomUUID().toString();
+        statement = "ps_" + psSeq++;
         cached = new CachedPreparedStatement();
         Future<PreparedStatement> fut = cached.fut;
         psCache.put(sql, cached);
@@ -163,7 +164,7 @@ public class SocketConnection implements Connection {
         return;
       }
     } else {
-      statement = "";
+      statement = null;
       f = supplier;
     }
     schedule(new PrepareStatementCommand(sql, statement, ar -> {

@@ -22,8 +22,6 @@ import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.decoder.DecodeContext;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.message.BindComplete;
-import com.julienviet.pgclient.codec.decoder.message.NoData;
-import com.julienviet.pgclient.codec.decoder.message.ParameterDescription;
 import com.julienviet.pgclient.codec.decoder.message.ParseComplete;
 import com.julienviet.pgclient.codec.decoder.message.PortalSuspended;
 import com.julienviet.pgclient.codec.encoder.message.Bind;
@@ -74,10 +72,10 @@ class ExtendedQueryCommand extends QueryCommandBase {
       conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
       conn.writeMessage(Sync.INSTANCE);
     } else {
-      if (ps.stmt.isEmpty()) {
+      if (ps.statement == null) {
         conn.writeMessage(new Parse(ps.sql).setStatement(""));
       }
-      conn.writeMessage(new Bind().setParamValues(params).setDataTypes(ps.paramDesc.getParamDataTypes()).setPortal(portal).setStatement(ps.stmt));
+      conn.writeMessage(new Bind().setParamValues(params).setDataTypes(ps.paramDesc.getParamDataTypes()).setPortal(portal).setStatement(ps.statement));
       conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
       conn.writeMessage(Sync.INSTANCE);
     }
