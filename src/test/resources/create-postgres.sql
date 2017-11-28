@@ -63,3 +63,8 @@ INSERT INTO "Fortune" (id, message) VALUES (9, 'Feature: A bug with seniority.')
 INSERT INTO "Fortune" (id, message) VALUES (10, 'Computers make very fast, very accurate mistakes.');
 INSERT INTO "Fortune" (id, message) VALUES (11, '<script>alert("This should not be displayed in a browser alert box.");</script>');
 INSERT INTO "Fortune" (id, message) VALUES (12, 'フレームワークのベンチマーク');
+
+DROP TABLE IF EXISTS "NumericDataType";
+CREATE TABLE "NumericDataType" ("Short" INT2, "Integer" INT4, "Long" INT8, "Float" FLOAT4, "Double" FLOAT8, "BigDecimal" NUMERIC, "Boolean" BOOLEAN);
+INSERT INTO "NumericDataType" ("Short", "Integer", "Long", "Float", "Double", "BigDecimal", "Boolean")
+VALUES (32767, 2147483647, 9223372036854775807, 3.4028235E38, 1.7976931348623157E308, '9.99999999999999999999999999999999999', true);

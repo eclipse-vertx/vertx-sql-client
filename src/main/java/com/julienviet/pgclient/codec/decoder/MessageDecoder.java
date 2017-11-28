@@ -382,7 +382,11 @@ public class MessageDecoder extends ByteToMessageDecoder {
         } else {
           decoded = dataType.decodeBinary(length, in);
         }
-        row.add(decoded);
+        if(decoded != null) {
+          row.add(decoded);
+        } else {
+         row.addNull();
+        }
       } else {
         row.addNull();
       }

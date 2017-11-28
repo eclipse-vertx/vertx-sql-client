@@ -17,12 +17,15 @@
 
 package com.julienviet.pgclient.codec;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -30,9 +33,8 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
 
-import static com.julienviet.pgclient.codec.formatter.DateTimeFormatter.TIMESTAMPTZ_FORMAT;
-import static com.julienviet.pgclient.codec.formatter.DateTimeFormatter.TIMESTAMP_FORMAT;
-import static com.julienviet.pgclient.codec.formatter.TimeFormatter.TIMETZ_FORMAT;
+import static com.julienviet.pgclient.codec.formatter.DateTimeFormatter.*;
+import static com.julienviet.pgclient.codec.formatter.TimeFormatter.*;
 
 /**
  * PostgreSQL <a href="https://github.com/postgres/postgres/blob/master/src/include/catalog/pg_type.h">object
@@ -52,6 +54,9 @@ public enum DataType {
         return Boolean.FALSE;
       }
     }
+    public Object decodeBinary(int len, ByteBuf buff) {
+      return buff.readBoolean();
+    }
   },
   BOOL_ARRAY(1000),
   // 2 bytes
@@ -59,6 +64,10 @@ public enum DataType {
     @Override
     public Object decodeText(int len, ByteBuf buff) {
       return (short)DataType.decodeInt(len, buff);
+    }
+    @Override
+    public Object decodeBinary(int len, ByteBuf buff) {
+      return buff.readShort();
     }
   },
   INT2_ARRAY(1005),
@@ -80,6 +89,10 @@ public enum DataType {
     public Object decodeText(int len, ByteBuf buff) {
       return DataType.decodeInt(len, buff);
     }
+    @Override
+    public Object decodeBinary(int len, ByteBuf buff) {
+      return buff.readLong();
+    }
   },
   INT8_ARRAY(1016),
   // 4 bytes single-precision floating point number
@@ -90,6 +103,10 @@ public enum DataType {
       CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
       return Float.parseFloat(cs.toString());
     }
+    @Override
+    public Object decodeBinary(int len, ByteBuf buff) {
+      return buff.readFloat();
+    }
   },
   FLOAT4_ARRAY(1021),
   // 8 bytes double-precision floating point number
@@ -99,6 +116,10 @@ public enum DataType {
       // Todo optimize that
       CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
       return Double.parseDouble(cs.toString());
+    }
+    @Override
+    public Object decodeBinary(int len, ByteBuf buff) {
+      return buff.readDouble();
     }
   },
   FLOAT8_ARRAY(1022),
@@ -266,11 +287,25 @@ public enum DataType {
   }
 
   private static Object decodeJson(String value) {
-    if(value.charAt(0)== '{') {
+    if(value.indexOf('{') != -1) {
       return new JsonObject(value);
-    } else {
+    } else if(value.indexOf('[') != -1) {
       return new JsonArray(value);
+    } else {
+      try {
+        JsonNode jsonNode = Json.mapper.readTree(value);
+        if (jsonNode.isNumber()) {
+          return jsonNode.numberValue();
+        } else if(jsonNode.isBoolean()) {
+          return jsonNode.booleanValue();
+        } else if(jsonNode.isTextual()) {
+          return jsonNode.textValue();
+        }
+      } catch (IOException e) {
+        // do nothing
+      }
     }
+    return null;
   }
 
   static IntObjectMap<DataType> oidToDataType = new IntObjectHashMap<>();
