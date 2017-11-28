@@ -85,14 +85,14 @@ class ExtendedQueryCommand extends QueryCommandBase {
 
   @Override
   public void handleMessage(InboundMessage msg) {
-    if (msg.getClass() == PortalSuspended.class) {
+    if (msg.getClass() == ParseComplete.class) {
+      // Response to Parse
+    } else if (msg.getClass() == PortalSuspended.class) {
       PortalSuspended portalSuspended = (PortalSuspended) msg;
       resultSet.setResults(portalSuspended.getRows());
       handler.result(resultSet, true);
-    } else if (msg.getClass() == ParameterDescription.class) {
-    } else if (msg.getClass() == NoData.class) {
-    } else if (msg.getClass() == ParseComplete.class) {
     } else if (msg.getClass() == BindComplete.class) {
+      // Response to Bind
     } else {
       super.handleMessage(msg);
     }

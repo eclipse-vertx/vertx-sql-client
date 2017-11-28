@@ -287,18 +287,24 @@ public enum DataType {
   }
 
   private static Object decodeJson(String value) {
-    if(value.indexOf('{') != -1) {
+    int pos = 0;
+    while (pos < value.length() && Character.isWhitespace(value.charAt(pos))) {
+      pos++;
+    }
+    if (pos == value.length()) {
+      return null;
+    } else if (value.charAt(pos) == '{') {
       return new JsonObject(value);
-    } else if(value.indexOf('[') != -1) {
+    } else if (value.charAt(pos) == '[') {
       return new JsonArray(value);
     } else {
       try {
         JsonNode jsonNode = Json.mapper.readTree(value);
         if (jsonNode.isNumber()) {
           return jsonNode.numberValue();
-        } else if(jsonNode.isBoolean()) {
+        } else if (jsonNode.isBoolean()) {
           return jsonNode.booleanValue();
-        } else if(jsonNode.isTextual()) {
+        } else if (jsonNode.isTextual()) {
           return jsonNode.textValue();
         }
       } catch (IOException e) {

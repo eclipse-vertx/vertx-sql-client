@@ -69,10 +69,10 @@ class PreparedUpdateCommand extends UpdateCommandBase {
 
   @Override
   public void handleMessage(InboundMessage msg) {
-    if (msg.getClass() == ParameterDescription.class) {
-    } else if (msg.getClass() == NoData.class) {
-    } else if (msg.getClass() == ParseComplete.class) {
+    if (msg.getClass() == ParseComplete.class) {
+      // Response to Parse
     } else if (msg.getClass() == BindComplete.class) {
+      // Response to Bind
     } else {
       super.handleMessage(msg);
     }

@@ -34,7 +34,7 @@ public class PrepareStatementCommand extends CommandBase {
   private final String statement;
   private ParameterDescription parameterDesc;
   private RowDescription rowDesc;
-  final Future<PreparedStatement> fut;
+  private final Future<PreparedStatement> fut;
 
   PrepareStatementCommand(String sql, String statement, Handler<AsyncResult<PreparedStatement>> handler) {
     this.sql = sql;
@@ -53,11 +53,15 @@ public class PrepareStatementCommand extends CommandBase {
   @Override
   public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == ParseComplete.class) {
-      // Ok
+      // Response to Parse
     } else if (msg.getClass() == ParameterDescription.class) {
+      // Response to Describe
       parameterDesc = (ParameterDescription) msg;
     } else if (msg.getClass() == RowDescription.class) {
+      // Response to Describe
       rowDesc = (RowDescription) msg;
+    } else if (msg.getClass() == NoData.class) {
+      // Response to Describe
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
       fut.tryFail(new PgException(error));
