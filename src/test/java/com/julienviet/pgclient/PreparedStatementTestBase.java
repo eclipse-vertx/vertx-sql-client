@@ -17,6 +17,7 @@
 
 package com.julienviet.pgclient;
 
+import com.julienviet.pgclient.codec.util.Util;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.unit.Async;
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -125,12 +127,12 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     Async async = ctx.async();
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
-        PgQuery query = ps.query("invalid-id");
-        query.execute(ctx.asyncAssertFailure(err -> {
-          PgException pgErr = (PgException) err;
-          ctx.assertEquals(ErrorCodes.invalid_text_representation, pgErr.getCode());
+        try {
+          ps.query("invalid-id");
+        } catch (IllegalArgumentException e) {
+          ctx.assertEquals(Util.buildInvalidArgsError(Stream.of("invalid-id"), Stream.of(Integer.class)), e.getMessage());
           async.complete();
-        }));
+        }
       }));
     }));
   }

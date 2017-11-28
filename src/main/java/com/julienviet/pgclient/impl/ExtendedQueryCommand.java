@@ -77,7 +77,7 @@ class ExtendedQueryCommand extends QueryCommandBase {
       if (ps.stmt.isEmpty()) {
         conn.writeMessage(new Parse(ps.sql).setStatement(""));
       }
-      conn.writeMessage(new Bind().setParamValues(params).setPortal(portal).setStatement(ps.stmt));
+      conn.writeMessage(new Bind().setParamValues(params).setDataTypes(ps.paramDesc.getParamDataTypes()).setPortal(portal).setStatement(ps.stmt));
       conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
       conn.writeMessage(Sync.INSTANCE);
     }

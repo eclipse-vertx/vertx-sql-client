@@ -2,6 +2,7 @@ package com.julienviet.pgclient;
 
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.time.Instant;
@@ -113,6 +114,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
     }));
   }
 
+  @Ignore
   @Test
   public void testDate(TestContext ctx) {
     Async async = ctx.async();
@@ -129,6 +131,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
     }));
   }
 
+  @Ignore
   @Test
   public void testTime(TestContext ctx) {
     Async async = ctx.async();
@@ -161,6 +164,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
 //    }));
 //  }
 
+  @Ignore
   @Test
   public void testTimestamp(TestContext ctx) {
     Async async = ctx.async();
@@ -177,6 +181,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
     }));
   }
 
+  @Ignore
   @Test
   public void testTimestampTz(TestContext ctx) {
     Async async = ctx.async();

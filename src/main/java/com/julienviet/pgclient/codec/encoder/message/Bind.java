@@ -17,6 +17,7 @@
 
 package com.julienviet.pgclient.codec.encoder.message;
 
+import com.julienviet.pgclient.codec.DataType;
 import com.julienviet.pgclient.codec.decoder.message.BindComplete;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
 import com.julienviet.pgclient.codec.encoder.OutboundMessage;
@@ -47,7 +48,20 @@ public class Bind implements OutboundMessage {
   private String statement;
   private String portal;
   private List<Object> paramValues;
+  private DataType[] dataTypes;
   private int[] paramFormats;
+
+  public Bind() {
+  }
+
+  public DataType[] getDataTypes() {
+    return dataTypes;
+  }
+
+  public Bind setDataTypes(DataType[] dataTypes) {
+    this.dataTypes = dataTypes;
+    return this;
+  }
 
   public Bind setParamValues(List<Object> paramValues) {
     this.paramValues = paramValues;
@@ -101,7 +115,7 @@ public class Bind implements OutboundMessage {
     return Objects.hash(statement, portal, paramValues, paramFormats);
   }
 
-  private static void encode(String portal, String statement, List<Object> paramValues, ByteBuf out) {
+  private static void encode(String portal, String statement, List<Object> paramValues, DataType<?>[] dataTypes, ByteBuf out) {
     int pos = out.writerIndex();
     out.writeByte(BIND);
     out.writeInt(0);
@@ -121,22 +135,24 @@ public class Bind implements OutboundMessage {
       // No parameter values
       out.writeShort(0);
     } else {
-      byte[][] foobar = Util.paramValues(paramValues);
+
+      // byte[][] foobar = Util.paramValues(paramValues);
+      int len = paramValues.size();
+      out.writeShort(len);
       // Parameter formats
-      out.writeShort(foobar.length);
-      for (int c = 0; c < foobar.length; ++c) {
+      for (int c = 0;c < len;c++) {
         // for now each format is TEXT
-        out.writeShort(0);
+        out.writeShort(1);
       }
-      out.writeShort(foobar.length);
-      for (int c = 0; c < foobar.length; ++c) {
-        if (foobar[c] == null) {
+      out.writeShort(len);
+      for (int c = 0;c < len;c++) {
+        Object param = paramValues.get(c);
+        if (param == null) {
           // NULL value
           out.writeInt(-1);
         } else {
-          // Not NULL value
-          out.writeInt(foobar[c].length);
-          out.writeBytes(foobar[c]);
+          DataType dataType = dataTypes[c];
+          dataType.encodeBinary(param, out);
         }
       }
     }
@@ -149,7 +165,7 @@ public class Bind implements OutboundMessage {
 
   @Override
   public void encode(ByteBuf out) {
-    encode(portal, statement, paramValues, out);
+    encode(portal, statement, paramValues, dataTypes, out);
   }
 
   @Override

@@ -101,6 +101,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
           ResultSet result = ar.result();
           ctx.assertEquals(1, result.getNumRows());
         } else {
+          ar.cause().printStackTrace();
           ctx.assertEquals("closed", ar.cause().getMessage());
         }
         async.countDown();

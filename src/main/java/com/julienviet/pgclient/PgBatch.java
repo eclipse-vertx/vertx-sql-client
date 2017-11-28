@@ -129,12 +129,12 @@ public interface PgBatch {
   /**
    * Add a command with a variable number of arguments to this batch
    *
-   * @param params the arguments of the command
+   * @param args the arguments of the command
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
   @GenIgnore
-  PgBatch add(List<Object> params);
+  PgBatch add(List<Object> args);
 
   /**
    * Execute the batch and notifies {@code resultHandler} of the result.

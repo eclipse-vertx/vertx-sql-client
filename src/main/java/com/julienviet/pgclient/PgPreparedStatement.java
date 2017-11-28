@@ -105,11 +105,11 @@ public interface PgPreparedStatement {
   }
 
   /**
-   * @param params the list of arguments
+   * @param args the list of arguments
    * @return create a query from this statement with a variable list of arguments
    */
   @GenIgnore
-  PgQuery query(List<Object> params);
+  PgQuery query(List<Object> args);
 
   /**
    * @return create a update query from this statement with no arguments

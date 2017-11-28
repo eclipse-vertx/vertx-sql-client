@@ -19,6 +19,7 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgBatch;
 import com.julienviet.pgclient.UpdateResult;
+import com.julienviet.pgclient.codec.decoder.message.ParameterDescription;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
@@ -31,15 +32,21 @@ import java.util.List;
 public class BatchImpl implements PgBatch {
 
   private final PgPreparedStatementImpl ps;
+  private final ParameterDescription paramDesc;
   private final ArrayList<List<Object>> values = new ArrayList<>();
 
-  BatchImpl(PgPreparedStatementImpl ps) {
+  BatchImpl(PgPreparedStatementImpl ps, ParameterDescription paramDesc) {
+    this.paramDesc = paramDesc;
     this.ps = ps;
   }
 
   @Override
-  public PgBatch add(List<Object> params) {
-    values.add(params);
+  public PgBatch add(List<Object> args) {
+    String msg = paramDesc.validate(args);
+    if (msg != null) {
+      throw new IllegalArgumentException(msg);
+    }
+    values.add(args);
     return this;
   }
 

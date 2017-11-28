@@ -40,6 +40,8 @@ import java.time.ZoneOffset;
 
 import static com.julienviet.pgclient.codec.formatter.DateTimeFormatter.*;
 import static com.julienviet.pgclient.codec.formatter.TimeFormatter.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static javax.xml.bind.DatatypeConverter.printHexBinary;
 
 /**
  * PostgreSQL <a href="https://github.com/postgres/postgres/blob/master/src/include/catalog/pg_type.h">object
@@ -51,7 +53,7 @@ import static com.julienviet.pgclient.codec.formatter.TimeFormatter.*;
 public class DataType<T> {
 
   // 1 byte
-  public static DataType<Boolean> BOOL = new DataType<Boolean>(16) {
+  public static DataType<Boolean> BOOL = new DataType<Boolean>(Boolean.class,16) {
     @Override
     public Boolean decodeText(int len, ByteBuf buff) {
       if(buff.readByte() == 't') {
@@ -63,12 +65,22 @@ public class DataType<T> {
     public Boolean decodeBinary(int len, ByteBuf buff) {
       return buff.readBoolean();
     }
+    @Override
+    public void encodeText(Boolean value, ByteBuf buff) {
+      buff.writeInt(1);
+      buff.writeByte(value == Boolean.TRUE ? 't' : 'f');
+    }
+    @Override
+    public void encodeBinary(Boolean value, ByteBuf buff) {
+      buff.writeInt(1);
+      buff.writeBoolean(value);
+    }
   };
 
-  public static DataType<boolean[]> BOOL_ARRAY = new DataType<>(1000);
+  public static DataType<boolean[]> BOOL_ARRAY = new DataType<>(boolean[].class, 1000);
 
   // 2 bytes
-  public static final DataType<Short> INT2 = new DataType<Short>(21) {
+  public static final DataType<Short> INT2 = new DataType<Short>(Short.class,21) {
     @Override
     public Short decodeText(int len, ByteBuf buff) {
       return (short)DataType.decodeInt(len, buff);
@@ -77,12 +89,17 @@ public class DataType<T> {
     public Short decodeBinary(int len, ByteBuf buff) {
       return buff.readShort();
     }
+    @Override
+    public void encodeBinary(Short value, ByteBuf buff) {
+      buff.writeInt(2);
+      buff.writeShort(value);
+    }
   };
 
-  public static DataType<short[]> INT2_ARRAY = new DataType<>(1005);
+  public static DataType<short[]> INT2_ARRAY = new DataType<>(short[].class, 1005);
 
   // 4 bytes
-  public static final DataType<Integer> INT4 = new DataType<Integer>(23) {
+  public static final DataType<Integer> INT4 = new DataType<Integer>(Integer.class,23) {
     @Override
     public Integer decodeText(int len, ByteBuf buff) {
       return (int)DataType.decodeInt(len, buff);
@@ -91,12 +108,17 @@ public class DataType<T> {
     public Integer decodeBinary(int len, ByteBuf buff) {
       return buff.readInt();
     }
+    @Override
+    public void encodeBinary(Integer value, ByteBuf buff) {
+      buff.writeInt(4);
+      buff.writeInt(value);
+    }
   };
 
-  public static DataType<int[]> INT4_ARRAY = new DataType<>(1007);
+  public static DataType<int[]> INT4_ARRAY = new DataType<>(int[].class, 1007);
 
   // 8 bytes
-  public static final DataType<Long> INT8 = new DataType<Long>(20) {
+  public static final DataType<Long> INT8 = new DataType<Long>(Long.class,20) {
     @Override
     public Long decodeText(int len, ByteBuf buff) {
       return DataType.decodeInt(len, buff);
@@ -105,12 +127,17 @@ public class DataType<T> {
     public Long decodeBinary(int len, ByteBuf buff) {
       return buff.readLong();
     }
+    @Override
+    public void encodeBinary(Long value, ByteBuf buff) {
+      buff.writeInt(8);
+      buff.writeLong(value);
+    }
   };
 
-  public static DataType<int[]> INT8_ARRAY = new DataType<>(1016);
+  public static DataType<int[]> INT8_ARRAY = new DataType<>(int[].class, 1016);
 
   // 4 bytes single-precision floating point number
-  public static final DataType<Float> FLOAT4 = new DataType<Float>(700) {
+  public static final DataType<Float> FLOAT4 = new DataType<Float>(Float.class, 700) {
     @Override
     public Float decodeText(int len, ByteBuf buff) {
       // Todo optimize that
@@ -121,12 +148,17 @@ public class DataType<T> {
     public Float decodeBinary(int len, ByteBuf buff) {
       return buff.readFloat();
     }
+    @Override
+    public void encodeBinary(Float value, ByteBuf buff) {
+      buff.writeInt(4);
+      buff.writeFloat(value);
+    }
   };
 
-  public static DataType<float[]> FLOAT4_ARRAY = new DataType<>(1021);
+  public static DataType<float[]> FLOAT4_ARRAY = new DataType<>(float[].class, 1021);
 
   // 8 bytes double-precision floating point number
-  public static final DataType<Double> FLOAT8 = new DataType<Double>(701) {
+  public static final DataType<Double> FLOAT8 = new DataType<Double>(Double.class,701) {
     @Override
     public Double decodeText(int len, ByteBuf buff) {
       // Todo optimize that
@@ -137,12 +169,17 @@ public class DataType<T> {
     public Double decodeBinary(int len, ByteBuf buff) {
       return buff.readDouble();
     }
+    @Override
+    public void encodeBinary(Double value, ByteBuf buff) {
+      buff.writeInt(8);
+      buff.writeDouble(value);
+    }
   };
 
-  public static DataType<double[]> FLOAT8_ARRAY = new DataType<>(1022);
+  public static DataType<double[]> FLOAT8_ARRAY = new DataType<>(double[].class, 1022);
 
   // User specified precision
-  public static final DataType<Number> NUMERIC = new DataType<Number>(1700) {
+  public static final DataType<Number> NUMERIC = new DataType<Number>(Number.class,1700) {
     @Override
     public Number decodeText(int len, ByteBuf buff) {
       // Todo optimize that
@@ -158,22 +195,22 @@ public class DataType<T> {
     }
   };
 
-  public static DataType<double[]> NUMERIC_ARRAY = new DataType<>(1231);
+  public static DataType<double[]> NUMERIC_ARRAY = new DataType<>(double[].class, 1231);
 
   // 8 bytes double
-  public static DataType<Object> MONEY = new DataType<>(790);
-  public static DataType<Object> MONEY_ARRAY = new DataType<>(791);
+  public static DataType<Object> MONEY = new DataType<>(Object.class,790);
+  public static DataType<Object> MONEY_ARRAY = new DataType<>(Object.class,791);
 
   // Fixed length bit string
-  public static DataType<Object> BITS = new DataType<>(1560);
-  public static DataType<Object> BIT_ARRAY = new DataType<>(1561);
+  public static DataType<Object> BITS = new DataType<>(Object.class,1560);
+  public static DataType<Object> BIT_ARRAY = new DataType<>(Object.class,1561);
 
   // Limited length bit string
-  public static DataType<Object> VARBIT = new DataType<>(1562);
-  public static DataType<Object> VARBIT_ARRAY = new DataType<>(1563);
+  public static DataType<Object> VARBIT = new DataType<>(Object.class,1562);
+  public static DataType<Object> VARBIT_ARRAY = new DataType<>(Object.class,1563);
 
   // Single length character
-  public static final DataType<Character> CHAR = new DataType<Character>(18) {
+  public static final DataType<Character> CHAR = new DataType<Character>(Character.class, 18) {
     @Override
     public Character decodeText(int len, ByteBuf buff) {
       return decodeBinary(len, buff);
@@ -184,10 +221,10 @@ public class DataType<T> {
     }
   };
 
-  public static DataType<Object> CHAR_ARRAY = new DataType<>(1002);
+  public static DataType<Object> CHAR_ARRAY = new DataType<>(Object.class,1002);
 
   // Limited length string
-  public static final DataType<String> VARCHAR = new DataType<String>(1043) {
+  public static final DataType<String> VARCHAR = new DataType<String>(String.class,1043) {
     @Override
     public String decodeText(int len, ByteBuf buff) {
       return decodeBinary(len, buff);
@@ -195,12 +232,16 @@ public class DataType<T> {
     public String decodeBinary(int len, ByteBuf buff) {
       return buff.readCharSequence(len, StandardCharsets.UTF_8).toString();
     }
+    @Override
+    public void encodeBinary(String value, ByteBuf buff) {
+      super.encodeText(value, buff);
+    }
   };
 
-  public static DataType<Object> VARCHAR_ARRAY = new DataType<>(1015);
+  public static DataType<Object> VARCHAR_ARRAY = new DataType<>(Object.class,1015);
 
   // Limited blank padded length string
-  public static DataType<Object> BPCHAR = new DataType<Object>(1042) {
+  public static DataType<Object> BPCHAR = new DataType<Object>(Object.class,1042) {
     @Override
     public Object decodeText(int len, ByteBuf buff) {
       return decodeBinary(len, buff);
@@ -210,10 +251,10 @@ public class DataType<T> {
       return buff.readCharSequence(len, StandardCharsets.UTF_8).toString();
     }
   };
-  public static DataType<Object> BPCHAR_ARRAY = new DataType<>(1014);
+  public static DataType<Object> BPCHAR_ARRAY = new DataType<>(Object.class,1014);
 
   // Unlimited length string
-  public static DataType<String> TEXT = new DataType<String>(25) {
+  public static DataType<String> TEXT = new DataType<String>(String.class,25) {
     @Override
     public String decodeText(int len, ByteBuf buff) {
       return decodeBinary(len, buff);
@@ -223,10 +264,10 @@ public class DataType<T> {
       return buff.readCharSequence(len, StandardCharsets.UTF_8).toString();
     }
   };
-  public static DataType<Object> TEXT_ARRAY = new DataType<>(1009);
+  public static DataType<Object> TEXT_ARRAY = new DataType<>(Object.class,1009);
 
   // 63 bytes length string (internal type for object names)
-  public static DataType<String> NAME = new DataType<String>(19) {
+  public static DataType<String> NAME = new DataType<String>(String.class,19) {
     @Override
     public String decodeText(int len, ByteBuf buff) {
       return decodeBinary(len, buff);
@@ -236,10 +277,10 @@ public class DataType<T> {
       return buff.readCharSequence(len, StandardCharsets.UTF_8).toString();
     }
   };
-  public static DataType<Object> NAME_ARRAY = new DataType<>(1003);
+  public static DataType<Object> NAME_ARRAY = new DataType<>(Object.class,1003);
 
   // 4 bytes date (no time of day)
-  public static DataType<Object> DATE = new DataType<Object>(1082) {
+  public static DataType<Object> DATE = new DataType<Object>(Object.class,1082) {
     @Override
     public Object decodeText(int len, ByteBuf buff) {
       CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
@@ -256,10 +297,10 @@ public class DataType<T> {
         ).atZone(ZoneId.of("UTC")).toLocalDate().toString();
     }
   };
-  public static DataType<Object> DATE_ARRAY = new DataType<>(1182);
+  public static DataType<Object> DATE_ARRAY = new DataType<>(Object.class,1182);
 
   // 8 bytes time of day (no date) without time zone
-  public static DataType<Object> TIME = new DataType<Object>(1083) {
+  public static DataType<Object> TIME = new DataType<Object>(Object.class,1083) {
     @Override
     public Object decodeText(int len, ByteBuf buff) {
       CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
@@ -272,10 +313,10 @@ public class DataType<T> {
       return LocalTime.ofNanoOfDay(buff.readLong() * 1000).toString();
     }
   };
-  public static DataType<Object> TIME_ARRAY = new DataType<>(1183);
+  public static DataType<Object> TIME_ARRAY = new DataType<>(Object.class,1183);
 
   // 12 bytes time of day (no date) with time zone
-  public static final DataType<Object> TIMETZ = new DataType<Object>(1266) {
+  public static final DataType<Object> TIMETZ = new DataType<Object>(Object.class,1266) {
     @Override
     public Object decodeText(int len, ByteBuf buff) {
       CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
@@ -286,10 +327,10 @@ public class DataType<T> {
       return null;
     }
   };
-  public static DataType<Object> TIMETZ_ARRAY = new DataType<>(1270);
+  public static DataType<Object> TIMETZ_ARRAY = new DataType<>(Object.class,1270);
 
   // 8 bytes date and time without time zone
-  public static final DataType<Object> TIMESTAMP = new DataType<Object>(1114) {
+  public static final DataType<Object> TIMESTAMP = new DataType<Object>(Object.class,1114) {
     @Override
     public Object decodeText(int len, ByteBuf buff) {
       CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
@@ -300,10 +341,10 @@ public class DataType<T> {
       return decodeTimestamp(buff);
     }
   };
-  public static DataType<Object> TIMESTAMP_ARRAY = new DataType<>(1115);
+  public static DataType<Object> TIMESTAMP_ARRAY = new DataType<>(Object.class,1115);
 
   // 8 bytes date and time with time zone
-  public static final DataType<Object> TIMESTAMPTZ = new DataType<Object>(1184) {
+  public static final DataType<Object> TIMESTAMPTZ = new DataType<Object>(Object.class,1184) {
     @Override
     public Object decodeText(int len, ByteBuf buff) {
       CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
@@ -314,15 +355,15 @@ public class DataType<T> {
       return decodeTimestamp(buff);
     }
   };
-  public static DataType<Object> TIMESTAMPTZ_ARRAY = new DataType<>(1185);
+  public static DataType<Object> TIMESTAMPTZ_ARRAY = new DataType<>(Object.class,1185);
   // 16 bytes time interval
-  public static DataType<Object> INTERVAL = new DataType<>(1186);
-  public static DataType<Object> INTERVAL_ARRAY = new DataType<>(1187);
+  public static DataType<Object> INTERVAL = new DataType<>(Object.class,1186);
+  public static DataType<Object> INTERVAL_ARRAY = new DataType<>(Object.class,1187);
 
   // 1 or 4 bytes plus the actual binary string
-  public static final DataType<Object> BYTEA = new DataType<Object>(17) {
+  public static final DataType<byte[]> BYTEA = new DataType<byte[]>(byte[].class, 17) {
     @Override
-    public Object decodeText(int len, ByteBuf buff) {
+    public byte[] decodeText(int len, ByteBuf buff) {
       buff.readByte(); // \
       buff.readByte(); // x
       len = (len - 2) / 2;
@@ -341,32 +382,42 @@ public class DataType<T> {
         return (byte)(b - 'a' + 10);
       }
     }
+    @Override
+    public void encodeText(byte[] value, ByteBuf buff) {
+      int index = buff.writerIndex();
+      buff.setByte(index + 4, '\\');
+      buff.setByte(index + 5, 'x');
+      // todo : optimize - no need to create an intermediate string here
+      int len = buff.setCharSequence(index + 6, printHexBinary(value), StandardCharsets.UTF_8);
+      buff.writeInt(2 + len);
+      buff.writerIndex(index + 2 + len);
+    }
   };
-  public static DataType<Object> BYTEA_ARRAY = new DataType<>(1001);
+  public static DataType<Object> BYTEA_ARRAY = new DataType<>(Object.class,1001);
 
   // 6 bytes MAC address (XX:XX:XX:XX:XX:XX)
-  public static DataType<Object> MACADDR = new DataType<>(829);
+  public static DataType<Object> MACADDR = new DataType<>(Object.class,829);
 
   // 7 or 19 bytes (IPv4 and IPv6 hosts and networks)
-  public static DataType<Object> INET = new DataType<>(869);
+  public static DataType<Object> INET = new DataType<>(Object.class,869);
 
   // 7 or 19 bytes (IPv4 and IPv6 networks)
-  public static DataType<Object> CIDR = new DataType<>(650);
+  public static DataType<Object> CIDR = new DataType<>(Object.class,650);
 
   // 8 bytes MAC address (XX:XX:XX:XX:XX:XX:XX:XX)
-  public static DataType<Object> MACADDR8 = new DataType<>(774);
+  public static DataType<Object> MACADDR8 = new DataType<>(Object.class,774);
 
   // UUID
-  public static DataType<String> UUID = new DataType<String>(2950) {
+  public static DataType<String> UUID = new DataType<String>(String.class, 2950) {
     @Override
     public String decodeText(int len, ByteBuf buff) {
       return buff.readCharSequence(len, StandardCharsets.UTF_8).toString();
     }
   };
-  public static DataType<Object> UUID_ARRAY = new DataType<>(2951);
+  public static DataType<Object> UUID_ARRAY = new DataType<>(Object.class,2951);
 
   // Text JSON
-  public static final DataType<Object> JSON = new DataType<Object>(114) {
+  public static final DataType<Object> JSON = new DataType<Object>(Object.class,114) {
     @Override
     public Object decodeText(int len, ByteBuf buff) {
       // Try to do without the intermediary String
@@ -375,7 +426,7 @@ public class DataType<T> {
     }
   };
   // Binary JSON
-  public static final DataType<Object> JSONB = new DataType<Object>(3802) {
+  public static final DataType<Object> JSONB = new DataType<Object>(Object.class,3802) {
     @Override
     public Object decodeText(int len, ByteBuf buff) {
       // Not sure this is correct
@@ -385,20 +436,20 @@ public class DataType<T> {
     }
   };
   // XML
-  public static DataType<Object> XML = new DataType<>(142);
-  public static DataType<Object> XML_ARRAY = new DataType<>(143);
+  public static DataType<Object> XML = new DataType<>(Object.class,142);
+  public static DataType<Object> XML_ARRAY = new DataType<>(Object.class,143);
 
   // Geometric point (x, y)
-  public static DataType<Object> POINT = new DataType<>(600);
+  public static DataType<Object> POINT = new DataType<>(Object.class,600);
   // Geometric box (lower left, upper right)
-  public static DataType<Object> BOX = new DataType<>(603);
-  public static DataType<Object> HSTORE = new DataType<>(33670);
+  public static DataType<Object> BOX = new DataType<>(Object.class,603);
+  public static DataType<Object> HSTORE = new DataType<>(Object.class,33670);
 
   // Object identifier
-  public static DataType<Object> OID = new DataType<>(26);
-  public static DataType<Object> OID_ARRAY = new DataType<>(1028);
-  public static DataType<Object> VOID = new DataType<>(2278);
-  public static DataType<Object> UNKNOWN = new DataType<>(705);
+  public static DataType<Object> OID = new DataType<>(Object.class,26);
+  public static DataType<Object> OID_ARRAY = new DataType<>(Object.class,1028);
+  public static DataType<Object> VOID = new DataType<>(Object.class,2278);
+  public static DataType<Object> UNKNOWN = new DataType<>(Object.class,705);
 
   private static long decodeInt(int len, ByteBuf buff) {
     long value = 0;
@@ -472,10 +523,16 @@ public class DataType<T> {
     }
   }
 
+  private final Class<T> javaType;
   private final int id;
 
-  private DataType(int id) {
+  private DataType(Class<T> javaType, int id) {
+    this.javaType = javaType;
     this.id = id;
+  }
+
+  public Class<T> getJavaType() {
+    return javaType;
   }
 
   public static DataType valueOf(int id) {
@@ -484,13 +541,13 @@ public class DataType<T> {
   }
 
   public T decodeText(int len, ByteBuf buff) {
-    // Default best effort implementation
+    // Default to null
     buff.readerIndex(buff.readerIndex() + len);
     return null;
   }
 
   public T decodeBinary(int len, ByteBuf buff) {
-    // Default best effort implementation
+    // Default to null
     buff.readerIndex(buff.readerIndex() + len);
     return null;
   }
@@ -507,5 +564,19 @@ public class DataType<T> {
     // convert to java epoch
     seconds = seconds + Duration.ofDays(LocalDate.of(2000, 1, 1).toEpochDay()).getSeconds();
     return LocalDateTime.ofEpochSecond(seconds, nanos, ZoneOffset.UTC).toInstant(ZoneOffset.UTC);
+  }
+
+  public void encodeBinary(T value, ByteBuf buff) {
+    // Default to null
+    buff.writeInt(-1);
+    System.out.println("Data type " + id + " does not support binary encoding");
+  }
+
+  public void encodeText(T value, ByteBuf buff) {
+    int index = buff.writerIndex();
+    String s = String.valueOf(value);
+    int len = buff.setCharSequence(index + 4, s, StandardCharsets.UTF_8);
+    buff.writeInt(len);
+    buff.writerIndex(index + 4 + len);
   }
 }

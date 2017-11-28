@@ -419,9 +419,9 @@ public class MessageDecoder extends ByteToMessageDecoder {
   }
 
   private void decodeParameterDescription(ByteBuf in, List<Object> out) {
-    int[] paramDataTypes = new int[in.readUnsignedShort()];
+    DataType[] paramDataTypes = new DataType[in.readUnsignedShort()];
     for (int c = 0; c < paramDataTypes.length; ++c) {
-      paramDataTypes[c] = in.readInt();
+      paramDataTypes[c] = DataType.valueOf(in.readInt());
     }
     out.add(new ParameterDescription(paramDataTypes));
   }

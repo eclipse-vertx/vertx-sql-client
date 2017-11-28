@@ -17,9 +17,14 @@
 
 package com.julienviet.pgclient.codec.decoder.message;
 
+import com.julienviet.pgclient.codec.DataType;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
+import com.julienviet.pgclient.codec.util.Util;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
@@ -28,14 +33,33 @@ import java.util.Arrays;
 public class ParameterDescription implements InboundMessage {
 
   // OIDs
-  private final int[] paramDataTypes;
+  private final DataType<?>[] paramDataTypes;
 
-  public ParameterDescription(int[] paramDataTypes) {
+  public ParameterDescription(DataType<?>[] paramDataTypes) {
     this.paramDataTypes = paramDataTypes;
   }
 
-  public int[] getParamDataTypes() {
+  public DataType<?>[] getParamDataTypes() {
     return paramDataTypes;
+  }
+
+  public String validate(List<Object> values) {
+    if (values.size() != paramDataTypes.length) {
+      return buildReport(values);
+    }
+    for (int i = 0;i < paramDataTypes.length;i++) {
+      DataType<?> paramDataType = paramDataTypes[i];
+      Class<?> type = paramDataType.getJavaType();
+      Object value = values.get(i);
+      if (!type.isInstance(value)) {
+        return buildReport(values);
+      }
+    }
+    return null;
+  }
+
+  private String buildReport(List<Object> values) {
+    return Util.buildInvalidArgsError(values.stream(), Stream.of(paramDataTypes).map(DataType::getJavaType));
   }
 
   @Override

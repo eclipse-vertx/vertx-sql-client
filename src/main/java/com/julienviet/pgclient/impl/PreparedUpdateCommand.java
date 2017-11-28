@@ -61,7 +61,7 @@ class PreparedUpdateCommand extends UpdateCommandBase {
       conn.writeMessage(new Parse(ps.sql).setStatement(""));
     }
     for (List<Object> params : paramsList) {
-      conn.writeMessage(new Bind().setParamValues(params).setStatement(ps.stmt));
+      conn.writeMessage(new Bind().setParamValues(params).setDataTypes(ps.paramDesc.getParamDataTypes()).setStatement(ps.stmt));
       conn.writeMessage(new Execute().setRowCount(0));
     }
     conn.writeMessage(Sync.INSTANCE);

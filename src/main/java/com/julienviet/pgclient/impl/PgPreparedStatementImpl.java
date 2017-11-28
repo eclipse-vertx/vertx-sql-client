@@ -18,6 +18,7 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.*;
+import com.julienviet.pgclient.codec.DataType;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -25,6 +26,8 @@ import io.vertx.core.Handler;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -41,13 +44,12 @@ class PgPreparedStatementImpl implements PgPreparedStatement {
   }
 
   @Override
-  public PgQuery query() {
-    return new ExtendedPgQueryImpl(this, Collections.emptyList());
-  }
-
-  @Override
-  public PgQuery query(List<Object> params) {
-    return new ExtendedPgQueryImpl(this, params);
+  public PgQuery query(List<Object> args) {
+    String msg = ps.paramDesc.validate(args);
+    if (msg != null) {
+      throw new IllegalArgumentException(msg);
+    }
+    return new ExtendedPgQueryImpl(this, args);
   }
 
   @Override
@@ -57,7 +59,7 @@ class PgPreparedStatementImpl implements PgPreparedStatement {
 
   @Override
   public PgBatch batch() {
-    return new BatchImpl(this);
+    return new BatchImpl(this, ps.paramDesc);
   }
 
   @Override
