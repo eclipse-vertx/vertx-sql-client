@@ -97,7 +97,7 @@ public class PgConnectionImpl extends PgOperationsImpl implements PgConnection, 
 
   @Override
   public void prepare(String sql, Handler<AsyncResult<PgPreparedStatement>> handler) {
-    conn.schedule(new PrepareCommand(sql, ar -> {
+    conn.schedule(new PrepareStatementCommand(sql, ar -> {
       if (ar.succeeded()) {
         handler.handle(Future.succeededFuture(new PgPreparedStatementImpl(conn, ar.result())));
       } else {

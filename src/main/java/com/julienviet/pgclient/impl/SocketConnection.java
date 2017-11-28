@@ -122,13 +122,13 @@ public class SocketConnection implements Connection {
     }
     if (status == Status.CONNECTED) {
 
-      if (cmd instanceof PrepareCommand && psCache != null) {
-        PrepareCommand prepareCmd = (PrepareCommand) cmd;
+      if (cmd instanceof PrepareStatementCommand && psCache != null) {
+        PrepareStatementCommand prepareCmd = (PrepareStatementCommand) cmd;
         CompletableFuture<PreparedStatement> psFut = psCache.get(prepareCmd.sql);
         if (psFut == null) {
           CompletableFuture<PreparedStatement> fut = new CompletableFuture<>();
           psCache.put(prepareCmd.sql, fut);
-          cmd = new PrepareCommand(prepareCmd.sql, UUID.randomUUID().toString(), ar -> {
+          cmd = new PrepareStatementCommand(prepareCmd.sql, UUID.randomUUID().toString(), ar -> {
             prepareCmd.fut.handle(ar);
             if (ar.succeeded()) {
               fut.complete(ar.result());

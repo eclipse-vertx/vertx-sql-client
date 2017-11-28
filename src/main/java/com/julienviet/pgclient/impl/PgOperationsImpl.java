@@ -27,7 +27,6 @@ import io.vertx.core.Handler;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 public abstract class PgOperationsImpl implements PgOperations {
 
@@ -40,7 +39,7 @@ public abstract class PgOperationsImpl implements PgOperations {
 
   @Override
   public void preparedQuery(String sql, List<Object> params, Handler<AsyncResult<ResultSet>> handler) {
-    schedule(new PrepareCommand(sql, ar -> {
+    schedule(new PrepareStatementCommand(sql, ar -> {
       if (ar.succeeded()) {
         schedule(new ExtendedQueryCommand(ar.result(), params, new PreparedQueryResultHandler(handler)));
       } else {
@@ -56,7 +55,7 @@ public abstract class PgOperationsImpl implements PgOperations {
 
   @Override
   public void preparedUpdate(String sql, List<Object> params, Handler<AsyncResult<UpdateResult>> handler) {
-    schedule(new PrepareCommand(sql, ar1 -> {
+    schedule(new PrepareStatementCommand(sql, ar1 -> {
       if (ar1.succeeded()) {
         schedule(new PreparedUpdateCommand(
           ar1.result(),

@@ -28,7 +28,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
-public class PrepareCommand extends CommandBase {
+public class PrepareStatementCommand extends CommandBase {
 
   final String sql;
   private final String statement;
@@ -36,11 +36,11 @@ public class PrepareCommand extends CommandBase {
   private RowDescription rowDesc;
   final Future<PreparedStatement> fut;
 
-  PrepareCommand(String sql, Handler<AsyncResult<PreparedStatement>> handler) {
+  PrepareStatementCommand(String sql, Handler<AsyncResult<PreparedStatement>> handler) {
     this(sql, "", handler);
   }
 
-  PrepareCommand(String sql, String statement, Handler<AsyncResult<PreparedStatement>> handler) {
+  PrepareStatementCommand(String sql, String statement, Handler<AsyncResult<PreparedStatement>> handler) {
     this.sql = sql;
     this.statement = statement;
     this.fut= Future.<PreparedStatement>future().setHandler(handler);
