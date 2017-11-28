@@ -71,4 +71,19 @@ public abstract class PgOperationsImpl implements PgOperations {
       }
     });
   }
+
+  @Override
+  public void preparedBatchUpdate(String sql, List<List<Object>> list, Handler<AsyncResult<UpdateResult>> handler) {
+    schedulePrepared(sql, ar -> {
+      if (ar.succeeded()) {
+        return new PreparedUpdateCommand(
+          ar.result(),
+          list,
+          ar2 -> handler.handle(ar2.map(l -> l.get(0))));
+      } else {
+        handler.handle(Future.failedFuture(ar.cause()));
+        return null;
+      }
+    });
+  }
 }
