@@ -64,7 +64,12 @@ public class DataRow implements InboundMessage {
         } else {
           decoded = column.getDataType().decodeBinary(value.length, bb);
         }
-        array.add(decoded);
+        if(decoded != null) {
+          array.add(decoded);
+        } else {
+          array.addNull();
+        }
+
       }
     }
     return array;
