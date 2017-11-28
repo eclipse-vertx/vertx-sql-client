@@ -458,16 +458,13 @@ public class DataType<T> {
 
   public T decodeText(int len, ByteBuf buff) {
     // Default best effort implementation
+    buff.readerIndex(buff.readerIndex() + len);
     return null;
   }
 
   public T decodeBinary(int len, ByteBuf buff) {
-    byte[] data = new byte[len];
-    buff.readBytes(data);
-    return decodeBinary(data);
-  }
-
-  public T decodeBinary(byte[] data) {
-    throw new UnsupportedOperationException("DataType " + id + " has not implemented binary decoding");
+    // Default best effort implementation
+    buff.readerIndex(buff.readerIndex() + len);
+    return null;
   }
 }
