@@ -39,6 +39,7 @@ public class ExtendedPgQueryImpl implements PgQuery, QueryResultHandler {
   private Handler<Throwable> exceptionHandler;
   private Handler<Void> endHandler;
 
+  private boolean executed;
   private String portal;
   private boolean completed;
   private boolean closed;
@@ -57,8 +58,9 @@ public class ExtendedPgQueryImpl implements PgQuery, QueryResultHandler {
   public PgQuery handler(Handler<ResultSet> handler) {
     if (handler != null) {
       resultHandler = handler;
-      if (portal == null) {
-        portal = fetch > 0 ? UUID.randomUUID().toString() : "";
+      if (!executed) {
+        executed = true;
+        portal = fetch > 0 ? UUID.randomUUID().toString() : null;
         ps.execute(params, fetch, portal, false, this);
       }
     } else {

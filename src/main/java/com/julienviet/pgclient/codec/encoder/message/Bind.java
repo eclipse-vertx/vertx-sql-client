@@ -24,6 +24,7 @@ import com.julienviet.pgclient.codec.encoder.OutboundMessage;
 import com.julienviet.pgclient.codec.util.Util;
 import io.netty.buffer.ByteBuf;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -119,11 +120,10 @@ public class Bind implements OutboundMessage {
     int pos = out.writerIndex();
     out.writeByte(BIND);
     out.writeInt(0);
-    if(portal == null) {
-      out.writeByte(0);
-    } else {
-      Util.writeCStringUTF8(out, portal);
+    if (portal != null) {
+      out.writeCharSequence(portal, StandardCharsets.UTF_8);
     }
+    out.writeByte(0);
     if (statement == null) {
       out.writeByte(0);
     } else {

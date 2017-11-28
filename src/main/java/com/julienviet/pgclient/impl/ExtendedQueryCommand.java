@@ -46,7 +46,7 @@ class ExtendedQueryCommand extends QueryCommandBase {
   ExtendedQueryCommand(PreparedStatement ps,
                        List<Object> params,
                        QueryResultHandler handler) {
-    this(ps, params, 0, "", false, handler);
+    this(ps, params, 0, null, false, handler);
   }
 
   ExtendedQueryCommand(PreparedStatement ps,

@@ -26,6 +26,7 @@ import com.julienviet.pgclient.codec.encoder.OutboundMessage;
 import com.julienviet.pgclient.codec.util.Util;
 import io.netty.buffer.ByteBuf;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import static com.julienviet.pgclient.codec.encoder.message.type.MessageType.EXECUTE;
@@ -59,7 +60,6 @@ public class Execute implements OutboundMessage {
   private String portal;
   private int rowCount;
 
-
   public String getPortal() {
     return portal;
   }
@@ -91,7 +91,10 @@ public class Execute implements OutboundMessage {
     int pos = out.writerIndex();
     out.writeByte(EXECUTE);
     out.writeInt(0);
-    Util.writeCStringUTF8(out, portal != null ? portal : "");
+    if (portal != null) {
+      out.writeCharSequence(portal, StandardCharsets.UTF_8);
+    }
+    out.writeByte(0);
     out.writeInt(rowCount); // Zero denotes "no limit" maybe for ReadStream<Row>
     out.setInt(pos + 1, out.writerIndex() - pos - 1);
   }
