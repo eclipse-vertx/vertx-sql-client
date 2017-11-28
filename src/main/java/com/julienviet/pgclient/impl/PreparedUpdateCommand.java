@@ -24,7 +24,6 @@ import com.julienviet.pgclient.codec.decoder.message.NoData;
 import com.julienviet.pgclient.codec.decoder.message.ParameterDescription;
 import com.julienviet.pgclient.codec.decoder.message.ParseComplete;
 import com.julienviet.pgclient.codec.encoder.message.Bind;
-import com.julienviet.pgclient.codec.encoder.message.Describe;
 import com.julienviet.pgclient.codec.encoder.message.Execute;
 import com.julienviet.pgclient.codec.encoder.message.Parse;
 import com.julienviet.pgclient.codec.encoder.message.Sync;
@@ -34,7 +33,6 @@ import io.vertx.core.Handler;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
@@ -43,21 +41,13 @@ import java.util.UUID;
 class PreparedUpdateCommand extends UpdateCommandBase {
 
 
-  final boolean parse;
-  final String sql;
-  final String stmt;
+  final PreparedStatement ps;
   final List<List<Object>> paramsList;
   final Handler<AsyncResult<List<UpdateResult>>> handler;
   private ArrayList<UpdateResult> results;
 
-  PreparedUpdateCommand(String sql, List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
-    this(true, sql, "", paramsList, handler);
-  }
-
-  PreparedUpdateCommand(boolean parse, String sql, String stmt, List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
-    this.parse = parse;
-    this.sql = sql;
-    this.stmt = stmt;
+  PreparedUpdateCommand(PreparedStatement ps, List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
+    this.ps = ps;
     this.paramsList = paramsList;
     this.handler = handler;
     this.results = new ArrayList<>(paramsList.size()); // Should reuse the paramsList for this as it's already allocated
@@ -65,29 +55,11 @@ class PreparedUpdateCommand extends UpdateCommandBase {
 
   @Override
   void exec(SocketConnection conn) {
-    boolean p;
-    String s;
-    if (conn.psCache != null) {
-      s = conn.psCache.get(sql);
-      if (s == null) {
-        p = true;
-        s = UUID.randomUUID().toString();
-        conn.psCache.put(sql, s);
-      } else {
-        p = false;
-      }
-    } else {
-      p = parse;
-      s = stmt;
-    }
-
-
-    if (p) {
-      conn.writeMessage(new Parse(sql).setStatement(s));
+    if (ps.stmt.length() == 0) {
+      conn.writeMessage(new Parse(ps.sql).setStatement(""));
     }
     for (List<Object> params : paramsList) {
-      conn.writeMessage(new Bind().setParamValues(params).setStatement(s));
-      conn.writeMessage(new Describe().setStatement(s));
+      conn.writeMessage(new Bind().setParamValues(params).setStatement(ps.stmt));
       conn.writeMessage(new Execute().setRowCount(0));
     }
     conn.writeMessage(Sync.INSTANCE);

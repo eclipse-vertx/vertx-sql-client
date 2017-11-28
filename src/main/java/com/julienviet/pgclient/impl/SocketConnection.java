@@ -32,6 +32,7 @@ import io.vertx.core.impl.ContextImpl;
 import io.vertx.core.impl.NetSocketInternal;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -52,7 +53,7 @@ public class SocketConnection implements Connection {
   final Context context;
   private Status status = Status.CONNECTED;
   private Holder holder;
-  final Map<String, String> psCache;
+  final Map<String, CompletableFuture<PreparedStatement>> psCache;
   private final int pipeliningLimit;
 
   public SocketConnection(PgClientImpl client,

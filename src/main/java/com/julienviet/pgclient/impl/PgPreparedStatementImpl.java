@@ -32,15 +32,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 class PgPreparedStatementImpl implements PgPreparedStatement {
 
   private final Connection conn;
-  final String sql;
+  private final PreparedStatement ps;
   final AtomicBoolean closed = new AtomicBoolean();
-  boolean parsed;
-  final String stmt;
 
-  PgPreparedStatementImpl(Connection conn, String sql, String stmt) {
+  PgPreparedStatementImpl(Connection conn, PreparedStatement ps) {
     this.conn = conn;
-    this.sql = sql;
-    this.stmt = stmt;
+    this.ps = ps;
   }
 
   @Override
@@ -74,32 +71,17 @@ class PgPreparedStatementImpl implements PgPreparedStatement {
                String portal,
                boolean suspended,
                QueryResultHandler handler) {
-    boolean parse;
-    if (!parsed) {
-      parsed = true;
-      parse = true;
-    } else {
-      parse = false;
-    }
-    conn.schedule(new ExtendedQueryCommand(parse, sql, params, fetch, stmt, portal, suspended, handler));
-    // conn.schedule(new ExtendedQueryCommand(sql, params, handler));
+    conn.schedule(new ExtendedQueryCommand(ps, params, fetch, portal, suspended, handler));
   }
 
   void update(List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
-    boolean parse;
-    if (!parsed) {
-      parsed = true;
-      parse = true;
-    } else {
-      parse = false;
-    }
-    conn.schedule(new PreparedUpdateCommand(parse, sql, stmt, paramsList, handler));
+    conn.schedule(new PreparedUpdateCommand(ps, paramsList, handler));
   }
 
   @Override
   public void close(Handler<AsyncResult<Void>> completionHandler) {
     if (closed.compareAndSet(false, true)) {
-      conn.schedule(new CloseStatementCommand(stmt, completionHandler));
+      conn.schedule(new CloseStatementCommand(completionHandler));
     } else {
       completionHandler.handle(Future.failedFuture("Already closed"));
     }

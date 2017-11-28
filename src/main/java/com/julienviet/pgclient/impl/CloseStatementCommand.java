@@ -19,8 +19,6 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.message.CloseComplete;
-import com.julienviet.pgclient.codec.encoder.message.Close;
-import com.julienviet.pgclient.codec.encoder.message.Sync;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -30,22 +28,23 @@ import io.vertx.core.Handler;
  */
 class CloseStatementCommand extends CommandBase {
 
-  final String stmt;
   final Handler<AsyncResult<Void>> handler;
 
-  CloseStatementCommand(String stmt, Handler<AsyncResult<Void>> handler) {
-    this.stmt = stmt;
+  CloseStatementCommand(Handler<AsyncResult<Void>> handler) {
     this.handler = handler;
   }
 
   @Override
   void exec(SocketConnection conn) {
+    /*
     if (conn.psCache == null) {
       conn.writeMessage(new Close().setStatement(stmt));
       conn.writeMessage(Sync.INSTANCE);
     } else {
-      completionHandler.handle(null);
     }
+    */
+    handler.handle(Future.succeededFuture());
+    completionHandler.handle(null);
   }
 
   @Override

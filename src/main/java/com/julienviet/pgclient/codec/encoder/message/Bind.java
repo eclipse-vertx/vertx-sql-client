@@ -140,8 +140,10 @@ public class Bind implements OutboundMessage {
         }
       }
     }
-    // Result columns are all in TEXT format
-    out.writeShort(0);
+
+    // Result columns are all in Binary format
+    out.writeShort(1);
+    out.writeShort(1);
     out.setInt(pos + 1, out.writerIndex() - pos - 1);
   }
 

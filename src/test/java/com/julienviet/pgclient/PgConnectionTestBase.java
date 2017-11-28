@@ -21,8 +21,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -33,13 +31,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.net.ssl.SSLHandshakeException;
-import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
-
-import static java.nio.charset.StandardCharsets.*;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -236,389 +231,23 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   }
 
   @Test
-  public void testTextNullDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT null").execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        ctx.assertNull(result.getResults().get(0).getValue(0));
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testTextBoolTrueDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT true").execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        ctx.assertEquals(true, result.getResults().get(0).getBoolean(0));
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testBoolFalseTextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT false").execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        ctx.assertEquals(false, result.getResults().get(0).getBoolean(0));
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testInt2TextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 32767::INT2").execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        ctx.assertEquals((short)32767, result.getResults().get(0).getValue(0));
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testInt4TextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 2147483647::INT4").execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        ctx.assertEquals(2147483647, result.getResults().get(0).getInteger(0));
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testInt8TextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 9223372036854775807::INT8").execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        ctx.assertEquals(9223372036854775807L, result.getResults().get(0).getLong(0));
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testFloat4TextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 3.4028235E38::FLOAT4").execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        ctx.assertEquals(3.4028235E38f, result.getResults().get(0).getFloat(0));
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testFloat8TextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 1.7976931348623157E308::FLOAT8").execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        ctx.assertEquals(1.7976931348623157E308d, result.getResults().get(0).getDouble(0));
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testNumericTextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 919.999999999999999999999999999999999999::NUMERIC").execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        ctx.assertEquals(920.0, result.getResults().get(0).getDouble(0));
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testNameTextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 'VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X & VERT.X'::NAME").execute(ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.getNumRows());
-          String name = result.getResults().get(0).getString(0);
-          ctx.assertEquals("VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X ", name);
-          // must be 63 length
-          ctx.assertEquals(63, name.length());
-          async.complete();
-        }));
-    }));
-  }
-
-  @Test
-  public void testBlankPaddedCharTextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 'pgClient'::CHAR(15)").execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        String bpchar = result.getResults().get(0).getString(0);
-        ctx.assertEquals("pgClient       ", bpchar);
-        ctx.assertEquals(15, bpchar.length());
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testSingleBlankPaddedCharTextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 'V'::CHAR").execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        String sbpchar = result.getResults().get(0).getString(0);
-        ctx.assertEquals("V", sbpchar);
-        ctx.assertEquals(1, sbpchar.length());
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testSingleCharTextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 'X'::\"char\"").execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        char character = (char) result.getResults().get(0).getValue(0);
-        ctx.assertEquals('X', character);
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testVarCharTextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 'pgClient'::VARCHAR(15)").execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        ctx.assertEquals("pgClient", result.getResults().get(0).getString(0));
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testTextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 'Vert.x PostgreSQL Client'::TEXT").execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        ctx.assertEquals("Vert.x PostgreSQL Client", result.getResults().get(0).getString(0));
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testUUIDTextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT '50867d3d-0098-4f61-bd31-9309ebf53475'::UUID").execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        ctx.assertEquals("50867d3d-0098-4f61-bd31-9309ebf53475", result.getResults().get(0).getString(0));
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testDateTextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT '1981-05-30'::DATE").execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        ctx.assertEquals("1981-05-30", result.getResults().get(0).getString(0));
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testTimeTextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT '17:55:04.90512'::TIME").execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        ctx.assertEquals("17:55:04.90512", result.getResults().get(0).getString(0));
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testTimeTzTextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT '17:55:04.90512+03:07'::TIMETZ").execute(
-        ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.getNumRows());
-          ctx.assertEquals("17:55:04.905120+03:07", result.getResults().get(0).getString(0));
-          async.complete();
-        }));
-    }));
-  }
-
-  @Test
-  public void testTimestampTextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT '2017-05-14 19:35:58.237666'::TIMESTAMP").execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
-        ctx.assertEquals(Instant.parse("2017-05-14T19:35:58.237666Z"), result.getResults().get(0).getInstant(0));
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testTimestampTzTextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SET TIME ZONE 'UTC'").execute(ctx.asyncAssertSuccess(v -> {
-        conn.query("SELECT '2017-05-14 22:35:58.237666-03'::TIMESTAMPTZ").execute(
-          ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.getNumRows());
-            ctx.assertEquals(Instant.parse("2017-05-15T01:35:58.237666Z"), result.getResults().get(0).getInstant(0));
-            async.complete();
-          }));
-      }));
-    }));
-  }
-
-  @Test
-  public void testJsonbObjectTextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT '{\"str\":\"blah\", \"int\" : 1, \"float\" :" +
-          " 3.5, \"object\": {}, \"array\" : []}'::JSONB").execute(
-        ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.getNumRows());
-          JsonObject jsonObject = result.getResults().get(0).getJsonObject(0);
-          ctx.assertEquals(new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" :" +
-            " 3.5, \"object\": {}, \"array\" : []}"), jsonObject);
-          async.complete();
-        }));
-    }));
-  }
-
-  @Test
-  public void testJsonbArrayTextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT '[1,true,null,9.5,\"Hi\"]'::JSONB").execute(
-        ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.getNumRows());
-          JsonArray jsonArray = result.getResults().get(0).getJsonArray(0);
-          ctx.assertEquals(new JsonArray("[1,true,null,9.5,\"Hi\"]"), jsonArray);
-          async.complete();
-        }));
-    }));
-  }
-
-  @Test
-  public void testJsonObjectTextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT '{\"str\":\"blah\", \"int\" : 1, \"float\" :" +
-          " 3.5, \"object\": {}, \"array\" : []}'::JSON").execute(
-        ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.getNumRows());
-          JsonObject jsonObject = result.getResults().get(0).getJsonObject(0);
-          ctx.assertEquals(new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" :" +
-            " 3.5, \"object\": {}, \"array\" : []}"), jsonObject);
-          async.complete();
-        }));
-    }));
-  }
-
-  @Test
-  public void testJsonArrayTextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT '[1,true,null,9.5,\"Hi\"]'::JSON").execute(
-        ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.getNumRows());
-          JsonArray jsonArray = result.getResults().get(0).getJsonArray(0);
-          ctx.assertEquals(new JsonArray("[1,true,null,9.5,\"Hi\"]"), jsonArray);
-          async.complete();
-        }));
-    }));
-  }
-
-  @Test
-  public void testByteaTextDataType(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT '12345678910'::BYTEA, '\u00DE\u00AD\u00BE\u00EF'::BYTEA").execute(
-        ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.getNumRows());
-          byte[] bytea1 = result.getResults().get(0).getBinary(0);
-          byte[] bytea2 = result.getResults().get(0).getBinary(1);
-          ctx.assertEquals("12345678910", new String(bytea1, UTF_8));
-          ctx.assertEquals("\u00DE\u00AD\u00BE\u00EF", new String(bytea2, UTF_8));
-          async.complete();
-        }));
-    }));
-  }
-
-
-  @Test
   public void testBatchUpdate(TestContext ctx) {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      PgPreparedStatement ps = conn.prepare("UPDATE Fortune SET message=$1 WHERE id=$2");
-      PgBatch batch = ps.batch();
-      batch.add("val0", 1);
-      batch.add("val1", 2);
-      batch.execute(ctx.asyncAssertSuccess(results -> {
-        ctx.assertEquals(2, results.size());
-        for (int i = 0;i < 2;i++) {
-          UpdateResult result = results.get(i);
-          ctx.assertEquals(1, result.getUpdated());
-        }
-        ps.close(ctx.asyncAssertSuccess(result -> {
-          async.complete();
+      conn.prepare("UPDATE Fortune SET message=$1 WHERE id=$2", ctx.asyncAssertSuccess(ps -> {
+        PgBatch batch = ps.batch();
+        batch.add("val0", 1);
+        batch.add("val1", 2);
+        batch.execute(ctx.asyncAssertSuccess(results -> {
+          ctx.assertEquals(2, results.size());
+          for (int i = 0;i < 2;i++) {
+            UpdateResult result = results.get(i);
+            ctx.assertEquals(1, result.getUpdated());
+          }
+          ps.close(ctx.asyncAssertSuccess(result -> {
+            async.complete();
+          }));
         }));
       }));
     }));
@@ -634,15 +263,16 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     PgClient client = PgClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       int id = randomWorld();
-      PgPreparedStatement worldUpdate = conn.prepare("INSERT INTO World (id, randomnumber) VALUES ($1, $2)");
-      PgBatch batch = worldUpdate.batch();
-      batch.add(id, 3);
-      batch.execute(ctx.asyncAssertFailure(err -> {
-        ctx.assertEquals("23505", ((PgException) err).getCode());
-        conn.query("SELECT 1000").execute(ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.getNumRows());
-          ctx.assertEquals(1000, result.getResults().get(0).getInteger(0));
-          async.complete();
+      conn.prepare("INSERT INTO World (id, randomnumber) VALUES ($1, $2)", ctx.asyncAssertSuccess(worldUpdate -> {
+        PgBatch batch = worldUpdate.batch();
+        batch.add(id, 3);
+        batch.execute(ctx.asyncAssertFailure(err -> {
+          ctx.assertEquals("23505", ((PgException) err).getCode());
+          conn.query("SELECT 1000").execute(ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.getNumRows());
+            ctx.assertEquals(1000, result.getResults().get(0).getInteger(0));
+            async.complete();
+          }));
         }));
       }));
     }));
@@ -941,16 +571,18 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      PgPreparedStatement ps = conn.prepare("UPDATE Fortune SET message = 'PgClient Rocks!' WHERE id = 2");
-      PgUpdate update = ps.update();
-      update.execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getUpdated());
-        conn.prepare("SELECT message FROM Fortune WHERE id = 2")
-          .query()
-          .execute(ctx.asyncAssertSuccess(r -> {
-            ctx.assertEquals("PgClient Rocks!", r.getRows().get(0).getValue("message"));
-            async.complete();
+      conn.prepare("UPDATE Fortune SET message = 'PgClient Rocks!' WHERE id = 2", ctx.asyncAssertSuccess(ps -> {
+        PgUpdate update = ps.update();
+        update.execute(ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.getUpdated());
+          conn.prepare("SELECT message FROM Fortune WHERE id = 2", ctx.asyncAssertSuccess(ps2 -> {
+            ps2.query()
+              .execute(ctx.asyncAssertSuccess(r -> {
+                ctx.assertEquals("PgClient Rocks!", r.getRows().get(0).getValue("message"));
+                async.complete();
+              }));
           }));
+        }));
       }));
     }));
   }
@@ -960,15 +592,17 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      PgPreparedStatement ps = conn.prepare("UPDATE Fortune SET message = $1 WHERE id = $2");
-      PgUpdate update = ps.update("PgClient Rocks Again!!", 2);
-      update.execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getUpdated());
-        conn.prepare("SELECT message FROM Fortune WHERE id = $1")
-          .query(2)
-          .execute(ctx.asyncAssertSuccess(r -> {
-            ctx.assertEquals("PgClient Rocks Again!!", r.getRows().get(0).getValue("message"));
-            async.complete();
+      conn.prepare("UPDATE Fortune SET message = $1 WHERE id = $2", ctx.asyncAssertSuccess(ps -> {
+        PgUpdate update = ps.update("PgClient Rocks Again!!", 2);
+        update.execute(ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.getUpdated());
+          conn.prepare("SELECT message FROM Fortune WHERE id = $1", ctx.asyncAssertSuccess(ps2 -> {
+            ps2.query(2)
+              .execute(ctx.asyncAssertSuccess(r -> {
+                ctx.assertEquals("PgClient Rocks Again!!", r.getRows().get(0).getValue("message"));
+                async.complete();
+              }));
+          }));
         }));
       }));
     }));

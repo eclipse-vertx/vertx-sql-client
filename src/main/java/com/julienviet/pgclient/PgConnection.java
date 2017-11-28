@@ -33,7 +33,7 @@ public interface PgConnection extends PgOperations {
 
   void execute(String sql, Handler<AsyncResult<ResultSet>> handler);
 
-  PgPreparedStatement prepare(String sql);
+  void prepare(String sql, Handler<AsyncResult<PgPreparedStatement>> handler);
 
   @Fluent
   PgConnection exceptionHandler(Handler<Throwable> handler);

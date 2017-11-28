@@ -20,10 +20,12 @@ package com.julienviet.pgclient;
 
 import org.junit.After;
 import org.junit.Before;
+import org.postgresql.PGProperty;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 
 public class JdbcTestBase extends PgTestBase {
 
@@ -31,9 +33,15 @@ public class JdbcTestBase extends PgTestBase {
 
   @Before
   public void setUp() throws Exception {
+    Properties props = new Properties();
+    PGProperty.PREPARE_THRESHOLD.set(props, -1);
+    PGProperty.BINARY_TRANSFER.set(props, "true");
+    // PGProperty.BINARY_TRANSFER_ENABLE.set(props, "true");
+    PGProperty.USER.set(props, "postgres");
+    PGProperty.PASSWORD.set(props, "postgres");
     con = DriverManager.getConnection("jdbc:postgresql://"
       + options.getHost() + ":"
-      + options.getPort() + "/postgres", "postgres", "postgres");
+      + options.getPort() + "/postgres", props);
 
   }
 

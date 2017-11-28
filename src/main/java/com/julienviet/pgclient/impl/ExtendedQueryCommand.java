@@ -17,6 +17,8 @@
 
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.ResultSet;
+import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.message.BindComplete;
 import com.julienviet.pgclient.codec.decoder.message.NoData;
@@ -24,90 +26,69 @@ import com.julienviet.pgclient.codec.decoder.message.ParameterDescription;
 import com.julienviet.pgclient.codec.decoder.message.ParseComplete;
 import com.julienviet.pgclient.codec.decoder.message.PortalSuspended;
 import com.julienviet.pgclient.codec.encoder.message.Bind;
-import com.julienviet.pgclient.codec.encoder.message.Describe;
 import com.julienviet.pgclient.codec.encoder.message.Execute;
 import com.julienviet.pgclient.codec.encoder.message.Parse;
 import com.julienviet.pgclient.codec.encoder.message.Sync;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 class ExtendedQueryCommand extends QueryCommandBase {
 
-
-  final boolean parse;
-  final String sql;
+  final PreparedStatement ps;
   final List<Object> params;
   final int fetch;
-  final String stmt;
   private final String portal;
   private final boolean suspended;
 
-  ExtendedQueryCommand(String sql,
+  ExtendedQueryCommand(PreparedStatement ps,
                        List<Object> params,
                        QueryResultHandler handler) {
-    this(true, sql, params, 0, "", "", false, handler);
+    this(ps, params, 0, "", false, handler);
   }
 
-  ExtendedQueryCommand(boolean parse,
-                       String sql,
+  ExtendedQueryCommand(PreparedStatement ps,
                        List<Object> params,
                        int fetch,
-                       String stmt,
                        String portal,
                        boolean suspended,
                        QueryResultHandler handler) {
     super(handler);
-    this.parse = parse;
-    this.sql = sql;
+    this.ps = ps;
     this.params = params;
     this.fetch = fetch;
-    this.stmt = stmt;
     this.portal = portal;
     this.suspended = suspended;
+
+    rowDesc = ps.rowDesc;
+    resultSet = new ResultSet().setResults(new ArrayList<>()).setColumnNames(rowDesc.getColumnNames());
+    dataFormat = DataFormat.BINARY;
   }
 
   @Override
   void exec(SocketConnection conn) {
-    boolean p;
-    String s;
-    if (conn.psCache != null) {
-      String cached = conn.psCache.get(sql);
-      if (cached == null) {
-        p = true;
-        s = UUID.randomUUID().toString();
-        conn.psCache.put(sql, s);
-      } else {
-        p = false;
-        s = cached;
-      }
+    if (suspended) {
+      conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
+      conn.writeMessage(Sync.INSTANCE);
+    } else if (ps.stmt.length() > 0) {
+      conn.writeMessage(new Bind().setParamValues(params).setPortal(portal).setStatement(ps.stmt));
+      conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
+      conn.writeMessage(Sync.INSTANCE);
     } else {
-      p = parse;
-      s = stmt;
+      conn.writeMessage(new Parse(ps.sql).setStatement(""));
+      conn.writeMessage(new Bind().setParamValues(params).setPortal(portal).setStatement(ps.stmt));
+      conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
+      conn.writeMessage(Sync.INSTANCE);
     }
-
-    if (p) {
-      conn.writeMessage(new Parse(sql).setStatement(s));
-    }
-    if (!suspended) {
-      conn.writeMessage(new Bind().setParamValues(params).setPortal(portal).setStatement(s));
-      conn.writeMessage(new Describe().setStatement(s));
-    } else {
-      // Needed for now, later see how to remove it
-      conn.writeMessage(new Describe().setPortal(portal));
-    }
-    conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
-    conn.writeMessage(Sync.INSTANCE);
   }
 
   @Override
   public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == PortalSuspended.class) {
-      PortalSuspended portalSuspended = (PortalSuspended) msg;
-      handler.result(portalSuspended.getResultSet(), true);
+      handler.result(resultSet, true);
     } else if (msg.getClass() == ParameterDescription.class) {
     } else if (msg.getClass() == NoData.class) {
     } else if (msg.getClass() == ParseComplete.class) {

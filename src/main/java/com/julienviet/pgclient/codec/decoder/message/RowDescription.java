@@ -17,54 +17,55 @@
 
 package com.julienviet.pgclient.codec.decoder.message;
 
-
-import com.julienviet.pgclient.ResultSet;
+import com.julienviet.pgclient.codec.Column;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
 
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class CommandComplete implements InboundMessage {
+public class RowDescription implements InboundMessage {
 
-  private final String command;
-  private final int rowsAffected;
+  final Column[] columns;
 
-  public CommandComplete(String command, int rowsAffected) {
-    this.command = command;
-    this.rowsAffected = rowsAffected;
+  public RowDescription(Column[] columns) {
+    this.columns = columns;
   }
 
-  public String getCommand() {
-    return command;
-  }
-
-  public int getRowsAffected() {
-    return rowsAffected;
+  public Column[] getColumns() {
+    return columns;
   }
 
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    CommandComplete that = (CommandComplete) o;
-    return Objects.equals(command, that.command) &&
-      Objects.equals(rowsAffected, that.rowsAffected);
+    RowDescription that = (RowDescription) o;
+    return Arrays.equals(columns, that.columns);
+  }
+
+  public List<String> getColumnNames() {
+    List<String> columnNames = new ArrayList<>();
+    for (Column column : columns) {
+      columnNames.add(column.getName());
+    }
+    return columnNames;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(command, rowsAffected);
+    return Arrays.hashCode(columns);
   }
+
 
   @Override
   public String toString() {
-    return "CommandComplete{" +
-      "command='" + command + '\'' +
-      ", rowsAffected=" + rowsAffected +
+    return "RowDescription{" +
+      "columns=" + Arrays.toString(columns) +
       '}';
   }
-
 }

@@ -85,6 +85,35 @@ public class JdbcTest extends JdbcTestBase {
   }
 
   @Test
+  public void testPreparedQuery() throws SQLException {
+    PreparedStatement ps = con.prepareStatement("SELECT * FROM Fortune WHERE id=(?)");
+    ps.setInt(1, 1);
+    ResultSet resultSet = ps.executeQuery();
+    ps.close();
+  }
+
+  @Test
+  public void testPreparedQueryWithFetch() throws SQLException {
+    con.setAutoCommit(false);
+    PreparedStatement ps = con.prepareStatement(
+      "SELECT * FROM World",
+      ResultSet.TYPE_FORWARD_ONLY,
+      ResultSet.CONCUR_READ_ONLY,
+      ResultSet.FETCH_FORWARD);
+    ps.setFetchSize(2);
+
+    ResultSet resultSet = ps.executeQuery();
+    int count = 4;
+    while (resultSet.next()) {
+      if (count-- == 0) {
+        break;
+      }
+    }
+    resultSet.close();
+    ps.close();
+  }
+
+  @Test
   public void testCursor() throws SQLException {
 
     con.setAutoCommit(false);

@@ -33,14 +33,9 @@ import com.julienviet.pgclient.codec.decoder.InboundMessage;
 
 public class PortalSuspended implements InboundMessage {
 
-  private final ResultSet resultSet;
+  public static PortalSuspended INSTANCE = new PortalSuspended();
 
-  public PortalSuspended(ResultSet resultSet) {
-    this.resultSet = resultSet;
-  }
-
-  public ResultSet getResultSet() {
-    return resultSet;
+  private PortalSuspended() {
   }
 
   @Override

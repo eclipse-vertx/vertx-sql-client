@@ -126,21 +126,23 @@ The `sql` string can refer to parameters by position, using $1, $2, etc...
 
 [source,groovy]
 ----
-def preparedStatement = conn.prepare("SELECT * FROM USERS WHERE user_id=$1")
+/*
+PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS WHERE user_id=$1");
 
 // Create a query : bind parameters
-def query = preparedStatement.query("julien")
+PgQuery query = preparedStatement.query("julien");
 
 // Execute query
-query.execute({ res ->
+query.execute(res -> {
   if (res.succeeded()) {
 
     // Get result
-    def result = res.result()
+    ResultSet result = res.result();
   } else {
-    println("Query failed ${res.cause()}")
+    System.out.println("Query failed " + res.cause());
   }
-})
+});
+*/
 
 ----
 
@@ -158,18 +160,21 @@ By default the query will fetch all results, you can override this and define a 
 
 [source,groovy]
 ----
-def preparedStatement = conn.prepare("SELECT * FROM USERS")
+/*
+PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS");
 
 // Create a query : bind parameters
-def query = preparedStatement.query().fetch(100)
+PgQuery query = preparedStatement.query()
+  .fetch(100); // Get at most 100 rows at a time
 
-query.endHandler({ v ->
+query.endHandler(v -> {
   // We are done
-}).exceptionHandler({ err ->
-  println("Query failed ${err}")
-}).handler({ result ->
+}).exceptionHandler(err -> {
+  System.out.println("Query failed " + err);
+}).handler(result -> {
   // Get results
-})
+});
+*/
 
 ----
 
@@ -178,27 +183,29 @@ the query result in progress:
 
 [source,groovy]
 ----
-def preparedStatement = conn.prepare("SELECT * FROM USERS")
+/*
+PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS");
 
 // Create a query : bind parameters
-def query = preparedStatement.query()
+PgQuery query = preparedStatement.query();
 
 // Get at most 100 rows
-query.fetch(100)
+query.fetch(100);
 
 // Execute query
-query.execute({ res ->
+query.execute(res -> {
   if (res.succeeded()) {
 
     // Get result
-    def result = res.result()
+    ResultSet result = res.result();
 
     // Close the query
-    query.close()
+    query.close();
   } else {
-    println("Query failed ${res.cause()}")
+    System.out.println("Query failed " + res.cause());
   }
-})
+});
+*/
 
 ----
 
@@ -206,32 +213,33 @@ Prepared statements can also be used for update operations
 
 [source,groovy]
 ----
-
-def preparedStatement = conn.prepare("UPDATE USERS SET name=$1 WHERE id=$2")
+/*
+PgPreparedStatement preparedStatement = conn.prepare("UPDATE USERS SET name=$1 WHERE id=$2");
 
 // Create an update : bind parameters
-def update = preparedStatement.update(2, "EMAD ALBLUESHI")
+PgUpdate update = preparedStatement.update(2, "EMAD ALBLUESHI");
 
-update.execute({ res ->
-  if (res.succeeded()) {
+update.execute(res -> {
+  if(res.succeeded()) {
     // Process results
-    def result = res.result()
+    UpdateResult result = res.result();
   } else {
-    println("Update failed ${res.cause()}")
+    System.out.println("Update failed " + res.cause());
   }
 
-})
+});
 
 // Or fluently
-preparedStatement.update(1, "JULIEN VIET").execute({ res ->
-  if (res.succeeded()) {
+preparedStatement.update(1, "JULIEN VIET").execute(res -> {
+  if(res.succeeded()) {
     // Process results
-    def result = res.result()
+    UpdateResult result = res.result();
   } else {
-    println("Update failed ${res.cause()}")
+    System.out.println("Update failed " + res.cause());
   }
 
-})
+});
+*/
 
 ----
 
@@ -240,24 +248,26 @@ Prepared statements can also be used to batch operations in a very efficient man
 
 [source,groovy]
 ----
-def preparedStatement = conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)")
+/*
+PgPreparedStatement preparedStatement = conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)");
 
 // Create a query : bind parameters
-def batch = preparedStatement.batch()
+PgBatch batch = preparedStatement.batch();
 
 // Add commands to the batch
-batch.add("julien", "Julien Viet")
-batch.add("emad", "Emad Alblueshi")
+batch.add("julien", "Julien Viet");
+batch.add("emad", "Emad Alblueshi");
 
-batch.execute({ res ->
+batch.execute(res -> {
   if (res.succeeded()) {
 
     // Process results
-    def results = res.result()
+    List<UpdateResult> results = res.result();
   } else {
-    println("Batch failed ${res.cause()}")
+    System.out.println("Batch failed " + res.cause());
   }
-})
+});
+*/
 
 ----
 

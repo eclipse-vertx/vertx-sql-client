@@ -22,10 +22,12 @@ import com.julienviet.pgclient.PgQuery;
 import com.julienviet.pgclient.ResultSet;
 import com.julienviet.pgclient.UpdateResult;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 public abstract class PgOperationsImpl implements PgOperations {
 
@@ -38,7 +40,13 @@ public abstract class PgOperationsImpl implements PgOperations {
 
   @Override
   public void preparedQuery(String sql, List<Object> params, Handler<AsyncResult<ResultSet>> handler) {
-    schedule(new ExtendedQueryCommand(sql, params, new PreparedQueryResultHandler(handler)));
+    schedule(new PrepareCommand(sql, ar -> {
+      if (ar.succeeded()) {
+        schedule(new ExtendedQueryCommand(ar.result(), params, new PreparedQueryResultHandler(handler)));
+      } else {
+        handler.handle(Future.failedFuture(ar.cause()));
+      }
+    }));
   }
 
   @Override
@@ -48,9 +56,15 @@ public abstract class PgOperationsImpl implements PgOperations {
 
   @Override
   public void preparedUpdate(String sql, List<Object> params, Handler<AsyncResult<UpdateResult>> handler) {
-    schedule(new PreparedUpdateCommand(
-      sql,
-      Collections.singletonList(params),
-      ar -> handler.handle(ar.map(l -> l.get(0)))));
+    schedule(new PrepareCommand(sql, ar1 -> {
+      if (ar1.succeeded()) {
+        schedule(new PreparedUpdateCommand(
+          ar1.result(),
+          Collections.singletonList(params),
+          ar2 -> handler.handle(ar2.map(l -> l.get(0)))));
+      } else {
+        handler.handle(Future.failedFuture(ar1.cause()));
+      }
+    }));
   }
 }

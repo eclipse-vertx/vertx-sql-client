@@ -128,21 +128,23 @@ The `sql` string can refer to parameters by position, using $1, $2, etc...
 
 [source,ruby]
 ----
-preparedStatement = conn.prepare("SELECT * FROM USERS WHERE user_id=$1")
+=begin
+PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS WHERE user_id=$1");
 
-# Create a query : bind parameters
-query = preparedStatement.query("julien")
+// Create a query : bind parameters
+PgQuery query = preparedStatement.query("julien");
 
-# Execute query
-query.execute() { |res_err,res|
-  if (res_err == nil)
+// Execute query
+query.execute(res -> {
+  if (res.succeeded()) {
 
-    # Get result
-    result = res
-  else
-    puts "Query failed #{res_err}"
-  end
-}
+    // Get result
+    ResultSet result = res.result();
+  } else {
+    System.out.println("Query failed " + res.cause());
+  }
+});
+=end
 
 ----
 
@@ -160,18 +162,21 @@ By default the query will fetch all results, you can override this and define a 
 
 [source,ruby]
 ----
-preparedStatement = conn.prepare("SELECT * FROM USERS")
+=begin
+PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS");
 
-# Create a query : bind parameters
-query = preparedStatement.query().fetch(100)
+// Create a query : bind parameters
+PgQuery query = preparedStatement.query()
+  .fetch(100); // Get at most 100 rows at a time
 
-query.end_handler() { |v|
-  # We are done
-}.exception_handler() { |err|
-  puts "Query failed #{err}"
-}.handler() { |result|
-  # Get results
-}
+query.endHandler(v -> {
+  // We are done
+}).exceptionHandler(err -> {
+  System.out.println("Query failed " + err);
+}).handler(result -> {
+  // Get results
+});
+=end
 
 ----
 
@@ -180,27 +185,29 @@ the query result in progress:
 
 [source,ruby]
 ----
-preparedStatement = conn.prepare("SELECT * FROM USERS")
+=begin
+PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS");
 
-# Create a query : bind parameters
-query = preparedStatement.query()
+// Create a query : bind parameters
+PgQuery query = preparedStatement.query();
 
-# Get at most 100 rows
-query.fetch(100)
+// Get at most 100 rows
+query.fetch(100);
 
-# Execute query
-query.execute() { |res_err,res|
-  if (res_err == nil)
+// Execute query
+query.execute(res -> {
+  if (res.succeeded()) {
 
-    # Get result
-    result = res
+    // Get result
+    ResultSet result = res.result();
 
-    # Close the query
-    query.close()
-  else
-    puts "Query failed #{res_err}"
-  end
-}
+    // Close the query
+    query.close();
+  } else {
+    System.out.println("Query failed " + res.cause());
+  }
+});
+=end
 
 ----
 
@@ -208,32 +215,33 @@ Prepared statements can also be used for update operations
 
 [source,ruby]
 ----
+=begin
+PgPreparedStatement preparedStatement = conn.prepare("UPDATE USERS SET name=$1 WHERE id=$2");
 
-preparedStatement = conn.prepare("UPDATE USERS SET name=$1 WHERE id=$2")
+// Create an update : bind parameters
+PgUpdate update = preparedStatement.update(2, "EMAD ALBLUESHI");
 
-# Create an update : bind parameters
-update = preparedStatement.update(2, "EMAD ALBLUESHI")
+update.execute(res -> {
+  if(res.succeeded()) {
+    // Process results
+    UpdateResult result = res.result();
+  } else {
+    System.out.println("Update failed " + res.cause());
+  }
 
-update.execute() { |res_err,res|
-  if (res_err == nil)
-    # Process results
-    result = res
-  else
-    puts "Update failed #{res_err}"
-  end
+});
 
-}
+// Or fluently
+preparedStatement.update(1, "JULIEN VIET").execute(res -> {
+  if(res.succeeded()) {
+    // Process results
+    UpdateResult result = res.result();
+  } else {
+    System.out.println("Update failed " + res.cause());
+  }
 
-# Or fluently
-preparedStatement.update(1, "JULIEN VIET").execute() { |res_err,res|
-  if (res_err == nil)
-    # Process results
-    result = res
-  else
-    puts "Update failed #{res_err}"
-  end
-
-}
+});
+=end
 
 ----
 
@@ -242,24 +250,26 @@ Prepared statements can also be used to batch operations in a very efficient man
 
 [source,ruby]
 ----
-preparedStatement = conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)")
+=begin
+PgPreparedStatement preparedStatement = conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)");
 
-# Create a query : bind parameters
-batch = preparedStatement.batch()
+// Create a query : bind parameters
+PgBatch batch = preparedStatement.batch();
 
-# Add commands to the batch
-batch.add("julien", "Julien Viet")
-batch.add("emad", "Emad Alblueshi")
+// Add commands to the batch
+batch.add("julien", "Julien Viet");
+batch.add("emad", "Emad Alblueshi");
 
-batch.execute() { |res_err,res|
-  if (res_err == nil)
+batch.execute(res -> {
+  if (res.succeeded()) {
 
-    # Process results
-    results = res
-  else
-    puts "Batch failed #{res_err}"
-  end
-}
+    // Process results
+    List<UpdateResult> results = res.result();
+  } else {
+    System.out.println("Batch failed " + res.cause());
+  }
+});
+=end
 
 ----
 
