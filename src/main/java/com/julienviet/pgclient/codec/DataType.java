@@ -304,8 +304,8 @@ public enum DataType {
       } catch (IOException e) {
         // do nothing
       }
-      return null;
     }
+    return null;
   }
 
   static IntObjectMap<DataType> oidToDataType = new IntObjectHashMap<>();
