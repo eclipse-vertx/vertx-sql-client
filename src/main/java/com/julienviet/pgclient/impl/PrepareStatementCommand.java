@@ -36,10 +36,6 @@ public class PrepareStatementCommand extends CommandBase {
   private RowDescription rowDesc;
   final Future<PreparedStatement> fut;
 
-  PrepareStatementCommand(String sql, Handler<AsyncResult<PreparedStatement>> handler) {
-    this(sql, "", handler);
-  }
-
   PrepareStatementCommand(String sql, String statement, Handler<AsyncResult<PreparedStatement>> handler) {
     this.sql = sql;
     this.statement = statement;

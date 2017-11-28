@@ -17,7 +17,10 @@
 
 package com.julienviet.pgclient.impl;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+
+import java.util.function.Function;
 
 public interface Connection {
 
@@ -30,6 +33,12 @@ public interface Connection {
   }
 
   void schedule(CommandBase cmd, Handler<Void> completionHandler);
+
+  default void schedulePrepared(String sql, Function<AsyncResult<PreparedStatement>, CommandBase> supplier) {
+    schedulePrepared(sql, supplier, null);
+  }
+
+  void schedulePrepared(String sql, Function<AsyncResult<PreparedStatement>, CommandBase> supplier, Handler<Void> completionHandler);
 
   void close(Holder holder);
 

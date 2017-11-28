@@ -23,6 +23,8 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
+import java.util.function.Function;
+
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
@@ -49,6 +51,11 @@ public class PgConnectionImpl extends PgOperationsImpl implements PgConnection, 
     if (handler != null) {
       context.runOnContext(handler);
     }
+  }
+
+  @Override
+  protected void schedulePrepared(String sql, Function<AsyncResult<PreparedStatement>, CommandBase> supplier) {
+    conn.schedulePrepared(sql, supplier);
   }
 
   @Override
@@ -97,12 +104,13 @@ public class PgConnectionImpl extends PgOperationsImpl implements PgConnection, 
 
   @Override
   public void prepare(String sql, Handler<AsyncResult<PgPreparedStatement>> handler) {
-    conn.schedule(new PrepareStatementCommand(sql, ar -> {
+    conn.schedulePrepared(sql, ar -> {
       if (ar.succeeded()) {
         handler.handle(Future.succeededFuture(new PgPreparedStatementImpl(conn, ar.result())));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
       }
-    }));
+      return null;
+    });
   }
 }

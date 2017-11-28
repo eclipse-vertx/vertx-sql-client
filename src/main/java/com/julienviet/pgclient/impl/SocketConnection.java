@@ -29,8 +29,8 @@ import io.vertx.core.impl.ContextImpl;
 import io.vertx.core.impl.NetSocketInternal;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -50,7 +50,7 @@ public class SocketConnection implements Connection {
   final Context context;
   private Status status = Status.CONNECTED;
   private Holder holder;
-  private final Map<String, CompletableFuture<PreparedStatement>> psCache;
+  private final Map<String, CachedPreparedStatement> psCache;
   private final int pipeliningLimit;
   final Deque<DecodeContext> decodeQueue = new ArrayDeque<>();
 
@@ -72,6 +72,28 @@ public class SocketConnection implements Connection {
     socket.exceptionHandler(this::handleException);
     socket.messageHandler(this::handleMessage);
     schedule(new InitCommand(username, password, database, client.ssl, completionHandler));
+  }
+
+  class CachedPreparedStatement implements Handler<AsyncResult<PreparedStatement>> {
+
+    final Future<PreparedStatement> fut = Future.<PreparedStatement>future().setHandler(this);
+    final ArrayDeque<Handler<AsyncResult<PreparedStatement>>> waiters = new ArrayDeque<>();
+
+    void get(Handler<AsyncResult<PreparedStatement>> handler) {
+      if (fut.isComplete()) {
+        handler.handle(fut);
+      } else {
+        waiters.add(handler);
+      }
+    }
+
+    @Override
+    public void handle(AsyncResult<PreparedStatement> event) {
+      Handler<AsyncResult<PreparedStatement>> waiter;
+      while ((waiter = waiters.poll()) != null) {
+        waiter.handle(fut);
+      }
+    }
   }
 
   public boolean isSsl() {
@@ -112,6 +134,50 @@ public class SocketConnection implements Connection {
     }
   }
 
+  @Override
+  public void schedulePrepared(String sql, Function<AsyncResult<PreparedStatement>, CommandBase> supplier, Handler<Void> completionHandler) {
+    Function<AsyncResult<PreparedStatement>, CommandBase> f;
+    String statement;
+    if (psCache != null) {
+      CachedPreparedStatement cached = psCache.get(sql);
+      if (cached == null) {
+        statement = UUID.randomUUID().toString();
+        cached = new CachedPreparedStatement();
+        Future<PreparedStatement> fut = cached.fut;
+        psCache.put(sql, cached);
+        f = ar -> {
+          fut.handle(ar);
+          return supplier.apply(ar);
+        };
+      } else {
+        cached.get(ar -> {
+          CommandBase next = supplier.apply(ar);
+          if (next != null) {
+            schedule(next, completionHandler);
+          } else {
+            if (completionHandler != null) {
+              completionHandler.handle(null);
+            }
+          }
+        });
+        return;
+      }
+    } else {
+      statement = "";
+      f = supplier;
+    }
+    schedule(new PrepareStatementCommand(sql, statement, ar -> {
+      CommandBase command = f.apply(ar);
+      if (command != null) {
+        schedule(command, completionHandler);
+      } else {
+        if (completionHandler != null) {
+          completionHandler.handle(null);
+        }
+      }
+    }));
+  }
+
   public void schedule(CommandBase cmd) {
     schedule(cmd, null);
   }
@@ -121,37 +187,6 @@ public class SocketConnection implements Connection {
       throw new IllegalStateException();
     }
     if (status == Status.CONNECTED) {
-
-      if (cmd instanceof PrepareStatementCommand && psCache != null) {
-        PrepareStatementCommand prepareCmd = (PrepareStatementCommand) cmd;
-        CompletableFuture<PreparedStatement> psFut = psCache.get(prepareCmd.sql);
-        if (psFut == null) {
-          CompletableFuture<PreparedStatement> fut = new CompletableFuture<>();
-          psCache.put(prepareCmd.sql, fut);
-          cmd = new PrepareStatementCommand(prepareCmd.sql, UUID.randomUUID().toString(), ar -> {
-            prepareCmd.fut.handle(ar);
-            if (ar.succeeded()) {
-              fut.complete(ar.result());
-            } else {
-              psCache.remove(prepareCmd.sql, fut);
-              fut.completeExceptionally(ar.cause());
-            }
-          });
-        } else {
-          psFut.whenComplete((ps, err) -> {
-            if (err == null) {
-              prepareCmd.fut.complete(ps);
-            } else {
-              prepareCmd.fut.fail(err);
-            }
-            if (completionHandler != null) {
-              completionHandler.handle(null);
-            }
-          });
-          return;
-        }
-      }
-
       pending.add(cmd);
       cmd.completionHandler = v -> {
         inflight.poll();

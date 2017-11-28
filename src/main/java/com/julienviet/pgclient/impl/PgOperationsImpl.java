@@ -27,10 +27,13 @@ import io.vertx.core.Handler;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 public abstract class PgOperationsImpl implements PgOperations {
 
   protected abstract void schedule(CommandBase cmd);
+
+  protected abstract void schedulePrepared(String sql, Function<AsyncResult<PreparedStatement>, CommandBase> supplier);
 
   @Override
   public PgQuery query(String sql) {
@@ -39,13 +42,14 @@ public abstract class PgOperationsImpl implements PgOperations {
 
   @Override
   public void preparedQuery(String sql, List<Object> params, Handler<AsyncResult<ResultSet>> handler) {
-    schedule(new PrepareStatementCommand(sql, ar -> {
+    schedulePrepared(sql, ar -> {
       if (ar.succeeded()) {
-        schedule(new ExtendedQueryCommand(ar.result(), params, new PreparedQueryResultHandler(handler)));
+        return new ExtendedQueryCommand(ar.result(), params, new PreparedQueryResultHandler(handler));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
+        return null;
       }
-    }));
+    });
   }
 
   @Override
@@ -55,15 +59,16 @@ public abstract class PgOperationsImpl implements PgOperations {
 
   @Override
   public void preparedUpdate(String sql, List<Object> params, Handler<AsyncResult<UpdateResult>> handler) {
-    schedule(new PrepareStatementCommand(sql, ar1 -> {
-      if (ar1.succeeded()) {
-        schedule(new PreparedUpdateCommand(
-          ar1.result(),
+    schedulePrepared(sql, ar -> {
+      if (ar.succeeded()) {
+        return new PreparedUpdateCommand(
+          ar.result(),
           Collections.singletonList(params),
-          ar2 -> handler.handle(ar2.map(l -> l.get(0)))));
+          ar2 -> handler.handle(ar2.map(l -> l.get(0))));
       } else {
-        handler.handle(Future.failedFuture(ar1.cause()));
+        handler.handle(Future.failedFuture(ar.cause()));
+        return null;
       }
-    }));
+    });
   }
 }

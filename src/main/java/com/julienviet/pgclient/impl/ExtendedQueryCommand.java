@@ -73,12 +73,10 @@ class ExtendedQueryCommand extends QueryCommandBase {
     if (suspended) {
       conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
       conn.writeMessage(Sync.INSTANCE);
-    } else if (ps.stmt.length() > 0) {
-      conn.writeMessage(new Bind().setParamValues(params).setPortal(portal).setStatement(ps.stmt));
-      conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
-      conn.writeMessage(Sync.INSTANCE);
     } else {
-      conn.writeMessage(new Parse(ps.sql).setStatement(""));
+      if (ps.stmt.isEmpty()) {
+        conn.writeMessage(new Parse(ps.sql).setStatement(""));
+      }
       conn.writeMessage(new Bind().setParamValues(params).setPortal(portal).setStatement(ps.stmt));
       conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
       conn.writeMessage(Sync.INSTANCE);
