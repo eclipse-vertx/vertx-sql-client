@@ -28,9 +28,14 @@ import io.vertx.core.json.JsonObject;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 
 import static com.julienviet.pgclient.codec.formatter.DateTimeFormatter.*;
@@ -237,11 +242,18 @@ public class DataType<T> {
   public static DataType<Object> DATE = new DataType<Object>(1082) {
     @Override
     public Object decodeText(int len, ByteBuf buff) {
-      return decodeBinary(len, buff);
+      CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
+      return LocalDate.parse(cs).toString();
     }
     @Override
     public Object decodeBinary(int len, ByteBuf buff) {
-      return buff.readCharSequence(len, StandardCharsets.UTF_8).toString();
+      int days = buff.readInt();
+      return Instant.ofEpochMilli
+        (
+          Duration.ofDays(days).toMillis() +
+          // convert to java epoch
+          Duration.ofDays(LocalDate.of(2000, 1, 1).toEpochDay()).toMillis()
+        ).atZone(ZoneId.of("UTC")).toLocalDate().toString();
     }
   };
   public static DataType<Object> DATE_ARRAY = new DataType<>(1182);
@@ -250,11 +262,14 @@ public class DataType<T> {
   public static DataType<Object> TIME = new DataType<Object>(1083) {
     @Override
     public Object decodeText(int len, ByteBuf buff) {
-      return decodeBinary(len, buff);
+      CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
+      return LocalTime.parse(cs).toString();
     }
     @Override
     public Object decodeBinary(int len, ByteBuf buff) {
-      return buff.readCharSequence(len, StandardCharsets.UTF_8).toString();
+      // nanos
+
+      return LocalTime.ofNanoOfDay(buff.readLong() * 1000).toString();
     }
   };
   public static DataType<Object> TIME_ARRAY = new DataType<>(1183);
@@ -266,6 +281,10 @@ public class DataType<T> {
       CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
       return OffsetTime.parse(cs, TIMETZ_FORMAT).toString(); // julien: why toString ?
     }
+    @Override
+    public Object decodeBinary(int len, ByteBuf buff) {
+      return null;
+    }
   };
   public static DataType<Object> TIMETZ_ARRAY = new DataType<>(1270);
 
@@ -276,6 +295,10 @@ public class DataType<T> {
       CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
       return LocalDateTime.parse(cs, TIMESTAMP_FORMAT).toInstant(ZoneOffset.UTC);
     }
+    @Override
+    public Object decodeBinary(int len, ByteBuf buff) {
+      return decodeTimestamp(buff);
+    }
   };
   public static DataType<Object> TIMESTAMP_ARRAY = new DataType<>(1115);
 
@@ -285,6 +308,10 @@ public class DataType<T> {
     public Object decodeText(int len, ByteBuf buff) {
       CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
       return OffsetDateTime.parse(cs, TIMESTAMPTZ_FORMAT).toInstant();
+    }
+    @Override
+    public Object decodeBinary(int len, ByteBuf buff) {
+      return decodeTimestamp(buff);
     }
   };
   public static DataType<Object> TIMESTAMPTZ_ARRAY = new DataType<>(1185);
@@ -466,5 +493,19 @@ public class DataType<T> {
     // Default best effort implementation
     buff.readerIndex(buff.readerIndex() + len);
     return null;
+  }
+
+  private static Object decodeTimestamp(ByteBuf buff) {
+    long value = buff.readLong();
+    long seconds = value / 1000000;
+    int nanos = (int) (value - seconds * 1000000);
+    if (nanos < 0) {
+      seconds--;
+      nanos += 1000000;
+    }
+    nanos *= 1000;
+    // convert to java epoch
+    seconds = seconds + Duration.ofDays(LocalDate.of(2000, 1, 1).toEpochDay()).getSeconds();
+    return LocalDateTime.ofEpochSecond(seconds, nanos, ZoneOffset.UTC).toInstant(ZoneOffset.UTC);
   }
 }

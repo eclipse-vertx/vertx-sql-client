@@ -275,10 +275,10 @@ public class DataTypeTextTest extends DataTypeTestBase {
     PgClient client = PgClient.create(vertx, options);
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("SELECT '17:55:04.90512'::TIME")
+        .query("SELECT '17:55:04.905120'::TIME")
         .execute(ctx.asyncAssertSuccess(result ->{
           ctx.assertEquals(1, result.getNumRows());
-          ctx.assertEquals("17:55:04.90512", result.getResults().get(0).getString(0));
+          ctx.assertEquals("17:55:04.905120", result.getResults().get(0).getString(0));
           async.complete();
         }));
     }));

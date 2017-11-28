@@ -68,3 +68,9 @@ DROP TABLE IF EXISTS "NumericDataType";
 CREATE TABLE "NumericDataType" ("Short" INT2, "Integer" INT4, "Long" INT8, "Float" FLOAT4, "Double" FLOAT8, "BigDecimal" NUMERIC, "Boolean" BOOLEAN);
 INSERT INTO "NumericDataType" ("Short", "Integer", "Long", "Float", "Double", "BigDecimal", "Boolean")
 VALUES (32767, 2147483647, 9223372036854775807, 3.4028235E38, 1.7976931348623157E308, '9.99999999999999999999999999999999999', true);
+
+DROP TABLE IF EXISTS "TemporalDataType";
+CREATE TABLE "TemporalDataType" ("Date" date, "Time" time without time zone, "TimeTz" time with time zone, "Timestamp" timestamp without time zone, "TimestampTz" timestamp with time zone, "Interval" interval);
+INSERT INTO "TemporalDataType" ("Date", "Time", "TimeTz", "Timestamp", "TimestampTz", "Interval") VALUES ('1981-05-30', '17:55:04.90512', '17:55:04.90512+03:07', '2017-05-14 19:35:58.237666', '2017-05-14 22:35:58.237666-03', '01:22:00');
+
+
