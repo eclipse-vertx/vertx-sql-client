@@ -25,6 +25,8 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
+import static com.julienviet.pgclient.codec.decoder.ResultDecoder.NOOP;
+
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
@@ -41,7 +43,7 @@ class UpdateCommand extends UpdateCommandBase {
 
   @Override
   void exec(SocketConnection conn) {
-    conn.decodeQueue.add(new DecodeContext(true, null, DataFormat.TEXT));
+    conn.decodeQueue.add(new DecodeContext(true, null, DataFormat.TEXT, NOOP));
     conn.writeMessage(new Query(sql));
   }
 

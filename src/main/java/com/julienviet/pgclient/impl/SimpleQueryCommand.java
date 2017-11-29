@@ -33,6 +33,7 @@ import java.util.ArrayList;
 class SimpleQueryCommand extends QueryCommandBase {
 
   private final String sql;
+  private RowDescription rowDesc;
 
   SimpleQueryCommand(String sql, QueryResultHandler handler) {
     super(handler);
@@ -41,15 +42,21 @@ class SimpleQueryCommand extends QueryCommandBase {
 
   @Override
   void exec(SocketConnection conn) {
-    conn.decodeQueue.add(new DecodeContext(true, null, DataFormat.TEXT));
+    conn.decodeQueue.add(new DecodeContext(true, null, DataFormat.TEXT, new JsonResultDecoder(json -> {
+      resultSet = new ResultSet();
+      resultSet.setResults(json);
+      if (rowDesc != null) {
+        resultSet.setColumnNames(rowDesc.getColumnNames());
+      }
+      rowDesc = null;
+    })));
     conn.writeMessage(new Query(sql));
   }
 
   @Override
   public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == RowDescription.class) {
-      RowDescription rowDesc = (RowDescription) msg;
-      resultSet = new ResultSet().setResults(new ArrayList<>()).setColumnNames(rowDesc.getColumnNames());
+      rowDesc = (RowDescription) msg;
     } else {
       super.handleMessage(msg);
     }

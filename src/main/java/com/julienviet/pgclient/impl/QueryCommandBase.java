@@ -40,14 +40,7 @@ abstract class QueryCommandBase extends CommandBase {
     if (msg.getClass() == ReadyForQuery.class) {
       super.handleMessage(msg);
       handler.end();
-    } /* else if (msg.getClass() == DataRow.class) {
-      DataRow dataRow = (DataRow) msg;
-      resultSet.getResults().add(dataRow.getValues());
-    } */ else if (msg.getClass() == CommandComplete.class) {
-      CommandComplete complete = (CommandComplete) msg;
-      if (resultSet != null) {
-        resultSet.setResults(complete.getRows());
-      }
+    } else if (msg.getClass() == CommandComplete.class) {
       handler.result(resultSet, false);
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;

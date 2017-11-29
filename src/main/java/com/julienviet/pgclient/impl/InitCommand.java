@@ -35,6 +35,8 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
+import static com.julienviet.pgclient.codec.decoder.ResultDecoder.NOOP;
+
 /**
  * Initialize the connection so it can be used to interact with the database.
  *
@@ -62,7 +64,7 @@ class InitCommand extends CommandBase {
   @Override
   void exec(SocketConnection c) {
     conn = c;
-    conn.decodeQueue.add(new DecodeContext(false, null, null));
+    conn.decodeQueue.add(new DecodeContext(false, null, null, NOOP));
     if (ssl) {
       c.writeMessage(SSLRequest.INSTANCE);
     } else {

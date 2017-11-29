@@ -26,9 +26,7 @@ import com.julienviet.pgclient.codec.util.Util;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
-import io.vertx.core.json.JsonArray;
 
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
@@ -49,7 +47,6 @@ public class MessageDecoder extends ByteToMessageDecoder {
 
   private final Deque<DecodeContext> decodeQueue;
   private RowDescription rowDesc;
-  private List<JsonArray> rows = new ArrayList<>();
 
   public MessageDecoder(Deque<DecodeContext> decodeQueue) {
     this.decodeQueue = decodeQueue;
@@ -122,13 +119,12 @@ public class MessageDecoder extends ByteToMessageDecoder {
       case DATA_ROW: {
         DecodeContext decodeCtx = decodeQueue.peek();
         RowDescription desc = decodeCtx.peekDesc ? rowDesc : decodeCtx.rowDesc;
-        JsonArray row = decodeDataRow(in, desc, decodeCtx.dataFormat);
-        rows.add(row);
+        decodeCtx.decoder.decode(in, desc, decodeCtx.dataFormat);
       }
       break;
       case COMMAND_COMPLETE: {
-        decodeCommandComplete(in, rows, out);
-        rows = new ArrayList<>();
+        decodeQueue.peek().decoder.complete();
+        decodeCommandComplete(in, out);
       }
       break;
       case EMPTY_QUERY_RESPONSE: {
@@ -152,8 +148,8 @@ public class MessageDecoder extends ByteToMessageDecoder {
       }
       break;
       case PORTAL_SUSPENDED: {
-        decodePortalSuspended(out, rows);
-        rows = new ArrayList<>();
+        decodeQueue.peek().decoder.complete();
+        decodePortalSuspended(out);
       }
       break;
       case PARAMETER_DESCRIPTION: {
@@ -287,7 +283,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
     }
   }
 
-  private void decodeCommandComplete(ByteBuf in, List<JsonArray> rows, List<Object> out) {
+  private void decodeCommandComplete(ByteBuf in, List<Object> out) {
 
     final byte SPACE = 32;
 
@@ -297,7 +293,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
     int prefixLen = spaceIdx1 - in.readerIndex();
 
     if (spaceIdx1 == -1) {
-      out.add(new CommandComplete(in.toString(UTF_8), rowsAffected, rows));
+      out.add(new CommandComplete(in.toString(UTF_8), rowsAffected));
       return;
     }
 
@@ -306,7 +302,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
       String command = in.toString(in.readerIndex(), prefixLen, UTF_8);
       switch (command) {
         case SELECT: {
-          out.add(new CommandComplete(command, rowsAffected, rows));
+          out.add(new CommandComplete(command, rowsAffected));
         }
         break;
         case UPDATE:
@@ -316,7 +312,10 @@ public class MessageDecoder extends ByteToMessageDecoder {
         case COPY: {
           rowsAffected = Integer.parseInt
             (in.toString(spaceIdx1 + 1, in.writerIndex() - spaceIdx1 - 2, UTF_8));
-          out.add(new CommandComplete(command, rowsAffected, rows));
+
+          // ALLOCATED LESS IN UPDATDE!!!!!!!!!!
+
+          out.add(new CommandComplete(command, rowsAffected));
         }
         break;
         default:
@@ -335,7 +334,10 @@ public class MessageDecoder extends ByteToMessageDecoder {
         String affectedRowsByteBuf = otherByteBuf.toString(otherSpace + 1,
           otherByteBuf.writerIndex() - otherSpace - 1, UTF_8);
         rowsAffected = Integer.parseInt(affectedRowsByteBuf);
-        out.add(new CommandComplete(command, rowsAffected, rows));
+
+
+
+        out.add(new CommandComplete(command, rowsAffected));
       }
       break;
       default:
@@ -368,32 +370,6 @@ public class MessageDecoder extends ByteToMessageDecoder {
     return columns;
   }
 
-  private JsonArray decodeDataRow(ByteBuf in, RowDescription rowDesc, DataFormat format) {
-    int len = in.readUnsignedShort();
-    JsonArray row = new JsonArray(new ArrayList(len));
-    for (int c = 0; c < len; ++c) {
-      int length = in.readInt();
-      if (length != -1) {
-        Column columnDesc = rowDesc.getColumns()[c];
-        DataType dataType = columnDesc.getDataType();
-        Object decoded;
-        if (format == DataFormat.TEXT) {
-          decoded = dataType.decodeText(length, in);
-        } else {
-          decoded = dataType.decodeBinary(length, in);
-        }
-        if(decoded != null) {
-          row.add(decoded);
-        } else {
-         row.addNull();
-        }
-      } else {
-        row.addNull();
-      }
-    }
-    return row;
-  }
-
   private void decodeReadyForQuery(ByteBuf in, List<Object> out) {
     out.add(new ReadyForQuery(TransactionStatus.valueOf(in.readByte())));
   }
@@ -414,8 +390,8 @@ public class MessageDecoder extends ByteToMessageDecoder {
     out.add(NoData.INSTANCE);
   }
 
-  private void decodePortalSuspended(List<Object> out, List<JsonArray> rows) {
-    out.add(new PortalSuspended(rows));
+  private void decodePortalSuspended(List<Object> out) {
+    out.add(PortalSuspended.INSTANCE);
   }
 
   private void decodeParameterDescription(ByteBuf in, List<Object> out) {

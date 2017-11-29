@@ -36,14 +36,9 @@ import java.util.List;
 
 public class PortalSuspended implements InboundMessage {
 
-  private final List<JsonArray> rows;
+  public static PortalSuspended INSTANCE = new PortalSuspended();
 
-  public PortalSuspended(List<JsonArray> rows) {
-    this.rows = rows;
-  }
-
-  public List<JsonArray> getRows() {
-    return rows;
+  private PortalSuspended() {
   }
 
   @Override

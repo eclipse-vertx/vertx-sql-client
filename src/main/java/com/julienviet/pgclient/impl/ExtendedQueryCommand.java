@@ -67,7 +67,11 @@ class ExtendedQueryCommand extends QueryCommandBase {
 
   @Override
   void exec(SocketConnection conn) {
-    conn.decodeQueue.add(new DecodeContext(false, ps.rowDesc, DataFormat.BINARY));
+    conn.decodeQueue.add(new DecodeContext(false, ps.rowDesc, DataFormat.BINARY, new JsonResultDecoder(json -> {
+      resultSet = new ResultSet();
+      resultSet.setResults(json);
+      resultSet.setColumnNames(ps.rowDesc.getColumnNames());
+    })));
     if (suspended) {
       conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
       conn.writeMessage(Sync.INSTANCE);
@@ -86,8 +90,6 @@ class ExtendedQueryCommand extends QueryCommandBase {
     if (msg.getClass() == ParseComplete.class) {
       // Response to Parse
     } else if (msg.getClass() == PortalSuspended.class) {
-      PortalSuspended portalSuspended = (PortalSuspended) msg;
-      resultSet.setResults(portalSuspended.getRows());
       handler.result(resultSet, true);
     } else if (msg.getClass() == BindComplete.class) {
       // Response to Bind

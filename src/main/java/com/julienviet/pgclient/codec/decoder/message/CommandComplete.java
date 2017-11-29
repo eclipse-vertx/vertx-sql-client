@@ -32,16 +32,10 @@ public class CommandComplete implements InboundMessage {
 
   private final String command;
   private final int rowsAffected;
-  private final List<JsonArray> rows;
 
-  public CommandComplete(String command, int rowsAffected, List<JsonArray> rows) {
+  public CommandComplete(String command, int rowsAffected) {
     this.command = command;
     this.rowsAffected = rowsAffected;
-    this.rows = rows;
-  }
-
-  public List<JsonArray> getRows() {
-    return rows;
   }
 
   public String getCommand() {

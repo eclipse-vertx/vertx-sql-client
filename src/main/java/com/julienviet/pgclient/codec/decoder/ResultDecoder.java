@@ -19,18 +19,20 @@ package com.julienviet.pgclient.codec.decoder;
 
 import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
+import io.netty.buffer.ByteBuf;
 
-public class DecodeContext {
+public interface ResultDecoder {
 
-  final boolean peekDesc;
-  final RowDescription rowDesc;
-  final DataFormat dataFormat;
-  final ResultDecoder decoder;
+  ResultDecoder NOOP = new ResultDecoder() {
+    @Override
+    public void decode(ByteBuf in, RowDescription rowDesc, DataFormat format) {
+    }
+    @Override
+    public void complete() {
+    }
+  };
 
-  public DecodeContext(boolean peekDesc, RowDescription rowDesc, DataFormat dataFormat, ResultDecoder decoder) {
-    this.peekDesc = peekDesc;
-    this.rowDesc = rowDesc;
-    this.dataFormat = dataFormat;
-    this.decoder = decoder;
-  }
+
+  void decode(ByteBuf in, RowDescription rowDesc, DataFormat format);
+  void complete();
 }
