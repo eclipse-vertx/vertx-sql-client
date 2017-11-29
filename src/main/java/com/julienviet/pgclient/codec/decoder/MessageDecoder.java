@@ -75,14 +75,15 @@ public class MessageDecoder extends ByteToMessageDecoder {
       byte id = in.getByte(beginIdx);
       int length = in.getInt(beginIdx + 1);
       int endIdx = beginIdx + length + 1;
-      if (in.writerIndex() < endIdx) {
+      final int writerIndex = in.writerIndex();
+      if (writerIndex < endIdx) {
         break;
       }
-      ByteBuf buff = in.slice(beginIdx + 5, length - 4);
       try {
-        decodeMessage(id, buff, out);
+        in.setIndex(beginIdx + 5, beginIdx + 1 + length);
+        decodeMessage(id, in, out);
       } finally {
-        in.readerIndex(endIdx);
+        in.setIndex(endIdx, writerIndex);
       }
     }
   }
