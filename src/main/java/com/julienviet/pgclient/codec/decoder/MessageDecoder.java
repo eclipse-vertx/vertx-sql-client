@@ -26,15 +26,14 @@ import com.julienviet.pgclient.codec.util.Util;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import io.netty.util.ByteProcessor;
 
 import java.util.Deque;
 import java.util.List;
 
 import static com.julienviet.pgclient.codec.decoder.message.type.AuthenticationType.*;
-import static com.julienviet.pgclient.codec.decoder.message.type.CommandCompleteType.*;
 import static com.julienviet.pgclient.codec.decoder.message.type.ErrorOrNoticeType.*;
 import static com.julienviet.pgclient.codec.decoder.message.type.MessageType.*;
-import static java.nio.charset.StandardCharsets.*;
 
 /**
  *
@@ -124,7 +123,8 @@ public class MessageDecoder extends ByteToMessageDecoder {
       break;
       case COMMAND_COMPLETE: {
         decodeQueue.peek().decoder.complete();
-        decodeCommandComplete(in, out);
+        CommandComplete complete = decodeCommandComplete(in);
+        out.add(complete);
       }
       break;
       case EMPTY_QUERY_RESPONSE: {
@@ -283,67 +283,37 @@ public class MessageDecoder extends ByteToMessageDecoder {
     }
   }
 
-  private void decodeCommandComplete(ByteBuf in, List<Object> out) {
+  private CommandCompleteProcessor processor = new CommandCompleteProcessor();
 
-    final byte SPACE = 32;
-
-    int rowsAffected = 0;
-
-    int spaceIdx1 = in.indexOf(in.readerIndex(), in.writerIndex(), SPACE);
-    int prefixLen = spaceIdx1 - in.readerIndex();
-
-    if (spaceIdx1 == -1) {
-      out.add(new CommandComplete(in.toString(UTF_8), rowsAffected));
-      return;
+  static class CommandCompleteProcessor implements ByteProcessor {
+    private static final byte SPACE = 32;
+    private int rows;
+    boolean afterSpace;
+    int parse(ByteBuf in) {
+      afterSpace = false;
+      rows = 0;
+      in.forEachByte(in.readerIndex(), in.readableBytes() - 1, this);
+      return rows;
     }
-
-    int spaceIdx2 = in.indexOf(spaceIdx1 + 1, in.writerIndex(), SPACE);
-    if (spaceIdx2 == -1) {
-      String command = in.toString(in.readerIndex(), prefixLen, UTF_8);
-      switch (command) {
-        case SELECT: {
-          out.add(new CommandComplete(command, rowsAffected));
+    @Override
+    public boolean process(byte value) throws Exception {
+      boolean space = value == SPACE;
+      if (afterSpace) {
+        if (space) {
+          rows = 0;
+        } else {
+          rows = rows * 10 + (value - '0');
         }
-        break;
-        case UPDATE:
-        case DELETE:
-        case MOVE:
-        case FETCH:
-        case COPY: {
-          rowsAffected = Integer.parseInt
-            (in.toString(spaceIdx1 + 1, in.writerIndex() - spaceIdx1 - 2, UTF_8));
-
-          // ALLOCATED LESS IN UPDATDE!!!!!!!!!!
-
-          out.add(new CommandComplete(command, rowsAffected));
-        }
-        break;
-        default:
-          break;
+      } else {
+        afterSpace = space;
       }
+      return true;
     }
+  }
 
-    String command = in.toString(in.readerIndex(), prefixLen, UTF_8);
-    switch (command) {
-      case INSERT: {
-        // Todo try to remove this slice operation
-        ByteBuf otherByteBuf = in.slice(spaceIdx1 + 1, in.writerIndex() - spaceIdx1 - 2);
-        int otherSpace = otherByteBuf.indexOf(otherByteBuf.readerIndex(), otherByteBuf.writerIndex(), SPACE);
-        // we may need to send the oid in the message
-//        ByteBuf oidBuf = otherByteBuf.slice(0, otherSpace);
-        String affectedRowsByteBuf = otherByteBuf.toString(otherSpace + 1,
-          otherByteBuf.writerIndex() - otherSpace - 1, UTF_8);
-        rowsAffected = Integer.parseInt(affectedRowsByteBuf);
-
-
-
-        out.add(new CommandComplete(command, rowsAffected));
-      }
-      break;
-      default:
-        // ignore other SQL commands
-        break;
-    }
+  private CommandComplete decodeCommandComplete(ByteBuf in) {
+    int rows = processor.parse(in);
+    return rows == 0 ? CommandComplete.EMPTY : new CommandComplete(rows);
   }
 
   private Column[]  decodeRowDescription(ByteBuf in) {

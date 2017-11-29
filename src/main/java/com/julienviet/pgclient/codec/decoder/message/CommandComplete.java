@@ -19,9 +19,7 @@ package com.julienviet.pgclient.codec.decoder.message;
 
 
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
-import io.vertx.core.json.JsonArray;
 
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -30,17 +28,21 @@ import java.util.Objects;
 
 public class CommandComplete implements InboundMessage {
 
-  private final String command;
+  public static CommandComplete EMPTY = new CommandComplete(0);
+
+  // private final String command;
   private final int rowsAffected;
 
-  public CommandComplete(String command, int rowsAffected) {
-    this.command = command;
+  public CommandComplete(/*String command, */int rowsAffected) {
+    // this.command = command;
     this.rowsAffected = rowsAffected;
   }
 
+  /*
   public String getCommand() {
     return command;
   }
+  */
 
   public int getRowsAffected() {
     return rowsAffected;
@@ -51,19 +53,19 @@ public class CommandComplete implements InboundMessage {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     CommandComplete that = (CommandComplete) o;
-    return Objects.equals(command, that.command) &&
+    return /* Objects.equals(command, that.command) && */
       Objects.equals(rowsAffected, that.rowsAffected);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(command, rowsAffected);
+    return Objects.hash(/*command, */rowsAffected);
   }
 
   @Override
   public String toString() {
     return "CommandComplete{" +
-      "command='" + command + '\'' +
+      // "command='" + command + '\'' +
       ", rowsAffected=" + rowsAffected +
       '}';
   }
