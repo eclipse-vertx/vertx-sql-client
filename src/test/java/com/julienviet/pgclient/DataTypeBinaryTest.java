@@ -5,8 +5,6 @@ import io.vertx.ext.unit.TestContext;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.time.Instant;
-
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
@@ -114,7 +112,6 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
     }));
   }
 
-  @Ignore
   @Test
   public void testDate(TestContext ctx) {
     Async async = ctx.async();
@@ -131,7 +128,6 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
     }));
   }
 
-  @Ignore
   @Test
   public void testTime(TestContext ctx) {
     Async async = ctx.async();
@@ -148,23 +144,24 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
     }));
   }
 
-//  @Test
-//  public void testTimeTz(TestContext ctx) {
-//    Async async = ctx.async();
-//    PgClient client = PgClient.create(vertx, options);
-//    client.connect(ctx.asyncAssertSuccess(conn -> {
-//      conn.prepare("SELECT \"TimeTz\" FROM \"TemporalDataType\" WHERE \"TimeTz\" = $1",
-//        ctx.asyncAssertSuccess(p -> {
-//          p.query("17:55:04.90512+03:07").execute(ctx.asyncAssertSuccess(result -> {
-//            ctx.assertEquals(1, result.getNumRows());
-//            ctx.assertEquals("17:55:04.905120+03:07", result.getResults().get(0).getString(0));
-//            async.complete();
-//          }));
-//        }));
-//    }));
-//  }
 
   @Ignore
+  @Test
+  public void testTimeTz(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient client = PgClient.create(vertx, options);
+    client.connect(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"TimeTz\" FROM \"TemporalDataType\" WHERE \"TimeTz\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.query("17:55:04.90512+03:07").execute(ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.getNumRows());
+            ctx.assertEquals("17:55:04.905120+03:07", result.getResults().get(0).getString(0));
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
   @Test
   public void testTimestamp(TestContext ctx) {
     Async async = ctx.async();
@@ -172,16 +169,15 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Timestamp\" FROM \"TemporalDataType\" WHERE \"Timestamp\" = $1",
         ctx.asyncAssertSuccess(p -> {
-          p.query("2017-05-14 19:35:58.237666").execute(ctx.asyncAssertSuccess(result -> {
+          p.query("2017-05-14T19:35:58.237666").execute(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.getNumRows());
-            ctx.assertEquals(Instant.parse("2017-05-14T19:35:58.237666Z"), result.getResults().get(0).getInstant(0));
+            ctx.assertEquals("2017-05-14T19:35:58.237666", result.getResults().get(0).getString(0));
             async.complete();
           }));
         }));
     }));
   }
 
-  @Ignore
   @Test
   public void testTimestampTz(TestContext ctx) {
     Async async = ctx.async();
@@ -190,9 +186,9 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
       conn.query("SET TIME ZONE 'UTC'").execute(ctx.asyncAssertSuccess(v -> {
         conn.prepare("SELECT \"TimestampTz\" FROM \"TemporalDataType\" WHERE \"TimestampTz\" = $1",
           ctx.asyncAssertSuccess(p -> {
-            p.query("2017-05-14 22:35:58.237666-03").execute(ctx.asyncAssertSuccess(result -> {
+            p.query("2017-05-14T22:35:58.237666-03:00").execute(ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.getNumRows());
-              ctx.assertEquals(Instant.parse("2017-05-15T01:35:58.237666Z"), result.getResults().get(0).getInstant(0));
+              ctx.assertEquals("2017-05-15T01:35:58.237666Z", result.getResults().get(0).getString(0));
               async.complete();
             }));
           }));

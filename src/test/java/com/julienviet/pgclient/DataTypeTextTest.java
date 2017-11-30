@@ -6,9 +6,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
-import java.time.Instant;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.charset.StandardCharsets.*;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
@@ -308,7 +306,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
         .query("SELECT '2017-05-14 19:35:58.237666'::TIMESTAMP")
         .execute(ctx.asyncAssertSuccess(result ->{
           ctx.assertEquals(1, result.getNumRows());
-          ctx.assertEquals(Instant.parse("2017-05-14T19:35:58.237666Z"), result.getResults().get(0).getInstant(0));
+          ctx.assertEquals("2017-05-14T19:35:58.237666", result.getResults().get(0).getString(0));
           async.complete();
         }));
     }));
@@ -323,7 +321,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
         conn.query("SELECT '2017-05-14 22:35:58.237666-03'::TIMESTAMPTZ").execute(
           ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.getNumRows());
-            ctx.assertEquals(Instant.parse("2017-05-15T01:35:58.237666Z"), result.getResults().get(0).getInstant(0));
+            ctx.assertEquals("2017-05-15T01:35:58.237666Z", result.getResults().get(0).getString(0));
             async.complete();
           }));
       }));
