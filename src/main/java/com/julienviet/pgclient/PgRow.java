@@ -19,6 +19,7 @@ package com.julienviet.pgclient;
 
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -44,8 +45,7 @@ public interface PgRow {
   @GenIgnore
   Temporal getTimestampTz(int pos);
 
-  @GenIgnore
-  byte[] getBinary(int pos);
+  Buffer getBinary(int pos);
 
   int size();
 

@@ -18,6 +18,7 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgRow;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -76,8 +77,8 @@ public class JsonPgRow extends ArrayList<Object> implements PgRow {
   }
 
   @Override
-  public byte[] getBinary(int pos) {
-    return (byte[]) get(pos);
+  public Buffer getBinary(int pos) {
+    return (Buffer) get(pos);
   }
 
   @Override

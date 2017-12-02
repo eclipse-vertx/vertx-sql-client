@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -392,9 +393,9 @@ public class DataType<T> {
   public static DataType<Object> INTERVAL_ARRAY = new DataType<>(Object.class,1187);
 
   // 1 or 4 bytes plus the actual binary string
-  public static final DataType<byte[]> BYTEA = new DataType<byte[]>(byte[].class, 17) {
+  public static final DataType<Buffer> BYTEA = new DataType<Buffer>(Buffer.class, 17) {
     @Override
-    public byte[] decodeText(int len, ByteBuf buff) {
+    public Buffer decodeText(int len, ByteBuf buff) {
       buff.readByte(); // \
       buff.readByte(); // x
       len = (len - 2) / 2;
@@ -404,7 +405,7 @@ public class DataType<T> {
         byte b1 = decodeHexChar(buff.readByte());
         bytes[i] = (byte)(b0 * 16 + b1);
       }
-      return bytes;
+      return Buffer.buffer(bytes);
     }
     private byte decodeHexChar(byte b) {
       if (b >= '0' && b <= '9') {
@@ -414,12 +415,12 @@ public class DataType<T> {
       }
     }
     @Override
-    public void encodeText(byte[] value, ByteBuf buff) {
+    public void encodeText(Buffer value, ByteBuf buff) {
       int index = buff.writerIndex();
       buff.setByte(index + 4, '\\');
       buff.setByte(index + 5, 'x');
       // todo : optimize - no need to create an intermediate string here
-      int len = buff.setCharSequence(index + 6, printHexBinary(value), StandardCharsets.UTF_8);
+      int len = buff.setCharSequence(index + 6, printHexBinary(value.getBytes()), StandardCharsets.UTF_8);
       buff.writeInt(2 + len);
       buff.writerIndex(index + 2 + len);
     }

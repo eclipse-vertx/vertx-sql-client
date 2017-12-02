@@ -1,5 +1,6 @@
 package com.julienviet.pgclient;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
@@ -451,10 +452,10 @@ public class DataTypeTextTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.getNumRows());
           PgRow row = result.rows().next();
-          byte[] bytea1 = row.getBinary(0);
-          byte[] bytea2 = row.getBinary(1);
-          ctx.assertEquals("12345678910", new String(bytea1, UTF_8));
-          ctx.assertEquals("\u00DE\u00AD\u00BE\u00EF", new String(bytea2, UTF_8));
+          Buffer bytea1 = row.getBinary(0);
+          Buffer bytea2 = row.getBinary(1);
+          ctx.assertEquals("12345678910", bytea1.toString(UTF_8));
+          ctx.assertEquals("\u00DE\u00AD\u00BE\u00EF", bytea2.toString(UTF_8));
           async.complete();
         }));
     }));
