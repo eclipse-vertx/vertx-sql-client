@@ -27,14 +27,14 @@ import java.util.*;
 
 public class SimpleQueryResultHandler implements QueryResultHandler {
 
-  private final Handler<AsyncResult<PgResult>> handler;
+  private final Handler<AsyncResult<PgResult<PgRow>>> handler;
   private JsonPgRow head;
   private JsonPgRow tail;
   private int size;
   private Throwable failure;
   private final Queue<PgResultImpl> results = new ArrayDeque<>(1);
 
-  public SimpleQueryResultHandler(Handler<AsyncResult<PgResult>> handler) {
+  public SimpleQueryResultHandler(Handler<AsyncResult<PgResult<PgRow>>> handler) {
     this.handler = handler;
   }
 
@@ -54,7 +54,7 @@ public class SimpleQueryResultHandler implements QueryResultHandler {
     return results.size() > 0;
   }
 
-  public PgResult next() {
+  public PgResult<PgRow> next() {
     if (results.size() > 0) {
       return results.poll();
     } else {

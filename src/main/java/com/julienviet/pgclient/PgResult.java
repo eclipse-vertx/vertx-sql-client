@@ -20,7 +20,7 @@ package com.julienviet.pgclient;
 import io.vertx.codegen.annotations.VertxGen;
 
 @VertxGen
-public interface PgResult {
+public interface PgResult<T> {
 
   default int getUpdated() {
     return 0;
@@ -28,6 +28,6 @@ public interface PgResult {
 
   int getNumRows();
 
-  PgRowIterator rows();
+  PgRowIterator<T> rows();
 
 }

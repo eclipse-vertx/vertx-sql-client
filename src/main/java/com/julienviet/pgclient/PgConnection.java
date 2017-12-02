@@ -31,7 +31,7 @@ import io.vertx.core.Handler;
 @VertxGen
 public interface PgConnection extends PgOperations {
 
-  void execute(String sql, Handler<AsyncResult<PgResult>> handler);
+  void execute(String sql, Handler<AsyncResult<PgResult<PgRow>>> handler);
 
   void prepare(String sql, Handler<AsyncResult<PgPreparedStatement>> handler);
 

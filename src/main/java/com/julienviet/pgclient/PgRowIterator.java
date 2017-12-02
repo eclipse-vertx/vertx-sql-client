@@ -23,10 +23,10 @@ import io.vertx.core.json.JsonArray;
 import java.util.Iterator;
 
 @VertxGen
-public interface PgRowIterator extends Iterator<PgRow> {
+public interface PgRowIterator<T> extends Iterator<T> {
 
   boolean hasNext();
 
-  PgRow next();
+  T next();
 
 }

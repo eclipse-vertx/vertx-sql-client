@@ -26,7 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class PgResultImpl implements PgResult {
+public class PgResultImpl implements PgResult<PgRow> {
 
   final int updated;
   final JsonPgRow rows;
@@ -55,8 +55,8 @@ public class PgResultImpl implements PgResult {
   }
 
   @Override
-  public PgRowIterator rows() {
-    return new PgRowIterator() {
+  public PgRowIterator<PgRow> rows() {
+    return new PgRowIterator<PgRow>() {
       JsonPgRow current = rows;
       @Override
       public boolean hasNext() {

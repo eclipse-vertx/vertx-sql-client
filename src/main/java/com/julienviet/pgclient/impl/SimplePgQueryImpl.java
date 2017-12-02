@@ -19,6 +19,7 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgQuery;
 import com.julienviet.pgclient.PgResult;
+import com.julienviet.pgclient.PgRow;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -47,7 +48,7 @@ public class SimplePgQueryImpl implements PgQuery {
   }
 
   @Override
-  public void next(Handler<AsyncResult<PgResult>> handler) {
+  public void next(Handler<AsyncResult<PgResult<PgRow>>> handler) {
     if (result.hasNext()) {
       handler.handle(Future.succeededFuture(result.next()));
     } else {
@@ -56,7 +57,7 @@ public class SimplePgQueryImpl implements PgQuery {
   }
 
   @Override
-  public void execute(Handler<AsyncResult<PgResult>> handler) {
+  public void execute(Handler<AsyncResult<PgResult<PgRow>>> handler) {
     if (result != null) {
       throw new IllegalStateException();
     }

@@ -38,7 +38,7 @@ public abstract class PgOperationsImpl implements PgOperations {
   }
 
   @Override
-  public void preparedQuery(String sql, List<Object> params, Handler<AsyncResult<PgResult>> handler) {
+  public void preparedQuery(String sql, List<Object> params, Handler<AsyncResult<PgResult<PgRow>>> handler) {
     schedulePrepared(sql, ar -> {
       if (ar.succeeded()) {
         return new ExtendedQueryCommand(ar.result(), params, new ExtendedQueryResultHandler(handler));
@@ -55,7 +55,7 @@ public abstract class PgOperationsImpl implements PgOperations {
   }
 
   @Override
-  public void preparedUpdate(String sql, List<Object> params, Handler<AsyncResult<PgResult>> handler) {
+  public void preparedUpdate(String sql, List<Object> params, Handler<AsyncResult<PgResult<PgRow>>> handler) {
     schedulePrepared(sql, ar -> {
       if (ar.succeeded()) {
         return new PreparedUpdateCommand(
@@ -70,7 +70,7 @@ public abstract class PgOperationsImpl implements PgOperations {
   }
 
   @Override
-  public void preparedBatchUpdate(String sql, List<List<Object>> list, Handler<AsyncResult<PgResult>> handler) {
+  public void preparedBatchUpdate(String sql, List<List<Object>> list, Handler<AsyncResult<PgResult<PgRow>>> handler) {
     schedulePrepared(sql, ar -> {
       if (ar.succeeded()) {
         return new PreparedUpdateCommand(

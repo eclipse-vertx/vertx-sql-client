@@ -25,14 +25,14 @@ import io.vertx.core.Handler;
 
 public class ExtendedQueryResultHandler implements QueryResultHandler {
 
-  private final Handler<AsyncResult<PgResult>> handler;
+  private final Handler<AsyncResult<PgResult<PgRow>>> handler;
   private JsonPgRow head;
   private JsonPgRow tail;
   private int size;
   private Throwable failure;
   private boolean suspended;
 
-  public ExtendedQueryResultHandler(Handler<AsyncResult<PgResult>> handler) {
+  public ExtendedQueryResultHandler(Handler<AsyncResult<PgResult<PgRow>>> handler) {
     this.handler = handler;
   }
 
