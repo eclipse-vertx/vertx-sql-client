@@ -2,7 +2,6 @@ package com.julienviet.pgclient;
 
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -113,7 +112,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
   }
 
   @Test
-  public void testDate(TestContext ctx) {
+  public void testDateBeforePgEpoch(TestContext ctx) {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
     client.connect(ctx.asyncAssertSuccess(conn -> {
@@ -122,6 +121,22 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
           p.query("1981-05-30").execute(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.getNumRows());
             ctx.assertEquals("1981-05-30", result.getResults().get(0).getString(0));
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testDateAfterPgEpoch(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient client = PgClient.create(vertx, options);
+    client.connect(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"Date\" FROM \"TemporalDataType\" WHERE \"Date\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.query("2017-05-30").execute(ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.getNumRows());
+            ctx.assertEquals("2017-05-30", result.getResults().get(0).getString(0));
             async.complete();
           }));
         }));
@@ -145,7 +160,6 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
   }
 
 
-  @Ignore
   @Test
   public void testTimeTz(TestContext ctx) {
     Async async = ctx.async();
@@ -163,7 +177,23 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
   }
 
   @Test
-  public void testTimestamp(TestContext ctx) {
+  public void testTimestampBeforePgEpoch(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient client = PgClient.create(vertx, options);
+    client.connect(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"Timestamp\" FROM \"TemporalDataType\" WHERE \"Timestamp\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.query("1800-01-01T23:57:53.237666").execute(ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.getNumRows());
+            ctx.assertEquals("1800-01-01T23:57:53.237666", result.getResults().get(0).getString(0));
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testTimestampAfterPgEpoch(TestContext ctx) {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
     client.connect(ctx.asyncAssertSuccess(conn -> {
@@ -179,16 +209,34 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
   }
 
   @Test
-  public void testTimestampTz(TestContext ctx) {
+  public void testTimestampTzBeforePgEpoch(TestContext ctx) {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("SET TIME ZONE 'UTC'").execute(ctx.asyncAssertSuccess(v -> {
         conn.prepare("SELECT \"TimestampTz\" FROM \"TemporalDataType\" WHERE \"TimestampTz\" = $1",
           ctx.asyncAssertSuccess(p -> {
-            p.query("2017-05-14T22:35:58.237666-03:00").execute(ctx.asyncAssertSuccess(result -> {
+            p.query("1800-01-01T23:59:59.237666-03:00").execute(ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.getNumRows());
-              ctx.assertEquals("2017-05-15T01:35:58.237666Z", result.getResults().get(0).getString(0));
+              ctx.assertEquals("1800-01-02T02:59:59.237666Z", result.getResults().get(0).getString(0));
+              async.complete();
+            }));
+          }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testTimestampTzAfterPgEpoch(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient client = PgClient.create(vertx, options);
+    client.connect(ctx.asyncAssertSuccess(conn -> {
+      conn.query("SET TIME ZONE 'UTC'").execute(ctx.asyncAssertSuccess(v -> {
+        conn.prepare("SELECT \"TimestampTz\" FROM \"TemporalDataType\" WHERE \"TimestampTz\" = $1",
+          ctx.asyncAssertSuccess(p -> {
+            p.query("2017-05-14T23:59:59.237666-03:00").execute(ctx.asyncAssertSuccess(result -> {
+              ctx.assertEquals(1, result.getNumRows());
+              ctx.assertEquals("2017-05-15T02:59:59.237666Z", result.getResults().get(0).getString(0));
               async.complete();
             }));
           }));

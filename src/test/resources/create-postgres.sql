@@ -71,6 +71,8 @@ VALUES (32767, 2147483647, 9223372036854775807, 3.4028235E38, 1.7976931348623157
 
 DROP TABLE IF EXISTS "TemporalDataType";
 CREATE TABLE "TemporalDataType" ("Date" date, "Time" time without time zone, "TimeTz" time with time zone, "Timestamp" timestamp without time zone, "TimestampTz" timestamp with time zone, "Interval" interval);
-INSERT INTO "TemporalDataType" ("Date", "Time", "TimeTz", "Timestamp", "TimestampTz", "Interval") VALUES ('1981-05-30', '17:55:04.90512', '17:55:04.90512+03:07', '2017-05-14 19:35:58.237666', '2017-05-14 22:35:58.237666-03', '01:22:00');
+INSERT INTO "TemporalDataType" ("Date", "Time", "TimeTz", "Timestamp", "TimestampTz", "Interval") VALUES ('1981-05-30', '17:55:04.90512', '17:55:04.90512+03:07', '2017-05-14 19:35:58.237666', '2017-05-14 23:59:59.237666-03', '17:22:05');
+INSERT INTO "TemporalDataType" ("Date", "Time", "TimeTz", "Timestamp", "TimestampTz", "Interval") VALUES ('2017-05-30', '12:55:04.90512', '02:55:04.90512+03:07', '1909-05-14 19:35:58.237666', '1909-05-14 22:35:58.237666-03', '02:01:33');
+INSERT INTO "TemporalDataType" ("Date", "Time", "TimeTz", "Timestamp", "TimestampTz", "Interval") VALUES ('1900-01-01', '23:59:04.90512', '08:08:03.90512+03:07', '1800-01-01 23:57:53.237666', '1800-01-01 23:59:59.237666-03', '04:33:59');
 
 

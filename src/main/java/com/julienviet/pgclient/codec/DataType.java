@@ -28,15 +28,13 @@ import io.vertx.core.json.JsonObject;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 
 import static com.julienviet.pgclient.codec.formatter.DateTimeFormatter.*;
 import static com.julienviet.pgclient.codec.formatter.TimeFormatter.*;
@@ -287,19 +285,13 @@ public class DataType<T> {
     }
     @Override
     public Object decodeBinary(int len, ByteBuf buff) {
-      int days = buff.readInt();
-      return Instant.ofEpochMilli
-        (
-          Duration.ofDays(days).toMillis() +
-          // convert to java epoch
-          Duration.ofDays(LocalDate.of(2000, 1, 1).toEpochDay()).toMillis()
-        ).atZone(ZoneId.of("UTC")).toLocalDate().toString();
+      LocalDate date = LocalDate.of(2000, 1, 1).plus(buff.readInt(), ChronoUnit.DAYS);
+      return date.toString();
     }
     @Override
     public void encodeBinary(Object value, ByteBuf buff) {
       buff.writeInt(4);
-      // convert to postgres epoch
-      buff.writeInt((int) (LocalDate.parse(value.toString()).toEpochDay() - LocalDate.of(2000, 1, 1).toEpochDay()));
+      buff.writeInt((int) -LocalDate.parse(value.toString()).until(LocalDate.of(2000, 1, 1), ChronoUnit.DAYS));
     }
   };
   public static DataType<Object> DATE_ARRAY = new DataType<>(Object.class,1182);
@@ -314,7 +306,8 @@ public class DataType<T> {
     @Override
     public Object decodeBinary(int len, ByteBuf buff) {
       // micros to nanos
-      return LocalTime.ofNanoOfDay(buff.readLong() * 1000).toString();
+      LocalTime time = LocalTime.ofNanoOfDay(buff.readLong() * 1000);
+      return time.toString();
     }
     @Override
     public void encodeBinary(Object value, ByteBuf buff) {
@@ -332,25 +325,22 @@ public class DataType<T> {
       CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
       return OffsetTime.parse(cs, TIMETZ_FORMAT).toString(); // julien: why toString ? emad: because it's not JSON friendly!
     }
-//    @Override
-//    public Object decodeBinary(int len, ByteBuf buff) {
-//      System.out.println("===============================================");
-//      System.out.println(buff.readLong());
-//      System.out.println(buff.readInt());
-//      System.out.println("===============================================");
-//      // micros to nanos
-//      return OffsetTime.of(LocalTime.ofNanoOfDay(buff.readLong() * 1000),
-//        // time offset in seconds
-//        ZoneOffset.ofTotalSeconds(buff.readInt()))
-//        .withOffsetSameInstant(ZoneOffset.UTC).toString();
-//    }
-//    @Override
-//    public void encodeBinary(Object value, ByteBuf buff) {
-//      OffsetTime timetz = OffsetTime.parse(value.toString()).withOffsetSameInstant(ZoneOffset.UTC);
-//      buff.writeInt(12);
-//      buff.writeLong(timetz.toLocalTime().toNanoOfDay() / 1000);
-//      buff.writeInt(timetz.getOffset().getTotalSeconds());
-//    }
+    @Override
+    public Object decodeBinary(int len, ByteBuf buff) {
+      // micros to nanos
+      OffsetTime timetz = OffsetTime.of(LocalTime.ofNanoOfDay(buff.readLong() * 1000),
+        // zone offset in seconds (should we change it to UTC ?)
+        ZoneOffset.ofTotalSeconds(-buff.readInt()));
+      return timetz.toString();
+    }
+    @Override
+    public void encodeBinary(Object value, ByteBuf buff) {
+      OffsetTime timetz = OffsetTime.parse(value.toString());
+      buff.writeInt(12);
+      buff.writeLong(timetz.toLocalTime().toNanoOfDay() / 1000);
+      // zone offset in seconds (should we change it to UTC ?)
+      buff.writeInt(-timetz.getOffset().getTotalSeconds());
+    }
   };
   public static DataType<Object> TIMETZ_ARRAY = new DataType<>(Object.class,1270);
 
@@ -363,33 +353,14 @@ public class DataType<T> {
     }
     @Override
     public Object decodeBinary(int len, ByteBuf buff) {
-      long micros = buff.readLong();
-      long seconds = micros / 1000000;
-      int nanos = (int) (micros - seconds * 1000000);
-      if (nanos < 0) {
-        seconds--;
-        nanos += 1000000;
-      }
-      nanos *= 1000;
-      // convert to java epoch
-      seconds = seconds + Duration.ofDays(LocalDate.of(2000, 1, 1).toEpochDay()).getSeconds();
-      LocalDateTime timestamp = LocalDateTime.ofEpochSecond(seconds, nanos, ZoneOffset.UTC);
+      LocalDateTime timestamp = LocalDateTime.of(2000, 1, 1, 0, 0, 0).plus(buff.readLong(), ChronoUnit.MICROS);
       return timestamp.toString();
     }
     @Override
     public void encodeBinary(Object value, ByteBuf buff) {
       LocalDateTime timestamp = LocalDateTime.parse(value.toString());
-      long timeNanos = timestamp.toLocalTime().toNanoOfDay();
-      long timeMicros = timeNanos / 1000;
       buff.writeInt(8);
-      // before Postgres Epoch ?
-      if(timestamp.isBefore(LocalDateTime.of(2000, 1, 1, 0, 0, 0))) {
-        long dateMicros = (timestamp.toLocalDate().toEpochDay() - 10957L) * 86400000000L;
-        buff.writeLong(dateMicros + timeMicros);
-      } else {
-        long dateMicros = (10957L - timestamp.toLocalDate().toEpochDay()) * 86400000000L;
-        buff.writeLong(-(dateMicros - timeMicros));
-      }
+      buff.writeLong(-timestamp.until(LocalDateTime.of(2000, 1, 1, 0, 0, 0), ChronoUnit.MICROS));
     }
   };
   public static DataType<Object> TIMESTAMP_ARRAY = new DataType<>(Object.class,1115);
@@ -403,32 +374,17 @@ public class DataType<T> {
     }
     @Override
     public Object decodeBinary(int len, ByteBuf buff) {
-      long micros = buff.readLong();
-      long seconds = micros / 1000000;
-      int nanos = (int) (micros - seconds * 1000000);
-      if (nanos < 0) {
-        seconds--;
-        nanos += 1000000;
-      }
-      nanos *= 1000;
-      seconds = seconds + Duration.ofDays(LocalDate.of(2000, 1, 1).toEpochDay()).getSeconds();
-      OffsetDateTime timestamptz = LocalDateTime.ofEpochSecond(seconds, nanos, ZoneOffset.UTC).atOffset(ZoneOffset.UTC);
+      OffsetDateTime timestamptz = LocalDateTime.of(2000, 1, 1, 0, 0, 0)
+        .atOffset(ZoneOffset.UTC)
+        .plus(buff.readLong(), ChronoUnit.MICROS);
       return timestamptz.toString();
     }
     @Override
     public void encodeBinary(Object value, ByteBuf buff) {
       OffsetDateTime timestamptz = OffsetDateTime.parse(value.toString()).withOffsetSameInstant(ZoneOffset.UTC);
-      long timeNanos = timestamptz.toLocalTime().toNanoOfDay();
-      long timeMicros = timeNanos / 1000;
       buff.writeInt(8);
-      // before Postgres Epoch ?
-      if(timestamptz.isBefore(LocalDateTime.of(2000, 1, 1, 0, 0, 0).atOffset(ZoneOffset.UTC))) {
-        long dateMicros = (timestamptz.toLocalDate().toEpochDay() - 10957L) * 86400000000L;
-        buff.writeLong(dateMicros + timeMicros);
-      } else {
-        long dateMicros = (10957L - timestamptz.toLocalDate().toEpochDay()) * 86400000000L;
-        buff.writeLong(-(dateMicros - timeMicros));
-      }
+      buff.writeLong(-timestamptz.until(LocalDateTime.of(2000, 1, 1, 0, 0, 0)
+        .atOffset(ZoneOffset.UTC), ChronoUnit.MICROS));
     }
   };
   public static DataType<Object> TIMESTAMPTZ_ARRAY = new DataType<>(Object.class,1185);
