@@ -143,11 +143,11 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
           PgQuery query = ps.query(1, 8, 4, 11, 2, 9);
           query.fetch(4);
           query.execute(ctx.asyncAssertSuccess(result -> {
-            // ctx.assertNotNull(result.getColumnNames());
+            ctx.assertNotNull(result.columnsNames());
             ctx.assertEquals(4, result.getNumRows());
             ctx.assertTrue(query.hasNext());
             query.next(ctx.asyncAssertSuccess(result2 -> {
-              // ctx.assertNotNull(result.getColumnNames());
+              ctx.assertNotNull(result.columnsNames());
               ctx.assertEquals(4, result.getNumRows());
               ctx.assertFalse(query.hasNext());
               async.complete();

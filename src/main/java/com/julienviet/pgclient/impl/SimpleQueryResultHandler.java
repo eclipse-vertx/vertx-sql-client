@@ -28,6 +28,7 @@ import java.util.*;
 public class SimpleQueryResultHandler implements QueryResultHandler {
 
   private final Handler<AsyncResult<PgResult<PgRow>>> handler;
+  private List<String> columnNames;
   private JsonPgRow head;
   private JsonPgRow tail;
   private int size;
@@ -36,6 +37,11 @@ public class SimpleQueryResultHandler implements QueryResultHandler {
 
   public SimpleQueryResultHandler(Handler<AsyncResult<PgResult<PgRow>>> handler) {
     this.handler = handler;
+  }
+
+  @Override
+  public void beginRows(List<String> columnNames) {
+    this.columnNames = columnNames;
   }
 
   @Override
@@ -64,7 +70,7 @@ public class SimpleQueryResultHandler implements QueryResultHandler {
 
   @Override
   public void endRows() {
-    results.add(new PgResultImpl(head, size));
+    results.add(new PgResultImpl(columnNames, head, size));
     head = null;
     size = 0;
   }

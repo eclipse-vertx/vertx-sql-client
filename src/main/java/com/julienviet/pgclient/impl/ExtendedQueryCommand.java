@@ -85,6 +85,7 @@ class ExtendedQueryCommand extends QueryCommandBase {
       handler.result(true);
     } else if (msg.getClass() == BindComplete.class) {
       // Response to Bind
+      handler.beginRows(ps.rowDesc.getColumnNames());
     } else {
       super.handleMessage(msg);
     }

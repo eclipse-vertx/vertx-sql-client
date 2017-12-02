@@ -19,6 +19,8 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgRow;
 
+import java.util.List;
+
 /**
  * todo : rework callbacks
  *
@@ -27,6 +29,8 @@ import com.julienviet.pgclient.PgRow;
 public interface QueryResultHandler {
 
   void result(boolean suspended);
+
+  void beginRows(List<String> columnNames);
 
   void addRow(PgRow row);
 

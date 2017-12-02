@@ -29,6 +29,7 @@ import java.util.NoSuchElementException;
 public class PgResultImpl implements PgResult<PgRow> {
 
   final int updated;
+  final List<String> columnNames;
   final JsonPgRow rows;
   final int size;
 
@@ -36,12 +37,19 @@ public class PgResultImpl implements PgResult<PgRow> {
     this.updated = updated;
     this.rows = null;
     this.size = 0;
+    this.columnNames = Collections.emptyList();
   }
 
-  public PgResultImpl(JsonPgRow rows, int size) {
+  public PgResultImpl(List<String> columnNames, JsonPgRow rows, int size) {
     this.updated = 0;
+    this.columnNames = columnNames;
     this.rows = rows;
     this.size = size;
+  }
+
+  @Override
+  public List<String> columnsNames() {
+    return columnNames;
   }
 
   @Override

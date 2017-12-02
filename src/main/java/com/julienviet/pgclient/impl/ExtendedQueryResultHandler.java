@@ -23,9 +23,12 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
+import java.util.List;
+
 public class ExtendedQueryResultHandler implements QueryResultHandler {
 
   private final Handler<AsyncResult<PgResult<PgRow>>> handler;
+  private List<String> columnNames;
   private JsonPgRow head;
   private JsonPgRow tail;
   private int size;
@@ -38,6 +41,11 @@ public class ExtendedQueryResultHandler implements QueryResultHandler {
 
   public boolean isSuspended() {
     return suspended;
+  }
+
+  @Override
+  public void beginRows(List<String> columnNames) {
+    this.columnNames = columnNames;
   }
 
   @Override
@@ -70,7 +78,7 @@ public class ExtendedQueryResultHandler implements QueryResultHandler {
   @Override
   public void end() {
     if (failure == null) {
-      handler.handle(Future.succeededFuture(new PgResultImpl(head, size)));
+      handler.handle(Future.succeededFuture(new PgResultImpl(columnNames, head, size)));
     }
   }
 }

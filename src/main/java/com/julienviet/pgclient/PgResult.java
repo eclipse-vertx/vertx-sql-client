@@ -19,12 +19,16 @@ package com.julienviet.pgclient;
 
 import io.vertx.codegen.annotations.VertxGen;
 
+import java.util.List;
+
 @VertxGen
 public interface PgResult<T> {
 
   default int getUpdated() {
     return 0;
   }
+
+  List<String> columnsNames();
 
   int getNumRows();
 
