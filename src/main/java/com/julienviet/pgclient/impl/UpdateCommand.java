@@ -17,7 +17,7 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.UpdateResult;
+import com.julienviet.pgclient.PgResult;
 import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.decoder.DecodeContext;
 import com.julienviet.pgclient.codec.encoder.message.Query;
@@ -34,9 +34,9 @@ import static com.julienviet.pgclient.codec.decoder.ResultDecoder.NOOP;
 class UpdateCommand extends UpdateCommandBase {
 
   private final String sql;
-  private final Handler<AsyncResult<UpdateResult>> handler;
+  private final Handler<AsyncResult<PgResult>> handler;
 
-  UpdateCommand(String sql, Handler<AsyncResult<UpdateResult>> handler) {
+  UpdateCommand(String sql, Handler<AsyncResult<PgResult>> handler) {
     this.handler = handler;
     this.sql = sql;
   }
@@ -48,8 +48,8 @@ class UpdateCommand extends UpdateCommandBase {
   }
 
   @Override
-  void handleResult(UpdateResult result) {
-    handler.handle(Future.succeededFuture(result));
+  void handleResult(int updated) {
+    handler.handle(Future.succeededFuture(new PgResultImpl(updated)));
   }
 
 

@@ -18,20 +18,17 @@
 package com.julienviet.pgclient;
 
 import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Threads(8)
 public class SingleSelectBenchmark extends PgBenchmarkBase {
 
   @Benchmark
   public void poolPreparedQuery(Blackhole blackhole) throws Exception {
-    CompletableFuture<ResultSet> latch = new CompletableFuture<>();
+    CompletableFuture<PgResult> latch = new CompletableFuture<>();
     pool.preparedQuery("SELECT id, randomnumber from WORLD where id=$1", 1, ar -> {
       if (ar.succeeded()) {
         latch.complete(ar.result());
@@ -44,7 +41,7 @@ public class SingleSelectBenchmark extends PgBenchmarkBase {
 
   @Benchmark
   public void pooledConnectionPreparedQuery(Blackhole blackhole) throws Exception {
-    CompletableFuture<ResultSet> latch = new CompletableFuture<>();
+    CompletableFuture<PgResult> latch = new CompletableFuture<>();
     pool.getConnection(ar1 -> {
       if (ar1.succeeded()) {
         PgConnection conn = ar1.result();
@@ -65,7 +62,7 @@ public class SingleSelectBenchmark extends PgBenchmarkBase {
 
   @Benchmark
   public void pooledConnectionPreparedStatementQuery(Blackhole blackhole) throws Exception {
-    CompletableFuture<ResultSet> latch = new CompletableFuture<>();
+    CompletableFuture<PgResult> latch = new CompletableFuture<>();
     pool.getConnection(ar1 -> {
       if (ar1.succeeded()) {
         PgConnection conn = ar1.result();

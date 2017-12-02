@@ -17,17 +17,20 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.ResultSet;
-import io.vertx.core.json.JsonArray;
-
-import java.util.List;
+import com.julienviet.pgclient.PgRow;
 
 /**
+ * todo : rework callbacks
+ *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 public interface QueryResultHandler {
 
-  void result(ResultSet result, boolean suspended);
+  void result(boolean suspended);
+
+  void addRow(PgRow row);
+
+  void endRows();
 
   void fail(Throwable cause);
 

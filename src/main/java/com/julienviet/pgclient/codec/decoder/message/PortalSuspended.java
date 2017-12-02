@@ -17,12 +17,8 @@
 
 package com.julienviet.pgclient.codec.decoder.message;
 
-import com.julienviet.pgclient.ResultSet;
 import com.julienviet.pgclient.codec.encoder.message.Execute;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
-import io.vertx.core.json.JsonArray;
-
-import java.util.List;
 
 /**
  *

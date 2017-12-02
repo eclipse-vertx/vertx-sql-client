@@ -27,6 +27,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.util.ByteProcessor;
+import io.vertx.core.json.JsonArray;
 
 import java.util.Deque;
 import java.util.List;
@@ -119,7 +120,20 @@ public class MessageDecoder extends ByteToMessageDecoder {
       case DATA_ROW: {
         DecodeContext decodeCtx = decodeQueue.peek();
         RowDescription desc = decodeCtx.peekDesc ? rowDesc : decodeCtx.rowDesc;
-        decodeCtx.decoder.decode(in, desc, decodeCtx.dataFormat);
+        int len = in.readUnsignedShort();
+        DataFormat format = decodeCtx.dataFormat;
+        Object row = decodeCtx.decoder.createRow(len);
+        for (int c = 0; c < len; ++c) {
+          int length = in.readInt();
+          if (length != -1) {
+            Column columnDesc = desc.getColumns()[c];
+            DataType dataType = columnDesc.getDataType();
+            decodeCtx.decoder.decode(in, length, dataType, format, row);
+          } else {
+            decodeCtx.decoder.decode(in, length, null, null, row);
+          }
+        }
+        decodeCtx.decoder.addRow(row);
       }
       break;
       case COMMAND_COMPLETE: {

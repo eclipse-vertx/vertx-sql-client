@@ -17,8 +17,8 @@
 
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.PgResult;
 import com.julienviet.pgclient.PgUpdate;
-import com.julienviet.pgclient.UpdateResult;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
@@ -40,7 +40,7 @@ public class PgUpdateImpl implements PgUpdate {
   }
 
   @Override
-  public void execute(Handler<AsyncResult<UpdateResult>> handler) {
+  public void execute(Handler<AsyncResult<PgResult>> handler) {
     ps.update(Collections.singletonList(params), ar -> handler.handle(ar.map(results -> results.get(0))));
   }
 }

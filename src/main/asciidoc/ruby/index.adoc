@@ -39,30 +39,31 @@ client = VertxPgClient::PgClient.create(vertx, {
   'username' => "user",
   'password' => "secret"
 })
+=begin
+    client.connect(res -> {
+      if (res.succeeded()) {
 
-client.connect() { |res_err,res|
-  if (res_err == nil)
+        // Connected
+        PgConnection conn = res.result();
 
-    # Connected
-    conn = res
+        conn.query("SELECT * FROM USERS").execute(ar -> {
 
-    conn.query("SELECT * FROM USERS").execute() { |ar_err,ar|
+          if (ar.succeeded()) {
 
-      if (ar_err == nil)
+            // Use result set
+            ResultSet rs = ar.result();
+          } else {
+            System.out.println("It failed");
+          }
 
-        # Use result set
-        rs = ar
-      else
-        puts "It failed"
-      end
-
-      # Close the connection
-      conn.close()
-    }
-  else
-    puts "Could not connect #{res_err}"
-  end
-}
+          // Close the connection
+          conn.close();
+        });
+      } else {
+        System.out.println("Could not connect " + res.cause());
+      }
+    });
+    =end
 
 ----
 
@@ -89,20 +90,21 @@ pool.get_connection() { |res_err,res|
 
     # Obtained a connection
     conn = res
+    =begin
+            conn.query("SELECT * FROM USERS").execute(ar -> {
 
-    conn.query("SELECT * FROM USERS").execute() { |ar_err,ar|
+              if (ar.succeeded()) {
 
-      if (ar_err == nil)
+                // Use result set
+                ResultSet rs = ar.result();
+              } else {
+                System.out.println("It failed");
+              }
 
-        # Use result set
-        rs = ar
-      else
-        puts "It failed"
-      end
-
-      # Return the connection to the pool
-      conn.close()
-    }
+              // Return the connection to the pool
+              conn.close();
+            });
+          =end
   else
     puts "Could not obtain a connection #{res_err}"
   end

@@ -23,6 +23,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -76,8 +77,12 @@ class PgPreparedStatementImpl implements PgPreparedStatement {
     conn.schedule(new ExtendedQueryCommand(ps, params, fetch, portal, suspended, handler));
   }
 
-  void update(List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
-    conn.schedule(new PreparedUpdateCommand(ps, paramsList, handler));
+  void update(List<List<Object>> paramsList, Handler<AsyncResult<List<PgResult>>> handler) {
+    conn.schedule(new PreparedUpdateCommand(ps, paramsList, ar -> {
+      handler.handle(ar.map(ur -> {
+        return ur.stream().map(a -> new PgResultImpl(a.getUpdated())).collect(Collectors.toList());
+      }));
+    }));
   }
 
   @Override

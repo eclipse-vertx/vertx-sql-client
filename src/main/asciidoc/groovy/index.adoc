@@ -38,30 +38,31 @@ def client = PgClient.create(vertx, [
   username:"user",
   password:"secret"
 ])
+/*
+    client.connect(res -> {
+      if (res.succeeded()) {
 
-client.connect({ res ->
-  if (res.succeeded()) {
+        // Connected
+        PgConnection conn = res.result();
 
-    // Connected
-    def conn = res.result()
+        conn.query("SELECT * FROM USERS").execute(ar -> {
 
-    conn.query("SELECT * FROM USERS").execute({ ar ->
+          if (ar.succeeded()) {
 
-      if (ar.succeeded()) {
+            // Use result set
+            ResultSet rs = ar.result();
+          } else {
+            System.out.println("It failed");
+          }
 
-        // Use result set
-        def rs = ar.result()
+          // Close the connection
+          conn.close();
+        });
       } else {
-        println("It failed")
+        System.out.println("Could not connect " + res.cause());
       }
-
-      // Close the connection
-      conn.close()
-    })
-  } else {
-    println("Could not connect ${res.cause()}")
-  }
-})
+    });
+    */
 
 ----
 
@@ -87,20 +88,21 @@ pool.getConnection({ res ->
 
     // Obtained a connection
     def conn = res.result()
+    /*
+            conn.query("SELECT * FROM USERS").execute(ar -> {
 
-    conn.query("SELECT * FROM USERS").execute({ ar ->
+              if (ar.succeeded()) {
 
-      if (ar.succeeded()) {
+                // Use result set
+                ResultSet rs = ar.result();
+              } else {
+                System.out.println("It failed");
+              }
 
-        // Use result set
-        def rs = ar.result()
-      } else {
-        println("It failed")
-      }
-
-      // Return the connection to the pool
-      conn.close()
-    })
+              // Return the connection to the pool
+              conn.close();
+            });
+          */
   } else {
     println("Could not obtain a connection ${res.cause()}")
   }

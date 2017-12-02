@@ -58,7 +58,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
       pool.getConnection(ctx.asyncAssertSuccess(conn -> {
         conn.query("SELECT id, randomnumber from WORLD").execute(ar -> {
           if (ar.succeeded()) {
-            ResultSet result = ar.result();
+            PgResult result = ar.result();
             ctx.assertEquals(10000, result.getNumRows());
           } else {
             ctx.assertEquals("closed", ar.cause().getMessage());
@@ -79,7 +79,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     for (int i = 0;i < num;i++) {
       pool.query("SELECT id, randomnumber from WORLD").execute(ar -> {
         if (ar.succeeded()) {
-          ResultSet result = ar.result();
+          PgResult result = ar.result();
           ctx.assertEquals(10000, result.getNumRows());
         } else {
           ctx.assertEquals("closed", ar.cause().getMessage());
@@ -98,7 +98,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     for (int i = 0;i < num;i++) {
       pool.preparedQuery("SELECT id, randomnumber from WORLD where id=$1", i + 1, ar -> {
         if (ar.succeeded()) {
-          ResultSet result = ar.result();
+          PgResult result = ar.result();
           ctx.assertEquals(1, result.getNumRows());
         } else {
           ar.cause().printStackTrace();
@@ -118,7 +118,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     for (int i = 0;i < num;i++) {
       pool.update("UPDATE Fortune SET message = 'Whatever' WHERE id = 9", ar -> {
         if (ar.succeeded()) {
-          UpdateResult result = ar.result();
+          PgResult result = ar.result();
           ctx.assertEquals(1, result.getUpdated());
         } else {
           ctx.assertEquals("closed", ar.cause().getMessage());
@@ -137,7 +137,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     for (int i = 0;i < num;i++) {
       pool.preparedUpdate("UPDATE Fortune SET message = 'Whatever' WHERE id = $1", 9, ar -> {
         if (ar.succeeded()) {
-          UpdateResult result = ar.result();
+          PgResult result = ar.result();
           ctx.assertEquals(1, result.getUpdated());
         } else {
           ctx.assertEquals("closed", ar.cause().getMessage());

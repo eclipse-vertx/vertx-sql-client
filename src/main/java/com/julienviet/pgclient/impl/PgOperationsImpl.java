@@ -17,10 +17,7 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.PgOperations;
-import com.julienviet.pgclient.PgQuery;
-import com.julienviet.pgclient.ResultSet;
-import com.julienviet.pgclient.UpdateResult;
+import com.julienviet.pgclient.*;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -41,10 +38,10 @@ public abstract class PgOperationsImpl implements PgOperations {
   }
 
   @Override
-  public void preparedQuery(String sql, List<Object> params, Handler<AsyncResult<ResultSet>> handler) {
+  public void preparedQuery(String sql, List<Object> params, Handler<AsyncResult<PgResult>> handler) {
     schedulePrepared(sql, ar -> {
       if (ar.succeeded()) {
-        return new ExtendedQueryCommand(ar.result(), params, new PreparedQueryResultHandler(handler));
+        return new ExtendedQueryCommand(ar.result(), params, new ExtendedQueryResultHandler(handler));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
         return null;
@@ -53,18 +50,18 @@ public abstract class PgOperationsImpl implements PgOperations {
   }
 
   @Override
-  public void update(String sql, Handler<AsyncResult<UpdateResult>> handler) {
+  public void update(String sql, Handler<AsyncResult<PgResult>> handler) {
     schedule(new UpdateCommand(sql, handler));
   }
 
   @Override
-  public void preparedUpdate(String sql, List<Object> params, Handler<AsyncResult<UpdateResult>> handler) {
+  public void preparedUpdate(String sql, List<Object> params, Handler<AsyncResult<PgResult>> handler) {
     schedulePrepared(sql, ar -> {
       if (ar.succeeded()) {
         return new PreparedUpdateCommand(
           ar.result(),
           Collections.singletonList(params),
-          ar2 -> handler.handle(ar2.map(l -> l.get(0))));
+          ar2 -> handler.handle(ar2.map(l -> new PgResultImpl(l.get(0).getUpdated()))));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
         return null;
@@ -73,13 +70,13 @@ public abstract class PgOperationsImpl implements PgOperations {
   }
 
   @Override
-  public void preparedBatchUpdate(String sql, List<List<Object>> list, Handler<AsyncResult<UpdateResult>> handler) {
+  public void preparedBatchUpdate(String sql, List<List<Object>> list, Handler<AsyncResult<PgResult>> handler) {
     schedulePrepared(sql, ar -> {
       if (ar.succeeded()) {
         return new PreparedUpdateCommand(
           ar.result(),
           list,
-          ar2 -> handler.handle(ar2.map(l -> l.get(0))));
+          ar2 -> handler.handle(ar2.map(l -> new PgResultImpl(l.get(0).getUpdated()))));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
         return null;

@@ -141,6 +141,6 @@ public interface PgBatch {
    *
    * @param resultHandler the handler of the result
    */
-  void execute(Handler<AsyncResult<List<UpdateResult>>> resultHandler);
+  void execute(Handler<AsyncResult<List<PgResult>>> resultHandler);
 
 }

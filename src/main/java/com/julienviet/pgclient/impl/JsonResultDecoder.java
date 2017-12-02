@@ -17,60 +17,51 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.codec.Column;
+import com.julienviet.pgclient.PgRow;
 import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.DataType;
 import com.julienviet.pgclient.codec.decoder.ResultDecoder;
-import com.julienviet.pgclient.codec.decoder.message.RowDescription;
 import io.netty.buffer.ByteBuf;
-import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 
-import java.util.ArrayList;
-import java.util.List;
+public class JsonResultDecoder implements ResultDecoder<PgRow> {
 
-public class JsonResultDecoder implements ResultDecoder {
+  private QueryResultHandler handler;
 
-  private List<JsonArray> rows;
-  private Handler<List<JsonArray>> handler;
-
-  public JsonResultDecoder(Handler<List<JsonArray>> handler) {
+  public JsonResultDecoder(QueryResultHandler handler) {
     this.handler = handler;
   }
 
-  public void decode(ByteBuf in, RowDescription rowDesc, DataFormat format) {
-    int len = in.readUnsignedShort();
-    JsonArray row = new JsonArray(new ArrayList(len));
-    for (int c = 0; c < len; ++c) {
-      int length = in.readInt();
-      if (length != -1) {
-        Column columnDesc = rowDesc.getColumns()[c];
-        DataType dataType = columnDesc.getDataType();
-        Object decoded;
-        if (format == DataFormat.TEXT) {
-          decoded = dataType.decodeText(length, in);
-        } else {
-          decoded = dataType.decodeBinary(length, in);
-        }
-        if(decoded != null) {
-          row.add(decoded);
-        } else {
-          row.addNull();
-        }
+  public PgRow createRow(int len) {
+    return new JsonPgRow(len);
+  }
+
+  @Override
+  public void decode(ByteBuf in, int len, DataType<?> dataType, DataFormat format, PgRow row) {
+    JsonPgRow a = (JsonPgRow) row;
+    if (len != -1) {
+      Object decoded;
+      if (format == DataFormat.TEXT) {
+        decoded = dataType.decodeText(len, in);
       } else {
-        row.addNull();
+        decoded = dataType.decodeBinary(len, in);
       }
+      if(decoded != null) {
+        a.add(decoded);
+      } else {
+        a.add(null);
+      }
+    } else {
+      a.add(null);
     }
-    if (rows == null) {
-      rows = new ArrayList<>();
-    }
-    rows.add(row);
+  }
+
+  @Override
+  public void addRow(PgRow row) {
+    handler.addRow(row);
   }
 
   public void complete() {
-    if (rows != null) {
-      handler.handle(rows);
-      rows = null;
-    }
+    handler.endRows();
   }
 }

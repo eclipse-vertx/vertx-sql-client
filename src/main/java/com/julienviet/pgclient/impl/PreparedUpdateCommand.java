@@ -17,7 +17,7 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.UpdateResult;
+import com.julienviet.pgclient.PgResult;
 import com.julienviet.pgclient.codec.decoder.DecodeContext;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.message.BindComplete;
@@ -44,10 +44,10 @@ class PreparedUpdateCommand extends UpdateCommandBase {
 
   final PreparedStatement ps;
   final List<List<Object>> paramsList;
-  final Handler<AsyncResult<List<UpdateResult>>> handler;
-  private ArrayList<UpdateResult> results;
+  final Handler<AsyncResult<List<PgResult>>> handler;
+  private ArrayList<PgResult> results;
 
-  PreparedUpdateCommand(PreparedStatement ps, List<List<Object>> paramsList, Handler<AsyncResult<List<UpdateResult>>> handler) {
+  PreparedUpdateCommand(PreparedStatement ps, List<List<Object>> paramsList, Handler<AsyncResult<List<PgResult>>> handler) {
     this.ps = ps;
     this.paramsList = paramsList;
     this.handler = handler;
@@ -79,8 +79,8 @@ class PreparedUpdateCommand extends UpdateCommandBase {
   }
 
   @Override
-  void handleResult(UpdateResult result) {
-    results.add(result);
+  void handleResult(int updated) {
+    results.add(new PgResultImpl(updated));
     if (results.size() == paramsList.size()) {
       handler.handle(Future.succeededFuture(results));
     }

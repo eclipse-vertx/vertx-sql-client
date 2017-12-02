@@ -18,73 +18,30 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgQuery;
-import com.julienviet.pgclient.ResultSet;
+import com.julienviet.pgclient.PgResult;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class ExtendedPgQueryImpl implements PgQuery, QueryResultHandler {
+public class ExtendedPgQueryImpl implements PgQuery {
 
   private final PgPreparedStatementImpl ps;
   private final List<Object> params;
   private int fetch;
 
-  private Handler<ResultSet> resultHandler;
-  private Handler<Throwable> exceptionHandler;
-  private Handler<Void> endHandler;
-
-  private boolean executed;
   private String portal;
   private boolean completed;
   private boolean closed;
+  private ExtendedQueryResultHandler result;
 
   ExtendedPgQueryImpl(PgPreparedStatementImpl ps, List<Object> params) {
     this.ps = ps;
     this.params = params;
-  }
-
-  @Override
-  public PgQuery exceptionHandler(Handler<Throwable> handler) {
-    exceptionHandler = handler;
-    return this;
-  }
-  @Override
-  public PgQuery handler(Handler<ResultSet> handler) {
-    if (handler != null) {
-      resultHandler = handler;
-      if (!executed) {
-        executed = true;
-        portal = fetch > 0 ? UUID.randomUUID().toString() : null;
-        ps.execute(params, fetch, portal, false, this);
-      }
-    } else {
-      if (!completed) {
-        throw new UnsupportedOperationException("Todo : unsubscribe");
-      }
-    }
-    return this;
-  }
-
-  @Override
-  public PgQuery pause() {
-    return this;
-  }
-
-  @Override
-  public PgQuery resume() {
-    return this;
-  }
-
-  @Override
-  public PgQuery endHandler(Handler<Void> handler) {
-    endHandler = handler;
-    return this;
   }
 
   private <T> void callHandler(Handler<T> handler, T event) {
@@ -103,40 +60,28 @@ public class ExtendedPgQueryImpl implements PgQuery, QueryResultHandler {
   }
 
   @Override
-  public void result(ResultSet result, boolean suspended) {
-    if (closed) {
-      return;
-    }
-    callHandler(resultHandler, result);
-    if (closed) {
-      return;
-    }
-    if (suspended) {
-      ps.execute(params, fetch, portal, true, this);
+  public boolean hasNext() {
+    return result.isSuspended();
+  }
+
+  @Override
+  public void next(Handler<AsyncResult<PgResult>> handler) {
+    if (!result.isSuspended()) {
+      handler.handle(Future.failedFuture(new NoSuchElementException()));
     } else {
-      if (!completed) {
-        completed = true;
-        callHandler(endHandler, null);
-      }
+      result = new ExtendedQueryResultHandler(handler);
+      ps.execute(params, fetch, portal, true, result);
     }
-  }
-/*
-  @Override
-  public void execute(Handler<AsyncResult<ResultSet>> handler) {
-    ps.execute(params, fetch, portal, true, new PreparedQueryResultHandler(handler));
-  }
-*/
-
-  @Override
-  public void end() {
   }
 
   @Override
-  public void fail(Throwable cause) {
-    if (!completed) {
-      completed = true;
-      callHandler(exceptionHandler, cause);
+  public void execute(Handler<AsyncResult<PgResult>> handler) {
+    if (result != null) {
+      throw new IllegalStateException();
     }
+    result = new ExtendedQueryResultHandler(handler);
+    portal = fetch > 0 ? UUID.randomUUID().toString() : null;
+    ps.execute(params, fetch, portal, false, result);
   }
 
   @Override
@@ -149,7 +94,6 @@ public class ExtendedPgQueryImpl implements PgQuery, QueryResultHandler {
       } else {
         if (!completed) {
           completed = true;
-          callHandler(endHandler, null);
           ps.closePortal(portal, completionHandler);
         }
       }

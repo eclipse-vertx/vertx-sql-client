@@ -81,8 +81,8 @@ public class PgConnectionImpl extends PgOperationsImpl implements PgConnection, 
   }
 
   @Override
-  public void execute(String sql, Handler<AsyncResult<ResultSet>> handler) {
-    conn.schedule(new SimpleQueryCommand(sql, new ResultSetBuilder(handler)));
+  public void execute(String sql, Handler<AsyncResult<PgResult>> handler) {
+    conn.schedule(new SimpleQueryCommand(sql, new SimpleQueryResultHandler(handler)));
   }
 
   @Override

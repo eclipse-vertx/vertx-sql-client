@@ -20,12 +20,10 @@ package com.julienviet.pgclient;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.streams.ReadStream;
 
 @VertxGen
-public interface PgQuery extends ReadStream<ResultSet> {
+public interface PgQuery {
 
   /**
    * Set the fetch size of the query when executed.
@@ -38,23 +36,11 @@ public interface PgQuery extends ReadStream<ResultSet> {
   @Fluent
   PgQuery fetch(int size);
 
-  default void execute(Handler<AsyncResult<ResultSet>> handler) {
-    Future<ResultSet> fut = Future.future();
-    fut.setHandler(handler);
-    exceptionHandler(fut::tryFail);
-    endHandler(v -> fut.tryComplete());
-    handler(fut::tryComplete);
-  }
+  void execute(Handler<AsyncResult<PgResult>> handler);
 
-  PgQuery exceptionHandler(Handler<Throwable> handler);
+  boolean hasNext();
 
-  PgQuery handler(Handler<ResultSet> handler);
-
-  PgQuery pause();
-
-  PgQuery resume();
-
-  PgQuery endHandler(Handler<Void> endHandler);
+  void next(Handler<AsyncResult<PgResult>> handler);
 
   default void close() {
     close(ar -> {});

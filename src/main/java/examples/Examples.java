@@ -37,7 +37,7 @@ public class Examples {
       .setUsername("user")
       .setPassword("secret")
     );
-
+/*
     client.connect(res -> {
       if (res.succeeded()) {
 
@@ -61,6 +61,7 @@ public class Examples {
         System.out.println("Could not connect " + res.cause());
       }
     });
+    */
   }
 
   public void ex2(Vertx vertx) {
@@ -80,7 +81,7 @@ public class Examples {
 
         // Obtained a connection
         PgConnection conn = res.result();
-
+/*
         conn.query("SELECT * FROM USERS").execute(ar -> {
 
           if (ar.succeeded()) {
@@ -94,6 +95,7 @@ public class Examples {
           // Return the connection to the pool
           conn.close();
         });
+      */
       } else {
         System.out.println("Could not obtain a connection " + res.cause());
       }

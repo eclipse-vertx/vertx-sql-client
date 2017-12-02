@@ -17,39 +17,60 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.ResultSet;
+import com.julienviet.pgclient.PgResult;
+import com.julienviet.pgclient.PgRow;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
-/**
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
- */
-public class PreparedQueryResultHandler implements QueryResultHandler {
+public class ExtendedQueryResultHandler implements QueryResultHandler {
 
+  private final Handler<AsyncResult<PgResult>> handler;
+  private JsonPgRow head;
+  private JsonPgRow tail;
+  private int size;
+  private Throwable failure;
   private boolean suspended;
-  private final Handler<AsyncResult<ResultSet>> handler;
 
-  public PreparedQueryResultHandler(Handler<AsyncResult<ResultSet>> handler) {
+  public ExtendedQueryResultHandler(Handler<AsyncResult<PgResult>> handler) {
     this.handler = handler;
   }
 
-  public boolean suspended() {
+  public boolean isSuspended() {
     return suspended;
   }
 
   @Override
-  public void result(ResultSet result, boolean suspended) {
+  public void addRow(PgRow row) {
+    JsonPgRow jsonRow = (JsonPgRow) row;
+    if (head == null) {
+      head = tail = jsonRow;
+    } else {
+      tail.next = jsonRow;
+      tail = jsonRow;
+    }
+    size++;
+  }
+
+  @Override
+  public void endRows() {
+  }
+
+  @Override
+  public void result(boolean suspended) {
     this.suspended = suspended;
-    handler.handle(Future.succeededFuture(result));
   }
 
   @Override
   public void fail(Throwable cause) {
+    failure = cause;
     handler.handle(Future.failedFuture(cause));
   }
 
   @Override
   public void end() {
+    if (failure == null) {
+      handler.handle(Future.succeededFuture(new PgResultImpl(head, size)));
+    }
   }
 }

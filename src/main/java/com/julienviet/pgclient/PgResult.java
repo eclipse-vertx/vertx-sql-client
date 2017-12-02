@@ -18,23 +18,16 @@
 package com.julienviet.pgclient;
 
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-
-/**
- * The binding of a {@link PgPreparedStatement} and a set of parameters that can be executed once.
- *
- * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
- */
 
 @VertxGen
-public interface PgUpdate {
-  /**
-   * Executes the query, the {@code handler} will be called when the update result is available or
-   * if an error occurs.
-   * <p/>
-   *
-   * @param handler the handler to call back
-   */
-  void execute(Handler<AsyncResult<PgResult>> handler);
+public interface PgResult {
+
+  default int getUpdated() {
+    return 0;
+  }
+
+  int getNumRows();
+
+  PgRowIterator rows();
+
 }

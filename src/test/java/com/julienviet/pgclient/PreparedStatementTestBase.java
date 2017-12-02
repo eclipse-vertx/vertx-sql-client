@@ -28,10 +28,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 /**
@@ -64,7 +60,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
         PgQuery query = ps.query(1);
         query.execute(ctx.asyncAssertSuccess(results -> {
           ctx.assertEquals(1, results.getNumRows());
-          JsonArray row = results.getResults().get(0);
+          PgRow row = results.rows().next();
           ctx.assertEquals(1, row.getInteger(0));
           ctx.assertEquals("fortune: No such file or directory", row.getString(1));
           ps.close(ctx.asyncAssertSuccess(ar -> {
@@ -90,7 +86,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
       }));
     }));
   }
-
+/*
   @Test
   public void testQueryStream(TestContext ctx) {
     Async async = ctx.async();
@@ -109,7 +105,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
       }));
     }));
   }
-
+*/
   @Test
   public void testQueryParseError(TestContext ctx) {
     Async async = ctx.async();
@@ -146,41 +142,17 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
         conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6", ctx.asyncAssertSuccess(ps -> {
           PgQuery query = ps.query(1, 8, 4, 11, 2, 9);
           query.fetch(4);
-          List<ResultSet> results = new ArrayList<>();
-          query.endHandler(v -> {
-            ctx.assertEquals(2, results.size());
-            ctx.assertEquals(4, results.get(0).getNumRows());
-            ctx.assertEquals(2, results.get(1).getNumRows());
-            async.complete();
-          });
-          query.handler(result -> {
-            ctx.assertNotNull(result.getColumnNames());
-            results.add(result);
-          });
-        }));
-      }));
-    }));
-  }
-
-  @Test
-  public void testQueryStreamCursor(TestContext ctx) {
-    Async async = ctx.async();
-    client.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
-        conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6", ctx.asyncAssertSuccess(ps -> {
-          PgQuery stream = ps.query(1, 8, 4, 11, 2, 9);
-          stream.fetch(4);
-          LinkedList<ResultSet> results = new LinkedList<>();
-          stream.exceptionHandler(ctx::fail);
-          stream.endHandler(v -> {
-            ctx.assertEquals(2, results.size());
-            ctx.assertEquals(4, results.get(0).getNumRows());
-            ctx.assertEquals(2, results.get(1).getNumRows());
-            ps.close(ctx.asyncAssertSuccess(result -> {
+          query.execute(ctx.asyncAssertSuccess(result -> {
+            // ctx.assertNotNull(result.getColumnNames());
+            ctx.assertEquals(4, result.getNumRows());
+            ctx.assertTrue(query.hasNext());
+            query.next(ctx.asyncAssertSuccess(result2 -> {
+              // ctx.assertNotNull(result.getColumnNames());
+              ctx.assertEquals(4, result.getNumRows());
+              ctx.assertFalse(query.hasNext());
               async.complete();
             }));
-          });
-          stream.handler(results::add);
+          }));
         }));
       }));
     }));
@@ -215,19 +187,14 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
         conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6", ctx.asyncAssertSuccess(ps -> {
           PgQuery stream = ps.query(1, 8, 4, 11, 2, 9);
           stream.fetch(4);
-          AtomicInteger results = new AtomicInteger();
-          AtomicInteger completions = new AtomicInteger();
-          stream.exceptionHandler(ctx::fail);
-          stream.endHandler(v -> completions.incrementAndGet());
-          stream.handler(result -> {
-            ctx.assertEquals(4, results.addAndGet(result.getNumRows()));
+          stream.execute(ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(4, result.getNumRows());
             stream.close(ctx.asyncAssertSuccess(v1 -> {
-              ctx.assertEquals(1, completions.get());
               ps.close(ctx.asyncAssertSuccess(v2 -> {
                 async.complete();
               }));
             }));
-          });
+          }));
         }));
       }));
     }));

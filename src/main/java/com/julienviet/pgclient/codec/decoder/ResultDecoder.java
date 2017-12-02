@@ -18,14 +18,21 @@
 package com.julienviet.pgclient.codec.decoder;
 
 import com.julienviet.pgclient.codec.DataFormat;
-import com.julienviet.pgclient.codec.decoder.message.RowDescription;
+import com.julienviet.pgclient.codec.DataType;
 import io.netty.buffer.ByteBuf;
 
-public interface ResultDecoder {
+public interface ResultDecoder<T> {
 
-  ResultDecoder NOOP = new ResultDecoder() {
+  ResultDecoder NOOP = new ResultDecoder<Void>() {
     @Override
-    public void decode(ByteBuf in, RowDescription rowDesc, DataFormat format) {
+    public Void createRow(int len) {
+      return null;
+    }
+    @Override
+    public void decode(ByteBuf in, int len, DataType<?> dataType, DataFormat format, Void row) {
+    }
+    @Override
+    public void addRow(Void row) {
     }
     @Override
     public void complete() {
@@ -33,6 +40,8 @@ public interface ResultDecoder {
   };
 
 
-  void decode(ByteBuf in, RowDescription rowDesc, DataFormat format);
+  T createRow(int len);
+  void decode(ByteBuf in, int len, DataType<?> dataType, DataFormat format, T row);
+  void addRow(T row);
   void complete();
 }

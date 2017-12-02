@@ -39,30 +39,31 @@ var client = PgClient.create(vertx, {
   "username" : "user",
   "password" : "secret"
 });
+/*
+    client.connect(res -> {
+      if (res.succeeded()) {
 
-client.connect(function (res, res_err) {
-  if (res_err == null) {
+        // Connected
+        PgConnection conn = res.result();
 
-    // Connected
-    var conn = res;
+        conn.query("SELECT * FROM USERS").execute(ar -> {
 
-    conn.query("SELECT * FROM USERS").execute(function (ar, ar_err) {
+          if (ar.succeeded()) {
 
-      if (ar_err == null) {
+            // Use result set
+            ResultSet rs = ar.result();
+          } else {
+            System.out.println("It failed");
+          }
 
-        // Use result set
-        var rs = ar;
+          // Close the connection
+          conn.close();
+        });
       } else {
-        console.log("It failed");
+        System.out.println("Could not connect " + res.cause());
       }
-
-      // Close the connection
-      conn.close();
     });
-  } else {
-    console.log("Could not connect " + res_err);
-  }
-});
+    */
 
 ----
 
@@ -89,20 +90,21 @@ pool.getConnection(function (res, res_err) {
 
     // Obtained a connection
     var conn = res;
+    /*
+            conn.query("SELECT * FROM USERS").execute(ar -> {
 
-    conn.query("SELECT * FROM USERS").execute(function (ar, ar_err) {
+              if (ar.succeeded()) {
 
-      if (ar_err == null) {
+                // Use result set
+                ResultSet rs = ar.result();
+              } else {
+                System.out.println("It failed");
+              }
 
-        // Use result set
-        var rs = ar;
-      } else {
-        console.log("It failed");
-      }
-
-      // Return the connection to the pool
-      conn.close();
-    });
+              // Return the connection to the pool
+              conn.close();
+            });
+          */
   } else {
     console.log("Could not obtain a connection " + res_err);
   }

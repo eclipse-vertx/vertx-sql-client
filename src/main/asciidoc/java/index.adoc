@@ -37,30 +37,6 @@ PgClient client = PgClient.create(vertx, new PgClientOptions()
   .setUsername("user")
   .setPassword("secret")
 );
-
-client.connect(res -> {
-  if (res.succeeded()) {
-
-    // Connected
-    PgConnection conn = res.result();
-
-    conn.query("SELECT * FROM USERS").execute(ar -> {
-
-      if (ar.succeeded()) {
-
-        // Use result set
-        ResultSet rs = ar.result();
-      } else {
-        System.out.println("It failed");
-      }
-
-      // Close the connection
-      conn.close();
-    });
-  } else {
-    System.out.println("Could not connect " + res.cause());
-  }
-});
 ----
 
 You can create a pool of connection to obtain a connection instead:
@@ -96,6 +72,7 @@ pool.getConnection(res -> {
       // Return the connection to the pool
       conn.close();
     });
+  */
   } else {
     System.out.println("Could not obtain a connection " + res.cause());
   }

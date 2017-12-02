@@ -18,7 +18,7 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgBatch;
-import com.julienviet.pgclient.UpdateResult;
+import com.julienviet.pgclient.PgResult;
 import com.julienviet.pgclient.codec.decoder.message.ParameterDescription;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -51,7 +51,7 @@ public class BatchImpl implements PgBatch {
   }
 
   @Override
-  public void execute(Handler<AsyncResult<List<UpdateResult>>> resultHandler) {
+  public void execute(Handler<AsyncResult<List<PgResult>>> resultHandler) {
     ps.update(values, resultHandler);
   }
 }

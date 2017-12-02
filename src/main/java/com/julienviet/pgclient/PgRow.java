@@ -17,24 +17,36 @@
 
 package com.julienviet.pgclient;
 
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
-/**
- * The binding of a {@link PgPreparedStatement} and a set of parameters that can be executed once.
- *
- * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
- */
+import java.time.LocalDateTime;
+import java.time.temporal.Temporal;
 
 @VertxGen
-public interface PgUpdate {
-  /**
-   * Executes the query, the {@code handler} will be called when the update result is available or
-   * if an error occurs.
-   * <p/>
-   *
-   * @param handler the handler to call back
-   */
-  void execute(Handler<AsyncResult<PgResult>> handler);
+public interface PgRow {
+
+  Boolean getBoolean(int pos);
+  Object getValue(int pos);
+  Integer getInteger(int pos);
+  Long getLong(int pos);
+  Float getFloat(int pos);
+  Double getDouble(int pos);
+  String getString(int pos);
+  JsonObject getJsonObject(int pos);
+  JsonArray getJsonArray(int pos);
+
+  @GenIgnore
+  LocalDateTime getTimestamp(int pos);
+
+  @GenIgnore
+  Temporal getTimestampTz(int pos);
+
+  @GenIgnore
+  byte[] getBinary(int pos);
+
+  int size();
+
 }

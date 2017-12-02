@@ -18,14 +18,9 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgException;
-import com.julienviet.pgclient.UpdateResult;
-import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
-import com.julienviet.pgclient.codec.decoder.ResultDecoder;
 import com.julienviet.pgclient.codec.decoder.message.CommandComplete;
 import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
-import com.julienviet.pgclient.codec.decoder.message.RowDescription;
-import io.netty.buffer.ByteBuf;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
@@ -33,15 +28,11 @@ import io.netty.buffer.ByteBuf;
 
 abstract class UpdateCommandBase extends CommandBase {
 
-  private UpdateResult updateResult;
-
   @Override
   public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == CommandComplete.class) {
       CommandComplete complete = (CommandComplete) msg;
-      updateResult = new UpdateResult();
-      updateResult.setUpdated(complete.getRowsAffected());
-      handleResult(updateResult);
+      handleResult(complete.getRowsAffected());
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
       fail(new PgException(error));
@@ -50,7 +41,7 @@ abstract class UpdateCommandBase extends CommandBase {
     }
   }
 
-  abstract void handleResult(UpdateResult updateResult);
+  abstract void handleResult(int updated);
 
   abstract void fail(Throwable cause);
 

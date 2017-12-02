@@ -18,17 +18,18 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgQuery;
-import com.julienviet.pgclient.ResultSet;
+import com.julienviet.pgclient.PgResult;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
-public class SimplePgQueryImpl implements PgQuery, QueryResultHandler {
+import java.util.*;
+
+public class SimplePgQueryImpl implements PgQuery {
 
   private final Handler<CommandBase> execHandler;
   private final String sql;
-  private Handler<ResultSet> resultHandler;
-  private Handler<Throwable> exceptionHandler;
-  private Handler<Void> endHandler;
+  private SimpleQueryResultHandler result;
 
   public SimplePgQueryImpl(String sql, Handler<CommandBase> execHandler) {
     this.execHandler = execHandler;
@@ -41,61 +42,30 @@ public class SimplePgQueryImpl implements PgQuery, QueryResultHandler {
   }
 
   @Override
+  public boolean hasNext() {
+    return result.hasNext();
+  }
+
+  @Override
+  public void next(Handler<AsyncResult<PgResult>> handler) {
+    if (result.hasNext()) {
+      handler.handle(Future.succeededFuture(result.next()));
+    } else {
+      handler.handle(Future.failedFuture(new NoSuchElementException()));
+    }
+  }
+
+  @Override
+  public void execute(Handler<AsyncResult<PgResult>> handler) {
+    if (result != null) {
+      throw new IllegalStateException();
+    }
+    result = new SimpleQueryResultHandler(handler);
+    execHandler.handle(new SimpleQueryCommand(sql, result));
+  }
+
+  @Override
   public void close(Handler<AsyncResult<Void>> completionHandler) {
 
   }
-
-  @Override
-  public PgQuery exceptionHandler(Handler<Throwable> handler) {
-    exceptionHandler = handler;
-    return this;
-  }
-
-  @Override
-  public PgQuery handler(Handler<ResultSet> handler) {
-    resultHandler = handler;
-    execHandler.handle(new SimpleQueryCommand(sql, this));
-    return this;
-  }
-
-  @Override
-  public PgQuery pause() {
-    return this;
-  }
-
-  @Override
-  public PgQuery resume() {
-    return this;
-  }
-
-  @Override
-  public PgQuery endHandler(Handler<Void> handler) {
-    endHandler = handler;
-    return this;
-  }
-
-  @Override
-  public void result(ResultSet result, boolean suspended) {
-    Handler<ResultSet> handler = resultHandler;
-    if (handler != null) {
-      handler.handle(result);
-    }
-  }
-
-  @Override
-  public void fail(Throwable cause) {
-    Handler<Throwable> handler = exceptionHandler;
-    if (handler != null) {
-      handler.handle(cause);
-    }
-  }
-
-  @Override
-  public void end() {
-    Handler<Void> handler = endHandler;
-    if (handler != null) {
-      handler.handle(null);
-    }
-  }
-
 }

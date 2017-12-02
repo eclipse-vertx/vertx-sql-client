@@ -17,8 +17,6 @@
 
 package com.julienviet.pgclient;
 
-import io.vertx.ext.unit.TestContext;
-
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
@@ -28,15 +26,4 @@ public class StatementPgPoolTest extends PgPoolTestBase {
   protected PgPool createPool(PgClient client, int size) {
     return client.createPool(new PgPoolOptions().setMode(PoolingMode.STATEMENT).setMaxSize(1));
   }
-
-  @Override
-  public void testPool(TestContext ctx) {
-    super.testPool(ctx);
-  }
-
-  @Override
-  public void testReconnect(TestContext ctx) {
-    super.testReconnect(ctx);
-  }
-
 }

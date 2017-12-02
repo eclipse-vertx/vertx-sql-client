@@ -17,7 +17,6 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.ResultSet;
 import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.decoder.DecodeContext;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
@@ -29,7 +28,6 @@ import com.julienviet.pgclient.codec.encoder.message.Execute;
 import com.julienviet.pgclient.codec.encoder.message.Parse;
 import com.julienviet.pgclient.codec.encoder.message.Sync;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -61,17 +59,11 @@ class ExtendedQueryCommand extends QueryCommandBase {
     this.fetch = fetch;
     this.portal = portal;
     this.suspended = suspended;
-
-    resultSet = new ResultSet().setResults(new ArrayList<>()).setColumnNames(ps.rowDesc.getColumnNames());
   }
 
   @Override
   void exec(SocketConnection conn) {
-    conn.decodeQueue.add(new DecodeContext(false, ps.rowDesc, DataFormat.BINARY, new JsonResultDecoder(json -> {
-      resultSet = new ResultSet();
-      resultSet.setResults(json);
-      resultSet.setColumnNames(ps.rowDesc.getColumnNames());
-    })));
+    conn.decodeQueue.add(new DecodeContext(false, ps.rowDesc, DataFormat.BINARY, new JsonResultDecoder(handler)));
     if (suspended) {
       conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
       conn.writeMessage(Sync.INSTANCE);
@@ -90,7 +82,7 @@ class ExtendedQueryCommand extends QueryCommandBase {
     if (msg.getClass() == ParseComplete.class) {
       // Response to Parse
     } else if (msg.getClass() == PortalSuspended.class) {
-      handler.result(resultSet, true);
+      handler.result(true);
     } else if (msg.getClass() == BindComplete.class) {
       // Response to Bind
     } else {
