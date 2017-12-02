@@ -18,6 +18,7 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgException;
+import com.julienviet.pgclient.PgRow;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.message.*;
 
@@ -27,9 +28,9 @@ import com.julienviet.pgclient.codec.decoder.message.*;
 
 abstract class QueryCommandBase extends CommandBase {
 
-  protected final QueryResultHandler handler;
+  protected final QueryResultHandler<PgRow> handler;
 
-  public QueryCommandBase(QueryResultHandler handler) {
+  public QueryCommandBase(QueryResultHandler<PgRow> handler) {
     this.handler = handler;
   }
 

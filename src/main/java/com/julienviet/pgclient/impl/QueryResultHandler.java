@@ -17,8 +17,6 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.PgRow;
-
 import java.util.List;
 
 /**
@@ -26,13 +24,13 @@ import java.util.List;
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public interface QueryResultHandler {
+public interface QueryResultHandler<T> {
 
   void result(boolean suspended);
 
   void beginRows(List<String> columnNames);
 
-  void addRow(PgRow row);
+  void addRow(T row);
 
   void endRows();
 

@@ -17,6 +17,7 @@
 
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.PgRow;
 import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.decoder.DecodeContext;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
@@ -32,7 +33,7 @@ class SimpleQueryCommand extends QueryCommandBase {
   private final String sql;
   private RowDescription rowDesc;
 
-  SimpleQueryCommand(String sql, QueryResultHandler handler) {
+  SimpleQueryCommand(String sql, QueryResultHandler<PgRow> handler) {
     super(handler);
     this.sql = sql;
   }

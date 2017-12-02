@@ -17,6 +17,7 @@
 
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.PgRow;
 import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.decoder.DecodeContext;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
@@ -43,7 +44,7 @@ class ExtendedQueryCommand extends QueryCommandBase {
 
   ExtendedQueryCommand(PreparedStatement ps,
                        List<Object> params,
-                       QueryResultHandler handler) {
+                       QueryResultHandler<PgRow> handler) {
     this(ps, params, 0, null, false, handler);
   }
 
@@ -52,7 +53,7 @@ class ExtendedQueryCommand extends QueryCommandBase {
                        int fetch,
                        String portal,
                        boolean suspended,
-                       QueryResultHandler handler) {
+                       QueryResultHandler<PgRow> handler) {
     super(handler);
     this.ps = ps;
     this.params = params;

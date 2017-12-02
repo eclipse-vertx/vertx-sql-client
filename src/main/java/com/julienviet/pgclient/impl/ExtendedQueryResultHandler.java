@@ -25,7 +25,7 @@ import io.vertx.core.Handler;
 
 import java.util.List;
 
-public class ExtendedQueryResultHandler implements QueryResultHandler {
+public class ExtendedQueryResultHandler implements QueryResultHandler<PgRow> {
 
   private final Handler<AsyncResult<PgResult<PgRow>>> handler;
   private List<String> columnNames;
