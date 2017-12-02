@@ -24,13 +24,11 @@ import java.util.List;
 @VertxGen
 public interface PgResult<T> {
 
-  default int getUpdated() {
-    return 0;
-  }
+  int updatedCount();
 
   List<String> columnsNames();
 
-  int getNumRows();
+  int size();
 
   PgRowIterator<T> rows();
 

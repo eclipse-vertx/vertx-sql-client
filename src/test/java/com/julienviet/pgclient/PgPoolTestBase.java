@@ -59,7 +59,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
         conn.query("SELECT id, randomnumber from WORLD").execute(ar -> {
           if (ar.succeeded()) {
             PgResult result = ar.result();
-            ctx.assertEquals(10000, result.getNumRows());
+            ctx.assertEquals(10000, result.size());
           } else {
             ctx.assertEquals("closed", ar.cause().getMessage());
           }
@@ -80,7 +80,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
       pool.query("SELECT id, randomnumber from WORLD").execute(ar -> {
         if (ar.succeeded()) {
           PgResult result = ar.result();
-          ctx.assertEquals(10000, result.getNumRows());
+          ctx.assertEquals(10000, result.size());
         } else {
           ctx.assertEquals("closed", ar.cause().getMessage());
         }
@@ -99,7 +99,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
       pool.preparedQuery("SELECT id, randomnumber from WORLD where id=$1", i + 1, ar -> {
         if (ar.succeeded()) {
           PgResult result = ar.result();
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
         } else {
           ar.cause().printStackTrace();
           ctx.assertEquals("closed", ar.cause().getMessage());
@@ -119,7 +119,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
       pool.update("UPDATE Fortune SET message = 'Whatever' WHERE id = 9", ar -> {
         if (ar.succeeded()) {
           PgResult result = ar.result();
-          ctx.assertEquals(1, result.getUpdated());
+          ctx.assertEquals(1, result.updatedCount());
         } else {
           ctx.assertEquals("closed", ar.cause().getMessage());
         }
@@ -138,7 +138,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
       pool.preparedUpdate("UPDATE Fortune SET message = 'Whatever' WHERE id = $1", 9, ar -> {
         if (ar.succeeded()) {
           PgResult result = ar.result();
-          ctx.assertEquals(1, result.getUpdated());
+          ctx.assertEquals(1, result.updatedCount());
         } else {
           ctx.assertEquals("closed", ar.cause().getMessage());
         }

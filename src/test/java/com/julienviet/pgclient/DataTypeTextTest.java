@@ -32,7 +32,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn
         .query("SELECT null")
         .execute(ctx.asyncAssertSuccess(result ->{
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           ctx.assertNull(result.rows().next().getValue(0));
           async.complete();
         }));
@@ -47,7 +47,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn
         .query("SELECT true, false")
         .execute(ctx.asyncAssertSuccess(result ->{
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           PgRow row = result.rows().next();
           ctx.assertEquals(true, row.getBoolean(0));
           ctx.assertEquals(false, row.getBoolean(1));
@@ -64,7 +64,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn
         .query("SELECT 32767::INT2")
         .execute(ctx.asyncAssertSuccess(result ->{
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           ctx.assertEquals((short)32767, result.rows().next().getValue(0));
           async.complete();
         }));
@@ -79,7 +79,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn
         .query("SELECT 2147483647::INT4")
         .execute(ctx.asyncAssertSuccess(result ->{
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           ctx.assertEquals(2147483647, result.rows().next().getInteger(0));
           async.complete();
         }));
@@ -94,7 +94,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn
         .query("SELECT 9223372036854775807::INT8")
         .execute(ctx.asyncAssertSuccess(result ->{
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           ctx.assertEquals(9223372036854775807L, result.rows().next().getLong(0));
           async.complete();
         }));
@@ -109,7 +109,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn
         .query("SELECT 3.4028235E38::FLOAT4")
         .execute(ctx.asyncAssertSuccess(result ->{
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           ctx.assertEquals(3.4028235E38f, result.rows().next().getFloat(0));
           async.complete();
         }));
@@ -124,7 +124,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn
         .query("SELECT 1.7976931348623157E308::FLOAT8")
         .execute(ctx.asyncAssertSuccess(result ->{
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           ctx.assertEquals(1.7976931348623157E308d, result.rows().next().getDouble(0));
           async.complete();
         }));
@@ -139,7 +139,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn
         .query("SELECT 919.999999999999999999999999999999999999::NUMERIC")
         .execute(ctx.asyncAssertSuccess(result ->{
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           ctx.assertEquals(920.0, result.rows().next().getDouble(0));
           async.complete();
         }));
@@ -154,7 +154,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn
         .query("SELECT 'VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X & VERT.X'::NAME")
         .execute(ctx.asyncAssertSuccess(result ->{
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           String name = result.rows().next().getString(0);
           ctx.assertEquals("VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X ", name);
           // must be 63 length
@@ -172,7 +172,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn
         .query("SELECT 'pgClient'::CHAR(15)")
         .execute(ctx.asyncAssertSuccess(result ->{
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           String bpchar = result.rows().next().getString(0);
           ctx.assertEquals("pgClient       ", bpchar);
           ctx.assertEquals(15, bpchar.length());
@@ -189,7 +189,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn
         .query("SELECT 'V'::CHAR")
         .execute(ctx.asyncAssertSuccess(result ->{
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           String sbpchar = result.rows().next().getString(0);
           ctx.assertEquals("V", sbpchar);
           ctx.assertEquals(1, sbpchar.length());
@@ -206,7 +206,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn
         .query("SELECT 'X'::\"char\"")
         .execute(ctx.asyncAssertSuccess(result ->{
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           char character = (char) result.rows().next().getValue(0);
           ctx.assertEquals('X', character);
           async.complete();
@@ -222,7 +222,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn
         .query("SELECT 'pgClient'::VARCHAR(15)")
         .execute(ctx.asyncAssertSuccess(result ->{
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           ctx.assertEquals("pgClient", result.rows().next().getString(0));
           async.complete();
         }));
@@ -237,7 +237,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn
         .query("SELECT 'Vert.x PostgreSQL Client'::TEXT")
         .execute(ctx.asyncAssertSuccess(result ->{
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           ctx.assertEquals("Vert.x PostgreSQL Client", result.rows().next().getString(0));
           async.complete();
         }));
@@ -252,7 +252,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn
         .query("SELECT '50867d3d-0098-4f61-bd31-9309ebf53475'::UUID")
         .execute(ctx.asyncAssertSuccess(result ->{
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           ctx.assertEquals("50867d3d-0098-4f61-bd31-9309ebf53475", result.rows().next().getString(0));
           async.complete();
         }));
@@ -267,7 +267,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn
         .query("SELECT '1981-05-30'::DATE")
         .execute(ctx.asyncAssertSuccess(result ->{
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           ctx.assertEquals("1981-05-30", result.rows().next().getString(0));
           async.complete();
         }));
@@ -282,7 +282,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn
         .query("SELECT '17:55:04.905120'::TIME")
         .execute(ctx.asyncAssertSuccess(result ->{
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           ctx.assertEquals("17:55:04.905120", result.rows().next().getString(0));
           async.complete();
         }));
@@ -297,7 +297,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn
         .query("SELECT '17:55:04.90512+03:07'::TIMETZ")
         .execute(ctx.asyncAssertSuccess(result ->{
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           ctx.assertEquals("17:55:04.905120+03:07", result.rows().next().getString(0));
           async.complete();
         }));
@@ -312,7 +312,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn
         .query("SELECT '2017-05-14 19:35:58.237666'::TIMESTAMP")
         .execute(ctx.asyncAssertSuccess(result ->{
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           ctx.assertEquals(LocalDateTime.parse("2017-05-14T19:35:58.237666"), result.rows().next().getTimestamp(0));
           async.complete();
         }));
@@ -327,7 +327,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn.query("SET TIME ZONE 'UTC'").execute(ctx.asyncAssertSuccess(v -> {
         conn.query("SELECT '2017-05-14 22:35:58.237666-03'::TIMESTAMPTZ").execute(
           ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.getNumRows());
+            ctx.assertEquals(1, result.size());
             ctx.assertEquals(OffsetDateTime.parse("2017-05-15T01:35:58.237666Z", TIMESTAMPTZ_FORMAT).withOffsetSameInstant(ZoneOffset.UTC), result.rows().next().getTimestampTz(0));
             async.complete();
           }));
@@ -343,7 +343,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn.query("SELECT '  {\"str\":\"blah\", \"int\" : 1, \"float\" :" +
         " 3.5, \"object\": {}, \"array\" : []   }'::JSONB")
         .execute(ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           JsonObject jsonObject = result.rows().next().getJsonObject(0);
           ctx.assertEquals(new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" :" +
             " 3.5, \"object\": {}, \"array\" : []}"), jsonObject);
@@ -359,7 +359,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT '  [1,true,null,9.5,\"Hi\" ] '::JSONB").execute(
         ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           JsonArray jsonArray = result.rows().next().getJsonArray(0);
           ctx.assertEquals(new JsonArray("[1,true,null,9.5,\"Hi\"]"), jsonArray);
           async.complete();
@@ -375,7 +375,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn.query("SELECT '    {\"str\":\"blah\", \"int\" : 1, \"float\" :" +
         " 3.5, \"object\": {}, \"array\" : []  }    '::JSON").execute(
         ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           JsonObject jsonObject = result.rows().next().getJsonObject(0);
           ctx.assertEquals(new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" :" +
             " 3.5, \"object\": {}, \"array\" : []}"), jsonObject);
@@ -391,7 +391,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT '     [1,true,null,9.5,\"Hi\"]     '::JSON").execute(
         ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           JsonArray jsonArray = result.rows().next().getJsonArray(0);
           ctx.assertEquals(new JsonArray("[1,true,null,9.5,\"Hi\"]"), jsonArray);
           async.complete();
@@ -406,7 +406,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT ' true '::JSONB, ' false '::JSONB, ' null '::JSONB, ' 7.502 '::JSONB, ' 8 '::JSONB, '\" Really Awesome! \"'::JSONB")
         .execute(ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           PgRow row = result.rows().next();
           ctx.assertEquals(true, row.getBoolean(0));
           ctx.assertEquals(false, row.getBoolean(1));
@@ -428,7 +428,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT ' true '::JSON, ' false '::JSON, ' null '::JSON, ' 7.502 '::JSON, ' 8 '::JSON, '\" Really Awesome! \"'::JSON")
         .execute(ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           PgRow row = result.rows().next();
           ctx.assertEquals(true, row.getBoolean(0));
           ctx.assertEquals(false, row.getBoolean(1));
@@ -450,7 +450,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT '12345678910'::BYTEA, '\u00DE\u00AD\u00BE\u00EF'::BYTEA").execute(
         ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           PgRow row = result.rows().next();
           Buffer bytea1 = row.getBinary(0);
           Buffer bytea2 = row.getBinary(1);

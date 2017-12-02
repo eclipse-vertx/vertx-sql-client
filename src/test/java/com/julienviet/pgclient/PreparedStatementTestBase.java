@@ -19,7 +19,6 @@ package com.julienviet.pgclient;
 
 import com.julienviet.pgclient.codec.util.Util;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -59,7 +58,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
         PgQuery query = ps.query(1);
         query.execute(ctx.asyncAssertSuccess(results -> {
-          ctx.assertEquals(1, results.getNumRows());
+          ctx.assertEquals(1, results.size());
           PgRow row = results.rows().next();
           ctx.assertEquals(1, row.getInteger(0));
           ctx.assertEquals("fortune: No such file or directory", row.getString(1));
@@ -78,7 +77,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6", ctx.asyncAssertSuccess(ps -> {
         PgQuery query = ps.query(1, 8, 4, 11, 2, 9);
         query.execute(ctx.asyncAssertSuccess(results -> {
-          ctx.assertEquals(6, results.getNumRows());
+          ctx.assertEquals(6, results.size());
           ps.close(ctx.asyncAssertSuccess(result -> {
             async.complete();
           }));
@@ -144,11 +143,11 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
           query.fetch(4);
           query.execute(ctx.asyncAssertSuccess(result -> {
             ctx.assertNotNull(result.columnsNames());
-            ctx.assertEquals(4, result.getNumRows());
+            ctx.assertEquals(4, result.size());
             ctx.assertTrue(query.hasNext());
             query.next(ctx.asyncAssertSuccess(result2 -> {
               ctx.assertNotNull(result.columnsNames());
-              ctx.assertEquals(4, result.getNumRows());
+              ctx.assertEquals(4, result.size());
               ctx.assertFalse(query.hasNext());
               async.complete();
             }));
@@ -167,7 +166,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
           PgQuery query = ps.query(1, 8, 4, 11, 2, 9);
           query.fetch(4);
           query.execute(ctx.asyncAssertSuccess(results -> {
-            ctx.assertEquals(4, results.getNumRows());
+            ctx.assertEquals(4, results.size());
             query.close(ctx.asyncAssertSuccess(v1 -> {
               ps.close(ctx.asyncAssertSuccess(v2 -> {
                 async.complete();
@@ -188,7 +187,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
           PgQuery stream = ps.query(1, 8, 4, 11, 2, 9);
           stream.fetch(4);
           stream.execute(ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(4, result.getNumRows());
+            ctx.assertEquals(4, result.size());
             stream.close(ctx.asyncAssertSuccess(v1 -> {
               ps.close(ctx.asyncAssertSuccess(v2 -> {
                 async.complete();

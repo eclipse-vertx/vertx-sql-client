@@ -18,17 +18,13 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.*;
-import com.julienviet.pgclient.codec.DataType;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -80,7 +76,7 @@ class PgPreparedStatementImpl implements PgPreparedStatement {
   void update(List<List<Object>> paramsList, Handler<AsyncResult<List<PgResult>>> handler) {
     conn.schedule(new PreparedUpdateCommand(ps, paramsList, ar -> {
       handler.handle(ar.map(ur -> {
-        return ur.stream().map(a -> new PgResultImpl(a.getUpdated())).collect(Collectors.toList());
+        return ur.stream().map(a -> new PgResultImpl(a.updatedCount())).collect(Collectors.toList());
       }));
     }));
   }

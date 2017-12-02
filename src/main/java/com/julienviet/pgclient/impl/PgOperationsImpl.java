@@ -61,7 +61,7 @@ public abstract class PgOperationsImpl implements PgOperations {
         return new PreparedUpdateCommand(
           ar.result(),
           Collections.singletonList(params),
-          ar2 -> handler.handle(ar2.map(l -> new PgResultImpl(l.get(0).getUpdated()))));
+          ar2 -> handler.handle(ar2.map(l -> new PgResultImpl(l.get(0).updatedCount()))));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
         return null;
@@ -76,7 +76,7 @@ public abstract class PgOperationsImpl implements PgOperations {
         return new PreparedUpdateCommand(
           ar.result(),
           list,
-          ar2 -> handler.handle(ar2.map(l -> new PgResultImpl(l.get(0).getUpdated()))));
+          ar2 -> handler.handle(ar2.map(l -> new PgResultImpl(l.get(0).updatedCount()))));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
         return null;

@@ -53,12 +53,12 @@ public class PgResultImpl implements PgResult<PgRow> {
   }
 
   @Override
-  public int getUpdated() {
+  public int updatedCount() {
     return updated;
   }
 
   @Override
-  public int getNumRows() {
+  public int size() {
     return size;
   }
 

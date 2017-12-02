@@ -21,7 +21,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -109,7 +108,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     PgClient client = PgClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(10000, result.getNumRows());
+        ctx.assertEquals(10000, result.size());
         PgRowIterator<PgRow> it = result.rows();
         for (int i = 0; i < 10000; i++) {
           PgRow row = it.next();
@@ -129,13 +128,13 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       PgQuery query = conn.query("SELECT id, randomnumber from WORLD LIMIT 1;SELECT id, randomnumber from WORLD LIMIT 1");
       query.execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
+        ctx.assertEquals(1, result.size());
         PgRow row1 = result.rows().next();
         ctx.assertTrue(row1.getValue(0) instanceof Integer);
         ctx.assertTrue(row1.getValue(1) instanceof Integer);
         ctx.assertTrue(query.hasNext());
         query.next(ctx.asyncAssertSuccess(result2 -> {
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           PgRow row2 = result.rows().next();
           ctx.assertTrue(row2.getValue(0) instanceof Integer);
           ctx.assertTrue(row2.getValue(1) instanceof Integer);
@@ -156,7 +155,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
         conn.query("SELECT id, randomnumber from WORLD").execute(ar -> {
           if (ar.succeeded()) {
             PgResult result = ar.result();
-            ctx.assertEquals(10000, result.getNumRows());
+            ctx.assertEquals(10000, result.size());
           } else {
             ctx.assertEquals("closed", ar.cause().getMessage());
           }
@@ -188,7 +187,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     PgClient client = PgClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.update("UPDATE Fortune SET message = 'Whatever' WHERE id = 9", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getUpdated());
+        ctx.assertEquals(1, result.updatedCount());
         async.complete();
       }));
     }));
@@ -202,7 +201,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
       conn.update("INSERT INTO Fortune (id, message) VALUES (1, 'Duplicate')", ctx.asyncAssertFailure(err -> {
         ctx.assertEquals("23505", ((PgException) err).getCode());
         conn.query("SELECT 1000").execute(ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.getNumRows());
+          ctx.assertEquals(1, result.size());
           ctx.assertEquals(1000, result.rows().next().getInteger(0));
           async.complete();
         }));
@@ -216,7 +215,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     PgClient client = PgClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.update("INSERT INTO Fortune (id, message) VALUES (13, 'Whatever')", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getUpdated());
+        ctx.assertEquals(1, result.updatedCount());
         async.complete();
       }));
     }));
@@ -228,7 +227,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     PgClient client = PgClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.update("DELETE FROM Fortune where id = 6", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getUpdated());
+        ctx.assertEquals(1, result.updatedCount());
         async.complete();
       }));
     }));
@@ -247,7 +246,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
           ctx.assertEquals(2, results.size());
           for (int i = 0;i < 2;i++) {
             PgResult result = results.get(i);
-            ctx.assertEquals(1, result.getUpdated());
+            ctx.assertEquals(1, result.updatedCount());
           }
           ps.close(ctx.asyncAssertSuccess(result -> {
             async.complete();
@@ -273,7 +272,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
         batch.execute(ctx.asyncAssertFailure(err -> {
           ctx.assertEquals("23505", ((PgException) err).getCode());
           conn.query("SELECT 1000").execute(ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.getNumRows());
+            ctx.assertEquals(1, result.size());
             ctx.assertEquals(1000, result.rows().next().getInteger(0));
             async.complete();
           }));
@@ -373,7 +372,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(2, async.count());
-        ctx.assertEquals(10000, result.getNumRows());
+        ctx.assertEquals(10000, result.size());
         async.countDown();
       }));
       conn.closeHandler(v -> {
@@ -407,10 +406,10 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     PgClient client = PgClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.query("BEGIN").execute(ctx.asyncAssertSuccess(result1 -> {
-        ctx.assertEquals(0, result1.getNumRows());
+        ctx.assertEquals(0, result1.size());
         ctx.assertNotNull(result1.rows());
         conn.query("COMMIT").execute(ctx.asyncAssertSuccess(result2 -> {
-          ctx.assertEquals(0, result2.getNumRows());
+          ctx.assertEquals(0, result2.size());
           async.complete();
         }));
       }));
@@ -423,7 +422,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     PgClientImpl client = (PgClientImpl) PgClient.create(vertx, options);
     client.getConnection(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT 1", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
+        ctx.assertEquals(1, result.rowCount());
         async.complete();
       }));
     }));
@@ -437,7 +436,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
       SQLConnection conn = c.result();
       conn.queryWithParams("SELECT * FROM Fortune WHERE id=$1", new JsonArray().add(1) ,
         ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.getNumRows());
+        ctx.assertEquals(1, result.rowCount());
         async.complete();
       }));
     });
@@ -579,7 +578,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
       conn.prepare("UPDATE Fortune SET message = 'PgClient Rocks!' WHERE id = 2", ctx.asyncAssertSuccess(ps -> {
         PgUpdate update = ps.update();
         update.execute(ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.getUpdated());
+          ctx.assertEquals(1, result.updatedCount());
           conn.prepare("SELECT message FROM Fortune WHERE id = 2", ctx.asyncAssertSuccess(ps2 -> {
             ps2.query()
               .execute(ctx.asyncAssertSuccess(r -> {
@@ -600,7 +599,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
       conn.prepare("UPDATE Fortune SET message = $1 WHERE id = $2", ctx.asyncAssertSuccess(ps -> {
         PgUpdate update = ps.update("PgClient Rocks Again!!", 2);
         update.execute(ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.getUpdated());
+          ctx.assertEquals(1, result.updatedCount());
           conn.prepare("SELECT message FROM Fortune WHERE id = $1", ctx.asyncAssertSuccess(ps2 -> {
             ps2.query(2)
               .execute(ctx.asyncAssertSuccess(r -> {
