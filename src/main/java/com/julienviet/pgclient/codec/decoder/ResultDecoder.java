@@ -24,11 +24,11 @@ public interface ResultDecoder<T> {
 
   ResultDecoder NOOP = new ResultDecoder<Void>() {
     @Override
-    public Void createRow(int len) {
+    public Void createRow(int size) {
       return null;
     }
     @Override
-    public void decode(ByteBuf in, int len, DataType.Decoder codec, Void row) {
+    public void decodeColumnToRow(Void row, ByteBuf in, int len, DataType.Decoder decoder) {
     }
     @Override
     public void addRow(Void row) {
@@ -39,8 +39,8 @@ public interface ResultDecoder<T> {
   };
 
 
-  T createRow(int len);
-  void decode(ByteBuf in, int len, DataType.Decoder codec, T row);
+  T createRow(int size);
+  void decodeColumnToRow(T row, ByteBuf in, int len, DataType.Decoder decoder);
   void addRow(T row);
   void complete();
 }

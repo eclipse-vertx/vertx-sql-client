@@ -30,15 +30,15 @@ public class JsonResultDecoder implements ResultDecoder<PgRow> {
     this.handler = handler;
   }
 
-  public PgRow createRow(int len) {
-    return new JsonPgRow(len);
+  public PgRow createRow(int size) {
+    return new JsonPgRow(size);
   }
 
   @Override
-  public void decode(ByteBuf in, int len, DataType.Decoder codec, PgRow row) {
+  public void decodeColumnToRow(PgRow row, ByteBuf in, int len, DataType.Decoder decoder) {
     JsonPgRow a = (JsonPgRow) row;
     if (len != -1) {
-      Object decoded = codec.decode(len, in);
+      Object decoded = decoder.decode(len, in);
       if(decoded != null) {
         a.add(decoded);
       } else {
