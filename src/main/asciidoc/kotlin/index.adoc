@@ -181,7 +181,7 @@ conn.prepare("SELECT * FROM USERS", { ar1 ->
 
           println("Get next 100")
           query.next({ ar3 ->
-            // ...
+            // Continue...
           })
         } else {
           // We are done
@@ -237,34 +237,16 @@ Prepared statements can also be used for update operations
 
 [source,kotlin]
 ----
-conn.prepare("UPDATE USERS SET name=\$$1 WHERE id=\$$2", { ar1 ->
 
-  if (ar1.succeeded()) {
-    var preparedStatement = ar1.result()
+// Prepare (when not cached)
+// Execute
+conn.preparedQuery("UPDATE USERS SET name=\$$1 WHERE id=\$$2", Tuple.of(2, "EMAD ALBLUESHI"), { ar ->
 
-    // Create an update : bind parameters
-    var update = preparedStatement.query(Tuple.of(2, "EMAD ALBLUESHI"))
-
-    update.execute({ res ->
-      if (res.succeeded()) {
-        // Process results
-        var result = res.result()
-      } else {
-        println("Update failed ${res.cause()}")
-      }
-    })
-
-    // Or fluently
-    preparedStatement.query(Tuple.of(1, "JULIEN VIET")).execute({ res ->
-      if (res.succeeded()) {
-        // Process results
-        var result = res.result()
-      } else {
-        println("Update failed ${res.cause()}")
-      }
-    })
+  if (ar.succeeded()) {
+    // Process results
+    var result = ar.result()
   } else {
-    println("Could not prepare statement ${ar1.cause()}")
+    println("Update failed ${ar.cause()}")
   }
 })
 

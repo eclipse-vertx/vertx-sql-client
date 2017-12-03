@@ -45,6 +45,6 @@ public interface PgOperations {
    */
   void preparedQuery(String sql, Tuple params, Handler<AsyncResult<PgResult<Tuple>>> handler);
 
-  void preparedBatch(String sql, List<Tuple> list, Handler<AsyncResult<PgResult<Tuple>>> handler);
+  void preparedBatch(String sql, List<Tuple> list, Handler<AsyncResult<List<PgResult>>> handler);
 
 }

@@ -187,7 +187,7 @@ conn.prepare("SELECT * FROM USERS", function (ar1, ar1_err) {
 
           console.log("Get next 100");
           query.next(function (ar3, ar3_err) {
-            // ...
+            // Continue...
           });
         } else {
           // We are done
@@ -244,34 +244,16 @@ Prepared statements can also be used for update operations
 [source,js]
 ----
 var Tuple = require("vertx-pg-client-js/tuple");
-conn.prepare("UPDATE USERS SET name=$1 WHERE id=$2", function (ar1, ar1_err) {
 
-  if (ar1_err == null) {
-    var preparedStatement = ar1;
+// Prepare (when not cached)
+// Execute
+conn.preparedQuery("UPDATE USERS SET name=$1 WHERE id=$2", Tuple.of(2, "EMAD ALBLUESHI"), function (ar, ar_err) {
 
-    // Create an update : bind parameters
-    var update = preparedStatement.query(Tuple.of(2, "EMAD ALBLUESHI"));
-
-    update.execute(function (res, res_err) {
-      if (res_err == null) {
-        // Process results
-        var result = res;
-      } else {
-        console.log("Update failed " + res_err);
-      }
-    });
-
-    // Or fluently
-    preparedStatement.query(Tuple.of(1, "JULIEN VIET")).execute(function (res, res_err) {
-      if (res_err == null) {
-        // Process results
-        var result = res;
-      } else {
-        console.log("Update failed " + res_err);
-      }
-    });
+  if (ar_err == null) {
+    // Process results
+    var result = ar;
   } else {
-    console.log("Could not prepare statement " + ar1_err);
+    console.log("Update failed " + ar_err);
   }
 });
 
