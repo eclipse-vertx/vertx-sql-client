@@ -19,6 +19,7 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgResult;
 import com.julienviet.pgclient.PgRow;
+import com.julienviet.pgclient.codec.Column;
 import com.julienviet.pgclient.codec.DataType;
 import com.julienviet.pgclient.codec.decoder.ResultDecoder;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
@@ -39,33 +40,29 @@ public class JsonResultDecoder implements ResultDecoder<PgRow> {
     this.desc = desc;
   }
 
-  public PgRow createRow(int size) {
-    return new JsonPgRow(size);
-  }
-
   @Override
-  public void decodeColumnToRow(PgRow row, ByteBuf in, int len, DataType.Decoder decoder) {
-    JsonPgRow a = (JsonPgRow) row;
-    if (len != -1) {
-      Object decoded = decoder.decode(len, in);
-      if(decoded != null) {
-        a.add(decoded);
+  public void decodeRow(int len, ByteBuf in) {
+    JsonPgRow row = new JsonPgRow(desc.getColumns().length);
+    for (int c = 0; c < len; ++c) {
+      int length = in.readInt();
+      if (length != -1) {
+        Column columnDesc = desc.getColumns()[c];
+        DataType.Decoder decoder = columnDesc.getCodec();
+        Object decoded = decoder.decode(length, in);
+        if(decoded != null) {
+          row.add(decoded);
+        } else {
+          row.add(null);
+        }
       } else {
-        a.add(null);
+        row.add(null);
       }
-    } else {
-      a.add(null);
     }
-  }
-
-  @Override
-  public void addRow(PgRow row) {
-    JsonPgRow jsonRow = (JsonPgRow) row;
     if (head == null) {
-      head = tail = jsonRow;
+      head = tail = row;
     } else {
-      tail.next = jsonRow;
-      tail = jsonRow;
+      tail.next = row;
+      tail = row;
     }
     size++;
   }

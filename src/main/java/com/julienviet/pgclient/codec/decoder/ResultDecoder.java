@@ -30,8 +30,6 @@ import java.util.NoSuchElementException;
 public interface ResultDecoder<T> {
 
   void init(RowDescription desc);
-  T createRow(int size);
-  void decodeColumnToRow(T row, ByteBuf in, int len, DataType.Decoder decoder);
-  void addRow(T row);
+  void decodeRow(int len, ByteBuf in);
   PgResult<T> complete();
 }

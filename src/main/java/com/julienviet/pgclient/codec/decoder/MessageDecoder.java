@@ -127,18 +127,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
           decodeCtx.decoder.init(decodeCtx.current);
         }
         int len = in.readUnsignedShort();
-        Object row = decodeCtx.decoder.createRow(len);
-        for (int c = 0; c < len; ++c) {
-          int length = in.readInt();
-          if (length != -1) {
-            Column columnDesc = desc.getColumns()[c];
-            DataType.Decoder decoder = columnDesc.getCodec();
-            decodeCtx.decoder.decodeColumnToRow(row, in, length, decoder);
-          } else {
-            decodeCtx.decoder.decodeColumnToRow(row, in, length, null);
-          }
-        }
-        decodeCtx.decoder.addRow(row);
+        decodeCtx.decoder.decodeRow(len, in);
       }
       break;
       case COMMAND_COMPLETE: {
