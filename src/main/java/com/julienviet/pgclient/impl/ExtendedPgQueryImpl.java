@@ -45,12 +45,6 @@ public class ExtendedPgQueryImpl implements PgQuery {
     this.params = params;
   }
 
-  private <T> void callHandler(Handler<T> handler, T event) {
-    if (handler != null) {
-      handler.handle(event);
-    }
-  }
-
   @Override
   public ExtendedPgQueryImpl fetch(int size) {
     if (size < 0) {
