@@ -18,18 +18,18 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgResult;
-import com.julienviet.pgclient.PgTuple;
+import com.julienviet.pgclient.Tuple;
 import com.julienviet.pgclient.PgRowIterator;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class PgResultImpl implements PgResult<PgTuple> {
+public class PgResultImpl implements PgResult<Tuple> {
 
   final int updated;
   final List<String> columnNames;
-  final PgRowImpl rows;
+  final LinkedArrayTuple rows;
   final int size;
 
   public PgResultImpl(int updated) {
@@ -39,7 +39,7 @@ public class PgResultImpl implements PgResult<PgTuple> {
     this.columnNames = Collections.emptyList();
   }
 
-  public PgResultImpl(int updated, List<String> columnNames, PgRowImpl rows, int size) {
+  public PgResultImpl(int updated, List<String> columnNames, LinkedArrayTuple rows, int size) {
     this.updated = updated;
     this.columnNames = columnNames;
     this.rows = rows;
@@ -62,19 +62,19 @@ public class PgResultImpl implements PgResult<PgTuple> {
   }
 
   @Override
-  public PgRowIterator<PgTuple> rows() {
-    return new PgRowIterator<PgTuple>() {
-      PgRowImpl current = rows;
+  public PgRowIterator<Tuple> rows() {
+    return new PgRowIterator<Tuple>() {
+      LinkedArrayTuple current = rows;
       @Override
       public boolean hasNext() {
         return current != null;
       }
       @Override
-      public PgTuple next() {
+      public Tuple next() {
         if (current == null) {
           throw new NoSuchElementException();
         }
-        PgRowImpl r = current;
+        LinkedArrayTuple r = current;
         current = current.next;
         return r;
       }

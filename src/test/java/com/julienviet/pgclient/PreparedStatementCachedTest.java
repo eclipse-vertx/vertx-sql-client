@@ -35,10 +35,10 @@ public class PreparedStatementCachedTest extends PreparedStatementTestBase {
         int val = i;
         Async async = ctx.async();
         conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
-          PgQuery query = ps.query(1);
+          PgQuery query = ps.query(Tuple.of(1));
           query.execute(ctx.asyncAssertSuccess(results -> {
             ctx.assertEquals(1, results.size());
-            PgTuple row = results.rows().next();
+            Tuple row = results.rows().next();
             ctx.assertEquals(1, row.getInteger(0));
             ctx.assertEquals("fortune: No such file or directory", row.getString(1));
             async.complete();

@@ -96,7 +96,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     PgClient client = PgClient.create(vertx, options);
     PgPool pool = createPool(client, 4);
     for (int i = 0;i < num;i++) {
-      pool.preparedQuery("SELECT id, randomnumber from WORLD where id=$1", i + 1, ar -> {
+      pool.preparedQuery("SELECT id, randomnumber from WORLD where id=$1", Tuple.of(i + 1), ar -> {
         if (ar.succeeded()) {
           PgResult result = ar.result();
           ctx.assertEquals(1, result.size());
@@ -135,7 +135,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     PgClient client = PgClient.create(vertx, options);
     PgPool pool = createPool(client, 4);
     for (int i = 0;i < num;i++) {
-      pool.preparedQuery("UPDATE Fortune SET message = 'Whatever' WHERE id = $1", 9, ar -> {
+      pool.preparedQuery("UPDATE Fortune SET message = 'Whatever' WHERE id = $1", Tuple.of(9), ar -> {
         if (ar.succeeded()) {
           PgResult result = ar.result();
           ctx.assertEquals(1, result.updatedCount());

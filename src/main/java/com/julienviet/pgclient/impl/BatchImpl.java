@@ -19,6 +19,7 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgBatch;
 import com.julienviet.pgclient.PgResult;
+import com.julienviet.pgclient.Tuple;
 import com.julienviet.pgclient.codec.decoder.message.ParameterDescription;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -33,7 +34,7 @@ public class BatchImpl implements PgBatch {
 
   private final PgPreparedStatementImpl ps;
   private final ParameterDescription paramDesc;
-  private final ArrayList<List<Object>> values = new ArrayList<>();
+  private final ArrayList<Tuple> values = new ArrayList<>();
 
   BatchImpl(PgPreparedStatementImpl ps, ParameterDescription paramDesc) {
     this.paramDesc = paramDesc;
@@ -41,8 +42,8 @@ public class BatchImpl implements PgBatch {
   }
 
   @Override
-  public PgBatch add(List<Object> args) {
-    String msg = paramDesc.validate(args);
+  public PgBatch add(Tuple args) {
+    String msg = paramDesc.validate((List<Object>) args);
     if (msg != null) {
       throw new IllegalArgumentException(msg);
     }

@@ -26,10 +26,18 @@ import java.util.concurrent.CompletableFuture;
 @Threads(8)
 public class SingleSelectBenchmark extends PgBenchmarkBase {
 
+  Tuple args;
+
+  @Override
+  public void setup() throws Exception {
+    super.setup();
+    args = Tuple.of(1);
+  }
+
   @Benchmark
   public void poolPreparedQuery(Blackhole blackhole) throws Exception {
     CompletableFuture<PgResult> latch = new CompletableFuture<>();
-    pool.preparedQuery("SELECT id, randomnumber from WORLD where id=$1", 1, ar -> {
+    pool.preparedQuery("SELECT id, randomnumber from WORLD where id=$1", args, ar -> {
       if (ar.succeeded()) {
         latch.complete(ar.result());
       } else {
@@ -45,7 +53,7 @@ public class SingleSelectBenchmark extends PgBenchmarkBase {
     pool.getConnection(ar1 -> {
       if (ar1.succeeded()) {
         PgConnection conn = ar1.result();
-        conn.preparedQuery("SELECT id, randomnumber from WORLD where id=$1", 1, ar2 -> {
+        conn.preparedQuery("SELECT id, randomnumber from WORLD where id=$1", args, ar2 -> {
           conn.close();
           if (ar2.succeeded()) {
             latch.complete(ar2.result());
@@ -69,7 +77,7 @@ public class SingleSelectBenchmark extends PgBenchmarkBase {
         conn.prepare("SELECT id, randomnumber from WORLD where id=$1", ar2 -> {
           if (ar2.succeeded()) {
             PgPreparedStatement ps = ar2.result();
-            PgQuery query = ps.query(1);
+            PgQuery query = ps.query(args);
             query.execute(ar3 -> {
               conn.close();
               if (ar3.succeeded()) {

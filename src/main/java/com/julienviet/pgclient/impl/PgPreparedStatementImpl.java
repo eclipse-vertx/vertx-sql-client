@@ -40,8 +40,8 @@ class PgPreparedStatementImpl implements PgPreparedStatement {
   }
 
   @Override
-  public PgQuery query(List<Object> args) {
-    String msg = ps.paramDesc.validate(args);
+  public PgQuery query(Tuple args) {
+    String msg = ps.paramDesc.validate((List<Object>) args);
     if (msg != null) {
       throw new IllegalArgumentException(msg);
     }
@@ -59,15 +59,15 @@ class PgPreparedStatementImpl implements PgPreparedStatement {
     });
   }
 
-  void execute(List<Object> params,
+  void execute(Tuple params,
                int fetch,
                String portal,
                boolean suspended,
-               QueryResultHandler<PgTuple> handler) {
+               QueryResultHandler<Tuple> handler) {
     conn.schedule(new ExtendedQueryCommand<>(ps, params, fetch, portal, suspended, new RowResultDecoder(), handler));
   }
 
-  void batch(List<List<Object>> paramsList, Handler<AsyncResult<List<PgResult<PgTuple>>>> handler) {
+  void batch(List<Tuple> paramsList, Handler<AsyncResult<List<PgResult<Tuple>>>> handler) {
     conn.schedule(new ExtendedQueryCommand<>(ps, paramsList.iterator(), new RowResultDecoder(), new BatchQueryResultHandler(paramsList.size(), handler)));
   }
 

@@ -110,9 +110,9 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(10000, result.size());
-        PgRowIterator<PgTuple> it = result.rows();
+        PgRowIterator<Tuple> it = result.rows();
         for (int i = 0; i < 10000; i++) {
-          PgTuple row = it.next();
+          Tuple row = it.next();
           ctx.assertEquals(2, row.size());
           ctx.assertTrue(row.getValue(0) instanceof Integer);
           ctx.assertTrue(row.getValue(1) instanceof Integer);
@@ -131,14 +131,14 @@ public abstract class PgConnectionTestBase extends PgTestBase {
       query.execute(ctx.asyncAssertSuccess(result1 -> {
         ctx.assertEquals(1, result1.size());
         ctx.assertEquals(Arrays.asList("id", "message"), result1.columnsNames());
-        PgTuple row1 = result1.rows().next();
+        Tuple row1 = result1.rows().next();
         ctx.assertTrue(row1.getValue(0) instanceof Integer);
         ctx.assertTrue(row1.getValue(1) instanceof String);
         ctx.assertTrue(query.hasNext());
         query.next(ctx.asyncAssertSuccess(result2 -> {
           ctx.assertEquals(1, result2.size());
           ctx.assertEquals(Arrays.asList("message", "id"), result2.columnsNames());
-          PgTuple row2 = result2.rows().next();
+          Tuple row2 = result2.rows().next();
           ctx.assertTrue(row2.getValue(0) instanceof String);
           ctx.assertTrue(row2.getValue(1) instanceof Integer);
           ctx.assertFalse(query.hasNext());
@@ -243,8 +243,8 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE Fortune SET message=$1 WHERE id=$2", ctx.asyncAssertSuccess(ps -> {
         PgBatch batch = ps.batch();
-        batch.add("val0", 1);
-        batch.add("val1", 2);
+        batch.add(Tuple.of("val0", 1));
+        batch.add(Tuple.of("val1", 2));
         batch.execute(ctx.asyncAssertSuccess(results -> {
           ctx.assertEquals(2, results.size());
           for (int i = 0;i < 2;i++) {
@@ -271,7 +271,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
       int id = randomWorld();
       conn.prepare("INSERT INTO World (id, randomnumber) VALUES ($1, $2)", ctx.asyncAssertSuccess(worldUpdate -> {
         PgBatch batch = worldUpdate.batch();
-        batch.add(id, 3);
+        batch.add(Tuple.of(id, 3));
         batch.execute(ctx.asyncAssertFailure(err -> {
           ctx.assertEquals("23505", ((PgException) err).getCode());
           conn.query("SELECT 1000").execute(ctx.asyncAssertSuccess(result -> {
@@ -600,11 +600,11 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     PgClient client = PgClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE Fortune SET message = $1 WHERE id = $2", ctx.asyncAssertSuccess(ps -> {
-        PgQuery update = ps.query("PgClient Rocks Again!!", 2);
+        PgQuery update = ps.query(Tuple.of("PgClient Rocks Again!!", 2));
         update.execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.updatedCount());
           conn.prepare("SELECT message FROM Fortune WHERE id = $1", ctx.asyncAssertSuccess(ps2 -> {
-            ps2.query(2)
+            ps2.query(Tuple.of(2))
               .execute(ctx.asyncAssertSuccess(r -> {
                 ctx.assertEquals("PgClient Rocks Again!!", r.rows().next().getValue(0));
                 async.complete();

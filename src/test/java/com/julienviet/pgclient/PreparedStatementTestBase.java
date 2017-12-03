@@ -56,10 +56,10 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     Async async = ctx.async();
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
-        PgQuery query = ps.query(1);
+        PgQuery query = ps.query(Tuple.of(1));
         query.execute(ctx.asyncAssertSuccess(results -> {
           ctx.assertEquals(1, results.size());
-          PgTuple row = results.rows().next();
+          Tuple row = results.rows().next();
           ctx.assertEquals(1, row.getInteger(0));
           ctx.assertEquals("fortune: No such file or directory", row.getString(1));
           ps.close(ctx.asyncAssertSuccess(ar -> {
@@ -75,7 +75,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     Async async = ctx.async();
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6", ctx.asyncAssertSuccess(ps -> {
-        PgQuery query = ps.query(1, 8, 4, 11, 2, 9);
+        PgQuery query = ps.query(Tuple.of(1, 8, 4, 11, 2, 9));
         query.execute(ctx.asyncAssertSuccess(results -> {
           ctx.assertEquals(6, results.size());
           ps.close(ctx.asyncAssertSuccess(result -> {
@@ -123,7 +123,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
         try {
-          ps.query("invalid-id");
+          ps.query(Tuple.of("invalid-id"));
         } catch (IllegalArgumentException e) {
           ctx.assertEquals(Util.buildInvalidArgsError(Stream.of("invalid-id"), Stream.of(Integer.class)), e.getMessage());
           async.complete();
@@ -139,7 +139,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
         conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6", ctx.asyncAssertSuccess(ps -> {
-          PgQuery query = ps.query(1, 8, 4, 11, 2, 9);
+          PgQuery query = ps.query(Tuple.of(1, 8, 4, 11, 2, 9));
           query.fetch(4);
           query.execute(ctx.asyncAssertSuccess(result -> {
             ctx.assertNotNull(result.columnsNames());
@@ -163,7 +163,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
         conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6", ctx.asyncAssertSuccess(ps -> {
-          PgQuery query = ps.query(1, 8, 4, 11, 2, 9);
+          PgQuery query = ps.query(Tuple.of(1, 8, 4, 11, 2, 9));
           query.fetch(4);
           query.execute(ctx.asyncAssertSuccess(results -> {
             ctx.assertEquals(4, results.size());
@@ -184,7 +184,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
         conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6", ctx.asyncAssertSuccess(ps -> {
-          PgQuery stream = ps.query(1, 8, 4, 11, 2, 9);
+          PgQuery stream = ps.query(Tuple.of(1, 8, 4, 11, 2, 9));
           stream.fetch(4);
           stream.execute(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(4, result.size());

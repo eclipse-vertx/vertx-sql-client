@@ -22,7 +22,6 @@ import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
@@ -30,7 +29,7 @@ import java.util.concurrent.CompletableFuture;
 @Threads(8)
 public class UpdateBenchmark extends PgBenchmarkBase {
 
-  List<List<Object>> batch;
+  List<Tuple> batch;
 
   @Override
   public void setup() throws Exception {
@@ -39,7 +38,7 @@ public class UpdateBenchmark extends PgBenchmarkBase {
     batch = new ArrayList<>();
     Random random = new Random();
     for (int id = 0;id < len;id++) {
-      batch.add(Arrays.asList(1 + random.nextInt(10000), id));
+      batch.add(Tuple.of(1 + random.nextInt(10000), id));
     }
   }
 

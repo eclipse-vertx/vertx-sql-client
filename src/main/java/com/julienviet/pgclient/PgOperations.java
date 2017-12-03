@@ -17,13 +17,11 @@
 
 package com.julienviet.pgclient;
 
-import io.vertx.codegen.annotations.GenIgnore;
+import com.julienviet.pgclient.impl.ArrayTuple;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -38,74 +36,15 @@ public interface PgOperations {
 
   /**
    */
-  default void preparedQuery(String sql, Handler<AsyncResult<PgResult<PgTuple>>> handler) {
-    preparedQuery(sql, Collections.emptyList(), handler);
-  }
-
-  /**
-   * @param param1 the first argument of the query
-   */
-  default void preparedQuery(String sql, Object param1, Handler<AsyncResult<PgResult<PgTuple>>> handler) {
-    preparedQuery(sql, Collections.singletonList(param1), handler);
-  }
-
-  /**
-   * @param param1 the first argument of the query
-   * @param param2 the second argument of the query
-   */
-  default void preparedQuery(String sql, Object param1, Object param2, Handler<AsyncResult<PgResult<PgTuple>>> handler) {
-    preparedQuery(sql, Arrays.asList(param1, param2), handler);
-  }
-
-  /**
-   * @param param1 the first argument of the query
-   * @param param2 the second argument of the query
-   * @param param3 the third argument of the query
-   */
-  default void preparedQuery(String sql, Object param1, Object param2, Object param3, Handler<AsyncResult<PgResult<PgTuple>>> handler) {
-    preparedQuery(sql, Arrays.asList(param1, param2, param3), handler);
-  }
-
-  /**
-   * @param param1 the first argument of the query
-   * @param param2 the second argument of the query
-   * @param param3 the third argument of the query
-   * @param param4 the fourth argument of the query
-   */
-  default void preparedQuery(String sql, Object param1, Object param2, Object param3, Object param4, Handler<AsyncResult<PgResult<PgTuple>>> handler) {
-    preparedQuery(sql, Arrays.asList(param1, param2, param3, param4), handler);
-  }
-
-  /**
-   * @param param1 the first argument of the query
-   * @param param2 the second argument of the query
-   * @param param3 the third argument of the query
-   * @param param4 the fourth argument of the query
-   * @param param5 the fifth argument of the query
-   */
-  default void preparedQuery(String sql, Object param1, Object param2, Object param3, Object param4, Object param5, Handler<AsyncResult<PgResult<PgTuple>>> handler) {
-    preparedQuery(sql, Arrays.asList(param1, param2, param3, param4, param5), handler);
-  }
-
-  /**
-   * @param param1 the first argument of the query
-   * @param param2 the second argument of the query
-   * @param param3 the third argument of the query
-   * @param param4 the fourth argument of the query
-   * @param param5 the fifth argument of the query
-   * @param param6 the sixth argument of the query
-   */
-  default void preparedQuery(String sql, Object param1, Object param2, Object param3, Object param4, Object param5, Object param6, Handler<AsyncResult<PgResult<PgTuple>>> handler) {
-    preparedQuery(sql, Arrays.asList(param1, param2, param3, param4, param5, param6), handler);
+  default void preparedQuery(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler) {
+    preparedQuery(sql, ArrayTuple.EMPTY, handler);
   }
 
   /**
    * @param params the list of arguments
    */
-  @GenIgnore
-  void preparedQuery(String sql, List<Object> params, Handler<AsyncResult<PgResult<PgTuple>>> handler);
+  void preparedQuery(String sql, Tuple params, Handler<AsyncResult<PgResult<Tuple>>> handler);
 
-  @GenIgnore
-  void preparedBatch(String sql, List<List<Object>> list, Handler<AsyncResult<PgResult<PgTuple>>> handler);
+  void preparedBatch(String sql, List<Tuple> list, Handler<AsyncResult<PgResult<Tuple>>> handler);
 
 }

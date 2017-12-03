@@ -36,11 +36,11 @@ public interface PgQuery {
   @Fluent
   PgQuery fetch(int size);
 
-  void execute(Handler<AsyncResult<PgResult<PgTuple>>> handler);
+  void execute(Handler<AsyncResult<PgResult<Tuple>>> handler);
 
   boolean hasNext();
 
-  void next(Handler<AsyncResult<PgResult<PgTuple>>> handler);
+  void next(Handler<AsyncResult<PgResult<Tuple>>> handler);
 
   default void close() {
     close(ar -> {});

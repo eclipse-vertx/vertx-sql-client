@@ -19,7 +19,7 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgQuery;
 import com.julienviet.pgclient.PgResult;
-import com.julienviet.pgclient.PgTuple;
+import com.julienviet.pgclient.Tuple;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -32,7 +32,7 @@ import java.util.*;
 public class ExtendedPgQueryImpl implements PgQuery {
 
   private final PgPreparedStatementImpl ps;
-  private final List<Object> params;
+  private final Tuple params;
   private int fetch;
 
   private String portal;
@@ -40,7 +40,7 @@ public class ExtendedPgQueryImpl implements PgQuery {
   private boolean closed;
   private ExtendedQueryResultHandler result;
 
-  ExtendedPgQueryImpl(PgPreparedStatementImpl ps, List<Object> params) {
+  ExtendedPgQueryImpl(PgPreparedStatementImpl ps, Tuple params) {
     this.ps = ps;
     this.params = params;
   }
@@ -60,7 +60,7 @@ public class ExtendedPgQueryImpl implements PgQuery {
   }
 
   @Override
-  public void next(Handler<AsyncResult<PgResult<PgTuple>>> handler) {
+  public void next(Handler<AsyncResult<PgResult<Tuple>>> handler) {
     if (!result.isSuspended()) {
       handler.handle(Future.failedFuture(new NoSuchElementException()));
     } else {
@@ -70,7 +70,7 @@ public class ExtendedPgQueryImpl implements PgQuery {
   }
 
   @Override
-  public void execute(Handler<AsyncResult<PgResult<PgTuple>>> handler) {
+  public void execute(Handler<AsyncResult<PgResult<Tuple>>> handler) {
     if (result != null) {
       throw new IllegalStateException();
     }

@@ -17,18 +17,18 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.PgTuple;
+import com.julienviet.pgclient.Tuple;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 
-public class PgRowImpl extends ArrayList<Object> implements PgTuple {
+public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
-  // Linked list
-  PgRowImpl next;
+  public static Tuple EMPTY = new ArrayTuple(0);
 
   @Override
   public Boolean getBoolean(int pos) {
@@ -85,7 +85,78 @@ public class PgRowImpl extends ArrayList<Object> implements PgTuple {
     return (Temporal) get(pos);
   }
 
-  public PgRowImpl(int len) {
+  @Override
+  public Tuple addBoolean(Boolean value) {
+    return this;
+  }
+
+  @Override
+  public Tuple addValue(Object value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addInteger(Integer value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addLong(Long value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addFloat(Float value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addDouble(Double value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addString(String value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addJsonObject(JsonObject value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addJsonArray(JsonArray value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addBinary(Buffer value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addTimestamp(LocalDateTime value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple getTimestampTz(Temporal value) {
+    add(value);
+    return this;
+  }
+
+  public ArrayTuple(int len) {
     super(len);
   }
 
