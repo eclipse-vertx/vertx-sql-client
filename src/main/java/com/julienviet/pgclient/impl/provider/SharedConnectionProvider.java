@@ -35,8 +35,9 @@ public class SharedConnectionProvider implements ConnectionProvider {
 
   private final Set<Connection.Holder> holders = new HashSet<>();
   private ConnectionProxy shared;
+  private AsyncResult<Connection> sharedAsyncResult;
   private boolean connecting;
-  private ArrayDeque<Future<Connection>> waiters = new ArrayDeque<>();
+  private ArrayDeque<Handler<AsyncResult<Connection>>> waiters = new ArrayDeque<>();
   private Consumer<Handler<AsyncResult<Connection>>> connector;
 
   public SharedConnectionProvider(Consumer<Handler<AsyncResult<Connection>>> connector) {
@@ -52,10 +53,10 @@ public class SharedConnectionProvider implements ConnectionProvider {
 
   @Override
   public void acquire(Handler<AsyncResult<Connection>> waiter) {
-    Future<Connection> fut = Future.<Connection>future().setHandler(waiter);
     if (shared != null) {
-      fut.complete(shared);
+      waiter.handle(sharedAsyncResult);
     } else {
+      Future<Connection> fut = Future.<Connection>future().setHandler(waiter);
       waiters.add(fut);
       if (!connecting) {
         connecting = true;
@@ -83,6 +84,7 @@ public class SharedConnectionProvider implements ConnectionProvider {
                   throw new IllegalStateException();
                 }
                 shared = null;
+                sharedAsyncResult = null;
                 ArrayList<Holder> copy = new ArrayList<>(holders);
                 holders.clear();
                 for (Holder holder : copy) {
@@ -97,15 +99,11 @@ public class SharedConnectionProvider implements ConnectionProvider {
               }
             };
             conn.init(shared);
-            Future<Connection> waiter_;
-            while ((waiter_ = waiters.poll()) != null) {
-              waiter_.complete(shared);
-            }
-          } else {
-            Future<Connection> waiter_;
-            while ((waiter_ = waiters.poll()) != null) {
-              waiter_.fail(ar.cause());
-            }
+            ar = sharedAsyncResult = Future.succeededFuture(shared);
+          }
+          Handler<AsyncResult<Connection>> waiter_;
+          while ((waiter_ = waiters.poll()) != null) {
+            waiter_.handle(ar);
           }
         });
       }
