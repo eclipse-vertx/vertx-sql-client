@@ -17,6 +17,8 @@
 
 package com.julienviet.pgclient.codec;
 
+import io.netty.buffer.ByteBuf;
+
 import java.util.Objects;
 
 /**
@@ -29,6 +31,7 @@ public class Column {
   private final int relationId;
   private final DataType dataType;
   private final DataFormat dataFormat;
+  private final DataType.Decoder codec;
   private final short relationAttributeNo;
   private final short length;
   private final int typeModifier;
@@ -41,6 +44,11 @@ public class Column {
     this.relationId = relationId;
     this.relationAttributeNo = relationAttributeNo;
     this.typeModifier = typeModifier;
+    if (dataFormat == DataFormat.TEXT) {
+      codec = dataType.textDecoder;
+    } else {
+      codec = dataType.binaryDecoder;
+    }
   }
 
   public String getName() {
@@ -69,6 +77,10 @@ public class Column {
 
   public int getTypeModifier() {
     return typeModifier;
+  }
+
+  public DataType.Decoder getCodec() {
+    return codec;
   }
 
   @Override

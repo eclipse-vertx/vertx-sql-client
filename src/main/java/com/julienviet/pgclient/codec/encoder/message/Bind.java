@@ -152,7 +152,7 @@ public class Bind implements OutboundMessage {
           out.writeInt(-1);
         } else {
           DataType dataType = dataTypes[c];
-          dataType.encodeBinary(param, out);
+          dataType.binaryEncoder.encode(param, out);
         }
       }
     }

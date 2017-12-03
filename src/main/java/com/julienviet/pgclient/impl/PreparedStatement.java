@@ -17,12 +17,15 @@
 
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.codec.Column;
+import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.decoder.message.ParameterDescription;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 public class PreparedStatement {
 
@@ -32,6 +35,14 @@ public class PreparedStatement {
   final RowDescription rowDesc;
 
   public PreparedStatement(String sql, String statement, ParameterDescription paramDesc, RowDescription rowDesc) {
+
+    // Fix to use binary
+    if (rowDesc != null) {
+      rowDesc = new RowDescription(Arrays.stream(rowDesc.getColumns())
+        .map(c -> new Column(c.getName(), c.getRelationId(), c.getRelationAttributeNo(), c.getDataType(), c.getLength(), c.getTypeModifier(), DataFormat.BINARY))
+        .toArray(Column[]::new));
+    }
+
     this.sql = sql;
     this.statement = statement != null ? Unpooled.copiedBuffer(statement, StandardCharsets.UTF_8).writeByte(0).asReadOnly() : null;
     this.paramDesc = paramDesc;

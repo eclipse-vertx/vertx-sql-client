@@ -18,17 +18,15 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgRow;
-import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.DataType;
 import com.julienviet.pgclient.codec.decoder.ResultDecoder;
 import io.netty.buffer.ByteBuf;
-import io.vertx.core.json.JsonArray;
 
 public class JsonResultDecoder implements ResultDecoder<PgRow> {
 
-  private QueryResultHandler handler;
+  private QueryResultHandler<PgRow> handler;
 
-  public JsonResultDecoder(QueryResultHandler handler) {
+  public JsonResultDecoder(QueryResultHandler<PgRow> handler) {
     this.handler = handler;
   }
 
@@ -37,15 +35,10 @@ public class JsonResultDecoder implements ResultDecoder<PgRow> {
   }
 
   @Override
-  public void decode(ByteBuf in, int len, DataType<?> dataType, DataFormat format, PgRow row) {
+  public void decode(ByteBuf in, int len, DataType.Decoder codec, PgRow row) {
     JsonPgRow a = (JsonPgRow) row;
     if (len != -1) {
-      Object decoded;
-      if (format == DataFormat.TEXT) {
-        decoded = dataType.decodeText(len, in);
-      } else {
-        decoded = dataType.decodeBinary(len, in);
-      }
+      Object decoded = codec.decode(len, in);
       if(decoded != null) {
         a.add(decoded);
       } else {

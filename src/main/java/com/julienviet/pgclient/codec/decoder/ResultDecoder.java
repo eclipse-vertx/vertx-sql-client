@@ -17,7 +17,6 @@
 
 package com.julienviet.pgclient.codec.decoder;
 
-import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.DataType;
 import io.netty.buffer.ByteBuf;
 
@@ -29,7 +28,7 @@ public interface ResultDecoder<T> {
       return null;
     }
     @Override
-    public void decode(ByteBuf in, int len, DataType<?> dataType, DataFormat format, Void row) {
+    public void decode(ByteBuf in, int len, DataType.Decoder codec, Void row) {
     }
     @Override
     public void addRow(Void row) {
@@ -41,7 +40,7 @@ public interface ResultDecoder<T> {
 
 
   T createRow(int len);
-  void decode(ByteBuf in, int len, DataType<?> dataType, DataFormat format, T row);
+  void decode(ByteBuf in, int len, DataType.Decoder codec, T row);
   void addRow(T row);
   void complete();
 }

@@ -121,16 +121,15 @@ public class MessageDecoder extends ByteToMessageDecoder {
         DecodeContext decodeCtx = decodeQueue.peek();
         RowDescription desc = decodeCtx.peekDesc ? rowDesc : decodeCtx.rowDesc;
         int len = in.readUnsignedShort();
-        DataFormat format = decodeCtx.dataFormat;
         Object row = decodeCtx.decoder.createRow(len);
         for (int c = 0; c < len; ++c) {
           int length = in.readInt();
           if (length != -1) {
             Column columnDesc = desc.getColumns()[c];
-            DataType dataType = columnDesc.getDataType();
-            decodeCtx.decoder.decode(in, length, dataType, format, row);
+            DataType.Decoder decoder = columnDesc.getCodec();
+            decodeCtx.decoder.decode(in, length, decoder, row);
           } else {
-            decodeCtx.decoder.decode(in, length, null, null, row);
+            decodeCtx.decoder.decode(in, length, null, row);
           }
         }
         decodeCtx.decoder.addRow(row);
