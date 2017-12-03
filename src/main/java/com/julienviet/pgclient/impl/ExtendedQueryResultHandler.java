@@ -38,23 +38,23 @@ public class ExtendedQueryResultHandler<T> implements QueryResultHandler<T> {
   }
 
   @Override
-  public void result(boolean suspended) {
-    this.suspended = suspended;
+  public void handleSuspend() {
+    this.suspended = true;
   }
 
   @Override
-  public void fail(Throwable cause) {
+  public void handleFailure(Throwable cause) {
     failure = cause;
     handler.handle(Future.failedFuture(cause));
   }
 
   @Override
-  public void result(PgResult<T> result) {
+  public void handleResult(PgResult<T> result) {
     this.result = result;
   }
 
   @Override
-  public void end() {
+  public void handleEnd() {
     if (failure == null) {
       handler.handle(Future.succeededFuture(result));
     }

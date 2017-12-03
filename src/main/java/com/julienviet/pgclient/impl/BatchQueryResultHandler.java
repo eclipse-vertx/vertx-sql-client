@@ -38,21 +38,21 @@ class BatchQueryResultHandler implements QueryResultHandler<PgRow> {
   }
 
   @Override
-  public void result(PgResult<PgRow> result) {
+  public void handleResult(PgResult<PgRow> result) {
     list.add(result);
   }
 
   @Override
-  public void result(boolean suspended) {
+  public void handleSuspend() {
   }
 
   @Override
-  public void fail(Throwable cause) {
+  public void handleFailure(Throwable cause) {
     failure = cause;
   }
 
   @Override
-  public void end() {
+  public void handleEnd() {
     if (failure != null) {
       handler.handle(Future.failedFuture(failure));
     } else {

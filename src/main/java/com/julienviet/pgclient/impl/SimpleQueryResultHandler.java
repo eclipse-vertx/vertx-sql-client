@@ -35,7 +35,7 @@ public class SimpleQueryResultHandler<T> implements QueryResultHandler<T> {
   }
 
   @Override
-  public void result(PgResult<T> result) {
+  public void handleResult(PgResult<T> result) {
     results.add(result);
   }
 
@@ -52,17 +52,17 @@ public class SimpleQueryResultHandler<T> implements QueryResultHandler<T> {
   }
 
   @Override
-  public void result(boolean suspended) {
+  public void handleSuspend() {
   }
 
   @Override
-  public void fail(Throwable cause) {
+  public void handleFailure(Throwable cause) {
     failure = cause;
     handler.handle(Future.failedFuture(cause));
   }
 
   @Override
-  public void end() {
+  public void handleEnd() {
     if (failure == null) {
       handler.handle(Future.succeededFuture(results.poll()));
     }

@@ -38,11 +38,10 @@ abstract class QueryCommandBase<T> extends CommandBase {
   public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == ReadyForQuery.class) {
       super.handleMessage(msg);
-      handler.end();
+      handler.handleEnd();
     } else if (msg.getClass() == CommandComplete.class) {
       PgResult<T> result = (PgResult<T>) ((CommandComplete) msg).result();
-      handler.result(result);
-      handler.result(false);
+      handler.handleResult(result);
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
       fail(new PgException(error));
@@ -53,6 +52,6 @@ abstract class QueryCommandBase<T> extends CommandBase {
 
   @Override
   void fail(Throwable cause) {
-    handler.fail(cause);
+    handler.handleFailure(cause);
   }
 }

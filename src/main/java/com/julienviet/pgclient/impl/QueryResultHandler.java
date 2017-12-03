@@ -20,18 +20,16 @@ package com.julienviet.pgclient.impl;
 import com.julienviet.pgclient.PgResult;
 
 /**
- * todo : rework callbacks
- *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 public interface QueryResultHandler<T> {
 
-  void result(PgResult<T> result);
+  void handleResult(PgResult<T> result);
 
-  void result(boolean suspended);
+  void handleSuspend();
 
-  void fail(Throwable cause);
+  void handleFailure(Throwable cause);
 
-  void end();
+  void handleEnd();
 
 }
