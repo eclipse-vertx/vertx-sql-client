@@ -263,25 +263,24 @@ public class Examples {
       }
     });
   }
-/*
+
   public void ex9_(PgConnection conn) {
 
     List<Tuple> batch = new ArrayList<>();
     batch.add(Tuple.of("julien", "Julien Viet"));
     batch.add(Tuple.of("emad", "Emad Alblueshi"));
-
-
+    
     conn.preparedBatch("INSERT INTO USERS (id, name) VALUES ($1, $2)", batch, ar -> {
       if (ar.succeeded()) {
 
         // Process results
-        List<List<PgResult>> results = ar.result();
+        PgBatchResult<Tuple> results = ar.result();
       } else {
         System.out.println("Batch failed " + ar.cause());
       }
     });
   }
-*/
+
   public void ex10(Vertx vertx) {
 
     PgClient client = PgClient.create(vertx, new PgClientOptions()
