@@ -22,6 +22,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
 
+import java.util.List;
+
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
@@ -37,7 +39,7 @@ public class Examples {
       .setUsername("user")
       .setPassword("secret")
     );
-/*
+
     client.connect(res -> {
       if (res.succeeded()) {
 
@@ -48,8 +50,8 @@ public class Examples {
 
           if (ar.succeeded()) {
 
-            // Use result set
-            ResultSet rs = ar.result();
+            // Use result
+            PgResult<Tuple> result = ar.result();
           } else {
             System.out.println("It failed");
           }
@@ -61,7 +63,6 @@ public class Examples {
         System.out.println("Could not connect " + res.cause());
       }
     });
-    */
   }
 
   public void ex2(Vertx vertx) {
@@ -81,13 +82,13 @@ public class Examples {
 
         // Obtained a connection
         PgConnection conn = res.result();
-/*
+
         conn.query("SELECT * FROM USERS").execute(ar -> {
 
           if (ar.succeeded()) {
 
             // Use result set
-            ResultSet rs = ar.result();
+            PgResult<Tuple> result = ar.result();
           } else {
             System.out.println("It failed");
           }
@@ -95,7 +96,6 @@ public class Examples {
           // Return the connection to the pool
           conn.close();
         });
-      */
       } else {
         System.out.println("Could not obtain a connection " + res.cause());
       }
@@ -109,23 +109,28 @@ public class Examples {
   }
 
   public void ex4(PgConnection conn) {
-    /*
-    PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS WHERE user_id=$1");
+    conn.prepare("SELECT * FROM USERS WHERE user_id=$1", ar1 -> {
 
-    // Create a query : bind parameters
-    PgQuery query = preparedStatement.query("julien");
+      if (ar1.succeeded()) {
+        PgPreparedStatement preparedStatement = ar1.result();
 
-    // Execute query
-    query.execute(res -> {
-      if (res.succeeded()) {
+        // Create a query : bind parameters
+        PgQuery query = preparedStatement.query(Tuple.of("julien"));
 
-        // Get result
-        ResultSet result = res.result();
+        // Execute query
+        query.execute(ar2 -> {
+          if (ar2.succeeded()) {
+
+            // Get result
+            PgResult<Tuple> result = ar2.result();
+          } else {
+            System.out.println("Query failed " + ar2.cause());
+          }
+        });
       } else {
-        System.out.println("Query failed " + res.cause());
+        System.out.println("Could not prepare statement " + ar1.cause());
       }
     });
-    */
   }
 
   public void ex5(PgPreparedStatement preparedStatement) {
@@ -133,100 +138,130 @@ public class Examples {
   }
 
   public void ex6(PgConnection conn) {
-    /*
-    PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS");
+    conn.prepare("SELECT * FROM USERS", ar1 -> {
+      if (ar1.succeeded()) {
 
-    // Create a query : bind parameters
-    PgQuery query = preparedStatement.query()
-      .fetch(100); // Get at most 100 rows at a time
+        PgPreparedStatement preparedStatement = ar1.result();
 
-    query.endHandler(v -> {
-      // We are done
-    }).exceptionHandler(err -> {
-      System.out.println("Query failed " + err);
-    }).handler(result -> {
-      // Get results
+        // Create a query : bind parameters
+        PgQuery query = preparedStatement.query()
+          .fetch(100); // Get at most 100 rows at a time
+
+        query.execute(ar2 -> {
+
+          if (ar2.succeeded()) {
+            System.out.println("Got at most 100 rows");
+
+            if (query.hasNext()) {
+              // Get results
+              PgResult<Tuple> result = ar2.result();
+
+              System.out.println("Get next 100");
+              query.next(ar3 -> {
+                // ...
+              });
+            } else {
+              // We are done
+            }
+          } else {
+            System.out.println("Query failed " + ar2.cause());
+          }
+        });
+      } else {
+        System.out.println("Could not prepare statement " + ar1.cause());
+      }
     });
-    */
   }
 
   public void ex7(PgConnection conn) {
-    /*
-    PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS");
+    conn.prepare("SELECT * FROM USERS", ar1 -> {
 
-    // Create a query : bind parameters
-    PgQuery query = preparedStatement.query();
+      if (ar1.succeeded()) {
+        PgPreparedStatement preparedStatement = ar1.result();
 
-    // Get at most 100 rows
-    query.fetch(100);
+        // Create a query : bind parameters
+        PgQuery query = preparedStatement.query();
 
-    // Execute query
-    query.execute(res -> {
-      if (res.succeeded()) {
+        // Get at most 100 rows
+        query.fetch(100);
 
-        // Get result
-        ResultSet result = res.result();
+        // Execute query
+        query.execute(res -> {
+          if (res.succeeded()) {
 
-        // Close the query
-        query.close();
+            // Get result
+            PgResult<Tuple> result = res.result();
+
+            // Close the query
+            query.close();
+          } else {
+            System.out.println("Query failed " + res.cause());
+          }
+        });
       } else {
-        System.out.println("Query failed " + res.cause());
+        System.out.println("Could not prepare statement " + ar1.cause());
       }
     });
-    */
   }
 
   public void ex8(PgConnection conn) {
-    /*
-    PgPreparedStatement preparedStatement = conn.prepare("UPDATE USERS SET name=$1 WHERE id=$2");
+    conn.prepare("UPDATE USERS SET name=$1 WHERE id=$2", ar1 -> {
 
-    // Create an update : bind parameters
-    PgUpdate update = preparedStatement.update(2, "EMAD ALBLUESHI");
+      if (ar1.succeeded()) {
+        PgPreparedStatement preparedStatement = ar1.result();
 
-    update.execute(res -> {
-      if(res.succeeded()) {
-        // Process results
-        UpdateResult result = res.result();
+        // Create an update : bind parameters
+        PgQuery update = preparedStatement.query(Tuple.of(2, "EMAD ALBLUESHI"));
+
+        update.execute(res -> {
+          if(res.succeeded()) {
+            // Process results
+            PgResult<Tuple> result = res.result();
+          } else {
+            System.out.println("Update failed " + res.cause());
+          }
+        });
+
+        // Or fluently
+        preparedStatement.query(Tuple.of(1, "JULIEN VIET")).execute(res -> {
+          if(res.succeeded()) {
+            // Process results
+            PgResult<Tuple> result = res.result();
+          } else {
+            System.out.println("Update failed " + res.cause());
+          }
+        });
       } else {
-        System.out.println("Update failed " + res.cause());
+        System.out.println("Could not prepare statement " + ar1.cause());
       }
-
     });
-
-    // Or fluently
-    preparedStatement.update(1, "JULIEN VIET").execute(res -> {
-      if(res.succeeded()) {
-        // Process results
-        UpdateResult result = res.result();
-      } else {
-        System.out.println("Update failed " + res.cause());
-      }
-
-    });
-    */
   }
 
   public void ex9(PgConnection conn) {
-    /*
-    PgPreparedStatement preparedStatement = conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)");
+    conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", ar1 -> {
+      if (ar1.succeeded()) {
+        PgPreparedStatement preparedStatement = ar1.result();
 
-    // Create a query : bind parameters
-    PgBatch batch = preparedStatement.batch();
+        // Create a query : bind parameters
+        PgBatch batch = preparedStatement.batch();
 
-    // Add commands to the batch
-    batch.add("julien", "Julien Viet");
-    batch.add("emad", "Emad Alblueshi");
+        // Add commands to the batch
+        batch.add(Tuple.of("julien", "Julien Viet"));
+        batch.add(Tuple.of("emad", "Emad Alblueshi"));
 
-    batch.execute(res -> {
-      if (res.succeeded()) {
+        batch.execute(res -> {
+          if (res.succeeded()) {
 
-        // Process results
-        List<UpdateResult> results = res.result();
+            // Process results
+            List<PgResult> results = res.result();
+          } else {
+            System.out.println("Batch failed " + res.cause());
+          }
+        });
       } else {
-        System.out.println("Batch failed " + res.cause());
+        System.out.println("Could not prepare statement " + ar1.cause());
       }
     });
-    */
   }
 
   public void ex10(Vertx vertx) {

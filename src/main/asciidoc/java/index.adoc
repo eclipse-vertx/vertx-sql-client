@@ -37,6 +37,30 @@ PgClient client = PgClient.create(vertx, new PgClientOptions()
   .setUsername("user")
   .setPassword("secret")
 );
+
+client.connect(res -> {
+  if (res.succeeded()) {
+
+    // Connected
+    PgConnection conn = res.result();
+
+    conn.query("SELECT * FROM USERS").execute(ar -> {
+
+      if (ar.succeeded()) {
+
+        // Use result
+        PgResult<Tuple> result = ar.result();
+      } else {
+        System.out.println("It failed");
+      }
+
+      // Close the connection
+      conn.close();
+    });
+  } else {
+    System.out.println("Could not connect " + res.cause());
+  }
+});
 ----
 
 You can create a pool of connection to obtain a connection instead:
@@ -64,7 +88,7 @@ pool.getConnection(res -> {
       if (ar.succeeded()) {
 
         // Use result set
-        ResultSet rs = ar.result();
+        PgResult<Tuple> result = ar.result();
       } else {
         System.out.println("It failed");
       }
@@ -72,7 +96,6 @@ pool.getConnection(res -> {
       // Return the connection to the pool
       conn.close();
     });
-  */
   } else {
     System.out.println("Could not obtain a connection " + res.cause());
   }
@@ -94,7 +117,28 @@ The `sql` string can refer to parameters by position, using $1, $2, etc...
 
 [source,java]
 ----
+conn.prepare("SELECT * FROM USERS WHERE user_id=$1", ar1 -> {
 
+  if (ar1.succeeded()) {
+    PgPreparedStatement preparedStatement = ar1.result();
+
+    // Create a query : bind parameters
+    PgQuery query = preparedStatement.query(Tuple.of("julien"));
+
+    // Execute query
+    query.execute(ar2 -> {
+      if (ar2.succeeded()) {
+
+        // Get result
+        PgResult<Tuple> result = ar2.result();
+      } else {
+        System.out.println("Query failed " + ar2.cause());
+      }
+    });
+  } else {
+    System.out.println("Could not prepare statement " + ar1.cause());
+  }
+});
 ----
 
 When you are done with the prepared statement, you should close it:
@@ -110,7 +154,39 @@ By default the query will fetch all results, you can override this and define a 
 
 [source,java]
 ----
+conn.prepare("SELECT * FROM USERS", ar1 -> {
+  if (ar1.succeeded()) {
 
+    PgPreparedStatement preparedStatement = ar1.result();
+
+    // Create a query : bind parameters
+    PgQuery query = preparedStatement.query()
+      .fetch(100); // Get at most 100 rows at a time
+
+    query.execute(ar2 -> {
+
+      if (ar2.succeeded()) {
+        System.out.println("Got at most 100 rows");
+
+        if (query.hasNext()) {
+          // Get results
+          PgResult<Tuple> result = ar2.result();
+
+          System.out.println("Get next 100");
+          query.next(ar3 -> {
+            // ...
+          });
+        } else {
+          // We are done
+        }
+      } else {
+        System.out.println("Query failed " + ar2.cause());
+      }
+    });
+  } else {
+    System.out.println("Could not prepare statement " + ar1.cause());
+  }
+});
 ----
 
 When a query is not completed you can call `link:../../apidocs/com/julienviet/pgclient/PgQuery.html#close--[close]` to release
@@ -118,14 +194,70 @@ the query result in progress:
 
 [source,java]
 ----
+conn.prepare("SELECT * FROM USERS", ar1 -> {
 
+  if (ar1.succeeded()) {
+    PgPreparedStatement preparedStatement = ar1.result();
+
+    // Create a query : bind parameters
+    PgQuery query = preparedStatement.query();
+
+    // Get at most 100 rows
+    query.fetch(100);
+
+    // Execute query
+    query.execute(res -> {
+      if (res.succeeded()) {
+
+        // Get result
+        PgResult<Tuple> result = res.result();
+
+        // Close the query
+        query.close();
+      } else {
+        System.out.println("Query failed " + res.cause());
+      }
+    });
+  } else {
+    System.out.println("Could not prepare statement " + ar1.cause());
+  }
+});
 ----
 
 Prepared statements can also be used for update operations
 
 [source,java]
 ----
+conn.prepare("UPDATE USERS SET name=$1 WHERE id=$2", ar1 -> {
 
+  if (ar1.succeeded()) {
+    PgPreparedStatement preparedStatement = ar1.result();
+
+    // Create an update : bind parameters
+    PgQuery update = preparedStatement.query(Tuple.of(2, "EMAD ALBLUESHI"));
+
+    update.execute(res -> {
+      if(res.succeeded()) {
+        // Process results
+        PgResult<Tuple> result = res.result();
+      } else {
+        System.out.println("Update failed " + res.cause());
+      }
+    });
+
+    // Or fluently
+    preparedStatement.query(Tuple.of(1, "JULIEN VIET")).execute(res -> {
+      if(res.succeeded()) {
+        // Process results
+        PgResult<Tuple> result = res.result();
+      } else {
+        System.out.println("Update failed " + res.cause());
+      }
+    });
+  } else {
+    System.out.println("Could not prepare statement " + ar1.cause());
+  }
+});
 ----
 
 
@@ -133,7 +265,30 @@ Prepared statements can also be used to batch operations in a very efficient man
 
 [source,java]
 ----
+conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", ar1 -> {
+  if (ar1.succeeded()) {
+    PgPreparedStatement preparedStatement = ar1.result();
 
+    // Create a query : bind parameters
+    PgBatch batch = preparedStatement.batch();
+
+    // Add commands to the batch
+    batch.add(Tuple.of("julien", "Julien Viet"));
+    batch.add(Tuple.of("emad", "Emad Alblueshi"));
+
+    batch.execute(res -> {
+      if (res.succeeded()) {
+
+        // Process results
+        List<PgResult> results = res.result();
+      } else {
+        System.out.println("Batch failed " + res.cause());
+      }
+    });
+  } else {
+    System.out.println("Could not prepare statement " + ar1.cause());
+  }
+});
 ----
 
 == Using SSL/TLS

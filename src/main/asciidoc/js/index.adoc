@@ -39,31 +39,30 @@ var client = PgClient.create(vertx, {
   "username" : "user",
   "password" : "secret"
 });
-/*
-    client.connect(res -> {
-      if (res.succeeded()) {
 
-        // Connected
-        PgConnection conn = res.result();
+client.connect(function (res, res_err) {
+  if (res_err == null) {
 
-        conn.query("SELECT * FROM USERS").execute(ar -> {
+    // Connected
+    var conn = res;
 
-          if (ar.succeeded()) {
+    conn.query("SELECT * FROM USERS").execute(function (ar, ar_err) {
 
-            // Use result set
-            ResultSet rs = ar.result();
-          } else {
-            System.out.println("It failed");
-          }
+      if (ar_err == null) {
 
-          // Close the connection
-          conn.close();
-        });
+        // Use result
+        var result = ar;
       } else {
-        System.out.println("Could not connect " + res.cause());
+        console.log("It failed");
       }
+
+      // Close the connection
+      conn.close();
     });
-    */
+  } else {
+    console.log("Could not connect " + res_err);
+  }
+});
 
 ----
 
@@ -90,21 +89,20 @@ pool.getConnection(function (res, res_err) {
 
     // Obtained a connection
     var conn = res;
-    /*
-            conn.query("SELECT * FROM USERS").execute(ar -> {
 
-              if (ar.succeeded()) {
+    conn.query("SELECT * FROM USERS").execute(function (ar, ar_err) {
 
-                // Use result set
-                ResultSet rs = ar.result();
-              } else {
-                System.out.println("It failed");
-              }
+      if (ar_err == null) {
 
-              // Return the connection to the pool
-              conn.close();
-            });
-          */
+        // Use result set
+        var result = ar;
+      } else {
+        console.log("It failed");
+      }
+
+      // Return the connection to the pool
+      conn.close();
+    });
   } else {
     console.log("Could not obtain a connection " + res_err);
   }
@@ -130,23 +128,29 @@ The `sql` string can refer to parameters by position, using $1, $2, etc...
 
 [source,js]
 ----
-/*
-PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS WHERE user_id=$1");
+var Tuple = require("vertx-pg-client-js/tuple");
+conn.prepare("SELECT * FROM USERS WHERE user_id=$1", function (ar1, ar1_err) {
 
-// Create a query : bind parameters
-PgQuery query = preparedStatement.query("julien");
+  if (ar1_err == null) {
+    var preparedStatement = ar1;
 
-// Execute query
-query.execute(res -> {
-  if (res.succeeded()) {
+    // Create a query : bind parameters
+    var query = preparedStatement.query(Tuple.of("julien"));
 
-    // Get result
-    ResultSet result = res.result();
+    // Execute query
+    query.execute(function (ar2, ar2_err) {
+      if (ar2_err == null) {
+
+        // Get result
+        var result = ar2;
+      } else {
+        console.log("Query failed " + ar2_err);
+      }
+    });
   } else {
-    System.out.println("Query failed " + res.cause());
+    console.log("Could not prepare statement " + ar1_err);
   }
 });
-*/
 
 ----
 
@@ -164,21 +168,38 @@ By default the query will fetch all results, you can override this and define a 
 
 [source,js]
 ----
-/*
-PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS");
+conn.prepare("SELECT * FROM USERS", function (ar1, ar1_err) {
+  if (ar1_err == null) {
 
-// Create a query : bind parameters
-PgQuery query = preparedStatement.query()
-  .fetch(100); // Get at most 100 rows at a time
+    var preparedStatement = ar1;
 
-query.endHandler(v -> {
-  // We are done
-}).exceptionHandler(err -> {
-  System.out.println("Query failed " + err);
-}).handler(result -> {
-  // Get results
+    // Create a query : bind parameters
+    var query = preparedStatement.query().fetch(100);
+
+    query.execute(function (ar2, ar2_err) {
+
+      if (ar2_err == null) {
+        console.log("Got at most 100 rows");
+
+        if (query.hasNext()) {
+          // Get results
+          var result = ar2;
+
+          console.log("Get next 100");
+          query.next(function (ar3, ar3_err) {
+            // ...
+          });
+        } else {
+          // We are done
+        }
+      } else {
+        console.log("Query failed " + ar2_err);
+      }
+    });
+  } else {
+    console.log("Could not prepare statement " + ar1_err);
+  }
 });
-*/
 
 ----
 
@@ -187,29 +208,34 @@ the query result in progress:
 
 [source,js]
 ----
-/*
-PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS");
+conn.prepare("SELECT * FROM USERS", function (ar1, ar1_err) {
 
-// Create a query : bind parameters
-PgQuery query = preparedStatement.query();
+  if (ar1_err == null) {
+    var preparedStatement = ar1;
 
-// Get at most 100 rows
-query.fetch(100);
+    // Create a query : bind parameters
+    var query = preparedStatement.query();
 
-// Execute query
-query.execute(res -> {
-  if (res.succeeded()) {
+    // Get at most 100 rows
+    query.fetch(100);
 
-    // Get result
-    ResultSet result = res.result();
+    // Execute query
+    query.execute(function (res, res_err) {
+      if (res_err == null) {
 
-    // Close the query
-    query.close();
+        // Get result
+        var result = res;
+
+        // Close the query
+        query.close();
+      } else {
+        console.log("Query failed " + res_err);
+      }
+    });
   } else {
-    System.out.println("Query failed " + res.cause());
+    console.log("Could not prepare statement " + ar1_err);
   }
 });
-*/
 
 ----
 
@@ -217,33 +243,37 @@ Prepared statements can also be used for update operations
 
 [source,js]
 ----
-/*
-PgPreparedStatement preparedStatement = conn.prepare("UPDATE USERS SET name=$1 WHERE id=$2");
+var Tuple = require("vertx-pg-client-js/tuple");
+conn.prepare("UPDATE USERS SET name=$1 WHERE id=$2", function (ar1, ar1_err) {
 
-// Create an update : bind parameters
-PgUpdate update = preparedStatement.update(2, "EMAD ALBLUESHI");
+  if (ar1_err == null) {
+    var preparedStatement = ar1;
 
-update.execute(res -> {
-  if(res.succeeded()) {
-    // Process results
-    UpdateResult result = res.result();
+    // Create an update : bind parameters
+    var update = preparedStatement.query(Tuple.of(2, "EMAD ALBLUESHI"));
+
+    update.execute(function (res, res_err) {
+      if (res_err == null) {
+        // Process results
+        var result = res;
+      } else {
+        console.log("Update failed " + res_err);
+      }
+    });
+
+    // Or fluently
+    preparedStatement.query(Tuple.of(1, "JULIEN VIET")).execute(function (res, res_err) {
+      if (res_err == null) {
+        // Process results
+        var result = res;
+      } else {
+        console.log("Update failed " + res_err);
+      }
+    });
   } else {
-    System.out.println("Update failed " + res.cause());
+    console.log("Could not prepare statement " + ar1_err);
   }
-
 });
-
-// Or fluently
-preparedStatement.update(1, "JULIEN VIET").execute(res -> {
-  if(res.succeeded()) {
-    // Process results
-    UpdateResult result = res.result();
-  } else {
-    System.out.println("Update failed " + res.cause());
-  }
-
-});
-*/
 
 ----
 
@@ -252,26 +282,31 @@ Prepared statements can also be used to batch operations in a very efficient man
 
 [source,js]
 ----
-/*
-PgPreparedStatement preparedStatement = conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)");
+var Tuple = require("vertx-pg-client-js/tuple");
+conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", function (ar1, ar1_err) {
+  if (ar1_err == null) {
+    var preparedStatement = ar1;
 
-// Create a query : bind parameters
-PgBatch batch = preparedStatement.batch();
+    // Create a query : bind parameters
+    var batch = preparedStatement.batch();
 
-// Add commands to the batch
-batch.add("julien", "Julien Viet");
-batch.add("emad", "Emad Alblueshi");
+    // Add commands to the batch
+    batch.add(Tuple.of("julien", "Julien Viet"));
+    batch.add(Tuple.of("emad", "Emad Alblueshi"));
 
-batch.execute(res -> {
-  if (res.succeeded()) {
+    batch.execute(function (res, res_err) {
+      if (res_err == null) {
 
-    // Process results
-    List<UpdateResult> results = res.result();
+        // Process results
+        var results = res;
+      } else {
+        console.log("Batch failed " + res_err);
+      }
+    });
   } else {
-    System.out.println("Batch failed " + res.cause());
+    console.log("Could not prepare statement " + ar1_err);
   }
 });
-*/
 
 ----
 

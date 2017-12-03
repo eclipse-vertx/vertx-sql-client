@@ -39,31 +39,30 @@ client = VertxPgClient::PgClient.create(vertx, {
   'username' => "user",
   'password' => "secret"
 })
-=begin
-    client.connect(res -> {
-      if (res.succeeded()) {
 
-        // Connected
-        PgConnection conn = res.result();
+client.connect() { |res_err,res|
+  if (res_err == nil)
 
-        conn.query("SELECT * FROM USERS").execute(ar -> {
+    # Connected
+    conn = res
 
-          if (ar.succeeded()) {
+    conn.query("SELECT * FROM USERS").execute() { |ar_err,ar|
 
-            // Use result set
-            ResultSet rs = ar.result();
-          } else {
-            System.out.println("It failed");
-          }
+      if (ar_err == nil)
 
-          // Close the connection
-          conn.close();
-        });
-      } else {
-        System.out.println("Could not connect " + res.cause());
-      }
-    });
-    =end
+        # Use result
+        result = ar
+      else
+        puts "It failed"
+      end
+
+      # Close the connection
+      conn.close()
+    }
+  else
+    puts "Could not connect #{res_err}"
+  end
+}
 
 ----
 
@@ -90,21 +89,20 @@ pool.get_connection() { |res_err,res|
 
     # Obtained a connection
     conn = res
-    =begin
-            conn.query("SELECT * FROM USERS").execute(ar -> {
 
-              if (ar.succeeded()) {
+    conn.query("SELECT * FROM USERS").execute() { |ar_err,ar|
 
-                // Use result set
-                ResultSet rs = ar.result();
-              } else {
-                System.out.println("It failed");
-              }
+      if (ar_err == nil)
 
-              // Return the connection to the pool
-              conn.close();
-            });
-          =end
+        # Use result set
+        result = ar
+      else
+        puts "It failed"
+      end
+
+      # Return the connection to the pool
+      conn.close()
+    }
   else
     puts "Could not obtain a connection #{res_err}"
   end
@@ -130,23 +128,29 @@ The `sql` string can refer to parameters by position, using $1, $2, etc...
 
 [source,ruby]
 ----
-=begin
-PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS WHERE user_id=$1");
+require 'vertx-pg-client/tuple'
+conn.prepare("SELECT * FROM USERS WHERE user_id=$1") { |ar1_err,ar1|
 
-// Create a query : bind parameters
-PgQuery query = preparedStatement.query("julien");
+  if (ar1_err == nil)
+    preparedStatement = ar1
 
-// Execute query
-query.execute(res -> {
-  if (res.succeeded()) {
+    # Create a query : bind parameters
+    query = preparedStatement.query(VertxPgClient::Tuple.of("julien"))
 
-    // Get result
-    ResultSet result = res.result();
-  } else {
-    System.out.println("Query failed " + res.cause());
-  }
-});
-=end
+    # Execute query
+    query.execute() { |ar2_err,ar2|
+      if (ar2_err == nil)
+
+        # Get result
+        result = ar2
+      else
+        puts "Query failed #{ar2_err}"
+      end
+    }
+  else
+    puts "Could not prepare statement #{ar1_err}"
+  end
+}
 
 ----
 
@@ -164,21 +168,38 @@ By default the query will fetch all results, you can override this and define a 
 
 [source,ruby]
 ----
-=begin
-PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS");
+conn.prepare("SELECT * FROM USERS") { |ar1_err,ar1|
+  if (ar1_err == nil)
 
-// Create a query : bind parameters
-PgQuery query = preparedStatement.query()
-  .fetch(100); // Get at most 100 rows at a time
+    preparedStatement = ar1
 
-query.endHandler(v -> {
-  // We are done
-}).exceptionHandler(err -> {
-  System.out.println("Query failed " + err);
-}).handler(result -> {
-  // Get results
-});
-=end
+    # Create a query : bind parameters
+    query = preparedStatement.query().fetch(100)
+
+    query.execute() { |ar2_err,ar2|
+
+      if (ar2_err == nil)
+        puts "Got at most 100 rows"
+
+        if (query.has_next?())
+          # Get results
+          result = ar2
+
+          puts "Get next 100"
+          query.next() { |ar3_err,ar3|
+            # ...
+          }
+        else
+          # We are done
+        end
+      else
+        puts "Query failed #{ar2_err}"
+      end
+    }
+  else
+    puts "Could not prepare statement #{ar1_err}"
+  end
+}
 
 ----
 
@@ -187,29 +208,34 @@ the query result in progress:
 
 [source,ruby]
 ----
-=begin
-PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS");
+conn.prepare("SELECT * FROM USERS") { |ar1_err,ar1|
 
-// Create a query : bind parameters
-PgQuery query = preparedStatement.query();
+  if (ar1_err == nil)
+    preparedStatement = ar1
 
-// Get at most 100 rows
-query.fetch(100);
+    # Create a query : bind parameters
+    query = preparedStatement.query()
 
-// Execute query
-query.execute(res -> {
-  if (res.succeeded()) {
+    # Get at most 100 rows
+    query.fetch(100)
 
-    // Get result
-    ResultSet result = res.result();
+    # Execute query
+    query.execute() { |res_err,res|
+      if (res_err == nil)
 
-    // Close the query
-    query.close();
-  } else {
-    System.out.println("Query failed " + res.cause());
-  }
-});
-=end
+        # Get result
+        result = res
+
+        # Close the query
+        query.close()
+      else
+        puts "Query failed #{res_err}"
+      end
+    }
+  else
+    puts "Could not prepare statement #{ar1_err}"
+  end
+}
 
 ----
 
@@ -217,33 +243,37 @@ Prepared statements can also be used for update operations
 
 [source,ruby]
 ----
-=begin
-PgPreparedStatement preparedStatement = conn.prepare("UPDATE USERS SET name=$1 WHERE id=$2");
+require 'vertx-pg-client/tuple'
+conn.prepare("UPDATE USERS SET name=$1 WHERE id=$2") { |ar1_err,ar1|
 
-// Create an update : bind parameters
-PgUpdate update = preparedStatement.update(2, "EMAD ALBLUESHI");
+  if (ar1_err == nil)
+    preparedStatement = ar1
 
-update.execute(res -> {
-  if(res.succeeded()) {
-    // Process results
-    UpdateResult result = res.result();
-  } else {
-    System.out.println("Update failed " + res.cause());
-  }
+    # Create an update : bind parameters
+    update = preparedStatement.query(VertxPgClient::Tuple.of(2, "EMAD ALBLUESHI"))
 
-});
+    update.execute() { |res_err,res|
+      if (res_err == nil)
+        # Process results
+        result = res
+      else
+        puts "Update failed #{res_err}"
+      end
+    }
 
-// Or fluently
-preparedStatement.update(1, "JULIEN VIET").execute(res -> {
-  if(res.succeeded()) {
-    // Process results
-    UpdateResult result = res.result();
-  } else {
-    System.out.println("Update failed " + res.cause());
-  }
-
-});
-=end
+    # Or fluently
+    preparedStatement.query(VertxPgClient::Tuple.of(1, "JULIEN VIET")).execute() { |res_err,res|
+      if (res_err == nil)
+        # Process results
+        result = res
+      else
+        puts "Update failed #{res_err}"
+      end
+    }
+  else
+    puts "Could not prepare statement #{ar1_err}"
+  end
+}
 
 ----
 
@@ -252,26 +282,31 @@ Prepared statements can also be used to batch operations in a very efficient man
 
 [source,ruby]
 ----
-=begin
-PgPreparedStatement preparedStatement = conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)");
+require 'vertx-pg-client/tuple'
+conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)") { |ar1_err,ar1|
+  if (ar1_err == nil)
+    preparedStatement = ar1
 
-// Create a query : bind parameters
-PgBatch batch = preparedStatement.batch();
+    # Create a query : bind parameters
+    batch = preparedStatement.batch()
 
-// Add commands to the batch
-batch.add("julien", "Julien Viet");
-batch.add("emad", "Emad Alblueshi");
+    # Add commands to the batch
+    batch.add(VertxPgClient::Tuple.of("julien", "Julien Viet"))
+    batch.add(VertxPgClient::Tuple.of("emad", "Emad Alblueshi"))
 
-batch.execute(res -> {
-  if (res.succeeded()) {
+    batch.execute() { |res_err,res|
+      if (res_err == nil)
 
-    // Process results
-    List<UpdateResult> results = res.result();
-  } else {
-    System.out.println("Batch failed " + res.cause());
-  }
-});
-=end
+        # Process results
+        results = res
+      else
+        puts "Batch failed #{res_err}"
+      end
+    }
+  else
+    puts "Could not prepare statement #{ar1_err}"
+  end
+}
 
 ----
 

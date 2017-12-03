@@ -37,31 +37,30 @@ var client = PgClient.create(vertx, PgClientOptions(
   database = "the-db",
   username = "user",
   password = "secret"))
-/*
-    client.connect(res -> {
-      if (res.succeeded()) {
 
-        // Connected
-        PgConnection conn = res.result();
+client.connect({ res ->
+  if (res.succeeded()) {
 
-        conn.query("SELECT * FROM USERS").execute(ar -> {
+    // Connected
+    var conn = res.result()
 
-          if (ar.succeeded()) {
+    conn.query("SELECT * FROM USERS").execute({ ar ->
 
-            // Use result set
-            ResultSet rs = ar.result();
-          } else {
-            System.out.println("It failed");
-          }
+      if (ar.succeeded()) {
 
-          // Close the connection
-          conn.close();
-        });
+        // Use result
+        var result = ar.result()
       } else {
-        System.out.println("Could not connect " + res.cause());
+        println("It failed")
       }
-    });
-    */
+
+      // Close the connection
+      conn.close()
+    })
+  } else {
+    println("Could not connect ${res.cause()}")
+  }
+})
 
 ----
 
@@ -85,21 +84,20 @@ pool.getConnection({ res ->
 
     // Obtained a connection
     var conn = res.result()
-    /*
-            conn.query("SELECT * FROM USERS").execute(ar -> {
 
-              if (ar.succeeded()) {
+    conn.query("SELECT * FROM USERS").execute({ ar ->
 
-                // Use result set
-                ResultSet rs = ar.result();
-              } else {
-                System.out.println("It failed");
-              }
+      if (ar.succeeded()) {
 
-              // Return the connection to the pool
-              conn.close();
-            });
-          */
+        // Use result set
+        var result = ar.result()
+      } else {
+        println("It failed")
+      }
+
+      // Return the connection to the pool
+      conn.close()
+    })
   } else {
     println("Could not obtain a connection ${res.cause()}")
   }
@@ -125,23 +123,28 @@ The `sql` string can refer to parameters by position, using $1, $2, etc...
 
 [source,kotlin]
 ----
-/*
-PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS WHERE user_id=$1");
+conn.prepare("SELECT * FROM USERS WHERE user_id=\$$1", { ar1 ->
 
-// Create a query : bind parameters
-PgQuery query = preparedStatement.query("julien");
+  if (ar1.succeeded()) {
+    var preparedStatement = ar1.result()
 
-// Execute query
-query.execute(res -> {
-  if (res.succeeded()) {
+    // Create a query : bind parameters
+    var query = preparedStatement.query(Tuple.of("julien"))
 
-    // Get result
-    ResultSet result = res.result();
+    // Execute query
+    query.execute({ ar2 ->
+      if (ar2.succeeded()) {
+
+        // Get result
+        var result = ar2.result()
+      } else {
+        println("Query failed ${ar2.cause()}")
+      }
+    })
   } else {
-    System.out.println("Query failed " + res.cause());
+    println("Could not prepare statement ${ar1.cause()}")
   }
-});
-*/
+})
 
 ----
 
@@ -159,21 +162,38 @@ By default the query will fetch all results, you can override this and define a 
 
 [source,kotlin]
 ----
-/*
-PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS");
+conn.prepare("SELECT * FROM USERS", { ar1 ->
+  if (ar1.succeeded()) {
 
-// Create a query : bind parameters
-PgQuery query = preparedStatement.query()
-  .fetch(100); // Get at most 100 rows at a time
+    var preparedStatement = ar1.result()
 
-query.endHandler(v -> {
-  // We are done
-}).exceptionHandler(err -> {
-  System.out.println("Query failed " + err);
-}).handler(result -> {
-  // Get results
-});
-*/
+    // Create a query : bind parameters
+    var query = preparedStatement.query().fetch(100)
+
+    query.execute({ ar2 ->
+
+      if (ar2.succeeded()) {
+        println("Got at most 100 rows")
+
+        if (query.hasNext()) {
+          // Get results
+          var result = ar2.result()
+
+          println("Get next 100")
+          query.next({ ar3 ->
+            // ...
+          })
+        } else {
+          // We are done
+        }
+      } else {
+        println("Query failed ${ar2.cause()}")
+      }
+    })
+  } else {
+    println("Could not prepare statement ${ar1.cause()}")
+  }
+})
 
 ----
 
@@ -182,29 +202,34 @@ the query result in progress:
 
 [source,kotlin]
 ----
-/*
-PgPreparedStatement preparedStatement = conn.prepare("SELECT * FROM USERS");
+conn.prepare("SELECT * FROM USERS", { ar1 ->
 
-// Create a query : bind parameters
-PgQuery query = preparedStatement.query();
+  if (ar1.succeeded()) {
+    var preparedStatement = ar1.result()
 
-// Get at most 100 rows
-query.fetch(100);
+    // Create a query : bind parameters
+    var query = preparedStatement.query()
 
-// Execute query
-query.execute(res -> {
-  if (res.succeeded()) {
+    // Get at most 100 rows
+    query.fetch(100)
 
-    // Get result
-    ResultSet result = res.result();
+    // Execute query
+    query.execute({ res ->
+      if (res.succeeded()) {
 
-    // Close the query
-    query.close();
+        // Get result
+        var result = res.result()
+
+        // Close the query
+        query.close()
+      } else {
+        println("Query failed ${res.cause()}")
+      }
+    })
   } else {
-    System.out.println("Query failed " + res.cause());
+    println("Could not prepare statement ${ar1.cause()}")
   }
-});
-*/
+})
 
 ----
 
@@ -212,33 +237,36 @@ Prepared statements can also be used for update operations
 
 [source,kotlin]
 ----
-/*
-PgPreparedStatement preparedStatement = conn.prepare("UPDATE USERS SET name=$1 WHERE id=$2");
+conn.prepare("UPDATE USERS SET name=\$$1 WHERE id=\$$2", { ar1 ->
 
-// Create an update : bind parameters
-PgUpdate update = preparedStatement.update(2, "EMAD ALBLUESHI");
+  if (ar1.succeeded()) {
+    var preparedStatement = ar1.result()
 
-update.execute(res -> {
-  if(res.succeeded()) {
-    // Process results
-    UpdateResult result = res.result();
+    // Create an update : bind parameters
+    var update = preparedStatement.query(Tuple.of(2, "EMAD ALBLUESHI"))
+
+    update.execute({ res ->
+      if (res.succeeded()) {
+        // Process results
+        var result = res.result()
+      } else {
+        println("Update failed ${res.cause()}")
+      }
+    })
+
+    // Or fluently
+    preparedStatement.query(Tuple.of(1, "JULIEN VIET")).execute({ res ->
+      if (res.succeeded()) {
+        // Process results
+        var result = res.result()
+      } else {
+        println("Update failed ${res.cause()}")
+      }
+    })
   } else {
-    System.out.println("Update failed " + res.cause());
+    println("Could not prepare statement ${ar1.cause()}")
   }
-
-});
-
-// Or fluently
-preparedStatement.update(1, "JULIEN VIET").execute(res -> {
-  if(res.succeeded()) {
-    // Process results
-    UpdateResult result = res.result();
-  } else {
-    System.out.println("Update failed " + res.cause());
-  }
-
-});
-*/
+})
 
 ----
 
@@ -247,26 +275,30 @@ Prepared statements can also be used to batch operations in a very efficient man
 
 [source,kotlin]
 ----
-/*
-PgPreparedStatement preparedStatement = conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)");
+conn.prepare("INSERT INTO USERS (id, name) VALUES (\$$1, \$$2)", { ar1 ->
+  if (ar1.succeeded()) {
+    var preparedStatement = ar1.result()
 
-// Create a query : bind parameters
-PgBatch batch = preparedStatement.batch();
+    // Create a query : bind parameters
+    var batch = preparedStatement.batch()
 
-// Add commands to the batch
-batch.add("julien", "Julien Viet");
-batch.add("emad", "Emad Alblueshi");
+    // Add commands to the batch
+    batch.add(Tuple.of("julien", "Julien Viet"))
+    batch.add(Tuple.of("emad", "Emad Alblueshi"))
 
-batch.execute(res -> {
-  if (res.succeeded()) {
+    batch.execute({ res ->
+      if (res.succeeded()) {
 
-    // Process results
-    List<UpdateResult> results = res.result();
+        // Process results
+        var results = res.result()
+      } else {
+        println("Batch failed ${res.cause()}")
+      }
+    })
   } else {
-    System.out.println("Batch failed " + res.cause());
+    println("Could not prepare statement ${ar1.cause()}")
   }
-});
-*/
+})
 
 ----
 
