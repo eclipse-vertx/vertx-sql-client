@@ -26,10 +26,10 @@ import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 
-public class JsonPgRow extends ArrayList<Object> implements PgRow {
+public class PgRowImpl extends ArrayList<Object> implements PgRow {
 
   // Linked list
-  JsonPgRow next;
+  PgRowImpl next;
 
   @Override
   public Boolean getBoolean(int pos) {
@@ -91,7 +91,7 @@ public class JsonPgRow extends ArrayList<Object> implements PgRow {
     return (Temporal) get(pos);
   }
 
-  public JsonPgRow(int len) {
+  public PgRowImpl(int len) {
     super(len);
   }
 

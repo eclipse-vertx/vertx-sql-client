@@ -28,8 +28,8 @@ import io.netty.buffer.ByteBuf;
 public class JsonResultDecoder implements ResultDecoder<PgRow> {
 
   private RowDescription desc;
-  private JsonPgRow head;
-  private JsonPgRow tail;
+  private PgRowImpl head;
+  private PgRowImpl tail;
   private int size;
 
   public JsonResultDecoder() {
@@ -42,7 +42,7 @@ public class JsonResultDecoder implements ResultDecoder<PgRow> {
 
   @Override
   public void decodeRow(int len, ByteBuf in) {
-    JsonPgRow row = new JsonPgRow(desc.getColumns().length);
+    PgRowImpl row = new PgRowImpl(desc.getColumns().length);
     for (int c = 0; c < len; ++c) {
       int length = in.readInt();
       if (length != -1) {

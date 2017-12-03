@@ -22,7 +22,6 @@ import com.julienviet.pgclient.PgRow;
 import com.julienviet.pgclient.PgRowIterator;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -30,7 +29,7 @@ public class PgResultImpl implements PgResult<PgRow> {
 
   final int updated;
   final List<String> columnNames;
-  final JsonPgRow rows;
+  final PgRowImpl rows;
   final int size;
 
   public PgResultImpl(int updated) {
@@ -40,7 +39,7 @@ public class PgResultImpl implements PgResult<PgRow> {
     this.columnNames = Collections.emptyList();
   }
 
-  public PgResultImpl(List<String> columnNames, JsonPgRow rows, int size) {
+  public PgResultImpl(List<String> columnNames, PgRowImpl rows, int size) {
     this.updated = 0;
     this.columnNames = columnNames;
     this.rows = rows;
@@ -65,7 +64,7 @@ public class PgResultImpl implements PgResult<PgRow> {
   @Override
   public PgRowIterator<PgRow> rows() {
     return new PgRowIterator<PgRow>() {
-      JsonPgRow current = rows;
+      PgRowImpl current = rows;
       @Override
       public boolean hasNext() {
         return current != null;
@@ -75,7 +74,7 @@ public class PgResultImpl implements PgResult<PgRow> {
         if (current == null) {
           throw new NoSuchElementException();
         }
-        JsonPgRow r = current;
+        PgRowImpl r = current;
         current = current.next;
         return r;
       }
