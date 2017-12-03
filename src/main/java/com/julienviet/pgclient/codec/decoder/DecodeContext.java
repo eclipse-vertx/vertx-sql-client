@@ -26,6 +26,7 @@ public class DecodeContext {
   final RowDescription rowDesc;
   final DataFormat dataFormat;
   final ResultDecoder decoder;
+  RowDescription current;
 
   public DecodeContext(boolean peekDesc, RowDescription rowDesc, DataFormat dataFormat, ResultDecoder decoder) {
     this.peekDesc = peekDesc;

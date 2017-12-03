@@ -48,7 +48,6 @@ class SimpleQueryCommand extends QueryCommandBase {
   public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == RowDescription.class) {
       rowDesc = (RowDescription) msg;
-      handler.beginRows(rowDesc.getColumnNames());
     } else {
       super.handleMessage(msg);
     }

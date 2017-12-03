@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.net.ssl.SSLHandshakeException;
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -126,17 +127,19 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     Async async = ctx.async();
     PgClient client = PgClient.create(vertx, options);
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      PgQuery query = conn.query("SELECT id, randomnumber from WORLD LIMIT 1;SELECT id, randomnumber from WORLD LIMIT 1");
-      query.execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.size());
-        PgRow row1 = result.rows().next();
+      PgQuery query = conn.query("SELECT id, message from FORTUNE LIMIT 1;SELECT message, id from FORTUNE LIMIT 1");
+      query.execute(ctx.asyncAssertSuccess(result1 -> {
+        ctx.assertEquals(1, result1.size());
+        ctx.assertEquals(Arrays.asList("id", "message"), result1.columnsNames());
+        PgRow row1 = result1.rows().next();
         ctx.assertTrue(row1.getValue(0) instanceof Integer);
-        ctx.assertTrue(row1.getValue(1) instanceof Integer);
+        ctx.assertTrue(row1.getValue(1) instanceof String);
         ctx.assertTrue(query.hasNext());
         query.next(ctx.asyncAssertSuccess(result2 -> {
-          ctx.assertEquals(1, result.size());
-          PgRow row2 = result.rows().next();
-          ctx.assertTrue(row2.getValue(0) instanceof Integer);
+          ctx.assertEquals(1, result2.size());
+          ctx.assertEquals(Arrays.asList("message", "id"), result2.columnsNames());
+          PgRow row2 = result2.rows().next();
+          ctx.assertTrue(row2.getValue(0) instanceof String);
           ctx.assertTrue(row2.getValue(1) instanceof Integer);
           ctx.assertFalse(query.hasNext());
           async.complete();

@@ -48,6 +48,7 @@ public class RowDescription implements InboundMessage {
     return Arrays.equals(columns, that.columns);
   }
 
+  // Cache this!
   public List<String> getColumnNames() {
     List<String> columnNames = new ArrayList<>();
     for (Column column : columns) {

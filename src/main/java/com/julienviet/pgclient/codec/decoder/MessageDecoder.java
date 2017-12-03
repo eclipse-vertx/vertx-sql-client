@@ -118,7 +118,12 @@ public class MessageDecoder extends ByteToMessageDecoder {
       break;
       case DATA_ROW: {
         DecodeContext decodeCtx = decodeQueue.peek();
-        RowDescription desc = decodeCtx.peekDesc ? rowDesc : decodeCtx.rowDesc;
+        RowDescription desc = decodeCtx.current;
+        if (desc == null) {
+          desc = decodeCtx.peekDesc ? rowDesc : decodeCtx.rowDesc;
+          decodeCtx.current = desc;
+          decodeCtx.decoder.init(decodeCtx.current);
+        }
         int len = in.readUnsignedShort();
         Object row = decodeCtx.decoder.createRow(len);
         for (int c = 0; c < len; ++c) {
@@ -135,7 +140,9 @@ public class MessageDecoder extends ByteToMessageDecoder {
       }
       break;
       case COMMAND_COMPLETE: {
-        decodeQueue.peek().decoder.complete();
+        DecodeContext ctx = decodeQueue.peek();
+        ctx.current = null;
+        ctx.decoder.complete();
         CommandComplete complete = decodeCommandComplete(in);
         out.add(complete);
       }
@@ -161,7 +168,9 @@ public class MessageDecoder extends ByteToMessageDecoder {
       }
       break;
       case PORTAL_SUSPENDED: {
-        decodeQueue.peek().decoder.complete();
+        DecodeContext ctx = decodeQueue.peek();
+        ctx.current = null;
+        ctx.decoder.complete();
         decodePortalSuspended(out);
       }
       break;

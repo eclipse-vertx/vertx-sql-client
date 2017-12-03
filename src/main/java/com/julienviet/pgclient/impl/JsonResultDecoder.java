@@ -20,14 +20,22 @@ package com.julienviet.pgclient.impl;
 import com.julienviet.pgclient.PgRow;
 import com.julienviet.pgclient.codec.DataType;
 import com.julienviet.pgclient.codec.decoder.ResultDecoder;
+import com.julienviet.pgclient.codec.decoder.message.RowDescription;
 import io.netty.buffer.ByteBuf;
 
 public class JsonResultDecoder implements ResultDecoder<PgRow> {
 
+  private RowDescription desc;
   private QueryResultHandler<PgRow> handler;
 
   public JsonResultDecoder(QueryResultHandler<PgRow> handler) {
     this.handler = handler;
+  }
+
+  @Override
+  public void init(RowDescription desc) {
+    handler.beginRows(desc.getColumnNames());
+    this.desc = desc;
   }
 
   public PgRow createRow(int size) {
