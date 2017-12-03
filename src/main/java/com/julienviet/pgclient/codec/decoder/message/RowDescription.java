@@ -20,9 +20,11 @@ package com.julienviet.pgclient.codec.decoder.message;
 import com.julienviet.pgclient.codec.Column;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
@@ -30,14 +32,22 @@ import java.util.List;
 
 public class RowDescription implements InboundMessage {
 
-  final Column[] columns;
+  private final Column[] columns;
+  private final List<String> columnNames;
 
   public RowDescription(Column[] columns) {
     this.columns = columns;
+    this.columnNames = Collections.unmodifiableList(Stream.of(columns)
+      .map(Column::getName)
+      .collect(Collectors.toList()));
   }
 
-  public Column[] getColumns() {
+  public Column[] columns() {
     return columns;
+  }
+
+  public List<String> columnNames() {
+    return columnNames;
   }
 
   @Override
@@ -46,15 +56,6 @@ public class RowDescription implements InboundMessage {
     if (o == null || getClass() != o.getClass()) return false;
     RowDescription that = (RowDescription) o;
     return Arrays.equals(columns, that.columns);
-  }
-
-  // Cache this!
-  public List<String> getColumnNames() {
-    List<String> columnNames = new ArrayList<>();
-    for (Column column : columns) {
-      columnNames.add(column.getName());
-    }
-    return columnNames;
   }
 
   @Override

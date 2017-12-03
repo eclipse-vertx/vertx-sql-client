@@ -42,11 +42,11 @@ public class JsonResultDecoder implements ResultDecoder<PgRow> {
 
   @Override
   public void decodeRow(int len, ByteBuf in) {
-    PgRowImpl row = new PgRowImpl(desc.getColumns().length);
+    PgRowImpl row = new PgRowImpl(desc.columns().length);
     for (int c = 0; c < len; ++c) {
       int length = in.readInt();
       if (length != -1) {
-        Column columnDesc = desc.getColumns()[c];
+        Column columnDesc = desc.columns()[c];
         DataType.Decoder decoder = columnDesc.getCodec();
         Object decoded = decoder.decode(length, in);
         if(decoded != null) {
@@ -69,7 +69,7 @@ public class JsonResultDecoder implements ResultDecoder<PgRow> {
 
   @Override
   public PgResult<PgRow> complete() {
-    PgResultImpl result = new PgResultImpl(desc != null ? desc.getColumnNames() : null, head, size);
+    PgResultImpl result = new PgResultImpl(desc != null ? desc.columnNames() : null, head, size);
     head = null;
     size = 0;
     return result;

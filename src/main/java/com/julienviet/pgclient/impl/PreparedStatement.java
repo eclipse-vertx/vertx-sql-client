@@ -38,7 +38,7 @@ public class PreparedStatement {
 
     // Fix to use binary
     if (rowDesc != null) {
-      rowDesc = new RowDescription(Arrays.stream(rowDesc.getColumns())
+      rowDesc = new RowDescription(Arrays.stream(rowDesc.columns())
         .map(c -> new Column(c.getName(), c.getRelationId(), c.getRelationAttributeNo(), c.getDataType(), c.getLength(), c.getTypeModifier(), DataFormat.BINARY))
         .toArray(Column[]::new));
     }
