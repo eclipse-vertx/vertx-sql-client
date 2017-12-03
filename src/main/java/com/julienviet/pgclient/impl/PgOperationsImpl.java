@@ -40,7 +40,7 @@ public abstract class PgOperationsImpl implements PgOperations {
   public void preparedQuery(String sql, List<Object> params, Handler<AsyncResult<PgResult<PgRow>>> handler) {
     schedulePrepared(sql, ar -> {
       if (ar.succeeded()) {
-        return new ExtendedQueryCommand<>(ar.result(), params, new JsonResultDecoder(), new ExtendedQueryResultHandler<>(handler));
+        return new ExtendedQueryCommand<>(ar.result(), params, new RowResultDecoder(), new ExtendedQueryResultHandler<>(handler));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
         return null;
@@ -55,7 +55,7 @@ public abstract class PgOperationsImpl implements PgOperations {
         return new ExtendedQueryCommand<>(
           ar.result(),
           list.iterator(),
-          new JsonResultDecoder()
+          new RowResultDecoder()
           , new BatchQueryResultHandler(list.size(), (Handler) handler));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));

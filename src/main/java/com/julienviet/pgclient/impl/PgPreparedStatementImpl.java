@@ -64,11 +64,11 @@ class PgPreparedStatementImpl implements PgPreparedStatement {
                String portal,
                boolean suspended,
                QueryResultHandler<PgRow> handler) {
-    conn.schedule(new ExtendedQueryCommand<>(ps, params, fetch, portal, suspended, new JsonResultDecoder(), handler));
+    conn.schedule(new ExtendedQueryCommand<>(ps, params, fetch, portal, suspended, new RowResultDecoder(), handler));
   }
 
   void batch(List<List<Object>> paramsList, Handler<AsyncResult<List<PgResult<PgRow>>>> handler) {
-    conn.schedule(new ExtendedQueryCommand<>(ps, paramsList.iterator(), new JsonResultDecoder(), new BatchQueryResultHandler(paramsList.size(), handler)));
+    conn.schedule(new ExtendedQueryCommand<>(ps, paramsList.iterator(), new RowResultDecoder(), new BatchQueryResultHandler(paramsList.size(), handler)));
   }
 
   @Override

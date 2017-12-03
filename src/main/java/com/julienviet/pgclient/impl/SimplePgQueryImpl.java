@@ -62,7 +62,7 @@ public class SimplePgQueryImpl implements PgQuery {
       throw new IllegalStateException();
     }
     result = new SimpleQueryResultHandler<>(handler);
-    execHandler.handle(new SimpleQueryCommand<>(sql, new JsonResultDecoder(), result));
+    execHandler.handle(new SimpleQueryCommand<>(sql, new RowResultDecoder(), result));
   }
 
   @Override

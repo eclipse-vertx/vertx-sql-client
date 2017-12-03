@@ -25,14 +25,14 @@ import com.julienviet.pgclient.codec.decoder.ResultDecoder;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
 import io.netty.buffer.ByteBuf;
 
-public class JsonResultDecoder implements ResultDecoder<PgRow> {
+public class RowResultDecoder implements ResultDecoder<PgRow> {
 
   private RowDescription desc;
   private PgRowImpl head;
   private PgRowImpl tail;
   private int size;
 
-  public JsonResultDecoder() {
+  public RowResultDecoder() {
   }
 
   @Override
