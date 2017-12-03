@@ -9,9 +9,7 @@ import org.junit.Test;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 
-import static com.julienviet.pgclient.codec.formatter.DateTimeFormatter.TIMESTAMPTZ_FORMAT;
 import static java.nio.charset.StandardCharsets.*;
 
 /**
@@ -313,7 +311,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
         .query("SELECT '2017-05-14 19:35:58.237666'::TIMESTAMP")
         .execute(ctx.asyncAssertSuccess(result ->{
           ctx.assertEquals(1, result.size());
-          ctx.assertEquals(LocalDateTime.parse("2017-05-14T19:35:58.237666"), result.rows().next().getTimestamp(0));
+          ctx.assertEquals(LocalDateTime.parse("2017-05-14T19:35:58.237666"), result.rows().next().getTemporal(0));
           async.complete();
         }));
     }));
@@ -328,7 +326,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
         conn.query("SELECT '2017-05-14 22:35:58.237666-03'::TIMESTAMPTZ").execute(
           ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(OffsetDateTime.parse("2017-05-15T01:35:58.237666Z", TIMESTAMPTZ_FORMAT).withOffsetSameInstant(ZoneOffset.UTC), result.rows().next().getTimestampTz(0));
+            ctx.assertEquals(OffsetDateTime.parse("2017-05-15T01:35:58.237666Z"), result.rows().next().getTemporal(0));
             async.complete();
           }));
       }));

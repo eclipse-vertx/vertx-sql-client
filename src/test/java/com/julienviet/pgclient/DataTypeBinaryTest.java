@@ -4,6 +4,9 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
@@ -183,9 +186,9 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Timestamp\" FROM \"TemporalDataType\" WHERE \"Timestamp\" = $1",
         ctx.asyncAssertSuccess(p -> {
-          p.query("1800-01-01T23:57:53.237666").execute(ctx.asyncAssertSuccess(result -> {
+          p.query(LocalDateTime.parse("1800-01-01T23:57:53.237666")).execute(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals("1800-01-01T23:57:53.237666", result.rows().next().getString(0));
+            ctx.assertEquals(LocalDateTime.parse("1800-01-01T23:57:53.237666"), result.rows().next().getTemporal(0));
             async.complete();
           }));
         }));
@@ -199,9 +202,9 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Timestamp\" FROM \"TemporalDataType\" WHERE \"Timestamp\" = $1",
         ctx.asyncAssertSuccess(p -> {
-          p.query("2017-05-14T19:35:58.237666").execute(ctx.asyncAssertSuccess(result -> {
+          p.query(LocalDateTime.parse("2017-05-14T19:35:58.237666")).execute(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals("2017-05-14T19:35:58.237666", result.rows().next().getString(0));
+            ctx.assertEquals(LocalDateTime.parse("2017-05-14T19:35:58.237666"), result.rows().next().getTemporal(0));
             async.complete();
           }));
         }));
@@ -216,9 +219,9 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
       conn.query("SET TIME ZONE 'UTC'").execute(ctx.asyncAssertSuccess(v -> {
         conn.prepare("SELECT \"TimestampTz\" FROM \"TemporalDataType\" WHERE \"TimestampTz\" = $1",
           ctx.asyncAssertSuccess(p -> {
-            p.query("1800-01-01T23:59:59.237666-03:00").execute(ctx.asyncAssertSuccess(result -> {
+            p.query(OffsetDateTime.parse("1800-01-01T23:59:59.237666-03:00")).execute(ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
-              ctx.assertEquals("1800-01-02T02:59:59.237666Z", result.rows().next().getString(0));
+              ctx.assertEquals(OffsetDateTime.parse("1800-01-02T02:59:59.237666Z"), result.rows().next().getTemporal(0));
               async.complete();
             }));
           }));
@@ -234,9 +237,9 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
       conn.query("SET TIME ZONE 'UTC'").execute(ctx.asyncAssertSuccess(v -> {
         conn.prepare("SELECT \"TimestampTz\" FROM \"TemporalDataType\" WHERE \"TimestampTz\" = $1",
           ctx.asyncAssertSuccess(p -> {
-            p.query("2017-05-14T23:59:59.237666-03:00").execute(ctx.asyncAssertSuccess(result -> {
+            p.query(OffsetDateTime.parse("2017-05-14T23:59:59.237666-03:00")).execute(ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
-              ctx.assertEquals("2017-05-15T02:59:59.237666Z", result.rows().next());
+              ctx.assertEquals(OffsetDateTime.parse("2017-05-15T02:59:59.237666Z"), result.rows().next().getTemporal(0));
               async.complete();
             }));
           }));

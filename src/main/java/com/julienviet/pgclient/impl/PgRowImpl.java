@@ -22,7 +22,6 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 
@@ -82,12 +81,7 @@ public class PgRowImpl extends ArrayList<Object> implements PgTuple {
   }
 
   @Override
-  public LocalDateTime getTimestamp(int pos) {
-    return (LocalDateTime) get(pos);
-  }
-
-  @Override
-  public Temporal getTimestampTz(int pos) {
+  public Temporal getTemporal(int pos) {
     return (Temporal) get(pos);
   }
 

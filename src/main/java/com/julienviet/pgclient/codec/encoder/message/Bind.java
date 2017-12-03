@@ -141,7 +141,7 @@ public class Bind implements OutboundMessage {
       out.writeShort(len);
       // Parameter formats
       for (int c = 0;c < len;c++) {
-        // for now each format is TEXT
+        // for now each format is Binary
         out.writeShort(1);
       }
       out.writeShort(len);

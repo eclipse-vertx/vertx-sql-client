@@ -23,7 +23,6 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
 
 @VertxGen
@@ -48,10 +47,7 @@ public interface PgTuple {
   JsonArray getJsonArray(int pos);
 
   @GenIgnore
-  LocalDateTime getTimestamp(int pos);
-
-  @GenIgnore
-  Temporal getTimestampTz(int pos);
+  Temporal getTemporal(int pos);
 
   Buffer getBinary(int pos);
 
