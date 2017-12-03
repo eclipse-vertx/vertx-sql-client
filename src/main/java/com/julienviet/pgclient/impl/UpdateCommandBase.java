@@ -32,7 +32,7 @@ abstract class UpdateCommandBase extends CommandBase {
   public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == CommandComplete.class) {
       CommandComplete complete = (CommandComplete) msg;
-      handleResult(complete.getRowsAffected());
+      handleResult(complete.result().updatedCount());
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
       fail(new PgException(error));

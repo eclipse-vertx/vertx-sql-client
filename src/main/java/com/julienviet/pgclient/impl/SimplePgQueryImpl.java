@@ -30,7 +30,7 @@ public class SimplePgQueryImpl implements PgQuery {
 
   private final Handler<CommandBase> execHandler;
   private final String sql;
-  private SimpleQueryResultHandler result;
+  private SimpleQueryResultHandler<PgRow> result;
 
   public SimplePgQueryImpl(String sql, Handler<CommandBase> execHandler) {
     this.execHandler = execHandler;
@@ -61,8 +61,8 @@ public class SimplePgQueryImpl implements PgQuery {
     if (result != null) {
       throw new IllegalStateException();
     }
-    result = new SimpleQueryResultHandler(handler);
-    execHandler.handle(new SimpleQueryCommand(sql, result));
+    result = new SimpleQueryResultHandler<>(handler);
+    execHandler.handle(new SimpleQueryCommand<>(sql, new JsonResultDecoder(), result));
   }
 
   @Override

@@ -17,6 +17,7 @@
 
 package com.julienviet.pgclient.codec.decoder.message;
 
+import com.julienviet.pgclient.PgResult;
 import com.julienviet.pgclient.codec.encoder.message.Execute;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
 
@@ -32,9 +33,14 @@ import com.julienviet.pgclient.codec.decoder.InboundMessage;
 
 public class PortalSuspended implements InboundMessage {
 
-  public static PortalSuspended INSTANCE = new PortalSuspended();
+  private final PgResult<?> result;
 
-  private PortalSuspended() {
+  public PortalSuspended(PgResult<?> result) {
+    this.result = result;
+  }
+
+  public PgResult<?> result() {
+    return result;
   }
 
   @Override

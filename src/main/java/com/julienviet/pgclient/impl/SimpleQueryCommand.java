@@ -17,10 +17,10 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.PgRow;
 import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.decoder.DecodeContext;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
+import com.julienviet.pgclient.codec.decoder.ResultDecoder;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
 import com.julienviet.pgclient.codec.encoder.message.Query;
 
@@ -28,26 +28,27 @@ import com.julienviet.pgclient.codec.encoder.message.Query;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
-class SimpleQueryCommand extends QueryCommandBase {
+class SimpleQueryCommand<T> extends QueryCommandBase<T> {
 
+  private ResultDecoder<T> decoder;
   private final String sql;
-  private RowDescription rowDesc;
 
-  SimpleQueryCommand(String sql, QueryResultHandler<PgRow> handler) {
+  SimpleQueryCommand(String sql, ResultDecoder<T> decoder, QueryResultHandler<T> handler) {
     super(handler);
     this.sql = sql;
+    this.decoder = decoder;
   }
 
   @Override
   void exec(SocketConnection conn) {
-    conn.decodeQueue.add(new DecodeContext(true, null, DataFormat.TEXT, new JsonResultDecoder(handler)));
+    conn.decodeQueue.add(new DecodeContext(true, null, DataFormat.TEXT, decoder));
     conn.writeMessage(new Query(sql));
   }
 
   @Override
   public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == RowDescription.class) {
-      rowDesc = (RowDescription) msg;
+      // Expected
     } else {
       super.handleMessage(msg);
     }

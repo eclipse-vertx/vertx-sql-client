@@ -33,8 +33,6 @@ import io.vertx.core.Handler;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.julienviet.pgclient.codec.decoder.ResultDecoder.NOOP;
-
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
@@ -56,7 +54,7 @@ class PreparedUpdateCommand extends UpdateCommandBase {
 
   @Override
   void exec(SocketConnection conn) {
-    conn.decodeQueue.add(new DecodeContext(false, null, null, NOOP));
+    conn.decodeQueue.add(new DecodeContext(false, null, null, null));
     if (ps.statement == null) {
       conn.writeMessage(new Parse(ps.sql).setStatement(""));
     }

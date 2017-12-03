@@ -17,12 +17,14 @@
 
 package com.julienviet.pgclient.codec.decoder;
 
+import com.julienviet.pgclient.PgResult;
 import com.julienviet.pgclient.codec.Column;
 import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.DataType;
 import com.julienviet.pgclient.codec.TransactionStatus;
 import com.julienviet.pgclient.codec.decoder.message.*;
 import com.julienviet.pgclient.codec.util.Util;
+import com.julienviet.pgclient.impl.PgResultImpl;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
@@ -142,8 +144,13 @@ public class MessageDecoder extends ByteToMessageDecoder {
       case COMMAND_COMPLETE: {
         DecodeContext ctx = decodeQueue.peek();
         ctx.current = null;
-        ctx.decoder.complete();
-        CommandComplete complete = decodeCommandComplete(in);
+        int updated = decodeCommandComplete(in);
+        CommandComplete complete;
+        if (ctx.decoder == null) {
+          complete = new CommandComplete(new PgResultImpl(updated));
+        } else {
+          complete = new CommandComplete(ctx.decoder.complete());
+        }
         out.add(complete);
       }
       break;
@@ -170,8 +177,8 @@ public class MessageDecoder extends ByteToMessageDecoder {
       case PORTAL_SUSPENDED: {
         DecodeContext ctx = decodeQueue.peek();
         ctx.current = null;
-        ctx.decoder.complete();
-        decodePortalSuspended(out);
+        PgResult result = ctx.decoder.complete();
+        out.add(new PortalSuspended(result));
       }
       break;
       case PARAMETER_DESCRIPTION: {
@@ -333,9 +340,8 @@ public class MessageDecoder extends ByteToMessageDecoder {
     }
   }
 
-  private CommandComplete decodeCommandComplete(ByteBuf in) {
-    int rows = processor.parse(in);
-    return rows == 0 ? CommandComplete.EMPTY : new CommandComplete(rows);
+  private int decodeCommandComplete(ByteBuf in) {
+    return processor.parse(in);
   }
 
   private Column[]  decodeRowDescription(ByteBuf in) {
@@ -380,10 +386,6 @@ public class MessageDecoder extends ByteToMessageDecoder {
 
   private void decodeNoData(List<Object> out) {
     out.add(NoData.INSTANCE);
-  }
-
-  private void decodePortalSuspended(List<Object> out) {
-    out.add(PortalSuspended.INSTANCE);
   }
 
   private void decodeParameterDescription(ByteBuf in, List<Object> out) {

@@ -18,7 +18,7 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgException;
-import com.julienviet.pgclient.PgRow;
+import com.julienviet.pgclient.PgResult;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.message.*;
 
@@ -26,11 +26,11 @@ import com.julienviet.pgclient.codec.decoder.message.*;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
-abstract class QueryCommandBase extends CommandBase {
+abstract class QueryCommandBase<T> extends CommandBase {
 
-  protected final QueryResultHandler<PgRow> handler;
+  protected final QueryResultHandler<T> handler;
 
-  public QueryCommandBase(QueryResultHandler<PgRow> handler) {
+  public QueryCommandBase(QueryResultHandler<T> handler) {
     this.handler = handler;
   }
 
@@ -40,6 +40,8 @@ abstract class QueryCommandBase extends CommandBase {
       super.handleMessage(msg);
       handler.end();
     } else if (msg.getClass() == CommandComplete.class) {
+      PgResult<T> result = (PgResult<T>) ((CommandComplete) msg).result();
+      handler.result(result);
       handler.result(false);
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;

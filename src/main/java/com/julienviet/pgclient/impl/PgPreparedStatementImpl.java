@@ -33,7 +33,7 @@ class PgPreparedStatementImpl implements PgPreparedStatement {
 
   private final Connection conn;
   private final PreparedStatement ps;
-  final AtomicBoolean closed = new AtomicBoolean();
+  private final AtomicBoolean closed = new AtomicBoolean();
 
   PgPreparedStatementImpl(Connection conn, PreparedStatement ps) {
     this.conn = conn;
@@ -69,8 +69,8 @@ class PgPreparedStatementImpl implements PgPreparedStatement {
                int fetch,
                String portal,
                boolean suspended,
-               QueryResultHandler handler) {
-    conn.schedule(new ExtendedQueryCommand(ps, params, fetch, portal, suspended, handler));
+               QueryResultHandler<PgRow> handler) {
+    conn.schedule(new ExtendedQueryCommand<>(ps, params, fetch, portal, suspended, new JsonResultDecoder(), handler));
   }
 
   void update(List<List<Object>> paramsList, Handler<AsyncResult<List<PgResult>>> handler) {

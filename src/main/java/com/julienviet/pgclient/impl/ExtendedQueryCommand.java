@@ -17,10 +17,11 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.PgRow;
+import com.julienviet.pgclient.PgResult;
 import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.decoder.DecodeContext;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
+import com.julienviet.pgclient.codec.decoder.ResultDecoder;
 import com.julienviet.pgclient.codec.decoder.message.BindComplete;
 import com.julienviet.pgclient.codec.decoder.message.ParseComplete;
 import com.julienviet.pgclient.codec.decoder.message.PortalSuspended;
@@ -34,18 +35,20 @@ import java.util.List;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class ExtendedQueryCommand extends QueryCommandBase {
+class ExtendedQueryCommand<T> extends QueryCommandBase<T> {
 
-  final PreparedStatement ps;
-  final List<Object> params;
-  final int fetch;
+  private final PreparedStatement ps;
+  private final List<Object> params;
+  private final int fetch;
   private final String portal;
   private final boolean suspended;
+  private final ResultDecoder<T> decoder;
 
   ExtendedQueryCommand(PreparedStatement ps,
                        List<Object> params,
-                       QueryResultHandler<PgRow> handler) {
-    this(ps, params, 0, null, false, handler);
+                       ResultDecoder<T> decoder,
+                       QueryResultHandler<T> handler) {
+    this(ps, params, 0, null, false, decoder, handler);
   }
 
   ExtendedQueryCommand(PreparedStatement ps,
@@ -53,18 +56,20 @@ class ExtendedQueryCommand extends QueryCommandBase {
                        int fetch,
                        String portal,
                        boolean suspended,
-                       QueryResultHandler<PgRow> handler) {
+                       ResultDecoder<T> decoder,
+                       QueryResultHandler<T> handler) {
     super(handler);
     this.ps = ps;
     this.params = params;
     this.fetch = fetch;
     this.portal = portal;
     this.suspended = suspended;
+    this.decoder = decoder;
   }
 
   @Override
   void exec(SocketConnection conn) {
-    conn.decodeQueue.add(new DecodeContext(false, ps.rowDesc, DataFormat.BINARY, new JsonResultDecoder(handler)));
+    conn.decodeQueue.add(new DecodeContext(false, ps.rowDesc, DataFormat.BINARY, decoder));
     if (suspended) {
       conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
       conn.writeMessage(Sync.INSTANCE);
@@ -83,6 +88,8 @@ class ExtendedQueryCommand extends QueryCommandBase {
     if (msg.getClass() == ParseComplete.class) {
       // Response to Parse
     } else if (msg.getClass() == PortalSuspended.class) {
+      PgResult<T> result = (PgResult<T>) ((PortalSuspended) msg).result();
+      handler.result(result);
       handler.result(true);
     } else if (msg.getClass() == BindComplete.class) {
       // Response to Bind

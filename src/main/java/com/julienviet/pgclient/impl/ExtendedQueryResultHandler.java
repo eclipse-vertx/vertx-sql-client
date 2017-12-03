@@ -18,50 +18,23 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgResult;
-import com.julienviet.pgclient.PgRow;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
-import java.util.List;
+public class ExtendedQueryResultHandler<T> implements QueryResultHandler<T> {
 
-public class ExtendedQueryResultHandler implements QueryResultHandler<PgRow> {
-
-  private final Handler<AsyncResult<PgResult<PgRow>>> handler;
-  private List<String> columnNames;
-  private JsonPgRow head;
-  private JsonPgRow tail;
-  private int size;
+  private final Handler<AsyncResult<PgResult<T>>> handler;
   private Throwable failure;
   private boolean suspended;
+  private PgResult<T> result;
 
-  public ExtendedQueryResultHandler(Handler<AsyncResult<PgResult<PgRow>>> handler) {
+  public ExtendedQueryResultHandler(Handler<AsyncResult<PgResult<T>>> handler) {
     this.handler = handler;
   }
 
   public boolean isSuspended() {
     return suspended;
-  }
-
-  @Override
-  public void beginRows(List<String> columnNames) {
-    this.columnNames = columnNames;
-  }
-
-  @Override
-  public void addRow(PgRow row) {
-    JsonPgRow jsonRow = (JsonPgRow) row;
-    if (head == null) {
-      head = tail = jsonRow;
-    } else {
-      tail.next = jsonRow;
-      tail = jsonRow;
-    }
-    size++;
-  }
-
-  @Override
-  public void endRows() {
   }
 
   @Override
@@ -76,9 +49,14 @@ public class ExtendedQueryResultHandler implements QueryResultHandler<PgRow> {
   }
 
   @Override
+  public void result(PgResult<T> result) {
+    this.result = result;
+  }
+
+  @Override
   public void end() {
     if (failure == null) {
-      handler.handle(Future.succeededFuture(new PgResultImpl(columnNames, head, size)));
+      handler.handle(Future.succeededFuture(result));
     }
   }
 }

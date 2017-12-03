@@ -18,61 +18,37 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgResult;
-import com.julienviet.pgclient.PgRow;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 import java.util.*;
 
-public class SimpleQueryResultHandler implements QueryResultHandler<PgRow> {
+public class SimpleQueryResultHandler<T> implements QueryResultHandler<T> {
 
-  private final Handler<AsyncResult<PgResult<PgRow>>> handler;
-  private List<String> columnNames;
-  private JsonPgRow head;
-  private JsonPgRow tail;
-  private int size;
+  private final Handler<AsyncResult<PgResult<T>>> handler;
   private Throwable failure;
-  private final Queue<PgResultImpl> results = new ArrayDeque<>(1);
+  private final Queue<PgResult<T>> results = new ArrayDeque<>(1);
 
-  public SimpleQueryResultHandler(Handler<AsyncResult<PgResult<PgRow>>> handler) {
+  public SimpleQueryResultHandler(Handler<AsyncResult<PgResult<T>>> handler) {
     this.handler = handler;
   }
 
   @Override
-  public void beginRows(List<String> columnNames) {
-    this.columnNames = columnNames;
-  }
-
-  @Override
-  public void addRow(PgRow row) {
-    JsonPgRow jsonRow = (JsonPgRow) row;
-    if (head == null) {
-      head = tail = jsonRow;
-    } else {
-      tail.next = jsonRow;
-      tail = jsonRow;
-    }
-    size++;
+  public void result(PgResult<T> result) {
+    results.add(result);
   }
 
   public boolean hasNext() {
     return results.size() > 0;
   }
 
-  public PgResult<PgRow> next() {
+  public PgResult<T> next() {
     if (results.size() > 0) {
       return results.poll();
     } else {
       throw new NoSuchElementException();
     }
-  }
-
-  @Override
-  public void endRows() {
-    results.add(new PgResultImpl(columnNames, head, size));
-    head = null;
-    size = 0;
   }
 
   @Override

@@ -18,7 +18,9 @@
 package com.julienviet.pgclient.codec.decoder.message;
 
 
+import com.julienviet.pgclient.PgResult;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
+import com.julienviet.pgclient.codec.decoder.ResultDecoder;
 
 import java.util.Objects;
 
@@ -28,14 +30,12 @@ import java.util.Objects;
 
 public class CommandComplete implements InboundMessage {
 
-  public static CommandComplete EMPTY = new CommandComplete(0);
-
   // private final String command;
-  private final int rowsAffected;
+  private final PgResult<?> result;
 
-  public CommandComplete(/*String command, */int rowsAffected) {
+  public CommandComplete(/*String command, */PgResult<?> result) {
     // this.command = command;
-    this.rowsAffected = rowsAffected;
+    this.result = result;
   }
 
   /*
@@ -44,8 +44,8 @@ public class CommandComplete implements InboundMessage {
   }
   */
 
-  public int getRowsAffected() {
-    return rowsAffected;
+  public PgResult<?> result() {
+    return result;
   }
 
   @Override
@@ -53,20 +53,19 @@ public class CommandComplete implements InboundMessage {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     CommandComplete that = (CommandComplete) o;
-    return /* Objects.equals(command, that.command) && */
-      Objects.equals(rowsAffected, that.rowsAffected);
+    return Objects.equals(result, that.result);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(/*command, */rowsAffected);
+    return result == null ? 0 : result.hashCode();
   }
 
   @Override
   public String toString() {
     return "CommandComplete{" +
       // "command='" + command + '\'' +
-      ", rowsAffected=" + rowsAffected +
+      ", result=" + result +
       '}';
   }
 

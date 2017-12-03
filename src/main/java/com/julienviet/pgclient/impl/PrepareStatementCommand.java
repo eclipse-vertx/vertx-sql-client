@@ -28,8 +28,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
-import static com.julienviet.pgclient.codec.decoder.ResultDecoder.NOOP;
-
 public class PrepareStatementCommand extends CommandBase {
 
   final String sql;
@@ -46,7 +44,7 @@ public class PrepareStatementCommand extends CommandBase {
 
   @Override
   void exec(SocketConnection conn) {
-    conn.decodeQueue.add(new DecodeContext(false, null, null, NOOP));
+    conn.decodeQueue.add(new DecodeContext(false, null, null, null));
     conn.writeMessage(new Parse(sql).setStatement(statement));
     conn.writeMessage(new Describe().setStatement(statement));
     conn.writeMessage(Sync.INSTANCE);

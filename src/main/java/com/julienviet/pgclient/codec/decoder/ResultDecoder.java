@@ -17,35 +17,21 @@
 
 package com.julienviet.pgclient.codec.decoder;
 
+import com.julienviet.pgclient.PgResult;
+import com.julienviet.pgclient.PgRowIterator;
 import com.julienviet.pgclient.codec.DataType;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
 import io.netty.buffer.ByteBuf;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.NoSuchElementException;
+
 public interface ResultDecoder<T> {
-
-  ResultDecoder NOOP = new ResultDecoder<Void>() {
-    @Override
-    public void init(RowDescription desc) {
-    }
-    @Override
-    public Void createRow(int size) {
-      return null;
-    }
-    @Override
-    public void decodeColumnToRow(Void row, ByteBuf in, int len, DataType.Decoder decoder) {
-    }
-    @Override
-    public void addRow(Void row) {
-    }
-    @Override
-    public void complete() {
-    }
-  };
-
 
   void init(RowDescription desc);
   T createRow(int size);
   void decodeColumnToRow(T row, ByteBuf in, int len, DataType.Decoder decoder);
   void addRow(T row);
-  void complete();
+  PgResult<T> complete();
 }

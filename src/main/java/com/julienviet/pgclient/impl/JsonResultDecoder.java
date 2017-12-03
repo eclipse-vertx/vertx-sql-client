@@ -17,6 +17,7 @@
 
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.PgResult;
 import com.julienviet.pgclient.PgRow;
 import com.julienviet.pgclient.codec.DataType;
 import com.julienviet.pgclient.codec.decoder.ResultDecoder;
@@ -26,15 +27,15 @@ import io.netty.buffer.ByteBuf;
 public class JsonResultDecoder implements ResultDecoder<PgRow> {
 
   private RowDescription desc;
-  private QueryResultHandler<PgRow> handler;
+  private JsonPgRow head;
+  private JsonPgRow tail;
+  private int size;
 
-  public JsonResultDecoder(QueryResultHandler<PgRow> handler) {
-    this.handler = handler;
+  public JsonResultDecoder() {
   }
 
   @Override
   public void init(RowDescription desc) {
-    handler.beginRows(desc.getColumnNames());
     this.desc = desc;
   }
 
@@ -59,10 +60,21 @@ public class JsonResultDecoder implements ResultDecoder<PgRow> {
 
   @Override
   public void addRow(PgRow row) {
-    handler.addRow(row);
+    JsonPgRow jsonRow = (JsonPgRow) row;
+    if (head == null) {
+      head = tail = jsonRow;
+    } else {
+      tail.next = jsonRow;
+      tail = jsonRow;
+    }
+    size++;
   }
 
-  public void complete() {
-    handler.endRows();
+  @Override
+  public PgResult<PgRow> complete() {
+    PgResultImpl result = new PgResultImpl(desc != null ? desc.getColumnNames() : null, head, size);
+    head = null;
+    size = 0;
+    return result;
   }
 }
