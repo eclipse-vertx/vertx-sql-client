@@ -253,7 +253,7 @@ public class Examples {
           if (res.succeeded()) {
 
             // Process results
-            List<PgResult> results = res.result();
+            PgBatchResult<Tuple> results = res.result();
           } else {
             System.out.println("Batch failed " + res.cause());
           }

@@ -49,7 +49,7 @@ public abstract class PgOperationsImpl implements PgOperations {
   }
 
   @Override
-  public void preparedBatch(String sql, List<Tuple> list, Handler<AsyncResult<List<PgResult>>> handler) {
+  public void preparedBatch(String sql, List<Tuple> list, Handler<AsyncResult<PgBatchResult<Tuple>>> handler) {
     schedulePrepared(sql, ar -> {
       if (ar.succeeded()) {
         return new ExtendedQueryCommand<>(

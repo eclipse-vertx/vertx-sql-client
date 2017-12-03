@@ -17,24 +17,22 @@
 
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.PgBatchResult;
 import com.julienviet.pgclient.PgResult;
 import com.julienviet.pgclient.Tuple;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
-import java.util.ArrayList;
-import java.util.List;
-
 class BatchQueryResultHandler implements QueryResultHandler<Tuple> {
 
-  private final Handler<AsyncResult<List<PgResult<Tuple>>>> handler;
-  private List<PgResult<Tuple>> list;
+  private final Handler<AsyncResult<PgBatchResult<Tuple>>> handler;
+  private PgBatchResultImpl<Tuple> list;
   private Throwable failure;
 
-  public BatchQueryResultHandler(int size, Handler<AsyncResult<List<PgResult<Tuple>>>> handler) {
+  public BatchQueryResultHandler(int size, Handler<AsyncResult<PgBatchResult<Tuple>>> handler) {
     this.handler = handler;
-    this.list = new ArrayList<>(size);
+    this.list = new PgBatchResultImpl<>(size);
   }
 
   @Override

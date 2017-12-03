@@ -18,6 +18,7 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgBatch;
+import com.julienviet.pgclient.PgBatchResult;
 import com.julienviet.pgclient.PgResult;
 import com.julienviet.pgclient.Tuple;
 import com.julienviet.pgclient.codec.decoder.message.ParameterDescription;
@@ -52,7 +53,7 @@ public class BatchImpl implements PgBatch {
   }
 
   @Override
-  public void execute(Handler<AsyncResult<List<PgResult>>> resultHandler) {
-    ps.batch(values, (Handler)resultHandler);
+  public void execute(Handler<AsyncResult<PgBatchResult<Tuple>>> resultHandler) {
+    ps.batch(values, resultHandler);
   }
 }
