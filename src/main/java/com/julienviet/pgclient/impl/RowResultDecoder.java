@@ -18,14 +18,14 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgResult;
-import com.julienviet.pgclient.PgRow;
+import com.julienviet.pgclient.PgTuple;
 import com.julienviet.pgclient.codec.Column;
 import com.julienviet.pgclient.codec.DataType;
 import com.julienviet.pgclient.codec.decoder.ResultDecoder;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
 import io.netty.buffer.ByteBuf;
 
-public class RowResultDecoder implements ResultDecoder<PgRow> {
+public class RowResultDecoder implements ResultDecoder<PgTuple> {
 
   private RowDescription desc;
   private PgRowImpl head;
@@ -68,7 +68,7 @@ public class RowResultDecoder implements ResultDecoder<PgRow> {
   }
 
   @Override
-  public PgResult<PgRow> complete(int updated) {
+  public PgResult<PgTuple> complete(int updated) {
     PgResultImpl result = new PgResultImpl(updated, desc != null ? desc.columnNames() : null, head, size);
     head = null;
     size = 0;

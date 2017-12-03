@@ -19,7 +19,7 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgQuery;
 import com.julienviet.pgclient.PgResult;
-import com.julienviet.pgclient.PgRow;
+import com.julienviet.pgclient.PgTuple;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -30,7 +30,7 @@ public class SimplePgQueryImpl implements PgQuery {
 
   private final Handler<CommandBase> execHandler;
   private final String sql;
-  private SimpleQueryResultHandler<PgRow> result;
+  private SimpleQueryResultHandler<PgTuple> result;
 
   public SimplePgQueryImpl(String sql, Handler<CommandBase> execHandler) {
     this.execHandler = execHandler;
@@ -48,7 +48,7 @@ public class SimplePgQueryImpl implements PgQuery {
   }
 
   @Override
-  public void next(Handler<AsyncResult<PgResult<PgRow>>> handler) {
+  public void next(Handler<AsyncResult<PgResult<PgTuple>>> handler) {
     if (result.hasNext()) {
       handler.handle(Future.succeededFuture(result.next()));
     } else {
@@ -57,7 +57,7 @@ public class SimplePgQueryImpl implements PgQuery {
   }
 
   @Override
-  public void execute(Handler<AsyncResult<PgResult<PgRow>>> handler) {
+  public void execute(Handler<AsyncResult<PgResult<PgTuple>>> handler) {
     if (result != null) {
       throw new IllegalStateException();
     }

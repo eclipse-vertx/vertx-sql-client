@@ -18,14 +18,14 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgResult;
-import com.julienviet.pgclient.PgRow;
+import com.julienviet.pgclient.PgTuple;
 import com.julienviet.pgclient.PgRowIterator;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class PgResultImpl implements PgResult<PgRow> {
+public class PgResultImpl implements PgResult<PgTuple> {
 
   final int updated;
   final List<String> columnNames;
@@ -62,15 +62,15 @@ public class PgResultImpl implements PgResult<PgRow> {
   }
 
   @Override
-  public PgRowIterator<PgRow> rows() {
-    return new PgRowIterator<PgRow>() {
+  public PgRowIterator<PgTuple> rows() {
+    return new PgRowIterator<PgTuple>() {
       PgRowImpl current = rows;
       @Override
       public boolean hasNext() {
         return current != null;
       }
       @Override
-      public PgRow next() {
+      public PgTuple next() {
         if (current == null) {
           throw new NoSuchElementException();
         }

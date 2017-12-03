@@ -17,7 +17,7 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.PgRow;
+import com.julienviet.pgclient.PgTuple;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -26,7 +26,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 
-public class PgRowImpl extends ArrayList<Object> implements PgRow {
+public class PgRowImpl extends ArrayList<Object> implements PgTuple {
 
   // Linked list
   PgRowImpl next;

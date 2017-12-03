@@ -38,7 +38,7 @@ public class PreparedStatementCachedTest extends PreparedStatementTestBase {
           PgQuery query = ps.query(1);
           query.execute(ctx.asyncAssertSuccess(results -> {
             ctx.assertEquals(1, results.size());
-            PgRow row = results.rows().next();
+            PgTuple row = results.rows().next();
             ctx.assertEquals(1, row.getInteger(0));
             ctx.assertEquals("fortune: No such file or directory", row.getString(1));
             async.complete();

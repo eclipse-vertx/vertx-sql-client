@@ -19,7 +19,7 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgQuery;
 import com.julienviet.pgclient.PgResult;
-import com.julienviet.pgclient.PgRow;
+import com.julienviet.pgclient.PgTuple;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -60,7 +60,7 @@ public class ExtendedPgQueryImpl implements PgQuery {
   }
 
   @Override
-  public void next(Handler<AsyncResult<PgResult<PgRow>>> handler) {
+  public void next(Handler<AsyncResult<PgResult<PgTuple>>> handler) {
     if (!result.isSuspended()) {
       handler.handle(Future.failedFuture(new NoSuchElementException()));
     } else {
@@ -70,7 +70,7 @@ public class ExtendedPgQueryImpl implements PgQuery {
   }
 
   @Override
-  public void execute(Handler<AsyncResult<PgResult<PgRow>>> handler) {
+  public void execute(Handler<AsyncResult<PgResult<PgTuple>>> handler) {
     if (result != null) {
       throw new IllegalStateException();
     }

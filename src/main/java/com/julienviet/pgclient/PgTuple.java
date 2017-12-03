@@ -27,16 +27,24 @@ import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
 
 @VertxGen
-public interface PgRow {
+public interface PgTuple {
 
   Boolean getBoolean(int pos);
+
   Object getValue(int pos);
+
   Integer getInteger(int pos);
+
   Long getLong(int pos);
+
   Float getFloat(int pos);
+
   Double getDouble(int pos);
+
   String getString(int pos);
+
   JsonObject getJsonObject(int pos);
+
   JsonArray getJsonArray(int pos);
 
   @GenIgnore

@@ -63,11 +63,11 @@ class PgPreparedStatementImpl implements PgPreparedStatement {
                int fetch,
                String portal,
                boolean suspended,
-               QueryResultHandler<PgRow> handler) {
+               QueryResultHandler<PgTuple> handler) {
     conn.schedule(new ExtendedQueryCommand<>(ps, params, fetch, portal, suspended, new RowResultDecoder(), handler));
   }
 
-  void batch(List<List<Object>> paramsList, Handler<AsyncResult<List<PgResult<PgRow>>>> handler) {
+  void batch(List<List<Object>> paramsList, Handler<AsyncResult<List<PgResult<PgTuple>>>> handler) {
     conn.schedule(new ExtendedQueryCommand<>(ps, paramsList.iterator(), new RowResultDecoder(), new BatchQueryResultHandler(paramsList.size(), handler)));
   }
 

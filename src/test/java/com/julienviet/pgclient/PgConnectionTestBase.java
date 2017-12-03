@@ -110,9 +110,9 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(10000, result.size());
-        PgRowIterator<PgRow> it = result.rows();
+        PgRowIterator<PgTuple> it = result.rows();
         for (int i = 0; i < 10000; i++) {
-          PgRow row = it.next();
+          PgTuple row = it.next();
           ctx.assertEquals(2, row.size());
           ctx.assertTrue(row.getValue(0) instanceof Integer);
           ctx.assertTrue(row.getValue(1) instanceof Integer);
@@ -131,14 +131,14 @@ public abstract class PgConnectionTestBase extends PgTestBase {
       query.execute(ctx.asyncAssertSuccess(result1 -> {
         ctx.assertEquals(1, result1.size());
         ctx.assertEquals(Arrays.asList("id", "message"), result1.columnsNames());
-        PgRow row1 = result1.rows().next();
+        PgTuple row1 = result1.rows().next();
         ctx.assertTrue(row1.getValue(0) instanceof Integer);
         ctx.assertTrue(row1.getValue(1) instanceof String);
         ctx.assertTrue(query.hasNext());
         query.next(ctx.asyncAssertSuccess(result2 -> {
           ctx.assertEquals(1, result2.size());
           ctx.assertEquals(Arrays.asList("message", "id"), result2.columnsNames());
-          PgRow row2 = result2.rows().next();
+          PgTuple row2 = result2.rows().next();
           ctx.assertTrue(row2.getValue(0) instanceof String);
           ctx.assertTrue(row2.getValue(1) instanceof Integer);
           ctx.assertFalse(query.hasNext());

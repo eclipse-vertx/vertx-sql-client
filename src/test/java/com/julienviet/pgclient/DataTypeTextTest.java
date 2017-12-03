@@ -48,7 +48,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
         .query("SELECT true, false")
         .execute(ctx.asyncAssertSuccess(result ->{
           ctx.assertEquals(1, result.size());
-          PgRow row = result.rows().next();
+          PgTuple row = result.rows().next();
           ctx.assertEquals(true, row.getBoolean(0));
           ctx.assertEquals(false, row.getBoolean(1));
           async.complete();
@@ -407,7 +407,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn.query("SELECT ' true '::JSONB, ' false '::JSONB, ' null '::JSONB, ' 7.502 '::JSONB, ' 8 '::JSONB, '\" Really Awesome! \"'::JSONB")
         .execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
-          PgRow row = result.rows().next();
+          PgTuple row = result.rows().next();
           ctx.assertEquals(true, row.getBoolean(0));
           ctx.assertEquals(false, row.getBoolean(1));
           ctx.assertNull(row.getValue(2));
@@ -429,7 +429,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn.query("SELECT ' true '::JSON, ' false '::JSON, ' null '::JSON, ' 7.502 '::JSON, ' 8 '::JSON, '\" Really Awesome! \"'::JSON")
         .execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
-          PgRow row = result.rows().next();
+          PgTuple row = result.rows().next();
           ctx.assertEquals(true, row.getBoolean(0));
           ctx.assertEquals(false, row.getBoolean(1));
           ctx.assertNull(row.getValue(2));
@@ -451,7 +451,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
       conn.query("SELECT '12345678910'::BYTEA, '\u00DE\u00AD\u00BE\u00EF'::BYTEA").execute(
         ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
-          PgRow row = result.rows().next();
+          PgTuple row = result.rows().next();
           Buffer bytea1 = row.getBinary(0);
           Buffer bytea2 = row.getBinary(1);
           ctx.assertEquals("12345678910", bytea1.toString(UTF_8));

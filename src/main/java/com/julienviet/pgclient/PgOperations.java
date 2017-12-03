@@ -38,14 +38,14 @@ public interface PgOperations {
 
   /**
    */
-  default void preparedQuery(String sql, Handler<AsyncResult<PgResult<PgRow>>> handler) {
+  default void preparedQuery(String sql, Handler<AsyncResult<PgResult<PgTuple>>> handler) {
     preparedQuery(sql, Collections.emptyList(), handler);
   }
 
   /**
    * @param param1 the first argument of the query
    */
-  default void preparedQuery(String sql, Object param1, Handler<AsyncResult<PgResult<PgRow>>> handler) {
+  default void preparedQuery(String sql, Object param1, Handler<AsyncResult<PgResult<PgTuple>>> handler) {
     preparedQuery(sql, Collections.singletonList(param1), handler);
   }
 
@@ -53,7 +53,7 @@ public interface PgOperations {
    * @param param1 the first argument of the query
    * @param param2 the second argument of the query
    */
-  default void preparedQuery(String sql, Object param1, Object param2, Handler<AsyncResult<PgResult<PgRow>>> handler) {
+  default void preparedQuery(String sql, Object param1, Object param2, Handler<AsyncResult<PgResult<PgTuple>>> handler) {
     preparedQuery(sql, Arrays.asList(param1, param2), handler);
   }
 
@@ -62,7 +62,7 @@ public interface PgOperations {
    * @param param2 the second argument of the query
    * @param param3 the third argument of the query
    */
-  default void preparedQuery(String sql, Object param1, Object param2, Object param3, Handler<AsyncResult<PgResult<PgRow>>> handler) {
+  default void preparedQuery(String sql, Object param1, Object param2, Object param3, Handler<AsyncResult<PgResult<PgTuple>>> handler) {
     preparedQuery(sql, Arrays.asList(param1, param2, param3), handler);
   }
 
@@ -72,7 +72,7 @@ public interface PgOperations {
    * @param param3 the third argument of the query
    * @param param4 the fourth argument of the query
    */
-  default void preparedQuery(String sql, Object param1, Object param2, Object param3, Object param4, Handler<AsyncResult<PgResult<PgRow>>> handler) {
+  default void preparedQuery(String sql, Object param1, Object param2, Object param3, Object param4, Handler<AsyncResult<PgResult<PgTuple>>> handler) {
     preparedQuery(sql, Arrays.asList(param1, param2, param3, param4), handler);
   }
 
@@ -83,7 +83,7 @@ public interface PgOperations {
    * @param param4 the fourth argument of the query
    * @param param5 the fifth argument of the query
    */
-  default void preparedQuery(String sql, Object param1, Object param2, Object param3, Object param4, Object param5, Handler<AsyncResult<PgResult<PgRow>>> handler) {
+  default void preparedQuery(String sql, Object param1, Object param2, Object param3, Object param4, Object param5, Handler<AsyncResult<PgResult<PgTuple>>> handler) {
     preparedQuery(sql, Arrays.asList(param1, param2, param3, param4, param5), handler);
   }
 
@@ -95,7 +95,7 @@ public interface PgOperations {
    * @param param5 the fifth argument of the query
    * @param param6 the sixth argument of the query
    */
-  default void preparedQuery(String sql, Object param1, Object param2, Object param3, Object param4, Object param5, Object param6, Handler<AsyncResult<PgResult<PgRow>>> handler) {
+  default void preparedQuery(String sql, Object param1, Object param2, Object param3, Object param4, Object param5, Object param6, Handler<AsyncResult<PgResult<PgTuple>>> handler) {
     preparedQuery(sql, Arrays.asList(param1, param2, param3, param4, param5, param6), handler);
   }
 
@@ -103,9 +103,9 @@ public interface PgOperations {
    * @param params the list of arguments
    */
   @GenIgnore
-  void preparedQuery(String sql, List<Object> params, Handler<AsyncResult<PgResult<PgRow>>> handler);
+  void preparedQuery(String sql, List<Object> params, Handler<AsyncResult<PgResult<PgTuple>>> handler);
 
   @GenIgnore
-  void preparedBatch(String sql, List<List<Object>> list, Handler<AsyncResult<PgResult<PgRow>>> handler);
+  void preparedBatch(String sql, List<List<Object>> list, Handler<AsyncResult<PgResult<PgTuple>>> handler);
 
 }

@@ -18,7 +18,7 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgResult;
-import com.julienviet.pgclient.PgRow;
+import com.julienviet.pgclient.PgTuple;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -26,19 +26,19 @@ import io.vertx.core.Handler;
 import java.util.ArrayList;
 import java.util.List;
 
-class BatchQueryResultHandler implements QueryResultHandler<PgRow> {
+class BatchQueryResultHandler implements QueryResultHandler<PgTuple> {
 
-  private final Handler<AsyncResult<List<PgResult<PgRow>>>> handler;
-  private List<PgResult<PgRow>> list;
+  private final Handler<AsyncResult<List<PgResult<PgTuple>>>> handler;
+  private List<PgResult<PgTuple>> list;
   private Throwable failure;
 
-  public BatchQueryResultHandler(int size, Handler<AsyncResult<List<PgResult<PgRow>>>> handler) {
+  public BatchQueryResultHandler(int size, Handler<AsyncResult<List<PgResult<PgTuple>>>> handler) {
     this.handler = handler;
     this.list = new ArrayList<>(size);
   }
 
   @Override
-  public void handleResult(PgResult<PgRow> result) {
+  public void handleResult(PgResult<PgTuple> result) {
     list.add(result);
   }
 
