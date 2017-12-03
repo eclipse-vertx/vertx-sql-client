@@ -22,6 +22,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -108,6 +110,22 @@ public class Examples {
     pool.close();
   }
 
+  public void ex4_(PgConnection conn) {
+
+    // Prepare (when not cached)
+    // Execute
+    conn.preparedQuery("SELECT * FROM USERS WHERE user_id=$1", Tuple.of("julien"), ar -> {
+
+      if (ar.succeeded()) {
+
+        // Get result
+        PgResult<Tuple> result = ar.result();
+      } else {
+        System.out.println("Query failed " + ar.cause());
+      }
+    });
+  }
+
   public void ex4(PgConnection conn) {
     conn.prepare("SELECT * FROM USERS WHERE user_id=$1", ar1 -> {
 
@@ -158,7 +176,7 @@ public class Examples {
 
               System.out.println("Get next 100");
               query.next(ar3 -> {
-                // ...
+                // Continue...
               });
             } else {
               // We are done
@@ -205,34 +223,16 @@ public class Examples {
   }
 
   public void ex8(PgConnection conn) {
-    conn.prepare("UPDATE USERS SET name=$1 WHERE id=$2", ar1 -> {
 
-      if (ar1.succeeded()) {
-        PgPreparedStatement preparedStatement = ar1.result();
+    // Prepare (when not cached)
+    // Execute
+    conn.preparedQuery("UPDATE USERS SET name=$1 WHERE id=$2", Tuple.of(2, "EMAD ALBLUESHI"), ar -> {
 
-        // Create an update : bind parameters
-        PgQuery update = preparedStatement.query(Tuple.of(2, "EMAD ALBLUESHI"));
-
-        update.execute(res -> {
-          if(res.succeeded()) {
-            // Process results
-            PgResult<Tuple> result = res.result();
-          } else {
-            System.out.println("Update failed " + res.cause());
-          }
-        });
-
-        // Or fluently
-        preparedStatement.query(Tuple.of(1, "JULIEN VIET")).execute(res -> {
-          if(res.succeeded()) {
-            // Process results
-            PgResult<Tuple> result = res.result();
-          } else {
-            System.out.println("Update failed " + res.cause());
-          }
-        });
+      if(ar.succeeded()) {
+        // Process results
+        PgResult<Tuple> result = ar.result();
       } else {
-        System.out.println("Could not prepare statement " + ar1.cause());
+        System.out.println("Update failed " + ar.cause());
       }
     });
   }
@@ -263,7 +263,25 @@ public class Examples {
       }
     });
   }
+/*
+  public void ex9_(PgConnection conn) {
 
+    List<Tuple> batch = new ArrayList<>();
+    batch.add(Tuple.of("julien", "Julien Viet"));
+    batch.add(Tuple.of("emad", "Emad Alblueshi"));
+
+
+    conn.preparedBatch("INSERT INTO USERS (id, name) VALUES ($1, $2)", batch, ar -> {
+      if (ar.succeeded()) {
+
+        // Process results
+        List<List<PgResult>> results = ar.result();
+      } else {
+        System.out.println("Batch failed " + ar.cause());
+      }
+    });
+  }
+*/
   public void ex10(Vertx vertx) {
 
     PgClient client = PgClient.create(vertx, new PgClientOptions()
