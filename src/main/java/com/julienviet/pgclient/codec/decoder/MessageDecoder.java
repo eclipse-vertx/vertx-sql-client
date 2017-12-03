@@ -138,7 +138,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
         if (ctx.decoder == null) {
           complete = new CommandComplete(new PgResultImpl(updated));
         } else {
-          complete = new CommandComplete(ctx.decoder.complete());
+          complete = new CommandComplete(ctx.decoder.complete(updated));
         }
         out.add(complete);
       }
@@ -166,7 +166,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
       case PORTAL_SUSPENDED: {
         DecodeContext ctx = decodeQueue.peek();
         ctx.current = null;
-        PgResult result = ctx.decoder.complete();
+        PgResult result = ctx.decoder.complete(0);
         out.add(new PortalSuspended(result));
       }
       break;

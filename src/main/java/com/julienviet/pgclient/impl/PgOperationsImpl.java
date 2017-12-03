@@ -22,7 +22,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
@@ -50,33 +49,14 @@ public abstract class PgOperationsImpl implements PgOperations {
   }
 
   @Override
-  public void update(String sql, Handler<AsyncResult<PgResult>> handler) {
-    schedule(new UpdateCommand(sql, handler));
-  }
-
-  @Override
-  public void preparedUpdate(String sql, List<Object> params, Handler<AsyncResult<PgResult<PgRow>>> handler) {
+  public void preparedBatch(String sql, List<List<Object>> list, Handler<AsyncResult<PgResult<PgRow>>> handler) {
     schedulePrepared(sql, ar -> {
       if (ar.succeeded()) {
-        return new PreparedUpdateCommand(
+        return new ExtendedQueryCommand<>(
           ar.result(),
-          Collections.singletonList(params),
-          ar2 -> handler.handle(ar2.map(l -> new PgResultImpl(l.get(0).updatedCount()))));
-      } else {
-        handler.handle(Future.failedFuture(ar.cause()));
-        return null;
-      }
-    });
-  }
-
-  @Override
-  public void preparedBatchUpdate(String sql, List<List<Object>> list, Handler<AsyncResult<PgResult<PgRow>>> handler) {
-    schedulePrepared(sql, ar -> {
-      if (ar.succeeded()) {
-        return new PreparedUpdateCommand(
-          ar.result(),
-          list,
-          ar2 -> handler.handle(ar2.map(l -> new PgResultImpl(l.get(0).updatedCount()))));
+          list.iterator(),
+          new JsonResultDecoder()
+          , new BatchQueryResultHandler(list.size(), (Handler) handler));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
         return null;

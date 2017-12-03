@@ -24,7 +24,6 @@ import io.vertx.core.Handler;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -50,11 +49,6 @@ class PgPreparedStatementImpl implements PgPreparedStatement {
   }
 
   @Override
-  public PgUpdate update(List<Object> params) {
-    return new PgUpdateImpl(this, params);
-  }
-
-  @Override
   public PgBatch batch() {
     return new BatchImpl(this, ps.paramDesc);
   }
@@ -73,12 +67,8 @@ class PgPreparedStatementImpl implements PgPreparedStatement {
     conn.schedule(new ExtendedQueryCommand<>(ps, params, fetch, portal, suspended, new JsonResultDecoder(), handler));
   }
 
-  void update(List<List<Object>> paramsList, Handler<AsyncResult<List<PgResult>>> handler) {
-    conn.schedule(new PreparedUpdateCommand(ps, paramsList, ar -> {
-      handler.handle(ar.map(ur -> {
-        return ur.stream().map(a -> new PgResultImpl(a.updatedCount())).collect(Collectors.toList());
-      }));
-    }));
+  void batch(List<List<Object>> paramsList, Handler<AsyncResult<List<PgResult<PgRow>>>> handler) {
+    conn.schedule(new ExtendedQueryCommand<>(ps, paramsList.iterator(), new JsonResultDecoder(), new BatchQueryResultHandler(paramsList.size(), handler)));
   }
 
   @Override
@@ -93,4 +83,5 @@ class PgPreparedStatementImpl implements PgPreparedStatement {
   void closePortal(String portal, Handler<AsyncResult<Void>> handler) {
     conn.schedule(new ClosePortalCommand(portal, handler));
   }
+
 }

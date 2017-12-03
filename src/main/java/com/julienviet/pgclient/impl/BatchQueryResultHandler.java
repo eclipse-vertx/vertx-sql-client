@@ -18,45 +18,45 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgResult;
-import com.julienviet.pgclient.codec.DataFormat;
-import com.julienviet.pgclient.codec.decoder.DecodeContext;
-import com.julienviet.pgclient.codec.encoder.message.Query;
+import com.julienviet.pgclient.PgRow;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
-/**
- * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
- */
+import java.util.ArrayList;
+import java.util.List;
 
-class UpdateCommand extends UpdateCommandBase {
+class BatchQueryResultHandler implements QueryResultHandler<PgRow> {
 
-  private final String sql;
-  private final Handler<AsyncResult<PgResult>> handler;
+  private final Handler<AsyncResult<List<PgResult<PgRow>>>> handler;
+  private List<PgResult<PgRow>> list;
+  private Throwable failure;
 
-  UpdateCommand(String sql, Handler<AsyncResult<PgResult>> handler) {
+  public BatchQueryResultHandler(int size, Handler<AsyncResult<List<PgResult<PgRow>>>> handler) {
     this.handler = handler;
-    this.sql = sql;
+    this.list = new ArrayList<>(size);
   }
 
   @Override
-  void exec(SocketConnection conn) {
-    conn.decodeQueue.add(new DecodeContext(true, null, DataFormat.TEXT, null));
-    conn.writeMessage(new Query(sql));
+  public void result(PgResult<PgRow> result) {
+    list.add(result);
   }
 
   @Override
-  void handleResult(int updated) {
-    handler.handle(Future.succeededFuture(new PgResultImpl(updated)));
+  public void result(boolean suspended) {
   }
-
 
   @Override
-  void fail(Throwable cause) {
-    handler.handle(Future.failedFuture(cause));
+  public void fail(Throwable cause) {
+    failure = cause;
   }
 
-  public String getSql() {
-    return sql;
+  @Override
+  public void end() {
+    if (failure != null) {
+      handler.handle(Future.failedFuture(failure));
+    } else {
+      handler.handle(Future.succeededFuture(list));
+    }
   }
 }

@@ -30,6 +30,8 @@ import com.julienviet.pgclient.codec.encoder.message.Execute;
 import com.julienviet.pgclient.codec.encoder.message.Parse;
 import com.julienviet.pgclient.codec.encoder.message.Sync;
 
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -38,7 +40,7 @@ import java.util.List;
 class ExtendedQueryCommand<T> extends QueryCommandBase<T> {
 
   private final PreparedStatement ps;
-  private final List<Object> params;
+  private final Iterator<List<Object>> paramsIterator;
   private final int fetch;
   private final String portal;
   private final boolean suspended;
@@ -52,7 +54,24 @@ class ExtendedQueryCommand<T> extends QueryCommandBase<T> {
   }
 
   ExtendedQueryCommand(PreparedStatement ps,
-                       List<Object> params,
+                       Iterator<List<Object>> paramsIterator,
+                       ResultDecoder<T> decoder,
+                       QueryResultHandler<T> handler) {
+    this(ps, paramsIterator, 0, null, false, decoder, handler);
+  }
+
+  ExtendedQueryCommand(PreparedStatement ps,
+                       List<Object> paramsIterator,
+                       int fetch,
+                       String portal,
+                       boolean suspended,
+                       ResultDecoder<T> decoder,
+                       QueryResultHandler<T> handler) {
+    this(ps, Collections.singletonList(paramsIterator).iterator(), fetch, portal, suspended, decoder, handler);
+  }
+
+  ExtendedQueryCommand(PreparedStatement ps,
+                       Iterator<List<Object>> paramsIterator,
                        int fetch,
                        String portal,
                        boolean suspended,
@@ -60,7 +79,7 @@ class ExtendedQueryCommand<T> extends QueryCommandBase<T> {
                        QueryResultHandler<T> handler) {
     super(handler);
     this.ps = ps;
-    this.params = params;
+    this.paramsIterator = paramsIterator;
     this.fetch = fetch;
     this.portal = portal;
     this.suspended = suspended;
@@ -77,8 +96,11 @@ class ExtendedQueryCommand<T> extends QueryCommandBase<T> {
       if (ps.statement == null) {
         conn.writeMessage(new Parse(ps.sql).setStatement(""));
       }
-      conn.writeMessage(new Bind().setParamValues(params).setDataTypes(ps.paramDesc.getParamDataTypes()).setPortal(portal).setStatement(ps.statement));
-      conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
+      while (paramsIterator.hasNext()) {
+        List<Object> params = paramsIterator.next();
+        conn.writeMessage(new Bind().setParamValues(params).setDataTypes(ps.paramDesc.getParamDataTypes()).setPortal(portal).setStatement(ps.statement));
+        conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
+      }
       conn.writeMessage(Sync.INSTANCE);
     }
   }

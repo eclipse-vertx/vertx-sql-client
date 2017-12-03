@@ -18,18 +18,12 @@
 package com.julienviet.pgclient.codec.decoder;
 
 import com.julienviet.pgclient.PgResult;
-import com.julienviet.pgclient.PgRowIterator;
-import com.julienviet.pgclient.codec.DataType;
 import com.julienviet.pgclient.codec.decoder.message.RowDescription;
 import io.netty.buffer.ByteBuf;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
 
 public interface ResultDecoder<T> {
 
   void init(RowDescription desc);
   void decodeRow(int len, ByteBuf in);
-  PgResult<T> complete();
+  PgResult<T> complete(int updated);
 }

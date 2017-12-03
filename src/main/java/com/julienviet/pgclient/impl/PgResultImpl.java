@@ -39,8 +39,8 @@ public class PgResultImpl implements PgResult<PgRow> {
     this.columnNames = Collections.emptyList();
   }
 
-  public PgResultImpl(List<String> columnNames, PgRowImpl rows, int size) {
-    this.updated = 0;
+  public PgResultImpl(int updated, List<String> columnNames, PgRowImpl rows, int size) {
+    this.updated = updated;
     this.columnNames = columnNames;
     this.rows = rows;
     this.size = size;

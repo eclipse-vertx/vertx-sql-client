@@ -68,8 +68,8 @@ public class JsonResultDecoder implements ResultDecoder<PgRow> {
   }
 
   @Override
-  public PgResult<PgRow> complete() {
-    PgResultImpl result = new PgResultImpl(desc != null ? desc.columnNames() : null, head, size);
+  public PgResult<PgRow> complete(int updated) {
+    PgResultImpl result = new PgResultImpl(updated, desc != null ? desc.columnNames() : null, head, size);
     head = null;
     size = 0;
     return result;
