@@ -36,12 +36,8 @@ class BatchQueryResultHandler implements QueryResultHandler<Tuple> {
   }
 
   @Override
-  public void handleResult(PgResult<Tuple> result) {
+  public void handleResult(PgResult<Tuple> result, boolean suspended) {
     list.add(result);
-  }
-
-  @Override
-  public void handleSuspend() {
   }
 
   @Override

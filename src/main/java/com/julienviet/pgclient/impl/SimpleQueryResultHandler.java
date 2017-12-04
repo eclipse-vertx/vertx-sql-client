@@ -35,7 +35,7 @@ public class SimpleQueryResultHandler<T> implements QueryResultHandler<T> {
   }
 
   @Override
-  public void handleResult(PgResult<T> result) {
+  public void handleResult(PgResult<T> result, boolean suspended) {
     results.add(result);
   }
 
@@ -49,10 +49,6 @@ public class SimpleQueryResultHandler<T> implements QueryResultHandler<T> {
     } else {
       throw new NoSuchElementException();
     }
-  }
-
-  @Override
-  public void handleSuspend() {
   }
 
   @Override

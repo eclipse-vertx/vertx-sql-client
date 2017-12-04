@@ -24,9 +24,7 @@ import com.julienviet.pgclient.PgResult;
  */
 public interface QueryResultHandler<T> {
 
-  void handleResult(PgResult<T> result);
-
-  void handleSuspend();
+  void handleResult(PgResult<T> result, boolean suspended);
 
   void handleFailure(Throwable cause);
 

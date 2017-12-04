@@ -112,8 +112,7 @@ class ExtendedQueryCommand<T> extends QueryCommandBase<T> {
       // Response to Parse
     } else if (msg.getClass() == PortalSuspended.class) {
       PgResult<T> result = (PgResult<T>) ((PortalSuspended) msg).result();
-      handler.handleResult(result);
-      handler.handleSuspend();
+      handler.handleResult(result, true);
     } else if (msg.getClass() == BindComplete.class) {
       // Response to Bind
     } else {

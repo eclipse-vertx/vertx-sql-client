@@ -41,7 +41,7 @@ abstract class QueryCommandBase<T> extends CommandBase {
       handler.handleEnd();
     } else if (msg.getClass() == CommandComplete.class) {
       PgResult<T> result = (PgResult<T>) ((CommandComplete) msg).result();
-      handler.handleResult(result);
+      handler.handleResult(result, false);
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
       fail(new PgException(error));

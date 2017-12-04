@@ -25,38 +25,28 @@ import io.vertx.core.Handler;
 public class ExtendedQueryResultHandler<T> implements QueryResultHandler<T> {
 
   private final Handler<AsyncResult<PgResult<T>>> handler;
-  private Throwable failure;
   private boolean suspended;
-  private PgResult<T> result;
 
-  public ExtendedQueryResultHandler(Handler<AsyncResult<PgResult<T>>> handler) {
+  ExtendedQueryResultHandler(Handler<AsyncResult<PgResult<T>>> handler) {
     this.handler = handler;
   }
 
-  public boolean isSuspended() {
+  boolean isSuspended() {
     return suspended;
   }
 
   @Override
-  public void handleSuspend() {
-    this.suspended = true;
-  }
-
-  @Override
   public void handleFailure(Throwable cause) {
-    failure = cause;
     handler.handle(Future.failedFuture(cause));
   }
 
   @Override
-  public void handleResult(PgResult<T> result) {
-    this.result = result;
+  public void handleResult(PgResult<T> result, boolean suspended) {
+    this.suspended = suspended;
+    handler.handle(Future.succeededFuture(result));
   }
 
   @Override
   public void handleEnd() {
-    if (failure == null) {
-      handler.handle(Future.succeededFuture(result));
-    }
   }
 }
