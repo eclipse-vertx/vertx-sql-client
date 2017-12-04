@@ -227,7 +227,7 @@
             <configuration>
               <archive>
                 <manifest>
-                  <mainClass>com.julienviet.pgclient.Main</mainClass>
+                  <mainClass>com.julienviet.pgclient.RawBenchmark</mainClass>
                 </manifest>
               </archive>
               <descriptors>

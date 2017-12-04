@@ -19,27 +19,9 @@ just make sure to run one benchmark at a time.
 
 ## Client performance
 
-### Prepared statements UUID creation
+### Outbound message size estimation
 
-UUID creation can be a bottleneck when creating lot of prepared statements, visible in benchmark.
-
-This does not happen with the `PgOperations` interface that avoid to create `PgPreparedStament`.
-
-### Extended queries and extended update execution
-
-Rework extended queries commands, right now:
-
-- initially Parse/Describe/Bind/Execute/Sync
-- then Describe/Bind/Execute/Sync over and over again
-
-instead we should do:
-
-- initially Parse/Describe/Sync
-- cache the result and then Bind/Execute/Sync
-
-### Parameter binary encoding
-
-Just encode them in binary it's more efficient and we don't need intermediate strings.
+Some messages are really small, and it would be good allocate the right size instead of 256 by default.
 
 ### Row decoding
 
