@@ -105,11 +105,8 @@ public class MessageDecoder extends ByteToMessageDecoder {
       }
       break;
       case READY_FOR_QUERY: {
-        decodeReadyForQuery(in, out);
-        DecodeContext decodeCtx = decodeQueue.poll();
-        if (decodeCtx == null) {
-          throw new AssertionError(); // For debugging purposes
-        }
+        out.add(ReadyForQuery.decode(in.readByte()));
+        decodeQueue.poll();
       }
       break;
       case ROW_DESCRIPTION: {
@@ -355,10 +352,6 @@ public class MessageDecoder extends ByteToMessageDecoder {
       columns[c] = column;
     }
     return columns;
-  }
-
-  private void decodeReadyForQuery(ByteBuf in, List<Object> out) {
-    out.add(new ReadyForQuery(TransactionStatus.valueOf(in.readByte())));
   }
 
   private void decodeParseComplete(List<Object> out) {

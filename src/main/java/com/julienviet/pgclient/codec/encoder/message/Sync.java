@@ -39,7 +39,7 @@ import static com.julienviet.pgclient.codec.encoder.message.type.MessageType.SYN
  *
  * <p>
  * Note this message does not cause a transaction block opened with BEGIN to be closed. It is possible to detect this
- * situation in {@link ReadyForQuery#getTransactionStatus()} that includes {@link TransactionStatus} information.
+ * situation in {@link ReadyForQuery#transactionStatus()} that includes {@link TransactionStatus} information.
  *
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */

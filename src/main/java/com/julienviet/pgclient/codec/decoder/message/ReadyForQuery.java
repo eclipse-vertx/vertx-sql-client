@@ -17,10 +17,8 @@
 
 package com.julienviet.pgclient.codec.decoder.message;
 
-import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.TransactionStatus;
-
-import java.util.Objects;
+import com.julienviet.pgclient.codec.decoder.InboundMessage;
 
 /**
  *
@@ -39,36 +37,36 @@ import java.util.Objects;
  *
  */
 
-public class ReadyForQuery implements InboundMessage {
+public enum ReadyForQuery implements InboundMessage {
+
+  IDLE(TransactionStatus.IDLE),
+  ACTIVE(TransactionStatus.ACTIVE),
+  FAILED(TransactionStatus.FAILED);
 
   private final TransactionStatus transactionStatus;
 
-  public ReadyForQuery(TransactionStatus transactionStatus) {
+  ReadyForQuery(TransactionStatus transactionStatus) {
     this.transactionStatus = transactionStatus;
   }
 
-  public TransactionStatus getTransactionStatus() {
+  public TransactionStatus transactionStatus() {
     return transactionStatus;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    ReadyForQuery that = (ReadyForQuery) o;
-    return transactionStatus == that.transactionStatus;
-  }
+  private static final byte I = (byte) 'I', T = (byte) 'T';
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(transactionStatus);
+  public static ReadyForQuery decode(byte id) {
+    if (id == I) {
+      return ReadyForQuery.IDLE;
+    } else if (id == T) {
+      return ReadyForQuery.ACTIVE;
+    } else {
+      return ReadyForQuery.FAILED;
+    }
   }
-
 
   @Override
   public String toString() {
-    return "ReadyForQuery{" +
-      "transactionStatus=" + transactionStatus +
-      '}';
+    return "ReadyForQuery{transactionStatus=" + name() + "}";
   }
 }
