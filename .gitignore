@@ -1,3 +1,5 @@
+jitwatch.out
+*.log
 .vertx
 .DS_Store
 .gradle

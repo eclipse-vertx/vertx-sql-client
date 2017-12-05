@@ -102,19 +102,19 @@ public class MessageDecoder extends ByteToMessageDecoder {
       }
       case AUTHENTICATION: {
         decodeAuthentication(in, out);
+        break;
       }
-      break;
       case READY_FOR_QUERY: {
         out.add(ReadyForQuery.decode(in.readByte()));
         decodeQueue.poll();
+        break;
       }
-      break;
       case ROW_DESCRIPTION: {
         Column[] columns = decodeRowDescription(in);
         rowDesc = new RowDescription(columns);
         out.add(rowDesc);
+        break;
       }
-      break;
       case DATA_ROW: {
         DecodeContext decodeCtx = decodeQueue.peek();
         RowDescription desc = decodeCtx.current;
@@ -125,8 +125,8 @@ public class MessageDecoder extends ByteToMessageDecoder {
         }
         int len = in.readUnsignedShort();
         decodeCtx.decoder.decodeRow(len, in);
+        break;
       }
-      break;
       case COMMAND_COMPLETE: {
         DecodeContext ctx = decodeQueue.peek();
         ctx.current = null;
@@ -138,51 +138,51 @@ public class MessageDecoder extends ByteToMessageDecoder {
           complete = new CommandComplete(ctx.decoder.complete(updated));
         }
         out.add(complete);
+        break;
       }
-      break;
       case EMPTY_QUERY_RESPONSE: {
         decodeEmptyQueryResponse(out);
+        break;
       }
-      break;
       case PARSE_COMPLETE: {
         decodeParseComplete(out);
+        break;
       }
-      break;
       case BIND_COMPLETE: {
         decodeBindComplete(out);
+        break;
       }
-      break;
       case CLOSE_COMPLETE: {
         decodeCloseComplete(out);
+        break;
       }
-      break;
       case NO_DATA: {
         decodeNoData(out);
+        break;
       }
-      break;
       case PORTAL_SUSPENDED: {
         DecodeContext ctx = decodeQueue.peek();
         ctx.current = null;
         PgResult result = ctx.decoder.complete(0);
         out.add(new PortalSuspended(result));
+        break;
       }
-      break;
       case PARAMETER_DESCRIPTION: {
         decodeParameterDescription(in, out);
+        break;
       }
-      break;
       case PARAMETER_STATUS: {
         decodeParameterStatus(in, out);
+        break;
       }
-      break;
       case BACKEND_KEY_DATA: {
         decodeBackendKeyData(in, out);
+        break;
       }
-      break;
       case NOTIFICATION_RESPONSE: {
         decodeNotificationResponse(in, out);
+        break;
       }
-      break;
     }
   }
 

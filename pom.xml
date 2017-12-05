@@ -239,4 +239,39 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>jitwatch</id>
+      <dependencies>
+        <dependency>
+          <groupId>com.chrisnewland</groupId>
+          <artifactId>jitwatch</artifactId>
+          <version>1.0.0</version>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>default-cli</id>
+                <goals>
+                  <goal>java</goal>
+                </goals>
+                <configuration>
+                  <mainClass>org.adoptopenjdk.jitwatch.launch.LaunchUI</mainClass>
+                  <cleanupDaemonThreads>false</cleanupDaemonThreads>
+                  <classpathScope>compile</classpathScope>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
 </project>
