@@ -20,6 +20,7 @@ package com.julienviet.pgclient.impl;
 import com.julienviet.pgclient.codec.decoder.DecodeContext;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.MessageDecoder;
+import com.julienviet.pgclient.codec.decoder.InitiateSslHandler;
 import com.julienviet.pgclient.codec.encoder.MessageEncoder;
 import com.julienviet.pgclient.codec.encoder.OutboundMessage;
 import io.netty.channel.ChannelPipeline;
@@ -65,14 +66,36 @@ public class SocketConnection implements Connection {
     this.pipeliningLimit = client.pipeliningLimit;
   }
 
-  void init(String username, String password, String database, Handler<AsyncResult<Connection>> completionHandler) {
+  void initiateProtocolOrSsl(String username, String password, String database, Handler<AsyncResult<Connection>> completionHandler) {
+    ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
+    if (client.ssl) {
+      Future<Void> upgradeFuture = Future.future();
+      upgradeFuture.setHandler(ar -> {
+        if (ar.succeeded()) {
+          initiateProtocol(username, password, database, completionHandler);
+        } else {
+          Throwable cause = ar.cause();
+          if (cause instanceof DecoderException) {
+            DecoderException err = (DecoderException) cause;
+            cause = err.getCause();
+          }
+          completionHandler.handle(Future.failedFuture(cause));
+        }
+      });
+      pipeline.addBefore("handler", "initiate-ssl-handler", new InitiateSslHandler(this, upgradeFuture));
+    } else {
+      initiateProtocol(username, password, database, completionHandler);
+    }
+  }
+
+  private void initiateProtocol(String username, String password, String database, Handler<AsyncResult<Connection>> completionHandler) {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     pipeline.addBefore("handler", "decoder", new MessageDecoder(decodeQueue));
     pipeline.addBefore("handler", "encoder", new MessageEncoder());
     socket.closeHandler(this::handleClosed);
     socket.exceptionHandler(this::handleException);
     socket.messageHandler(this::handleMessage);
-    schedule(new InitCommand(username, password, database, client.ssl, completionHandler));
+    schedule(new InitCommand(username, password, database, completionHandler));
   }
 
   class CachedPreparedStatement implements Handler<AsyncResult<PreparedStatement>> {
@@ -101,8 +124,10 @@ public class SocketConnection implements Connection {
     return socket.isSsl();
   }
 
-  void upgradeToSSL(Handler<Void> handler) {
-    socket.upgradeToSsl(handler);
+  public void upgradeToSSL(Handler<Void> handler) {
+    socket.upgradeToSsl(v -> {
+      handler.handle(null);
+    });
   }
 
   @Override

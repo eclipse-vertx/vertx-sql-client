@@ -76,7 +76,7 @@ public class PgClientImpl implements PgClient {
       if (ar.succeeded()) {
         NetSocketInternal socket = (NetSocketInternal) ar.result();
         SocketConnection conn = new SocketConnection(this, socket, vertx.getOrCreateContext());
-        conn.init(username, password, database, completionHandler);
+        conn.initiateProtocolOrSsl(username, password, database, completionHandler);
       } else {
         completionHandler.handle(Future.failedFuture(ar.cause()));
       }

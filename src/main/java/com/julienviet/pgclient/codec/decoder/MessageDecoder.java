@@ -56,20 +56,6 @@ public class MessageDecoder extends ByteToMessageDecoder {
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
     while (true) {
-      if (in.readableBytes() == 1) {
-        switch (in.getByte(0)) {
-          case SSL_YES: {
-            out.add(new SSLResponse(true));
-            in.readerIndex(in.readerIndex() + 1);
-            return;
-          }
-          case SSL_NO: {
-            out.add(new SSLResponse(false));
-            in.readerIndex(in.readerIndex() + 1);
-            return;
-          }
-        }
-      }
       if (in.readableBytes() < 5) {
         break;
       }
