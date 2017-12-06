@@ -56,10 +56,10 @@ import static com.julienviet.pgclient.codec.encoder.message.type.MessageType.DES
 
 public class Describe implements OutboundMessage {
 
-  private String statement;
+  private long statement;
   private String portal;
 
-  public String getStatement() {
+  public long getStatement() {
     return statement;
   }
 
@@ -67,7 +67,7 @@ public class Describe implements OutboundMessage {
     return portal;
   }
 
-  public Describe setStatement(String statement) {
+  public Describe setStatement(long statement) {
     this.statement = statement;
     return this;
   }
@@ -86,13 +86,13 @@ public class Describe implements OutboundMessage {
       Objects.equals(portal, describe.portal);
   }
 
-  private static void encode(String statement, String portal, ByteBuf out) {
+  private static void encode(long statement, String portal, ByteBuf out) {
     int pos = out.writerIndex();
     out.writeByte(DESCRIBE);
     out.writeInt(0);
-    if (statement != null) {
+    if (statement != 0) {
       out.writeByte('S');
-      Util.writeCStringUTF8(out, statement);
+      out.writeLong(statement);
     } else if (portal != null) {
       out.writeByte('P');
       Util.writeCStringUTF8(out, portal);

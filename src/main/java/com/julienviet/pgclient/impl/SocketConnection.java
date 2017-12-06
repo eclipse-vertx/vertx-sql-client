@@ -54,7 +54,7 @@ public class SocketConnection implements Connection {
   private final Map<String, CachedPreparedStatement> psCache;
   private final int pipeliningLimit;
   final Deque<DecodeContext> decodeQueue = new ArrayDeque<>();
-  private int psSeq;
+  private StringLongSequence psSeq = new StringLongSequence();
 
   public SocketConnection(PgClientImpl client,
                           NetSocketInternal socket,
@@ -172,11 +172,11 @@ public class SocketConnection implements Connection {
   @Override
   public void schedulePrepared(String sql, Function<AsyncResult<PreparedStatement>, CommandBase> supplier, Handler<Void> completionHandler) {
     Function<AsyncResult<PreparedStatement>, CommandBase> f;
-    String statement;
+    long statement;
     if (psCache != null) {
       CachedPreparedStatement cached = psCache.get(sql);
       if (cached == null) {
-        statement = "ps_" + psSeq++;
+        statement = psSeq.next();
         cached = new CachedPreparedStatement();
         Future<PreparedStatement> fut = cached.fut;
         psCache.put(sql, cached);
@@ -198,7 +198,7 @@ public class SocketConnection implements Connection {
         return;
       }
     } else {
-      statement = null;
+      statement = 0;
       f = supplier;
     }
     schedule(new PrepareStatementCommand(sql, statement, ar -> {

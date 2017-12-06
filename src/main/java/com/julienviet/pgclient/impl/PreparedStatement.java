@@ -30,11 +30,11 @@ import java.util.Arrays;
 public class PreparedStatement {
 
   final String sql;
-  final ByteBuf statement;
+  final long statement;
   final ParameterDescription paramDesc;
   final RowDescription rowDesc;
 
-  public PreparedStatement(String sql, String statement, ParameterDescription paramDesc, RowDescription rowDesc) {
+  public PreparedStatement(String sql, long statement, ParameterDescription paramDesc, RowDescription rowDesc) {
 
     // Fix to use binary
     if (rowDesc != null) {
@@ -44,7 +44,7 @@ public class PreparedStatement {
     }
 
     this.sql = sql;
-    this.statement = statement != null ? Unpooled.copiedBuffer(statement, StandardCharsets.UTF_8).writeByte(0).asReadOnly() : null;
+    this.statement = statement;
     this.paramDesc = paramDesc;
     this.rowDesc = rowDesc;
   }

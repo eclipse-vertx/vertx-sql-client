@@ -31,12 +31,12 @@ import io.vertx.core.Handler;
 public class PrepareStatementCommand extends CommandBase {
 
   final String sql;
-  private final String statement;
+  private final long statement; // 0 means unamed statement otherwise CString
   private ParameterDescription parameterDesc;
   private RowDescription rowDesc;
   private final Future<PreparedStatement> fut;
 
-  PrepareStatementCommand(String sql, String statement, Handler<AsyncResult<PreparedStatement>> handler) {
+  PrepareStatementCommand(String sql, long statement, Handler<AsyncResult<PreparedStatement>> handler) {
     this.sql = sql;
     this.statement = statement;
     this.fut= Future.<PreparedStatement>future().setHandler(handler);

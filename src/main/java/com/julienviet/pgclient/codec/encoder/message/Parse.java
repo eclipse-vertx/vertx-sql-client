@@ -41,14 +41,14 @@ import static com.julienviet.pgclient.codec.encoder.message.type.MessageType.PAR
 public class Parse implements OutboundMessage {
 
   private final String query;
-  private String statement;
+  private long statement;
   private int[] paramDataTypes;
 
   public Parse(String query) {
     this.query = query;
   }
 
-  public Parse setStatement(String statement) {
+  public Parse setStatement(long statement) {
     this.statement = statement;
     return this;
   }
@@ -58,7 +58,7 @@ public class Parse implements OutboundMessage {
     return this;
   }
 
-  public String getStatement() {
+  public long getStatement() {
     return statement;
   }
 
@@ -81,14 +81,14 @@ public class Parse implements OutboundMessage {
       Arrays.equals(paramDataTypes, parse.paramDataTypes);
   }
 
-  private static void encode(String statement, String query, int[] paramDataTypes, ByteBuf out) {
+  private static void encode(long statement, String query, int[] paramDataTypes, ByteBuf out) {
     int pos = out.writerIndex();
     out.writeByte(PARSE);
     out.writeInt(0);
-    if(statement == null) {
+    if(statement == 0) {
       out.writeByte(0);
     } else {
-      Util.writeCStringUTF8(out, statement);
+      out.writeLong(statement);
     }
     Util.writeCStringUTF8(out, query);
     // no parameter data types (OIDs)
