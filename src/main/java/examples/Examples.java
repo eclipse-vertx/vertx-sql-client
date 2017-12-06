@@ -23,7 +23,6 @@ import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -170,12 +169,12 @@ public class Examples {
           if (ar2.succeeded()) {
             System.out.println("Got at most 100 rows");
 
-            if (query.hasNext()) {
+            if (query.hasMore()) {
               // Get results
               PgResult<Tuple> result = ar2.result();
 
               System.out.println("Get next 100");
-              query.next(ar3 -> {
+              query.execute(ar3 -> {
                 // Continue...
               });
             } else {
@@ -269,7 +268,7 @@ public class Examples {
     List<Tuple> batch = new ArrayList<>();
     batch.add(Tuple.of("julien", "Julien Viet"));
     batch.add(Tuple.of("emad", "Emad Alblueshi"));
-    
+
     conn.preparedBatch("INSERT INTO USERS (id, name) VALUES ($1, $2)", batch, ar -> {
       if (ar.succeeded()) {
 

@@ -168,12 +168,12 @@ conn.prepare("SELECT * FROM USERS", ar1 -> {
       if (ar2.succeeded()) {
         System.out.println("Got at most 100 rows");
 
-        if (query.hasNext()) {
+        if (query.hasMore()) {
           // Get results
           PgResult<Tuple> result = ar2.result();
 
           System.out.println("Get next 100");
-          query.next(ar3 -> {
+          query.execute(ar3 -> {
             // Continue...
           });
         } else {

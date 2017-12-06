@@ -55,28 +55,22 @@ public class ExtendedPgQueryImpl implements PgQuery {
   }
 
   @Override
-  public boolean hasNext() {
+  public boolean hasMore() {
     return result.isSuspended();
   }
 
   @Override
-  public void next(Handler<AsyncResult<PgResult<Tuple>>> handler) {
-    if (!result.isSuspended()) {
-      handler.handle(Future.failedFuture(new NoSuchElementException()));
-    } else {
+  public void execute(Handler<AsyncResult<PgResult<Tuple>>> handler) {
+    if (result == null) {
+      result = new ExtendedQueryResultHandler(handler);
+      portal = fetch > 0 ? UUID.randomUUID().toString() : null;
+      ps.execute(params, fetch, portal, false, result);
+    } else if (result.isSuspended()) {
       result = new ExtendedQueryResultHandler(handler);
       ps.execute(params, fetch, portal, true, result);
-    }
-  }
-
-  @Override
-  public void execute(Handler<AsyncResult<PgResult<Tuple>>> handler) {
-    if (result != null) {
+    } else {
       throw new IllegalStateException();
     }
-    result = new ExtendedQueryResultHandler(handler);
-    portal = fetch > 0 ? UUID.randomUUID().toString() : null;
-    ps.execute(params, fetch, portal, false, result);
   }
 
   @Override

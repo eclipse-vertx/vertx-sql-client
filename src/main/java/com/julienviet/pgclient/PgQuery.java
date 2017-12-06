@@ -38,9 +38,7 @@ public interface PgQuery {
 
   void execute(Handler<AsyncResult<PgResult<Tuple>>> handler);
 
-  boolean hasNext();
-
-  void next(Handler<AsyncResult<PgResult<Tuple>>> handler);
+  boolean hasMore();
 
   default void close() {
     close(ar -> {});

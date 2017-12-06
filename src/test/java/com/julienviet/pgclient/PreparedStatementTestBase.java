@@ -144,11 +144,11 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
           query.execute(ctx.asyncAssertSuccess(result -> {
             ctx.assertNotNull(result.columnsNames());
             ctx.assertEquals(4, result.size());
-            ctx.assertTrue(query.hasNext());
-            query.next(ctx.asyncAssertSuccess(result2 -> {
+            ctx.assertTrue(query.hasMore());
+            query.execute(ctx.asyncAssertSuccess(result2 -> {
               ctx.assertNotNull(result.columnsNames());
               ctx.assertEquals(4, result.size());
-              ctx.assertFalse(query.hasNext());
+              ctx.assertFalse(query.hasMore());
               async.complete();
             }));
           }));

@@ -181,12 +181,12 @@ conn.prepare("SELECT * FROM USERS") { |ar1_err,ar1|
       if (ar2_err == nil)
         puts "Got at most 100 rows"
 
-        if (query.has_next?())
+        if (query.has_more?())
           # Get results
           result = ar2
 
           puts "Get next 100"
-          query.next() { |ar3_err,ar3|
+          query.execute() { |ar3_err,ar3|
             # Continue...
           }
         else

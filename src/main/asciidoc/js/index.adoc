@@ -181,12 +181,12 @@ conn.prepare("SELECT * FROM USERS", function (ar1, ar1_err) {
       if (ar2_err == null) {
         console.log("Got at most 100 rows");
 
-        if (query.hasNext()) {
+        if (query.hasMore()) {
           // Get results
           var result = ar2;
 
           console.log("Get next 100");
-          query.next(function (ar3, ar3_err) {
+          query.execute(function (ar3, ar3_err) {
             // Continue...
           });
         } else {

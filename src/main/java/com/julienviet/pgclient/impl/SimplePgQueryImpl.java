@@ -24,8 +24,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
-import java.util.*;
-
 public class SimplePgQueryImpl implements PgQuery {
 
   private final Handler<CommandBase> execHandler;
@@ -43,26 +41,20 @@ public class SimplePgQueryImpl implements PgQuery {
   }
 
   @Override
-  public boolean hasNext() {
+  public boolean hasMore() {
     return result.hasNext();
   }
 
   @Override
-  public void next(Handler<AsyncResult<PgResult<Tuple>>> handler) {
-    if (result.hasNext()) {
+  public void execute(Handler<AsyncResult<PgResult<Tuple>>> handler) {
+    if (result == null) {
+      result = new SimpleQueryResultHandler<>(handler);
+      execHandler.handle(new SimpleQueryCommand<>(sql, new RowResultDecoder(), result));
+    } else if (result.hasNext()) {
       handler.handle(Future.succeededFuture(result.next()));
     } else {
-      handler.handle(Future.failedFuture(new NoSuchElementException()));
-    }
-  }
-
-  @Override
-  public void execute(Handler<AsyncResult<PgResult<Tuple>>> handler) {
-    if (result != null) {
       throw new IllegalStateException();
     }
-    result = new SimpleQueryResultHandler<>(handler);
-    execHandler.handle(new SimpleQueryCommand<>(sql, new RowResultDecoder(), result));
   }
 
   @Override

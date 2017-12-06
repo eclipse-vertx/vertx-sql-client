@@ -134,14 +134,14 @@ public abstract class PgConnectionTestBase extends PgTestBase {
         Tuple row1 = result1.iterator().next();
         ctx.assertTrue(row1.getValue(0) instanceof Integer);
         ctx.assertTrue(row1.getValue(1) instanceof String);
-        ctx.assertTrue(query.hasNext());
-        query.next(ctx.asyncAssertSuccess(result2 -> {
+        ctx.assertTrue(query.hasMore());
+        query.execute(ctx.asyncAssertSuccess(result2 -> {
           ctx.assertEquals(1, result2.size());
           ctx.assertEquals(Arrays.asList("message", "id"), result2.columnsNames());
           Tuple row2 = result2.iterator().next();
           ctx.assertTrue(row2.getValue(0) instanceof String);
           ctx.assertTrue(row2.getValue(1) instanceof Integer);
-          ctx.assertFalse(query.hasNext());
+          ctx.assertFalse(query.hasMore());
           async.complete();
         }));
       }));
