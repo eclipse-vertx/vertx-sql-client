@@ -18,9 +18,7 @@
 package com.julienviet.pgclient;
 
 import io.vertx.codegen.annotations.VertxGen;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.Iterator;
 import java.util.List;
 
 @VertxGen
@@ -32,6 +30,6 @@ public interface PgResult<T> extends Iterable<T> {
 
   int size();
 
-  PgRowIterator<T> iterator();
+  PgIterator<T> iterator();
 
 }

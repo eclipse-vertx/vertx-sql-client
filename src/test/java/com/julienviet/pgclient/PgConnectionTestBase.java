@@ -110,7 +110,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     connector.accept(client, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(10000, result.size());
-        PgRowIterator<Tuple> it = result.iterator();
+        PgIterator<Tuple> it = result.iterator();
         for (int i = 0; i < 10000; i++) {
           Tuple row = it.next();
           ctx.assertEquals(2, row.size());

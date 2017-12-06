@@ -17,9 +17,9 @@
 
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.PgIterator;
 import com.julienviet.pgclient.PgResult;
 import com.julienviet.pgclient.Tuple;
-import com.julienviet.pgclient.PgRowIterator;
 
 import java.util.Collections;
 import java.util.List;
@@ -62,8 +62,8 @@ public class PgResultImpl implements PgResult<Tuple> {
   }
 
   @Override
-  public PgRowIterator<Tuple> iterator() {
-    return new PgRowIterator<Tuple>() {
+  public PgIterator<Tuple> iterator() {
+    return new PgIterator<Tuple>() {
       LinkedArrayTuple current = rows;
       @Override
       public boolean hasNext() {
