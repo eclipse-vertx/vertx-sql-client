@@ -21,8 +21,8 @@ import com.julienviet.pgclient.codec.decoder.DecodeContext;
 import com.julienviet.pgclient.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.codec.decoder.MessageDecoder;
 import com.julienviet.pgclient.codec.decoder.InitiateSslHandler;
-import com.julienviet.pgclient.codec.encoder.MessageEncoder;
 import com.julienviet.pgclient.codec.encoder.OutboundMessage;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.*;
@@ -91,7 +91,6 @@ public class SocketConnection implements Connection {
   private void initiateProtocol(String username, String password, String database, Handler<AsyncResult<Connection>> completionHandler) {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     pipeline.addBefore("handler", "decoder", new MessageDecoder(decodeQueue));
-    pipeline.addBefore("handler", "encoder", new MessageEncoder());
     socket.closeHandler(this::handleClosed);
     socket.exceptionHandler(this::handleException);
     socket.messageHandler(this::handleMessage);
@@ -142,7 +141,17 @@ public class SocketConnection implements Connection {
     if (cork) {
       outbound.add(cmd);
     } else {
-      socket.writeMessage(cmd);
+      ByteBuf out = null;
+      try {
+        out = socket.channelHandlerContext().alloc().ioBuffer();
+        cmd.encode(out);
+        socket.writeMessage(out);
+        out = null;
+      } finally {
+        if (out != null) {
+          out.release();
+        }
+      }
     }
   }
 
@@ -234,20 +243,21 @@ public class SocketConnection implements Connection {
         cork = true;
         inflight.add(cmd);
         cmd.exec(this);
-        switch (outbound.size()) {
-          case 0:
-            break;
-          case 1:
-            socket.writeMessage(outbound.poll());
-            break;
-          default:
-            OutboundMessage msg = out -> {
-              OutboundMessage msg1;
-              while ((msg1 = outbound.poll()) != null) {
-                msg1.encode(out);
-              }
-            };
-            socket.writeMessage(msg);
+        if (outbound.size() > 0) {
+          ByteBuf out = null;
+          try {
+            out = socket.channelHandlerContext().alloc().ioBuffer();
+            OutboundMessage msg;
+            while ((msg = outbound.poll()) != null) {
+              msg.encode(out);
+            }
+            socket.writeMessage(out);
+            out = null;
+          } finally {
+            if (out != null) {
+              out.release();
+            }
+          }
         }
         cork = false;
       }

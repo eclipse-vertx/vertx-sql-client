@@ -17,8 +17,6 @@
 
 package com.julienviet.pgclient.codec.encoder.message.type;
 
-import com.julienviet.pgclient.codec.encoder.MessageEncoder;
-
 /**
  *
  * Frontend message types for {@link MessageEncoder}
