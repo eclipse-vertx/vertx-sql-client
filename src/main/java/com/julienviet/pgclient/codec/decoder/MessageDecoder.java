@@ -21,7 +21,6 @@ import com.julienviet.pgclient.PgResult;
 import com.julienviet.pgclient.codec.Column;
 import com.julienviet.pgclient.codec.DataFormat;
 import com.julienviet.pgclient.codec.DataType;
-import com.julienviet.pgclient.codec.TransactionStatus;
 import com.julienviet.pgclient.codec.decoder.message.*;
 import com.julienviet.pgclient.codec.util.Util;
 import com.julienviet.pgclient.impl.PgResultImpl;
@@ -68,8 +67,28 @@ public class MessageDecoder extends ByteToMessageDecoder {
         break;
       }
       try {
-        in.setIndex(beginIdx + 5, beginIdx + 1 + length);
-        decodeMessage(id, in, out);
+        in.setIndex(beginIdx + 5, endIdx);
+        switch (id) {
+          case READY_FOR_QUERY: {
+            decodeReadyForQuery(in, out);
+            break;
+          }
+          case DATA_ROW: {
+            decodeDataRow(in);
+            break;
+          }
+          case COMMAND_COMPLETE: {
+            decodeCommandComplete(in, out);
+            break;
+          }
+          case BIND_COMPLETE: {
+            decodeBindComplete(out);
+            break;
+          }
+          default: {
+            decodeMessage(id, in ,out);
+          }
+        }
       } finally {
         in.setIndex(endIdx, writerIndex);
       }
@@ -78,52 +97,20 @@ public class MessageDecoder extends ByteToMessageDecoder {
 
   private void decodeMessage(byte id, ByteBuf in, List<Object> out) {
     switch (id) {
+      case ROW_DESCRIPTION: {
+        decodeRowDescription(in, out);
+        break;
+      }
       case ERROR_RESPONSE: {
-        decodeErrorOrNotice(ErrorResponse.INSTANCE, in, out);
+        decodeError(in, out);
         break;
       }
       case NOTICE_RESPONSE: {
-        decodeErrorOrNotice(NoticeResponse.INSTANCE, in, out);
+        decodeNotice(in, out);
         break;
       }
       case AUTHENTICATION: {
         decodeAuthentication(in, out);
-        break;
-      }
-      case READY_FOR_QUERY: {
-        out.add(ReadyForQuery.decode(in.readByte()));
-        decodeQueue.poll();
-        break;
-      }
-      case ROW_DESCRIPTION: {
-        Column[] columns = decodeRowDescription(in);
-        rowDesc = new RowDescription(columns);
-        out.add(rowDesc);
-        break;
-      }
-      case DATA_ROW: {
-        DecodeContext decodeCtx = decodeQueue.peek();
-        RowDescription desc = decodeCtx.current;
-        if (desc == null) {
-          desc = decodeCtx.peekDesc ? rowDesc : decodeCtx.rowDesc;
-          decodeCtx.current = desc;
-          decodeCtx.decoder.init(decodeCtx.current);
-        }
-        int len = in.readUnsignedShort();
-        decodeCtx.decoder.decodeRow(len, in);
-        break;
-      }
-      case COMMAND_COMPLETE: {
-        DecodeContext ctx = decodeQueue.peek();
-        ctx.current = null;
-        int updated = decodeCommandComplete(in);
-        CommandComplete complete;
-        if (ctx.decoder == null) {
-          complete = new CommandComplete(new PgResultImpl(updated));
-        } else {
-          complete = new CommandComplete(ctx.decoder.complete(updated));
-        }
-        out.add(complete);
         break;
       }
       case EMPTY_QUERY_RESPONSE: {
@@ -132,10 +119,6 @@ public class MessageDecoder extends ByteToMessageDecoder {
       }
       case PARSE_COMPLETE: {
         decodeParseComplete(out);
-        break;
-      }
-      case BIND_COMPLETE: {
-        decodeBindComplete(out);
         break;
       }
       case CLOSE_COMPLETE: {
@@ -147,10 +130,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
         break;
       }
       case PORTAL_SUSPENDED: {
-        DecodeContext ctx = decodeQueue.peek();
-        ctx.current = null;
-        PgResult result = ctx.decoder.complete(0);
-        out.add(new PortalSuspended(result));
+        decodePortalSuspended(out);
         break;
       }
       case PARAMETER_DESCRIPTION: {
@@ -169,7 +149,61 @@ public class MessageDecoder extends ByteToMessageDecoder {
         decodeNotificationResponse(in, out);
         break;
       }
+      default: {
+        throw new UnsupportedOperationException();
+      }
     }
+  }
+
+  private void decodePortalSuspended(List<Object> out) {
+    DecodeContext ctx = decodeQueue.peek();
+    ctx.current = null;
+    PgResult result = ctx.decoder.complete(0);
+    out.add(new PortalSuspended(result));
+  }
+
+  private void decodeCommandComplete(ByteBuf in, List<Object> out) {
+    DecodeContext ctx = decodeQueue.peek();
+    ctx.current = null;
+    int updated = decodeCommandComplete(in);
+    CommandComplete complete;
+    if (ctx.decoder == null) {
+      complete = new CommandComplete(new PgResultImpl(updated));
+    } else {
+      complete = new CommandComplete(ctx.decoder.complete(updated));
+    }
+    out.add(complete);
+  }
+
+  private void decodeDataRow(ByteBuf in) {
+    DecodeContext decodeCtx = decodeQueue.peek();
+    RowDescription desc = decodeCtx.current;
+    if (desc == null) {
+      desc = decodeCtx.peekDesc ? rowDesc : decodeCtx.rowDesc;
+      decodeCtx.current = desc;
+      decodeCtx.decoder.init(decodeCtx.current);
+    }
+    int len = in.readUnsignedShort();
+    decodeCtx.decoder.decodeRow(len, in);
+  }
+
+  private void decodeRowDescription(ByteBuf in, List<Object> out) {
+    Column[] columns = decodeRowDescription(in);
+    rowDesc = new RowDescription(columns);
+    out.add(rowDesc);
+  }
+
+  private void decodeReadyForQuery(ByteBuf in, List<Object> out) {
+    out.add(ReadyForQuery.decode(in.readByte()));
+    decodeQueue.poll();
+  }
+
+  private void decodeError(ByteBuf in, List<Object> out) {
+    decodeErrorOrNotice(ErrorResponse.INSTANCE, in, out);
+  }
+
+  private void decodeNotice(ByteBuf in, List<Object> out) {
+    decodeErrorOrNotice(NoticeResponse.INSTANCE, in, out);
   }
 
   private void decodeErrorOrNotice(Response response, ByteBuf in, List<Object> out) {

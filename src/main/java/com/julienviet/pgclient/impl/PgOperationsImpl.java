@@ -52,11 +52,11 @@ public abstract class PgOperationsImpl implements PgOperations {
   public void preparedBatch(String sql, List<Tuple> list, Handler<AsyncResult<PgBatchResult<Tuple>>> handler) {
     schedulePrepared(sql, ar -> {
       if (ar.succeeded()) {
-        return new ExtendedQueryCommand<>(
+        return new ExtendedBatchQueryCommand<>(
           ar.result(),
           list.iterator(),
           new RowResultDecoder()
-          , new BatchQueryResultHandler(list.size(), (Handler) handler));
+          , new BatchQueryResultHandler(list.size(), handler));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
         return null;

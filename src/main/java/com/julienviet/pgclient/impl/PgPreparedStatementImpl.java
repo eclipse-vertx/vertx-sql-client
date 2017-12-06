@@ -68,7 +68,7 @@ class PgPreparedStatementImpl implements PgPreparedStatement {
   }
 
   void batch(List<Tuple> paramsList, Handler<AsyncResult<PgBatchResult<Tuple>>> handler) {
-    conn.schedule(new ExtendedQueryCommand<>(ps, paramsList.iterator(), new RowResultDecoder(), new BatchQueryResultHandler(paramsList.size(), handler)));
+    conn.schedule(new ExtendedBatchQueryCommand<>(ps, paramsList.iterator(), new RowResultDecoder(), new BatchQueryResultHandler(paramsList.size(), handler)));
   }
 
   @Override

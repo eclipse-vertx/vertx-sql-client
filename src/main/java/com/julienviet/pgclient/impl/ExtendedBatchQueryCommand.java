@@ -26,28 +26,29 @@ import com.julienviet.pgclient.codec.encoder.message.Execute;
 import com.julienviet.pgclient.codec.encoder.message.Parse;
 import com.julienviet.pgclient.codec.encoder.message.Sync;
 
+import java.util.Iterator;
 import java.util.List;
 
-public class ExtendedQueryCommand<T> extends ExtendedQueryCommandBase<T> {
+public class ExtendedBatchQueryCommand<T> extends ExtendedQueryCommandBase<T> {
 
-  private final Tuple params;
+  private final Iterator<Tuple> paramsIterator;
 
-  ExtendedQueryCommand(PreparedStatement ps,
-                       Tuple params,
-                       ResultDecoder<T> decoder,
-                       QueryResultHandler<T> handler) {
-    this(ps, params, 0, null, false, decoder, handler);
+  ExtendedBatchQueryCommand(PreparedStatement ps,
+                            Iterator<Tuple> paramsIterator,
+                            ResultDecoder<T> decoder,
+                            QueryResultHandler<T> handler) {
+    this(ps, paramsIterator, 0, null, false, decoder, handler);
   }
 
-  ExtendedQueryCommand(PreparedStatement ps,
-                       Tuple params,
-                       int fetch,
-                       String portal,
-                       boolean suspended,
-                       ResultDecoder<T> decoder,
-                       QueryResultHandler<T> handler) {
+  ExtendedBatchQueryCommand(PreparedStatement ps,
+                            Iterator<Tuple> paramsIterator,
+                            int fetch,
+                            String portal,
+                            boolean suspended,
+                            ResultDecoder<T> decoder,
+                            QueryResultHandler<T> handler) {
     super(ps, fetch, portal, suspended, decoder, handler);
-    this.params = params;
+    this.paramsIterator = paramsIterator;
   }
 
   @Override
@@ -60,8 +61,11 @@ public class ExtendedQueryCommand<T> extends ExtendedQueryCommandBase<T> {
       if (ps.statement == null) {
         conn.writeMessage(new Parse(ps.sql).setStatement(""));
       }
-      conn.writeMessage(new Bind().setParamValues((List<Object>) params).setDataTypes(ps.paramDesc.getParamDataTypes()).setPortal(portal).setStatement(ps.statement));
-      conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
+      while (paramsIterator.hasNext()) {
+        List<Object> params = (List<Object>) paramsIterator.next();
+        conn.writeMessage(new Bind().setParamValues(params).setDataTypes(ps.paramDesc.getParamDataTypes()).setPortal(portal).setStatement(ps.statement));
+        conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
+      }
       conn.writeMessage(Sync.INSTANCE);
     }
   }
