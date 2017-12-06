@@ -116,9 +116,7 @@ public class RawBenchmark {
         if (ar.succeeded()) {
           doLargeQuery(conn, remaining -1, latch);
           PgResult<Tuple> result = ar.result();
-          PgRowIterator<Tuple> it = result.rows();
-          while (it.hasNext()) {
-            Tuple tuple = it.next();
+          for (Tuple tuple : result) {
             int val = tuple.getInteger(0);
           }
         } else {

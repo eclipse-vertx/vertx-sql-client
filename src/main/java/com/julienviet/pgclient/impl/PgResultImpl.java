@@ -62,7 +62,7 @@ public class PgResultImpl implements PgResult<Tuple> {
   }
 
   @Override
-  public PgRowIterator<Tuple> rows() {
+  public PgRowIterator<Tuple> iterator() {
     return new PgRowIterator<Tuple>() {
       LinkedArrayTuple current = rows;
       @Override

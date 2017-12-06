@@ -59,7 +59,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
         PgQuery query = ps.query(Tuple.of(1));
         query.execute(ctx.asyncAssertSuccess(results -> {
           ctx.assertEquals(1, results.size());
-          Tuple row = results.rows().next();
+          Tuple row = results.iterator().next();
           ctx.assertEquals(1, row.getInteger(0));
           ctx.assertEquals("fortune: No such file or directory", row.getString(1));
           ps.close(ctx.asyncAssertSuccess(ar -> {
