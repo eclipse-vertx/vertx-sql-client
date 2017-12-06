@@ -44,6 +44,18 @@ public interface PgPreparedStatement {
   PgQuery query(Tuple args);
 
   /**
+   * Execute the prepared statement with a cursor and stream the result. The stream opens a cursor
+   * with a {@code fetch} size to fetch the results.
+   * <p/>
+   * Note: this requires to be in a transaction, since cursors require it.
+   *
+   * @param fetch the cursor fetch size
+   * @param args the prepared statement arguments
+   * @return the stream
+   */
+  PgStream<Tuple> stream(int fetch, Tuple args);
+
+  /**
    * Create a new batch.
    *
    * @return the batch

@@ -60,7 +60,10 @@ public class ExtendedQueryCommand<T> extends ExtendedQueryCommandBase<T> {
       if (ps.statement == 0) {
         conn.writeMessage(new Parse(ps.sql));
       }
-      conn.writeMessage(new Bind().setParamValues((List<Object>) params).setDataTypes(ps.paramDesc.getParamDataTypes()).setPortal(portal).setStatement(ps.statement));
+      conn.writeMessage(new Bind().setParamValues((List<Object>) params)
+        .setDataTypes(ps.paramDesc.getParamDataTypes())
+        .setPortal(portal)
+        .setStatement(ps.statement));
       conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
       conn.writeMessage(Sync.INSTANCE);
     }

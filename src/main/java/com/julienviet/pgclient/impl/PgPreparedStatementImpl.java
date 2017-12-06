@@ -72,6 +72,11 @@ class PgPreparedStatementImpl implements PgPreparedStatement {
   }
 
   @Override
+  public PgStream<Tuple> stream(int fetch, Tuple args) {
+    return new PgCursorStreamImpl(this, fetch, args);
+  }
+
+  @Override
   public void close(Handler<AsyncResult<Void>> completionHandler) {
     if (closed.compareAndSet(false, true)) {
       conn.schedule(new CloseStatementCommand(completionHandler));

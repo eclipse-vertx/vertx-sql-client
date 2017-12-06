@@ -27,6 +27,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 /**
@@ -198,4 +201,90 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
       }));
     }));
   }
+
+  @Test
+  public void testStreamQuery(TestContext ctx) {
+    Async async = ctx.async();
+    client.connect(ctx.asyncAssertSuccess(conn -> {
+      conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
+        conn.prepare("SELECT * FROM Fortune", ctx.asyncAssertSuccess(ps -> {
+          PgStream<Tuple> stream = ps.stream(4, Tuple.tuple());
+          List<Tuple> rows = new ArrayList<>();
+          AtomicInteger ended = new AtomicInteger();
+          stream.endHandler(v -> {
+            ctx.assertEquals(0, ended.getAndIncrement());
+            ctx.assertEquals(12, rows.size());
+            async.complete();
+          });
+          stream.handler(tuple -> {
+            ctx.assertEquals(0, ended.get());
+            rows.add(tuple);
+          });
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testStreamQueryPauseInBatch(TestContext ctx) {
+    Async async = ctx.async();
+    client.connect(ctx.asyncAssertSuccess(conn -> {
+      conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
+        conn.prepare("SELECT * FROM Fortune", ctx.asyncAssertSuccess(ps -> {
+          PgStream<Tuple> stream = ps.stream(4, Tuple.tuple());
+          List<Tuple> rows = new ArrayList<>();
+          AtomicInteger ended = new AtomicInteger();
+          stream.endHandler(v -> {
+            ctx.assertEquals(0, ended.getAndIncrement());
+            ctx.assertEquals(12, rows.size());
+            async.complete();
+          });
+          stream.handler(tuple -> {
+            rows.add(tuple);
+            if (rows.size() == 2) {
+              stream.pause();
+              vertx.setTimer(100, v -> {
+                stream.resume();
+              });
+            }
+          });
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testStreamQueryError(TestContext ctx) {
+    Async async = ctx.async();
+    client.connect(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT * FROM Fortune", ctx.asyncAssertSuccess(ps -> {
+        PgStream<Tuple> stream = ps.stream(4, Tuple.tuple());
+        stream.endHandler(v -> ctx.fail());
+        AtomicInteger rowCount = new AtomicInteger();
+        stream.exceptionHandler(err -> {
+          ctx.assertEquals(4, rowCount.getAndIncrement());
+          async.complete();
+        });
+        stream.handler(tuple -> rowCount.incrementAndGet());
+      }));
+    }));
+  }
+/*
+  @Test
+  public void testStreamQueryCancel(TestContext ctx) {
+    Async async = ctx.async();
+    client.connect(ctx.asyncAssertSuccess(conn -> {
+      conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
+        conn.prepare("SELECT * FROM Fortune", ctx.asyncAssertSuccess(ps -> {
+          PgStream<Tuple> stream = ps.stream(Tuple.tuple());
+          AtomicInteger count = new AtomicInteger();
+          stream.handler(tuple -> {
+            ctx.assertEquals(0, count.getAndIncrement());
+            stream.handler(null);
+          });
+        }));
+      }));
+    }));
+  }
+  */
 }
