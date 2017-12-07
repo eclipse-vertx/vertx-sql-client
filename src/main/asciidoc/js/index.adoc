@@ -46,7 +46,7 @@ client.connect(function (res, res_err) {
     // Connected
     var conn = res;
 
-    conn.query("SELECT * FROM USERS").execute(function (ar, ar_err) {
+    conn.createQuery("SELECT * FROM USERS").execute(function (ar, ar_err) {
 
       if (ar_err == null) {
 
@@ -90,7 +90,7 @@ pool.getConnection(function (res, res_err) {
     // Obtained a connection
     var conn = res;
 
-    conn.query("SELECT * FROM USERS").execute(function (ar, ar_err) {
+    conn.createQuery("SELECT * FROM USERS").execute(function (ar, ar_err) {
 
       if (ar_err == null) {
 
@@ -135,7 +135,7 @@ conn.prepare("SELECT * FROM USERS WHERE user_id=$1", function (ar1, ar1_err) {
     var preparedStatement = ar1;
 
     // Create a query : bind parameters
-    var query = preparedStatement.query(Tuple.of("julien"));
+    var query = preparedStatement.createQuery(Tuple.of("julien"));
 
     // Execute query
     query.execute(function (ar2, ar2_err) {
@@ -174,7 +174,7 @@ conn.prepare("SELECT * FROM USERS", function (ar1, ar1_err) {
     var preparedStatement = ar1;
 
     // Create a query : bind parameters
-    var query = preparedStatement.query().fetch(100);
+    var query = preparedStatement.createQuery().fetch(100);
 
     query.execute(function (ar2, ar2_err) {
 
@@ -214,7 +214,7 @@ conn.prepare("SELECT * FROM USERS", function (ar1, ar1_err) {
     var preparedStatement = ar1;
 
     // Create a query : bind parameters
-    var query = preparedStatement.query();
+    var query = preparedStatement.createQuery();
 
     // Get at most 100 rows
     query.fetch(100);
@@ -260,7 +260,7 @@ conn.preparedQuery("UPDATE USERS SET name=$1 WHERE id=$2", Tuple.of(2, "EMAD ALB
 ----
 
 
-Prepared statements can also be used to batch operations in a very efficient manner:
+Prepared statements can also be used to createBatch operations in a very efficient manner:
 
 [source,js]
 ----
@@ -270,9 +270,9 @@ conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", function (ar1, ar1_
     var preparedStatement = ar1;
 
     // Create a query : bind parameters
-    var batch = preparedStatement.batch();
+    var batch = preparedStatement.createBatch();
 
-    // Add commands to the batch
+    // Add commands to the createBatch
     batch.add(Tuple.of("julien", "Julien Viet"));
     batch.add(Tuple.of("emad", "Emad Alblueshi"));
 

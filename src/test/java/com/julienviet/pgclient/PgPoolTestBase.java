@@ -56,7 +56,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     PgPool pool = createPool(client, 4);
     for (int i = 0;i < num;i++) {
       pool.getConnection(ctx.asyncAssertSuccess(conn -> {
-        conn.query("SELECT id, randomnumber from WORLD").execute(ar -> {
+        conn.createQuery("SELECT id, randomnumber from WORLD").execute(ar -> {
           if (ar.succeeded()) {
             PgResult result = ar.result();
             ctx.assertEquals(10000, result.size());
@@ -77,7 +77,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     PgClient client = PgClient.create(vertx, options);
     PgPool pool = createPool(client, 4);
     for (int i = 0;i < num;i++) {
-      pool.query("SELECT id, randomnumber from WORLD").execute(ar -> {
+      pool.createQuery("SELECT id, randomnumber from WORLD").execute(ar -> {
         if (ar.succeeded()) {
           PgResult result = ar.result();
           ctx.assertEquals(10000, result.size());
@@ -116,7 +116,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     PgClient client = PgClient.create(vertx, options);
     PgPool pool = createPool(client, 4);
     for (int i = 0;i < num;i++) {
-      pool.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9").execute(ar -> {
+      pool.createQuery("UPDATE Fortune SET message = 'Whatever' WHERE id = 9").execute(ar -> {
         if (ar.succeeded()) {
           PgResult result = ar.result();
           ctx.assertEquals(1, result.updatedCount());
@@ -162,9 +162,9 @@ public abstract class PgPoolTestBase extends PgTestBase {
       pool.getConnection(ctx.asyncAssertSuccess(conn1 -> {
         proxyConn.get().close();
         conn1.closeHandler(v2 -> {
-          conn1.query("never-executer").execute(ctx.asyncAssertFailure(err -> {
+          conn1.createQuery("never-executer").execute(ctx.asyncAssertFailure(err -> {
             pool.getConnection(ctx.asyncAssertSuccess(conn2 -> {
-              conn2.query("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(v3 -> {
+              conn2.createQuery("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(v3 -> {
                 async.complete();
               }));
             }));

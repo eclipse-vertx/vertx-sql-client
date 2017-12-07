@@ -47,7 +47,7 @@ public class Examples {
         // Connected
         PgConnection conn = res.result();
 
-        conn.query("SELECT * FROM USERS").execute(ar -> {
+        conn.createQuery("SELECT * FROM USERS").execute(ar -> {
 
           if (ar.succeeded()) {
 
@@ -84,7 +84,7 @@ public class Examples {
         // Obtained a connection
         PgConnection conn = res.result();
 
-        conn.query("SELECT * FROM USERS").execute(ar -> {
+        conn.createQuery("SELECT * FROM USERS").execute(ar -> {
 
           if (ar.succeeded()) {
 
@@ -132,7 +132,7 @@ public class Examples {
         PgPreparedStatement preparedStatement = ar1.result();
 
         // Create a query : bind parameters
-        PgQuery query = preparedStatement.query(Tuple.of("julien"));
+        PgQuery query = preparedStatement.createQuery(Tuple.of("julien"));
 
         // Execute query
         query.execute(ar2 -> {
@@ -161,7 +161,7 @@ public class Examples {
         PgPreparedStatement preparedStatement = ar1.result();
 
         // Create a query : bind parameters
-        PgQuery query = preparedStatement.query()
+        PgQuery query = preparedStatement.createQuery()
           .fetch(100); // Get at most 100 rows at a time
 
         query.execute(ar2 -> {
@@ -197,7 +197,7 @@ public class Examples {
         PgPreparedStatement preparedStatement = ar1.result();
 
         // Create a query : bind parameters
-        PgQuery query = preparedStatement.query();
+        PgQuery query = preparedStatement.createQuery();
 
         // Get at most 100 rows
         query.fetch(100);
@@ -242,9 +242,9 @@ public class Examples {
         PgPreparedStatement preparedStatement = ar1.result();
 
         // Create a query : bind parameters
-        PgBatch batch = preparedStatement.batch();
+        PgBatch batch = preparedStatement.createBatch();
 
-        // Add commands to the batch
+        // Add commands to the createBatch
         batch.add(Tuple.of("julien", "Julien Viet"));
         batch.add(Tuple.of("emad", "Emad Alblueshi"));
 

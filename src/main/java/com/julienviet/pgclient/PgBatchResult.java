@@ -20,11 +20,23 @@ package com.julienviet.pgclient;
 import io.vertx.codegen.annotations.CacheReturn;
 import io.vertx.codegen.annotations.VertxGen;
 
+/**
+ * The result of a createBatch execution.
+ */
 @VertxGen
 public interface PgBatchResult<T> extends Iterable<PgResult<T>> {
 
+  /**
+   * Retrieve the result at {@code index}
+   *
+   * @param index the index
+   * @return the result
+   */
   PgResult<T> get(int index);
 
+  /**
+   * @return the number of results
+   */
   @CacheReturn
   int size();
 

@@ -21,6 +21,8 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
+import java.util.List;
+
 /**
  * A pool of connection.
  *
@@ -28,6 +30,17 @@ import io.vertx.core.Handler;
  */
 @VertxGen
 public interface PgPool extends PgOperations {
+
+  @Override
+  default PgPool preparedQuery(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler) {
+    return (PgPool) PgOperations.super.preparedQuery(sql, handler);
+  }
+
+  @Override
+  PgPool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<Tuple>>> handler);
+
+  @Override
+  PgPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgBatchResult<Tuple>>> handler);
 
   /**
    * Obtain a connection from the pool.

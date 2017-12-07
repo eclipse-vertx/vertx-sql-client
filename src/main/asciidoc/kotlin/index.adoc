@@ -44,7 +44,7 @@ client.connect({ res ->
     // Connected
     var conn = res.result()
 
-    conn.query("SELECT * FROM USERS").execute({ ar ->
+    conn.createQuery("SELECT * FROM USERS").execute({ ar ->
 
       if (ar.succeeded()) {
 
@@ -85,7 +85,7 @@ pool.getConnection({ res ->
     // Obtained a connection
     var conn = res.result()
 
-    conn.query("SELECT * FROM USERS").execute({ ar ->
+    conn.createQuery("SELECT * FROM USERS").execute({ ar ->
 
       if (ar.succeeded()) {
 
@@ -129,7 +129,7 @@ conn.prepare("SELECT * FROM USERS WHERE user_id=\$$1", { ar1 ->
     var preparedStatement = ar1.result()
 
     // Create a query : bind parameters
-    var query = preparedStatement.query(Tuple.of("julien"))
+    var query = preparedStatement.createQuery(Tuple.of("julien"))
 
     // Execute query
     query.execute({ ar2 ->
@@ -168,7 +168,7 @@ conn.prepare("SELECT * FROM USERS", { ar1 ->
     var preparedStatement = ar1.result()
 
     // Create a query : bind parameters
-    var query = preparedStatement.query().fetch(100)
+    var query = preparedStatement.createQuery().fetch(100)
 
     query.execute({ ar2 ->
 
@@ -208,7 +208,7 @@ conn.prepare("SELECT * FROM USERS", { ar1 ->
     var preparedStatement = ar1.result()
 
     // Create a query : bind parameters
-    var query = preparedStatement.query()
+    var query = preparedStatement.createQuery()
 
     // Get at most 100 rows
     query.fetch(100)
@@ -253,7 +253,7 @@ conn.preparedQuery("UPDATE USERS SET name=\$$1 WHERE id=\$$2", Tuple.of(2, "EMAD
 ----
 
 
-Prepared statements can also be used to batch operations in a very efficient manner:
+Prepared statements can also be used to createBatch operations in a very efficient manner:
 
 [source,kotlin]
 ----
@@ -262,9 +262,9 @@ conn.prepare("INSERT INTO USERS (id, name) VALUES (\$$1, \$$2)", { ar1 ->
     var preparedStatement = ar1.result()
 
     // Create a query : bind parameters
-    var batch = preparedStatement.batch()
+    var batch = preparedStatement.createBatch()
 
-    // Add commands to the batch
+    // Add commands to the createBatch
     batch.add(Tuple.of("julien", "Julien Viet"))
     batch.add(Tuple.of("emad", "Emad Alblueshi"))
 

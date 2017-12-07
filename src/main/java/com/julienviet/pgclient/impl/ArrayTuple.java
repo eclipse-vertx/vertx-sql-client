@@ -145,13 +145,7 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
-  public Tuple addTimestamp(LocalDateTime value) {
-    add(value);
-    return this;
-  }
-
-  @Override
-  public Tuple getTimestampTz(Temporal value) {
+  public Tuple getTemporal(Temporal value) {
     add(value);
     return this;
   }

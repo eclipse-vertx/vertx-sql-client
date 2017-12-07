@@ -108,7 +108,7 @@
  * ----
  *
  *
- * Prepared statements can also be used to batch operations in a very efficient manner:
+ * Prepared statements can also be used to createBatch operations in a very efficient manner:
  *
  * [source,$lang]
  * ----

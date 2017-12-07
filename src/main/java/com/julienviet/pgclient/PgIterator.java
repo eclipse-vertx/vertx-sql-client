@@ -22,6 +22,10 @@ import io.vertx.core.json.JsonArray;
 
 import java.util.Iterator;
 
+/**
+ * An iterator for processing postgres items synchronously.
+ * @param <T>
+ */
 @VertxGen
 public interface PgIterator<T> extends Iterator<T> {
 

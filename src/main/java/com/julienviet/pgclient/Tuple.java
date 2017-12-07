@@ -25,134 +25,328 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
 import java.util.Collections;
 
+/**
+ * A general purpose tuple.
+ */
 @VertxGen
 public interface Tuple {
 
+  /**
+   * @return a new empty tuple
+   */
   static Tuple tuple() {
     return new ArrayTuple(10);
   }
 
-  static Tuple of(Object val1) {
+  /**
+   * Create a tuple of one element.
+   *
+   * @param elt1 the first value
+   * @return the tuple
+   */
+  static Tuple of(Object elt1) {
     ArrayTuple tuple = new ArrayTuple(1);
-    tuple.add(val1);
+    tuple.add(elt1);
     return tuple;
   }
 
-  static Tuple of(Object val1, Object val2) {
+  /**
+   * Create a tuple of two elements.
+   *
+   * @param elt1 the first value
+   * @param elt2 the second value
+   * @return the tuple
+   */
+  static Tuple of(Object elt1, Object elt2) {
     ArrayTuple tuple = new ArrayTuple(2);
-    tuple.add(val1);
-    tuple.add(val2);
+    tuple.add(elt1);
+    tuple.add(elt2);
     return tuple;
   }
 
-  static Tuple of(Object val1, Object val2, Object val3) {
+  /**
+   * Create a tuple of three elements.
+   *
+   * @param elt1 the first value
+   * @param elt2 the second value
+   * @param elt3 the third value
+   * @return the tuple
+   */
+  static Tuple of(Object elt1, Object elt2, Object elt3) {
     ArrayTuple tuple = new ArrayTuple(3);
-    tuple.add(val1);
-    tuple.add(val2);
-    tuple.add(val3);
+    tuple.add(elt1);
+    tuple.add(elt2);
+    tuple.add(elt3);
     return tuple;
   }
 
-  static Tuple of(Object val1, Object val2, Object val3, Object val4) {
+  /**
+   * Create a tuple of four elements.
+   *
+   * @param elt1 the first value
+   * @param elt2 the second value
+   * @param elt3 the third value
+   * @param elt4 the fourth value
+   * @return the tuple
+   */
+  static Tuple of(Object elt1, Object elt2, Object elt3, Object elt4) {
     ArrayTuple tuple = new ArrayTuple(4);
-    tuple.add(val1);
-    tuple.add(val2);
-    tuple.add(val3);
-    tuple.add(val4);
+    tuple.add(elt1);
+    tuple.add(elt2);
+    tuple.add(elt3);
+    tuple.add(elt4);
     return tuple;
   }
 
-  static Tuple of(Object val1, Object val2, Object val3, Object val4, Object val5) {
+  /**
+   * Create a tuple of five elements.
+   *
+   * @param elt1 the first value
+   * @param elt2 the second value
+   * @param elt3 the third value
+   * @param elt4 the fourth value
+   * @param elt5 the fifth value
+   * @return the tuple
+   */
+  static Tuple of(Object elt1, Object elt2, Object elt3, Object elt4, Object elt5) {
     ArrayTuple tuple = new ArrayTuple(5);
-    tuple.add(val1);
-    tuple.add(val2);
-    tuple.add(val3);
-    tuple.add(val4);
-    tuple.add(val5);
+    tuple.add(elt1);
+    tuple.add(elt2);
+    tuple.add(elt3);
+    tuple.add(elt4);
+    tuple.add(elt5);
     return tuple;
   }
 
-  static Tuple of(Object val1, Object val2, Object val3, Object val4, Object val5, Object val6) {
+  /**
+   * Create a tuple of six elements.
+   *
+   * @param elt1 the first value
+   * @param elt2 the second value
+   * @param elt3 the third value
+   * @param elt4 the fourth value
+   * @param elt5 the fifth value
+   * @param elt5 the sixth value
+   * @return the tuple
+   */
+  static Tuple of(Object elt1, Object elt2, Object elt3, Object elt4, Object elt5, Object elt6) {
     ArrayTuple tuple = new ArrayTuple(5);
-    tuple.add(val1);
-    tuple.add(val2);
-    tuple.add(val3);
-    tuple.add(val4);
-    tuple.add(val5);
-    tuple.add(val6);
+    tuple.add(elt1);
+    tuple.add(elt2);
+    tuple.add(elt3);
+    tuple.add(elt4);
+    tuple.add(elt5);
+    tuple.add(elt6);
     return tuple;
   }
 
+  /**
+   * Create a tuple of an arbitrary number of elements.
+   *
+   * @param elements the elements
+   * @return the tuple
+   */
   @GenIgnore
-  static Tuple of(Object... vals) {
-    ArrayTuple tuple = new ArrayTuple(vals.length);
-    Collections.addAll(tuple, vals);
+  static Tuple of(Object... elements) {
+    ArrayTuple tuple = new ArrayTuple(elements.length);
+    Collections.addAll(tuple, elements);
     return tuple;
   }
 
+  /**
+   * Get a boolean value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
   Boolean getBoolean(int pos);
 
+  /**
+   * Get an object value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
   Object getValue(int pos);
 
+  /**
+   * Get an integer value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
   Integer getInteger(int pos);
 
+  /**
+   * Get a long value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
   Long getLong(int pos);
 
+  /**
+   * Get a float value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
   Float getFloat(int pos);
 
+  /**
+   * Get a double value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
   Double getDouble(int pos);
 
+  /**
+   * Get a string value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
   String getString(int pos);
 
+  /**
+   * Get a json object value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
   JsonObject getJsonObject(int pos);
 
+  /**
+   * Get a json array value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
   JsonArray getJsonArray(int pos);
 
+  /**
+   * Get a temporal value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
   @GenIgnore
   Temporal getTemporal(int pos);
 
+  /**
+   * Get a binary value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
   Buffer getBinary(int pos);
 
+  /**
+   * Add a boolean value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
   @Fluent
   Tuple addBoolean(Boolean value);
 
+  /**
+   * Add an object value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
   @Fluent
   Tuple addValue(Object value);
 
+  /**
+   * Add an integer value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
   @Fluent
   Tuple addInteger(Integer value);
 
+  /**
+   * Add a long value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
   @Fluent
   Tuple addLong(Long value);
 
+  /**
+   * Add a float value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
   @Fluent
   Tuple addFloat(Float value);
 
+  /**
+   * Add a double value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
   @Fluent
   Tuple addDouble(Double value);
 
+  /**
+   * Add a string value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
   @Fluent
   Tuple addString(String value);
 
+  /**
+   * Add a json object value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
   @Fluent
   Tuple addJsonObject(JsonObject value);
 
+  /**
+   * Add a json array value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
   @Fluent
   Tuple addJsonArray(JsonArray value);
 
+  /**
+   * Add a binary value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
   @Fluent
   Tuple addBinary(Buffer value);
 
+  /**
+   * Add a temporal value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
   @GenIgnore
-  Tuple addTimestamp(LocalDateTime value);
+  Tuple getTemporal(Temporal value);
 
-  @GenIgnore
-  Tuple getTimestampTz(Temporal value);
-
+  /**
+   * @return the tuple size
+   */
   int size();
 
 }

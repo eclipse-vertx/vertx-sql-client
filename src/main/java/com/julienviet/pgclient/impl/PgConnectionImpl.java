@@ -28,7 +28,7 @@ import java.util.function.Function;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class PgConnectionImpl extends PgOperationsImpl implements PgConnection, Connection.Holder {
+public class PgConnectionImpl extends PgOperationsImpl<PgConnectionImpl> implements PgConnection, Connection.Holder {
 
   private final Context context;
   public final Connection conn;
@@ -98,7 +98,7 @@ public class PgConnectionImpl extends PgOperationsImpl implements PgConnection, 
   }
 
   @Override
-  public void prepare(String sql, Handler<AsyncResult<PgPreparedStatement>> handler) {
+  public PgConnection prepare(String sql, Handler<AsyncResult<PgPreparedStatement>> handler) {
     conn.schedulePrepared(sql, ar -> {
       if (ar.succeeded()) {
         handler.handle(Future.succeededFuture(new PgPreparedStatementImpl(conn, ar.result())));
@@ -107,5 +107,6 @@ public class PgConnectionImpl extends PgOperationsImpl implements PgConnection, 
       }
       return null;
     });
+    return this;
   }
 }

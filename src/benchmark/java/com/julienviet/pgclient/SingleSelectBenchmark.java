@@ -77,7 +77,7 @@ public class SingleSelectBenchmark extends PgBenchmarkBase {
         conn.prepare("SELECT id, randomnumber from WORLD where id=$1", ar2 -> {
           if (ar2.succeeded()) {
             PgPreparedStatement ps = ar2.result();
-            PgQuery query = ps.query(args);
+            PgQuery query = ps.createQuery(args);
             query.execute(ar3 -> {
               conn.close();
               if (ar3.succeeded()) {

@@ -38,7 +38,7 @@ import java.util.function.Function;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public class PgPoolImpl extends PgOperationsImpl implements PgPool {
+public class PgPoolImpl extends PgOperationsImpl<PgPoolImpl> implements PgPool {
 
   private final Context context;
   private final ConnectionProvider provider;

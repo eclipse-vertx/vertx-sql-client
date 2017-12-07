@@ -40,16 +40,16 @@ class PgPreparedStatementImpl implements PgPreparedStatement {
   }
 
   @Override
-  public PgQuery query(Tuple args) {
-    String msg = ps.paramDesc.validate((List<Object>) args);
+  public PgQuery createQuery(Tuple arguments) {
+    String msg = ps.paramDesc.validate((List<Object>) arguments);
     if (msg != null) {
       throw new IllegalArgumentException(msg);
     }
-    return new ExtendedPgQueryImpl(this, args);
+    return new ExtendedPgQueryImpl(this, arguments);
   }
 
   @Override
-  public PgBatch batch() {
+  public PgBatch createBatch() {
     return new BatchImpl(this, ps.paramDesc);
   }
 
@@ -72,7 +72,7 @@ class PgPreparedStatementImpl implements PgPreparedStatement {
   }
 
   @Override
-  public PgStream<Tuple> stream(int fetch, Tuple args) {
+  public PgStream<Tuple> createStream(int fetch, Tuple args) {
     return new PgCursorStreamImpl(this, fetch, args);
   }
 

@@ -33,34 +33,36 @@ public interface PgPreparedStatement {
   /**
    * @return create a query from this statement with no arguments
    */
-  default PgQuery query() {
-    return query(ArrayTuple.EMPTY);
+  default PgQuery createQuery() {
+    return createQuery(ArrayTuple.EMPTY);
   }
 
   /**
-   * @param args the list of arguments
-   * @return create a query from this statement with a variable list of arguments
+   * Create a query, the provided {@code arguments} will be bound prior the execution.
+   *
+   * @param arguments the list of arguments
+   * @return the query
    */
-  PgQuery query(Tuple args);
+  PgQuery createQuery(Tuple arguments);
 
   /**
-   * Execute the prepared statement with a cursor and stream the result. The stream opens a cursor
+   * Execute the prepared statement with a cursor and createStream the result. The createStream opens a cursor
    * with a {@code fetch} size to fetch the results.
    * <p/>
    * Note: this requires to be in a transaction, since cursors require it.
    *
    * @param fetch the cursor fetch size
    * @param args the prepared statement arguments
-   * @return the stream
+   * @return the createStream
    */
-  PgStream<Tuple> stream(int fetch, Tuple args);
+  PgStream<Tuple> createStream(int fetch, Tuple args);
 
   /**
-   * Create a new batch.
+   * Create a new createBatch.
    *
-   * @return the batch
+   * @return the createBatch
    */
-  PgBatch batch();
+  PgBatch createBatch();
 
   /**
    * Close the prepared statement and release its resources.

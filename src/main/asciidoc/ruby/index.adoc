@@ -46,7 +46,7 @@ client.connect() { |res_err,res|
     # Connected
     conn = res
 
-    conn.query("SELECT * FROM USERS").execute() { |ar_err,ar|
+    conn.create_query("SELECT * FROM USERS").execute() { |ar_err,ar|
 
       if (ar_err == nil)
 
@@ -90,7 +90,7 @@ pool.get_connection() { |res_err,res|
     # Obtained a connection
     conn = res
 
-    conn.query("SELECT * FROM USERS").execute() { |ar_err,ar|
+    conn.create_query("SELECT * FROM USERS").execute() { |ar_err,ar|
 
       if (ar_err == nil)
 
@@ -135,7 +135,7 @@ conn.prepare("SELECT * FROM USERS WHERE user_id=$1") { |ar1_err,ar1|
     preparedStatement = ar1
 
     # Create a query : bind parameters
-    query = preparedStatement.query(VertxPgClient::Tuple.of("julien"))
+    query = preparedStatement.create_query(VertxPgClient::Tuple.of("julien"))
 
     # Execute query
     query.execute() { |ar2_err,ar2|
@@ -174,7 +174,7 @@ conn.prepare("SELECT * FROM USERS") { |ar1_err,ar1|
     preparedStatement = ar1
 
     # Create a query : bind parameters
-    query = preparedStatement.query().fetch(100)
+    query = preparedStatement.create_query().fetch(100)
 
     query.execute() { |ar2_err,ar2|
 
@@ -214,7 +214,7 @@ conn.prepare("SELECT * FROM USERS") { |ar1_err,ar1|
     preparedStatement = ar1
 
     # Create a query : bind parameters
-    query = preparedStatement.query()
+    query = preparedStatement.create_query()
 
     # Get at most 100 rows
     query.fetch(100)
@@ -260,7 +260,7 @@ conn.prepared_query("UPDATE USERS SET name=$1 WHERE id=$2", VertxPgClient::Tuple
 ----
 
 
-Prepared statements can also be used to batch operations in a very efficient manner:
+Prepared statements can also be used to createBatch operations in a very efficient manner:
 
 [source,ruby]
 ----
@@ -270,9 +270,9 @@ conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)") { |ar1_err,ar1|
     preparedStatement = ar1
 
     # Create a query : bind parameters
-    batch = preparedStatement.batch()
+    batch = preparedStatement.create_batch()
 
-    # Add commands to the batch
+    # Add commands to the createBatch
     batch.add(VertxPgClient::Tuple.of("julien", "Julien Viet"))
     batch.add(VertxPgClient::Tuple.of("emad", "Emad Alblueshi"))
 

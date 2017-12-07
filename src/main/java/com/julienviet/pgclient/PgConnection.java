@@ -22,6 +22,8 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
+import java.util.List;
+
 /**
  * A connection to Postgres.
  *
@@ -31,11 +33,41 @@ import io.vertx.core.Handler;
 @VertxGen
 public interface PgConnection extends PgOperations {
 
-  void prepare(String sql, Handler<AsyncResult<PgPreparedStatement>> handler);
+  @Override
+  default PgConnection preparedQuery(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler) {
+    return (PgConnection) PgOperations.super.preparedQuery(sql, handler);
+  }
 
+  @Override
+  PgConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<Tuple>>> handler);
+
+  @Override
+  PgConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgBatchResult<Tuple>>> handler);
+
+  /**
+   * Create a prepared statement.
+   *
+   * @param sql the sql
+   * @param handler the handler notified with the prepared statement asynchronously
+   */
+  @Fluent
+  PgConnection prepare(String sql, Handler<AsyncResult<PgPreparedStatement>> handler);
+
+  /**
+   * Set an handler called with connection errors.
+   *
+   * @param handler the handler
+   * @return a reference to this, so the API can be used fluently
+   */
   @Fluent
   PgConnection exceptionHandler(Handler<Throwable> handler);
 
+  /**
+   * Set an handler called when the connection is closed.
+   *
+   * @param handler the handler
+   * @return a reference to this, so the API can be used fluently
+   */
   @Fluent
   PgConnection closeHandler(Handler<Void> handler);
 

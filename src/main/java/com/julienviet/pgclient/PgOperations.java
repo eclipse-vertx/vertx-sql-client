@@ -18,6 +18,7 @@
 package com.julienviet.pgclient;
 
 import com.julienviet.pgclient.impl.ArrayTuple;
+import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -32,19 +33,46 @@ import java.util.List;
 @VertxGen
 public interface PgOperations {
 
-  PgQuery query(String sql);
+  /**
+   * Create a simple query.
+   *
+   * @param sql the query SQL
+   * @return the query ready to be executed
+   */
+  PgQuery createQuery(String sql);
 
   /**
+   * Prepare and execute a query in a single operation.
+   *
+   * @param sql the prepared query SQL
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
    */
-  default void preparedQuery(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler) {
-    preparedQuery(sql, ArrayTuple.EMPTY, handler);
+  @Fluent
+  default PgOperations preparedQuery(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler) {
+    return preparedQuery(sql, ArrayTuple.EMPTY, handler);
   }
 
   /**
-   * @param params the list of arguments
+   * Prepare and execute a query in a single operation.
+   *
+   * @param sql the prepared query SQL
+   * @param arguments the list of arguments
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
    */
-  void preparedQuery(String sql, Tuple params, Handler<AsyncResult<PgResult<Tuple>>> handler);
+  @Fluent
+  PgOperations preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<Tuple>>> handler);
 
-  void preparedBatch(String sql, List<Tuple> list, Handler<AsyncResult<PgBatchResult<Tuple>>> handler);
+  /**
+   * Prepare and execute a createBatch in a single operation.
+   *
+   * @param sql the prepared query SQL
+   * @param batch the createBatch of tuples
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  PgOperations preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgBatchResult<Tuple>>> handler);
 
 }

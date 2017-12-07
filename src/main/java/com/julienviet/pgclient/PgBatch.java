@@ -26,7 +26,7 @@ import io.vertx.core.Handler;
 import java.util.List;
 
 /**
- * A batch execution.
+ * A createBatch execution.
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
@@ -34,7 +34,7 @@ import java.util.List;
 public interface PgBatch {
 
   /**
-   * Add a command with a no arguments to this batch
+   * Add a command with a no arguments to this createBatch
    *
    * @return a reference to this, so the API can be used fluently
    */
@@ -44,7 +44,7 @@ public interface PgBatch {
   }
 
   /**
-   * Add a command with a variable number of arguments to this batch
+   * Add a command with a variable number of arguments to this createBatch
    *
    * @param args the arguments of the command
    * @return a reference to this, so the API can be used fluently
@@ -53,7 +53,7 @@ public interface PgBatch {
   PgBatch add(Tuple args);
 
   /**
-   * Execute the batch and notifies {@code resultHandler} of the result.
+   * Execute the createBatch and notifies {@code resultHandler} of the result.
    *
    * @param resultHandler the handler of the result
    */
