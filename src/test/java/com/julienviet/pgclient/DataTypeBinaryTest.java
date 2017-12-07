@@ -4,8 +4,11 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
@@ -121,9 +124,9 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Date\" FROM \"TemporalDataType\" WHERE \"Date\" = $1",
         ctx.asyncAssertSuccess(p -> {
-          p.createQuery(Tuple.of("1981-05-30")).execute(ctx.asyncAssertSuccess(result -> {
+          p.createQuery(Tuple.of(LocalDate.parse("1981-05-30"))).execute(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals("1981-05-30", result.iterator().next().getString(0));
+            ctx.assertEquals(LocalDate.parse("1981-05-30"), result.iterator().next().getTemporal(0));
             async.complete();
           }));
         }));
@@ -137,9 +140,9 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Date\" FROM \"TemporalDataType\" WHERE \"Date\" = $1",
         ctx.asyncAssertSuccess(p -> {
-          p.createQuery(Tuple.of("2017-05-30")).execute(ctx.asyncAssertSuccess(result -> {
+          p.createQuery(Tuple.of(LocalDate.parse("2017-05-30"))).execute(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals("2017-05-30", result.iterator().next().getString(0));
+            ctx.assertEquals(LocalDate.parse("2017-05-30"), result.iterator().next().getTemporal(0));
             async.complete();
           }));
         }));
@@ -153,9 +156,9 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Time\" FROM \"TemporalDataType\" WHERE \"Time\" = $1",
         ctx.asyncAssertSuccess(p -> {
-          p.createQuery(Tuple.of("17:55:04.905120")).execute(ctx.asyncAssertSuccess(result -> {
+          p.createQuery(Tuple.of(LocalTime.parse("17:55:04.905120"))).execute(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals("17:55:04.905120", result.iterator().next().getString(0));
+            ctx.assertEquals(LocalTime.parse("17:55:04.905120"), result.iterator().next().getTemporal(0));
             async.complete();
           }));
         }));
@@ -170,9 +173,9 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
     client.connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"TimeTz\" FROM \"TemporalDataType\" WHERE \"TimeTz\" = $1",
         ctx.asyncAssertSuccess(p -> {
-          p.createQuery(Tuple.of("17:55:04.90512+03:07")).execute(ctx.asyncAssertSuccess(result -> {
+          p.createQuery(Tuple.of(OffsetTime.parse("17:55:04.90512+03:07"))).execute(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals("17:55:04.905120+03:07", result.iterator().next().getString(0));
+            ctx.assertEquals(OffsetTime.parse("17:55:04.905120+03:07"), result.iterator().next().getTemporal(0));
             async.complete();
           }));
         }));

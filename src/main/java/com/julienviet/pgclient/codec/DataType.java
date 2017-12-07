@@ -35,8 +35,8 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.Temporal;
 
 import static com.julienviet.pgclient.codec.formatter.DateTimeFormatter.*;
 import static com.julienviet.pgclient.codec.formatter.TimeFormatter.*;
@@ -287,90 +287,83 @@ public class DataType<T> {
   public static DataType<Object> NAME_ARRAY = new DataType<>(Object.class,1003);
 
   // 4 bytes date (no time of day)
-  public static DataType<Object> DATE = new DataType<Object>(Object.class,1082) {
+  public static DataType<LocalDate> DATE = new DataType<LocalDate>(LocalDate.class,1082) {
     final LocalDate PG_EPOCH = LocalDate.of(2000, 1, 1);
     @Override
-    public Object decodeText(int len, ByteBuf buff) {
+    public LocalDate decodeText(int len, ByteBuf buff) {
       CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
-      return LocalDate.parse(cs).toString();
+      return LocalDate.parse(cs);
     }
     @Override
-    public Object decodeBinary(int len, ByteBuf buff) {
-      LocalDate date = PG_EPOCH.plus(buff.readInt(), ChronoUnit.DAYS);
-      return date.toString();
+    public LocalDate decodeBinary(int len, ByteBuf buff) {
+      return PG_EPOCH.plus(buff.readInt(), ChronoUnit.DAYS);
     }
     @Override
-    public void encodeBinary(Object value, ByteBuf buff) {
-      LocalDate localDate = LocalDate.parse(value.toString());
+    public void encodeBinary(LocalDate value, ByteBuf buff) {
       buff.writeInt(4);
-      buff.writeInt((int) -LocalDate.parse(value.toString()).until(PG_EPOCH, ChronoUnit.DAYS));
+      buff.writeInt((int) -value.until(PG_EPOCH, ChronoUnit.DAYS));
     }
   };
   public static DataType<Object> DATE_ARRAY = new DataType<>(Object.class,1182);
 
   // 8 bytes time of day (no date) without time zone
-  public static DataType<Object> TIME = new DataType<Object>(Object.class,1083) {
+  public static DataType<LocalTime> TIME = new DataType<LocalTime>(LocalTime.class,1083) {
     @Override
-    public Object decodeText(int len, ByteBuf buff) {
+    public LocalTime decodeText(int len, ByteBuf buff) {
       CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
-      return LocalTime.parse(cs).toString();
+      return LocalTime.parse(cs);
     }
     @Override
-    public Object decodeBinary(int len, ByteBuf buff) {
+    public LocalTime decodeBinary(int len, ByteBuf buff) {
       // micros to nanos
-      LocalTime time = LocalTime.ofNanoOfDay(buff.readLong() * 1000);
-      return time.toString();
+      return LocalTime.ofNanoOfDay(buff.readLong() * 1000);
     }
     @Override
-    public void encodeBinary(Object value, ByteBuf buff) {
+    public void encodeBinary(LocalTime value, ByteBuf buff) {
       buff.writeInt(8);
-      // nanos to micros
-      buff.writeLong(LocalTime.parse(value.toString()).toNanoOfDay() / 1000);
+      buff.writeLong(value.getLong(ChronoField.MICRO_OF_DAY));
     }
   };
   public static DataType<Object> TIME_ARRAY = new DataType<>(Object.class,1183);
 
   // 12 bytes time of day (no date) with time zone
-  public static final DataType<Object> TIMETZ = new DataType<Object>(Object.class,1266) {
+  public static final DataType<OffsetTime> TIMETZ = new DataType<OffsetTime>(OffsetTime.class,1266) {
     @Override
-    public Object decodeText(int len, ByteBuf buff) {
+    public OffsetTime decodeText(int len, ByteBuf buff) {
       CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
-      return OffsetTime.parse(cs, TIMETZ_FORMAT).toString(); // julien: why toString ? emad: because it's not JSON friendly!
+      return OffsetTime.parse(cs, TIMETZ_FORMAT);
     }
     @Override
-    public Object decodeBinary(int len, ByteBuf buff) {
+    public OffsetTime decodeBinary(int len, ByteBuf buff) {
       // micros to nanos
-      OffsetTime timetz = OffsetTime.of(LocalTime.ofNanoOfDay(buff.readLong() * 1000),
+      return OffsetTime.of(LocalTime.ofNanoOfDay(buff.readLong() * 1000),
         // zone offset in seconds (should we change it to UTC ?)
         ZoneOffset.ofTotalSeconds(-buff.readInt()));
-      return timetz.toString();
     }
     @Override
-    public void encodeBinary(Object value, ByteBuf buff) {
-      OffsetTime timetz = OffsetTime.parse(value.toString());
+    public void encodeBinary(OffsetTime value, ByteBuf buff) {
       buff.writeInt(12);
-      buff.writeLong(timetz.toLocalTime().toNanoOfDay() / 1000);
+      buff.writeLong(value.toLocalTime().getLong(ChronoField.MICRO_OF_DAY));
       // zone offset in seconds (should we change it to UTC ?)
-      buff.writeInt(-timetz.getOffset().getTotalSeconds());
+      buff.writeInt(-value.getOffset().getTotalSeconds());
     }
   };
   public static DataType<Object> TIMETZ_ARRAY = new DataType<>(Object.class,1270);
 
   // 8 bytes date and time without time zone
-  public static final DataType<Temporal> TIMESTAMP = new DataType<Temporal>(Temporal.class,1114) {
+  public static final DataType<LocalDateTime> TIMESTAMP = new DataType<LocalDateTime>(LocalDateTime.class,1114) {
     final LocalDateTime PG_EPOCH = LocalDateTime.of(2000, 1, 1, 0, 0, 0);
     @Override
-    public Temporal decodeText(int len, ByteBuf buff) {
+    public LocalDateTime decodeText(int len, ByteBuf buff) {
       CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
       return LocalDateTime.parse(cs, TIMESTAMP_FORMAT);
     }
     @Override
-    public Temporal decodeBinary(int len, ByteBuf buff) {
-      LocalDateTime timestamp = PG_EPOCH.plus(buff.readLong(), ChronoUnit.MICROS);
-      return timestamp;
+    public LocalDateTime decodeBinary(int len, ByteBuf buff) {
+      return PG_EPOCH.plus(buff.readLong(), ChronoUnit.MICROS);
     }
     @Override
-    public void encodeBinary(Temporal value, ByteBuf buff) {
+    public void encodeBinary(LocalDateTime value, ByteBuf buff) {
       buff.writeInt(8);
       buff.writeLong(-value.until(PG_EPOCH, ChronoUnit.MICROS));
     }
@@ -378,20 +371,19 @@ public class DataType<T> {
   public static DataType<Object> TIMESTAMP_ARRAY = new DataType<>(Object.class,1115);
 
   // 8 bytes date and time with time zone
-  public static final DataType<Temporal> TIMESTAMPTZ = new DataType<Temporal>(Temporal.class,1184) {
+  public static final DataType<OffsetDateTime> TIMESTAMPTZ = new DataType<OffsetDateTime>(OffsetDateTime.class,1184) {
     final OffsetDateTime PG_EPOCH = LocalDateTime.of(2000, 1, 1, 0, 0, 0).atOffset(ZoneOffset.UTC);
     @Override
-    public Temporal decodeText(int len, ByteBuf buff) {
+    public OffsetDateTime decodeText(int len, ByteBuf buff) {
       CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
       return OffsetDateTime.parse(cs, TIMESTAMPTZ_FORMAT);
     }
     @Override
-    public Temporal decodeBinary(int len, ByteBuf buff) {
-      OffsetDateTime timestamptz = PG_EPOCH.plus(buff.readLong(), ChronoUnit.MICROS);
-      return timestamptz;
+    public OffsetDateTime decodeBinary(int len, ByteBuf buff) {
+      return PG_EPOCH.plus(buff.readLong(), ChronoUnit.MICROS);
     }
     @Override
-    public void encodeBinary(Temporal value, ByteBuf buff) {
+    public void encodeBinary(OffsetDateTime value, ByteBuf buff) {
       buff.writeInt(8);
       buff.writeLong(-value.until(PG_EPOCH, ChronoUnit.MICROS));
     }

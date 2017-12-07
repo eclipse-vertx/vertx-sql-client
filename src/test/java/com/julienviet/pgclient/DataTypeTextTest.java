@@ -7,8 +7,11 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 
 import static java.nio.charset.StandardCharsets.*;
 
@@ -266,7 +269,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
         .createQuery("SELECT '1981-05-30'::DATE")
         .execute(ctx.asyncAssertSuccess(result ->{
           ctx.assertEquals(1, result.size());
-          ctx.assertEquals("1981-05-30", result.iterator().next().getString(0));
+          ctx.assertEquals(LocalDate.parse("1981-05-30"), result.iterator().next().getTemporal(0));
           async.complete();
         }));
     }));
@@ -281,7 +284,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
         .createQuery("SELECT '17:55:04.905120'::TIME")
         .execute(ctx.asyncAssertSuccess(result ->{
           ctx.assertEquals(1, result.size());
-          ctx.assertEquals("17:55:04.905120", result.iterator().next().getString(0));
+          ctx.assertEquals(LocalTime.parse("17:55:04.905120"), result.iterator().next().getTemporal(0));
           async.complete();
         }));
     }));
@@ -296,7 +299,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
         .createQuery("SELECT '17:55:04.90512+03:07'::TIMETZ")
         .execute(ctx.asyncAssertSuccess(result ->{
           ctx.assertEquals(1, result.size());
-          ctx.assertEquals("17:55:04.905120+03:07", result.iterator().next().getString(0));
+          ctx.assertEquals(OffsetTime.parse("17:55:04.905120+03:07"), result.iterator().next().getTemporal(0));
           async.complete();
         }));
     }));
