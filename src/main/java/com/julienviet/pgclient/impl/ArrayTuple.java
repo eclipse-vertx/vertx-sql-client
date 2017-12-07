@@ -116,6 +116,7 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Tuple addBoolean(Boolean value) {
+    add(value);
     return this;
   }
 
@@ -181,6 +182,30 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Tuple addLocalDate(LocalDate value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addLocalTime(LocalTime value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addLocalDateTime(LocalDateTime value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addOffsetTime(OffsetTime value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addOffsetDateTime(OffsetDateTime value) {
     add(value);
     return this;
   }

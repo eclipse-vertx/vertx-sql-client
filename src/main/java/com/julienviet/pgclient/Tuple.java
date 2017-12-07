@@ -404,6 +404,42 @@ public interface Tuple {
   Tuple addLocalDate(LocalDate value);
 
   /**
+   * Add a {@link java.time.LocalTime} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addLocalTime(LocalTime value);
+
+  /**
+   * Add a {@link java.time.LocalDateTime} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addLocalDateTime(LocalDateTime value);
+
+  /**
+   * Add a {@link java.time.OffsetTime} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addOffsetTime(OffsetTime value);
+
+  /**
+   * Add a {@link java.time.OffsetDateTime} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addOffsetDateTime(OffsetDateTime value);
+
+  /**
    * @return the tuple size
    */
   int size();
