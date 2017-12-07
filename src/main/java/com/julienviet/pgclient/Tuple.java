@@ -25,6 +25,11 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.time.temporal.Temporal;
 import java.util.Collections;
 
@@ -229,13 +234,58 @@ public interface Tuple {
   JsonArray getJsonArray(int pos);
 
   /**
-   * Get a temporal value at {@code pos}.
+   * Get a {@link java.time.temporal.Temporal} value at {@code pos}.
    *
    * @param pos the position
    * @return the value or {@code null}
    */
   @GenIgnore
   Temporal getTemporal(int pos);
+
+  /**
+   * Get {@link java.time.LocalDate} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  LocalDate getLocalDate(int pos);
+
+  /**
+   * Get {@link java.time.LocalTime} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  LocalTime getLocalTime(int pos);
+
+  /**
+   * Get {@link java.time.LocalDateTime} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  LocalDateTime getLocalDateTime(int pos);
+
+  /**
+   * Get {@link java.time.OffsetTime} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  OffsetTime getOffsetTime(int pos);
+
+  /**
+   * Get {@link java.time.OffsetDateTime} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  OffsetDateTime getOffsetDateTime(int pos);
 
   /**
    * Get a binary value at {@code pos}.
@@ -336,13 +386,22 @@ public interface Tuple {
   Tuple addBinary(Buffer value);
 
   /**
-   * Add a temporal value at the end of the tuple.
+   * Add a {@link java.time.temporal.Temporal} value at the end of the tuple.
    *
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore
-  Tuple getTemporal(Temporal value);
+  Tuple addTemporal(Temporal value);
+
+  /**
+   * Add a {@link java.time.LocalDate} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addLocalDate(LocalDate value);
 
   /**
    * @return the tuple size

@@ -22,7 +22,11 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 
@@ -86,6 +90,31 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
+  public LocalDate getLocalDate(int pos) {
+    return (LocalDate) get(pos);
+  }
+
+  @Override
+  public LocalTime getLocalTime(int pos) {
+    return (LocalTime) get(pos);
+  }
+
+  @Override
+  public LocalDateTime getLocalDateTime(int pos) {
+    return (LocalDateTime) get(pos);
+  }
+
+  @Override
+  public OffsetTime getOffsetTime(int pos) {
+    return (OffsetTime) get(pos);
+  }
+
+  @Override
+  public OffsetDateTime getOffsetDateTime(int pos) {
+    return (OffsetDateTime) get(pos);
+  }
+
+  @Override
   public Tuple addBoolean(Boolean value) {
     return this;
   }
@@ -145,7 +174,13 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
-  public Tuple getTemporal(Temporal value) {
+  public Tuple addTemporal(Temporal value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addLocalDate(LocalDate value) {
     add(value);
     return this;
   }
