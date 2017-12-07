@@ -21,7 +21,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -30,7 +29,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.net.ssl.SSLHandshakeException;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
@@ -612,36 +610,6 @@ public abstract class PgConnectionTestBase extends PgTestBase {
           }));
         }));
       }));
-    }));
-  }
-
-  @Test
-  public void testTLS(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, new PgClientOptions(options).setSsl(true).setPemTrustOptions(new PemTrustOptions().addCertPath("/Users/julien/java/vertx-pg-client/src/test/resources/tls/server.crt")));
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      ctx.assertTrue(conn.isSSL());
-      async.complete();
-    }));
-  }
-
-  @Test
-  public void testTLSTrustAll(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, new PgClientOptions(options).setSsl(true).setTrustAll(true));
-    connector.accept(client, ctx.asyncAssertSuccess(conn -> {
-      ctx.assertTrue(conn.isSSL());
-      async.complete();
-    }));
-  }
-
-  @Test
-  public void testTLSInvalidCertificate(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, new PgClientOptions(options).setSsl(true));
-    connector.accept(client, ctx.asyncAssertFailure(err -> {
-      ctx.assertEquals(err.getClass(), SSLHandshakeException.class);
-      async.complete();
     }));
   }
 
