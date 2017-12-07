@@ -22,6 +22,9 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
+/**
+ * A general purpose query to execute.
+ */
 @VertxGen
 public interface PgQuery {
 
@@ -36,14 +39,37 @@ public interface PgQuery {
   @Fluent
   PgQuery fetch(int size);
 
+  /**
+   * Execute the query, the result is provided asynchronously to the {@code handler}.
+   * <p/>
+   *
+   * @param handler the handler for the result
+   */
   void execute(Handler<AsyncResult<PgResult<Tuple>>> handler);
 
+  /**
+   * Returns {@code true} when the query has results in progress and the {@link #execute} should be called to retrieve
+   * them.
+   * <p/>
+   * This happens for multiple statement executed with {@link PgOperations#query(String) simple queries} or
+   * for prepared statement executed with a {@link #fetch} size.
+   *
+   * @return whether the query has more results,
+   */
   boolean hasMore();
 
+  /**
+   * Release the underlying cursor.
+   * <p/>
+   * It should be called for prepared statement queries executed with {@link #fetch} size.
+   */
   default void close() {
     close(ar -> {});
   }
 
+  /**
+   * Like {@link #close()} but with a {@code completionHandler} called when the cursor has been released.
+   */
   void close(Handler<AsyncResult<Void>> completionHandler);
 
 }
