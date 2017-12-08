@@ -9,6 +9,7 @@ before_install:
 - cp .travis.maven.settings.xml $HOME/.m2/settings.xml
 script:
 - set -e
+- travis_wait 30 mvn -q -Dmaven.test.redirectTestOutputToFile clean verify -B
 - bash .travis.deploy.artifacts.sh
 notifications:
   email:
