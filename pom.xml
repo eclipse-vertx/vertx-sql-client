@@ -26,12 +26,12 @@
   </parent>
 
   <groupId>com.julienviet</groupId>
-  <artifactId>vertx-pg-client</artifactId>
+  <artifactId>reactive-pg-client</artifactId>
   <version>0.3.1-SNAPSHOT</version>
 
-  <name>Postgres Client for Eclipse Vert.x</name>
+  <name>Reactive Postgres Client</name>
   <url>https://github.com/vietj/vertx-pg-client</url>
-  <description>A Postgres client for Eclipse Vert.x</description>
+  <description>The reactive Postgres client</description>
 
   <licenses>
     <license>
@@ -42,9 +42,9 @@
   </licenses>
 
   <scm>
-    <connection>scm:git:git@github.com:vietj/vertx-pg-client.git</connection>
-    <developerConnection>scm:git:git@github.com:vietj/vertx-pg-client.git</developerConnection>
-    <url>git@github.com:vietj/vertx-pg-client.git</url>
+    <connection>scm:git:git@github.com:vietj/reactive-pg-client.git</connection>
+    <developerConnection>scm:git:git@github.com:vietj/reactive-pg-client.git</developerConnection>
+    <url>git@github.com:vietj/reactive-pg-client.git</url>
   </scm>
 
   <developers>
