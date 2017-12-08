@@ -17,10 +17,14 @@
 
 package com.julienviet.pgclient;
 
+import com.julienviet.pgclient.impl.PgConnectionFactory;
+import com.julienviet.pgclient.impl.PgConnectionImpl;
+import com.julienviet.pgclient.impl.SocketConnection;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 
 import java.util.List;
 
@@ -31,7 +35,26 @@ import java.util.List;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 @VertxGen
-public interface PgConnection extends PgOperations {
+public interface PgConnection extends PgClient {
+
+  /**
+   * Connects to the database and returns the connection if that succeeds.
+   * <p/>
+   * The connection interracts directly with the database is not a proxy, so closing the
+   * connection will close the underlying connection to the database.
+   *
+   * @param vertx the vertx instance
+   * @param options the connect options
+   * @param handler the handler called with the connection or the failure
+   */
+  static void connect(Vertx vertx, PgConnectOptions options, Handler<AsyncResult<PgConnection>> handler) {
+    PgConnectionFactory client = new PgConnectionFactory(vertx, options);
+    client.connect(ar -> handler.handle(ar.map(conn -> {
+      PgConnectionImpl p = new PgConnectionImpl(((SocketConnection)conn).context(), conn);
+      conn.init(p);
+      return p;
+    })));
+  }
 
   /**
    * Create a simple query.
@@ -43,7 +66,7 @@ public interface PgConnection extends PgOperations {
 
   @Override
   default PgConnection preparedQuery(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler) {
-    return (PgConnection) PgOperations.super.preparedQuery(sql, handler);
+    return (PgConnection) PgClient.super.preparedQuery(sql, handler);
   }
 
   @Override

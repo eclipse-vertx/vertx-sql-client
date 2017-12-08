@@ -31,7 +31,7 @@ import io.vertx.core.net.NetClientOptions;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class PgClientImpl implements PgClient {
+public class PgConnectionFactory {
 
   final NetClient client;
   final VertxInternal vertx;
@@ -44,7 +44,7 @@ public class PgClientImpl implements PgClient {
   final boolean cachePreparedStatements;
   final int pipeliningLimit;
 
-  public PgClientImpl(Vertx vertx, PgConnectOptions options) {
+  public PgConnectionFactory(Vertx vertx, PgConnectOptions options) {
 
     NetClientOptions netClientOptions = new NetClientOptions(options);
 
@@ -63,12 +63,11 @@ public class PgClientImpl implements PgClient {
     this.pipeliningLimit = options.getPipeliningLimit();
   }
 
-  @Override
   public void close() {
     client.close();
   }
 
-  public void _connect(Handler<AsyncResult<Connection>> completionHandler) {
+  public void connect(Handler<AsyncResult<Connection>> completionHandler) {
     client.connect(port, host, null, ar -> {
       if (ar.succeeded()) {
         NetSocketInternal socket = (NetSocketInternal) ar.result();
@@ -78,21 +77,5 @@ public class PgClientImpl implements PgClient {
         completionHandler.handle(Future.failedFuture(ar.cause()));
       }
     });
-  }
-
-  @Override
-  public void connect(Handler<AsyncResult<PgConnection>> completionHandler) {
-    _connect(ar ->
-      completionHandler.handle(ar.map(conn -> {
-        PgConnectionImpl p = new PgConnectionImpl(((SocketConnection)conn).context, conn);
-        conn.init(p);
-        return p;
-      })))
-    ;
-  }
-
-  @Override
-  public PgPool createPool(PgPoolOptions options) {
-    return new PgPoolImpl(vertx.getOrCreateContext(), this, options.getMaxSize());
   }
 }

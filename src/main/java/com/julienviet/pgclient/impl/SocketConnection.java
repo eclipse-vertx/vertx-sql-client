@@ -31,7 +31,6 @@ import io.vertx.core.impl.NetSocketInternal;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -47,8 +46,8 @@ public class SocketConnection implements Connection {
   private final NetSocketInternal socket;
   private final ArrayDeque<CommandBase> inflight = new ArrayDeque<>();
   private final ArrayDeque<CommandBase> pending = new ArrayDeque<>();
-  private final PgClientImpl client;
-  final Context context;
+  private final PgConnectionFactory client;
+  private final Context context;
   private Status status = Status.CONNECTED;
   private Holder holder;
   final Map<String, CachedPreparedStatement> psCache;
@@ -56,7 +55,7 @@ public class SocketConnection implements Connection {
   final Deque<DecodeContext> decodeQueue = new ArrayDeque<>();
   final StringLongSequence psSeq = new StringLongSequence();
 
-  public SocketConnection(PgClientImpl client,
+  public SocketConnection(PgConnectionFactory client,
                           NetSocketInternal socket,
                           ContextImpl context) {
     this.socket = socket;
@@ -64,6 +63,10 @@ public class SocketConnection implements Connection {
     this.context = context;
     this.psCache = client.cachePreparedStatements ? new ConcurrentHashMap<>() : null;
     this.pipeliningLimit = client.pipeliningLimit;
+  }
+
+  public Context context() {
+    return context;
   }
 
   void initiateProtocolOrSsl(String username, String password, String database, Handler<AsyncResult<Connection>> completionHandler) {

@@ -51,7 +51,7 @@ public interface PgQuery {
    * Returns {@code true} when the query has results in progress and the {@link #execute} should be called to retrieve
    * them.
    * <p/>
-   * This happens for multiple statement executed with {@link PgOperations#createQuery(String) simple queries} or
+   * This happens for multiple statement executed with {@link PgClient#createQuery(String) simple queries} or
    * for prepared statement executed with a {@link #fetch} size.
    *
    * @return whether the query has more results,

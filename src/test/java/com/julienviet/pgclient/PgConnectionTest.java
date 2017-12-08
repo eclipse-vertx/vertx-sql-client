@@ -23,6 +23,6 @@ package com.julienviet.pgclient;
 public class PgConnectionTest extends PgConnectionTestBase {
 
   public PgConnectionTest() {
-    super(PgClient::connect);
+    connector = (handler) -> PgConnection.connect(vertx, options, handler);
   }
 }

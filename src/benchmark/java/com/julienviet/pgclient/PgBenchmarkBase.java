@@ -17,6 +17,7 @@
 
 package com.julienviet.pgclient;
 
+import com.julienviet.pgclient.impl.PgConnectionFactory;
 import io.vertx.core.Vertx;
 import org.openjdk.jmh.annotations.*;
 
@@ -44,13 +45,12 @@ public abstract class PgBenchmarkBase extends BenchmarkBase {
   int pipeliningLimit;
 
   Vertx vertx;
-  PgClient client;
   PgPool pool;
 
   @Setup
   public void setup() throws Exception {
     vertx = Vertx.vertx();
-    client = PgClient.create(vertx, new PgConnectOptions()
+    pool = PgPool.pool(vertx, new PgPoolOptions()
       .setHost(host)
       .setPort(port)
       .setDatabase(database)
@@ -58,8 +58,7 @@ public abstract class PgBenchmarkBase extends BenchmarkBase {
       .setPassword(password)
       .setCachePreparedStatements(true)
       .setPipeliningLimit(pipeliningLimit)
-    );
-    pool = client.createPool(new PgPoolOptions().setMaxSize(1));
+      .setMaxSize(1));
   }
 
   @TearDown

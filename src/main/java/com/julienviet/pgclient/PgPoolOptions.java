@@ -18,7 +18,9 @@
 package com.julienviet.pgclient;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.*;
 
 /**
  * The options for configuring a connection pool.
@@ -26,7 +28,7 @@ import io.vertx.core.json.JsonObject;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 @DataObject(generateConverter = true)
-public class PgPoolOptions {
+public class PgPoolOptions extends PgConnectOptions {
 
   public static final int DEFAULT_MAX_POOL_SIZE = 4;
 
@@ -36,11 +38,18 @@ public class PgPoolOptions {
   }
 
   public PgPoolOptions(JsonObject json) {
+    super(json);
     PgPoolOptionsConverter.fromJson(json, this);
   }
 
   public PgPoolOptions(PgPoolOptions other) {
+    super(other);
     maxSize = other.maxSize;
+  }
+
+  public PgPoolOptions(PgConnectOptions other) {
+    super(other);
+    maxSize = DEFAULT_MAX_POOL_SIZE;
   }
 
   public int getMaxSize() {
@@ -53,5 +62,222 @@ public class PgPoolOptions {
     }
     this.maxSize = maxSize;
     return this;
+  }
+
+  @Override
+  public PgPoolOptions setHost(String host) {
+    return (PgPoolOptions) super.setHost(host);
+  }
+
+  @Override
+  public PgPoolOptions setPort(int port) {
+    return (PgPoolOptions) super.setPort(port);
+  }
+
+  @Override
+  public PgPoolOptions setDatabase(String database) {
+    return (PgPoolOptions) super.setDatabase(database);
+  }
+
+  @Override
+  public PgPoolOptions setUsername(String username) {
+    return (PgPoolOptions) super.setUsername(username);
+  }
+
+  @Override
+  public PgPoolOptions setPassword(String password) {
+    return (PgPoolOptions) super.setPassword(password);
+  }
+
+  @Override
+  public PgPoolOptions setPipeliningLimit(int pipeliningLimit) {
+    return (PgPoolOptions) super.setPipeliningLimit(pipeliningLimit);
+  }
+
+  @Override
+  public PgPoolOptions setCachePreparedStatements(boolean cachePreparedStatements) {
+    return (PgPoolOptions) super.setCachePreparedStatements(cachePreparedStatements);
+  }
+
+  @Override
+  public PgPoolOptions setSendBufferSize(int sendBufferSize) {
+    return (PgPoolOptions) super.setSendBufferSize(sendBufferSize);
+  }
+
+  @Override
+  public PgPoolOptions setReceiveBufferSize(int receiveBufferSize) {
+    return (PgPoolOptions) super.setReceiveBufferSize(receiveBufferSize);
+  }
+
+  @Override
+  public PgPoolOptions setReuseAddress(boolean reuseAddress) {
+    return (PgPoolOptions) super.setReuseAddress(reuseAddress);
+  }
+
+  @Override
+  public PgPoolOptions setTrafficClass(int trafficClass) {
+    return (PgPoolOptions) super.setTrafficClass(trafficClass);
+  }
+
+  @Override
+  public PgPoolOptions setTcpNoDelay(boolean tcpNoDelay) {
+    return (PgPoolOptions) super.setTcpNoDelay(tcpNoDelay);
+  }
+
+  @Override
+  public PgPoolOptions setTcpKeepAlive(boolean tcpKeepAlive) {
+    return (PgPoolOptions) super.setTcpKeepAlive(tcpKeepAlive);
+  }
+
+  @Override
+  public PgPoolOptions setSoLinger(int soLinger) {
+    return (PgPoolOptions) super.setSoLinger(soLinger);
+  }
+
+  @Override
+  public PgPoolOptions setUsePooledBuffers(boolean usePooledBuffers) {
+    return (PgPoolOptions) super.setUsePooledBuffers(usePooledBuffers);
+  }
+
+  @Override
+  public PgPoolOptions setIdleTimeout(int idleTimeout) {
+    return (PgPoolOptions) super.setIdleTimeout(idleTimeout);
+  }
+
+  @Override
+  public PgPoolOptions setSsl(boolean ssl) {
+    return (PgPoolOptions) super.setSsl(ssl);
+  }
+
+  @Override
+  public PgPoolOptions setKeyCertOptions(KeyCertOptions options) {
+    return (PgPoolOptions) super.setKeyCertOptions(options);
+  }
+
+  @Override
+  public PgPoolOptions setKeyStoreOptions(JksOptions options) {
+    return (PgPoolOptions) super.setKeyStoreOptions(options);
+  }
+
+  @Override
+  public PgPoolOptions setPfxKeyCertOptions(PfxOptions options) {
+    return (PgPoolOptions) super.setPfxKeyCertOptions(options);
+  }
+
+  @Override
+  public PgPoolOptions setPemKeyCertOptions(PemKeyCertOptions options) {
+    return (PgPoolOptions) super.setPemKeyCertOptions(options);
+  }
+
+  @Override
+  public PgPoolOptions setTrustOptions(TrustOptions options) {
+    return (PgPoolOptions) super.setTrustOptions(options);
+  }
+
+  @Override
+  public PgPoolOptions setTrustStoreOptions(JksOptions options) {
+    return (PgPoolOptions) super.setTrustStoreOptions(options);
+  }
+
+  @Override
+  public PgPoolOptions setPemTrustOptions(PemTrustOptions options) {
+    return (PgPoolOptions) super.setPemTrustOptions(options);
+  }
+
+  @Override
+  public PgPoolOptions setPfxTrustOptions(PfxOptions options) {
+    return (PgPoolOptions) super.setPfxTrustOptions(options);
+  }
+
+  @Override
+  public PgPoolOptions addEnabledCipherSuite(String suite) {
+    return (PgPoolOptions) super.addEnabledCipherSuite(suite);
+  }
+
+  @Override
+  public PgPoolOptions addEnabledSecureTransportProtocol(String protocol) {
+    return (PgPoolOptions) super.addEnabledSecureTransportProtocol(protocol);
+  }
+
+  @Override
+  public PgPoolOptions addCrlPath(String crlPath) throws NullPointerException {
+    return (PgPoolOptions) super.addCrlPath(crlPath);
+  }
+
+  @Override
+  public PgPoolOptions addCrlValue(Buffer crlValue) throws NullPointerException {
+    return (PgPoolOptions) super.addCrlValue(crlValue);
+  }
+
+  @Override
+  public PgPoolOptions setTrustAll(boolean trustAll) {
+    return (PgPoolOptions) super.setTrustAll(trustAll);
+  }
+
+  @Override
+  public PgPoolOptions setConnectTimeout(int connectTimeout) {
+    return (PgPoolOptions) super.setConnectTimeout(connectTimeout);
+  }
+
+  @Override
+  public PgPoolOptions setMetricsName(String metricsName) {
+    return (PgPoolOptions) super.setMetricsName(metricsName);
+  }
+
+  @Override
+  public PgPoolOptions setReconnectAttempts(int attempts) {
+    return (PgPoolOptions) super.setReconnectAttempts(attempts);
+  }
+
+  @Override
+  public PgPoolOptions setHostnameVerificationAlgorithm(String hostnameVerificationAlgorithm) {
+    return (PgPoolOptions) super.setHostnameVerificationAlgorithm(hostnameVerificationAlgorithm);
+  }
+
+  @Override
+  public PgPoolOptions setLogActivity(boolean logEnabled) {
+    return (PgPoolOptions) super.setLogActivity(logEnabled);
+  }
+
+  @Override
+  public PgPoolOptions setReconnectInterval(long interval) {
+    return (PgPoolOptions) super.setReconnectInterval(interval);
+  }
+
+  @Override
+  public PgPoolOptions setProxyOptions(ProxyOptions proxyOptions) {
+    return (PgPoolOptions) super.setProxyOptions(proxyOptions);
+  }
+
+  @Override
+  public PgPoolOptions setLocalAddress(String localAddress) {
+    return (PgPoolOptions) super.setLocalAddress(localAddress);
+  }
+
+  @Override
+  public PgPoolOptions setUseAlpn(boolean useAlpn) {
+    return (PgPoolOptions) super.setUseAlpn(useAlpn);
+  }
+
+  @Override
+  public PgPoolOptions setSslEngineOptions(SSLEngineOptions sslEngineOptions) {
+    return (PgPoolOptions) super.setSslEngineOptions(sslEngineOptions);
+  }
+
+  @Override
+  public PgPoolOptions setJdkSslEngineOptions(JdkSSLEngineOptions sslEngineOptions) {
+    return (PgPoolOptions) super.setJdkSslEngineOptions(sslEngineOptions);
+  }
+
+  @Override
+  public PgPoolOptions setOpenSslEngineOptions(OpenSSLEngineOptions sslEngineOptions) {
+    return (PgPoolOptions) super.setOpenSslEngineOptions(sslEngineOptions);
+  }
+
+  @Override
+  public JsonObject toJson() {
+    JsonObject json = super.toJson();
+    PgPoolOptionsConverter.toJson(this, json);
+    return json;
   }
 }

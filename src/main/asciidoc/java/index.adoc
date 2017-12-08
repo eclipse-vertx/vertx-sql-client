@@ -30,76 +30,14 @@ You can use the client to connect to the database and interact with it.
 
 [source,java]
 ----
-PgClient client = PgClient.create(vertx, new PgConnectOptions()
-  .setPort(5432)
-  .setHost("the-host")
-  .setDatabase("the-db")
-  .setUsername("user")
-  .setPassword("secret")
-);
 
-client.connect(res -> {
-  if (res.succeeded()) {
-
-    // Connected
-    PgConnection conn = res.result();
-
-    conn.createQuery("SELECT * FROM USERS").execute(ar -> {
-
-      if (ar.succeeded()) {
-
-        // Use result
-        PgResult<Tuple> result = ar.result();
-      } else {
-        System.out.println("It failed");
-      }
-
-      // Close the connection
-      conn.close();
-    });
-  } else {
-    System.out.println("Could not connect " + res.cause());
-  }
-});
 ----
 
 You can create a pool of connection to obtain a connection instead:
 
 [source,java]
 ----
-PgClient client = PgClient.create(vertx, new PgConnectOptions()
-  .setPort(5432)
-  .setHost("the-host")
-  .setDatabase("the-db")
-  .setUsername("user")
-  .setPassword("secret")
-);
 
-PgPool pool = client.createPool(new PgPoolOptions().setMaxSize(20));
-
-pool.getConnection(res -> {
-  if (res.succeeded()) {
-
-    // Obtained a connection
-    PgConnection conn = res.result();
-
-    conn.createQuery("SELECT * FROM USERS").execute(ar -> {
-
-      if (ar.succeeded()) {
-
-        // Use result set
-        PgResult<Tuple> result = ar.result();
-      } else {
-        System.out.println("It failed");
-      }
-
-      // Return the connection to the pool
-      conn.close();
-    });
-  } else {
-    System.out.println("Could not obtain a connection " + res.cause());
-  }
-});
 ----
 
 When you are done with the pool, you should close it:
@@ -272,28 +210,12 @@ conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", ar1 -> {
 
 == Using SSL/TLS
 
-To configure the client to use SSL connection, you can configure the `link:../../apidocs/com/julienviet/pgclient/PgClient.html[PgClient]`
+To configure the client to use SSL connection, you can configure the `link:../../apidocs/com/julienviet/pgclient/PgConnectOptions.html[PgConnectOptions]`
 like a Vert.x `NetClient`.
 
 [source,java]
 ----
-PgClient client = PgClient.create(vertx, new PgConnectOptions()
-  .setPort(5432)
-  .setHost("the-host")
-  .setDatabase("the-db")
-  .setUsername("user")
-  .setPassword("secret")
-  .setSsl(true)
-  .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/cert.pem"))
-);
 
-client.connect(res -> {
-  if (res.succeeded()) {
-    // Connected with SSL
-  } else {
-    System.out.println("Could not connect " + res.cause());
-  }
-});
 ----
 
 More information can be found in the http://vertx.io/docs/vertx-core/java/#ssl[Vert.x documentation].

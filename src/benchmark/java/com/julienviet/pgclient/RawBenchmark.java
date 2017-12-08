@@ -17,6 +17,7 @@
 
 package com.julienviet.pgclient;
 
+import com.julienviet.pgclient.impl.PgConnectionFactory;
 import io.vertx.core.Vertx;
 import org.postgresql.PGProperty;
 
@@ -128,7 +129,7 @@ public class RawBenchmark {
 
   private static void benchmark(String name, PgConnectOptions options, BiConsumer<PgConnection, CompletableFuture<Void>> benchmark) throws Exception {
     Vertx vertx = Vertx.vertx();
-    PgClient client = PgClient.create(vertx, new PgConnectOptions()
+    PgConnectionFactory client = new PgConnectionFactory(vertx, new PgConnectOptions()
       .setHost(options.getHost())
       .setPort(options.getPort())
       .setDatabase(options.getDatabase())

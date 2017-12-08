@@ -26,7 +26,7 @@ import io.vertx.core.Handler;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class PgConnectionImpl extends PgOperationsImpl<PgConnectionImpl> implements PgConnection, Connection.Holder {
+public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements PgConnection, Connection.Holder {
 
   private final Context context;
   public final Connection conn;

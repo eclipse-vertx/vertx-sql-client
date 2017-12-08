@@ -29,8 +29,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class PgPoolTest extends PgPoolTestBase {
 
   @Override
-  protected PgPool createPool(PgClient client, int size) {
-    return client.createPool(new PgPoolOptions().setMaxSize(size));
+  protected PgPool createPool(PgConnectOptions options, int size) {
+    return PgPool.pool(vertx, new PgPoolOptions(options).setMaxSize(size));
   }
 
   @Test
@@ -43,12 +43,11 @@ public class PgPoolTest extends PgPoolTestBase {
       conn.connect();
     });
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
-      PgClient client = PgClient.create(vertx, new PgConnectOptions(options).setPort(8080).setHost("localhost"));
-      PgPool pool = createPool(client, 1);
-      pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+      PgPool pool = createPool(new PgConnectOptions(options).setPort(8080).setHost("localhost"), 1);
+      pool.connect(ctx.asyncAssertSuccess(conn -> {
         proxyConn.get().close();
       }));
-      pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+      pool.connect(ctx.asyncAssertSuccess(conn -> {
         conn.createQuery("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(v2 -> {
           async.complete();
         }));

@@ -30,38 +30,39 @@ You can use the client to connect to the database and interact with it.
 
 [source,groovy]
 ----
+/*
+    PgClient client = PgClient.create(vertx, new PgConnectOptions()
+      .setPort(5432)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUsername("user")
+      .setPassword("secret")
+    );
 
-def client = PgClient.create(vertx, [
-  port:5432,
-  host:"the-host",
-  database:"the-db",
-  username:"user",
-  password:"secret"
-])
+    client.connect(res -> {
+      if (res.succeeded()) {
 
-client.connect({ res ->
-  if (res.succeeded()) {
+        // Connected
+        PgConnection conn = res.result();
 
-    // Connected
-    def conn = res.result()
+        conn.createQuery("SELECT * FROM USERS").execute(ar -> {
 
-    conn.createQuery("SELECT * FROM USERS").execute({ ar ->
+          if (ar.succeeded()) {
 
-      if (ar.succeeded()) {
+            // Use result
+            PgResult<Tuple> result = ar.result();
+          } else {
+            System.out.println("It failed");
+          }
 
-        // Use result
-        def result = ar.result()
+          // Close the connection
+          conn.close();
+        });
       } else {
-        println("It failed")
+        System.out.println("Could not connect " + res.cause());
       }
-
-      // Close the connection
-      conn.close()
-    })
-  } else {
-    println("Could not connect ${res.cause()}")
-  }
-})
+    });
+    */
 
 ----
 
@@ -69,42 +70,41 @@ You can create a pool of connection to obtain a connection instead:
 
 [source,groovy]
 ----
+/*
+    PgClient client = PgClient.create(vertx, new PgConnectOptions()
+      .setPort(5432)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUsername("user")
+      .setPassword("secret")
+    );
 
-def client = PgClient.create(vertx, [
-  port:5432,
-  host:"the-host",
-  database:"the-db",
-  username:"user",
-  password:"secret"
-])
+    PgPool pool = client.createPool(new PgPoolOptions().setMaxSize(20));
 
-def pool = client.createPool([
-  maxSize:20
-])
+    pool.connect(res -> {
+      if (res.succeeded()) {
 
-pool.getConnection({ res ->
-  if (res.succeeded()) {
+        // Obtained a connection
+        PgConnection conn = res.result();
 
-    // Obtained a connection
-    def conn = res.result()
+        conn.createQuery("SELECT * FROM USERS").execute(ar -> {
 
-    conn.createQuery("SELECT * FROM USERS").execute({ ar ->
+          if (ar.succeeded()) {
 
-      if (ar.succeeded()) {
+            // Use result set
+            PgResult<Tuple> result = ar.result();
+          } else {
+            System.out.println("It failed");
+          }
 
-        // Use result set
-        def result = ar.result()
+          // Return the connection to the pool
+          conn.close();
+        });
       } else {
-        println("It failed")
+        System.out.println("Could not obtain a connection " + res.cause());
       }
-
-      // Return the connection to the pool
-      conn.close()
-    })
-  } else {
-    println("Could not obtain a connection ${res.cause()}")
-  }
-})
+    });
+    */
 
 ----
 
@@ -289,33 +289,30 @@ conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", { ar1 ->
 
 == Using SSL/TLS
 
-To configure the client to use SSL connection, you can configure the `link:../../apidocs/com/julienviet/pgclient/PgClient.html[PgClient]`
+To configure the client to use SSL connection, you can configure the `link:../../apidocs/com/julienviet/pgclient/PgConnectOptions.html[PgConnectOptions]`
 like a Vert.x `NetClient`.
 
 [source,groovy]
 ----
+/*
+    PgClient client = PgClient.create(vertx, new PgConnectOptions()
+      .setPort(5432)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUsername("user")
+      .setPassword("secret")
+      .setSsl(true)
+      .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/cert.pem"))
+    );
 
-def client = PgClient.create(vertx, [
-  port:5432,
-  host:"the-host",
-  database:"the-db",
-  username:"user",
-  password:"secret",
-  ssl:true,
-  pemTrustOptions:[
-    certPaths:[
-      "/path/to/cert.pem"
-    ]
-  ]
-])
-
-client.connect({ res ->
-  if (res.succeeded()) {
-    // Connected with SSL
-  } else {
-    println("Could not connect ${res.cause()}")
-  }
-})
+    client.connect(res -> {
+      if (res.succeeded()) {
+        // Connected with SSL
+      } else {
+        System.out.println("Could not connect " + res.cause());
+      }
+    });
+    */
 
 ----
 

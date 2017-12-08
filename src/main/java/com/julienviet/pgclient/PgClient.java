@@ -17,14 +17,16 @@
 
 package com.julienviet.pgclient;
 
+import com.julienviet.pgclient.impl.ArrayTuple;
+import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import com.julienviet.pgclient.impl.PgClientImpl;
+
+import java.util.List;
 
 /**
- * The entry point for interacting with a Postgres database.
+ * Defines the client operations with a Postgres Database.
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
@@ -32,36 +34,47 @@ import com.julienviet.pgclient.impl.PgClientImpl;
 public interface PgClient {
 
   /**
-   * Create a client.
+   * Execute a simple query.
    *
-   * @param vertx the vertx instance
-   * @param options the client options
-   * @return the client
+   * @param sql the query SQL
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
    */
-  static PgClient create(Vertx vertx, PgConnectOptions options) {
-    return new PgClientImpl(vertx, options);
+  @Fluent
+  PgClient query(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler);
+
+  /**
+   * Prepare and execute a query.
+   *
+   * @param sql the prepared query SQL
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  default PgClient preparedQuery(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler) {
+    return preparedQuery(sql, ArrayTuple.EMPTY, handler);
   }
 
   /**
-   * Connects to the database and returns the connection if that succeeds.
-   * <p/>
-   * The connection interracts directly with the database is not a proxy, so closing the
-   * connection will close the underlying connection to the database.
+   * Prepare and execute a query.
    *
-   * @param completionHandler the handler called with the connection or the failure
+   * @param sql the prepared query SQL
+   * @param arguments the list of arguments
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
    */
-  void connect(Handler<AsyncResult<PgConnection>> completionHandler);
+  @Fluent
+  PgClient preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<Tuple>>> handler);
 
   /**
-   * Create a connection pool to the database configured with the given {@code options}.
+   * Prepare and execute a createBatch.
    *
-   * @param options the options for creating the pool
-   * @return the connection pool
+   * @param sql the prepared query SQL
+   * @param batch the batch of tuples
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
    */
-  PgPool createPool(PgPoolOptions options);
+  @Fluent
+  PgClient preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgBatchResult<Tuple>>> handler);
 
-  /**
-   * Close the client.
-   */
-  void close();
 }

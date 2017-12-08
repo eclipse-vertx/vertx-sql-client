@@ -33,15 +33,16 @@ public class Examples {
 
   public void ex1(Vertx vertx) {
 
-    PgClient client = PgClient.create(vertx, new PgConnectOptions()
+    // Create options
+    PgConnectOptions options = new PgConnectOptions()
       .setPort(5432)
       .setHost("the-host")
       .setDatabase("the-db")
       .setUsername("user")
-      .setPassword("secret")
-    );
+      .setPassword("secret");
 
-    client.connect(res -> {
+    // Connect
+    PgConnection.connect(vertx, options, res -> {
       if (res.succeeded()) {
 
         // Connected
@@ -68,17 +69,18 @@ public class Examples {
 
   public void ex2(Vertx vertx) {
 
-    PgClient client = PgClient.create(vertx, new PgConnectOptions()
+    PgPoolOptions options = new PgPoolOptions()
       .setPort(5432)
       .setHost("the-host")
       .setDatabase("the-db")
       .setUsername("user")
       .setPassword("secret")
-    );
+      .setMaxSize(20);
 
-    PgPool pool = client.createPool(new PgPoolOptions().setMaxSize(20));
+    // Create a pool with 20 connections max
+    PgPool pool = PgPool.pool(vertx, options);
 
-    pool.getConnection(res -> {
+    pool.connect(res -> {
       if (res.succeeded()) {
 
         // Obtained a connection
@@ -109,7 +111,7 @@ public class Examples {
     pool.close();
   }
 
-  public void ex4_(PgConnection conn) {
+  public void ex4_(PgPool conn) {
 
     // Prepare (when not cached)
     // Execute
@@ -282,17 +284,16 @@ public class Examples {
 
   public void ex10(Vertx vertx) {
 
-    PgClient client = PgClient.create(vertx, new PgConnectOptions()
+    PgConnectOptions options = new PgConnectOptions()
       .setPort(5432)
       .setHost("the-host")
       .setDatabase("the-db")
       .setUsername("user")
       .setPassword("secret")
       .setSsl(true)
-      .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/cert.pem"))
-    );
+      .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/cert.pem"));
 
-    client.connect(res -> {
+    PgConnection.connect(vertx, options, res -> {
       if (res.succeeded()) {
         // Connected with SSL
       } else {

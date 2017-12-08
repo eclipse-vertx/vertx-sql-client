@@ -17,9 +17,11 @@
 
 package com.julienviet.pgclient;
 
+import com.julienviet.pgclient.impl.PgPoolImpl;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 
 import java.util.List;
 
@@ -29,11 +31,22 @@ import java.util.List;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 @VertxGen
-public interface PgPool extends PgOperations {
+public interface PgPool extends PgClient {
+
+  /**
+   * Create a connection pool to the database configured with the given {@code options}.
+   *
+   * @param vertx the vertx instance
+   * @param options the options for creating the pool
+   * @return the connection pool
+   */
+  static PgPool pool(Vertx vertx, PgPoolOptions options) {
+    return new PgPoolImpl(vertx, options);
+  }
 
   @Override
   default PgPool preparedQuery(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler) {
-    return (PgPool) PgOperations.super.preparedQuery(sql, handler);
+    return (PgPool) PgClient.super.preparedQuery(sql, handler);
   }
 
   @Override
@@ -50,7 +63,7 @@ public interface PgPool extends PgOperations {
    *
    * @param handler the handler that will get the connection result
    */
-  void getConnection(Handler<AsyncResult<PgConnection>> handler);
+  void connect(Handler<AsyncResult<PgConnection>> handler);
 
   /**
    * Close the pool and release the associated resources.

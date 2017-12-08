@@ -26,7 +26,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import javax.net.ssl.SSLHandshakeException;
 
 @RunWith(VertxUnitRunner.class)
@@ -50,8 +49,7 @@ public class TLSTest extends PgTestBase {
     PgConnectOptions options = new PgConnectOptions(PgTestBase.options)
       .setSsl(true)
       .setPemTrustOptions(new PemTrustOptions().addCertPath("tls/server.crt"));
-    PgClient client = PgClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, new PgConnectOptions(options).setSsl(true).setTrustAll(true), ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
       conn.createQuery("SELECT * FROM Fortune WHERE id=1").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
@@ -66,8 +64,7 @@ public class TLSTest extends PgTestBase {
   @Test
   public void testTLSTrustAll(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, new PgConnectOptions(options).setSsl(true).setTrustAll(true));
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, new PgConnectOptions(options).setSsl(true).setTrustAll(true), ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
       async.complete();
     }));
@@ -76,8 +73,7 @@ public class TLSTest extends PgTestBase {
   @Test
   public void testTLSInvalidCertificate(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, new PgConnectOptions(options).setSsl(true));
-    client.connect(ctx.asyncAssertFailure(err -> {
+    PgConnection.connect(vertx, new PgConnectOptions(options).setSsl(true), ctx.asyncAssertFailure(err -> {
       ctx.assertEquals(err.getClass(), SSLHandshakeException.class);
       async.complete();
     }));

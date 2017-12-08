@@ -117,7 +117,7 @@
  *
  * == Using SSL/TLS
  *
- * To configure the client to use SSL connection, you can configure the {@link com.julienviet.pgclient.PgClient}
+ * To configure the client to use SSL connection, you can configure the {@link com.julienviet.pgclient.PgConnectOptions}
  * like a Vert.x {@code NetClient}.
  *
  * [source,$lang]

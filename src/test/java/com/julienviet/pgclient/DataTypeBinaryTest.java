@@ -24,8 +24,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
   @Test
   public void testBoolean(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Boolean\" FROM \"NumericDataType\" WHERE \"Boolean\" = $1",
         ctx.asyncAssertSuccess(p -> {
           p.createQuery(Tuple.of(Boolean.TRUE)).execute(ctx.asyncAssertSuccess(result -> {
@@ -40,8 +39,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
   @Test
   public void testInt2(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Short\" FROM \"NumericDataType\" WHERE \"Short\" = $1",
         ctx.asyncAssertSuccess(p -> {
           p.createQuery(Tuple.of(Short.MAX_VALUE)).execute(ctx.asyncAssertSuccess(result -> {
@@ -56,8 +54,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
   @Test
   public void testInt4(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Integer\" FROM \"NumericDataType\" WHERE \"Integer\" = $1",
         ctx.asyncAssertSuccess(p -> {
           p.createQuery(Tuple.of(Integer.MAX_VALUE)).execute(ctx.asyncAssertSuccess(result -> {
@@ -72,8 +69,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
   @Test
   public void testInt8(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Long\" FROM \"NumericDataType\" WHERE \"Long\" = $1",
         ctx.asyncAssertSuccess(p -> {
           p.createQuery(Tuple.of(Long.MAX_VALUE)).execute(ctx.asyncAssertSuccess(result -> {
@@ -88,8 +84,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
   @Test
   public void testFloat4(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Float\" FROM \"NumericDataType\" WHERE \"Float\" = $1",
         ctx.asyncAssertSuccess(p -> {
           p.createQuery(Tuple.of(Float.MAX_VALUE)).execute(ctx.asyncAssertSuccess(result -> {
@@ -104,8 +99,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
   @Test
   public void testFloat8(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Double\" FROM \"NumericDataType\" WHERE \"Double\" = $1",
         ctx.asyncAssertSuccess(p -> {
           p.createQuery(Tuple.of(Double.MAX_VALUE)).execute(ctx.asyncAssertSuccess(result -> {
@@ -120,8 +114,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
   @Test
   public void testDateBeforePgEpoch(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Date\" FROM \"TemporalDataType\" WHERE \"Date\" = $1",
         ctx.asyncAssertSuccess(p -> {
           p.createQuery(Tuple.of(LocalDate.parse("1981-05-30"))).execute(ctx.asyncAssertSuccess(result -> {
@@ -136,8 +129,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
   @Test
   public void testDateAfterPgEpoch(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Date\" FROM \"TemporalDataType\" WHERE \"Date\" = $1",
         ctx.asyncAssertSuccess(p -> {
           p.createQuery(Tuple.of(LocalDate.parse("2017-05-30"))).execute(ctx.asyncAssertSuccess(result -> {
@@ -152,8 +144,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
   @Test
   public void testTime(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Time\" FROM \"TemporalDataType\" WHERE \"Time\" = $1",
         ctx.asyncAssertSuccess(p -> {
           p.createQuery(Tuple.of(LocalTime.parse("17:55:04.905120"))).execute(ctx.asyncAssertSuccess(result -> {
@@ -169,8 +160,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
   @Test
   public void testTimeTz(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"TimeTz\" FROM \"TemporalDataType\" WHERE \"TimeTz\" = $1",
         ctx.asyncAssertSuccess(p -> {
           p.createQuery(Tuple.of(OffsetTime.parse("17:55:04.90512+03:07"))).execute(ctx.asyncAssertSuccess(result -> {
@@ -185,8 +175,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
   @Test
   public void testTimestampBeforePgEpoch(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Timestamp\" FROM \"TemporalDataType\" WHERE \"Timestamp\" = $1",
         ctx.asyncAssertSuccess(p -> {
           p.createQuery(Tuple.of(LocalDateTime.parse("1800-01-01T23:57:53.237666"))).execute(ctx.asyncAssertSuccess(result -> {
@@ -201,8 +190,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
   @Test
   public void testTimestampAfterPgEpoch(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Timestamp\" FROM \"TemporalDataType\" WHERE \"Timestamp\" = $1",
         ctx.asyncAssertSuccess(p -> {
           p.createQuery(Tuple.of(LocalDateTime.parse("2017-05-14T19:35:58.237666"))).execute(ctx.asyncAssertSuccess(result -> {
@@ -217,8 +205,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
   @Test
   public void testTimestampTzBeforePgEpoch(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.createQuery("SET TIME ZONE 'UTC'").execute(ctx.asyncAssertSuccess(v -> {
         conn.prepare("SELECT \"TimestampTz\" FROM \"TemporalDataType\" WHERE \"TimestampTz\" = $1",
           ctx.asyncAssertSuccess(p -> {
@@ -235,8 +222,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
   @Test
   public void testTimestampTzAfterPgEpoch(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, options);
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.createQuery("SET TIME ZONE 'UTC'").execute(ctx.asyncAssertSuccess(v -> {
         conn.prepare("SELECT \"TimestampTz\" FROM \"TemporalDataType\" WHERE \"TimestampTz\" = $1",
           ctx.asyncAssertSuccess(p -> {

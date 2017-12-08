@@ -42,7 +42,7 @@ public class LargeSelectBenchmark extends PgBenchmarkBase {
   @Benchmark
   public void pooledConnectionPreparedQuery(Blackhole blackhole) throws Exception {
     CompletableFuture<PgResult> latch = new CompletableFuture<>();
-    pool.getConnection(ar1 -> {
+    pool.connect(ar1 -> {
       if (ar1.succeeded()) {
         PgConnection conn = ar1.result();
         conn.preparedQuery("SELECT id, randomnumber from WORLD", ar2 -> {
@@ -63,7 +63,7 @@ public class LargeSelectBenchmark extends PgBenchmarkBase {
   @Benchmark
   public void pooledConnectionPreparedStatementQuery(Blackhole blackhole) throws Exception {
     CompletableFuture<PgResult> latch = new CompletableFuture<>();
-    pool.getConnection(ar1 -> {
+    pool.connect(ar1 -> {
       if (ar1.succeeded()) {
         PgConnection conn = ar1.result();
         conn.prepare("SELECT id, randomnumber from WORLD", ar2 -> {

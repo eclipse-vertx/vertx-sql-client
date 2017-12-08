@@ -13,14 +13,12 @@ import org.junit.runner.RunWith;
 @RunWith(VertxUnitRunner.class)
 public abstract class DataTypeTestBase extends PgTestBase {
   Vertx vertx;
-  PgClient client;
 
   protected abstract PgConnectOptions options();
 
   @Before
   public void setup() {
     vertx = Vertx.vertx();
-    client = PgClient.create(vertx, options());
   }
 
   @After

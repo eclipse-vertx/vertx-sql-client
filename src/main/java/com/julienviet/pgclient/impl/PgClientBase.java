@@ -24,18 +24,18 @@ import io.vertx.core.Handler;
 
 import java.util.List;
 
-public abstract class PgOperationsImpl<T extends PgOperations> implements PgOperations {
+public abstract class PgClientBase<C extends PgClient> implements PgClient {
 
   protected abstract void schedule(CommandBase cmd);
 
   @Override
-  public PgOperations query(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler) {
+  public PgClient query(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler) {
     schedule(new SimpleQueryCommand<>(sql, new RowResultDecoder(), new SimpleQueryResultHandler<>(handler)));
     return this;
   }
 
   @Override
-  public T preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<Tuple>>> handler) {
+  public C preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<Tuple>>> handler) {
     schedule(new PrepareStatementCommand(sql, ar -> {
       if (ar.succeeded()) {
         return new ExtendedQueryCommand<>(ar.result(), arguments, new RowResultDecoder(), new ExtendedQueryResultHandler<>(handler));
@@ -44,11 +44,11 @@ public abstract class PgOperationsImpl<T extends PgOperations> implements PgOper
         return null;
       }
     }));
-    return (T) this;
+    return (C) this;
   }
 
   @Override
-  public T preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgBatchResult<Tuple>>> handler) {
+  public C preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgBatchResult<Tuple>>> handler) {
     schedule(new PrepareStatementCommand(sql,  ar -> {
       if (ar.succeeded()) {
         return new ExtendedBatchQueryCommand<>(
@@ -61,6 +61,6 @@ public abstract class PgOperationsImpl<T extends PgOperations> implements PgOper
         return null;
       }
     }));
-    return (T) this;
+    return (C) this;
   }
 }

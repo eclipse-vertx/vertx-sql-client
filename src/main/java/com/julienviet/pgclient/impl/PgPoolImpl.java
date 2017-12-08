@@ -35,17 +35,20 @@ import io.vertx.core.Vertx;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public class PgPoolImpl extends PgOperationsImpl<PgPoolImpl> implements PgPool {
+public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
 
   private final Context context;
+  private final PgConnectionFactory factory;
   private final ConnectionProvider provider;
 
-  public PgPoolImpl(Context context, PgClientImpl client, int maxSize) {
+  public PgPoolImpl(Vertx vertx, PgPoolOptions options) {
+    int maxSize = options.getMaxSize();
     if (maxSize < 1) {
       throw new IllegalArgumentException("Pool max size must be > 0");
     }
-    this.context = context;
-    this.provider = new ConnectionPoolProvider(client::_connect, maxSize);
+    this.factory = new PgConnectionFactory(vertx, options);
+    this.context = vertx.getOrCreateContext();
+    this.provider = new ConnectionPoolProvider(factory::connect, maxSize);
   }
 
   @Override
@@ -54,12 +57,12 @@ public class PgPoolImpl extends PgOperationsImpl<PgPoolImpl> implements PgPool {
   }
 
   @Override
-  public void getConnection(Handler<AsyncResult<PgConnection>> handler) {
+  public void connect(Handler<AsyncResult<PgConnection>> handler) {
     Context current = Vertx.currentContext();
     if (current == context) {
       provider.acquire(new ConnectionWaiter(handler));
     } else {
-      context.runOnContext(v -> getConnection(handler));
+      context.runOnContext(v -> connect(handler));
     }
   }
 
@@ -144,5 +147,6 @@ public class PgPoolImpl extends PgOperationsImpl<PgPoolImpl> implements PgPool {
   @Override
   public void close() {
     provider.close();
+    factory.close();
   }
 }

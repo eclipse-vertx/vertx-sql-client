@@ -30,7 +30,7 @@ public class PreparedStatementCachedTest extends PreparedStatementTestBase {
 
   @Test
   public void testConcurrent(TestContext ctx) {
-    client.connect(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
       for (int i = 0;i < 10;i++) {
         int val = i;
         Async async = ctx.async();
