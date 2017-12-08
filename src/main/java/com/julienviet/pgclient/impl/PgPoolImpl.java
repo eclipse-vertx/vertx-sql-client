@@ -67,30 +67,6 @@ public class PgPoolImpl extends PgOperationsImpl<PgPoolImpl> implements PgPool {
   }
 
   @Override
-  protected void schedulePrepared(String sql, Function<AsyncResult<PreparedStatement>, CommandBase> supplier) {
-    Context current = Vertx.currentContext();
-    if (current == context) {
-      provider.acquire(new CommandWaiter() {
-        @Override
-        protected void onSuccess(Connection conn) {
-          conn.schedulePrepared(sql, supplier, v -> {
-            conn.close(this);
-          });
-        }
-        @Override
-        protected void onFailure(Throwable cause) {
-          CommandBase cmd = supplier.apply(Future.failedFuture(cause));
-          if (cmd != null) {
-            cmd.fail(cause);
-          }
-        }
-      });
-    } else {
-      context.runOnContext(v -> schedulePrepared(sql, supplier));
-    }
-  }
-
-  @Override
   protected void schedule(CommandBase cmd) {
     Context current = Vertx.currentContext();
     if (current == context) {

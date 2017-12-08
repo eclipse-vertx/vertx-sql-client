@@ -23,13 +23,10 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 import java.util.List;
-import java.util.function.Function;
 
 public abstract class PgOperationsImpl<T extends PgOperations> implements PgOperations {
 
   protected abstract void schedule(CommandBase cmd);
-
-  protected abstract void schedulePrepared(String sql, Function<AsyncResult<PreparedStatement>, CommandBase> supplier);
 
   @Override
   public PgOperations query(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler) {
@@ -39,20 +36,20 @@ public abstract class PgOperationsImpl<T extends PgOperations> implements PgOper
 
   @Override
   public T preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<Tuple>>> handler) {
-    schedulePrepared(sql, ar -> {
+    schedule(new PrepareStatementCommand(sql, ar -> {
       if (ar.succeeded()) {
         return new ExtendedQueryCommand<>(ar.result(), arguments, new RowResultDecoder(), new ExtendedQueryResultHandler<>(handler));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
         return null;
       }
-    });
+    }));
     return (T) this;
   }
 
   @Override
   public T preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgBatchResult<Tuple>>> handler) {
-    schedulePrepared(sql, ar -> {
+    schedule(new PrepareStatementCommand(sql,  ar -> {
       if (ar.succeeded()) {
         return new ExtendedBatchQueryCommand<>(
           ar.result(),
@@ -63,7 +60,7 @@ public abstract class PgOperationsImpl<T extends PgOperations> implements PgOper
         handler.handle(Future.failedFuture(ar.cause()));
         return null;
       }
-    });
+    }));
     return (T) this;
   }
 }

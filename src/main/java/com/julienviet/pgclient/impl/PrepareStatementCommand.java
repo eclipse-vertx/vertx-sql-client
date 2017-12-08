@@ -28,18 +28,59 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
+import java.util.Map;
+import java.util.function.Function;
+
 public class PrepareStatementCommand extends CommandBase {
 
   final String sql;
-  private final long statement; // 0 means unamed statement otherwise CString
+  private long statement; // 0 means unamed statement otherwise CString
   private ParameterDescription parameterDesc;
   private RowDescription rowDesc;
-  private final Future<PreparedStatement> fut;
+  private Future<PreparedStatement> fut;
+  private final Function<AsyncResult<PreparedStatement>, CommandBase> supplier;
 
-  PrepareStatementCommand(String sql, long statement, Handler<AsyncResult<PreparedStatement>> handler) {
+  PrepareStatementCommand(String sql, Function<AsyncResult<PreparedStatement>, CommandBase> supplier) {
     this.sql = sql;
-    this.statement = statement;
-    this.fut= Future.<PreparedStatement>future().setHandler(handler);
+    this.supplier = supplier;
+  }
+
+  @Override
+  void foo(SocketConnection conn, Handler<Void> completionHandler) {
+
+    Future<PreparedStatement> bilto = Future.<PreparedStatement>future().setHandler(ar -> {
+      CommandBase command = supplier.apply(ar);
+      if (command != null) {
+        conn.schedule(command, completionHandler);
+      } else {
+        if (completionHandler != null) {
+          completionHandler.handle(null);
+        }
+      }
+    });
+
+    Map<String, SocketConnection.CachedPreparedStatement> psCache = conn.psCache;
+    if (psCache != null) {
+      SocketConnection.CachedPreparedStatement cached = psCache.get(sql);
+      if (cached == null) {
+        statement = conn.psSeq.next();
+        cached = new SocketConnection.CachedPreparedStatement();
+        Future<PreparedStatement> futal = cached.fut;
+        psCache.put(sql, cached);
+        fut = Future.<PreparedStatement>future().setHandler(ar -> {
+          futal.handle(ar);
+          bilto.handle(ar);
+        });
+        super.foo(conn, v -> {});
+      } else {
+        cached.get(ar -> {
+          bilto.handle(ar);
+        });
+      }
+    } else {
+      fut = bilto;
+      super.foo(conn, v -> {});
+    }
   }
 
   @Override

@@ -162,7 +162,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
       pool.getConnection(ctx.asyncAssertSuccess(conn1 -> {
         proxyConn.get().close();
         conn1.closeHandler(v2 -> {
-          conn1.createQuery("never-executer").execute(ctx.asyncAssertFailure(err -> {
+          conn1.createQuery("never-execute").execute(ctx.asyncAssertFailure(err -> {
             pool.getConnection(ctx.asyncAssertSuccess(conn2 -> {
               conn2.createQuery("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(v3 -> {
                 async.complete();

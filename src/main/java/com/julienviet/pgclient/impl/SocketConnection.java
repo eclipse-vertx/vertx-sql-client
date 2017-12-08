@@ -51,10 +51,10 @@ public class SocketConnection implements Connection {
   final Context context;
   private Status status = Status.CONNECTED;
   private Holder holder;
-  private final Map<String, CachedPreparedStatement> psCache;
+  final Map<String, CachedPreparedStatement> psCache;
   private final int pipeliningLimit;
   final Deque<DecodeContext> decodeQueue = new ArrayDeque<>();
-  private StringLongSequence psSeq = new StringLongSequence();
+  final StringLongSequence psSeq = new StringLongSequence();
 
   public SocketConnection(PgClientImpl client,
                           NetSocketInternal socket,
@@ -97,7 +97,7 @@ public class SocketConnection implements Connection {
     schedule(new InitCommand(username, password, database, completionHandler));
   }
 
-  class CachedPreparedStatement implements Handler<AsyncResult<PreparedStatement>> {
+  static class CachedPreparedStatement implements Handler<AsyncResult<PreparedStatement>> {
 
     final Future<PreparedStatement> fut = Future.<PreparedStatement>future().setHandler(this);
     final ArrayDeque<Handler<AsyncResult<PreparedStatement>>> waiters = new ArrayDeque<>();
@@ -169,50 +169,6 @@ public class SocketConnection implements Connection {
     }
   }
 
-  @Override
-  public void schedulePrepared(String sql, Function<AsyncResult<PreparedStatement>, CommandBase> supplier, Handler<Void> completionHandler) {
-    Function<AsyncResult<PreparedStatement>, CommandBase> f;
-    long statement;
-    if (psCache != null) {
-      CachedPreparedStatement cached = psCache.get(sql);
-      if (cached == null) {
-        statement = psSeq.next();
-        cached = new CachedPreparedStatement();
-        Future<PreparedStatement> fut = cached.fut;
-        psCache.put(sql, cached);
-        f = ar -> {
-          fut.handle(ar);
-          return supplier.apply(ar);
-        };
-      } else {
-        cached.get(ar -> {
-          CommandBase next = supplier.apply(ar);
-          if (next != null) {
-            schedule(next, completionHandler);
-          } else {
-            if (completionHandler != null) {
-              completionHandler.handle(null);
-            }
-          }
-        });
-        return;
-      }
-    } else {
-      statement = 0;
-      f = supplier;
-    }
-    schedule(new PrepareStatementCommand(sql, statement, ar -> {
-      CommandBase command = f.apply(ar);
-      if (command != null) {
-        schedule(command, completionHandler);
-      } else {
-        if (completionHandler != null) {
-          completionHandler.handle(null);
-        }
-      }
-    }));
-  }
-
   public void schedule(CommandBase cmd) {
     schedule(cmd, null);
   }
@@ -221,6 +177,10 @@ public class SocketConnection implements Connection {
     if (Vertx.currentContext() != context) {
       throw new IllegalStateException();
     }
+    cmd.foo(this, completionHandler);
+  }
+
+  void bilto(CommandBase cmd, Handler<Void> completionHandler) {
     if (status == Status.CONNECTED) {
       pending.add(cmd);
       cmd.completionHandler = v -> {

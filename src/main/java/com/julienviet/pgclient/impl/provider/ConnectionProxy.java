@@ -19,11 +19,7 @@ package com.julienviet.pgclient.impl.provider;
 
 import com.julienviet.pgclient.impl.CommandBase;
 import com.julienviet.pgclient.impl.Connection;
-import com.julienviet.pgclient.impl.PreparedStatement;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-
-import java.util.function.Function;
 
 abstract class ConnectionProxy implements Connection, Connection.Holder {
 
@@ -46,11 +42,6 @@ abstract class ConnectionProxy implements Connection, Connection.Holder {
   @Override
   public void schedule(CommandBase cmd, Handler<Void> completionHandler) {
     conn.schedule(cmd, completionHandler);
-  }
-
-  @Override
-  public void schedulePrepared(String sql, Function<AsyncResult<PreparedStatement>, CommandBase> supplier, Handler<Void> completionHandler) {
-    conn.schedulePrepared(sql, supplier, completionHandler);
   }
 
   /**
