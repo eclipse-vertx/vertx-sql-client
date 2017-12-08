@@ -30,7 +30,7 @@ import java.util.function.Consumer;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class ConnectionPoolProvider implements ConnectionProvider {
+public class ConnectionPoolProvider {
 
   private final Consumer<Handler<AsyncResult<Connection>>> connector;
   private final int maxSize;
@@ -44,13 +44,11 @@ public class ConnectionPoolProvider implements ConnectionProvider {
     this.connector = connector;
   }
 
-  @Override
   public void acquire(Handler<AsyncResult<Connection>> holder) {
     waiters.add(Future.<Connection>future().setHandler(holder));
     check();
   }
 
-  @Override
   public void close() {
     for (PooledConnection pooled : new ArrayList<>(all)) {
       pooled.close();
