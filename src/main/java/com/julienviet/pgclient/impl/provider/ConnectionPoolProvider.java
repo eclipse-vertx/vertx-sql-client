@@ -17,6 +17,7 @@
 
 package com.julienviet.pgclient.impl.provider;
 
+import com.julienviet.pgclient.impl.CommandBase;
 import com.julienviet.pgclient.impl.Connection;
 import io.vertx.core.*;
 
@@ -56,12 +57,35 @@ public class ConnectionPoolProvider implements ConnectionProvider {
     }
   }
 
-  class PooledConnection extends ConnectionProxy {
+  class PooledConnection implements Connection, Connection.Holder  {
 
+    private final Connection conn;
     private Holder holder;
 
     PooledConnection(Connection conn) {
-      super(conn);
+      this.conn = conn;
+    }
+
+    @Override
+    public Connection connection() {
+      return this;
+    }
+
+    @Override
+    public boolean isSsl() {
+      return conn.isSsl();
+    }
+
+    @Override
+    public void schedule(CommandBase cmd, Handler<Void> completionHandler) {
+      conn.schedule(cmd, completionHandler);
+    }
+
+    /**
+     * Close the underlying connection
+     */
+    void close() {
+      conn.close(this);
     }
 
     @Override
