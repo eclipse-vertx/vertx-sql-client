@@ -129,7 +129,7 @@ public class RawBenchmark {
 
   private static void benchmark(String name, PgConnectOptions options, BiConsumer<PgConnection, CompletableFuture<Void>> benchmark) throws Exception {
     Vertx vertx = Vertx.vertx();
-    PgConnectionFactory client = new PgConnectionFactory(vertx, new PgConnectOptions()
+    PgPool client = PgPool.pool(vertx, new PgPoolOptions()
       .setHost(options.getHost())
       .setPort(options.getPort())
       .setDatabase(options.getDatabase())
