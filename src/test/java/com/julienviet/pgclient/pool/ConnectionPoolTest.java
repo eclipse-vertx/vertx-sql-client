@@ -15,10 +15,9 @@
  *
  */
 
-package com.julienviet.pgclient.provider;
+package com.julienviet.pgclient.pool;
 
-import com.julienviet.pgclient.impl.provider.ConnectionPoolProvider;
-import com.julienviet.pgclient.impl.provider.ConnectionProvider;
+import com.julienviet.pgclient.impl.ConnectionPool;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -28,9 +27,9 @@ public class ConnectionPoolTest {
   @Test
   public void testSimple() {
     ConnectionQueue queue = new ConnectionQueue();
-    ConnectionProvider provider = new ConnectionPoolProvider(queue, 1);
+    ConnectionPool pool = new ConnectionPool(queue, 1);
     SimpleHolder holder = new SimpleHolder();
-    provider.acquire(holder);
+    pool.acquire(holder);
     assertEquals(1, queue.size());
     assertFalse(holder.isComplete());
     SimpleConnection conn = new SimpleConnection();
@@ -45,14 +44,14 @@ public class ConnectionPoolTest {
   @Test
   public void testRecycle() {
     ConnectionQueue queue = new ConnectionQueue();
-    ConnectionProvider provider = new ConnectionPoolProvider(queue, 1);
+    ConnectionPool pool = new ConnectionPool(queue, 1);
     SimpleHolder holder1 = new SimpleHolder();
-    provider.acquire(holder1);
+    pool.acquire(holder1);
     SimpleConnection conn = new SimpleConnection();
     queue.connect(conn);
     holder1.init();
     SimpleHolder holder2 = new SimpleHolder();
-    provider.acquire(holder2);
+    pool.acquire(holder2);
     assertFalse(holder2.isComplete());
     assertEquals(0, queue.size());
     holder1.close();
@@ -65,11 +64,11 @@ public class ConnectionPoolTest {
   @Test
   public void testConnectionCreation() {
     ConnectionQueue queue = new ConnectionQueue();
-    ConnectionProvider provider = new ConnectionPoolProvider(queue, 1);
+    ConnectionPool pool = new ConnectionPool(queue, 1);
     SimpleHolder holder1 = new SimpleHolder();
-    provider.acquire(holder1);
+    pool.acquire(holder1);
     SimpleHolder holder2 = new SimpleHolder();
-    provider.acquire(holder2);
+    pool.acquire(holder2);
     assertEquals(1, queue.size()); // Check that we won't create more connection than max size
     SimpleConnection conn = new SimpleConnection();
     queue.connect(conn);
@@ -80,14 +79,14 @@ public class ConnectionPoolTest {
   @Test
   public void testConnClose() {
     ConnectionQueue queue = new ConnectionQueue();
-    ConnectionProvider provider = new ConnectionPoolProvider(queue, 1);
+    ConnectionPool pool = new ConnectionPool(queue, 1);
     SimpleHolder holder1 = new SimpleHolder();
-    provider.acquire(holder1);
+    pool.acquire(holder1);
     SimpleConnection conn = new SimpleConnection();
     queue.connect(conn);
     holder1.init();
     SimpleHolder holder2 = new SimpleHolder();
-    provider.acquire(holder2);
+    pool.acquire(holder2);
     assertFalse(holder2.isComplete());
     assertEquals(0, queue.size());
     conn.close();
@@ -99,9 +98,9 @@ public class ConnectionPoolTest {
   @Test
   public void testDoubleConnectionClose() {
     ConnectionQueue queue = new ConnectionQueue();
-    ConnectionProvider provider = new ConnectionPoolProvider(queue, 1);
+    ConnectionPool pool = new ConnectionPool(queue, 1);
     SimpleHolder holder = new SimpleHolder();
-    provider.acquire(holder);
+    pool.acquire(holder);
     SimpleConnection conn = new SimpleConnection();
     queue.connect(conn);
     holder.init();
@@ -116,9 +115,9 @@ public class ConnectionPoolTest {
   @Test
   public void testDoubleConnectionRelease() {
     ConnectionQueue queue = new ConnectionQueue();
-    ConnectionProvider provider = new ConnectionPoolProvider(queue, 1);
+    ConnectionPool pool = new ConnectionPool(queue, 1);
     SimpleHolder holder = new SimpleHolder();
-    provider.acquire(holder);
+    pool.acquire(holder);
     SimpleConnection conn = new SimpleConnection();
     queue.connect(conn);
     holder.init();
@@ -133,9 +132,9 @@ public class ConnectionPoolTest {
   @Test
   public void testDoubleConnectionAcquire() {
     ConnectionQueue queue = new ConnectionQueue();
-    ConnectionProvider provider = new ConnectionPoolProvider(queue, 1);
+    ConnectionPool pool = new ConnectionPool(queue, 1);
     SimpleHolder holder = new SimpleHolder();
-    provider.acquire(holder);
+    pool.acquire(holder);
     SimpleConnection conn = new SimpleConnection();
     queue.connect(conn);
     holder.init();

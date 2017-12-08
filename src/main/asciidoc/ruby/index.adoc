@@ -30,39 +30,41 @@ You can use the client to connect to the database and interact with it.
 
 [source,ruby]
 ----
-=begin
-    PgClient client = PgClient.create(vertx, new PgConnectOptions()
-      .setPort(5432)
-      .setHost("the-host")
-      .setDatabase("the-db")
-      .setUsername("user")
-      .setPassword("secret")
-    );
+require 'vertx-pg-client/pg_connection'
 
-    client.connect(res -> {
-      if (res.succeeded()) {
+# Create options
+options = {
+  'port' => 5432,
+  'host' => "the-host",
+  'database' => "the-db",
+  'username' => "user",
+  'password' => "secret"
+}
 
-        // Connected
-        PgConnection conn = res.result();
+# Connect
+VertxPgClient::PgConnection.connect(vertx, options) { |res_err,res|
+  if (res_err == nil)
 
-        conn.createQuery("SELECT * FROM USERS").execute(ar -> {
+    # Connected
+    conn = res
 
-          if (ar.succeeded()) {
+    conn.create_query("SELECT * FROM USERS").execute() { |ar_err,ar|
 
-            // Use result
-            PgResult<Tuple> result = ar.result();
-          } else {
-            System.out.println("It failed");
-          }
+      if (ar_err == nil)
 
-          // Close the connection
-          conn.close();
-        });
-      } else {
-        System.out.println("Could not connect " + res.cause());
-      }
-    });
-    =end
+        # Use result
+        result = ar
+      else
+        puts "It failed"
+      end
+
+      # Close the connection
+      conn.close()
+    }
+  else
+    puts "Could not connect #{res_err}"
+  end
+}
 
 ----
 
@@ -70,41 +72,43 @@ You can create a pool of connection to obtain a connection instead:
 
 [source,ruby]
 ----
-=begin
-    PgClient client = PgClient.create(vertx, new PgConnectOptions()
-      .setPort(5432)
-      .setHost("the-host")
-      .setDatabase("the-db")
-      .setUsername("user")
-      .setPassword("secret")
-    );
+require 'vertx-pg-client/pg_pool'
 
-    PgPool pool = client.createPool(new PgPoolOptions().setMaxSize(20));
+options = {
+  'port' => 5432,
+  'host' => "the-host",
+  'database' => "the-db",
+  'username' => "user",
+  'password' => "secret",
+  'maxSize' => 20
+}
 
-    pool.connect(res -> {
-      if (res.succeeded()) {
+# Create a pool with 20 connections max
+pool = VertxPgClient::PgPool.pool(vertx, options)
 
-        // Obtained a connection
-        PgConnection conn = res.result();
+pool.connect() { |res_err,res|
+  if (res_err == nil)
 
-        conn.createQuery("SELECT * FROM USERS").execute(ar -> {
+    # Obtained a connection
+    conn = res
 
-          if (ar.succeeded()) {
+    conn.create_query("SELECT * FROM USERS").execute() { |ar_err,ar|
 
-            // Use result set
-            PgResult<Tuple> result = ar.result();
-          } else {
-            System.out.println("It failed");
-          }
+      if (ar_err == nil)
 
-          // Return the connection to the pool
-          conn.close();
-        });
-      } else {
-        System.out.println("Could not obtain a connection " + res.cause());
-      }
-    });
-    =end
+        # Use result set
+        result = ar
+      else
+        puts "It failed"
+      end
+
+      # Return the connection to the pool
+      conn.close()
+    }
+  else
+    puts "Could not obtain a connection #{res_err}"
+  end
+}
 
 ----
 
@@ -297,25 +301,29 @@ like a Vert.x `NetClient`.
 
 [source,ruby]
 ----
-=begin
-    PgClient client = PgClient.create(vertx, new PgConnectOptions()
-      .setPort(5432)
-      .setHost("the-host")
-      .setDatabase("the-db")
-      .setUsername("user")
-      .setPassword("secret")
-      .setSsl(true)
-      .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/cert.pem"))
-    );
+require 'vertx-pg-client/pg_connection'
 
-    client.connect(res -> {
-      if (res.succeeded()) {
-        // Connected with SSL
-      } else {
-        System.out.println("Could not connect " + res.cause());
-      }
-    });
-    =end
+options = {
+  'port' => 5432,
+  'host' => "the-host",
+  'database' => "the-db",
+  'username' => "user",
+  'password' => "secret",
+  'ssl' => true,
+  'pemTrustOptions' => {
+    'certPaths' => [
+      "/path/to/cert.pem"
+    ]
+  }
+}
+
+VertxPgClient::PgConnection.connect(vertx, options) { |res_err,res|
+  if (res_err == nil)
+    # Connected with SSL
+  else
+    puts "Could not connect #{res_err}"
+  end
+}
 
 ----
 

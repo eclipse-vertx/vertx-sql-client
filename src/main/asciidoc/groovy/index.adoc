@@ -30,39 +30,40 @@ You can use the client to connect to the database and interact with it.
 
 [source,groovy]
 ----
-/*
-    PgClient client = PgClient.create(vertx, new PgConnectOptions()
-      .setPort(5432)
-      .setHost("the-host")
-      .setDatabase("the-db")
-      .setUsername("user")
-      .setPassword("secret")
-    );
 
-    client.connect(res -> {
-      if (res.succeeded()) {
+// Create options
+def options = [
+  port:5432,
+  host:"the-host",
+  database:"the-db",
+  username:"user",
+  password:"secret"
+]
 
-        // Connected
-        PgConnection conn = res.result();
+// Connect
+PgConnection.connect(vertx, options, { res ->
+  if (res.succeeded()) {
 
-        conn.createQuery("SELECT * FROM USERS").execute(ar -> {
+    // Connected
+    def conn = res.result()
 
-          if (ar.succeeded()) {
+    conn.createQuery("SELECT * FROM USERS").execute({ ar ->
 
-            // Use result
-            PgResult<Tuple> result = ar.result();
-          } else {
-            System.out.println("It failed");
-          }
+      if (ar.succeeded()) {
 
-          // Close the connection
-          conn.close();
-        });
+        // Use result
+        def result = ar.result()
       } else {
-        System.out.println("Could not connect " + res.cause());
+        println("It failed")
       }
-    });
-    */
+
+      // Close the connection
+      conn.close()
+    })
+  } else {
+    println("Could not connect ${res.cause()}")
+  }
+})
 
 ----
 
@@ -70,41 +71,42 @@ You can create a pool of connection to obtain a connection instead:
 
 [source,groovy]
 ----
-/*
-    PgClient client = PgClient.create(vertx, new PgConnectOptions()
-      .setPort(5432)
-      .setHost("the-host")
-      .setDatabase("the-db")
-      .setUsername("user")
-      .setPassword("secret")
-    );
 
-    PgPool pool = client.createPool(new PgPoolOptions().setMaxSize(20));
+def options = [
+  port:5432,
+  host:"the-host",
+  database:"the-db",
+  username:"user",
+  password:"secret",
+  maxSize:20
+]
 
-    pool.connect(res -> {
-      if (res.succeeded()) {
+// Create a pool with 20 connections max
+def pool = PgPool.pool(vertx, options)
 
-        // Obtained a connection
-        PgConnection conn = res.result();
+pool.connect({ res ->
+  if (res.succeeded()) {
 
-        conn.createQuery("SELECT * FROM USERS").execute(ar -> {
+    // Obtained a connection
+    def conn = res.result()
 
-          if (ar.succeeded()) {
+    conn.createQuery("SELECT * FROM USERS").execute({ ar ->
 
-            // Use result set
-            PgResult<Tuple> result = ar.result();
-          } else {
-            System.out.println("It failed");
-          }
+      if (ar.succeeded()) {
 
-          // Return the connection to the pool
-          conn.close();
-        });
+        // Use result set
+        def result = ar.result()
       } else {
-        System.out.println("Could not obtain a connection " + res.cause());
+        println("It failed")
       }
-    });
-    */
+
+      // Return the connection to the pool
+      conn.close()
+    })
+  } else {
+    println("Could not obtain a connection ${res.cause()}")
+  }
+})
 
 ----
 
@@ -294,25 +296,28 @@ like a Vert.x `NetClient`.
 
 [source,groovy]
 ----
-/*
-    PgClient client = PgClient.create(vertx, new PgConnectOptions()
-      .setPort(5432)
-      .setHost("the-host")
-      .setDatabase("the-db")
-      .setUsername("user")
-      .setPassword("secret")
-      .setSsl(true)
-      .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/cert.pem"))
-    );
 
-    client.connect(res -> {
-      if (res.succeeded()) {
-        // Connected with SSL
-      } else {
-        System.out.println("Could not connect " + res.cause());
-      }
-    });
-    */
+def options = [
+  port:5432,
+  host:"the-host",
+  database:"the-db",
+  username:"user",
+  password:"secret",
+  ssl:true,
+  pemTrustOptions:[
+    certPaths:[
+      "/path/to/cert.pem"
+    ]
+  ]
+]
+
+PgConnection.connect(vertx, options, { res ->
+  if (res.succeeded()) {
+    // Connected with SSL
+  } else {
+    println("Could not connect ${res.cause()}")
+  }
+})
 
 ----
 

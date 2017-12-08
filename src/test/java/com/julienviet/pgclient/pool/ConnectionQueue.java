@@ -15,38 +15,24 @@
  *
  */
 
-package com.julienviet.pgclient.provider;
+package com.julienviet.pgclient.pool;
 
-import com.julienviet.pgclient.impl.CommandBase;
 import com.julienviet.pgclient.impl.Connection;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
-class SimpleConnection implements Connection {
+import java.util.ArrayDeque;
+import java.util.function.Consumer;
 
-  Holder holder;
-  int closed;
-
-  @Override
-  public void init(Holder holder) {
-    this.holder = holder;
-  }
+class ConnectionQueue extends ArrayDeque<Handler<AsyncResult<Connection>>> implements Consumer<Handler<AsyncResult<Connection>>> {
 
   @Override
-  public boolean isSsl() {
-    return false;
+  public void accept(Handler<AsyncResult<Connection>> event) {
+    add(event);
   }
 
-  @Override
-  public void schedule(CommandBase cmd, Handler<Void> completionHandler) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void close(Holder holder) {
-    closed++;
-  }
-
-  void close() {
-    holder.handleClosed();
+  void connect(SimpleConnection conn) {
+    poll().handle(Future.succeededFuture(conn));
   }
 }

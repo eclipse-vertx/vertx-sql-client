@@ -30,14 +30,77 @@ You can use the client to connect to the database and interact with it.
 
 [source,java]
 ----
+PgConnectOptions options = new PgConnectOptions()
+  .setPort(5432)
+  .setHost("the-host")
+  .setDatabase("the-db")
+  .setUsername("user")
+  .setPassword("secret");
 
+// Connect
+PgConnection.connect(vertx, options, res -> {
+  if (res.succeeded()) {
+
+    // Connected
+    PgConnection conn = res.result();
+
+    conn.createQuery("SELECT * FROM USERS").execute(ar -> {
+
+      if (ar.succeeded()) {
+
+        // Use result
+        PgResult<Tuple> result = ar.result();
+      } else {
+        System.out.println("It failed");
+      }
+
+      // Close the connection
+      conn.close();
+    });
+  } else {
+    System.out.println("Could not connect " + res.cause());
+  }
+});
 ----
 
 You can create a pool of connection to obtain a connection instead:
 
 [source,java]
 ----
+PgPoolOptions options = new PgPoolOptions()
+  .setPort(5432)
+  .setHost("the-host")
+  .setDatabase("the-db")
+  .setUsername("user")
+  .setPassword("secret")
+  .setMaxSize(20);
 
+// Create a pool with 20 connections max
+PgPool pool = PgPool.pool(vertx, options);
+
+pool.connect(res -> {
+  if (res.succeeded()) {
+
+    // Obtained a connection
+    PgConnection conn = res.result();
+
+    conn.createQuery("SELECT * FROM USERS").execute(ar -> {
+
+      if (ar.succeeded()) {
+
+        // Use result set
+        PgResult<Tuple> result = ar.result();
+      } else {
+        System.out.println("It failed");
+      }
+
+      // Return the connection to the pool
+      conn.close();
+    });
+  } else {
+    System.out.println("Could not obtain a connection " + res.cause());
+  }
+});
 ----
 
 When you are done with the pool, you should close it:
@@ -215,7 +278,22 @@ like a Vert.x `NetClient`.
 
 [source,java]
 ----
+PgConnectOptions options = new PgConnectOptions()
+  .setPort(5432)
+  .setHost("the-host")
+  .setDatabase("the-db")
+  .setUsername("user")
+  .setPassword("secret")
+  .setSsl(true)
+  .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/cert.pem"));
 
+PgConnection.connect(vertx, options, res -> {
+  if (res.succeeded()) {
+    // Connected with SSL
+  } else {
+    System.out.println("Could not connect " + res.cause());
+  }
+});
 ----
 
 More information can be found in the http://vertx.io/docs/vertx-core/java/#ssl[Vert.x documentation].

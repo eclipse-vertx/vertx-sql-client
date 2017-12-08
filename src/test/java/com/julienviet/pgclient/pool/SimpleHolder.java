@@ -15,7 +15,7 @@
  *
  */
 
-package com.julienviet.pgclient.provider;
+package com.julienviet.pgclient.pool;
 
 import com.julienviet.pgclient.impl.Connection;
 import io.vertx.core.AsyncResult;

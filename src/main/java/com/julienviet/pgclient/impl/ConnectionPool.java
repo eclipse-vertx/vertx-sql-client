@@ -15,7 +15,7 @@
  *
  */
 
-package com.julienviet.pgclient.impl.provider;
+package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.impl.CommandBase;
 import com.julienviet.pgclient.impl.Connection;
@@ -30,7 +30,7 @@ import java.util.function.Consumer;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class ConnectionPoolProvider {
+public class ConnectionPool {
 
   private final Consumer<Handler<AsyncResult<Connection>>> connector;
   private final int maxSize;
@@ -39,7 +39,7 @@ public class ConnectionPoolProvider {
   private final ArrayDeque<PooledConnection> available = new ArrayDeque<>();
   private int size;
 
-  public ConnectionPoolProvider(Consumer<Handler<AsyncResult<Connection>>> connector, int maxSize) {
+  public ConnectionPool(Consumer<Handler<AsyncResult<Connection>>> connector, int maxSize) {
     this.maxSize = maxSize;
     this.connector = connector;
   }

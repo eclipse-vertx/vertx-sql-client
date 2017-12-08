@@ -18,8 +18,6 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.*;
-import com.julienviet.pgclient.impl.provider.ConnectionPoolProvider;
-import com.julienviet.pgclient.impl.provider.ConnectionProvider;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -39,7 +37,7 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
 
   private final Context context;
   private final PgConnectionFactory factory;
-  private final ConnectionProvider provider;
+  private final ConnectionPool pool;
 
   public PgPoolImpl(Vertx vertx, PgPoolOptions options) {
     int maxSize = options.getMaxSize();
@@ -48,7 +46,7 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
     }
     this.factory = new PgConnectionFactory(vertx, options);
     this.context = vertx.getOrCreateContext();
-    this.provider = new ConnectionPoolProvider(factory::connect, maxSize);
+    this.pool = new ConnectionPool(factory::connect, maxSize);
   }
 
   @Override
@@ -60,7 +58,7 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
   public void connect(Handler<AsyncResult<PgConnection>> handler) {
     Context current = Vertx.currentContext();
     if (current == context) {
-      provider.acquire(new ConnectionWaiter(handler));
+      pool.acquire(new ConnectionWaiter(handler));
     } else {
       context.runOnContext(v -> connect(handler));
     }
@@ -70,7 +68,7 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
   protected void schedule(CommandBase cmd) {
     Context current = Vertx.currentContext();
     if (current == context) {
-      provider.acquire(new CommandWaiter() {
+      pool.acquire(new CommandWaiter() {
         @Override
         protected void onSuccess(Connection conn) {
           // Work around stack over flow
@@ -146,7 +144,7 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
 
   @Override
   public void close() {
-    provider.close();
+    pool.close();
     factory.close();
   }
 }
