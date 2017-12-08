@@ -93,6 +93,6 @@ public class PgClientImpl implements PgClient {
 
   @Override
   public PgPool createPool(PgPoolOptions options) {
-    return new PgPoolImpl(vertx.getOrCreateContext(), this, options.getMaxSize(), options.getMode());
+    return new PgPoolImpl(vertx.getOrCreateContext(), this, options.getMaxSize());
   }
 }

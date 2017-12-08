@@ -29,10 +29,8 @@ import io.vertx.core.json.JsonObject;
 public class PgPoolOptions {
 
   public static final int DEFAULT_MAX_POOL_SIZE = 4;
-  public static final PoolingMode DEFAULT_MODE = PoolingMode.CONNECTION;
 
   private int maxSize = DEFAULT_MAX_POOL_SIZE;
-  private PoolingMode mode = DEFAULT_MODE;
 
   public PgPoolOptions() {
   }
@@ -43,7 +41,6 @@ public class PgPoolOptions {
 
   public PgPoolOptions(PgPoolOptions other) {
     maxSize = other.maxSize;
-    mode = other.mode;
   }
 
   public int getMaxSize() {
@@ -55,15 +52,6 @@ public class PgPoolOptions {
       throw new IllegalArgumentException("Max size cannot be negative");
     }
     this.maxSize = maxSize;
-    return this;
-  }
-
-  public PoolingMode getMode() {
-    return mode;
-  }
-
-  public PgPoolOptions setMode(PoolingMode mode) {
-    this.mode = mode;
     return this;
   }
 }

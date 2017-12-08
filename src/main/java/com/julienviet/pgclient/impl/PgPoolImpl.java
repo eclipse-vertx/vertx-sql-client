@@ -20,14 +20,11 @@ package com.julienviet.pgclient.impl;
 import com.julienviet.pgclient.*;
 import com.julienviet.pgclient.impl.provider.ConnectionPoolProvider;
 import com.julienviet.pgclient.impl.provider.ConnectionProvider;
-import com.julienviet.pgclient.impl.provider.SharedConnectionProvider;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-
-import java.util.function.Function;
 
 /**
  * Todo :
@@ -43,12 +40,12 @@ public class PgPoolImpl extends PgOperationsImpl<PgPoolImpl> implements PgPool {
   private final Context context;
   private final ConnectionProvider provider;
 
-  public PgPoolImpl(Context context, PgClientImpl client, int maxSize, PoolingMode mode) {
+  public PgPoolImpl(Context context, PgClientImpl client, int maxSize) {
     if (maxSize < 1) {
       throw new IllegalArgumentException("Pool max size must be > 0");
     }
     this.context = context;
-    this.provider = mode == PoolingMode.STATEMENT ? new SharedConnectionProvider(client::_connect) : new ConnectionPoolProvider(client::_connect, maxSize);
+    this.provider = new ConnectionPoolProvider(client::_connect, maxSize);
   }
 
   @Override
@@ -73,7 +70,9 @@ public class PgPoolImpl extends PgOperationsImpl<PgPoolImpl> implements PgPool {
       provider.acquire(new CommandWaiter() {
         @Override
         protected void onSuccess(Connection conn) {
-          conn.schedule(cmd, v -> {
+          // Work around stack over flow
+          context.runOnContext(v -> {
+            conn.schedule(cmd);
             conn.close(this);
           });
         }

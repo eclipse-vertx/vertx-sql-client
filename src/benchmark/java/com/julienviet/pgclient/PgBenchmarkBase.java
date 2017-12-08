@@ -22,7 +22,7 @@ import org.openjdk.jmh.annotations.*;
 
 import java.util.concurrent.CountDownLatch;
 
-@State(Scope.Benchmark)
+@State(Scope.Thread)
 public abstract class PgBenchmarkBase extends BenchmarkBase {
 
   @Param("localhost")
@@ -59,10 +59,7 @@ public abstract class PgBenchmarkBase extends BenchmarkBase {
       .setCachePreparedStatements(true)
       .setPipeliningLimit(pipeliningLimit)
     );
-    pool = client.createPool(new PgPoolOptions()
-      .setMode(PoolingMode.STATEMENT)
-      .setMaxSize(8)
-    );
+    pool = client.createPool(new PgPoolOptions().setMaxSize(1));
   }
 
   @TearDown

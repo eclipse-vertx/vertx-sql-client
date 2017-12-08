@@ -65,6 +65,5 @@
 |===
 ^|Name | Type ^| Description
 |[[maxSize]]`maxSize`|`Number (int)`|-
-|[[mode]]`mode`|`link:enums.html#PoolingMode[PoolingMode]`|-
 |===
 

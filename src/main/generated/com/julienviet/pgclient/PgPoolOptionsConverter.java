@@ -30,15 +30,9 @@ public class PgPoolOptionsConverter {
     if (json.getValue("maxSize") instanceof Number) {
       obj.setMaxSize(((Number)json.getValue("maxSize")).intValue());
     }
-    if (json.getValue("mode") instanceof String) {
-      obj.setMode(com.julienviet.pgclient.PoolingMode.valueOf((String)json.getValue("mode")));
-    }
   }
 
   public static void toJson(PgPoolOptions obj, JsonObject json) {
     json.put("maxSize", obj.getMaxSize());
-    if (obj.getMode() != null) {
-      json.put("mode", obj.getMode().name());
-    }
   }
 }
