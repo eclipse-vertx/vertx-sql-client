@@ -121,6 +121,9 @@ public interface PgConnection extends PgClient {
    */
   PgTransaction begin();
 
+  @Fluent
+  PgConnection notificationHandler(Handler<PgNotification> handler);
+
   boolean isSSL();
 
   /**

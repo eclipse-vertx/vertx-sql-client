@@ -67,7 +67,10 @@ class SimpleHolder implements Connection.Holder, Handler<AsyncResult<Connection>
 
   @Override
   public void handleException(Throwable err) {
+  }
 
+  @Override
+  public void handleNotification(int processId, String channel, String payload) {
   }
 
   void close() {

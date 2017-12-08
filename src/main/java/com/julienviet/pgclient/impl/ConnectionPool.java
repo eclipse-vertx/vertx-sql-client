@@ -119,6 +119,13 @@ public class ConnectionPool {
     }
 
     @Override
+    public void handleNotification(int processId, String channel, String payload) {
+      if (holder != null) {
+        holder.handleNotification(processId, channel, payload);
+      }
+    }
+
+    @Override
     public void handleException(Throwable err) {
       if (holder != null) {
         holder.handleException(err);

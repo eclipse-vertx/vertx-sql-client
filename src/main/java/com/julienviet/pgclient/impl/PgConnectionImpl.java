@@ -33,6 +33,7 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
   private volatile Handler<Throwable> exceptionHandler;
   private volatile Handler<Void> closeHandler;
   private Transaction tx;
+  private volatile Handler<PgNotification> notificationHandler;
 
   public PgConnectionImpl(Context context, Connection conn) {
     this.context = context;
@@ -91,6 +92,12 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
   }
 
   @Override
+  public PgConnection notificationHandler(Handler<PgNotification> handler) {
+    notificationHandler = handler;
+    return this;
+  }
+
+  @Override
   public PgConnection exceptionHandler(Handler<Throwable> handler) {
     exceptionHandler = handler;
     return this;
@@ -105,6 +112,13 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
       tx = null;
     });
     return tx;
+  }
+
+  public void handleNotification(int processId, String channel, String payload) {
+    Handler<PgNotification> handler = notificationHandler;
+    if (handler != null) {
+      handler.handle(new PgNotification().setProcessId(processId).setChannel(channel).setPayload(payload));
+    }
   }
 
   @Override

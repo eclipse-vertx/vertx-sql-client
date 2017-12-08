@@ -22,6 +22,7 @@ import com.julienviet.pgclient.impl.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.impl.codec.decoder.MessageDecoder;
 import com.julienviet.pgclient.impl.codec.decoder.InitiateSslHandler;
 import com.julienviet.pgclient.impl.codec.encoder.OutboundMessage;
+import com.julienviet.pgclient.impl.codec.decoder.message.NotificationResponse;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
@@ -222,12 +223,23 @@ public class SocketConnection implements Connection {
   }
 
   private void handleMessage(Object msg) {
-    InboundMessage pgMsg = (InboundMessage) msg;
-    CommandBase<?> cmd = inflight.peek();
-    if (cmd != null) {
-      cmd.handleMessage(pgMsg);
+    // System.out.println("<-- " + msg);
+    if (msg instanceof NotificationResponse) {
+      handleNotification((NotificationResponse) msg);
     } else {
-      System.out.println("Uh oh, no inflight command for " + msg);
+      InboundMessage pgMsg = (InboundMessage) msg;
+      CommandBase<?> cmd = inflight.peek();
+      if (cmd != null) {
+        cmd.handleMessage(pgMsg);
+      } else {
+        System.out.println("Uh oh, no inflight command for " + msg);
+      }
+    }
+  }
+
+  private void handleNotification(NotificationResponse response) {
+    if (holder != null) {
+      holder.handleNotification(response.getProcessId(), response.getChannel(), response.getPayload());
     }
   }
 
