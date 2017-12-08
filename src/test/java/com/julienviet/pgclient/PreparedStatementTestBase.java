@@ -17,7 +17,7 @@
 
 package com.julienviet.pgclient;
 
-import com.julienviet.pgclient.codec.util.Util;
+import com.julienviet.pgclient.impl.codec.util.Util;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -26,7 +26,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.postgresql.PGConnection;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -17,11 +17,11 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.codec.decoder.DecodeContext;
-import com.julienviet.pgclient.codec.decoder.InboundMessage;
-import com.julienviet.pgclient.codec.decoder.MessageDecoder;
-import com.julienviet.pgclient.codec.decoder.InitiateSslHandler;
-import com.julienviet.pgclient.codec.encoder.OutboundMessage;
+import com.julienviet.pgclient.impl.codec.decoder.DecodeContext;
+import com.julienviet.pgclient.impl.codec.decoder.InboundMessage;
+import com.julienviet.pgclient.impl.codec.decoder.MessageDecoder;
+import com.julienviet.pgclient.impl.codec.decoder.InitiateSslHandler;
+import com.julienviet.pgclient.impl.codec.encoder.OutboundMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;

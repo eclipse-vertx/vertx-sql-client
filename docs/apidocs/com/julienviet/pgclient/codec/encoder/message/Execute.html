@@ -50,8 +50,8 @@ var activeTableTab = "activeTableTab";
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../../../../com/julienviet/pgclient/codec/encoder/message/Describe.html" title="class in com.julienviet.pgclient.codec.encoder.message"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../../../../com/julienviet/pgclient/codec/encoder/message/Parse.html" title="class in com.julienviet.pgclient.codec.encoder.message"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../../../../com/julienviet/pgclient/codec/encoder/message/Describe.html" title="class in com.julienviet.pgclient.impl.codec.encoder.message"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../../../../com/julienviet/pgclient/codec/encoder/message/Parse.html" title="class in com.julienviet.pgclient.impl.codec.encoder.message"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../../../../index.html?com/julienviet/pgclient/codec/encoder/message/Execute.html" target="_top">Frames</a></li>
@@ -93,7 +93,7 @@ var activeTableTab = "activeTableTab";
 <!-- ========= END OF TOP NAVBAR ========= -->
 <!-- ======== START OF CLASS DATA ======== -->
 <div class="header">
-<div class="subTitle">com.julienviet.pgclient.codec.encoder.message</div>
+<div class="subTitle">com.julienviet.pgclient.impl.codec.encoder.message</div>
 <h2 title="Class Execute" class="title">Class Execute</h2>
 </div>
 <div class="contentContainer">
@@ -101,7 +101,7 @@ var activeTableTab = "activeTableTab";
 <li><a href="http://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">java.lang.Object</a></li>
 <li>
 <ul class="inheritance">
-<li>com.julienviet.pgclient.codec.encoder.message.Execute</li>
+<li>com.julienviet.pgclient.impl.codec.encoder.message.Execute</li>
 </ul>
 </li>
 </ul>
@@ -110,13 +110,13 @@ var activeTableTab = "activeTableTab";
 <li class="blockList">
 <dl>
 <dt>All Implemented Interfaces:</dt>
-<dd><a href="../../../../../../com/julienviet/pgclient/codec/Message.html" title="interface in com.julienviet.pgclient.codec">Message</a></dd>
+<dd><a href="../../../../../../com/julienviet/pgclient/codec/Message.html" title="interface in com.julienviet.pgclient.impl.codec">Message</a></dd>
 </dl>
 <hr>
 <br>
 <pre>public class <span class="typeNameLabel">Execute</span>
 extends <a href="http://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</a>
-implements <a href="../../../../../../com/julienviet/pgclient/codec/Message.html" title="interface in com.julienviet.pgclient.codec">Message</a></pre>
+implements <a href="../../../../../../com/julienviet/pgclient/codec/Message.html" title="interface in com.julienviet.pgclient.impl.codec">Message</a></pre>
 <div class="block"><p>
  The message specifies the portal and a maximum row count (zero meaning "fetch all rows") of the result.
 
@@ -125,16 +125,16 @@ implements <a href="../../../../../../com/julienviet/pgclient/codec/Message.html
  in other cases the command is always executed to completion, and the row count of the result is ignored.
 
  <p>
- The possible responses to this message are the same as <a href="../../../../../../com/julienviet/pgclient/codec/encoder/message/Query.html" title="class in com.julienviet.pgclient.codec.encoder.message"><code>Query</code></a> message, except that
- it doesn't cause <a href="../../../../../../com/julienviet/pgclient/codec/decoder/message/ReadyForQuery.html" title="class in com.julienviet.pgclient.codec.decoder.message"><code>ReadyForQuery</code></a> or <a href="../../../../../../com/julienviet/pgclient/codec/decoder/message/RowDescription.html" title="class in com.julienviet.pgclient.codec.decoder.message"><code>RowDescription</code></a> to be issued.
+ The possible responses to this message are the same as <a href="../../../../../../com/julienviet/pgclient/codec/encoder/message/Query.html" title="class in com.julienviet.pgclient.impl.codec.encoder.message"><code>Query</code></a> message, except that
+ it doesn't cause <a href="../../../../../../com/julienviet/pgclient/codec/decoder/message/ReadyForQuery.html" title="class in com.julienviet.pgclient.impl.codec.decoder.message"><code>ReadyForQuery</code></a> or <a href="../../../../../../com/julienviet/pgclient/codec/decoder/message/RowDescription.html" title="class in com.julienviet.pgclient.impl.codec.decoder.message"><code>RowDescription</code></a> to be issued.
 
  <p>
- If Execute terminates before completing the execution of a portal, it will send a <a href="../../../../../../com/julienviet/pgclient/codec/decoder/message/PortalSuspended.html" title="class in com.julienviet.pgclient.codec.decoder.message"><code>PortalSuspended</code></a> message;
+ If Execute terminates before completing the execution of a portal, it will send a <a href="../../../../../../com/julienviet/pgclient/codec/decoder/message/PortalSuspended.html" title="class in com.julienviet.pgclient.impl.codec.decoder.message"><code>PortalSuspended</code></a> message;
  the appearance of this message tells the frontend that another Execute should be issued against the same portal to
- complete the operation. The <a href="../../../../../../com/julienviet/pgclient/codec/decoder/message/CommandComplete.html" title="class in com.julienviet.pgclient.codec.decoder.message"><code>CommandComplete</code></a> message indicating completion of the source SQL command
+ complete the operation. The <a href="../../../../../../com/julienviet/pgclient/codec/decoder/message/CommandComplete.html" title="class in com.julienviet.pgclient.impl.codec.decoder.message"><code>CommandComplete</code></a> message indicating completion of the source SQL command
  is not sent until the portal's execution is completed. Therefore, This message is always terminated by
- the appearance of exactly one of these messages: <a href="../../../../../../com/julienviet/pgclient/codec/decoder/message/CommandComplete.html" title="class in com.julienviet.pgclient.codec.decoder.message"><code>CommandComplete</code></a>,
- <a href="../../../../../../com/julienviet/pgclient/codec/decoder/message/EmptyQueryResponse.html" title="class in com.julienviet.pgclient.codec.decoder.message"><code>EmptyQueryResponse</code></a>, <a href="../../../../../../com/julienviet/pgclient/codec/decoder/message/ErrorResponse.html" title="class in com.julienviet.pgclient.codec.decoder.message"><code>ErrorResponse</code></a> or <a href="../../../../../../com/julienviet/pgclient/codec/decoder/message/PortalSuspended.html" title="class in com.julienviet.pgclient.codec.decoder.message"><code>PortalSuspended</code></a>.</div>
+ the appearance of exactly one of these messages: <a href="../../../../../../com/julienviet/pgclient/codec/decoder/message/CommandComplete.html" title="class in com.julienviet.pgclient.impl.codec.decoder.message"><code>CommandComplete</code></a>,
+ <a href="../../../../../../com/julienviet/pgclient/codec/decoder/message/EmptyQueryResponse.html" title="class in com.julienviet.pgclient.impl.codec.decoder.message"><code>EmptyQueryResponse</code></a>, <a href="../../../../../../com/julienviet/pgclient/codec/decoder/message/ErrorResponse.html" title="class in com.julienviet.pgclient.impl.codec.decoder.message"><code>ErrorResponse</code></a> or <a href="../../../../../../com/julienviet/pgclient/codec/decoder/message/PortalSuspended.html" title="class in com.julienviet.pgclient.impl.codec.decoder.message"><code>PortalSuspended</code></a>.</div>
 <dl>
 <dt><span class="simpleTagLabel">Author:</span></dt>
 <dd><a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a></dd>
@@ -191,11 +191,11 @@ implements <a href="../../../../../../com/julienviet/pgclient/codec/Message.html
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../../com/julienviet/pgclient/codec/encoder/message/Execute.html#hashCode--">hashCode</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i4" class="altColor">
-<td class="colFirst"><code><a href="../../../../../../com/julienviet/pgclient/codec/encoder/message/Execute.html" title="class in com.julienviet.pgclient.codec.encoder.message">Execute</a></code></td>
+<td class="colFirst"><code><a href="../../../../../../com/julienviet/pgclient/codec/encoder/message/Execute.html" title="class in com.julienviet.pgclient.impl.codec.encoder.message">Execute</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../../com/julienviet/pgclient/codec/encoder/message/Execute.html#setPortal-java.lang.String-">setPortal</a></span>(<a href="http://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;portal)</code>&nbsp;</td>
 </tr>
 <tr id="i5" class="rowColor">
-<td class="colFirst"><code><a href="../../../../../../com/julienviet/pgclient/codec/encoder/message/Execute.html" title="class in com.julienviet.pgclient.codec.encoder.message">Execute</a></code></td>
+<td class="colFirst"><code><a href="../../../../../../com/julienviet/pgclient/codec/encoder/message/Execute.html" title="class in com.julienviet.pgclient.impl.codec.encoder.message">Execute</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../../com/julienviet/pgclient/codec/encoder/message/Execute.html#setRowCount-int-">setRowCount</a></span>(int&nbsp;rowCount)</code>&nbsp;</td>
 </tr>
 <tr id="i6" class="altColor">
@@ -265,7 +265,7 @@ implements <a href="../../../../../../com/julienviet/pgclient/codec/Message.html
 <ul class="blockList">
 <li class="blockList">
 <h4>setPortal</h4>
-<pre>public&nbsp;<a href="../../../../../../com/julienviet/pgclient/codec/encoder/message/Execute.html" title="class in com.julienviet.pgclient.codec.encoder.message">Execute</a>&nbsp;setPortal(<a href="http://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;portal)</pre>
+<pre>public&nbsp;<a href="../../../../../../com/julienviet/pgclient/codec/encoder/message/Execute.html" title="class in com.julienviet.pgclient.impl.codec.encoder.message">Execute</a>&nbsp;setPortal(<a href="http://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;portal)</pre>
 </li>
 </ul>
 <a name="setRowCount-int-">
@@ -274,7 +274,7 @@ implements <a href="../../../../../../com/julienviet/pgclient/codec/Message.html
 <ul class="blockList">
 <li class="blockList">
 <h4>setRowCount</h4>
-<pre>public&nbsp;<a href="../../../../../../com/julienviet/pgclient/codec/encoder/message/Execute.html" title="class in com.julienviet.pgclient.codec.encoder.message">Execute</a>&nbsp;setRowCount(int&nbsp;rowCount)</pre>
+<pre>public&nbsp;<a href="../../../../../../com/julienviet/pgclient/codec/encoder/message/Execute.html" title="class in com.julienviet.pgclient.impl.codec.encoder.message">Execute</a>&nbsp;setRowCount(int&nbsp;rowCount)</pre>
 </li>
 </ul>
 <a name="equals-java.lang.Object-">
@@ -344,8 +344,8 @@ implements <a href="../../../../../../com/julienviet/pgclient/codec/Message.html
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../../../../com/julienviet/pgclient/codec/encoder/message/Describe.html" title="class in com.julienviet.pgclient.codec.encoder.message"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../../../../com/julienviet/pgclient/codec/encoder/message/Parse.html" title="class in com.julienviet.pgclient.codec.encoder.message"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../../../../com/julienviet/pgclient/codec/encoder/message/Describe.html" title="class in com.julienviet.pgclient.impl.codec.encoder.message"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../../../../com/julienviet/pgclient/codec/encoder/message/Parse.html" title="class in com.julienviet.pgclient.impl.codec.encoder.message"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../../../../index.html?com/julienviet/pgclient/codec/encoder/message/Execute.html" target="_top">Frames</a></li>

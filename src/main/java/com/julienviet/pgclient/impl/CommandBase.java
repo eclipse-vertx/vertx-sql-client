@@ -17,8 +17,8 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.codec.decoder.InboundMessage;
-import com.julienviet.pgclient.codec.decoder.message.ReadyForQuery;
+import com.julienviet.pgclient.impl.codec.decoder.InboundMessage;
+import com.julienviet.pgclient.impl.codec.decoder.message.ReadyForQuery;
 import io.vertx.core.Handler;
 
 /**

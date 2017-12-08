@@ -18,13 +18,13 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.Tuple;
-import com.julienviet.pgclient.codec.DataFormat;
-import com.julienviet.pgclient.codec.decoder.DecodeContext;
-import com.julienviet.pgclient.codec.decoder.ResultDecoder;
-import com.julienviet.pgclient.codec.encoder.message.Bind;
-import com.julienviet.pgclient.codec.encoder.message.Execute;
-import com.julienviet.pgclient.codec.encoder.message.Parse;
-import com.julienviet.pgclient.codec.encoder.message.Sync;
+import com.julienviet.pgclient.impl.codec.DataFormat;
+import com.julienviet.pgclient.impl.codec.decoder.DecodeContext;
+import com.julienviet.pgclient.impl.codec.decoder.ResultDecoder;
+import com.julienviet.pgclient.impl.codec.encoder.message.Bind;
+import com.julienviet.pgclient.impl.codec.encoder.message.Execute;
+import com.julienviet.pgclient.impl.codec.encoder.message.Parse;
+import com.julienviet.pgclient.impl.codec.encoder.message.Sync;
 
 import java.util.Iterator;
 import java.util.List;

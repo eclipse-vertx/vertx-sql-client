@@ -18,15 +18,14 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgException;
-import com.julienviet.pgclient.codec.decoder.DecodeContext;
-import com.julienviet.pgclient.codec.decoder.InboundMessage;
-import com.julienviet.pgclient.codec.decoder.message.*;
-import com.julienviet.pgclient.codec.encoder.message.Describe;
-import com.julienviet.pgclient.codec.encoder.message.Parse;
-import com.julienviet.pgclient.codec.encoder.message.Sync;
+import com.julienviet.pgclient.impl.codec.decoder.DecodeContext;
+import com.julienviet.pgclient.impl.codec.decoder.InboundMessage;
+import com.julienviet.pgclient.impl.codec.decoder.message.*;
+import com.julienviet.pgclient.impl.codec.encoder.message.Describe;
+import com.julienviet.pgclient.impl.codec.encoder.message.Parse;
+import com.julienviet.pgclient.impl.codec.encoder.message.Sync;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 
 import java.util.Map;
 import java.util.function.Function;

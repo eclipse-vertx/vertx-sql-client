@@ -17,7 +17,7 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.codec.encoder.message.Terminate;
+import com.julienviet.pgclient.impl.codec.encoder.message.Terminate;
 
 class CloseConnectionCommand extends CommandBase {
 

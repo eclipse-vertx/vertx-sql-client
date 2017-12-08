@@ -17,12 +17,12 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.codec.DataFormat;
-import com.julienviet.pgclient.codec.decoder.DecodeContext;
-import com.julienviet.pgclient.codec.decoder.InboundMessage;
-import com.julienviet.pgclient.codec.decoder.ResultDecoder;
-import com.julienviet.pgclient.codec.decoder.message.RowDescription;
-import com.julienviet.pgclient.codec.encoder.message.Query;
+import com.julienviet.pgclient.impl.codec.DataFormat;
+import com.julienviet.pgclient.impl.codec.decoder.DecodeContext;
+import com.julienviet.pgclient.impl.codec.decoder.InboundMessage;
+import com.julienviet.pgclient.impl.codec.decoder.ResultDecoder;
+import com.julienviet.pgclient.impl.codec.decoder.message.RowDescription;
+import com.julienviet.pgclient.impl.codec.encoder.message.Query;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>

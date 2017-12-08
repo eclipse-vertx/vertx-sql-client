@@ -17,14 +17,11 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.codec.Column;
-import com.julienviet.pgclient.codec.DataFormat;
-import com.julienviet.pgclient.codec.decoder.message.ParameterDescription;
-import com.julienviet.pgclient.codec.decoder.message.RowDescription;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
+import com.julienviet.pgclient.impl.codec.Column;
+import com.julienviet.pgclient.impl.codec.DataFormat;
+import com.julienviet.pgclient.impl.codec.decoder.message.ParameterDescription;
+import com.julienviet.pgclient.impl.codec.decoder.message.RowDescription;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class PreparedStatement {

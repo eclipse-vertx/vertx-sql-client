@@ -18,22 +18,12 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgResult;
-import com.julienviet.pgclient.Tuple;
-import com.julienviet.pgclient.codec.DataFormat;
-import com.julienviet.pgclient.codec.decoder.DecodeContext;
-import com.julienviet.pgclient.codec.decoder.InboundMessage;
-import com.julienviet.pgclient.codec.decoder.ResultDecoder;
-import com.julienviet.pgclient.codec.decoder.message.BindComplete;
-import com.julienviet.pgclient.codec.decoder.message.ParseComplete;
-import com.julienviet.pgclient.codec.decoder.message.PortalSuspended;
-import com.julienviet.pgclient.codec.encoder.message.Bind;
-import com.julienviet.pgclient.codec.encoder.message.Execute;
-import com.julienviet.pgclient.codec.encoder.message.Parse;
-import com.julienviet.pgclient.codec.encoder.message.Sync;
-
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import com.julienviet.pgclient.impl.codec.DataFormat;
+import com.julienviet.pgclient.impl.codec.decoder.InboundMessage;
+import com.julienviet.pgclient.impl.codec.decoder.ResultDecoder;
+import com.julienviet.pgclient.impl.codec.decoder.message.BindComplete;
+import com.julienviet.pgclient.impl.codec.decoder.message.ParseComplete;
+import com.julienviet.pgclient.impl.codec.decoder.message.PortalSuspended;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>

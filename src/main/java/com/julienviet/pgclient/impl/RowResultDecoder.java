@@ -19,10 +19,10 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgResult;
 import com.julienviet.pgclient.Tuple;
-import com.julienviet.pgclient.codec.Column;
-import com.julienviet.pgclient.codec.DataType;
-import com.julienviet.pgclient.codec.decoder.ResultDecoder;
-import com.julienviet.pgclient.codec.decoder.message.RowDescription;
+import com.julienviet.pgclient.impl.codec.Column;
+import com.julienviet.pgclient.impl.codec.DataType;
+import com.julienviet.pgclient.impl.codec.decoder.ResultDecoder;
+import com.julienviet.pgclient.impl.codec.decoder.message.RowDescription;
 import io.netty.buffer.ByteBuf;
 
 public class RowResultDecoder implements ResultDecoder<Tuple> {

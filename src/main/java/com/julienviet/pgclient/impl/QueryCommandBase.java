@@ -19,8 +19,8 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgException;
 import com.julienviet.pgclient.PgResult;
-import com.julienviet.pgclient.codec.decoder.InboundMessage;
-import com.julienviet.pgclient.codec.decoder.message.*;
+import com.julienviet.pgclient.impl.codec.decoder.InboundMessage;
+import com.julienviet.pgclient.impl.codec.decoder.message.*;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>

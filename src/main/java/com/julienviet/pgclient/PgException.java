@@ -17,7 +17,7 @@
 
 package com.julienviet.pgclient;
 
-import com.julienviet.pgclient.codec.decoder.message.ErrorResponse;
+import com.julienviet.pgclient.impl.codec.decoder.message.ErrorResponse;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>

@@ -93,7 +93,7 @@ var activeTableTab = "activeTableTab";
 <!-- ========= END OF TOP NAVBAR ========= -->
 <!-- ======== START OF CLASS DATA ======== -->
 <div class="header">
-<div class="subTitle">com.julienviet.pgclient.codec.encoder</div>
+<div class="subTitle">com.julienviet.pgclient.impl.codec.encoder</div>
 <h2 title="Class MessageEncoder" class="title">Class MessageEncoder</h2>
 </div>
 <div class="contentContainer">
@@ -107,10 +107,10 @@ var activeTableTab = "activeTableTab";
 <li>io.netty.channel.ChannelOutboundHandlerAdapter</li>
 <li>
 <ul class="inheritance">
-<li>io.netty.handler.codec.MessageToByteEncoder&lt;<a href="../../../../../com/julienviet/pgclient/codec/Message.html" title="interface in com.julienviet.pgclient.codec">Message</a>&gt;</li>
+<li>io.netty.handler.codec.MessageToByteEncoder&lt;<a href="../../../../../com/julienviet/pgclient/codec/Message.html" title="interface in com.julienviet.pgclient.impl.codec">Message</a>&gt;</li>
 <li>
 <ul class="inheritance">
-<li>com.julienviet.pgclient.codec.encoder.MessageEncoder</li>
+<li>com.julienviet.pgclient.impl.codec.encoder.MessageEncoder</li>
 </ul>
 </li>
 </ul>
@@ -130,7 +130,7 @@ var activeTableTab = "activeTableTab";
 <hr>
 <br>
 <pre>public class <span class="typeNameLabel">MessageEncoder</span>
-extends io.netty.handler.codec.MessageToByteEncoder&lt;<a href="../../../../../com/julienviet/pgclient/codec/Message.html" title="interface in com.julienviet.pgclient.codec">Message</a>&gt;</pre>
+extends io.netty.handler.codec.MessageToByteEncoder&lt;<a href="../../../../../com/julienviet/pgclient/codec/Message.html" title="interface in com.julienviet.pgclient.impl.codec">Message</a>&gt;</pre>
 <div class="block">Encoder for <a href="https://www.postgresql.org/docs/9.5/static/protocol.html">PostgreSQL protocol</a></div>
 <dl>
 <dt><span class="simpleTagLabel">Author:</span></dt>
@@ -189,7 +189,7 @@ extends io.netty.handler.codec.MessageToByteEncoder&lt;<a href="../../../../../c
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../com/julienviet/pgclient/codec/encoder/MessageEncoder.html#encode-io.netty.channel.ChannelHandlerContext-com.julienviet.pgclient.codec.Message-io.netty.buffer.ByteBuf-">encode</a></span>(io.netty.channel.ChannelHandlerContext&nbsp;ctx,
-      <a href="../../../../../com/julienviet/pgclient/codec/Message.html" title="interface in com.julienviet.pgclient.codec">Message</a>&nbsp;message,
+      <a href="../../../../../com/julienviet/pgclient/codec/Message.html" title="interface in com.julienviet.pgclient.impl.codec">Message</a>&nbsp;message,
       io.netty.buffer.ByteBuf&nbsp;out)</code>&nbsp;</td>
 </tr>
 </table>
@@ -259,19 +259,19 @@ extends io.netty.handler.codec.MessageToByteEncoder&lt;<a href="../../../../../c
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="encode-io.netty.channel.ChannelHandlerContext-com.julienviet.pgclient.codec.Message-io.netty.buffer.ByteBuf-">
+<a name="encode-io.netty.channel.ChannelHandlerContext-com.julienviet.pgclient.impl.codec.Message-io.netty.buffer.ByteBuf-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>encode</h4>
 <pre>protected&nbsp;void&nbsp;encode(io.netty.channel.ChannelHandlerContext&nbsp;ctx,
-                      <a href="../../../../../com/julienviet/pgclient/codec/Message.html" title="interface in com.julienviet.pgclient.codec">Message</a>&nbsp;message,
+                      <a href="../../../../../com/julienviet/pgclient/codec/Message.html" title="interface in com.julienviet.pgclient.impl.codec">Message</a>&nbsp;message,
                       io.netty.buffer.ByteBuf&nbsp;out)
                throws <a href="http://docs.oracle.com/javase/8/docs/api/java/lang/Exception.html?is-external=true" title="class or interface in java.lang">Exception</a></pre>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code>encode</code>&nbsp;in class&nbsp;<code>io.netty.handler.codec.MessageToByteEncoder&lt;<a href="../../../../../com/julienviet/pgclient/codec/Message.html" title="interface in com.julienviet.pgclient.codec">Message</a>&gt;</code></dd>
+<dd><code>encode</code>&nbsp;in class&nbsp;<code>io.netty.handler.codec.MessageToByteEncoder&lt;<a href="../../../../../com/julienviet/pgclient/codec/Message.html" title="interface in com.julienviet.pgclient.impl.codec">Message</a>&gt;</code></dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code><a href="http://docs.oracle.com/javase/8/docs/api/java/lang/Exception.html?is-external=true" title="class or interface in java.lang">Exception</a></code></dd>
 </dl>
