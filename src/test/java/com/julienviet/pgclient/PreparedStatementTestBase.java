@@ -41,7 +41,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
   Vertx vertx;
   PgClient client;
 
-  protected abstract PgClientOptions options();
+  protected abstract PgConnectOptions options();
 
   @Before
   public void setup() {

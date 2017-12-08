@@ -30,7 +30,7 @@ You can use the client to connect to the database and interact with it.
 
 [source,java]
 ----
-PgClient client = PgClient.create(vertx, new PgClientOptions()
+PgClient client = PgClient.create(vertx, new PgConnectOptions()
   .setPort(5432)
   .setHost("the-host")
   .setDatabase("the-db")
@@ -67,7 +67,7 @@ You can create a pool of connection to obtain a connection instead:
 
 [source,java]
 ----
-PgClient client = PgClient.create(vertx, new PgClientOptions()
+PgClient client = PgClient.create(vertx, new PgConnectOptions()
   .setPort(5432)
   .setHost("the-host")
   .setDatabase("the-db")
@@ -277,7 +277,7 @@ like a Vert.x `NetClient`.
 
 [source,java]
 ----
-PgClient client = PgClient.create(vertx, new PgClientOptions()
+PgClient client = PgClient.create(vertx, new PgConnectOptions()
   .setPort(5432)
   .setHost("the-host")
   .setDatabase("the-db")

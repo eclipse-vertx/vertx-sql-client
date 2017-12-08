@@ -25,7 +25,7 @@ import java.util.Arrays;
 public class Main {
 
   public static void main(String[] argv) throws Exception {
-    PgClientOptions options = PgTestBase.startPg();
+    PgConnectOptions options = PgTestBase.startPg();
     int len = argv.length;
     argv = Arrays.copyOf(argv, len + 10);
     argv[len] = "-p";

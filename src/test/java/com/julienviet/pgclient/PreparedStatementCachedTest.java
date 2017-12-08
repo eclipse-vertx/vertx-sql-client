@@ -24,8 +24,8 @@ import org.junit.Test;
 public class PreparedStatementCachedTest extends PreparedStatementTestBase {
 
   @Override
-  protected PgClientOptions options() {
-    return new PgClientOptions(options).setCachePreparedStatements(true);
+  protected PgConnectOptions options() {
+    return new PgConnectOptions(options).setCachePreparedStatements(true);
   }
 
   @Test

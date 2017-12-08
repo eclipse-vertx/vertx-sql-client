@@ -25,15 +25,13 @@ import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class RawBenchmark {
 
   private static final Tuple args = Tuple.of(1);
 
   public static void main(String[] args) throws Exception {
-    PgClientOptions options = PgTestBase.startPg();
+    PgConnectOptions options = PgTestBase.startPg();
     largeSelectJDBC(options, 5_000);
     largeSelect(options, 5_000);
     singleSelectJDBC(options, 200_000);
@@ -46,7 +44,7 @@ public class RawBenchmark {
 
   }
 
-  private static void singleSelectJDBC(PgClientOptions options, int reps) throws Exception {
+  private static void singleSelectJDBC(PgConnectOptions options, int reps) throws Exception {
     benchmark("Single select jdbc", options, conn -> {
       PreparedStatement ps = conn.prepareStatement("select id, randomnumber from WORLD where id=(?)");
       for (int i = 0;i < reps;i++) {
@@ -60,7 +58,7 @@ public class RawBenchmark {
     });
   }
 
-  private static void largeSelectJDBC(PgClientOptions options, int reps) throws Exception {
+  private static void largeSelectJDBC(PgConnectOptions options, int reps) throws Exception {
     benchmark("Large select jdbc", options, conn -> {
       PreparedStatement ps = conn.prepareStatement("SELECT id, randomnumber from WORLD");
       for (int i = 0;i < reps;i++) {
@@ -73,7 +71,7 @@ public class RawBenchmark {
     });
   }
 
-  private static void benchmark(String name, PgClientOptions options, Benchmark benchmark) throws Exception {
+  private static void benchmark(String name, PgConnectOptions options, Benchmark benchmark) throws Exception {
     Properties props = new Properties();
     PGProperty.PREPARE_THRESHOLD.set(props, -1);
     PGProperty.BINARY_TRANSFER.set(props, "true");
@@ -88,11 +86,11 @@ public class RawBenchmark {
     System.out.println(name + ": " + (System.currentTimeMillis() - now));
   }
 
-  private static void singleSelect(PgClientOptions options, int reps) throws Exception {
+  private static void singleSelect(PgConnectOptions options, int reps) throws Exception {
     benchmark("Single select", options, (conn, latch) -> doSingleQuery(conn, reps, latch));
   }
 
-  private static void largeSelect(PgClientOptions options, int reps) throws Exception {
+  private static void largeSelect(PgConnectOptions options, int reps) throws Exception {
     benchmark("Large select", options, (conn, latch) -> doLargeQuery(conn, reps, latch));
   }
 
@@ -128,9 +126,9 @@ public class RawBenchmark {
     }
   }
 
-  private static void benchmark(String name, PgClientOptions options, BiConsumer<PgConnection, CompletableFuture<Void>> benchmark) throws Exception {
+  private static void benchmark(String name, PgConnectOptions options, BiConsumer<PgConnection, CompletableFuture<Void>> benchmark) throws Exception {
     Vertx vertx = Vertx.vertx();
-    PgClient client = PgClient.create(vertx, new PgClientOptions()
+    PgClient client = PgClient.create(vertx, new PgConnectOptions()
       .setHost(options.getHost())
       .setPort(options.getPort())
       .setDatabase(options.getDatabase())

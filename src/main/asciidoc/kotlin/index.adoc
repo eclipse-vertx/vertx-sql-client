@@ -31,7 +31,7 @@ You can use the client to connect to the database and interact with it.
 [source,kotlin]
 ----
 
-var client = PgClient.create(vertx, PgClientOptions(
+var client = PgClient.create(vertx, PgConnectOptions(
   port = 5432,
   host = "the-host",
   database = "the-db",
@@ -69,7 +69,7 @@ You can create a pool of connection to obtain a connection instead:
 [source,kotlin]
 ----
 
-var client = PgClient.create(vertx, PgClientOptions(
+var client = PgClient.create(vertx, PgConnectOptions(
   port = 5432,
   host = "the-host",
   database = "the-db",
@@ -292,7 +292,7 @@ like a Vert.x `NetClient`.
 [source,kotlin]
 ----
 
-var client = PgClient.create(vertx, PgClientOptions(
+var client = PgClient.create(vertx, PgConnectOptions(
   port = 5432,
   host = "the-host",
   database = "the-db",

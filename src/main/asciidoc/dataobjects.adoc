@@ -1,7 +1,7 @@
 = Cheatsheets
 
-[[PgClientOptions]]
-== PgClientOptions
+[[PgConnectOptions]]
+== PgConnectOptions
 
 ++++
 ++++

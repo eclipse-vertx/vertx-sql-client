@@ -74,7 +74,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   @Test
   public void testConnectInvalidDatabase(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, new PgClientOptions(options).setDatabase("blah_db"));
+    PgClient client = PgClient.create(vertx, new PgConnectOptions(options).setDatabase("blah_db"));
     connector.accept(client, ctx.asyncAssertFailure(conn -> {
       ctx.assertEquals("database \"blah_db\" does not exist", conn.getMessage());
       async.complete();
@@ -84,7 +84,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   @Test
   public void testConnectInvalidPassword(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, new PgClientOptions(options).setPassword("incorrect"));
+    PgClient client = PgClient.create(vertx, new PgConnectOptions(options).setPassword("incorrect"));
     connector.accept(client, ctx.asyncAssertFailure(conn -> {
       ctx.assertEquals("password authentication failed for user \"postgres\"", conn.getMessage());
       async.complete();
@@ -94,7 +94,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   @Test
   public void testConnectInvalidUsername(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, new PgClientOptions(options).setUsername("vertx"));
+    PgClient client = PgClient.create(vertx, new PgConnectOptions(options).setUsername("vertx"));
     connector.accept(client, ctx.asyncAssertFailure(conn -> {
       ctx.assertEquals("password authentication failed for user \"vertx\"", conn.getMessage());
       async.complete();
@@ -304,7 +304,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
       });
     });
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
-      PgClient client = PgClient.create(vertx, new PgClientOptions(options)
+      PgClient client = PgClient.create(vertx, new PgConnectOptions(options)
         .setPort(8080).setHost("localhost"));
       connector.accept(client, ctx.asyncAssertFailure(err -> async.complete()));
     }));
@@ -321,7 +321,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
       conn.connect();
     });
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
-      PgClient client = PgClient.create(vertx, new PgClientOptions(options)
+      PgClient client = PgClient.create(vertx, new PgConnectOptions(options)
         .setPort(8080).setHost("localhost"));
       connector.accept(client, ctx.asyncAssertSuccess(conn -> {
         conn.closeHandler(v2 -> {
@@ -349,7 +349,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
       conn.connect();
     });
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
-      PgClient client = PgClient.create(vertx, new PgClientOptions(options)
+      PgClient client = PgClient.create(vertx, new PgConnectOptions(options)
         .setPort(8080).setHost("localhost"));
       connector.accept(client, ctx.asyncAssertSuccess(conn -> {
         AtomicInteger count = new AtomicInteger();

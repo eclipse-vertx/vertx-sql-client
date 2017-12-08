@@ -20,7 +20,7 @@ package com.julienviet.pgclient;
 public class PreparedStatementTest extends PreparedStatementTestBase {
 
   @Override
-  protected PgClientOptions options() {
-    return new PgClientOptions(options).setCachePreparedStatements(false);
+  protected PgConnectOptions options() {
+    return new PgConnectOptions(options).setCachePreparedStatements(false);
   }
 }

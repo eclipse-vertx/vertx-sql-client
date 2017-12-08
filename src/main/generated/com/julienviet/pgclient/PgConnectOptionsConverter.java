@@ -20,13 +20,13 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 
 /**
- * Converter for {@link com.julienviet.pgclient.PgClientOptions}.
+ * Converter for {@link com.julienviet.pgclient.PgConnectOptions}.
  *
- * NOTE: This class has been automatically generated from the {@link com.julienviet.pgclient.PgClientOptions} original class using Vert.x codegen.
+ * NOTE: This class has been automatically generated from the {@link com.julienviet.pgclient.PgConnectOptions} original class using Vert.x codegen.
  */
-public class PgClientOptionsConverter {
+public class PgConnectOptionsConverter {
 
-  public static void fromJson(JsonObject json, PgClientOptions obj) {
+  public static void fromJson(JsonObject json, PgConnectOptions obj) {
     if (json.getValue("cachePreparedStatements") instanceof Boolean) {
       obj.setCachePreparedStatements((Boolean)json.getValue("cachePreparedStatements"));
     }
@@ -50,7 +50,7 @@ public class PgClientOptionsConverter {
     }
   }
 
-  public static void toJson(PgClientOptions obj, JsonObject json) {
+  public static void toJson(PgConnectOptions obj, JsonObject json) {
     json.put("cachePreparedStatements", obj.getCachePreparedStatements());
     if (obj.getDatabase() != null) {
       json.put("database", obj.getDatabase());

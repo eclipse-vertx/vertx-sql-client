@@ -17,8 +17,8 @@ import java.time.OffsetTime;
 public class DataTypeBinaryTest extends DataTypeTestBase {
 
   @Override
-  protected PgClientOptions options() {
-    return new PgClientOptions(options).setCachePreparedStatements(false);
+  protected PgConnectOptions options() {
+    return new PgConnectOptions(options).setCachePreparedStatements(false);
   }
 
   @Test

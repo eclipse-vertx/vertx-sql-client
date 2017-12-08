@@ -50,7 +50,7 @@ public abstract class PgBenchmarkBase extends BenchmarkBase {
   @Setup
   public void setup() throws Exception {
     vertx = Vertx.vertx();
-    client = PgClient.create(vertx, new PgClientOptions()
+    client = PgClient.create(vertx, new PgConnectOptions()
       .setHost(host)
       .setPort(port)
       .setDatabase(database)

@@ -1,55 +1,62 @@
 package com.julienviet.kotlin.pgclient
 
 import com.julienviet.pgclient.PgConnectOptions
+import io.vertx.core.net.JdkSSLEngineOptions
+import io.vertx.core.net.JksOptions
+import io.vertx.core.net.OpenSSLEngineOptions
+import io.vertx.core.net.PemKeyCertOptions
+import io.vertx.core.net.PemTrustOptions
+import io.vertx.core.net.PfxOptions
+import io.vertx.core.net.ProxyOptions
 
 /**
  * A function providing a DSL for building [com.julienviet.pgclient.PgConnectOptions] objects.
  *
  *
- * @param cachePreparedStatements
- * @param connectTimeout
- * @param crlPaths
- * @param crlValues
- * @param database
- * @param enabledCipherSuites
- * @param enabledSecureTransportProtocols
- * @param host
- * @param hostnameVerificationAlgorithm
- * @param idleTimeout
- * @param jdkSslEngineOptions
- * @param keyStoreOptions
- * @param localAddress
- * @param logActivity
- * @param metricsName
- * @param openSslEngineOptions
- * @param password
- * @param pemKeyCertOptions
- * @param pemTrustOptions
- * @param pfxKeyCertOptions
- * @param pfxTrustOptions
- * @param pipeliningLimit
- * @param port
- * @param proxyOptions
- * @param receiveBufferSize
- * @param reconnectAttempts
- * @param reconnectInterval
- * @param reuseAddress
- * @param sendBufferSize
- * @param soLinger
- * @param ssl
- * @param tcpKeepAlive
- * @param tcpNoDelay
- * @param trafficClass
- * @param trustAll
- * @param trustStoreOptions
- * @param useAlpn
- * @param usePooledBuffers
- * @param username
+ * @param cachePreparedStatements 
+ * @param connectTimeout 
+ * @param crlPaths 
+ * @param crlValues 
+ * @param database 
+ * @param enabledCipherSuites 
+ * @param enabledSecureTransportProtocols 
+ * @param host 
+ * @param hostnameVerificationAlgorithm 
+ * @param idleTimeout 
+ * @param jdkSslEngineOptions 
+ * @param keyStoreOptions 
+ * @param localAddress 
+ * @param logActivity 
+ * @param metricsName 
+ * @param openSslEngineOptions 
+ * @param password 
+ * @param pemKeyCertOptions 
+ * @param pemTrustOptions 
+ * @param pfxKeyCertOptions 
+ * @param pfxTrustOptions 
+ * @param pipeliningLimit 
+ * @param port 
+ * @param proxyOptions 
+ * @param receiveBufferSize 
+ * @param reconnectAttempts 
+ * @param reconnectInterval 
+ * @param reuseAddress 
+ * @param sendBufferSize 
+ * @param soLinger 
+ * @param ssl 
+ * @param tcpKeepAlive 
+ * @param tcpNoDelay 
+ * @param trafficClass 
+ * @param trustAll 
+ * @param trustStoreOptions 
+ * @param useAlpn 
+ * @param usePooledBuffers 
+ * @param username 
  *
  * <p/>
- * NOTE: This function has been automatically generated from the [com.julienviet.pgclient.PgClientOptions original] using Vert.x codegen.
+ * NOTE: This function has been automatically generated from the [com.julienviet.pgclient.PgConnectOptions original] using Vert.x codegen.
  */
-fun PgClientOptions(
+fun PgConnectOptions(
   cachePreparedStatements: Boolean? = null,
   connectTimeout: Int? = null,
   crlPaths: Iterable<String>? = null,
@@ -88,7 +95,7 @@ fun PgClientOptions(
   trustStoreOptions: io.vertx.core.net.JksOptions? = null,
   useAlpn: Boolean? = null,
   usePooledBuffers: Boolean? = null,
-  username: String? = null): PgConnectOptions = PgConnectOptions().apply {
+  username: String? = null): PgConnectOptions = com.julienviet.pgclient.PgConnectOptions().apply {
 
   if (cachePreparedStatements != null) {
     this.setCachePreparedStatements(cachePreparedStatements)

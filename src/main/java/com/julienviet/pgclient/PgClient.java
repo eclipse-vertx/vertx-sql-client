@@ -38,7 +38,7 @@ public interface PgClient {
    * @param options the client options
    * @return the client
    */
-  static PgClient create(Vertx vertx, PgClientOptions options) {
+  static PgClient create(Vertx vertx, PgConnectOptions options) {
     return new PgClientImpl(vertx, options);
   }
 

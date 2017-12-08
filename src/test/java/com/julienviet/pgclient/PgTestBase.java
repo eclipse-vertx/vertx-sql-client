@@ -21,15 +21,12 @@ import de.flapdoodle.embed.process.config.IRuntimeConfig;
 import de.flapdoodle.embed.process.config.io.ProcessOutput;
 import de.flapdoodle.embed.process.runtime.ICommandLinePostProcessor;
 import de.flapdoodle.embed.process.store.IArtifactStore;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
 
 import java.io.File;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -47,7 +44,7 @@ import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
 public abstract class PgTestBase {
 
   private static EmbeddedPostgres postgres;
-  static PgClientOptions options;
+  static PgConnectOptions options;
 
   @BeforeClass
   public static void before() throws Exception {
@@ -59,7 +56,7 @@ public abstract class PgTestBase {
     stopPg();
   }
 
-  public synchronized static PgClientOptions startPg() throws Exception {
+  public synchronized static PgConnectOptions startPg() throws Exception {
     if (postgres != null) {
       throw new IllegalStateException();
     }
@@ -115,7 +112,7 @@ public abstract class PgTestBase {
       Collections.emptyList());
     File setupFile = getResourceAsFile("create-postgres.sql");
     PgTestBase.postgres.getProcess().get().importFromFile(setupFile);
-    PgClientOptions options = new PgClientOptions();
+    PgConnectOptions options = new PgConnectOptions();
     options.setHost("localhost");
     options.setPort(8081);
     options.setUsername("postgres");

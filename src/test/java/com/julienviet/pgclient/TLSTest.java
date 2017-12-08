@@ -47,7 +47,7 @@ public class TLSTest extends PgTestBase {
   @Test
   public void testTLS(TestContext ctx) {
     Async async = ctx.async();
-    PgClientOptions options = new PgClientOptions(PgTestBase.options)
+    PgConnectOptions options = new PgConnectOptions(PgTestBase.options)
       .setSsl(true)
       .setPemTrustOptions(new PemTrustOptions().addCertPath("tls/server.crt"));
     PgClient client = PgClient.create(vertx, options);
@@ -66,7 +66,7 @@ public class TLSTest extends PgTestBase {
   @Test
   public void testTLSTrustAll(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, new PgClientOptions(options).setSsl(true).setTrustAll(true));
+    PgClient client = PgClient.create(vertx, new PgConnectOptions(options).setSsl(true).setTrustAll(true));
     client.connect(ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
       async.complete();
@@ -76,7 +76,7 @@ public class TLSTest extends PgTestBase {
   @Test
   public void testTLSInvalidCertificate(TestContext ctx) {
     Async async = ctx.async();
-    PgClient client = PgClient.create(vertx, new PgClientOptions(options).setSsl(true));
+    PgClient client = PgClient.create(vertx, new PgConnectOptions(options).setSsl(true));
     client.connect(ctx.asyncAssertFailure(err -> {
       ctx.assertEquals(err.getClass(), SSLHandshakeException.class);
       async.complete();

@@ -33,7 +33,7 @@ public class Examples {
 
   public void ex1(Vertx vertx) {
 
-    PgClient client = PgClient.create(vertx, new PgClientOptions()
+    PgClient client = PgClient.create(vertx, new PgConnectOptions()
       .setPort(5432)
       .setHost("the-host")
       .setDatabase("the-db")
@@ -68,7 +68,7 @@ public class Examples {
 
   public void ex2(Vertx vertx) {
 
-    PgClient client = PgClient.create(vertx, new PgClientOptions()
+    PgClient client = PgClient.create(vertx, new PgConnectOptions()
       .setPort(5432)
       .setHost("the-host")
       .setDatabase("the-db")
@@ -282,7 +282,7 @@ public class Examples {
 
   public void ex10(Vertx vertx) {
 
-    PgClient client = PgClient.create(vertx, new PgClientOptions()
+    PgClient client = PgClient.create(vertx, new PgConnectOptions()
       .setPort(5432)
       .setHost("the-host")
       .setDatabase("the-db")

@@ -157,7 +157,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
       conn.connect();
     });
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
-      PgClient client = PgClient.create(vertx, new PgClientOptions(options).setPort(8080).setHost("localhost"));
+      PgClient client = PgClient.create(vertx, new PgConnectOptions(options).setPort(8080).setHost("localhost"));
       PgPool pool = createPool(client, 1);
       pool.getConnection(ctx.asyncAssertSuccess(conn1 -> {
         proxyConn.get().close();

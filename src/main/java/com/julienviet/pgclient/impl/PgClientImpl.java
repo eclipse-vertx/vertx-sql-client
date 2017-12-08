@@ -17,11 +17,8 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.PgClient;
-import com.julienviet.pgclient.PgClientOptions;
-import com.julienviet.pgclient.PgConnection;
-import com.julienviet.pgclient.PgPool;
-import com.julienviet.pgclient.PgPoolOptions;
+import com.julienviet.pgclient.*;
+import com.julienviet.pgclient.PgConnectOptions;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -47,7 +44,7 @@ public class PgClientImpl implements PgClient {
   final boolean cachePreparedStatements;
   final int pipeliningLimit;
 
-  public PgClientImpl(Vertx vertx, PgClientOptions options) {
+  public PgClientImpl(Vertx vertx, PgConnectOptions options) {
 
     NetClientOptions netClientOptions = new NetClientOptions(options);
 
