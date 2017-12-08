@@ -11,6 +11,8 @@ script:
 - set -e
 - travis_wait 30 mvn -q -Dmaven.test.redirectTestOutputToFile clean verify -B
 - bash .travis.deploy.artifacts.sh
+after_failure:
+- echo "IT FAILED!!!!!!"
 notifications:
   email:
     recipients:
