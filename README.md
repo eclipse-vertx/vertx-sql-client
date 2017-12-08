@@ -1,15 +1,12 @@
-# Async Postgres client for Eclipse Vert.x
+# High performance reactive Postgres Client
 
-[![Build Status](https://travis-ci.org/vietj/vertx-pg-client.svg?branch=master)](https://travis-ci.org/vietj/vertx-pg-client)
-
-## What for ?
-
-[Vert.x 3.5.0](http://vertx.io)
+[![Build Status](https://travis-ci.org/vietj/reactive-pg-client.svg?branch=master)](https://travis-ci.org/vietj/reactive-pg-client)
 
 ## Why ?
 
-_PgClient_ provides a simple API close to Postgres while focusing on performance and low
-overhead.
+_PgClient_ provides a simple API close to Postgres while focusing on scalability and low overhead.
+
+It is reactive and non blocking, allowing to handle many database connections with only one thread.
 
 ## Using Postgres Client
 
@@ -20,8 +17,8 @@ To use the client, add the following dependency to the _dependencies_ section of
 ```
 <dependency>
   <groupId>com.julienviet</groupId>
-  <artifactId>vertx-pg-client</artifactId>
-  <version>0.3.0</version>
+  <artifactId>reactive-pg-client</artifactId>
+  <version>0.4.0</version>
 </dependency>
 ```
 
@@ -29,7 +26,7 @@ To use the client, add the following dependency to the _dependencies_ section of
 
 ```
 dependencies {
-  compile 'com.julienviet:vertx-pg-client:0.30'
+  compile 'com.julienviet:reactive-pg-client:0.4.0'
 }
 ```
 
@@ -72,14 +69,14 @@ client.connect(res -> {
 
 ## Web-site docs
 
-* [Java docs](http://www.julienviet.com/vertx-pg-client/guide/java/index.html)
-* [Groovy docs](http://www.julienviet.com/vertx-pg-client/guide/groovy/index.html)
-* [Ruby docs](http://www.julienviet.com/vertx-pg-client/guide/ruby/index.html)
-* [JavaScript docs](http://www.julienviet.com/vertx-pg-client/guide/js/index.html)
+* [Java docs](http://www.julienviet.com/reactive-pg-client/guide/java/index.html)
+* [Groovy docs](http://www.julienviet.com/reactive-pg-client/guide/groovy/index.html)
+* [Ruby docs](http://www.julienviet.com/reactive-pg-client/guide/ruby/index.html)
+* [JavaScript docs](http://www.julienviet.com/reactive-pg-client/guide/js/index.html)
 
 ## Snapshots
 
-Snapshots are deploy in Sonatype OSS repository: https://oss.sonatype.org/content/repositories/snapshots/com/julienviet/vertx-pg-client/
+Snapshots are deploy in Sonatype OSS repository: https://oss.sonatype.org/content/repositories/snapshots/com/julienviet/reactive-pg-client/
 
 ## License
 
@@ -89,4 +86,4 @@ Apache License - Version 2.0
 
 * mvn package -Pdocs
 * cp -r target/docs docs/
-* mv docs/vertx-pg-client docs/guide
+* mv docs/reactive-pg-client docs/guide
