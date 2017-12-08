@@ -33,10 +33,21 @@ import java.util.List;
 @VertxGen
 public interface PgConnection extends PgOperations {
 
+  /**
+   * Create a simple query.
+   *
+   * @param sql the query SQL
+   * @return the query ready to be executed
+   */
+  PgQuery createQuery(String sql);
+
   @Override
   default PgConnection preparedQuery(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler) {
     return (PgConnection) PgOperations.super.preparedQuery(sql, handler);
   }
+
+  @Override
+  PgConnection query(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler);
 
   @Override
   PgConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<Tuple>>> handler);

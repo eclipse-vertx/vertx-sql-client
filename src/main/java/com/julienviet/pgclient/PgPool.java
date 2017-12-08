@@ -37,6 +37,9 @@ public interface PgPool extends PgOperations {
   }
 
   @Override
+  PgPool query(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler);
+
+  @Override
   PgPool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<Tuple>>> handler);
 
   @Override

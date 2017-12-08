@@ -32,8 +32,9 @@ public abstract class PgOperationsImpl<T extends PgOperations> implements PgOper
   protected abstract void schedulePrepared(String sql, Function<AsyncResult<PreparedStatement>, CommandBase> supplier);
 
   @Override
-  public PgQuery createQuery(String sql) {
-    return new SimplePgQueryImpl(sql, this::schedule);
+  public PgOperations query(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler) {
+    schedule(new SimpleQueryCommand<>(sql, new RowResultDecoder(), new SimpleQueryResultHandler<>(handler)));
+    return this;
   }
 
   @Override

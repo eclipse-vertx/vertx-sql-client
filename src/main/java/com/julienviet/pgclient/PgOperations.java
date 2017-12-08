@@ -34,12 +34,14 @@ import java.util.List;
 public interface PgOperations {
 
   /**
-   * Create a simple query.
+   * Execute a simple query.
    *
    * @param sql the query SQL
-   * @return the query ready to be executed
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
    */
-  PgQuery createQuery(String sql);
+  @Fluent
+  PgOperations query(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler);
 
   /**
    * Prepare and execute a query in a single operation.

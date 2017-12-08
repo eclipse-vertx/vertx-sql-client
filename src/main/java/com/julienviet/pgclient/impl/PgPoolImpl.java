@@ -52,6 +52,11 @@ public class PgPoolImpl extends PgOperationsImpl<PgPoolImpl> implements PgPool {
   }
 
   @Override
+  public PgPoolImpl query(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler) {
+    return (PgPoolImpl) super.query(sql, handler);
+  }
+
+  @Override
   public void getConnection(Handler<AsyncResult<PgConnection>> handler) {
     Context current = Vertx.currentContext();
     if (current == context) {

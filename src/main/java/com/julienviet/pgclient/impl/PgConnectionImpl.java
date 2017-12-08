@@ -41,6 +41,17 @@ public class PgConnectionImpl extends PgOperationsImpl<PgConnectionImpl> impleme
   }
 
   @Override
+  public PgQuery createQuery(String sql) {
+    return new SimplePgQueryImpl(sql, this::schedule);
+  }
+
+
+  @Override
+  public PgConnectionImpl query(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler) {
+    return (PgConnectionImpl) super.query(sql, handler);
+  }
+
+  @Override
   public Connection connection() {
     return conn;
   }
