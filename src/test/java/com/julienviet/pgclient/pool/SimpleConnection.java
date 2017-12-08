@@ -37,16 +37,16 @@ class SimpleConnection implements Connection {
   }
 
   @Override
-  public void schedule(CommandBase cmd, Handler<Void> completionHandler) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public void close(Holder holder) {
     closed++;
   }
 
   void close() {
     holder.handleClosed();
+  }
+
+  @Override
+  public void schedule(CommandBase cmd) {
+    throw new UnsupportedOperationException();
   }
 }

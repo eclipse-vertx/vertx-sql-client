@@ -25,11 +25,7 @@ public interface Connection {
 
   boolean isSsl();
 
-  default void schedule(CommandBase cmd) {
-    schedule(cmd, null);
-  }
-
-  void schedule(CommandBase cmd, Handler<Void> completionHandler);
+  void schedule(CommandBase cmd);
 
   void close(Holder holder);
 

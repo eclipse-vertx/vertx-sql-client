@@ -37,8 +37,8 @@ public abstract class CommandBase {
     }
   }
 
-  void foo(SocketConnection conn, Handler<Void> completionHandler) {
-    conn.bilto(this, completionHandler);
+  void foo(SocketConnection conn) {
+    conn.bilto(this);
   }
 
   abstract void exec(SocketConnection conn);

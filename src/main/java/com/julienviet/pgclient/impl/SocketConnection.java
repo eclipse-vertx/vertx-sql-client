@@ -173,24 +173,17 @@ public class SocketConnection implements Connection {
   }
 
   public void schedule(CommandBase cmd) {
-    schedule(cmd, null);
-  }
-
-  public void schedule(CommandBase cmd, Handler<Void> completionHandler) {
     if (Vertx.currentContext() != context) {
       throw new IllegalStateException();
     }
-    cmd.foo(this, completionHandler);
+    cmd.foo(this);
   }
 
-  void bilto(CommandBase cmd, Handler<Void> completionHandler) {
+  void bilto(CommandBase cmd) {
     if (status == Status.CONNECTED) {
       pending.add(cmd);
       cmd.completionHandler = v -> {
         inflight.poll();
-        if (completionHandler != null) {
-          completionHandler.handle(null);
-        }
         checkPending();
       };
       checkPending();

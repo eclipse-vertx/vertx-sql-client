@@ -46,16 +46,12 @@ public class PrepareStatementCommand extends CommandBase {
   }
 
   @Override
-  void foo(SocketConnection conn, Handler<Void> completionHandler) {
+  void foo(SocketConnection conn) {
 
     Future<PreparedStatement> bilto = Future.<PreparedStatement>future().setHandler(ar -> {
       CommandBase command = supplier.apply(ar);
       if (command != null) {
-        conn.schedule(command, completionHandler);
-      } else {
-        if (completionHandler != null) {
-          completionHandler.handle(null);
-        }
+        conn.schedule(command);
       }
     });
 
@@ -71,7 +67,7 @@ public class PrepareStatementCommand extends CommandBase {
           futal.handle(ar);
           bilto.handle(ar);
         });
-        super.foo(conn, v -> {});
+        super.foo(conn);
       } else {
         cached.get(ar -> {
           bilto.handle(ar);
@@ -79,7 +75,7 @@ public class PrepareStatementCommand extends CommandBase {
       }
     } else {
       fut = bilto;
-      super.foo(conn, v -> {});
+      super.foo(conn);
     }
   }
 

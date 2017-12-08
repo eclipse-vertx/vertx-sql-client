@@ -75,8 +75,8 @@ public class ConnectionPool {
     }
 
     @Override
-    public void schedule(CommandBase cmd, Handler<Void> completionHandler) {
-      conn.schedule(cmd, completionHandler);
+    public void schedule(CommandBase cmd) {
+      conn.schedule(cmd);
     }
 
     /**
