@@ -21,15 +21,39 @@ import io.vertx.codegen.annotations.VertxGen;
 
 import java.util.List;
 
+/**
+ * Represents the result of an operation on database.
+ * @param <T>
+ */
 @VertxGen
 public interface PgResult<T> extends Iterable<T> {
 
+  /**
+   * Get the number of the affected rows in the operation to this PgResult.
+   *
+   * @return the count of affected rows.
+   */
   int updatedCount();
 
+  /**
+   * Get the names of columns in the PgResult.
+   *
+   * @return the list of names of columns.
+   */
   List<String> columnsNames();
 
+  /**
+   * Get the number of rows in the PgResult.
+   *
+   * @return the count of rows.
+   */
   int size();
 
+  /**
+   * Get the iterator of the PgResult.
+   *
+   * @return the iterator.
+   */
   PgIterator<T> iterator();
 
 }
