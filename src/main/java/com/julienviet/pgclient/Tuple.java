@@ -31,7 +31,6 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.temporal.Temporal;
-import java.util.Collections;
 
 /**
  * A general purpose tuple.
@@ -54,7 +53,7 @@ public interface Tuple {
    */
   static Tuple of(Object elt1) {
     ArrayTuple tuple = new ArrayTuple(1);
-    tuple.add(elt1);
+    tuple.addValue(elt1);
     return tuple;
   }
 
@@ -67,8 +66,8 @@ public interface Tuple {
    */
   static Tuple of(Object elt1, Object elt2) {
     ArrayTuple tuple = new ArrayTuple(2);
-    tuple.add(elt1);
-    tuple.add(elt2);
+    tuple.addValue(elt1);
+    tuple.addValue(elt2);
     return tuple;
   }
 
@@ -82,9 +81,9 @@ public interface Tuple {
    */
   static Tuple of(Object elt1, Object elt2, Object elt3) {
     ArrayTuple tuple = new ArrayTuple(3);
-    tuple.add(elt1);
-    tuple.add(elt2);
-    tuple.add(elt3);
+    tuple.addValue(elt1);
+    tuple.addValue(elt2);
+    tuple.addValue(elt3);
     return tuple;
   }
 
@@ -99,10 +98,10 @@ public interface Tuple {
    */
   static Tuple of(Object elt1, Object elt2, Object elt3, Object elt4) {
     ArrayTuple tuple = new ArrayTuple(4);
-    tuple.add(elt1);
-    tuple.add(elt2);
-    tuple.add(elt3);
-    tuple.add(elt4);
+    tuple.addValue(elt1);
+    tuple.addValue(elt2);
+    tuple.addValue(elt3);
+    tuple.addValue(elt4);
     return tuple;
   }
 
@@ -118,11 +117,11 @@ public interface Tuple {
    */
   static Tuple of(Object elt1, Object elt2, Object elt3, Object elt4, Object elt5) {
     ArrayTuple tuple = new ArrayTuple(5);
-    tuple.add(elt1);
-    tuple.add(elt2);
-    tuple.add(elt3);
-    tuple.add(elt4);
-    tuple.add(elt5);
+    tuple.addValue(elt1);
+    tuple.addValue(elt2);
+    tuple.addValue(elt3);
+    tuple.addValue(elt4);
+    tuple.addValue(elt5);
     return tuple;
   }
 
@@ -139,12 +138,12 @@ public interface Tuple {
    */
   static Tuple of(Object elt1, Object elt2, Object elt3, Object elt4, Object elt5, Object elt6) {
     ArrayTuple tuple = new ArrayTuple(5);
-    tuple.add(elt1);
-    tuple.add(elt2);
-    tuple.add(elt3);
-    tuple.add(elt4);
-    tuple.add(elt5);
-    tuple.add(elt6);
+    tuple.addValue(elt1);
+    tuple.addValue(elt2);
+    tuple.addValue(elt3);
+    tuple.addValue(elt4);
+    tuple.addValue(elt5);
+    tuple.addValue(elt6);
     return tuple;
   }
 
@@ -157,7 +156,9 @@ public interface Tuple {
   @GenIgnore
   static Tuple of(Object... elements) {
     ArrayTuple tuple = new ArrayTuple(elements.length);
-    Collections.addAll(tuple, elements);
+    for (Object elt: elements) {
+      tuple.addValue(elt);
+    }
     return tuple;
   }
 

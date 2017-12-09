@@ -43,16 +43,7 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Object getValue(int pos) {
-    if(get(pos) instanceof Boolean
-      || get(pos) instanceof Number
-      || get(pos) instanceof Character
-      || get(pos) instanceof String
-      || get(pos) instanceof JsonObject
-      || get(pos) instanceof JsonArray
-      || get(pos) instanceof Buffer
-      || get(pos) instanceof Temporal)
-      return get(pos);
-    return null;
+    return get(pos);
   }
 
   @Override
@@ -161,7 +152,22 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Tuple addValue(Object value) {
-    add(value);
+    if(value instanceof Boolean
+      || value instanceof Number
+      || value instanceof Character
+      || value instanceof String
+      || value instanceof JsonObject
+      || value instanceof JsonArray
+      || value instanceof Buffer
+      || value instanceof LocalTime
+      || value instanceof OffsetTime
+      || value instanceof LocalDate
+      || value instanceof LocalDateTime
+      || value instanceof OffsetDateTime) {
+      add(value);
+    } else {
+      add(null);
+    }
     return this;
   }
 
