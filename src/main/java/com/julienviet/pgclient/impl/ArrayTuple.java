@@ -36,82 +36,121 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Boolean getBoolean(int pos) {
-    return (Boolean) get(pos);
+    if((get(pos) instanceof Boolean))
+      return (Boolean) get(pos);
+    return null;
   }
 
   @Override
   public Object getValue(int pos) {
-    return get(pos);
+    if((get(pos) instanceof Boolean)
+      || (get(pos) instanceof Number)
+      || (get(pos) instanceof Character)
+      || (get(pos) instanceof String)
+      || (get(pos) instanceof JsonObject)
+      || (get(pos) instanceof JsonArray)
+      || (get(pos) instanceof Buffer)
+      || (get(pos) instanceof Temporal))
+      return get(pos);
+    return null;
   }
 
   @Override
   public Integer getInteger(int pos) {
-    return (Integer) get(pos);
+    if((get(pos) instanceof Integer))
+      return (Integer) get(pos);
+    return null;
   }
 
   @Override
   public Long getLong(int pos) {
-    return (Long) get(pos);
+    if((get(pos) instanceof Long))
+      return (Long) get(pos);
+    return null;
   }
 
   @Override
   public Float getFloat(int pos) {
-    return (Float) get(pos);
+    if((get(pos) instanceof Float))
+      return (Float) get(pos);
+    return null;
   }
 
   @Override
   public Double getDouble(int pos) {
-    return (Double) get(pos);
+    if((get(pos) instanceof Double))
+      return (Double) get(pos);
+    return null;
   }
 
   @Override
   public String getString(int pos) {
-    return (String) get(pos);
+    if((get(pos) instanceof String))
+      return (String) get(pos);
+    return null;
   }
 
   @Override
   public JsonObject getJsonObject(int pos) {
-    return (JsonObject) get(pos);
+    if((get(pos) instanceof JsonObject))
+      return (JsonObject) get(pos);
+    return null;
   }
 
   @Override
   public JsonArray getJsonArray(int pos) {
-    return (JsonArray) get(pos);
+    if((get(pos) instanceof JsonArray))
+      return (JsonArray) get(pos);
+    return null;
   }
 
   @Override
   public Buffer getBinary(int pos) {
-    return (Buffer) get(pos);
+    if((get(pos) instanceof Buffer))
+      return (Buffer) get(pos);
+    return null;
   }
 
   @Override
   public Temporal getTemporal(int pos) {
-    return (Temporal) get(pos);
+    if((get(pos) instanceof Temporal))
+      return (Temporal) get(pos);
+    return null;
   }
 
   @Override
   public LocalDate getLocalDate(int pos) {
-    return (LocalDate) get(pos);
+    if((get(pos) instanceof LocalDate))
+      return (LocalDate) get(pos);
+    return null;
   }
 
   @Override
   public LocalTime getLocalTime(int pos) {
-    return (LocalTime) get(pos);
+    if((get(pos) instanceof LocalTime))
+      return (LocalTime) get(pos);
+    return null;
   }
 
   @Override
   public LocalDateTime getLocalDateTime(int pos) {
-    return (LocalDateTime) get(pos);
+    if((get(pos) instanceof LocalDateTime))
+      return (LocalDateTime) get(pos);
+    return null;
   }
 
   @Override
   public OffsetTime getOffsetTime(int pos) {
-    return (OffsetTime) get(pos);
+    if((get(pos) instanceof OffsetTime))
+      return (OffsetTime) get(pos);
+    return null;
   }
 
   @Override
   public OffsetDateTime getOffsetDateTime(int pos) {
-    return (OffsetDateTime) get(pos);
+    if((get(pos) instanceof OffsetDateTime))
+      return (OffsetDateTime) get(pos);
+    return null;
   }
 
   @Override

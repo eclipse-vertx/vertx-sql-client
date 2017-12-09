@@ -34,6 +34,21 @@ public class DataTypeTextTest extends DataTypeTestBase {
         .execute(ctx.asyncAssertSuccess(result ->{
           ctx.assertEquals(1, result.size());
           ctx.assertNull(result.iterator().next().getValue(0));
+          ctx.assertNull(result.iterator().next().getBoolean(0));
+          ctx.assertNull(result.iterator().next().getLong(0));
+          ctx.assertNull(result.iterator().next().getInteger(0));
+          ctx.assertNull(result.iterator().next().getFloat(0));
+          ctx.assertNull(result.iterator().next().getDouble(0));
+          ctx.assertNull(result.iterator().next().getString(0));
+          ctx.assertNull(result.iterator().next().getJsonObject(0));
+          ctx.assertNull(result.iterator().next().getJsonArray(0));
+          ctx.assertNull(result.iterator().next().getBinary(0));
+          ctx.assertNull(result.iterator().next().getTemporal(0));
+          ctx.assertNull(result.iterator().next().getLocalDate(0));
+          ctx.assertNull(result.iterator().next().getLocalTime(0));
+          ctx.assertNull(result.iterator().next().getOffsetTime(0));
+          ctx.assertNull(result.iterator().next().getLocalDateTime(0));
+          ctx.assertNull(result.iterator().next().getOffsetDateTime(0));
           async.complete();
         }));
     }));
@@ -47,9 +62,24 @@ public class DataTypeTextTest extends DataTypeTestBase {
         .createQuery("SELECT true, false")
         .execute(ctx.asyncAssertSuccess(result ->{
           ctx.assertEquals(1, result.size());
-          Tuple row = result.iterator().next();
-          ctx.assertEquals(true, row.getBoolean(0));
-          ctx.assertEquals(false, row.getBoolean(1));
+          ctx.assertEquals(true, result.iterator().next().getBoolean(0));
+          ctx.assertEquals(true, result.iterator().next().getValue(0));
+          ctx.assertEquals(false, result.iterator().next().getBoolean(1));
+          ctx.assertEquals(false, result.iterator().next().getValue(1));
+          ctx.assertNull(result.iterator().next().getLong(0));
+          ctx.assertNull(result.iterator().next().getInteger(0));
+          ctx.assertNull(result.iterator().next().getFloat(0));
+          ctx.assertNull(result.iterator().next().getDouble(0));
+          ctx.assertNull(result.iterator().next().getString(0));
+          ctx.assertNull(result.iterator().next().getJsonObject(0));
+          ctx.assertNull(result.iterator().next().getJsonArray(0));
+          ctx.assertNull(result.iterator().next().getBinary(0));
+          ctx.assertNull(result.iterator().next().getTemporal(0));
+          ctx.assertNull(result.iterator().next().getLocalDate(0));
+          ctx.assertNull(result.iterator().next().getLocalTime(0));
+          ctx.assertNull(result.iterator().next().getOffsetTime(0));
+          ctx.assertNull(result.iterator().next().getLocalDateTime(0));
+          ctx.assertNull(result.iterator().next().getOffsetDateTime(0));
           async.complete();
         }));
     }));
