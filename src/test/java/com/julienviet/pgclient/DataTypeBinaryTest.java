@@ -38,7 +38,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(result.iterator().next().getString(0));
             ctx.assertNull(result.iterator().next().getJsonObject(0));
             ctx.assertNull(result.iterator().next().getJsonArray(0));
-            ctx.assertNull(result.iterator().next().getBinary(0));
+            ctx.assertNull(result.iterator().next().getBuffer(0));
             ctx.assertNull(result.iterator().next().getTemporal(0));
             ctx.assertNull(result.iterator().next().getLocalDate(0));
             ctx.assertNull(result.iterator().next().getLocalTime(0));
@@ -68,7 +68,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(result.iterator().next().getString(0));
             ctx.assertNull(result.iterator().next().getJsonObject(0));
             ctx.assertNull(result.iterator().next().getJsonArray(0));
-            ctx.assertNull(result.iterator().next().getBinary(0));
+            ctx.assertNull(result.iterator().next().getBuffer(0));
             ctx.assertNull(result.iterator().next().getTemporal(0));
             ctx.assertNull(result.iterator().next().getLocalDate(0));
             ctx.assertNull(result.iterator().next().getLocalTime(0));
@@ -98,7 +98,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(result.iterator().next().getString(0));
             ctx.assertNull(result.iterator().next().getJsonObject(0));
             ctx.assertNull(result.iterator().next().getJsonArray(0));
-            ctx.assertNull(result.iterator().next().getBinary(0));
+            ctx.assertNull(result.iterator().next().getBuffer(0));
             ctx.assertNull(result.iterator().next().getTemporal(0));
             ctx.assertNull(result.iterator().next().getLocalDate(0));
             ctx.assertNull(result.iterator().next().getLocalTime(0));
@@ -128,7 +128,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(result.iterator().next().getString(0));
             ctx.assertNull(result.iterator().next().getJsonObject(0));
             ctx.assertNull(result.iterator().next().getJsonArray(0));
-            ctx.assertNull(result.iterator().next().getBinary(0));
+            ctx.assertNull(result.iterator().next().getBuffer(0));
             ctx.assertNull(result.iterator().next().getTemporal(0));
             ctx.assertNull(result.iterator().next().getLocalDate(0));
             ctx.assertNull(result.iterator().next().getLocalTime(0));
@@ -158,7 +158,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(result.iterator().next().getString(0));
             ctx.assertNull(result.iterator().next().getJsonObject(0));
             ctx.assertNull(result.iterator().next().getJsonArray(0));
-            ctx.assertNull(result.iterator().next().getBinary(0));
+            ctx.assertNull(result.iterator().next().getBuffer(0));
             ctx.assertNull(result.iterator().next().getTemporal(0));
             ctx.assertNull(result.iterator().next().getLocalDate(0));
             ctx.assertNull(result.iterator().next().getLocalTime(0));
@@ -188,7 +188,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(result.iterator().next().getString(0));
             ctx.assertNull(result.iterator().next().getJsonObject(0));
             ctx.assertNull(result.iterator().next().getJsonArray(0));
-            ctx.assertNull(result.iterator().next().getBinary(0));
+            ctx.assertNull(result.iterator().next().getBuffer(0));
             ctx.assertNull(result.iterator().next().getTemporal(0));
             ctx.assertNull(result.iterator().next().getLocalDate(0));
             ctx.assertNull(result.iterator().next().getLocalTime(0));
@@ -220,7 +220,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(result.iterator().next().getString(0));
             ctx.assertNull(result.iterator().next().getJsonObject(0));
             ctx.assertNull(result.iterator().next().getJsonArray(0));
-            ctx.assertNull(result.iterator().next().getBinary(0));
+            ctx.assertNull(result.iterator().next().getBuffer(0));
             ctx.assertNull(result.iterator().next().getLocalTime(0));
             ctx.assertNull(result.iterator().next().getOffsetTime(0));
             ctx.assertNull(result.iterator().next().getLocalDateTime(0));
@@ -250,7 +250,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(result.iterator().next().getString(0));
             ctx.assertNull(result.iterator().next().getJsonObject(0));
             ctx.assertNull(result.iterator().next().getJsonArray(0));
-            ctx.assertNull(result.iterator().next().getBinary(0));
+            ctx.assertNull(result.iterator().next().getBuffer(0));
             ctx.assertNull(result.iterator().next().getLocalTime(0));
             ctx.assertNull(result.iterator().next().getOffsetTime(0));
             ctx.assertNull(result.iterator().next().getLocalDateTime(0));
@@ -280,7 +280,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(result.iterator().next().getString(0));
             ctx.assertNull(result.iterator().next().getJsonObject(0));
             ctx.assertNull(result.iterator().next().getJsonArray(0));
-            ctx.assertNull(result.iterator().next().getBinary(0));
+            ctx.assertNull(result.iterator().next().getBuffer(0));
             ctx.assertNull(result.iterator().next().getLocalDate(0));
             ctx.assertNull(result.iterator().next().getOffsetTime(0));
             ctx.assertNull(result.iterator().next().getLocalDateTime(0));
@@ -311,7 +311,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(result.iterator().next().getString(0));
             ctx.assertNull(result.iterator().next().getJsonObject(0));
             ctx.assertNull(result.iterator().next().getJsonArray(0));
-            ctx.assertNull(result.iterator().next().getBinary(0));
+            ctx.assertNull(result.iterator().next().getBuffer(0));
             ctx.assertNull(result.iterator().next().getLocalDate(0));
             ctx.assertNull(result.iterator().next().getLocalTime(0));
             ctx.assertNull(result.iterator().next().getLocalDateTime(0));
@@ -341,7 +341,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(result.iterator().next().getString(0));
             ctx.assertNull(result.iterator().next().getJsonObject(0));
             ctx.assertNull(result.iterator().next().getJsonArray(0));
-            ctx.assertNull(result.iterator().next().getBinary(0));
+            ctx.assertNull(result.iterator().next().getBuffer(0));
             ctx.assertNull(result.iterator().next().getLocalDate(0));
             ctx.assertNull(result.iterator().next().getLocalTime(0));
             ctx.assertNull(result.iterator().next().getOffsetTime(0));
@@ -371,7 +371,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(result.iterator().next().getString(0));
             ctx.assertNull(result.iterator().next().getJsonObject(0));
             ctx.assertNull(result.iterator().next().getJsonArray(0));
-            ctx.assertNull(result.iterator().next().getBinary(0));
+            ctx.assertNull(result.iterator().next().getBuffer(0));
             ctx.assertNull(result.iterator().next().getLocalDate(0));
             ctx.assertNull(result.iterator().next().getLocalTime(0));
             ctx.assertNull(result.iterator().next().getOffsetTime(0));
@@ -402,7 +402,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(result.iterator().next().getString(0));
               ctx.assertNull(result.iterator().next().getJsonObject(0));
               ctx.assertNull(result.iterator().next().getJsonArray(0));
-              ctx.assertNull(result.iterator().next().getBinary(0));
+              ctx.assertNull(result.iterator().next().getBuffer(0));
               ctx.assertNull(result.iterator().next().getLocalDate(0));
               ctx.assertNull(result.iterator().next().getLocalTime(0));
               ctx.assertNull(result.iterator().next().getOffsetTime(0));
@@ -434,7 +434,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(result.iterator().next().getString(0));
               ctx.assertNull(result.iterator().next().getJsonObject(0));
               ctx.assertNull(result.iterator().next().getJsonArray(0));
-              ctx.assertNull(result.iterator().next().getBinary(0));
+              ctx.assertNull(result.iterator().next().getBuffer(0));
               ctx.assertNull(result.iterator().next().getLocalDate(0));
               ctx.assertNull(result.iterator().next().getLocalTime(0));
               ctx.assertNull(result.iterator().next().getOffsetTime(0));

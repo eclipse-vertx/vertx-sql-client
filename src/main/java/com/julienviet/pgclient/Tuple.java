@@ -288,12 +288,12 @@ public interface Tuple {
   OffsetDateTime getOffsetDateTime(int pos);
 
   /**
-   * Get a binary value at {@code pos}.
+   * Get a buffer value at {@code pos}.
    *
    * @param pos the position
    * @return the value or {@code null}
    */
-  Buffer getBinary(int pos);
+  Buffer getBuffer(int pos);
 
   /**
    * Add a boolean value at the end of the tuple.
@@ -377,13 +377,13 @@ public interface Tuple {
   Tuple addJsonArray(JsonArray value);
 
   /**
-   * Add a binary value at the end of the tuple.
+   * Add a buffer value at the end of the tuple.
    *
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  Tuple addBinary(Buffer value);
+  Tuple addBuffer(Buffer value);
 
   /**
    * Add a {@link java.time.temporal.Temporal} value at the end of the tuple.

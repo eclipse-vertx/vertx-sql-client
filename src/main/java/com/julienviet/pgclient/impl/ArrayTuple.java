@@ -36,119 +36,119 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Boolean getBoolean(int pos) {
-    if((get(pos) instanceof Boolean))
+    if(get(pos) instanceof Boolean)
       return (Boolean) get(pos);
     return null;
   }
 
   @Override
   public Object getValue(int pos) {
-    if((get(pos) instanceof Boolean)
-      || (get(pos) instanceof Number)
-      || (get(pos) instanceof Character)
-      || (get(pos) instanceof String)
-      || (get(pos) instanceof JsonObject)
-      || (get(pos) instanceof JsonArray)
-      || (get(pos) instanceof Buffer)
-      || (get(pos) instanceof Temporal))
+    if(get(pos) instanceof Boolean
+      || get(pos) instanceof Number
+      || get(pos) instanceof Character
+      || get(pos) instanceof String
+      || get(pos) instanceof JsonObject
+      || get(pos) instanceof JsonArray
+      || get(pos) instanceof Buffer
+      || get(pos) instanceof Temporal)
       return get(pos);
     return null;
   }
 
   @Override
   public Integer getInteger(int pos) {
-    if((get(pos) instanceof Integer))
+    if(get(pos) instanceof Integer)
       return (Integer) get(pos);
     return null;
   }
 
   @Override
   public Long getLong(int pos) {
-    if((get(pos) instanceof Long))
+    if(get(pos) instanceof Long)
       return (Long) get(pos);
     return null;
   }
 
   @Override
   public Float getFloat(int pos) {
-    if((get(pos) instanceof Float))
+    if(get(pos) instanceof Float)
       return (Float) get(pos);
     return null;
   }
 
   @Override
   public Double getDouble(int pos) {
-    if((get(pos) instanceof Double))
+    if(get(pos) instanceof Double)
       return (Double) get(pos);
     return null;
   }
 
   @Override
   public String getString(int pos) {
-    if((get(pos) instanceof String))
+    if(get(pos) instanceof String)
       return (String) get(pos);
     return null;
   }
 
   @Override
   public JsonObject getJsonObject(int pos) {
-    if((get(pos) instanceof JsonObject))
+    if(get(pos) instanceof JsonObject)
       return (JsonObject) get(pos);
     return null;
   }
 
   @Override
   public JsonArray getJsonArray(int pos) {
-    if((get(pos) instanceof JsonArray))
+    if(get(pos) instanceof JsonArray)
       return (JsonArray) get(pos);
     return null;
   }
 
   @Override
-  public Buffer getBinary(int pos) {
-    if((get(pos) instanceof Buffer))
+  public Buffer getBuffer(int pos) {
+    if(get(pos) instanceof Buffer)
       return (Buffer) get(pos);
     return null;
   }
 
   @Override
   public Temporal getTemporal(int pos) {
-    if((get(pos) instanceof Temporal))
+    if(get(pos) instanceof Temporal)
       return (Temporal) get(pos);
     return null;
   }
 
   @Override
   public LocalDate getLocalDate(int pos) {
-    if((get(pos) instanceof LocalDate))
+    if(get(pos) instanceof LocalDate)
       return (LocalDate) get(pos);
     return null;
   }
 
   @Override
   public LocalTime getLocalTime(int pos) {
-    if((get(pos) instanceof LocalTime))
+    if(get(pos) instanceof LocalTime)
       return (LocalTime) get(pos);
     return null;
   }
 
   @Override
   public LocalDateTime getLocalDateTime(int pos) {
-    if((get(pos) instanceof LocalDateTime))
+    if(get(pos) instanceof LocalDateTime)
       return (LocalDateTime) get(pos);
     return null;
   }
 
   @Override
   public OffsetTime getOffsetTime(int pos) {
-    if((get(pos) instanceof OffsetTime))
+    if(get(pos) instanceof OffsetTime)
       return (OffsetTime) get(pos);
     return null;
   }
 
   @Override
   public OffsetDateTime getOffsetDateTime(int pos) {
-    if((get(pos) instanceof OffsetDateTime))
+    if(get(pos) instanceof OffsetDateTime)
       return (OffsetDateTime) get(pos);
     return null;
   }
@@ -208,7 +208,7 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
-  public Tuple addBinary(Buffer value) {
+  public Tuple addBuffer(Buffer value) {
     add(value);
     return this;
   }
