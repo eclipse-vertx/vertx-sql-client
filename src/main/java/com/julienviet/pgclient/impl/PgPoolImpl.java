@@ -38,8 +38,9 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
   private final Context context;
   private final PgConnectionFactory factory;
   private final ConnectionPool pool;
+  private final boolean closeVertx;
 
-  public PgPoolImpl(Vertx vertx, PgPoolOptions options) {
+  public PgPoolImpl(Vertx vertx, boolean closeVertx, PgPoolOptions options) {
     int maxSize = options.getMaxSize();
     if (maxSize < 1) {
       throw new IllegalArgumentException("Pool max size must be > 0");
@@ -47,6 +48,7 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
     this.factory = new PgConnectionFactory(vertx, options);
     this.context = vertx.getOrCreateContext();
     this.pool = new ConnectionPool(factory::connect, maxSize);
+    this.closeVertx = closeVertx;
   }
 
   @Override
@@ -146,5 +148,8 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
   public void close() {
     pool.close();
     factory.close();
+    if (closeVertx) {
+      context.owner().close();
+    }
   }
 }

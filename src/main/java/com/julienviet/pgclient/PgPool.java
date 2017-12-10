@@ -36,12 +36,21 @@ public interface PgPool extends PgClient {
   /**
    * Create a connection pool to the database configured with the given {@code options}.
    *
-   * @param vertx the vertx instance
    * @param options the options for creating the pool
    * @return the connection pool
    */
+  static PgPool pool(PgPoolOptions options) {
+    if (Vertx.currentContext() != null) {
+      throw new IllegalStateException("Running in a Vertx context => use PgPool#pool(Vertx, PgPoolOptions) instead");
+    }
+    return new PgPoolImpl(Vertx.vertx(), true, options);
+  }
+
+  /**
+   * Like {@link #pool(PgPoolOptions)} with a specific {@link Vertx} instance.
+   */
   static PgPool pool(Vertx vertx, PgPoolOptions options) {
-    return new PgPoolImpl(vertx, options);
+    return new PgPoolImpl(vertx, false, options);
   }
 
   @Override

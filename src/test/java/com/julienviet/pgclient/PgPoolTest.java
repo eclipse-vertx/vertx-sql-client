@@ -54,4 +54,31 @@ public class PgPoolTest extends PgPoolTestBase {
       }));
     }));
   }
+
+  @Test
+  public void testRunWithExisting(TestContext ctx) {
+    Async async = ctx.async();
+    vertx.runOnContext(v -> {
+      try {
+        PgPool.pool(new PgPoolOptions());
+        ctx.fail();
+      } catch (IllegalStateException ignore) {
+        async.complete();
+      }
+    });
+  }
+
+  @Test
+  public void testRunStandalone(TestContext ctx) {
+    Async async = ctx.async();
+    PgPool pool = PgPool.pool(new PgPoolOptions(options));
+    try {
+      pool.query("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(v -> {
+        async.complete();
+      }));
+      async.await(4000);
+    } finally {
+      pool.close();
+    }
+  }
 }
