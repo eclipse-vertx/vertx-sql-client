@@ -33,6 +33,14 @@ public class RawBenchmark {
 
   public static void main(String[] args) throws Exception {
     PgConnectOptions options = PgTestBase.startPg();
+    /*
+    PgConnectOptions options = new PgConnectOptions()
+      .setHost("localhost")
+      .setPort(5432)
+      .setDatabase("postgres")
+      .setUsername("postgres")
+      .setPassword("postgres");
+    */
     largeSelectJDBC(options, 5_000);
     largeSelect(options, 5_000);
     singleSelectJDBC(options, 200_000);
