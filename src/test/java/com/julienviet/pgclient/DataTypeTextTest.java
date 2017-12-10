@@ -39,6 +39,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
           ctx.assertNull(result.iterator().next().getDouble(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getString(0));
           ctx.assertNull(result.iterator().next().getJsonObject(0));
           ctx.assertNull(result.iterator().next().getJsonArray(0));
@@ -70,6 +71,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
           ctx.assertNull(result.iterator().next().getDouble(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getString(0));
           ctx.assertNull(result.iterator().next().getJsonObject(0));
           ctx.assertNull(result.iterator().next().getJsonArray(0));
@@ -99,6 +101,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
           ctx.assertNull(result.iterator().next().getDouble(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getString(0));
           ctx.assertNull(result.iterator().next().getJsonObject(0));
           ctx.assertNull(result.iterator().next().getJsonArray(0));
@@ -128,6 +131,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getLong(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
           ctx.assertNull(result.iterator().next().getDouble(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getString(0));
           ctx.assertNull(result.iterator().next().getJsonObject(0));
           ctx.assertNull(result.iterator().next().getJsonArray(0));
@@ -157,6 +161,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
           ctx.assertNull(result.iterator().next().getDouble(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getString(0));
           ctx.assertNull(result.iterator().next().getJsonObject(0));
           ctx.assertNull(result.iterator().next().getJsonArray(0));
@@ -186,6 +191,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getLong(0));
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getDouble(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getString(0));
           ctx.assertNull(result.iterator().next().getJsonObject(0));
           ctx.assertNull(result.iterator().next().getJsonArray(0));
@@ -215,6 +221,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getLong(0));
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getString(0));
           ctx.assertNull(result.iterator().next().getJsonObject(0));
           ctx.assertNull(result.iterator().next().getJsonArray(0));
@@ -244,6 +251,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getLong(0));
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getString(0));
           ctx.assertNull(result.iterator().next().getJsonObject(0));
           ctx.assertNull(result.iterator().next().getJsonArray(0));
@@ -277,6 +285,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getLong(0));
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getDouble(0));
           ctx.assertNull(result.iterator().next().getJsonObject(0));
           ctx.assertNull(result.iterator().next().getJsonArray(0));
@@ -309,6 +318,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getLong(0));
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getDouble(0));
           ctx.assertNull(result.iterator().next().getJsonObject(0));
           ctx.assertNull(result.iterator().next().getJsonArray(0));
@@ -342,6 +352,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
           ctx.assertNull(result.iterator().next().getDouble(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getJsonObject(0));
           ctx.assertNull(result.iterator().next().getJsonArray(0));
           ctx.assertNull(result.iterator().next().getBuffer(0));
@@ -364,8 +375,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
         .createQuery("SELECT 'X'::\"char\"")
         .execute(ctx.asyncAssertSuccess(result ->{
           ctx.assertEquals(1, result.size());
-          char character = (char) result.iterator().next().getValue(0);
-          ctx.assertEquals('X', character);
+          ctx.assertEquals('X', result.iterator().next().getValue(0));
+          ctx.assertEquals('X', result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getBoolean(0));
           ctx.assertNull(result.iterator().next().getLong(0));
           ctx.assertNull(result.iterator().next().getInteger(0));
@@ -401,6 +412,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
           ctx.assertNull(result.iterator().next().getDouble(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getJsonObject(0));
           ctx.assertNull(result.iterator().next().getJsonArray(0));
           ctx.assertNull(result.iterator().next().getBuffer(0));
@@ -430,6 +442,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
           ctx.assertNull(result.iterator().next().getDouble(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getJsonObject(0));
           ctx.assertNull(result.iterator().next().getJsonArray(0));
           ctx.assertNull(result.iterator().next().getBuffer(0));
@@ -459,6 +472,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
           ctx.assertNull(result.iterator().next().getDouble(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getJsonObject(0));
           ctx.assertNull(result.iterator().next().getJsonArray(0));
           ctx.assertNull(result.iterator().next().getBuffer(0));
@@ -489,6 +503,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
           ctx.assertNull(result.iterator().next().getDouble(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getString(0));
           ctx.assertNull(result.iterator().next().getJsonObject(0));
           ctx.assertNull(result.iterator().next().getJsonArray(0));
@@ -518,6 +533,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
           ctx.assertNull(result.iterator().next().getDouble(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getString(0));
           ctx.assertNull(result.iterator().next().getJsonObject(0));
           ctx.assertNull(result.iterator().next().getJsonArray(0));
@@ -547,6 +563,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
           ctx.assertNull(result.iterator().next().getDouble(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getString(0));
           ctx.assertNull(result.iterator().next().getJsonObject(0));
           ctx.assertNull(result.iterator().next().getJsonArray(0));
@@ -579,6 +596,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
           ctx.assertNull(result.iterator().next().getDouble(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getString(0));
           ctx.assertNull(result.iterator().next().getJsonObject(0));
           ctx.assertNull(result.iterator().next().getJsonArray(0));
@@ -611,6 +629,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
             ctx.assertNull(result.iterator().next().getInteger(0));
             ctx.assertNull(result.iterator().next().getFloat(0));
             ctx.assertNull(result.iterator().next().getDouble(0));
+            ctx.assertNull(result.iterator().next().getCharacter(0));
             ctx.assertNull(result.iterator().next().getString(0));
             ctx.assertNull(result.iterator().next().getJsonObject(0));
             ctx.assertNull(result.iterator().next().getJsonArray(0));
@@ -644,6 +663,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
           ctx.assertNull(result.iterator().next().getDouble(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getString(0));
           ctx.assertNull(result.iterator().next().getJsonArray(0));
           ctx.assertNull(result.iterator().next().getBuffer(0));
@@ -674,6 +694,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
           ctx.assertNull(result.iterator().next().getDouble(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getString(0));
           ctx.assertNull(result.iterator().next().getJsonObject(0));
           ctx.assertNull(result.iterator().next().getBuffer(0));
@@ -707,6 +728,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
           ctx.assertNull(result.iterator().next().getDouble(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getString(0));
           ctx.assertNull(result.iterator().next().getJsonArray(0));
           ctx.assertNull(result.iterator().next().getBuffer(0));
@@ -737,6 +759,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
           ctx.assertNull(result.iterator().next().getDouble(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getString(0));
           ctx.assertNull(result.iterator().next().getJsonObject(0));
           ctx.assertNull(result.iterator().next().getBuffer(0));
@@ -764,6 +787,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
           ctx.assertNull(result.iterator().next().getDouble(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getString(0));
           ctx.assertNull(result.iterator().next().getJsonObject(0));
           ctx.assertNull(result.iterator().next().getJsonArray(0));
@@ -781,6 +805,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(1));
           ctx.assertNull(result.iterator().next().getFloat(1));
           ctx.assertNull(result.iterator().next().getDouble(1));
+          ctx.assertNull(result.iterator().next().getCharacter(1));
           ctx.assertNull(result.iterator().next().getString(1));
           ctx.assertNull(result.iterator().next().getJsonObject(1));
           ctx.assertNull(result.iterator().next().getJsonArray(1));
@@ -798,6 +823,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(2));
           ctx.assertNull(result.iterator().next().getFloat(2));
           ctx.assertNull(result.iterator().next().getDouble(2));
+          ctx.assertNull(result.iterator().next().getCharacter(2));
           ctx.assertNull(result.iterator().next().getString(2));
           ctx.assertNull(result.iterator().next().getJsonObject(2));
           ctx.assertNull(result.iterator().next().getJsonArray(2));
@@ -816,6 +842,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getLong(3));
           ctx.assertNull(result.iterator().next().getInteger(3));
           ctx.assertNull(result.iterator().next().getFloat(3));
+          ctx.assertNull(result.iterator().next().getCharacter(3));
           ctx.assertNull(result.iterator().next().getString(3));
           ctx.assertNull(result.iterator().next().getJsonObject(3));
           ctx.assertNull(result.iterator().next().getJsonArray(3));
@@ -833,6 +860,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getLong(4));
           ctx.assertNull(result.iterator().next().getFloat(4));
           ctx.assertNull(result.iterator().next().getDouble(4));
+          ctx.assertNull(result.iterator().next().getCharacter(4));
           ctx.assertNull(result.iterator().next().getString(4));
           ctx.assertNull(result.iterator().next().getJsonObject(4));
           ctx.assertNull(result.iterator().next().getJsonArray(4));
@@ -852,6 +880,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(5));
           ctx.assertNull(result.iterator().next().getFloat(5));
           ctx.assertNull(result.iterator().next().getDouble(5));
+          ctx.assertNull(result.iterator().next().getCharacter(5));
           ctx.assertNull(result.iterator().next().getJsonObject(5));
           ctx.assertNull(result.iterator().next().getJsonArray(5));
           ctx.assertNull(result.iterator().next().getBuffer(5));
@@ -879,6 +908,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
           ctx.assertNull(result.iterator().next().getDouble(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getString(0));
           ctx.assertNull(result.iterator().next().getJsonObject(0));
           ctx.assertNull(result.iterator().next().getJsonArray(0));
@@ -896,6 +926,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(1));
           ctx.assertNull(result.iterator().next().getFloat(1));
           ctx.assertNull(result.iterator().next().getDouble(1));
+          ctx.assertNull(result.iterator().next().getCharacter(1));
           ctx.assertNull(result.iterator().next().getString(1));
           ctx.assertNull(result.iterator().next().getJsonObject(1));
           ctx.assertNull(result.iterator().next().getJsonArray(1));
@@ -913,6 +944,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(2));
           ctx.assertNull(result.iterator().next().getFloat(2));
           ctx.assertNull(result.iterator().next().getDouble(2));
+          ctx.assertNull(result.iterator().next().getCharacter(2));
           ctx.assertNull(result.iterator().next().getString(2));
           ctx.assertNull(result.iterator().next().getJsonObject(2));
           ctx.assertNull(result.iterator().next().getJsonArray(2));
@@ -931,6 +963,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getLong(3));
           ctx.assertNull(result.iterator().next().getInteger(3));
           ctx.assertNull(result.iterator().next().getFloat(3));
+          ctx.assertNull(result.iterator().next().getCharacter(3));
           ctx.assertNull(result.iterator().next().getString(3));
           ctx.assertNull(result.iterator().next().getJsonObject(3));
           ctx.assertNull(result.iterator().next().getJsonArray(3));
@@ -948,6 +981,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getLong(4));
           ctx.assertNull(result.iterator().next().getFloat(4));
           ctx.assertNull(result.iterator().next().getDouble(4));
+          ctx.assertNull(result.iterator().next().getCharacter(4));
           ctx.assertNull(result.iterator().next().getString(4));
           ctx.assertNull(result.iterator().next().getJsonObject(4));
           ctx.assertNull(result.iterator().next().getJsonArray(4));
@@ -967,6 +1001,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(5));
           ctx.assertNull(result.iterator().next().getFloat(5));
           ctx.assertNull(result.iterator().next().getDouble(5));
+          ctx.assertNull(result.iterator().next().getCharacter(5));
           ctx.assertNull(result.iterator().next().getJsonObject(5));
           ctx.assertNull(result.iterator().next().getJsonArray(5));
           ctx.assertNull(result.iterator().next().getBuffer(5));
@@ -995,6 +1030,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(0));
           ctx.assertNull(result.iterator().next().getFloat(0));
           ctx.assertNull(result.iterator().next().getDouble(0));
+          ctx.assertNull(result.iterator().next().getCharacter(0));
           ctx.assertNull(result.iterator().next().getString(0));
           ctx.assertNull(result.iterator().next().getJsonObject(0));
           ctx.assertNull(result.iterator().next().getJsonArray(0));
@@ -1012,6 +1048,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(result.iterator().next().getInteger(1));
           ctx.assertNull(result.iterator().next().getFloat(1));
           ctx.assertNull(result.iterator().next().getDouble(1));
+          ctx.assertNull(result.iterator().next().getCharacter(1));
           ctx.assertNull(result.iterator().next().getString(1));
           ctx.assertNull(result.iterator().next().getJsonObject(1));
           ctx.assertNull(result.iterator().next().getJsonArray(1));

@@ -82,6 +82,13 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
+  public Character getCharacter(int pos) {
+    if(get(pos) instanceof Character)
+      return (Character) get(pos);
+    return null;
+  }
+
+  @Override
   public JsonObject getJsonObject(int pos) {
     if(get(pos) instanceof JsonObject)
       return (JsonObject) get(pos);
@@ -197,6 +204,12 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Tuple addString(String value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addCharacter(Character value) {
     add(value);
     return this;
   }

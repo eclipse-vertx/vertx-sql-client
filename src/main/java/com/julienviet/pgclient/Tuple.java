@@ -219,6 +219,14 @@ public interface Tuple {
   String getString(int pos);
 
   /**
+   * Get a {@link Character} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  Character getCharacter(int pos);
+
+  /**
    * Get a json object value at {@code pos}.
    *
    * @param pos the position
@@ -358,6 +366,15 @@ public interface Tuple {
    */
   @Fluent
   Tuple addString(String value);
+
+  /**
+   * Add a {@link Character} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  Tuple addCharacter(Character value);
 
   /**
    * Add a json object value at the end of the tuple.
