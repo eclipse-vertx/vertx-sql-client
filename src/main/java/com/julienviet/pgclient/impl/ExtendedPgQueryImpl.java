@@ -19,6 +19,7 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgQuery;
 import com.julienviet.pgclient.PgResult;
+import com.julienviet.pgclient.Row;
 import com.julienviet.pgclient.Tuple;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -60,7 +61,7 @@ public class ExtendedPgQueryImpl implements PgQuery {
   }
 
   @Override
-  public void execute(Handler<AsyncResult<PgResult<Tuple>>> handler) {
+  public void execute(Handler<AsyncResult<PgResult<Row>>> handler) {
     if (result == null) {
       result = new ExtendedQueryResultHandler(handler);
       portal = fetch > 0 ? UUID.randomUUID().toString() : null;

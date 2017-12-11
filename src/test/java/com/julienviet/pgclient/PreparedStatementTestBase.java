@@ -206,7 +206,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
       conn.createQuery("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
         conn.prepare("SELECT * FROM Fortune", ctx.asyncAssertSuccess(ps -> {
-          PgStream<Tuple> stream = ps.createStream(4, Tuple.tuple());
+          PgStream<Row> stream = ps.createStream(4, Tuple.tuple());
           List<Tuple> rows = new ArrayList<>();
           AtomicInteger ended = new AtomicInteger();
           stream.endHandler(v -> {
@@ -229,7 +229,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
       conn.createQuery("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
         conn.prepare("SELECT * FROM Fortune", ctx.asyncAssertSuccess(ps -> {
-          PgStream<Tuple> stream = ps.createStream(4, Tuple.tuple());
+          PgStream<Row> stream = ps.createStream(4, Tuple.tuple());
           List<Tuple> rows = new ArrayList<>();
           AtomicInteger ended = new AtomicInteger();
           stream.endHandler(v -> {
@@ -256,7 +256,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     Async async = ctx.async();
     PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT * FROM Fortune", ctx.asyncAssertSuccess(ps -> {
-        PgStream<Tuple> stream = ps.createStream(4, Tuple.tuple());
+        PgStream<Row> stream = ps.createStream(4, Tuple.tuple());
         stream.endHandler(v -> ctx.fail());
         AtomicInteger rowCount = new AtomicInteger();
         stream.exceptionHandler(err -> {

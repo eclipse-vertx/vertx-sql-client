@@ -45,7 +45,7 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
 
 
   @Override
-  public PgConnectionImpl query(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler) {
+  public PgConnectionImpl query(String sql, Handler<AsyncResult<PgResult<Row>>> handler) {
     return (PgConnectionImpl) super.query(sql, handler);
   }
 

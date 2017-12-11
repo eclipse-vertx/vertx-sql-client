@@ -57,6 +57,6 @@ public interface PgBatch {
    *
    * @param resultHandler the handler of the result
    */
-  void execute(Handler<AsyncResult<PgBatchResult<Tuple>>> resultHandler);
+  void execute(Handler<AsyncResult<PgBatchResult<Row>>> resultHandler);
 
 }

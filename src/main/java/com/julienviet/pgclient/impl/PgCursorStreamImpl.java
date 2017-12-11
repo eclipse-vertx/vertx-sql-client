@@ -19,6 +19,7 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgStream;
 import com.julienviet.pgclient.PgResult;
+import com.julienviet.pgclient.Row;
 import com.julienviet.pgclient.Tuple;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -26,27 +27,27 @@ import io.vertx.core.Handler;
 import java.util.Iterator;
 import java.util.UUID;
 
-public class PgCursorStreamImpl implements PgStream<Tuple> {
+public class PgCursorStreamImpl implements PgStream<Row> {
 
   private final PgPreparedStatementImpl ps;
   private final int fetch;
   private final Tuple params;
 
   private Handler<Void> endHandler;
-  private Handler<Tuple> rowHandler;
+  private Handler<Row> rowHandler;
   private Handler<Throwable> exceptionHandler;
   private boolean paused;
   private QueryCursor cursor;
 
-  class QueryCursor implements QueryResultHandler<Tuple> {
+  class QueryCursor implements QueryResultHandler<Row> {
 
     final String portal = UUID.randomUUID().toString();
-    Iterator<Tuple> result;
+    Iterator<Row> result;
     boolean suspended;
     boolean closed;
 
     @Override
-    public void handleResult(PgResult<Tuple> result, boolean suspended) {
+    public void handleResult(PgResult<Row> result, boolean suspended) {
       this.suspended = suspended;
       this.result = result.iterator();
     }
@@ -69,8 +70,8 @@ public class PgCursorStreamImpl implements PgStream<Tuple> {
     private void checkPending() {
       while (!paused && result != null) {
         if (result.hasNext()) {
-          Tuple tuple = result.next();
-          Handler<Tuple> handler = rowHandler;
+          Row tuple = result.next();
+          Handler<Row> handler = rowHandler;
           if (handler != null) {
             handler.handle(tuple);
           }
@@ -108,13 +109,13 @@ public class PgCursorStreamImpl implements PgStream<Tuple> {
   }
 
   @Override
-  public PgStream<Tuple> exceptionHandler(Handler<Throwable> handler) {
+  public PgStream<Row> exceptionHandler(Handler<Throwable> handler) {
     exceptionHandler = handler;
     return this;
   }
 
   @Override
-  public PgStream<Tuple> handler(Handler<Tuple> handler) {
+  public PgStream<Row> handler(Handler<Row> handler) {
     if (handler != null) {
       if (cursor == null) {
         rowHandler = handler;
@@ -135,13 +136,13 @@ public class PgCursorStreamImpl implements PgStream<Tuple> {
   }
 
   @Override
-  public PgStream<Tuple> pause() {
+  public PgStream<Row> pause() {
     paused = true;
     return this;
   }
 
   @Override
-  public PgStream<Tuple> resume() {
+  public PgStream<Row> resume() {
     paused = false;
     if (cursor != null) {
       cursor.checkPending();
@@ -150,7 +151,7 @@ public class PgCursorStreamImpl implements PgStream<Tuple> {
   }
 
   @Override
-  public PgStream<Tuple> endHandler(Handler<Void> handler) {
+  public PgStream<Row> endHandler(Handler<Void> handler) {
     endHandler = handler;
     return this;
   }

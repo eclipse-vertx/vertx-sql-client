@@ -107,7 +107,12 @@ pool.preparedQuery("SELECT first_name, last_name FROM users", { ar ->
   if (ar.succeeded()) {
     def result = ar.result()
     result.each { row ->
+
+      // You can access columns by position
       println("User ${row.getString(0)} ${row.getString(1)}")
+
+      // Or by name
+      println("User ${row.getString("first_name")} ${row.getString("last_name")}")
     }
   } else {
     println("Failure: ${ar.cause().getMessage()}")

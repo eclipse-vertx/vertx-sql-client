@@ -122,7 +122,7 @@ public class RawBenchmark {
       conn.preparedQuery("SELECT id, randomnumber from WORLD", ar -> {
         if (ar.succeeded()) {
           doLargeQuery(conn, remaining -1, latch);
-          PgResult<Tuple> result = ar.result();
+          PgResult<Row> result = ar.result();
           for (Tuple tuple : result) {
             int val = tuple.getInteger(0);
           }

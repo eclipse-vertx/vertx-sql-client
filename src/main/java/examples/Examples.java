@@ -48,7 +48,7 @@ public class Examples {
     // A simple query
     pool.query("SELECT * FROM users WHERE id='julien'", ar -> {
       if (ar.succeeded()) {
-        PgResult<Tuple> result = ar.result();
+        PgResult<Row> result = ar.result();
         System.out.println("Got " + result.size() + " results ");
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
@@ -65,7 +65,7 @@ public class Examples {
   public void queries01(PgClient pool) {
     pool.query("SELECT * FROM users WHERE id='julien'", ar -> {
       if (ar.succeeded()) {
-        PgResult<Tuple> result = ar.result();
+        PgResult<Row> result = ar.result();
         System.out.println("Got " + result.size() + " results ");
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
@@ -76,7 +76,7 @@ public class Examples {
   public void queries02(PgClient pool) {
     pool.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"),  ar -> {
       if (ar.succeeded()) {
-        PgResult<Tuple> result = ar.result();
+        PgResult<Row> result = ar.result();
         System.out.println("Got " + result.size() + " results ");
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
@@ -87,9 +87,14 @@ public class Examples {
   public void queries03(PgClient pool) {
     pool.preparedQuery("SELECT first_name, last_name FROM users", ar -> {
       if (ar.succeeded()) {
-        PgResult<Tuple> result = ar.result();
-        for (Tuple row : result) {
+        PgResult<Row> result = ar.result();
+        for (Row row : result) {
+
+          // You can access columns by position
           System.out.println("User " + row.getString(0) + " " + row.getString(1));
+
+          // Or by name
+          System.out.println("User " + row.getString("first_name") + " " + row.getString("last_name"));
         }
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
@@ -100,7 +105,7 @@ public class Examples {
   public void queries04(PgClient pool) {
     pool.preparedQuery("\"INSERT INTO users (first_name, last_name) VALUES ($1, $2)", Tuple.of("Julien", "Viet"),  ar -> {
       if (ar.succeeded()) {
-        PgResult<Tuple> result = ar.result();
+        PgResult<Row> result = ar.result();
         System.out.println(result.updatedCount());
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
@@ -130,7 +135,7 @@ public class Examples {
           if (ar.succeeded()) {
 
             // Use result
-            PgResult<Tuple> result = ar.result();
+            PgResult<Row> result = ar.result();
           } else {
             System.out.println("It failed");
           }
@@ -168,7 +173,7 @@ public class Examples {
           if (ar.succeeded()) {
 
             // Use result set
-            PgResult<Tuple> result = ar.result();
+            PgResult<Row> result = ar.result();
           } else {
             System.out.println("It failed");
           }
@@ -197,7 +202,7 @@ public class Examples {
       if (ar.succeeded()) {
 
         // Get result
-        PgResult<Tuple> result = ar.result();
+        PgResult<Row> result = ar.result();
       } else {
         System.out.println("Query failed " + ar.cause());
       }
@@ -218,7 +223,7 @@ public class Examples {
           if (ar2.succeeded()) {
 
             // Get result
-            PgResult<Tuple> result = ar2.result();
+            PgResult<Row> result = ar2.result();
           } else {
             System.out.println("Query failed " + ar2.cause());
           }
@@ -250,7 +255,7 @@ public class Examples {
 
             if (query.hasMore()) {
               // Get results
-              PgResult<Tuple> result = ar2.result();
+              PgResult<Row> result = ar2.result();
 
               System.out.println("Get next 100");
               query.execute(ar3 -> {
@@ -286,7 +291,7 @@ public class Examples {
           if (res.succeeded()) {
 
             // Get result
-            PgResult<Tuple> result = res.result();
+            PgResult<Row> result = res.result();
 
             // Close the query
             query.close();
@@ -308,7 +313,7 @@ public class Examples {
 
       if(ar.succeeded()) {
         // Process results
-        PgResult<Tuple> result = ar.result();
+        PgResult<Row> result = ar.result();
       } else {
         System.out.println("Update failed " + ar.cause());
       }
@@ -331,7 +336,7 @@ public class Examples {
           if (res.succeeded()) {
 
             // Process results
-            PgBatchResult<Tuple> results = res.result();
+            PgBatchResult<Row> results = res.result();
           } else {
             System.out.println("Batch failed " + res.cause());
           }
@@ -352,7 +357,7 @@ public class Examples {
       if (ar.succeeded()) {
 
         // Process results
-        PgBatchResult<Tuple> results = ar.result();
+        PgBatchResult<Row> results = ar.result();
       } else {
         System.out.println("Batch failed " + ar.cause());
       }

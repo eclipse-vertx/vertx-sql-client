@@ -109,7 +109,12 @@ pool.preparedQuery("SELECT first_name, last_name FROM users", function (ar, ar_e
   if (ar_err == null) {
     var result = ar;
     Array.prototype.forEach.call(result, function(row) {
+
+      // You can access columns by position
       console.log("User " + row.getString(0) + " " + row.getString(1));
+
+      // Or by name
+      console.log("User " + row.getString("first_name") + " " + row.getString("last_name"));
     });
   } else {
     console.log("Failure: " + ar_err.getMessage());

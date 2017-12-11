@@ -45,7 +45,7 @@ public interface PgQuery {
    *
    * @param handler the handler for the result
    */
-  void execute(Handler<AsyncResult<PgResult<Tuple>>> handler);
+  void execute(Handler<AsyncResult<PgResult<Row>>> handler);
 
   /**
    * Returns {@code true} when the query has results in progress and the {@link #execute} should be called to retrieve

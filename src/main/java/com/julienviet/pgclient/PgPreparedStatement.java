@@ -55,7 +55,7 @@ public interface PgPreparedStatement {
    * @param args the prepared statement arguments
    * @return the createStream
    */
-  PgStream<Tuple> createStream(int fetch, Tuple args);
+  PgStream<Row> createStream(int fetch, Tuple args);
 
   /**
    * Create a new createBatch.

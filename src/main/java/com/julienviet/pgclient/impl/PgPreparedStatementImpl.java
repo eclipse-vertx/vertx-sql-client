@@ -63,16 +63,16 @@ class PgPreparedStatementImpl implements PgPreparedStatement {
                int fetch,
                String portal,
                boolean suspended,
-               QueryResultHandler<Tuple> handler) {
+               QueryResultHandler<Row> handler) {
     conn.schedule(new ExtendedQueryCommand<>(ps, params, fetch, portal, suspended, new RowResultDecoder(), handler));
   }
 
-  void batch(List<Tuple> paramsList, Handler<AsyncResult<PgBatchResult<Tuple>>> handler) {
+  void batch(List<Tuple> paramsList, Handler<AsyncResult<PgBatchResult<Row>>> handler) {
     conn.schedule(new ExtendedBatchQueryCommand<>(ps, paramsList.iterator(), new RowResultDecoder(), new BatchQueryResultHandler(paramsList.size(), handler)));
   }
 
   @Override
-  public PgStream<Tuple> createStream(int fetch, Tuple args) {
+  public PgStream<Row> createStream(int fetch, Tuple args) {
     return new PgCursorStreamImpl(this, fetch, args);
   }
 

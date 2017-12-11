@@ -19,17 +19,18 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgIterator;
 import com.julienviet.pgclient.PgResult;
+import com.julienviet.pgclient.Row;
 import com.julienviet.pgclient.Tuple;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class PgResultImpl implements PgResult<Tuple> {
+public class PgResultImpl implements PgResult<Row> {
 
   final int updated;
   final List<String> columnNames;
-  final LinkedArrayTuple rows;
+  final RowImpl rows;
   final int size;
 
   public PgResultImpl(int updated) {
@@ -39,7 +40,7 @@ public class PgResultImpl implements PgResult<Tuple> {
     this.columnNames = Collections.emptyList();
   }
 
-  public PgResultImpl(int updated, List<String> columnNames, LinkedArrayTuple rows, int size) {
+  public PgResultImpl(int updated, List<String> columnNames, RowImpl rows, int size) {
     this.updated = updated;
     this.columnNames = columnNames;
     this.rows = rows;
@@ -62,19 +63,19 @@ public class PgResultImpl implements PgResult<Tuple> {
   }
 
   @Override
-  public PgIterator<Tuple> iterator() {
-    return new PgIterator<Tuple>() {
-      LinkedArrayTuple current = rows;
+  public PgIterator<Row> iterator() {
+    return new PgIterator<Row>() {
+      RowImpl current = rows;
       @Override
       public boolean hasNext() {
         return current != null;
       }
       @Override
-      public Tuple next() {
+      public Row next() {
         if (current == null) {
           throw new NoSuchElementException();
         }
-        LinkedArrayTuple r = current;
+        RowImpl r = current;
         current = current.next;
         return r;
       }

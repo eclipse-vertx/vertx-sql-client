@@ -42,6 +42,10 @@ public class RowDescription implements InboundMessage {
       .collect(Collectors.toList()));
   }
 
+  public int columnIndex(String columnName) {
+    return columnNames.indexOf(columnName);
+  }
+
   public Column[] columns() {
     return columns;
   }

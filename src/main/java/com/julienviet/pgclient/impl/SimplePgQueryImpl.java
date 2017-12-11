@@ -19,6 +19,7 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgQuery;
 import com.julienviet.pgclient.PgResult;
+import com.julienviet.pgclient.Row;
 import com.julienviet.pgclient.Tuple;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -28,7 +29,7 @@ public class SimplePgQueryImpl implements PgQuery {
 
   private final Handler<CommandBase> execHandler;
   private final String sql;
-  private SimpleQueryResultHandler<Tuple> result;
+  private SimpleQueryResultHandler<Row> result;
 
   public SimplePgQueryImpl(String sql, Handler<CommandBase> execHandler) {
     this.execHandler = execHandler;
@@ -46,7 +47,7 @@ public class SimplePgQueryImpl implements PgQuery {
   }
 
   @Override
-  public void execute(Handler<AsyncResult<PgResult<Tuple>>> handler) {
+  public void execute(Handler<AsyncResult<PgResult<Row>>> handler) {
     if (result == null) {
       result = new SimpleQueryResultHandler<>(handler);
       execHandler.handle(new SimpleQueryCommand<>(sql, new RowResultDecoder(), result));

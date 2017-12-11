@@ -18,6 +18,7 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgResult;
+import com.julienviet.pgclient.Row;
 import com.julienviet.pgclient.Tuple;
 import com.julienviet.pgclient.impl.codec.Column;
 import com.julienviet.pgclient.impl.codec.DataType;
@@ -25,11 +26,11 @@ import com.julienviet.pgclient.impl.codec.decoder.ResultDecoder;
 import com.julienviet.pgclient.impl.codec.decoder.message.RowDescription;
 import io.netty.buffer.ByteBuf;
 
-public class RowResultDecoder implements ResultDecoder<Tuple> {
+public class RowResultDecoder implements ResultDecoder<Row> {
 
   private RowDescription desc;
-  private LinkedArrayTuple head;
-  private LinkedArrayTuple tail;
+  private RowImpl head;
+  private RowImpl tail;
   private int size;
 
   public RowResultDecoder() {
@@ -42,7 +43,7 @@ public class RowResultDecoder implements ResultDecoder<Tuple> {
 
   @Override
   public void decodeRow(int len, ByteBuf in) {
-    LinkedArrayTuple row = new LinkedArrayTuple(desc.columns().length);
+    RowImpl row = new RowImpl(desc);
     for (int c = 0; c < len; ++c) {
       int length = in.readInt();
       if (length != -1) {
@@ -68,7 +69,7 @@ public class RowResultDecoder implements ResultDecoder<Tuple> {
   }
 
   @Override
-  public PgResult<Tuple> complete(int updated) {
+  public PgResult<Row> complete(int updated) {
     PgResultImpl result = new PgResultImpl(updated, desc != null ? desc.columnNames() : null, head, size);
     head = null;
     size = 0;

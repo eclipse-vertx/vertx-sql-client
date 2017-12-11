@@ -65,18 +65,18 @@ public interface PgConnection extends PgClient {
   PgQuery createQuery(String sql);
 
   @Override
-  default PgConnection preparedQuery(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler) {
+  default PgConnection preparedQuery(String sql, Handler<AsyncResult<PgResult<Row>>> handler) {
     return (PgConnection) PgClient.super.preparedQuery(sql, handler);
   }
 
   @Override
-  PgConnection query(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler);
+  PgConnection query(String sql, Handler<AsyncResult<PgResult<Row>>> handler);
 
   @Override
-  PgConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<Tuple>>> handler);
+  PgConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<Row>>> handler);
 
   @Override
-  PgConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgBatchResult<Tuple>>> handler);
+  PgConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgBatchResult<Row>>> handler);
 
   /**
    * Create a prepared statement.

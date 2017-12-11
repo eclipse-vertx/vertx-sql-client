@@ -101,12 +101,14 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(10000, result.size());
-        PgIterator<Tuple> it = result.iterator();
+        PgIterator<Row> it = result.iterator();
         for (int i = 0; i < 10000; i++) {
-          Tuple row = it.next();
+          Row row = it.next();
           ctx.assertEquals(2, row.size());
           ctx.assertTrue(row.getValue(0) instanceof Integer);
+          ctx.assertEquals(row.getValue("id"), row.getValue(0));
           ctx.assertTrue(row.getValue(1) instanceof Integer);
+          ctx.assertEquals(row.getValue("randomnumber"), row.getValue(1));
         }
         async.complete();
       }));

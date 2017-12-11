@@ -54,18 +54,18 @@ public interface PgPool extends PgClient {
   }
 
   @Override
-  default PgPool preparedQuery(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler) {
+  default PgPool preparedQuery(String sql, Handler<AsyncResult<PgResult<Row>>> handler) {
     return (PgPool) PgClient.super.preparedQuery(sql, handler);
   }
 
   @Override
-  PgPool query(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler);
+  PgPool query(String sql, Handler<AsyncResult<PgResult<Row>>> handler);
 
   @Override
-  PgPool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<Tuple>>> handler);
+  PgPool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<Row>>> handler);
 
   @Override
-  PgPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgBatchResult<Tuple>>> handler);
+  PgPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgBatchResult<Row>>> handler);
 
   /**
    * Obtain a connection from the pool.

@@ -52,7 +52,7 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
   }
 
   @Override
-  public PgPoolImpl query(String sql, Handler<AsyncResult<PgResult<Tuple>>> handler) {
+  public PgPoolImpl query(String sql, Handler<AsyncResult<PgResult<Row>>> handler) {
     return (PgPoolImpl) super.query(sql, handler);
   }
 
