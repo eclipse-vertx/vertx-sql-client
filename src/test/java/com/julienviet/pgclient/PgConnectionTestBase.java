@@ -17,9 +17,7 @@
 
 package com.julienviet.pgclient;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -33,6 +31,7 @@ import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -42,9 +41,6 @@ import java.util.function.Consumer;
 
 @RunWith(VertxUnitRunner.class)
 public abstract class PgConnectionTestBase extends PgTestBase {
-
-  private static final String LIST_TABLES = "SELECT table_schema,table_name FROM information_schema.tables ORDER BY table_schema,table_name";
-  private static final String CURRENT_DB = "SELECT current_database()";
 
   Vertx vertx;
   Consumer<Handler<AsyncResult<PgConnection>>> connector;
@@ -589,6 +585,24 @@ public abstract class PgConnectionTestBase extends PgTestBase {
           }));
         }));
       }));
+    }));
+  }
+
+  @Test
+  public void testCloseOnUndeploy(TestContext ctx) {
+    Async done = ctx.async();
+    vertx.deployVerticle(new AbstractVerticle() {
+      @Override
+      public void start(Future<Void> startFuture) throws Exception {
+        connector.accept(ctx.asyncAssertSuccess(conn -> {
+          conn.closeHandler(v -> {
+            done.complete();
+          });
+          startFuture.complete();
+        }));
+      }
+    }, ctx.asyncAssertSuccess(id -> {
+      vertx.undeploy(id);
     }));
   }
 

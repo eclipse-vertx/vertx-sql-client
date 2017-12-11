@@ -26,7 +26,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.*;
-import io.vertx.core.impl.ContextImpl;
 import io.vertx.core.impl.NetSocketInternal;
 
 import java.util.*;
@@ -46,7 +45,7 @@ public class SocketConnection implements Connection {
   private final NetSocketInternal socket;
   private final ArrayDeque<CommandBase> inflight = new ArrayDeque<>();
   private final ArrayDeque<CommandBase> pending = new ArrayDeque<>();
-  private final PgConnectionFactory client;
+  private final boolean ssl;
   private final Context context;
   private Status status = Status.CONNECTED;
   private Holder holder;
@@ -55,14 +54,16 @@ public class SocketConnection implements Connection {
   final Deque<DecodeContext> decodeQueue = new ArrayDeque<>();
   final StringLongSequence psSeq = new StringLongSequence();
 
-  public SocketConnection(PgConnectionFactory client,
-                          NetSocketInternal socket,
-                          ContextImpl context) {
+  public SocketConnection(NetSocketInternal socket,
+                          boolean cachePreparedStatements,
+                          int pipeliningLimit,
+                          boolean ssl,
+                          Context context) {
     this.socket = socket;
-    this.client = client;
+    this.ssl = ssl;
     this.context = context;
-    this.psCache = client.cachePreparedStatements ? new ConcurrentHashMap<>() : null;
-    this.pipeliningLimit = client.pipeliningLimit;
+    this.psCache = cachePreparedStatements ? new ConcurrentHashMap<>() : null;
+    this.pipeliningLimit = pipeliningLimit;
   }
 
   public Context context() {
@@ -71,7 +72,7 @@ public class SocketConnection implements Connection {
 
   void initiateProtocolOrSsl(String username, String password, String database, Handler<AsyncResult<Connection>> completionHandler) {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
-    if (client.ssl) {
+    if (ssl) {
       Future<Void> upgradeFuture = Future.future();
       upgradeFuture.setHandler(ar -> {
         if (ar.succeeded()) {

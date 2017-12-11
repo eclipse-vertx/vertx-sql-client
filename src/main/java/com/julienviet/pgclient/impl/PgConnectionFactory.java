@@ -17,14 +17,9 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.*;
 import com.julienviet.pgclient.PgConnectOptions;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.impl.NetSocketInternal;
-import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 
@@ -33,18 +28,28 @@ import io.vertx.core.net.NetClientOptions;
  */
 public class PgConnectionFactory {
 
-  final NetClient client;
-  final VertxInternal vertx;
-  final String host;
-  final int port;
-  final boolean ssl;
-  final String database;
-  final String username;
-  final String password;
-  final boolean cachePreparedStatements;
-  final int pipeliningLimit;
+  private final NetClient client;
+  private final Context ctx;
+  private final Vertx vertx;
+  private final String host;
+  private final int port;
+  private final boolean ssl;
+  private final String database;
+  private final String username;
+  private final String password;
+  private final boolean cachePreparedStatements;
+  private final int pipeliningLimit;
+  private final Closeable hook;
 
-  public PgConnectionFactory(Vertx vertx, PgConnectOptions options) {
+  public PgConnectionFactory(Vertx vertx,
+                             PgConnectOptions options) {
+
+    hook = this::close;
+
+    ctx = Vertx.currentContext();
+    if (ctx != null) {
+      ctx.addCloseHook(hook);
+    }
 
     NetClientOptions netClientOptions = new NetClientOptions(options);
 
@@ -57,13 +62,22 @@ public class PgConnectionFactory {
     this.database = options.getDatabase();
     this.username = options.getUsername();
     this.password = options.getPassword();
-    this.vertx = (VertxInternal) vertx;
+    this.vertx = vertx;
     this.client = vertx.createNetClient(netClientOptions);
     this.cachePreparedStatements = options.getCachePreparedStatements();
     this.pipeliningLimit = options.getPipeliningLimit();
   }
 
+  // Called by hook
+  private void close(Handler<AsyncResult<Void>> completionHandler) {
+    client.close();
+    completionHandler.handle(Future.succeededFuture());
+  }
+
   public void close() {
+    if (ctx != null) {
+      ctx.removeCloseHook(hook);
+    }
     client.close();
   }
 
@@ -71,7 +85,12 @@ public class PgConnectionFactory {
     client.connect(port, host, null, ar -> {
       if (ar.succeeded()) {
         NetSocketInternal socket = (NetSocketInternal) ar.result();
-        SocketConnection conn = new SocketConnection(this, socket, vertx.getOrCreateContext());
+        SocketConnection conn = new SocketConnection(
+          socket,
+          cachePreparedStatements,
+          pipeliningLimit,
+          ssl,
+          vertx.getOrCreateContext());
         conn.initiateProtocolOrSsl(username, password, database, completionHandler);
       } else {
         completionHandler.handle(Future.failedFuture(ar.cause()));
