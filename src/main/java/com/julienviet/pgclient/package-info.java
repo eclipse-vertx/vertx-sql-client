@@ -16,11 +16,11 @@
  */
 
 /**
- * = Postgres Client for Eclipse Vert.x
+ * = Reactive Postgres Client
  *
  * == Using the client
  *
- * To use Postgres Client for Vert.x add the following dependency to the _dependencies_ section of your build descriptor:
+ * To use the Reactive Postgres Client add the following dependency to the _dependencies_ section of your build descriptor:
  *
  * * Maven (in your `pom.xml`):
  *
@@ -41,6 +41,58 @@
  *   compile '${maven.groupId}:${maven.artifactId}:${maven.version}'
  * }
  * ----
+ *
+ * == Connecting to Postgres
+ *
+ * Most of the time you will use a pool to connect to Postgres:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#connecting01}
+ * ----
+ *
+ * You need to release the pool when you don't need it anymore:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#connecting02}
+ * ----
+ *
+ * == Running queries
+ *
+ * When you don't need a transaction or run single queries, you can run queries directly on the pool; the pool
+ * will use one of its connection to run the query and return the result to you:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#queries01(com.julienviet.pgclient.PgClient)}
+ * ----
+ *
+ * You can do the same with prepared statements:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#queries02(com.julienviet.pgclient.PgClient)}
+ * ----
+ *
+ * Query methods returns a {@link com.julienviet.pgclient.PgResult} instance that works both for _select_ statements
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#queries03(com.julienviet.pgclient.PgClient)}
+ * ----
+ *
+ * or _update_/_insert_ statements:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#queries04(com.julienviet.pgclient.PgClient)}
+ * ----
+ *
+ *
+ *
+ * OLD DOC:
+ *
  *
  * == Connecting to a database
  *

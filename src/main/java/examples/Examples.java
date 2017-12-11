@@ -31,6 +31,83 @@ import java.util.List;
 @Source
 public class Examples {
 
+  public void connecting01() {
+
+    // Pool options
+    PgPoolOptions options = new PgPoolOptions()
+      .setPort(5432)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUsername("user")
+      .setPassword("secret")
+      .setMaxSize(5);
+
+    // Create the pool
+    PgPool pool = PgPool.pool(options);
+
+    // A simple query
+    pool.query("SELECT * FROM users WHERE id='julien'", ar -> {
+      if (ar.succeeded()) {
+        PgResult<Tuple> result = ar.result();
+        System.out.println("Got " + result.size() + " results ");
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
+  }
+
+  public void connecting02(PgPool pool) {
+
+    // Close the pool and all the associated resources
+    pool.close();
+  }
+
+  public void queries01(PgClient pool) {
+    pool.query("SELECT * FROM users WHERE id='julien'", ar -> {
+      if (ar.succeeded()) {
+        PgResult<Tuple> result = ar.result();
+        System.out.println("Got " + result.size() + " results ");
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
+  }
+
+  public void queries02(PgClient pool) {
+    pool.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"),  ar -> {
+      if (ar.succeeded()) {
+        PgResult<Tuple> result = ar.result();
+        System.out.println("Got " + result.size() + " results ");
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
+  }
+
+  public void queries03(PgClient pool) {
+    pool.preparedQuery("SELECT first_name, last_name FROM users", ar -> {
+      if (ar.succeeded()) {
+        PgResult<Tuple> result = ar.result();
+        for (Tuple row : result) {
+          System.out.println("User " + row.getString(0) + " " + row.getString(1));
+        }
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
+  }
+
+  public void queries04(PgClient pool) {
+    pool.preparedQuery("\"INSERT INTO users (first_name, last_name) VALUES ($1, $2)", Tuple.of("Julien", "Viet"),  ar -> {
+      if (ar.succeeded()) {
+        PgResult<Tuple> result = ar.result();
+        System.out.println(result.updatedCount());
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
+  }
+
   public void ex1(Vertx vertx) {
 
     // Create options

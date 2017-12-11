@@ -1,8 +1,8 @@
-= Postgres Client for Eclipse Vert.x
+= Reactive Postgres Client
 
 == Using the client
 
-To use Postgres Client for Vert.x add the following dependency to the _dependencies_ section of your build descriptor:
+To use the Reactive Postgres Client add the following dependency to the _dependencies_ section of your build descriptor:
 
 * Maven (in your `pom.xml`):
 
@@ -23,6 +23,117 @@ dependencies {
   compile 'com.julienviet:reactive-pg-client:0.3.1-SNAPSHOT'
 }
 ----
+
+== Connecting to Postgres
+
+Most of the time you will use a pool to connect to Postgres:
+
+[source,kotlin]
+----
+
+// Pool options
+var options = PgPoolOptions(
+  port = 5432,
+  host = "the-host",
+  database = "the-db",
+  username = "user",
+  password = "secret",
+  maxSize = 5)
+
+// Create the pool
+var pool = PgPool.pool(options)
+
+// A simple query
+pool.query("SELECT * FROM users WHERE id='julien'", { ar ->
+  if (ar.succeeded()) {
+    var result = ar.result()
+    println("Got ${result.size()} results ")
+  } else {
+    println("Failure: ${ar.cause().getMessage()}")
+  }
+})
+
+----
+
+You need to release the pool when you don't need it anymore:
+
+[source,kotlin]
+----
+
+// Close the pool and all the associated resources
+pool.close()
+
+----
+
+== Running queries
+
+When you don't need a transaction or run single queries, you can run queries directly on the pool; the pool
+will use one of its connection to run the query and return the result to you:
+
+[source,kotlin]
+----
+pool.query("SELECT * FROM users WHERE id='julien'", { ar ->
+  if (ar.succeeded()) {
+    var result = ar.result()
+    println("Got ${result.size()} results ")
+  } else {
+    println("Failure: ${ar.cause().getMessage()}")
+  }
+})
+
+----
+
+You can do the same with prepared statements:
+
+[source,kotlin]
+----
+pool.preparedQuery("SELECT * FROM users WHERE id=\$$1", Tuple.of("julien"), { ar ->
+  if (ar.succeeded()) {
+    var result = ar.result()
+    println("Got ${result.size()} results ")
+  } else {
+    println("Failure: ${ar.cause().getMessage()}")
+  }
+})
+
+----
+
+Query methods returns a `link:../../apidocs/com/julienviet/pgclient/PgResult.html[PgResult]` instance that works both for _select_ statements
+
+[source,kotlin]
+----
+pool.preparedQuery("SELECT first_name, last_name FROM users", { ar ->
+  if (ar.succeeded()) {
+    var result = ar.result()
+    for (row in result) {
+      println("User ${row.getString(0)} ${row.getString(1)}")
+    }
+  } else {
+    println("Failure: ${ar.cause().getMessage()}")
+  }
+})
+
+----
+
+or _update_/_insert_ statements:
+
+[source,kotlin]
+----
+pool.preparedQuery("\"INSERT INTO users (first_name, last_name) VALUES (\$$1, \$$2)", Tuple.of("Julien", "Viet"), { ar ->
+  if (ar.succeeded()) {
+    var result = ar.result()
+    println(result.updatedCount())
+  } else {
+    println("Failure: ${ar.cause().getMessage()}")
+  }
+})
+
+----
+
+
+
+OLD DOC:
+
 
 == Connecting to a database
 
