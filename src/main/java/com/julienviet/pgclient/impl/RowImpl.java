@@ -19,9 +19,15 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.Row;
 import com.julienviet.pgclient.impl.codec.decoder.message.RowDescription;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.time.temporal.Temporal;
 
 public class RowImpl extends ArrayTuple implements Row {
@@ -66,6 +72,11 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
+  public Character getCharacter(String name) {
+    return getCharacter(desc.columnIndex(name));
+  }
+
+  @Override
   public String getString(String name) {
     return getString(desc.columnIndex(name));
   }
@@ -81,7 +92,37 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
+  public Buffer getBuffer(String name) {
+    return getBuffer(desc.columnIndex(name));
+  }
+
+  @Override
   public Temporal getTemporal(String name) {
     return getTemporal(desc.columnIndex(name));
+  }
+
+  @Override
+  public LocalDate getLocalDate(String name) {
+    return getLocalDate(desc.columnIndex(name));
+  }
+
+  @Override
+  public LocalTime getLocalTime(String name) {
+    return getLocalTime(desc.columnIndex(name));
+  }
+
+  @Override
+  public LocalDateTime getLocalDateTime(String name) {
+    return getLocalDateTime(desc.columnIndex(name));
+  }
+
+  @Override
+  public OffsetTime getOffsetTime(String name) {
+    return getOffsetTime(desc.columnIndex(name));
+  }
+
+  @Override
+  public OffsetDateTime getOffsetDateTime(String name) {
+    return getOffsetDateTime(desc.columnIndex(name));
   }
 }

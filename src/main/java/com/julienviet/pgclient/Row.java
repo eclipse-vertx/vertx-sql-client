@@ -18,9 +18,15 @@ package com.julienviet.pgclient;
 
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.time.temporal.Temporal;
 
 @VertxGen
@@ -80,6 +86,14 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
+  Character getCharacter(String name);
+
+  /**
+   * Get a string value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
   String getString(String name);
 
   /**
@@ -99,6 +113,14 @@ public interface Row extends Tuple {
   JsonArray getJsonArray(String name);
 
   /**
+   * Get a buffer value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  Buffer getBuffer(String name);
+
+  /**
    * Get a temporal value at {@code pos}.
    *
    * @param name the column
@@ -106,5 +128,50 @@ public interface Row extends Tuple {
    */
   @GenIgnore
   Temporal getTemporal(String name);
+
+  /**
+   * Get {@link java.time.LocalDate} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  LocalDate getLocalDate(String name);
+
+  /**
+   * Get {@link java.time.LocalTime} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  LocalTime getLocalTime(String name);
+
+  /**
+   * Get {@link java.time.LocalDateTime} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  LocalDateTime getLocalDateTime(String name);
+
+  /**
+   * Get {@link java.time.OffsetTime} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  OffsetTime getOffsetTime(String name);
+
+  /**
+   * Get {@link java.time.OffsetDateTime} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  OffsetDateTime getOffsetDateTime(String name);
 
 }
