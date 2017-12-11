@@ -245,11 +245,22 @@ age = row.get_integer("age")
 
 == Using transactions
 
-todo.
+You can execute transaction using SQL `BEGIN`/`COMMIT`/`ROLLBACK`, if you do so you must use
+a `link:../../yardoc/VertxPgClient/PgConnection.html[PgConnection]` and manage it yourself.
 
+Or you can use the transaction API of `link:../../yardoc/VertxPgClient/PgConnection.html[PgConnection]`:
 
+[source,ruby]
+----
+Code not translatable
+----
 
+When one of the statements after `begin` fails, the transaction is rollbacked.
 
+[source,ruby]
+----
+Code not translatable
+----
 
 OLD DOC:
 

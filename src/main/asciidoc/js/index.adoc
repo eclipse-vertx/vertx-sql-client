@@ -245,11 +245,22 @@ var age = row.getInteger("age");
 
 == Using transactions
 
-todo.
+You can execute transaction using SQL `BEGIN`/`COMMIT`/`ROLLBACK`, if you do so you must use
+a `link:../../jsdoc/module-vertx-pg-client-js_pg_connection-PgConnection.html[PgConnection]` and manage it yourself.
 
+Or you can use the transaction API of `link:../../jsdoc/module-vertx-pg-client-js_pg_connection-PgConnection.html[PgConnection]`:
 
+[source,js]
+----
+Code not translatable
+----
 
+When one of the statements after `begin` fails, the transaction is rollbacked.
 
+[source,js]
+----
+Code not translatable
+----
 
 OLD DOC:
 

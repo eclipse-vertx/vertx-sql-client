@@ -137,11 +137,22 @@
  *
  * == Using transactions
  *
- * todo.
+ * You can execute transaction using SQL `BEGIN`/`COMMIT`/`ROLLBACK`, if you do so you must use
+ * a {@link com.julienviet.pgclient.PgConnection} and manage it yourself.
  *
+ * Or you can use the transaction API of {@link com.julienviet.pgclient.PgConnection}:
  *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#transaction02(com.julienviet.pgclient.PgPool)}
+ * ----
  *
+ * When one of the statements after `begin` fails, the transaction is rollbacked.
  *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#transaction02(com.julienviet.pgclient.PgPool)}
+ * ----
  *
  * OLD DOC:
  *

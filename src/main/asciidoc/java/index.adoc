@@ -209,11 +209,64 @@ Integer age = row.getInteger("age");
 
 == Using transactions
 
-todo.
+You can execute transaction using SQL `BEGIN`/`COMMIT`/`ROLLBACK`, if you do so you must use
+a `link:../../apidocs/com/julienviet/pgclient/PgConnection.html[PgConnection]` and manage it yourself.
 
+Or you can use the transaction API of `link:../../apidocs/com/julienviet/pgclient/PgConnection.html[PgConnection]`:
 
+[source,java]
+----
+pool.connect(res -> {
+  if (res.succeeded()) {
 
+    // Transaction must use a connection
+    PgConnection conn = res.result();
 
+    // Begin the transaction
+    conn.begin();
+
+    // Statements
+    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
+
+    // Triggers a transaction rollback
+    conn.query("a statement that fails", ar -> {});
+
+    // Attempt to commit the transaction
+    conn.commit(ar -> {
+      // This won't be executed (?)
+      // should it be executed or not ?
+    });
+  }
+});
+----
+
+When one of the statements after `begin` fails, the transaction is rollbacked.
+
+[source,java]
+----
+pool.connect(res -> {
+  if (res.succeeded()) {
+
+    // Transaction must use a connection
+    PgConnection conn = res.result();
+
+    // Begin the transaction
+    conn.begin();
+
+    // Statements
+    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
+
+    // Triggers a transaction rollback
+    conn.query("a statement that fails", ar -> {});
+
+    // Attempt to commit the transaction
+    conn.commit(ar -> {
+      // This won't be executed (?)
+      // should it be executed or not ?
+    });
+  }
+});
+----
 
 OLD DOC:
 

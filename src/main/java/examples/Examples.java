@@ -184,14 +184,54 @@ public class Examples {
   }
 
   public void transaction01(PgPool pool) {
+    pool.connect(res -> {
+      if (res.succeeded()) {
 
-    pool.connect(ar -> {
-      if (ar.succeeded()) {
-        PgConnection conn = ar.result();
-        // conn.query("BEGIN", )
+        // Transaction must use a connection
+        PgConnection conn = res.result();
+
+        // Begin the transaction
+        conn.begin();
+
+        // Statements
+        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar2 ->{});
+        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')", ar2 ->{});
+
+        // Commit the transaction
+        conn.commit(ar -> {
+          if (ar.succeeded()) {
+            System.out.println("Transaction succeeded");
+          } else {
+            System.out.println("Transaction failed " + ar.cause().getMessage());
+          }
+        });
       }
     });
+  }
 
+  public void transaction02(PgPool pool) {
+    pool.connect(res -> {
+      if (res.succeeded()) {
+
+        // Transaction must use a connection
+        PgConnection conn = res.result();
+
+        // Begin the transaction
+        conn.begin();
+
+        // Statements
+        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
+
+        // Triggers a transaction rollback
+        conn.query("a statement that fails", ar -> {});
+
+        // Attempt to commit the transaction
+        conn.commit(ar -> {
+          // This won't be executed (?)
+          // should it be executed or not ?
+        });
+      }
+    });
   }
 
   public void ex1(Vertx vertx) {
