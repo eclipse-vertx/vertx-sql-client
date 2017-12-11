@@ -22,7 +22,11 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 
@@ -32,7 +36,9 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Boolean getBoolean(int pos) {
-    return (Boolean) get(pos);
+    if(get(pos) instanceof Boolean)
+      return (Boolean) get(pos);
+    return null;
   }
 
   @Override
@@ -42,57 +48,133 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Integer getInteger(int pos) {
-    return (Integer) get(pos);
+    if(get(pos) instanceof Integer)
+      return (Integer) get(pos);
+    return null;
   }
 
   @Override
   public Long getLong(int pos) {
-    return (Long) get(pos);
+    if(get(pos) instanceof Long)
+      return (Long) get(pos);
+    return null;
   }
 
   @Override
   public Float getFloat(int pos) {
-    return (Float) get(pos);
+    if(get(pos) instanceof Float)
+      return (Float) get(pos);
+    return null;
   }
 
   @Override
   public Double getDouble(int pos) {
-    return (Double) get(pos);
+    if(get(pos) instanceof Double)
+      return (Double) get(pos);
+    return null;
   }
 
   @Override
   public String getString(int pos) {
-    return (String) get(pos);
+    if(get(pos) instanceof String)
+      return (String) get(pos);
+    return null;
+  }
+
+  @Override
+  public Character getCharacter(int pos) {
+    if(get(pos) instanceof Character)
+      return (Character) get(pos);
+    return null;
   }
 
   @Override
   public JsonObject getJsonObject(int pos) {
-    return (JsonObject) get(pos);
+    if(get(pos) instanceof JsonObject)
+      return (JsonObject) get(pos);
+    return null;
   }
 
   @Override
   public JsonArray getJsonArray(int pos) {
-    return (JsonArray) get(pos);
+    if(get(pos) instanceof JsonArray)
+      return (JsonArray) get(pos);
+    return null;
   }
 
   @Override
-  public Buffer getBinary(int pos) {
-    return (Buffer) get(pos);
+  public Buffer getBuffer(int pos) {
+    if(get(pos) instanceof Buffer)
+      return (Buffer) get(pos);
+    return null;
   }
 
   @Override
   public Temporal getTemporal(int pos) {
-    return (Temporal) get(pos);
+    if(get(pos) instanceof Temporal)
+      return (Temporal) get(pos);
+    return null;
+  }
+
+  @Override
+  public LocalDate getLocalDate(int pos) {
+    if(get(pos) instanceof LocalDate)
+      return (LocalDate) get(pos);
+    return null;
+  }
+
+  @Override
+  public LocalTime getLocalTime(int pos) {
+    if(get(pos) instanceof LocalTime)
+      return (LocalTime) get(pos);
+    return null;
+  }
+
+  @Override
+  public LocalDateTime getLocalDateTime(int pos) {
+    if(get(pos) instanceof LocalDateTime)
+      return (LocalDateTime) get(pos);
+    return null;
+  }
+
+  @Override
+  public OffsetTime getOffsetTime(int pos) {
+    if(get(pos) instanceof OffsetTime)
+      return (OffsetTime) get(pos);
+    return null;
+  }
+
+  @Override
+  public OffsetDateTime getOffsetDateTime(int pos) {
+    if(get(pos) instanceof OffsetDateTime)
+      return (OffsetDateTime) get(pos);
+    return null;
   }
 
   @Override
   public Tuple addBoolean(Boolean value) {
+    add(value);
     return this;
   }
 
   @Override
   public Tuple addValue(Object value) {
-    add(value);
+    if(value instanceof Boolean
+      || value instanceof Number
+      || value instanceof Character
+      || value instanceof String
+      || value instanceof JsonObject
+      || value instanceof JsonArray
+      || value instanceof Buffer
+      || value instanceof LocalTime
+      || value instanceof OffsetTime
+      || value instanceof LocalDate
+      || value instanceof LocalDateTime
+      || value instanceof OffsetDateTime) {
+      add(value);
+    } else {
+      add(null);
+    }
     return this;
   }
 
@@ -127,6 +209,12 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
+  public Tuple addCharacter(Character value) {
+    add(value);
+    return this;
+  }
+
+  @Override
   public Tuple addJsonObject(JsonObject value) {
     add(value);
     return this;
@@ -139,13 +227,43 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
-  public Tuple addBinary(Buffer value) {
+  public Tuple addBuffer(Buffer value) {
     add(value);
     return this;
   }
 
   @Override
-  public Tuple getTemporal(Temporal value) {
+  public Tuple addTemporal(Temporal value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addLocalDate(LocalDate value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addLocalTime(LocalTime value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addLocalDateTime(LocalDateTime value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addOffsetTime(OffsetTime value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addOffsetDateTime(OffsetDateTime value) {
     add(value);
     return this;
   }

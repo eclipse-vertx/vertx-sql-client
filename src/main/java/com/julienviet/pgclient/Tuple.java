@@ -25,8 +25,12 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.time.temporal.Temporal;
-import java.util.Collections;
 
 /**
  * A general purpose tuple.
@@ -49,7 +53,7 @@ public interface Tuple {
    */
   static Tuple of(Object elt1) {
     ArrayTuple tuple = new ArrayTuple(1);
-    tuple.add(elt1);
+    tuple.addValue(elt1);
     return tuple;
   }
 
@@ -62,8 +66,8 @@ public interface Tuple {
    */
   static Tuple of(Object elt1, Object elt2) {
     ArrayTuple tuple = new ArrayTuple(2);
-    tuple.add(elt1);
-    tuple.add(elt2);
+    tuple.addValue(elt1);
+    tuple.addValue(elt2);
     return tuple;
   }
 
@@ -77,9 +81,9 @@ public interface Tuple {
    */
   static Tuple of(Object elt1, Object elt2, Object elt3) {
     ArrayTuple tuple = new ArrayTuple(3);
-    tuple.add(elt1);
-    tuple.add(elt2);
-    tuple.add(elt3);
+    tuple.addValue(elt1);
+    tuple.addValue(elt2);
+    tuple.addValue(elt3);
     return tuple;
   }
 
@@ -94,10 +98,10 @@ public interface Tuple {
    */
   static Tuple of(Object elt1, Object elt2, Object elt3, Object elt4) {
     ArrayTuple tuple = new ArrayTuple(4);
-    tuple.add(elt1);
-    tuple.add(elt2);
-    tuple.add(elt3);
-    tuple.add(elt4);
+    tuple.addValue(elt1);
+    tuple.addValue(elt2);
+    tuple.addValue(elt3);
+    tuple.addValue(elt4);
     return tuple;
   }
 
@@ -113,11 +117,11 @@ public interface Tuple {
    */
   static Tuple of(Object elt1, Object elt2, Object elt3, Object elt4, Object elt5) {
     ArrayTuple tuple = new ArrayTuple(5);
-    tuple.add(elt1);
-    tuple.add(elt2);
-    tuple.add(elt3);
-    tuple.add(elt4);
-    tuple.add(elt5);
+    tuple.addValue(elt1);
+    tuple.addValue(elt2);
+    tuple.addValue(elt3);
+    tuple.addValue(elt4);
+    tuple.addValue(elt5);
     return tuple;
   }
 
@@ -134,12 +138,12 @@ public interface Tuple {
    */
   static Tuple of(Object elt1, Object elt2, Object elt3, Object elt4, Object elt5, Object elt6) {
     ArrayTuple tuple = new ArrayTuple(5);
-    tuple.add(elt1);
-    tuple.add(elt2);
-    tuple.add(elt3);
-    tuple.add(elt4);
-    tuple.add(elt5);
-    tuple.add(elt6);
+    tuple.addValue(elt1);
+    tuple.addValue(elt2);
+    tuple.addValue(elt3);
+    tuple.addValue(elt4);
+    tuple.addValue(elt5);
+    tuple.addValue(elt6);
     return tuple;
   }
 
@@ -152,7 +156,9 @@ public interface Tuple {
   @GenIgnore
   static Tuple of(Object... elements) {
     ArrayTuple tuple = new ArrayTuple(elements.length);
-    Collections.addAll(tuple, elements);
+    for (Object elt: elements) {
+      tuple.addValue(elt);
+    }
     return tuple;
   }
 
@@ -213,6 +219,14 @@ public interface Tuple {
   String getString(int pos);
 
   /**
+   * Get a {@link Character} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  Character getCharacter(int pos);
+
+  /**
    * Get a json object value at {@code pos}.
    *
    * @param pos the position
@@ -229,7 +243,7 @@ public interface Tuple {
   JsonArray getJsonArray(int pos);
 
   /**
-   * Get a temporal value at {@code pos}.
+   * Get a {@link java.time.temporal.Temporal} value at {@code pos}.
    *
    * @param pos the position
    * @return the value or {@code null}
@@ -238,12 +252,57 @@ public interface Tuple {
   Temporal getTemporal(int pos);
 
   /**
-   * Get a binary value at {@code pos}.
+   * Get {@link java.time.LocalDate} value at {@code pos}.
    *
    * @param pos the position
    * @return the value or {@code null}
    */
-  Buffer getBinary(int pos);
+  @GenIgnore
+  LocalDate getLocalDate(int pos);
+
+  /**
+   * Get {@link java.time.LocalTime} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  LocalTime getLocalTime(int pos);
+
+  /**
+   * Get {@link java.time.LocalDateTime} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  LocalDateTime getLocalDateTime(int pos);
+
+  /**
+   * Get {@link java.time.OffsetTime} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  OffsetTime getOffsetTime(int pos);
+
+  /**
+   * Get {@link java.time.OffsetDateTime} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  OffsetDateTime getOffsetDateTime(int pos);
+
+  /**
+   * Get a buffer value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  Buffer getBuffer(int pos);
 
   /**
    * Add a boolean value at the end of the tuple.
@@ -309,6 +368,15 @@ public interface Tuple {
   Tuple addString(String value);
 
   /**
+   * Add a {@link Character} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  Tuple addCharacter(Character value);
+
+  /**
    * Add a json object value at the end of the tuple.
    *
    * @param value the value
@@ -327,22 +395,67 @@ public interface Tuple {
   Tuple addJsonArray(JsonArray value);
 
   /**
-   * Add a binary value at the end of the tuple.
+   * Add a buffer value at the end of the tuple.
    *
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  Tuple addBinary(Buffer value);
+  Tuple addBuffer(Buffer value);
 
   /**
-   * Add a temporal value at the end of the tuple.
+   * Add a {@link java.time.temporal.Temporal} value at the end of the tuple.
    *
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore
-  Tuple getTemporal(Temporal value);
+  Tuple addTemporal(Temporal value);
+
+  /**
+   * Add a {@link java.time.LocalDate} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addLocalDate(LocalDate value);
+
+  /**
+   * Add a {@link java.time.LocalTime} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addLocalTime(LocalTime value);
+
+  /**
+   * Add a {@link java.time.LocalDateTime} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addLocalDateTime(LocalDateTime value);
+
+  /**
+   * Add a {@link java.time.OffsetTime} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addOffsetTime(OffsetTime value);
+
+  /**
+   * Add a {@link java.time.OffsetDateTime} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addOffsetDateTime(OffsetDateTime value);
 
   /**
    * @return the tuple size
