@@ -147,7 +147,9 @@ VertxPgClient::PgConnection.connect(vertx, options) { |res_err,res|
 == Running queries
 
 When you don't need a transaction or run single queries, you can run queries directly on the pool; the pool
-will use one of its connection to run the query and return the result to you:
+will use one of its connection to run the query and return the result to you.
+
+Here is how to run simple queries:
 
 [source,ruby]
 ----
@@ -162,7 +164,7 @@ pool.query("SELECT * FROM users WHERE id='julien'") { |ar_err,ar|
 
 ----
 
-You can do the same with prepared statements:
+You can do the same with prepared queries:
 
 [source,ruby]
 ----
@@ -178,7 +180,7 @@ pool.prepared_query("SELECT * FROM users WHERE id=$1", VertxPgClient::Tuple.of("
 
 ----
 
-Query methods returns a `link:../../yardoc/VertxPgClient/PgResult.html[PgResult]` instance that works for _select_ statements
+Query methods return a `link:../../yardoc/VertxPgClient/PgResult.html[PgResult]` instance that works for _select_ statements
 
 [source,ruby]
 ----
@@ -186,12 +188,7 @@ pool.prepared_query("SELECT first_name, last_name FROM users") { |ar_err,ar|
   if (ar_err == nil)
     result = ar
     result.each do |row|
-
-      # You can access columns by position
       puts "User #{row.get_string(0)} #{row.get_string(1)}"
-
-      # Or by name
-      puts "User #{row.get_string("first_name")} #{row.get_string("last_name")}"
     end
   else
     puts "Failure: #{ar_err.get_message()}"
@@ -216,7 +213,35 @@ pool.prepared_query("\"INSERT INTO users (first_name, last_name) VALUES ($1, $2)
 
 ----
 
+The `link:../../yardoc/VertxPgClient/Row.html[Row]` gives you access to your data by index
 
+[source,ruby]
+----
+puts "User #{row.get_string(0)} #{row.get_string(1)}"
+
+----
+
+or by name
+
+[source,ruby]
+----
+puts "User #{row.get_string("first_name")} #{row.get_string("last_name")}"
+
+----
+
+You can access a wide variety of of types
+
+[source,ruby]
+----
+
+firstName = row.get_string("first_name")
+male = row.get_boolean?("male")
+age = row.get_integer("age")
+
+# ...
+
+
+----
 
 
 

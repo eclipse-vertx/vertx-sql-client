@@ -146,12 +146,7 @@ public class Examples {
       if (ar.succeeded()) {
         PgResult<Row> result = ar.result();
         for (Row row : result) {
-
-          // You can access columns by position
           System.out.println("User " + row.getString(0) + " " + row.getString(1));
-
-          // Or by name
-          System.out.println("User " + row.getString("first_name") + " " + row.getString("last_name"));
         }
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
@@ -168,6 +163,24 @@ public class Examples {
         System.out.println("Failure: " + ar.cause().getMessage());
       }
     });
+  }
+
+  public void queries05(Row row) {
+    System.out.println("User " + row.getString(0) + " " + row.getString(1));
+  }
+
+  public void queries06(Row row) {
+    System.out.println("User " + row.getString("first_name") + " " + row.getString("last_name"));
+  }
+
+  public void queries07(Row row) {
+
+    String firstName = row.getString("first_name");
+    Boolean male = row.getBoolean("male");
+    Integer age = row.getInteger("age");
+
+    // ...
+
   }
 
   public void ex1(Vertx vertx) {

@@ -143,7 +143,9 @@ PgConnection.connect(vertx, options, { res ->
 == Running queries
 
 When you don't need a transaction or run single queries, you can run queries directly on the pool; the pool
-will use one of its connection to run the query and return the result to you:
+will use one of its connection to run the query and return the result to you.
+
+Here is how to run simple queries:
 
 [source,groovy]
 ----
@@ -158,7 +160,7 @@ pool.query("SELECT * FROM users WHERE id='julien'", { ar ->
 
 ----
 
-You can do the same with prepared statements:
+You can do the same with prepared queries:
 
 [source,groovy]
 ----
@@ -173,7 +175,7 @@ pool.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"), { ar -
 
 ----
 
-Query methods returns a `link:../../apidocs/com/julienviet/pgclient/PgResult.html[PgResult]` instance that works for _select_ statements
+Query methods return a `link:../../apidocs/com/julienviet/pgclient/PgResult.html[PgResult]` instance that works for _select_ statements
 
 [source,groovy]
 ----
@@ -181,12 +183,7 @@ pool.preparedQuery("SELECT first_name, last_name FROM users", { ar ->
   if (ar.succeeded()) {
     def result = ar.result()
     result.each { row ->
-
-      // You can access columns by position
       println("User ${row.getString(0)} ${row.getString(1)}")
-
-      // Or by name
-      println("User ${row.getString("first_name")} ${row.getString("last_name")}")
     }
   } else {
     println("Failure: ${ar.cause().getMessage()}")
@@ -210,7 +207,35 @@ pool.preparedQuery("\"INSERT INTO users (first_name, last_name) VALUES ($1, $2)"
 
 ----
 
+The `link:../../apidocs/com/julienviet/pgclient/Row.html[Row]` gives you access to your data by index
 
+[source,groovy]
+----
+println("User ${row.getString(0)} ${row.getString(1)}")
+
+----
+
+or by name
+
+[source,groovy]
+----
+println("User ${row.getString("first_name")} ${row.getString("last_name")}")
+
+----
+
+You can access a wide variety of of types
+
+[source,groovy]
+----
+
+def firstName = row.getString("first_name")
+def male = row.getBoolean("male")
+def age = row.getInteger("age")
+
+// ...
+
+
+----
 
 
 

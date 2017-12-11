@@ -147,7 +147,9 @@ PgConnection.connect(vertx, options, function (res, res_err) {
 == Running queries
 
 When you don't need a transaction or run single queries, you can run queries directly on the pool; the pool
-will use one of its connection to run the query and return the result to you:
+will use one of its connection to run the query and return the result to you.
+
+Here is how to run simple queries:
 
 [source,js]
 ----
@@ -162,7 +164,7 @@ pool.query("SELECT * FROM users WHERE id='julien'", function (ar, ar_err) {
 
 ----
 
-You can do the same with prepared statements:
+You can do the same with prepared queries:
 
 [source,js]
 ----
@@ -178,7 +180,7 @@ pool.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"), functi
 
 ----
 
-Query methods returns a `link:../../jsdoc/module-vertx-pg-client-js_pg_result-PgResult.html[PgResult]` instance that works for _select_ statements
+Query methods return a `link:../../jsdoc/module-vertx-pg-client-js_pg_result-PgResult.html[PgResult]` instance that works for _select_ statements
 
 [source,js]
 ----
@@ -186,12 +188,7 @@ pool.preparedQuery("SELECT first_name, last_name FROM users", function (ar, ar_e
   if (ar_err == null) {
     var result = ar;
     Array.prototype.forEach.call(result, function(row) {
-
-      // You can access columns by position
       console.log("User " + row.getString(0) + " " + row.getString(1));
-
-      // Or by name
-      console.log("User " + row.getString("first_name") + " " + row.getString("last_name"));
     });
   } else {
     console.log("Failure: " + ar_err.getMessage());
@@ -216,7 +213,35 @@ pool.preparedQuery("\"INSERT INTO users (first_name, last_name) VALUES ($1, $2)"
 
 ----
 
+The `link:../../jsdoc/module-vertx-pg-client-js_row-Row.html[Row]` gives you access to your data by index
 
+[source,js]
+----
+console.log("User " + row.getString(0) + " " + row.getString(1));
+
+----
+
+or by name
+
+[source,js]
+----
+console.log("User " + row.getString("first_name") + " " + row.getString("last_name"));
+
+----
+
+You can access a wide variety of of types
+
+[source,js]
+----
+
+var firstName = row.getString("first_name");
+var male = row.getBoolean("male");
+var age = row.getInteger("age");
+
+// ...
+
+
+----
 
 
 

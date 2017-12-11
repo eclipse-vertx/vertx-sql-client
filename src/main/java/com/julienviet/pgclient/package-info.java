@@ -84,21 +84,23 @@
  * == Running queries
  *
  * When you don't need a transaction or run single queries, you can run queries directly on the pool; the pool
- * will use one of its connection to run the query and return the result to you:
+ * will use one of its connection to run the query and return the result to you.
+ *
+ * Here is how to run simple queries:
  *
  * [source,$lang]
  * ----
  * {@link examples.Examples#queries01(com.julienviet.pgclient.PgClient)}
  * ----
  *
- * You can do the same with prepared statements:
+ * You can do the same with prepared queries:
  *
  * [source,$lang]
  * ----
  * {@link examples.Examples#queries02(com.julienviet.pgclient.PgClient)}
  * ----
  *
- * Query methods returns a {@link com.julienviet.pgclient.PgResult} instance that works for _select_ statements
+ * Query methods return a {@link com.julienviet.pgclient.PgResult} instance that works for _select_ statements
  *
  * [source,$lang]
  * ----
@@ -112,7 +114,26 @@
  * {@link examples.Examples#queries04(com.julienviet.pgclient.PgClient)}
  * ----
  *
+ * The {@link com.julienviet.pgclient.Row} gives you access to your data by index
  *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#queries05(com.julienviet.pgclient.Row)}
+ * ----
+ *
+ * or by name
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#queries06(com.julienviet.pgclient.Row)}
+ * ----
+ *
+ * You can access a wide variety of of types
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#queries07(com.julienviet.pgclient.Row)}
+ * ----
  *
  *
  *

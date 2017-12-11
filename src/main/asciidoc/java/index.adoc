@@ -124,7 +124,9 @@ PgConnection.connect(vertx, options, res -> {
 == Running queries
 
 When you don't need a transaction or run single queries, you can run queries directly on the pool; the pool
-will use one of its connection to run the query and return the result to you:
+will use one of its connection to run the query and return the result to you.
+
+Here is how to run simple queries:
 
 [source,java]
 ----
@@ -138,7 +140,7 @@ pool.query("SELECT * FROM users WHERE id='julien'", ar -> {
 });
 ----
 
-You can do the same with prepared statements:
+You can do the same with prepared queries:
 
 [source,java]
 ----
@@ -152,7 +154,7 @@ pool.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"),  ar ->
 });
 ----
 
-Query methods returns a `link:../../apidocs/com/julienviet/pgclient/PgResult.html[PgResult]` instance that works for _select_ statements
+Query methods return a `link:../../apidocs/com/julienviet/pgclient/PgResult.html[PgResult]` instance that works for _select_ statements
 
 [source,java]
 ----
@@ -160,12 +162,7 @@ pool.preparedQuery("SELECT first_name, last_name FROM users", ar -> {
   if (ar.succeeded()) {
     PgResult<Row> result = ar.result();
     for (Row row : result) {
-
-      // You can access columns by position
       System.out.println("User " + row.getString(0) + " " + row.getString(1));
-
-      // Or by name
-      System.out.println("User " + row.getString("first_name") + " " + row.getString("last_name"));
     }
   } else {
     System.out.println("Failure: " + ar.cause().getMessage());
@@ -187,7 +184,28 @@ pool.preparedQuery("\"INSERT INTO users (first_name, last_name) VALUES ($1, $2)"
 });
 ----
 
+The `link:../../apidocs/com/julienviet/pgclient/Row.html[Row]` gives you access to your data by index
 
+[source,java]
+----
+System.out.println("User " + row.getString(0) + " " + row.getString(1));
+----
+
+or by name
+
+[source,java]
+----
+System.out.println("User " + row.getString("first_name") + " " + row.getString("last_name"));
+----
+
+You can access a wide variety of of types
+
+[source,java]
+----
+String firstName = row.getString("first_name");
+Boolean male = row.getBoolean("male");
+Integer age = row.getInteger("age");
+----
 
 
 
