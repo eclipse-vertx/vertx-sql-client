@@ -20,16 +20,13 @@ package com.julienviet.pgclient.impl;
 import com.julienviet.pgclient.PgBatchResult;
 import com.julienviet.pgclient.PgResult;
 import com.julienviet.pgclient.Row;
-import com.julienviet.pgclient.Tuple;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 class BatchQueryResultHandler implements QueryResultHandler<Row> {
 
   private final Handler<AsyncResult<PgBatchResult<Row>>> handler;
   private PgBatchResultImpl<Row> list;
-  private Throwable failure;
 
   public BatchQueryResultHandler(int size, Handler<AsyncResult<PgBatchResult<Row>>> handler) {
     this.handler = handler;
@@ -37,21 +34,12 @@ class BatchQueryResultHandler implements QueryResultHandler<Row> {
   }
 
   @Override
-  public void handleResult(PgResult<Row> result, boolean suspended) {
+  public void handleResult(PgResult<Row> result) {
     list.add(result);
   }
 
   @Override
-  public void handleFailure(Throwable cause) {
-    failure = cause;
-  }
-
-  @Override
-  public void handleEnd() {
-    if (failure != null) {
-      handler.handle(Future.failedFuture(failure));
-    } else {
-      handler.handle(Future.succeededFuture(list));
-    }
+  public void handle(AsyncResult<Boolean> res) {
+    handler.handle(res.map(list));
   }
 }

@@ -24,6 +24,8 @@ import com.julienviet.pgclient.impl.codec.decoder.ResultDecoder;
 import com.julienviet.pgclient.impl.codec.decoder.message.BindComplete;
 import com.julienviet.pgclient.impl.codec.decoder.message.ParseComplete;
 import com.julienviet.pgclient.impl.codec.decoder.message.PortalSuspended;
+import com.julienviet.pgclient.impl.codec.decoder.message.ReadyForQuery;
+import io.vertx.core.Future;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -35,6 +37,7 @@ abstract class ExtendedQueryCommandBase<T> extends QueryCommandBase<T> {
   protected final String portal;
   protected final boolean suspended;
   protected final ResultDecoder<T> decoder;
+  private boolean susp;
 
   ExtendedQueryCommandBase(PreparedStatement ps,
                            int fetch,
@@ -51,14 +54,26 @@ abstract class ExtendedQueryCommandBase<T> extends QueryCommandBase<T> {
   }
 
   @Override
+  String sql() {
+    return ps.sql;
+  }
+
+  @Override
   public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == ParseComplete.class) {
       // Response to Parse
     } else if (msg.getClass() == PortalSuspended.class) {
+      susp = true;
       PgResult<T> result = (PgResult<T>) ((PortalSuspended) msg).result();
-      handler.handleResult(result, true);
+      resultHandler.handleResult(result);
     } else if (msg.getClass() == BindComplete.class) {
       // Response to Bind
+    } else if (msg.getClass() == ReadyForQuery.class) {
+      super.handleMessage(msg);
+      if (!completed) {
+        completed = true;
+        handler.handle(Future.succeededFuture(susp));
+      }
     } else {
       super.handleMessage(msg);
     }

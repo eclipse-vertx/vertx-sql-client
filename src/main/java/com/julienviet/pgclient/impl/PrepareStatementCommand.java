@@ -26,33 +26,27 @@ import com.julienviet.pgclient.impl.codec.encoder.message.Parse;
 import com.julienviet.pgclient.impl.codec.encoder.message.Sync;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 
 import java.util.Map;
-import java.util.function.Function;
 
-public class PrepareStatementCommand extends CommandBase {
+public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
 
   final String sql;
   private long statement; // 0 means unamed statement otherwise CString
   private ParameterDescription parameterDesc;
   private RowDescription rowDesc;
   private Future<PreparedStatement> fut;
-  private final Function<AsyncResult<PreparedStatement>, CommandBase> supplier;
 
-  PrepareStatementCommand(String sql, Function<AsyncResult<PreparedStatement>, CommandBase> supplier) {
+  PrepareStatementCommand(String sql, Handler<AsyncResult<PreparedStatement>> handler) {
+    super(handler);
     this.sql = sql;
-    this.supplier = supplier;
   }
 
   @Override
   void foo(SocketConnection conn) {
 
-    Future<PreparedStatement> bilto = Future.<PreparedStatement>future().setHandler(ar -> {
-      CommandBase command = supplier.apply(ar);
-      if (command != null) {
-        conn.schedule(command);
-      }
-    });
+    Future<PreparedStatement> bilto = Future.<PreparedStatement>future().setHandler(handler);
 
     Map<String, SocketConnection.CachedPreparedStatement> psCache = conn.psCache;
     if (psCache != null) {

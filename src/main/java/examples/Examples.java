@@ -183,6 +183,17 @@ public class Examples {
 
   }
 
+  public void transaction01(PgPool pool) {
+
+    pool.connect(ar -> {
+      if (ar.succeeded()) {
+        PgConnection conn = ar.result();
+        // conn.query("BEGIN", )
+      }
+    });
+
+  }
+
   public void ex1(Vertx vertx) {
 
     // Create options

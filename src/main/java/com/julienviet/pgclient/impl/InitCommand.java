@@ -38,10 +38,9 @@ import io.vertx.core.Handler;
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class InitCommand extends CommandBase {
+public class InitCommand extends CommandBase<Connection> {
 
   private static final String UTF8 = "UTF8";
-  private final Handler<AsyncResult<Connection>> handler;
   final String username;
   final String password;
   final String database;
@@ -49,10 +48,10 @@ public class InitCommand extends CommandBase {
   private SocketConnection conn;
 
   InitCommand(String username, String password, String database, Handler<AsyncResult<Connection>> handler) {
+    super(handler);
     this.username = username;
     this.password = password;
     this.database = database;
-    this.handler = handler;
   }
 
   @Override

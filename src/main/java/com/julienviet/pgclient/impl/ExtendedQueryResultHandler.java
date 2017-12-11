@@ -19,12 +19,12 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgResult;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 public class ExtendedQueryResultHandler<T> implements QueryResultHandler<T> {
 
   private final Handler<AsyncResult<PgResult<T>>> handler;
+  private PgResult<T> result;
   private boolean suspended;
 
   ExtendedQueryResultHandler(Handler<AsyncResult<PgResult<T>>> handler) {
@@ -36,17 +36,13 @@ public class ExtendedQueryResultHandler<T> implements QueryResultHandler<T> {
   }
 
   @Override
-  public void handleFailure(Throwable cause) {
-    handler.handle(Future.failedFuture(cause));
+  public void handleResult(PgResult<T> result) {
+    this.result = result;
   }
 
   @Override
-  public void handleResult(PgResult<T> result, boolean suspended) {
-    this.suspended = suspended;
-    handler.handle(Future.succeededFuture(result));
-  }
-
-  @Override
-  public void handleEnd() {
+  public void handle(AsyncResult<Boolean> res) {
+    suspended = res.result();
+    handler.handle(res.map(result));
   }
 }

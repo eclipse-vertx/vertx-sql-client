@@ -28,7 +28,6 @@ INSERT INTO Fortune (id, message) VALUES (10, 'Computers make very fast, very ac
 INSERT INTO Fortune (id, message) VALUES (11, '<script>alert("This should not be displayed in a browser alert box.");</script>');
 INSERT INTO Fortune (id, message) VALUES (12, 'フレームワークのベンチマーク');
 
-
 DROP TABLE IF EXISTS "World";
 CREATE TABLE  "World" (
   id integer NOT NULL,
@@ -69,3 +68,9 @@ CREATE TABLE "TemporalDataType" ("Date" date, "Time" time without time zone, "Ti
 INSERT INTO "TemporalDataType" ("Date", "Time", "TimeTz", "Timestamp", "TimestampTz", "Interval") VALUES ('1981-05-30', '17:55:04.90512', '17:55:04.90512+03:07', '2017-05-14 19:35:58.237666', '2017-05-14 23:59:59.237666-03', '17:22:05');
 INSERT INTO "TemporalDataType" ("Date", "Time", "TimeTz", "Timestamp", "TimestampTz", "Interval") VALUES ('2017-05-30', '12:55:04.90512', '02:55:04.90512+03:07', '1909-05-14 19:35:58.237666', '1909-05-14 22:35:58.237666-03', '02:01:33');
 INSERT INTO "TemporalDataType" ("Date", "Time", "TimeTz", "Timestamp", "TimestampTz", "Interval") VALUES ('1900-01-01', '23:59:04.90512', '08:08:03.90512+03:07', '1800-01-01 23:57:53.237666', '1800-01-01 23:59:59.237666-03', '04:33:59');
+
+DROP TABLE IF EXISTS TxTest;
+CREATE TABLE TxTest (
+  id integer NOT NULL,
+  PRIMARY KEY (id)
+);

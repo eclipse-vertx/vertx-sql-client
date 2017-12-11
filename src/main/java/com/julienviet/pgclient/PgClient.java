@@ -51,9 +51,7 @@ public interface PgClient {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  default PgClient preparedQuery(String sql, Handler<AsyncResult<PgResult<Row>>> handler) {
-    return preparedQuery(sql, ArrayTuple.EMPTY, handler);
-  }
+  PgClient preparedQuery(String sql, Handler<AsyncResult<PgResult<Row>>> handler);
 
   /**
    * Prepare and execute a query.

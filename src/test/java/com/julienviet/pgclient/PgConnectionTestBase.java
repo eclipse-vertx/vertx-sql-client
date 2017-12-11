@@ -31,8 +31,6 @@ import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -605,6 +603,63 @@ public abstract class PgConnectionTestBase extends PgTestBase {
       }
     }, ctx.asyncAssertSuccess(id -> {
       vertx.undeploy(id);
+    }));
+  }
+
+  @Test
+  public void testTransactionCommit(TestContext ctx) {
+    Async done = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      conn.begin();
+      conn.query("INSERT INTO TxTest (id) VALUES (1)", ar1 -> {
+        System.out.println("got res 1");
+      });
+      conn.query("INSERT INTO TxTest (id) VALUES (2)", ar2 -> {
+        System.out.println("got res 2");
+      });
+      conn.commit(ctx.asyncAssertSuccess(v -> {
+        conn.query("SELECT id FROM TxTest WHERE id=1 OR id=2", ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(2, result.size());
+          done.complete();
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testTransactionRollback(TestContext ctx) {
+    Async done = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      conn.begin();
+      conn.query("INSERT INTO TxTest (id) VALUES (3)", ar1 -> {
+        System.out.println("got res 1 " + ar1.succeeded());
+      });
+      conn.query("INSERT INTO TxTest (id) VALUES (4)", ar2 -> {
+        System.out.println("got res 2");
+      });
+      conn.rollback(ctx.asyncAssertSuccess(v -> {
+        conn.query("SELECT id FROM TxTest WHERE id=3 OR id=4", ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(0, result.size());
+          done.complete();
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testTransactionFailure(TestContext ctx) {
+    Async done = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      conn.begin();
+      conn.query("INSERT INTO TxTest (id) VALUES (5)", ar1 -> {
+        System.out.println("got res 1");
+      });
+      conn.query("invalid-sql", ar2 -> {
+        conn.query("SELECT id FROM TxTest WHERE id=5", ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(0, result.size());
+          done.complete();
+        }));
+      });
     }));
   }
 

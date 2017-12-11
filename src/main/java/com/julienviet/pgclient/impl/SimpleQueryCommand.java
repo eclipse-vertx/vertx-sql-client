@@ -21,8 +21,10 @@ import com.julienviet.pgclient.impl.codec.DataFormat;
 import com.julienviet.pgclient.impl.codec.decoder.DecodeContext;
 import com.julienviet.pgclient.impl.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.impl.codec.decoder.ResultDecoder;
+import com.julienviet.pgclient.impl.codec.decoder.message.ReadyForQuery;
 import com.julienviet.pgclient.impl.codec.decoder.message.RowDescription;
 import com.julienviet.pgclient.impl.codec.encoder.message.Query;
+import io.vertx.core.Future;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -40,6 +42,11 @@ class SimpleQueryCommand<T> extends QueryCommandBase<T> {
   }
 
   @Override
+  String sql() {
+    return sql;
+  }
+
+  @Override
   void exec(SocketConnection conn) {
     conn.decodeQueue.add(new DecodeContext(true, null, DataFormat.TEXT, decoder));
     conn.writeMessage(new Query(sql));
@@ -49,6 +56,12 @@ class SimpleQueryCommand<T> extends QueryCommandBase<T> {
   public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == RowDescription.class) {
       // Expected
+    } else if (msg.getClass() == ReadyForQuery.class) {
+      super.handleMessage(msg);
+      if (!completed) {
+        completed = true;
+        handler.handle(Future.succeededFuture(false));
+      }
     } else {
       super.handleMessage(msg);
     }

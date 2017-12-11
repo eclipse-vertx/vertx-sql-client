@@ -27,7 +27,6 @@ import java.util.*;
 public class SimpleQueryResultHandler<T> implements QueryResultHandler<T> {
 
   private final Handler<AsyncResult<PgResult<T>>> handler;
-  private Throwable failure;
   private final Queue<PgResult<T>> results = new ArrayDeque<>(1);
 
   public SimpleQueryResultHandler(Handler<AsyncResult<PgResult<T>>> handler) {
@@ -35,7 +34,7 @@ public class SimpleQueryResultHandler<T> implements QueryResultHandler<T> {
   }
 
   @Override
-  public void handleResult(PgResult<T> result, boolean suspended) {
+  public void handleResult(PgResult<T> result) {
     results.add(result);
   }
 
@@ -52,15 +51,7 @@ public class SimpleQueryResultHandler<T> implements QueryResultHandler<T> {
   }
 
   @Override
-  public void handleFailure(Throwable cause) {
-    failure = cause;
-    handler.handle(Future.failedFuture(cause));
-  }
-
-  @Override
-  public void handleEnd() {
-    if (failure == null) {
-      handler.handle(Future.succeededFuture(results.poll()));
-    }
+  public void handle(AsyncResult<Boolean> res) {
+    handler.handle(res.map(results.poll()));
   }
 }

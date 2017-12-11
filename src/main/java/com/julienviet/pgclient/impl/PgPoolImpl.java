@@ -45,15 +45,10 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
     if (maxSize < 1) {
       throw new IllegalArgumentException("Pool max size must be > 0");
     }
-    this.factory = new PgConnectionFactory(vertx, options);
     this.context = vertx.getOrCreateContext();
+    this.factory = new PgConnectionFactory(context, Vertx.currentContext() != null, options);
     this.pool = new ConnectionPool(factory::connect, maxSize);
     this.closeVertx = closeVertx;
-  }
-
-  @Override
-  public PgPoolImpl query(String sql, Handler<AsyncResult<PgResult<Row>>> handler) {
-    return (PgPoolImpl) super.query(sql, handler);
   }
 
   @Override
@@ -67,7 +62,7 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
   }
 
   @Override
-  protected void schedule(CommandBase cmd) {
+  protected void schedule(CommandBase<?> cmd) {
     Context current = Vertx.currentContext();
     if (current == context) {
       pool.acquire(new CommandWaiter() {

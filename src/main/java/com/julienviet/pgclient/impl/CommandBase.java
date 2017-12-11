@@ -19,15 +19,21 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.impl.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.impl.codec.decoder.message.ReadyForQuery;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
-public abstract class CommandBase {
+public abstract class CommandBase<R> {
 
   protected Handler<Void> completionHandler;
+  Handler<AsyncResult<R>> handler;
+
+  public CommandBase(Handler<AsyncResult<R>> handler) {
+    this.handler = handler;
+  }
 
   public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == ReadyForQuery.class) {

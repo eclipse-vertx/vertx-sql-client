@@ -135,6 +135,12 @@
  * {@link examples.Examples#queries07(com.julienviet.pgclient.Row)}
  * ----
  *
+ * == Using transactions
+ *
+ * todo.
+ *
+ *
+ *
  *
  *
  * OLD DOC:

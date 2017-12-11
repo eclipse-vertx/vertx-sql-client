@@ -17,8 +17,6 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.impl.CommandBase;
-import com.julienviet.pgclient.impl.Connection;
 import io.vertx.core.*;
 
 import java.util.ArrayDeque;
@@ -75,7 +73,7 @@ public class ConnectionPool {
     }
 
     @Override
-    public void schedule(CommandBase cmd) {
+    public void schedule(CommandBase<?> cmd) {
       conn.schedule(cmd);
     }
 

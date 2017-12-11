@@ -47,24 +47,23 @@ public class PgCursorStreamImpl implements PgStream<Row> {
     boolean closed;
 
     @Override
-    public void handleResult(PgResult<Row> result, boolean suspended) {
-      this.suspended = suspended;
+    public void handleResult(PgResult<Row> result) {
       this.result = result.iterator();
     }
 
     @Override
-    public void handleFailure(Throwable cause) {
-      cursor = null;
-      Handler<Throwable> handler = exceptionHandler;
-      if (handler != null) {
-        handler.handle(cause);
+    public void handle(AsyncResult<Boolean> res) {
+      if (res.failed()) {
+        cursor = null;
+        Handler<Throwable> handler = exceptionHandler;
+        if (handler != null) {
+          handler.handle(res.cause());
+        }
+        close();
+      } else {
+        this.suspended = res.result();
+        checkPending();
       }
-      close();
-    }
-
-    @Override
-    public void handleEnd() {
-      checkPending();
     }
 
     private void checkPending() {

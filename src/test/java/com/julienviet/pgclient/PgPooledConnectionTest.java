@@ -18,6 +18,7 @@
 package com.julienviet.pgclient;
 
 import com.julienviet.pgclient.impl.PgConnectionFactory;
+import io.vertx.core.Future;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 

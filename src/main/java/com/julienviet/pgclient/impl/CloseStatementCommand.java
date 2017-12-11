@@ -26,12 +26,10 @@ import io.vertx.core.Handler;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class CloseStatementCommand extends CommandBase {
-
-  final Handler<AsyncResult<Void>> handler;
+class CloseStatementCommand extends CommandBase<Void> {
 
   CloseStatementCommand(Handler<AsyncResult<Void>> handler) {
-    this.handler = handler;
+    super(handler);
   }
 
   @Override

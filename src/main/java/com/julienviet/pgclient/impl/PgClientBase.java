@@ -26,39 +26,42 @@ import java.util.List;
 
 public abstract class PgClientBase<C extends PgClient> implements PgClient {
 
-  protected abstract void schedule(CommandBase cmd);
+  protected abstract void schedule(CommandBase<?> cmd);
 
   @Override
-  public PgClient query(String sql, Handler<AsyncResult<PgResult<Row>>> handler) {
+  public C query(String sql, Handler<AsyncResult<PgResult<Row>>> handler) {
     schedule(new SimpleQueryCommand<>(sql, new RowResultDecoder(), new SimpleQueryResultHandler<>(handler)));
-    return this;
+    return (C) this;
   }
 
   @Override
   public C preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<Row>>> handler) {
     schedule(new PrepareStatementCommand(sql, ar -> {
       if (ar.succeeded()) {
-        return new ExtendedQueryCommand<>(ar.result(), arguments, new RowResultDecoder(), new ExtendedQueryResultHandler<>(handler));
+        schedule(new ExtendedQueryCommand<>(ar.result(), arguments, new RowResultDecoder(), new ExtendedQueryResultHandler<>(handler)));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
-        return null;
       }
     }));
     return (C) this;
   }
 
   @Override
+  public C preparedQuery(String sql, Handler<AsyncResult<PgResult<Row>>> handler) {
+    return preparedQuery(sql, ArrayTuple.EMPTY, handler);
+  }
+
+  @Override
   public C preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgBatchResult<Row>>> handler) {
-    schedule(new PrepareStatementCommand(sql,  ar -> {
+    schedule(new PrepareStatementCommand(sql, ar -> {
       if (ar.succeeded()) {
-        return new ExtendedBatchQueryCommand<>(
+        schedule(new ExtendedBatchQueryCommand<Row>(
           ar.result(),
           batch.iterator(),
           new RowResultDecoder()
-          , new BatchQueryResultHandler(batch.size(), handler));
+          , new BatchQueryResultHandler(batch.size(), handler)));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
-        return null;
       }
     }));
     return (C) this;

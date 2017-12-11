@@ -32,6 +32,7 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
   public final Connection conn;
   private volatile Handler<Throwable> exceptionHandler;
   private volatile Handler<Void> closeHandler;
+  private Transaction tx;
 
   public PgConnectionImpl(Context context, Connection conn) {
     this.context = context;
@@ -43,11 +44,6 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
     return new SimplePgQueryImpl(sql, this::schedule);
   }
 
-
-  @Override
-  public PgConnectionImpl query(String sql, Handler<AsyncResult<PgResult<Row>>> handler) {
-    return (PgConnectionImpl) super.query(sql, handler);
-  }
 
   @Override
   public Connection connection() {
@@ -63,8 +59,12 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
   }
 
   @Override
-  protected void schedule(CommandBase cmd) {
-    conn.schedule(cmd);
+  protected void schedule(CommandBase<?> cmd) {
+    if (tx != null) {
+      tx.schedule(cmd);
+    } else {
+      conn.schedule(cmd);
+    }
   }
 
   @Override
@@ -97,6 +97,37 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
   }
 
   @Override
+  public PgConnection begin() {
+    if (tx != null) {
+      throw new IllegalStateException();
+    }
+    tx = new Transaction(conn, v -> {
+      tx = null;
+    });
+    return this;
+  }
+
+  @Override
+  public void commit() {
+    tx.commit(ar -> {});
+  }
+
+  @Override
+  public void commit(Handler<AsyncResult<Void>> completionHandler) {
+    tx.commit(completionHandler);
+  }
+
+  @Override
+  public void rollback() {
+    tx.rollback(ar -> {});
+  }
+
+  @Override
+  public void rollback(Handler<AsyncResult<Void>> completionHandler) {
+    tx.rollback(completionHandler);
+  }
+
+  @Override
   public void close() {
     conn.close(this);
   }
@@ -109,7 +140,6 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
       }
-      return null;
     }));
     return this;
   }

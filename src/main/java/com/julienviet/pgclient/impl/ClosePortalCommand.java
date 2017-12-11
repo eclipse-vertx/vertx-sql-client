@@ -29,14 +29,13 @@ import io.vertx.core.Handler;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class ClosePortalCommand extends CommandBase {
+class ClosePortalCommand extends CommandBase<Void> {
 
-  final String portal;
-  final Handler<AsyncResult<Void>> handler;
+  private final String portal;
 
-  public ClosePortalCommand(String portal, Handler<AsyncResult<Void>> handler) {
+  ClosePortalCommand(String portal, Handler<AsyncResult<Void>> handler) {
+    super(handler);
     this.portal = portal;
-    this.handler = handler;
   }
 
   @Override
