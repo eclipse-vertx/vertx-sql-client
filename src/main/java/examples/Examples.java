@@ -31,7 +31,7 @@ import java.util.List;
 @Source
 public class Examples {
 
-  public void connecting01() {
+  public void gettingStarted() {
 
     // Pool options
     PgPoolOptions options = new PgPoolOptions()
@@ -53,13 +53,70 @@ public class Examples {
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
       }
+
+      // Close now the pool
+      pool.close();
     });
   }
 
-  public void connecting02(PgPool pool) {
+  public void connecting01() {
+
+    // Pool options
+    PgPoolOptions options = new PgPoolOptions()
+      .setPort(5432)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUsername("user")
+      .setPassword("secret")
+      .setMaxSize(5);
+
+    // Create the pool
+    PgPool pool = PgPool.pool(options);
+  }
+
+  public void connecting02(Vertx vertx) {
+
+    // Pool options
+    PgPoolOptions options = new PgPoolOptions()
+      .setPort(5432)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUsername("user")
+      .setPassword("secret")
+      .setMaxSize(5);
+
+    // Create the pool
+    PgPool pool = PgPool.pool(vertx, options);
+  }
+
+  public void connecting03(PgPool pool) {
 
     // Close the pool and all the associated resources
     pool.close();
+  }
+
+  public void connecting04(Vertx vertx) {
+
+    // Pool options
+    PgConnectOptions options = new PgConnectOptions()
+      .setPort(5432)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUsername("user")
+      .setPassword("secret");
+
+    // Close the pool and all the associated resources
+    PgConnection.connect(vertx, options, res -> {
+      if (res.succeeded()) {
+
+        System.out.println("Connected");
+
+        // Obtain our connection
+        PgConnection conn = res.result();
+      } else {
+        System.out.println("Could not connect: " + res.cause().getMessage());
+      }
+    });
   }
 
   public void queries01(PgClient pool) {

@@ -1,6 +1,6 @@
 = Reactive Postgres Client
 
-== Using the client
+== Usage
 
 To use the Reactive Postgres Client add the following dependency to the _dependencies_ section of your build descriptor:
 
@@ -24,9 +24,9 @@ dependencies {
 }
 ----
 
-== Connecting to Postgres
+== Getting started
 
-Most of the time you will use a pool to connect to Postgres:
+Here is the simplest way to connect, query and disconnect
 
 [source,kotlin]
 ----
@@ -51,7 +51,50 @@ pool.query("SELECT * FROM users WHERE id='julien'", { ar ->
   } else {
     println("Failure: ${ar.cause().getMessage()}")
   }
+
+  // Close now the pool
+  pool.close()
 })
+
+----
+
+== Connecting to Postgres
+
+Most of the time you will use a pool to connect to Postgres:
+
+[source,kotlin]
+----
+
+// Pool options
+var options = PgPoolOptions(
+  port = 5432,
+  host = "the-host",
+  database = "the-db",
+  username = "user",
+  password = "secret",
+  maxSize = 5)
+
+// Create the pool
+var pool = PgPool.pool(options)
+
+----
+
+If you are running with Vert.x you can pass it your Vertx instance:
+
+[source,kotlin]
+----
+
+// Pool options
+var options = PgPoolOptions(
+  port = 5432,
+  host = "the-host",
+  database = "the-db",
+  username = "user",
+  password = "secret",
+  maxSize = 5)
+
+// Create the pool
+var pool = PgPool.pool(vertx, options)
 
 ----
 
@@ -62,6 +105,34 @@ You need to release the pool when you don't need it anymore:
 
 // Close the pool and all the associated resources
 pool.close()
+
+----
+
+You can also connect directly to Postgres without a pool
+
+[source,kotlin]
+----
+
+// Pool options
+var options = PgConnectOptions(
+  port = 5432,
+  host = "the-host",
+  database = "the-db",
+  username = "user",
+  password = "secret")
+
+// Close the pool and all the associated resources
+PgConnection.connect(vertx, options, { res ->
+  if (res.succeeded()) {
+
+    println("Connected")
+
+    // Obtain our connection
+    var conn = res.result()
+  } else {
+    println("Could not connect: ${res.cause().getMessage()}")
+  }
+})
 
 ----
 
@@ -98,7 +169,7 @@ pool.preparedQuery("SELECT * FROM users WHERE id=\$$1", Tuple.of("julien"), { ar
 
 ----
 
-Query methods returns a `link:../../apidocs/com/julienviet/pgclient/PgResult.html[PgResult]` instance that works both for _select_ statements
+Query methods returns a `link:../../apidocs/com/julienviet/pgclient/PgResult.html[PgResult]` instance that works for _select_ statements
 
 [source,kotlin]
 ----
@@ -134,6 +205,8 @@ pool.preparedQuery("\"INSERT INTO users (first_name, last_name) VALUES (\$$1, \$
 })
 
 ----
+
+
 
 
 

@@ -1,6 +1,6 @@
 = Reactive Postgres Client
 
-== Using the client
+== Usage
 
 To use the Reactive Postgres Client add the following dependency to the _dependencies_ section of your build descriptor:
 
@@ -24,9 +24,9 @@ dependencies {
 }
 ----
 
-== Connecting to Postgres
+== Getting started
 
-Most of the time you will use a pool to connect to Postgres:
+Here is the simplest way to connect, query and disconnect
 
 [source,ruby]
 ----
@@ -53,7 +53,54 @@ pool.query("SELECT * FROM users WHERE id='julien'") { |ar_err,ar|
   else
     puts "Failure: #{ar_err.get_message()}"
   end
+
+  # Close now the pool
+  pool.close()
 }
+
+----
+
+== Connecting to Postgres
+
+Most of the time you will use a pool to connect to Postgres:
+
+[source,ruby]
+----
+require 'vertx-pg-client/pg_pool'
+
+# Pool options
+options = {
+  'port' => 5432,
+  'host' => "the-host",
+  'database' => "the-db",
+  'username' => "user",
+  'password' => "secret",
+  'maxSize' => 5
+}
+
+# Create the pool
+pool = VertxPgClient::PgPool.pool(options)
+
+----
+
+If you are running with Vert.x you can pass it your Vertx instance:
+
+[source,ruby]
+----
+require 'vertx-pg-client/pg_pool'
+
+# Pool options
+options = {
+  'port' => 5432,
+  'host' => "the-host",
+  'database' => "the-db",
+  'username' => "user",
+  'password' => "secret",
+  'maxSize' => 5
+}
+
+# Create the pool
+pool = VertxPgClient::PgPool.pool(vertx, options)
 
 ----
 
@@ -64,6 +111,36 @@ You need to release the pool when you don't need it anymore:
 
 # Close the pool and all the associated resources
 pool.close()
+
+----
+
+You can also connect directly to Postgres without a pool
+
+[source,ruby]
+----
+require 'vertx-pg-client/pg_connection'
+
+# Pool options
+options = {
+  'port' => 5432,
+  'host' => "the-host",
+  'database' => "the-db",
+  'username' => "user",
+  'password' => "secret"
+}
+
+# Close the pool and all the associated resources
+VertxPgClient::PgConnection.connect(vertx, options) { |res_err,res|
+  if (res_err == nil)
+
+    puts "Connected"
+
+    # Obtain our connection
+    conn = res
+  else
+    puts "Could not connect: #{res_err.get_message()}"
+  end
+}
 
 ----
 
@@ -101,7 +178,7 @@ pool.prepared_query("SELECT * FROM users WHERE id=$1", VertxPgClient::Tuple.of("
 
 ----
 
-Query methods returns a `link:../../yardoc/VertxPgClient/PgResult.html[PgResult]` instance that works both for _select_ statements
+Query methods returns a `link:../../yardoc/VertxPgClient/PgResult.html[PgResult]` instance that works for _select_ statements
 
 [source,ruby]
 ----
@@ -138,6 +215,8 @@ pool.prepared_query("\"INSERT INTO users (first_name, last_name) VALUES ($1, $2)
 }
 
 ----
+
+
 
 
 

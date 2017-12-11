@@ -18,7 +18,7 @@
 /**
  * = Reactive Postgres Client
  *
- * == Using the client
+ * == Usage
  *
  * To use the Reactive Postgres Client add the following dependency to the _dependencies_ section of your build descriptor:
  *
@@ -42,6 +42,15 @@
  * }
  * ----
  *
+ * == Getting started
+ *
+ * Here is the simplest way to connect, query and disconnect
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#gettingStarted()}
+ * ----
+ *
  * == Connecting to Postgres
  *
  * Most of the time you will use a pool to connect to Postgres:
@@ -51,11 +60,25 @@
  * {@link examples.Examples#connecting01}
  * ----
  *
- * You need to release the pool when you don't need it anymore:
+ * If you are running with Vert.x you can pass it your Vertx instance:
  *
  * [source,$lang]
  * ----
  * {@link examples.Examples#connecting02}
+ * ----
+ *
+ * You need to release the pool when you don't need it anymore:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#connecting03}
+ * ----
+ *
+ * You can also connect directly to Postgres without a pool
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#connecting04}
  * ----
  *
  * == Running queries
@@ -75,7 +98,7 @@
  * {@link examples.Examples#queries02(com.julienviet.pgclient.PgClient)}
  * ----
  *
- * Query methods returns a {@link com.julienviet.pgclient.PgResult} instance that works both for _select_ statements
+ * Query methods returns a {@link com.julienviet.pgclient.PgResult} instance that works for _select_ statements
  *
  * [source,$lang]
  * ----
@@ -88,6 +111,8 @@
  * ----
  * {@link examples.Examples#queries04(com.julienviet.pgclient.PgClient)}
  * ----
+ *
+ *
  *
  *
  *
