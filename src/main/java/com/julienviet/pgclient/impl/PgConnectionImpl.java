@@ -129,7 +129,12 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
 
   @Override
   public void close() {
-    conn.close(this);
+    if (tx != null) {
+      tx.rollback(ar -> conn.close(this));
+      tx = null;
+    } else {
+      conn.close(this);
+    }
   }
 
   @Override
