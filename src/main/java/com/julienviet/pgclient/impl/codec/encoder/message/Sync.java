@@ -18,7 +18,7 @@
 package com.julienviet.pgclient.impl.codec.encoder.message;
 
 import com.julienviet.pgclient.impl.codec.decoder.message.ReadyForQuery;
-import com.julienviet.pgclient.impl.codec.TransactionStatus;
+import com.julienviet.pgclient.impl.codec.TxStatus;
 import com.julienviet.pgclient.impl.codec.decoder.message.ErrorResponse;
 import com.julienviet.pgclient.impl.codec.encoder.OutboundMessage;
 import io.netty.buffer.ByteBuf;
@@ -39,7 +39,7 @@ import static com.julienviet.pgclient.impl.codec.encoder.message.type.MessageTyp
  *
  * <p>
  * Note this message does not cause a transaction block opened with BEGIN to be closed. It is possible to detect this
- * situation in {@link ReadyForQuery#transactionStatus()} that includes {@link TransactionStatus} information.
+ * situation in {@link ReadyForQuery#txStatus()} that includes {@link TxStatus} information.
  *
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */

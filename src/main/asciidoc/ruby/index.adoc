@@ -255,7 +255,9 @@ Or you can use the transaction API of `link:../../yardoc/VertxPgClient/PgConnect
 Code not translatable
 ----
 
-When one of the statements after `begin` fails, the transaction is rollbacked.
+When Postgres reports the current transaction is failed (e.g the infamous _current transaction is aborted, commands ignored until
+end of transaction block_), the transaction is rollbacked and the `link:../../yardoc/VertxPgClient/PgTransaction.html#abort_handler-instance_method[abortHandler]`
+is called:
 
 [source,ruby]
 ----

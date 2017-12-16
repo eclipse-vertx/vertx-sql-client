@@ -97,34 +97,14 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
   }
 
   @Override
-  public PgConnection begin() {
+  public PgTransaction begin() {
     if (tx != null) {
       throw new IllegalStateException();
     }
-    tx = new Transaction(conn, v -> {
+    tx = new Transaction(context, conn, v -> {
       tx = null;
     });
-    return this;
-  }
-
-  @Override
-  public void commit() {
-    tx.commit(ar -> {});
-  }
-
-  @Override
-  public void commit(Handler<AsyncResult<Void>> completionHandler) {
-    tx.commit(completionHandler);
-  }
-
-  @Override
-  public void rollback() {
-    tx.rollback(ar -> {});
-  }
-
-  @Override
-  public void rollback(Handler<AsyncResult<Void>> completionHandler) {
-    tx.rollback(completionHandler);
+    return tx;
   }
 
   @Override

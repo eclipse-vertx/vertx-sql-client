@@ -22,8 +22,6 @@ import com.julienviet.pgclient.impl.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.impl.codec.decoder.message.CloseComplete;
 import com.julienviet.pgclient.impl.codec.encoder.message.Close;
 import com.julienviet.pgclient.impl.codec.encoder.message.Sync;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 /**
@@ -33,7 +31,7 @@ class ClosePortalCommand extends CommandBase<Void> {
 
   private final String portal;
 
-  ClosePortalCommand(String portal, Handler<AsyncResult<Void>> handler) {
+  ClosePortalCommand(String portal, Handler<? super CommandResponse<Void>> handler) {
     super(handler);
     this.portal = portal;
   }
@@ -48,7 +46,7 @@ class ClosePortalCommand extends CommandBase<Void> {
   @Override
   public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == CloseComplete.class) {
-      handler.handle(Future.succeededFuture());
+      // Expected
     } else {
       super.handleMessage(msg);
     }
@@ -56,6 +54,6 @@ class ClosePortalCommand extends CommandBase<Void> {
 
   @Override
   void fail(Throwable err) {
-    handler.handle(Future.failedFuture(err));
+    handler.handle(CommandResponse.failure(err));
   }
 }

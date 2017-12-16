@@ -30,7 +30,6 @@ import io.vertx.core.Future;
 abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
 
   protected final QueryResultHandler<T> resultHandler;
-  protected boolean completed;
 
   public QueryCommandBase(QueryResultHandler<T> handler) {
     super(handler);
@@ -42,11 +41,12 @@ abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
   @Override
   public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == CommandComplete.class) {
+      this.result = false;
       PgResult<T> result = (PgResult<T>) ((CommandComplete) msg).result();
       resultHandler.handleResult(result);
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
-      fail(new PgException(error));
+      failure = new PgException(error);
     } else {
       super.handleMessage(msg);
     }
@@ -54,9 +54,6 @@ abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
 
   @Override
   void fail(Throwable cause) {
-    if (!completed) {
-      completed = true;
-      handler.handle(Future.failedFuture(cause));
-    }
+    handler.handle(CommandResponse.failure(cause));
   }
 }

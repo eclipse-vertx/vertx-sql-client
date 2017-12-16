@@ -32,7 +32,6 @@ public class PreparedStatementCachedTest extends PreparedStatementTestBase {
   public void testConcurrent(TestContext ctx) {
     PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
       for (int i = 0;i < 10;i++) {
-        int val = i;
         Async async = ctx.async();
         conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
           PgQuery query = ps.createQuery(Tuple.of(1));

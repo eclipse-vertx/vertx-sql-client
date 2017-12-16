@@ -19,7 +19,6 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.impl.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.impl.codec.decoder.message.ReadyForQuery;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
 /**
@@ -29,15 +28,23 @@ import io.vertx.core.Handler;
 public abstract class CommandBase<R> {
 
   protected Handler<Void> completionHandler;
-  Handler<AsyncResult<R>> handler;
+  Handler<? super CommandResponse<R>> handler;
+  Throwable failure;
+  R result;
 
-  public CommandBase(Handler<AsyncResult<R>> handler) {
+  public CommandBase(Handler<? super CommandResponse<R>> handler) {
     this.handler = handler;
   }
 
   public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == ReadyForQuery.class) {
+      ReadyForQuery readyForQuery = (ReadyForQuery) msg;
       completionHandler.handle(null);
+      if (failure != null) {
+        handler.handle(CommandResponse.failure(failure, readyForQuery.txStatus()));
+      } else {
+        handler.handle(CommandResponse.success(result, readyForQuery.txStatus()));
+      }
     } else {
       System.out.println(getClass().getSimpleName() + " should handle message " + msg);
     }

@@ -28,7 +28,7 @@ import io.vertx.core.Handler;
  */
 class CloseStatementCommand extends CommandBase<Void> {
 
-  CloseStatementCommand(Handler<AsyncResult<Void>> handler) {
+  CloseStatementCommand(Handler<? super CommandResponse<Void>> handler) {
     super(handler);
   }
 
@@ -41,21 +41,17 @@ class CloseStatementCommand extends CommandBase<Void> {
     } else {
     }
     */
-    handler.handle(Future.succeededFuture());
+    handler.handle(CommandResponse.success(null));
     completionHandler.handle(null);
   }
 
   @Override
   public void handleMessage(InboundMessage msg) {
-    if (msg.getClass() == CloseComplete.class) {
-      handler.handle(Future.succeededFuture());
-    } else {
-      super.handleMessage(msg);
-    }
+    throw new UnsupportedOperationException("Uh");
   }
 
   @Override
   void fail(Throwable err) {
-    handler.handle(Future.failedFuture(err));
+    handler.handle(CommandResponse.failure(err));
   }
 }

@@ -191,14 +191,14 @@ public class Examples {
         PgConnection conn = res.result();
 
         // Begin the transaction
-        conn.begin();
+        PgTransaction tx = conn.begin();
 
         // Statements
         conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar2 ->{});
         conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')", ar2 ->{});
 
         // Commit the transaction
-        conn.commit(ar -> {
+        tx.commit(ar -> {
           if (ar.succeeded()) {
             System.out.println("Transaction succeeded");
           } else {
@@ -217,16 +217,17 @@ public class Examples {
         PgConnection conn = res.result();
 
         // Begin the transaction
-        conn.begin();
+        PgTransaction tx = conn
+          .begin()
+          .abortHandler(v -> {
+          System.out.println("Transaction failed => rollbacked");
+        });
 
-        // Statements
+        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
         conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
 
-        // Triggers a transaction rollback
-        conn.query("a statement that fails", ar -> {});
-
         // Attempt to commit the transaction
-        conn.commit(ar -> {
+        tx.commit(ar -> {
           // This won't be executed (?)
           // should it be executed or not ?
         });

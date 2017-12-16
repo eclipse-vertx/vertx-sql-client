@@ -82,7 +82,7 @@ public class PgConnectionFactory {
     client.close();
   }
 
-  public void connect(Handler<AsyncResult<Connection>> completionHandler) {
+  public void connect(Handler<? super CommandResponse<Connection>> completionHandler) {
     if (Vertx.currentContext() != ctx) {
       throw new IllegalStateException();
     }
@@ -97,7 +97,7 @@ public class PgConnectionFactory {
           ctx);
         conn.initiateProtocolOrSsl(username, password, database, completionHandler);
       } else {
-        completionHandler.handle(Future.failedFuture(ar.cause()));
+        completionHandler.handle(CommandResponse.failure(ar.cause()));
       }
     });
   }

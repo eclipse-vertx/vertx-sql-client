@@ -17,7 +17,9 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.*;
+import com.julienviet.pgclient.impl.codec.TxStatus;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.impl.NoStackTraceThrowable;
@@ -25,19 +27,23 @@ import io.vertx.core.impl.NoStackTraceThrowable;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-class Transaction {
+class Transaction implements PgTransaction {
 
   private static final int ST_BEGIN = 0;
   private static final int ST_PENDING = 1;
   private static final int ST_PROCESSING = 2;
   private static final int ST_COMPLETED = 3;
 
+  private final Context context;
   private final Handler<Void> disposeHandler;
   private Connection conn;
   private Deque<CommandBase<?>> pending = new ArrayDeque<>();
+  private Handler<Void> failedHandler;
   private int status = ST_BEGIN;
+  private boolean rollbacked;
 
-  Transaction(Connection conn, Handler<Void> disposeHandler) {
+  Transaction(Context context, Connection conn, Handler<Void> disposeHandler) {
+    this.context = context;
     this.disposeHandler = disposeHandler;
     this.conn = conn;
     conn.schedule(query("BEGIN", this::afterBegin));
@@ -97,43 +103,68 @@ class Transaction {
   }
 
   private <T> void wrap(CommandBase<T> cmd) {
-    Handler<AsyncResult<T>> handler = cmd.handler;
+    Handler<? super CommandResponse<T>> handler = cmd.handler;
     cmd.handler = ar -> {
       synchronized (Transaction.this) {
         status = ST_PENDING;
-        if (ar.succeeded()) {
-          handler.handle(ar);
-          checkPending();
-        } else {
+        if (ar.txStatus() == TxStatus.FAILED) {
+          // We won't recover from this so rollback
+          CommandBase<?> c;
+          while ((c = pending.poll()) != null) {
+            c.fail(new RuntimeException("rollback exception"));
+          }
+          Handler<Void> h = failedHandler;
+          if (h != null) {
+            context.runOnContext(h);
+          }
           schedule(query("ROLLBACK", ar2 -> {
             disposeHandler.handle(null);
             handler.handle(ar);
           }));
+        } else {
+          handler.handle(ar);
+          checkPending();
         }
       }
     };
   }
 
-  void commit(Handler<AsyncResult<Void>> completionHandler) {
+  @Override
+  public void commit() {
+    commit(null);
+  }
+
+  public void commit(Handler<AsyncResult<Void>> handler) {
     schedule(query("COMMIT", ar -> {
       disposeHandler.handle(null);
       if (ar.succeeded()) {
-        completionHandler.handle(Future.succeededFuture());
+        handler.handle(Future.succeededFuture());
       } else {
-        completionHandler.handle(Future.failedFuture(ar.cause()));
+        handler.handle(Future.failedFuture(ar.cause()));
       }
     }));
   }
 
-  void rollback(Handler<AsyncResult<Void>> completionHandler) {
+  @Override
+  public void rollback() {
+    rollback(null);
+  }
+
+  public void rollback(Handler<AsyncResult<Void>> handler) {
     schedule(query("ROLLBACK", ar -> {
       disposeHandler.handle(null);
       if (ar.succeeded()) {
-        completionHandler.handle(Future.succeededFuture());
+        handler.handle(Future.succeededFuture());
       } else {
-        completionHandler.handle(Future.failedFuture(ar.cause()));
+        handler.handle(Future.failedFuture(ar.cause()));
       }
     }));
+  }
+
+  @Override
+  public PgTransaction abortHandler(Handler<Void> handler) {
+    failedHandler = handler;
+    return this;
   }
 
   private CommandBase query(String sql, Handler<AsyncResult<PgResult<Row>>> handler) {

@@ -36,38 +36,35 @@ public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
   private long statement; // 0 means unamed statement otherwise CString
   private ParameterDescription parameterDesc;
   private RowDescription rowDesc;
-  private Future<PreparedStatement> fut;
+  private SocketConnection.CachedPreparedStatement cached;
+  private Handler<AsyncResult<PreparedStatement>> handler;
 
   PrepareStatementCommand(String sql, Handler<AsyncResult<PreparedStatement>> handler) {
-    super(handler);
+    super(null); // Not pretty but well, that's fine for now
     this.sql = sql;
+    this.handler = handler;
+    super.handler = ar -> {
+      handler.handle(ar);
+      if (cached != null) {
+        cached.fut.handle(ar);
+      }
+    };
   }
 
   @Override
   void foo(SocketConnection conn) {
-
-    Future<PreparedStatement> bilto = Future.<PreparedStatement>future().setHandler(handler);
-
     Map<String, SocketConnection.CachedPreparedStatement> psCache = conn.psCache;
     if (psCache != null) {
-      SocketConnection.CachedPreparedStatement cached = psCache.get(sql);
-      if (cached == null) {
+      cached = psCache.get(sql);
+      if (cached != null) {
+        cached.get(handler);
+      } else {
         statement = conn.psSeq.next();
         cached = new SocketConnection.CachedPreparedStatement();
-        Future<PreparedStatement> futal = cached.fut;
-        psCache.put(sql, cached);
-        fut = Future.<PreparedStatement>future().setHandler(ar -> {
-          futal.handle(ar);
-          bilto.handle(ar);
-        });
+        psCache.put(sql, this.cached);
         super.foo(conn);
-      } else {
-        cached.get(ar -> {
-          bilto.handle(ar);
-        });
       }
     } else {
-      fut = bilto;
       super.foo(conn);
     }
   }
@@ -94,10 +91,10 @@ public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
       // Response to Describe
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
-      fut.tryFail(new PgException(error));
+      failure = new PgException(error);
     } else {
       if (msg.getClass() == ReadyForQuery.class) {
-        fut.tryComplete(new PreparedStatement(sql, statement, parameterDesc, rowDesc));
+        result = new PreparedStatement(sql, statement, parameterDesc, rowDesc);
       }
       super.handleMessage(msg);
     }
@@ -105,6 +102,10 @@ public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
 
   @Override
   void fail(Throwable err) {
-    fut.tryFail(err);
+    Future<PreparedStatement> failure = Future.failedFuture(err);
+    handler.handle(failure);
+    if (cached != null) {
+      cached.fut.handle(failure);
+    }
   }
 }

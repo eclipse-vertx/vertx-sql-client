@@ -147,7 +147,9 @@
  * {@link examples.Examples#transaction02(com.julienviet.pgclient.PgPool)}
  * ----
  *
- * When one of the statements after `begin` fails, the transaction is rollbacked.
+ * When Postgres reports the current transaction is failed (e.g the infamous _current transaction is aborted, commands ignored until
+ * end of transaction block_), the transaction is rollbacked and the {@link com.julienviet.pgclient.PgTransaction#abortHandler(io.vertx.core.Handler)}
+ * is called:
  *
  * [source,$lang]
  * ----

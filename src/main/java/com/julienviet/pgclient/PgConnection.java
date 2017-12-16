@@ -116,28 +116,7 @@ public interface PgConnection extends PgClient {
    *
    * @return a reference to this, so the API can be used fluently
    */
-  @Fluent
-  PgConnection begin();
-
-  /**
-   * Commit the current transaction.
-   */
-  void commit();
-
-  /**
-   * Like {@link #commit} with an handler to be notified when the transaction commit has completed
-   */
-  void commit(Handler<AsyncResult<Void>> completionHandler);
-
-  /**
-   * Rollback the current transaction.
-   */
-  void rollback();
-
-  /**
-   * Like {@link #rollback} with an handler to be notified when the transaction rollback has completed
-   */
-  void rollback(Handler<AsyncResult<Void>> completionHandler);
+  PgTransaction begin();
 
   boolean isSSL();
 

@@ -223,16 +223,17 @@ pool.connect(res -> {
     PgConnection conn = res.result();
 
     // Begin the transaction
-    conn.begin();
+    PgTransaction tx = conn
+      .begin()
+      .abortHandler(v -> {
+      System.out.println("Transaction failed => rollbacked");
+    });
 
-    // Statements
+    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
     conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
 
-    // Triggers a transaction rollback
-    conn.query("a statement that fails", ar -> {});
-
     // Attempt to commit the transaction
-    conn.commit(ar -> {
+    tx.commit(ar -> {
       // This won't be executed (?)
       // should it be executed or not ?
     });
@@ -240,7 +241,9 @@ pool.connect(res -> {
 });
 ----
 
-When one of the statements after `begin` fails, the transaction is rollbacked.
+When Postgres reports the current transaction is failed (e.g the infamous _current transaction is aborted, commands ignored until
+end of transaction block_), the transaction is rollbacked and the `link:../../apidocs/com/julienviet/pgclient/PgTransaction.html#abortHandler-io.vertx.core.Handler-[abortHandler]`
+is called:
 
 [source,java]
 ----
@@ -251,16 +254,17 @@ pool.connect(res -> {
     PgConnection conn = res.result();
 
     // Begin the transaction
-    conn.begin();
+    PgTransaction tx = conn
+      .begin()
+      .abortHandler(v -> {
+      System.out.println("Transaction failed => rollbacked");
+    });
 
-    // Statements
+    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
     conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
 
-    // Triggers a transaction rollback
-    conn.query("a statement that fails", ar -> {});
-
     // Attempt to commit the transaction
-    conn.commit(ar -> {
+    tx.commit(ar -> {
       // This won't be executed (?)
       // should it be executed or not ?
     });

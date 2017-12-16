@@ -22,7 +22,7 @@ package com.julienviet.pgclient.impl.codec;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  *
  */
-public enum TransactionStatus {
+public enum TxStatus {
 
   IDLE,
   ACTIVE,

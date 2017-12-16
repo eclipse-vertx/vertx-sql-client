@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
@@ -610,14 +611,14 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   public void testTransactionCommit(TestContext ctx) {
     Async done = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.begin();
+      PgTransaction tx = conn.begin();
       conn.query("INSERT INTO TxTest (id) VALUES (1)", ar1 -> {
         System.out.println("got res 1");
       });
       conn.query("INSERT INTO TxTest (id) VALUES (2)", ar2 -> {
         System.out.println("got res 2");
       });
-      conn.commit(ctx.asyncAssertSuccess(v -> {
+      tx.commit(ctx.asyncAssertSuccess(v -> {
         conn.query("SELECT id FROM TxTest WHERE id=1 OR id=2", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(2, result.size());
           done.complete();
@@ -630,14 +631,14 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   public void testTransactionRollback(TestContext ctx) {
     Async done = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.begin();
+      PgTransaction tx = conn.begin();
       conn.query("INSERT INTO TxTest (id) VALUES (3)", ar1 -> {
         System.out.println("got res 1 " + ar1.succeeded());
       });
       conn.query("INSERT INTO TxTest (id) VALUES (4)", ar2 -> {
         System.out.println("got res 2");
       });
-      conn.rollback(ctx.asyncAssertSuccess(v -> {
+      tx.rollback(ctx.asyncAssertSuccess(v -> {
         conn.query("SELECT id FROM TxTest WHERE id=3 OR id=4", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(0, result.size());
           done.complete();
@@ -647,19 +648,30 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   }
 
   @Test
-  public void testTransactionFailure(TestContext ctx) {
+  public void testTransactionAbort(TestContext ctx) {
     Async done = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.begin();
-      conn.query("INSERT INTO TxTest (id) VALUES (5)", ar1 -> {
-        System.out.println("got res 1");
-      });
-      conn.query("invalid-sql", ar2 -> {
+      PgTransaction tx = conn.begin();
+      AtomicInteger failures = new AtomicInteger();
+      tx.abortHandler(v -> ctx.assertEquals(0, failures.getAndIncrement()));
+      AtomicReference<AsyncResult<PgResult<Row>>> queryAfterFailed = new AtomicReference<>();
+      AtomicReference<AsyncResult<Void>> commit = new AtomicReference<>();
+      conn.query("INSERT INTO TxTest (id) VALUES (5)", ar1 -> { });
+      conn.query("INSERT INTO TxTest (id) VALUES (5)", ar2 -> {
+        ctx.assertNotNull(queryAfterFailed.get());
+        ctx.assertTrue(queryAfterFailed.get().failed());
+        ctx.assertNotNull(commit.get());
+        ctx.assertTrue(commit.get().failed());
+        ctx.assertTrue(ar2.failed());
+        ctx.assertEquals(1, failures.get());
+        // This query won't be made in the same TX
         conn.query("SELECT id FROM TxTest WHERE id=5", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(0, result.size());
           done.complete();
         }));
       });
+      conn.query("SELECT id FROM TxTest", queryAfterFailed::set);
+      tx.commit(commit::set);
     }));
   }
 
