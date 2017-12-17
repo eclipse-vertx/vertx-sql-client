@@ -121,6 +121,15 @@ public interface PgConnection extends PgClient {
    */
   PgTransaction begin();
 
+  /**
+   * Set an handler called when the connection receives notification on a channel.
+   * <p/>
+   * The handler is called with the {@link PgNotification} and has access to the channel name
+   * and the notification payload.
+   *
+   * @param handler the handler
+   * @return the transaction instance
+   */
   @Fluent
   PgConnection notificationHandler(Handler<PgNotification> handler);
 

@@ -55,14 +55,27 @@
 [[PgNotification]]
 == PgNotification
 
+++++
+ A notification emited by Postgres.
+++++
+'''
 
 [cols=">25%,^25%,50%"]
 [frame="topbot"]
 |===
 ^|Name | Type ^| Description
-|[[channel]]`channel`|`String`|-
-|[[payload]]`payload`|`String`|-
-|[[processId]]`processId`|`Number (int)`|-
+|[[channel]]`channel`|`String`|
++++
+Set the channel value.
++++
+|[[payload]]`payload`|`String`|
++++
+Set the payload value.
++++
+|[[processId]]`processId`|`Number (int)`|
++++
+Set the process id.
++++
 |===
 
 [[PgPoolOptions]]

@@ -19,6 +19,9 @@ package com.julienviet.pgclient;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
+/**
+ * A notification emited by Postgres.
+ */
 @DataObject(generateConverter = true)
 public class PgNotification {
 
@@ -33,28 +36,52 @@ public class PgNotification {
     PgNotificationConverter.fromJson(json, this);
   }
 
+  /**
+   * @return the notification process id
+   */
   public int getProcessId() {
     return processId;
   }
 
+  /**
+   * Set the process id.
+   *
+   * @return a reference to this, so the API can be used fluently
+   */
   public PgNotification setProcessId(int processId) {
     this.processId = processId;
     return this;
   }
 
+  /**
+   * @return the notification channel value
+   */
   public String getChannel() {
     return channel;
   }
 
+  /**
+   * Set the channel value.
+   *
+   * @return a reference to this, so the API can be used fluently
+   */
   public PgNotification setChannel(String channel) {
     this.channel = channel;
     return this;
   }
 
+  /**
+   * @return the notification payload value
+   */
   public String getPayload() {
     return payload;
   }
 
+  /**
+   * Set the payload value.
+   *
+   * @return a reference to this, so the API can be used fluently
+   */
   public PgNotification setPayload(String payload) {
     this.payload = payload;
     return this;
