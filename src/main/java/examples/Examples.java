@@ -193,9 +193,9 @@ public class Examples {
         // Begin the transaction
         PgTransaction tx = conn.begin();
 
-        // Statements
-        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar2 ->{});
-        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')", ar2 ->{});
+        // Various statements
+        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
+        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')", ar -> {});
 
         // Commit the transaction
         tx.commit(ar -> {
@@ -223,13 +223,16 @@ public class Examples {
           System.out.println("Transaction failed => rollbacked");
         });
 
-        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
-        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
+        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {
+          // Works fine of course
+        });
+        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {
+          // Fails and triggers transaction aborts
+        });
 
         // Attempt to commit the transaction
         tx.commit(ar -> {
-          // This won't be executed (?)
-          // should it be executed or not ?
+          // But transaction abortion fails it
         });
       }
     });

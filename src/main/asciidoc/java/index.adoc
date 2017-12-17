@@ -229,13 +229,16 @@ pool.connect(res -> {
       System.out.println("Transaction failed => rollbacked");
     });
 
-    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
-    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
+    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {
+      // Works fine of course
+    });
+    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {
+      // Fails and triggers transaction aborts
+    });
 
     // Attempt to commit the transaction
     tx.commit(ar -> {
-      // This won't be executed (?)
-      // should it be executed or not ?
+      // But transaction abortion fails it
     });
   }
 });
@@ -260,13 +263,16 @@ pool.connect(res -> {
       System.out.println("Transaction failed => rollbacked");
     });
 
-    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
-    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
+    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {
+      // Works fine of course
+    });
+    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {
+      // Fails and triggers transaction aborts
+    });
 
     // Attempt to commit the transaction
     tx.commit(ar -> {
-      // This won't be executed (?)
-      // should it be executed or not ?
+      // But transaction abortion fails it
     });
   }
 });
