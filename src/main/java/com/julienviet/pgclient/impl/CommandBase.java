@@ -25,13 +25,26 @@ import io.vertx.core.Handler;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
-public abstract class CommandBase {
+public abstract class CommandBase<R> {
 
   protected Handler<Void> completionHandler;
+  Handler<? super CommandResponse<R>> handler;
+  Throwable failure;
+  R result;
+
+  public CommandBase(Handler<? super CommandResponse<R>> handler) {
+    this.handler = handler;
+  }
 
   public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == ReadyForQuery.class) {
+      ReadyForQuery readyForQuery = (ReadyForQuery) msg;
       completionHandler.handle(null);
+      if (failure != null) {
+        handler.handle(CommandResponse.failure(failure, readyForQuery.txStatus()));
+      } else {
+        handler.handle(CommandResponse.success(result, readyForQuery.txStatus()));
+      }
     } else {
       System.out.println(getClass().getSimpleName() + " should handle message " + msg);
     }

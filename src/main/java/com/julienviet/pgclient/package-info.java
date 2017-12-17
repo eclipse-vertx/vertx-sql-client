@@ -135,7 +135,26 @@
  * {@link examples.Examples#queries07(com.julienviet.pgclient.Row)}
  * ----
  *
+ * == Using transactions
  *
+ * You can execute transaction using SQL `BEGIN`/`COMMIT`/`ROLLBACK`, if you do so you must use
+ * a {@link com.julienviet.pgclient.PgConnection} and manage it yourself.
+ *
+ * Or you can use the transaction API of {@link com.julienviet.pgclient.PgConnection}:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#transaction02(com.julienviet.pgclient.PgPool)}
+ * ----
+ *
+ * When Postgres reports the current transaction is failed (e.g the infamous _current transaction is aborted, commands ignored until
+ * end of transaction block_), the transaction is rollbacked and the {@link com.julienviet.pgclient.PgTransaction#abortHandler(io.vertx.core.Handler)}
+ * is called:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#transaction02(com.julienviet.pgclient.PgPool)}
+ * ----
  *
  * OLD DOC:
  *

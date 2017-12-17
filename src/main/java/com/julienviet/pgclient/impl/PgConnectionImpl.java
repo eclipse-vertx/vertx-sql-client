@@ -32,6 +32,7 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
   public final Connection conn;
   private volatile Handler<Throwable> exceptionHandler;
   private volatile Handler<Void> closeHandler;
+  private Transaction tx;
 
   public PgConnectionImpl(Context context, Connection conn) {
     this.context = context;
@@ -43,11 +44,6 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
     return new SimplePgQueryImpl(sql, this::schedule);
   }
 
-
-  @Override
-  public PgConnectionImpl query(String sql, Handler<AsyncResult<PgResult<Row>>> handler) {
-    return (PgConnectionImpl) super.query(sql, handler);
-  }
 
   @Override
   public Connection connection() {
@@ -63,8 +59,12 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
   }
 
   @Override
-  protected void schedule(CommandBase cmd) {
-    conn.schedule(cmd);
+  protected void schedule(CommandBase<?> cmd) {
+    if (tx != null) {
+      tx.schedule(cmd);
+    } else {
+      conn.schedule(cmd);
+    }
   }
 
   @Override
@@ -97,8 +97,24 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
   }
 
   @Override
+  public PgTransaction begin() {
+    if (tx != null) {
+      throw new IllegalStateException();
+    }
+    tx = new Transaction(context, conn, v -> {
+      tx = null;
+    });
+    return tx;
+  }
+
+  @Override
   public void close() {
-    conn.close(this);
+    if (tx != null) {
+      tx.rollback(ar -> conn.close(this));
+      tx = null;
+    } else {
+      conn.close(this);
+    }
   }
 
   @Override
@@ -109,7 +125,6 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
       }
-      return null;
     }));
     return this;
   }

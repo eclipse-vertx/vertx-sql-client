@@ -18,16 +18,16 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgResult;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public interface QueryResultHandler<T> {
+public interface QueryResultHandler<T> extends Handler<AsyncResult<Boolean>> {
 
-  void handleResult(PgResult<T> result, boolean suspended);
+  void handleResult(PgResult<T> result);
 
-  void handleFailure(Throwable cause);
-
-  void handleEnd();
-
+  @Override
+  void handle(AsyncResult<Boolean> res);
 }

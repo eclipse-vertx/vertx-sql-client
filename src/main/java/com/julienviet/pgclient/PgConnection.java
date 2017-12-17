@@ -23,6 +23,7 @@ import com.julienviet.pgclient.impl.SocketConnection;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 
@@ -48,12 +49,19 @@ public interface PgConnection extends PgClient {
    * @param handler the handler called with the connection or the failure
    */
   static void connect(Vertx vertx, PgConnectOptions options, Handler<AsyncResult<PgConnection>> handler) {
-    PgConnectionFactory client = new PgConnectionFactory(vertx, options);
-    client.connect(ar -> handler.handle(ar.map(conn -> {
-      PgConnectionImpl p = new PgConnectionImpl(((SocketConnection)conn).context(), conn);
-      conn.init(p);
-      return p;
-    })));
+    Context ctx = Vertx.currentContext();
+    if (ctx != null) {
+      PgConnectionFactory client = new PgConnectionFactory(ctx, false, options);
+      client.connect(ar -> handler.handle(ar.map(conn -> {
+        PgConnectionImpl p = new PgConnectionImpl(ctx, conn);
+        conn.init(p);
+        return p;
+      })));
+    } else {
+      vertx.runOnContext(v -> {
+        connect(vertx, options, handler);
+      });
+    }
   }
 
   /**
@@ -65,9 +73,7 @@ public interface PgConnection extends PgClient {
   PgQuery createQuery(String sql);
 
   @Override
-  default PgConnection preparedQuery(String sql, Handler<AsyncResult<PgResult<Row>>> handler) {
-    return (PgConnection) PgClient.super.preparedQuery(sql, handler);
-  }
+  PgConnection preparedQuery(String sql, Handler<AsyncResult<PgResult<Row>>> handler);
 
   @Override
   PgConnection query(String sql, Handler<AsyncResult<PgResult<Row>>> handler);
@@ -104,6 +110,16 @@ public interface PgConnection extends PgClient {
    */
   @Fluent
   PgConnection closeHandler(Handler<Void> handler);
+
+  /**
+   * Begin a transaction and returns a {@link PgTransaction} for controlling and tracking
+   * this transaction.
+   * <p/>
+   * When the connection is explicitely closed, any inflight transaction is rollbacked.
+   *
+   * @return the transaction instance
+   */
+  PgTransaction begin();
 
   boolean isSSL();
 

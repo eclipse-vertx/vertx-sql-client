@@ -40,6 +40,11 @@ class SimpleQueryCommand<T> extends QueryCommandBase<T> {
   }
 
   @Override
+  String sql() {
+    return sql;
+  }
+
+  @Override
   void exec(SocketConnection conn) {
     conn.decodeQueue.add(new DecodeContext(true, null, DataFormat.TEXT, decoder));
     conn.writeMessage(new Query(sql));

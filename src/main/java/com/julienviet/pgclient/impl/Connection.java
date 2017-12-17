@@ -17,15 +17,13 @@
 
 package com.julienviet.pgclient.impl;
 
-import io.vertx.core.Handler;
-
 public interface Connection {
 
   void init(Holder holder);
 
   boolean isSsl();
 
-  void schedule(CommandBase cmd);
+  void schedule(CommandBase<?> cmd);
 
   void close(Holder holder);
 

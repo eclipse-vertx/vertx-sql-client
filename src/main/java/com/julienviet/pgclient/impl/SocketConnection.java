@@ -43,8 +43,8 @@ public class SocketConnection implements Connection {
   }
 
   private final NetSocketInternal socket;
-  private final ArrayDeque<CommandBase> inflight = new ArrayDeque<>();
-  private final ArrayDeque<CommandBase> pending = new ArrayDeque<>();
+  private final ArrayDeque<CommandBase<?>> inflight = new ArrayDeque<>();
+  private final ArrayDeque<CommandBase<?>> pending = new ArrayDeque<>();
   private final boolean ssl;
   private final Context context;
   private Status status = Status.CONNECTED;
@@ -70,7 +70,7 @@ public class SocketConnection implements Connection {
     return context;
   }
 
-  void initiateProtocolOrSsl(String username, String password, String database, Handler<AsyncResult<Connection>> completionHandler) {
+  void initiateProtocolOrSsl(String username, String password, String database, Handler<? super CommandResponse<Connection>> completionHandler) {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     if (ssl) {
       Future<Void> upgradeFuture = Future.future();
@@ -83,7 +83,7 @@ public class SocketConnection implements Connection {
             DecoderException err = (DecoderException) cause;
             cause = err.getCause();
           }
-          completionHandler.handle(Future.failedFuture(cause));
+          completionHandler.handle(CommandResponse.failure(cause));
         }
       });
       pipeline.addBefore("handler", "initiate-ssl-handler", new InitiateSslHandler(this, upgradeFuture));
@@ -92,7 +92,7 @@ public class SocketConnection implements Connection {
     }
   }
 
-  private void initiateProtocol(String username, String password, String database, Handler<AsyncResult<Connection>> completionHandler) {
+  private void initiateProtocol(String username, String password, String database, Handler<? super CommandResponse<Connection>> completionHandler) {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     pipeline.addBefore("handler", "decoder", new MessageDecoder(decodeQueue));
     socket.closeHandler(this::handleClosed);
@@ -173,14 +173,14 @@ public class SocketConnection implements Connection {
     }
   }
 
-  public void schedule(CommandBase cmd) {
+  public void schedule(CommandBase<?> cmd) {
     if (Vertx.currentContext() != context) {
       throw new IllegalStateException();
     }
     cmd.foo(this);
   }
 
-  void bilto(CommandBase cmd) {
+  void bilto(CommandBase<?> cmd) {
     if (status == Status.CONNECTED) {
       pending.add(cmd);
       cmd.completionHandler = v -> {
@@ -195,7 +195,7 @@ public class SocketConnection implements Connection {
 
   private void checkPending() {
     if (inflight.size() < pipeliningLimit) {
-      CommandBase cmd;
+      CommandBase<?> cmd;
       while (inflight.size() < pipeliningLimit && (cmd = pending.poll()) != null) {
         cork = true;
         inflight.add(cmd);
@@ -223,8 +223,7 @@ public class SocketConnection implements Connection {
 
   private void handleMessage(Object msg) {
     InboundMessage pgMsg = (InboundMessage) msg;
-    // System.out.println("<-- " + msg);
-    CommandBase cmd = inflight.peek();
+    CommandBase<?> cmd = inflight.peek();
     if (cmd != null) {
       cmd.handleMessage(pgMsg);
     } else {
@@ -255,10 +254,10 @@ public class SocketConnection implements Connection {
         }
       }
       Throwable cause = t == null ? new VertxException("closed") : t;
-      for (ArrayDeque<CommandBase> q : Arrays.asList(inflight, pending)) {
-        CommandBase cmd;
+      for (ArrayDeque<CommandBase<?>> q : Arrays.asList(inflight, pending)) {
+        CommandBase<?> cmd;
         while ((cmd = q.poll()) != null) {
-          CommandBase c = cmd;
+          CommandBase<?> c = cmd;
           context.runOnContext(v -> c.fail(cause));
         }
       }

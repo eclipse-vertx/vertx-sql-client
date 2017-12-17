@@ -19,11 +19,12 @@ package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.impl.codec.encoder.message.Terminate;
 
-class CloseConnectionCommand extends CommandBase {
+class CloseConnectionCommand extends CommandBase<Void> {
 
   static final CloseConnectionCommand INSTANCE = new CloseConnectionCommand();
 
   private CloseConnectionCommand() {
+    super(ar -> {});
   }
 
   @Override

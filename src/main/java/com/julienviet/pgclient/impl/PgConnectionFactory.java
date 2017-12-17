@@ -30,7 +30,7 @@ public class PgConnectionFactory {
 
   private final NetClient client;
   private final Context ctx;
-  private final Vertx vertx;
+  private final boolean registerCloseHook;
   private final String host;
   private final int port;
   private final boolean ssl;
@@ -41,13 +41,15 @@ public class PgConnectionFactory {
   private final int pipeliningLimit;
   private final Closeable hook;
 
-  public PgConnectionFactory(Vertx vertx,
+  public PgConnectionFactory(Context context,
+                             boolean registerCloseHook,
                              PgConnectOptions options) {
 
     hook = this::close;
+    this.registerCloseHook = registerCloseHook;
 
-    ctx = Vertx.currentContext();
-    if (ctx != null) {
+    ctx = context;
+    if (registerCloseHook) {
       ctx.addCloseHook(hook);
     }
 
@@ -62,8 +64,7 @@ public class PgConnectionFactory {
     this.database = options.getDatabase();
     this.username = options.getUsername();
     this.password = options.getPassword();
-    this.vertx = vertx;
-    this.client = vertx.createNetClient(netClientOptions);
+    this.client = context.owner().createNetClient(netClientOptions);
     this.cachePreparedStatements = options.getCachePreparedStatements();
     this.pipeliningLimit = options.getPipeliningLimit();
   }
@@ -75,13 +76,16 @@ public class PgConnectionFactory {
   }
 
   public void close() {
-    if (ctx != null) {
+    if (registerCloseHook) {
       ctx.removeCloseHook(hook);
     }
     client.close();
   }
 
-  public void connect(Handler<AsyncResult<Connection>> completionHandler) {
+  public void connect(Handler<? super CommandResponse<Connection>> completionHandler) {
+    if (Vertx.currentContext() != ctx) {
+      throw new IllegalStateException();
+    }
     client.connect(port, host, null, ar -> {
       if (ar.succeeded()) {
         NetSocketInternal socket = (NetSocketInternal) ar.result();
@@ -90,10 +94,10 @@ public class PgConnectionFactory {
           cachePreparedStatements,
           pipeliningLimit,
           ssl,
-          vertx.getOrCreateContext());
+          ctx);
         conn.initiateProtocolOrSsl(username, password, database, completionHandler);
       } else {
-        completionHandler.handle(Future.failedFuture(ar.cause()));
+        completionHandler.handle(CommandResponse.failure(ar.cause()));
       }
     });
   }

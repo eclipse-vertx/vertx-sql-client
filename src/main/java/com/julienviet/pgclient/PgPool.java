@@ -54,9 +54,7 @@ public interface PgPool extends PgClient {
   }
 
   @Override
-  default PgPool preparedQuery(String sql, Handler<AsyncResult<PgResult<Row>>> handler) {
-    return (PgPool) PgClient.super.preparedQuery(sql, handler);
-  }
+  PgPool preparedQuery(String sql, Handler<AsyncResult<PgResult<Row>>> handler);
 
   @Override
   PgPool query(String sql, Handler<AsyncResult<PgResult<Row>>> handler);

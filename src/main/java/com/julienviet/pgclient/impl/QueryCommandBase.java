@@ -21,30 +21,32 @@ import com.julienviet.pgclient.PgException;
 import com.julienviet.pgclient.PgResult;
 import com.julienviet.pgclient.impl.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.impl.codec.decoder.message.*;
+import io.vertx.core.Future;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
-abstract class QueryCommandBase<T> extends CommandBase {
+abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
 
-  protected final QueryResultHandler<T> handler;
+  protected final QueryResultHandler<T> resultHandler;
 
   public QueryCommandBase(QueryResultHandler<T> handler) {
-    this.handler = handler;
+    super(handler);
+    this.resultHandler = handler;
   }
+
+  abstract String sql();
 
   @Override
   public void handleMessage(InboundMessage msg) {
-    if (msg.getClass() == ReadyForQuery.class) {
-      super.handleMessage(msg);
-      handler.handleEnd();
-    } else if (msg.getClass() == CommandComplete.class) {
+    if (msg.getClass() == CommandComplete.class) {
+      this.result = false;
       PgResult<T> result = (PgResult<T>) ((CommandComplete) msg).result();
-      handler.handleResult(result, false);
+      resultHandler.handleResult(result);
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
-      fail(new PgException(error));
+      failure = new PgException(error);
     } else {
       super.handleMessage(msg);
     }
@@ -52,6 +54,6 @@ abstract class QueryCommandBase<T> extends CommandBase {
 
   @Override
   void fail(Throwable cause) {
-    handler.handleFailure(cause);
+    handler.handle(CommandResponse.failure(cause));
   }
 }

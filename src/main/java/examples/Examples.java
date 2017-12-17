@@ -183,6 +183,61 @@ public class Examples {
 
   }
 
+  public void transaction01(PgPool pool) {
+    pool.connect(res -> {
+      if (res.succeeded()) {
+
+        // Transaction must use a connection
+        PgConnection conn = res.result();
+
+        // Begin the transaction
+        PgTransaction tx = conn.begin();
+
+        // Various statements
+        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
+        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')", ar -> {});
+
+        // Commit the transaction
+        tx.commit(ar -> {
+          if (ar.succeeded()) {
+            System.out.println("Transaction succeeded");
+          } else {
+            System.out.println("Transaction failed " + ar.cause().getMessage());
+          }
+        });
+      }
+    });
+  }
+
+  public void transaction02(PgPool pool) {
+    pool.connect(res -> {
+      if (res.succeeded()) {
+
+        // Transaction must use a connection
+        PgConnection conn = res.result();
+
+        // Begin the transaction
+        PgTransaction tx = conn
+          .begin()
+          .abortHandler(v -> {
+          System.out.println("Transaction failed => rollbacked");
+        });
+
+        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {
+          // Works fine of course
+        });
+        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {
+          // Fails and triggers transaction aborts
+        });
+
+        // Attempt to commit the transaction
+        tx.commit(ar -> {
+          // But transaction abortion fails it
+        });
+      }
+    });
+  }
+
   public void ex1(Vertx vertx) {
 
     // Create options

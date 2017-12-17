@@ -20,18 +20,17 @@ package com.julienviet.pgclient.impl;
 import com.julienviet.pgclient.PgQuery;
 import com.julienviet.pgclient.PgResult;
 import com.julienviet.pgclient.Row;
-import com.julienviet.pgclient.Tuple;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 public class SimplePgQueryImpl implements PgQuery {
 
-  private final Handler<CommandBase> execHandler;
+  private final Handler<CommandBase<?>> execHandler;
   private final String sql;
   private SimpleQueryResultHandler<Row> result;
 
-  public SimplePgQueryImpl(String sql, Handler<CommandBase> execHandler) {
+  public SimplePgQueryImpl(String sql, Handler<CommandBase<?>> execHandler) {
     this.execHandler = execHandler;
     this.sql = sql;
   }

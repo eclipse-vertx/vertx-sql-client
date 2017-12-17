@@ -29,8 +29,6 @@ import com.julienviet.pgclient.impl.codec.decoder.message.ParameterStatus;
 import com.julienviet.pgclient.impl.codec.decoder.message.ReadyForQuery;
 import com.julienviet.pgclient.impl.codec.encoder.message.PasswordMessage;
 import com.julienviet.pgclient.impl.codec.encoder.message.StartupMessage;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 /**
@@ -38,21 +36,20 @@ import io.vertx.core.Handler;
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class InitCommand extends CommandBase {
+public class InitCommand extends CommandBase<Connection> {
 
   private static final String UTF8 = "UTF8";
-  private final Handler<AsyncResult<Connection>> handler;
   final String username;
   final String password;
   final String database;
   private String CLIENT_ENCODING;
   private SocketConnection conn;
 
-  InitCommand(String username, String password, String database, Handler<AsyncResult<Connection>> handler) {
+  InitCommand(String username, String password, String database, Handler<? super CommandResponse<Connection>> handler) {
+    super(handler);
     this.username = username;
     this.password = password;
     this.database = database;
-    this.handler = handler;
   }
 
   @Override
@@ -81,16 +78,16 @@ public class InitCommand extends CommandBase {
     }  else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
       completionHandler.handle(null);
-      handler.handle(Future.failedFuture(new PgException(error)));
+      handler.handle(CommandResponse.failure(new PgException(error)));
     } else if (msg.getClass() == ReadyForQuery.class) {
       // The final phase before returning the connection
       // We should make sure we are supporting only UTF8
       // https://www.postgresql.org/docs/9.5/static/multibyte.html#MULTIBYTE-CHARSET-SUPPORTED
-      Future<Connection> fut;
+      CommandResponse<Connection> fut;
       if(!CLIENT_ENCODING.equals(UTF8)) {
-        fut = Future.failedFuture(CLIENT_ENCODING + " is not supported in the client only " + UTF8);
+        fut = CommandResponse.failure(CLIENT_ENCODING + " is not supported in the client only " + UTF8);
       } else {
-        fut = Future.succeededFuture(conn);
+        fut = CommandResponse.success(conn);
       }
       completionHandler.handle(null);
       handler.handle(fut);
@@ -101,6 +98,6 @@ public class InitCommand extends CommandBase {
 
   @Override
   public void fail(Throwable err) {
-    handler.handle(Future.failedFuture(err));
+    handler.handle(CommandResponse.failure(err));
   }
 }

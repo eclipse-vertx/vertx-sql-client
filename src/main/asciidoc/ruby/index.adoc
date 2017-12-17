@@ -243,7 +243,74 @@ age = row.get_integer("age")
 
 ----
 
+== Using transactions
 
+You can execute transaction using SQL `BEGIN`/`COMMIT`/`ROLLBACK`, if you do so you must use
+a `link:../../yardoc/VertxPgClient/PgConnection.html[PgConnection]` and manage it yourself.
+
+Or you can use the transaction API of `link:../../yardoc/VertxPgClient/PgConnection.html[PgConnection]`:
+
+[source,ruby]
+----
+pool.connect() { |res_err,res|
+  if (res_err == nil)
+
+    # Transaction must use a connection
+    conn = res
+
+    # Begin the transaction
+    tx = conn.begin().abort_handler() { |v|
+      puts "Transaction failed => rollbacked"
+    }
+
+    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')") { |ar_err,ar|
+      # Works fine of course
+    }
+    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')") { |ar_err,ar|
+      # Fails and triggers transaction aborts
+    }
+
+    # Attempt to commit the transaction
+    tx.commit() { |ar_err,ar|
+      # But transaction abortion fails it
+    }
+  end
+}
+
+----
+
+When Postgres reports the current transaction is failed (e.g the infamous _current transaction is aborted, commands ignored until
+end of transaction block_), the transaction is rollbacked and the `link:../../yardoc/VertxPgClient/PgTransaction.html#abort_handler-instance_method[abortHandler]`
+is called:
+
+[source,ruby]
+----
+pool.connect() { |res_err,res|
+  if (res_err == nil)
+
+    # Transaction must use a connection
+    conn = res
+
+    # Begin the transaction
+    tx = conn.begin().abort_handler() { |v|
+      puts "Transaction failed => rollbacked"
+    }
+
+    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')") { |ar_err,ar|
+      # Works fine of course
+    }
+    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')") { |ar_err,ar|
+      # Fails and triggers transaction aborts
+    }
+
+    # Attempt to commit the transaction
+    tx.commit() { |ar_err,ar|
+      # But transaction abortion fails it
+    }
+  end
+}
+
+----
 
 OLD DOC:
 

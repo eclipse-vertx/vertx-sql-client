@@ -17,7 +17,7 @@
 
 package com.julienviet.pgclient.impl.codec.decoder.message;
 
-import com.julienviet.pgclient.impl.codec.TransactionStatus;
+import com.julienviet.pgclient.impl.codec.TxStatus;
 import com.julienviet.pgclient.impl.codec.decoder.InboundMessage;
 
 /**
@@ -39,18 +39,18 @@ import com.julienviet.pgclient.impl.codec.decoder.InboundMessage;
 
 public enum ReadyForQuery implements InboundMessage {
 
-  IDLE(TransactionStatus.IDLE),
-  ACTIVE(TransactionStatus.ACTIVE),
-  FAILED(TransactionStatus.FAILED);
+  IDLE(TxStatus.IDLE),
+  ACTIVE(TxStatus.ACTIVE),
+  FAILED(TxStatus.FAILED);
 
-  private final TransactionStatus transactionStatus;
+  private final TxStatus txStatus;
 
-  ReadyForQuery(TransactionStatus transactionStatus) {
-    this.transactionStatus = transactionStatus;
+  ReadyForQuery(TxStatus txStatus) {
+    this.txStatus = txStatus;
   }
 
-  public TransactionStatus transactionStatus() {
-    return transactionStatus;
+  public TxStatus txStatus() {
+    return txStatus;
   }
 
   private static final byte I = (byte) 'I', T = (byte) 'T';
@@ -67,6 +67,6 @@ public enum ReadyForQuery implements InboundMessage {
 
   @Override
   public String toString() {
-    return "ReadyForQuery{transactionStatus=" + name() + "}";
+    return "ReadyForQuery{txStatus=" + name() + "}";
   }
 }

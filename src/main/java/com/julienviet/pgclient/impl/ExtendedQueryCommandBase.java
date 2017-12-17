@@ -18,7 +18,6 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgResult;
-import com.julienviet.pgclient.impl.codec.DataFormat;
 import com.julienviet.pgclient.impl.codec.decoder.InboundMessage;
 import com.julienviet.pgclient.impl.codec.decoder.ResultDecoder;
 import com.julienviet.pgclient.impl.codec.decoder.message.BindComplete;
@@ -51,12 +50,18 @@ abstract class ExtendedQueryCommandBase<T> extends QueryCommandBase<T> {
   }
 
   @Override
+  String sql() {
+    return ps.sql;
+  }
+
+  @Override
   public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == ParseComplete.class) {
       // Response to Parse
     } else if (msg.getClass() == PortalSuspended.class) {
+      this.result = true;
       PgResult<T> result = (PgResult<T>) ((PortalSuspended) msg).result();
-      handler.handleResult(result, true);
+      resultHandler.handleResult(result);
     } else if (msg.getClass() == BindComplete.class) {
       // Response to Bind
     } else {

@@ -233,7 +233,74 @@ var age = row.getInteger("age")
 
 ----
 
+== Using transactions
 
+You can execute transaction using SQL `BEGIN`/`COMMIT`/`ROLLBACK`, if you do so you must use
+a `link:../../apidocs/com/julienviet/pgclient/PgConnection.html[PgConnection]` and manage it yourself.
+
+Or you can use the transaction API of `link:../../apidocs/com/julienviet/pgclient/PgConnection.html[PgConnection]`:
+
+[source,kotlin]
+----
+pool.connect({ res ->
+  if (res.succeeded()) {
+
+    // Transaction must use a connection
+    var conn = res.result()
+
+    // Begin the transaction
+    var tx = conn.begin().abortHandler({ v ->
+      println("Transaction failed => rollbacked")
+    })
+
+    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", { ar ->
+      // Works fine of course
+    })
+    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", { ar ->
+      // Fails and triggers transaction aborts
+    })
+
+    // Attempt to commit the transaction
+    tx.commit({ ar ->
+      // But transaction abortion fails it
+    })
+  }
+})
+
+----
+
+When Postgres reports the current transaction is failed (e.g the infamous _current transaction is aborted, commands ignored until
+end of transaction block_), the transaction is rollbacked and the `link:../../apidocs/com/julienviet/pgclient/PgTransaction.html#abortHandler-io.vertx.core.Handler-[abortHandler]`
+is called:
+
+[source,kotlin]
+----
+pool.connect({ res ->
+  if (res.succeeded()) {
+
+    // Transaction must use a connection
+    var conn = res.result()
+
+    // Begin the transaction
+    var tx = conn.begin().abortHandler({ v ->
+      println("Transaction failed => rollbacked")
+    })
+
+    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", { ar ->
+      // Works fine of course
+    })
+    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", { ar ->
+      // Fails and triggers transaction aborts
+    })
+
+    // Attempt to commit the transaction
+    tx.commit({ ar ->
+      // But transaction abortion fails it
+    })
+  }
+})
+
+----
 
 OLD DOC:
 
