@@ -98,6 +98,11 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
   }
 
   @Override
+  public Handler<PgNotification> notificationHandler() {
+    return notificationHandler;
+  }
+
+  @Override
   public PgConnection exceptionHandler(Handler<Throwable> handler) {
     exceptionHandler = handler;
     return this;

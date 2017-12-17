@@ -133,6 +133,12 @@ public interface PgConnection extends PgClient {
   @Fluent
   PgConnection notificationHandler(Handler<PgNotification> handler);
 
+  /**
+   *
+   * @return the notification handler set on this connection instance
+   */
+  Handler<PgNotification> notificationHandler();
+
   boolean isSSL();
 
   /**
