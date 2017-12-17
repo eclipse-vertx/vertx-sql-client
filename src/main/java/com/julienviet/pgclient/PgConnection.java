@@ -112,9 +112,12 @@ public interface PgConnection extends PgClient {
   PgConnection closeHandler(Handler<Void> handler);
 
   /**
-   * Begin a transaction.
+   * Begin a transaction and returns a {@link PgTransaction} for controlling and tracking
+   * this transaction.
+   * <p/>
+   * When the connection is explicitely closed, any inflight transaction is rollbacked.
    *
-   * @return a reference to this, so the API can be used fluently
+   * @return the transaction instance
    */
   PgTransaction begin();
 
