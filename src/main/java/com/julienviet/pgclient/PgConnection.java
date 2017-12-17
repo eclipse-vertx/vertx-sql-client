@@ -17,15 +17,12 @@
 
 package com.julienviet.pgclient;
 
+import com.julienviet.pgclient.impl.Connection;
 import com.julienviet.pgclient.impl.PgConnectionFactory;
 import com.julienviet.pgclient.impl.PgConnectionImpl;
-import com.julienviet.pgclient.impl.SocketConnection;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 
 import java.util.List;
 
@@ -52,11 +49,16 @@ public interface PgConnection extends PgClient {
     Context ctx = Vertx.currentContext();
     if (ctx != null) {
       PgConnectionFactory client = new PgConnectionFactory(ctx, false, options);
-      client.connect(ar -> handler.handle(ar.map(conn -> {
-        PgConnectionImpl p = new PgConnectionImpl(ctx, conn);
-        conn.init(p);
-        return p;
-      })));
+      client.connect(ar -> {
+        if (ar.succeeded()) {
+          Connection conn = ar.result();
+          PgConnectionImpl p = new PgConnectionImpl(ctx, conn);
+          conn.init(p);
+          handler.handle(Future.succeededFuture(p));
+        } else {
+          handler.handle(Future.failedFuture(ar.cause()));
+        }
+      });
     } else {
       vertx.runOnContext(v -> {
         connect(vertx, options, handler);
@@ -132,12 +134,6 @@ public interface PgConnection extends PgClient {
    */
   @Fluent
   PgConnection notificationHandler(Handler<PgNotification> handler);
-
-  /**
-   *
-   * @return the notification handler set on this connection instance
-   */
-  Handler<PgNotification> notificationHandler();
 
   boolean isSSL();
 

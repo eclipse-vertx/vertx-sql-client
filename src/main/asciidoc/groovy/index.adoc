@@ -458,6 +458,88 @@ pool.connect({ res ->
 
 ----
 
+== Pub/sub
+
+Postgres supports pub/sub communication channels.
+
+You can set a `link:../../apidocs/com/julienviet/pgclient/PgConnection.html#notificationHandler-io.vertx.core.Handler-[notificationHandler]` to receive
+Postgres notifications:
+
+[source,groovy]
+----
+
+connection.notificationHandler({ notification ->
+  println("Received ${notification.payload} on channel ${notification.channel}")
+})
+
+connection.query("LISTEN some-channel", { ar ->
+  println("Subscribed to channel")
+})
+
+----
+
+The `link:../../apidocs/com/julienviet/pgclient/pubsub/PgSubscriber.html[PgSubscriber]` is a channel manager managing a single connection that
+provides per channel subscription:
+
+[source,groovy]
+----
+
+def subscriber = PgSubscriber.subscriber(vertx, [
+  port:5432,
+  host:"the-host",
+  database:"the-db",
+  username:"user",
+  password:"secret"
+])
+
+// You can set the channel before connect
+subscriber.channel("channel1").handler({ payload ->
+  println("Received ${payload}")
+})
+
+subscriber.connect({ ar ->
+  if (ar.succeeded()) {
+
+    // Or you can set the channel after connect
+    subscriber.channel("channel2").handler({ payload ->
+      println("Received ${payload}")
+    })
+  }
+})
+
+----
+
+You can provide a reconnect policy as a function that takes the number of `retries` as argument and returns an `amountOfTime`
+value:
+
+* when `amountOfTime < 0`: the subscriber is closed and there is no retry
+* when `amountOfTime == 0`: the subscriber retries to connect immediately
+* when `amountOfTime > 0`: the subscriber retries after `amountOfTime` milliseconds
+
+[source,groovy]
+----
+
+def subscriber = PgSubscriber.subscriber(vertx, [
+  port:5432,
+  host:"the-host",
+  database:"the-db",
+  username:"user",
+  password:"secret"
+])
+
+// Reconnect at most 10 times after 100 ms each
+subscriber.reconnectPolicy({ retries ->
+  if (retries < 10) {
+    return 100L
+  } else {
+    return -1L
+  }
+})
+
+----
+
+The default policy is to not reconnect.
+
 == Using SSL/TLS
 
 To configure the client to use SSL connection, you can configure the `link:../../apidocs/com/julienviet/pgclient/PgConnectOptions.html[PgConnectOptions]`
