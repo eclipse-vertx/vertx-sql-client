@@ -612,13 +612,13 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     Async done = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       PgTransaction tx = conn.begin();
-      conn.query("INSERT INTO TxTest (id) VALUES (1)", ar1 -> {
-        System.out.println("got res 1");
-      });
-      conn.query("INSERT INTO TxTest (id) VALUES (2)", ar2 -> {
-        System.out.println("got res 2");
-      });
+      AtomicInteger u1 = new AtomicInteger();
+      AtomicInteger u2 = new AtomicInteger();
+      conn.query("INSERT INTO TxTest (id) VALUES (1)", ctx.asyncAssertSuccess(res -> u1.addAndGet(res.updatedCount())));
+      conn.query("INSERT INTO TxTest (id) VALUES (2)", ctx.asyncAssertSuccess(res -> u2.addAndGet(res.updatedCount())));
       tx.commit(ctx.asyncAssertSuccess(v -> {
+        ctx.assertEquals(1, u1.get());
+        ctx.assertEquals(1, u2.get());
         conn.query("SELECT id FROM TxTest WHERE id=1 OR id=2", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(2, result.size());
           done.complete();
@@ -632,13 +632,13 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     Async done = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       PgTransaction tx = conn.begin();
-      conn.query("INSERT INTO TxTest (id) VALUES (3)", ar1 -> {
-        System.out.println("got res 1 " + ar1.succeeded());
-      });
-      conn.query("INSERT INTO TxTest (id) VALUES (4)", ar2 -> {
-        System.out.println("got res 2");
-      });
+      AtomicInteger u1 = new AtomicInteger();
+      AtomicInteger u2 = new AtomicInteger();
+      conn.query("INSERT INTO TxTest (id) VALUES (3)", ctx.asyncAssertSuccess(res -> u1.addAndGet(res.updatedCount())));
+      conn.query("INSERT INTO TxTest (id) VALUES (4)", ctx.asyncAssertSuccess(res -> u2.addAndGet(res.updatedCount())));
       tx.rollback(ctx.asyncAssertSuccess(v -> {
+        ctx.assertEquals(1, u1.get());
+        ctx.assertEquals(1, u2.get());
         conn.query("SELECT id FROM TxTest WHERE id=3 OR id=4", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(0, result.size());
           done.complete();
