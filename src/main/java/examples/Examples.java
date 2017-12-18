@@ -183,6 +183,14 @@ public class Examples {
 
   }
 
+  public void queries08(Vertx vertx, PgPoolOptions options) {
+
+    // Enable prepare statements
+    options.setCachePreparedStatements(true);
+
+    PgPool pool = PgPool.pool(vertx, options);
+  }
+
   public void transaction01(PgPool pool) {
     pool.connect(res -> {
       if (res.succeeded()) {

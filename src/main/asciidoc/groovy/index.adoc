@@ -237,6 +237,18 @@ def age = row.getInteger("age")
 
 ----
 
+You can cache prepared statements:
+
+[source,groovy]
+----
+
+// Enable prepare statements
+options.cachePreparedStatements = true
+
+def pool = PgPool.pool(vertx, options)
+
+----
+
 == Using transactions
 
 You can execute transaction using SQL `BEGIN`/`COMMIT`/`ROLLBACK`, if you do so you must use

@@ -135,6 +135,13 @@
  * {@link examples.Examples#queries07(com.julienviet.pgclient.Row)}
  * ----
  *
+ * You can cache prepared statements:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#queries08(io.vertx.core.Vertx, com.julienviet.pgclient.PgPoolOptions)}
+ * ----
+ *
  * == Using transactions
  *
  * You can execute transaction using SQL `BEGIN`/`COMMIT`/`ROLLBACK`, if you do so you must use

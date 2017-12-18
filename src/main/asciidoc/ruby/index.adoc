@@ -243,6 +243,19 @@ age = row.get_integer("age")
 
 ----
 
+You can cache prepared statements:
+
+[source,ruby]
+----
+require 'vertx-pg-client/pg_pool'
+
+# Enable prepare statements
+options['cachePreparedStatements'] = true
+
+pool = VertxPgClient::PgPool.pool(vertx, options)
+
+----
+
 == Using transactions
 
 You can execute transaction using SQL `BEGIN`/`COMMIT`/`ROLLBACK`, if you do so you must use

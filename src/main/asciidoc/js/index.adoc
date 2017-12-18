@@ -243,6 +243,19 @@ var age = row.getInteger("age");
 
 ----
 
+You can cache prepared statements:
+
+[source,js]
+----
+var PgPool = require("vertx-pg-client-js/pg_pool");
+
+// Enable prepare statements
+options.cachePreparedStatements = true;
+
+var pool = PgPool.pool(vertx, options);
+
+----
+
 == Using transactions
 
 You can execute transaction using SQL `BEGIN`/`COMMIT`/`ROLLBACK`, if you do so you must use

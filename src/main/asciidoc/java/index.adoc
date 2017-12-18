@@ -207,6 +207,15 @@ Boolean male = row.getBoolean("male");
 Integer age = row.getInteger("age");
 ----
 
+You can cache prepared statements:
+
+[source,java]
+----
+options.setCachePreparedStatements(true);
+
+PgPool pool = PgPool.pool(vertx, options);
+----
+
 == Using transactions
 
 You can execute transaction using SQL `BEGIN`/`COMMIT`/`ROLLBACK`, if you do so you must use
