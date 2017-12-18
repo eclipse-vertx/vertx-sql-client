@@ -183,12 +183,152 @@ public class Examples {
 
   }
 
-  public void queries08(Vertx vertx, PgPoolOptions options) {
+  public void queries08(PgClient connection) {
+
+    // Add commands to the batch
+    List<Tuple> batch = new ArrayList<>();
+    batch.add(Tuple.of("julien", "Julien Viet"));
+    batch.add(Tuple.of("emad", "Emad Alblueshi"));
+
+    // Execute the prepared batch
+    connection.preparedBatch("INSERT INTO USERS (id, name) VALUES ($1, $2)", batch, res -> {
+      if (res.succeeded()) {
+
+        // Process results
+        PgBatchResult<Row> results = res.result();
+      } else {
+        System.out.println("Batch failed " + res.cause());
+      }
+    });
+  }
+
+  public void queries09(Vertx vertx, PgPoolOptions options) {
 
     // Enable prepare statements
     options.setCachePreparedStatements(true);
 
     PgPool pool = PgPool.pool(vertx, options);
+  }
+
+  public void usingConnections01(Vertx vertx, PgPool pool) {
+
+    pool.connect(ar1 -> {
+      if (ar1.succeeded()) {
+        PgConnection connection = ar1.result();
+
+        connection.query("SELECT * FROM users WHERE id='julien'", ar2 -> {
+          if (ar1.succeeded()) {
+            connection.query("SELECT * FROM users WHERE id='paulo'", ar3 -> {
+              // Do something with results and return the connection to the pool
+              connection.close();
+            });
+          } else {
+            // Return the connection to the pool
+            connection.close();
+          }
+        });
+      }
+    });
+  }
+
+  public void usingConnections02(PgConnection connection) {
+    connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
+      if (ar1.succeeded()) {
+        PgPreparedStatement pq = ar1.result();
+        PgQuery query = pq.createQuery(Tuple.of("julien"));
+        query.execute(ar2 -> {
+          if (ar2.succeeded()) {
+            // All rows
+            PgResult<Row> result = ar2.result();
+          }
+        });
+      }
+    });
+  }
+
+  public void usingConnections03(PgConnection connection) {
+    connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
+      if (ar1.succeeded()) {
+        PgPreparedStatement pq = ar1.result();
+        PgQuery query = pq.createQuery(Tuple.of("julien")).fetch(50);
+        query.execute(ar2 -> {
+          if (ar2.succeeded()) {
+            PgResult<Row> result = ar2.result();
+
+            // Check for more ?
+            if (query.hasMore()) {
+              query.execute(ar3 -> {
+                // More results, and so on...
+              });
+            } else {
+              // No more results
+            }
+          }
+        });
+      }
+    });
+  }
+
+  public void usingConnections04(PgConnection connection) {
+    connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
+      if (ar1.succeeded()) {
+        PgPreparedStatement pq = ar1.result();
+        PgQuery query = pq.createQuery(Tuple.of("julien")).fetch(50);
+        query.execute(ar2 -> {
+          if (ar2.succeeded()) {
+            // Close the cursor
+            query.close();
+          }
+        });
+      }
+    });
+  }
+
+  public void usingConnections05(PgConnection connection) {
+    connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
+      if (ar1.succeeded()) {
+        PgPreparedStatement pq = ar1.result();
+
+        // Fetch 50 rows at a time
+        PgStream<Row> stream = pq.createStream(50, Tuple.of("julien"));
+
+        // Use the stream
+        stream.exceptionHandler(err -> {
+          System.out.println("Error: " + err.getMessage());
+        });
+        stream.endHandler(v -> {
+          System.out.println("End of stream");
+        });
+        stream.handler(row -> {
+          System.out.println("User: " + row.getString("last_name"));
+        });
+      }
+    });
+  }
+
+  public void usingConnections06(PgConnection connection) {
+    connection.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", ar1 -> {
+      if (ar1.succeeded()) {
+        PgPreparedStatement preparedStatement = ar1.result();
+
+        // Create a query : bind parameters
+        PgBatch batch = preparedStatement.createBatch();
+
+        // Add commands to the createBatch
+        batch.add(Tuple.of("julien", "Julien Viet"));
+        batch.add(Tuple.of("emad", "Emad Alblueshi"));
+
+        batch.execute(res -> {
+          if (res.succeeded()) {
+
+            // Process results
+            PgBatchResult<Row> results = res.result();
+          } else {
+            System.out.println("Batch failed " + res.cause());
+          }
+        });
+      }
+    });
   }
 
   public void transaction01(PgPool pool) {
@@ -365,10 +505,6 @@ public class Examples {
         System.out.println("Could not prepare statement " + ar1.cause());
       }
     });
-  }
-
-  public void ex5(PgPreparedStatement preparedStatement) {
-    preparedStatement.close();
   }
 
   public void ex6(PgConnection conn) {

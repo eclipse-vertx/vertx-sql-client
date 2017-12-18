@@ -164,7 +164,9 @@ pool.query("SELECT * FROM users WHERE id='julien'", function (ar, ar_err) {
 
 ----
 
-You can do the same with prepared queries:
+You can do the same with prepared queries.
+
+The sql string can refer to parameters by position, using `$1`, `$2`, etc…​
 
 [source,js]
 ----
@@ -243,6 +245,30 @@ var age = row.getInteger("age");
 
 ----
 
+You can execute prepared batch
+
+[source,js]
+----
+var Tuple = require("vertx-pg-client-js/tuple");
+
+// Add commands to the batch
+var batch = [];
+batch.push(Tuple.of("julien", "Julien Viet"));
+batch.push(Tuple.of("emad", "Emad Alblueshi"));
+
+// Execute the prepared batch
+connection.preparedBatch("INSERT INTO USERS (id, name) VALUES ($1, $2)", batch, function (res, res_err) {
+  if (res_err == null) {
+
+    // Process results
+    var results = res;
+  } else {
+    console.log("Batch failed " + res_err);
+  }
+});
+
+----
+
 You can cache prepared statements:
 
 [source,js]
@@ -253,6 +279,150 @@ var PgPool = require("vertx-pg-client-js/pg_pool");
 options.cachePreparedStatements = true;
 
 var pool = PgPool.pool(vertx, options);
+
+----
+
+== Using connections
+
+When you need to execute sequential queries (without a transaction), you can create a new connection
+or borrow one from the pool:
+
+[source,js]
+----
+Code not translatable
+----
+
+Prepared queries can be managed:
+
+[source,js]
+----
+var Tuple = require("vertx-pg-client-js/tuple");
+connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1, ar1_err) {
+  if (ar1_err == null) {
+    var pq = ar1;
+    var query = pq.createQuery(Tuple.of("julien"));
+    query.execute(function (ar2, ar2_err) {
+      if (ar2_err == null) {
+        // All rows
+        var result = ar2;
+      }
+    });
+  }
+});
+
+----
+
+NOTE: prepared query caching depends on the `link:../dataobjects.html#PgConnectOptions#setCachePreparedStatements[cachePreparedStatements]` and
+does not depend on whether you are creating prepared statement or use `link:../../jsdoc/module-vertx-pg-client-js_pg_client-PgClient.html#preparedQuery[direct prepared queries]`
+
+By default the query will fetch all results, you can override this and define a maximum fetch size using cursors:
+
+[source,js]
+----
+var Tuple = require("vertx-pg-client-js/tuple");
+connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1, ar1_err) {
+  if (ar1_err == null) {
+    var pq = ar1;
+    var query = pq.createQuery(Tuple.of("julien")).fetch(50);
+    query.execute(function (ar2, ar2_err) {
+      if (ar2_err == null) {
+        var result = ar2;
+
+        // Check for more ?
+        if (query.hasMore()) {
+          query.execute(function (ar3, ar3_err) {
+            // More results, and so on...
+          });
+        } else {
+          // No more results
+        }
+      }
+    });
+  }
+});
+
+----
+
+Cursors shall be closed when they are released prematurely:
+
+[source,js]
+----
+var Tuple = require("vertx-pg-client-js/tuple");
+connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1, ar1_err) {
+  if (ar1_err == null) {
+    var pq = ar1;
+    var query = pq.createQuery(Tuple.of("julien")).fetch(50);
+    query.execute(function (ar2, ar2_err) {
+      if (ar2_err == null) {
+        // Close the cursor
+        query.close();
+      }
+    });
+  }
+});
+
+----
+
+A stream API is also available for cursors:
+
+[source,js]
+----
+var Tuple = require("vertx-pg-client-js/tuple");
+connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1, ar1_err) {
+  if (ar1_err == null) {
+    var pq = ar1;
+
+    // Fetch 50 rows at a time
+    var stream = pq.createStream(50, Tuple.of("julien"));
+
+    // Use the stream
+    stream.exceptionHandler(function (err) {
+      console.log("Error: " + err.getMessage());
+    });
+    stream.endHandler(function (v) {
+      console.log("End of stream");
+    });
+    stream.handler(function (row) {
+      console.log("User: " + row.getString("last_name"));
+    });
+  }
+});
+
+----
+
+The stream fetches the rows by batch of `50` and stream them, when the rows have been passed to the handler,
+a new batch of `50` is loaded and so on.
+
+The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
+will stop iterating.
+
+You can also use `link:../../jsdoc/module-vertx-pg-client-js_pg_prepared_statement-PgPreparedStatement.html[PgPreparedStatement]` for efficient batching:
+
+[source,js]
+----
+var Tuple = require("vertx-pg-client-js/tuple");
+connection.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", function (ar1, ar1_err) {
+  if (ar1_err == null) {
+    var preparedStatement = ar1;
+
+    // Create a query : bind parameters
+    var batch = preparedStatement.createBatch();
+
+    // Add commands to the createBatch
+    batch.add(Tuple.of("julien", "Julien Viet"));
+    batch.add(Tuple.of("emad", "Emad Alblueshi"));
+
+    batch.execute(function (res, res_err) {
+      if (res_err == null) {
+
+        // Process results
+        var results = res;
+      } else {
+        console.log("Batch failed " + res_err);
+      }
+    });
+  }
+});
 
 ----
 
@@ -296,279 +466,6 @@ pool.connect(function (res, res_err) {
     tx.commit(function (ar, ar_err) {
       // But transaction abortion fails it
     });
-  }
-});
-
-----
-
-OLD DOC:
-
-
-== Connecting to a database
-
-You can use the client to connect to the database and interact with it.
-
-[source,js]
-----
-var PgConnection = require("vertx-pg-client-js/pg_connection");
-
-// Create options
-var options = {
-  "port" : 5432,
-  "host" : "the-host",
-  "database" : "the-db",
-  "username" : "user",
-  "password" : "secret"
-};
-
-// Connect
-PgConnection.connect(vertx, options, function (res, res_err) {
-  if (res_err == null) {
-
-    // Connected
-    var conn = res;
-
-    conn.createQuery("SELECT * FROM USERS").execute(function (ar, ar_err) {
-
-      if (ar_err == null) {
-
-        // Use result
-        var result = ar;
-      } else {
-        console.log("It failed");
-      }
-
-      // Close the connection
-      conn.close();
-    });
-  } else {
-    console.log("Could not connect " + res_err);
-  }
-});
-
-----
-
-You can create a pool of connection to obtain a connection instead:
-
-[source,js]
-----
-var PgPool = require("vertx-pg-client-js/pg_pool");
-
-var options = {
-  "port" : 5432,
-  "host" : "the-host",
-  "database" : "the-db",
-  "username" : "user",
-  "password" : "secret",
-  "maxSize" : 20
-};
-
-// Create a pool with 20 connections max
-var pool = PgPool.pool(vertx, options);
-
-pool.connect(function (res, res_err) {
-  if (res_err == null) {
-
-    // Obtained a connection
-    var conn = res;
-
-    conn.createQuery("SELECT * FROM USERS").execute(function (ar, ar_err) {
-
-      if (ar_err == null) {
-
-        // Use result set
-        var result = ar;
-      } else {
-        console.log("It failed");
-      }
-
-      // Return the connection to the pool
-      conn.close();
-    });
-  } else {
-    console.log("Could not obtain a connection " + res_err);
-  }
-});
-
-----
-
-When you are done with the pool, you should close it:
-
-[source,js]
-----
-
-// Close the pool and the connection it maintains
-pool.close();
-
-----
-
-== Prepared statements
-
-Prepared statements can be created and managed by the application.
-
-The `sql` string can refer to parameters by position, using $1, $2, etc...
-
-[source,js]
-----
-var Tuple = require("vertx-pg-client-js/tuple");
-conn.prepare("SELECT * FROM USERS WHERE user_id=$1", function (ar1, ar1_err) {
-
-  if (ar1_err == null) {
-    var preparedStatement = ar1;
-
-    // Create a query : bind parameters
-    var query = preparedStatement.createQuery(Tuple.of("julien"));
-
-    // Execute query
-    query.execute(function (ar2, ar2_err) {
-      if (ar2_err == null) {
-
-        // Get result
-        var result = ar2;
-      } else {
-        console.log("Query failed " + ar2_err);
-      }
-    });
-  } else {
-    console.log("Could not prepare statement " + ar1_err);
-  }
-});
-
-----
-
-When you are done with the prepared statement, you should close it:
-
-[source,js]
-----
-preparedStatement.close();
-
-----
-
-NOTE: when you close the connection, you don't need to close its prepared statements
-
-By default the query will fetch all results, you can override this and define a maximum fetch size.
-
-[source,js]
-----
-conn.prepare("SELECT * FROM USERS", function (ar1, ar1_err) {
-  if (ar1_err == null) {
-
-    var preparedStatement = ar1;
-
-    // Create a query : bind parameters
-    var query = preparedStatement.createQuery().fetch(100);
-
-    query.execute(function (ar2, ar2_err) {
-
-      if (ar2_err == null) {
-        console.log("Got at most 100 rows");
-
-        if (query.hasMore()) {
-          // Get results
-          var result = ar2;
-
-          console.log("Get next 100");
-          query.execute(function (ar3, ar3_err) {
-            // Continue...
-          });
-        } else {
-          // We are done
-        }
-      } else {
-        console.log("Query failed " + ar2_err);
-      }
-    });
-  } else {
-    console.log("Could not prepare statement " + ar1_err);
-  }
-});
-
-----
-
-When a query is not completed you can call `link:../../jsdoc/module-vertx-pg-client-js_pg_query-PgQuery.html#close[close]` to release
-the query result in progress:
-
-[source,js]
-----
-conn.prepare("SELECT * FROM USERS", function (ar1, ar1_err) {
-
-  if (ar1_err == null) {
-    var preparedStatement = ar1;
-
-    // Create a query : bind parameters
-    var query = preparedStatement.createQuery();
-
-    // Get at most 100 rows
-    query.fetch(100);
-
-    // Execute query
-    query.execute(function (res, res_err) {
-      if (res_err == null) {
-
-        // Get result
-        var result = res;
-
-        // Close the query
-        query.close();
-      } else {
-        console.log("Query failed " + res_err);
-      }
-    });
-  } else {
-    console.log("Could not prepare statement " + ar1_err);
-  }
-});
-
-----
-
-Prepared statements can also be used for update operations
-
-[source,js]
-----
-var Tuple = require("vertx-pg-client-js/tuple");
-
-// Prepare (when not cached)
-// Execute
-conn.preparedQuery("UPDATE USERS SET name=$1 WHERE id=$2", Tuple.of(2, "EMAD ALBLUESHI"), function (ar, ar_err) {
-
-  if (ar_err == null) {
-    // Process results
-    var result = ar;
-  } else {
-    console.log("Update failed " + ar_err);
-  }
-});
-
-----
-
-
-Prepared statements can also be used to createBatch operations in a very efficient manner:
-
-[source,js]
-----
-var Tuple = require("vertx-pg-client-js/tuple");
-conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", function (ar1, ar1_err) {
-  if (ar1_err == null) {
-    var preparedStatement = ar1;
-
-    // Create a query : bind parameters
-    var batch = preparedStatement.createBatch();
-
-    // Add commands to the createBatch
-    batch.add(Tuple.of("julien", "Julien Viet"));
-    batch.add(Tuple.of("emad", "Emad Alblueshi"));
-
-    batch.execute(function (res, res_err) {
-      if (res_err == null) {
-
-        // Process results
-        var results = res;
-      } else {
-        console.log("Batch failed " + res_err);
-      }
-    });
-  } else {
-    console.log("Could not prepare statement " + ar1_err);
   }
 });
 

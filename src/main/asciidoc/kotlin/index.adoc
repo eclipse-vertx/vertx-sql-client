@@ -156,7 +156,9 @@ pool.query("SELECT * FROM users WHERE id='julien'", { ar ->
 
 ----
 
-You can do the same with prepared queries:
+You can do the same with prepared queries.
+
+The sql string can refer to parameters by position, using `$1`, `$2`, etc…​
 
 [source,kotlin]
 ----
@@ -233,6 +235,29 @@ var age = row.getInteger("age")
 
 ----
 
+You can execute prepared batch
+
+[source,kotlin]
+----
+
+// Add commands to the batch
+var batch = mutableListOf<Any?>()
+batch.add(Tuple.of("julien", "Julien Viet"))
+batch.add(Tuple.of("emad", "Emad Alblueshi"))
+
+// Execute the prepared batch
+connection.preparedBatch("INSERT INTO USERS (id, name) VALUES (\$$1, \$$2)", batch, { res ->
+  if (res.succeeded()) {
+
+    // Process results
+    var results = res.result()
+  } else {
+    println("Batch failed ${res.cause()}")
+  }
+})
+
+----
+
 You can cache prepared statements:
 
 [source,kotlin]
@@ -242,6 +267,145 @@ You can cache prepared statements:
 options.cachePreparedStatements = true
 
 var pool = PgPool.pool(vertx, options)
+
+----
+
+== Using connections
+
+When you need to execute sequential queries (without a transaction), you can create a new connection
+or borrow one from the pool:
+
+[source,kotlin]
+----
+Code not translatable
+----
+
+Prepared queries can be managed:
+
+[source,kotlin]
+----
+connection.prepare("SELECT * FROM users WHERE first_name LIKE \$$1", { ar1 ->
+  if (ar1.succeeded()) {
+    var pq = ar1.result()
+    var query = pq.createQuery(Tuple.of("julien"))
+    query.execute({ ar2 ->
+      if (ar2.succeeded()) {
+        // All rows
+        var result = ar2.result()
+      }
+    })
+  }
+})
+
+----
+
+NOTE: prepared query caching depends on the `link:../../apidocs/com/julienviet/pgclient/PgConnectOptions.html#setCachePreparedStatements-boolean-[setCachePreparedStatements]` and
+does not depend on whether you are creating prepared statement or use `link:../../apidocs/com/julienviet/pgclient/PgClient.html#preparedQuery-java.lang.String-io.vertx.core.Handler-[direct prepared queries]`
+
+By default the query will fetch all results, you can override this and define a maximum fetch size using cursors:
+
+[source,kotlin]
+----
+connection.prepare("SELECT * FROM users WHERE first_name LIKE \$$1", { ar1 ->
+  if (ar1.succeeded()) {
+    var pq = ar1.result()
+    var query = pq.createQuery(Tuple.of("julien")).fetch(50)
+    query.execute({ ar2 ->
+      if (ar2.succeeded()) {
+        var result = ar2.result()
+
+        // Check for more ?
+        if (query.hasMore()) {
+          query.execute({ ar3 ->
+            // More results, and so on...
+          })
+        } else {
+          // No more results
+        }
+      }
+    })
+  }
+})
+
+----
+
+Cursors shall be closed when they are released prematurely:
+
+[source,kotlin]
+----
+connection.prepare("SELECT * FROM users WHERE first_name LIKE \$$1", { ar1 ->
+  if (ar1.succeeded()) {
+    var pq = ar1.result()
+    var query = pq.createQuery(Tuple.of("julien")).fetch(50)
+    query.execute({ ar2 ->
+      if (ar2.succeeded()) {
+        // Close the cursor
+        query.close()
+      }
+    })
+  }
+})
+
+----
+
+A stream API is also available for cursors:
+
+[source,kotlin]
+----
+connection.prepare("SELECT * FROM users WHERE first_name LIKE \$$1", { ar1 ->
+  if (ar1.succeeded()) {
+    var pq = ar1.result()
+
+    // Fetch 50 rows at a time
+    var stream = pq.createStream(50, Tuple.of("julien"))
+
+    // Use the stream
+    stream.exceptionHandler({ err ->
+      println("Error: ${err.getMessage()}")
+    })
+    stream.endHandler({ v ->
+      println("End of stream")
+    })
+    stream.handler({ row ->
+      println("User: ${row.getString("last_name")}")
+    })
+  }
+})
+
+----
+
+The stream fetches the rows by batch of `50` and stream them, when the rows have been passed to the handler,
+a new batch of `50` is loaded and so on.
+
+The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
+will stop iterating.
+
+You can also use `link:../../apidocs/com/julienviet/pgclient/PgPreparedStatement.html[PgPreparedStatement]` for efficient batching:
+
+[source,kotlin]
+----
+connection.prepare("INSERT INTO USERS (id, name) VALUES (\$$1, \$$2)", { ar1 ->
+  if (ar1.succeeded()) {
+    var preparedStatement = ar1.result()
+
+    // Create a query : bind parameters
+    var batch = preparedStatement.createBatch()
+
+    // Add commands to the createBatch
+    batch.add(Tuple.of("julien", "Julien Viet"))
+    batch.add(Tuple.of("emad", "Emad Alblueshi"))
+
+    batch.execute({ res ->
+      if (res.succeeded()) {
+
+        // Process results
+        var results = res.result()
+      } else {
+        println("Batch failed ${res.cause()}")
+      }
+    })
+  }
+})
 
 ----
 
@@ -285,272 +449,6 @@ pool.connect({ res ->
     tx.commit({ ar ->
       // But transaction abortion fails it
     })
-  }
-})
-
-----
-
-OLD DOC:
-
-
-== Connecting to a database
-
-You can use the client to connect to the database and interact with it.
-
-[source,kotlin]
-----
-
-// Create options
-var options = PgConnectOptions(
-  port = 5432,
-  host = "the-host",
-  database = "the-db",
-  username = "user",
-  password = "secret")
-
-// Connect
-PgConnection.connect(vertx, options, { res ->
-  if (res.succeeded()) {
-
-    // Connected
-    var conn = res.result()
-
-    conn.createQuery("SELECT * FROM USERS").execute({ ar ->
-
-      if (ar.succeeded()) {
-
-        // Use result
-        var result = ar.result()
-      } else {
-        println("It failed")
-      }
-
-      // Close the connection
-      conn.close()
-    })
-  } else {
-    println("Could not connect ${res.cause()}")
-  }
-})
-
-----
-
-You can create a pool of connection to obtain a connection instead:
-
-[source,kotlin]
-----
-
-var options = PgPoolOptions(
-  port = 5432,
-  host = "the-host",
-  database = "the-db",
-  username = "user",
-  password = "secret",
-  maxSize = 20)
-
-// Create a pool with 20 connections max
-var pool = PgPool.pool(vertx, options)
-
-pool.connect({ res ->
-  if (res.succeeded()) {
-
-    // Obtained a connection
-    var conn = res.result()
-
-    conn.createQuery("SELECT * FROM USERS").execute({ ar ->
-
-      if (ar.succeeded()) {
-
-        // Use result set
-        var result = ar.result()
-      } else {
-        println("It failed")
-      }
-
-      // Return the connection to the pool
-      conn.close()
-    })
-  } else {
-    println("Could not obtain a connection ${res.cause()}")
-  }
-})
-
-----
-
-When you are done with the pool, you should close it:
-
-[source,kotlin]
-----
-
-// Close the pool and the connection it maintains
-pool.close()
-
-----
-
-== Prepared statements
-
-Prepared statements can be created and managed by the application.
-
-The `sql` string can refer to parameters by position, using $1, $2, etc...
-
-[source,kotlin]
-----
-conn.prepare("SELECT * FROM USERS WHERE user_id=\$$1", { ar1 ->
-
-  if (ar1.succeeded()) {
-    var preparedStatement = ar1.result()
-
-    // Create a query : bind parameters
-    var query = preparedStatement.createQuery(Tuple.of("julien"))
-
-    // Execute query
-    query.execute({ ar2 ->
-      if (ar2.succeeded()) {
-
-        // Get result
-        var result = ar2.result()
-      } else {
-        println("Query failed ${ar2.cause()}")
-      }
-    })
-  } else {
-    println("Could not prepare statement ${ar1.cause()}")
-  }
-})
-
-----
-
-When you are done with the prepared statement, you should close it:
-
-[source,kotlin]
-----
-preparedStatement.close()
-
-----
-
-NOTE: when you close the connection, you don't need to close its prepared statements
-
-By default the query will fetch all results, you can override this and define a maximum fetch size.
-
-[source,kotlin]
-----
-conn.prepare("SELECT * FROM USERS", { ar1 ->
-  if (ar1.succeeded()) {
-
-    var preparedStatement = ar1.result()
-
-    // Create a query : bind parameters
-    var query = preparedStatement.createQuery().fetch(100)
-
-    query.execute({ ar2 ->
-
-      if (ar2.succeeded()) {
-        println("Got at most 100 rows")
-
-        if (query.hasMore()) {
-          // Get results
-          var result = ar2.result()
-
-          println("Get next 100")
-          query.execute({ ar3 ->
-            // Continue...
-          })
-        } else {
-          // We are done
-        }
-      } else {
-        println("Query failed ${ar2.cause()}")
-      }
-    })
-  } else {
-    println("Could not prepare statement ${ar1.cause()}")
-  }
-})
-
-----
-
-When a query is not completed you can call `link:../../apidocs/com/julienviet/pgclient/PgQuery.html#close--[close]` to release
-the query result in progress:
-
-[source,kotlin]
-----
-conn.prepare("SELECT * FROM USERS", { ar1 ->
-
-  if (ar1.succeeded()) {
-    var preparedStatement = ar1.result()
-
-    // Create a query : bind parameters
-    var query = preparedStatement.createQuery()
-
-    // Get at most 100 rows
-    query.fetch(100)
-
-    // Execute query
-    query.execute({ res ->
-      if (res.succeeded()) {
-
-        // Get result
-        var result = res.result()
-
-        // Close the query
-        query.close()
-      } else {
-        println("Query failed ${res.cause()}")
-      }
-    })
-  } else {
-    println("Could not prepare statement ${ar1.cause()}")
-  }
-})
-
-----
-
-Prepared statements can also be used for update operations
-
-[source,kotlin]
-----
-
-// Prepare (when not cached)
-// Execute
-conn.preparedQuery("UPDATE USERS SET name=\$$1 WHERE id=\$$2", Tuple.of(2, "EMAD ALBLUESHI"), { ar ->
-
-  if (ar.succeeded()) {
-    // Process results
-    var result = ar.result()
-  } else {
-    println("Update failed ${ar.cause()}")
-  }
-})
-
-----
-
-
-Prepared statements can also be used to createBatch operations in a very efficient manner:
-
-[source,kotlin]
-----
-conn.prepare("INSERT INTO USERS (id, name) VALUES (\$$1, \$$2)", { ar1 ->
-  if (ar1.succeeded()) {
-    var preparedStatement = ar1.result()
-
-    // Create a query : bind parameters
-    var batch = preparedStatement.createBatch()
-
-    // Add commands to the createBatch
-    batch.add(Tuple.of("julien", "Julien Viet"))
-    batch.add(Tuple.of("emad", "Emad Alblueshi"))
-
-    batch.execute({ res ->
-      if (res.succeeded()) {
-
-        // Process results
-        var results = res.result()
-      } else {
-        println("Batch failed ${res.cause()}")
-      }
-    })
-  } else {
-    println("Could not prepare statement ${ar1.cause()}")
   }
 })
 

@@ -164,7 +164,9 @@ pool.query("SELECT * FROM users WHERE id='julien'") { |ar_err,ar|
 
 ----
 
-You can do the same with prepared queries:
+You can do the same with prepared queries.
+
+The sql string can refer to parameters by position, using `$1`, `$2`, etc…​
 
 [source,ruby]
 ----
@@ -243,6 +245,30 @@ age = row.get_integer("age")
 
 ----
 
+You can execute prepared batch
+
+[source,ruby]
+----
+require 'vertx-pg-client/tuple'
+
+# Add commands to the batch
+batch = Array.new
+batch.push(VertxPgClient::Tuple.of("julien", "Julien Viet"))
+batch.push(VertxPgClient::Tuple.of("emad", "Emad Alblueshi"))
+
+# Execute the prepared batch
+connection.prepared_batch("INSERT INTO USERS (id, name) VALUES ($1, $2)", batch) { |res_err,res|
+  if (res_err == nil)
+
+    # Process results
+    results = res
+  else
+    puts "Batch failed #{res_err}"
+  end
+}
+
+----
+
 You can cache prepared statements:
 
 [source,ruby]
@@ -253,6 +279,150 @@ require 'vertx-pg-client/pg_pool'
 options['cachePreparedStatements'] = true
 
 pool = VertxPgClient::PgPool.pool(vertx, options)
+
+----
+
+== Using connections
+
+When you need to execute sequential queries (without a transaction), you can create a new connection
+or borrow one from the pool:
+
+[source,ruby]
+----
+Code not translatable
+----
+
+Prepared queries can be managed:
+
+[source,ruby]
+----
+require 'vertx-pg-client/tuple'
+connection.prepare("SELECT * FROM users WHERE first_name LIKE $1") { |ar1_err,ar1|
+  if (ar1_err == nil)
+    pq = ar1
+    query = pq.create_query(VertxPgClient::Tuple.of("julien"))
+    query.execute() { |ar2_err,ar2|
+      if (ar2_err == nil)
+        # All rows
+        result = ar2
+      end
+    }
+  end
+}
+
+----
+
+NOTE: prepared query caching depends on the `link:../dataobjects.html#PgConnectOptions#set_cache_prepared_statements-instance_method[cachePreparedStatements]` and
+does not depend on whether you are creating prepared statement or use `link:../../yardoc/VertxPgClient/PgClient.html#prepared_query-instance_method[direct prepared queries]`
+
+By default the query will fetch all results, you can override this and define a maximum fetch size using cursors:
+
+[source,ruby]
+----
+require 'vertx-pg-client/tuple'
+connection.prepare("SELECT * FROM users WHERE first_name LIKE $1") { |ar1_err,ar1|
+  if (ar1_err == nil)
+    pq = ar1
+    query = pq.create_query(VertxPgClient::Tuple.of("julien")).fetch(50)
+    query.execute() { |ar2_err,ar2|
+      if (ar2_err == nil)
+        result = ar2
+
+        # Check for more ?
+        if (query.has_more?())
+          query.execute() { |ar3_err,ar3|
+            # More results, and so on...
+          }
+        else
+          # No more results
+        end
+      end
+    }
+  end
+}
+
+----
+
+Cursors shall be closed when they are released prematurely:
+
+[source,ruby]
+----
+require 'vertx-pg-client/tuple'
+connection.prepare("SELECT * FROM users WHERE first_name LIKE $1") { |ar1_err,ar1|
+  if (ar1_err == nil)
+    pq = ar1
+    query = pq.create_query(VertxPgClient::Tuple.of("julien")).fetch(50)
+    query.execute() { |ar2_err,ar2|
+      if (ar2_err == nil)
+        # Close the cursor
+        query.close()
+      end
+    }
+  end
+}
+
+----
+
+A stream API is also available for cursors:
+
+[source,ruby]
+----
+require 'vertx-pg-client/tuple'
+connection.prepare("SELECT * FROM users WHERE first_name LIKE $1") { |ar1_err,ar1|
+  if (ar1_err == nil)
+    pq = ar1
+
+    # Fetch 50 rows at a time
+    stream = pq.create_stream(50, VertxPgClient::Tuple.of("julien"))
+
+    # Use the stream
+    stream.exception_handler() { |err|
+      puts "Error: #{err.get_message()}"
+    }
+    stream.end_handler() { |v|
+      puts "End of stream"
+    }
+    stream.handler() { |row|
+      puts "User: #{row.get_string("last_name")}"
+    }
+  end
+}
+
+----
+
+The stream fetches the rows by batch of `50` and stream them, when the rows have been passed to the handler,
+a new batch of `50` is loaded and so on.
+
+The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
+will stop iterating.
+
+You can also use `link:../../yardoc/VertxPgClient/PgPreparedStatement.html[PgPreparedStatement]` for efficient batching:
+
+[source,ruby]
+----
+require 'vertx-pg-client/tuple'
+connection.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)") { |ar1_err,ar1|
+  if (ar1_err == nil)
+    preparedStatement = ar1
+
+    # Create a query : bind parameters
+    batch = preparedStatement.create_batch()
+
+    # Add commands to the createBatch
+    batch.add(VertxPgClient::Tuple.of("julien", "Julien Viet"))
+    batch.add(VertxPgClient::Tuple.of("emad", "Emad Alblueshi"))
+
+    batch.execute() { |res_err,res|
+      if (res_err == nil)
+
+        # Process results
+        results = res
+      else
+        puts "Batch failed #{res_err}"
+      end
+    }
+  end
+}
 
 ----
 
@@ -296,279 +466,6 @@ pool.connect() { |res_err,res|
     tx.commit() { |ar_err,ar|
       # But transaction abortion fails it
     }
-  end
-}
-
-----
-
-OLD DOC:
-
-
-== Connecting to a database
-
-You can use the client to connect to the database and interact with it.
-
-[source,ruby]
-----
-require 'vertx-pg-client/pg_connection'
-
-# Create options
-options = {
-  'port' => 5432,
-  'host' => "the-host",
-  'database' => "the-db",
-  'username' => "user",
-  'password' => "secret"
-}
-
-# Connect
-VertxPgClient::PgConnection.connect(vertx, options) { |res_err,res|
-  if (res_err == nil)
-
-    # Connected
-    conn = res
-
-    conn.create_query("SELECT * FROM USERS").execute() { |ar_err,ar|
-
-      if (ar_err == nil)
-
-        # Use result
-        result = ar
-      else
-        puts "It failed"
-      end
-
-      # Close the connection
-      conn.close()
-    }
-  else
-    puts "Could not connect #{res_err}"
-  end
-}
-
-----
-
-You can create a pool of connection to obtain a connection instead:
-
-[source,ruby]
-----
-require 'vertx-pg-client/pg_pool'
-
-options = {
-  'port' => 5432,
-  'host' => "the-host",
-  'database' => "the-db",
-  'username' => "user",
-  'password' => "secret",
-  'maxSize' => 20
-}
-
-# Create a pool with 20 connections max
-pool = VertxPgClient::PgPool.pool(vertx, options)
-
-pool.connect() { |res_err,res|
-  if (res_err == nil)
-
-    # Obtained a connection
-    conn = res
-
-    conn.create_query("SELECT * FROM USERS").execute() { |ar_err,ar|
-
-      if (ar_err == nil)
-
-        # Use result set
-        result = ar
-      else
-        puts "It failed"
-      end
-
-      # Return the connection to the pool
-      conn.close()
-    }
-  else
-    puts "Could not obtain a connection #{res_err}"
-  end
-}
-
-----
-
-When you are done with the pool, you should close it:
-
-[source,ruby]
-----
-
-# Close the pool and the connection it maintains
-pool.close()
-
-----
-
-== Prepared statements
-
-Prepared statements can be created and managed by the application.
-
-The `sql` string can refer to parameters by position, using $1, $2, etc...
-
-[source,ruby]
-----
-require 'vertx-pg-client/tuple'
-conn.prepare("SELECT * FROM USERS WHERE user_id=$1") { |ar1_err,ar1|
-
-  if (ar1_err == nil)
-    preparedStatement = ar1
-
-    # Create a query : bind parameters
-    query = preparedStatement.create_query(VertxPgClient::Tuple.of("julien"))
-
-    # Execute query
-    query.execute() { |ar2_err,ar2|
-      if (ar2_err == nil)
-
-        # Get result
-        result = ar2
-      else
-        puts "Query failed #{ar2_err}"
-      end
-    }
-  else
-    puts "Could not prepare statement #{ar1_err}"
-  end
-}
-
-----
-
-When you are done with the prepared statement, you should close it:
-
-[source,ruby]
-----
-preparedStatement.close()
-
-----
-
-NOTE: when you close the connection, you don't need to close its prepared statements
-
-By default the query will fetch all results, you can override this and define a maximum fetch size.
-
-[source,ruby]
-----
-conn.prepare("SELECT * FROM USERS") { |ar1_err,ar1|
-  if (ar1_err == nil)
-
-    preparedStatement = ar1
-
-    # Create a query : bind parameters
-    query = preparedStatement.create_query().fetch(100)
-
-    query.execute() { |ar2_err,ar2|
-
-      if (ar2_err == nil)
-        puts "Got at most 100 rows"
-
-        if (query.has_more?())
-          # Get results
-          result = ar2
-
-          puts "Get next 100"
-          query.execute() { |ar3_err,ar3|
-            # Continue...
-          }
-        else
-          # We are done
-        end
-      else
-        puts "Query failed #{ar2_err}"
-      end
-    }
-  else
-    puts "Could not prepare statement #{ar1_err}"
-  end
-}
-
-----
-
-When a query is not completed you can call `link:../../yardoc/VertxPgClient/PgQuery.html#close-instance_method[close]` to release
-the query result in progress:
-
-[source,ruby]
-----
-conn.prepare("SELECT * FROM USERS") { |ar1_err,ar1|
-
-  if (ar1_err == nil)
-    preparedStatement = ar1
-
-    # Create a query : bind parameters
-    query = preparedStatement.create_query()
-
-    # Get at most 100 rows
-    query.fetch(100)
-
-    # Execute query
-    query.execute() { |res_err,res|
-      if (res_err == nil)
-
-        # Get result
-        result = res
-
-        # Close the query
-        query.close()
-      else
-        puts "Query failed #{res_err}"
-      end
-    }
-  else
-    puts "Could not prepare statement #{ar1_err}"
-  end
-}
-
-----
-
-Prepared statements can also be used for update operations
-
-[source,ruby]
-----
-require 'vertx-pg-client/tuple'
-
-# Prepare (when not cached)
-# Execute
-conn.prepared_query("UPDATE USERS SET name=$1 WHERE id=$2", VertxPgClient::Tuple.of(2, "EMAD ALBLUESHI")) { |ar_err,ar|
-
-  if (ar_err == nil)
-    # Process results
-    result = ar
-  else
-    puts "Update failed #{ar_err}"
-  end
-}
-
-----
-
-
-Prepared statements can also be used to createBatch operations in a very efficient manner:
-
-[source,ruby]
-----
-require 'vertx-pg-client/tuple'
-conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)") { |ar1_err,ar1|
-  if (ar1_err == nil)
-    preparedStatement = ar1
-
-    # Create a query : bind parameters
-    batch = preparedStatement.create_batch()
-
-    # Add commands to the createBatch
-    batch.add(VertxPgClient::Tuple.of("julien", "Julien Viet"))
-    batch.add(VertxPgClient::Tuple.of("emad", "Emad Alblueshi"))
-
-    batch.execute() { |res_err,res|
-      if (res_err == nil)
-
-        # Process results
-        results = res
-      else
-        puts "Batch failed #{res_err}"
-      end
-    }
-  else
-    puts "Could not prepare statement #{ar1_err}"
   end
 }
 

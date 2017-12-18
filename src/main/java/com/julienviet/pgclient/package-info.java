@@ -93,7 +93,9 @@
  * {@link examples.Examples#queries01(com.julienviet.pgclient.PgClient)}
  * ----
  *
- * You can do the same with prepared queries:
+ * You can do the same with prepared queries.
+ *
+ * The sql string can refer to parameters by position, using `$1`, `$2`, etc…​
  *
  * [source,$lang]
  * ----
@@ -135,11 +137,72 @@
  * {@link examples.Examples#queries07(com.julienviet.pgclient.Row)}
  * ----
  *
+ * You can execute prepared batch
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#queries08(com.julienviet.pgclient.PgClient)}
+ * ----
+ *
  * You can cache prepared statements:
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#queries08(io.vertx.core.Vertx, com.julienviet.pgclient.PgPoolOptions)}
+ * {@link examples.Examples#queries09(io.vertx.core.Vertx, com.julienviet.pgclient.PgPoolOptions)}
+ * ----
+ *
+ * == Using connections
+ *
+ * When you need to execute sequential queries (without a transaction), you can create a new connection
+ * or borrow one from the pool:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#usingConnections01(io.vertx.core.Vertx, com.julienviet.pgclient.PgPool)}
+ * ----
+ *
+ * Prepared queries can be managed:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#usingConnections02(com.julienviet.pgclient.PgConnection)}
+ * ----
+ *
+ * NOTE: prepared query caching depends on the {@link com.julienviet.pgclient.PgConnectOptions#setCachePreparedStatements(boolean)} and
+ * does not depend on whether you are creating prepared statement or use {@link com.julienviet.pgclient.PgClient#preparedQuery(java.lang.String, io.vertx.core.Handler) direct prepared queries}
+ *
+ * By default the query will fetch all results, you can override this and define a maximum fetch size using cursors:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#usingConnections03(com.julienviet.pgclient.PgConnection)}
+ * ----
+ *
+ * Cursors shall be closed when they are released prematurely:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#usingConnections04(com.julienviet.pgclient.PgConnection)}
+ * ----
+ *
+ * A stream API is also available for cursors:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#usingConnections05(com.julienviet.pgclient.PgConnection)}
+ * ----
+ *
+ * The stream fetches the rows by batch of `50` and stream them, when the rows have been passed to the handler,
+ * a new batch of `50` is loaded and so on.
+ *
+ * The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
+ * will stop iterating.
+ *
+ * You can also use {@link com.julienviet.pgclient.PgPreparedStatement} for efficient batching:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#usingConnections06(com.julienviet.pgclient.PgConnection)}
  * ----
  *
  * == Using transactions
@@ -161,82 +224,6 @@
  * [source,$lang]
  * ----
  * {@link examples.Examples#transaction02(com.julienviet.pgclient.PgPool)}
- * ----
- *
- * OLD DOC:
- *
- *
- * == Connecting to a database
- *
- * You can use the client to connect to the database and interact with it.
- *
- * [source,$lang]
- * ----
- * {@link examples.Examples#ex1}
- * ----
- *
- * You can create a pool of connection to obtain a connection instead:
- *
- * [source,$lang]
- * ----
- * {@link examples.Examples#ex2}
- * ----
- *
- * When you are done with the pool, you should close it:
- *
- * [source,$lang]
- * ----
- * {@link examples.Examples#ex3}
- * ----
- *
- * == Prepared statements
- *
- * Prepared statements can be created and managed by the application.
- *
- * The `sql` string can refer to parameters by position, using $1, $2, etc...
- *
- * [source,$lang]
- * ----
- * {@link examples.Examples#ex4}
- * ----
- *
- * When you are done with the prepared statement, you should close it:
- *
- * [source,$lang]
- * ----
- * {@link examples.Examples#ex5}
- * ----
- *
- * NOTE: when you close the connection, you don't need to close its prepared statements
- *
- * By default the query will fetch all results, you can override this and define a maximum fetch size.
- *
- * [source,$lang]
- * ----
- * {@link examples.Examples#ex6}
- * ----
- *
- * When a query is not completed you can call {@link com.julienviet.pgclient.PgQuery#close()} to release
- * the query result in progress:
- *
- * [source,$lang]
- * ----
- * {@link examples.Examples#ex7}
- * ----
- *
- * Prepared statements can also be used for update operations
- *
- * [source,$lang]
- * ----
- * {@link examples.Examples#ex8}
- * ----
- *
- *
- * Prepared statements can also be used to createBatch operations in a very efficient manner:
- *
- * [source,$lang]
- * ----
- * {@link examples.Examples#ex9}
  * ----
  *
  * == Using SSL/TLS
