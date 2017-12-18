@@ -242,31 +242,7 @@ Or you can use the transaction API of `link:../../apidocs/com/julienviet/pgclien
 
 [source,kotlin]
 ----
-pool.connect({ res ->
-  if (res.succeeded()) {
-
-    // Transaction must use a connection
-    var conn = res.result()
-
-    // Begin the transaction
-    var tx = conn.begin().abortHandler({ v ->
-      println("Transaction failed => rollbacked")
-    })
-
-    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", { ar ->
-      // Works fine of course
-    })
-    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", { ar ->
-      // Fails and triggers transaction aborts
-    })
-
-    // Attempt to commit the transaction
-    tx.commit({ ar ->
-      // But transaction abortion fails it
-    })
-  }
-})
-
+Code not translatable
 ----
 
 When Postgres reports the current transaction is failed (e.g the infamous _current transaction is aborted, commands ignored until

@@ -252,31 +252,7 @@ Or you can use the transaction API of `link:../../yardoc/VertxPgClient/PgConnect
 
 [source,ruby]
 ----
-pool.connect() { |res_err,res|
-  if (res_err == nil)
-
-    # Transaction must use a connection
-    conn = res
-
-    # Begin the transaction
-    tx = conn.begin().abort_handler() { |v|
-      puts "Transaction failed => rollbacked"
-    }
-
-    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')") { |ar_err,ar|
-      # Works fine of course
-    }
-    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')") { |ar_err,ar|
-      # Fails and triggers transaction aborts
-    }
-
-    # Attempt to commit the transaction
-    tx.commit() { |ar_err,ar|
-      # But transaction abortion fails it
-    }
-  end
-}
-
+Code not translatable
 ----
 
 When Postgres reports the current transaction is failed (e.g the infamous _current transaction is aborted, commands ignored until

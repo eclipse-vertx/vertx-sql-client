@@ -223,22 +223,19 @@ pool.connect(res -> {
     PgConnection conn = res.result();
 
     // Begin the transaction
-    PgTransaction tx = conn
-      .begin()
-      .abortHandler(v -> {
-      System.out.println("Transaction failed => rollbacked");
-    });
+    PgTransaction tx = conn.begin();
 
-    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {
-      // Works fine of course
-    });
-    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {
-      // Fails and triggers transaction aborts
-    });
+    // Various statements
+    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
+    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')", ar -> {});
 
-    // Attempt to commit the transaction
+    // Commit the transaction
     tx.commit(ar -> {
-      // But transaction abortion fails it
+      if (ar.succeeded()) {
+        System.out.println("Transaction succeeded");
+      } else {
+        System.out.println("Transaction failed " + ar.cause().getMessage());
+      }
     });
   }
 });

@@ -252,31 +252,7 @@ Or you can use the transaction API of `link:../../jsdoc/module-vertx-pg-client-j
 
 [source,js]
 ----
-pool.connect(function (res, res_err) {
-  if (res_err == null) {
-
-    // Transaction must use a connection
-    var conn = res;
-
-    // Begin the transaction
-    var tx = conn.begin().abortHandler(function (v) {
-      console.log("Transaction failed => rollbacked");
-    });
-
-    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", function (ar, ar_err) {
-      // Works fine of course
-    });
-    conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", function (ar, ar_err) {
-      // Fails and triggers transaction aborts
-    });
-
-    // Attempt to commit the transaction
-    tx.commit(function (ar, ar_err) {
-      // But transaction abortion fails it
-    });
-  }
-});
-
+Code not translatable
 ----
 
 When Postgres reports the current transaction is failed (e.g the infamous _current transaction is aborted, commands ignored until

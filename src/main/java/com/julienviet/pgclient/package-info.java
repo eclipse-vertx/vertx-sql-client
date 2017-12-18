@@ -144,7 +144,7 @@
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#transaction02(com.julienviet.pgclient.PgPool)}
+ * {@link examples.Examples#transaction01(com.julienviet.pgclient.PgPool)}
  * ----
  *
  * When Postgres reports the current transaction is failed (e.g the infamous _current transaction is aborted, commands ignored until
