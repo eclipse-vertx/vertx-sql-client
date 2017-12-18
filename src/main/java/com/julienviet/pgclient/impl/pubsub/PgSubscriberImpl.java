@@ -31,8 +31,6 @@ public class PgSubscriberImpl implements PgSubscriber {
 
   private static final Function<Integer, Long> DEFAULT_RECONNECT_POLICY = count -> -1L;
 
-  private static final Logger log = LoggerFactory.getLogger(PgSubscriberImpl.class);
-
   private final Vertx vertx;
   private final PgConnectOptions options;
   private Map<String, ChannelList> channels = new HashMap<>();
@@ -49,40 +47,46 @@ public class PgSubscriberImpl implements PgSubscriber {
   }
 
   private void handleNotification(PgNotification notif) {
-    ChannelList channel = channels.get(notif.getChannel());
-    if (channel != null) {
-      channel.subs.forEach(sub -> {
-        if (!sub.paused) {
-          Handler<String> handler = sub.eventHandler;
-          if (handler != null) {
-            handler.handle(notif.getPayload());
-          } else {
-            // Race ?
+    List<Handler<String>> handlers = new ArrayList<>();
+    synchronized (this) {
+      ChannelList channel = channels.get(notif.getChannel());
+      if (channel != null) {
+        channel.subs.forEach(sub -> {
+          if (!sub.paused) {
+            Handler<String> handler = sub.eventHandler;
+            if (handler != null) {
+              handlers.add(handler);
+            } else {
+              // Race ?
+            }
           }
-        }
-      });
-    } else {
-      // Race ?
+        });
+      } else {
+        // Race ?
+      }
     }
+    handlers.forEach(handler -> {
+      handler.handle(notif.getPayload());
+    });
   }
 
   @Override
-  public PgSubscriber closeHandler(Handler<Void> handler) {
+  public synchronized PgSubscriber closeHandler(Handler<Void> handler) {
     closeHandler = handler;
     return this;
   }
 
   @Override
-  public PgSubscriber reconnectPolicy(Function<Integer, Long> policy) {
+  public synchronized PgSubscriber reconnectPolicy(Function<Integer, Long> policy) {
     if (policy == null) {
-      policy = DEFAULT_RECONNECT_POLICY;
+      reconnectPolicy = DEFAULT_RECONNECT_POLICY;
     } else {
       reconnectPolicy = policy;
     }
     return this;
   }
 
-  private void handleClose(Void v) {
+  private synchronized void handleClose(Void v) {
     conn = null;
     checkReconnect(0);
   }
@@ -116,17 +120,17 @@ public class PgSubscriberImpl implements PgSubscriber {
   }
 
   @Override
-  public boolean closed() {
+  public synchronized boolean closed() {
     return closed;
   }
 
   @Override
-  public PgConnection actualConnection() {
+  public synchronized PgConnection actualConnection() {
     return conn;
   }
 
   @Override
-  public PgSubscriber connect(Handler<AsyncResult<Void>> handler) {
+  public synchronized PgSubscriber connect(Handler<AsyncResult<Void>> handler) {
     if (closed) {
       closed = false;
       tryConnect(0, handler);
@@ -146,39 +150,41 @@ public class PgSubscriberImpl implements PgSubscriber {
   }
 
   private void doConnect(Handler<AsyncResult<Void>> completionHandler) {
-    PgConnection.connect(vertx, options, ar1 -> {
-      connecting = false;
-      if (ar1.succeeded()) {
-        conn = ar1.result();
-        conn.notificationHandler(PgSubscriberImpl.this::handleNotification);
-        conn.closeHandler(PgSubscriberImpl.this::handleClose);
-        if (channels.size() > 0) {
-          List<Handler<Void>> handlers = channels.values()
-            .stream()
-            .flatMap(channel -> channel.subs.stream())
-            .map(sub -> sub.subscribeHandler)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
-          String sql = channels.values()
-            .stream()
-            .map(channel -> {
-              channel.subscribed = true;
-              return channel.name;
-            })
-            .collect(Collectors.joining(";LISTEN ", "LISTEN ", ""));
-          conn.query(sql, ar2 -> {
-            if (ar2.failed()) {
-              conn.close();
-            } else {
-              handlers.forEach(vertx::runOnContext);
-            }
-            completionHandler.handle(ar2.mapEmpty());
-          });
-          return;
-        }
+    PgConnection.connect(vertx, options, ar -> handleConnectResult(completionHandler, ar));
+  }
+
+  private synchronized void handleConnectResult(Handler<AsyncResult<Void>> completionHandler, AsyncResult<PgConnection> ar1) {
+    connecting = false;
+    if (ar1.succeeded()) {
+      conn = ar1.result();
+      conn.notificationHandler(PgSubscriberImpl.this::handleNotification);
+      conn.closeHandler(PgSubscriberImpl.this::handleClose);
+      if (channels.size() > 0) {
+        List<Handler<Void>> handlers = channels.values()
+          .stream()
+          .flatMap(channel -> channel.subs.stream())
+          .map(sub -> sub.subscribeHandler)
+          .filter(Objects::nonNull)
+          .collect(Collectors.toList());
+        String sql = channels.values()
+          .stream()
+          .map(channel -> {
+            channel.subscribed = true;
+            return channel.name;
+          })
+          .collect(Collectors.joining(";LISTEN ", "LISTEN ", ""));
+        conn.query(sql, ar2 -> {
+          if (ar2.failed()) {
+            conn.close();
+          } else {
+            handlers.forEach(vertx::runOnContext);
+          }
+          completionHandler.handle(ar2.mapEmpty());
+        });
+        return;
       }
-      completionHandler.handle(ar1.mapEmpty());
-    });
+    }
+    completionHandler.handle(ar1.mapEmpty());
   }
 
   private class ChannelList {
@@ -235,7 +241,9 @@ public class PgSubscriberImpl implements PgSubscriber {
 
     @Override
     public PgChannel subscribeHandler(Handler<Void> handler) {
-      subscribeHandler = handler;
+      synchronized (PgSubscriberImpl.this) {
+        subscribeHandler = handler;
+      }
       return this;
     }
 
@@ -246,20 +254,22 @@ public class PgSubscriberImpl implements PgSubscriber {
 
     @Override
     public ChannelImpl handler(Handler<String> handler) {
-      if (handler != null) {
-        eventHandler = handler;
-        if (channel == null) {
-          channel = channels.computeIfAbsent(name, ChannelList::new);
-          channel.add(this);
-        }
-      } else {
-        if (channel != null) {
-          ChannelList ch = channel;
-          channel = null;
-          ch.remove(this);
-          Handler<Void> _handler = endHandler;
-          if (_handler != null) {
-            _handler.handle(null);
+      synchronized (PgSubscriberImpl.this) {
+        if (handler != null) {
+          eventHandler = handler;
+          if (channel == null) {
+            channel = channels.computeIfAbsent(name, ChannelList::new);
+            channel.add(this);
+          }
+        } else {
+          if (channel != null) {
+            ChannelList ch = channel;
+            channel = null;
+            ch.remove(this);
+            Handler<Void> _handler = endHandler;
+            if (_handler != null) {
+              _handler.handle(null);
+            }
           }
         }
       }
@@ -268,29 +278,37 @@ public class PgSubscriberImpl implements PgSubscriber {
 
     @Override
     public ChannelImpl endHandler(Handler<Void> handler) {
-      endHandler = handler;
+      synchronized (PgSubscriberImpl.this) {
+        endHandler = handler;
+      }
       return this;
     }
 
     @Override
     public ChannelImpl pause() {
-      paused = true;
+      synchronized (PgSubscriberImpl.this) {
+        paused = true;
+      }
       return this;
     }
 
     @Override
     public ChannelImpl resume() {
-      paused = false;
+      synchronized (PgSubscriberImpl.this) {
+        paused = false;
+      }
       return this;
     }
   }
 
   @Override
   public void close() {
-    if (!closed) {
-      closed = true;
-      if (conn != null) {
-        conn.close();
+    synchronized (PgSubscriberImpl.this) {
+      if (!closed) {
+        closed = true;
+        if (conn != null) {
+          conn.close();
+        }
       }
     }
   }
