@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 public class PgSubscriberImpl implements PgSubscriber {
 
+  private static Logger log = LoggerFactory.getLogger(PgSubscriberImpl.class);
   private static final Function<Integer, Long> DEFAULT_RECONNECT_POLICY = count -> -1L;
 
   private final Vertx vertx;
@@ -175,6 +176,7 @@ public class PgSubscriberImpl implements PgSubscriber {
           .collect(Collectors.joining(";LISTEN ", "LISTEN ", ""));
         conn.query(sql, ar2 -> {
           if (ar2.failed()) {
+            log.error("Cannot LISTEN to channels", ar2.cause());
             conn.close();
           } else {
             handlers.forEach(vertx::runOnContext);
@@ -209,6 +211,8 @@ public class PgSubscriberImpl implements PgSubscriber {
               if (handler != null) {
                 handler.handle(null);
               }
+            } else {
+              log.error("Cannot LISTEN to channel " + name, ar.cause());
             }
           });
         }
@@ -220,7 +224,11 @@ public class PgSubscriberImpl implements PgSubscriber {
       if (subs.isEmpty()) {
         channels.remove(name, this);
         if (conn != null) {
-          conn.query("UNLISTEN " + name, ar -> {});
+          conn.query("UNLISTEN " + name, ar -> {
+            if (ar.failed()) {
+              log.error("Cannot UNLISTEN channel " + name, ar.cause());
+            }
+          });
         }
       }
     }
