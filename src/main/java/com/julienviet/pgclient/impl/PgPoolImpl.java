@@ -93,6 +93,11 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
     protected abstract void onFailure(Throwable cause);
 
     @Override
+    public void handleNotification(int processId, String channel, String payload) {
+      // What should we do ?
+    }
+
+    @Override
     public void handle(AsyncResult<Connection> ar) {
       if (ar.succeeded()) {
         Connection conn = ar.result();

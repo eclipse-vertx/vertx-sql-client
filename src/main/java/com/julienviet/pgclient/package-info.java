@@ -226,6 +226,40 @@
  * {@link examples.Examples#transaction02(com.julienviet.pgclient.PgPool)}
  * ----
  *
+ * == Pub/sub
+ *
+ * Postgres supports pub/sub communication channels.
+ *
+ * You can set a {@link com.julienviet.pgclient.PgConnection#notificationHandler(io.vertx.core.Handler)} to receive
+ * Postgres notifications:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#pubsub01(com.julienviet.pgclient.PgConnection)}
+ * ----
+ *
+ * The {@link com.julienviet.pgclient.pubsub.PgSubscriber} is a channel manager managing a single connection that
+ * provides per channel subscription:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#pubsub02(io.vertx.core.Vertx)}
+ * ----
+ *
+ * You can provide a reconnect policy as a function that takes the number of `retries` as argument and returns an `amountOfTime`
+ * value:
+ *
+ * * when `amountOfTime < 0`: the subscriber is closed and there is no retry
+ * * when `amountOfTime == 0`: the subscriber retries to connect immediately
+ * * when `amountOfTime > 0`: the subscriber retries after `amountOfTime` milliseconds
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#pubsub03(io.vertx.core.Vertx)}
+ * ----
+ *
+ * The default policy is to not reconnect.
+ *
  * == Using SSL/TLS
  *
  * To configure the client to use SSL connection, you can configure the {@link com.julienviet.pgclient.PgConnectOptions}

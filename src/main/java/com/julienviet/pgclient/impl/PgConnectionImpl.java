@@ -18,10 +18,7 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.*;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import io.vertx.core.*;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -33,6 +30,7 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
   private volatile Handler<Throwable> exceptionHandler;
   private volatile Handler<Void> closeHandler;
   private Transaction tx;
+  private volatile Handler<PgNotification> notificationHandler;
 
   public PgConnectionImpl(Context context, Connection conn) {
     this.context = context;
@@ -60,10 +58,17 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
 
   @Override
   protected void schedule(CommandBase<?> cmd) {
-    if (tx != null) {
-      tx.schedule(cmd);
+    Context current = Vertx.currentContext();
+    if (current == context) {
+      if (tx != null) {
+        tx.schedule(cmd);
+      } else {
+        conn.schedule(cmd);
+      }
     } else {
-      conn.schedule(cmd);
+      context.runOnContext(v -> {
+        schedule(cmd);
+      });
     }
   }
 
@@ -91,6 +96,12 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
   }
 
   @Override
+  public PgConnection notificationHandler(Handler<PgNotification> handler) {
+    notificationHandler = handler;
+    return this;
+  }
+
+  @Override
   public PgConnection exceptionHandler(Handler<Throwable> handler) {
     exceptionHandler = handler;
     return this;
@@ -105,6 +116,13 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
       tx = null;
     });
     return tx;
+  }
+
+  public void handleNotification(int processId, String channel, String payload) {
+    Handler<PgNotification> handler = notificationHandler;
+    if (handler != null) {
+      handler.handle(new PgNotification().setProcessId(processId).setChannel(channel).setPayload(payload));
+    }
   }
 
   @Override

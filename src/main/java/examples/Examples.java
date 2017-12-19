@@ -18,6 +18,8 @@
 package examples;
 
 import com.julienviet.pgclient.*;
+import com.julienviet.pgclient.pubsub.PgChannel;
+import com.julienviet.pgclient.pubsub.PgSubscriber;
 import io.vertx.core.Vertx;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
@@ -382,6 +384,63 @@ public class Examples {
         tx.commit(ar -> {
           // But transaction abortion fails it
         });
+      }
+    });
+  }
+
+  public void pubsub01(PgConnection connection) {
+
+    connection.notificationHandler(notification -> {
+      System.out.println("Received " + notification.getPayload() + " on channel " + notification.getChannel());
+    });
+
+    connection.query("LISTEN some-channel", ar -> {
+      System.out.println("Subscribed to channel");
+    });
+  }
+
+  public void pubsub02(Vertx vertx) {
+
+    PgSubscriber subscriber = PgSubscriber.subscriber(vertx, new PgConnectOptions()
+      .setPort(5432)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUsername("user")
+      .setPassword("secret")
+    );
+
+    // You can set the channel before connect
+    subscriber.channel("channel1").handler(payload -> {
+      System.out.println("Received " + payload);
+    });
+
+    subscriber.connect(ar -> {
+      if (ar.succeeded()) {
+
+        // Or you can set the channel after connect
+        subscriber.channel("channel2").handler(payload -> {
+          System.out.println("Received " + payload);
+        });
+      }
+    });
+  }
+
+  public void pubsub03(Vertx vertx) {
+
+    PgSubscriber subscriber = PgSubscriber.subscriber(vertx, new PgConnectOptions()
+      .setPort(5432)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUsername("user")
+      .setPassword("secret")
+    );
+
+    // Reconnect at most 10 times after 100 ms each
+    subscriber.reconnectPolicy(retries -> {
+      if (retries < 10) {
+        return 100L;
+      } else {
+        return -1L;
       }
     });
   }

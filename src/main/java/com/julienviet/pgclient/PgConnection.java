@@ -17,15 +17,12 @@
 
 package com.julienviet.pgclient;
 
+import com.julienviet.pgclient.impl.Connection;
 import com.julienviet.pgclient.impl.PgConnectionFactory;
 import com.julienviet.pgclient.impl.PgConnectionImpl;
-import com.julienviet.pgclient.impl.SocketConnection;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 
 import java.util.List;
 
@@ -52,11 +49,16 @@ public interface PgConnection extends PgClient {
     Context ctx = Vertx.currentContext();
     if (ctx != null) {
       PgConnectionFactory client = new PgConnectionFactory(ctx, false, options);
-      client.connect(ar -> handler.handle(ar.map(conn -> {
-        PgConnectionImpl p = new PgConnectionImpl(ctx, conn);
-        conn.init(p);
-        return p;
-      })));
+      client.connect(ar -> {
+        if (ar.succeeded()) {
+          Connection conn = ar.result();
+          PgConnectionImpl p = new PgConnectionImpl(ctx, conn);
+          conn.init(p);
+          handler.handle(Future.succeededFuture(p));
+        } else {
+          handler.handle(Future.failedFuture(ar.cause()));
+        }
+      });
     } else {
       vertx.runOnContext(v -> {
         connect(vertx, options, handler);
@@ -120,6 +122,18 @@ public interface PgConnection extends PgClient {
    * @return the transaction instance
    */
   PgTransaction begin();
+
+  /**
+   * Set an handler called when the connection receives notification on a channel.
+   * <p/>
+   * The handler is called with the {@link PgNotification} and has access to the channel name
+   * and the notification payload.
+   *
+   * @param handler the handler
+   * @return the transaction instance
+   */
+  @Fluent
+  PgConnection notificationHandler(Handler<PgNotification> handler);
 
   boolean isSSL();
 

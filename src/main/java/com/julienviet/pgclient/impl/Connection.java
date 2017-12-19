@@ -31,6 +31,8 @@ public interface Connection {
 
     Connection connection();
 
+    void handleNotification(int processId, String channel, String payload);
+
     void handleClosed();
 
     void handleException(Throwable err);

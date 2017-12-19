@@ -471,6 +471,90 @@ pool.connect() { |res_err,res|
 
 ----
 
+== Pub/sub
+
+Postgres supports pub/sub communication channels.
+
+You can set a `link:../../yardoc/VertxPgClient/PgConnection.html#notification_handler-instance_method[notificationHandler]` to receive
+Postgres notifications:
+
+[source,ruby]
+----
+
+connection.notification_handler() { |notification|
+  puts "Received #{notification['payload']} on channel #{notification['channel']}"
+}
+
+connection.query("LISTEN some-channel") { |ar_err,ar|
+  puts "Subscribed to channel"
+}
+
+----
+
+The `link:../../yardoc/VertxPgClient/PgSubscriber.html[PgSubscriber]` is a channel manager managing a single connection that
+provides per channel subscription:
+
+[source,ruby]
+----
+require 'vertx-pg-client/pg_subscriber'
+
+subscriber = VertxPgClient::PgSubscriber.subscriber(vertx, {
+  'port' => 5432,
+  'host' => "the-host",
+  'database' => "the-db",
+  'username' => "user",
+  'password' => "secret"
+})
+
+# You can set the channel before connect
+subscriber.channel("channel1").handler() { |payload|
+  puts "Received #{payload}"
+}
+
+subscriber.connect() { |ar_err,ar|
+  if (ar_err == nil)
+
+    # Or you can set the channel after connect
+    subscriber.channel("channel2").handler() { |payload|
+      puts "Received #{payload}"
+    }
+  end
+}
+
+----
+
+You can provide a reconnect policy as a function that takes the number of `retries` as argument and returns an `amountOfTime`
+value:
+
+* when `amountOfTime < 0`: the subscriber is closed and there is no retry
+* when `amountOfTime == 0`: the subscriber retries to connect immediately
+* when `amountOfTime > 0`: the subscriber retries after `amountOfTime` milliseconds
+
+[source,ruby]
+----
+require 'vertx-pg-client/pg_subscriber'
+
+subscriber = VertxPgClient::PgSubscriber.subscriber(vertx, {
+  'port' => 5432,
+  'host' => "the-host",
+  'database' => "the-db",
+  'username' => "user",
+  'password' => "secret"
+})
+
+# Reconnect at most 10 times after 100 ms each
+subscriber.reconnect_policy(lambda { |retries|
+  if (retries < 10)
+    return 100
+  else
+    return -1
+  end
+})
+
+----
+
+The default policy is to not reconnect.
+
 == Using SSL/TLS
 
 To configure the client to use SSL connection, you can configure the `link:../dataobjects.html#PgConnectOptions[PgConnectOptions]`
