@@ -30,7 +30,7 @@ public class PgPoolTest extends PgPoolTestBase {
 
   @Override
   protected PgPool createPool(PgConnectOptions options, int size) {
-    return PgPool.pool(vertx, new PgPoolOptions(options).setMaxSize(size));
+    return PgClient.pool(vertx, new PgPoolOptions(options).setMaxSize(size));
   }
 
   @Test
@@ -44,10 +44,10 @@ public class PgPoolTest extends PgPoolTestBase {
     });
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
       PgPool pool = createPool(new PgConnectOptions(options).setPort(8080).setHost("localhost"), 1);
-      pool.connect(ctx.asyncAssertSuccess(conn -> {
+      pool.getConnection(ctx.asyncAssertSuccess(conn -> {
         proxyConn.get().close();
       }));
-      pool.connect(ctx.asyncAssertSuccess(conn -> {
+      pool.getConnection(ctx.asyncAssertSuccess(conn -> {
         conn.createQuery("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(v2 -> {
           async.complete();
         }));
@@ -60,7 +60,7 @@ public class PgPoolTest extends PgPoolTestBase {
     Async async = ctx.async();
     vertx.runOnContext(v -> {
       try {
-        PgPool.pool(new PgPoolOptions());
+        PgClient.pool(new PgPoolOptions());
         ctx.fail();
       } catch (IllegalStateException ignore) {
         async.complete();
@@ -71,7 +71,7 @@ public class PgPoolTest extends PgPoolTestBase {
   @Test
   public void testRunStandalone(TestContext ctx) {
     Async async = ctx.async();
-    PgPool pool = PgPool.pool(new PgPoolOptions(options));
+    PgPool pool = PgClient.pool(new PgPoolOptions(options));
     try {
       pool.query("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(v -> {
         async.complete();

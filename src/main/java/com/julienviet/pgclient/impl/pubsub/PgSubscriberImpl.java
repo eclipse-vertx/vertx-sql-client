@@ -151,7 +151,7 @@ public class PgSubscriberImpl implements PgSubscriber {
   }
 
   private void doConnect(Handler<AsyncResult<Void>> completionHandler) {
-    PgConnection.connect(vertx, options, ar -> handleConnectResult(completionHandler, ar));
+    PgClient.connect(vertx, options, ar -> handleConnectResult(completionHandler, ar));
   }
 
   private synchronized void handleConnectResult(Handler<AsyncResult<Void>> completionHandler, AsyncResult<PgConnection> ar1) {

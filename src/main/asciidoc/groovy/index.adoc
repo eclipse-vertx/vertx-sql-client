@@ -42,7 +42,7 @@ def options = [
 ]
 
 // Create the pool
-def pool = PgPool.pool(options)
+def pool = PgClient.pool(options)
 
 // A simple query
 pool.query("SELECT * FROM users WHERE id='julien'", { ar ->
@@ -77,7 +77,7 @@ def options = [
 ]
 
 // Create the pool
-def pool = PgPool.pool(options)
+def pool = PgClient.pool(options)
 
 ----
 
@@ -97,7 +97,7 @@ def options = [
 ]
 
 // Create the pool
-def pool = PgPool.pool(vertx, options)
+def pool = PgClient.pool(vertx, options)
 
 ----
 
@@ -126,7 +126,7 @@ def options = [
 ]
 
 // Close the pool and all the associated resources
-PgConnection.connect(vertx, options, { res ->
+PgClient.connect(vertx, options, { res ->
   if (res.succeeded()) {
 
     println("Connected")
@@ -270,7 +270,7 @@ You can cache prepared statements:
 // Enable prepare statements
 options.cachePreparedStatements = true
 
-def pool = PgPool.pool(vertx, options)
+def pool = PgClient.pool(vertx, options)
 
 ----
 
@@ -431,7 +431,7 @@ is called:
 
 [source,groovy]
 ----
-pool.connect({ res ->
+pool.getConnection({ res ->
   if (res.succeeded()) {
 
     // Transaction must use a connection
@@ -562,7 +562,7 @@ def options = [
   ]
 ]
 
-PgConnection.connect(vertx, options, { res ->
+PgClient.connect(vertx, options, { res ->
   if (res.succeeded()) {
     // Connected with SSL
   } else {

@@ -30,7 +30,7 @@ Here is the simplest way to connect, query and disconnect
 
 [source,ruby]
 ----
-require 'vertx-pg-client/pg_pool'
+require 'vertx-pg-client/pg_client'
 
 # Pool options
 options = {
@@ -43,7 +43,7 @@ options = {
 }
 
 # Create the pool
-pool = VertxPgClient::PgPool.pool(options)
+pool = VertxPgClient::PgClient.pool(options)
 
 # A simple query
 pool.query("SELECT * FROM users WHERE id='julien'") { |ar_err,ar|
@@ -66,7 +66,7 @@ Most of the time you will use a pool to connect to Postgres:
 
 [source,ruby]
 ----
-require 'vertx-pg-client/pg_pool'
+require 'vertx-pg-client/pg_client'
 
 # Pool options
 options = {
@@ -79,7 +79,7 @@ options = {
 }
 
 # Create the pool
-pool = VertxPgClient::PgPool.pool(options)
+pool = VertxPgClient::PgClient.pool(options)
 
 ----
 
@@ -87,7 +87,7 @@ If you are running with Vert.x you can pass it your Vertx instance:
 
 [source,ruby]
 ----
-require 'vertx-pg-client/pg_pool'
+require 'vertx-pg-client/pg_client'
 
 # Pool options
 options = {
@@ -100,7 +100,7 @@ options = {
 }
 
 # Create the pool
-pool = VertxPgClient::PgPool.pool(vertx, options)
+pool = VertxPgClient::PgClient.pool(vertx, options)
 
 ----
 
@@ -118,7 +118,7 @@ You can also connect directly to Postgres without a pool
 
 [source,ruby]
 ----
-require 'vertx-pg-client/pg_connection'
+require 'vertx-pg-client/pg_client'
 
 # Pool options
 options = {
@@ -130,7 +130,7 @@ options = {
 }
 
 # Close the pool and all the associated resources
-VertxPgClient::PgConnection.connect(vertx, options) { |res_err,res|
+VertxPgClient::PgClient.connect(vertx, options) { |res_err,res|
   if (res_err == nil)
 
     puts "Connected"
@@ -273,12 +273,12 @@ You can cache prepared statements:
 
 [source,ruby]
 ----
-require 'vertx-pg-client/pg_pool'
+require 'vertx-pg-client/pg_client'
 
 # Enable prepare statements
 options['cachePreparedStatements'] = true
 
-pool = VertxPgClient::PgPool.pool(vertx, options)
+pool = VertxPgClient::PgClient.pool(vertx, options)
 
 ----
 
@@ -444,7 +444,7 @@ is called:
 
 [source,ruby]
 ----
-pool.connect() { |res_err,res|
+pool.get_connection() { |res_err,res|
   if (res_err == nil)
 
     # Transaction must use a connection
@@ -562,7 +562,7 @@ like a Vert.x `NetClient`.
 
 [source,ruby]
 ----
-require 'vertx-pg-client/pg_connection'
+require 'vertx-pg-client/pg_client'
 
 options = {
   'port' => 5432,
@@ -578,7 +578,7 @@ options = {
   }
 }
 
-VertxPgClient::PgConnection.connect(vertx, options) { |res_err,res|
+VertxPgClient::PgClient.connect(vertx, options) { |res_err,res|
   if (res_err == nil)
     # Connected with SSL
   else

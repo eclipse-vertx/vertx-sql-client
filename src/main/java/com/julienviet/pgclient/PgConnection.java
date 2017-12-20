@@ -36,37 +36,6 @@ import java.util.List;
 public interface PgConnection extends PgClient {
 
   /**
-   * Connects to the database and returns the connection if that succeeds.
-   * <p/>
-   * The connection interracts directly with the database is not a proxy, so closing the
-   * connection will close the underlying connection to the database.
-   *
-   * @param vertx the vertx instance
-   * @param options the connect options
-   * @param handler the handler called with the connection or the failure
-   */
-  static void connect(Vertx vertx, PgConnectOptions options, Handler<AsyncResult<PgConnection>> handler) {
-    Context ctx = Vertx.currentContext();
-    if (ctx != null) {
-      PgConnectionFactory client = new PgConnectionFactory(ctx, false, options);
-      client.connect(ar -> {
-        if (ar.succeeded()) {
-          Connection conn = ar.result();
-          PgConnectionImpl p = new PgConnectionImpl(ctx, conn);
-          conn.init(p);
-          handler.handle(Future.succeededFuture(p));
-        } else {
-          handler.handle(Future.failedFuture(ar.cause()));
-        }
-      });
-    } else {
-      vertx.runOnContext(v -> {
-        connect(vertx, options, handler);
-      });
-    }
-  }
-
-  /**
    * Create a simple query.
    *
    * @param sql the query SQL

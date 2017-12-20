@@ -30,7 +30,7 @@ Here is the simplest way to connect, query and disconnect
 
 [source,js]
 ----
-var PgPool = require("vertx-pg-client-js/pg_pool");
+var PgClient = require("vertx-pg-client-js/pg_client");
 
 // Pool options
 var options = {
@@ -43,7 +43,7 @@ var options = {
 };
 
 // Create the pool
-var pool = PgPool.pool(options);
+var pool = PgClient.pool(options);
 
 // A simple query
 pool.query("SELECT * FROM users WHERE id='julien'", function (ar, ar_err) {
@@ -66,7 +66,7 @@ Most of the time you will use a pool to connect to Postgres:
 
 [source,js]
 ----
-var PgPool = require("vertx-pg-client-js/pg_pool");
+var PgClient = require("vertx-pg-client-js/pg_client");
 
 // Pool options
 var options = {
@@ -79,7 +79,7 @@ var options = {
 };
 
 // Create the pool
-var pool = PgPool.pool(options);
+var pool = PgClient.pool(options);
 
 ----
 
@@ -87,7 +87,7 @@ If you are running with Vert.x you can pass it your Vertx instance:
 
 [source,js]
 ----
-var PgPool = require("vertx-pg-client-js/pg_pool");
+var PgClient = require("vertx-pg-client-js/pg_client");
 
 // Pool options
 var options = {
@@ -100,7 +100,7 @@ var options = {
 };
 
 // Create the pool
-var pool = PgPool.pool(vertx, options);
+var pool = PgClient.pool(vertx, options);
 
 ----
 
@@ -118,7 +118,7 @@ You can also connect directly to Postgres without a pool
 
 [source,js]
 ----
-var PgConnection = require("vertx-pg-client-js/pg_connection");
+var PgClient = require("vertx-pg-client-js/pg_client");
 
 // Pool options
 var options = {
@@ -130,7 +130,7 @@ var options = {
 };
 
 // Close the pool and all the associated resources
-PgConnection.connect(vertx, options, function (res, res_err) {
+PgClient.connect(vertx, options, function (res, res_err) {
   if (res_err == null) {
 
     console.log("Connected");
@@ -273,12 +273,12 @@ You can cache prepared statements:
 
 [source,js]
 ----
-var PgPool = require("vertx-pg-client-js/pg_pool");
+var PgClient = require("vertx-pg-client-js/pg_client");
 
 // Enable prepare statements
 options.cachePreparedStatements = true;
 
-var pool = PgPool.pool(vertx, options);
+var pool = PgClient.pool(vertx, options);
 
 ----
 
@@ -444,7 +444,7 @@ is called:
 
 [source,js]
 ----
-pool.connect(function (res, res_err) {
+pool.getConnection(function (res, res_err) {
   if (res_err == null) {
 
     // Transaction must use a connection
@@ -562,7 +562,7 @@ like a Vert.x `NetClient`.
 
 [source,js]
 ----
-var PgConnection = require("vertx-pg-client-js/pg_connection");
+var PgClient = require("vertx-pg-client-js/pg_client");
 
 var options = {
   "port" : 5432,
@@ -578,7 +578,7 @@ var options = {
   }
 };
 
-PgConnection.connect(vertx, options, function (res, res_err) {
+PgClient.connect(vertx, options, function (res, res_err) {
   if (res_err == null) {
     // Connected with SSL
   } else {

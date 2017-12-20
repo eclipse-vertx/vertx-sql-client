@@ -41,7 +41,7 @@ var options = PgPoolOptions(
   maxSize = 5)
 
 // Create the pool
-var pool = PgPool.pool(options)
+var pool = PgClient.pool(options)
 
 // A simple query
 pool.query("SELECT * FROM users WHERE id='julien'", { ar ->
@@ -75,7 +75,7 @@ var options = PgPoolOptions(
   maxSize = 5)
 
 // Create the pool
-var pool = PgPool.pool(options)
+var pool = PgClient.pool(options)
 
 ----
 
@@ -94,7 +94,7 @@ var options = PgPoolOptions(
   maxSize = 5)
 
 // Create the pool
-var pool = PgPool.pool(vertx, options)
+var pool = PgClient.pool(vertx, options)
 
 ----
 
@@ -122,7 +122,7 @@ var options = PgConnectOptions(
   password = "secret")
 
 // Close the pool and all the associated resources
-PgConnection.connect(vertx, options, { res ->
+PgClient.connect(vertx, options, { res ->
   if (res.succeeded()) {
 
     println("Connected")
@@ -266,7 +266,7 @@ You can cache prepared statements:
 // Enable prepare statements
 options.cachePreparedStatements = true
 
-var pool = PgPool.pool(vertx, options)
+var pool = PgClient.pool(vertx, options)
 
 ----
 
@@ -427,7 +427,7 @@ is called:
 
 [source,kotlin]
 ----
-pool.connect({ res ->
+pool.getConnection({ res ->
   if (res.succeeded()) {
 
     // Transaction must use a connection
@@ -552,7 +552,7 @@ var options = PgConnectOptions(
   pemTrustOptions = PemTrustOptions(
     certPaths = listOf("/path/to/cert.pem")))
 
-PgConnection.connect(vertx, options, { res ->
+PgClient.connect(vertx, options, { res ->
   if (res.succeeded()) {
     // Connected with SSL
   } else {

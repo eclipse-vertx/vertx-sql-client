@@ -52,12 +52,12 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
   }
 
   @Override
-  public void connect(Handler<AsyncResult<PgConnection>> handler) {
+  public void getConnection(Handler<AsyncResult<PgConnection>> handler) {
     Context current = Vertx.currentContext();
     if (current == context) {
       pool.acquire(new ConnectionWaiter(handler));
     } else {
-      context.runOnContext(v -> connect(handler));
+      context.runOnContext(v -> getConnection(handler));
     }
   }
 

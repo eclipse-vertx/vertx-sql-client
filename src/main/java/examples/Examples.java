@@ -18,7 +18,6 @@
 package examples;
 
 import com.julienviet.pgclient.*;
-import com.julienviet.pgclient.pubsub.PgChannel;
 import com.julienviet.pgclient.pubsub.PgSubscriber;
 import io.vertx.core.Vertx;
 import io.vertx.core.net.PemTrustOptions;
@@ -45,7 +44,7 @@ public class Examples {
       .setMaxSize(5);
 
     // Create the pool
-    PgPool pool = PgPool.pool(options);
+    PgPool pool = PgClient.pool(options);
 
     // A simple query
     pool.query("SELECT * FROM users WHERE id='julien'", ar -> {
@@ -73,7 +72,7 @@ public class Examples {
       .setMaxSize(5);
 
     // Create the pool
-    PgPool pool = PgPool.pool(options);
+    PgPool pool = PgClient.pool(options);
   }
 
   public void connecting02(Vertx vertx) {
@@ -88,7 +87,7 @@ public class Examples {
       .setMaxSize(5);
 
     // Create the pool
-    PgPool pool = PgPool.pool(vertx, options);
+    PgPool pool = PgClient.pool(vertx, options);
   }
 
   public void connecting03(PgPool pool) {
@@ -108,7 +107,7 @@ public class Examples {
       .setPassword("secret");
 
     // Close the pool and all the associated resources
-    PgConnection.connect(vertx, options, res -> {
+    PgClient.connect(vertx, options, res -> {
       if (res.succeeded()) {
 
         System.out.println("Connected");
@@ -209,12 +208,12 @@ public class Examples {
     // Enable prepare statements
     options.setCachePreparedStatements(true);
 
-    PgPool pool = PgPool.pool(vertx, options);
+    PgPool pool = PgClient.pool(vertx, options);
   }
 
   public void usingConnections01(Vertx vertx, PgPool pool) {
 
-    pool.connect(ar1 -> {
+    pool.getConnection(ar1 -> {
       if (ar1.succeeded()) {
         PgConnection connection = ar1.result();
 
@@ -334,7 +333,7 @@ public class Examples {
   }
 
   public void transaction01(PgPool pool) {
-    pool.connect(res -> {
+    pool.getConnection(res -> {
       if (res.succeeded()) {
 
         // Transaction must use a connection
@@ -360,7 +359,7 @@ public class Examples {
   }
 
   public void transaction02(PgPool pool) {
-    pool.connect(res -> {
+    pool.getConnection(res -> {
       if (res.succeeded()) {
 
         // Transaction must use a connection
@@ -456,7 +455,7 @@ public class Examples {
       .setPassword("secret");
 
     // Connect
-    PgConnection.connect(vertx, options, res -> {
+    PgClient.connect(vertx, options, res -> {
       if (res.succeeded()) {
 
         // Connected
@@ -492,9 +491,9 @@ public class Examples {
       .setMaxSize(20);
 
     // Create a pool with 20 connections max
-    PgPool pool = PgPool.pool(vertx, options);
+    PgPool pool = PgClient.pool(vertx, options);
 
-    pool.connect(res -> {
+    pool.getConnection(res -> {
       if (res.succeeded()) {
 
         // Obtained a connection
@@ -703,7 +702,7 @@ public class Examples {
       .setSsl(true)
       .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/cert.pem"));
 
-    PgConnection.connect(vertx, options, res -> {
+    PgClient.connect(vertx, options, res -> {
       if (res.succeeded()) {
         // Connected with SSL
       } else {

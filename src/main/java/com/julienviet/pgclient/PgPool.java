@@ -33,26 +33,6 @@ import java.util.List;
 @VertxGen
 public interface PgPool extends PgClient {
 
-  /**
-   * Create a connection pool to the database configured with the given {@code options}.
-   *
-   * @param options the options for creating the pool
-   * @return the connection pool
-   */
-  static PgPool pool(PgPoolOptions options) {
-    if (Vertx.currentContext() != null) {
-      throw new IllegalStateException("Running in a Vertx context => use PgPool#pool(Vertx, PgPoolOptions) instead");
-    }
-    return new PgPoolImpl(Vertx.vertx(), true, options);
-  }
-
-  /**
-   * Like {@link #pool(PgPoolOptions)} with a specific {@link Vertx} instance.
-   */
-  static PgPool pool(Vertx vertx, PgPoolOptions options) {
-    return new PgPoolImpl(vertx, false, options);
-  }
-
   @Override
   PgPool preparedQuery(String sql, Handler<AsyncResult<PgResult<Row>>> handler);
 
@@ -66,11 +46,11 @@ public interface PgPool extends PgClient {
   PgPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgBatchResult<Row>>> handler);
 
   /**
-   * Obtain a connection from the pool.
+   * Get a connection from the pool.
    *
    * @param handler the handler that will get the connection result
    */
-  void connect(Handler<AsyncResult<PgConnection>> handler);
+  void getConnection(Handler<AsyncResult<PgConnection>> handler);
 
   /**
    * Close the pool and release the associated resources.

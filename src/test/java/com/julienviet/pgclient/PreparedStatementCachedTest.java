@@ -30,7 +30,7 @@ public class PreparedStatementCachedTest extends PreparedStatementTestBase {
 
   @Test
   public void testConcurrent(TestContext ctx) {
-    PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
+    PgClient.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
       for (int i = 0;i < 10;i++) {
         Async async = ctx.async();
         conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {

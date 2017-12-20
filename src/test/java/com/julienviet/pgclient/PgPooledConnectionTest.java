@@ -17,8 +17,6 @@
 
 package com.julienviet.pgclient;
 
-import com.julienviet.pgclient.impl.PgConnectionFactory;
-import io.vertx.core.Future;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
@@ -33,9 +31,9 @@ public class PgPooledConnectionTest extends PgConnectionTestBase {
   public PgPooledConnectionTest() {
     connector = (handler) -> {
       if (pool == null) {
-        pool = PgPool.pool(vertx, new PgPoolOptions(options).setMaxSize(1));
+        pool = PgClient.pool(vertx, new PgPoolOptions(options).setMaxSize(1));
       }
-      pool.connect(handler);
+      pool.getConnection(handler);
     };
   }
 

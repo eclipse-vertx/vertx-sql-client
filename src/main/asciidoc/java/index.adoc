@@ -39,7 +39,7 @@ PgPoolOptions options = new PgPoolOptions()
   .setMaxSize(5);
 
 // Create the pool
-PgPool pool = PgPool.pool(options);
+PgPool pool = PgClient.pool(options);
 
 // A simple query
 pool.query("SELECT * FROM users WHERE id='julien'", ar -> {
@@ -70,7 +70,7 @@ PgPoolOptions options = new PgPoolOptions()
   .setMaxSize(5);
 
 // Create the pool
-PgPool pool = PgPool.pool(options);
+PgPool pool = PgClient.pool(options);
 ----
 
 If you are running with Vert.x you can pass it your Vertx instance:
@@ -86,7 +86,7 @@ PgPoolOptions options = new PgPoolOptions()
   .setMaxSize(5);
 
 // Create the pool
-PgPool pool = PgPool.pool(vertx, options);
+PgPool pool = PgClient.pool(vertx, options);
 ----
 
 You need to release the pool when you don't need it anymore:
@@ -108,7 +108,7 @@ PgConnectOptions options = new PgConnectOptions()
   .setPassword("secret");
 
 // Close the pool and all the associated resources
-PgConnection.connect(vertx, options, res -> {
+PgClient.connect(vertx, options, res -> {
   if (res.succeeded()) {
 
     System.out.println("Connected");
@@ -235,7 +235,7 @@ You can cache prepared statements:
 ----
 options.setCachePreparedStatements(true);
 
-PgPool pool = PgPool.pool(vertx, options);
+PgPool pool = PgClient.pool(vertx, options);
 ----
 
 == Using connections
@@ -245,7 +245,7 @@ or borrow one from the pool:
 
 [source,java]
 ----
-pool.connect(ar1 -> {
+pool.getConnection(ar1 -> {
   if (ar1.succeeded()) {
     PgConnection connection = ar1.result();
 
@@ -397,7 +397,7 @@ Or you can use the transaction API of `link:../../apidocs/com/julienviet/pgclien
 
 [source,java]
 ----
-pool.connect(res -> {
+pool.getConnection(res -> {
   if (res.succeeded()) {
 
     // Transaction must use a connection
@@ -428,7 +428,7 @@ is called:
 
 [source,java]
 ----
-pool.connect(res -> {
+pool.getConnection(res -> {
   if (res.succeeded()) {
 
     // Transaction must use a connection
@@ -548,7 +548,7 @@ PgConnectOptions options = new PgConnectOptions()
   .setSsl(true)
   .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/cert.pem"));
 
-PgConnection.connect(vertx, options, res -> {
+PgClient.connect(vertx, options, res -> {
   if (res.succeeded()) {
     // Connected with SSL
   } else {
