@@ -275,6 +275,26 @@ public class PgPoolOptions extends PgConnectOptions {
   }
 
   @Override
+  public PgPoolOptions setReusePort(boolean reusePort) {
+    return (PgPoolOptions) super.setReusePort(reusePort);
+  }
+
+  @Override
+  public PgPoolOptions setTcpFastOpen(boolean tcpFastOpen) {
+    return (PgPoolOptions) super.setTcpFastOpen(tcpFastOpen);
+  }
+
+  @Override
+  public PgPoolOptions setTcpCork(boolean tcpCork) {
+    return (PgPoolOptions) super.setTcpCork(tcpCork);
+  }
+
+  @Override
+  public PgPoolOptions setTcpQuickAck(boolean tcpQuickAck) {
+    return (PgPoolOptions) super.setTcpQuickAck(tcpQuickAck);
+  }
+
+  @Override
   public JsonObject toJson() {
     JsonObject json = super.toJson();
     PgPoolOptionsConverter.toJson(this, json);

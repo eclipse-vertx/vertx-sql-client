@@ -313,4 +313,24 @@ public class PgConnectOptions extends NetClientOptions {
   public PgConnectOptions setOpenSslEngineOptions(OpenSSLEngineOptions sslEngineOptions) {
     return (PgConnectOptions)super.setOpenSslEngineOptions(sslEngineOptions);
   }
+
+  @Override
+  public PgConnectOptions setReusePort(boolean reusePort) {
+    return (PgConnectOptions) super.setReusePort(reusePort);
+  }
+
+  @Override
+  public PgConnectOptions setTcpFastOpen(boolean tcpFastOpen) {
+    return (PgConnectOptions) super.setTcpFastOpen(tcpFastOpen);
+  }
+
+  @Override
+  public PgConnectOptions setTcpCork(boolean tcpCork) {
+    return (PgConnectOptions) super.setTcpCork(tcpCork);
+  }
+
+  @Override
+  public PgConnectOptions setTcpQuickAck(boolean tcpQuickAck) {
+    return (PgConnectOptions) super.setTcpQuickAck(tcpQuickAck);
+  }
 }

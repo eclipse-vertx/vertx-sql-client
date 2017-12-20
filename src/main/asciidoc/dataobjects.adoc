@@ -39,11 +39,15 @@
 |[[reconnectAttempts]]`reconnectAttempts`|`Number (int)`|-
 |[[reconnectInterval]]`reconnectInterval`|`Number (long)`|-
 |[[reuseAddress]]`reuseAddress`|`Boolean`|-
+|[[reusePort]]`reusePort`|`Boolean`|-
 |[[sendBufferSize]]`sendBufferSize`|`Number (int)`|-
 |[[soLinger]]`soLinger`|`Number (int)`|-
 |[[ssl]]`ssl`|`Boolean`|-
+|[[tcpCork]]`tcpCork`|`Boolean`|-
+|[[tcpFastOpen]]`tcpFastOpen`|`Boolean`|-
 |[[tcpKeepAlive]]`tcpKeepAlive`|`Boolean`|-
 |[[tcpNoDelay]]`tcpNoDelay`|`Boolean`|-
+|[[tcpQuickAck]]`tcpQuickAck`|`Boolean`|-
 |[[trafficClass]]`trafficClass`|`Number (int)`|-
 |[[trustAll]]`trustAll`|`Boolean`|-
 |[[trustStoreOptions]]`trustStoreOptions`|`link:dataobjects.html#JksOptions[JksOptions]`|-
@@ -119,11 +123,15 @@ Set the process id.
 |[[reconnectAttempts]]`reconnectAttempts`|`Number (int)`|-
 |[[reconnectInterval]]`reconnectInterval`|`Number (long)`|-
 |[[reuseAddress]]`reuseAddress`|`Boolean`|-
+|[[reusePort]]`reusePort`|`Boolean`|-
 |[[sendBufferSize]]`sendBufferSize`|`Number (int)`|-
 |[[soLinger]]`soLinger`|`Number (int)`|-
 |[[ssl]]`ssl`|`Boolean`|-
+|[[tcpCork]]`tcpCork`|`Boolean`|-
+|[[tcpFastOpen]]`tcpFastOpen`|`Boolean`|-
 |[[tcpKeepAlive]]`tcpKeepAlive`|`Boolean`|-
 |[[tcpNoDelay]]`tcpNoDelay`|`Boolean`|-
+|[[tcpQuickAck]]`tcpQuickAck`|`Boolean`|-
 |[[trafficClass]]`trafficClass`|`Number (int)`|-
 |[[trustAll]]`trustAll`|`Boolean`|-
 |[[trustStoreOptions]]`trustStoreOptions`|`link:dataobjects.html#JksOptions[JksOptions]`|-

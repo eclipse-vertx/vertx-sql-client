@@ -22,7 +22,7 @@
   <parent>
     <groupId>io.vertx</groupId>
     <artifactId>vertx-ext-parent</artifactId>
-    <version>26</version>
+    <version>27</version>
   </parent>
 
   <groupId>com.julienviet</groupId>
@@ -59,7 +59,7 @@
   </developers>
 
   <properties>
-    <stack.version>3.5.0.Beta1</stack.version>
+    <stack.version>3.5.0</stack.version>
     <jmh.version>1.19</jmh.version>
   </properties>
 
