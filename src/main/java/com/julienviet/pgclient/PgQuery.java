@@ -29,7 +29,6 @@ public interface PgQuery {
 
   /**
    * Execute the query, the result is provided asynchronously to the {@code handler}.
-   * <p/>
    *
    * @param handler the handler for the result
    */

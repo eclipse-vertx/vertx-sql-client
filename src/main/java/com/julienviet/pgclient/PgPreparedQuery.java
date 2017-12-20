@@ -44,7 +44,7 @@ public interface PgPreparedQuery {
    * @return create a query cursor with a {@code fetch} size and empty arguments
    */
   default PgQuery createQuery(int fetch) {
-    return createQuery(0, ArrayTuple.EMPTY);
+    return createQuery(fetch, ArrayTuple.EMPTY);
   }
 
   /**
