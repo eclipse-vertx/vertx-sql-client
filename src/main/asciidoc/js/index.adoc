@@ -208,7 +208,7 @@ client.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"), func
 
 ----
 
-Query methods return a `link:../../jsdoc/module-vertx-pg-client-js_pg_result-PgResult.html[PgResult]` instance that works for _SELECT_ queries
+Query methods provides an asynchronous `link:../../jsdoc/module-vertx-pg-client-js_pg_result-PgResult.html[PgResult]` instance that works for _SELECT_ queries
 
 [source,js]
 ----
@@ -318,7 +318,7 @@ or borrow one from the pool:
 Code not translatable
 ----
 
-Prepared queries can be managed:
+Prepared queries can be created:
 
 [source,js]
 ----
@@ -340,7 +340,7 @@ connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1
 NOTE: prepared query caching depends on the `link:../dataobjects.html#PgConnectOptions#setCachePreparedStatements[cachePreparedStatements]` and
 does not depend on whether you are creating prepared queries or use `link:../../jsdoc/module-vertx-pg-client-js_pg_client-PgClient.html#preparedQuery[direct prepared queries]`
 
-By default the query will fetch all results, you can override this and define a maximum fetch size using cursors:
+By default prepared query executions fetch all results, you can use a `link:../../jsdoc/module-vertx-pg-client-js_pg_cursor-PgCursor.html[PgCursor]` to control the amount of rows you want to read:
 
 [source,js]
 ----
@@ -348,13 +348,19 @@ var Tuple = require("vertx-pg-client-js/tuple");
 connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1, ar1_err) {
   if (ar1_err == null) {
     var pq = ar1;
+
+    // Create a cursor
     var cursor = pq.cursor(Tuple.of("julien"));
+
+    // Read 50 rows
     cursor.read(50, function (ar2, ar2_err) {
       if (ar2_err == null) {
         var result = ar2;
 
         // Check for more ?
         if (cursor.hasMore()) {
+
+          // Read the next 50
           cursor.read(50, function (ar3, ar3_err) {
             // More results, and so on...
           });
@@ -388,7 +394,7 @@ connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1
 
 ----
 
-A stream API is also available for cursors:
+A stream API is also available for cursors, which can be more convenient, specially with the Rxified version.
 
 [source,js]
 ----
@@ -415,13 +421,13 @@ connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1
 
 ----
 
-The stream fetches the rows by batch of `50` and stream them, when the rows have been passed to the handler,
-a new batch of `50` is loaded and so on.
+The stream read the rows by batch of `50` and stream them, when the rows have been passed to the handler,
+a new batch of `50` is read and so on.
 
 The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
 will stop iterating.
 
-You can also use `link:../../jsdoc/module-vertx-pg-client-js_pg_prepared_query-PgPreparedQuery.html[PgPreparedQuery]` for efficient batching:
+`link:../../jsdoc/module-vertx-pg-client-js_pg_prepared_query-PgPreparedQuery.html[PgPreparedQuery]` can perform efficient batching:
 
 [source,js]
 ----

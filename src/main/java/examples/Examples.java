@@ -305,13 +305,19 @@ public class Examples {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
       if (ar1.succeeded()) {
         PgPreparedQuery pq = ar1.result();
+
+        // Create a cursor
         PgCursor cursor = pq.cursor(Tuple.of("julien"));
+
+        // Read 50 rows
         cursor.read(50, ar2 -> {
           if (ar2.succeeded()) {
             PgResult<Row> result = ar2.result();
 
             // Check for more ?
             if (cursor.hasMore()) {
+
+              // Read the next 50
               cursor.read(50, ar3 -> {
                 // More results, and so on...
               });

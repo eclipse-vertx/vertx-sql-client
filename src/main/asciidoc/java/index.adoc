@@ -182,7 +182,7 @@ client.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"),  ar 
 });
 ----
 
-Query methods return a `link:../../apidocs/com/julienviet/pgclient/PgResult.html[PgResult]` instance that works for _SELECT_ queries
+Query methods provides an asynchronous `link:../../apidocs/com/julienviet/pgclient/PgResult.html[PgResult]` instance that works for _SELECT_ queries
 
 [source,java]
 ----
@@ -290,7 +290,7 @@ pool.getConnection(ar1 -> {
 });
 ----
 
-Prepared queries can be managed:
+Prepared queries can be created:
 
 [source,java]
 ----
@@ -310,20 +310,26 @@ connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
 NOTE: prepared query caching depends on the `link:../../apidocs/com/julienviet/pgclient/PgConnectOptions.html#setCachePreparedStatements-boolean-[setCachePreparedStatements]` and
 does not depend on whether you are creating prepared queries or use `link:../../apidocs/com/julienviet/pgclient/PgClient.html#preparedQuery-java.lang.String-io.vertx.core.Handler-[direct prepared queries]`
 
-By default the query will fetch all results, you can override this and define a maximum fetch size using cursors:
+By default prepared query executions fetch all results, you can use a `link:../../apidocs/com/julienviet/pgclient/PgCursor.html[PgCursor]` to control the amount of rows you want to read:
 
 [source,java]
 ----
 connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
   if (ar1.succeeded()) {
     PgPreparedQuery pq = ar1.result();
+
+    // Create a cursor
     PgCursor cursor = pq.cursor(Tuple.of("julien"));
+
+    // Read 50 rows
     cursor.read(50, ar2 -> {
       if (ar2.succeeded()) {
         PgResult<Row> result = ar2.result();
 
         // Check for more ?
         if (cursor.hasMore()) {
+
+          // Read the next 50
           cursor.read(50, ar3 -> {
             // More results, and so on...
           });
@@ -354,7 +360,7 @@ connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
 });
 ----
 
-A stream API is also available for cursors:
+A stream API is also available for cursors, which can be more convenient, specially with the Rxified version.
 
 [source,java]
 ----
@@ -379,13 +385,13 @@ connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
 });
 ----
 
-The stream fetches the rows by batch of `50` and stream them, when the rows have been passed to the handler,
-a new batch of `50` is loaded and so on.
+The stream read the rows by batch of `50` and stream them, when the rows have been passed to the handler,
+a new batch of `50` is read and so on.
 
 The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
 will stop iterating.
 
-You can also use `link:../../apidocs/com/julienviet/pgclient/PgPreparedQuery.html[PgPreparedQuery]` for efficient batching:
+`link:../../apidocs/com/julienviet/pgclient/PgPreparedQuery.html[PgPreparedQuery]` can perform efficient batching:
 
 [source,java]
 ----

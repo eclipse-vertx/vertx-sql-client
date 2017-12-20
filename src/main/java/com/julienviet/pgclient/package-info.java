@@ -110,7 +110,7 @@
  * {@link examples.Examples#queries02(com.julienviet.pgclient.PgClient)}
  * ----
  *
- * Query methods return a {@link com.julienviet.pgclient.PgResult} instance that works for _SELECT_ queries
+ * Query methods provides an asynchronous {@link com.julienviet.pgclient.PgResult} instance that works for _SELECT_ queries
  *
  * [source,$lang]
  * ----
@@ -169,7 +169,7 @@
  * {@link examples.Examples#usingConnections01(io.vertx.core.Vertx, com.julienviet.pgclient.PgPool)}
  * ----
  *
- * Prepared queries can be managed:
+ * Prepared queries can be created:
  *
  * [source,$lang]
  * ----
@@ -179,7 +179,7 @@
  * NOTE: prepared query caching depends on the {@link com.julienviet.pgclient.PgConnectOptions#setCachePreparedStatements(boolean)} and
  * does not depend on whether you are creating prepared queries or use {@link com.julienviet.pgclient.PgClient#preparedQuery(java.lang.String, io.vertx.core.Handler) direct prepared queries}
  *
- * By default the query will fetch all results, you can override this and define a maximum fetch size using cursors:
+ * By default prepared query executions fetch all results, you can use a {@link com.julienviet.pgclient.PgCursor} to control the amount of rows you want to read:
  *
  * [source,$lang]
  * ----
@@ -193,20 +193,20 @@
  * {@link examples.Examples#usingConnections04(com.julienviet.pgclient.PgConnection)}
  * ----
  *
- * A stream API is also available for cursors:
+ * A stream API is also available for cursors, which can be more convenient, specially with the Rxified version.
  *
  * [source,$lang]
  * ----
  * {@link examples.Examples#usingConnections05(com.julienviet.pgclient.PgConnection)}
  * ----
  *
- * The stream fetches the rows by batch of `50` and stream them, when the rows have been passed to the handler,
- * a new batch of `50` is loaded and so on.
+ * The stream read the rows by batch of `50` and stream them, when the rows have been passed to the handler,
+ * a new batch of `50` is read and so on.
  *
  * The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
  * will stop iterating.
  *
- * You can also use {@link com.julienviet.pgclient.PgPreparedQuery} for efficient batching:
+ * {@link com.julienviet.pgclient.PgPreparedQuery} can perform efficient batching:
  *
  * [source,$lang]
  * ----

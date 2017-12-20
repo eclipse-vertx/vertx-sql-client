@@ -208,7 +208,7 @@ client.prepared_query("SELECT * FROM users WHERE id=$1", VertxPgClient::Tuple.of
 
 ----
 
-Query methods return a `link:../../yardoc/VertxPgClient/PgResult.html[PgResult]` instance that works for _SELECT_ queries
+Query methods provides an asynchronous `link:../../yardoc/VertxPgClient/PgResult.html[PgResult]` instance that works for _SELECT_ queries
 
 [source,ruby]
 ----
@@ -318,7 +318,7 @@ or borrow one from the pool:
 Code not translatable
 ----
 
-Prepared queries can be managed:
+Prepared queries can be created:
 
 [source,ruby]
 ----
@@ -340,7 +340,7 @@ connection.prepare("SELECT * FROM users WHERE first_name LIKE $1") { |ar1_err,ar
 NOTE: prepared query caching depends on the `link:../dataobjects.html#PgConnectOptions#set_cache_prepared_statements-instance_method[cachePreparedStatements]` and
 does not depend on whether you are creating prepared queries or use `link:../../yardoc/VertxPgClient/PgClient.html#prepared_query-instance_method[direct prepared queries]`
 
-By default the query will fetch all results, you can override this and define a maximum fetch size using cursors:
+By default prepared query executions fetch all results, you can use a `link:../../yardoc/VertxPgClient/PgCursor.html[PgCursor]` to control the amount of rows you want to read:
 
 [source,ruby]
 ----
@@ -348,13 +348,19 @@ require 'vertx-pg-client/tuple'
 connection.prepare("SELECT * FROM users WHERE first_name LIKE $1") { |ar1_err,ar1|
   if (ar1_err == nil)
     pq = ar1
+
+    # Create a cursor
     cursor = pq.cursor(VertxPgClient::Tuple.of("julien"))
+
+    # Read 50 rows
     cursor.read(50) { |ar2_err,ar2|
       if (ar2_err == nil)
         result = ar2
 
         # Check for more ?
         if (cursor.has_more?())
+
+          # Read the next 50
           cursor.read(50) { |ar3_err,ar3|
             # More results, and so on...
           }
@@ -388,7 +394,7 @@ connection.prepare("SELECT * FROM users WHERE first_name LIKE $1") { |ar1_err,ar
 
 ----
 
-A stream API is also available for cursors:
+A stream API is also available for cursors, which can be more convenient, specially with the Rxified version.
 
 [source,ruby]
 ----
@@ -415,13 +421,13 @@ connection.prepare("SELECT * FROM users WHERE first_name LIKE $1") { |ar1_err,ar
 
 ----
 
-The stream fetches the rows by batch of `50` and stream them, when the rows have been passed to the handler,
-a new batch of `50` is loaded and so on.
+The stream read the rows by batch of `50` and stream them, when the rows have been passed to the handler,
+a new batch of `50` is read and so on.
 
 The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
 will stop iterating.
 
-You can also use `link:../../yardoc/VertxPgClient/PgPreparedQuery.html[PgPreparedQuery]` for efficient batching:
+`link:../../yardoc/VertxPgClient/PgPreparedQuery.html[PgPreparedQuery]` can perform efficient batching:
 
 [source,ruby]
 ----
