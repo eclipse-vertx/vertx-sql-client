@@ -21,16 +21,21 @@
  * The Reactive Postgres Client is a client for Postgres with a straightforward API focusing on
  * scalability and low overhead.
  *
- * The client reactive and non blocking, allowing to handle many database connections with a single thread.
+ * The client is reactive and non blocking, allowing to handle many database connections with a single thread.
  *
- * * lightweight
- * * prepared queries caching
- * * publish / subscribe using Postgres `NOTIFY/LISTEN`
- * * batch support
- * * cursor support
- * * row streaming
- * * command pipeling
- * * direct memory to object without unnecessary copies
+ * * Event driven
+ * * Lightweight
+ * * Built-in connection pooling
+ * * Prepared queries caching
+ * * Publish / subscribe using Postgres `NOTIFY/LISTEN`
+ * * Batch and cursor support
+ * * Row streaming
+ * * Command pipeling
+ * * RxJava 1 and RxJava 2 support
+ * * Direct memory to object without unnecessary copies
+ * * Java 8 Date and Time support
+ * * SSL/TLS support
+ * * HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy support
  *
  * == Usage
  *

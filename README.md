@@ -1,21 +1,26 @@
-# High performance reactive Postgres Client
+# Reactive Postgres Client
 
 [![Build Status](https://travis-ci.org/vietj/reactive-pg-client.svg?branch=master)](https://travis-ci.org/vietj/reactive-pg-client)
 
-## Why ?
+The Reactive Postgres Client is a client for Postgres with a straightforward API focusing on scalability and low overhead.
 
-_PgClient_ provides a simple API close to Postgres while focusing on scalability and low overhead.
-
-It is reactive and non blocking, allowing to handle many database connections with a single thread.
+The client is reactive and non blocking, allowing to handle many database connections with a single thread.
 
 ## Features
 
-- lightweight
-- prepared queries caching
-- publish / subscribe using Postgres `NOTIFY/LISTEN`
-- batch support
-- cursor streaming
-- command pipeling
+- Event driven
+- Lightweight
+- Built-in connection pooling
+- Prepared queries caching
+- Publish / subscribe using Postgres `NOTIFY/LISTEN`
+- Batch and cursor support
+- Row streaming
+- Command pipeling
+- RxJava 1 and RxJava 2 support
+- Direct memory to object without unnecessary copies
+- Java 8 Date and Time support
+- SSL/TLS support
+- HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy support
 
 ## Using Postgres Client
 
@@ -27,7 +32,7 @@ To use the client, add the following dependency to the _dependencies_ section of
 <dependency>
   <groupId>com.julienviet</groupId>
   <artifactId>reactive-pg-client</artifactId>
-  <version>0.4.0</version>
+  <version>0.3.1</version>
 </dependency>
 ```
 
