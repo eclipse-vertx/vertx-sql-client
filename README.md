@@ -32,7 +32,7 @@ To use the client, add the following dependency to the _dependencies_ section of
 <dependency>
   <groupId>com.julienviet</groupId>
   <artifactId>reactive-pg-client</artifactId>
-  <version>0.3.1</version>
+  <version>0.5.0</version>
 </dependency>
 ```
 
@@ -40,13 +40,14 @@ To use the client, add the following dependency to the _dependencies_ section of
 
 ```groovy
 dependencies {
-  compile 'com.julienviet:reactive-pg-client:0.4.0'
+  compile 'com.julienviet:reactive-pg-client:0.5.0'
 }
 ```
 
 Then the code is quite straightforward:
 
 ```java
+// Pool options
 PgPoolOptions options = new PgPoolOptions()
   .setPort(5432)
   .setHost("the-host")
@@ -55,11 +56,11 @@ PgPoolOptions options = new PgPoolOptions()
   .setPassword("secret")
   .setMaxSize(5);
 
-// Create the pool
-PgPool pool = PgPool.pool(options);
+// Create the client pool
+PgPool client = PgClient.pool(options);
 
 // A simple query
-pool.query("SELECT * FROM users WHERE id='julien'", ar -> {
+client.query("SELECT * FROM users WHERE id='julien'", ar -> {
   if (ar.succeeded()) {
     PgResult<Row> result = ar.result();
     System.out.println("Got " + result.size() + " results ");
@@ -67,8 +68,8 @@ pool.query("SELECT * FROM users WHERE id='julien'", ar -> {
     System.out.println("Failure: " + ar.cause().getMessage());
   }
 
-  // Close now the pool
-  pool.close();
+  // Now close the pool
+  client.close();
 });
 ```
 
