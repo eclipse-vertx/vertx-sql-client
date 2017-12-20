@@ -51,8 +51,8 @@ public interface PgQuery {
    * Returns {@code true} when the query has results in progress and the {@link #execute} should be called to retrieve
    * them.
    * <p/>
-   * This happens for multiple statement executed with {@link PgClient#createQuery(String) simple queries} or
-   * for prepared statement executed with a {@link #fetch} size.
+   * This happens for multiple statement executed with {@link PgConnection#createQuery(String) simple queries} or
+   * for prepared queries executed with a {@link #fetch} size.
    *
    * @return whether the query has more results,
    */
@@ -61,7 +61,7 @@ public interface PgQuery {
   /**
    * Release the underlying cursor.
    * <p/>
-   * It should be called for prepared statement queries executed with {@link #fetch} size.
+   * It should be called for prepared queries executed with {@link #fetch} size.
    */
   default void close() {
     close(ar -> {});

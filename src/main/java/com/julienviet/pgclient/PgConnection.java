@@ -44,7 +44,7 @@ public interface PgConnection extends PgClient {
    * Create a prepared query.
    *
    * @param sql the sql
-   * @param handler the handler notified with the prepared statement asynchronously
+   * @param handler the handler notified with the prepared query asynchronously
    */
   @Fluent
   PgConnection prepare(String sql, Handler<AsyncResult<PgPreparedQuery>> handler);

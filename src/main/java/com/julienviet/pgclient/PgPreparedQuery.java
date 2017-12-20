@@ -52,7 +52,7 @@ public interface PgPreparedQuery {
    * Note: this requires to be in a transaction, since cursors require it.
    *
    * @param fetch the cursor fetch size
-   * @param args the prepared statement arguments
+   * @param args the prepared query arguments
    * @return the createStream
    */
   PgStream<Row> createStream(int fetch, Tuple args);
@@ -65,7 +65,7 @@ public interface PgPreparedQuery {
   PgBatch createBatch();
 
   /**
-   * Close the prepared statement and release its resources.
+   * Close the prepared query and release its resources.
    */
   void close();
 
