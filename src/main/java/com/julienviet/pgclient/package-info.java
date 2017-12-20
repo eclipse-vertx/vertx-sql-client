@@ -18,6 +18,20 @@
 /**
  * = Reactive Postgres Client
  *
+ * The Reactive Postgres Client is a client for Postgres with a straightforward API focusing on
+ * scalability and low overhead.
+ *
+ * The client reactive and non blocking, allowing to handle many database connections with a single thread.
+ *
+ * * lightweight
+ * * prepared queries caching
+ * * publish / subscribe using Postgres `NOTIFY/LISTEN`
+ * * batch support
+ * * cursor support
+ * * row streaming
+ * * command pipeling
+ * * direct memory to object without unnecessary copies
+ *
  * == Usage
  *
  * To use the Reactive Postgres Client add the following dependency to the _dependencies_ section of your build descriptor:
