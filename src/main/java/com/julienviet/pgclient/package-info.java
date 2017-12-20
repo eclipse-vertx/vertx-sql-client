@@ -152,7 +152,7 @@
  * {@link examples.Examples#queries08(com.julienviet.pgclient.PgClient)}
  * ----
  *
- * You can cache prepared statements:
+ * You can cache prepared queries:
  *
  * [source,$lang]
  * ----
@@ -177,7 +177,7 @@
  * ----
  *
  * NOTE: prepared query caching depends on the {@link com.julienviet.pgclient.PgConnectOptions#setCachePreparedStatements(boolean)} and
- * does not depend on whether you are creating prepared statement or use {@link com.julienviet.pgclient.PgClient#preparedQuery(java.lang.String, io.vertx.core.Handler) direct prepared queries}
+ * does not depend on whether you are creating prepared queries or use {@link com.julienviet.pgclient.PgClient#preparedQuery(java.lang.String, io.vertx.core.Handler) direct prepared queries}
  *
  * By default the query will fetch all results, you can override this and define a maximum fetch size using cursors:
  *
@@ -206,7 +206,7 @@
  * The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
  * will stop iterating.
  *
- * You can also use {@link com.julienviet.pgclient.PgPreparedStatement} for efficient batching:
+ * You can also use {@link com.julienviet.pgclient.PgPreparedQuery} for efficient batching:
  *
  * [source,$lang]
  * ----

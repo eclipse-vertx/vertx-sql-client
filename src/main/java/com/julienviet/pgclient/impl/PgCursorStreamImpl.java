@@ -29,7 +29,7 @@ import java.util.UUID;
 
 public class PgCursorStreamImpl implements PgStream<Row> {
 
-  private final PgPreparedStatementImpl ps;
+  private final PgPreparedQueryImpl ps;
   private final int fetch;
   private final Tuple params;
 
@@ -101,7 +101,7 @@ public class PgCursorStreamImpl implements PgStream<Row> {
     }
   }
 
-  PgCursorStreamImpl(PgPreparedStatementImpl ps, int fetch, Tuple params) {
+  PgCursorStreamImpl(PgPreparedQueryImpl ps, int fetch, Tuple params) {
     this.ps = ps;
     this.fetch = fetch;
     this.params = params;

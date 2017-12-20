@@ -17,9 +17,6 @@
 
 package com.julienviet.pgclient;
 
-import com.julienviet.pgclient.impl.Connection;
-import com.julienviet.pgclient.impl.PgConnectionFactory;
-import com.julienviet.pgclient.impl.PgConnectionImpl;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.*;
@@ -44,13 +41,13 @@ public interface PgConnection extends PgClient {
   PgQuery createQuery(String sql);
 
   /**
-   * Create a prepared statement.
+   * Create a prepared query.
    *
    * @param sql the sql
    * @param handler the handler notified with the prepared statement asynchronously
    */
   @Fluent
-  PgConnection prepare(String sql, Handler<AsyncResult<PgPreparedStatement>> handler);
+  PgConnection prepare(String sql, Handler<AsyncResult<PgPreparedQuery>> handler);
 
   /**
    * Set an handler called with connection errors.

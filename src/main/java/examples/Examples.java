@@ -290,7 +290,7 @@ public class Examples {
   public void usingConnections02(PgConnection connection) {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
       if (ar1.succeeded()) {
-        PgPreparedStatement pq = ar1.result();
+        PgPreparedQuery pq = ar1.result();
         PgQuery query = pq.createQuery(Tuple.of("julien"));
         query.execute(ar2 -> {
           if (ar2.succeeded()) {
@@ -305,7 +305,7 @@ public class Examples {
   public void usingConnections03(PgConnection connection) {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
       if (ar1.succeeded()) {
-        PgPreparedStatement pq = ar1.result();
+        PgPreparedQuery pq = ar1.result();
         PgQuery query = pq.createQuery(Tuple.of("julien")).fetch(50);
         query.execute(ar2 -> {
           if (ar2.succeeded()) {
@@ -328,7 +328,7 @@ public class Examples {
   public void usingConnections04(PgConnection connection) {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
       if (ar1.succeeded()) {
-        PgPreparedStatement pq = ar1.result();
+        PgPreparedQuery pq = ar1.result();
         PgQuery query = pq.createQuery(Tuple.of("julien")).fetch(50);
         query.execute(ar2 -> {
           if (ar2.succeeded()) {
@@ -343,7 +343,7 @@ public class Examples {
   public void usingConnections05(PgConnection connection) {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
       if (ar1.succeeded()) {
-        PgPreparedStatement pq = ar1.result();
+        PgPreparedQuery pq = ar1.result();
 
         // Fetch 50 rows at a time
         PgStream<Row> stream = pq.createStream(50, Tuple.of("julien"));
@@ -365,7 +365,7 @@ public class Examples {
   public void usingConnections06(PgConnection connection) {
     connection.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", ar1 -> {
       if (ar1.succeeded()) {
-        PgPreparedStatement preparedStatement = ar1.result();
+        PgPreparedQuery preparedStatement = ar1.result();
 
         // Create a query : bind parameters
         PgBatch batch = preparedStatement.createBatch();
@@ -599,7 +599,7 @@ public class Examples {
     conn.prepare("SELECT * FROM USERS WHERE user_id=$1", ar1 -> {
 
       if (ar1.succeeded()) {
-        PgPreparedStatement preparedStatement = ar1.result();
+        PgPreparedQuery preparedStatement = ar1.result();
 
         // Create a query : bind parameters
         PgQuery query = preparedStatement.createQuery(Tuple.of("julien"));
@@ -624,7 +624,7 @@ public class Examples {
     conn.prepare("SELECT * FROM USERS", ar1 -> {
       if (ar1.succeeded()) {
 
-        PgPreparedStatement preparedStatement = ar1.result();
+        PgPreparedQuery preparedStatement = ar1.result();
 
         // Create a query : bind parameters
         PgQuery query = preparedStatement.createQuery()
@@ -660,7 +660,7 @@ public class Examples {
     conn.prepare("SELECT * FROM USERS", ar1 -> {
 
       if (ar1.succeeded()) {
-        PgPreparedStatement preparedStatement = ar1.result();
+        PgPreparedQuery preparedStatement = ar1.result();
 
         // Create a query : bind parameters
         PgQuery query = preparedStatement.createQuery();
@@ -705,7 +705,7 @@ public class Examples {
   public void ex9(PgConnection conn) {
     conn.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", ar1 -> {
       if (ar1.succeeded()) {
-        PgPreparedStatement preparedStatement = ar1.result();
+        PgPreparedQuery preparedStatement = ar1.result();
 
         // Create a query : bind parameters
         PgBatch batch = preparedStatement.createBatch();

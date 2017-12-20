@@ -33,11 +33,11 @@ import java.util.List;
  */
 public class BatchImpl implements PgBatch {
 
-  private final PgPreparedStatementImpl ps;
+  private final PgPreparedQueryImpl ps;
   private final ParameterDescription paramDesc;
   private final ArrayList<Tuple> values = new ArrayList<>();
 
-  BatchImpl(PgPreparedStatementImpl ps, ParameterDescription paramDesc) {
+  BatchImpl(PgPreparedQueryImpl ps, ParameterDescription paramDesc) {
     this.paramDesc = paramDesc;
     this.ps = ps;
   }

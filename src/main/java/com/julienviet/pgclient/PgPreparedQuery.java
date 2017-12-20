@@ -23,12 +23,12 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
 /**
- * A postgres prepared statement.
+ * A prepared query.
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 @VertxGen
-public interface PgPreparedStatement {
+public interface PgPreparedQuery {
 
   /**
    * @return create a query from this statement with no arguments
@@ -46,7 +46,7 @@ public interface PgPreparedStatement {
   PgQuery createQuery(Tuple arguments);
 
   /**
-   * Execute the prepared statement with a cursor and createStream the result. The createStream opens a cursor
+   * Execute the prepared query with a cursor and createStream the result. The createStream opens a cursor
    * with a {@code fetch} size to fetch the results.
    * <p/>
    * Note: this requires to be in a transaction, since cursors require it.

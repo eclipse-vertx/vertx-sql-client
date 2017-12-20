@@ -288,7 +288,7 @@ client.preparedBatch("INSERT INTO USERS (id, name) VALUES ($1, $2)", batch, { re
 
 ----
 
-You can cache prepared statements:
+You can cache prepared queries:
 
 [source,groovy]
 ----
@@ -330,7 +330,7 @@ connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", { ar1 ->
 ----
 
 NOTE: prepared query caching depends on the `link:../../apidocs/com/julienviet/pgclient/PgConnectOptions.html#setCachePreparedStatements-boolean-[setCachePreparedStatements]` and
-does not depend on whether you are creating prepared statement or use `link:../../apidocs/com/julienviet/pgclient/PgClient.html#preparedQuery-java.lang.String-io.vertx.core.Handler-[direct prepared queries]`
+does not depend on whether you are creating prepared queries or use `link:../../apidocs/com/julienviet/pgclient/PgClient.html#preparedQuery-java.lang.String-io.vertx.core.Handler-[direct prepared queries]`
 
 By default the query will fetch all results, you can override this and define a maximum fetch size using cursors:
 
@@ -410,7 +410,7 @@ a new batch of `50` is loaded and so on.
 The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
 will stop iterating.
 
-You can also use `link:../../apidocs/com/julienviet/pgclient/PgPreparedStatement.html[PgPreparedStatement]` for efficient batching:
+You can also use `link:../../apidocs/com/julienviet/pgclient/PgPreparedQuery.html[PgPreparedQuery]` for efficient batching:
 
 [source,groovy]
 ----

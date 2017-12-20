@@ -136,10 +136,10 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
   }
 
   @Override
-  public PgConnection prepare(String sql, Handler<AsyncResult<PgPreparedStatement>> handler) {
+  public PgConnection prepare(String sql, Handler<AsyncResult<PgPreparedQuery>> handler) {
     schedule(new PrepareStatementCommand(sql, ar -> {
       if (ar.succeeded()) {
-        handler.handle(Future.succeededFuture(new PgPreparedStatementImpl(conn, ar.result())));
+        handler.handle(Future.succeededFuture(new PgPreparedQueryImpl(conn, ar.result())));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
       }

@@ -28,13 +28,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class PgPreparedStatementImpl implements PgPreparedStatement {
+class PgPreparedQueryImpl implements PgPreparedQuery {
 
   private final Connection conn;
   private final PreparedStatement ps;
   private final AtomicBoolean closed = new AtomicBoolean();
 
-  PgPreparedStatementImpl(Connection conn, PreparedStatement ps) {
+  PgPreparedQueryImpl(Connection conn, PreparedStatement ps) {
     this.conn = conn;
     this.ps = ps;
   }

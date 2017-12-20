@@ -32,7 +32,7 @@ import java.util.*;
  */
 public class ExtendedPgQueryImpl implements PgQuery {
 
-  private final PgPreparedStatementImpl ps;
+  private final PgPreparedQueryImpl ps;
   private final Tuple params;
   private int fetch;
 
@@ -41,7 +41,7 @@ public class ExtendedPgQueryImpl implements PgQuery {
   private boolean closed;
   private ExtendedQueryResultHandler result;
 
-  ExtendedPgQueryImpl(PgPreparedStatementImpl ps, Tuple params) {
+  ExtendedPgQueryImpl(PgPreparedQueryImpl ps, Tuple params) {
     this.ps = ps;
     this.params = params;
   }

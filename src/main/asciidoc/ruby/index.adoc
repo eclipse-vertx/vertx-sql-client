@@ -295,7 +295,7 @@ client.prepared_batch("INSERT INTO USERS (id, name) VALUES ($1, $2)", batch) { |
 
 ----
 
-You can cache prepared statements:
+You can cache prepared queries:
 
 [source,ruby]
 ----
@@ -339,7 +339,7 @@ connection.prepare("SELECT * FROM users WHERE first_name LIKE $1") { |ar1_err,ar
 ----
 
 NOTE: prepared query caching depends on the `link:../dataobjects.html#PgConnectOptions#set_cache_prepared_statements-instance_method[cachePreparedStatements]` and
-does not depend on whether you are creating prepared statement or use `link:../../yardoc/VertxPgClient/PgClient.html#prepared_query-instance_method[direct prepared queries]`
+does not depend on whether you are creating prepared queries or use `link:../../yardoc/VertxPgClient/PgClient.html#prepared_query-instance_method[direct prepared queries]`
 
 By default the query will fetch all results, you can override this and define a maximum fetch size using cursors:
 
@@ -422,7 +422,7 @@ a new batch of `50` is loaded and so on.
 The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
 will stop iterating.
 
-You can also use `link:../../yardoc/VertxPgClient/PgPreparedStatement.html[PgPreparedStatement]` for efficient batching:
+You can also use `link:../../yardoc/VertxPgClient/PgPreparedQuery.html[PgPreparedQuery]` for efficient batching:
 
 [source,ruby]
 ----
