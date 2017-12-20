@@ -42,11 +42,11 @@ options = {
   'maxSize' => 5
 }
 
-# Create the pool
-pool = VertxPgClient::PgClient.pool(options)
+# Create the client pool
+client = VertxPgClient::PgClient.pool(options)
 
 # A simple query
-pool.query("SELECT * FROM users WHERE id='julien'") { |ar_err,ar|
+client.query("SELECT * FROM users WHERE id='julien'") { |ar_err,ar|
   if (ar_err == nil)
     result = ar
     puts "Got #{result.size()} results "
@@ -54,8 +54,8 @@ pool.query("SELECT * FROM users WHERE id='julien'") { |ar_err,ar|
     puts "Failure: #{ar_err.get_message()}"
   end
 
-  # Close now the pool
-  pool.close()
+  # Now close the pool
+  client.close()
 }
 
 ----
@@ -78,10 +78,13 @@ options = {
   'maxSize' => 5
 }
 
-# Create the pool
-pool = VertxPgClient::PgClient.pool(options)
+# Create the pooled client
+client = VertxPgClient::PgClient.pool(options)
 
 ----
+
+The pooled client uses a connection pool and any operation will borrow a connection from the pool
+to execute the operation and release it to the pool.
 
 If you are running with Vert.x you can pass it your Vertx instance:
 
@@ -99,8 +102,8 @@ options = {
   'maxSize' => 5
 }
 
-# Create the pool
-pool = VertxPgClient::PgClient.pool(vertx, options)
+# Create the pooled client
+client = VertxPgClient::PgClient.pool(vertx, options)
 
 ----
 
@@ -114,7 +117,10 @@ pool.close()
 
 ----
 
-You can also connect directly to Postgres without a pool
+When you need to execute several operations on the same connection, you need to use a client
+`link:../../yardoc/VertxPgClient/PgConnection.html[connection]`.
+
+You can easily get one from the pool:
 
 [source,ruby]
 ----
@@ -126,23 +132,43 @@ options = {
   'host' => "the-host",
   'database' => "the-db",
   'username' => "user",
-  'password' => "secret"
+  'password' => "secret",
+  'maxSize' => 5
 }
 
-# Close the pool and all the associated resources
-VertxPgClient::PgClient.connect(vertx, options) { |res_err,res|
-  if (res_err == nil)
+# Create the pooled client
+client = VertxPgClient::PgClient.pool(vertx, options)
+
+# Get a connection from the pool
+client.get_connection() { |ar1_err,ar1|
+
+  if (ar1_err == nil)
 
     puts "Connected"
 
     # Obtain our connection
-    conn = res
+    conn = ar1
+
+    # All operations execute on the same connection
+    conn.query("SELECT * FROM users WHERE id='julien'") { |ar2_err,ar2|
+      if (ar2_err == nil)
+        conn.query("SELECT * FROM users WHERE id='emad'") { |ar3_err,ar3|
+          # Release the connection to the pool
+          conn.close()
+        }
+      else
+        # Release the connection to the pool
+        conn.close()
+      end
+    }
   else
-    puts "Could not connect: #{res_err.get_message()}"
+    puts "Could not connect: #{ar1_err.get_message()}"
   end
 }
 
 ----
+
+Once you are done with the connection you must close it to release it to the pool, so it can be reused.
 
 == Running queries
 
@@ -153,7 +179,7 @@ Here is how to run simple queries:
 
 [source,ruby]
 ----
-pool.query("SELECT * FROM users WHERE id='julien'") { |ar_err,ar|
+client.query("SELECT * FROM users WHERE id='julien'") { |ar_err,ar|
   if (ar_err == nil)
     result = ar
     puts "Got #{result.size()} results "
@@ -166,12 +192,12 @@ pool.query("SELECT * FROM users WHERE id='julien'") { |ar_err,ar|
 
 You can do the same with prepared queries.
 
-The sql string can refer to parameters by position, using `$1`, `$2`, etc…​
+The SQL string can refer to parameters by position, using `$1`, `$2`, etc…​
 
 [source,ruby]
 ----
 require 'vertx-pg-client/tuple'
-pool.prepared_query("SELECT * FROM users WHERE id=$1", VertxPgClient::Tuple.of("julien")) { |ar_err,ar|
+client.prepared_query("SELECT * FROM users WHERE id=$1", VertxPgClient::Tuple.of("julien")) { |ar_err,ar|
   if (ar_err == nil)
     result = ar
     puts "Got #{result.size()} results "
@@ -182,11 +208,11 @@ pool.prepared_query("SELECT * FROM users WHERE id=$1", VertxPgClient::Tuple.of("
 
 ----
 
-Query methods return a `link:../../yardoc/VertxPgClient/PgResult.html[PgResult]` instance that works for _select_ statements
+Query methods return a `link:../../yardoc/VertxPgClient/PgResult.html[PgResult]` instance that works for _SELECT_ queries
 
 [source,ruby]
 ----
-pool.prepared_query("SELECT first_name, last_name FROM users") { |ar_err,ar|
+client.prepared_query("SELECT first_name, last_name FROM users") { |ar_err,ar|
   if (ar_err == nil)
     result = ar
     result.each do |row|
@@ -199,12 +225,12 @@ pool.prepared_query("SELECT first_name, last_name FROM users") { |ar_err,ar|
 
 ----
 
-or _update_/_insert_ statements:
+or _UPDATE_/_INSERT_ queries:
 
 [source,ruby]
 ----
 require 'vertx-pg-client/tuple'
-pool.prepared_query("\"INSERT INTO users (first_name, last_name) VALUES ($1, $2)", VertxPgClient::Tuple.of("Julien", "Viet")) { |ar_err,ar|
+client.prepared_query("\"INSERT INTO users (first_name, last_name) VALUES ($1, $2)", VertxPgClient::Tuple.of("Julien", "Viet")) { |ar_err,ar|
   if (ar_err == nil)
     result = ar
     puts result.updated_count()
@@ -257,7 +283,7 @@ batch.push(VertxPgClient::Tuple.of("julien", "Julien Viet"))
 batch.push(VertxPgClient::Tuple.of("emad", "Emad Alblueshi"))
 
 # Execute the prepared batch
-connection.prepared_batch("INSERT INTO USERS (id, name) VALUES ($1, $2)", batch) { |res_err,res|
+client.prepared_batch("INSERT INTO USERS (id, name) VALUES ($1, $2)", batch) { |res_err,res|
   if (res_err == nil)
 
     # Process results
@@ -278,7 +304,7 @@ require 'vertx-pg-client/pg_client'
 # Enable prepare statements
 options['cachePreparedStatements'] = true
 
-pool = VertxPgClient::PgClient.pool(vertx, options)
+client = VertxPgClient::PgClient.pool(vertx, options)
 
 ----
 

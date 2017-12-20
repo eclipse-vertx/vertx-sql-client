@@ -43,11 +43,11 @@ public class Examples {
       .setPassword("secret")
       .setMaxSize(5);
 
-    // Create the pool
-    PgPool pool = PgClient.pool(options);
+    // Create the client pool
+    PgPool client = PgClient.pool(options);
 
     // A simple query
-    pool.query("SELECT * FROM users WHERE id='julien'", ar -> {
+    client.query("SELECT * FROM users WHERE id='julien'", ar -> {
       if (ar.succeeded()) {
         PgResult<Row> result = ar.result();
         System.out.println("Got " + result.size() + " results ");
@@ -55,8 +55,8 @@ public class Examples {
         System.out.println("Failure: " + ar.cause().getMessage());
       }
 
-      // Close now the pool
-      pool.close();
+      // Now close the pool
+      client.close();
     });
   }
 
@@ -71,8 +71,8 @@ public class Examples {
       .setPassword("secret")
       .setMaxSize(5);
 
-    // Create the pool
-    PgPool pool = PgClient.pool(options);
+    // Create the pooled client
+    PgPool client = PgClient.pool(options);
   }
 
   public void connecting02(Vertx vertx) {
@@ -86,8 +86,8 @@ public class Examples {
       .setPassword("secret")
       .setMaxSize(5);
 
-    // Create the pool
-    PgPool pool = PgClient.pool(vertx, options);
+    // Create the pooled client
+    PgPool client = PgClient.pool(vertx, options);
   }
 
   public void connecting03(PgPool pool) {
@@ -99,6 +99,48 @@ public class Examples {
   public void connecting04(Vertx vertx) {
 
     // Pool options
+    PgPoolOptions options = new PgPoolOptions()
+      .setPort(5432)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUsername("user")
+      .setPassword("secret")
+      .setMaxSize(5);
+
+    // Create the pooled client
+    PgPool client = PgClient.pool(vertx, options);
+
+    // Get a connection from the pool
+    client.getConnection(ar1 -> {
+
+      if (ar1.succeeded()) {
+
+        System.out.println("Connected");
+
+        // Obtain our connection
+        PgConnection conn = ar1.result();
+
+        // All operations execute on the same connection
+        conn.query("SELECT * FROM users WHERE id='julien'", ar2 -> {
+          if (ar2.succeeded()) {
+            conn.query("SELECT * FROM users WHERE id='emad'", ar3 -> {
+              // Release the connection to the pool
+              conn.close();
+            });
+          } else {
+            // Release the connection to the pool
+            conn.close();
+          }
+        });
+      } else {
+        System.out.println("Could not connect: " + ar1.cause().getMessage());
+      }
+    });
+  }
+
+  public void connecting05(Vertx vertx) {
+
+    // Pool options
     PgConnectOptions options = new PgConnectOptions()
       .setPort(5432)
       .setHost("the-host")
@@ -106,7 +148,7 @@ public class Examples {
       .setUsername("user")
       .setPassword("secret");
 
-    // Close the pool and all the associated resources
+    // Connect to Postgres
     PgClient.connect(vertx, options, res -> {
       if (res.succeeded()) {
 
@@ -114,14 +156,27 @@ public class Examples {
 
         // Obtain our connection
         PgConnection conn = res.result();
+
+        // All operations execute on the same connection
+        conn.query("SELECT * FROM users WHERE id='julien'", ar2 -> {
+          if (ar2.succeeded()) {
+            conn.query("SELECT * FROM users WHERE id='emad'", ar3 -> {
+              // Close the connection
+              conn.close();
+            });
+          } else {
+            // Close the connection
+            conn.close();
+          }
+        });
       } else {
         System.out.println("Could not connect: " + res.cause().getMessage());
       }
     });
   }
 
-  public void queries01(PgClient pool) {
-    pool.query("SELECT * FROM users WHERE id='julien'", ar -> {
+  public void queries01(PgClient client) {
+    client.query("SELECT * FROM users WHERE id='julien'", ar -> {
       if (ar.succeeded()) {
         PgResult<Row> result = ar.result();
         System.out.println("Got " + result.size() + " results ");
@@ -131,8 +186,8 @@ public class Examples {
     });
   }
 
-  public void queries02(PgClient pool) {
-    pool.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"),  ar -> {
+  public void queries02(PgClient client) {
+    client.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"),  ar -> {
       if (ar.succeeded()) {
         PgResult<Row> result = ar.result();
         System.out.println("Got " + result.size() + " results ");
@@ -142,8 +197,8 @@ public class Examples {
     });
   }
 
-  public void queries03(PgClient pool) {
-    pool.preparedQuery("SELECT first_name, last_name FROM users", ar -> {
+  public void queries03(PgClient client) {
+    client.preparedQuery("SELECT first_name, last_name FROM users", ar -> {
       if (ar.succeeded()) {
         PgResult<Row> result = ar.result();
         for (Row row : result) {
@@ -155,8 +210,8 @@ public class Examples {
     });
   }
 
-  public void queries04(PgClient pool) {
-    pool.preparedQuery("\"INSERT INTO users (first_name, last_name) VALUES ($1, $2)", Tuple.of("Julien", "Viet"),  ar -> {
+  public void queries04(PgClient client) {
+    client.preparedQuery("\"INSERT INTO users (first_name, last_name) VALUES ($1, $2)", Tuple.of("Julien", "Viet"),  ar -> {
       if (ar.succeeded()) {
         PgResult<Row> result = ar.result();
         System.out.println(result.updatedCount());
@@ -184,7 +239,7 @@ public class Examples {
 
   }
 
-  public void queries08(PgClient connection) {
+  public void queries08(PgClient client) {
 
     // Add commands to the batch
     List<Tuple> batch = new ArrayList<>();
@@ -192,7 +247,7 @@ public class Examples {
     batch.add(Tuple.of("emad", "Emad Alblueshi"));
 
     // Execute the prepared batch
-    connection.preparedBatch("INSERT INTO USERS (id, name) VALUES ($1, $2)", batch, res -> {
+    client.preparedBatch("INSERT INTO USERS (id, name) VALUES ($1, $2)", batch, res -> {
       if (res.succeeded()) {
 
         // Process results
@@ -208,7 +263,7 @@ public class Examples {
     // Enable prepare statements
     options.setCachePreparedStatements(true);
 
-    PgPool pool = PgClient.pool(vertx, options);
+    PgPool client = PgClient.pool(vertx, options);
   }
 
   public void usingConnections01(Vertx vertx, PgPool pool) {

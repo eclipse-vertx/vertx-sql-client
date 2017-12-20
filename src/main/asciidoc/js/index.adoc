@@ -42,11 +42,11 @@ var options = {
   "maxSize" : 5
 };
 
-// Create the pool
-var pool = PgClient.pool(options);
+// Create the client pool
+var client = PgClient.pool(options);
 
 // A simple query
-pool.query("SELECT * FROM users WHERE id='julien'", function (ar, ar_err) {
+client.query("SELECT * FROM users WHERE id='julien'", function (ar, ar_err) {
   if (ar_err == null) {
     var result = ar;
     console.log("Got " + result.size() + " results ");
@@ -54,8 +54,8 @@ pool.query("SELECT * FROM users WHERE id='julien'", function (ar, ar_err) {
     console.log("Failure: " + ar_err.getMessage());
   }
 
-  // Close now the pool
-  pool.close();
+  // Now close the pool
+  client.close();
 });
 
 ----
@@ -78,10 +78,13 @@ var options = {
   "maxSize" : 5
 };
 
-// Create the pool
-var pool = PgClient.pool(options);
+// Create the pooled client
+var client = PgClient.pool(options);
 
 ----
+
+The pooled client uses a connection pool and any operation will borrow a connection from the pool
+to execute the operation and release it to the pool.
 
 If you are running with Vert.x you can pass it your Vertx instance:
 
@@ -99,8 +102,8 @@ var options = {
   "maxSize" : 5
 };
 
-// Create the pool
-var pool = PgClient.pool(vertx, options);
+// Create the pooled client
+var client = PgClient.pool(vertx, options);
 
 ----
 
@@ -114,7 +117,10 @@ pool.close();
 
 ----
 
-You can also connect directly to Postgres without a pool
+When you need to execute several operations on the same connection, you need to use a client
+`link:../../jsdoc/module-vertx-pg-client-js_pg_connection-PgConnection.html[connection]`.
+
+You can easily get one from the pool:
 
 [source,js]
 ----
@@ -126,23 +132,43 @@ var options = {
   "host" : "the-host",
   "database" : "the-db",
   "username" : "user",
-  "password" : "secret"
+  "password" : "secret",
+  "maxSize" : 5
 };
 
-// Close the pool and all the associated resources
-PgClient.connect(vertx, options, function (res, res_err) {
-  if (res_err == null) {
+// Create the pooled client
+var client = PgClient.pool(vertx, options);
+
+// Get a connection from the pool
+client.getConnection(function (ar1, ar1_err) {
+
+  if (ar1_err == null) {
 
     console.log("Connected");
 
     // Obtain our connection
-    var conn = res;
+    var conn = ar1;
+
+    // All operations execute on the same connection
+    conn.query("SELECT * FROM users WHERE id='julien'", function (ar2, ar2_err) {
+      if (ar2_err == null) {
+        conn.query("SELECT * FROM users WHERE id='emad'", function (ar3, ar3_err) {
+          // Release the connection to the pool
+          conn.close();
+        });
+      } else {
+        // Release the connection to the pool
+        conn.close();
+      }
+    });
   } else {
-    console.log("Could not connect: " + res_err.getMessage());
+    console.log("Could not connect: " + ar1_err.getMessage());
   }
 });
 
 ----
+
+Once you are done with the connection you must close it to release it to the pool, so it can be reused.
 
 == Running queries
 
@@ -153,7 +179,7 @@ Here is how to run simple queries:
 
 [source,js]
 ----
-pool.query("SELECT * FROM users WHERE id='julien'", function (ar, ar_err) {
+client.query("SELECT * FROM users WHERE id='julien'", function (ar, ar_err) {
   if (ar_err == null) {
     var result = ar;
     console.log("Got " + result.size() + " results ");
@@ -166,12 +192,12 @@ pool.query("SELECT * FROM users WHERE id='julien'", function (ar, ar_err) {
 
 You can do the same with prepared queries.
 
-The sql string can refer to parameters by position, using `$1`, `$2`, etc…​
+The SQL string can refer to parameters by position, using `$1`, `$2`, etc…​
 
 [source,js]
 ----
 var Tuple = require("vertx-pg-client-js/tuple");
-pool.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"), function (ar, ar_err) {
+client.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"), function (ar, ar_err) {
   if (ar_err == null) {
     var result = ar;
     console.log("Got " + result.size() + " results ");
@@ -182,11 +208,11 @@ pool.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"), functi
 
 ----
 
-Query methods return a `link:../../jsdoc/module-vertx-pg-client-js_pg_result-PgResult.html[PgResult]` instance that works for _select_ statements
+Query methods return a `link:../../jsdoc/module-vertx-pg-client-js_pg_result-PgResult.html[PgResult]` instance that works for _SELECT_ queries
 
 [source,js]
 ----
-pool.preparedQuery("SELECT first_name, last_name FROM users", function (ar, ar_err) {
+client.preparedQuery("SELECT first_name, last_name FROM users", function (ar, ar_err) {
   if (ar_err == null) {
     var result = ar;
     Array.prototype.forEach.call(result, function(row) {
@@ -199,12 +225,12 @@ pool.preparedQuery("SELECT first_name, last_name FROM users", function (ar, ar_e
 
 ----
 
-or _update_/_insert_ statements:
+or _UPDATE_/_INSERT_ queries:
 
 [source,js]
 ----
 var Tuple = require("vertx-pg-client-js/tuple");
-pool.preparedQuery("\"INSERT INTO users (first_name, last_name) VALUES ($1, $2)", Tuple.of("Julien", "Viet"), function (ar, ar_err) {
+client.preparedQuery("\"INSERT INTO users (first_name, last_name) VALUES ($1, $2)", Tuple.of("Julien", "Viet"), function (ar, ar_err) {
   if (ar_err == null) {
     var result = ar;
     console.log(result.updatedCount());
@@ -257,7 +283,7 @@ batch.push(Tuple.of("julien", "Julien Viet"));
 batch.push(Tuple.of("emad", "Emad Alblueshi"));
 
 // Execute the prepared batch
-connection.preparedBatch("INSERT INTO USERS (id, name) VALUES ($1, $2)", batch, function (res, res_err) {
+client.preparedBatch("INSERT INTO USERS (id, name) VALUES ($1, $2)", batch, function (res, res_err) {
   if (res_err == null) {
 
     // Process results
@@ -278,7 +304,7 @@ var PgClient = require("vertx-pg-client-js/pg_client");
 // Enable prepare statements
 options.cachePreparedStatements = true;
 
-var pool = PgClient.pool(vertx, options);
+var client = PgClient.pool(vertx, options);
 
 ----
 

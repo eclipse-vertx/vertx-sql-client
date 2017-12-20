@@ -41,11 +41,11 @@ def options = [
   maxSize:5
 ]
 
-// Create the pool
-def pool = PgClient.pool(options)
+// Create the client pool
+def client = PgClient.pool(options)
 
 // A simple query
-pool.query("SELECT * FROM users WHERE id='julien'", { ar ->
+client.query("SELECT * FROM users WHERE id='julien'", { ar ->
   if (ar.succeeded()) {
     def result = ar.result()
     println("Got ${result.size()} results ")
@@ -53,8 +53,8 @@ pool.query("SELECT * FROM users WHERE id='julien'", { ar ->
     println("Failure: ${ar.cause().getMessage()}")
   }
 
-  // Close now the pool
-  pool.close()
+  // Now close the pool
+  client.close()
 })
 
 ----
@@ -76,10 +76,13 @@ def options = [
   maxSize:5
 ]
 
-// Create the pool
-def pool = PgClient.pool(options)
+// Create the pooled client
+def client = PgClient.pool(options)
 
 ----
+
+The pooled client uses a connection pool and any operation will borrow a connection from the pool
+to execute the operation and release it to the pool.
 
 If you are running with Vert.x you can pass it your Vertx instance:
 
@@ -96,8 +99,8 @@ def options = [
   maxSize:5
 ]
 
-// Create the pool
-def pool = PgClient.pool(vertx, options)
+// Create the pooled client
+def client = PgClient.pool(vertx, options)
 
 ----
 
@@ -111,7 +114,10 @@ pool.close()
 
 ----
 
-You can also connect directly to Postgres without a pool
+When you need to execute several operations on the same connection, you need to use a client
+`link:../../apidocs/com/julienviet/pgclient/PgConnection.html[connection]`.
+
+You can easily get one from the pool:
 
 [source,groovy]
 ----
@@ -122,23 +128,43 @@ def options = [
   host:"the-host",
   database:"the-db",
   username:"user",
-  password:"secret"
+  password:"secret",
+  maxSize:5
 ]
 
-// Close the pool and all the associated resources
-PgClient.connect(vertx, options, { res ->
-  if (res.succeeded()) {
+// Create the pooled client
+def client = PgClient.pool(vertx, options)
+
+// Get a connection from the pool
+client.getConnection({ ar1 ->
+
+  if (ar1.succeeded()) {
 
     println("Connected")
 
     // Obtain our connection
-    def conn = res.result()
+    def conn = ar1.result()
+
+    // All operations execute on the same connection
+    conn.query("SELECT * FROM users WHERE id='julien'", { ar2 ->
+      if (ar2.succeeded()) {
+        conn.query("SELECT * FROM users WHERE id='emad'", { ar3 ->
+          // Release the connection to the pool
+          conn.close()
+        })
+      } else {
+        // Release the connection to the pool
+        conn.close()
+      }
+    })
   } else {
-    println("Could not connect: ${res.cause().getMessage()}")
+    println("Could not connect: ${ar1.cause().getMessage()}")
   }
 })
 
 ----
+
+Once you are done with the connection you must close it to release it to the pool, so it can be reused.
 
 == Running queries
 
@@ -149,7 +175,7 @@ Here is how to run simple queries:
 
 [source,groovy]
 ----
-pool.query("SELECT * FROM users WHERE id='julien'", { ar ->
+client.query("SELECT * FROM users WHERE id='julien'", { ar ->
   if (ar.succeeded()) {
     def result = ar.result()
     println("Got ${result.size()} results ")
@@ -162,11 +188,11 @@ pool.query("SELECT * FROM users WHERE id='julien'", { ar ->
 
 You can do the same with prepared queries.
 
-The sql string can refer to parameters by position, using `$1`, `$2`, etc…​
+The SQL string can refer to parameters by position, using `$1`, `$2`, etc…​
 
 [source,groovy]
 ----
-pool.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"), { ar ->
+client.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"), { ar ->
   if (ar.succeeded()) {
     def result = ar.result()
     println("Got ${result.size()} results ")
@@ -177,11 +203,11 @@ pool.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"), { ar -
 
 ----
 
-Query methods return a `link:../../apidocs/com/julienviet/pgclient/PgResult.html[PgResult]` instance that works for _select_ statements
+Query methods return a `link:../../apidocs/com/julienviet/pgclient/PgResult.html[PgResult]` instance that works for _SELECT_ queries
 
 [source,groovy]
 ----
-pool.preparedQuery("SELECT first_name, last_name FROM users", { ar ->
+client.preparedQuery("SELECT first_name, last_name FROM users", { ar ->
   if (ar.succeeded()) {
     def result = ar.result()
     result.each { row ->
@@ -194,11 +220,11 @@ pool.preparedQuery("SELECT first_name, last_name FROM users", { ar ->
 
 ----
 
-or _update_/_insert_ statements:
+or _UPDATE_/_INSERT_ queries:
 
 [source,groovy]
 ----
-pool.preparedQuery("\"INSERT INTO users (first_name, last_name) VALUES ($1, $2)", Tuple.of("Julien", "Viet"), { ar ->
+client.preparedQuery("\"INSERT INTO users (first_name, last_name) VALUES ($1, $2)", Tuple.of("Julien", "Viet"), { ar ->
   if (ar.succeeded()) {
     def result = ar.result()
     println(result.updatedCount())
@@ -250,7 +276,7 @@ batch.add(Tuple.of("julien", "Julien Viet"))
 batch.add(Tuple.of("emad", "Emad Alblueshi"))
 
 // Execute the prepared batch
-connection.preparedBatch("INSERT INTO USERS (id, name) VALUES ($1, $2)", batch, { res ->
+client.preparedBatch("INSERT INTO USERS (id, name) VALUES ($1, $2)", batch, { res ->
   if (res.succeeded()) {
 
     // Process results
@@ -270,7 +296,7 @@ You can cache prepared statements:
 // Enable prepare statements
 options.cachePreparedStatements = true
 
-def pool = PgClient.pool(vertx, options)
+def client = PgClient.pool(vertx, options)
 
 ----
 

@@ -43,18 +43,6 @@ public interface PgConnection extends PgClient {
    */
   PgQuery createQuery(String sql);
 
-  @Override
-  PgConnection preparedQuery(String sql, Handler<AsyncResult<PgResult<Row>>> handler);
-
-  @Override
-  PgConnection query(String sql, Handler<AsyncResult<PgResult<Row>>> handler);
-
-  @Override
-  PgConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<Row>>> handler);
-
-  @Override
-  PgConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgBatchResult<Row>>> handler);
-
   /**
    * Create a prepared statement.
    *
@@ -104,11 +92,26 @@ public interface PgConnection extends PgClient {
   @Fluent
   PgConnection notificationHandler(Handler<PgNotification> handler);
 
+  /**
+   * @return whether the connection uses SSL
+   */
   boolean isSSL();
 
   /**
    * Close the current connection after all the pending commands have been processed.
    */
   void close();
+
+  @Override
+  PgConnection preparedQuery(String sql, Handler<AsyncResult<PgResult<Row>>> handler);
+
+  @Override
+  PgConnection query(String sql, Handler<AsyncResult<PgResult<Row>>> handler);
+
+  @Override
+  PgConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<Row>>> handler);
+
+  @Override
+  PgConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgBatchResult<Row>>> handler);
 
 }

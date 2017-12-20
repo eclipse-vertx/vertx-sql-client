@@ -60,6 +60,9 @@
  * {@link examples.Examples#connecting01}
  * ----
  *
+ * The pooled client uses a connection pool and any operation will borrow a connection from the pool
+ * to execute the operation and release it to the pool.
+ *
  * If you are running with Vert.x you can pass it your Vertx instance:
  *
  * [source,$lang]
@@ -74,12 +77,17 @@
  * {@link examples.Examples#connecting03}
  * ----
  *
- * You can also connect directly to Postgres without a pool
+ * When you need to execute several operations on the same connection, you need to use a client
+ * {@link com.julienviet.pgclient.PgConnection connection}.
+ *
+ * You can easily get one from the pool:
  *
  * [source,$lang]
  * ----
  * {@link examples.Examples#connecting04}
  * ----
+ *
+ * Once you are done with the connection you must close it to release it to the pool, so it can be reused.
  *
  * == Running queries
  *
@@ -95,21 +103,21 @@
  *
  * You can do the same with prepared queries.
  *
- * The sql string can refer to parameters by position, using `$1`, `$2`, etc…​
+ * The SQL string can refer to parameters by position, using `$1`, `$2`, etc…​
  *
  * [source,$lang]
  * ----
  * {@link examples.Examples#queries02(com.julienviet.pgclient.PgClient)}
  * ----
  *
- * Query methods return a {@link com.julienviet.pgclient.PgResult} instance that works for _select_ statements
+ * Query methods return a {@link com.julienviet.pgclient.PgResult} instance that works for _SELECT_ queries
  *
  * [source,$lang]
  * ----
  * {@link examples.Examples#queries03(com.julienviet.pgclient.PgClient)}
  * ----
  *
- * or _update_/_insert_ statements:
+ * or _UPDATE_/_INSERT_ queries:
  *
  * [source,$lang]
  * ----
