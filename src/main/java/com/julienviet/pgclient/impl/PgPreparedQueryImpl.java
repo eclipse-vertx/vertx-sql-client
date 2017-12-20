@@ -40,12 +40,21 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
   }
 
   @Override
-  public PgQuery createQuery(Tuple arguments) {
-    String msg = ps.paramDesc.validate((List<Object>) arguments);
+  public PgQuery createQuery(Tuple args) {
+    String msg = ps.paramDesc.validate((List<Object>) args);
     if (msg != null) {
       throw new IllegalArgumentException(msg);
     }
-    return new ExtendedPgQueryImpl(this, arguments);
+    return new ExtendedPgQueryImpl(this, 0, args);
+  }
+
+  @Override
+  public PgQuery createQuery(int fetch, Tuple args) {
+    String msg = ps.paramDesc.validate((List<Object>) args);
+    if (msg != null) {
+      throw new IllegalArgumentException(msg);
+    }
+    return new ExtendedPgQueryImpl(this, fetch, args);
   }
 
   @Override

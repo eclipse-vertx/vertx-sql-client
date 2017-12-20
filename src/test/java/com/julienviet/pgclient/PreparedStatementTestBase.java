@@ -140,8 +140,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     PgClient.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
       conn.createQuery("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
         conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6", ctx.asyncAssertSuccess(ps -> {
-          PgQuery query = ps.createQuery(Tuple.of(1, 8, 4, 11, 2, 9));
-          query.fetch(4);
+          PgQuery query = ps.createQuery(4, Tuple.of(1, 8, 4, 11, 2, 9));
           query.execute(ctx.asyncAssertSuccess(result -> {
             ctx.assertNotNull(result.columnsNames());
             ctx.assertEquals(4, result.size());
@@ -164,8 +163,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     PgClient.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
       conn.createQuery("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
         conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6", ctx.asyncAssertSuccess(ps -> {
-          PgQuery query = ps.createQuery(Tuple.of(1, 8, 4, 11, 2, 9));
-          query.fetch(4);
+          PgQuery query = ps.createQuery(4, Tuple.of(1, 8, 4, 11, 2, 9));
           query.execute(ctx.asyncAssertSuccess(results -> {
             ctx.assertEquals(4, results.size());
             query.close(ctx.asyncAssertSuccess(v1 -> {
@@ -185,8 +183,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     PgClient.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
       conn.createQuery("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
         conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6", ctx.asyncAssertSuccess(ps -> {
-          PgQuery stream = ps.createQuery(Tuple.of(1, 8, 4, 11, 2, 9));
-          stream.fetch(4);
+          PgQuery stream = ps.createQuery(4, Tuple.of(1, 8, 4, 11, 2, 9));
           stream.execute(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(4, result.size());
             stream.close(ctx.asyncAssertSuccess(v1 -> {

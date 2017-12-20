@@ -36,11 +36,6 @@ public class SimplePgQueryImpl implements PgQuery {
   }
 
   @Override
-  public PgQuery fetch(int size) {
-    return this;
-  }
-
-  @Override
   public boolean hasMore() {
     return result.hasNext();
   }

@@ -306,7 +306,7 @@ public class Examples {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
       if (ar1.succeeded()) {
         PgPreparedQuery pq = ar1.result();
-        PgQuery query = pq.createQuery(Tuple.of("julien")).fetch(50);
+        PgQuery query = pq.createQuery(50, Tuple.of("julien"));
         query.execute(ar2 -> {
           if (ar2.succeeded()) {
             PgResult<Row> result = ar2.result();
@@ -329,7 +329,7 @@ public class Examples {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
       if (ar1.succeeded()) {
         PgPreparedQuery pq = ar1.result();
-        PgQuery query = pq.createQuery(Tuple.of("julien")).fetch(50);
+        PgQuery query = pq.createQuery(50, Tuple.of("julien"));
         query.execute(ar2 -> {
           if (ar2.succeeded()) {
             // Close the cursor

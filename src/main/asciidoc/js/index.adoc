@@ -349,7 +349,7 @@ var Tuple = require("vertx-pg-client-js/tuple");
 connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1, ar1_err) {
   if (ar1_err == null) {
     var pq = ar1;
-    var query = pq.createQuery(Tuple.of("julien")).fetch(50);
+    var query = pq.createQuery(50, Tuple.of("julien"));
     query.execute(function (ar2, ar2_err) {
       if (ar2_err == null) {
         var result = ar2;
@@ -377,7 +377,7 @@ var Tuple = require("vertx-pg-client-js/tuple");
 connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1, ar1_err) {
   if (ar1_err == null) {
     var pq = ar1;
-    var query = pq.createQuery(Tuple.of("julien")).fetch(50);
+    var query = pq.createQuery(50, Tuple.of("julien"));
     query.execute(function (ar2, ar2_err) {
       if (ar2_err == null) {
         // Close the cursor

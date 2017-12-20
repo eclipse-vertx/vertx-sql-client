@@ -34,19 +34,35 @@ import java.util.List;
 public interface PgPreparedQuery {
 
   /**
-   * @return create a query from this statement with no arguments
+   * @return create a query with no arguments
    */
   default PgQuery createQuery() {
     return createQuery(ArrayTuple.EMPTY);
   }
 
   /**
-   * Create a query, the provided {@code arguments} will be bound prior the execution.
+   * @return create a query cursor with a {@code fetch} size and empty arguments
+   */
+  default PgQuery createQuery(int fetch) {
+    return createQuery(0, ArrayTuple.EMPTY);
+  }
+
+  /**
+   * Create a query with cursor with a {@code fetch} size and the provided {@code arguments}.
    *
-   * @param arguments the list of arguments
+   * @param fetch the fetch size
+   * @param args the list of arguments
    * @return the query
    */
-  PgQuery createQuery(Tuple arguments);
+  PgQuery createQuery(int fetch, Tuple args);
+
+  /**
+   * Create a query with the provided {@code arguments}.
+   *
+   * @param args the list of arguments
+   * @return the query
+   */
+  PgQuery createQuery(Tuple args);
 
   /**
    * Execute the prepared query with a cursor and createStream the result. The createStream opens a cursor

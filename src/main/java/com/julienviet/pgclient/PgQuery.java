@@ -17,7 +17,6 @@
 
 package com.julienviet.pgclient;
 
-import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -27,17 +26,6 @@ import io.vertx.core.Handler;
  */
 @VertxGen
 public interface PgQuery {
-
-  /**
-   * Set the fetch size of the query when executed.
-   *
-   * It is only valid for prepared queries executed with the streaming API.
-   *
-   * @param size the fetch size
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  PgQuery fetch(int size);
 
   /**
    * Execute the query, the result is provided asynchronously to the {@code handler}.
@@ -52,7 +40,7 @@ public interface PgQuery {
    * them.
    * <p/>
    * This happens for multiple statement executed with {@link PgConnection#createQuery(String) simple queries} or
-   * for prepared queries executed with a {@link #fetch} size.
+   * for prepared queries executed with a fetch size.
    *
    * @return whether the query has more results,
    */
@@ -61,7 +49,7 @@ public interface PgQuery {
   /**
    * Release the underlying cursor.
    * <p/>
-   * It should be called for prepared queries executed with {@link #fetch} size.
+   * It should be called for prepared queries executed with a fetch size.
    */
   default void close() {
     close(ar -> {});

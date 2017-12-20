@@ -34,25 +34,17 @@ public class ExtendedPgQueryImpl implements PgQuery {
 
   private final PgPreparedQueryImpl ps;
   private final Tuple params;
-  private int fetch;
+  private final int fetch;
 
   private String portal;
   private boolean completed;
   private boolean closed;
   private ExtendedQueryResultHandler result;
 
-  ExtendedPgQueryImpl(PgPreparedQueryImpl ps, Tuple params) {
+  ExtendedPgQueryImpl(PgPreparedQueryImpl ps, int fetch, Tuple params) {
     this.ps = ps;
+    this.fetch = fetch;
     this.params = params;
-  }
-
-  @Override
-  public ExtendedPgQueryImpl fetch(int size) {
-    if (size < 0) {
-      throw new IllegalArgumentException("Fetch size must be 0 (disabled) or a positive number");
-    }
-    this.fetch = size;
-    return this;
   }
 
   @Override
