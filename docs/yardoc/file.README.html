@@ -113,21 +113,20 @@ connections with a single thread.</p>
 <pre class="code ruby"><code class="ruby">&lt;dependency&gt;
   &lt;groupId&gt;com.julienviet&lt;/groupId&gt;
   &lt;artifactId&gt;reactive-pg-client&lt;/artifactId&gt;
-  &lt;version&gt;0.5.0&lt;/version&gt;
+  &lt;version&gt;0.3.1&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
 <ul><li>
 <p>Gradle (in your <code>build.gradle</code> file):</p>
 </li></ul>
 
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_dependencies'>dependencies</span> <span class='lbrace'>{</span>
-  <span class='id identifier rubyid_compile'>compile</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>com.julienviet:reactive-pg-client:0.5.0</span><span class='tstring_end'>&#39;</span></span>
+  <span class='id identifier rubyid_compile'>compile</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>com.julienviet:reactive-pg-client:0.4.0</span><span class='tstring_end'>&#39;</span></span>
 <span class='rbrace'>}</span>
 </code></pre>
 
 <p>Then the code is quite straightforward:</p>
 
-<pre class="code ruby"><code class="ruby">// Pool options
-PgPoolOptions options = new PgPoolOptions()
+<pre class="code ruby"><code class="ruby">PgPoolOptions options = new PgPoolOptions()
   .setPort(5432)
   .setHost(&quot;the-host&quot;)
   .setDatabase(&quot;the-db&quot;)
@@ -135,11 +134,11 @@ PgPoolOptions options = new PgPoolOptions()
   .setPassword(&quot;secret&quot;)
   .setMaxSize(5);
 
-// Create the client pool
-PgPool client = PgClient.pool(options);
+// Create the pool
+PgPool pool = PgPool.pool(options);
 
 // A simple query
-client.query(&quot;SELECT * FROM users WHERE id=&#39;julien&#39;&quot;, ar -&gt; {
+pool.query(&quot;SELECT * FROM users WHERE id=&#39;julien&#39;&quot;, ar -&gt; {
   if (ar.succeeded()) {
     PgResult&lt;Row&gt; result = ar.result();
     System.out.println(&quot;Got &quot; + result.size() + &quot; results &quot;);
@@ -147,8 +146,8 @@ client.query(&quot;SELECT * FROM users WHERE id=&#39;julien&#39;&quot;, ar -&gt;
     System.out.println(&quot;Failure: &quot; + ar.cause().getMessage());
   }
 
-  // Now close the pool
-  client.close();
+  // Close now the pool
+  pool.close();
 });</code></pre>
 
 <h2 id="label-Web-site+docs">Web-site docs</h2>
@@ -190,7 +189,7 @@ href="https://oss.sonatype.org/content/repositories/snapshots/com/julienviet/rea
 </div></div>
 
     <div id="footer">
-  Generated on Wed Dec 20 22:16:38 2017 by
+  Generated on Wed Dec 20 22:22:19 2017 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.8.7.6 (ruby-2.3.3).
 </div>
