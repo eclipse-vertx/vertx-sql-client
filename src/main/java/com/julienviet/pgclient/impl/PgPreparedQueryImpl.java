@@ -49,11 +49,6 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
   }
 
   @Override
-  public PgBatch createBatch() {
-    return new BatchImpl(this, ps.paramDesc);
-  }
-
-  @Override
   public void close() {
     close(ar -> {
     });
@@ -67,8 +62,15 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
     conn.schedule(new ExtendedQueryCommand<>(ps, params, fetch, portal, suspended, new RowResultDecoder(), handler));
   }
 
-  void batch(List<Tuple> paramsList, Handler<AsyncResult<PgBatchResult<Row>>> handler) {
-    conn.schedule(new ExtendedBatchQueryCommand<>(ps, paramsList.iterator(), new RowResultDecoder(), new BatchQueryResultHandler(paramsList.size(), handler)));
+  public PgPreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<PgBatchResult<Row>>> handler) {
+    for  (Tuple args : argsList) {
+      String msg = ps.paramDesc.validate((List<Object>) args);
+      if (msg != null) {
+        throw new IllegalArgumentException(msg);
+      }
+    }
+    conn.schedule(new ExtendedBatchQueryCommand<>(ps, argsList.iterator(), new RowResultDecoder(), new BatchQueryResultHandler(argsList.size(), handler)));
+    return this;
   }
 
   @Override

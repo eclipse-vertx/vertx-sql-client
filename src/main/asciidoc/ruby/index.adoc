@@ -429,16 +429,16 @@ You can also use `link:../../yardoc/VertxPgClient/PgPreparedQuery.html[PgPrepare
 require 'vertx-pg-client/tuple'
 connection.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)") { |ar1_err,ar1|
   if (ar1_err == nil)
-    preparedStatement = ar1
+    prepared = ar1
 
     # Create a query : bind parameters
-    batch = preparedStatement.create_batch()
+    batch = Array.new
 
     # Add commands to the createBatch
-    batch.add(VertxPgClient::Tuple.of("julien", "Julien Viet"))
-    batch.add(VertxPgClient::Tuple.of("emad", "Emad Alblueshi"))
+    batch.push(VertxPgClient::Tuple.of("julien", "Julien Viet"))
+    batch.push(VertxPgClient::Tuple.of("emad", "Emad Alblueshi"))
 
-    batch.execute() { |res_err,res|
+    prepared.batch(batch) { |res_err,res|
       if (res_err == nil)
 
         # Process results

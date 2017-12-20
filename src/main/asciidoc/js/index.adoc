@@ -429,16 +429,16 @@ You can also use `link:../../jsdoc/module-vertx-pg-client-js_pg_prepared_query-P
 var Tuple = require("vertx-pg-client-js/tuple");
 connection.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", function (ar1, ar1_err) {
   if (ar1_err == null) {
-    var preparedStatement = ar1;
+    var prepared = ar1;
 
     // Create a query : bind parameters
-    var batch = preparedStatement.createBatch();
+    var batch = [];
 
     // Add commands to the createBatch
-    batch.add(Tuple.of("julien", "Julien Viet"));
-    batch.add(Tuple.of("emad", "Emad Alblueshi"));
+    batch.push(Tuple.of("julien", "Julien Viet"));
+    batch.push(Tuple.of("emad", "Emad Alblueshi"));
 
-    batch.execute(function (res, res_err) {
+    prepared.batch(batch, function (res, res_err) {
       if (res_err == null) {
 
         // Process results

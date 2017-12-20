@@ -392,16 +392,16 @@ You can also use `link:../../apidocs/com/julienviet/pgclient/PgPreparedQuery.htm
 ----
 connection.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", ar1 -> {
   if (ar1.succeeded()) {
-    PgPreparedQuery preparedStatement = ar1.result();
+    PgPreparedQuery prepared = ar1.result();
 
     // Create a query : bind parameters
-    PgBatch batch = preparedStatement.createBatch();
+    List<Tuple> batch = new ArrayList();
 
     // Add commands to the createBatch
     batch.add(Tuple.of("julien", "Julien Viet"));
     batch.add(Tuple.of("emad", "Emad Alblueshi"));
 
-    batch.execute(res -> {
+    prepared.batch(batch, res -> {
       if (res.succeeded()) {
 
         // Process results

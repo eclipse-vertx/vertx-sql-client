@@ -27,7 +27,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -226,10 +228,10 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE Fortune SET message=$1 WHERE id=$2", ctx.asyncAssertSuccess(ps -> {
-        PgBatch batch = ps.createBatch();
+        List<Tuple> batch = new ArrayList<>();
         batch.add(Tuple.of("val0", 1));
         batch.add(Tuple.of("val1", 2));
-        batch.execute(ctx.asyncAssertSuccess(results -> {
+        ps.batch(batch, ctx.asyncAssertSuccess(results -> {
           ctx.assertEquals(2, results.size());
           for (int i = 0;i < 2;i++) {
             PgResult result = results.get(i);
@@ -253,9 +255,9 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       int id = randomWorld();
       conn.prepare("INSERT INTO World (id, randomnumber) VALUES ($1, $2)", ctx.asyncAssertSuccess(worldUpdate -> {
-        PgBatch batch = worldUpdate.createBatch();
+        List<Tuple> batch = new ArrayList<>();
         batch.add(Tuple.of(id, 3));
-        batch.execute(ctx.asyncAssertFailure(err -> {
+        worldUpdate.batch(batch, ctx.asyncAssertFailure(err -> {
           ctx.assertEquals("23505", ((PgException) err).getCode());
           conn.createQuery("SELECT 1000").execute(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());

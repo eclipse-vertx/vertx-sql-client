@@ -18,9 +18,12 @@
 package com.julienviet.pgclient;
 
 import com.julienviet.pgclient.impl.ArrayTuple;
+import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+
+import java.util.List;
 
 /**
  * A prepared query.
@@ -58,11 +61,13 @@ public interface PgPreparedQuery {
   PgStream<Row> createStream(int fetch, Tuple args);
 
   /**
-   * Create a new createBatch.
+   * Execute a batch.
    *
+   * @param argsList the list of tuple for the batch
    * @return the createBatch
    */
-  PgBatch createBatch();
+  @Fluent
+  PgPreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<PgBatchResult<Row>>> handler);
 
   /**
    * Close the prepared query and release its resources.

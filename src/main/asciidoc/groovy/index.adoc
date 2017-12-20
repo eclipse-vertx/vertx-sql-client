@@ -416,16 +416,16 @@ You can also use `link:../../apidocs/com/julienviet/pgclient/PgPreparedQuery.htm
 ----
 connection.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", { ar1 ->
   if (ar1.succeeded()) {
-    def preparedStatement = ar1.result()
+    def prepared = ar1.result()
 
     // Create a query : bind parameters
-    def batch = preparedStatement.createBatch()
+    def batch = []
 
     // Add commands to the createBatch
     batch.add(Tuple.of("julien", "Julien Viet"))
     batch.add(Tuple.of("emad", "Emad Alblueshi"))
 
-    batch.execute({ res ->
+    prepared.batch(batch, { res ->
       if (res.succeeded()) {
 
         // Process results
