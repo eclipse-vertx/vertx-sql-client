@@ -62,14 +62,45 @@
     <iframe id="search_frame"></iframe>
 
     <div id="content"><div id='filecontents'>
-<h1 id="label-Async+Postgres+client+for+Eclipse+Vert.x">Async Postgres client for Eclipse Vert.x</h1>
+<h1 id="label-Reactive+Postgres+Client">Reactive Postgres Client</h1>
 
-<p><a href="https://travis-ci.org/vietj/vertx-pg-client"><img
-src="https://travis-ci.org/vietj/vertx-pg-client.svg?branch=master"></a></p>
+<p><a href="https://travis-ci.org/vietj/reactive-pg-client"><img
+src="https://travis-ci.org/vietj/reactive-pg-client.svg?branch=master"></a></p>
 
-<h2 id="label-What+for+-3F">What for ?</h2>
+<p>The Reactive Postgres Client is a client for Postgres with a
+straightforward API focusing on scalability and low overhead.</p>
 
-<p><a href="http://vertx.io">Vert.x 3.5.0.Beta1</a></p>
+<p>The client is reactive and non blocking, allowing to handle many database
+connections with a single thread.</p>
+
+<h2 id="label-Features">Features</h2>
+<ul><li>
+<p>Event driven</p>
+</li><li>
+<p>Lightweight</p>
+</li><li>
+<p>Built-in connection pooling</p>
+</li><li>
+<p>Prepared queries caching</p>
+</li><li>
+<p>Publish / subscribe using Postgres <code>NOTIFY/LISTEN</code></p>
+</li><li>
+<p>Batch and cursor support</p>
+</li><li>
+<p>Row streaming</p>
+</li><li>
+<p>Command pipeling</p>
+</li><li>
+<p>RxJava 1 and RxJava 2 support</p>
+</li><li>
+<p>Direct memory to object without unnecessary copies</p>
+</li><li>
+<p>Java 8 Date and Time support</p>
+</li><li>
+<p>SSL/TLS support</p>
+</li><li>
+<p>HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy support</p>
+</li></ul>
 
 <h2 id="label-Using+Postgres+Client">Using Postgres Client</h2>
 
@@ -81,75 +112,68 @@ src="https://travis-ci.org/vietj/vertx-pg-client.svg?branch=master"></a></p>
 
 <pre class="code ruby"><code class="ruby">&lt;dependency&gt;
   &lt;groupId&gt;com.julienviet&lt;/groupId&gt;
-  &lt;artifactId&gt;vertx-pg-client&lt;/artifactId&gt;
-  &lt;version&gt;0.3.0&lt;/version&gt;
+  &lt;artifactId&gt;reactive-pg-client&lt;/artifactId&gt;
+  &lt;version&gt;0.5.0&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
 <ul><li>
 <p>Gradle (in your <code>build.gradle</code> file):</p>
 </li></ul>
 
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_dependencies'>dependencies</span> <span class='lbrace'>{</span>
-  <span class='id identifier rubyid_compile'>compile</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>com.julienviet:vertx-pg-client:0.30</span><span class='tstring_end'>&#39;</span></span>
+  <span class='id identifier rubyid_compile'>compile</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>com.julienviet:reactive-pg-client:0.5.0</span><span class='tstring_end'>&#39;</span></span>
 <span class='rbrace'>}</span>
 </code></pre>
 
-<p>Use Postgres from Vert.x:</p>
+<p>Then the code is quite straightforward:</p>
 
-<pre class="code ruby"><code class="ruby">PgClient client = PgClient.create(vertx, new PgClientOptions()
+<pre class="code ruby"><code class="ruby">// Pool options
+PgPoolOptions options = new PgPoolOptions()
   .setPort(5432)
   .setHost(&quot;the-host&quot;)
   .setDatabase(&quot;the-db&quot;)
   .setUsername(&quot;user&quot;)
   .setPassword(&quot;secret&quot;)
-);
+  .setMaxSize(5);
 
-client.connect(res -&gt; {
-  if (res.succeeded()) {
+// Create the client pool
+PgPool client = PgClient.pool(options);
 
-    // Connected
-    PgConnection conn = res.result();
-
-    conn.query(&quot;SELECT * FROM USERS&quot;, ar -&gt; {
-
-      if (ar.succeeded()) {
-
-        // Use result set
-        ResultSet rs = ar.result();
-      } else {
-        System.out.println(&quot;It failed&quot;);
-      }
-
-      // Close the connection
-      conn.close();
-    });
+// A simple query
+client.query(&quot;SELECT * FROM users WHERE id=&#39;julien&#39;&quot;, ar -&gt; {
+  if (ar.succeeded()) {
+    PgResult&lt;Row&gt; result = ar.result();
+    System.out.println(&quot;Got &quot; + result.size() + &quot; results &quot;);
   } else {
-    System.out.println(&quot;Could not connect &quot; + res.cause());
+    System.out.println(&quot;Failure: &quot; + ar.cause().getMessage());
   }
+
+  // Now close the pool
+  client.close();
 });</code></pre>
 
 <h2 id="label-Web-site+docs">Web-site docs</h2>
 <ul><li>
 <p><a
-href="http://www.julienviet.com/vertx-pg-client/guide/java/index.html">Java
+href="http://www.julienviet.com/reactive-pg-client/guide/java/index.html">Java
 docs</a></p>
 </li><li>
 <p><a
-href="http://www.julienviet.com/vertx-pg-client/guide/groovy/index.html">Groovy
+href="http://www.julienviet.com/reactive-pg-client/guide/groovy/index.html">Groovy
 docs</a></p>
 </li><li>
 <p><a
-href="http://www.julienviet.com/vertx-pg-client/guide/ruby/index.html">Ruby
+href="http://www.julienviet.com/reactive-pg-client/guide/ruby/index.html">Ruby
 docs</a></p>
 </li><li>
 <p><a
-href="http://www.julienviet.com/vertx-pg-client/guide/js/index.html">JavaScript
+href="http://www.julienviet.com/reactive-pg-client/guide/js/index.html">JavaScript
 docs</a></p>
 </li></ul>
 
 <h2 id="label-Snapshots">Snapshots</h2>
 
 <p>Snapshots are deploy in Sonatype OSS repository: <a
-href="https://oss.sonatype.org/content/repositories/snapshots/com/julienviet/vertx-pg-client">oss.sonatype.org/content/repositories/snapshots/com/julienviet/vertx-pg-client</a>/</p>
+href="https://oss.sonatype.org/content/repositories/snapshots/com/julienviet/reactive-pg-client">oss.sonatype.org/content/repositories/snapshots/com/julienviet/reactive-pg-client</a>/</p>
 
 <h2 id="label-License">License</h2>
 
@@ -161,14 +185,14 @@ href="https://oss.sonatype.org/content/repositories/snapshots/com/julienviet/ver
 </li><li>
 <p>cp -r target/docs docs/</p>
 </li><li>
-<p>mv docs/vertx-pg-client docs/guide</p>
+<p>mv docs/reactive-pg-client docs/guide</p>
 </li></ul>
 </div></div>
 
     <div id="footer">
-  Generated on Wed Sep 13 15:18:06 2017 by
+  Generated on Wed Dec 20 22:16:38 2017 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.8.7.6 (ruby-2.3.1).
+  0.8.7.6 (ruby-2.3.3).
 </div>
 
   </body>

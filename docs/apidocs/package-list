@@ -1,10 +1,2 @@
 com.julienviet.pgclient
-com.julienviet.pgclient.codec
-com.julienviet.pgclient.codec.decoder
-com.julienviet.pgclient.codec.decoder.message
-com.julienviet.pgclient.codec.decoder.message.type
-com.julienviet.pgclient.codec.encoder
-com.julienviet.pgclient.codec.encoder.message
-com.julienviet.pgclient.codec.encoder.message.type
-com.julienviet.pgclient.codec.formatter
-com.julienviet.pgclient.codec.util
+com.julienviet.pgclient.pubsub

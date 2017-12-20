@@ -5,7 +5,7 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.3">
-<title>Postgres Client for Eclipse Vert.x</title>
+<title>Reactive Postgres Client</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -510,14 +510,68 @@ table.CodeRay td.code>pre{padding:0}
 </head>
 <body class="book">
 <div id="header">
-<h1>Postgres Client for Eclipse Vert.x</h1>
+<h1>Reactive Postgres Client</h1>
 </div>
 <div id="content">
-<div class="sect1">
-<h2 id="_using_the_client">Using the client</h2>
+<div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>To use Postgres Client for Vert.x add the following dependency to the <em>dependencies</em> section of your build descriptor:</p>
+<p>The Reactive Postgres Client is a client for Postgres with a straightforward API focusing on
+scalability and low overhead.</p>
+</div>
+<div class="paragraph">
+<p>The client is reactive and non blocking, allowing to handle many database connections with a single thread.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Event driven</p>
+</li>
+<li>
+<p>Lightweight</p>
+</li>
+<li>
+<p>Built-in connection pooling</p>
+</li>
+<li>
+<p>Prepared queries caching</p>
+</li>
+<li>
+<p>Publish / subscribe using Postgres <code>NOTIFY/LISTEN</code></p>
+</li>
+<li>
+<p>Batch and cursor support</p>
+</li>
+<li>
+<p>Row streaming</p>
+</li>
+<li>
+<p>Command pipeling</p>
+</li>
+<li>
+<p>RxJava 1 and RxJava 2 support</p>
+</li>
+<li>
+<p>Direct memory to object without unnecessary copies</p>
+</li>
+<li>
+<p>Java 8 Date and Time support</p>
+</li>
+<li>
+<p>SSL/TLS support</p>
+</li>
+<li>
+<p>HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy support</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_usage">Usage</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To use the Reactive Postgres Client add the following dependency to the <em>dependencies</em> section of your build descriptor:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -530,8 +584,8 @@ table.CodeRay td.code>pre{padding:0}
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="xml"><span class="tag">&lt;dependency&gt;</span>
   <span class="tag">&lt;groupId&gt;</span>com.julienviet<span class="tag">&lt;/groupId&gt;</span>
-  <span class="tag">&lt;artifactId&gt;</span>vertx-pg-client<span class="tag">&lt;/artifactId&gt;</span>
-  <span class="tag">&lt;version&gt;</span>0.3.1-SNAPSHOT<span class="tag">&lt;/version&gt;</span>
+  <span class="tag">&lt;artifactId&gt;</span>reactive-pg-client<span class="tag">&lt;/artifactId&gt;</span>
+  <span class="tag">&lt;version&gt;</span>0.5.1-SNAPSHOT<span class="tag">&lt;/version&gt;</span>
 <span class="tag">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
@@ -545,238 +599,282 @@ table.CodeRay td.code>pre{padding:0}
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="groovy">dependencies {
-  compile <span class="string"><span class="delimiter">'</span><span class="content">com.julienviet:vertx-pg-client:0.3.1-SNAPSHOT</span><span class="delimiter">'</span></span>
+  compile <span class="string"><span class="delimiter">'</span><span class="content">com.julienviet:reactive-pg-client:0.5.1-SNAPSHOT</span><span class="delimiter">'</span></span>
 }</code></pre>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_connecting_to_a_database">Connecting to a database</h2>
+<h2 id="_getting_started">Getting started</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>You can use the client to connect to the database and interact with it.</p>
+<p>Here is the simplest way to connect, query and disconnect</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="ruby">require <span class="string"><span class="delimiter">'</span><span class="content">vertx-pg-client/pg_client</span><span class="delimiter">'</span></span>
 
-client = <span class="constant">VertxPgClient</span>::<span class="constant">PgClient</span>.create(vertx, {
+<span class="comment"># Pool options</span>
+options = {
   <span class="string"><span class="delimiter">'</span><span class="content">port</span><span class="delimiter">'</span></span> =&gt; <span class="integer">5432</span>,
   <span class="string"><span class="delimiter">'</span><span class="content">host</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">the-host</span><span class="delimiter">&quot;</span></span>,
   <span class="string"><span class="delimiter">'</span><span class="content">database</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">the-db</span><span class="delimiter">&quot;</span></span>,
   <span class="string"><span class="delimiter">'</span><span class="content">username</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">user</span><span class="delimiter">&quot;</span></span>,
-  <span class="string"><span class="delimiter">'</span><span class="content">password</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">secret</span><span class="delimiter">&quot;</span></span>
-})
+  <span class="string"><span class="delimiter">'</span><span class="content">password</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">secret</span><span class="delimiter">&quot;</span></span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">maxSize</span><span class="delimiter">'</span></span> =&gt; <span class="integer">5</span>
+}
 
-client.connect() { |res_err,res|
-  <span class="keyword">if</span> (res_err == <span class="predefined-constant">nil</span>)
+<span class="comment"># Create the client pool</span>
+client = <span class="constant">VertxPgClient</span>::<span class="constant">PgClient</span>.pool(options)
 
-    <span class="comment"># Connected</span>
-    conn = res
-
-    conn.query(<span class="string"><span class="delimiter">&quot;</span><span class="content">SELECT * FROM USERS</span><span class="delimiter">&quot;</span></span>) { |ar_err,ar|
-
-      <span class="keyword">if</span> (ar_err == <span class="predefined-constant">nil</span>)
-
-        <span class="comment"># Use result set</span>
-        rs = ar
-      <span class="keyword">else</span>
-        puts <span class="string"><span class="delimiter">&quot;</span><span class="content">It failed</span><span class="delimiter">&quot;</span></span>
-      <span class="keyword">end</span>
-
-      <span class="comment"># Close the connection</span>
-      conn.close()
-    }
+<span class="comment"># A simple query</span>
+client.query(<span class="string"><span class="delimiter">&quot;</span><span class="content">SELECT * FROM users WHERE id='julien'</span><span class="delimiter">&quot;</span></span>) { |ar_err,ar|
+  <span class="keyword">if</span> (ar_err == <span class="predefined-constant">nil</span>)
+    result = ar
+    puts <span class="string"><span class="delimiter">&quot;</span><span class="content">Got </span><span class="inline"><span class="inline-delimiter">#{</span>result.size()<span class="inline-delimiter">}</span></span><span class="content"> results </span><span class="delimiter">&quot;</span></span>
   <span class="keyword">else</span>
-    puts <span class="string"><span class="delimiter">&quot;</span><span class="content">Could not connect </span><span class="inline"><span class="inline-delimiter">#{</span>res_err<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>
+    puts <span class="string"><span class="delimiter">&quot;</span><span class="content">Failure: </span><span class="inline"><span class="inline-delimiter">#{</span>ar_err.get_message()<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>
   <span class="keyword">end</span>
+
+  <span class="comment"># Now close the pool</span>
+  client.close()
 }</code></pre>
 </div>
 </div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_connecting_to_postgres">Connecting to Postgres</h2>
+<div class="sectionbody">
 <div class="paragraph">
-<p>You can create a pool of connection to obtain a connection instead:</p>
+<p>Most of the time you will use a pool to connect to Postgres:</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="ruby">require <span class="string"><span class="delimiter">'</span><span class="content">vertx-pg-client/pg_client</span><span class="delimiter">'</span></span>
 
-client = <span class="constant">VertxPgClient</span>::<span class="constant">PgClient</span>.create(vertx, {
+<span class="comment"># Pool options</span>
+options = {
   <span class="string"><span class="delimiter">'</span><span class="content">port</span><span class="delimiter">'</span></span> =&gt; <span class="integer">5432</span>,
   <span class="string"><span class="delimiter">'</span><span class="content">host</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">the-host</span><span class="delimiter">&quot;</span></span>,
   <span class="string"><span class="delimiter">'</span><span class="content">database</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">the-db</span><span class="delimiter">&quot;</span></span>,
   <span class="string"><span class="delimiter">'</span><span class="content">username</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">user</span><span class="delimiter">&quot;</span></span>,
-  <span class="string"><span class="delimiter">'</span><span class="content">password</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">secret</span><span class="delimiter">&quot;</span></span>
-})
+  <span class="string"><span class="delimiter">'</span><span class="content">password</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">secret</span><span class="delimiter">&quot;</span></span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">maxSize</span><span class="delimiter">'</span></span> =&gt; <span class="integer">5</span>
+}
 
-pool = client.create_pool({
-  <span class="string"><span class="delimiter">'</span><span class="content">maxSize</span><span class="delimiter">'</span></span> =&gt; <span class="integer">20</span>
-})
-
-pool.get_connection() { |res_err,res|
-  <span class="keyword">if</span> (res_err == <span class="predefined-constant">nil</span>)
-
-    <span class="comment"># Obtained a connection</span>
-    conn = res
-
-    conn.query(<span class="string"><span class="delimiter">&quot;</span><span class="content">SELECT * FROM USERS</span><span class="delimiter">&quot;</span></span>) { |ar_err,ar|
-
-      <span class="keyword">if</span> (ar_err == <span class="predefined-constant">nil</span>)
-
-        <span class="comment"># Use result set</span>
-        rs = ar
-      <span class="keyword">else</span>
-        puts <span class="string"><span class="delimiter">&quot;</span><span class="content">It failed</span><span class="delimiter">&quot;</span></span>
-      <span class="keyword">end</span>
-
-      <span class="comment"># Return the connection to the pool</span>
-      conn.close()
-    }
-  <span class="keyword">else</span>
-    puts <span class="string"><span class="delimiter">&quot;</span><span class="content">Could not obtain a connection </span><span class="inline"><span class="inline-delimiter">#{</span>res_err<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>
-  <span class="keyword">end</span>
-}</code></pre>
+<span class="comment"># Create the pooled client</span>
+client = <span class="constant">VertxPgClient</span>::<span class="constant">PgClient</span>.pool(options)</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>When you are done with the pool, you should close it:</p>
+<p>The pooled client uses a connection pool and any operation will borrow a connection from the pool
+to execute the operation and release it to the pool.</p>
+</div>
+<div class="paragraph">
+<p>If you are running with Vert.x you can pass it your Vertx instance:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="ruby"><span class="comment"># Close the pool and the connection it maintains</span>
+<pre class="CodeRay highlight"><code data-lang="ruby">require <span class="string"><span class="delimiter">'</span><span class="content">vertx-pg-client/pg_client</span><span class="delimiter">'</span></span>
+
+<span class="comment"># Pool options</span>
+options = {
+  <span class="string"><span class="delimiter">'</span><span class="content">port</span><span class="delimiter">'</span></span> =&gt; <span class="integer">5432</span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">host</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">the-host</span><span class="delimiter">&quot;</span></span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">database</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">the-db</span><span class="delimiter">&quot;</span></span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">username</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">user</span><span class="delimiter">&quot;</span></span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">password</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">secret</span><span class="delimiter">&quot;</span></span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">maxSize</span><span class="delimiter">'</span></span> =&gt; <span class="integer">5</span>
+}
+
+<span class="comment"># Create the pooled client</span>
+client = <span class="constant">VertxPgClient</span>::<span class="constant">PgClient</span>.pool(vertx, options)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You need to release the pool when you don&#8217;t need it anymore:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="ruby"><span class="comment"># Close the pool and all the associated resources</span>
 pool.close()</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>When you need to execute several operations on the same connection, you need to use a client
+<code><a href="../../yardoc/VertxPgClient/PgConnection.html">connection</a></code>.</p>
+</div>
+<div class="paragraph">
+<p>You can easily get one from the pool:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="ruby">require <span class="string"><span class="delimiter">'</span><span class="content">vertx-pg-client/pg_client</span><span class="delimiter">'</span></span>
+
+<span class="comment"># Pool options</span>
+options = {
+  <span class="string"><span class="delimiter">'</span><span class="content">port</span><span class="delimiter">'</span></span> =&gt; <span class="integer">5432</span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">host</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">the-host</span><span class="delimiter">&quot;</span></span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">database</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">the-db</span><span class="delimiter">&quot;</span></span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">username</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">user</span><span class="delimiter">&quot;</span></span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">password</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">secret</span><span class="delimiter">&quot;</span></span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">maxSize</span><span class="delimiter">'</span></span> =&gt; <span class="integer">5</span>
+}
+
+<span class="comment"># Create the pooled client</span>
+client = <span class="constant">VertxPgClient</span>::<span class="constant">PgClient</span>.pool(vertx, options)
+
+<span class="comment"># Get a connection from the pool</span>
+client.get_connection() { |ar1_err,ar1|
+
+  <span class="keyword">if</span> (ar1_err == <span class="predefined-constant">nil</span>)
+
+    puts <span class="string"><span class="delimiter">&quot;</span><span class="content">Connected</span><span class="delimiter">&quot;</span></span>
+
+    <span class="comment"># Obtain our connection</span>
+    conn = ar1
+
+    <span class="comment"># All operations execute on the same connection</span>
+    conn.query(<span class="string"><span class="delimiter">&quot;</span><span class="content">SELECT * FROM users WHERE id='julien'</span><span class="delimiter">&quot;</span></span>) { |ar2_err,ar2|
+      <span class="keyword">if</span> (ar2_err == <span class="predefined-constant">nil</span>)
+        conn.query(<span class="string"><span class="delimiter">&quot;</span><span class="content">SELECT * FROM users WHERE id='emad'</span><span class="delimiter">&quot;</span></span>) { |ar3_err,ar3|
+          <span class="comment"># Release the connection to the pool</span>
+          conn.close()
+        }
+      <span class="keyword">else</span>
+        <span class="comment"># Release the connection to the pool</span>
+        conn.close()
+      <span class="keyword">end</span>
+    }
+  <span class="keyword">else</span>
+    puts <span class="string"><span class="delimiter">&quot;</span><span class="content">Could not connect: </span><span class="inline"><span class="inline-delimiter">#{</span>ar1_err.get_message()<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>
+  <span class="keyword">end</span>
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Once you are done with the connection you must close it to release it to the pool, so it can be reused.</p>
+</div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_prepared_statements">Prepared statements</h2>
+<h2 id="_running_queries">Running queries</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Prepared statements can be created and managed by the application.</p>
+<p>When you don&#8217;t need a transaction or run single queries, you can run queries directly on the pool; the pool
+will use one of its connection to run the query and return the result to you.</p>
 </div>
 <div class="paragraph">
-<p>The <code>sql</code> string can refer to parameters by position, using $1, $2, etc&#8230;&#8203;</p>
+<p>Here is how to run simple queries:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="ruby">preparedStatement = conn.prepare(<span class="string"><span class="delimiter">&quot;</span><span class="content">SELECT * FROM USERS WHERE user_id=$1</span><span class="delimiter">&quot;</span></span>)
-
-<span class="comment"># Create a query : bind parameters</span>
-query = preparedStatement.query(<span class="string"><span class="delimiter">&quot;</span><span class="content">julien</span><span class="delimiter">&quot;</span></span>)
-
-<span class="comment"># Execute query</span>
-query.execute() { |res_err,res|
-  <span class="keyword">if</span> (res_err == <span class="predefined-constant">nil</span>)
-
-    <span class="comment"># Get result</span>
-    result = res
+<pre class="CodeRay highlight"><code data-lang="ruby">client.query(<span class="string"><span class="delimiter">&quot;</span><span class="content">SELECT * FROM users WHERE id='julien'</span><span class="delimiter">&quot;</span></span>) { |ar_err,ar|
+  <span class="keyword">if</span> (ar_err == <span class="predefined-constant">nil</span>)
+    result = ar
+    puts <span class="string"><span class="delimiter">&quot;</span><span class="content">Got </span><span class="inline"><span class="inline-delimiter">#{</span>result.size()<span class="inline-delimiter">}</span></span><span class="content"> results </span><span class="delimiter">&quot;</span></span>
   <span class="keyword">else</span>
-    puts <span class="string"><span class="delimiter">&quot;</span><span class="content">Query failed </span><span class="inline"><span class="inline-delimiter">#{</span>res_err<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>
+    puts <span class="string"><span class="delimiter">&quot;</span><span class="content">Failure: </span><span class="inline"><span class="inline-delimiter">#{</span>ar_err.get_message()<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>
   <span class="keyword">end</span>
 }</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>When you are done with the prepared statement, you should close it:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="ruby">preparedStatement.close()</code></pre>
-</div>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Note</div>
-</td>
-<td class="content">
-when you close the connection, you don&#8217;t need to close its prepared statements
-</td>
-</tr>
-</table>
+<p>You can do the same with prepared queries.</p>
 </div>
 <div class="paragraph">
-<p>By default the query will fetch all results, you can override this and define a maximum fetch size.</p>
+<p>The SQL string can refer to parameters by position, using <code>$1</code>, <code>$2</code>, etc…​</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="ruby">preparedStatement = conn.prepare(<span class="string"><span class="delimiter">&quot;</span><span class="content">SELECT * FROM USERS</span><span class="delimiter">&quot;</span></span>)
-
-<span class="comment"># Create a query : bind parameters</span>
-query = preparedStatement.query()
-
-<span class="comment"># Get at most 100 rows</span>
-query.fetch(<span class="integer">100</span>)
-
-<span class="comment"># Execute query</span>
-query.execute() { |res_err,res|
-  <span class="keyword">if</span> (res_err == <span class="predefined-constant">nil</span>)
-
-    <span class="comment"># Get result</span>
-    result = res
-
-    <span class="comment">#</span>
-    <span class="keyword">if</span> (query.completed?())
-      <span class="comment"># We are done</span>
-    <span class="keyword">else</span>
-
-      <span class="comment"># Fetch 100 more</span>
-      query.execute() { |res2_err,res2|
-        <span class="comment"># And the beat goes on...</span>
-      }
+<pre class="CodeRay highlight"><code data-lang="ruby">require <span class="string"><span class="delimiter">'</span><span class="content">vertx-pg-client/tuple</span><span class="delimiter">'</span></span>
+client.prepared_query(<span class="string"><span class="delimiter">&quot;</span><span class="content">SELECT * FROM users WHERE id=$1</span><span class="delimiter">&quot;</span></span>, <span class="constant">VertxPgClient</span>::<span class="constant">Tuple</span>.of(<span class="string"><span class="delimiter">&quot;</span><span class="content">julien</span><span class="delimiter">&quot;</span></span>)) { |ar_err,ar|
+  <span class="keyword">if</span> (ar_err == <span class="predefined-constant">nil</span>)
+    result = ar
+    puts <span class="string"><span class="delimiter">&quot;</span><span class="content">Got </span><span class="inline"><span class="inline-delimiter">#{</span>result.size()<span class="inline-delimiter">}</span></span><span class="content"> results </span><span class="delimiter">&quot;</span></span>
+  <span class="keyword">else</span>
+    puts <span class="string"><span class="delimiter">&quot;</span><span class="content">Failure: </span><span class="inline"><span class="inline-delimiter">#{</span>ar_err.get_message()<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>
+  <span class="keyword">end</span>
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Query methods provides an asynchronous <code><a href="../../yardoc/VertxPgClient/PgResult.html">PgResult</a></code> instance that works for <em>SELECT</em> queries</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="ruby">client.prepared_query(<span class="string"><span class="delimiter">&quot;</span><span class="content">SELECT first_name, last_name FROM users</span><span class="delimiter">&quot;</span></span>) { |ar_err,ar|
+  <span class="keyword">if</span> (ar_err == <span class="predefined-constant">nil</span>)
+    result = ar
+    result.each <span class="keyword">do</span> |row|
+      puts <span class="string"><span class="delimiter">&quot;</span><span class="content">User </span><span class="inline"><span class="inline-delimiter">#{</span>row.get_string(<span class="integer">0</span>)<span class="inline-delimiter">}</span></span><span class="content"> </span><span class="inline"><span class="inline-delimiter">#{</span>row.get_string(<span class="integer">1</span>)<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>
     <span class="keyword">end</span>
   <span class="keyword">else</span>
-    puts <span class="string"><span class="delimiter">&quot;</span><span class="content">Query failed </span><span class="inline"><span class="inline-delimiter">#{</span>res_err<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>
+    puts <span class="string"><span class="delimiter">&quot;</span><span class="content">Failure: </span><span class="inline"><span class="inline-delimiter">#{</span>ar_err.get_message()<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>
   <span class="keyword">end</span>
 }</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>When a query is not completed you can call <code><a href="../../yardoc/VertxPgClient/PgQuery.html#close-instance_method">close</a></code> to release
-the query result in progress:</p>
+<p>or <em>UPDATE</em>/<em>INSERT</em> queries:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="ruby">preparedStatement = conn.prepare(<span class="string"><span class="delimiter">&quot;</span><span class="content">SELECT * FROM USERS</span><span class="delimiter">&quot;</span></span>)
-
-<span class="comment"># Create a query : bind parameters</span>
-query = preparedStatement.query()
-
-<span class="comment"># Get at most 100 rows</span>
-query.fetch(<span class="integer">100</span>)
-
-<span class="comment"># Execute query</span>
-query.execute() { |res_err,res|
-  <span class="keyword">if</span> (res_err == <span class="predefined-constant">nil</span>)
-
-    <span class="comment"># Get result</span>
-    result = res
-
-    <span class="comment"># Close the query</span>
-    query.close()
+<pre class="CodeRay highlight"><code data-lang="ruby">require <span class="string"><span class="delimiter">'</span><span class="content">vertx-pg-client/tuple</span><span class="delimiter">'</span></span>
+client.prepared_query(<span class="string"><span class="delimiter">&quot;</span><span class="char">\&quot;</span><span class="content">INSERT INTO users (first_name, last_name) VALUES ($1, $2)</span><span class="delimiter">&quot;</span></span>, <span class="constant">VertxPgClient</span>::<span class="constant">Tuple</span>.of(<span class="string"><span class="delimiter">&quot;</span><span class="content">Julien</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">Viet</span><span class="delimiter">&quot;</span></span>)) { |ar_err,ar|
+  <span class="keyword">if</span> (ar_err == <span class="predefined-constant">nil</span>)
+    result = ar
+    puts result.updated_count()
   <span class="keyword">else</span>
-    puts <span class="string"><span class="delimiter">&quot;</span><span class="content">Query failed </span><span class="inline"><span class="inline-delimiter">#{</span>res_err<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>
+    puts <span class="string"><span class="delimiter">&quot;</span><span class="content">Failure: </span><span class="inline"><span class="inline-delimiter">#{</span>ar_err.get_message()<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>
   <span class="keyword">end</span>
 }</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Prepared statements can also be used to batch operations in a very efficient manner:</p>
+<p>The <code><a href="../../yardoc/VertxPgClient/Row.html">Row</a></code> gives you access to your data by index</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="ruby">preparedStatement = conn.prepare(<span class="string"><span class="delimiter">&quot;</span><span class="content">INSERT INTO USERS (id, name) VALUES ($1, $2)</span><span class="delimiter">&quot;</span></span>)
+<pre class="CodeRay highlight"><code data-lang="ruby">puts <span class="string"><span class="delimiter">&quot;</span><span class="content">User </span><span class="inline"><span class="inline-delimiter">#{</span>row.get_string(<span class="integer">0</span>)<span class="inline-delimiter">}</span></span><span class="content"> </span><span class="inline"><span class="inline-delimiter">#{</span>row.get_string(<span class="integer">1</span>)<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or by name</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="ruby">puts <span class="string"><span class="delimiter">&quot;</span><span class="content">User </span><span class="inline"><span class="inline-delimiter">#{</span>row.get_string(<span class="string"><span class="delimiter">&quot;</span><span class="content">first_name</span><span class="delimiter">&quot;</span></span>)<span class="inline-delimiter">}</span></span><span class="content"> </span><span class="inline"><span class="inline-delimiter">#{</span>row.get_string(<span class="string"><span class="delimiter">&quot;</span><span class="content">last_name</span><span class="delimiter">&quot;</span></span>)<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can access a wide variety of of types</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="ruby">firstName = row.get_string(<span class="string"><span class="delimiter">&quot;</span><span class="content">first_name</span><span class="delimiter">&quot;</span></span>)
+male = row.get_boolean?(<span class="string"><span class="delimiter">&quot;</span><span class="content">male</span><span class="delimiter">&quot;</span></span>)
+age = row.get_integer(<span class="string"><span class="delimiter">&quot;</span><span class="content">age</span><span class="delimiter">&quot;</span></span>)
 
-<span class="comment"># Create a query : bind parameters</span>
-batch = preparedStatement.batch()
+<span class="comment"># ...</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can execute prepared batch</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="ruby">require <span class="string"><span class="delimiter">'</span><span class="content">vertx-pg-client/tuple</span><span class="delimiter">'</span></span>
 
 <span class="comment"># Add commands to the batch</span>
-batch.add(<span class="string"><span class="delimiter">&quot;</span><span class="content">julien</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">Julien Viet</span><span class="delimiter">&quot;</span></span>)
-batch.add(<span class="string"><span class="delimiter">&quot;</span><span class="content">emad</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">Emad Alblueshi</span><span class="delimiter">&quot;</span></span>)
+batch = <span class="constant">Array</span>.new
+batch.push(<span class="constant">VertxPgClient</span>::<span class="constant">Tuple</span>.of(<span class="string"><span class="delimiter">&quot;</span><span class="content">julien</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">Julien Viet</span><span class="delimiter">&quot;</span></span>))
+batch.push(<span class="constant">VertxPgClient</span>::<span class="constant">Tuple</span>.of(<span class="string"><span class="delimiter">&quot;</span><span class="content">emad</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">Emad Alblueshi</span><span class="delimiter">&quot;</span></span>))
 
-batch.execute() { |res_err,res|
+<span class="comment"># Execute the prepared batch</span>
+client.prepared_batch(<span class="string"><span class="delimiter">&quot;</span><span class="content">INSERT INTO USERS (id, name) VALUES ($1, $2)</span><span class="delimiter">&quot;</span></span>, batch) { |res_err,res|
   <span class="keyword">if</span> (res_err == <span class="predefined-constant">nil</span>)
 
     <span class="comment"># Process results</span>
@@ -787,12 +885,387 @@ batch.execute() { |res_err,res|
 }</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>You can cache prepared queries:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="ruby">require <span class="string"><span class="delimiter">'</span><span class="content">vertx-pg-client/pg_client</span><span class="delimiter">'</span></span>
+
+<span class="comment"># Enable prepare statements</span>
+options[<span class="string"><span class="delimiter">'</span><span class="content">cachePreparedStatements</span><span class="delimiter">'</span></span>] = <span class="predefined-constant">true</span>
+
+client = <span class="constant">VertxPgClient</span>::<span class="constant">PgClient</span>.pool(vertx, options)</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_using_connections">Using connections</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When you need to execute sequential queries (without a transaction), you can create a new connection
+or borrow one from the pool:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="ruby"><span class="constant">Code</span> <span class="keyword">not</span> translatable</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Prepared queries can be created:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="ruby">require <span class="string"><span class="delimiter">'</span><span class="content">vertx-pg-client/tuple</span><span class="delimiter">'</span></span>
+connection.prepare(<span class="string"><span class="delimiter">&quot;</span><span class="content">SELECT * FROM users WHERE first_name LIKE $1</span><span class="delimiter">&quot;</span></span>) { |ar1_err,ar1|
+  <span class="keyword">if</span> (ar1_err == <span class="predefined-constant">nil</span>)
+    pq = ar1
+    pq.execute(<span class="constant">VertxPgClient</span>::<span class="constant">Tuple</span>.of(<span class="string"><span class="delimiter">&quot;</span><span class="content">julien</span><span class="delimiter">&quot;</span></span>)) { |ar2_err,ar2|
+      <span class="keyword">if</span> (ar2_err == <span class="predefined-constant">nil</span>)
+        <span class="comment"># All rows</span>
+        result = ar2
+      <span class="keyword">end</span>
+    }
+  <span class="keyword">end</span>
+}</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+prepared query caching depends on the <code><a href="../dataobjects.html#PgConnectOptions#set_cache_prepared_statements-instance_method">cachePreparedStatements</a></code> and
+does not depend on whether you are creating prepared queries or use <code><a href="../../yardoc/VertxPgClient/PgClient.html#prepared_query-instance_method">direct prepared queries</a></code>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>By default prepared query executions fetch all results, you can use a <code><a href="../../yardoc/VertxPgClient/PgCursor.html">PgCursor</a></code> to control the amount of rows you want to read:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="ruby">require <span class="string"><span class="delimiter">'</span><span class="content">vertx-pg-client/tuple</span><span class="delimiter">'</span></span>
+connection.prepare(<span class="string"><span class="delimiter">&quot;</span><span class="content">SELECT * FROM users WHERE first_name LIKE $1</span><span class="delimiter">&quot;</span></span>) { |ar1_err,ar1|
+  <span class="keyword">if</span> (ar1_err == <span class="predefined-constant">nil</span>)
+    pq = ar1
+
+    <span class="comment"># Create a cursor</span>
+    cursor = pq.cursor(<span class="constant">VertxPgClient</span>::<span class="constant">Tuple</span>.of(<span class="string"><span class="delimiter">&quot;</span><span class="content">julien</span><span class="delimiter">&quot;</span></span>))
+
+    <span class="comment"># Read 50 rows</span>
+    cursor.read(<span class="integer">50</span>) { |ar2_err,ar2|
+      <span class="keyword">if</span> (ar2_err == <span class="predefined-constant">nil</span>)
+        result = ar2
+
+        <span class="comment"># Check for more ?</span>
+        <span class="keyword">if</span> (cursor.has_more?())
+
+          <span class="comment"># Read the next 50</span>
+          cursor.read(<span class="integer">50</span>) { |ar3_err,ar3|
+            <span class="comment"># More results, and so on...</span>
+          }
+        <span class="keyword">else</span>
+          <span class="comment"># No more results</span>
+        <span class="keyword">end</span>
+      <span class="keyword">end</span>
+    }
+  <span class="keyword">end</span>
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Cursors shall be closed when they are released prematurely:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="ruby">require <span class="string"><span class="delimiter">'</span><span class="content">vertx-pg-client/tuple</span><span class="delimiter">'</span></span>
+connection.prepare(<span class="string"><span class="delimiter">&quot;</span><span class="content">SELECT * FROM users WHERE first_name LIKE $1</span><span class="delimiter">&quot;</span></span>) { |ar1_err,ar1|
+  <span class="keyword">if</span> (ar1_err == <span class="predefined-constant">nil</span>)
+    pq = ar1
+    cursor = pq.cursor(<span class="constant">VertxPgClient</span>::<span class="constant">Tuple</span>.of(<span class="string"><span class="delimiter">&quot;</span><span class="content">julien</span><span class="delimiter">&quot;</span></span>))
+    cursor.read(<span class="integer">50</span>) { |ar2_err,ar2|
+      <span class="keyword">if</span> (ar2_err == <span class="predefined-constant">nil</span>)
+        <span class="comment"># Close the cursor</span>
+        cursor.close()
+      <span class="keyword">end</span>
+    }
+  <span class="keyword">end</span>
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A stream API is also available for cursors, which can be more convenient, specially with the Rxified version.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="ruby">require <span class="string"><span class="delimiter">'</span><span class="content">vertx-pg-client/tuple</span><span class="delimiter">'</span></span>
+connection.prepare(<span class="string"><span class="delimiter">&quot;</span><span class="content">SELECT * FROM users WHERE first_name LIKE $1</span><span class="delimiter">&quot;</span></span>) { |ar1_err,ar1|
+  <span class="keyword">if</span> (ar1_err == <span class="predefined-constant">nil</span>)
+    pq = ar1
+
+    <span class="comment"># Fetch 50 rows at a time</span>
+    stream = pq.create_stream(<span class="integer">50</span>, <span class="constant">VertxPgClient</span>::<span class="constant">Tuple</span>.of(<span class="string"><span class="delimiter">&quot;</span><span class="content">julien</span><span class="delimiter">&quot;</span></span>))
+
+    <span class="comment"># Use the stream</span>
+    stream.exception_handler() { |err|
+      puts <span class="string"><span class="delimiter">&quot;</span><span class="content">Error: </span><span class="inline"><span class="inline-delimiter">#{</span>err.get_message()<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>
+    }
+    stream.end_handler() { |v|
+      puts <span class="string"><span class="delimiter">&quot;</span><span class="content">End of stream</span><span class="delimiter">&quot;</span></span>
+    }
+    stream.handler() { |row|
+      puts <span class="string"><span class="delimiter">&quot;</span><span class="content">User: </span><span class="inline"><span class="inline-delimiter">#{</span>row.get_string(<span class="string"><span class="delimiter">&quot;</span><span class="content">last_name</span><span class="delimiter">&quot;</span></span>)<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>
+    }
+  <span class="keyword">end</span>
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The stream read the rows by batch of <code>50</code> and stream them, when the rows have been passed to the handler,
+a new batch of <code>50</code> is read and so on.</p>
+</div>
+<div class="paragraph">
+<p>The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
+will stop iterating.</p>
+</div>
+<div class="paragraph">
+<p><code><a href="../../yardoc/VertxPgClient/PgPreparedQuery.html">PgPreparedQuery</a></code> can perform efficient batching:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="ruby">require <span class="string"><span class="delimiter">'</span><span class="content">vertx-pg-client/tuple</span><span class="delimiter">'</span></span>
+connection.prepare(<span class="string"><span class="delimiter">&quot;</span><span class="content">INSERT INTO USERS (id, name) VALUES ($1, $2)</span><span class="delimiter">&quot;</span></span>) { |ar1_err,ar1|
+  <span class="keyword">if</span> (ar1_err == <span class="predefined-constant">nil</span>)
+    prepared = ar1
+
+    <span class="comment"># Create a query : bind parameters</span>
+    batch = <span class="constant">Array</span>.new
+
+    <span class="comment"># Add commands to the createBatch</span>
+    batch.push(<span class="constant">VertxPgClient</span>::<span class="constant">Tuple</span>.of(<span class="string"><span class="delimiter">&quot;</span><span class="content">julien</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">Julien Viet</span><span class="delimiter">&quot;</span></span>))
+    batch.push(<span class="constant">VertxPgClient</span>::<span class="constant">Tuple</span>.of(<span class="string"><span class="delimiter">&quot;</span><span class="content">emad</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">Emad Alblueshi</span><span class="delimiter">&quot;</span></span>))
+
+    prepared.batch(batch) { |res_err,res|
+      <span class="keyword">if</span> (res_err == <span class="predefined-constant">nil</span>)
+
+        <span class="comment"># Process results</span>
+        results = res
+      <span class="keyword">else</span>
+        puts <span class="string"><span class="delimiter">&quot;</span><span class="content">Batch failed </span><span class="inline"><span class="inline-delimiter">#{</span>res_err<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>
+      <span class="keyword">end</span>
+    }
+  <span class="keyword">end</span>
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_using_transactions">Using transactions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You can execute transaction using SQL <code>BEGIN</code>/<code>COMMIT</code>/<code>ROLLBACK</code>, if you do so you must use
+a <code><a href="../../yardoc/VertxPgClient/PgConnection.html">PgConnection</a></code> and manage it yourself.</p>
+</div>
+<div class="paragraph">
+<p>Or you can use the transaction API of <code><a href="../../yardoc/VertxPgClient/PgConnection.html">PgConnection</a></code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="ruby"><span class="constant">Code</span> <span class="keyword">not</span> translatable</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When Postgres reports the current transaction is failed (e.g the infamous <em>current transaction is aborted, commands ignored until
+end of transaction block</em>), the transaction is rollbacked and the <code><a href="../../yardoc/VertxPgClient/PgTransaction.html#abort_handler-instance_method">abortHandler</a></code>
+is called:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="ruby">pool.get_connection() { |res_err,res|
+  <span class="keyword">if</span> (res_err == <span class="predefined-constant">nil</span>)
+
+    <span class="comment"># Transaction must use a connection</span>
+    conn = res
+
+    <span class="comment"># Begin the transaction</span>
+    tx = conn.begin().abort_handler() { |v|
+      puts <span class="string"><span class="delimiter">&quot;</span><span class="content">Transaction failed =&gt; rollbacked</span><span class="delimiter">&quot;</span></span>
+    }
+
+    conn.query(<span class="string"><span class="delimiter">&quot;</span><span class="content">INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')</span><span class="delimiter">&quot;</span></span>) { |ar_err,ar|
+      <span class="comment"># Works fine of course</span>
+    }
+    conn.query(<span class="string"><span class="delimiter">&quot;</span><span class="content">INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')</span><span class="delimiter">&quot;</span></span>) { |ar_err,ar|
+      <span class="comment"># Fails and triggers transaction aborts</span>
+    }
+
+    <span class="comment"># Attempt to commit the transaction</span>
+    tx.commit() { |ar_err,ar|
+      <span class="comment"># But transaction abortion fails it</span>
+    }
+  <span class="keyword">end</span>
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_pub_sub">Pub/sub</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Postgres supports pub/sub communication channels.</p>
+</div>
+<div class="paragraph">
+<p>You can set a <code><a href="../../yardoc/VertxPgClient/PgConnection.html#notification_handler-instance_method">notificationHandler</a></code> to receive
+Postgres notifications:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="ruby">connection.notification_handler() { |notification|
+  puts <span class="string"><span class="delimiter">&quot;</span><span class="content">Received </span><span class="inline"><span class="inline-delimiter">#{</span>notification[<span class="string"><span class="delimiter">'</span><span class="content">payload</span><span class="delimiter">'</span></span>]<span class="inline-delimiter">}</span></span><span class="content"> on channel </span><span class="inline"><span class="inline-delimiter">#{</span>notification[<span class="string"><span class="delimiter">'</span><span class="content">channel</span><span class="delimiter">'</span></span>]<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>
+}
+
+connection.query(<span class="string"><span class="delimiter">&quot;</span><span class="content">LISTEN some-channel</span><span class="delimiter">&quot;</span></span>) { |ar_err,ar|
+  puts <span class="string"><span class="delimiter">&quot;</span><span class="content">Subscribed to channel</span><span class="delimiter">&quot;</span></span>
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code><a href="../../yardoc/VertxPgClient/PgSubscriber.html">PgSubscriber</a></code> is a channel manager managing a single connection that
+provides per channel subscription:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="ruby">require <span class="string"><span class="delimiter">'</span><span class="content">vertx-pg-client/pg_subscriber</span><span class="delimiter">'</span></span>
+
+subscriber = <span class="constant">VertxPgClient</span>::<span class="constant">PgSubscriber</span>.subscriber(vertx, {
+  <span class="string"><span class="delimiter">'</span><span class="content">port</span><span class="delimiter">'</span></span> =&gt; <span class="integer">5432</span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">host</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">the-host</span><span class="delimiter">&quot;</span></span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">database</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">the-db</span><span class="delimiter">&quot;</span></span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">username</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">user</span><span class="delimiter">&quot;</span></span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">password</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">secret</span><span class="delimiter">&quot;</span></span>
+})
+
+<span class="comment"># You can set the channel before connect</span>
+subscriber.channel(<span class="string"><span class="delimiter">&quot;</span><span class="content">channel1</span><span class="delimiter">&quot;</span></span>).handler() { |payload|
+  puts <span class="string"><span class="delimiter">&quot;</span><span class="content">Received </span><span class="inline"><span class="inline-delimiter">#{</span>payload<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>
+}
+
+subscriber.connect() { |ar_err,ar|
+  <span class="keyword">if</span> (ar_err == <span class="predefined-constant">nil</span>)
+
+    <span class="comment"># Or you can set the channel after connect</span>
+    subscriber.channel(<span class="string"><span class="delimiter">&quot;</span><span class="content">channel2</span><span class="delimiter">&quot;</span></span>).handler() { |payload|
+      puts <span class="string"><span class="delimiter">&quot;</span><span class="content">Received </span><span class="inline"><span class="inline-delimiter">#{</span>payload<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>
+    }
+  <span class="keyword">end</span>
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can provide a reconnect policy as a function that takes the number of <code>retries</code> as argument and returns an <code>amountOfTime</code>
+value:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>when <code>amountOfTime &lt; 0</code>: the subscriber is closed and there is no retry</p>
+</li>
+<li>
+<p>when <code>amountOfTime == 0</code>: the subscriber retries to connect immediately</p>
+</li>
+<li>
+<p>when <code>amountOfTime &gt; 0</code>: the subscriber retries after <code>amountOfTime</code> milliseconds</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="ruby">require <span class="string"><span class="delimiter">'</span><span class="content">vertx-pg-client/pg_subscriber</span><span class="delimiter">'</span></span>
+
+subscriber = <span class="constant">VertxPgClient</span>::<span class="constant">PgSubscriber</span>.subscriber(vertx, {
+  <span class="string"><span class="delimiter">'</span><span class="content">port</span><span class="delimiter">'</span></span> =&gt; <span class="integer">5432</span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">host</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">the-host</span><span class="delimiter">&quot;</span></span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">database</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">the-db</span><span class="delimiter">&quot;</span></span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">username</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">user</span><span class="delimiter">&quot;</span></span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">password</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">secret</span><span class="delimiter">&quot;</span></span>
+})
+
+<span class="comment"># Reconnect at most 10 times after 100 ms each</span>
+subscriber.reconnect_policy(lambda { |retries|
+  <span class="keyword">if</span> (retries &lt; <span class="integer">10</span>)
+    <span class="keyword">return</span> <span class="integer">100</span>
+  <span class="keyword">else</span>
+    <span class="keyword">return</span> <span class="integer">-1</span>
+  <span class="keyword">end</span>
+})</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The default policy is to not reconnect.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_using_ssl_tls">Using SSL/TLS</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To configure the client to use SSL connection, you can configure the <code><a href="../dataobjects.html#PgConnectOptions">PgConnectOptions</a></code>
+like a Vert.x <code>NetClient</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="ruby">require <span class="string"><span class="delimiter">'</span><span class="content">vertx-pg-client/pg_client</span><span class="delimiter">'</span></span>
+
+options = {
+  <span class="string"><span class="delimiter">'</span><span class="content">port</span><span class="delimiter">'</span></span> =&gt; <span class="integer">5432</span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">host</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">the-host</span><span class="delimiter">&quot;</span></span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">database</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">the-db</span><span class="delimiter">&quot;</span></span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">username</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">user</span><span class="delimiter">&quot;</span></span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">password</span><span class="delimiter">'</span></span> =&gt; <span class="string"><span class="delimiter">&quot;</span><span class="content">secret</span><span class="delimiter">&quot;</span></span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">ssl</span><span class="delimiter">'</span></span> =&gt; <span class="predefined-constant">true</span>,
+  <span class="string"><span class="delimiter">'</span><span class="content">pemTrustOptions</span><span class="delimiter">'</span></span> =&gt; {
+    <span class="string"><span class="delimiter">'</span><span class="content">certPaths</span><span class="delimiter">'</span></span> =&gt; [
+      <span class="string"><span class="delimiter">&quot;</span><span class="content">/path/to/cert.pem</span><span class="delimiter">&quot;</span></span>
+    ]
+  }
+}
+
+<span class="constant">VertxPgClient</span>::<span class="constant">PgClient</span>.connect(vertx, options) { |res_err,res|
+  <span class="keyword">if</span> (res_err == <span class="predefined-constant">nil</span>)
+    <span class="comment"># Connected with SSL</span>
+  <span class="keyword">else</span>
+    puts <span class="string"><span class="delimiter">&quot;</span><span class="content">Could not connect </span><span class="inline"><span class="inline-delimiter">#{</span>res_err<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>
+  <span class="keyword">end</span>
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>More information can be found in the <a href="http://vertx.io/docs/vertx-core/java/#ssl">Vert.x documentation</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_using_a_proxy">Using a proxy</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You can also configure the client to use an HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy.</p>
+</div>
+<div class="paragraph">
+<p>More information can be found in the <a href="http://vertx.io/docs/vertx-core/java/#_using_a_proxy_for_client_connections">Vert.x documentation</a>.</p>
+</div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2017-09-13 15:16:44 CEST
+Last updated 2017-12-20 22:14:54 CET
 </div>
 </div>
 </body>
