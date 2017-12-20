@@ -250,7 +250,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   }
 
   @Test
-  public void testBatchUpdateError(TestContext ctx) throws Exception {
+  public void testBatchInsertError(TestContext ctx) throws Exception {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       int id = randomWorld();
@@ -264,6 +264,23 @@ public abstract class PgConnectionTestBase extends PgTestBase {
             ctx.assertEquals(1000, result.iterator().next().getInteger(0));
             async.complete();
           }));
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testBatchSelect(TestContext ctx) throws Exception {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      int id = randomWorld();
+      conn.prepare("SELECT count(id) FROM World", ctx.asyncAssertSuccess(worldUpdate -> {
+        List<Tuple> batch = new ArrayList<>();
+        batch.add(Tuple.tuple());
+        batch.add(Tuple.tuple());
+        worldUpdate.batch(batch, ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(result.get(0).size(), result.get(1).size());
+          async.complete();
         }));
       }));
     }));
