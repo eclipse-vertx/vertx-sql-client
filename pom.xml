@@ -233,6 +233,7 @@
               <descriptors>
                 <descriptor>src/benchmark/assembly/benchmarks.xml</descriptor>
               </descriptors>
+              <attach>false</attach>
             </configuration>
           </execution>
         </executions>
