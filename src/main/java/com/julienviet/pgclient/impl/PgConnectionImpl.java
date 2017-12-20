@@ -38,12 +38,6 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
   }
 
   @Override
-  public PgQuery createQuery(String sql) {
-    return new SimplePgQueryImpl(sql, this::schedule);
-  }
-
-
-  @Override
   public Connection connection() {
     return conn;
   }

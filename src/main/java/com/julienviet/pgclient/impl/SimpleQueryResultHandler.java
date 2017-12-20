@@ -18,16 +18,15 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.PgResult;
+import com.julienviet.pgclient.Row;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
-
-import java.util.*;
 
 public class SimpleQueryResultHandler<T> implements QueryResultHandler<T> {
 
   private final Handler<AsyncResult<PgResult<T>>> handler;
-  private final Queue<PgResult<T>> results = new ArrayDeque<>(1);
+  private PgResult<T> head;
+  private PgResultImpl tail;
 
   public SimpleQueryResultHandler(Handler<AsyncResult<PgResult<T>>> handler) {
     this.handler = handler;
@@ -35,23 +34,17 @@ public class SimpleQueryResultHandler<T> implements QueryResultHandler<T> {
 
   @Override
   public void handleResult(PgResult<T> result) {
-    results.add(result);
-  }
-
-  public boolean hasNext() {
-    return results.size() > 0;
-  }
-
-  public PgResult<T> next() {
-    if (results.size() > 0) {
-      return results.poll();
+    if (head == null) {
+      head = result;
+      tail = (PgResultImpl) result;
     } else {
-      throw new NoSuchElementException();
+      tail.next = (PgResult<Row>) result;
+      tail = (PgResultImpl) result;
     }
   }
 
   @Override
   public void handle(AsyncResult<Boolean> res) {
-    handler.handle(res.map(results.poll()));
+    handler.handle(res.map(head));
   }
 }

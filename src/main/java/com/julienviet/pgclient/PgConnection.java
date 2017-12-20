@@ -33,14 +33,6 @@ import java.util.List;
 public interface PgConnection extends PgClient {
 
   /**
-   * Create a simple query.
-   *
-   * @param sql the query SQL
-   * @return the query ready to be executed
-   */
-  PgQuery createQuery(String sql);
-
-  /**
    * Create a prepared query.
    *
    * @param sql the sql
@@ -109,6 +101,6 @@ public interface PgConnection extends PgClient {
   PgConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<Row>>> handler);
 
   @Override
-  PgConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgBatchResult<Row>>> handler);
+  PgConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgResult<Row>>> handler);
 
 }

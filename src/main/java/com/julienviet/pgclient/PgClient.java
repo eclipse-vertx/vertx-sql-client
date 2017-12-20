@@ -123,6 +123,6 @@ public interface PgClient {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  PgClient preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgBatchResult<Row>>> handler);
+  PgClient preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgResult<Row>>> handler);
 
 }

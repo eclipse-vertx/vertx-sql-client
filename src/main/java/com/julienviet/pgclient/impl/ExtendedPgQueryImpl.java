@@ -17,7 +17,7 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.PgQuery;
+import com.julienviet.pgclient.PgCursor;
 import com.julienviet.pgclient.PgResult;
 import com.julienviet.pgclient.Row;
 import com.julienviet.pgclient.Tuple;
@@ -30,20 +30,18 @@ import java.util.*;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class ExtendedPgQueryImpl implements PgQuery {
+public class ExtendedPgQueryImpl implements PgCursor {
 
   private final PgPreparedQueryImpl ps;
   private final Tuple params;
-  private final int fetch;
 
   private String portal;
   private boolean completed;
   private boolean closed;
   private ExtendedQueryResultHandler result;
 
-  ExtendedPgQueryImpl(PgPreparedQueryImpl ps, int fetch, Tuple params) {
+  ExtendedPgQueryImpl(PgPreparedQueryImpl ps, Tuple params) {
     this.ps = ps;
-    this.fetch = fetch;
     this.params = params;
   }
 
@@ -53,14 +51,14 @@ public class ExtendedPgQueryImpl implements PgQuery {
   }
 
   @Override
-  public void execute(Handler<AsyncResult<PgResult<Row>>> handler) {
+  public void read(int count, Handler<AsyncResult<PgResult<Row>>> handler) {
     if (result == null) {
       result = new ExtendedQueryResultHandler(handler);
-      portal = fetch > 0 ? UUID.randomUUID().toString() : null;
-      ps.execute(params, fetch, portal, false, result);
+      portal = UUID.randomUUID().toString();
+      ps.execute(params, count, portal, false, result);
     } else if (result.isSuspended()) {
       result = new ExtendedQueryResultHandler(handler);
-      ps.execute(params, fetch, portal, true, result);
+      ps.execute(params, count, portal, true, result);
     } else {
       throw new IllegalStateException();
     }

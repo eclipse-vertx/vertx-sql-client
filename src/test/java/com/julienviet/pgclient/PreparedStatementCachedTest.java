@@ -34,8 +34,7 @@ public class PreparedStatementCachedTest extends PreparedStatementTestBase {
       for (int i = 0;i < 10;i++) {
         Async async = ctx.async();
         conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
-          PgQuery query = ps.createQuery(Tuple.of(1));
-          query.execute(ctx.asyncAssertSuccess(results -> {
+          ps.execute(Tuple.of(1), ctx.asyncAssertSuccess(results -> {
             ctx.assertEquals(1, results.size());
             Tuple row = results.iterator().next();
             ctx.assertEquals(1, row.getInteger(0));

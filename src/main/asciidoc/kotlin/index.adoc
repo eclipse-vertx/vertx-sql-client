@@ -313,8 +313,7 @@ Prepared queries can be managed:
 connection.prepare("SELECT * FROM users WHERE first_name LIKE \$$1", { ar1 ->
   if (ar1.succeeded()) {
     var pq = ar1.result()
-    var query = pq.createQuery(Tuple.of("julien"))
-    query.execute({ ar2 ->
+    pq.execute(Tuple.of("julien"), { ar2 ->
       if (ar2.succeeded()) {
         // All rows
         var result = ar2.result()
@@ -335,14 +334,14 @@ By default the query will fetch all results, you can override this and define a 
 connection.prepare("SELECT * FROM users WHERE first_name LIKE \$$1", { ar1 ->
   if (ar1.succeeded()) {
     var pq = ar1.result()
-    var query = pq.createQuery(50, Tuple.of("julien"))
-    query.execute({ ar2 ->
+    var cursor = pq.cursor(Tuple.of("julien"))
+    cursor.read(50, { ar2 ->
       if (ar2.succeeded()) {
         var result = ar2.result()
 
         // Check for more ?
-        if (query.hasMore()) {
-          query.execute({ ar3 ->
+        if (cursor.hasMore()) {
+          cursor.read(50, { ar3 ->
             // More results, and so on...
           })
         } else {
@@ -362,11 +361,11 @@ Cursors shall be closed when they are released prematurely:
 connection.prepare("SELECT * FROM users WHERE first_name LIKE \$$1", { ar1 ->
   if (ar1.succeeded()) {
     var pq = ar1.result()
-    var query = pq.createQuery(50, Tuple.of("julien"))
-    query.execute({ ar2 ->
+    var cursor = pq.cursor(Tuple.of("julien"))
+    cursor.read(50, { ar2 ->
       if (ar2.succeeded()) {
         // Close the cursor
-        query.close()
+        cursor.close()
       }
     })
   }

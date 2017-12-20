@@ -30,8 +30,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .createQuery("SELECT null \"NullValue\"")
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT null \"NullValue\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           ctx.assertNull(result.iterator().next().getValue(0));
           ctx.assertNull(result.iterator().next().getValue("NullValue"));
@@ -77,8 +76,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .createQuery("SELECT true \"TrueValue\", false \"FalseValue\"")
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT true \"TrueValue\", false \"FalseValue\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           ctx.assertEquals(true, result.iterator().next().getBoolean(0));
           ctx.assertEquals(true, result.iterator().next().getValue(0));
@@ -157,8 +155,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .createQuery("SELECT 32767::INT2 \"Short\"")
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT 32767::INT2 \"Short\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           ctx.assertEquals((short) 32767, result.iterator().next().getValue(0));
           ctx.assertEquals((short) 32767, result.iterator().next().getValue("Short"));
@@ -204,8 +201,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .createQuery("SELECT 2147483647::INT4 \"Integer\"")
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT 2147483647::INT4 \"Integer\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           ctx.assertEquals(2147483647, result.iterator().next().getInteger(0));
           ctx.assertEquals(2147483647, result.iterator().next().getValue(0));
@@ -251,8 +247,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .createQuery("SELECT 9223372036854775807::INT8 \"Long\"")
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT 9223372036854775807::INT8 \"Long\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           ctx.assertEquals(9223372036854775807L, result.iterator().next().getLong(0));
           ctx.assertEquals(9223372036854775807L, result.iterator().next().getValue(0));
@@ -298,8 +293,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .createQuery("SELECT 3.4028235E38::FLOAT4 \"Float\"")
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT 3.4028235E38::FLOAT4 \"Float\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           ctx.assertEquals(3.4028235E38f, result.iterator().next().getFloat(0));
           ctx.assertEquals(3.4028235E38f, result.iterator().next().getValue(0));
@@ -345,8 +339,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .createQuery("SELECT 1.7976931348623157E308::FLOAT8 \"Double\"")
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT 1.7976931348623157E308::FLOAT8 \"Double\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           ctx.assertEquals(1.7976931348623157E308d, result.iterator().next().getDouble(0));
           ctx.assertEquals(1.7976931348623157E308d, result.iterator().next().getValue(0));
@@ -392,8 +385,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .createQuery("SELECT 919.999999999999999999999999999999999999::NUMERIC \"Numeric\"")
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT 919.999999999999999999999999999999999999::NUMERIC \"Numeric\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           ctx.assertEquals(920.0, result.iterator().next().getDouble(0));
           ctx.assertEquals(920.0, result.iterator().next().getValue(0));
@@ -439,8 +431,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .createQuery("SELECT 'VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X & VERT.X'::NAME \"Name\"")
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT 'VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X & VERT.X'::NAME \"Name\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           String name1 = result.iterator().next().getString(0);
           Object value1 = result.iterator().next().getValue(0);
@@ -493,8 +484,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .createQuery("SELECT 'pgClient'::CHAR(15) \"Char\" ")
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT 'pgClient'::CHAR(15) \"Char\" ", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           String char1 = result.iterator().next().getString(0);
           Object value1 = result.iterator().next().getValue(0);
@@ -546,8 +536,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .createQuery("SELECT 'V'::CHAR \"Char\"")
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT 'V'::CHAR \"Char\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           String char1 = result.iterator().next().getString(0);
           Object value1 = result.iterator().next().getValue(0);
@@ -599,8 +588,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .createQuery("SELECT 'X'::\"char\" \"Character\"")
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT 'X'::\"char\" \"Character\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           ctx.assertEquals('X', result.iterator().next().getValue(0));
           ctx.assertEquals('X', result.iterator().next().getCharacter(0));
@@ -646,8 +634,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .createQuery("SELECT 'pgClient'::VARCHAR(15) \"Driver\"")
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT 'pgClient'::VARCHAR(15) \"Driver\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           ctx.assertEquals("pgClient", result.iterator().next().getString(0));
           ctx.assertEquals("pgClient", result.iterator().next().getValue(0));
@@ -693,8 +680,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .createQuery("SELECT 'Vert.x PostgreSQL Client'::TEXT \"Text\"")
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT 'Vert.x PostgreSQL Client'::TEXT \"Text\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           ctx.assertEquals("Vert.x PostgreSQL Client", result.iterator().next().getString(0));
           ctx.assertEquals("Vert.x PostgreSQL Client", result.iterator().next().getValue(0));
@@ -740,8 +726,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .createQuery("SELECT '50867d3d-0098-4f61-bd31-9309ebf53475'::UUID \"uuid\"")
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT '50867d3d-0098-4f61-bd31-9309ebf53475'::UUID \"uuid\"", ctx.asyncAssertSuccess(result -> {
           String uuid = "50867d3d-0098-4f61-bd31-9309ebf53475";
           ctx.assertEquals(1, result.size());
           ctx.assertEquals(uuid, result.iterator().next().getString(0));
@@ -788,8 +773,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .createQuery("SELECT '1981-05-30'::DATE \"LocalDate\"")
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT '1981-05-30'::DATE \"LocalDate\"", ctx.asyncAssertSuccess(result -> {
           LocalDate ld = LocalDate.parse("1981-05-30");
           ctx.assertEquals(1, result.size());
           ctx.assertEquals(ld, result.iterator().next().getLocalDate(0));
@@ -836,8 +820,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .createQuery("SELECT '17:55:04.905120'::TIME \"LocalTime\"")
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT '17:55:04.905120'::TIME \"LocalTime\"", ctx.asyncAssertSuccess(result -> {
           LocalTime lt = LocalTime.parse("17:55:04.905120");
           ctx.assertEquals(1, result.size());
           ctx.assertEquals(lt, result.iterator().next().getLocalTime(0));
@@ -884,8 +867,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .createQuery("SELECT '17:55:04.90512+03:07'::TIMETZ \"OffsetTime\"")
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT '17:55:04.90512+03:07'::TIMETZ \"OffsetTime\"", ctx.asyncAssertSuccess(result -> {
           OffsetTime ot = OffsetTime.parse("17:55:04.905120+03:07");
           ctx.assertEquals(1, result.size());
           ctx.assertEquals(ot, result.iterator().next().getOffsetTime(0));
@@ -932,8 +914,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .createQuery("SELECT '2017-05-14 19:35:58.237666'::TIMESTAMP \"LocalDateTime\"")
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT '2017-05-14 19:35:58.237666'::TIMESTAMP \"LocalDateTime\"", ctx.asyncAssertSuccess(result -> {
           LocalDateTime ldt = LocalDateTime.parse("2017-05-14T19:35:58.237666");
           ctx.assertEquals(1, result.size());
           ctx.assertEquals(ldt, result.iterator().next().getLocalDateTime(0));
@@ -979,9 +960,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
   public void testTimestampTz(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.createQuery("SET TIME ZONE 'UTC'").execute(ctx.asyncAssertSuccess(v -> {
-        conn.createQuery("SELECT '2017-05-14 22:35:58.237666-03'::TIMESTAMPTZ \"OffsetDateTime\"").execute(
-          ctx.asyncAssertSuccess(result -> {
+      conn.query("SET TIME ZONE 'UTC'", ctx.asyncAssertSuccess(v -> {
+        conn.query("SELECT '2017-05-14 22:35:58.237666-03'::TIMESTAMPTZ \"OffsetDateTime\"", ctx.asyncAssertSuccess(result -> {
             OffsetDateTime odt = OffsetDateTime.parse("2017-05-15T01:35:58.237666Z");
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(odt, result.iterator().next().getOffsetDateTime(0));
@@ -1028,9 +1008,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
   public void testJsonbObject(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.createQuery("SELECT '  {\"str\":\"blah\", \"int\" : 1, \"float\" :" +
-        " 3.5, \"object\": {}, \"array\" : []   }'::JSONB \"JsonObject\"")
-        .execute(ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT '  {\"str\":\"blah\", \"int\" : 1, \"float\" :" +
+        " 3.5, \"object\": {}, \"array\" : []   }'::JSONB \"JsonObject\"", ctx.asyncAssertSuccess(result -> {
           JsonObject object = new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" :" +
             " 3.5, \"object\": {}, \"array\" : []}");
           ctx.assertEquals(1, result.size());
@@ -1077,8 +1056,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
   public void testJsonbArray(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.createQuery("SELECT '  [1,true,null,9.5,\"Hi\" ] '::JSONB").execute(
-        ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT '  [1,true,null,9.5,\"Hi\" ] '::JSONB", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           JsonArray jsonArray = result.iterator().next().getJsonArray(0);
           Object value = result.iterator().next().getValue(0);
@@ -1108,9 +1086,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
   public void testJsonObject(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.createQuery("SELECT '    {\"str\":\"blah\", \"int\" : 1, \"float\" :" +
-        " 3.5, \"object\": {}, \"array\" : []  }    '::JSON \"JsonObject\"").execute(
-        ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT '    {\"str\":\"blah\", \"int\" : 1, \"float\" :" +
+        " 3.5, \"object\": {}, \"array\" : []  }    '::JSON \"JsonObject\"", ctx.asyncAssertSuccess(result -> {
           JsonObject object = new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" :" +
             " 3.5, \"object\": {}, \"array\" : []}");
           ctx.assertEquals(1, result.size());
@@ -1157,8 +1134,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
   public void testJsonArray(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.createQuery("SELECT '     [1,true,null,9.5,\"Hi\"]     '::JSON \"Array\"").execute(
-        ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT '     [1,true,null,9.5,\"Hi\"]     '::JSON \"Array\"", ctx.asyncAssertSuccess(result -> {
           JsonArray array = new JsonArray("[1,true,null,9.5,\"Hi\"]");
           ctx.assertEquals(1, result.size());
           ctx.assertEquals(array, result.iterator().next().getValue(0));
@@ -1204,8 +1180,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
   public void testJsonbScalar(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.createQuery("SELECT ' true '::JSONB \"TrueValue\", ' false '::JSONB \"FalseValue\", ' null '::JSONB \"NullValue\", ' 7.502 '::JSONB \"Number1\", ' 8 '::JSONB \"Number2\", '\" Really Awesome! \"'::JSONB \"Text\"")
-        .execute(ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT ' true '::JSONB \"TrueValue\", ' false '::JSONB \"FalseValue\", ' null '::JSONB \"NullValue\", ' 7.502 '::JSONB \"Number1\", ' 8 '::JSONB \"Number2\", '\" Really Awesome! \"'::JSONB \"Text\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           ctx.assertEquals(true, result.iterator().next().getBoolean(0));
           ctx.assertEquals(true, result.iterator().next().getValue(0));
@@ -1427,8 +1402,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
   public void testJsonScalar(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.createQuery("SELECT ' true '::JSON \"TrueValue\", ' false '::JSON \"FalseValue\", ' null '::JSON \"NullValue\", ' 7.502 '::JSON \"Number1\", ' 8 '::JSON \"Number2\", '\" Really Awesome! \"'::JSON \"Text\"")
-        .execute(ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT ' true '::JSON \"TrueValue\", ' false '::JSON \"FalseValue\", ' null '::JSON \"NullValue\", ' 7.502 '::JSON \"Number1\", ' 8 '::JSON \"Number2\", '\" Really Awesome! \"'::JSON \"Text\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           ctx.assertEquals(true, result.iterator().next().getBoolean(0));
           ctx.assertEquals(true, result.iterator().next().getValue(0));
@@ -1650,8 +1624,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
   public void testBytea(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.createQuery("SELECT '12345678910'::BYTEA \"Buffer1\", '\u00DE\u00AD\u00BE\u00EF'::BYTEA \"Buffer2\"").execute(
-        ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT '12345678910'::BYTEA \"Buffer1\", '\u00DE\u00AD\u00BE\u00EF'::BYTEA \"Buffer2\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           ctx.assertEquals("12345678910", result.iterator().next().getBuffer(0).toString(UTF_8));
           ctx.assertEquals(Buffer.buffer("12345678910"), result.iterator().next().getValue(0));

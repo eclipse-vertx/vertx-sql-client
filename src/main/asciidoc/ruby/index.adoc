@@ -326,8 +326,7 @@ require 'vertx-pg-client/tuple'
 connection.prepare("SELECT * FROM users WHERE first_name LIKE $1") { |ar1_err,ar1|
   if (ar1_err == nil)
     pq = ar1
-    query = pq.create_query(VertxPgClient::Tuple.of("julien"))
-    query.execute() { |ar2_err,ar2|
+    pq.execute(VertxPgClient::Tuple.of("julien")) { |ar2_err,ar2|
       if (ar2_err == nil)
         # All rows
         result = ar2
@@ -349,14 +348,14 @@ require 'vertx-pg-client/tuple'
 connection.prepare("SELECT * FROM users WHERE first_name LIKE $1") { |ar1_err,ar1|
   if (ar1_err == nil)
     pq = ar1
-    query = pq.create_query(50, VertxPgClient::Tuple.of("julien"))
-    query.execute() { |ar2_err,ar2|
+    cursor = pq.cursor(VertxPgClient::Tuple.of("julien"))
+    cursor.read(50) { |ar2_err,ar2|
       if (ar2_err == nil)
         result = ar2
 
         # Check for more ?
-        if (query.has_more?())
-          query.execute() { |ar3_err,ar3|
+        if (cursor.has_more?())
+          cursor.read(50) { |ar3_err,ar3|
             # More results, and so on...
           }
         else
@@ -377,11 +376,11 @@ require 'vertx-pg-client/tuple'
 connection.prepare("SELECT * FROM users WHERE first_name LIKE $1") { |ar1_err,ar1|
   if (ar1_err == nil)
     pq = ar1
-    query = pq.create_query(50, VertxPgClient::Tuple.of("julien"))
-    query.execute() { |ar2_err,ar2|
+    cursor = pq.cursor(VertxPgClient::Tuple.of("julien"))
+    cursor.read(50) { |ar2_err,ar2|
       if (ar2_err == nil)
         # Close the cursor
-        query.close()
+        cursor.close()
       end
     }
   end

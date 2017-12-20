@@ -51,7 +51,7 @@ public class TLSTest extends PgTestBase {
       .setPemTrustOptions(new PemTrustOptions().addCertPath("tls/server.crt"));
     PgClient.connect(vertx, new PgConnectOptions(options).setSsl(true).setTrustAll(true), ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
-      conn.createQuery("SELECT * FROM Fortune WHERE id=1").execute(ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT * FROM Fortune WHERE id=1", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Tuple row = result.iterator().next();
         ctx.assertEquals(1, row.getInteger(0));

@@ -32,6 +32,7 @@ public class PgResultImpl implements PgResult<Row> {
   final List<String> columnNames;
   final RowImpl rows;
   final int size;
+  PgResult<Row> next;
 
   public PgResultImpl(int updated) {
     this.updated = updated;
@@ -80,5 +81,10 @@ public class PgResultImpl implements PgResult<Row> {
         return r;
       }
     };
+  }
+
+  @Override
+  public PgResult<Row> next() {
+    return next;
   }
 }

@@ -55,7 +55,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     PgPool pool = createPool(options, 4);
     for (int i = 0;i < num;i++) {
       pool.getConnection(ctx.asyncAssertSuccess(conn -> {
-        conn.createQuery("SELECT id, randomnumber from WORLD").execute(ar -> {
+        conn.query("SELECT id, randomnumber from WORLD", ar -> {
           if (ar.succeeded()) {
             PgResult result = ar.result();
             ctx.assertEquals(10000, result.size());
@@ -156,9 +156,9 @@ public abstract class PgPoolTestBase extends PgTestBase {
       pool.getConnection(ctx.asyncAssertSuccess(conn1 -> {
         proxyConn.get().close();
         conn1.closeHandler(v2 -> {
-          conn1.createQuery("never-execute").execute(ctx.asyncAssertFailure(err -> {
+          conn1.query("never-read", ctx.asyncAssertFailure(err -> {
             pool.getConnection(ctx.asyncAssertSuccess(conn2 -> {
-              conn2.createQuery("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(v3 -> {
+              conn2.query("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(v3 -> {
                 async.complete();
               }));
             }));

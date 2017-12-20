@@ -251,7 +251,7 @@ public class Examples {
       if (res.succeeded()) {
 
         // Process results
-        PgBatchResult<Row> results = res.result();
+        PgResult<Row> results = res.result();
       } else {
         System.out.println("Batch failed " + res.cause());
       }
@@ -291,8 +291,7 @@ public class Examples {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
       if (ar1.succeeded()) {
         PgPreparedQuery pq = ar1.result();
-        PgQuery query = pq.createQuery(Tuple.of("julien"));
-        query.execute(ar2 -> {
+        pq.execute(Tuple.of("julien"), ar2 -> {
           if (ar2.succeeded()) {
             // All rows
             PgResult<Row> result = ar2.result();
@@ -306,14 +305,14 @@ public class Examples {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
       if (ar1.succeeded()) {
         PgPreparedQuery pq = ar1.result();
-        PgQuery query = pq.createQuery(50, Tuple.of("julien"));
-        query.execute(ar2 -> {
+        PgCursor cursor = pq.cursor(Tuple.of("julien"));
+        cursor.read(50, ar2 -> {
           if (ar2.succeeded()) {
             PgResult<Row> result = ar2.result();
 
             // Check for more ?
-            if (query.hasMore()) {
-              query.execute(ar3 -> {
+            if (cursor.hasMore()) {
+              cursor.read(50, ar3 -> {
                 // More results, and so on...
               });
             } else {
@@ -329,11 +328,11 @@ public class Examples {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
       if (ar1.succeeded()) {
         PgPreparedQuery pq = ar1.result();
-        PgQuery query = pq.createQuery(50, Tuple.of("julien"));
-        query.execute(ar2 -> {
+        PgCursor cursor = pq.cursor(Tuple.of("julien"));
+        cursor.read(50, ar2 -> {
           if (ar2.succeeded()) {
             // Close the cursor
-            query.close();
+            cursor.close();
           }
         });
       }
@@ -378,7 +377,7 @@ public class Examples {
           if (res.succeeded()) {
 
             // Process results
-            PgBatchResult<Row> results = res.result();
+            PgResult<Row> results = res.result();
           } else {
             System.out.println("Batch failed " + res.cause());
           }

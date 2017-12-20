@@ -17,7 +17,6 @@
 
 package com.julienviet.pgclient.impl;
 
-import com.julienviet.pgclient.PgBatchResult;
 import com.julienviet.pgclient.PgResult;
 import com.julienviet.pgclient.Row;
 import io.vertx.core.AsyncResult;
@@ -25,21 +24,27 @@ import io.vertx.core.Handler;
 
 class BatchQueryResultHandler implements QueryResultHandler<Row> {
 
-  private final Handler<AsyncResult<PgBatchResult<Row>>> handler;
-  private PgBatchResultImpl<Row> list;
+  private final Handler<AsyncResult<PgResult<Row>>> handler;
+  private PgResult<Row> head;
+  private PgResultImpl tail;
 
-  public BatchQueryResultHandler(int size, Handler<AsyncResult<PgBatchResult<Row>>> handler) {
+  public BatchQueryResultHandler(int size, Handler<AsyncResult<PgResult<Row>>> handler) {
     this.handler = handler;
-    this.list = new PgBatchResultImpl<>(size);
   }
 
   @Override
   public void handleResult(PgResult<Row> result) {
-    list.add(result);
+    if (head == null) {
+      head = result;
+      tail = (PgResultImpl) result;
+    } else {
+      tail.next = result;
+      tail = (PgResultImpl) result;
+    }
   }
 
   @Override
   public void handle(AsyncResult<Boolean> res) {
-    handler.handle(res.map(list));
+    handler.handle(res.map(head));
   }
 }

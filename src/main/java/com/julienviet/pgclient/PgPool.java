@@ -17,11 +17,9 @@
 
 package com.julienviet.pgclient;
 
-import com.julienviet.pgclient.impl.PgPoolImpl;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 
 import java.util.List;
 
@@ -43,7 +41,7 @@ public interface PgPool extends PgClient {
   PgPool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<Row>>> handler);
 
   @Override
-  PgPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgBatchResult<Row>>> handler);
+  PgPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgResult<Row>>> handler);
 
   /**
    * Get a connection from the pool.

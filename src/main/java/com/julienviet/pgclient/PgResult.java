@@ -56,4 +56,12 @@ public interface PgResult<T> extends Iterable<T> {
    */
   PgIterator<T> iterator();
 
+  /**
+   * Return the next available result or {@code null}, e.g for a simple query that executed multiple queries or for
+   * a batch result.
+   *
+   * @return the next available result or {@code null} if none is available
+   */
+  PgResult<T> next();
+
 }

@@ -40,21 +40,22 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
   }
 
   @Override
-  public PgQuery createQuery(Tuple args) {
+  public PgPreparedQuery execute(Tuple args, Handler<AsyncResult<PgResult<Row>>> handler) {
     String msg = ps.paramDesc.validate((List<Object>) args);
     if (msg != null) {
       throw new IllegalArgumentException(msg);
     }
-    return new ExtendedPgQueryImpl(this, 0, args);
+    execute(args, 0, null, false, new ExtendedQueryResultHandler<>(handler));
+    return  this;
   }
 
   @Override
-  public PgQuery createQuery(int fetch, Tuple args) {
+  public PgCursor cursor(Tuple args) {
     String msg = ps.paramDesc.validate((List<Object>) args);
     if (msg != null) {
       throw new IllegalArgumentException(msg);
     }
-    return new ExtendedPgQueryImpl(this, fetch, args);
+    return new ExtendedPgQueryImpl(this, args);
   }
 
   @Override
@@ -71,7 +72,7 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
     conn.schedule(new ExtendedQueryCommand<>(ps, params, fetch, portal, suspended, new RowResultDecoder(), handler));
   }
 
-  public PgPreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<PgBatchResult<Row>>> handler) {
+  public PgPreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<PgResult<Row>>> handler) {
     for  (Tuple args : argsList) {
       String msg = ps.paramDesc.validate((List<Object>) args);
       if (msg != null) {

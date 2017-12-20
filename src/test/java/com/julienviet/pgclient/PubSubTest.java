@@ -53,7 +53,7 @@ public class PubSubTest extends PgTestBase {
   public void testNotify(TestContext ctx) {
     Async async = ctx.async(2);
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.createQuery("LISTEN the_channel").execute(ctx.asyncAssertSuccess(result1 -> {
+      conn.query("LISTEN the_channel", ctx.asyncAssertSuccess(result1 -> {
         conn.notificationHandler(notification -> {
           ctx.assertEquals("the_channel", notification.getChannel());
           ctx.assertEquals("the message", notification.getPayload());

@@ -69,8 +69,7 @@ public class LargeSelectBenchmark extends PgBenchmarkBase {
         conn.prepare("SELECT id, randomnumber from WORLD", ar2 -> {
           if (ar2.succeeded()) {
             PgPreparedQuery ps = ar2.result();
-            PgQuery query = ps.createQuery();
-            query.execute(ar3 -> {
+            ps.execute(ar3 -> {
               conn.close();
               if (ar3.succeeded()) {
                 latch.complete(ar3.result());

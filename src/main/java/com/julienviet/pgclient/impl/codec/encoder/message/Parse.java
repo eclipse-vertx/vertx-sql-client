@@ -117,7 +117,7 @@ public class Parse implements OutboundMessage {
   @Override
   public String toString() {
     return "Parse{" +
-      "createQuery='" + query + '\'' +
+      "query='" + query + '\'' +
       ", statement='" + statement + '\'' +
       ", paramDataTypes=" + Arrays.toString(paramDataTypes) +
       '}';

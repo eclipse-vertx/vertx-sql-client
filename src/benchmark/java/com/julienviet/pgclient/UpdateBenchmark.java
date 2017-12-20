@@ -44,7 +44,7 @@ public class UpdateBenchmark extends PgBenchmarkBase {
 
   @Benchmark
   public void poolPreparedBatchUpdate(Blackhole blackhole) throws Exception {
-    CompletableFuture<PgBatchResult<Row>> latch = new CompletableFuture<>();
+    CompletableFuture<PgResult<Row>> latch = new CompletableFuture<>();
     pool.preparedBatch("UPDATE world SET randomnumber=$1 WHERE id=$2", batch, ar -> {
       if (ar.succeeded()) {
         latch.complete(ar.result());

@@ -52,7 +52,7 @@ public abstract class PgClientBase<C extends PgClient> implements PgClient {
   }
 
   @Override
-  public C preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgBatchResult<Row>>> handler) {
+  public C preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgResult<Row>>> handler) {
     schedule(new PrepareStatementCommand(sql, ar -> {
       if (ar.succeeded()) {
         schedule(new ExtendedBatchQueryCommand<Row>(

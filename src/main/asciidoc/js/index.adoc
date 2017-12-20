@@ -326,8 +326,7 @@ var Tuple = require("vertx-pg-client-js/tuple");
 connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1, ar1_err) {
   if (ar1_err == null) {
     var pq = ar1;
-    var query = pq.createQuery(Tuple.of("julien"));
-    query.execute(function (ar2, ar2_err) {
+    pq.execute(Tuple.of("julien"), function (ar2, ar2_err) {
       if (ar2_err == null) {
         // All rows
         var result = ar2;
@@ -349,14 +348,14 @@ var Tuple = require("vertx-pg-client-js/tuple");
 connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1, ar1_err) {
   if (ar1_err == null) {
     var pq = ar1;
-    var query = pq.createQuery(50, Tuple.of("julien"));
-    query.execute(function (ar2, ar2_err) {
+    var cursor = pq.cursor(Tuple.of("julien"));
+    cursor.read(50, function (ar2, ar2_err) {
       if (ar2_err == null) {
         var result = ar2;
 
         // Check for more ?
-        if (query.hasMore()) {
-          query.execute(function (ar3, ar3_err) {
+        if (cursor.hasMore()) {
+          cursor.read(50, function (ar3, ar3_err) {
             // More results, and so on...
           });
         } else {
@@ -377,11 +376,11 @@ var Tuple = require("vertx-pg-client-js/tuple");
 connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1, ar1_err) {
   if (ar1_err == null) {
     var pq = ar1;
-    var query = pq.createQuery(50, Tuple.of("julien"));
-    query.execute(function (ar2, ar2_err) {
+    var cursor = pq.cursor(Tuple.of("julien"));
+    cursor.read(50, function (ar2, ar2_err) {
       if (ar2_err == null) {
         // Close the cursor
-        query.close();
+        cursor.close();
       }
     });
   }

@@ -22,31 +22,29 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
 /**
- * A general purpose query to execute.
+ * A cursor that reads progressively the rows from Postgres, it is usefull for reading very large result.
  */
 @VertxGen
-public interface PgQuery {
+public interface PgCursor {
 
   /**
-   * Execute the query, the result is provided asynchronously to the {@code handler}.
+   * Read rows from the cursor, the result is provided asynchronously to the {@code handler}.
    *
+   * @param count the amount of rows to read
    * @param handler the handler for the result
    */
-  void execute(Handler<AsyncResult<PgResult<Row>>> handler);
+  void read(int count, Handler<AsyncResult<PgResult<Row>>> handler);
 
   /**
-   * Returns {@code true} when the query has results in progress and the {@link #execute} should be called to retrieve
+   * Returns {@code true} when the cursor has results in progress and the {@link #execute} should be called to retrieve
    * them.
-   * <p/>
-   * This happens for multiple statement executed with {@link PgConnection#createQuery(String) simple queries} or
-   * for prepared queries executed with a fetch size.
    *
-   * @return whether the query has more results,
+   * @return whether the cursor has more results,
    */
   boolean hasMore();
 
   /**
-   * Release the underlying cursor.
+   * Release the cursor.
    * <p/>
    * It should be called for prepared queries executed with a fetch size.
    */
