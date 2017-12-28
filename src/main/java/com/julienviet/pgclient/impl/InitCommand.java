@@ -55,7 +55,7 @@ public class InitCommand extends CommandBase<Connection> {
   @Override
   void exec(SocketConnection c) {
     conn = c;
-    conn.decodeQueue.add(new DecodeContext(false, null, null, null));
+    conn.decodeQueue.add(new DecodeContext(false, null));
     c.writeMessage(new StartupMessage(username, database));
   }
 

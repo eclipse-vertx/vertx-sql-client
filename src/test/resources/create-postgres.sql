@@ -74,3 +74,9 @@ CREATE TABLE TxTest (
   id integer NOT NULL,
   PRIMARY KEY (id)
 );
+
+CREATE OR REPLACE FUNCTION test_function(i INT) RETURNS INT AS $$
+BEGIN
+  RETURN i + 1;
+END;
+$$ LANGUAGE plpgsql;

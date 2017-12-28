@@ -14,13 +14,19 @@
  * limitations under the License.
  *
  */
+package com.julienviet.pgclient.impl.codec.decoder.message;
 
-package com.julienviet.pgclient.impl.codec;
+import com.julienviet.pgclient.impl.codec.decoder.InboundMessage;
 
-import com.julienviet.pgclient.impl.codec.decoder.message.RowDescription;
+public class FunctionCallResponse implements InboundMessage {
 
-public class DecodeContext {
-  public boolean query;
-  public DataFormat dataFormat;
-  public RowDescription rowDesc;
+  private final Object value;
+
+  public FunctionCallResponse(Object value) {
+    this.value = value;
+  }
+
+  public Object value() {
+    return value;
+  }
 }

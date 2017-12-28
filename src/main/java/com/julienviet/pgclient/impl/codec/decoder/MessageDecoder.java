@@ -149,8 +149,12 @@ public class MessageDecoder extends ByteToMessageDecoder {
         decodeNotificationResponse(in, out);
         break;
       }
+      case FUNCTION_RESULT: {
+        decodeFunctionResult(in, out);
+        break;
+      }
       default: {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Not implemented " + id);
       }
     }
   }
@@ -158,7 +162,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
   private void decodePortalSuspended(List<Object> out) {
     DecodeContext ctx = decodeQueue.peek();
     ctx.current = null;
-    PgResult result = ctx.decoder.complete(0);
+    PgResult result = ctx.resultDecoder.complete(0);
     out.add(new PortalSuspended(result));
   }
 
@@ -167,10 +171,10 @@ public class MessageDecoder extends ByteToMessageDecoder {
     ctx.current = null;
     int updated = decodeCommandComplete(in);
     CommandComplete complete;
-    if (ctx.decoder == null) {
+    if (ctx.resultDecoder == null) {
       complete = new CommandComplete(new PgResultImpl(updated));
     } else {
-      complete = new CommandComplete(ctx.decoder.complete(updated));
+      complete = new CommandComplete(ctx.resultDecoder.complete(updated));
     }
     out.add(complete);
   }
@@ -181,10 +185,17 @@ public class MessageDecoder extends ByteToMessageDecoder {
     if (desc == null) {
       desc = decodeCtx.peekDesc ? rowDesc : decodeCtx.rowDesc;
       decodeCtx.current = desc;
-      decodeCtx.decoder.init(decodeCtx.current);
+      decodeCtx.resultDecoder.init(decodeCtx.current);
     }
     int len = in.readUnsignedShort();
-    decodeCtx.decoder.decodeRow(len, in);
+    decodeCtx.resultDecoder.decodeRow(len, in);
+  }
+
+  private void decodeFunctionResult(ByteBuf in, List<Object> out) {
+    int len = (int) in.readUnsignedInt();
+    DecodeContext ctx = decodeQueue.peek();
+    Object value = ctx.returnType.binaryDecoder.decode(len, in);
+    out.add(new FunctionCallResponse(value));
   }
 
   private void decodeRowDescription(ByteBuf in, List<Object> out) {

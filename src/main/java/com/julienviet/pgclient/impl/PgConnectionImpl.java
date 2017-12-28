@@ -18,7 +18,10 @@
 package com.julienviet.pgclient.impl;
 
 import com.julienviet.pgclient.*;
+import com.julienviet.pgclient.impl.codec.DataType;
 import io.vertx.core.*;
+
+import java.util.stream.IntStream;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -138,6 +141,31 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
         handler.handle(Future.failedFuture(ar.cause()));
       }
     }));
+    return this;
+  }
+
+  public <R> PgConnection getFunction(String name, Handler<AsyncResult<PgFunction<R>>> handler) {
+    query("SELECT oid, proargtypes, pronargdefaults, prorettype FROM pg_proc WHERE proname='" + name + "'", ar -> {
+      if (ar.succeeded()) {
+        PgResult<Row> rows = ar.result();
+        if (rows.size() >= 1) {
+          Row row = rows.iterator().next();
+          int oid = row.getInteger(0);
+          int[] argTypeOids = (int[]) row.getValue(1);
+          DataType<?>[] paramTypes = IntStream.of(argTypeOids).mapToObj(DataType::valueOf).toArray(DataType[]::new);
+          int defaultArgsCount = row.getInteger(2);
+          int returnTypeOid = row.getInteger(3);
+          DataType<?> returnType = DataType.valueOf(returnTypeOid);
+          handler.handle(Future.succeededFuture(new PgFunction<>(
+            conn, oid, paramTypes, returnType
+          )));
+        } else {
+          handler.handle(Future.failedFuture("Function " + name + " does not exists"));
+        }
+      } else {
+        handler.handle(Future.failedFuture(ar.cause()));
+      }
+    });
     return this;
   }
 }

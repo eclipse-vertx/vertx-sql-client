@@ -17,6 +17,7 @@
 
 package com.julienviet.pgclient;
 
+import com.julienviet.pgclient.impl.PgConnectionImpl;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.Async;
@@ -112,6 +113,35 @@ public abstract class PgConnectionTestBase extends PgTestBase {
           ctx.assertEquals(row.getValue("randomnumber"), row.getValue(1));
         }
         async.complete();
+      }));
+    }));
+  }
+
+  @Test
+  public void testCallable(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      PgConnectionImpl connInternal = (PgConnectionImpl) conn;
+      connInternal.<Integer>getFunction("test_function", ctx.asyncAssertSuccess(fx -> {
+        fx.call(Tuple.of(4), ctx.asyncAssertSuccess(ret -> {
+          ctx.assertEquals(5, ret);
+          async.complete();
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testCallableError(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      PgConnectionImpl connInternal = (PgConnectionImpl) conn;
+      connInternal.<Integer>getFunction("test_function", ctx.asyncAssertSuccess(fx -> {
+        fx.call(Tuple.of(), ctx.asyncAssertFailure(err -> {
+          PgException ex = (PgException) err;
+          ctx.assertEquals("08P01", ex.getCode());
+          async.complete();
+        }));
       }));
     }));
   }

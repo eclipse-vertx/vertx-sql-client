@@ -17,8 +17,12 @@
 
 package com.julienviet.pgclient.impl.codec.util;
 
+import com.julienviet.pgclient.impl.codec.DataType;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -69,5 +73,35 @@ public class Util {
       "] cannot be coerced to [" + types
       .map(Class::getSimpleName)
       .collect(Collectors.joining(", ")) + "]";
+  }
+
+  public static void encodeBinaryArguments(ByteBuf out, DataType<?>[] dataTypes, List<Object> arguments) {
+    if(arguments == null || arguments.isEmpty()) {
+      // No parameter formats
+      out.writeShort(0);
+      // No parameter values
+      out.writeShort(0);
+    } else {
+
+      // byte[][] foobar = Util.paramValues(paramValues);
+      int len = arguments.size();
+      out.writeShort(len);
+      // Parameter formats
+      for (int c = 0;c < len;c++) {
+        // for now each format is Binary
+        out.writeShort(1);
+      }
+      out.writeShort(len);
+      for (int c = 0;c < len;c++) {
+        Object param = arguments.get(c);
+        if (param == null) {
+          // NULL value
+          out.writeInt(-1);
+        } else {
+          DataType dataType = dataTypes[c];
+          dataType.binaryEncoder.encode(param, out);
+        }
+      }
+    }
   }
 }

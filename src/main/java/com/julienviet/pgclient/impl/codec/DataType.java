@@ -37,6 +37,7 @@ import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
+import java.util.regex.Pattern;
 
 import static com.julienviet.pgclient.impl.codec.formatter.DateTimeFormatter.*;
 import static com.julienviet.pgclient.impl.codec.formatter.TimeFormatter.*;
@@ -465,7 +466,36 @@ public class DataType<T> {
   public static DataType<Object> HSTORE = new DataType<>(Object.class,33670);
 
   // Object identifier
-  public static DataType<Object> OID = new DataType<>(Object.class,26);
+  public static DataType<Integer> OID = new DataType<Integer>(Integer.class,26) {
+    @Override
+    public Integer decodeBinary(int len, ByteBuf buff) {
+      return super.decodeBinary(len, buff);
+    }
+    @Override
+    public void encodeBinary(Integer value, ByteBuf buff) {
+      super.encodeBinary(value, buff);
+    }
+    @Override
+    public Integer decodeText(int len, ByteBuf buff) {
+      return (int)DataType.decodeDecStringToLong(len, buff);
+    }
+    @Override
+    public void encodeText(Integer value, ByteBuf buff) {
+      super.encodeText(value, buff);
+    }
+  };
+
+  private static final Pattern WHITESPACE_PATTERN = Pattern.compile(" ");
+
+  public static DataType<int[]> OID_VECTOR = new DataType<int[]>(int[].class,30) {
+    @Override
+    public int[] decodeText(int len, ByteBuf buff) {
+      CharSequence s = buff.readCharSequence(len, StandardCharsets.US_ASCII);
+      return WHITESPACE_PATTERN.splitAsStream(s).mapToInt(Integer::parseInt).toArray();
+    }
+  };
+
+
   public static DataType<Object> OID_ARRAY = new DataType<>(Object.class,1028);
   public static DataType<Object> VOID = new DataType<>(Object.class,2278);
   public static DataType<Object> UNKNOWN = new DataType<>(Object.class,705);
@@ -566,7 +596,7 @@ public class DataType<T> {
       XML, XML_ARRAY,
       POINT, BOX,
       HSTORE,
-      OID, OID_ARRAY,
+      OID, OID_VECTOR, OID_ARRAY,
       VOID,
       UNKNOWN
     };
@@ -608,8 +638,8 @@ public class DataType<T> {
     return javaType;
   }
 
-  public static DataType valueOf(int id) {
-    DataType value = oidToDataType.get(id);
+  public static DataType valueOf(int oid) {
+    DataType value = oidToDataType.get(oid);
     return value != null ? value : DataType.UNKNOWN;
   }
 

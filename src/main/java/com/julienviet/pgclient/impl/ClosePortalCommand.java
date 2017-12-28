@@ -38,7 +38,7 @@ class ClosePortalCommand extends CommandBase<Void> {
 
   @Override
   void exec(SocketConnection conn) {
-    conn.decodeQueue.add(new DecodeContext(false, null, null, null));
+    conn.decodeQueue.add(new DecodeContext(false, null));
     conn.writeMessage(new Close().setPortal(portal));
     conn.writeMessage(Sync.INSTANCE);
   }

@@ -21,6 +21,7 @@ import com.julienviet.pgclient.impl.codec.DataType;
 import com.julienviet.pgclient.impl.codec.decoder.message.BindComplete;
 import com.julienviet.pgclient.impl.codec.decoder.message.ErrorResponse;
 import com.julienviet.pgclient.impl.codec.encoder.OutboundMessage;
+import com.julienviet.pgclient.impl.codec.util.Util;
 import io.netty.buffer.ByteBuf;
 
 import java.nio.charset.StandardCharsets;
@@ -128,34 +129,7 @@ public class Bind implements OutboundMessage {
     } else {
       out.writeLong(statement);
     }
-    if(paramValues == null) {
-      // No parameter formats
-      out.writeShort(0);
-      // No parameter values
-      out.writeShort(0);
-    } else {
-
-      // byte[][] foobar = Util.paramValues(paramValues);
-      int len = paramValues.size();
-      out.writeShort(len);
-      // Parameter formats
-      for (int c = 0;c < len;c++) {
-        // for now each format is Binary
-        out.writeShort(1);
-      }
-      out.writeShort(len);
-      for (int c = 0;c < len;c++) {
-        Object param = paramValues.get(c);
-        if (param == null) {
-          // NULL value
-          out.writeInt(-1);
-        } else {
-          DataType dataType = dataTypes[c];
-          dataType.binaryEncoder.encode(param, out);
-        }
-      }
-    }
-
+    Util.encodeBinaryArguments(out, dataTypes, paramValues);
     // Result columns are all in Binary format
     out.writeShort(1);
     out.writeShort(1);

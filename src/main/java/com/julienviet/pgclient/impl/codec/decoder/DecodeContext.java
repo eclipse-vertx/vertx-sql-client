@@ -18,6 +18,7 @@
 package com.julienviet.pgclient.impl.codec.decoder;
 
 import com.julienviet.pgclient.impl.codec.DataFormat;
+import com.julienviet.pgclient.impl.codec.DataType;
 import com.julienviet.pgclient.impl.codec.decoder.message.RowDescription;
 
 public class DecodeContext {
@@ -25,13 +26,31 @@ public class DecodeContext {
   final boolean peekDesc;
   final RowDescription rowDesc;
   final DataFormat dataFormat;
-  final ResultDecoder decoder;
+  final ResultDecoder resultDecoder;
+  final DataType<?> returnType;
   RowDescription current;
 
-  public DecodeContext(boolean peekDesc, RowDescription rowDesc, DataFormat dataFormat, ResultDecoder decoder) {
+  public DecodeContext(boolean peekDesc, RowDescription rowDesc) {
+    this.peekDesc = peekDesc;
+    this.rowDesc = rowDesc;
+    this.dataFormat = null;
+    this.returnType = null;
+    this.resultDecoder = null;
+  }
+
+  public DecodeContext(boolean peekDesc, RowDescription rowDesc, DataFormat dataFormat, ResultDecoder resultDecoder) {
     this.peekDesc = peekDesc;
     this.rowDesc = rowDesc;
     this.dataFormat = dataFormat;
-    this.decoder = decoder;
+    this.returnType = null;
+    this.resultDecoder = resultDecoder;
+  }
+
+  public DecodeContext(boolean peekDesc, RowDescription rowDesc, DataFormat dataFormat, DataType<?> returnType) {
+    this.peekDesc = peekDesc;
+    this.rowDesc = rowDesc;
+    this.dataFormat = dataFormat;
+    this.resultDecoder = null;
+    this.returnType = returnType;
   }
 }

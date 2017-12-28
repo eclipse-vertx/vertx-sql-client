@@ -1,0 +1,49 @@
+/*
+ * Copyright (C) 2017 Julien Viet
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+package com.julienviet.pgclient.impl.codec.encoder.message;
+
+import com.julienviet.pgclient.Tuple;
+import com.julienviet.pgclient.impl.codec.DataType;
+import com.julienviet.pgclient.impl.codec.encoder.OutboundMessage;
+import com.julienviet.pgclient.impl.codec.util.Util;
+import io.netty.buffer.ByteBuf;
+
+import java.util.List;
+
+public class FunctionCall implements OutboundMessage {
+
+  private final int oid;
+  private final Tuple params;
+  private final DataType[] dataTypes;
+
+  public FunctionCall(int oid, Tuple params, DataType[] dataTypes) {
+    this.oid = oid;
+    this.params = params;
+    this.dataTypes = dataTypes;
+  }
+
+  @Override
+  public void encode(ByteBuf out) {
+    int pos = out.writerIndex();
+    out.writeByte('F');
+    out.writeInt(0);
+    out.writeInt(oid);
+    Util.encodeBinaryArguments(out, dataTypes, (List<Object>) params);
+    out.writeShort(1); // Binary
+    out.setInt(pos + 1, out.writerIndex() - pos - 1);
+  }
+}

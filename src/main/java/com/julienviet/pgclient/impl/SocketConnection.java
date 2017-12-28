@@ -223,7 +223,6 @@ public class SocketConnection implements Connection {
   }
 
   private void handleMessage(Object msg) {
-    // System.out.println("<-- " + msg);
     if (msg instanceof NotificationResponse) {
       handleNotification((NotificationResponse) msg);
     } else {
