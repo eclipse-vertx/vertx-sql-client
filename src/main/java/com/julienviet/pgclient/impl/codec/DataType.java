@@ -399,21 +399,7 @@ public class DataType<T> {
     public Buffer decodeText(int len, ByteBuf buff) {
       buff.readByte(); // \
       buff.readByte(); // x
-      len = (len - 2) / 2;
-      byte[] bytes = new byte[len];
-      for (int i = 0;i < len;i++) {
-        byte b0 = decodeHexChar(buff.readByte());
-        byte b1 = decodeHexChar(buff.readByte());
-        bytes[i] = (byte)(b0 * 16 + b1);
-      }
-      return Buffer.buffer(bytes);
-    }
-    private byte decodeHexChar(byte b) {
-      if (b >= '0' && b <= '9') {
-        return (byte)(b - '0');
-      } else {
-        return (byte)(b - 'a' + 10);
-      }
+      return Buffer.buffer(DataType.decodeHexStringToBytes(len - 2, buff));
     }
     @Override
     public void encodeText(Buffer value, ByteBuf buff) {
@@ -485,8 +471,8 @@ public class DataType<T> {
   public static DataType<Object> UNKNOWN = new DataType<>(Object.class,705);
 
   /**
-   * Decode an hex string with the specified {@code length } decoded from the current {@code buff} starting
-   * from the buffer readable index.
+   * Decode the specified {@code buff} starting with the specified {@code length } from the buffer readable index
+   * to a long.
    *
    * @param len the hex string length
    * @param buff the byte buff to read from
@@ -496,10 +482,33 @@ public class DataType<T> {
     long value = 0;
     for (int i = 0;i < len;i++) {
       byte ch = buff.readByte();
-      byte nibble = (byte)(((ch & 0x1F) + ((ch >> 6) * 0x19) - 0x10) & 0x0F);
+      byte nibble = decodeHexChar(ch);
       value = value * 10 + nibble;
     }
     return value;
+  }
+
+  /**
+   * Decode the specified {@code buff} starting with the specified {@code length } from the buffer readable index
+   * to a byte array.
+   *
+   * @param len the hex string length
+   * @param buff the byte buff to read from
+   * @return the decoded value as a byte array
+   */
+  private static byte[] decodeHexStringToBytes(int len, ByteBuf buff) {
+    len = len >> 1;
+    byte[] bytes = new byte[len];
+    for (int i = 0;i < len;i++) {
+      byte b0 = decodeHexChar(buff.readByte());
+      byte b1 = decodeHexChar(buff.readByte());
+      bytes[i] = (byte)(b0 * 16 + b1);
+    }
+    return bytes;
+  }
+
+  private static byte decodeHexChar(byte ch) {
+    return (byte)(((ch & 0x1F) + ((ch >> 6) * 0x19) - 0x10) & 0x0F);
   }
 
   private static Object decodeJson(String value) {
