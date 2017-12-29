@@ -90,7 +90,7 @@ public class DataType<T> {
   public static final DataType<Short> INT2 = new DataType<Short>(Short.class,21) {
     @Override
     public Short decodeText(int len, ByteBuf buff) {
-      return (short)DataType.decodeInt(len, buff);
+      return (short)DataType.decodeHexStringToLong(len, buff);
     }
     @Override
     public Short decodeBinary(int len, ByteBuf buff) {
@@ -109,7 +109,7 @@ public class DataType<T> {
   public static final DataType<Integer> INT4 = new DataType<Integer>(Integer.class,23) {
     @Override
     public Integer decodeText(int len, ByteBuf buff) {
-      return (int)DataType.decodeInt(len, buff);
+      return (int)DataType.decodeHexStringToLong(len, buff);
     }
     @Override
     public Integer decodeBinary(int len, ByteBuf buff) {
@@ -128,7 +128,7 @@ public class DataType<T> {
   public static final DataType<Long> INT8 = new DataType<Long>(Long.class,20) {
     @Override
     public Long decodeText(int len, ByteBuf buff) {
-      return DataType.decodeInt(len, buff);
+      return DataType.decodeHexStringToLong(len, buff);
     }
     @Override
     public Long decodeBinary(int len, ByteBuf buff) {
@@ -484,10 +484,20 @@ public class DataType<T> {
   public static DataType<Object> VOID = new DataType<>(Object.class,2278);
   public static DataType<Object> UNKNOWN = new DataType<>(Object.class,705);
 
-  private static long decodeInt(int len, ByteBuf buff) {
+  /**
+   * Decode an hex string with the specified {@code length } decoded from the current {@code buff} starting
+   * from the buffer readable index.
+   *
+   * @param len the hex string length
+   * @param buff the byte buff to read from
+   * @return the decoded value as a long
+   */
+  private static long decodeHexStringToLong(int len, ByteBuf buff) {
     long value = 0;
     for (int i = 0;i < len;i++) {
-      value = value * 10 + (buff.readUnsignedByte() -'0'); // HOT
+      byte ch = buff.readByte();
+      byte nibble = (byte)(((ch & 0x1F) + ((ch >> 6) * 0x19) - 0x10) & 0x0F);
+      value = value * 10 + nibble;
     }
     return value;
   }
