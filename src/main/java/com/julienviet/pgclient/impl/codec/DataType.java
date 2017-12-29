@@ -90,7 +90,7 @@ public class DataType<T> {
   public static final DataType<Short> INT2 = new DataType<Short>(Short.class,21) {
     @Override
     public Short decodeText(int len, ByteBuf buff) {
-      return (short)DataType.decodeHexStringToLong(len, buff);
+      return (short)DataType.decodeDecStringToLong(len, buff);
     }
     @Override
     public Short decodeBinary(int len, ByteBuf buff) {
@@ -109,7 +109,7 @@ public class DataType<T> {
   public static final DataType<Integer> INT4 = new DataType<Integer>(Integer.class,23) {
     @Override
     public Integer decodeText(int len, ByteBuf buff) {
-      return (int)DataType.decodeHexStringToLong(len, buff);
+      return (int)DataType.decodeDecStringToLong(len, buff);
     }
     @Override
     public Integer decodeBinary(int len, ByteBuf buff) {
@@ -128,7 +128,7 @@ public class DataType<T> {
   public static final DataType<Long> INT8 = new DataType<Long>(Long.class,20) {
     @Override
     public Long decodeText(int len, ByteBuf buff) {
-      return DataType.decodeHexStringToLong(len, buff);
+      return DataType.decodeDecStringToLong(len, buff);
     }
     @Override
     public Long decodeBinary(int len, ByteBuf buff) {
@@ -471,26 +471,26 @@ public class DataType<T> {
   public static DataType<Object> UNKNOWN = new DataType<>(Object.class,705);
 
   /**
-   * Decode the specified {@code buff} starting with the specified {@code length } from the buffer readable index
-   * to a long.
+   * Decode the specified {@code buff} formatted as a decimal string starting at the readable index
+   * with the specified {@code length} to a long.
    *
    * @param len the hex string length
    * @param buff the byte buff to read from
    * @return the decoded value as a long
    */
-  private static long decodeHexStringToLong(int len, ByteBuf buff) {
+  private static long decodeDecStringToLong(int len, ByteBuf buff) {
     long value = 0;
     for (int i = 0;i < len;i++) {
       byte ch = buff.readByte();
-      byte nibble = decodeHexChar(ch);
+      byte nibble = (byte)(ch - '0');
       value = value * 10 + nibble;
     }
     return value;
   }
 
   /**
-   * Decode the specified {@code buff} starting with the specified {@code length } from the buffer readable index
-   * to a byte array.
+   * Decode the specified {@code buff} formatted as an hex string starting at the buffer readable index
+   * with the specified {@code length} to a byte array.
    *
    * @param len the hex string length
    * @param buff the byte buff to read from
