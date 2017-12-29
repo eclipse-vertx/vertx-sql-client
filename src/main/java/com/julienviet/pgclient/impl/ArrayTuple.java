@@ -48,29 +48,45 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Integer getInteger(int pos) {
-    if(get(pos) instanceof Integer)
-      return (Integer) get(pos);
+    Object val = get(pos);
+    if(val instanceof Integer) {
+      return (Integer) val;
+    } else if (val instanceof Number) {
+      return ((Number) val).intValue();
+    }
     return null;
   }
 
   @Override
   public Long getLong(int pos) {
-    if(get(pos) instanceof Long)
-      return (Long) get(pos);
+    Object val = get(pos);
+    if(val instanceof Long) {
+      return (Long) val;
+    } else if (val instanceof Number) {
+      return ((Number) val).longValue();
+    }
     return null;
   }
 
   @Override
   public Float getFloat(int pos) {
-    if(get(pos) instanceof Float)
-      return (Float) get(pos);
+    Object val = get(pos);
+    if(val instanceof Float) {
+      return (Float) val;
+    } else if (val instanceof Number) {
+      return ((Number) val).floatValue();
+    }
     return null;
   }
 
   @Override
   public Double getDouble(int pos) {
-    if(get(pos) instanceof Double)
-      return (Double) get(pos);
+    Object val = get(pos);
+    if(val instanceof Double) {
+      return (Double) val;
+    } else if (val instanceof Number) {
+      return ((Number) val).doubleValue();
+    }
     return null;
   }
 

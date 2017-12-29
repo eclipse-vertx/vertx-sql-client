@@ -30,6 +30,8 @@ import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.Date;
 
+import static org.junit.Assert.*;
+
 public class TupleTest {
 
   @Test
@@ -53,5 +55,34 @@ public class TupleTest {
     Assert.assertNull(tuple.getValue(5));
     Assert.assertNull(tuple.getValue(6));
     Assert.assertNull(tuple.getValue(7));
+  }
+
+  @Test
+  public void testNumbers() {
+    Tuple tuple = Tuple.of((byte)127, (short)4000, 1_000_000, 1_000_000_000L, 4.5F, 4.5D);
+    assertEquals(127, (int)tuple.getInteger(0));
+    assertEquals(4000, (int)tuple.getInteger(1));
+    assertEquals(1_000_000, (int)tuple.getInteger(2));
+    assertEquals(1_000_000_000, (int)tuple.getInteger(3));
+    assertEquals(4, (int)tuple.getInteger(4));
+    assertEquals(4, (int)tuple.getInteger(5));
+    assertEquals(127, (long)tuple.getLong(0));
+    assertEquals(4000, (long)tuple.getLong(1));
+    assertEquals(1_000_000, (long)tuple.getLong(2));
+    assertEquals(1_000_000_000, (long)tuple.getLong(3));
+    assertEquals(4, (long)tuple.getLong(4));
+    assertEquals(4, (long)tuple.getLong(5));
+    assertEquals(127, tuple.getFloat(0), 0.0f);
+    assertEquals(4000, tuple.getFloat(1), 0.0f);
+    assertEquals(1_000_000, tuple.getFloat(2), 0.0f);
+    assertEquals(1_000_000_000, tuple.getFloat(3), 0.0f);
+    assertEquals(4.5, tuple.getFloat(4), 0.0f);
+    assertEquals(4.5, tuple.getFloat(5), 0.0f);
+    assertEquals(127, tuple.getDouble(0), 0.0D);
+    assertEquals(4000, tuple.getDouble(1), 0.0D);
+    assertEquals(1_000_000, tuple.getDouble(2), 0.0D);
+    assertEquals(1_000_000_000, tuple.getDouble(3), 0.0D);
+    assertEquals(4.5, tuple.getDouble(4), 0.0D);
+    assertEquals(4.5, tuple.getDouble(5), 0.0D);
   }
 }
