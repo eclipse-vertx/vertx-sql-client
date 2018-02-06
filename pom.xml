@@ -179,11 +179,24 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
           <configuration>
+            <sourcepath>${project.build.sourceDirectory};${project.build.directory}/generated-sources/annotations</sourcepath>
             <sourceFileIncludes>
               <sourceFileInclude>com/julienviet/**/*.java</sourceFileInclude>
             </sourceFileIncludes>
+            <sourceFileExcludes>
+              <sourceFileExclude>com/julienviet/groovy/**/*.java</sourceFileExclude>
+              <sourceFileExclude>**/package-info.java</sourceFileExclude>
+              <sourceFileExclude>**/impl/**</sourceFileExclude>
+            </sourceFileExcludes>
+            <detectLinks/>
+            <detectJavaApiLink/>
             <links>
               <link>http://vertx.io/docs/apidocs/</link>
+              <link>http://reactivex.io/RxJava/1.x/javadoc/</link>
+              <link>http://reactivex.io/RxJava/javadoc/</link>
+              <link>http://fasterxml.github.com/jackson-annotations/javadoc/2.9/</link>
+              <link>http://fasterxml.github.io/jackson-core/javadoc/2.9/</link>
+              <link>http://fasterxml.github.io/jackson-databind/javadoc/2.9/</link>
             </links>
           </configuration>
         </plugin>
