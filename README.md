@@ -76,6 +76,7 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -> {
 ## Web-site docs
 
 * [Java docs](http://www.julienviet.com/reactive-pg-client/guide/java/index.html)
+* [Javadoc](https://www.julienviet.com/reactive-pg-client/apidocs/index.html)
 * [Kotlin docs](http://www.julienviet.com/reactive-pg-client/guide/kotlin/index.html)
 * [Groovy docs](http://www.julienviet.com/reactive-pg-client/guide/groovy/index.html)
 * [Ruby docs](http://www.julienviet.com/reactive-pg-client/guide/ruby/index.html)
