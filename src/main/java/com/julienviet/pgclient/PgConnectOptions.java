@@ -20,17 +20,9 @@ package com.julienviet.pgclient;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.JdkSSLEngineOptions;
-import io.vertx.core.net.JksOptions;
-import io.vertx.core.net.KeyCertOptions;
-import io.vertx.core.net.NetClientOptions;
-import io.vertx.core.net.OpenSSLEngineOptions;
-import io.vertx.core.net.PemKeyCertOptions;
-import io.vertx.core.net.PemTrustOptions;
-import io.vertx.core.net.PfxOptions;
-import io.vertx.core.net.ProxyOptions;
-import io.vertx.core.net.SSLEngineOptions;
-import io.vertx.core.net.TrustOptions;
+import io.vertx.core.net.*;
+
+import java.util.Set;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -332,5 +324,10 @@ public class PgConnectOptions extends NetClientOptions {
   @Override
   public PgConnectOptions setTcpQuickAck(boolean tcpQuickAck) {
     return (PgConnectOptions) super.setTcpQuickAck(tcpQuickAck);
+  }
+
+  @Override
+  public PgConnectOptions setEnabledSecureTransportProtocols(Set<String> enabledSecureTransportProtocols) {
+    return (PgConnectOptions) super.setEnabledSecureTransportProtocols(enabledSecureTransportProtocols);
   }
 }

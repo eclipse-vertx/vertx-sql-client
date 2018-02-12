@@ -130,9 +130,7 @@ fun PgConnectOptions(
     }
   }
   if (enabledSecureTransportProtocols != null) {
-    for (item in enabledSecureTransportProtocols) {
-      this.addEnabledSecureTransportProtocol(item)
-    }
+    this.setEnabledSecureTransportProtocols(enabledSecureTransportProtocols.toSet())
   }
   if (host != null) {
     this.setHost(host)
