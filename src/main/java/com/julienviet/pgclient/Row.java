@@ -28,6 +28,7 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.temporal.Temporal;
+import java.util.UUID;
 
 @VertxGen
 public interface Row extends Tuple {
@@ -173,5 +174,14 @@ public interface Row extends Tuple {
    */
   @GenIgnore
   OffsetDateTime getOffsetDateTime(String name);
+
+  /**
+   * Get {@link java.util.UUID} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  UUID getUUID(String name);
 
 }

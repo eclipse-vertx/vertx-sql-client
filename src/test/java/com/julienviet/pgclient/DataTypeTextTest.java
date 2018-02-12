@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.util.UUID;
 
 import static java.nio.charset.StandardCharsets.*;
 
@@ -67,6 +68,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(row.getLocalDateTime("NullValue"));
           ctx.assertNull(row.getOffsetDateTime(0));
           ctx.assertNull(row.getOffsetDateTime("NullValue"));
+          ctx.assertNull(row.getUUID(0));
+          ctx.assertNull(row.getUUID("NullValue"));
           async.complete();
         }));
     }));
@@ -146,7 +149,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(row.getLocalDateTime("FalseValue"));
           ctx.assertNull(row.getOffsetDateTime(1));
           ctx.assertNull(row.getOffsetDateTime("FalseValue"));
-
+          ctx.assertNull(row.getUUID(0));
+          ctx.assertNull(row.getUUID("FalseValue"));
           async.complete();
         }));
     }));
@@ -194,6 +198,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(row.getLocalDateTime("Short"));
           ctx.assertNull(row.getOffsetDateTime(0));
           ctx.assertNull(row.getOffsetDateTime("Short"));
+          ctx.assertNull(row.getUUID(0));
+          ctx.assertNull(row.getUUID("Short"));
           async.complete();
         }));
     }));
@@ -241,6 +247,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(row.getLocalDateTime("Integer"));
           ctx.assertNull(row.getOffsetDateTime(0));
           ctx.assertNull(row.getOffsetDateTime("Integer"));
+          ctx.assertNull(row.getUUID(0));
+          ctx.assertNull(row.getUUID("Integer"));
           async.complete();
         }));
     }));
@@ -288,6 +296,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(row.getLocalDateTime("Long"));
           ctx.assertNull(row.getOffsetDateTime(0));
           ctx.assertNull(row.getOffsetDateTime("Long"));
+          ctx.assertNull(row.getUUID(0));
+          ctx.assertNull(row.getUUID("Long"));
           async.complete();
         }));
     }));
@@ -335,6 +345,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(row.getLocalDateTime("Float"));
           ctx.assertNull(row.getOffsetDateTime(0));
           ctx.assertNull(row.getOffsetDateTime("Float"));
+          ctx.assertNull(row.getUUID(0));
+          ctx.assertNull(row.getUUID("Float"));
           async.complete();
         }));
     }));
@@ -382,6 +394,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(row.getLocalDateTime("Double"));
           ctx.assertNull(row.getOffsetDateTime(0));
           ctx.assertNull(row.getOffsetDateTime("Double"));
+          ctx.assertNull(row.getUUID(0));
+          ctx.assertNull(row.getUUID("Double"));
           async.complete();
         }));
     }));
@@ -429,6 +443,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(row.getLocalDateTime("Numeric"));
           ctx.assertNull(row.getOffsetDateTime(0));
           ctx.assertNull(row.getOffsetDateTime("Numeric"));
+          ctx.assertNull(row.getUUID(0));
+          ctx.assertNull(row.getUUID("Numeric"));
           async.complete();
         }));
     }));
@@ -483,6 +499,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(row.getLocalDateTime("Name"));
           ctx.assertNull(row.getOffsetDateTime(0));
           ctx.assertNull(row.getOffsetDateTime("Name"));
+          ctx.assertNull(row.getUUID(0));
+          ctx.assertNull(row.getUUID("Name"));
           async.complete();
         }));
     }));
@@ -536,6 +554,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(row.getLocalDateTime("Char"));
           ctx.assertNull(row.getOffsetDateTime(0));
           ctx.assertNull(row.getOffsetDateTime("Char"));
+          ctx.assertNull(row.getUUID(0));
+          ctx.assertNull(row.getUUID("Char"));
           async.complete();
         }));
     }));
@@ -589,6 +609,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(row.getLocalDateTime("Char"));
           ctx.assertNull(row.getOffsetDateTime(0));
           ctx.assertNull(row.getOffsetDateTime("Char"));
+          ctx.assertNull(row.getUUID(0));
+          ctx.assertNull(row.getUUID("Char"));
           async.complete();
         }));
     }));
@@ -636,6 +658,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(row.getLocalDateTime("Character"));
           ctx.assertNull(row.getOffsetDateTime(0));
           ctx.assertNull(row.getOffsetDateTime("Character"));
+          ctx.assertNull(row.getUUID(0));
+          ctx.assertNull(row.getUUID("Character"));
           async.complete();
         }));
     }));
@@ -683,6 +707,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(row.getLocalDateTime("Driver"));
           ctx.assertNull(row.getOffsetDateTime(0));
           ctx.assertNull(row.getOffsetDateTime("Driver"));
+          ctx.assertNull(row.getUUID(0));
+          ctx.assertNull(row.getUUID("Driver"));
           async.complete();
         }));
     }));
@@ -730,6 +756,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(row.getLocalDateTime("Text"));
           ctx.assertNull(row.getOffsetDateTime(0));
           ctx.assertNull(row.getOffsetDateTime("Text"));
+          ctx.assertNull(row.getUUID(0));
+          ctx.assertNull(row.getUUID("Text"));
           async.complete();
         }));
     }));
@@ -741,13 +769,15 @@ public class DataTypeTextTest extends DataTypeTestBase {
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
         .query("SELECT '50867d3d-0098-4f61-bd31-9309ebf53475'::UUID \"uuid\"", ctx.asyncAssertSuccess(result -> {
-          String uuid = "50867d3d-0098-4f61-bd31-9309ebf53475";
+          UUID uuid = UUID.fromString("50867d3d-0098-4f61-bd31-9309ebf53475");
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
-          ctx.assertEquals(uuid, row.getString(0));
+          ctx.assertEquals(uuid, row.getUUID(0));
           ctx.assertEquals(uuid, row.getValue(0));
-          ctx.assertEquals(uuid, row.getString("uuid"));
+          ctx.assertEquals(uuid, row.getUUID("uuid"));
           ctx.assertEquals(uuid, row.getValue("uuid"));
+          ctx.assertNull(row.getString(0));
+          ctx.assertNull(row.getString("uuid"));
           ctx.assertNull(row.getBoolean(0));
           ctx.assertNull(row.getBoolean("uuid"));
           ctx.assertNull(row.getLong(0));
@@ -826,6 +856,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(row.getLocalDateTime("LocalDate"));
           ctx.assertNull(row.getOffsetDateTime(0));
           ctx.assertNull(row.getOffsetDateTime("LocalDate"));
+          ctx.assertNull(row.getUUID(0));
+          ctx.assertNull(row.getUUID("LocalDate"));
           async.complete();
         }));
     }));
@@ -874,6 +906,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(row.getLocalDateTime("LocalTime"));
           ctx.assertNull(row.getOffsetDateTime(0));
           ctx.assertNull(row.getOffsetDateTime("LocalTime"));
+          ctx.assertNull(row.getUUID(0));
+          ctx.assertNull(row.getUUID("LocalTime"));
           async.complete();
         }));
     }));
@@ -922,6 +956,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(row.getLocalDateTime("OffsetTime"));
           ctx.assertNull(row.getOffsetDateTime(0));
           ctx.assertNull(row.getOffsetDateTime("OffsetTime"));
+          ctx.assertNull(row.getUUID(0));
+          ctx.assertNull(row.getUUID("OffsetTime"));
           async.complete();
         }));
     }));
@@ -970,6 +1006,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(row.getOffsetTime("LocalDateTime"));
           ctx.assertNull(row.getOffsetDateTime(0));
           ctx.assertNull(row.getOffsetDateTime("LocalDateTime"));
+          ctx.assertNull(row.getUUID(0));
+          ctx.assertNull(row.getUUID("LocalDateTime"));
           async.complete();
         }));
     }));
@@ -1018,6 +1056,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertNull(row.getOffsetTime("OffsetDateTime"));
           ctx.assertNull(row.getLocalDateTime(0));
           ctx.assertNull(row.getLocalDateTime("OffsetDateTime"));
+          ctx.assertNull(row.getUUID(0));
+          ctx.assertNull(row.getUUID("OffsetDateTime"));
           async.complete();
         }));
       }));
@@ -1068,6 +1108,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
         ctx.assertNull(row.getLocalDateTime("JsonObject"));
         ctx.assertNull(row.getOffsetDateTime(0));
         ctx.assertNull(row.getOffsetDateTime("JsonObject"));
+        ctx.assertNull(row.getUUID(0));
+        ctx.assertNull(row.getUUID("JsonObject"));
         async.complete();
       }));
     }));
@@ -1099,6 +1141,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
         ctx.assertNull(row.getOffsetTime(0));
         ctx.assertNull(row.getLocalDateTime(0));
         ctx.assertNull(row.getOffsetDateTime(0));
+        ctx.assertNull(row.getUUID(0));
         async.complete();
       }));
     }));
@@ -1148,6 +1191,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
         ctx.assertNull(row.getLocalDateTime("JsonObject"));
         ctx.assertNull(row.getOffsetDateTime(0));
         ctx.assertNull(row.getOffsetDateTime("JsonObject"));
+        ctx.assertNull(row.getUUID(0));
+        ctx.assertNull(row.getUUID("JsonObject"));
         async.complete();
       }));
     }));
@@ -1195,6 +1240,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
         ctx.assertNull(row.getLocalDateTime("Array"));
         ctx.assertNull(row.getOffsetDateTime(0));
         ctx.assertNull(row.getOffsetDateTime("Array"));
+        ctx.assertNull(row.getUUID(0));
+        ctx.assertNull(row.getUUID("Array"));
         async.complete();
       }));
     }));
@@ -1241,6 +1288,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
         ctx.assertNull(row.getLocalDateTime("TrueValue"));
         ctx.assertNull(row.getOffsetDateTime(0));
         ctx.assertNull(row.getOffsetDateTime("TrueValue"));
+        ctx.assertNull(row.getUUID(0));
+        ctx.assertNull(row.getUUID("TrueValue"));
 
         ctx.assertEquals(false, row.getBoolean(1));
         ctx.assertEquals(false, row.getValue(1));
@@ -1276,6 +1325,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
         ctx.assertNull(row.getLocalDateTime("FalseValue"));
         ctx.assertNull(row.getOffsetDateTime(1));
         ctx.assertNull(row.getOffsetDateTime("FalseValue"));
+        ctx.assertNull(row.getUUID(1));
+        ctx.assertNull(row.getUUID("FalseValue"));
 
         ctx.assertNull(row.getValue(2));
         ctx.assertNull(row.getValue("NullValue"));
@@ -1311,6 +1362,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
         ctx.assertNull(row.getLocalDateTime("NullValue"));
         ctx.assertNull(row.getOffsetDateTime(2));
         ctx.assertNull(row.getOffsetDateTime("NullValue"));
+        ctx.assertNull(row.getUUID(2));
+        ctx.assertNull(row.getUUID("NullValue"));
 
         // ctx.assertEquals(7.502f, row.getFloat(3));
         ctx.assertEquals(7.502d, row.getDouble(3));
@@ -1347,6 +1400,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
         ctx.assertNull(row.getLocalDateTime("Number1"));
         ctx.assertNull(row.getOffsetDateTime(3));
         ctx.assertNull(row.getOffsetDateTime("Number1"));
+        ctx.assertNull(row.getUUID(3));
+        ctx.assertNull(row.getUUID("Number1"));
 
         ctx.assertEquals(8, row.getInteger(4));
         ctx.assertEquals(8, row.getValue(4));
@@ -1382,6 +1437,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
         ctx.assertNull(row.getLocalDateTime("Number2"));
         ctx.assertNull(row.getOffsetDateTime(4));
         ctx.assertNull(row.getOffsetDateTime("Number2"));
+        ctx.assertNull(row.getUUID(4));
+        ctx.assertNull(row.getUUID("Number2"));
 
         // ctx.assertEquals(8L, row.getLong(4));
         ctx.assertEquals(" Really Awesome! ", row.getString(5));
@@ -1418,6 +1475,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
         ctx.assertNull(row.getLocalDateTime("Text"));
         ctx.assertNull(row.getOffsetDateTime(5));
         ctx.assertNull(row.getOffsetDateTime("Text"));
+        ctx.assertNull(row.getUUID(5));
+        ctx.assertNull(row.getUUID("Text"));
         async.complete();
       }));
     }));
@@ -1464,6 +1523,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
         ctx.assertNull(row.getLocalDateTime("TrueValue"));
         ctx.assertNull(row.getOffsetDateTime(0));
         ctx.assertNull(row.getOffsetDateTime("TrueValue"));
+        ctx.assertNull(row.getUUID(0));
+        ctx.assertNull(row.getUUID("TrueValue"));
 
         ctx.assertEquals(false, row.getBoolean(1));
         ctx.assertEquals(false, row.getValue(1));
@@ -1499,6 +1560,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
         ctx.assertNull(row.getLocalDateTime("FalseValue"));
         ctx.assertNull(row.getOffsetDateTime(1));
         ctx.assertNull(row.getOffsetDateTime("FalseValue"));
+        ctx.assertNull(row.getUUID(1));
+        ctx.assertNull(row.getUUID("FalseValue"));
 
         ctx.assertNull(row.getValue(2));
         ctx.assertNull(row.getValue("NullValue"));
@@ -1534,6 +1597,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
         ctx.assertNull(row.getLocalDateTime("NullValue"));
         ctx.assertNull(row.getOffsetDateTime(2));
         ctx.assertNull(row.getOffsetDateTime("NullValue"));
+        ctx.assertNull(row.getUUID(2));
+        ctx.assertNull(row.getUUID("NullValue"));
 
         // ctx.assertEquals(7.502f, row.getFloat(3));
         ctx.assertEquals(7.502d, row.getDouble(3));
@@ -1570,6 +1635,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
         ctx.assertNull(row.getLocalDateTime("Number1"));
         ctx.assertNull(row.getOffsetDateTime(3));
         ctx.assertNull(row.getOffsetDateTime("Number1"));
+        ctx.assertNull(row.getUUID(3));
+        ctx.assertNull(row.getUUID("Number1"));
 
         ctx.assertEquals(8, row.getInteger(4));
         ctx.assertEquals(8, row.getValue(4));
@@ -1605,6 +1672,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
         ctx.assertNull(row.getLocalDateTime("Number2"));
         ctx.assertNull(row.getOffsetDateTime(4));
         ctx.assertNull(row.getOffsetDateTime("Number2"));
+        ctx.assertNull(row.getUUID(4));
+        ctx.assertNull(row.getUUID("Number2"));
 
         // ctx.assertEquals(8L, row.getLong(4));
         ctx.assertEquals(" Really Awesome! ", row.getString(5));
@@ -1641,6 +1710,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
         ctx.assertNull(row.getLocalDateTime("Text"));
         ctx.assertNull(row.getOffsetDateTime(5));
         ctx.assertNull(row.getOffsetDateTime("Text"));
+        ctx.assertNull(row.getUUID(5));
+        ctx.assertNull(row.getUUID("Text"));
         async.complete();
       }));
     }));
@@ -1688,6 +1759,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
         ctx.assertNull(row.getLocalDateTime("Buffer1"));
         ctx.assertNull(row.getOffsetDateTime(0));
         ctx.assertNull(row.getOffsetDateTime("Buffer1"));
+        ctx.assertNull(row.getUUID(0));
+        ctx.assertNull(row.getUUID("Buffer1"));
 
         ctx.assertEquals("\u00DE\u00AD\u00BE\u00EF", row.getBuffer(1).toString(UTF_8));
         ctx.assertEquals(Buffer.buffer("\u00DE\u00AD\u00BE\u00EF"), row.getValue(1));
@@ -1724,9 +1797,10 @@ public class DataTypeTextTest extends DataTypeTestBase {
         ctx.assertNull(row.getLocalDateTime("Buffer2"));
         ctx.assertNull(row.getOffsetDateTime(1));
         ctx.assertNull(row.getOffsetDateTime("Buffer2"));
+        ctx.assertNull(row.getUUID(1));
+        ctx.assertNull(row.getUUID("Buffer2"));
         async.complete();
       }));
     }));
   }
-
 }

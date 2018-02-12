@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.util.UUID;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
@@ -66,6 +67,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(row.getLocalDateTime("Boolean"));
             ctx.assertNull(row.getOffsetDateTime(0));
             ctx.assertNull(row.getOffsetDateTime("Boolean"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("Boolean"));
             async.complete();
           }));
         }));
@@ -120,6 +123,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(row.getLocalDateTime("Boolean"));
               ctx.assertNull(row.getOffsetDateTime(0));
               ctx.assertNull(row.getOffsetDateTime("Boolean"));
+              ctx.assertNull(row.getUUID(0));
+              ctx.assertNull(row.getUUID("Boolean"));
               async.complete();
             }));
         }));
@@ -170,6 +175,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(row.getLocalDateTime("Short"));
             ctx.assertNull(row.getOffsetDateTime(0));
             ctx.assertNull(row.getOffsetDateTime("Short"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("Short"));
             async.complete();
           }));
         }));
@@ -220,6 +227,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(row.getLocalDateTime("Short"));
             ctx.assertNull(row.getOffsetDateTime(0));
             ctx.assertNull(row.getOffsetDateTime("Short"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("Short"));
             async.complete();
           }));
         }));
@@ -270,6 +279,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(row.getLocalDateTime("Integer"));
             ctx.assertNull(row.getOffsetDateTime(0));
             ctx.assertNull(row.getOffsetDateTime("Integer"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("Integer"));
             async.complete();
           }));
         }));
@@ -323,6 +334,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(row.getLocalDateTime("Integer"));
               ctx.assertNull(row.getOffsetDateTime(0));
               ctx.assertNull(row.getOffsetDateTime("Integer"));
+              ctx.assertNull(row.getUUID(0));
+              ctx.assertNull(row.getUUID("Integer"));
               async.complete();
             }));
         }));
@@ -373,6 +386,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(row.getLocalDateTime("Long"));
             ctx.assertNull(row.getOffsetDateTime(0));
             ctx.assertNull(row.getOffsetDateTime("Long"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("Long"));
             async.complete();
           }));
         }));
@@ -426,6 +441,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(row.getLocalDateTime("Long"));
               ctx.assertNull(row.getOffsetDateTime(0));
               ctx.assertNull(row.getOffsetDateTime("Long"));
+              ctx.assertNull(row.getUUID(0));
+              ctx.assertNull(row.getUUID("Long"));
               async.complete();
             }));
         }));
@@ -476,6 +493,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(row.getLocalDateTime("Float"));
             ctx.assertNull(row.getOffsetDateTime(0));
             ctx.assertNull(row.getOffsetDateTime("Float"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("Float"));
             async.complete();
           }));
         }));
@@ -529,6 +548,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(row.getLocalDateTime("Float"));
               ctx.assertNull(row.getOffsetDateTime(0));
               ctx.assertNull(row.getOffsetDateTime("Float"));
+              ctx.assertNull(row.getUUID(0));
+              ctx.assertNull(row.getUUID("Float"));
               async.complete();
             }));
         }));
@@ -579,6 +600,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(row.getLocalDateTime("Double"));
             ctx.assertNull(row.getOffsetDateTime(0));
             ctx.assertNull(row.getOffsetDateTime("Double"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("Double"));
             async.complete();
           }));
         }));
@@ -632,6 +655,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(row.getLocalDateTime("Double"));
               ctx.assertNull(row.getOffsetDateTime(0));
               ctx.assertNull(row.getOffsetDateTime("Double"));
+              ctx.assertNull(row.getUUID(0));
+              ctx.assertNull(row.getUUID("Double"));
               async.complete();
             }));
         }));
@@ -683,6 +708,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(row.getLocalDateTime("Date"));
             ctx.assertNull(row.getOffsetDateTime(0));
             ctx.assertNull(row.getOffsetDateTime("Date"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("Date"));
             async.complete();
           }));
         }));
@@ -736,6 +763,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(row.getLocalDateTime("Date"));
             ctx.assertNull(row.getOffsetDateTime(0));
             ctx.assertNull(row.getOffsetDateTime("Date"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("Date"));
             async.complete();
           }));
         }));
@@ -787,6 +816,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(row.getLocalDateTime("Date"));
             ctx.assertNull(row.getOffsetDateTime(0));
             ctx.assertNull(row.getOffsetDateTime("Date"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("Date"));
             async.complete();
           }));
         }));
@@ -841,6 +872,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(row.getLocalDateTime("Date"));
               ctx.assertNull(row.getOffsetDateTime(0));
               ctx.assertNull(row.getOffsetDateTime("Date"));
+              ctx.assertNull(row.getUUID(0));
+              ctx.assertNull(row.getUUID("Date"));
               async.complete();
             }));
         }));
@@ -892,6 +925,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(row.getLocalDateTime("Time"));
             ctx.assertNull(row.getOffsetDateTime(0));
             ctx.assertNull(row.getOffsetDateTime("Time"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("Time"));
             async.complete();
           }));
         }));
@@ -947,6 +982,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(row.getLocalDateTime("Time"));
               ctx.assertNull(row.getOffsetDateTime(0));
               ctx.assertNull(row.getOffsetDateTime("Time"));
+              ctx.assertNull(row.getUUID(0));
+              ctx.assertNull(row.getUUID("Time"));
               async.complete();
             }));
         }));
@@ -999,6 +1036,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(row.getLocalDateTime("TimeTz"));
             ctx.assertNull(row.getOffsetDateTime(0));
             ctx.assertNull(row.getOffsetDateTime("TimeTz"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("TimeTz"));
             async.complete();
           }));
         }));
@@ -1052,6 +1091,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(row.getLocalDateTime("TimeTz"));
             ctx.assertNull(row.getOffsetDateTime(0));
             ctx.assertNull(row.getOffsetDateTime("TimeTz"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("TimeTz"));
             async.complete();
           }));
         }));
@@ -1103,6 +1144,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(row.getOffsetTime("Timestamp"));
             ctx.assertNull(row.getOffsetDateTime(0));
             ctx.assertNull(row.getOffsetDateTime("Timestamp"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("Timestamp"));
             async.complete();
           }));
         }));
@@ -1156,6 +1199,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(row.getOffsetTime("Timestamp"));
             ctx.assertNull(row.getOffsetDateTime(0));
             ctx.assertNull(row.getOffsetDateTime("Timestamp"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("Timestamp"));
             async.complete();
           }));
         }));
@@ -1207,6 +1252,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(row.getOffsetTime("Timestamp"));
             ctx.assertNull(row.getOffsetDateTime(0));
             ctx.assertNull(row.getOffsetDateTime("Timestamp"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("Timestamp"));
             async.complete();
           }));
         }));
@@ -1312,6 +1359,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(row.getOffsetTime("TimestampTz"));
               ctx.assertNull(row.getLocalDateTime(0));
               ctx.assertNull(row.getLocalDateTime("TimestampTz"));
+              ctx.assertNull(row.getUUID(0));
+              ctx.assertNull(row.getUUID("TimestampTz"));
               async.complete();
             }));
           }));
@@ -1368,6 +1417,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
                 ctx.assertNull(row.getOffsetTime("TimestampTz"));
                 ctx.assertNull(row.getLocalDateTime(0));
                 ctx.assertNull(row.getLocalDateTime("TimestampTz"));
+                ctx.assertNull(row.getUUID(0));
+                ctx.assertNull(row.getUUID("TimestampTz"));
                 async.complete();
               }));
           }));
@@ -1421,6 +1472,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(row.getOffsetTime("TimestampTz"));
               ctx.assertNull(row.getLocalDateTime(0));
               ctx.assertNull(row.getLocalDateTime("TimestampTz"));
+              ctx.assertNull(row.getUUID(0));
+              ctx.assertNull(row.getUUID("TimestampTz"));
               async.complete();
             }));
           }));
@@ -1477,10 +1530,116 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
                 ctx.assertNull(row.getOffsetTime("TimestampTz"));
                 ctx.assertNull(row.getLocalDateTime(0));
                 ctx.assertNull(row.getLocalDateTime("TimestampTz"));
+                ctx.assertNull(row.getUUID(0));
+                ctx.assertNull(row.getUUID("TimestampTz"));
                 async.complete();
               }));
           }));
       }));
+    }));
+  }
+
+  @Test
+  public void testDecodeUUID(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"uuid\" FROM \"CharacterDataType\" WHERE \"id\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.size());
+            ctx.assertEquals(1, result.updatedCount());
+            Row row = result.iterator().next();
+            UUID uuid = UUID.fromString("6f790482-b5bd-438b-a8b7-4a0bed747011");
+            ctx.assertEquals(uuid, row.getUUID(0));
+            ctx.assertEquals(uuid, row.getValue(0));
+            ctx.assertEquals(uuid, row.getUUID("uuid"));
+            ctx.assertEquals(uuid, row.getValue("uuid"));
+            ctx.assertNull(row.getString(0));
+            ctx.assertNull(row.getString("uuid"));
+            ctx.assertNull(row.getBoolean(0));
+            ctx.assertNull(row.getBoolean("uuid"));
+            ctx.assertNull(row.getLong(0));
+            ctx.assertNull(row.getLong("uuid"));
+            ctx.assertNull(row.getInteger(0));
+            ctx.assertNull(row.getInteger("uuid"));
+            ctx.assertNull(row.getDouble(0));
+            ctx.assertNull(row.getDouble("uuid"));
+            ctx.assertNull(row.getCharacter(0));
+            ctx.assertNull(row.getCharacter("uuid"));
+            ctx.assertNull(row.getJsonObject(0));
+            ctx.assertNull(row.getJsonObject("uuid"));
+            ctx.assertNull(row.getJsonArray(0));
+            ctx.assertNull(row.getJsonArray("uuid"));
+            ctx.assertNull(row.getBuffer(0));
+            ctx.assertNull(row.getBuffer("uuid"));
+            ctx.assertNull(row.getTemporal(0));
+            ctx.assertNull(row.getTemporal("uuid"));
+            ctx.assertNull(row.getLocalDate(0));
+            ctx.assertNull(row.getLocalDate("uuid"));
+            ctx.assertNull(row.getLocalTime(0));
+            ctx.assertNull(row.getLocalTime("uuid"));
+            ctx.assertNull(row.getOffsetTime(0));
+            ctx.assertNull(row.getOffsetTime("uuid"));
+            ctx.assertNull(row.getLocalDateTime(0));
+            ctx.assertNull(row.getLocalDateTime("uuid"));
+            ctx.assertNull(row.getOffsetDateTime(0));
+            ctx.assertNull(row.getOffsetDateTime("uuid"));
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testEncodeUUID(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"CharacterDataType\" SET \"uuid\" = $1 WHERE \"id\" = $2 RETURNING \"uuid\"",
+        ctx.asyncAssertSuccess(p -> {
+          UUID uuid = UUID.fromString("92b53cf1-2ad0-49f9-be9d-ca48966e43ee");
+          p.execute(Tuple.tuple()
+            .addUUID(uuid)
+            .addInteger(2), ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.size());
+            ctx.assertEquals(1, result.updatedCount());
+            Row row = result.iterator().next();
+            ctx.assertEquals(uuid, row.getUUID(0));
+            ctx.assertEquals(uuid, row.getValue(0));
+            ctx.assertEquals(uuid, row.getUUID("uuid"));
+            ctx.assertEquals(uuid, row.getValue("uuid"));
+            ctx.assertNull(row.getString(0));
+            ctx.assertNull(row.getString("uuid"));
+            ctx.assertNull(row.getBoolean(0));
+            ctx.assertNull(row.getBoolean("uuid"));
+            ctx.assertNull(row.getLong(0));
+            ctx.assertNull(row.getLong("uuid"));
+            ctx.assertNull(row.getInteger(0));
+            ctx.assertNull(row.getInteger("uuid"));
+            ctx.assertNull(row.getDouble(0));
+            ctx.assertNull(row.getDouble("uuid"));
+            ctx.assertNull(row.getCharacter(0));
+            ctx.assertNull(row.getCharacter("uuid"));
+            ctx.assertNull(row.getJsonObject(0));
+            ctx.assertNull(row.getJsonObject("uuid"));
+            ctx.assertNull(row.getJsonArray(0));
+            ctx.assertNull(row.getJsonArray("uuid"));
+            ctx.assertNull(row.getBuffer(0));
+            ctx.assertNull(row.getBuffer("uuid"));
+            ctx.assertNull(row.getTemporal(0));
+            ctx.assertNull(row.getTemporal("uuid"));
+            ctx.assertNull(row.getLocalDate(0));
+            ctx.assertNull(row.getLocalDate("uuid"));
+            ctx.assertNull(row.getLocalTime(0));
+            ctx.assertNull(row.getLocalTime("uuid"));
+            ctx.assertNull(row.getOffsetTime(0));
+            ctx.assertNull(row.getOffsetTime("uuid"));
+            ctx.assertNull(row.getLocalDateTime(0));
+            ctx.assertNull(row.getLocalDateTime("uuid"));
+            ctx.assertNull(row.getOffsetDateTime(0));
+            ctx.assertNull(row.getOffsetDateTime("uuid"));
+            async.complete();
+          }));
+        }));
     }));
   }
 
@@ -1500,6 +1659,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertEquals(name, row.getValue(0));
             ctx.assertEquals(name, row.getString("Name"));
             ctx.assertEquals(name, row.getValue("Name"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("Name"));
             ctx.assertNull(row.getBoolean(0));
             ctx.assertNull(row.getBoolean("Name"));
             ctx.assertNull(row.getLong(0));
@@ -1551,6 +1712,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertEquals(name, row.getValue(0));
             ctx.assertEquals(name, row.getString("Name"));
             ctx.assertEquals(name, row.getValue("Name"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("Name"));
             ctx.assertNull(row.getBoolean(0));
             ctx.assertNull(row.getBoolean("Name"));
             ctx.assertNull(row.getLong(0));
@@ -1601,6 +1764,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertEquals(singleChar, row.getValue(0));
             ctx.assertEquals(singleChar, row.getString("SingleChar"));
             ctx.assertEquals(singleChar, row.getValue("SingleChar"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("SingleChar"));
             ctx.assertNull(row.getBoolean(0));
             ctx.assertNull(row.getBoolean("SingleChar"));
             ctx.assertNull(row.getLong(0));
@@ -1652,6 +1817,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertEquals(singleChar, row.getValue(0));
             ctx.assertEquals(singleChar, row.getString("SingleChar"));
             ctx.assertEquals(singleChar, row.getValue("SingleChar"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("SingleChar"));
             ctx.assertNull(row.getBoolean(0));
             ctx.assertNull(row.getBoolean("SingleChar"));
             ctx.assertNull(row.getLong(0));
@@ -1701,6 +1868,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertEquals(name, row.getValue(0));
             ctx.assertEquals(name, row.getString("FixedChar"));
             ctx.assertEquals(name, row.getValue("FixedChar"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("FixedChar"));
             ctx.assertNull(row.getBoolean(0));
             ctx.assertNull(row.getBoolean("FixedChar"));
             ctx.assertNull(row.getLong(0));
@@ -1752,6 +1921,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertEquals(name, row.getValue(0));
             ctx.assertEquals(name, row.getString("FixedChar"));
             ctx.assertEquals(name, row.getValue("FixedChar"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("FixedChar"));
             ctx.assertNull(row.getBoolean(0));
             ctx.assertNull(row.getBoolean("FixedChar"));
             ctx.assertNull(row.getLong(0));
@@ -1801,6 +1972,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertEquals(name, row.getValue(0));
             ctx.assertEquals(name, row.getString("Text"));
             ctx.assertEquals(name, row.getValue("Text"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("Text"));
             ctx.assertNull(row.getBoolean(0));
             ctx.assertNull(row.getBoolean("Text"));
             ctx.assertNull(row.getLong(0));
@@ -1852,6 +2025,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertEquals(name, row.getValue(0));
             ctx.assertEquals(name, row.getString("Text"));
             ctx.assertEquals(name, row.getValue("Text"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("Text"));
             ctx.assertNull(row.getBoolean(0));
             ctx.assertNull(row.getBoolean("Text"));
             ctx.assertNull(row.getLong(0));
@@ -1901,6 +2076,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertEquals(name, row.getValue(0));
             ctx.assertEquals(name, row.getString("VarCharacter"));
             ctx.assertEquals(name, row.getValue("VarCharacter"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("VarCharacter"));
             ctx.assertNull(row.getBoolean(0));
             ctx.assertNull(row.getBoolean("VarCharacter"));
             ctx.assertNull(row.getLong(0));
@@ -1952,6 +2129,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertEquals(name, row.getValue(0));
             ctx.assertEquals(name, row.getString("VarCharacter"));
             ctx.assertEquals(name, row.getValue("VarCharacter"));
+            ctx.assertNull(row.getUUID(0));
+            ctx.assertNull(row.getUUID("VarCharacter"));
             ctx.assertNull(row.getBoolean(0));
             ctx.assertNull(row.getBoolean("VarCharacter"));
             ctx.assertNull(row.getLong(0));
@@ -1985,6 +2164,4 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
         }));
     }));
   }
-
-
 }

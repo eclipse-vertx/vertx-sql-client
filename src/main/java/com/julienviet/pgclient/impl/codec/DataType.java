@@ -435,10 +435,20 @@ public class DataType<T> {
   public static DataType<Object> MACADDR8 = new DataType<>(Object.class,774);
 
   // UUID
-  public static DataType<String> UUID = new DataType<String>(String.class, 2950) {
+  public static DataType<java.util.UUID> UUID = new DataType<java.util.UUID>(java.util.UUID.class, 2950) {
     @Override
-    public String decodeText(int len, ByteBuf buff) {
-      return buff.readCharSequence(len, StandardCharsets.UTF_8).toString();
+    public java.util.UUID decodeText(int len, ByteBuf buff) {
+      return java.util.UUID.fromString(buff.readCharSequence(len, StandardCharsets.UTF_8).toString());
+    }
+    @Override
+    public java.util.UUID decodeBinary(int len, ByteBuf buff) {
+      return new java.util.UUID(buff.readLong(), buff.readLong());
+    }
+    @Override
+    public void encodeBinary(java.util.UUID uuid, ByteBuf buff) {
+      buff.writeInt(16);
+      buff.writeLong(uuid.getMostSignificantBits());
+      buff.writeLong(uuid.getLeastSignificantBits());
     }
   };
   public static DataType<Object> UUID_ARRAY = new DataType<>(Object.class,2951);
