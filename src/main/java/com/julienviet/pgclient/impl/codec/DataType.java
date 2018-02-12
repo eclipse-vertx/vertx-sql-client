@@ -270,6 +270,10 @@ public class DataType<T> {
     public String decodeBinary(int len, ByteBuf buff) {
       return buff.readCharSequence(len, StandardCharsets.UTF_8).toString();
     }
+    @Override
+    public void encodeBinary(String value, ByteBuf buff) {
+      super.encodeText(value, buff);
+    }
   };
   public static DataType<Object> TEXT_ARRAY = new DataType<>(Object.class,1009);
 
@@ -282,6 +286,10 @@ public class DataType<T> {
     @Override
     public String decodeBinary(int len, ByteBuf buff) {
       return buff.readCharSequence(len, StandardCharsets.UTF_8).toString();
+    }
+    @Override
+    public void encodeBinary(String value, ByteBuf buff) {
+      super.encodeText(value, buff);
     }
   };
   public static DataType<Object> NAME_ARRAY = new DataType<>(Object.class,1003);
