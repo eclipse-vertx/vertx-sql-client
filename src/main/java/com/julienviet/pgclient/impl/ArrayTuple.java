@@ -29,6 +29,7 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
@@ -168,6 +169,13 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
+  public UUID getUUID(int pos) {
+    if(get(pos) instanceof UUID)
+      return (UUID) get(pos);
+    return null;
+  }
+
+  @Override
   public Tuple addBoolean(Boolean value) {
     add(value);
     return this;
@@ -186,7 +194,8 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
       || value instanceof OffsetTime
       || value instanceof LocalDate
       || value instanceof LocalDateTime
-      || value instanceof OffsetDateTime) {
+      || value instanceof OffsetDateTime
+      || value instanceof UUID) {
       add(value);
     } else {
       add(null);
@@ -280,6 +289,12 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Tuple addOffsetDateTime(OffsetDateTime value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addUUID(UUID value) {
     add(value);
     return this;
   }

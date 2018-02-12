@@ -29,6 +29,7 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.temporal.Temporal;
+import java.util.UUID;
 
 public class RowImpl extends ArrayTuple implements Row {
 
@@ -124,5 +125,10 @@ public class RowImpl extends ArrayTuple implements Row {
   @Override
   public OffsetDateTime getOffsetDateTime(String name) {
     return getOffsetDateTime(desc.columnIndex(name));
+  }
+
+  @Override
+  public UUID getUUID(String name) {
+    return getUUID(desc.columnIndex(name));
   }
 }
