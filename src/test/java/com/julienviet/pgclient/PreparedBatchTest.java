@@ -17,9 +17,14 @@
 
 package com.julienviet.pgclient;
 
+import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,18 +32,25 @@ import java.util.List;
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
+@RunWith(VertxUnitRunner.class)
+public class PreparedBatchTest extends PgTestBase {
 
-public class PreparedBatchTest extends PreparedBatchTestBase {
+  Vertx vertx;
 
-  @Override
-  protected PgConnectOptions options() {
-    return new PgConnectOptions(options).setCachePreparedStatements(false);
+  @Before
+  public void setup() {
+    vertx = Vertx.vertx();
+  }
+
+  @After
+  public void teardown(TestContext ctx) {
+    vertx.close(ctx.asyncAssertSuccess());
   }
 
   @Test
   public void testInsert(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       List<Tuple> batch = new ArrayList<>();
       batch.add(Tuple.of(79991, "batch one"));
       batch.add(Tuple.of(79992, "batch two"));
@@ -78,7 +90,7 @@ public class PreparedBatchTest extends PreparedBatchTestBase {
   @Test
   public void testInsertWithFunction(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       List<Tuple> batch = new ArrayList<>();
       batch.add(Tuple.of(78881, "batch one"));
       batch.add(Tuple.of(78882, "batch two"));
