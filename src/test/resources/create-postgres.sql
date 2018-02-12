@@ -59,15 +59,31 @@ INSERT INTO "Fortune" (id, message) VALUES (11, '<script>alert("This should not 
 INSERT INTO "Fortune" (id, message) VALUES (12, 'フレームワークのベンチマーク');
 
 DROP TABLE IF EXISTS "NumericDataType";
-CREATE TABLE "NumericDataType" ("Short" INT2, "Integer" INT4, "Long" INT8, "Float" FLOAT4, "Double" FLOAT8, "BigDecimal" NUMERIC, "Boolean" BOOLEAN);
-INSERT INTO "NumericDataType" ("Short", "Integer", "Long", "Float", "Double", "BigDecimal", "Boolean")
-VALUES (32767, 2147483647, 9223372036854775807, 3.4028235E38, 1.7976931348623157E308, '9.99999999999999999999999999999999999', true);
+CREATE TABLE "NumericDataType" ("id" INTEGER NOT NULL PRIMARY KEY, "Short" INT2, "Integer" INT4, "Long" INT8, "Float" FLOAT4, "Double" FLOAT8, "BigDecimal" NUMERIC, "Boolean" BOOLEAN);
+INSERT INTO "NumericDataType" ("id", "Short", "Integer", "Long", "Float", "Double", "BigDecimal", "Boolean")
+VALUES (1, 32767, 2147483647, 9223372036854775807, 3.4028235E38, 1.7976931348623157E308, '9.99999999999999999999999999999999999', true);
+INSERT INTO "NumericDataType" ("id", "Short", "Integer", "Long", "Float", "Double", "BigDecimal", "Boolean")
+VALUES (2, 32767, 2147483647, 9223372036854775807, 3.4028235E38, 1.7976931348623157E308, '9.99999999999999999999999999999999999', true);
 
 DROP TABLE IF EXISTS "TemporalDataType";
-CREATE TABLE "TemporalDataType" ("Date" date, "Time" time without time zone, "TimeTz" time with time zone, "Timestamp" timestamp without time zone, "TimestampTz" timestamp with time zone, "Interval" interval);
-INSERT INTO "TemporalDataType" ("Date", "Time", "TimeTz", "Timestamp", "TimestampTz", "Interval") VALUES ('1981-05-30', '17:55:04.90512', '17:55:04.90512+03:07', '2017-05-14 19:35:58.237666', '2017-05-14 23:59:59.237666-03', '17:22:05');
-INSERT INTO "TemporalDataType" ("Date", "Time", "TimeTz", "Timestamp", "TimestampTz", "Interval") VALUES ('2017-05-30', '12:55:04.90512', '02:55:04.90512+03:07', '1909-05-14 19:35:58.237666', '1909-05-14 22:35:58.237666-03', '02:01:33');
-INSERT INTO "TemporalDataType" ("Date", "Time", "TimeTz", "Timestamp", "TimestampTz", "Interval") VALUES ('1900-01-01', '23:59:04.90512', '08:08:03.90512+03:07', '1800-01-01 23:57:53.237666', '1800-01-01 23:59:59.237666-03', '04:33:59');
+CREATE TABLE "TemporalDataType" ("id" INTEGER NOT NULL PRIMARY KEY, "Date" date, "Time" time without time zone, "TimeTz" time with time zone, "Timestamp" timestamp without time zone, "TimestampTz" timestamp with time zone, "Interval" interval);
+INSERT INTO "TemporalDataType" ("id" ,"Date", "Time", "TimeTz", "Timestamp", "TimestampTz", "Interval") VALUES (1 ,'1981-05-30', '17:55:04.90512', '17:55:04.90512+03:07', '2017-05-14 19:35:58.237666', '2017-05-14 23:59:59.237666-03', '17:22:05');
+INSERT INTO "TemporalDataType" ("id" ,"Date", "Time", "TimeTz", "Timestamp", "TimestampTz", "Interval") VALUES (2 ,'2017-05-30', '12:55:04.90512', '02:55:04.90512+03:07', '1909-05-14 19:35:58.237666', '1909-05-14 22:35:58.237666-03', '02:01:33');
+INSERT INTO "TemporalDataType" ("id" ,"Date", "Time", "TimeTz", "Timestamp", "TimestampTz", "Interval") VALUES (3 ,'1900-01-01', '23:59:04.90512', '08:08:03.90512+03:07', '1800-01-01 23:57:53.237666', '1800-01-01 23:59:59.237666-03', '04:33:59');
+INSERT INTO "TemporalDataType" ("id" ,"Date", "Time", "TimeTz", "Timestamp", "TimestampTz", "Interval") VALUES (4 ,'1900-01-01', '23:59:04.90512', '08:08:03.90512+03:07', '1800-01-01 23:57:53.237666', '1800-01-01 23:59:59.237666-03', '04:33:59');
+
+DROP TABLE IF EXISTS "CharacterDataType";
+CREATE TABLE "CharacterDataType" (
+  "id" INTEGER NOT NULL PRIMARY KEY,
+  "Name" NAME,
+  "SingleChar" CHAR,
+  "FixedChar" CHAR(3),
+  "Text" TEXT,
+  "VarCharacter" VARCHAR,
+  "uuid" UUID
+);
+INSERT INTO "CharacterDataType" ("id" ,"Name", "SingleChar", "FixedChar", "Text", "VarCharacter", "uuid") VALUES (1, 'What is my name ?', 'A', 'YES', 'Hello World', 'Great!', '6f790482-b5bd-438b-a8b7-4a0bed747011');
+INSERT INTO "CharacterDataType" ("id" ,"Name", "SingleChar", "FixedChar", "Text", "VarCharacter", "uuid") VALUES (2, 'What is my name ?', 'A', 'YES', 'Hello World', 'Great!', '6f790482-b5bd-438b-a8b7-4a0bed747011');
 
 DROP TABLE IF EXISTS TxTest;
 CREATE TABLE TxTest (
