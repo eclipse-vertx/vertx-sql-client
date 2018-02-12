@@ -1763,7 +1763,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertEquals(singleChar, row.getString(0));
             ctx.assertEquals(singleChar, row.getValue(0));
             ctx.assertEquals(singleChar, row.getString("SingleChar"));
-            ctx.assertEquals(singleChar, row.getValue("SingleChar"));;
+            ctx.assertEquals(singleChar, row.getValue("SingleChar"));
             ctx.assertNull(row.getUUID(0));
             ctx.assertNull(row.getUUID("SingleChar"));
             ctx.assertNull(row.getBoolean(0));
@@ -2164,6 +2164,4 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
         }));
     }));
   }
-
-
 }
