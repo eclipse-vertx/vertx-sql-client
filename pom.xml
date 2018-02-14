@@ -27,7 +27,7 @@
 
   <groupId>com.julienviet</groupId>
   <artifactId>reactive-pg-client</artifactId>
-  <version>0.5.1-SNAPSHOT</version>
+  <version>0.5.1</version>
 
   <name>Reactive Postgres Client</name>
   <url>https://github.com/vietj/vertx-pg-client</url>
@@ -188,8 +188,8 @@
               <sourceFileExclude>**/package-info.java</sourceFileExclude>
               <sourceFileExclude>**/impl/**</sourceFileExclude>
             </sourceFileExcludes>
-            <detectLinks/>
-            <detectJavaApiLink/>
+            <detectLinks />
+            <detectJavaApiLink />
             <links>
               <link>http://vertx.io/docs/apidocs/</link>
               <link>http://reactivex.io/RxJava/1.x/javadoc/</link>
