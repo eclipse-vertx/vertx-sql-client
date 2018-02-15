@@ -6,6 +6,8 @@ The Reactive Postgres Client is a client for Postgres with a straightforward API
 
 The client is reactive and non blocking, allowing to handle many database connections with a single thread.
 
+The Reactive Postgres Client ranked #1 in the [TechEmpower Benchmark Round 15](https://www.techempower.com/benchmarks/#section=data-r15&hw=ph&test=db) _Single query_ benchmark.
+
 ## Features
 
 - Event driven
