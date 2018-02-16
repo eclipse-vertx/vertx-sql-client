@@ -1,0 +1,210 @@
+= Reactive Postgres Client
+
+image:https://travis-ci.org/vietj/reactive-pg-client.svg?branch=master["Build Status",link="https://travis-ci.org/vietj/reactive-pg-client"]
+
+* Simple API focusing on scalability and low overhead.
+* Reactive and non blocking which able to handle many database connections with a single thread.
+* Ranked *#1* in the https://www.techempower.com/benchmarks/#section=data-r15&hw=ph&test=db[TechEmpower Benchmark Round 15] _Single query_ benchmark.
+
+== Features
+
+- Event driven
+- Lightweight
+- Built-in connection pooling
+- Prepared queries caching
+- Publish / subscribe using Postgres `LISTEN/NOTIFY`
+- Batch and cursor support
+- Row streaming
+- Command pipeling
+- RxJava 1 and RxJava 2 support
+- Direct memory to object without unnecessary copies
+- Java 8 Date and Time support
+- SSL/TLS support
+- HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy support
+
+== Usage
+
+To use the client, add the following dependency to the _dependencies_ section of your build descriptor:
+
+* Maven (in your `pom.xml`):
+
+[source,xml]
+----
+<dependency>
+  <groupId>com.julienviet</groupId>
+  <artifactId>reactive-pg-client</artifactId>
+  <version>0.5.1</version>
+</dependency>
+----
+
+* Gradle (in your `build.gradle` file):
+
+[source,groovy]
+----
+dependencies {
+  compile 'com.julienviet:reactive-pg-client:0.5.1'
+}
+----
+
+Then the code is quite straightforward:
+
+[source,java]
+----
+// Pool options
+PgPoolOptions options = new PgPoolOptions()
+  .setPort(5432)
+  .setHost("the-host")
+  .setDatabase("the-db")
+  .setUsername("user")
+  .setPassword("secret")
+  .setMaxSize(5);
+
+// Create the client pool
+PgPool client = PgClient.pool(options);
+
+// A simple query
+client.query("SELECT * FROM users WHERE id='julien'", ar -> {
+  if (ar.succeeded()) {
+    PgResult<Row> result = ar.result();
+    System.out.println("Got " + result.size() + " results ");
+  } else {
+    System.out.println("Failure: " + ar.cause().getMessage());
+  }
+
+  // Now close the pool
+  client.close();
+});
+----
+
+== Documentations
+
+* http://www.julienviet.com/reactive-pg-client/guide/java/index.html[Java docs]
+* https://www.julienviet.com/reactive-pg-client/apidocs/index.html[Javadoc]
+* http://www.julienviet.com/reactive-pg-client/guide/kotlin/index.html[Kotlin docs]
+* http://www.julienviet.com/reactive-pg-client/guide/groovy/index.html[Groovy docs]
+* http://www.julienviet.com/reactive-pg-client/guide/ruby/index.html[Ruby docs]
+* http://www.julienviet.com/reactive-pg-client/guide/js/index.html[JavaScript docs]
+
+== Supported Data Types
+
+Postgres has two protocols `TEXT` and `BINARY` to encode/decode data types.
+
+The *Reactive Postgres Client* currently supports the following data types
+
+[cols="^,^,^,^", options="header"]
+|====
+| Postgres | Java | TEXT | BINARY
+
+|`INT2`
+|`java.lang.Short`
+|Yes
+|Yes
+
+|`INT4`
+|`java.lang.Integer`
+|Yes
+|Yes
+
+|`INT8`
+|`java.lang.Long`
+|Yes
+|Yes
+
+|`FLOAT4`
+|`java.lang.Float`
+|Yes
+|Yes
+
+|`FLOAT8`
+|`java.lang.Double`
+|Yes
+|Yes
+
+|`NUMERIC`
+|`java.lang.Number`
+|Yes
+|No
+
+|`CHAR`
+|`java.lang.Character`
+|Yes
+|No
+
+|`VARCHAR`
+|`java.lang.String`
+|Yes
+|Yes
+
+|`TEXT`
+|`java.lang.String`
+|Yes
+|Yes
+
+
+|`UUID`
+|`java.util.UUID`
+|Yes
+|Yes
+
+|`DATE`
+|`java.time.LocalDate`
+|Yes
+|Yes
+
+|`TIME`
+|`java.time.LocalTime`
+|Yes
+|Yes
+
+|`TIMETZ`
+|`java.time.OffsetTime`
+|Yes
+|Yes
+
+|`TIMESTAMP`
+|`java.time.LocalDateTime`
+|Yes
+|Yes
+
+
+|`TIMESTAMPTZ`
+|`java.time.OffsetDateTime`
+|Yes
+|Yes
+
+|`BYTEA`
+|`io.vertx.core.buffer.Buffer`
+|Yes
+|No
+
+|`JSON`
+|`io.vertx.core.json.Json[Object/Array]`
+|Yes
+|No
+
+|`JSONB`
+|`io.vertx.core.json.Json[Object/Array]`
+|Yes
+|No
+
+|====
+
+NOTE: The client uses `BINARY` protocol only for prepared queries `PgClient#preparedQuery` and `PgClient#preparedBatch`
+
+== Snapshots
+
+Snapshots are deploy in Sonatype OSS repository: https://oss.sonatype.org/content/repositories/snapshots/com/julienviet/reactive-pg-client/
+
+== License
+
+Apache License - Version 2.0
+
+== Publishing docs
+
+* mvn package -Pdocs
+* cp -r target/docs docs/
+* mv docs/reactive-pg-client docs/guide
+
+
+
+
