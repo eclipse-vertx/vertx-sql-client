@@ -42,6 +42,10 @@ public class ConnectionPool {
     this.connector = connector;
   }
 
+  public int available() {
+    return available.size();
+  }
+
   public void acquire(Handler<AsyncResult<Connection>> holder) {
     waiters.add(Future.<Connection>future().setHandler(holder));
     check();
@@ -98,8 +102,7 @@ public class ConnectionPool {
         throw new IllegalStateException();
       }
       this.holder = null;
-      available.add(this);
-      check();
+      release(this);
     }
 
     @Override
@@ -133,43 +136,36 @@ public class ConnectionPool {
     }
   }
 
-  private void doAcq(Handler<AsyncResult<PooledConnection>> handler) {
-    if (available.size() > 0) {
-      PooledConnection proxy = available.poll();
-      handler.handle(Future.succeededFuture(proxy));
-    } else {
-      if (size < maxSize) {
-        size++;
-        connector.accept(ar -> {
-          if (ar.succeeded()) {
-            Connection conn = ar.result();
-            PooledConnection proxy = new PooledConnection(conn);
-            all.add(proxy);
-            available.add(proxy);
-            conn.init(proxy);
-            doAcq(handler);
-          } else {
-            handler.handle(Future.failedFuture(ar.cause()));
-          }
-        });
-      }
-    }
+  private void release(PooledConnection proxy) {
+    available.add(proxy);
+    check();
   }
 
   private void check() {
     if (waiters.size() > 0) {
-      doAcq(ar -> {
-        if (ar.succeeded()) {
-          PooledConnection proxy = ar.result();
-          Future<Connection> waiter = waiters.poll();
-          waiter.complete(proxy);
-        } else {
-          Future<Connection> waiter;
-          while ((waiter = waiters.poll()) != null) {
-            waiter.fail(ar.cause());
-          }
+      if (available.size() > 0) {
+        PooledConnection proxy = available.poll();
+        Future<Connection> waiter = waiters.poll();
+        waiter.complete(proxy);
+      } else {
+        if (size < maxSize) {
+          size++;
+          connector.accept(ar -> {
+            if (ar.succeeded()) {
+              Connection conn = ar.result();
+              PooledConnection proxy = new PooledConnection(conn);
+              all.add(proxy);
+              conn.init(proxy);
+              release(proxy);
+            } else {
+              Future<Connection> waiter;
+              while ((waiter = waiters.poll()) != null) {
+                waiter.fail(ar.cause());
+              }
+            }
+          });
         }
-      });
+      }
     }
   }
 }

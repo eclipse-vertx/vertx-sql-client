@@ -144,4 +144,28 @@ public class ConnectionPoolTest {
     } catch (IllegalStateException ignore) {
     }
   }
+
+  @Test
+  public void testReleaseConnectionWhenWaiterQueueIsEmpty() {
+    ConnectionQueue queue = new ConnectionQueue();
+    ConnectionPool pool = new ConnectionPool(queue, 2);
+    // Acquire a connection from the pool for holder1
+    SimpleHolder holder1 = new SimpleHolder();
+    pool.acquire(holder1);
+    SimpleConnection conn1 = new SimpleConnection();
+    queue.connect(conn1);
+    holder1.init();
+    // Acquire a connection from the pool for holder2
+    SimpleHolder holder2 = new SimpleHolder();
+    pool.acquire(holder2);
+    // Release the first connection so the second waiter gets the connection
+    holder1.close();
+    holder2.init();
+    assertEquals(0, pool.available());
+    // Satisfy the holder with connection it actually asked for
+    SimpleConnection conn2 = new SimpleConnection();
+    queue.connect(conn2);
+    // The connection should be put back in the pool
+    assertEquals(1, pool.available());
+  }
 }
