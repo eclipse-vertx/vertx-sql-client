@@ -419,6 +419,19 @@ public class DataType<T> {
       buff.writeInt(2 + len);
       buff.writerIndex(index + 2 + len);
     }
+    @Override
+    public Buffer decodeBinary(int len, ByteBuf buff) {
+      return Buffer.buffer(buff.readBytes(len));
+    }
+    @Override
+    public void encodeBinary(Buffer value, ByteBuf buff) {
+      int index = buff.writerIndex();
+      buff.writeInt(0);
+      ByteBuf byteBuf = value.getByteBuf();
+      int len = byteBuf.readableBytes();
+      buff.writeBytes(byteBuf);
+      buff.setInt(index, len);
+    }
   };
   public static DataType<Object> BYTEA_ARRAY = new DataType<>(Object.class,1001);
 

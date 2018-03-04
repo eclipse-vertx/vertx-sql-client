@@ -175,7 +175,7 @@ The *Reactive Postgres Client* currently supports the following data types
 |`BYTEA`
 |`io.vertx.core.buffer.Buffer`
 |Yes
-|No
+|Yes
 
 |`JSON`
 |`io.vertx.core.json.Json[Object/Array]`
