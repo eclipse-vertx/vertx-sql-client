@@ -1,5 +1,6 @@
 package com.julienviet.pgclient;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.util.Random;
 import java.util.UUID;
 
 /**
@@ -2179,6 +2181,24 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.of(value), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(value, result.iterator().next().getString(0));
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testBytea(TestContext ctx) {
+    Random r = new Random();
+    int len = 2048;
+    byte[] buff = new byte[len];
+    r.nextBytes(buff);
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT $1::BYTEA",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.of(Buffer.buffer(buff)), ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(result.iterator().next().getBuffer(0), Buffer.buffer(buff));
             async.complete();
           }));
         }));
