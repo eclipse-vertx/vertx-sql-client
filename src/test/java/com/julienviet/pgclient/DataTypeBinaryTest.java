@@ -2164,4 +2164,24 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
         }));
     }));
   }
+
+  @Test
+  public void testEncodeLargeVarchar(TestContext ctx) {
+    int len = 2048;
+    StringBuilder builder = new StringBuilder();
+    for (int i = 0;i < len;i++) {
+      builder.append((char)('A' + (i % 26)));
+    }
+    String value = builder.toString();
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT $1::VARCHAR(" + len + ")",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.of(value), ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(value, result.iterator().next().getString(0));
+            async.complete();
+          }));
+        }));
+    }));
+  }
 }

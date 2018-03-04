@@ -652,8 +652,8 @@ public class DataType<T> {
   public void encodeText(T value, ByteBuf buff) {
     int index = buff.writerIndex();
     String s = String.valueOf(value);
-    int len = buff.setCharSequence(index + 4, s, StandardCharsets.UTF_8);
-    buff.writeInt(len);
-    buff.writerIndex(index + 4 + len);
+    buff.writeInt(0); // Undetermined yet
+    int len = buff.writeCharSequence(s, StandardCharsets.UTF_8);
+    buff.setInt(index, len);
   }
 }
