@@ -96,6 +96,20 @@ public class ConnectionPoolTest {
   }
 
   @Test
+  public void testConnectionCloseInPool() {
+    ConnectionQueue queue = new ConnectionQueue();
+    ConnectionPool pool = new ConnectionPool(queue, 1);
+    SimpleHolder holder = new SimpleHolder();
+    pool.acquire(holder);
+    SimpleConnection conn = new SimpleConnection();
+    queue.connect(conn);
+    holder.init();
+    holder.close();
+    conn.close();
+    assertEquals(0, pool.available());
+  }
+
+  @Test
   public void testDoubleConnectionClose() {
     ConnectionQueue queue = new ConnectionQueue();
     ConnectionPool pool = new ConnectionPool(queue, 1);

@@ -109,10 +109,9 @@ public class ConnectionPool {
     public void handleClosed() {
       if (all.remove(this)) {
         size--;
-        if (holder != null) {
+        if (holder == null) {
           available.remove(this);
-        }
-        if (holder != null) {
+        } else {
           holder.handleClosed();
         }
         check();
