@@ -7,6 +7,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -407,20 +408,23 @@ public class DataTypeTextTest extends DataTypeTestBase {
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
         .query("SELECT 919.999999999999999999999999999999999999::NUMERIC \"Numeric\"", ctx.asyncAssertSuccess(result -> {
+          BigDecimal numeric = new BigDecimal("919.999999999999999999999999999999999999");
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
+          ctx.assertEquals(numeric, row.getValue("Numeric"));
+          ctx.assertEquals(numeric, row.getValue(0));
+          ctx.assertEquals(numeric, row.getBigDecimal("Numeric"));
+          ctx.assertEquals(numeric, row.getBigDecimal(0));
           ctx.assertEquals(920.0, row.getDouble(0));
-          ctx.assertEquals(920.0, row.getValue(0));
           ctx.assertEquals(920.0, row.getDouble("Numeric"));
-          ctx.assertEquals(920.0, row.getValue("Numeric"));
-          ctx.assertNull(row.getBoolean(0));
-          ctx.assertNull(row.getBoolean("Numeric"));
-          ctx.assertEquals(920L, row.getLong(0));
-          ctx.assertEquals(920L, row.getLong("Numeric"));
-          ctx.assertEquals(920, row.getInteger(0));
-          ctx.assertEquals(920, row.getInteger("Numeric"));
           ctx.assertEquals(920f, row.getFloat(0));
           ctx.assertEquals(920f, row.getFloat("Numeric"));
+          ctx.assertEquals(919L, row.getLong(0));
+          ctx.assertEquals(919L, row.getLong("Numeric"));
+          ctx.assertEquals(919, row.getInteger(0));
+          ctx.assertEquals(919, row.getInteger("Numeric"));
+          ctx.assertNull(row.getBoolean(0));
+          ctx.assertNull(row.getBoolean("Numeric"));
           ctx.assertNull(row.getCharacter(0));
           ctx.assertNull(row.getCharacter("Numeric"));
           ctx.assertNull(row.getString(0));
