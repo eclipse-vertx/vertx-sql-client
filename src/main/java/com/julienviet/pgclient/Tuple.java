@@ -25,6 +25,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -307,6 +308,15 @@ public interface Tuple {
   UUID getUUID(int pos);
 
   /**
+   * Get {@link BigDecimal} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  BigDecimal getBigDecimal(int pos);
+
+  /**
    * Get a buffer value at {@code pos}.
    *
    * @param pos the position
@@ -475,6 +485,15 @@ public interface Tuple {
    */
   @GenIgnore
   Tuple addUUID(UUID value);
+
+  /**
+   * Add a {@link BigDecimal} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addBigDecimal(BigDecimal value);
 
   /**
    * @return the tuple size
