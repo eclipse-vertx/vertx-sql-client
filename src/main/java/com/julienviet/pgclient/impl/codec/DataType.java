@@ -191,14 +191,7 @@ public class DataType<T> {
     public Number decodeText(int len, ByteBuf buff) {
       // Todo optimize that
       CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
-      BigDecimal big = new BigDecimal(cs.toString());
-      // julien : that does not seem consistent to either return a Double or BigInteger
-      if (big.scale() == 0) {
-        return big.toBigInteger();
-      } else {
-        // we might loose precision here
-        return big.doubleValue();
-      }
+      return new BigDecimal(cs.toString());
     }
   };
 
