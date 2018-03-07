@@ -94,8 +94,12 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public BigDecimal getBigDecimal(int pos) {
-    if(get(pos) instanceof BigDecimal)
-      return (BigDecimal) get(pos);
+    Object val = get(pos);
+    if(val instanceof BigDecimal) {
+      return (BigDecimal) val;
+    } else if (val instanceof Number) {
+      return new BigDecimal(val.toString());
+    }
     return null;
   }
 
