@@ -23,6 +23,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -130,5 +131,10 @@ public class RowImpl extends ArrayTuple implements Row {
   @Override
   public UUID getUUID(String name) {
     return getUUID(desc.columnIndex(name));
+  }
+
+  @Override
+  public BigDecimal getBigDecimal(String name) {
+    return getBigDecimal(desc.columnIndex(name));
   }
 }

@@ -22,6 +22,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -183,5 +184,14 @@ public interface Row extends Tuple {
    */
   @GenIgnore
   UUID getUUID(String name);
+
+  /**
+   * Get {@link BigDecimal} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  BigDecimal getBigDecimal(String name);
 
 }

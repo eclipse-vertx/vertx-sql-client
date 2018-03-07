@@ -22,6 +22,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -87,6 +88,17 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
       return (Double) val;
     } else if (val instanceof Number) {
       return ((Number) val).doubleValue();
+    }
+    return null;
+  }
+
+  @Override
+  public BigDecimal getBigDecimal(int pos) {
+    Object val = get(pos);
+    if(val instanceof BigDecimal) {
+      return (BigDecimal) val;
+    } else if (val instanceof Number) {
+      return new BigDecimal(val.toString());
     }
     return null;
   }
@@ -295,6 +307,12 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Tuple addUUID(UUID value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addBigDecimal(BigDecimal value) {
     add(value);
     return this;
   }
