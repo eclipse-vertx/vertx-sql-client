@@ -61,135 +61,356 @@
 
     <iframe id="search_frame"></iframe>
 
-    <div id="content"><div id='filecontents'>
-<h1 id="label-Reactive+Postgres+Client">Reactive Postgres Client</h1>
-
-<p><a href="https://travis-ci.org/vietj/reactive-pg-client"><img
-src="https://travis-ci.org/vietj/reactive-pg-client.svg?branch=master"></a></p>
-
-<p>The Reactive Postgres Client is a client for Postgres with a
-straightforward API focusing on scalability and low overhead.</p>
-
-<p>The client is reactive and non blocking, allowing to handle many database
-connections with a single thread.</p>
-
-<h2 id="label-Features">Features</h2>
-<ul><li>
+    <div id="content"><div id='filecontents'><div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><span class="image"><a class="image" href="https://travis-ci.org/vietj/reactive-pg-client"><img src="https://travis-ci.org/vietj/reactive-pg-client.svg?branch=master" alt="Build Status"></a></span></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Simple API focusing on scalability and low overhead.</p>
+</li>
+<li>
+<p>Reactive and non blocking which able to handle many database connections with a single thread.</p>
+</li>
+<li>
+<p>Ranked <strong>#1</strong> in the <a href="https://www.techempower.com/benchmarks/#section=data-r15&amp;hw=ph&amp;test=db">TechEmpower Benchmark Round 15</a> <em>Single query</em> benchmark.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_features">Features</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
 <p>Event driven</p>
-</li><li>
+</li>
+<li>
 <p>Lightweight</p>
-</li><li>
+</li>
+<li>
 <p>Built-in connection pooling</p>
-</li><li>
+</li>
+<li>
 <p>Prepared queries caching</p>
-</li><li>
-<p>Publish / subscribe using Postgres <code>NOTIFY/LISTEN</code></p>
-</li><li>
+</li>
+<li>
+<p>Publish / subscribe using Postgres <code>LISTEN/NOTIFY</code></p>
+</li>
+<li>
 <p>Batch and cursor support</p>
-</li><li>
+</li>
+<li>
 <p>Row streaming</p>
-</li><li>
+</li>
+<li>
 <p>Command pipeling</p>
-</li><li>
+</li>
+<li>
 <p>RxJava 1 and RxJava 2 support</p>
-</li><li>
+</li>
+<li>
 <p>Direct memory to object without unnecessary copies</p>
-</li><li>
+</li>
+<li>
 <p>Java 8 Date and Time support</p>
-</li><li>
+</li>
+<li>
 <p>SSL/TLS support</p>
-</li><li>
+</li>
+<li>
 <p>HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy support</p>
-</li></ul>
-
-<h2 id="label-Using+Postgres+Client">Using Postgres Client</h2>
-
-<p>To use the client, add the following dependency to the
-<em>dependencies</em> section of your build descriptor:</p>
-<ul><li>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_usage">Usage</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To use the client, add the following dependency to the <em>dependencies</em> section of your build descriptor:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
 <p>Maven (in your <code>pom.xml</code>):</p>
-</li></ul>
-
-<pre class="code ruby"><code class="ruby">&lt;dependency&gt;
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-xml" data-lang="xml">&lt;dependency&gt;
   &lt;groupId&gt;com.julienviet&lt;/groupId&gt;
   &lt;artifactId&gt;reactive-pg-client&lt;/artifactId&gt;
-  &lt;version&gt;0.3.1&lt;/version&gt;
+  &lt;version&gt;0.5.1&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
-<ul><li>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
 <p>Gradle (in your <code>build.gradle</code> file):</p>
-</li></ul>
-
-<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_dependencies'>dependencies</span> <span class='lbrace'>{</span>
-  <span class='id identifier rubyid_compile'>compile</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>com.julienviet:reactive-pg-client:0.4.0</span><span class='tstring_end'>&#39;</span></span>
-<span class='rbrace'>}</span>
-</code></pre>
-
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-groovy" data-lang="groovy">dependencies {
+  compile 'com.julienviet:reactive-pg-client:0.5.1'
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
 <p>Then the code is quite straightforward:</p>
-
-<pre class="code ruby"><code class="ruby">PgPoolOptions options = new PgPoolOptions()
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">// Pool options
+PgPoolOptions options = new PgPoolOptions()
   .setPort(5432)
-  .setHost(&quot;the-host&quot;)
-  .setDatabase(&quot;the-db&quot;)
-  .setUsername(&quot;user&quot;)
-  .setPassword(&quot;secret&quot;)
+  .setHost("the-host")
+  .setDatabase("the-db")
+  .setUsername("user")
+  .setPassword("secret")
   .setMaxSize(5);
 
-// Create the pool
-PgPool pool = PgPool.pool(options);
+// Create the client pool
+PgPool client = PgClient.pool(options);
 
 // A simple query
-pool.query(&quot;SELECT * FROM users WHERE id=&#39;julien&#39;&quot;, ar -&gt; {
+client.query("SELECT * FROM users WHERE id='julien'", ar -&gt; {
   if (ar.succeeded()) {
     PgResult&lt;Row&gt; result = ar.result();
-    System.out.println(&quot;Got &quot; + result.size() + &quot; results &quot;);
+    System.out.println("Got " + result.size() + " results ");
   } else {
-    System.out.println(&quot;Failure: &quot; + ar.cause().getMessage());
+    System.out.println("Failure: " + ar.cause().getMessage());
   }
 
-  // Close now the pool
-  pool.close();
+  // Now close the pool
+  client.close();
 });</code></pre>
-
-<h2 id="label-Web-site+docs">Web-site docs</h2>
-<ul><li>
-<p><a
-href="http://www.julienviet.com/reactive-pg-client/guide/java/index.html">Java
-docs</a></p>
-</li><li>
-<p><a
-href="http://www.julienviet.com/reactive-pg-client/guide/groovy/index.html">Groovy
-docs</a></p>
-</li><li>
-<p><a
-href="http://www.julienviet.com/reactive-pg-client/guide/ruby/index.html">Ruby
-docs</a></p>
-</li><li>
-<p><a
-href="http://www.julienviet.com/reactive-pg-client/guide/js/index.html">JavaScript
-docs</a></p>
-</li></ul>
-
-<h2 id="label-Snapshots">Snapshots</h2>
-
-<p>Snapshots are deploy in Sonatype OSS repository: <a
-href="https://oss.sonatype.org/content/repositories/snapshots/com/julienviet/reactive-pg-client">oss.sonatype.org/content/repositories/snapshots/com/julienviet/reactive-pg-client</a>/</p>
-
-<h2 id="label-License">License</h2>
-
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_documentations">Documentations</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><a href="http://www.julienviet.com/reactive-pg-client/guide/java/index.html">Java docs</a></p>
+</li>
+<li>
+<p><a href="https://www.julienviet.com/reactive-pg-client/apidocs/index.html">Javadoc</a></p>
+</li>
+<li>
+<p><a href="http://www.julienviet.com/reactive-pg-client/guide/kotlin/index.html">Kotlin docs</a></p>
+</li>
+<li>
+<p><a href="http://www.julienviet.com/reactive-pg-client/guide/groovy/index.html">Groovy docs</a></p>
+</li>
+<li>
+<p><a href="http://www.julienviet.com/reactive-pg-client/guide/ruby/index.html">Ruby docs</a></p>
+</li>
+<li>
+<p><a href="http://www.julienviet.com/reactive-pg-client/guide/js/index.html">JavaScript docs</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_supported_data_types">Supported Data Types</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Postgres has two protocols <code>TEXT</code> and <code>BINARY</code> to encode/decode data types.</p>
+</div>
+<div class="paragraph">
+<p>The <strong>Reactive Postgres Client</strong> currently supports the following data types</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-center valign-top">Postgres</th>
+<th class="tableblock halign-center valign-top">Java</th>
+<th class="tableblock halign-center valign-top">TEXT</th>
+<th class="tableblock halign-center valign-top">BINARY</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>INT2</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.lang.Short</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>INT4</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.lang.Integer</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>INT8</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.lang.Long</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>FLOAT4</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.lang.Float</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>FLOAT8</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.lang.Double</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>NUMERIC</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.lang.Number</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">No</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>CHAR</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.lang.Character</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">No</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>VARCHAR</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.lang.String</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>TEXT</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.lang.String</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>UUID</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.util.UUID</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>DATE</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.time.LocalDate</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>TIME</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.time.LocalTime</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>TIMETZ</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.time.OffsetTime</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>TIMESTAMP</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.time.LocalDateTime</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>TIMESTAMPTZ</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.time.OffsetDateTime</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>BYTEA</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>io.vertx.core.buffer.Buffer</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>JSON</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>io.vertx.core.json.Json[Object/Array]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">No</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>JSONB</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>io.vertx.core.json.Json[Object/Array]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">No</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+The client uses <code>BINARY</code> protocol only for prepared queries <code>PgClient#preparedQuery</code> and <code>PgClient#preparedBatch</code>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_snapshots">Snapshots</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Snapshots are deploy in Sonatype OSS repository: <a href="https://oss.sonatype.org/content/repositories/snapshots/com/julienviet/reactive-pg-client/" class="bare">https://oss.sonatype.org/content/repositories/snapshots/com/julienviet/reactive-pg-client/</a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_license">License</h2>
+<div class="sectionbody">
+<div class="paragraph">
 <p>Apache License - Version 2.0</p>
-
-<h2 id="label-Publishing+docs">Publishing docs</h2>
-<ul><li>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_publishing_docs">Publishing docs</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
 <p>mvn package -Pdocs</p>
-</li><li>
+</li>
+<li>
 <p>cp -r target/docs docs/</p>
-</li><li>
+</li>
+<li>
 <p>mv docs/reactive-pg-client docs/guide</p>
-</li></ul>
-</div></div>
+</li>
+</ul>
+</div>
+</div>
+</div></div></div>
 
     <div id="footer">
-  Generated on Wed Dec 20 22:22:19 2017 by
+  Generated on Wed Mar  7 12:28:53 2018 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.8.7.6 (ruby-2.3.3).
 </div>
