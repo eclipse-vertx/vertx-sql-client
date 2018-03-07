@@ -43,6 +43,9 @@ public class RowDescription implements InboundMessage {
   }
 
   public int columnIndex(String columnName) {
+    if (columnName == null) {
+      throw new NullPointerException("Column name must not be null");
+    }
     return columnNames.indexOf(columnName);
   }
 

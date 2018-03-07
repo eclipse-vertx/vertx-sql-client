@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(VertxUnitRunner.class)
 public abstract class DataTypeTestBase extends PgTestBase {
+
   Vertx vertx;
 
   protected abstract PgConnectOptions options();

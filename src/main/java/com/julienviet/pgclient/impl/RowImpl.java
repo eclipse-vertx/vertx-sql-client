@@ -45,96 +45,115 @@ public class RowImpl extends ArrayTuple implements Row {
 
   @Override
   public Boolean getBoolean(String name) {
-    return getBoolean(desc.columnIndex(name));
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getBoolean(pos);
   }
 
   @Override
   public Object getValue(String name) {
-    return getValue(desc.columnIndex(name));
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getValue(pos);
   }
 
   @Override
   public Integer getInteger(String name) {
-    return getInteger(desc.columnIndex(name));
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getInteger(pos);
   }
 
   @Override
   public Long getLong(String name) {
-    return getLong(desc.columnIndex(name));
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getLong(pos);
   }
 
   @Override
   public Float getFloat(String name) {
-    return getFloat(desc.columnIndex(name));
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getFloat(pos);
   }
 
   @Override
   public Double getDouble(String name) {
-    return getDouble(desc.columnIndex(name));
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getDouble(pos);
   }
 
   @Override
   public Character getCharacter(String name) {
-    return getCharacter(desc.columnIndex(name));
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getCharacter(pos);
   }
 
   @Override
   public String getString(String name) {
-    return getString(desc.columnIndex(name));
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getString(pos);
   }
 
   @Override
   public JsonObject getJsonObject(String name) {
-    return getJsonObject(desc.columnIndex(name));
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getJsonObject(pos);
   }
 
   @Override
   public JsonArray getJsonArray(String name) {
-    return getJsonArray(desc.columnIndex(name));
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getJsonArray(pos);
   }
 
   @Override
   public Buffer getBuffer(String name) {
-    return getBuffer(desc.columnIndex(name));
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getBuffer(pos);
   }
 
   @Override
   public Temporal getTemporal(String name) {
-    return getTemporal(desc.columnIndex(name));
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getTemporal(pos);
   }
 
   @Override
   public LocalDate getLocalDate(String name) {
-    return getLocalDate(desc.columnIndex(name));
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getLocalDate(pos);
   }
 
   @Override
   public LocalTime getLocalTime(String name) {
-    return getLocalTime(desc.columnIndex(name));
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getLocalTime(pos);
   }
 
   @Override
   public LocalDateTime getLocalDateTime(String name) {
-    return getLocalDateTime(desc.columnIndex(name));
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getLocalDateTime(pos);
   }
 
   @Override
   public OffsetTime getOffsetTime(String name) {
-    return getOffsetTime(desc.columnIndex(name));
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getOffsetTime(pos);
   }
 
   @Override
   public OffsetDateTime getOffsetDateTime(String name) {
-    return getOffsetDateTime(desc.columnIndex(name));
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getOffsetDateTime(pos);
   }
 
   @Override
   public UUID getUUID(String name) {
-    return getUUID(desc.columnIndex(name));
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getUUID(pos);
   }
 
   @Override
   public BigDecimal getBigDecimal(String name) {
-    return getBigDecimal(desc.columnIndex(name));
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getBigDecimal(pos);
   }
 }
