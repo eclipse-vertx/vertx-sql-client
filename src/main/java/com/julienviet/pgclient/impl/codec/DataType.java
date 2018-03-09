@@ -18,6 +18,7 @@
 package com.julienviet.pgclient.impl.codec;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.julienviet.pgclient.Numeric;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
@@ -27,7 +28,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -191,7 +191,7 @@ public class DataType<T> {
     public Number decodeText(int len, ByteBuf buff) {
       // Todo optimize that
       CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
-      return new BigDecimal(cs.toString());
+      return Numeric.parse(cs.toString());
     }
   };
 

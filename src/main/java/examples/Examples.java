@@ -23,6 +23,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -522,5 +523,14 @@ public class Examples {
         System.out.println("Could not connect " + res.cause());
       }
     });
+  }
+
+  public void numericExample(Row row) {
+    Numeric numeric = row.getNumeric("value");
+    if (numeric.isNaN()) {
+      // Handle NaN
+    } else {
+      BigDecimal value = numeric.bigDecimalValue();
+    }
   }
 }

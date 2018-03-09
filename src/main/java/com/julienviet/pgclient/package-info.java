@@ -253,6 +253,17 @@
  * {@link examples.Examples#transaction02(com.julienviet.pgclient.PgPool)}
  * ----
  *
+ * == Postgres type mapping
+ *
+ * === Handling NUMERIC
+ *
+ * The {@link com.julienviet.pgclient.Numeric} Java type is used to represent the Postgres `NUMERIC` type.
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#numericExample(com.julienviet.pgclient.Row)}
+ * ----
+ *
  * == Pub/sub
  *
  * Postgres supports pub/sub communication channels.

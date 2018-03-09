@@ -317,6 +317,15 @@ public interface Tuple {
   BigDecimal getBigDecimal(int pos);
 
   /**
+   * Get {@link Numeric} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Numeric getNumeric(int pos);
+
+  /**
    * Get a buffer value at {@code pos}.
    *
    * @param pos the position
@@ -494,6 +503,15 @@ public interface Tuple {
    */
   @GenIgnore
   Tuple addBigDecimal(BigDecimal value);
+
+  /**
+   * Add a {@link Numeric} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addNumeric(Numeric value);
 
   /**
    * @return the tuple size

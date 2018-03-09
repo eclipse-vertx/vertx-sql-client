@@ -521,6 +521,23 @@ pool.get_connection() { |res_err,res|
 
 ----
 
+== Postgres type mapping
+
+=== Handling NUMERIC
+
+The `link:unavailable[Numeric]` Java type is used to represent the Postgres `NUMERIC` type.
+
+[source,ruby]
+----
+numeric = row.get_numeric("value")
+if (numeric.na_n?())
+  # Handle NaN
+else
+  value = numeric.big_decimal_value()
+end
+
+----
+
 == Pub/sub
 
 Postgres supports pub/sub communication channels.
