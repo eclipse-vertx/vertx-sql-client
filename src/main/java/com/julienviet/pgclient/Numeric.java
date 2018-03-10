@@ -18,7 +18,6 @@ package com.julienviet.pgclient;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Objects;
 
 /**
  * The Postgres <i>NUMERIC</i> type.
@@ -28,28 +27,27 @@ public final class Numeric extends Number {
   /**
    * Constant for the {@code NaN} value.
    */
-  public static final Numeric NaN = new Numeric(null);
+  public static final Numeric NaN = new Numeric(Double.NaN);
 
-  private BigDecimal value;
+  private final Number value;
 
   /**
    * Return a {@code Numeric} instance for the given {@code number}.
+   * <p/>
+   * Null values or infinite {@code Double} or {@code Float} are rejected.
    *
    * @param number the number
    * @return the {@code Numeric} value
+   * @throws NumberFormatException when the number is infinite
    */
   public static Numeric create(Number number) {
-    if (number instanceof BigDecimal) {
-      return new Numeric((BigDecimal) number);
-    } else if (number instanceof BigInteger) {
-      return new Numeric(new BigDecimal((BigInteger) number));
-    } else if (number instanceof Integer || number instanceof Long) {
-      return new Numeric(new BigDecimal(number.longValue()));
-    } else if (number instanceof Float || number instanceof Double) {
-      return new Numeric(new BigDecimal(number.doubleValue()));
-    } else {
-      return new Numeric(new BigDecimal(number.toString()));
+    if (number == null) {
+      throw new NullPointerException();
     }
+    if (number instanceof Double && ((Double)number).isInfinite() || number instanceof Float && ((Float)number).isInfinite()) {
+      throw new NumberFormatException("Infinite numbers are not valid numerics");
+    }
+    return new Numeric(number);
   }
 
   /**
@@ -61,42 +59,43 @@ public final class Numeric extends Number {
    * @return the {@code Numeric} value
    */
   public static Numeric parse(String s) {
-    if (s.equals("NaN")) {
-      return NaN;
-    } else {
-      return new Numeric(new BigDecimal(s));
+    switch (s) {
+      case "NaN":
+        return NaN;
+      default:
+        return new Numeric(new BigDecimal(s));
     }
   }
 
-  private Numeric(BigDecimal value) {
+  private Numeric(Number value) {
     this.value = value;
   }
 
   @Override
   public int intValue() {
-    return (value == null ? new Double(Double.NaN) : value).intValue();
+    return value.intValue();
   }
 
   @Override
   public long longValue() {
-    return (value == null ? new Double(Double.NaN) : value).longValue();
+    return value.longValue();
   }
 
   @Override
   public float floatValue() {
-    return value == null ? Float.NaN : value.floatValue();
+    return value.floatValue();
   }
 
   @Override
   public double doubleValue() {
-    return value == null ? Double.NaN : value.doubleValue();
+    return value.doubleValue();
   }
 
   /**
    * @return {@code true} when this number represents {@code NaN}
    */
   public boolean isNaN() {
-    return value == null;
+    return value instanceof Double && ((Double)value).isNaN() || value instanceof Float && ((Float)value).isNaN();
   }
 
   /**
@@ -104,7 +103,15 @@ public final class Numeric extends Number {
    *          to type {@code BigDecimal}.
    */
   public BigDecimal bigDecimalValue() {
-     return value;
+    if (value instanceof BigDecimal) {
+      return (BigDecimal) value;
+    } else if (value instanceof BigInteger) {
+      return new BigDecimal((BigInteger)value);
+    } else if (isNaN()) {
+      return null;
+    } else {
+      return new BigDecimal(value.toString());
+    }
   }
 
   /**
@@ -112,21 +119,44 @@ public final class Numeric extends Number {
    *          to type {@code BigInteger}.
    */
   public BigInteger bigIntegerValue() {
-    return value.toBigInteger();
+    if (value instanceof BigInteger) {
+      return (BigInteger) value;
+    } else if (value instanceof BigDecimal) {
+      return ((BigDecimal)value).toBigInteger();
+    } else if (isNaN()) {
+      return null;
+    } else {
+      return new BigInteger(Long.toString(value.longValue()));
+    }
   }
 
   @Override
   public boolean equals(Object obj) {
-    return obj instanceof Numeric && Objects.equals(((Numeric) obj).value, value);
+    if (obj instanceof Numeric) {
+      Numeric that = (Numeric) obj;
+      if (value.getClass() == that.value.getClass()) {
+        return value.equals(that.value);
+      } else {
+        BigDecimal l = bigDecimalValue();
+        BigDecimal r = that.bigDecimalValue();
+        if (l == null) {
+          return r == null;
+        } else if (r == null) {
+          return false;
+        }
+        return l.compareTo(r) == 0;
+      }
+    }
+    return false;
   }
 
   @Override
   public int hashCode() {
-    return value == null ? 0 : value.hashCode();
+    return intValue();
   }
 
   @Override
   public String toString() {
-    return value == null ? "NaN" : value.toString();
+    return value.toString();
   }
 }
