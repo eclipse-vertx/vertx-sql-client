@@ -42,7 +42,7 @@ public class ExtendedQueryResultHandler<T> implements QueryResultHandler<T> {
 
   @Override
   public void handle(AsyncResult<Boolean> res) {
-    suspended = res.result();
+    suspended = res.succeeded() && res.result();
     handler.handle(res.map(result));
   }
 }
