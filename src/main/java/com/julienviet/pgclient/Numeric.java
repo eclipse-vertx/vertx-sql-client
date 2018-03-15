@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Julien Viet
+ * Copyright (C) 2018 Julien Viet
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,7 +100,8 @@ public final class Numeric extends Number {
 
   /**
    * @return  the numeric value represented by this object after conversion
-   *          to type {@code BigDecimal}.
+   *          to type {@code BigDecimal}. It can be {@code null} when this instance
+   *          represents the {@code NaN} value.
    */
   public BigDecimal bigDecimalValue() {
     if (value instanceof BigDecimal) {
@@ -116,7 +117,8 @@ public final class Numeric extends Number {
 
   /**
    * @return  the numeric value represented by this object after conversion
-   *          to type {@code BigInteger}.
+   *          to type {@code BigInteger}. It can be {@code null} when this instance
+   *          represents the {@code NaN} value.
    */
   public BigInteger bigIntegerValue() {
     if (value instanceof BigInteger) {
