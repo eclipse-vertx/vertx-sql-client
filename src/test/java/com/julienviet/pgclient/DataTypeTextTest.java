@@ -422,14 +422,18 @@ public class DataTypeTextTest extends DataTypeTestBase {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("SELECT 919.999999999999999999999999999999999999::NUMERIC \"Numeric\"", ctx.asyncAssertSuccess(result -> {
-          BigDecimal numeric = new BigDecimal("919.999999999999999999999999999999999999");
+        .query("SELECT 919.999999999999999999999999999999999999::NUMERIC \"Numeric\", 'NaN'::NUMERIC \"NaN\"", ctx.asyncAssertSuccess(result -> {
+          Numeric numeric = Numeric.parse("919.999999999999999999999999999999999999");
+          Numeric nan = Numeric.parse("NaN");
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
+
           ctx.assertEquals(numeric, row.getValue("Numeric"));
           ctx.assertEquals(numeric, row.getValue(0));
-          ctx.assertEquals(numeric, row.getBigDecimal("Numeric"));
-          ctx.assertEquals(numeric, row.getBigDecimal(0));
+          ctx.assertEquals(numeric, row.getNumeric("Numeric"));
+          ctx.assertEquals(numeric, row.getNumeric(0));
+          ctx.assertEquals(numeric.bigDecimalValue(), row.getBigDecimal("Numeric"));
+          ctx.assertEquals(numeric.bigDecimalValue(), row.getBigDecimal(0));
           ctx.assertEquals(920.0, row.getDouble(0));
           ctx.assertEquals(920.0, row.getDouble("Numeric"));
           ctx.assertEquals(920f, row.getFloat(0));
@@ -438,32 +442,59 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertEquals(919L, row.getLong("Numeric"));
           ctx.assertEquals(919, row.getInteger(0));
           ctx.assertEquals(919, row.getInteger("Numeric"));
-          ctx.assertNull(row.getBoolean(0));
-          ctx.assertNull(row.getBoolean("Numeric"));
-          ctx.assertNull(row.getCharacter(0));
-          ctx.assertNull(row.getCharacter("Numeric"));
-          ctx.assertNull(row.getString(0));
-          ctx.assertNull(row.getString("Numeric"));
-          ctx.assertNull(row.getJsonObject(0));
-          ctx.assertNull(row.getJsonObject("Numeric"));
-          ctx.assertNull(row.getJsonArray(0));
-          ctx.assertNull(row.getJsonArray("Numeric"));
-          ctx.assertNull(row.getBuffer(0));
-          ctx.assertNull(row.getBuffer("Numeric"));
-          ctx.assertNull(row.getTemporal(0));
-          ctx.assertNull(row.getTemporal("Numeric"));
-          ctx.assertNull(row.getLocalDate(0));
-          ctx.assertNull(row.getLocalDate("Numeric"));
-          ctx.assertNull(row.getLocalTime(0));
-          ctx.assertNull(row.getLocalTime("Numeric"));
-          ctx.assertNull(row.getOffsetTime(0));
-          ctx.assertNull(row.getOffsetTime("Numeric"));
-          ctx.assertNull(row.getLocalDateTime(0));
-          ctx.assertNull(row.getLocalDateTime("Numeric"));
-          ctx.assertNull(row.getOffsetDateTime(0));
-          ctx.assertNull(row.getOffsetDateTime("Numeric"));
-          ctx.assertNull(row.getUUID(0));
-          ctx.assertNull(row.getUUID("Numeric"));
+
+          ctx.assertEquals(nan, row.getValue("NaN"));
+          ctx.assertEquals(nan, row.getValue(1));
+          ctx.assertEquals(nan, row.getNumeric("NaN"));
+          ctx.assertEquals(nan, row.getNumeric(1));
+          try {
+            ctx.assertEquals(null, row.getBigDecimal("NaN"));
+            ctx.fail();
+          } catch (NumberFormatException ignore) {
+          }
+          try {
+            ctx.assertEquals(null, row.getBigDecimal(1));
+            ctx.fail();
+          } catch (NumberFormatException ignore) {
+          }
+          ctx.assertTrue(Double.isNaN(row.getDouble(1)));
+          ctx.assertTrue(Double.isNaN(row.getDouble("NaN")));
+          ctx.assertTrue(Float.isNaN(row.getFloat(1)));
+          ctx.assertTrue(Float.isNaN(row.getFloat("NaN")));
+          ctx.assertEquals(0, row.getInteger(1));
+          ctx.assertEquals(0, row.getInteger("NaN"));
+          ctx.assertEquals(0L, row.getLong(1));
+          ctx.assertEquals(0L, row.getLong("NaN"));
+          String[] columns = { "Numeric", "NaN" };
+          for (int index = 0;index < columns.length;index++) {
+            String column = columns[index];
+            ctx.assertNull(row.getBoolean(index));
+            ctx.assertNull(row.getBoolean(column));
+            ctx.assertNull(row.getCharacter(index));
+            ctx.assertNull(row.getCharacter(column));
+            ctx.assertNull(row.getString(index));
+            ctx.assertNull(row.getString(column));
+            ctx.assertNull(row.getJsonObject(index));
+            ctx.assertNull(row.getJsonObject(column));
+            ctx.assertNull(row.getJsonArray(index));
+            ctx.assertNull(row.getJsonArray(column));
+            ctx.assertNull(row.getBuffer(index));
+            ctx.assertNull(row.getBuffer(column));
+            ctx.assertNull(row.getTemporal(index));
+            ctx.assertNull(row.getTemporal(column));
+            ctx.assertNull(row.getLocalDate(index));
+            ctx.assertNull(row.getLocalDate(column));
+            ctx.assertNull(row.getLocalTime(index));
+            ctx.assertNull(row.getLocalTime(column));
+            ctx.assertNull(row.getOffsetTime(index));
+            ctx.assertNull(row.getOffsetTime(column));
+            ctx.assertNull(row.getLocalDateTime(index));
+            ctx.assertNull(row.getLocalDateTime(column));
+            ctx.assertNull(row.getOffsetDateTime(index));
+            ctx.assertNull(row.getOffsetDateTime(column));
+            ctx.assertNull(row.getUUID(index));
+            ctx.assertNull(row.getUUID(column));
+          }
           async.complete();
         }));
     }));

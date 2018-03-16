@@ -521,6 +521,23 @@ pool.getConnection(function (res, res_err) {
 
 ----
 
+== Postgres type mapping
+
+=== Handling NUMERIC
+
+The `Numeric` Java type is used to represent the Postgres `NUMERIC` type.
+
+[source,js]
+----
+var numeric = row.getNumeric("value");
+if (numeric.isNaN()) {
+  // Handle NaN
+} else {
+  var value = numeric.bigDecimalValue();
+}
+
+----
+
 == Pub/sub
 
 Postgres supports pub/sub communication channels.

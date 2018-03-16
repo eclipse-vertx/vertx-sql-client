@@ -194,4 +194,12 @@ public interface Row extends Tuple {
   @GenIgnore
   BigDecimal getBigDecimal(String name);
 
+  /**
+   * Get {@link Numeric} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Numeric getNumeric(String name);
 }

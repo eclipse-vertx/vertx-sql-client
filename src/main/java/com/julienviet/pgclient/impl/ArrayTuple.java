@@ -17,6 +17,7 @@
 
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.Numeric;
 import com.julienviet.pgclient.Tuple;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
@@ -99,6 +100,17 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
       return (BigDecimal) val;
     } else if (val instanceof Number) {
       return new BigDecimal(val.toString());
+    }
+    return null;
+  }
+
+  @Override
+  public Numeric getNumeric(int pos) {
+    Object val = get(pos);
+    if(val instanceof Numeric) {
+      return (Numeric) val;
+    } else if (val instanceof Number) {
+      return Numeric.parse(val.toString());
     }
     return null;
   }
@@ -313,6 +325,12 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Tuple addBigDecimal(BigDecimal value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addNumeric(Numeric value) {
     add(value);
     return this;
   }

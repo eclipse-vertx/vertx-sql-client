@@ -60,6 +60,7 @@ public class RowTest extends PgTestBase {
             row::getInteger,
             row::getLong,
             row::getBigDecimal,
+            row::getNumeric,
             row::getFloat,
             row::getLocalDate,
             row::getLocalTime,

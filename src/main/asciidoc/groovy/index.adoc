@@ -508,6 +508,23 @@ pool.getConnection({ res ->
 
 ----
 
+== Postgres type mapping
+
+=== Handling NUMERIC
+
+The `link:../../apidocs/com/julienviet/pgclient/Numeric.html[Numeric]` Java type is used to represent the Postgres `NUMERIC` type.
+
+[source,groovy]
+----
+def numeric = row.getNumeric("value")
+if (numeric.isNaN()) {
+  // Handle NaN
+} else {
+  def value = numeric.bigDecimalValue()
+}
+
+----
+
 == Pub/sub
 
 Postgres supports pub/sub communication channels.

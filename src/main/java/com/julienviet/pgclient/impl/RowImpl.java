@@ -17,6 +17,7 @@
 
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.Numeric;
 import com.julienviet.pgclient.Row;
 import com.julienviet.pgclient.impl.codec.decoder.message.RowDescription;
 import io.vertx.core.buffer.Buffer;
@@ -155,5 +156,11 @@ public class RowImpl extends ArrayTuple implements Row {
   public BigDecimal getBigDecimal(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getBigDecimal(pos);
+  }
+
+  @Override
+  public Numeric getNumeric(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getNumeric(pos);
   }
 }
