@@ -211,6 +211,31 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   }
 
   @Test
+  public void testInsertReturning(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("INSERT INTO Fortune (id, message) VALUES ($1, $2) RETURNING id", Tuple.of(14, "SomeMessage"), ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(14, result.iterator().next().getInteger("id"));
+        async.complete();
+      }));
+    }));
+  }
+
+  @Test
+  public void testInsertReturningError(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("INSERT INTO Fortune (id, message) VALUES ($1, $2) RETURNING id", Tuple.of(15, "SomeMessage"), ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(15, result.iterator().next().getInteger("id"));
+        conn.preparedQuery("INSERT INTO Fortune (id, message) VALUES ($1, $2) RETURNING id", Tuple.of(15, "SomeMessage"), ctx.asyncAssertFailure(err -> {
+          ctx.assertEquals("23505", ((PgException) err).getCode());
+          async.complete();
+        }));
+      }));
+      }));
+  }
+
+  @Test
   public void testDelete(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
