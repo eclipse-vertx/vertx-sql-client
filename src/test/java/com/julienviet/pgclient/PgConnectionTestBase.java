@@ -255,7 +255,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
         batch.add(Tuple.of("val0", 1));
         batch.add(Tuple.of("val1", 2));
         ps.batch(batch, ctx.asyncAssertSuccess(result -> {
-          for (int i = 0; i < 2; i++) {
+          for (int i = 0;i < 2;i++) {
             ctx.assertEquals(1, result.updatedCount());
             result = result.next();
           }
