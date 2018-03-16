@@ -585,7 +585,7 @@ scalability and low overhead.</p>
 <pre class="CodeRay highlight"><code data-lang="xml"><span class="tag">&lt;dependency&gt;</span>
   <span class="tag">&lt;groupId&gt;</span>com.julienviet<span class="tag">&lt;/groupId&gt;</span>
   <span class="tag">&lt;artifactId&gt;</span>reactive-pg-client<span class="tag">&lt;/artifactId&gt;</span>
-  <span class="tag">&lt;version&gt;</span>0.5.2<span class="tag">&lt;/version&gt;</span>
+  <span class="tag">&lt;version&gt;</span>0.6.0<span class="tag">&lt;/version&gt;</span>
 <span class="tag">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
@@ -599,7 +599,7 @@ scalability and low overhead.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="groovy">dependencies {
-  compile <span class="string"><span class="delimiter">'</span><span class="content">com.julienviet:reactive-pg-client:0.5.2</span><span class="delimiter">'</span></span>
+  compile <span class="string"><span class="delimiter">'</span><span class="content">com.julienviet:reactive-pg-client:0.6.0</span><span class="delimiter">'</span></span>
 }</code></pre>
 </div>
 </div>
@@ -1116,6 +1116,27 @@ is called:</p>
 </div>
 </div>
 <div class="sect1">
+<h2 id="_postgres_type_mapping">Postgres type mapping</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_handling_numeric">Handling NUMERIC</h3>
+<div class="paragraph">
+<p>The <code><a href="unavailable">Numeric</a></code> Java type is used to represent the Postgres <code>NUMERIC</code> type.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="ruby">numeric = row.get_numeric(<span class="string"><span class="delimiter">&quot;</span><span class="content">value</span><span class="delimiter">&quot;</span></span>)
+<span class="keyword">if</span> (numeric.na_n?())
+  <span class="comment"># Handle NaN</span>
+<span class="keyword">else</span>
+  value = numeric.big_decimal_value()
+<span class="keyword">end</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="_pub_sub">Pub/sub</h2>
 <div class="sectionbody">
 <div class="paragraph">
@@ -1265,7 +1286,7 @@ options = {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2018-03-07 12:28:03 CET
+Last updated 2018-03-16 11:43:58 CET
 </div>
 </div>
 </body>

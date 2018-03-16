@@ -33,7 +33,7 @@ To use the client, add the following dependency to the _dependencies_ section of
 <dependency>
   <groupId>com.julienviet</groupId>
   <artifactId>reactive-pg-client</artifactId>
-  <version>0.5.2</version>
+  <version>0.6.0</version>
 </dependency>
 ----
 
@@ -42,7 +42,7 @@ To use the client, add the following dependency to the _dependencies_ section of
 [source,groovy]
 ----
 dependencies {
-  compile 'com.julienviet:reactive-pg-client:0.5.2'
+  compile 'com.julienviet:reactive-pg-client:0.6.0'
 }
 ----
 
