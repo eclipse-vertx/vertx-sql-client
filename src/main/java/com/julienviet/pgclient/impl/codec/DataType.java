@@ -476,14 +476,59 @@ public class DataType<T> {
         int len = byteBuf.readableBytes();
         buff.writeBytes(byteBuf);
         buff.setInt(index, len);
+        return;
+      }
 
-      } else if (String.class.equals(value.getClass())) {
+      // Do for JSON array e.g. [{"x":1},{"x":2},{"x":3}]
+      if (JsonArray.class.equals(value.getClass())) {
+        int index = buff.writerIndex();
+        buff.writeInt(0);
+        ByteBuf byteBuf = ((JsonArray) value).toBuffer().getByteBuf();
+        int len = byteBuf.readableBytes();
+        buff.writeBytes(byteBuf);
+        buff.setInt(index, len);
+        return;
+      }
+
+      // Do for scalar values or plain JSON string
+      if (String.class.equals(value.getClass())) {
         byte[] bytes = ((String)value).getBytes();
         buff.writeInt(bytes.length);
         buff.writeBytes(bytes);
-      } else{
-        super.encodeBinary(value, buff);
+        return;
       }
+
+//      if (Integer.class.equals(value.getClass())) {
+//        System.out.println("Int value: " + value.toString());
+//        buff.writeInt(4);
+//        buff.writeInt((Integer) value);
+//        return;
+//      }
+//
+//      if (Long.class.equals(value.getClass())) {
+//        buff.writeInt(8);
+//        buff.writeLong((Long) value);
+//        return;
+//      }
+//
+//      if (Float.class.equals(value.getClass())) {
+//        buff.writeInt(8);
+//        buff.writeFloat((Float) value);
+//        return;
+//      }
+//
+//      if (Boolean.class.equals(value.getClass())) {
+//        buff.writeInt(1);
+//        buff.writeBoolean((Boolean) value);
+//        return;
+//      }
+//
+//      if (Double.class.equals(value.getClass())) {
+//        buff.writeInt(8);
+//        buff.writeDouble((Double) value);
+//        return;
+//      }
+      super.encodeBinary(value, buff);
     }
 
     @Override
@@ -494,7 +539,8 @@ public class DataType<T> {
       byte[] jsonBytes = new byte[len];
       buff.readBytes(jsonBytes, 0, len);
       // Could use improvement as we're creating a String from the bytes
-      return new JsonObject(new String(jsonBytes, StandardCharsets.UTF_8));
+      String jsonString = new String(jsonBytes, StandardCharsets.UTF_8);
+      return DataType.decodeJson(jsonString);
     }
 
   };
