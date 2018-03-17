@@ -459,7 +459,6 @@ public class DataType<T> {
   };
   public static DataType<Object> UUID_ARRAY = new DataType<>(Object.class,2951);
 
-  // Text JSON
   public static final DataType<Object> JSON = new DataType<Object>(Object.class,114) {
     @Override
     public Object decodeText(int len, ByteBuf buff) {
@@ -467,7 +466,39 @@ public class DataType<T> {
       CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
       return decodeJson(cs.toString());
     }
+
+    @Override
+    public void encodeBinary(Object value, ByteBuf buff) {
+      if(JsonObject.class.equals(value.getClass())) {
+        int index = buff.writerIndex();
+        buff.writeInt(0);
+        ByteBuf byteBuf = ((JsonObject) value).toBuffer().getByteBuf();
+        int len = byteBuf.readableBytes();
+        buff.writeBytes(byteBuf);
+        buff.setInt(index, len);
+
+      } else if (String.class.equals(value.getClass())) {
+        byte[] bytes = ((String)value).getBytes();
+        buff.writeInt(bytes.length);
+        buff.writeBytes(bytes);
+      } else{
+        super.encodeBinary(value, buff);
+      }
+    }
+
+    @Override
+    public Object decodeBinary(int len, ByteBuf buff) {
+      if (len == 0) {
+        return null;
+      }
+      byte[] jsonBytes = new byte[len];
+      buff.readBytes(jsonBytes, 0, len);
+      // Could use improvement as we're creating a String from the bytes
+      return new JsonObject(new String(jsonBytes, StandardCharsets.UTF_8));
+    }
+
   };
+
   // Binary JSON
   public static final DataType<Object> JSONB = new DataType<Object>(Object.class,3802) {
     @Override

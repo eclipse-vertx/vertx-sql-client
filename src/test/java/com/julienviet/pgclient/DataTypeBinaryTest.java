@@ -1,6 +1,7 @@
 package com.julienviet.pgclient;
 
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
@@ -2202,6 +2203,57 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             async.complete();
           }));
         }));
+    }));
+  }
+
+  @Test
+  public void testJsonObject(TestContext ctx) {
+    Async async = ctx.async();
+    String json = "{\"str\":\"blah\", \"int\" : 1, \"float\":3.5, \"object\": {}, \"array\" : []}";
+    JsonObject jsonObject = new JsonObject(json);
+    Tuple tuple = Tuple.of(jsonObject);
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("SELECT ($1::JSON) \"JsonObject\"", tuple, ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.size());
+        Row row = result.iterator().next();
+        ctx.assertEquals(jsonObject, row.getValue(0));
+        ctx.assertEquals(jsonObject, row.getJsonObject(0));
+        ctx.assertEquals(jsonObject, row.getValue("JsonObject"));
+        ctx.assertEquals(jsonObject, row.getJsonObject("JsonObject"));
+        ctx.assertNull(row.getBoolean(0));
+        ctx.assertNull(row.getBoolean("JsonObject"));
+        ctx.assertNull(row.getLong(0));
+        ctx.assertNull(row.getLong("JsonObject"));
+        ctx.assertNull(row.getInteger(0));
+        ctx.assertNull(row.getInteger("JsonObject"));
+        ctx.assertNull(row.getFloat(0));
+        ctx.assertNull(row.getFloat("JsonObject"));
+        ctx.assertNull(row.getDouble(0));
+        ctx.assertNull(row.getDouble("JsonObject"));
+        ctx.assertNull(row.getCharacter(0));
+        ctx.assertNull(row.getCharacter("JsonObject"));
+        ctx.assertNull(row.getString(0));
+        ctx.assertNull(row.getString("JsonObject"));
+        ctx.assertNull(row.getJsonArray(0));
+        ctx.assertNull(row.getJsonArray("JsonObject"));
+        ctx.assertNull(row.getBuffer(0));
+        ctx.assertNull(row.getBuffer("JsonObject"));
+        ctx.assertNull(row.getTemporal(0));
+        ctx.assertNull(row.getTemporal("JsonObject"));
+        ctx.assertNull(row.getLocalDate(0));
+        ctx.assertNull(row.getLocalDate("JsonObject"));
+        ctx.assertNull(row.getLocalTime(0));
+        ctx.assertNull(row.getLocalTime("JsonObject"));
+        ctx.assertNull(row.getOffsetTime(0));
+        ctx.assertNull(row.getOffsetTime("JsonObject"));
+        ctx.assertNull(row.getLocalDateTime(0));
+        ctx.assertNull(row.getLocalDateTime("JsonObject"));
+        ctx.assertNull(row.getOffsetDateTime(0));
+        ctx.assertNull(row.getOffsetDateTime("JsonObject"));
+        ctx.assertNull(row.getUUID(0));
+        ctx.assertNull(row.getUUID("JsonObject"));
+        async.complete();
+      }));
     }));
   }
 }
