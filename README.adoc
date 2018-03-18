@@ -180,12 +180,12 @@ The *Reactive Postgres Client* currently supports the following data types
 |`JSON`
 |`io.vertx.core.json.Json[Object/Array]`
 |Yes
-|No
+|Yes
 
 |`JSONB`
 |`io.vertx.core.json.Json[Object/Array]`
 |Yes
-|No
+|Yes
 
 |====
 

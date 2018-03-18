@@ -463,6 +463,25 @@ public class DataType<T> {
       CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
       return Json.create(decodeJson(cs.toString()));
     }
+    @Override
+    public Json decodeBinary(int len, ByteBuf buff) {
+      CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
+      return Json.create(decodeJson(cs.toString()));
+    }
+    @Override
+    public boolean accept(Object value) {
+      return value instanceof Json
+        || value instanceof String
+        || value instanceof Boolean
+        || value instanceof Number;
+    }
+    @Override
+    public void encodeBinary(Object value, ByteBuf buff) {
+      if (value instanceof Json) {
+        value = ((Json) value).value();
+      }
+      DataType.TEXT.encodeText(io.vertx.core.json.Json.encode(value), buff);
+    }
   };
   // Binary JSON
   public static final DataType<Json> JSONB = new DataType<Json>(Json.class,3802) {
@@ -472,6 +491,27 @@ public class DataType<T> {
       // Try to do without the intermediary String
       CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
       return Json.create(decodeJson(cs.toString()));
+    }
+    @Override
+    public boolean accept(Object value) {
+      return JSON.accept(value);
+    }
+    @Override
+    public void encodeBinary(Object value, ByteBuf buff) {
+      if (value instanceof Json) {
+        value = ((Json) value).value();
+      }
+      int index = buff.writerIndex();
+      String s = io.vertx.core.json.Json.encode(value);
+      buff.writeInt(0); // Undetermined yet
+      buff.writeByte(1); // version
+      int len = buff.writeCharSequence(s, StandardCharsets.UTF_8);
+      buff.setInt(index, len + 1);
+    }
+    @Override
+    public Json decodeBinary(int len, ByteBuf buff) {
+      buff.readerIndex(buff.readerIndex() + 1); // Skip 1 byte for version (which is 1)
+      return decodeText(len - 1, buff);
     }
   };
   // XML

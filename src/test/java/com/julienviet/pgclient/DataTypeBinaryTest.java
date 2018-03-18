@@ -1,6 +1,8 @@
 package com.julienviet.pgclient;
 
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
@@ -757,6 +759,139 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
     }));
   }
 
+  @Test
+  public void testDecodeJson(TestContext ctx) {
+    testDecodeJson(ctx, "JsonDataType");
+  }
+
+  @Test
+  public void testDecodeJsonb(TestContext ctx) {
+    testDecodeJson(ctx, "JsonbDataType");
+  }
+
+  private void testDecodeJson(TestContext ctx, String tableName) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"JsonObject\", \"JsonArray\", \"Number\", \"String\", \"BooleanTrue\", \"BooleanFalse\", \"Null\" FROM \"" + tableName + "\" WHERE \"id\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.size());
+            ctx.assertEquals(1, result.updatedCount());
+            Row row = result.iterator().next();
+            JsonObject object = new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []}");
+            JsonArray array = new JsonArray("[1,true,null,9.5,\"Hi\"]");
+            ColumnChecker.checkColumn(0, "JsonObject")
+              .returns(Tuple::getValue, Row::getValue, Json.create(object))
+              .returns(Tuple::getJsonObject, Row::getJsonObject, object)
+              .forRow(row);
+            ColumnChecker.checkColumn(1, "JsonArray")
+              .returns(Tuple::getValue, Row::getValue, Json.create(array))
+              .returns(Tuple::getJsonArray, Row::getJsonArray, array)
+              .forRow(row);
+            ColumnChecker.checkColumn(2, "Number")
+              .returns(Tuple::getValue, Row::getValue, Json.create(4))
+              .returns(Tuple::getInteger, Row::getInteger, 4)
+              .returns(Tuple::getLong, Row::getLong, 4L)
+              .returns(Tuple::getFloat, Row::getFloat, 4f)
+              .returns(Tuple::getDouble, Row::getDouble, 4d)
+              .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("4"))
+              .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("4"))
+              .forRow(row);
+            ColumnChecker.checkColumn(3, "String")
+              .returns(Tuple::getValue, Row::getValue, Json.create("Hello World"))
+              .returns(Tuple::getString, Row::getString, "Hello World")
+              .forRow(row);
+            ColumnChecker.checkColumn(4, "BooleanTrue")
+              .returns(Tuple::getValue, Row::getValue, Json.create(true))
+              .returns(Tuple::getBoolean, Row::getBoolean, true)
+              .forRow(row);
+            ColumnChecker.checkColumn(5, "BooleanFalse")
+              .returns(Tuple::getValue, Row::getValue, Json.create(false))
+              .returns(Tuple::getBoolean, Row::getBoolean, false)
+              .forRow(row);
+            ColumnChecker.checkColumn(6, "Null")
+              .returns(Tuple::getValue, Row::getValue, Json.create(null))
+              .forRow(row);
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testEncodeJson(TestContext ctx) {
+    testEncodeJson(ctx, "JsonDataType");
+  }
+
+  @Test
+  public void testEncodeJsonb(TestContext ctx) {
+    testEncodeJson(ctx, "JsonbDataType");
+  }
+
+  private void testEncodeJson(TestContext ctx, String tableName) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"" + tableName + "\" SET " +
+          "\"JsonObject\" = $1, " +
+          "\"JsonArray\" = $2, " +
+          "\"Number\" = $3, " +
+          "\"String\" = $4, " +
+          "\"BooleanTrue\" = $5, " +
+          "\"BooleanFalse\" = $6, " +
+          "\"Null\" = $7 " +
+          "WHERE \"id\" = $8 RETURNING \"JsonObject\", \"JsonArray\", \"Number\", \"String\", \"BooleanTrue\", \"BooleanFalse\", \"Null\"",
+        ctx.asyncAssertSuccess(p -> {
+          JsonObject object = new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []}");
+          JsonArray array = new JsonArray("[1,true,null,9.5,\"Hi\"]");
+          p.execute(Tuple.tuple()
+            .addJsonObject(object)
+            .addJsonArray(array)
+            .addInteger(4)
+            .addString("Hello World")
+            .addBoolean(true)
+            .addBoolean(false)
+            .addJson(Json.create(null))
+            .addInteger(2), ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.size());
+            ctx.assertEquals(1, result.updatedCount());
+            Row row = result.iterator().next();
+            ColumnChecker.checkColumn(0, "JsonObject")
+              .returns(Tuple::getValue, Row::getValue, Json.create(object))
+              .returns(Tuple::getJsonObject, Row::getJsonObject, object)
+              .forRow(row);
+            ColumnChecker.checkColumn(1, "JsonArray")
+              .returns(Tuple::getValue, Row::getValue, Json.create(array))
+              .returns(Tuple::getJsonArray, Row::getJsonArray, array)
+              .forRow(row);
+            ColumnChecker.checkColumn(2, "Number")
+              .returns(Tuple::getValue, Row::getValue, Json.create(4))
+              .returns(Tuple::getInteger, Row::getInteger, 4)
+              .returns(Tuple::getLong, Row::getLong, 4L)
+              .returns(Tuple::getFloat, Row::getFloat, 4f)
+              .returns(Tuple::getDouble, Row::getDouble, 4d)
+              .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("4"))
+              .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("4"))
+              .forRow(row);
+            ColumnChecker.checkColumn(3, "String")
+              .returns(Tuple::getValue, Row::getValue, Json.create("Hello World"))
+              .returns(Tuple::getString, Row::getString, "Hello World")
+              .forRow(row);
+            ColumnChecker.checkColumn(4, "BooleanTrue")
+              .returns(Tuple::getValue, Row::getValue, Json.create(true))
+              .returns(Tuple::getBoolean, Row::getBoolean, true)
+              .forRow(row);
+            ColumnChecker.checkColumn(5, "BooleanFalse")
+              .returns(Tuple::getValue, Row::getValue, Json.create(false))
+              .returns(Tuple::getBoolean, Row::getBoolean, false)
+              .forRow(row);
+            ColumnChecker.checkColumn(6, "Null")
+              .returns(Tuple::getValue, Row::getValue, Json.create(null))
+              .forRow(row);
+            async.complete();
+          }));
+        }));
+    }));
+  }
 
   @Test
   public void testDecodeName(TestContext ctx) {

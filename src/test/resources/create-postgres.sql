@@ -85,6 +85,34 @@ CREATE TABLE "CharacterDataType" (
 INSERT INTO "CharacterDataType" ("id" ,"Name", "SingleChar", "FixedChar", "Text", "VarCharacter", "uuid") VALUES (1, 'What is my name ?', 'A', 'YES', 'Hello World', 'Great!', '6f790482-b5bd-438b-a8b7-4a0bed747011');
 INSERT INTO "CharacterDataType" ("id" ,"Name", "SingleChar", "FixedChar", "Text", "VarCharacter", "uuid") VALUES (2, 'What is my name ?', 'A', 'YES', 'Hello World', 'Great!', '6f790482-b5bd-438b-a8b7-4a0bed747011');
 
+DROP TABLE IF EXISTS "JsonDataType";
+CREATE TABLE "JsonDataType" (
+  "id" INTEGER NOT NULL PRIMARY KEY,
+  "JsonObject" JSON,
+  "JsonArray" JSON,
+  "Number" JSON,
+  "String" JSON,
+  "BooleanTrue" JSON,
+  "BooleanFalse" JSON,
+  "Null" JSON
+);
+INSERT INTO "JsonDataType" ("id" ,"JsonObject", "JsonArray", "Number", "String", "BooleanTrue", "BooleanFalse", "Null") VALUES (1, '  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }', '[1,true,null,9.5,"Hi"]', '4', '"Hello World"', 'true', 'false', 'null');
+INSERT INTO "JsonDataType" ("id" ,"JsonObject", "JsonArray", "Number", "String", "BooleanTrue", "BooleanFalse", "Null") VALUES (2, '  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }', '[1,true,null,9.5,"Hi"]', '4', '"Hello World"', 'true', 'false', 'null');
+
+DROP TABLE IF EXISTS "JsonbDataType";
+CREATE TABLE "JsonbDataType" (
+  "id" INTEGER NOT NULL PRIMARY KEY,
+  "JsonObject" JSONB,
+  "JsonArray" JSONB,
+  "Number" JSONB,
+  "String" JSONB,
+  "BooleanTrue" JSONB,
+  "BooleanFalse" JSONB,
+  "Null" JSONB
+);
+INSERT INTO "JsonbDataType" ("id" ,"JsonObject", "JsonArray", "Number", "String", "BooleanTrue", "BooleanFalse", "Null") VALUES (1, '  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }', '[1,true,null,9.5,"Hi"]', '4', '"Hello World"', 'true', 'false', 'null');
+INSERT INTO "JsonbDataType" ("id" ,"JsonObject", "JsonArray", "Number", "String", "BooleanTrue", "BooleanFalse", "Null") VALUES (2, '  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }', '[1,true,null,9.5,"Hi"]', '4', '"Hello World"', 'true', 'false', 'null');
+
 DROP TABLE IF EXISTS TxTest;
 CREATE TABLE TxTest (
   id integer NOT NULL,
