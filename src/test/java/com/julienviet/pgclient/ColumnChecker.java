@@ -5,9 +5,11 @@ import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 class ColumnChecker {
 
@@ -58,33 +60,50 @@ class ColumnChecker {
   }
 
   static ColumnChecker checkColumn(int index, String name) {
-    return new ColumnChecker(null, index, name);
+    return new ColumnChecker(index, name);
   }
 
   private final Set<Method> blackList = new HashSet<>();
-  private final List<Expect<?, ?>> expects = new ArrayList<>();
-  private final ColumnChecker previous;
+  private final List<Consumer<? super Row>> expects = new ArrayList<>();
   private final int index;
   private final String name;
 
-  private ColumnChecker(ColumnChecker previous, int index, String name) {
-    this.previous = previous;
+  private ColumnChecker(int index, String name) {
     this.index = index;
     this.name = name;
   }
 
   <R> ColumnChecker returns(SerializableBiFunction<Tuple, Integer, R> byIndexGetter,
                             SerializableBiFunction<Row, String, R> byNameGetter,
-                            R val) {
+                            R expected) {
     blackList.add(byIndexGetter.method());
     blackList.add(byNameGetter.method());
-    expects.add(new Expect<>(byIndexGetter, index, val));
-    expects.add(new Expect<>(byNameGetter, name, val));
+    expects.add(row -> {
+      Object actual = byIndexGetter.apply(row, index);
+      assertEquals("Expected that " + byIndexGetter.method() + " returns " + expected + " instead of " + actual, actual, expected);
+      actual = byNameGetter.apply(row, name);
+      assertEquals("Expected that " + byNameGetter.method() + " returns " + expected + " instead of " + actual, actual, expected);
+    });
     return this;
   }
 
-  ColumnChecker andCheckThatColumn(int index, String name) {
-    return new ColumnChecker(this, index, name);
+  <R> ColumnChecker fails(SerializableBiFunction<Tuple, Integer, R> byIndexGetter,
+                            SerializableBiFunction<Row, String, R> byNameGetter) {
+    blackList.add(byIndexGetter.method());
+    blackList.add(byNameGetter.method());
+    expects.add(row -> {
+      try {
+        byIndexGetter.apply(row, index);
+        fail("Expected that " + byIndexGetter.method() + " would throw an exception");
+      } catch (Exception ignore) {
+      }
+      try {
+        byNameGetter.apply(row, name);
+        fail("Expected that " + byNameGetter.method() + " would throw an exception");
+      } catch (Exception ignore) {
+      }
+    });
+    return this;
   }
 
   void forRow(Row row) {
@@ -100,30 +119,13 @@ class ColumnChecker {
         assertNull(v);
       }
     }
-    for (Expect<?, ?> e : expects) {
-      e.check(row);
-    }
-    if (previous != null) {
-      previous.forRow(row);
+    for (Consumer<? super Row> e : expects) {
+      e.accept(row);
     }
   }
 
-  private static class Expect<T, R> {
-
-    final SerializableBiFunction<? super Row, T, R> bifunc;
-    final T key;
-    final R expected;
-
-    Expect(SerializableBiFunction<? super Row, T, R> bifunc, T key, R expected) {
-      this.bifunc = bifunc;
-      this.key = key;
-      this.expected = expected;
-    }
-
-    void check(Row o) {
-      Object actual = bifunc.apply(o, key);
-      assertEquals("Expected that " + bifunc.method() + " return " + expected + " instead of " + actual, actual, expected);
-    }
+  private interface Expect<T, R> {
+    void check(Row o);
   }
 
   interface MethodReferenceReflection {
