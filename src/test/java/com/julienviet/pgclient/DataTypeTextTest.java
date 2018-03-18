@@ -35,42 +35,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
         .query("SELECT null \"NullValue\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
-          ctx.assertNull(row.getValue(0));
-          ctx.assertNull(row.getValue("NullValue"));
-          ctx.assertNull(row.getBoolean(0));
-          ctx.assertNull(row.getBoolean("NullValue"));
-          ctx.assertNull(row.getLong(0));
-          ctx.assertNull(row.getLong("NullValue"));
-          ctx.assertNull(row.getInteger(0));
-          ctx.assertNull(row.getInteger("NullValue"));
-          ctx.assertNull(row.getFloat(0));
-          ctx.assertNull(row.getFloat("NullValue"));
-          ctx.assertNull(row.getDouble(0));
-          ctx.assertNull(row.getDouble("NullValue"));
-          ctx.assertNull(row.getCharacter(0));
-          ctx.assertNull(row.getCharacter("NullValue"));
-          ctx.assertNull(row.getString(0));
-          ctx.assertNull(row.getString("NullValue"));
-          ctx.assertNull(row.getJsonObject(0));
-          ctx.assertNull(row.getJsonObject("NullValue"));
-          ctx.assertNull(row.getJsonArray(0));
-          ctx.assertNull(row.getJsonArray("NullValue"));
-          ctx.assertNull(row.getBuffer(0));
-          ctx.assertNull(row.getBuffer("NullValue"));
-          ctx.assertNull(row.getTemporal(0));
-          ctx.assertNull(row.getTemporal("NullValue"));
-          ctx.assertNull(row.getLocalDate(0));
-          ctx.assertNull(row.getLocalDate("NullValue"));
-          ctx.assertNull(row.getLocalTime(0));
-          ctx.assertNull(row.getLocalTime("NullValue"));
-          ctx.assertNull(row.getOffsetTime(0));
-          ctx.assertNull(row.getOffsetTime("NullValue"));
-          ctx.assertNull(row.getLocalDateTime(0));
-          ctx.assertNull(row.getLocalDateTime("NullValue"));
-          ctx.assertNull(row.getOffsetDateTime(0));
-          ctx.assertNull(row.getOffsetDateTime("NullValue"));
-          ctx.assertNull(row.getUUID(0));
-          ctx.assertNull(row.getUUID("NullValue"));
+          ColumnChecker.checkColumn(0, "NullValue").forRow(row);
           async.complete();
         }));
     }));
@@ -84,74 +49,13 @@ public class DataTypeTextTest extends DataTypeTestBase {
         .query("SELECT true \"TrueValue\", false \"FalseValue\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
-          ctx.assertEquals(true, row.getBoolean(0));
-          ctx.assertEquals(true, row.getValue(0));
-          ctx.assertEquals(true, row.getValue("TrueValue"));
-          ctx.assertNull(row.getLong(0));
-          ctx.assertNull(row.getLong("TrueValue"));
-          ctx.assertNull(row.getInteger(0));
-          ctx.assertNull(row.getInteger("TrueValue"));
-          ctx.assertNull(row.getFloat(0));
-          ctx.assertNull(row.getFloat("TrueValue"));
-          ctx.assertNull(row.getDouble(0));
-          ctx.assertNull(row.getDouble("TrueValue"));
-          ctx.assertNull(row.getCharacter(0));
-          ctx.assertNull(row.getCharacter("TrueValue"));
-          ctx.assertNull(row.getString(0));
-          ctx.assertNull(row.getString("TrueValue"));
-          ctx.assertNull(row.getJsonObject(0));
-          ctx.assertNull(row.getJsonObject("TrueValue"));
-          ctx.assertNull(row.getJsonArray(0));
-          ctx.assertNull(row.getJsonArray("TrueValue"));
-          ctx.assertNull(row.getBuffer(0));
-          ctx.assertNull(row.getBuffer("TrueValue"));
-          ctx.assertNull(row.getTemporal(0));
-          ctx.assertNull(row.getTemporal("TrueValue"));
-          ctx.assertNull(row.getLocalDate(0));
-          ctx.assertNull(row.getLocalDate("TrueValue"));
-          ctx.assertNull(row.getLocalTime(0));
-          ctx.assertNull(row.getLocalTime("TrueValue"));
-          ctx.assertNull(row.getOffsetTime(0));
-          ctx.assertNull(row.getOffsetTime("TrueValue"));
-          ctx.assertNull(row.getLocalDateTime(0));
-          ctx.assertNull(row.getLocalDateTime("TrueValue"));
-          ctx.assertNull(row.getOffsetDateTime(0));
-          ctx.assertNull(row.getOffsetDateTime("TrueValue"));
-          ctx.assertEquals(false, row.getBoolean(1));
-          ctx.assertEquals(false, row.getValue(1));
-          ctx.assertEquals(false, row.getValue("FalseValue"));
-          ctx.assertNull(row.getLong(1));
-          ctx.assertNull(row.getLong("FalseValue"));
-          ctx.assertNull(row.getInteger(1));
-          ctx.assertNull(row.getInteger("FalseValue"));
-          ctx.assertNull(row.getFloat(1));
-          ctx.assertNull(row.getFloat("FalseValue"));
-          ctx.assertNull(row.getDouble(1));
-          ctx.assertNull(row.getDouble("FalseValue"));
-          ctx.assertNull(row.getCharacter(1));
-          ctx.assertNull(row.getCharacter("FalseValue"));
-          ctx.assertNull(row.getString(1));
-          ctx.assertNull(row.getString("FalseValue"));
-          ctx.assertNull(row.getJsonObject(1));
-          ctx.assertNull(row.getJsonObject("FalseValue"));
-          ctx.assertNull(row.getJsonArray(1));
-          ctx.assertNull(row.getJsonArray("FalseValue"));
-          ctx.assertNull(row.getBuffer(1));
-          ctx.assertNull(row.getBuffer("FalseValue"));
-          ctx.assertNull(row.getTemporal(1));
-          ctx.assertNull(row.getTemporal("FalseValue"));
-          ctx.assertNull(row.getLocalDate(1));
-          ctx.assertNull(row.getLocalDate("FalseValue"));
-          ctx.assertNull(row.getLocalTime(1));
-          ctx.assertNull(row.getLocalTime("FalseValue"));
-          ctx.assertNull(row.getOffsetTime(1));
-          ctx.assertNull(row.getOffsetTime("FalseValue"));
-          ctx.assertNull(row.getLocalDateTime(1));
-          ctx.assertNull(row.getLocalDateTime("FalseValue"));
-          ctx.assertNull(row.getOffsetDateTime(1));
-          ctx.assertNull(row.getOffsetDateTime("FalseValue"));
-          ctx.assertNull(row.getUUID(0));
-          ctx.assertNull(row.getUUID("FalseValue"));
+          ColumnChecker.checkColumn(0, "TrueValue")
+            .returns(Tuple::getValue, Row::getValue, true)
+            .returns(Tuple::getBoolean, Row::getBoolean, true)
+            .andCheckThatColumn(1, "FalseValue")
+            .returns(Tuple::getBoolean, Row::getBoolean, false)
+            .returns(Tuple::getValue, Row::getValue, false)
+            .forRow(row);
           async.complete();
         }));
     }));
@@ -165,45 +69,14 @@ public class DataTypeTextTest extends DataTypeTestBase {
         .query("SELECT 32767::INT2 \"Short\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
-          ctx.assertEquals((short) 32767, row.getValue(0));
-          ctx.assertEquals((short) 32767, row.getValue("Short"));
-          ctx.assertNull(row.getBoolean(0));
-          ctx.assertNull(row.getBoolean("Short"));
-          ctx.assertEquals(32767L, row.getLong(0));
-          ctx.assertEquals(32767L, row.getLong("Short"));
-          ctx.assertEquals(32767, row.getInteger(0));
-          ctx.assertEquals(32767, row.getInteger("Short"));
-          ctx.assertEquals(32767f, row.getFloat(0));
-          ctx.assertEquals(32767f, row.getFloat("Short"));
-          ctx.assertEquals(32767D, row.getDouble(0));
-          ctx.assertEquals(32767D, row.getDouble("Short"));
-          BigDecimal bigDecimal = new BigDecimal("32767");
-          ctx.assertEquals(bigDecimal, row.getBigDecimal(0));
-          ctx.assertEquals(bigDecimal, row.getBigDecimal("Short"));
-          ctx.assertNull(row.getCharacter(0));
-          ctx.assertNull(row.getCharacter("Short"));
-          ctx.assertNull(row.getString(0));
-          ctx.assertNull(row.getString("Short"));
-          ctx.assertNull(row.getJsonObject(0));
-          ctx.assertNull(row.getJsonObject("Short"));
-          ctx.assertNull(row.getJsonArray(0));
-          ctx.assertNull(row.getJsonArray("Short"));
-          ctx.assertNull(row.getBuffer(0));
-          ctx.assertNull(row.getBuffer("Short"));
-          ctx.assertNull(row.getTemporal(0));
-          ctx.assertNull(row.getTemporal("Short"));
-          ctx.assertNull(row.getLocalDate(0));
-          ctx.assertNull(row.getLocalDate("Short"));
-          ctx.assertNull(row.getLocalTime(0));
-          ctx.assertNull(row.getLocalTime("Short"));
-          ctx.assertNull(row.getOffsetTime(0));
-          ctx.assertNull(row.getOffsetTime("Short"));
-          ctx.assertNull(row.getLocalDateTime(0));
-          ctx.assertNull(row.getLocalDateTime("Short"));
-          ctx.assertNull(row.getOffsetDateTime(0));
-          ctx.assertNull(row.getOffsetDateTime("Short"));
-          ctx.assertNull(row.getUUID(0));
-          ctx.assertNull(row.getUUID("Short"));
+          ColumnChecker.checkColumn(0, "Short")
+            .returns(Tuple::getValue, Row::getValue, (short) 32767)
+            .returns(Tuple::getInteger, Row::getInteger, 32767)
+            .returns(Tuple::getLong, Row::getLong, 32767L)
+            .returns(Tuple::getFloat, Row::getFloat, 32767f)
+            .returns(Tuple::getDouble, Row::getDouble, 32767d)
+            .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("32767"))
+            .forRow(row);
           async.complete();
         }));
     }));
@@ -217,45 +90,14 @@ public class DataTypeTextTest extends DataTypeTestBase {
         .query("SELECT 2147483647::INT4 \"Integer\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
-          ctx.assertEquals(2147483647, row.getInteger(0));
-          ctx.assertEquals(2147483647, row.getValue(0));
-          ctx.assertEquals(2147483647, row.getInteger("Integer"));
-          ctx.assertEquals(2147483647, row.getValue("Integer"));
-          ctx.assertNull(row.getBoolean(0));
-          ctx.assertNull(row.getBoolean("Integer"));
-          ctx.assertEquals(2147483647L, row.getLong(0));
-          ctx.assertEquals(2147483647L, row.getLong("Integer"));
-          ctx.assertEquals(2147483647f, row.getFloat(0));
-          ctx.assertEquals(2147483647f, row.getFloat("Integer"));
-          ctx.assertEquals(2147483647D, row.getDouble(0));
-          ctx.assertEquals(2147483647D, row.getDouble("Integer"));
-          BigDecimal bigDecimal = new BigDecimal("2147483647");
-          ctx.assertEquals(bigDecimal, row.getBigDecimal(0));
-          ctx.assertEquals(bigDecimal, row.getBigDecimal("Integer"));
-          ctx.assertNull(row.getCharacter(0));
-          ctx.assertNull(row.getCharacter("Integer"));
-          ctx.assertNull(row.getString(0));
-          ctx.assertNull(row.getString("Integer"));
-          ctx.assertNull(row.getJsonObject(0));
-          ctx.assertNull(row.getJsonObject("Integer"));
-          ctx.assertNull(row.getJsonArray(0));
-          ctx.assertNull(row.getJsonArray("Integer"));
-          ctx.assertNull(row.getBuffer(0));
-          ctx.assertNull(row.getBuffer("Integer"));
-          ctx.assertNull(row.getTemporal(0));
-          ctx.assertNull(row.getTemporal("Integer"));
-          ctx.assertNull(row.getLocalDate(0));
-          ctx.assertNull(row.getLocalDate("Integer"));
-          ctx.assertNull(row.getLocalTime(0));
-          ctx.assertNull(row.getLocalTime("Integer"));
-          ctx.assertNull(row.getOffsetTime(0));
-          ctx.assertNull(row.getOffsetTime("Integer"));
-          ctx.assertNull(row.getLocalDateTime(0));
-          ctx.assertNull(row.getLocalDateTime("Integer"));
-          ctx.assertNull(row.getOffsetDateTime(0));
-          ctx.assertNull(row.getOffsetDateTime("Integer"));
-          ctx.assertNull(row.getUUID(0));
-          ctx.assertNull(row.getUUID("Integer"));
+          ColumnChecker.checkColumn(0, "Integer")
+            .returns(Tuple::getInteger, Row::getInteger, 2147483647)
+            .returns(Tuple::getValue, Row::getValue, 2147483647)
+            .returns(Tuple::getLong, Row::getLong, 2147483647L)
+            .returns(Tuple::getFloat, Row::getFloat, 2147483647f)
+            .returns(Tuple::getDouble, Row::getDouble, 2147483647D)
+            .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("2147483647"))
+            .forRow(row);
           async.complete();
         }));
     }));
@@ -269,45 +111,14 @@ public class DataTypeTextTest extends DataTypeTestBase {
         .query("SELECT 9223372036854775807::INT8 \"Long\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
-          ctx.assertEquals(9223372036854775807L, row.getLong(0));
-          ctx.assertEquals(9223372036854775807L, row.getValue(0));
-          ctx.assertEquals(9223372036854775807L, row.getLong("Long"));
-          ctx.assertEquals(9223372036854775807L, row.getValue("Long"));
-          ctx.assertNull(row.getBoolean(0));
-          ctx.assertNull(row.getBoolean("Long"));
-          ctx.assertEquals(-1, row.getInteger(0));
-          ctx.assertEquals(-1, row.getInteger("Long"));
-          ctx.assertEquals(9223372036854775807f, row.getFloat(0));
-          ctx.assertEquals(9223372036854775807f, row.getFloat("Long"));
-          ctx.assertEquals(9223372036854775807d, row.getDouble(0));
-          ctx.assertEquals(9223372036854775807d, row.getDouble("Long"));
-          BigDecimal bigDecimal = new BigDecimal("9223372036854775807");
-          ctx.assertEquals(bigDecimal, row.getBigDecimal(0));
-          ctx.assertEquals(bigDecimal, row.getBigDecimal("Long"));
-          ctx.assertNull(row.getCharacter(0));
-          ctx.assertNull(row.getCharacter("Long"));
-          ctx.assertNull(row.getString(0));
-          ctx.assertNull(row.getString("Long"));
-          ctx.assertNull(row.getJsonObject(0));
-          ctx.assertNull(row.getJsonObject("Long"));
-          ctx.assertNull(row.getJsonArray(0));
-          ctx.assertNull(row.getJsonArray("Long"));
-          ctx.assertNull(row.getBuffer(0));
-          ctx.assertNull(row.getBuffer("Long"));
-          ctx.assertNull(row.getTemporal(0));
-          ctx.assertNull(row.getTemporal("Long"));
-          ctx.assertNull(row.getLocalDate(0));
-          ctx.assertNull(row.getLocalDate("Long"));
-          ctx.assertNull(row.getLocalTime(0));
-          ctx.assertNull(row.getLocalTime("Long"));
-          ctx.assertNull(row.getOffsetTime(0));
-          ctx.assertNull(row.getOffsetTime("Long"));
-          ctx.assertNull(row.getLocalDateTime(0));
-          ctx.assertNull(row.getLocalDateTime("Long"));
-          ctx.assertNull(row.getOffsetDateTime(0));
-          ctx.assertNull(row.getOffsetDateTime("Long"));
-          ctx.assertNull(row.getUUID(0));
-          ctx.assertNull(row.getUUID("Long"));
+          ColumnChecker.checkColumn(0, "Long")
+            .returns(Tuple::getValue, Row::getValue, 9223372036854775807L)
+            .returns(Tuple::getInteger, Row::getInteger, -1)
+            .returns(Tuple::getLong, Row::getLong, 9223372036854775807L)
+            .returns(Tuple::getFloat, Row::getFloat, 9223372036854775807f)
+            .returns(Tuple::getDouble, Row::getDouble, 9223372036854775807d)
+            .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("9223372036854775807"))
+            .forRow(row);
           async.complete();
         }));
     }));
@@ -321,45 +132,14 @@ public class DataTypeTextTest extends DataTypeTestBase {
         .query("SELECT 3.4028235E38::FLOAT4 \"Float\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
-          ctx.assertEquals(3.4028235E38f, row.getFloat(0));
-          ctx.assertEquals(3.4028235E38f, row.getValue(0));
-          ctx.assertEquals(3.4028235E38f, row.getFloat("Float"));
-          ctx.assertEquals(3.4028235E38f, row.getValue("Float"));
-          ctx.assertNull(row.getBoolean(0));
-          ctx.assertNull(row.getBoolean("Float"));
-          ctx.assertEquals(9223372036854775807L, row.getLong(0));
-          ctx.assertEquals(9223372036854775807L, row.getLong("Float"));
-          ctx.assertEquals(2147483647, row.getInteger(0));
-          ctx.assertEquals(2147483647, row.getInteger("Float"));
-          ctx.assertEquals(3.4028234663852886E38d, row.getDouble(0));
-          ctx.assertEquals(3.4028234663852886E38d, row.getDouble("Float"));
-          BigDecimal bigDecimal = new BigDecimal("3.4028235E38");
-          ctx.assertEquals(bigDecimal, row.getBigDecimal(0));
-          ctx.assertEquals(bigDecimal, row.getBigDecimal("Float"));
-          ctx.assertNull(row.getCharacter(0));
-          ctx.assertNull(row.getCharacter("Float"));
-          ctx.assertNull(row.getString(0));
-          ctx.assertNull(row.getString("Float"));
-          ctx.assertNull(row.getJsonObject(0));
-          ctx.assertNull(row.getJsonObject("Float"));
-          ctx.assertNull(row.getJsonArray(0));
-          ctx.assertNull(row.getJsonArray("Float"));
-          ctx.assertNull(row.getBuffer(0));
-          ctx.assertNull(row.getBuffer("Float"));
-          ctx.assertNull(row.getTemporal(0));
-          ctx.assertNull(row.getTemporal("Float"));
-          ctx.assertNull(row.getLocalDate(0));
-          ctx.assertNull(row.getLocalDate("Float"));
-          ctx.assertNull(row.getLocalTime(0));
-          ctx.assertNull(row.getLocalTime("Float"));
-          ctx.assertNull(row.getOffsetTime(0));
-          ctx.assertNull(row.getOffsetTime("Float"));
-          ctx.assertNull(row.getLocalDateTime(0));
-          ctx.assertNull(row.getLocalDateTime("Float"));
-          ctx.assertNull(row.getOffsetDateTime(0));
-          ctx.assertNull(row.getOffsetDateTime("Float"));
-          ctx.assertNull(row.getUUID(0));
-          ctx.assertNull(row.getUUID("Float"));
+          ColumnChecker.checkColumn(0, "Float")
+            .returns(Tuple::getValue, Row::getValue, 3.4028235E38f)
+            .returns(Tuple::getInteger, Row::getInteger, 2147483647)
+            .returns(Tuple::getLong, Row::getLong, 9223372036854775807L)
+            .returns(Tuple::getFloat, Row::getFloat, 3.4028235E38f)
+            .returns(Tuple::getDouble, Row::getDouble, 3.4028234663852886E38d)
+            .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("3.4028235E38"))
+            .forRow(row);
           async.complete();
         }));
     }));
@@ -373,45 +153,14 @@ public class DataTypeTextTest extends DataTypeTestBase {
         .query("SELECT 1.7976931348623157E308::FLOAT8 \"Double\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
-          ctx.assertEquals(1.7976931348623157E308d, row.getDouble(0));
-          ctx.assertEquals(1.7976931348623157E308d, row.getValue(0));
-          ctx.assertEquals(1.7976931348623157E308d, row.getDouble("Double"));
-          ctx.assertEquals(1.7976931348623157E308d, row.getValue("Double"));
-          ctx.assertNull(row.getBoolean(0));
-          ctx.assertNull(row.getBoolean("Double"));
-          ctx.assertEquals(9223372036854775807L, row.getLong(0));
-          ctx.assertEquals(9223372036854775807L, row.getLong("Double"));
-          ctx.assertEquals(2147483647, row.getInteger(0));
-          ctx.assertEquals(2147483647, row.getInteger("Double"));
-          ctx.assertEquals(Float.POSITIVE_INFINITY, row.getFloat(0));
-          ctx.assertEquals(Float.POSITIVE_INFINITY, row.getFloat("Double"));
-          BigDecimal bigDecimal = new BigDecimal("1.7976931348623157E308");
-          ctx.assertEquals(bigDecimal, row.getBigDecimal(0));
-          ctx.assertEquals(bigDecimal, row.getBigDecimal("Double"));
-          ctx.assertNull(row.getCharacter(0));
-          ctx.assertNull(row.getCharacter("Double"));
-          ctx.assertNull(row.getString(0));
-          ctx.assertNull(row.getString("Double"));
-          ctx.assertNull(row.getJsonObject(0));
-          ctx.assertNull(row.getJsonObject("Double"));
-          ctx.assertNull(row.getJsonArray(0));
-          ctx.assertNull(row.getJsonArray("Double"));
-          ctx.assertNull(row.getBuffer(0));
-          ctx.assertNull(row.getBuffer("Double"));
-          ctx.assertNull(row.getTemporal(0));
-          ctx.assertNull(row.getTemporal("Double"));
-          ctx.assertNull(row.getLocalDate(0));
-          ctx.assertNull(row.getLocalDate("Double"));
-          ctx.assertNull(row.getLocalTime(0));
-          ctx.assertNull(row.getLocalTime("Double"));
-          ctx.assertNull(row.getOffsetTime(0));
-          ctx.assertNull(row.getOffsetTime("Double"));
-          ctx.assertNull(row.getLocalDateTime(0));
-          ctx.assertNull(row.getLocalDateTime("Double"));
-          ctx.assertNull(row.getOffsetDateTime(0));
-          ctx.assertNull(row.getOffsetDateTime("Double"));
-          ctx.assertNull(row.getUUID(0));
-          ctx.assertNull(row.getUUID("Double"));
+          ColumnChecker.checkColumn(0, "Double")
+            .returns(Tuple::getValue, Row::getValue, 1.7976931348623157E308d)
+            .returns(Tuple::getInteger, Row::getInteger, 2147483647)
+            .returns(Tuple::getLong, Row::getLong, 9223372036854775807L)
+            .returns(Tuple::getFloat, Row::getFloat, Float.POSITIVE_INFINITY)
+            .returns(Tuple::getDouble, Row::getDouble, 1.7976931348623157E308d)
+            .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("1.7976931348623157E308"))
+            .forRow(row);
           async.complete();
         }));
     }));
@@ -427,21 +176,15 @@ public class DataTypeTextTest extends DataTypeTestBase {
           Numeric nan = Numeric.parse("NaN");
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
-
-          ctx.assertEquals(numeric, row.getValue("Numeric"));
-          ctx.assertEquals(numeric, row.getValue(0));
-          ctx.assertEquals(numeric, row.getNumeric("Numeric"));
-          ctx.assertEquals(numeric, row.getNumeric(0));
-          ctx.assertEquals(numeric.bigDecimalValue(), row.getBigDecimal("Numeric"));
-          ctx.assertEquals(numeric.bigDecimalValue(), row.getBigDecimal(0));
-          ctx.assertEquals(920.0, row.getDouble(0));
-          ctx.assertEquals(920.0, row.getDouble("Numeric"));
-          ctx.assertEquals(920f, row.getFloat(0));
-          ctx.assertEquals(920f, row.getFloat("Numeric"));
-          ctx.assertEquals(919L, row.getLong(0));
-          ctx.assertEquals(919L, row.getLong("Numeric"));
-          ctx.assertEquals(919, row.getInteger(0));
-          ctx.assertEquals(919, row.getInteger("Numeric"));
+          ColumnChecker.checkColumn(0, "Numeric")
+            .returns(Tuple::getValue, Row::getValue, numeric)
+            .returns(Tuple::getInteger, Row::getInteger, 919)
+            .returns(Tuple::getLong, Row::getLong, 919L)
+            .returns(Tuple::getFloat, Row::getFloat, 920f)
+            .returns(Tuple::getDouble, Row::getDouble, 920.0)
+            .returns(Tuple::getBigDecimal, Row::getBigDecimal, numeric.bigDecimalValue())
+            .returns(Tuple::getNumeric, Row::getNumeric, numeric)
+            .forRow(row);
 
           ctx.assertEquals(nan, row.getValue("NaN"));
           ctx.assertEquals(nan, row.getValue(1));
@@ -972,42 +715,11 @@ public class DataTypeTextTest extends DataTypeTestBase {
           OffsetTime ot = OffsetTime.parse("17:55:04.905120+03:07");
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
-          ctx.assertEquals(ot, row.getOffsetTime(0));
-          ctx.assertEquals(ot, row.getTemporal(0));
-          ctx.assertEquals(ot, row.getValue(0));
-          ctx.assertEquals(ot, row.getOffsetTime("OffsetTime"));
-          ctx.assertEquals(ot, row.getTemporal("OffsetTime"));
-          ctx.assertEquals(ot, row.getValue("OffsetTime"));
-          ctx.assertNull(row.getBoolean(0));
-          ctx.assertNull(row.getBoolean("OffsetTime"));
-          ctx.assertNull(row.getLong(0));
-          ctx.assertNull(row.getLong("OffsetTime"));
-          ctx.assertNull(row.getInteger(0));
-          ctx.assertNull(row.getInteger("OffsetTime"));
-          ctx.assertNull(row.getFloat(0));
-          ctx.assertNull(row.getFloat("OffsetTime"));
-          ctx.assertNull(row.getDouble(0));
-          ctx.assertNull(row.getDouble("OffsetTime"));
-          ctx.assertNull(row.getCharacter(0));
-          ctx.assertNull(row.getCharacter("OffsetTime"));
-          ctx.assertNull(row.getString(0));
-          ctx.assertNull(row.getString("OffsetTime"));
-          ctx.assertNull(row.getJsonObject(0));
-          ctx.assertNull(row.getJsonObject("OffsetTime"));
-          ctx.assertNull(row.getJsonArray(0));
-          ctx.assertNull(row.getJsonArray("OffsetTime"));
-          ctx.assertNull(row.getBuffer(0));
-          ctx.assertNull(row.getBuffer("OffsetTime"));
-          ctx.assertNull(row.getLocalDate(0));
-          ctx.assertNull(row.getLocalDate("OffsetTime"));
-          ctx.assertNull(row.getLocalTime(0));
-          ctx.assertNull(row.getLocalTime("OffsetTime"));
-          ctx.assertNull(row.getLocalDateTime(0));
-          ctx.assertNull(row.getLocalDateTime("OffsetTime"));
-          ctx.assertNull(row.getOffsetDateTime(0));
-          ctx.assertNull(row.getOffsetDateTime("OffsetTime"));
-          ctx.assertNull(row.getUUID(0));
-          ctx.assertNull(row.getUUID("OffsetTime"));
+          ColumnChecker.checkColumn(0, "OffsetTime")
+            .returns(Tuple::getOffsetTime, Row::getOffsetTime, ot)
+            .returns(Tuple::getTemporal, Row::getTemporal, ot)
+            .returns(Tuple::getValue, Row::getValue, ot)
+            .forRow(row);
           async.complete();
         }));
     }));
