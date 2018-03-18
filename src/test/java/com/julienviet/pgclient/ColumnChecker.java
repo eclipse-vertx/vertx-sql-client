@@ -29,6 +29,8 @@ class ColumnChecker {
     rowMethods.add(Row::getDouble);
     tupleMethods.add(Tuple::getBigDecimal);
     rowMethods.add(Row::getBigDecimal);
+    tupleMethods.add(Tuple::getNumeric);
+    rowMethods.add(Row::getNumeric);
     tupleMethods.add(Tuple::getString);
     rowMethods.add(Row::getString);
     tupleMethods.add(Tuple::getCharacter);
@@ -63,7 +65,7 @@ class ColumnChecker {
     return new ColumnChecker(index, name);
   }
 
-  private final Set<Method> blackList = new HashSet<>();
+  private final List<Method> blackList = new ArrayList<>();
   private final List<Consumer<? super Row>> expects = new ArrayList<>();
   private final int index;
   private final String name;
@@ -76,13 +78,43 @@ class ColumnChecker {
   <R> ColumnChecker returns(SerializableBiFunction<Tuple, Integer, R> byIndexGetter,
                             SerializableBiFunction<Row, String, R> byNameGetter,
                             R expected) {
+    Method byIndexMeth = byIndexGetter.method();
+    blackList.add(byIndexMeth);
+    Method byNameMeth = byNameGetter.method();
+    blackList.add(byNameMeth);
+    expects.add(row -> {
+      Object actual = byIndexGetter.apply(row, index);
+      assertEquals("Expected that " + byIndexMeth + " returns " + expected + " instead of " + actual, actual, expected);
+      actual = byNameGetter.apply(row, name);
+      assertEquals("Expected that " + byNameMeth + " returns " + expected + " instead of " + actual, actual, expected);
+    });
+    return this;
+  }
+
+  ColumnChecker returns(SerializableBiFunction<Tuple, Integer, Double> byIndexGetter,
+                            SerializableBiFunction<Row, String, Double> byNameGetter,
+                        double expected, double delta) {
     blackList.add(byIndexGetter.method());
     blackList.add(byNameGetter.method());
     expects.add(row -> {
       Object actual = byIndexGetter.apply(row, index);
-      assertEquals("Expected that " + byIndexGetter.method() + " returns " + expected + " instead of " + actual, actual, expected);
+      assertEquals("Expected that " + byIndexGetter.method() + " returns " + expected + " instead of " + actual, (double)actual, expected, delta);
       actual = byNameGetter.apply(row, name);
-      assertEquals("Expected that " + byNameGetter.method() + " returns " + expected + " instead of " + actual, actual, expected);
+      assertEquals("Expected that " + byNameGetter.method() + " returns " + expected + " instead of " + actual, (double)actual, expected, delta);
+    });
+    return this;
+  }
+
+  ColumnChecker returns(SerializableBiFunction<Tuple, Integer, Float> byIndexGetter,
+                        SerializableBiFunction<Row, String, Float> byNameGetter,
+                        float expected, float delta) {
+    blackList.add(byIndexGetter.method());
+    blackList.add(byNameGetter.method());
+    expects.add(row -> {
+      Object actual = byIndexGetter.apply(row, index);
+      assertEquals("Expected that " + byIndexGetter.method() + " returns " + expected + " instead of " + actual, (float)actual, expected, delta);
+      actual = byNameGetter.apply(row, name);
+      assertEquals("Expected that " + byNameGetter.method() + " returns " + expected + " instead of " + actual, (float)actual, expected, delta);
     });
     return this;
   }
@@ -110,7 +142,12 @@ class ColumnChecker {
     for (SerializableBiFunction<Tuple, Integer, ?> m : tupleMethods) {
       if (!blackList.contains(m.method())) {
         Object v = m.apply(row, index);
-        assertNull(v);
+        try {
+          assertNull("Was expecting null for " + m.method() + " instead of " + v, v);
+        } catch (Throwable e) {
+          e.printStackTrace();
+          throw e;
+        }
       }
     }
     for (SerializableBiFunction<Row, String, ?> m : rowMethods) {
@@ -122,10 +159,6 @@ class ColumnChecker {
     for (Consumer<? super Row> e : expects) {
       e.accept(row);
     }
-  }
-
-  private interface Expect<T, R> {
-    void check(Row o);
   }
 
   interface MethodReferenceReflection {

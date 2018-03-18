@@ -49,7 +49,8 @@ public class DataTypeTextTest extends DataTypeTestBase {
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "TrueValue")
             .returns(Tuple::getValue, Row::getValue, true)
-            .returns(Tuple::getBoolean, Row::getBoolean, true);
+            .returns(Tuple::getBoolean, Row::getBoolean, true)
+            .forRow(row);
           ColumnChecker.checkColumn(1, "FalseValue")
             .returns(Tuple::getBoolean, Row::getBoolean, false)
             .returns(Tuple::getValue, Row::getValue, false)
@@ -74,6 +75,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
             .returns(Tuple::getFloat, Row::getFloat, 32767f)
             .returns(Tuple::getDouble, Row::getDouble, 32767d)
             .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("32767"))
+            .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("32767"))
             .forRow(row);
           async.complete();
         }));
@@ -95,6 +97,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
             .returns(Tuple::getFloat, Row::getFloat, 2147483647f)
             .returns(Tuple::getDouble, Row::getDouble, 2147483647D)
             .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("2147483647"))
+            .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("2147483647"))
             .forRow(row);
           async.complete();
         }));
@@ -116,6 +119,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
             .returns(Tuple::getFloat, Row::getFloat, 9223372036854775807f)
             .returns(Tuple::getDouble, Row::getDouble, 9223372036854775807d)
             .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("9223372036854775807"))
+            .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("9223372036854775807"))
             .forRow(row);
           async.complete();
         }));
@@ -137,6 +141,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
             .returns(Tuple::getFloat, Row::getFloat, 3.4028235E38f)
             .returns(Tuple::getDouble, Row::getDouble, 3.4028234663852886E38d)
             .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("3.4028235E38"))
+            .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("3.4028235E38"))
             .forRow(row);
           async.complete();
         }));
@@ -158,6 +163,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
             .returns(Tuple::getFloat, Row::getFloat, Float.POSITIVE_INFINITY)
             .returns(Tuple::getDouble, Row::getDouble, 1.7976931348623157E308d)
             .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("1.7976931348623157E308"))
+            .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("1.7976931348623157E308"))
             .forRow(row);
           async.complete();
         }));
@@ -508,6 +514,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           .returns(Tuple::getFloat, Row::getFloat, 7.502f)
           .returns(Tuple::getDouble, Row::getDouble, 7.502d)
           .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("7.502"))
+          .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("7.502"))
           .forRow(row);
         ColumnChecker.checkColumn(4, "Number2")
           .returns(Tuple::getValue, Row::getValue, 8)
@@ -516,6 +523,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           .returns(Tuple::getFloat, Row::getFloat, 8f)
           .returns(Tuple::getDouble, Row::getDouble, 8d)
           .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(8))
+          .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("8"))
           .forRow(row);
         ColumnChecker.checkColumn(5, "Text")
           .returns(Tuple::getValue, Row::getValue, " Really Awesome! ")
@@ -550,6 +558,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           .returns(Tuple::getFloat, Row::getFloat, 7.502f)
           .returns(Tuple::getDouble, Row::getDouble, 7.502d)
           .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("7.502"))
+          .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("7.502"))
           .forRow(row);
         ColumnChecker.checkColumn(4, "Number2")
           .returns(Tuple::getValue, Row::getValue, 8)
@@ -558,6 +567,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           .returns(Tuple::getFloat, Row::getFloat, 8f)
           .returns(Tuple::getDouble, Row::getDouble, 8d)
           .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(8))
+          .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("8"))
           .forRow(row);
         ColumnChecker.checkColumn(5, "Text")
           .returns(Tuple::getValue, Row::getValue, " Really Awesome! ")
