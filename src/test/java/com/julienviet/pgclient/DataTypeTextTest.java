@@ -420,94 +420,49 @@ public class DataTypeTextTest extends DataTypeTestBase {
   }
 
   @Test
-  public void testJsonbObject(TestContext ctx) {
+  public void testJSONB(TestContext ctx) {
+    testJson(ctx, "JSONB");
+  }
+
+  @Test
+  public void testJSON(TestContext ctx) {
+    testJson(ctx, "JSON");
+  }
+
+  private void testJson(TestContext ctx, String type) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT '  {\"str\":\"blah\", \"int\" : 1, \"float\" :" +
-        " 3.5, \"object\": {}, \"array\" : []   }'::JSONB \"JsonObject\"", ctx.asyncAssertSuccess(result -> {
-        JsonObject object = new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" :" +
-          " 3.5, \"object\": {}, \"array\" : []}");
+      conn.query("SELECT " +
+        "'  {\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []   }'::" + type + " \"JsonObject\"," +
+        "'  [1,true,null,9.5,\"Hi\" ] '::" + type + " \"JsonArray\"," +
+        "' true '::" + type + " \"TrueValue\"," +
+        "' false '::" + type + " \"FalseValue\"," +
+        "' null '::" + type + " \"NullValue\"," +
+        "' 7.502 '::" + type + " \"Number1\"," +
+        "' 8 '::" + type + " \"Number2\"," +
+        "'\" Really Awesome! \"'::" + type + " \"Text\"", ctx.asyncAssertSuccess(result -> {
+        JsonObject object = new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []}");
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         ColumnChecker.checkColumn(0, "JsonObject")
           .returns(Tuple::getValue, Row::getValue, object)
           .returns(Tuple::getJsonObject, Row::getJsonObject, object)
           .forRow(row);
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testJsonbArray(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT '  [1,true,null,9.5,\"Hi\" ] '::JSONB \"JsonArray\"", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.size());
-        Row row = result.iterator().next();
-        ColumnChecker.checkColumn(0, "JsonArray")
+        ColumnChecker.checkColumn(1, "JsonArray")
           .returns(Tuple::getValue, Row::getValue, new JsonArray("[1,true,null,9.5,\"Hi\"]"))
           .returns(Tuple::getJsonArray, Row::getJsonArray, new JsonArray("[1,true,null,9.5,\"Hi\"]"))
           .forRow(row);
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testJsonObject(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT '    {\"str\":\"blah\", \"int\" : 1, \"float\" :" +
-        " 3.5, \"object\": {}, \"array\" : []  }    '::JSON \"JsonObject\"", ctx.asyncAssertSuccess(result -> {
-        JsonObject object = new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" :" +
-          " 3.5, \"object\": {}, \"array\" : []}");
-        ctx.assertEquals(1, result.size());
-        Row row = result.iterator().next();
-        ColumnChecker.checkColumn(0, "JsonObject")
-          .returns(Tuple::getValue, Row::getValue, object)
-          .returns(Tuple::getJsonObject, Row::getJsonObject, object)
-          .forRow(row);
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testJsonArray(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT '     [1,true,null,9.5,\"Hi\"]     '::JSON \"Array\"", ctx.asyncAssertSuccess(result -> {
-        JsonArray array = new JsonArray("[1,true,null,9.5,\"Hi\"]");
-        ctx.assertEquals(1, result.size());
-        Row row = result.iterator().next();
-        ColumnChecker.checkColumn(0, "Array")
-          .returns(Tuple::getValue, Row::getValue, array)
-          .returns(Tuple::getJsonArray, Row::getJsonArray, array)
-          .forRow(row);
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testJsonbScalar(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT ' true '::JSONB \"TrueValue\", ' false '::JSONB \"FalseValue\", ' null '::JSONB \"NullValue\", ' 7.502 '::JSONB \"Number1\", ' 8 '::JSONB \"Number2\", '\" Really Awesome! \"'::JSONB \"Text\"", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.size());
-        Row row = result.iterator().next();
-        ColumnChecker.checkColumn(0, "TrueValue")
+        ColumnChecker.checkColumn(2, "TrueValue")
           .returns(Tuple::getValue, Row::getValue, true)
           .returns(Tuple::getBoolean, Row::getBoolean, true)
           .forRow(row);
-        ColumnChecker.checkColumn(1, "FalseValue")
+        ColumnChecker.checkColumn(3, "FalseValue")
           .returns(Tuple::getValue, Row::getValue, false)
           .returns(Tuple::getBoolean, Row::getBoolean, false)
           .forRow(row);
-        ColumnChecker.checkColumn(2, "NullValue")
+        ColumnChecker.checkColumn(4, "NullValue")
           .forRow(row);
-        ColumnChecker.checkColumn(3, "Number1")
+        ColumnChecker.checkColumn(5, "Number1")
           .returns(Tuple::getValue, Row::getValue, 7.502d)
           .returns(Tuple::getInteger, Row::getInteger, 7)
           .returns(Tuple::getLong, Row::getLong, 7L)
@@ -516,7 +471,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("7.502"))
           .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("7.502"))
           .forRow(row);
-        ColumnChecker.checkColumn(4, "Number2")
+        ColumnChecker.checkColumn(6, "Number2")
           .returns(Tuple::getValue, Row::getValue, 8)
           .returns(Tuple::getInteger, Row::getInteger, 8)
           .returns(Tuple::getLong, Row::getLong, 8L)
@@ -525,51 +480,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(8))
           .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("8"))
           .forRow(row);
-        ColumnChecker.checkColumn(5, "Text")
-          .returns(Tuple::getValue, Row::getValue, " Really Awesome! ")
-          .returns(Tuple::getString, Row::getString, " Really Awesome! ")
-          .forRow(row);
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testJsonScalar(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT ' true '::JSON \"TrueValue\", ' false '::JSON \"FalseValue\", ' null '::JSON \"NullValue\", ' 7.502 '::JSON \"Number1\", ' 8 '::JSON \"Number2\", '\" Really Awesome! \"'::JSON \"Text\"", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.size());
-        Row row = result.iterator().next();
-        ColumnChecker.checkColumn(0, "TrueValue")
-          .returns(Tuple::getValue, Row::getValue, true)
-          .returns(Tuple::getBoolean, Row::getBoolean, true)
-          .forRow(row);
-        ColumnChecker.checkColumn(1, "FalseValue")
-          .returns(Tuple::getValue, Row::getValue, false)
-          .returns(Tuple::getBoolean, Row::getBoolean, false)
-          .forRow(row);
-        ColumnChecker.checkColumn(2, "NullValue")
-          .forRow(row);
-        ColumnChecker.checkColumn(3, "Number1")
-          .returns(Tuple::getValue, Row::getValue, 7.502d)
-          .returns(Tuple::getInteger, Row::getInteger, 7)
-          .returns(Tuple::getLong, Row::getLong, 7L)
-          .returns(Tuple::getFloat, Row::getFloat, 7.502f)
-          .returns(Tuple::getDouble, Row::getDouble, 7.502d)
-          .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("7.502"))
-          .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("7.502"))
-          .forRow(row);
-        ColumnChecker.checkColumn(4, "Number2")
-          .returns(Tuple::getValue, Row::getValue, 8)
-          .returns(Tuple::getInteger, Row::getInteger, 8)
-          .returns(Tuple::getLong, Row::getLong, 8L)
-          .returns(Tuple::getFloat, Row::getFloat, 8f)
-          .returns(Tuple::getDouble, Row::getDouble, 8d)
-          .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(8))
-          .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("8"))
-          .forRow(row);
-        ColumnChecker.checkColumn(5, "Text")
+        ColumnChecker.checkColumn(7, "Text")
           .returns(Tuple::getValue, Row::getValue, " Really Awesome! ")
           .returns(Tuple::getString, Row::getString, " Really Awesome! ")
           .forRow(row);
