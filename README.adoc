@@ -178,12 +178,12 @@ The *Reactive Postgres Client* currently supports the following data types
 |Yes
 
 |`JSON`
-|`io.vertx.core.json.Json[Object/Array]`
+|`com.julienviet.pgclient.Json`
 |Yes
 |Yes
 
 |`JSONB`
-|`io.vertx.core.json.Json[Object/Array]`
+|`com.julienviet.pgclient.Json`
 |Yes
 |Yes
 
