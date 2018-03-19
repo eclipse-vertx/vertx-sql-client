@@ -48,9 +48,8 @@ public class ParameterDescription implements InboundMessage {
     }
     for (int i = 0;i < paramDataTypes.length;i++) {
       DataType<?> paramDataType = paramDataTypes[i];
-      Class<?> type = paramDataType.getJavaType();
       Object value = values.get(i);
-      if (!type.isInstance(value)) {
+      if (!paramDataType.accept(value)) {
         return buildReport(values);
       }
     }

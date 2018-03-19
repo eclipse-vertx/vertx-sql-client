@@ -74,7 +74,7 @@ public class DataType<T> {
       buff.writeByte(value == Boolean.TRUE ? 't' : 'f');
     }
     @Override
-    public void encodeBinary(Boolean value, ByteBuf buff) {
+    public void encodeBinaryInternal(Boolean value, ByteBuf buff) {
       buff.writeInt(1);
       buff.writeBoolean(value);
     }
@@ -93,7 +93,7 @@ public class DataType<T> {
       return buff.readShort();
     }
     @Override
-    public void encodeBinary(Short value, ByteBuf buff) {
+    public void encodeBinaryInternal(Short value, ByteBuf buff) {
       buff.writeInt(2);
       buff.writeShort(value);
     }
@@ -112,7 +112,7 @@ public class DataType<T> {
       return buff.readInt();
     }
     @Override
-    public void encodeBinary(Integer value, ByteBuf buff) {
+    public void encodeBinaryInternal(Integer value, ByteBuf buff) {
       buff.writeInt(4);
       buff.writeInt(value);
     }
@@ -131,7 +131,7 @@ public class DataType<T> {
       return buff.readLong();
     }
     @Override
-    public void encodeBinary(Long value, ByteBuf buff) {
+    public void encodeBinaryInternal(Long value, ByteBuf buff) {
       buff.writeInt(8);
       buff.writeLong(value);
     }
@@ -152,7 +152,7 @@ public class DataType<T> {
       return buff.readFloat();
     }
     @Override
-    public void encodeBinary(Float value, ByteBuf buff) {
+    public void encodeBinaryInternal(Float value, ByteBuf buff) {
       buff.writeInt(4);
       buff.writeFloat(value);
     }
@@ -173,7 +173,7 @@ public class DataType<T> {
       return buff.readDouble();
     }
     @Override
-    public void encodeBinary(Double value, ByteBuf buff) {
+    public void encodeBinaryInternal(Double value, ByteBuf buff) {
       buff.writeInt(8);
       buff.writeDouble(value);
     }
@@ -229,7 +229,7 @@ public class DataType<T> {
       return buff.readCharSequence(len, StandardCharsets.UTF_8).toString();
     }
     @Override
-    public void encodeBinary(String value, ByteBuf buff) {
+    public void encodeBinaryInternal(String value, ByteBuf buff) {
       super.encodeText(value, buff);
     }
   };
@@ -260,7 +260,7 @@ public class DataType<T> {
       return buff.readCharSequence(len, StandardCharsets.UTF_8).toString();
     }
     @Override
-    public void encodeBinary(String value, ByteBuf buff) {
+    public void encodeBinaryInternal(String value, ByteBuf buff) {
       super.encodeText(value, buff);
     }
   };
@@ -277,7 +277,7 @@ public class DataType<T> {
       return buff.readCharSequence(len, StandardCharsets.UTF_8).toString();
     }
     @Override
-    public void encodeBinary(String value, ByteBuf buff) {
+    public void encodeBinaryInternal(String value, ByteBuf buff) {
       super.encodeText(value, buff);
     }
   };
@@ -296,7 +296,7 @@ public class DataType<T> {
       return PG_EPOCH.plus(buff.readInt(), ChronoUnit.DAYS);
     }
     @Override
-    public void encodeBinary(LocalDate value, ByteBuf buff) {
+    public void encodeBinaryInternal(LocalDate value, ByteBuf buff) {
       buff.writeInt(4);
       buff.writeInt((int) -value.until(PG_EPOCH, ChronoUnit.DAYS));
     }
@@ -316,7 +316,7 @@ public class DataType<T> {
       return LocalTime.ofNanoOfDay(buff.readLong() * 1000);
     }
     @Override
-    public void encodeBinary(LocalTime value, ByteBuf buff) {
+    public void encodeBinaryInternal(LocalTime value, ByteBuf buff) {
       buff.writeInt(8);
       buff.writeLong(value.getLong(ChronoField.MICRO_OF_DAY));
     }
@@ -338,7 +338,7 @@ public class DataType<T> {
         ZoneOffset.ofTotalSeconds(-buff.readInt()));
     }
     @Override
-    public void encodeBinary(OffsetTime value, ByteBuf buff) {
+    public void encodeBinaryInternal(OffsetTime value, ByteBuf buff) {
       buff.writeInt(12);
       buff.writeLong(value.toLocalTime().getLong(ChronoField.MICRO_OF_DAY));
       // zone offset in seconds (should we change it to UTC ?)
@@ -360,7 +360,7 @@ public class DataType<T> {
       return PG_EPOCH.plus(buff.readLong(), ChronoUnit.MICROS);
     }
     @Override
-    public void encodeBinary(LocalDateTime value, ByteBuf buff) {
+    public void encodeBinaryInternal(LocalDateTime value, ByteBuf buff) {
       buff.writeInt(8);
       buff.writeLong(-value.until(PG_EPOCH, ChronoUnit.MICROS));
     }
@@ -380,7 +380,7 @@ public class DataType<T> {
       return PG_EPOCH.plus(buff.readLong(), ChronoUnit.MICROS);
     }
     @Override
-    public void encodeBinary(OffsetDateTime value, ByteBuf buff) {
+    public void encodeBinaryInternal(OffsetDateTime value, ByteBuf buff) {
       buff.writeInt(8);
       buff.writeLong(-value.until(PG_EPOCH, ChronoUnit.MICROS));
     }
@@ -413,7 +413,7 @@ public class DataType<T> {
       return Buffer.buffer(buff.readBytes(len));
     }
     @Override
-    public void encodeBinary(Buffer value, ByteBuf buff) {
+    public void encodeBinaryInternal(Buffer value, ByteBuf buff) {
       int index = buff.writerIndex();
       buff.writeInt(0);
       ByteBuf byteBuf = value.getByteBuf();
@@ -447,7 +447,7 @@ public class DataType<T> {
       return new java.util.UUID(buff.readLong(), buff.readLong());
     }
     @Override
-    public void encodeBinary(java.util.UUID uuid, ByteBuf buff) {
+    public void encodeBinaryInternal(java.util.UUID uuid, ByteBuf buff) {
       buff.writeInt(16);
       buff.writeLong(uuid.getMostSignificantBits());
       buff.writeLong(uuid.getLeastSignificantBits());
@@ -631,7 +631,15 @@ public class DataType<T> {
     return null;
   }
 
-  public void encodeBinary(T value, ByteBuf buff) {
+  public boolean accept(Object value) {
+    return javaType.isInstance(value);
+  }
+
+  public void encodeBinary(Object value, ByteBuf buff) {
+    encodeBinaryInternal((T) value, buff);
+  }
+
+  protected void encodeBinaryInternal(T value, ByteBuf buff) {
     // Default to null
     buff.writeInt(-1);
     System.out.println("Data type " + id + " does not support binary encoding");
