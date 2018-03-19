@@ -523,6 +523,44 @@ pool.getConnection(function (res, res_err) {
 
 == Postgres type mapping
 
+=== Handling JSON
+
+The `link:../../jsdoc/module-vertx-pg-client-js_json-Json.html[Json]` Java type is used to represent the Postgres `JSON` and `JSONB` type.
+
+The main reason of this type is handling `null` JSON values.
+
+[source,js]
+----
+var Json = require("vertx-pg-client-js/json");
+var Tuple = require("vertx-pg-client-js/tuple");
+
+// Create a tuple
+var tuple = Tuple.of(Json.create(null), Json.create({
+  "foo" : "bar"
+}), Json.create(3));
+
+//
+tuple = Tuple.tuple().addJson(Json.create(null)).addJson(Json.create({
+  "foo" : "bar"
+})).addJson(Json.create(3));
+
+// JSON object (and arrays) can also be added directly
+tuple = Tuple.tuple().addJson(Json.create(null)).addJsonObject({
+  "foo" : "bar"
+}).addJson(Json.create(3));
+
+// Retrieving json
+var value = tuple.getJson(0).value();
+
+//
+value = tuple.getJson(1).value();
+value = tuple.getJsonObject(1);
+
+//
+value = tuple.getJson(3).value();
+
+----
+
 === Handling NUMERIC
 
 The `Numeric` Java type is used to represent the Postgres `NUMERIC` type.

@@ -255,6 +255,17 @@
  *
  * == Postgres type mapping
  *
+ * === Handling JSON
+ *
+ * The {@link com.julienviet.pgclient.Json} Java type is used to represent the Postgres `JSON` and `JSONB` type.
+ *
+ * The main reason of this type is handling {@code null} JSON values.
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#jsonExample()}
+ * ----
+ *
  * === Handling NUMERIC
  *
  * The {@link com.julienviet.pgclient.Numeric} Java type is used to represent the Postgres `NUMERIC` type.

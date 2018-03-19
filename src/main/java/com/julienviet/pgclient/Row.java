@@ -99,6 +99,14 @@ public interface Row extends Tuple {
   String getString(String name);
 
   /**
+   * Get a json value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  Json getJson(String name);
+
+  /**
    * Get a json object value at {@code pos}.
    *
    * @param name the column

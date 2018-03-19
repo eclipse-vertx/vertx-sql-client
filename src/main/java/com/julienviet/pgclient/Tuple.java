@@ -229,6 +229,14 @@ public interface Tuple {
   Character getCharacter(int pos);
 
   /**
+   * Get a json value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  Json getJson(int pos);
+
+  /**
    * Get a json object value at {@code pos}.
    *
    * @param pos the position
@@ -422,6 +430,15 @@ public interface Tuple {
    */
   @Fluent
   Tuple addJsonArray(JsonArray value);
+
+  /**
+   * Add a json value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  Tuple addJson(Json value);
 
   /**
    * Add a buffer value at the end of the tuple.

@@ -17,6 +17,7 @@
 
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.Json;
 import com.julienviet.pgclient.Numeric;
 import com.julienviet.pgclient.Row;
 import com.julienviet.pgclient.impl.codec.decoder.message.RowDescription;
@@ -90,6 +91,12 @@ public class RowImpl extends ArrayTuple implements Row {
   public String getString(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getString(pos);
+  }
+
+  @Override
+  public Json getJson(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getJson(pos);
   }
 
   @Override

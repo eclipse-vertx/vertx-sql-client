@@ -508,6 +508,42 @@ pool.getConnection(res -> {
 
 == Postgres type mapping
 
+=== Handling JSON
+
+The `link:../../apidocs/com/julienviet/pgclient/Json.html[Json]` Java type is used to represent the Postgres `JSON` and `JSONB` type.
+
+The main reason of this type is handling `null` JSON values.
+
+[source,java]
+----
+Tuple tuple = Tuple.of(
+  Json.create(null),
+  Json.create(new JsonObject().put("foo", "bar")),
+  Json.create(3));
+
+//
+tuple = Tuple.tuple()
+  .addJson(Json.create(null))
+  .addJson(Json.create(new JsonObject().put("foo", "bar")))
+  .addJson(Json.create(3));
+
+// JSON object (and arrays) can also be added directly
+tuple = Tuple.tuple()
+  .addJson(Json.create(null))
+  .addJsonObject(new JsonObject().put("foo", "bar"))
+  .addJson(Json.create(3));
+
+// Retrieving json
+Object value = tuple.getJson(0).value(); // Expect null
+
+//
+value = tuple.getJson(1).value(); // Expect JSON object
+value = tuple.getJsonObject(1); // Works too
+
+//
+value = tuple.getJson(3).value(); // Expect 3
+----
+
 === Handling NUMERIC
 
 The `link:../../apidocs/com/julienviet/pgclient/Numeric.html[Numeric]` Java type is used to represent the Postgres `NUMERIC` type.

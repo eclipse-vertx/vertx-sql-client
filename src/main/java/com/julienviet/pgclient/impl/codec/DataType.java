@@ -18,12 +18,12 @@
 package com.julienviet.pgclient.impl.codec;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.julienviet.pgclient.Json;
 import com.julienviet.pgclient.Numeric;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -460,22 +460,22 @@ public class DataType<T> {
   public static DataType<Object> UUID_ARRAY = new DataType<>(Object.class,2951);
 
   // Text JSON
-  public static final DataType<Object> JSON = new DataType<Object>(Object.class,114) {
+  public static final DataType<Json> JSON = new DataType<Json>(Json.class,114) {
     @Override
-    public Object decodeText(int len, ByteBuf buff) {
+    public Json decodeText(int len, ByteBuf buff) {
       // Try to do without the intermediary String
       CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
-      return decodeJson(cs.toString());
+      return Json.create(decodeJson(cs.toString()));
     }
   };
   // Binary JSON
-  public static final DataType<Object> JSONB = new DataType<Object>(Object.class,3802) {
+  public static final DataType<Json> JSONB = new DataType<Json>(Json.class,3802) {
     @Override
-    public Object decodeText(int len, ByteBuf buff) {
+    public Json decodeText(int len, ByteBuf buff) {
       // Not sure this is correct
       // Try to do without the intermediary String
       CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
-      return decodeJson(cs.toString());
+      return Json.create(decodeJson(cs.toString()));
     }
   };
   // XML
@@ -548,7 +548,7 @@ public class DataType<T> {
       return new JsonArray(value);
     } else {
       try {
-        JsonNode jsonNode = Json.mapper.readTree(value);
+        JsonNode jsonNode = io.vertx.core.json.Json.mapper.readTree(value);
         if (jsonNode.isNumber()) {
           return jsonNode.numberValue();
         } else if (jsonNode.isBoolean()) {

@@ -17,6 +17,7 @@
 
 package com.julienviet.pgclient.impl;
 
+import com.julienviet.pgclient.Json;
 import com.julienviet.pgclient.Numeric;
 import com.julienviet.pgclient.Tuple;
 import io.vertx.core.buffer.Buffer;
@@ -39,8 +40,13 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Boolean getBoolean(int pos) {
-    if(get(pos) instanceof Boolean)
-      return (Boolean) get(pos);
+    Object val = get(pos);
+    if (val instanceof Json) {
+      val = ((Json)val).value();
+    }
+    if (val instanceof Boolean) {
+      return (Boolean) val;
+    }
     return null;
   }
 
@@ -52,7 +58,10 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   @Override
   public Integer getInteger(int pos) {
     Object val = get(pos);
-    if(val instanceof Integer) {
+    if (val instanceof Json) {
+      val = ((Json)val).value();
+    }
+    if (val instanceof Integer) {
       return (Integer) val;
     } else if (val instanceof Number) {
       return ((Number) val).intValue();
@@ -63,7 +72,10 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   @Override
   public Long getLong(int pos) {
     Object val = get(pos);
-    if(val instanceof Long) {
+    if (val instanceof Json) {
+      val = ((Json)val).value();
+    }
+    if (val instanceof Long) {
       return (Long) val;
     } else if (val instanceof Number) {
       return ((Number) val).longValue();
@@ -74,7 +86,10 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   @Override
   public Float getFloat(int pos) {
     Object val = get(pos);
-    if(val instanceof Float) {
+    if (val instanceof Json) {
+      val = ((Json)val).value();
+    }
+    if (val instanceof Float) {
       return (Float) val;
     } else if (val instanceof Number) {
       return ((Number) val).floatValue();
@@ -85,7 +100,10 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   @Override
   public Double getDouble(int pos) {
     Object val = get(pos);
-    if(val instanceof Double) {
+    if (val instanceof Json) {
+      val = ((Json)val).value();
+    }
+    if (val instanceof Double) {
       return (Double) val;
     } else if (val instanceof Number) {
       return ((Number) val).doubleValue();
@@ -96,7 +114,10 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   @Override
   public BigDecimal getBigDecimal(int pos) {
     Object val = get(pos);
-    if(val instanceof BigDecimal) {
+    if (val instanceof Json) {
+      val = ((Json)val).value();
+    }
+    if (val instanceof BigDecimal) {
       return (BigDecimal) val;
     } else if (val instanceof Number) {
       return new BigDecimal(val.toString());
@@ -107,7 +128,10 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   @Override
   public Numeric getNumeric(int pos) {
     Object val = get(pos);
-    if(val instanceof Numeric) {
+    if (val instanceof Json) {
+      val = ((Json)val).value();
+    }
+    if (val instanceof Numeric) {
       return (Numeric) val;
     } else if (val instanceof Number) {
       return Numeric.parse(val.toString());
@@ -117,85 +141,127 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public String getString(int pos) {
-    if(get(pos) instanceof String)
-      return (String) get(pos);
+    Object val = get(pos);
+    if (val instanceof Json) {
+      val = ((Json)val).value();
+    }
+    if (val instanceof String) {
+      return (String) val;
+    }
     return null;
   }
 
   @Override
   public Character getCharacter(int pos) {
-    if(get(pos) instanceof Character)
-      return (Character) get(pos);
+    Object val = get(pos);
+    if (val instanceof Character) {
+      return (Character) val;
+    }
+    return null;
+  }
+
+  @Override
+  public Json getJson(int pos) {
+    Object val = get(pos);
+    if (val instanceof Json) {
+      return (Json) val;
+    }
     return null;
   }
 
   @Override
   public JsonObject getJsonObject(int pos) {
-    if(get(pos) instanceof JsonObject)
-      return (JsonObject) get(pos);
+    Object val = get(pos);
+    if (val instanceof Json) {
+      val = ((Json) val).value();
+      if (val instanceof JsonObject) {
+        return (JsonObject) val;
+      }
+    }
     return null;
   }
 
   @Override
   public JsonArray getJsonArray(int pos) {
-    if(get(pos) instanceof JsonArray)
-      return (JsonArray) get(pos);
+    Object val = get(pos);
+    if (val instanceof Json) {
+      val = ((Json) val).value();
+      if (val instanceof JsonArray) {
+        return (JsonArray) val;
+      }
+    }
     return null;
   }
 
   @Override
   public Buffer getBuffer(int pos) {
-    if(get(pos) instanceof Buffer)
-      return (Buffer) get(pos);
+    Object val = get(pos);
+    if (val instanceof Buffer) {
+      return (Buffer) val;
+    }
     return null;
   }
 
   @Override
   public Temporal getTemporal(int pos) {
-    if(get(pos) instanceof Temporal)
-      return (Temporal) get(pos);
+    Object val = get(pos);
+    if (val instanceof Temporal) {
+      return (Temporal) val;
+    }
     return null;
   }
 
   @Override
   public LocalDate getLocalDate(int pos) {
-    if(get(pos) instanceof LocalDate)
-      return (LocalDate) get(pos);
+    Object val = get(pos);
+    if (val instanceof LocalDate) {
+      return (LocalDate) val;
+    }
     return null;
   }
 
   @Override
   public LocalTime getLocalTime(int pos) {
-    if(get(pos) instanceof LocalTime)
-      return (LocalTime) get(pos);
+    Object val = get(pos);
+    if (val instanceof LocalTime) {
+      return (LocalTime) val;
+    }
     return null;
   }
 
   @Override
   public LocalDateTime getLocalDateTime(int pos) {
-    if(get(pos) instanceof LocalDateTime)
-      return (LocalDateTime) get(pos);
+    Object val = get(pos);
+    if (val instanceof LocalDateTime) {
+      return (LocalDateTime) val;
+    }
     return null;
   }
 
   @Override
   public OffsetTime getOffsetTime(int pos) {
-    if(get(pos) instanceof OffsetTime)
-      return (OffsetTime) get(pos);
+    Object val = get(pos);
+    if (val instanceof OffsetTime) {
+      return (OffsetTime) val;
+    }
     return null;
   }
 
   @Override
   public OffsetDateTime getOffsetDateTime(int pos) {
-    if(get(pos) instanceof OffsetDateTime)
-      return (OffsetDateTime) get(pos);
+    Object val = get(pos);
+    if (val instanceof OffsetDateTime) {
+      return (OffsetDateTime) val;
+    }
     return null;
   }
 
   @Override
   public UUID getUUID(int pos) {
-    if(get(pos) instanceof UUID)
-      return (UUID) get(pos);
+    Object val = get(pos);
+    if (val instanceof UUID) {
+      return (UUID) val;
+    }
     return null;
   }
 
@@ -265,12 +331,18 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Tuple addJsonObject(JsonObject value) {
-    add(value);
+    add(Json.create(value));
     return this;
   }
 
   @Override
   public Tuple addJsonArray(JsonArray value) {
+    add(Json.create(value));
+    return this;
+  }
+
+  @Override
+  public Tuple addJson(Json value) {
     add(value);
     return this;
   }

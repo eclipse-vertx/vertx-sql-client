@@ -523,6 +523,44 @@ pool.get_connection() { |res_err,res|
 
 == Postgres type mapping
 
+=== Handling JSON
+
+The `link:../../yardoc/VertxPgClient/Json.html[Json]` Java type is used to represent the Postgres `JSON` and `JSONB` type.
+
+The main reason of this type is handling `null` JSON values.
+
+[source,ruby]
+----
+require 'vertx-pg-client/json'
+require 'vertx-pg-client/tuple'
+
+# Create a tuple
+tuple = VertxPgClient::Tuple.of(VertxPgClient::Json.create(nil), VertxPgClient::Json.create({
+  'foo' => "bar"
+}), VertxPgClient::Json.create(3))
+
+#
+tuple = VertxPgClient::Tuple.tuple().add_json(VertxPgClient::Json.create(nil)).add_json(VertxPgClient::Json.create({
+  'foo' => "bar"
+})).add_json(VertxPgClient::Json.create(3))
+
+# JSON object (and arrays) can also be added directly
+tuple = VertxPgClient::Tuple.tuple().add_json(VertxPgClient::Json.create(nil)).add_json_object({
+  'foo' => "bar"
+}).add_json(VertxPgClient::Json.create(3))
+
+# Retrieving json
+value = tuple.get_json(0).value()
+
+#
+value = tuple.get_json(1).value()
+value = tuple.get_json_object(1)
+
+#
+value = tuple.get_json(3).value()
+
+----
+
 === Handling NUMERIC
 
 The `link:unavailable[Numeric]` Java type is used to represent the Postgres `NUMERIC` type.

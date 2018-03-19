@@ -20,6 +20,7 @@ package examples;
 import com.julienviet.pgclient.*;
 import com.julienviet.pgclient.pubsub.PgSubscriber;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
 
@@ -523,6 +524,37 @@ public class Examples {
         System.out.println("Could not connect " + res.cause());
       }
     });
+  }
+
+  public void jsonExample() {
+
+    // Create a tuple
+    Tuple tuple = Tuple.of(
+      Json.create(null),
+      Json.create(new JsonObject().put("foo", "bar")),
+      Json.create(3));
+
+    //
+    tuple = Tuple.tuple()
+      .addJson(Json.create(null))
+      .addJson(Json.create(new JsonObject().put("foo", "bar")))
+      .addJson(Json.create(3));
+
+    // JSON object (and arrays) can also be added directly
+    tuple = Tuple.tuple()
+      .addJson(Json.create(null))
+      .addJsonObject(new JsonObject().put("foo", "bar"))
+      .addJson(Json.create(3));
+
+    // Retrieving json
+    Object value = tuple.getJson(0).value(); // Expect null
+
+    //
+    value = tuple.getJson(1).value(); // Expect JSON object
+    value = tuple.getJsonObject(1); // Works too
+
+    //
+    value = tuple.getJson(3).value(); // Expect 3
   }
 
   public void numericExample(Row row) {
