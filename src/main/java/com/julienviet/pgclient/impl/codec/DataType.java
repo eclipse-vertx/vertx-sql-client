@@ -51,10 +51,6 @@ import static javax.xml.bind.DatatypeConverter.*;
 
 public class DataType<T> {
 
-  public interface Encoder<T> {
-    void encode(T value, ByteBuf buff);
-  }
-
   public interface Decoder<T> {
     T decode(int len, ByteBuf buff);
   }
@@ -601,30 +597,22 @@ public class DataType<T> {
 
   private final Class<T> javaType;
   private final int id;
-  public final Encoder<T> textEncoder;
   public final Decoder<T> textDecoder;
-  public final Encoder<T> binaryEncoder;
   public final Decoder<T> binaryDecoder;
 
   private DataType(Class<T> javaType, int id) {
     this.javaType = javaType;
     this.id = id;
     this.textDecoder = this::decodeText;
-    this.textEncoder = this::encodeText;
     this.binaryDecoder = this::decodeBinary;
-    this.binaryEncoder = this::encodeBinary;
   }
 
   public DataType(Class<T> javaType, int id,
-                  Encoder<T> textEncoder,
                   Decoder<T> textDecoder,
-                  Encoder<T> binaryEncoder,
                   Decoder<T> binaryDecoder) {
     this.javaType = javaType;
     this.id = id;
-    this.textEncoder = textEncoder;
     this.textDecoder = textDecoder;
-    this.binaryEncoder = binaryEncoder;
     this.binaryDecoder = binaryDecoder;
   }
 
