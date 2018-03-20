@@ -1,6 +1,6 @@
 = Reactive Postgres Client
 
-image:https://travis-ci.org/vietj/reactive-pg-client.svg?branch=master["Build Status",link="https://travis-ci.org/vietj/reactive-pg-client"]
+image:https://travis-ci.org/reactiverse/reactive-pg-client.svg?branch=master["Build Status",link="https://travis-ci.org/vietj/reactive-pg-client"]
 
 * Simple API focusing on scalability and low overhead.
 * Reactive and non blocking which able to handle many database connections with a single thread.
@@ -78,12 +78,12 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -> {
 
 == Documentations
 
-* http://www.julienviet.com/reactive-pg-client/guide/java/index.html[Java docs]
-* https://www.julienviet.com/reactive-pg-client/apidocs/index.html[Javadoc]
-* http://www.julienviet.com/reactive-pg-client/guide/kotlin/index.html[Kotlin docs]
-* http://www.julienviet.com/reactive-pg-client/guide/groovy/index.html[Groovy docs]
-* http://www.julienviet.com/reactive-pg-client/guide/ruby/index.html[Ruby docs]
-* http://www.julienviet.com/reactive-pg-client/guide/js/index.html[JavaScript docs]
+* https://reactiverse.io/reactive-pg-client/guide/java/index.html[Java docs]
+* https://reactiverse.io/reactive-pg-client/apidocs/index.html[Javadoc]
+* https:/reactiverse.io/reactive-pg-client/guide/kotlin/index.html[Kotlin docs]
+* https://reactiverse.io/reactive-pg-client/guide/groovy/index.html[Groovy docs]
+* https://reactiverse.io/reactive-pg-client/guide/ruby/index.html[Ruby docs]
+* https://reactiverse.io/reactive-pg-client/guide/js/index.html[JavaScript docs]
 
 == Supported Data Types
 
