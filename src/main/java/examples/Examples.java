@@ -17,8 +17,8 @@
 
 package examples;
 
-import com.julienviet.pgclient.*;
-import com.julienviet.pgclient.pubsub.PgSubscriber;
+import io.reactiverse.pgclient.*;
+import io.reactiverse.pgclient.pubsub.PgSubscriber;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.PemTrustOptions;

@@ -28,7 +28,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 [source,xml,subs="+attributes"]
 ----
 <dependency>
-  <groupId>com.julienviet</groupId>
+  <groupId>io.reactiverse</groupId>
   <artifactId>reactive-pg-client</artifactId>
   <version>0.6.1-SNAPSHOT</version>
 </dependency>
@@ -39,7 +39,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 [source,groovy,subs="+attributes"]
 ----
 dependencies {
-  compile 'com.julienviet:reactive-pg-client:0.6.1-SNAPSHOT'
+  compile 'io.reactiverse:reactive-pg-client:0.6.1-SNAPSHOT'
 }
 ----
 
@@ -49,7 +49,7 @@ Here is the simplest way to connect, query and disconnect
 
 [source,js]
 ----
-var PgClient = require("vertx-pg-client-js/pg_client");
+var PgClient = require("reactive-pg-client-js/pg_client");
 
 // Pool options
 var options = {
@@ -85,7 +85,7 @@ Most of the time you will use a pool to connect to Postgres:
 
 [source,js]
 ----
-var PgClient = require("vertx-pg-client-js/pg_client");
+var PgClient = require("reactive-pg-client-js/pg_client");
 
 // Pool options
 var options = {
@@ -109,7 +109,7 @@ If you are running with Vert.x you can pass it your Vertx instance:
 
 [source,js]
 ----
-var PgClient = require("vertx-pg-client-js/pg_client");
+var PgClient = require("reactive-pg-client-js/pg_client");
 
 // Pool options
 var options = {
@@ -137,13 +137,13 @@ pool.close();
 ----
 
 When you need to execute several operations on the same connection, you need to use a client
-`link:../../jsdoc/module-vertx-pg-client-js_pg_connection-PgConnection.html[connection]`.
+`link:../../jsdoc/module-reactive-pg-client-js_pg_connection-PgConnection.html[connection]`.
 
 You can easily get one from the pool:
 
 [source,js]
 ----
-var PgClient = require("vertx-pg-client-js/pg_client");
+var PgClient = require("reactive-pg-client-js/pg_client");
 
 // Pool options
 var options = {
@@ -215,7 +215,7 @@ The SQL string can refer to parameters by position, using `$1`, `$2`, etc…​
 
 [source,js]
 ----
-var Tuple = require("vertx-pg-client-js/tuple");
+var Tuple = require("reactive-pg-client-js/tuple");
 client.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"), function (ar, ar_err) {
   if (ar_err == null) {
     var result = ar;
@@ -227,7 +227,7 @@ client.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"), func
 
 ----
 
-Query methods provides an asynchronous `link:../../jsdoc/module-vertx-pg-client-js_pg_result-PgResult.html[PgResult]` instance that works for _SELECT_ queries
+Query methods provides an asynchronous `link:../../jsdoc/module-reactive-pg-client-js_pg_result-PgResult.html[PgResult]` instance that works for _SELECT_ queries
 
 [source,js]
 ----
@@ -248,7 +248,7 @@ or _UPDATE_/_INSERT_ queries:
 
 [source,js]
 ----
-var Tuple = require("vertx-pg-client-js/tuple");
+var Tuple = require("reactive-pg-client-js/tuple");
 client.preparedQuery("\"INSERT INTO users (first_name, last_name) VALUES ($1, $2)", Tuple.of("Julien", "Viet"), function (ar, ar_err) {
   if (ar_err == null) {
     var result = ar;
@@ -260,7 +260,7 @@ client.preparedQuery("\"INSERT INTO users (first_name, last_name) VALUES ($1, $2
 
 ----
 
-The `link:../../jsdoc/module-vertx-pg-client-js_row-Row.html[Row]` gives you access to your data by index
+The `link:../../jsdoc/module-reactive-pg-client-js_row-Row.html[Row]` gives you access to your data by index
 
 [source,js]
 ----
@@ -294,7 +294,7 @@ You can execute prepared batch
 
 [source,js]
 ----
-var Tuple = require("vertx-pg-client-js/tuple");
+var Tuple = require("reactive-pg-client-js/tuple");
 
 // Add commands to the batch
 var batch = [];
@@ -318,7 +318,7 @@ You can cache prepared queries:
 
 [source,js]
 ----
-var PgClient = require("vertx-pg-client-js/pg_client");
+var PgClient = require("reactive-pg-client-js/pg_client");
 
 // Enable prepare statements
 options.cachePreparedStatements = true;
@@ -341,7 +341,7 @@ Prepared queries can be created:
 
 [source,js]
 ----
-var Tuple = require("vertx-pg-client-js/tuple");
+var Tuple = require("reactive-pg-client-js/tuple");
 connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1, ar1_err) {
   if (ar1_err == null) {
     var pq = ar1;
@@ -357,13 +357,13 @@ connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1
 ----
 
 NOTE: prepared query caching depends on the `link:../dataobjects.html#PgConnectOptions#setCachePreparedStatements[cachePreparedStatements]` and
-does not depend on whether you are creating prepared queries or use `link:../../jsdoc/module-vertx-pg-client-js_pg_client-PgClient.html#preparedQuery[direct prepared queries]`
+does not depend on whether you are creating prepared queries or use `link:../../jsdoc/module-reactive-pg-client-js_pg_client-PgClient.html#preparedQuery[direct prepared queries]`
 
-By default prepared query executions fetch all results, you can use a `link:../../jsdoc/module-vertx-pg-client-js_pg_cursor-PgCursor.html[PgCursor]` to control the amount of rows you want to read:
+By default prepared query executions fetch all results, you can use a `link:../../jsdoc/module-reactive-pg-client-js_pg_cursor-PgCursor.html[PgCursor]` to control the amount of rows you want to read:
 
 [source,js]
 ----
-var Tuple = require("vertx-pg-client-js/tuple");
+var Tuple = require("reactive-pg-client-js/tuple");
 connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1, ar1_err) {
   if (ar1_err == null) {
     var pq = ar1;
@@ -397,7 +397,7 @@ Cursors shall be closed when they are released prematurely:
 
 [source,js]
 ----
-var Tuple = require("vertx-pg-client-js/tuple");
+var Tuple = require("reactive-pg-client-js/tuple");
 connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1, ar1_err) {
   if (ar1_err == null) {
     var pq = ar1;
@@ -417,7 +417,7 @@ A stream API is also available for cursors, which can be more convenient, specia
 
 [source,js]
 ----
-var Tuple = require("vertx-pg-client-js/tuple");
+var Tuple = require("reactive-pg-client-js/tuple");
 connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1, ar1_err) {
   if (ar1_err == null) {
     var pq = ar1;
@@ -446,11 +446,11 @@ a new batch of `50` is read and so on.
 The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
 will stop iterating.
 
-`link:../../jsdoc/module-vertx-pg-client-js_pg_prepared_query-PgPreparedQuery.html[PgPreparedQuery]` can perform efficient batching:
+`link:../../jsdoc/module-reactive-pg-client-js_pg_prepared_query-PgPreparedQuery.html[PgPreparedQuery]` can perform efficient batching:
 
 [source,js]
 ----
-var Tuple = require("vertx-pg-client-js/tuple");
+var Tuple = require("reactive-pg-client-js/tuple");
 connection.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", function (ar1, ar1_err) {
   if (ar1_err == null) {
     var prepared = ar1;
@@ -479,9 +479,9 @@ connection.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", function (ar1
 == Using transactions
 
 You can execute transaction using SQL `BEGIN`/`COMMIT`/`ROLLBACK`, if you do so you must use
-a `link:../../jsdoc/module-vertx-pg-client-js_pg_connection-PgConnection.html[PgConnection]` and manage it yourself.
+a `link:../../jsdoc/module-reactive-pg-client-js_pg_connection-PgConnection.html[PgConnection]` and manage it yourself.
 
-Or you can use the transaction API of `link:../../jsdoc/module-vertx-pg-client-js_pg_connection-PgConnection.html[PgConnection]`:
+Or you can use the transaction API of `link:../../jsdoc/module-reactive-pg-client-js_pg_connection-PgConnection.html[PgConnection]`:
 
 [source,js]
 ----
@@ -489,7 +489,7 @@ Code not translatable
 ----
 
 When Postgres reports the current transaction is failed (e.g the infamous _current transaction is aborted, commands ignored until
-end of transaction block_), the transaction is rollbacked and the `link:../../jsdoc/module-vertx-pg-client-js_pg_transaction-PgTransaction.html#abortHandler[abortHandler]`
+end of transaction block_), the transaction is rollbacked and the `link:../../jsdoc/module-reactive-pg-client-js_pg_transaction-PgTransaction.html#abortHandler[abortHandler]`
 is called:
 
 [source,js]
@@ -525,14 +525,14 @@ pool.getConnection(function (res, res_err) {
 
 === Handling JSON
 
-The `link:../../jsdoc/module-vertx-pg-client-js_json-Json.html[Json]` Java type is used to represent the Postgres `JSON` and `JSONB` type.
+The `link:../../jsdoc/module-reactive-pg-client-js_json-Json.html[Json]` Java type is used to represent the Postgres `JSON` and `JSONB` type.
 
 The main reason of this type is handling `null` JSON values.
 
 [source,js]
 ----
-var Json = require("vertx-pg-client-js/json");
-var Tuple = require("vertx-pg-client-js/tuple");
+var Json = require("reactive-pg-client-js/json");
+var Tuple = require("reactive-pg-client-js/tuple");
 
 // Create a tuple
 var tuple = Tuple.of(Json.create(null), Json.create({
@@ -580,7 +580,7 @@ if (numeric.isNaN()) {
 
 Postgres supports pub/sub communication channels.
 
-You can set a `link:../../jsdoc/module-vertx-pg-client-js_pg_connection-PgConnection.html#notificationHandler[notificationHandler]` to receive
+You can set a `link:../../jsdoc/module-reactive-pg-client-js_pg_connection-PgConnection.html#notificationHandler[notificationHandler]` to receive
 Postgres notifications:
 
 [source,js]
@@ -596,12 +596,12 @@ connection.query("LISTEN some-channel", function (ar, ar_err) {
 
 ----
 
-The `link:../../jsdoc/module-vertx-pg-client-js_pg_subscriber-PgSubscriber.html[PgSubscriber]` is a channel manager managing a single connection that
+The `link:../../jsdoc/module-reactive-pg-client-js_pg_subscriber-PgSubscriber.html[PgSubscriber]` is a channel manager managing a single connection that
 provides per channel subscription:
 
 [source,js]
 ----
-var PgSubscriber = require("vertx-pg-client-js/pg_subscriber");
+var PgSubscriber = require("reactive-pg-client-js/pg_subscriber");
 
 var subscriber = PgSubscriber.subscriber(vertx, {
   "port" : 5432,
@@ -637,7 +637,7 @@ value:
 
 [source,js]
 ----
-var PgSubscriber = require("vertx-pg-client-js/pg_subscriber");
+var PgSubscriber = require("reactive-pg-client-js/pg_subscriber");
 
 var subscriber = PgSubscriber.subscriber(vertx, {
   "port" : 5432,
@@ -667,7 +667,7 @@ like a Vert.x `NetClient`.
 
 [source,js]
 ----
-var PgClient = require("vertx-pg-client-js/pg_client");
+var PgClient = require("reactive-pg-client-js/pg_client");
 
 var options = {
   "port" : 5432,

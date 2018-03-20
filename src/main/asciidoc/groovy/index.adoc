@@ -28,7 +28,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 [source,xml,subs="+attributes"]
 ----
 <dependency>
-  <groupId>com.julienviet</groupId>
+  <groupId>io.reactiverse</groupId>
   <artifactId>reactive-pg-client</artifactId>
   <version>0.6.1-SNAPSHOT</version>
 </dependency>
@@ -39,7 +39,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 [source,groovy,subs="+attributes"]
 ----
 dependencies {
-  compile 'com.julienviet:reactive-pg-client:0.6.1-SNAPSHOT'
+  compile 'io.reactiverse:reactive-pg-client:0.6.1-SNAPSHOT'
 }
 ----
 
@@ -134,7 +134,7 @@ pool.close()
 ----
 
 When you need to execute several operations on the same connection, you need to use a client
-`link:../../apidocs/com/julienviet/pgclient/PgConnection.html[connection]`.
+`link:../../apidocs/io/reactiverse/pgclient/PgConnection.html[connection]`.
 
 You can easily get one from the pool:
 
@@ -222,7 +222,7 @@ client.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"), { ar
 
 ----
 
-Query methods provides an asynchronous `link:../../apidocs/com/julienviet/pgclient/PgResult.html[PgResult]` instance that works for _SELECT_ queries
+Query methods provides an asynchronous `link:../../apidocs/io/reactiverse/pgclient/PgResult.html[PgResult]` instance that works for _SELECT_ queries
 
 [source,groovy]
 ----
@@ -254,7 +254,7 @@ client.preparedQuery("\"INSERT INTO users (first_name, last_name) VALUES ($1, $2
 
 ----
 
-The `link:../../apidocs/com/julienviet/pgclient/Row.html[Row]` gives you access to your data by index
+The `link:../../apidocs/io/reactiverse/pgclient/Row.html[Row]` gives you access to your data by index
 
 [source,groovy]
 ----
@@ -347,10 +347,10 @@ connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", { ar1 ->
 
 ----
 
-NOTE: prepared query caching depends on the `link:../../apidocs/com/julienviet/pgclient/PgConnectOptions.html#setCachePreparedStatements-boolean-[setCachePreparedStatements]` and
-does not depend on whether you are creating prepared queries or use `link:../../apidocs/com/julienviet/pgclient/PgClient.html#preparedQuery-java.lang.String-io.vertx.core.Handler-[direct prepared queries]`
+NOTE: prepared query caching depends on the `link:../../apidocs/io/reactiverse/pgclient/PgConnectOptions.html#setCachePreparedStatements-boolean-[setCachePreparedStatements]` and
+does not depend on whether you are creating prepared queries or use `link:../../apidocs/io/reactiverse/pgclient/PgClient.html#preparedQuery-java.lang.String-io.vertx.core.Handler-[direct prepared queries]`
 
-By default prepared query executions fetch all results, you can use a `link:../../apidocs/com/julienviet/pgclient/PgCursor.html[PgCursor]` to control the amount of rows you want to read:
+By default prepared query executions fetch all results, you can use a `link:../../apidocs/io/reactiverse/pgclient/PgCursor.html[PgCursor]` to control the amount of rows you want to read:
 
 [source,groovy]
 ----
@@ -434,7 +434,7 @@ a new batch of `50` is read and so on.
 The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
 will stop iterating.
 
-`link:../../apidocs/com/julienviet/pgclient/PgPreparedQuery.html[PgPreparedQuery]` can perform efficient batching:
+`link:../../apidocs/io/reactiverse/pgclient/PgPreparedQuery.html[PgPreparedQuery]` can perform efficient batching:
 
 [source,groovy]
 ----
@@ -466,9 +466,9 @@ connection.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", { ar1 ->
 == Using transactions
 
 You can execute transaction using SQL `BEGIN`/`COMMIT`/`ROLLBACK`, if you do so you must use
-a `link:../../apidocs/com/julienviet/pgclient/PgConnection.html[PgConnection]` and manage it yourself.
+a `link:../../apidocs/io/reactiverse/pgclient/PgConnection.html[PgConnection]` and manage it yourself.
 
-Or you can use the transaction API of `link:../../apidocs/com/julienviet/pgclient/PgConnection.html[PgConnection]`:
+Or you can use the transaction API of `link:../../apidocs/io/reactiverse/pgclient/PgConnection.html[PgConnection]`:
 
 [source,groovy]
 ----
@@ -476,7 +476,7 @@ Code not translatable
 ----
 
 When Postgres reports the current transaction is failed (e.g the infamous _current transaction is aborted, commands ignored until
-end of transaction block_), the transaction is rollbacked and the `link:../../apidocs/com/julienviet/pgclient/PgTransaction.html#abortHandler-io.vertx.core.Handler-[abortHandler]`
+end of transaction block_), the transaction is rollbacked and the `link:../../apidocs/io/reactiverse/pgclient/PgTransaction.html#abortHandler-io.vertx.core.Handler-[abortHandler]`
 is called:
 
 [source,groovy]
@@ -512,7 +512,7 @@ pool.getConnection({ res ->
 
 === Handling JSON
 
-The `link:../../apidocs/com/julienviet/pgclient/Json.html[Json]` Java type is used to represent the Postgres `JSON` and `JSONB` type.
+The `link:../../apidocs/io/reactiverse/pgclient/Json.html[Json]` Java type is used to represent the Postgres `JSON` and `JSONB` type.
 
 The main reason of this type is handling `null` JSON values.
 
@@ -548,7 +548,7 @@ value = tuple.getJson(3).value()
 
 === Handling NUMERIC
 
-The `link:../../apidocs/com/julienviet/pgclient/Numeric.html[Numeric]` Java type is used to represent the Postgres `NUMERIC` type.
+The `link:../../apidocs/io/reactiverse/pgclient/Numeric.html[Numeric]` Java type is used to represent the Postgres `NUMERIC` type.
 
 [source,groovy]
 ----
@@ -565,7 +565,7 @@ if (numeric.isNaN()) {
 
 Postgres supports pub/sub communication channels.
 
-You can set a `link:../../apidocs/com/julienviet/pgclient/PgConnection.html#notificationHandler-io.vertx.core.Handler-[notificationHandler]` to receive
+You can set a `link:../../apidocs/io/reactiverse/pgclient/PgConnection.html#notificationHandler-io.vertx.core.Handler-[notificationHandler]` to receive
 Postgres notifications:
 
 [source,groovy]
@@ -581,7 +581,7 @@ connection.query("LISTEN some-channel", { ar ->
 
 ----
 
-The `link:../../apidocs/com/julienviet/pgclient/pubsub/PgSubscriber.html[PgSubscriber]` is a channel manager managing a single connection that
+The `link:../../apidocs/io/reactiverse/pgclient/pubsub/PgSubscriber.html[PgSubscriber]` is a channel manager managing a single connection that
 provides per channel subscription:
 
 [source,groovy]
@@ -645,7 +645,7 @@ The default policy is to not reconnect.
 
 == Using SSL/TLS
 
-To configure the client to use SSL connection, you can configure the `link:../../apidocs/com/julienviet/pgclient/PgConnectOptions.html[PgConnectOptions]`
+To configure the client to use SSL connection, you can configure the `link:../../apidocs/io/reactiverse/pgclient/PgConnectOptions.html[PgConnectOptions]`
 like a Vert.x `NetClient`.
 
 [source,groovy]

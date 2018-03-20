@@ -25,12 +25,12 @@
     <version>27</version>
   </parent>
 
-  <groupId>com.julienviet</groupId>
+  <groupId>io.reactiverse</groupId>
   <artifactId>reactive-pg-client</artifactId>
   <version>0.6.1-SNAPSHOT</version>
 
   <name>Reactive Postgres Client</name>
-  <url>https://github.com/vietj/vertx-pg-client</url>
+  <url>https://github.com/reactiverse/reactive-pg-client</url>
   <description>The reactive Postgres client</description>
 
   <licenses>
@@ -42,9 +42,9 @@
   </licenses>
 
   <scm>
-    <connection>scm:git:git@github.com:vietj/reactive-pg-client.git</connection>
-    <developerConnection>scm:git:git@github.com:vietj/reactive-pg-client.git</developerConnection>
-    <url>git@github.com:vietj/reactive-pg-client.git</url>
+    <connection>scm:git:git@github.com:reactiverse/reactive-pg-client.git</connection>
+    <developerConnection>scm:git:git@github.com:reactiverse/reactive-pg-client.git</developerConnection>
+    <url>git@github.com:reactiverse/reactive-pg-client.git</url>
   </scm>
 
   <developers>
@@ -240,7 +240,7 @@
             <configuration>
               <archive>
                 <manifest>
-                  <mainClass>com.julienviet.pgclient.RawBenchmark</mainClass>
+                  <mainClass>io.reactiverse.pgclient.RawBenchmark</mainClass>
                 </manifest>
               </archive>
               <descriptors>
