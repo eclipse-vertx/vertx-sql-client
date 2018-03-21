@@ -19,6 +19,8 @@ class ColumnChecker {
   static {
     tupleMethods.add(Tuple::getValue);
     rowMethods.add(Row::getValue);
+    tupleMethods.add(Tuple::getShort);
+    rowMethods.add(Row::getShort);
     tupleMethods.add(Tuple::getInteger);
     rowMethods.add(Row::getInteger);
     tupleMethods.add(Tuple::getLong);
