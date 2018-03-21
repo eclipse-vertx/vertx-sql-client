@@ -193,7 +193,7 @@ NOTE: The client uses `BINARY` protocol only for prepared queries `PgClient#prep
 
 == Snapshots
 
-Snapshots are deploy in Sonatype OSS repository: https://oss.sonatype.org/content/repositories/snapshots/com/julienviet/reactive-pg-client/
+Snapshots are deploy in Sonatype OSS repository: https://oss.sonatype.org/content/repositories/snapshots/io/reactiverse/reactive-pg-client/
 
 == License
 
