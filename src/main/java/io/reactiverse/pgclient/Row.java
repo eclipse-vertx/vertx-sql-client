@@ -47,6 +47,14 @@ public interface Row extends Tuple {
   Object getValue(String name);
 
   /**
+   * Get a short value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  Short getShort(String name);
+
+  /**
    * Get an integer value at {@code pos}.
    *
    * @param name the column

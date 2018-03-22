@@ -33,12 +33,14 @@ public class NumericTest {
   private BigDecimal bigDecimalValue = new BigDecimal(new BigInteger(100, random), 50);
   private BigInteger bigIntegerValue = new BigInteger(100, random);
   private long longValue = random.nextLong();
+  private short shortValue = (short) random.nextInt();
   private int intValue = random.nextInt();
   private double doubleValue = random.nextDouble();
   private float floatValue = random.nextFloat();
 
   @Test
   public void testCreate() {
+    assertEquals(shortValue, Numeric.create(shortValue).shortValue());
     assertEquals(intValue, Numeric.create(intValue).intValue());
     assertEquals(longValue, Numeric.create(longValue).longValue());
     assertEquals(floatValue, Numeric.create(floatValue).floatValue(), 0.01f);
@@ -53,6 +55,7 @@ public class NumericTest {
     assertEquals(Numeric.create(bigDecimalValue), Numeric.parse(bigDecimalValue.toString()));
     assertEquals(Numeric.create(bigIntegerValue), Numeric.parse(bigIntegerValue.toString()));
     assertEquals(Numeric.create(longValue), Numeric.parse("" + longValue));
+    assertEquals(Numeric.create(shortValue), Numeric.parse("" + shortValue));
     assertEquals(Numeric.create(intValue), Numeric.parse("" + intValue));
     assertEquals(Numeric.create(floatValue), Numeric.parse("" + floatValue));
     assertEquals(Numeric.create(doubleValue), Numeric.parse("" + doubleValue));
@@ -67,6 +70,7 @@ public class NumericTest {
       bigDecimalValue,
       bigIntegerValue,
       longValue,
+      shortValue,
       intValue,
       doubleValue,
       floatValue,
@@ -78,6 +82,7 @@ public class NumericTest {
       Numeric.create(bigDecimalValue),
       Numeric.create(bigIntegerValue),
       Numeric.create(longValue),
+      Numeric.create(shortValue),
       Numeric.create(intValue),
       Numeric.create(doubleValue),
       Numeric.create(floatValue),
@@ -86,6 +91,7 @@ public class NumericTest {
       assertEquals(Double.isNaN(numbers[i].doubleValue()), test[i].isNaN());
       assertEquals(numbers[i].byteValue(), test[i].byteValue());
       assertEquals(numbers[i].intValue(), test[i].intValue());
+      assertEquals(numbers[i].shortValue(), test[i].shortValue());
       assertEquals(numbers[i].longValue(), test[i].longValue());
       assertEquals(numbers[i].floatValue(), test[i].floatValue(), 0.01f);
       assertEquals(numbers[i].doubleValue(), test[i].doubleValue(), 0.01d);
@@ -135,6 +141,7 @@ public class NumericTest {
     int intValue = random.nextInt(1000);
     Numeric[] numerics = {
       Numeric.create(intValue),
+      Numeric.create((short)intValue),
       Numeric.create((double)intValue),
       Numeric.create((long)intValue),
       Numeric.create((float)intValue),

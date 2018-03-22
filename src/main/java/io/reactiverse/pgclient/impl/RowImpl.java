@@ -54,6 +54,12 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
+  public Short getShort(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getShort(pos);
+  }
+
+  @Override
   public Integer getInteger(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getInteger(pos);

@@ -70,6 +70,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "Short")
             .returns(Tuple::getValue, Row::getValue, (short) 32767)
+            .returns(Tuple::getShort, Row::getShort, (short) 32767)
             .returns(Tuple::getInteger, Row::getInteger, 32767)
             .returns(Tuple::getLong, Row::getLong, 32767L)
             .returns(Tuple::getFloat, Row::getFloat, 32767f)
@@ -91,6 +92,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "Integer")
+            .returns(Tuple::getShort, Row::getShort, (short) -1)
             .returns(Tuple::getInteger, Row::getInteger, 2147483647)
             .returns(Tuple::getValue, Row::getValue, 2147483647)
             .returns(Tuple::getLong, Row::getLong, 2147483647L)
@@ -114,6 +116,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "Long")
             .returns(Tuple::getValue, Row::getValue, 9223372036854775807L)
+            .returns(Tuple::getShort, Row::getShort, (short) -1)
             .returns(Tuple::getInteger, Row::getInteger, -1)
             .returns(Tuple::getLong, Row::getLong, 9223372036854775807L)
             .returns(Tuple::getFloat, Row::getFloat, 9223372036854775807f)
@@ -136,6 +139,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "Float")
             .returns(Tuple::getValue, Row::getValue, 3.4028235E38f)
+            .returns(Tuple::getShort, Row::getShort, (short) -1)
             .returns(Tuple::getInteger, Row::getInteger, 2147483647)
             .returns(Tuple::getLong, Row::getLong, 9223372036854775807L)
             .returns(Tuple::getFloat, Row::getFloat, 3.4028235E38f)
@@ -158,6 +162,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "Double")
             .returns(Tuple::getValue, Row::getValue, 1.7976931348623157E308d)
+            .returns(Tuple::getShort, Row::getShort, (short) -1)
             .returns(Tuple::getInteger, Row::getInteger, 2147483647)
             .returns(Tuple::getLong, Row::getLong, 9223372036854775807L)
             .returns(Tuple::getFloat, Row::getFloat, Float.POSITIVE_INFINITY)
@@ -182,6 +187,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "Numeric")
             .returns(Tuple::getValue, Row::getValue, numeric)
+            .returns(Tuple::getShort, Row::getShort, (short) 919)
             .returns(Tuple::getInteger, Row::getInteger, 919)
             .returns(Tuple::getLong, Row::getLong, 919L)
             .returns(Tuple::getFloat, Row::getFloat, 920f)
@@ -191,6 +197,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
             .forRow(row);
           ColumnChecker.checkColumn(1, "NaN")
             .returns(Tuple::getValue, Row::getValue, nan)
+            .returns(Tuple::getShort, Row::getShort, (short) 0)
             .returns(Tuple::getInteger, Row::getInteger, 0)
             .returns(Tuple::getLong, Row::getLong, 0L)
             .returns(Tuple::getFloat, Row::getFloat, Float.NaN)
@@ -466,6 +473,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           .forRow(row);
         ColumnChecker.checkColumn(5, "Number1")
           .returns(Tuple::getValue, Row::getValue, Json.create(7.502d))
+          .returns(Tuple::getShort, Row::getShort, (short)7)
           .returns(Tuple::getInteger, Row::getInteger, 7)
           .returns(Tuple::getLong, Row::getLong, 7L)
           .returns(Tuple::getFloat, Row::getFloat, 7.502f)
@@ -475,6 +483,7 @@ public class DataTypeTextTest extends DataTypeTestBase {
           .forRow(row);
         ColumnChecker.checkColumn(6, "Number2")
           .returns(Tuple::getValue, Row::getValue, Json.create(8))
+          .returns(Tuple::getShort, Row::getShort, (short) 8)
           .returns(Tuple::getInteger, Row::getInteger, 8)
           .returns(Tuple::getLong, Row::getLong, 8L)
           .returns(Tuple::getFloat, Row::getFloat, 8f)

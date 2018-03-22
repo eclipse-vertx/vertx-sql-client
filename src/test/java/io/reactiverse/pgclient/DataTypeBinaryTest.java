@@ -79,7 +79,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertEquals(1, result.updatedCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Short")
-              .returns(Tuple::getValue, Row::getValue, Short.MAX_VALUE)
+              .returns(Tuple::getValue, Row::getValue, (short) 32767)
+              .returns(Tuple::getShort, Row::getShort, Short.MAX_VALUE)
               .returns(Tuple::getInteger, Row::getInteger, 32767)
               .returns(Tuple::getLong, Row::getLong, 32767L)
               .returns(Tuple::getFloat, Row::getFloat, 32767f)
@@ -104,7 +105,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertEquals(1, result.updatedCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Short")
-              .returns(Tuple::getValue, Row::getValue, Short.MIN_VALUE)
+              .returns(Tuple::getValue, Row::getValue, (short) -32768)
+              .returns(Tuple::getShort, Row::getShort, Short.MIN_VALUE)
               .returns(Tuple::getInteger, Row::getInteger, -32768)
               .returns(Tuple::getLong, Row::getLong, -32768L)
               .returns(Tuple::getFloat, Row::getFloat, -32768f)
@@ -130,6 +132,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Integer")
               .returns(Tuple::getValue, Row::getValue, Integer.MAX_VALUE)
+              .returns(Tuple::getShort, Row::getShort, (short) -1)
               .returns(Tuple::getInteger, Row::getInteger, Integer.MAX_VALUE)
               .returns(Tuple::getLong, Row::getLong, 2147483647L)
               .returns(Tuple::getFloat, Row::getFloat, 2147483647f)
@@ -158,6 +161,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               Row row = result.iterator().next();
               ColumnChecker.checkColumn(0, "Integer")
                 .returns(Tuple::getValue, Row::getValue, Integer.MIN_VALUE)
+                .returns(Tuple::getShort, Row::getShort, (short) 0)
                 .returns(Tuple::getInteger, Row::getInteger, Integer.MIN_VALUE)
                 .returns(Tuple::getLong, Row::getLong, -2147483648L)
                 .returns(Tuple::getFloat, Row::getFloat, -2147483648f)
@@ -183,6 +187,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Long")
               .returns(Tuple::getValue, Row::getValue, Long.MAX_VALUE)
+              .returns(Tuple::getShort, Row::getShort, (short) -1)
               .returns(Tuple::getInteger, Row::getInteger, -1)
               .returns(Tuple::getLong, Row::getLong, Long.MAX_VALUE)
               .returns(Tuple::getFloat, Row::getFloat, 9.223372E18f)
@@ -211,6 +216,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               Row row = result.iterator().next();
               ColumnChecker.checkColumn(0, "Long")
                 .returns(Tuple::getValue, Row::getValue, Long.MIN_VALUE)
+                .returns(Tuple::getShort, Row::getShort, (short) 0)
                 .returns(Tuple::getInteger, Row::getInteger, 0)
                 .returns(Tuple::getLong, Row::getLong, Long.MIN_VALUE)
                 .returns(Tuple::getFloat, Row::getFloat, -9.223372E18f)
@@ -236,6 +242,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Float")
               .returns(Tuple::getValue, Row::getValue, Float.MAX_VALUE)
+              .returns(Tuple::getShort, Row::getShort, (short) -1)
               .returns(Tuple::getInteger, Row::getInteger, 2147483647)
               .returns(Tuple::getLong, Row::getLong, 9223372036854775807L)
               .returns(Tuple::getFloat, Row::getFloat, Float.MAX_VALUE)
@@ -264,6 +271,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               Row row = result.iterator().next();
               ColumnChecker.checkColumn(0, "Float")
                 .returns(Tuple::getValue, Row::getValue, Float.MIN_VALUE)
+                .returns(Tuple::getShort, Row::getShort, (short) 0)
                 .returns(Tuple::getInteger, Row::getInteger, 0)
                 .returns(Tuple::getLong, Row::getLong, 0L)
                 .returns(Tuple::getFloat, Row::getFloat, Float.MIN_VALUE)
@@ -289,6 +297,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Double")
               .returns(Tuple::getValue, Row::getValue, Double.MAX_VALUE)
+              .returns(Tuple::getShort, Row::getShort, (short) -1)
               .returns(Tuple::getInteger, Row::getInteger, 2147483647)
               .returns(Tuple::getLong, Row::getLong, 9223372036854775807L)
               .returns(Tuple::getFloat, Row::getFloat, Float.POSITIVE_INFINITY)
@@ -317,6 +326,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               Row row = result.iterator().next();
               ColumnChecker.checkColumn(0, "Double")
                 .returns(Tuple::getValue, Row::getValue, Double.MIN_VALUE)
+                .returns(Tuple::getShort, Row::getShort, (short) 0)
                 .returns(Tuple::getInteger, Row::getInteger, 0)
                 .returns(Tuple::getLong, Row::getLong, 0L)
                 .returns(Tuple::getFloat, Row::getFloat, 0f)
@@ -787,6 +797,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               .forRow(row);
             ColumnChecker.checkColumn(2, "Number")
               .returns(Tuple::getValue, Row::getValue, Json.create(4))
+              .returns(Tuple::getShort, Row::getShort, (short) 4)
               .returns(Tuple::getInteger, Row::getInteger, 4)
               .returns(Tuple::getLong, Row::getLong, 4L)
               .returns(Tuple::getFloat, Row::getFloat, 4f)
@@ -862,6 +873,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               .forRow(row);
             ColumnChecker.checkColumn(2, "Number")
               .returns(Tuple::getValue, Row::getValue, Json.create(4))
+              .returns(Tuple::getShort, Row::getShort, (short) 4)
               .returns(Tuple::getInteger, Row::getInteger, 4)
               .returns(Tuple::getLong, Row::getLong, 4L)
               .returns(Tuple::getFloat, Row::getFloat, 4f)

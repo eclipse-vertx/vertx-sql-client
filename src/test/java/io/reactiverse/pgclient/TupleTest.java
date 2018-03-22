@@ -60,6 +60,10 @@ public class TupleTest {
   @Test
   public void testNumbers() {
     Tuple tuple = Tuple.of((byte)127, (short)4000, 1_000_000, 1_000_000_000L, 4.5F, 4.5D);
+    assertEquals(127, (short)tuple.getShort(0));
+    assertEquals(4000, (short)tuple.getShort(1));
+    assertEquals(4, (short)tuple.getShort(4));
+    assertEquals(4, (short)tuple.getShort(5));
     assertEquals(127, (int)tuple.getInteger(0));
     assertEquals(4000, (int)tuple.getInteger(1));
     assertEquals(1_000_000, (int)tuple.getInteger(2));
