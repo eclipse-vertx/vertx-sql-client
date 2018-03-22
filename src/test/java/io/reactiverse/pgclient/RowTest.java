@@ -55,7 +55,6 @@ public class RowTest extends PgTestBase {
             row::getValue,
             row::getString,
             row::getBuffer,
-            row::getCharacter,
             row::getDouble,
             row::getInteger,
             row::getLong,

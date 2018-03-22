@@ -23,11 +23,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
+import java.time.*;
 import java.time.temporal.Temporal;
 import java.util.UUID;
 
@@ -210,4 +206,140 @@ public interface Row extends Tuple {
    */
   @GenIgnore
   Numeric getNumeric(String name);
+
+  /**
+   * Get {@link Integer} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Integer[] getIntArray(String name);
+
+  /**
+   * Get {@link Boolean} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Boolean[] getBooleanArray(String name);
+
+  /**
+   * Get {@link Short} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Short[] getShortArray(String name);
+
+  /**
+   * Get {@link Long} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Long[] getLongArray(String name);
+
+  /**
+   * Get {@link Float} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Float[] getFloatArray(String name);
+
+  /**
+   * Get {@link Double} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Double[] getDoubleArray(String name);
+
+  /**
+   * Get {@link String} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  String[] getStringArray(String name);
+
+  /**
+   * Get {@link LocalDate} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  LocalDate[] getLocalDateArray(String name);
+
+  /**
+   * Get {@link LocalTime} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  LocalTime[] getLocalTimeArray(String name);
+
+  /**
+   * Get {@link OffsetTime} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  OffsetTime[] getOffsetTimeArray(String name);
+
+  /**
+   * Get {@link LocalDateTime} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  LocalDateTime[] getLocalDateTimeArray(String name);
+
+  /**
+   * Get {@link OffsetDateTime} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  OffsetDateTime[] getOffsetDateTimeArray(String name);
+
+  /**
+   * Get {@link Buffer} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Buffer[] getBufferArray(String name);
+
+  /**
+   * Get {@link UUID} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  UUID[] getUUIDArray(String name);
+
+  /**
+   * Get {@link Character} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Character[] getCharacterArray(String name);
+
 }

@@ -26,11 +26,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
+import java.time.*;
 import java.time.temporal.Temporal;
 import java.util.UUID;
 
@@ -170,4 +166,95 @@ public class RowImpl extends ArrayTuple implements Row {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getNumeric(pos);
   }
+
+  @Override
+  public Integer[] getIntArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getIntArray(pos);
+  }
+
+  @Override
+  public Boolean[] getBooleanArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getBooleanArray(pos);
+  }
+
+  @Override
+  public Short[] getShortArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getShortArray(pos);
+  }
+
+  @Override
+  public Long[] getLongArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getLongArray(pos);
+  }
+
+  @Override
+  public Float[] getFloatArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getFloatArray(pos);
+  }
+
+  @Override
+  public Double[] getDoubleArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getDoubleArray(pos);
+  }
+
+  @Override
+  public String[] getStringArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getStringArray(pos);
+  }
+
+  @Override
+  public LocalDate[] getLocalDateArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getLocalDateArray(pos);
+  }
+
+  @Override
+  public LocalTime[] getLocalTimeArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getLocalTimeArray(pos);
+  }
+
+  @Override
+  public OffsetTime[] getOffsetTimeArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getOffsetTimeArray(pos);
+  }
+
+  @Override
+  public LocalDateTime[] getLocalDateTimeArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getLocalDateTimeArray(pos);
+  }
+
+  @Override
+  public OffsetDateTime[] getOffsetDateTimeArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getOffsetDateTimeArray(pos);
+  }
+
+  @Override
+  public Buffer[] getBufferArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getBufferArray(pos);
+  }
+
+  @Override
+  public UUID[] getUUIDArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getUUIDArray(pos);
+  }
+
+  @Override
+  public Character[] getCharacterArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getCharacterArray(pos);
+  }
+
 }

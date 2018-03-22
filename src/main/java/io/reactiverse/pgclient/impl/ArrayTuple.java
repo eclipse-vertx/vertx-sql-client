@@ -25,11 +25,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
+import java.time.*;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -137,6 +133,146 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
       return Numeric.parse(val.toString());
     }
     return null;
+  }
+
+  @Override
+  public Integer[] getIntArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Integer[]) {
+      return (Integer[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public Boolean[] getBooleanArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Boolean[]) {
+      return (Boolean[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public Short[] getShortArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Short[]) {
+      return (Short[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public Long[] getLongArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Long[]) {
+      return (Long[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public Float[] getFloatArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Float[]) {
+      return (Float[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public Double[] getDoubleArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Double[]) {
+      return (Double[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public String[] getStringArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof String[]) {
+      return (String[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public LocalDate[] getLocalDateArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof LocalDate[]) {
+      return (LocalDate[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public LocalTime[] getLocalTimeArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof LocalTime[]) {
+      return (LocalTime[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public OffsetTime[] getOffsetTimeArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof OffsetTime[]) {
+      return (OffsetTime[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public LocalDateTime[] getLocalDateTimeArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof LocalDateTime[]) {
+      return (LocalDateTime[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public OffsetDateTime[] getOffsetDateTimeArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof OffsetDateTime[]) {
+      return (OffsetDateTime[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public Buffer[] getBufferArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Buffer[]) {
+      return (Buffer[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public UUID[] getUUIDArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof UUID[]) {
+      return (UUID[]) val;
+    } else {
+      return null;
+    }
   }
 
   @Override
@@ -266,6 +402,15 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
+  public Character[] getCharacterArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Character[]) {
+      return (Character[]) val;
+    }
+    return null;
+  }
+
+  @Override
   public Tuple addBoolean(Boolean value) {
     add(value);
     return this;
@@ -275,8 +420,8 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   public Tuple addValue(Object value) {
     if(value instanceof Boolean
       || value instanceof Number
-      || value instanceof Character
       || value instanceof String
+      || value instanceof Character
       || value instanceof JsonObject
       || value instanceof JsonArray
       || value instanceof Buffer
@@ -285,7 +430,22 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
       || value instanceof LocalDate
       || value instanceof LocalDateTime
       || value instanceof OffsetDateTime
-      || value instanceof UUID) {
+      || value instanceof UUID
+      || value instanceof Boolean[]
+      || value instanceof Short[]
+      || value instanceof Integer[]
+      || value instanceof Long[]
+      || value instanceof Float[]
+      || value instanceof Double[]
+      || value instanceof Character[]
+      || value instanceof String[]
+      || value instanceof LocalDate[]
+      || value instanceof LocalTime[]
+      || value instanceof OffsetTime[]
+      || value instanceof LocalDateTime[]
+      || value instanceof OffsetDateTime[]
+      || value instanceof UUID[]
+      || value instanceof Buffer[]) {
       add(value);
     } else {
       add(null);
@@ -403,6 +563,96 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Tuple addNumeric(Numeric value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addIntArray(Integer[] value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addBooleanArray(Boolean[] value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addShortArray(Short[] value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addLongArray(Long[] value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addFloatArray(Float[] value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addDoubleArray(Double[] value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addStringArray(String[] value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addLocalDateArray(LocalDate[] value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addLocalTimeArray(LocalTime[] value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addOffsetTimeArray(OffsetTime[] value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addLocalDateTimeArray(LocalDateTime[] value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addOffsetDateTimeArray(OffsetDateTime[] value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addBufferArray(Buffer[] value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addUUIDArray(UUID[] value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addCharacterArray(Character[] value) {
     add(value);
     return this;
   }
