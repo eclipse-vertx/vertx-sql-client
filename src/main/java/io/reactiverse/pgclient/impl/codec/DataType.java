@@ -74,39 +74,40 @@ public class DataType<T> {
       buff.writeBoolean(value);
     }
   };
-
+  //Commented version cause other datatypes are always the same procedure
   public static final DataType<Boolean[]> BOOL_ARRAY = new DataType<Boolean[]>(Boolean[].class, 1000) {
 
     @Override
     public Boolean[] decodeBinary(int len, ByteBuf buff) {
+      //If length equals 12 then it is an empty array
       if (len == 12) {
         return new Boolean[]{};
       }
-      buff.readerIndex(buff.readerIndex() + 4);
-      int offset = buff.readInt();
-      buff.readerIndex(buff.readerIndex() + 4);
-      int length = buff.readInt();
-      Boolean[] array = new Boolean[length];
-      buff.readerIndex(buff.readerIndex() + offset + 4);
+      buff.readerIndex(buff.readerIndex() + 4);//Skip dimensons cause its always 1
+      int offset = buff.readInt();//Read the offset, used to skip the bitmap
+      buff.readerIndex(buff.readerIndex() + 4);//Skip the oid cause we know what type it is
+      int length = buff.readInt(); //Read the length to create a fixed length array
+      Boolean[] array = new Boolean[length];//Create the array
+      buff.readerIndex(buff.readerIndex() + offset + 4);//Skip, if exists, the bitmap and the lower boundry
       for (int i = 0; i < array.length; i++) {
-        array[i] = BOOL.decodeBinary(buff.readInt(), buff);
+        array[i] = BOOL.decodeBinary(buff.readInt(), buff);//Decode the elements with the element decoder
       }
       return array;
     }
 
     @Override
     public void encodeBinaryInternal(Boolean[] values, ByteBuf buff) {
-      int startIndex = buff.writerIndex();
-      buff.writeInt(0);
-      buff.writeInt(1);
-      buff.writeInt(0);
-      buff.writeInt(BOOL.id);
-      buff.writeInt(values.length);
-      buff.writeInt(1);
+      int startIndex = buff.writerIndex();//Mark for later to insert the length
+      buff.writeInt(0);//Write 0 as placeholder
+      buff.writeInt(1);//write the dimension, always 1 because we only accept 1 dimensional arrays
+      buff.writeInt(0);//Write the offset to skip the bitmap, always 0 because we dont write bitmaps
+      buff.writeInt(BOOL.id);//Write the oid
+      buff.writeInt(values.length);//Write the length of the array
+      buff.writeInt(1);//Write the lower boundry, seems to always be 1
       for (boolean value : values) {
-        BOOL.encodeBinaryInternal(value, buff);
+        BOOL.encodeBinaryInternal(value, buff);//Encode the element with the element encoder
       }
-      buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
+      buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);//Set the length of the header plus body minus the length of the length attribute
     }
   };
 

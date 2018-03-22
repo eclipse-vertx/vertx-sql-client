@@ -1151,7 +1151,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
         }));
     }));
   }
-
+//Had to use the old test method cause vertx TestContext doesnt seem to support to compare arrays
   @Test
   public void testDecodeBooleanArray(TestContext ctx) {
     Async async = ctx.async();
