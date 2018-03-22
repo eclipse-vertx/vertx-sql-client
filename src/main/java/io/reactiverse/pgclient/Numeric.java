@@ -72,6 +72,11 @@ public final class Numeric extends Number {
   }
 
   @Override
+  public short shortValue() {
+    return value.shortValue();
+  }
+
+  @Override
   public int intValue() {
     return value.intValue();
   }

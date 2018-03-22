@@ -56,6 +56,20 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
+  public Short getShort(int pos) {
+    Object val = get(pos);
+    if (val instanceof Json) {
+      val = ((Json) val).value();
+    }
+    if (val instanceof Short) {
+      return (Short) val;
+    } else if (val instanceof Number) {
+      return ((Number) val).shortValue();
+    }
+    return null;
+  }
+
+  @Override
   public Integer getInteger(int pos) {
     Object val = get(pos);
     if (val instanceof Json) {
@@ -290,6 +304,12 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
     } else {
       add(null);
     }
+    return this;
+  }
+
+  @Override
+  public Tuple addShort(Short value) {
+    add(value);
     return this;
   }
 
