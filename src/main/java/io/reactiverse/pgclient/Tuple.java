@@ -329,7 +329,7 @@ public interface Tuple {
   BigDecimal getBigDecimal(int pos);
 
   @GenIgnore
-  Integer[] getIntArray(int pos);
+  int[] getIntegerArray(int pos);
 
   /**
    * Get {@link Boolean} value at {@code pos}.
@@ -338,7 +338,7 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore
-  Boolean[] getBooleanArray(int pos);
+  boolean[] getBooleanArray(int pos);
 
   /**
    * Get {@link Short} value at {@code pos}.
@@ -347,7 +347,7 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore
-  Short[] getShortArray(int pos);
+  short[] getShortArray(int pos);
 
   /**
    * Get {@link Long} value at {@code pos}.
@@ -356,7 +356,7 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore
-  Long[] getLongArray(int pos);
+  long[] getLongArray(int pos);
 
   /**
    * Get {@link Float} value at {@code pos}.
@@ -365,7 +365,7 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore
-  Float[] getFloatArray(int pos);
+  float[] getFloatArray(int pos);
 
   /**
    * Get {@link Double} value at {@code pos}.
@@ -374,7 +374,7 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore
-  Double[] getDoubleArray(int pos);
+  double[] getDoubleArray(int pos);
 
   /**
    * Get {@link String} value at {@code pos}.
@@ -449,7 +449,7 @@ public interface Tuple {
   UUID[] getUUIDArray(int pos);
 
   @GenIgnore
-  Character[] getCharacterArray(int pos);
+  char[] getCharacterArray(int pos);
 
   /**
    * Get {@link Numeric} value at {@code pos}.
@@ -664,7 +664,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore
-  Tuple addIntArray(Integer[] value);
+  Tuple addIntArray(int[] value);
 
   /**
    * Add a {@link Boolean} value at the end of the tuple.
@@ -673,7 +673,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore
-  Tuple addBooleanArray(Boolean[] value);
+  Tuple addBooleanArray(boolean[] value);
 
   /**
    * Add a {@link Short} value at the end of the tuple.
@@ -682,7 +682,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore
-  Tuple addShortArray(Short[] value);
+  Tuple addShortArray(short[] value);
 
   /**
    * Add a {@link Long} value at the end of the tuple.
@@ -691,7 +691,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore
-  Tuple addLongArray(Long[] value);
+  Tuple addLongArray(long[] value);
 
   /**
    * Add a {@link Float} value at the end of the tuple.
@@ -700,7 +700,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore
-  Tuple addFloatArray(Float[] value);
+  Tuple addFloatArray(float[] value);
 
   /**
    * Add a {@link Double} value at the end of the tuple.
@@ -709,7 +709,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore
-  Tuple addDoubleArray(Double[] value);
+  Tuple addDoubleArray(double[] value);
 
   /**
    * Add a {@link String} value at the end of the tuple.
@@ -781,7 +781,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore
-  Tuple addCharacterArray(Character[] value);
+  Tuple addCharacterArray(char[] value);
 
   /**
    * Add a {@link UUID} value at the end of the tuple.

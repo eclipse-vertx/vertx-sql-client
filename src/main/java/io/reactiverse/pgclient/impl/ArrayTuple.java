@@ -150,60 +150,60 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
-  public Integer[] getIntArray(int pos) {
+  public int[] getIntegerArray(int pos) {
     Object val = get(pos);
-    if (val instanceof Integer[]) {
-      return (Integer[]) val;
+    if (val instanceof int[]) {
+      return (int[]) val;
     } else {
       return null;
     }
   }
 
   @Override
-  public Boolean[] getBooleanArray(int pos) {
+  public boolean[] getBooleanArray(int pos) {
     Object val = get(pos);
-    if (val instanceof Boolean[]) {
-      return (Boolean[]) val;
+    if (val instanceof boolean[]) {
+      return (boolean[]) val;
     } else {
       return null;
     }
   }
 
   @Override
-  public Short[] getShortArray(int pos) {
+  public short[] getShortArray(int pos) {
     Object val = get(pos);
-    if (val instanceof Short[]) {
-      return (Short[]) val;
+    if (val instanceof short[]) {
+      return (short[]) val;
     } else {
       return null;
     }
   }
 
   @Override
-  public Long[] getLongArray(int pos) {
+  public long[] getLongArray(int pos) {
     Object val = get(pos);
-    if (val instanceof Long[]) {
-      return (Long[]) val;
+    if (val instanceof long[]) {
+      return (long[]) val;
     } else {
       return null;
     }
   }
 
   @Override
-  public Float[] getFloatArray(int pos) {
+  public float[] getFloatArray(int pos) {
     Object val = get(pos);
-    if (val instanceof Float[]) {
-      return (Float[]) val;
+    if (val instanceof float[]) {
+      return (float[]) val;
     } else {
       return null;
     }
   }
 
   @Override
-  public Double[] getDoubleArray(int pos) {
+  public double[] getDoubleArray(int pos) {
     Object val = get(pos);
-    if (val instanceof Double[]) {
-      return (Double[]) val;
+    if (val instanceof double[]) {
+      return (double[]) val;
     } else {
       return null;
     }
@@ -416,10 +416,10 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
-  public Character[] getCharacterArray(int pos) {
+  public char[] getCharacterArray(int pos) {
     Object val = get(pos);
-    if (val instanceof Character[]) {
-      return (Character[]) val;
+    if (val instanceof char[]) {
+      return (char[]) val;
     }
     return null;
   }
@@ -445,13 +445,13 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
       || value instanceof LocalDateTime
       || value instanceof OffsetDateTime
       || value instanceof UUID
-      || value instanceof Boolean[]
-      || value instanceof Short[]
-      || value instanceof Integer[]
-      || value instanceof Long[]
-      || value instanceof Float[]
-      || value instanceof Double[]
-      || value instanceof Character[]
+      || value instanceof boolean[]
+      || value instanceof short[]
+      || value instanceof int[]
+      || value instanceof long[]
+      || value instanceof float[]
+      || value instanceof double[]
+      || value instanceof char[]
       || value instanceof String[]
       || value instanceof LocalDate[]
       || value instanceof LocalTime[]
@@ -588,37 +588,37 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
-  public Tuple addIntArray(Integer[] value) {
+  public Tuple addIntArray(int[] value) {
     add(value);
     return this;
   }
 
   @Override
-  public Tuple addBooleanArray(Boolean[] value) {
+  public Tuple addBooleanArray(boolean[] value) {
     add(value);
     return this;
   }
 
   @Override
-  public Tuple addShortArray(Short[] value) {
+  public Tuple addShortArray(short[] value) {
     add(value);
     return this;
   }
 
   @Override
-  public Tuple addLongArray(Long[] value) {
+  public Tuple addLongArray(long[] value) {
     add(value);
     return this;
   }
 
   @Override
-  public Tuple addFloatArray(Float[] value) {
+  public Tuple addFloatArray(float[] value) {
     add(value);
     return this;
   }
 
   @Override
-  public Tuple addDoubleArray(Double[] value) {
+  public Tuple addDoubleArray(double[] value) {
     add(value);
     return this;
   }
@@ -672,7 +672,7 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
-  public Tuple addCharacterArray(Character[] value) {
+  public Tuple addCharacterArray(char[] value) {
     add(value);
     return this;
   }

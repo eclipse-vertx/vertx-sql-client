@@ -75,19 +75,19 @@ public class DataType<T> {
     }
   };
   //Commented version cause other datatypes are always the same procedure
-  public static final DataType<Boolean[]> BOOL_ARRAY = new DataType<Boolean[]>(Boolean[].class, 1000) {
+  public static final DataType<boolean[]> BOOL_ARRAY = new DataType<boolean[]>(boolean[].class, 1000) {
 
     @Override
-    public Boolean[] decodeBinary(int len, ByteBuf buff) {
+    public boolean[] decodeBinary(int len, ByteBuf buff) {
       //If length equals 12 then it is an empty array
       if (len == 12) {
-        return new Boolean[]{};
+        return new boolean[]{};
       }
       buff.readerIndex(buff.readerIndex() + 4);//Skip dimensons cause its always 1
       int offset = buff.readInt();//Read the offset, used to skip the bitmap
       buff.readerIndex(buff.readerIndex() + 4);//Skip the oid cause we know what type it is
       int length = buff.readInt(); //Read the length to create a fixed length array
-      Boolean[] array = new Boolean[length];//Create the array
+      boolean[] array = new boolean[length];//Create the array
       buff.readerIndex(buff.readerIndex() + offset + 4);//Skip, if exists, the bitmap and the lower boundry
       for (int i = 0; i < array.length; i++) {
         array[i] = BOOL.decodeBinary(buff.readInt(), buff);//Decode the elements with the element decoder
@@ -96,7 +96,7 @@ public class DataType<T> {
     }
 
     @Override
-    public void encodeBinaryInternal(Boolean[] values, ByteBuf buff) {
+    public void encodeBinaryInternal(boolean[] values, ByteBuf buff) {
       int startIndex = buff.writerIndex();//Mark for later to insert the length
       buff.writeInt(0);//Write 0 as placeholder
       buff.writeInt(1);//write the dimension, always 1 because we only accept 1 dimensional arrays
@@ -128,18 +128,18 @@ public class DataType<T> {
     }
   };
 
-  public static final DataType<Short[]> INT2_ARRAY = new DataType<Short[]>(Short[].class, 1005) {
+  public static final DataType<short[]> INT2_ARRAY = new DataType<short[]>(short[].class, 1005) {
 
     @Override
-    public Short[] decodeBinary(int len, ByteBuf buff) {
+    public short[] decodeBinary(int len, ByteBuf buff) {
       if (len == 12) {
-        return new Short[]{};
+        return new short[]{};
       }
       buff.readerIndex(buff.readerIndex() + 4);
       int offset = buff.readInt();
       buff.readerIndex(buff.readerIndex() + 4);
       int length = buff.readInt();
-      Short[] array = new Short[length];
+      short[] array = new short[length];
       buff.readerIndex(buff.readerIndex() + offset + 4);
       for (int i = 0; i < array.length; i++) {
         array[i] = INT2.decodeBinary(buff.readInt(), buff);
@@ -148,7 +148,7 @@ public class DataType<T> {
     }
 
     @Override
-    public void encodeBinaryInternal(Short[] values, ByteBuf buff) {
+    public void encodeBinaryInternal(short[] values, ByteBuf buff) {
       int startIndex = buff.writerIndex();
       buff.writeInt(0);
       buff.writeInt(1);
@@ -180,18 +180,18 @@ public class DataType<T> {
     }
   };
 
-  public static final DataType<Integer[]> INT4_ARRAY = new DataType<Integer[]>(Integer[].class, 1007) {
+  public static final DataType<int[]> INT4_ARRAY = new DataType<int[]>(int[].class, 1007) {
 
     @Override
-    public Integer[] decodeBinary(int len, ByteBuf buff) {
+    public int[] decodeBinary(int len, ByteBuf buff) {
       if (len == 12) {
-        return new Integer[]{};
+        return new int[]{};
       }
       buff.readerIndex(buff.readerIndex() + 4);
       int offset = buff.readInt();
       buff.readerIndex(buff.readerIndex() + 4);
       int length = buff.readInt();
-      Integer[] array = new Integer[length];
+      int[] array = new int[length];
       buff.readerIndex(buff.readerIndex() + offset + 4);
       for (int i = 0; i < array.length; i++) {
         array[i] = INT4.decodeBinary(buff.readInt(), buff);
@@ -200,7 +200,7 @@ public class DataType<T> {
     }
 
     @Override
-    public void encodeBinaryInternal(Integer[] values, ByteBuf buff) {
+    public void encodeBinaryInternal(int[] values, ByteBuf buff) {
       int startIndex = buff.writerIndex();
       buff.writeInt(0);
       buff.writeInt(1);
@@ -232,18 +232,18 @@ public class DataType<T> {
     }
   };
 
-  public static final DataType<Long[]> INT8_ARRAY = new DataType<Long[]>(Long[].class, 1016) {
+  public static final DataType<long[]> INT8_ARRAY = new DataType<long[]>(long[].class, 1016) {
 
     @Override
-    public Long[] decodeBinary(int len, ByteBuf buff) {
+    public long[] decodeBinary(int len, ByteBuf buff) {
       if (len == 12) {
-        return new Long[]{};
+        return new long[]{};
       }
       buff.readerIndex(buff.readerIndex() + 4);
       int offset = buff.readInt();
       buff.readerIndex(buff.readerIndex() + 4);
       int length = buff.readInt();
-      Long[] array = new Long[length];
+      long[] array = new long[length];
       buff.readerIndex(buff.readerIndex() + offset + 4);
       for (int i = 0; i < array.length; i++) {
         array[i] = INT8.decodeBinary(buff.readInt(), buff);
@@ -252,7 +252,7 @@ public class DataType<T> {
     }
 
     @Override
-    public void encodeBinaryInternal(Long[] values, ByteBuf buff) {
+    public void encodeBinaryInternal(long[] values, ByteBuf buff) {
       int startIndex = buff.writerIndex();
       buff.writeInt(0);
       buff.writeInt(1);
@@ -286,18 +286,18 @@ public class DataType<T> {
     }
   };
 
-  public static final DataType<Float[]> FLOAT4_ARRAY = new DataType<Float[]>(Float[].class, 1021) {
+  public static final DataType<float[]> FLOAT4_ARRAY = new DataType<float[]>(float[].class, 1021) {
 
     @Override
-    public Float[] decodeBinary(int len, ByteBuf buff) {
+    public float[] decodeBinary(int len, ByteBuf buff) {
       if (len == 12) {
-        return new Float[]{};
+        return new float[]{};
       }
       buff.readerIndex(buff.readerIndex() + 4);
       int offset = buff.readInt();
       buff.readerIndex(buff.readerIndex() + 4);
       int length = buff.readInt();
-      Float[] array = new Float[length];
+      float[] array = new float[length];
       buff.readerIndex(buff.readerIndex() + offset + 4);
       for (int i = 0; i < array.length; i++) {
         array[i] = FLOAT4.decodeBinary(buff.readInt(), buff);
@@ -306,7 +306,7 @@ public class DataType<T> {
     }
 
     @Override
-    public void encodeBinaryInternal(Float[] values, ByteBuf buff) {
+    public void encodeBinaryInternal(float[] values, ByteBuf buff) {
       int startIndex = buff.writerIndex();
       buff.writeInt(0);
       buff.writeInt(1);
@@ -340,18 +340,18 @@ public class DataType<T> {
     }
   };
 
-  public static final DataType<Double[]> FLOAT8_ARRAY = new DataType<Double[]>(Double[].class, 1022) {
+  public static final DataType<double[]> FLOAT8_ARRAY = new DataType<double[]>(double[].class, 1022) {
 
     @Override
-    public Double[] decodeBinary(int len, ByteBuf buff) {
+    public double[] decodeBinary(int len, ByteBuf buff) {
       if (len == 12) {
-        return new Double[]{};
+        return new double[]{};
       }
       buff.readerIndex(buff.readerIndex() + 4);
       int offset = buff.readInt();
       buff.readerIndex(buff.readerIndex() + 4);
       int length = buff.readInt();
-      Double[] array = new Double[length];
+      double[] array = new double[length];
       buff.readerIndex(buff.readerIndex() + offset + 4);
       for (int i = 0; i < array.length; i++) {
         array[i] = FLOAT8.decodeBinary(buff.readInt(), buff);
@@ -360,7 +360,7 @@ public class DataType<T> {
     }
 
     @Override
-    public void encodeBinaryInternal(Double[] values, ByteBuf buff) {
+    public void encodeBinaryInternal(double[] values, ByteBuf buff) {
       int startIndex = buff.writerIndex();
       buff.writeInt(0);
       buff.writeInt(1);
@@ -385,7 +385,7 @@ public class DataType<T> {
     }
   };
 
-  public static final DataType<Double[]> NUMERIC_ARRAY = new DataType<>(Double[].class, 1231);
+  public static final DataType<double[]> NUMERIC_ARRAY = new DataType<>(double[].class, 1231);
 
   // 8 bytes double
   public static final DataType<Object> MONEY = new DataType<>(Object.class, 790);
@@ -424,18 +424,18 @@ public class DataType<T> {
     }
   };
   // Single length character
-  public static final DataType<Character[]> CHAR_ARRAY = new DataType<Character[]>(Character[].class, 1002) {
+  public static final DataType<char[]> CHAR_ARRAY = new DataType<char[]>(char[].class, 1002) {
 
     @Override
-    public Character[] decodeBinary(int len, ByteBuf buff) {
+    public char[] decodeBinary(int len, ByteBuf buff) {
       if (len == 12) {
-        return new Character[]{};
+        return new char[]{};
       }
       buff.readerIndex(buff.readerIndex() + 4);
       int offset = buff.readInt();
       buff.readerIndex(buff.readerIndex() + 4);
       int length = buff.readInt();
-      Character[] array = new Character[length];
+      char[] array = new char[length];
       buff.readerIndex(buff.readerIndex() + offset + 4);
       for (int i = 0; i < array.length; i++) {
         array[i] = CHAR.decodeBinary(buff.readInt(), buff);
@@ -444,7 +444,7 @@ public class DataType<T> {
     }
 
     @Override
-    public void encodeBinaryInternal(Character[] values, ByteBuf buff) {
+    public void encodeBinaryInternal(char[] values, ByteBuf buff) {
       int startIndex = buff.writerIndex();
       buff.writeInt(0);
       buff.writeInt(1);

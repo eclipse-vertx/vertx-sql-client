@@ -1207,12 +1207,12 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(row.getOffsetDateTime("Boolean"));
             ctx.assertNull(row.getUUID(0));
             ctx.assertNull(row.getUUID("Boolean"));
-            ctx.assertNull(row.getIntArray(0));
-            ctx.assertNull(row.getIntArray("Boolean"));
+            ctx.assertNull(row.getIntegerArray(0));
+            ctx.assertNull(row.getIntegerArray("Boolean"));
             ctx.assertEquals(Boolean.TRUE, row.getBooleanArray(0)[0]);
             ctx.assertEquals(Boolean.TRUE, row.getBooleanArray("Boolean")[0]);
-            ctx.assertEquals(Boolean.TRUE, ((Boolean[]) row.getValue(0))[0]);
-            ctx.assertEquals(Boolean.TRUE, ((Boolean[]) row.getValue("Boolean"))[0]);
+            ctx.assertEquals(Boolean.TRUE, ((boolean[]) row.getValue(0))[0]);
+            ctx.assertEquals(Boolean.TRUE, ((boolean[]) row.getValue("Boolean"))[0]);
             ctx.assertNull(row.getShortArray(0));
             ctx.assertNull(row.getShortArray("Boolean"));
             ctx.assertNull(row.getLongArray(0));
@@ -1250,7 +1250,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Boolean\" = $1  WHERE \"id\" = $2 RETURNING \"Boolean\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
-              .addBooleanArray(new Boolean[]{Boolean.FALSE})
+              .addBooleanArray(new boolean[]{Boolean.FALSE})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
@@ -1288,12 +1288,12 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(row.getOffsetDateTime("Boolean"));
               ctx.assertNull(row.getUUID(0));
               ctx.assertNull(row.getUUID("Boolean"));
-              ctx.assertNull(row.getIntArray(0));
-              ctx.assertNull(row.getIntArray("Boolean"));
+              ctx.assertNull(row.getIntegerArray(0));
+              ctx.assertNull(row.getIntegerArray("Boolean"));
               ctx.assertEquals(Boolean.FALSE, row.getBooleanArray(0)[0]);
               ctx.assertEquals(Boolean.FALSE, row.getBooleanArray("Boolean")[0]);
-              ctx.assertEquals(Boolean.FALSE, ((Boolean[]) row.getValue(0))[0]);
-              ctx.assertEquals(Boolean.FALSE, ((Boolean[]) row.getValue("Boolean"))[0]);
+              ctx.assertEquals(Boolean.FALSE, ((boolean[]) row.getValue(0))[0]);
+              ctx.assertEquals(Boolean.FALSE, ((boolean[]) row.getValue("Boolean"))[0]);
               ctx.assertNull(row.getShortArray(0));
               ctx.assertNull(row.getShortArray("Boolean"));
               ctx.assertNull(row.getLongArray(0));
@@ -1367,12 +1367,12 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(row.getOffsetDateTime("Short"));
             ctx.assertNull(row.getUUID(0));
             ctx.assertNull(row.getUUID("Short"));
-            ctx.assertNull(row.getIntArray(0));
-            ctx.assertNull(row.getIntArray("Short"));
+            ctx.assertNull(row.getIntegerArray(0));
+            ctx.assertNull(row.getIntegerArray("Short"));
             ctx.assertEquals((short) 1, row.getShortArray(0)[0]);
             ctx.assertEquals((short) 1, row.getShortArray("Short")[0]);
-            ctx.assertEquals((short) 1, ((Short[]) row.getValue(0))[0]);
-            ctx.assertEquals((short) 1, ((Short[]) row.getValue("Short"))[0]);
+            ctx.assertEquals((short) 1, ((short[]) row.getValue(0))[0]);
+            ctx.assertEquals((short) 1, ((short[]) row.getValue("Short"))[0]);
             ctx.assertNull(row.getBooleanArray(0));
             ctx.assertNull(row.getBooleanArray("Short"));
             ctx.assertNull(row.getLongArray(0));
@@ -1410,7 +1410,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Short\" = $1  WHERE \"id\" = $2 RETURNING \"Short\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
-              .addShortArray(new Short[]{2})
+              .addShortArray(new short[]{2})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
@@ -1448,12 +1448,12 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(row.getOffsetDateTime("Short"));
               ctx.assertNull(row.getUUID(0));
               ctx.assertNull(row.getUUID("Short"));
-              ctx.assertNull(row.getIntArray(0));
-              ctx.assertNull(row.getIntArray("Short"));
+              ctx.assertNull(row.getIntegerArray(0));
+              ctx.assertNull(row.getIntegerArray("Short"));
               ctx.assertEquals((short) 2, row.getShortArray(0)[0]);
               ctx.assertEquals((short) 2, row.getShortArray("Short")[0]);
-              ctx.assertEquals((short) 2, ((Short[]) row.getValue(0))[0]);
-              ctx.assertEquals((short) 2, ((Short[]) row.getValue("Short"))[0]);
+              ctx.assertEquals((short) 2, ((short[]) row.getValue(0))[0]);
+              ctx.assertEquals((short) 2, ((short[]) row.getValue("Short"))[0]);
               ctx.assertNull(row.getBooleanArray(0));
               ctx.assertNull(row.getBooleanArray("Short"));
               ctx.assertNull(row.getLongArray(0));
@@ -1529,10 +1529,10 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(row.getUUID("Integer"));
             ctx.assertNull(row.getShortArray(0));
             ctx.assertNull(row.getShortArray("Integer"));
-            ctx.assertEquals(2, row.getIntArray(0)[0]);
-            ctx.assertEquals(2, row.getIntArray("Integer")[0]);
-            ctx.assertEquals(2, ((Integer[]) row.getValue(0))[0]);
-            ctx.assertEquals(2, ((Integer[]) row.getValue("Integer"))[0]);
+            ctx.assertEquals(2, row.getIntegerArray(0)[0]);
+            ctx.assertEquals(2, row.getIntegerArray("Integer")[0]);
+            ctx.assertEquals(2, ((int[]) row.getValue(0))[0]);
+            ctx.assertEquals(2, ((int[]) row.getValue("Integer"))[0]);
             ctx.assertNull(row.getBooleanArray(0));
             ctx.assertNull(row.getBooleanArray("Integer"));
             ctx.assertNull(row.getLongArray(0));
@@ -1570,7 +1570,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Integer\" = $1  WHERE \"id\" = $2 RETURNING \"Integer\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
-              .addIntArray(new Integer[]{3})
+              .addIntArray(new int[]{3})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
@@ -1610,10 +1610,10 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(row.getUUID("Integer"));
               ctx.assertNull(row.getLongArray(0));
               ctx.assertNull(row.getLongArray("Integer"));
-              ctx.assertEquals(3, row.getIntArray(0)[0]);
-              ctx.assertEquals(3, row.getIntArray("Integer")[0]);
-              ctx.assertEquals(3, ((Integer[]) row.getValue(0))[0]);
-              ctx.assertEquals(3, ((Integer[]) row.getValue("Integer"))[0]);
+              ctx.assertEquals(3, row.getIntegerArray(0)[0]);
+              ctx.assertEquals(3, row.getIntegerArray("Integer")[0]);
+              ctx.assertEquals(3, ((int[]) row.getValue(0))[0]);
+              ctx.assertEquals(3, ((int[]) row.getValue("Integer"))[0]);
               ctx.assertNull(row.getBooleanArray(0));
               ctx.assertNull(row.getBooleanArray("Integer"));
               ctx.assertNull(row.getShortArray(0));
@@ -1691,12 +1691,12 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(row.getShortArray("Long"));
             ctx.assertEquals((long) 3, row.getLongArray(0)[0]);
             ctx.assertEquals((long) 3, row.getLongArray("Long")[0]);
-            ctx.assertEquals((long) 3, ((Long[]) row.getValue(0))[0]);
-            ctx.assertEquals((long) 3, ((Long[]) row.getValue("Long"))[0]);
+            ctx.assertEquals((long) 3, ((long[]) row.getValue(0))[0]);
+            ctx.assertEquals((long) 3, ((long[]) row.getValue("Long"))[0]);
             ctx.assertNull(row.getBooleanArray(0));
             ctx.assertNull(row.getBooleanArray("Long"));
-            ctx.assertNull(row.getIntArray(0));
-            ctx.assertNull(row.getIntArray("Long"));
+            ctx.assertNull(row.getIntegerArray(0));
+            ctx.assertNull(row.getIntegerArray("Long"));
             ctx.assertNull(row.getFloatArray(0));
             ctx.assertNull(row.getFloatArray("Long"));
             ctx.assertNull(row.getDoubleArray(0));
@@ -1730,7 +1730,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Long\" = $1  WHERE \"id\" = $2 RETURNING \"Long\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
-              .addLongArray(new Long[]{(long) 4})
+              .addLongArray(new long[]{(long) 4})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
@@ -1768,12 +1768,12 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(row.getOffsetDateTime("Long"));
               ctx.assertNull(row.getUUID(0));
               ctx.assertNull(row.getUUID("Long"));
-              ctx.assertNull(row.getIntArray(0));
-              ctx.assertNull(row.getIntArray("Long"));
+              ctx.assertNull(row.getIntegerArray(0));
+              ctx.assertNull(row.getIntegerArray("Long"));
               ctx.assertEquals((long) 4, row.getLongArray(0)[0]);
               ctx.assertEquals((long) 4, row.getLongArray("Long")[0]);
-              ctx.assertEquals((long) 4, ((Long[]) row.getValue(0))[0]);
-              ctx.assertEquals((long) 4, ((Long[]) row.getValue("Long"))[0]);
+              ctx.assertEquals((long) 4, ((long[]) row.getValue(0))[0]);
+              ctx.assertEquals((long) 4, ((long[]) row.getValue("Long"))[0]);
               ctx.assertNull(row.getBooleanArray(0));
               ctx.assertNull(row.getBooleanArray("Long"));
               ctx.assertNull(row.getShortArray(0));
@@ -1851,12 +1851,12 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(row.getShortArray("Float"));
             ctx.assertEquals((float) 4.1, row.getFloatArray(0)[0]);
             ctx.assertEquals((float) 4.1, row.getFloatArray("Float")[0]);
-            ctx.assertEquals((float) 4.1, ((Float[]) row.getValue(0))[0]);
-            ctx.assertEquals((float) 4.1, ((Float[]) row.getValue("Float"))[0]);
+            ctx.assertEquals((float) 4.1, ((float[]) row.getValue(0))[0]);
+            ctx.assertEquals((float) 4.1, ((float[]) row.getValue("Float"))[0]);
             ctx.assertNull(row.getBooleanArray(0));
             ctx.assertNull(row.getBooleanArray("Float"));
-            ctx.assertNull(row.getIntArray(0));
-            ctx.assertNull(row.getIntArray("Float"));
+            ctx.assertNull(row.getIntegerArray(0));
+            ctx.assertNull(row.getIntegerArray("Float"));
             ctx.assertNull(row.getLongArray(0));
             ctx.assertNull(row.getLongArray("Float"));
             ctx.assertNull(row.getDoubleArray(0));
@@ -1890,7 +1890,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Float\" = $1  WHERE \"id\" = $2 RETURNING \"Float\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
-              .addFloatArray(new Float[]{(float) 5.2})
+              .addFloatArray(new float[]{(float) 5.2})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
@@ -1928,12 +1928,12 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(row.getOffsetDateTime("Float"));
               ctx.assertNull(row.getUUID(0));
               ctx.assertNull(row.getUUID("Float"));
-              ctx.assertNull(row.getIntArray(0));
-              ctx.assertNull(row.getIntArray("Float"));
+              ctx.assertNull(row.getIntegerArray(0));
+              ctx.assertNull(row.getIntegerArray("Float"));
               ctx.assertEquals((float) 5.2, row.getFloatArray(0)[0]);
               ctx.assertEquals((float) 5.2, row.getFloatArray("Float")[0]);
-              ctx.assertEquals((float) 5.2, ((Float[]) row.getValue(0))[0]);
-              ctx.assertEquals((float) 5.2, ((Float[]) row.getValue("Float"))[0]);
+              ctx.assertEquals((float) 5.2, ((float[]) row.getValue(0))[0]);
+              ctx.assertEquals((float) 5.2, ((float[]) row.getValue("Float"))[0]);
               ctx.assertNull(row.getBooleanArray(0));
               ctx.assertNull(row.getBooleanArray("Float"));
               ctx.assertNull(row.getShortArray(0));
@@ -2011,12 +2011,12 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertNull(row.getShortArray("Double"));
             ctx.assertEquals(5.2, row.getDoubleArray(0)[0]);
             ctx.assertEquals(5.2, row.getDoubleArray("Double")[0]);
-            ctx.assertEquals(5.2, ((Double[]) row.getValue(0))[0]);
-            ctx.assertEquals(5.2, ((Double[]) row.getValue("Double"))[0]);
+            ctx.assertEquals(5.2, ((double[]) row.getValue(0))[0]);
+            ctx.assertEquals(5.2, ((double[]) row.getValue("Double"))[0]);
             ctx.assertNull(row.getBooleanArray(0));
             ctx.assertNull(row.getBooleanArray("Double"));
-            ctx.assertNull(row.getIntArray(0));
-            ctx.assertNull(row.getIntArray("Double"));
+            ctx.assertNull(row.getIntegerArray(0));
+            ctx.assertNull(row.getIntegerArray("Double"));
             ctx.assertNull(row.getLongArray(0));
             ctx.assertNull(row.getLongArray("Double"));
             ctx.assertNull(row.getFloatArray(0));
@@ -2050,7 +2050,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Double\" = $1  WHERE \"id\" = $2 RETURNING \"Double\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
-              .addDoubleArray(new Double[]{6.3})
+              .addDoubleArray(new double[]{6.3})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
@@ -2088,12 +2088,12 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(row.getOffsetDateTime("Double"));
               ctx.assertNull(row.getUUID(0));
               ctx.assertNull(row.getUUID("Double"));
-              ctx.assertNull(row.getIntArray(0));
-              ctx.assertNull(row.getIntArray("Double"));
+              ctx.assertNull(row.getIntegerArray(0));
+              ctx.assertNull(row.getIntegerArray("Double"));
               ctx.assertEquals(6.3, row.getDoubleArray(0)[0]);
               ctx.assertEquals(6.3, row.getDoubleArray("Double")[0]);
-              ctx.assertEquals(6.3, ((Double[]) row.getValue(0))[0]);
-              ctx.assertEquals(6.3, ((Double[]) row.getValue("Double"))[0]);
+              ctx.assertEquals(6.3, ((double[]) row.getValue(0))[0]);
+              ctx.assertEquals(6.3, ((double[]) row.getValue("Double"))[0]);
               ctx.assertNull(row.getBooleanArray(0));
               ctx.assertNull(row.getBooleanArray("Double"));
               ctx.assertNull(row.getShortArray(0));
@@ -2175,8 +2175,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertEquals("Knock, knock.Who’s there?very long pause….Java.", ((String[]) row.getValue("Text"))[0]);
             ctx.assertNull(row.getBooleanArray(0));
             ctx.assertNull(row.getBooleanArray("Text"));
-            ctx.assertNull(row.getIntArray(0));
-            ctx.assertNull(row.getIntArray("Text"));
+            ctx.assertNull(row.getIntegerArray(0));
+            ctx.assertNull(row.getIntegerArray("Text"));
             ctx.assertNull(row.getLongArray(0));
             ctx.assertNull(row.getLongArray("Text"));
             ctx.assertNull(row.getFloatArray(0));
@@ -2248,8 +2248,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(row.getOffsetDateTime("Text"));
               ctx.assertNull(row.getUUID(0));
               ctx.assertNull(row.getUUID("Text"));
-              ctx.assertNull(row.getIntArray(0));
-              ctx.assertNull(row.getIntArray("Text"));
+              ctx.assertNull(row.getIntegerArray(0));
+              ctx.assertNull(row.getIntegerArray("Text"));
               ctx.assertEquals("Knock, knock.Who’s there?", row.getStringArray(0)[0]);
               ctx.assertEquals("Knock, knock.Who’s there?", row.getStringArray("Text")[0]);
               ctx.assertEquals("Knock, knock.Who’s there?", ((String[]) row.getValue(0))[0]);
@@ -2337,8 +2337,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertEquals(dt, ((LocalDate[]) row.getValue("LocalDate"))[0]);
             ctx.assertNull(row.getBooleanArray(0));
             ctx.assertNull(row.getBooleanArray("LocalDate"));
-            ctx.assertNull(row.getIntArray(0));
-            ctx.assertNull(row.getIntArray("LocalDate"));
+            ctx.assertNull(row.getIntegerArray(0));
+            ctx.assertNull(row.getIntegerArray("LocalDate"));
             ctx.assertNull(row.getLongArray(0));
             ctx.assertNull(row.getLongArray("LocalDate"));
             ctx.assertNull(row.getFloatArray(0));
@@ -2412,8 +2412,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(row.getOffsetDateTime("LocalDate"));
               ctx.assertNull(row.getUUID(0));
               ctx.assertNull(row.getUUID("LocalDate"));
-              ctx.assertNull(row.getIntArray(0));
-              ctx.assertNull(row.getIntArray("LocalDate"));
+              ctx.assertNull(row.getIntegerArray(0));
+              ctx.assertNull(row.getIntegerArray("LocalDate"));
               ctx.assertEquals(dt, row.getLocalDateArray(0)[0]);
               ctx.assertEquals(dt, row.getLocalDateArray("LocalDate")[0]);
               ctx.assertEquals(dt, ((LocalDate[]) row.getValue(0))[0]);
@@ -2501,8 +2501,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertEquals(dt, ((LocalTime[]) row.getValue("LocalTime"))[0]);
             ctx.assertNull(row.getBooleanArray(0));
             ctx.assertNull(row.getBooleanArray("LocalTime"));
-            ctx.assertNull(row.getIntArray(0));
-            ctx.assertNull(row.getIntArray("LocalTime"));
+            ctx.assertNull(row.getIntegerArray(0));
+            ctx.assertNull(row.getIntegerArray("LocalTime"));
             ctx.assertNull(row.getLongArray(0));
             ctx.assertNull(row.getLongArray("LocalTime"));
             ctx.assertNull(row.getFloatArray(0));
@@ -2576,8 +2576,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(row.getOffsetDateTime("LocalTime"));
               ctx.assertNull(row.getUUID(0));
               ctx.assertNull(row.getUUID("LocalTime"));
-              ctx.assertNull(row.getIntArray(0));
-              ctx.assertNull(row.getIntArray("LocalTime"));
+              ctx.assertNull(row.getIntegerArray(0));
+              ctx.assertNull(row.getIntegerArray("LocalTime"));
               ctx.assertEquals(dt, row.getLocalTimeArray(0)[0]);
               ctx.assertEquals(dt, row.getLocalTimeArray("LocalTime")[0]);
               ctx.assertEquals(dt, ((LocalTime[]) row.getValue(0))[0]);
@@ -2664,8 +2664,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertEquals(dt, ((OffsetTime[]) row.getValue("OffsetTime"))[0]);
             ctx.assertNull(row.getBooleanArray(0));
             ctx.assertNull(row.getBooleanArray("OffsetTime"));
-            ctx.assertNull(row.getIntArray(0));
-            ctx.assertNull(row.getIntArray("OffsetTime"));
+            ctx.assertNull(row.getIntegerArray(0));
+            ctx.assertNull(row.getIntegerArray("OffsetTime"));
             ctx.assertNull(row.getLongArray(0));
             ctx.assertNull(row.getLongArray("OffsetTime"));
             ctx.assertNull(row.getFloatArray(0));
@@ -2738,8 +2738,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(row.getOffsetDateTime("OffsetTime"));
               ctx.assertNull(row.getUUID(0));
               ctx.assertNull(row.getUUID("OffsetTime"));
-              ctx.assertNull(row.getIntArray(0));
-              ctx.assertNull(row.getIntArray("OffsetTime"));
+              ctx.assertNull(row.getIntegerArray(0));
+              ctx.assertNull(row.getIntegerArray("OffsetTime"));
               ctx.assertEquals(dt, row.getOffsetTimeArray(0)[0]);
               ctx.assertEquals(dt, row.getOffsetTimeArray("OffsetTime")[0]);
               ctx.assertEquals(dt, ((OffsetTime[]) row.getValue(0))[0]);
@@ -2826,8 +2826,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertEquals(dt, ((LocalDateTime[]) row.getValue("LocalDateTime"))[0]);
             ctx.assertNull(row.getBooleanArray(0));
             ctx.assertNull(row.getBooleanArray("LocalDateTime"));
-            ctx.assertNull(row.getIntArray(0));
-            ctx.assertNull(row.getIntArray("LocalDateTime"));
+            ctx.assertNull(row.getIntegerArray(0));
+            ctx.assertNull(row.getIntegerArray("LocalDateTime"));
             ctx.assertNull(row.getLongArray(0));
             ctx.assertNull(row.getLongArray("LocalDateTime"));
             ctx.assertNull(row.getFloatArray(0));
@@ -2900,8 +2900,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(row.getOffsetDateTime("LocalDateTime"));
               ctx.assertNull(row.getUUID(0));
               ctx.assertNull(row.getUUID("LocalDateTime"));
-              ctx.assertNull(row.getIntArray(0));
-              ctx.assertNull(row.getIntArray("LocalDateTime"));
+              ctx.assertNull(row.getIntegerArray(0));
+              ctx.assertNull(row.getIntegerArray("LocalDateTime"));
               ctx.assertEquals(dt, row.getLocalDateTimeArray(0)[0]);
               ctx.assertEquals(dt, row.getLocalDateTimeArray("LocalDateTime")[0]);
               ctx.assertEquals(dt, ((LocalDateTime[]) row.getValue(0))[0]);
@@ -2988,8 +2988,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertEquals(dt, ((OffsetDateTime[]) row.getValue("OffsetDateTime"))[0]);
             ctx.assertNull(row.getBooleanArray(0));
             ctx.assertNull(row.getBooleanArray("OffsetDateTime"));
-            ctx.assertNull(row.getIntArray(0));
-            ctx.assertNull(row.getIntArray("OffsetDateTime"));
+            ctx.assertNull(row.getIntegerArray(0));
+            ctx.assertNull(row.getIntegerArray("OffsetDateTime"));
             ctx.assertNull(row.getLongArray(0));
             ctx.assertNull(row.getLongArray("OffsetDateTime"));
             ctx.assertNull(row.getFloatArray(0));
@@ -3062,8 +3062,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(row.getOffsetDateTime("OffsetDateTime"));
               ctx.assertNull(row.getUUID(0));
               ctx.assertNull(row.getUUID("OffsetDateTime"));
-              ctx.assertNull(row.getIntArray(0));
-              ctx.assertNull(row.getIntArray("OffsetDateTime"));
+              ctx.assertNull(row.getIntegerArray(0));
+              ctx.assertNull(row.getIntegerArray("OffsetDateTime"));
               ctx.assertEquals(dt, row.getOffsetDateTimeArray(0)[0]);
               ctx.assertEquals(dt, row.getOffsetDateTimeArray("OffsetDateTime")[0]);
               ctx.assertEquals(dt, ((OffsetDateTime[]) row.getValue(0))[0]);
@@ -3150,8 +3150,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
             ctx.assertEquals(uuid, ((UUID[]) row.getValue("UUID"))[0]);
             ctx.assertNull(row.getBooleanArray(0));
             ctx.assertNull(row.getBooleanArray("UUID"));
-            ctx.assertNull(row.getIntArray(0));
-            ctx.assertNull(row.getIntArray("UUID"));
+            ctx.assertNull(row.getIntegerArray(0));
+            ctx.assertNull(row.getIntegerArray("UUID"));
             ctx.assertNull(row.getLongArray(0));
             ctx.assertNull(row.getLongArray("UUID"));
             ctx.assertNull(row.getFloatArray(0));
@@ -3224,8 +3224,8 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ctx.assertNull(row.getOffsetDateTime("UUID"));
               ctx.assertNull(row.getUUID(0));
               ctx.assertNull(row.getUUID("UUID"));
-              ctx.assertNull(row.getIntArray(0));
-              ctx.assertNull(row.getIntArray("UUID"));
+              ctx.assertNull(row.getIntegerArray(0));
+              ctx.assertNull(row.getIntegerArray("UUID"));
               ctx.assertEquals(uuid, row.getUUIDArray(0)[0]);
               ctx.assertEquals(uuid, row.getUUIDArray("UUID")[0]);
               ctx.assertEquals(uuid, ((UUID[]) row.getValue(0))[0]);

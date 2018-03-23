@@ -222,7 +222,7 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore
-  Integer[] getIntArray(String name);
+  int[] getIntegerArray(String name);
 
   /**
    * Get {@link Boolean} value at {@code pos}.
@@ -231,7 +231,7 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore
-  Boolean[] getBooleanArray(String name);
+  boolean[] getBooleanArray(String name);
 
   /**
    * Get {@link Short} value at {@code pos}.
@@ -240,7 +240,7 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore
-  Short[] getShortArray(String name);
+  short[] getShortArray(String name);
 
   /**
    * Get {@link Long} value at {@code pos}.
@@ -249,7 +249,7 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore
-  Long[] getLongArray(String name);
+  long[] getLongArray(String name);
 
   /**
    * Get {@link Float} value at {@code pos}.
@@ -258,7 +258,7 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore
-  Float[] getFloatArray(String name);
+  float[] getFloatArray(String name);
 
   /**
    * Get {@link Double} value at {@code pos}.
@@ -267,7 +267,7 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore
-  Double[] getDoubleArray(String name);
+  double[] getDoubleArray(String name);
 
   /**
    * Get {@link String} value at {@code pos}.
@@ -348,6 +348,6 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore
-  Character[] getCharacterArray(String name);
+  char[] getCharacterArray(String name);
 
 }

@@ -74,7 +74,7 @@ public class RowTest extends PgTestBase {
             row::getUUID,
             row::getBooleanArray,
             row::getShortArray,
-            row::getIntArray,
+            row::getIntegerArray,
             row::getLongArray,
             row::getFloatArray,
             row::getDoubleArray,
