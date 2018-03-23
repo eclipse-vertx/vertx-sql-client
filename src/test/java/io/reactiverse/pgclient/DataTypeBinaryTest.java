@@ -1394,6 +1394,26 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
   }
 
   @Test
+  public void testEncodeEmptyArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Double\" = $1  WHERE \"id\" = $2 RETURNING \"Double\"",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+              .addDoubleArray(new double[]{})
+              .addInteger(2)
+            , ctx.asyncAssertSuccess(result -> {
+              ColumnChecker.checkColumn(0, "Double")
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new double[]{}))
+                .returns(Tuple::getDoubleArray, Row::getDoubleArray, ColumnChecker.toObjectArray(new double[]{}))
+                .forRow(result.iterator().next());
+              async.complete();
+            }));
+        }));
+    }));
+  }
+
+  @Test
   public void testDecodeStringArray(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
