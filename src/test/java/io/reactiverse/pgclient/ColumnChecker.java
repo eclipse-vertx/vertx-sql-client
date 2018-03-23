@@ -2,12 +2,14 @@ package io.reactiverse.pgclient;
 
 import java.io.Serializable;
 import java.lang.invoke.SerializedLambda;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
@@ -59,8 +61,34 @@ class ColumnChecker {
     rowMethods.add(Row::getLocalDateTime);
     tupleMethods.add(Tuple::getOffsetDateTime);
     rowMethods.add(Row::getOffsetDateTime);
-    tupleMethods.add(Tuple::getUUID);
-    rowMethods.add(Row::getUUID);
+    tupleMethods.add(Tuple::getBooleanArray);
+    rowMethods.add(Row::getBooleanArray);
+    tupleMethods.add(Tuple::getShortArray);
+    rowMethods.add(Row::getShortArray);
+    tupleMethods.add(Tuple::getIntegerArray);
+    rowMethods.add(Row::getIntegerArray);
+    tupleMethods.add(Tuple::getLongArray);
+    rowMethods.add(Row::getLongArray);
+    tupleMethods.add(Tuple::getFloatArray);
+    rowMethods.add(Row::getFloatArray);
+    tupleMethods.add(Tuple::getDoubleArray);
+    rowMethods.add(Row::getDoubleArray);
+    tupleMethods.add(Tuple::getStringArray);
+    rowMethods.add(Row::getStringArray);
+    tupleMethods.add(Tuple::getLocalDateArray);
+    rowMethods.add(Row::getLocalDateArray);
+    tupleMethods.add(Tuple::getLocalTimeArray);
+    rowMethods.add(Row::getLocalTimeArray);
+    tupleMethods.add(Tuple::getOffsetTimeArray);
+    rowMethods.add(Row::getOffsetTimeArray);
+    tupleMethods.add(Tuple::getLocalDateTimeArray);
+    rowMethods.add(Row::getLocalDateTimeArray);
+    tupleMethods.add(Tuple::getCharacterArray);
+    rowMethods.add(Row::getCharacterArray);
+    tupleMethods.add(Tuple::getBufferArray);
+    rowMethods.add(Row::getBufferArray);
+    tupleMethods.add(Tuple::getUUIDArray);
+    rowMethods.add(Row::getUUIDArray);
   }
 
   static ColumnChecker checkColumn(int index, String name) {
@@ -89,6 +117,23 @@ class ColumnChecker {
       assertEquals("Expected that " + byIndexMeth + " returns " + expected + " instead of " + actual, actual, expected);
       actual = byNameGetter.apply(row, name);
       assertEquals("Expected that " + byNameMeth + " returns " + expected + " instead of " + actual, actual, expected);
+    });
+    return this;
+  }
+
+  ColumnChecker returns(SerializableBiFunction<Tuple, Integer, Object> byIndexGetter,
+                            SerializableBiFunction<Row, String, Object> byNameGetter,
+                            Object[] expected) {
+    Method byIndexMeth = byIndexGetter.method();
+    blackList.add(byIndexMeth);
+    Method byNameMeth = byNameGetter.method();
+    blackList.add(byNameMeth);
+    expects.add(row -> {
+      Object[] actual = toObjectArray(byIndexGetter.apply(row, index));
+      assertArrayEquals("Expected that " + byIndexMeth + " returns " + expected + " instead of " + actual, actual, expected);
+      actual = toObjectArray(byNameGetter.apply(row, name));
+      assertArrayEquals("Expected that " + byNameMeth + " returns " + expected + " instead of " + actual, actual, expected);
+
     });
     return this;
   }
@@ -199,4 +244,26 @@ class ColumnChecker {
   }
 
   interface SerializableBiFunction<O, T, R> extends BiFunction<O, T, R>, Serializable, MethodReferenceReflection {}
+
+  public static Object[] toObjectArray(Object source) {
+    if (source instanceof Object[]) {
+      return (Object[]) source;
+    }
+    if (source == null) {
+      return new Object[0];
+    }
+    if (!source.getClass().isArray()) {
+      throw new IllegalArgumentException("Source is not an array: " + source);
+    }
+    int length = Array.getLength(source);
+    if (length == 0) {
+      return new Object[0];
+    }
+    Class wrapperType = Array.get(source, 0).getClass();
+    Object[] newArray = (Object[]) Array.newInstance(wrapperType, length);
+    for (int i = 0; i < length; i++) {
+      newArray[i] = Array.get(source, i);
+    }
+    return newArray;
+  }
 }

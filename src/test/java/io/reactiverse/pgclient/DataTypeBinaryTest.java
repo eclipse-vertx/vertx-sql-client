@@ -7,6 +7,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -1163,7 +1164,7 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
         }));
     }));
   }
-//Had to use the old test method cause vertx TestContext doesnt seem to support to compare arrays
+
   @Test
   public void testDecodeBooleanArray(TestContext ctx) {
     Async async = ctx.async();
@@ -1172,71 +1173,10 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
-            Row row = result.iterator().next();
-            ctx.assertNull(row.getBoolean(0));
-            ctx.assertNull(row.getBoolean("Boolean"));
-            ctx.assertNull(row.getLong(0));
-            ctx.assertNull(row.getLong("Boolean"));
-            ctx.assertNull(row.getInteger(0));
-            ctx.assertNull(row.getInteger("Boolean"));
-            ctx.assertNull(row.getFloat(0));
-            ctx.assertNull(row.getFloat("Boolean"));
-            ctx.assertNull(row.getDouble(0));
-            ctx.assertNull(row.getDouble("Boolean"));
-            ctx.assertNull(row.getString(0));
-            ctx.assertNull(row.getString("Boolean"));
-            ctx.assertNull(row.getJsonObject(0));
-            ctx.assertNull(row.getJsonObject("Boolean"));
-            ctx.assertNull(row.getJsonArray(0));
-            ctx.assertNull(row.getJsonArray("Boolean"));
-            ctx.assertNull(row.getBuffer(0));
-            ctx.assertNull(row.getBuffer("Boolean"));
-            ctx.assertNull(row.getTemporal(0));
-            ctx.assertNull(row.getTemporal("Boolean"));
-            ctx.assertNull(row.getLocalDate(0));
-            ctx.assertNull(row.getLocalDate("Boolean"));
-            ctx.assertNull(row.getLocalTime(0));
-            ctx.assertNull(row.getLocalTime("Boolean"));
-            ctx.assertNull(row.getOffsetTime(0));
-            ctx.assertNull(row.getOffsetTime("Boolean"));
-            ctx.assertNull(row.getLocalDateTime(0));
-            ctx.assertNull(row.getLocalDateTime("Boolean"));
-            ctx.assertNull(row.getOffsetDateTime(0));
-            ctx.assertNull(row.getOffsetDateTime("Boolean"));
-            ctx.assertNull(row.getUUID(0));
-            ctx.assertNull(row.getUUID("Boolean"));
-            ctx.assertNull(row.getIntegerArray(0));
-            ctx.assertNull(row.getIntegerArray("Boolean"));
-            ctx.assertEquals(Boolean.TRUE, row.getBooleanArray(0)[0]);
-            ctx.assertEquals(Boolean.TRUE, row.getBooleanArray("Boolean")[0]);
-            ctx.assertEquals(Boolean.TRUE, ((boolean[]) row.getValue(0))[0]);
-            ctx.assertEquals(Boolean.TRUE, ((boolean[]) row.getValue("Boolean"))[0]);
-            ctx.assertNull(row.getShortArray(0));
-            ctx.assertNull(row.getShortArray("Boolean"));
-            ctx.assertNull(row.getLongArray(0));
-            ctx.assertNull(row.getLongArray("Boolean"));
-            ctx.assertNull(row.getFloatArray(0));
-            ctx.assertNull(row.getFloatArray("Boolean"));
-            ctx.assertNull(row.getDoubleArray(0));
-            ctx.assertNull(row.getDoubleArray("Boolean"));
-            ctx.assertNull(row.getStringArray(0));
-            ctx.assertNull(row.getStringArray("Boolean"));
-            ctx.assertNull(row.getLocalDateArray(0));
-            ctx.assertNull(row.getLocalDateArray("Boolean"));
-            ctx.assertNull(row.getLocalTimeArray(0));
-            ctx.assertNull(row.getLocalTimeArray("Boolean"));
-            ctx.assertNull(row.getOffsetTimeArray(0));
-            ctx.assertNull(row.getOffsetTimeArray("Boolean"));
-            ctx.assertNull(row.getLocalDateTimeArray(0));
-            ctx.assertNull(row.getLocalDateTimeArray("Boolean"));
-            ctx.assertNull(row.getOffsetDateTimeArray(0));
-            ctx.assertNull(row.getOffsetDateTimeArray("Boolean"));
-            ctx.assertNull(row.getBufferArray(0));
-            ctx.assertNull(row.getBufferArray("Boolean"));
-            ctx.assertNull(row.getUUIDArray(0));
-            ctx.assertNull(row.getUUIDArray("Boolean"));
+            ColumnChecker.checkColumn(0, "Boolean")
+              .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new boolean[]{Boolean.TRUE}))
+              .returns(Tuple::getBooleanArray, Row::getBooleanArray, ColumnChecker.toObjectArray(new boolean[]{Boolean.TRUE}))
+              .forRow(result.iterator().next());
             async.complete();
           }));
         }));
@@ -1253,71 +1193,10 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               .addBooleanArray(new boolean[]{Boolean.FALSE})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
-              ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.updatedCount());
-              Row row = result.iterator().next();
-              ctx.assertNull(row.getBoolean(0));
-              ctx.assertNull(row.getBoolean("Boolean"));
-              ctx.assertNull(row.getLong(0));
-              ctx.assertNull(row.getLong("Boolean"));
-              ctx.assertNull(row.getInteger(0));
-              ctx.assertNull(row.getInteger("Boolean"));
-              ctx.assertNull(row.getFloat(0));
-              ctx.assertNull(row.getFloat("Boolean"));
-              ctx.assertNull(row.getDouble(0));
-              ctx.assertNull(row.getDouble("Boolean"));
-              ctx.assertNull(row.getString(0));
-              ctx.assertNull(row.getString("Boolean"));
-              ctx.assertNull(row.getJsonObject(0));
-              ctx.assertNull(row.getJsonObject("Boolean"));
-              ctx.assertNull(row.getJsonArray(0));
-              ctx.assertNull(row.getJsonArray("Boolean"));
-              ctx.assertNull(row.getBuffer(0));
-              ctx.assertNull(row.getBuffer("Boolean"));
-              ctx.assertNull(row.getTemporal(0));
-              ctx.assertNull(row.getTemporal("Boolean"));
-              ctx.assertNull(row.getLocalDate(0));
-              ctx.assertNull(row.getLocalDate("Boolean"));
-              ctx.assertNull(row.getLocalTime(0));
-              ctx.assertNull(row.getLocalTime("Boolean"));
-              ctx.assertNull(row.getOffsetTime(0));
-              ctx.assertNull(row.getOffsetTime("Boolean"));
-              ctx.assertNull(row.getLocalDateTime(0));
-              ctx.assertNull(row.getLocalDateTime("Boolean"));
-              ctx.assertNull(row.getOffsetDateTime(0));
-              ctx.assertNull(row.getOffsetDateTime("Boolean"));
-              ctx.assertNull(row.getUUID(0));
-              ctx.assertNull(row.getUUID("Boolean"));
-              ctx.assertNull(row.getIntegerArray(0));
-              ctx.assertNull(row.getIntegerArray("Boolean"));
-              ctx.assertEquals(Boolean.FALSE, row.getBooleanArray(0)[0]);
-              ctx.assertEquals(Boolean.FALSE, row.getBooleanArray("Boolean")[0]);
-              ctx.assertEquals(Boolean.FALSE, ((boolean[]) row.getValue(0))[0]);
-              ctx.assertEquals(Boolean.FALSE, ((boolean[]) row.getValue("Boolean"))[0]);
-              ctx.assertNull(row.getShortArray(0));
-              ctx.assertNull(row.getShortArray("Boolean"));
-              ctx.assertNull(row.getLongArray(0));
-              ctx.assertNull(row.getLongArray("Boolean"));
-              ctx.assertNull(row.getFloatArray(0));
-              ctx.assertNull(row.getFloatArray("Boolean"));
-              ctx.assertNull(row.getDoubleArray(0));
-              ctx.assertNull(row.getDoubleArray("Boolean"));
-              ctx.assertNull(row.getStringArray(0));
-              ctx.assertNull(row.getStringArray("Boolean"));
-              ctx.assertNull(row.getLocalDateArray(0));
-              ctx.assertNull(row.getLocalDateArray("Boolean"));
-              ctx.assertNull(row.getLocalTimeArray(0));
-              ctx.assertNull(row.getLocalTimeArray("Boolean"));
-              ctx.assertNull(row.getOffsetTimeArray(0));
-              ctx.assertNull(row.getOffsetTimeArray("Boolean"));
-              ctx.assertNull(row.getLocalDateTimeArray(0));
-              ctx.assertNull(row.getLocalDateTimeArray("Boolean"));
-              ctx.assertNull(row.getOffsetDateTimeArray(0));
-              ctx.assertNull(row.getOffsetDateTimeArray("Boolean"));
-              ctx.assertNull(row.getBufferArray(0));
-              ctx.assertNull(row.getBufferArray("Boolean"));
-              ctx.assertNull(row.getUUIDArray(0));
-              ctx.assertNull(row.getUUIDArray("Boolean"));
+              ColumnChecker.checkColumn(0, "Boolean")
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new boolean[]{Boolean.FALSE}))
+                .returns(Tuple::getBooleanArray, Row::getBooleanArray, ColumnChecker.toObjectArray(new boolean[]{Boolean.FALSE}))
+                .forRow(result.iterator().next());
               async.complete();
             }));
         }));
@@ -1332,71 +1211,10 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
-            Row row = result.iterator().next();
-            ctx.assertNull(row.getBoolean(0));
-            ctx.assertNull(row.getBoolean("Short"));
-            ctx.assertNull(row.getLong(0));
-            ctx.assertNull(row.getLong("Short"));
-            ctx.assertNull(row.getInteger(0));
-            ctx.assertNull(row.getInteger("Short"));
-            ctx.assertNull(row.getFloat(0));
-            ctx.assertNull(row.getFloat("Short"));
-            ctx.assertNull(row.getDouble(0));
-            ctx.assertNull(row.getDouble("Short"));
-            ctx.assertNull(row.getString(0));
-            ctx.assertNull(row.getString("Short"));
-            ctx.assertNull(row.getJsonObject(0));
-            ctx.assertNull(row.getJsonObject("Short"));
-            ctx.assertNull(row.getJsonArray(0));
-            ctx.assertNull(row.getJsonArray("Short"));
-            ctx.assertNull(row.getBuffer(0));
-            ctx.assertNull(row.getBuffer("Short"));
-            ctx.assertNull(row.getTemporal(0));
-            ctx.assertNull(row.getTemporal("Short"));
-            ctx.assertNull(row.getLocalDate(0));
-            ctx.assertNull(row.getLocalDate("Short"));
-            ctx.assertNull(row.getLocalTime(0));
-            ctx.assertNull(row.getLocalTime("Short"));
-            ctx.assertNull(row.getOffsetTime(0));
-            ctx.assertNull(row.getOffsetTime("Short"));
-            ctx.assertNull(row.getLocalDateTime(0));
-            ctx.assertNull(row.getLocalDateTime("Short"));
-            ctx.assertNull(row.getOffsetDateTime(0));
-            ctx.assertNull(row.getOffsetDateTime("Short"));
-            ctx.assertNull(row.getUUID(0));
-            ctx.assertNull(row.getUUID("Short"));
-            ctx.assertNull(row.getIntegerArray(0));
-            ctx.assertNull(row.getIntegerArray("Short"));
-            ctx.assertEquals((short) 1, row.getShortArray(0)[0]);
-            ctx.assertEquals((short) 1, row.getShortArray("Short")[0]);
-            ctx.assertEquals((short) 1, ((short[]) row.getValue(0))[0]);
-            ctx.assertEquals((short) 1, ((short[]) row.getValue("Short"))[0]);
-            ctx.assertNull(row.getBooleanArray(0));
-            ctx.assertNull(row.getBooleanArray("Short"));
-            ctx.assertNull(row.getLongArray(0));
-            ctx.assertNull(row.getLongArray("Short"));
-            ctx.assertNull(row.getFloatArray(0));
-            ctx.assertNull(row.getFloatArray("Short"));
-            ctx.assertNull(row.getDoubleArray(0));
-            ctx.assertNull(row.getDoubleArray("Short"));
-            ctx.assertNull(row.getStringArray(0));
-            ctx.assertNull(row.getStringArray("Short"));
-            ctx.assertNull(row.getLocalDateArray(0));
-            ctx.assertNull(row.getLocalDateArray("Short"));
-            ctx.assertNull(row.getLocalTimeArray(0));
-            ctx.assertNull(row.getLocalTimeArray("Short"));
-            ctx.assertNull(row.getOffsetTimeArray(0));
-            ctx.assertNull(row.getOffsetTimeArray("Short"));
-            ctx.assertNull(row.getLocalDateTimeArray(0));
-            ctx.assertNull(row.getLocalDateTimeArray("Short"));
-            ctx.assertNull(row.getOffsetDateTimeArray(0));
-            ctx.assertNull(row.getOffsetDateTimeArray("Short"));
-            ctx.assertNull(row.getBufferArray(0));
-            ctx.assertNull(row.getBufferArray("Short"));
-            ctx.assertNull(row.getUUIDArray(0));
-            ctx.assertNull(row.getUUIDArray("Short"));
+            ColumnChecker.checkColumn(0, "Short")
+              .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new short[]{1}))
+              .returns(Tuple::getShortArray, Row::getShortArray, ColumnChecker.toObjectArray(new short[]{1}))
+              .forRow(result.iterator().next());
             async.complete();
           }));
         }));
@@ -1413,71 +1231,10 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               .addShortArray(new short[]{2})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
-              ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.updatedCount());
-              Row row = result.iterator().next();
-              ctx.assertNull(row.getBoolean(0));
-              ctx.assertNull(row.getBoolean("Short"));
-              ctx.assertNull(row.getLong(0));
-              ctx.assertNull(row.getLong("Short"));
-              ctx.assertNull(row.getInteger(0));
-              ctx.assertNull(row.getInteger("Short"));
-              ctx.assertNull(row.getFloat(0));
-              ctx.assertNull(row.getFloat("Short"));
-              ctx.assertNull(row.getDouble(0));
-              ctx.assertNull(row.getDouble("Short"));
-              ctx.assertNull(row.getString(0));
-              ctx.assertNull(row.getString("Short"));
-              ctx.assertNull(row.getJsonObject(0));
-              ctx.assertNull(row.getJsonObject("Short"));
-              ctx.assertNull(row.getJsonArray(0));
-              ctx.assertNull(row.getJsonArray("Short"));
-              ctx.assertNull(row.getBuffer(0));
-              ctx.assertNull(row.getBuffer("Short"));
-              ctx.assertNull(row.getTemporal(0));
-              ctx.assertNull(row.getTemporal("Short"));
-              ctx.assertNull(row.getLocalDate(0));
-              ctx.assertNull(row.getLocalDate("Short"));
-              ctx.assertNull(row.getLocalTime(0));
-              ctx.assertNull(row.getLocalTime("Short"));
-              ctx.assertNull(row.getOffsetTime(0));
-              ctx.assertNull(row.getOffsetTime("Short"));
-              ctx.assertNull(row.getLocalDateTime(0));
-              ctx.assertNull(row.getLocalDateTime("Short"));
-              ctx.assertNull(row.getOffsetDateTime(0));
-              ctx.assertNull(row.getOffsetDateTime("Short"));
-              ctx.assertNull(row.getUUID(0));
-              ctx.assertNull(row.getUUID("Short"));
-              ctx.assertNull(row.getIntegerArray(0));
-              ctx.assertNull(row.getIntegerArray("Short"));
-              ctx.assertEquals((short) 2, row.getShortArray(0)[0]);
-              ctx.assertEquals((short) 2, row.getShortArray("Short")[0]);
-              ctx.assertEquals((short) 2, ((short[]) row.getValue(0))[0]);
-              ctx.assertEquals((short) 2, ((short[]) row.getValue("Short"))[0]);
-              ctx.assertNull(row.getBooleanArray(0));
-              ctx.assertNull(row.getBooleanArray("Short"));
-              ctx.assertNull(row.getLongArray(0));
-              ctx.assertNull(row.getLongArray("Short"));
-              ctx.assertNull(row.getFloatArray(0));
-              ctx.assertNull(row.getFloatArray("Short"));
-              ctx.assertNull(row.getDoubleArray(0));
-              ctx.assertNull(row.getDoubleArray("Short"));
-              ctx.assertNull(row.getStringArray(0));
-              ctx.assertNull(row.getStringArray("Short"));
-              ctx.assertNull(row.getLocalDateArray(0));
-              ctx.assertNull(row.getLocalDateArray("Short"));
-              ctx.assertNull(row.getLocalTimeArray(0));
-              ctx.assertNull(row.getLocalTimeArray("Short"));
-              ctx.assertNull(row.getOffsetTimeArray(0));
-              ctx.assertNull(row.getOffsetTimeArray("Short"));
-              ctx.assertNull(row.getLocalDateTimeArray(0));
-              ctx.assertNull(row.getLocalDateTimeArray("Short"));
-              ctx.assertNull(row.getOffsetDateTimeArray(0));
-              ctx.assertNull(row.getOffsetDateTimeArray("Short"));
-              ctx.assertNull(row.getBufferArray(0));
-              ctx.assertNull(row.getBufferArray("Short"));
-              ctx.assertNull(row.getUUIDArray(0));
-              ctx.assertNull(row.getUUIDArray("Short"));
+              ColumnChecker.checkColumn(0, "Short")
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new short[]{2}))
+                .returns(Tuple::getShortArray, Row::getShortArray, ColumnChecker.toObjectArray(new short[]{2}))
+                .forRow(result.iterator().next());
               async.complete();
             }));
         }));
@@ -1492,71 +1249,10 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
-            Row row = result.iterator().next();
-            ctx.assertNull(row.getBoolean(0));
-            ctx.assertNull(row.getBoolean("Integer"));
-            ctx.assertNull(row.getLong(0));
-            ctx.assertNull(row.getLong("Integer"));
-            ctx.assertNull(row.getInteger(0));
-            ctx.assertNull(row.getInteger("Integer"));
-            ctx.assertNull(row.getFloat(0));
-            ctx.assertNull(row.getFloat("Integer"));
-            ctx.assertNull(row.getDouble(0));
-            ctx.assertNull(row.getDouble("Integer"));
-            ctx.assertNull(row.getString(0));
-            ctx.assertNull(row.getString("Integer"));
-            ctx.assertNull(row.getJsonObject(0));
-            ctx.assertNull(row.getJsonObject("Integer"));
-            ctx.assertNull(row.getJsonArray(0));
-            ctx.assertNull(row.getJsonArray("Integer"));
-            ctx.assertNull(row.getBuffer(0));
-            ctx.assertNull(row.getBuffer("Integer"));
-            ctx.assertNull(row.getTemporal(0));
-            ctx.assertNull(row.getTemporal("Integer"));
-            ctx.assertNull(row.getLocalDate(0));
-            ctx.assertNull(row.getLocalDate("Integer"));
-            ctx.assertNull(row.getLocalTime(0));
-            ctx.assertNull(row.getLocalTime("Integer"));
-            ctx.assertNull(row.getOffsetTime(0));
-            ctx.assertNull(row.getOffsetTime("Integer"));
-            ctx.assertNull(row.getLocalDateTime(0));
-            ctx.assertNull(row.getLocalDateTime("Integer"));
-            ctx.assertNull(row.getOffsetDateTime(0));
-            ctx.assertNull(row.getOffsetDateTime("Integer"));
-            ctx.assertNull(row.getUUID(0));
-            ctx.assertNull(row.getUUID("Integer"));
-            ctx.assertNull(row.getShortArray(0));
-            ctx.assertNull(row.getShortArray("Integer"));
-            ctx.assertEquals(2, row.getIntegerArray(0)[0]);
-            ctx.assertEquals(2, row.getIntegerArray("Integer")[0]);
-            ctx.assertEquals(2, ((int[]) row.getValue(0))[0]);
-            ctx.assertEquals(2, ((int[]) row.getValue("Integer"))[0]);
-            ctx.assertNull(row.getBooleanArray(0));
-            ctx.assertNull(row.getBooleanArray("Integer"));
-            ctx.assertNull(row.getLongArray(0));
-            ctx.assertNull(row.getLongArray("Integer"));
-            ctx.assertNull(row.getFloatArray(0));
-            ctx.assertNull(row.getFloatArray("Integer"));
-            ctx.assertNull(row.getDoubleArray(0));
-            ctx.assertNull(row.getDoubleArray("Integer"));
-            ctx.assertNull(row.getStringArray(0));
-            ctx.assertNull(row.getStringArray("Integer"));
-            ctx.assertNull(row.getLocalDateArray(0));
-            ctx.assertNull(row.getLocalDateArray("Integer"));
-            ctx.assertNull(row.getLocalTimeArray(0));
-            ctx.assertNull(row.getLocalTimeArray("Integer"));
-            ctx.assertNull(row.getOffsetTimeArray(0));
-            ctx.assertNull(row.getOffsetTimeArray("Integer"));
-            ctx.assertNull(row.getLocalDateTimeArray(0));
-            ctx.assertNull(row.getLocalDateTimeArray("Integer"));
-            ctx.assertNull(row.getOffsetDateTimeArray(0));
-            ctx.assertNull(row.getOffsetDateTimeArray("Integer"));
-            ctx.assertNull(row.getBufferArray(0));
-            ctx.assertNull(row.getBufferArray("Integer"));
-            ctx.assertNull(row.getUUIDArray(0));
-            ctx.assertNull(row.getUUIDArray("Integer"));
+            ColumnChecker.checkColumn(0, "Integer")
+              .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new int[]{2}))
+              .returns(Tuple::getIntegerArray, Row::getIntegerArray, ColumnChecker.toObjectArray(new int[]{2}))
+              .forRow(result.iterator().next());
             async.complete();
           }));
         }));
@@ -1570,74 +1266,13 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Integer\" = $1  WHERE \"id\" = $2 RETURNING \"Integer\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
-              .addIntArray(new int[]{3})
+              .addIntArray(new int[]{3,5})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
-              ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.updatedCount());
-              Row row = result.iterator().next();
-              ctx.assertNull(row.getBoolean(0));
-              ctx.assertNull(row.getBoolean("Integer"));
-              ctx.assertNull(row.getLong(0));
-              ctx.assertNull(row.getLong("Integer"));
-              ctx.assertNull(row.getInteger(0));
-              ctx.assertNull(row.getInteger("Integer"));
-              ctx.assertNull(row.getFloat(0));
-              ctx.assertNull(row.getFloat("Integer"));
-              ctx.assertNull(row.getDouble(0));
-              ctx.assertNull(row.getDouble("Integer"));
-              ctx.assertNull(row.getString(0));
-              ctx.assertNull(row.getString("Integer"));
-              ctx.assertNull(row.getJsonObject(0));
-              ctx.assertNull(row.getJsonObject("Integer"));
-              ctx.assertNull(row.getJsonArray(0));
-              ctx.assertNull(row.getJsonArray("Integer"));
-              ctx.assertNull(row.getBuffer(0));
-              ctx.assertNull(row.getBuffer("Integer"));
-              ctx.assertNull(row.getTemporal(0));
-              ctx.assertNull(row.getTemporal("Integer"));
-              ctx.assertNull(row.getLocalDate(0));
-              ctx.assertNull(row.getLocalDate("Integer"));
-              ctx.assertNull(row.getLocalTime(0));
-              ctx.assertNull(row.getLocalTime("Integer"));
-              ctx.assertNull(row.getOffsetTime(0));
-              ctx.assertNull(row.getOffsetTime("Integer"));
-              ctx.assertNull(row.getLocalDateTime(0));
-              ctx.assertNull(row.getLocalDateTime("Integer"));
-              ctx.assertNull(row.getOffsetDateTime(0));
-              ctx.assertNull(row.getOffsetDateTime("Integer"));
-              ctx.assertNull(row.getUUID(0));
-              ctx.assertNull(row.getUUID("Integer"));
-              ctx.assertNull(row.getLongArray(0));
-              ctx.assertNull(row.getLongArray("Integer"));
-              ctx.assertEquals(3, row.getIntegerArray(0)[0]);
-              ctx.assertEquals(3, row.getIntegerArray("Integer")[0]);
-              ctx.assertEquals(3, ((int[]) row.getValue(0))[0]);
-              ctx.assertEquals(3, ((int[]) row.getValue("Integer"))[0]);
-              ctx.assertNull(row.getBooleanArray(0));
-              ctx.assertNull(row.getBooleanArray("Integer"));
-              ctx.assertNull(row.getShortArray(0));
-              ctx.assertNull(row.getShortArray("Integer"));
-              ctx.assertNull(row.getFloatArray(0));
-              ctx.assertNull(row.getFloatArray("Integer"));
-              ctx.assertNull(row.getDoubleArray(0));
-              ctx.assertNull(row.getDoubleArray("Integer"));
-              ctx.assertNull(row.getStringArray(0));
-              ctx.assertNull(row.getStringArray("Integer"));
-              ctx.assertNull(row.getLocalDateArray(0));
-              ctx.assertNull(row.getLocalDateArray("Integer"));
-              ctx.assertNull(row.getLocalTimeArray(0));
-              ctx.assertNull(row.getLocalTimeArray("Integer"));
-              ctx.assertNull(row.getOffsetTimeArray(0));
-              ctx.assertNull(row.getOffsetTimeArray("Integer"));
-              ctx.assertNull(row.getLocalDateTimeArray(0));
-              ctx.assertNull(row.getLocalDateTimeArray("Integer"));
-              ctx.assertNull(row.getOffsetDateTimeArray(0));
-              ctx.assertNull(row.getOffsetDateTimeArray("Integer"));
-              ctx.assertNull(row.getBufferArray(0));
-              ctx.assertNull(row.getBufferArray("Integer"));
-              ctx.assertNull(row.getUUIDArray(0));
-              ctx.assertNull(row.getUUIDArray("Integer"));
+              ColumnChecker.checkColumn(0, "Integer")
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new int[]{3,5}))
+                .returns(Tuple::getIntegerArray, Row::getIntegerArray, ColumnChecker.toObjectArray(new int[]{3,5}))
+                .forRow(result.iterator().next());
               async.complete();
             }));
         }));
@@ -1652,71 +1287,10 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
-            Row row = result.iterator().next();
-            ctx.assertNull(row.getBoolean(0));
-            ctx.assertNull(row.getBoolean("Long"));
-            ctx.assertNull(row.getLong(0));
-            ctx.assertNull(row.getLong("Long"));
-            ctx.assertNull(row.getInteger(0));
-            ctx.assertNull(row.getInteger("Long"));
-            ctx.assertNull(row.getFloat(0));
-            ctx.assertNull(row.getFloat("Long"));
-            ctx.assertNull(row.getDouble(0));
-            ctx.assertNull(row.getDouble("Long"));
-            ctx.assertNull(row.getString(0));
-            ctx.assertNull(row.getString("Long"));
-            ctx.assertNull(row.getJsonObject(0));
-            ctx.assertNull(row.getJsonObject("Long"));
-            ctx.assertNull(row.getJsonArray(0));
-            ctx.assertNull(row.getJsonArray("Long"));
-            ctx.assertNull(row.getBuffer(0));
-            ctx.assertNull(row.getBuffer("Long"));
-            ctx.assertNull(row.getTemporal(0));
-            ctx.assertNull(row.getTemporal("Long"));
-            ctx.assertNull(row.getLocalDate(0));
-            ctx.assertNull(row.getLocalDate("Long"));
-            ctx.assertNull(row.getLocalTime(0));
-            ctx.assertNull(row.getLocalTime("Long"));
-            ctx.assertNull(row.getOffsetTime(0));
-            ctx.assertNull(row.getOffsetTime("Long"));
-            ctx.assertNull(row.getLocalDateTime(0));
-            ctx.assertNull(row.getLocalDateTime("Long"));
-            ctx.assertNull(row.getOffsetDateTime(0));
-            ctx.assertNull(row.getOffsetDateTime("Long"));
-            ctx.assertNull(row.getUUID(0));
-            ctx.assertNull(row.getUUID("Long"));
-            ctx.assertNull(row.getShortArray(0));
-            ctx.assertNull(row.getShortArray("Long"));
-            ctx.assertEquals((long) 3, row.getLongArray(0)[0]);
-            ctx.assertEquals((long) 3, row.getLongArray("Long")[0]);
-            ctx.assertEquals((long) 3, ((long[]) row.getValue(0))[0]);
-            ctx.assertEquals((long) 3, ((long[]) row.getValue("Long"))[0]);
-            ctx.assertNull(row.getBooleanArray(0));
-            ctx.assertNull(row.getBooleanArray("Long"));
-            ctx.assertNull(row.getIntegerArray(0));
-            ctx.assertNull(row.getIntegerArray("Long"));
-            ctx.assertNull(row.getFloatArray(0));
-            ctx.assertNull(row.getFloatArray("Long"));
-            ctx.assertNull(row.getDoubleArray(0));
-            ctx.assertNull(row.getDoubleArray("Long"));
-            ctx.assertNull(row.getStringArray(0));
-            ctx.assertNull(row.getStringArray("Long"));
-            ctx.assertNull(row.getLocalDateArray(0));
-            ctx.assertNull(row.getLocalDateArray("Long"));
-            ctx.assertNull(row.getLocalTimeArray(0));
-            ctx.assertNull(row.getLocalTimeArray("Long"));
-            ctx.assertNull(row.getOffsetTimeArray(0));
-            ctx.assertNull(row.getOffsetTimeArray("Long"));
-            ctx.assertNull(row.getLocalDateTimeArray(0));
-            ctx.assertNull(row.getLocalDateTimeArray("Long"));
-            ctx.assertNull(row.getOffsetDateTimeArray(0));
-            ctx.assertNull(row.getOffsetDateTimeArray("Long"));
-            ctx.assertNull(row.getBufferArray(0));
-            ctx.assertNull(row.getBufferArray("Long"));
-            ctx.assertNull(row.getUUIDArray(0));
-            ctx.assertNull(row.getUUIDArray("Long"));
+            ColumnChecker.checkColumn(0, "Long")
+              .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new long[]{3}))
+              .returns(Tuple::getLongArray, Row::getLongArray, ColumnChecker.toObjectArray(new long[]{3}))
+              .forRow(result.iterator().next());
             async.complete();
           }));
         }));
@@ -1733,71 +1307,10 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               .addLongArray(new long[]{(long) 4})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
-              ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.updatedCount());
-              Row row = result.iterator().next();
-              ctx.assertNull(row.getBoolean(0));
-              ctx.assertNull(row.getBoolean("Long"));
-              ctx.assertNull(row.getLong(0));
-              ctx.assertNull(row.getLong("Long"));
-              ctx.assertNull(row.getInteger(0));
-              ctx.assertNull(row.getInteger("Long"));
-              ctx.assertNull(row.getFloat(0));
-              ctx.assertNull(row.getFloat("Long"));
-              ctx.assertNull(row.getDouble(0));
-              ctx.assertNull(row.getDouble("Long"));
-              ctx.assertNull(row.getString(0));
-              ctx.assertNull(row.getString("Long"));
-              ctx.assertNull(row.getJsonObject(0));
-              ctx.assertNull(row.getJsonObject("Long"));
-              ctx.assertNull(row.getJsonArray(0));
-              ctx.assertNull(row.getJsonArray("Long"));
-              ctx.assertNull(row.getBuffer(0));
-              ctx.assertNull(row.getBuffer("Long"));
-              ctx.assertNull(row.getTemporal(0));
-              ctx.assertNull(row.getTemporal("Long"));
-              ctx.assertNull(row.getLocalDate(0));
-              ctx.assertNull(row.getLocalDate("Long"));
-              ctx.assertNull(row.getLocalTime(0));
-              ctx.assertNull(row.getLocalTime("Long"));
-              ctx.assertNull(row.getOffsetTime(0));
-              ctx.assertNull(row.getOffsetTime("Long"));
-              ctx.assertNull(row.getLocalDateTime(0));
-              ctx.assertNull(row.getLocalDateTime("Long"));
-              ctx.assertNull(row.getOffsetDateTime(0));
-              ctx.assertNull(row.getOffsetDateTime("Long"));
-              ctx.assertNull(row.getUUID(0));
-              ctx.assertNull(row.getUUID("Long"));
-              ctx.assertNull(row.getIntegerArray(0));
-              ctx.assertNull(row.getIntegerArray("Long"));
-              ctx.assertEquals((long) 4, row.getLongArray(0)[0]);
-              ctx.assertEquals((long) 4, row.getLongArray("Long")[0]);
-              ctx.assertEquals((long) 4, ((long[]) row.getValue(0))[0]);
-              ctx.assertEquals((long) 4, ((long[]) row.getValue("Long"))[0]);
-              ctx.assertNull(row.getBooleanArray(0));
-              ctx.assertNull(row.getBooleanArray("Long"));
-              ctx.assertNull(row.getShortArray(0));
-              ctx.assertNull(row.getShortArray("Long"));
-              ctx.assertNull(row.getFloatArray(0));
-              ctx.assertNull(row.getFloatArray("Long"));
-              ctx.assertNull(row.getDoubleArray(0));
-              ctx.assertNull(row.getDoubleArray("Long"));
-              ctx.assertNull(row.getStringArray(0));
-              ctx.assertNull(row.getStringArray("Long"));
-              ctx.assertNull(row.getLocalDateArray(0));
-              ctx.assertNull(row.getLocalDateArray("Long"));
-              ctx.assertNull(row.getLocalTimeArray(0));
-              ctx.assertNull(row.getLocalTimeArray("Long"));
-              ctx.assertNull(row.getOffsetTimeArray(0));
-              ctx.assertNull(row.getOffsetTimeArray("Long"));
-              ctx.assertNull(row.getLocalDateTimeArray(0));
-              ctx.assertNull(row.getLocalDateTimeArray("Long"));
-              ctx.assertNull(row.getOffsetDateTimeArray(0));
-              ctx.assertNull(row.getOffsetDateTimeArray("Long"));
-              ctx.assertNull(row.getBufferArray(0));
-              ctx.assertNull(row.getBufferArray("Long"));
-              ctx.assertNull(row.getUUIDArray(0));
-              ctx.assertNull(row.getUUIDArray("Long"));
+              ColumnChecker.checkColumn(0, "Long")
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new long[]{4}))
+                .returns(Tuple::getLongArray, Row::getLongArray, ColumnChecker.toObjectArray(new long[]{4}))
+                .forRow(result.iterator().next());
               async.complete();
             }));
         }));
@@ -1812,71 +1325,10 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
-            Row row = result.iterator().next();
-            ctx.assertNull(row.getBoolean(0));
-            ctx.assertNull(row.getBoolean("Float"));
-            ctx.assertNull(row.getLong(0));
-            ctx.assertNull(row.getLong("Float"));
-            ctx.assertNull(row.getInteger(0));
-            ctx.assertNull(row.getInteger("Float"));
-            ctx.assertNull(row.getFloat(0));
-            ctx.assertNull(row.getFloat("Float"));
-            ctx.assertNull(row.getDouble(0));
-            ctx.assertNull(row.getDouble("Float"));
-            ctx.assertNull(row.getString(0));
-            ctx.assertNull(row.getString("Float"));
-            ctx.assertNull(row.getJsonObject(0));
-            ctx.assertNull(row.getJsonObject("Float"));
-            ctx.assertNull(row.getJsonArray(0));
-            ctx.assertNull(row.getJsonArray("Float"));
-            ctx.assertNull(row.getBuffer(0));
-            ctx.assertNull(row.getBuffer("Float"));
-            ctx.assertNull(row.getTemporal(0));
-            ctx.assertNull(row.getTemporal("Float"));
-            ctx.assertNull(row.getLocalDate(0));
-            ctx.assertNull(row.getLocalDate("Float"));
-            ctx.assertNull(row.getLocalTime(0));
-            ctx.assertNull(row.getLocalTime("Float"));
-            ctx.assertNull(row.getOffsetTime(0));
-            ctx.assertNull(row.getOffsetTime("Float"));
-            ctx.assertNull(row.getLocalDateTime(0));
-            ctx.assertNull(row.getLocalDateTime("Float"));
-            ctx.assertNull(row.getOffsetDateTime(0));
-            ctx.assertNull(row.getOffsetDateTime("Float"));
-            ctx.assertNull(row.getUUID(0));
-            ctx.assertNull(row.getUUID("Float"));
-            ctx.assertNull(row.getShortArray(0));
-            ctx.assertNull(row.getShortArray("Float"));
-            ctx.assertEquals((float) 4.1, row.getFloatArray(0)[0]);
-            ctx.assertEquals((float) 4.1, row.getFloatArray("Float")[0]);
-            ctx.assertEquals((float) 4.1, ((float[]) row.getValue(0))[0]);
-            ctx.assertEquals((float) 4.1, ((float[]) row.getValue("Float"))[0]);
-            ctx.assertNull(row.getBooleanArray(0));
-            ctx.assertNull(row.getBooleanArray("Float"));
-            ctx.assertNull(row.getIntegerArray(0));
-            ctx.assertNull(row.getIntegerArray("Float"));
-            ctx.assertNull(row.getLongArray(0));
-            ctx.assertNull(row.getLongArray("Float"));
-            ctx.assertNull(row.getDoubleArray(0));
-            ctx.assertNull(row.getDoubleArray("Float"));
-            ctx.assertNull(row.getStringArray(0));
-            ctx.assertNull(row.getStringArray("Float"));
-            ctx.assertNull(row.getLocalDateArray(0));
-            ctx.assertNull(row.getLocalDateArray("Float"));
-            ctx.assertNull(row.getLocalTimeArray(0));
-            ctx.assertNull(row.getLocalTimeArray("Float"));
-            ctx.assertNull(row.getOffsetTimeArray(0));
-            ctx.assertNull(row.getOffsetTimeArray("Float"));
-            ctx.assertNull(row.getLocalDateTimeArray(0));
-            ctx.assertNull(row.getLocalDateTimeArray("Float"));
-            ctx.assertNull(row.getOffsetDateTimeArray(0));
-            ctx.assertNull(row.getOffsetDateTimeArray("Float"));
-            ctx.assertNull(row.getBufferArray(0));
-            ctx.assertNull(row.getBufferArray("Float"));
-            ctx.assertNull(row.getUUIDArray(0));
-            ctx.assertNull(row.getUUIDArray("Float"));
+            ColumnChecker.checkColumn(0, "Float")
+              .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new float[]{4.1f}))
+              .returns(Tuple::getFloatArray, Row::getFloatArray, ColumnChecker.toObjectArray(new float[]{4.1f}))
+              .forRow(result.iterator().next());
             async.complete();
           }));
         }));
@@ -1893,71 +1345,10 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               .addFloatArray(new float[]{(float) 5.2})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
-              ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.updatedCount());
-              Row row = result.iterator().next();
-              ctx.assertNull(row.getBoolean(0));
-              ctx.assertNull(row.getBoolean("Float"));
-              ctx.assertNull(row.getLong(0));
-              ctx.assertNull(row.getLong("Float"));
-              ctx.assertNull(row.getInteger(0));
-              ctx.assertNull(row.getInteger("Float"));
-              ctx.assertNull(row.getFloat(0));
-              ctx.assertNull(row.getFloat("Float"));
-              ctx.assertNull(row.getDouble(0));
-              ctx.assertNull(row.getDouble("Float"));
-              ctx.assertNull(row.getString(0));
-              ctx.assertNull(row.getString("Float"));
-              ctx.assertNull(row.getJsonObject(0));
-              ctx.assertNull(row.getJsonObject("Float"));
-              ctx.assertNull(row.getJsonArray(0));
-              ctx.assertNull(row.getJsonArray("Float"));
-              ctx.assertNull(row.getBuffer(0));
-              ctx.assertNull(row.getBuffer("Float"));
-              ctx.assertNull(row.getTemporal(0));
-              ctx.assertNull(row.getTemporal("Float"));
-              ctx.assertNull(row.getLocalDate(0));
-              ctx.assertNull(row.getLocalDate("Float"));
-              ctx.assertNull(row.getLocalTime(0));
-              ctx.assertNull(row.getLocalTime("Float"));
-              ctx.assertNull(row.getOffsetTime(0));
-              ctx.assertNull(row.getOffsetTime("Float"));
-              ctx.assertNull(row.getLocalDateTime(0));
-              ctx.assertNull(row.getLocalDateTime("Float"));
-              ctx.assertNull(row.getOffsetDateTime(0));
-              ctx.assertNull(row.getOffsetDateTime("Float"));
-              ctx.assertNull(row.getUUID(0));
-              ctx.assertNull(row.getUUID("Float"));
-              ctx.assertNull(row.getIntegerArray(0));
-              ctx.assertNull(row.getIntegerArray("Float"));
-              ctx.assertEquals((float) 5.2, row.getFloatArray(0)[0]);
-              ctx.assertEquals((float) 5.2, row.getFloatArray("Float")[0]);
-              ctx.assertEquals((float) 5.2, ((float[]) row.getValue(0))[0]);
-              ctx.assertEquals((float) 5.2, ((float[]) row.getValue("Float"))[0]);
-              ctx.assertNull(row.getBooleanArray(0));
-              ctx.assertNull(row.getBooleanArray("Float"));
-              ctx.assertNull(row.getShortArray(0));
-              ctx.assertNull(row.getShortArray("Float"));
-              ctx.assertNull(row.getLongArray(0));
-              ctx.assertNull(row.getLongArray("Float"));
-              ctx.assertNull(row.getDoubleArray(0));
-              ctx.assertNull(row.getDoubleArray("Float"));
-              ctx.assertNull(row.getStringArray(0));
-              ctx.assertNull(row.getStringArray("Float"));
-              ctx.assertNull(row.getLocalDateArray(0));
-              ctx.assertNull(row.getLocalDateArray("Float"));
-              ctx.assertNull(row.getLocalTimeArray(0));
-              ctx.assertNull(row.getLocalTimeArray("Float"));
-              ctx.assertNull(row.getOffsetTimeArray(0));
-              ctx.assertNull(row.getOffsetTimeArray("Float"));
-              ctx.assertNull(row.getLocalDateTimeArray(0));
-              ctx.assertNull(row.getLocalDateTimeArray("Float"));
-              ctx.assertNull(row.getOffsetDateTimeArray(0));
-              ctx.assertNull(row.getOffsetDateTimeArray("Float"));
-              ctx.assertNull(row.getBufferArray(0));
-              ctx.assertNull(row.getBufferArray("Float"));
-              ctx.assertNull(row.getUUIDArray(0));
-              ctx.assertNull(row.getUUIDArray("Float"));
+              ColumnChecker.checkColumn(0, "Float")
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new float[]{5.2f}))
+                .returns(Tuple::getFloatArray, Row::getFloatArray, ColumnChecker.toObjectArray(new float[]{5.2f}))
+                .forRow(result.iterator().next());
               async.complete();
             }));
         }));
@@ -1972,71 +1363,10 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
-            Row row = result.iterator().next();
-            ctx.assertNull(row.getBoolean(0));
-            ctx.assertNull(row.getBoolean("Double"));
-            ctx.assertNull(row.getLong(0));
-            ctx.assertNull(row.getLong("Double"));
-            ctx.assertNull(row.getInteger(0));
-            ctx.assertNull(row.getInteger("Double"));
-            ctx.assertNull(row.getFloat(0));
-            ctx.assertNull(row.getFloat("Double"));
-            ctx.assertNull(row.getDouble(0));
-            ctx.assertNull(row.getDouble("Double"));
-            ctx.assertNull(row.getString(0));
-            ctx.assertNull(row.getString("Double"));
-            ctx.assertNull(row.getJsonObject(0));
-            ctx.assertNull(row.getJsonObject("Double"));
-            ctx.assertNull(row.getJsonArray(0));
-            ctx.assertNull(row.getJsonArray("Double"));
-            ctx.assertNull(row.getBuffer(0));
-            ctx.assertNull(row.getBuffer("Double"));
-            ctx.assertNull(row.getTemporal(0));
-            ctx.assertNull(row.getTemporal("Double"));
-            ctx.assertNull(row.getLocalDate(0));
-            ctx.assertNull(row.getLocalDate("Double"));
-            ctx.assertNull(row.getLocalTime(0));
-            ctx.assertNull(row.getLocalTime("Double"));
-            ctx.assertNull(row.getOffsetTime(0));
-            ctx.assertNull(row.getOffsetTime("Double"));
-            ctx.assertNull(row.getLocalDateTime(0));
-            ctx.assertNull(row.getLocalDateTime("Double"));
-            ctx.assertNull(row.getOffsetDateTime(0));
-            ctx.assertNull(row.getOffsetDateTime("Double"));
-            ctx.assertNull(row.getUUID(0));
-            ctx.assertNull(row.getUUID("Double"));
-            ctx.assertNull(row.getShortArray(0));
-            ctx.assertNull(row.getShortArray("Double"));
-            ctx.assertEquals(5.2, row.getDoubleArray(0)[0]);
-            ctx.assertEquals(5.2, row.getDoubleArray("Double")[0]);
-            ctx.assertEquals(5.2, ((double[]) row.getValue(0))[0]);
-            ctx.assertEquals(5.2, ((double[]) row.getValue("Double"))[0]);
-            ctx.assertNull(row.getBooleanArray(0));
-            ctx.assertNull(row.getBooleanArray("Double"));
-            ctx.assertNull(row.getIntegerArray(0));
-            ctx.assertNull(row.getIntegerArray("Double"));
-            ctx.assertNull(row.getLongArray(0));
-            ctx.assertNull(row.getLongArray("Double"));
-            ctx.assertNull(row.getFloatArray(0));
-            ctx.assertNull(row.getFloatArray("Double"));
-            ctx.assertNull(row.getStringArray(0));
-            ctx.assertNull(row.getStringArray("Double"));
-            ctx.assertNull(row.getLocalDateArray(0));
-            ctx.assertNull(row.getLocalDateArray("Double"));
-            ctx.assertNull(row.getLocalTimeArray(0));
-            ctx.assertNull(row.getLocalTimeArray("Double"));
-            ctx.assertNull(row.getOffsetTimeArray(0));
-            ctx.assertNull(row.getOffsetTimeArray("Double"));
-            ctx.assertNull(row.getLocalDateTimeArray(0));
-            ctx.assertNull(row.getLocalDateTimeArray("Double"));
-            ctx.assertNull(row.getOffsetDateTimeArray(0));
-            ctx.assertNull(row.getOffsetDateTimeArray("Double"));
-            ctx.assertNull(row.getBufferArray(0));
-            ctx.assertNull(row.getBufferArray("Double"));
-            ctx.assertNull(row.getUUIDArray(0));
-            ctx.assertNull(row.getUUIDArray("Double"));
+            ColumnChecker.checkColumn(0, "Double")
+              .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new double[]{5.2}))
+              .returns(Tuple::getDoubleArray, Row::getDoubleArray, ColumnChecker.toObjectArray(new double[]{5.2}))
+              .forRow(result.iterator().next());
             async.complete();
           }));
         }));
@@ -2053,71 +1383,10 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               .addDoubleArray(new double[]{6.3})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
-              ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.updatedCount());
-              Row row = result.iterator().next();
-              ctx.assertNull(row.getBoolean(0));
-              ctx.assertNull(row.getBoolean("Double"));
-              ctx.assertNull(row.getLong(0));
-              ctx.assertNull(row.getLong("Double"));
-              ctx.assertNull(row.getInteger(0));
-              ctx.assertNull(row.getInteger("Double"));
-              ctx.assertNull(row.getFloat(0));
-              ctx.assertNull(row.getFloat("Double"));
-              ctx.assertNull(row.getDouble(0));
-              ctx.assertNull(row.getDouble("Double"));
-              ctx.assertNull(row.getString(0));
-              ctx.assertNull(row.getString("Double"));
-              ctx.assertNull(row.getJsonObject(0));
-              ctx.assertNull(row.getJsonObject("Double"));
-              ctx.assertNull(row.getJsonArray(0));
-              ctx.assertNull(row.getJsonArray("Double"));
-              ctx.assertNull(row.getBuffer(0));
-              ctx.assertNull(row.getBuffer("Double"));
-              ctx.assertNull(row.getTemporal(0));
-              ctx.assertNull(row.getTemporal("Double"));
-              ctx.assertNull(row.getLocalDate(0));
-              ctx.assertNull(row.getLocalDate("Double"));
-              ctx.assertNull(row.getLocalTime(0));
-              ctx.assertNull(row.getLocalTime("Double"));
-              ctx.assertNull(row.getOffsetTime(0));
-              ctx.assertNull(row.getOffsetTime("Double"));
-              ctx.assertNull(row.getLocalDateTime(0));
-              ctx.assertNull(row.getLocalDateTime("Double"));
-              ctx.assertNull(row.getOffsetDateTime(0));
-              ctx.assertNull(row.getOffsetDateTime("Double"));
-              ctx.assertNull(row.getUUID(0));
-              ctx.assertNull(row.getUUID("Double"));
-              ctx.assertNull(row.getIntegerArray(0));
-              ctx.assertNull(row.getIntegerArray("Double"));
-              ctx.assertEquals(6.3, row.getDoubleArray(0)[0]);
-              ctx.assertEquals(6.3, row.getDoubleArray("Double")[0]);
-              ctx.assertEquals(6.3, ((double[]) row.getValue(0))[0]);
-              ctx.assertEquals(6.3, ((double[]) row.getValue("Double"))[0]);
-              ctx.assertNull(row.getBooleanArray(0));
-              ctx.assertNull(row.getBooleanArray("Double"));
-              ctx.assertNull(row.getShortArray(0));
-              ctx.assertNull(row.getShortArray("Double"));
-              ctx.assertNull(row.getLongArray(0));
-              ctx.assertNull(row.getLongArray("Double"));
-              ctx.assertNull(row.getFloatArray(0));
-              ctx.assertNull(row.getFloatArray("Double"));
-              ctx.assertNull(row.getStringArray(0));
-              ctx.assertNull(row.getStringArray("Double"));
-              ctx.assertNull(row.getLocalDateArray(0));
-              ctx.assertNull(row.getLocalDateArray("Double"));
-              ctx.assertNull(row.getLocalTimeArray(0));
-              ctx.assertNull(row.getLocalTimeArray("Double"));
-              ctx.assertNull(row.getOffsetTimeArray(0));
-              ctx.assertNull(row.getOffsetTimeArray("Double"));
-              ctx.assertNull(row.getLocalDateTimeArray(0));
-              ctx.assertNull(row.getLocalDateTimeArray("Double"));
-              ctx.assertNull(row.getOffsetDateTimeArray(0));
-              ctx.assertNull(row.getOffsetDateTimeArray("Double"));
-              ctx.assertNull(row.getBufferArray(0));
-              ctx.assertNull(row.getBufferArray("Double"));
-              ctx.assertNull(row.getUUIDArray(0));
-              ctx.assertNull(row.getUUIDArray("Double"));
+              ColumnChecker.checkColumn(0, "Double")
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new double[]{6.3}))
+                .returns(Tuple::getDoubleArray, Row::getDoubleArray, ColumnChecker.toObjectArray(new double[]{6.3}))
+                .forRow(result.iterator().next());
               async.complete();
             }));
         }));
@@ -2132,71 +1401,10 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
-            Row row = result.iterator().next();
-            ctx.assertNull(row.getBoolean(0));
-            ctx.assertNull(row.getBoolean("Text"));
-            ctx.assertNull(row.getLong(0));
-            ctx.assertNull(row.getLong("Text"));
-            ctx.assertNull(row.getInteger(0));
-            ctx.assertNull(row.getInteger("Text"));
-            ctx.assertNull(row.getFloat(0));
-            ctx.assertNull(row.getFloat("Text"));
-            ctx.assertNull(row.getDouble(0));
-            ctx.assertNull(row.getDouble("Text"));
-            ctx.assertNull(row.getString(0));
-            ctx.assertNull(row.getString("Text"));
-            ctx.assertNull(row.getJsonObject(0));
-            ctx.assertNull(row.getJsonObject("Text"));
-            ctx.assertNull(row.getJsonArray(0));
-            ctx.assertNull(row.getJsonArray("Text"));
-            ctx.assertNull(row.getBuffer(0));
-            ctx.assertNull(row.getBuffer("Text"));
-            ctx.assertNull(row.getTemporal(0));
-            ctx.assertNull(row.getTemporal("Text"));
-            ctx.assertNull(row.getLocalDate(0));
-            ctx.assertNull(row.getLocalDate("Text"));
-            ctx.assertNull(row.getLocalTime(0));
-            ctx.assertNull(row.getLocalTime("Text"));
-            ctx.assertNull(row.getOffsetTime(0));
-            ctx.assertNull(row.getOffsetTime("Text"));
-            ctx.assertNull(row.getLocalDateTime(0));
-            ctx.assertNull(row.getLocalDateTime("Text"));
-            ctx.assertNull(row.getOffsetDateTime(0));
-            ctx.assertNull(row.getOffsetDateTime("Text"));
-            ctx.assertNull(row.getUUID(0));
-            ctx.assertNull(row.getUUID("Text"));
-            ctx.assertNull(row.getShortArray(0));
-            ctx.assertNull(row.getShortArray("Text"));
-            ctx.assertEquals("Knock, knock.Who’s there?very long pause….Java.", row.getStringArray(0)[0]);
-            ctx.assertEquals("Knock, knock.Who’s there?very long pause….Java.", row.getStringArray("Text")[0]);
-            ctx.assertEquals("Knock, knock.Who’s there?very long pause….Java.", ((String[]) row.getValue(0))[0]);
-            ctx.assertEquals("Knock, knock.Who’s there?very long pause….Java.", ((String[]) row.getValue("Text"))[0]);
-            ctx.assertNull(row.getBooleanArray(0));
-            ctx.assertNull(row.getBooleanArray("Text"));
-            ctx.assertNull(row.getIntegerArray(0));
-            ctx.assertNull(row.getIntegerArray("Text"));
-            ctx.assertNull(row.getLongArray(0));
-            ctx.assertNull(row.getLongArray("Text"));
-            ctx.assertNull(row.getFloatArray(0));
-            ctx.assertNull(row.getFloatArray("Text"));
-            ctx.assertNull(row.getDoubleArray(0));
-            ctx.assertNull(row.getDoubleArray("Text"));
-            ctx.assertNull(row.getLocalDateArray(0));
-            ctx.assertNull(row.getLocalDateArray("Text"));
-            ctx.assertNull(row.getLocalTimeArray(0));
-            ctx.assertNull(row.getLocalTimeArray("Text"));
-            ctx.assertNull(row.getOffsetTimeArray(0));
-            ctx.assertNull(row.getOffsetTimeArray("Text"));
-            ctx.assertNull(row.getLocalDateTimeArray(0));
-            ctx.assertNull(row.getLocalDateTimeArray("Text"));
-            ctx.assertNull(row.getOffsetDateTimeArray(0));
-            ctx.assertNull(row.getOffsetDateTimeArray("Text"));
-            ctx.assertNull(row.getBufferArray(0));
-            ctx.assertNull(row.getBufferArray("Text"));
-            ctx.assertNull(row.getUUIDArray(0));
-            ctx.assertNull(row.getUUIDArray("Text"));
+            ColumnChecker.checkColumn(0, "Text")
+              .returns(Tuple::getValue, Row::getValue, new String[]{"Knock, knock.Who’s there?very long pause….Java."})
+              .returns(Tuple::getStringArray, Row::getStringArray, new String[]{"Knock, knock.Who’s there?very long pause….Java."})
+              .forRow(result.iterator().next());
             async.complete();
           }));
         }));
@@ -2213,71 +1421,10 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               .addStringArray(new String[]{"Knock, knock.Who’s there?"})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
-              ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.updatedCount());
-              Row row = result.iterator().next();
-              ctx.assertNull(row.getBoolean(0));
-              ctx.assertNull(row.getBoolean("Text"));
-              ctx.assertNull(row.getLong(0));
-              ctx.assertNull(row.getLong("Text"));
-              ctx.assertNull(row.getInteger(0));
-              ctx.assertNull(row.getInteger("Text"));
-              ctx.assertNull(row.getFloat(0));
-              ctx.assertNull(row.getFloat("Text"));
-              ctx.assertNull(row.getDouble(0));
-              ctx.assertNull(row.getDouble("Text"));
-              ctx.assertNull(row.getString(0));
-              ctx.assertNull(row.getString("Text"));
-              ctx.assertNull(row.getJsonObject(0));
-              ctx.assertNull(row.getJsonObject("Text"));
-              ctx.assertNull(row.getJsonArray(0));
-              ctx.assertNull(row.getJsonArray("Text"));
-              ctx.assertNull(row.getBuffer(0));
-              ctx.assertNull(row.getBuffer("Text"));
-              ctx.assertNull(row.getTemporal(0));
-              ctx.assertNull(row.getTemporal("Text"));
-              ctx.assertNull(row.getLocalDate(0));
-              ctx.assertNull(row.getLocalDate("Text"));
-              ctx.assertNull(row.getLocalTime(0));
-              ctx.assertNull(row.getLocalTime("Text"));
-              ctx.assertNull(row.getOffsetTime(0));
-              ctx.assertNull(row.getOffsetTime("Text"));
-              ctx.assertNull(row.getLocalDateTime(0));
-              ctx.assertNull(row.getLocalDateTime("Text"));
-              ctx.assertNull(row.getOffsetDateTime(0));
-              ctx.assertNull(row.getOffsetDateTime("Text"));
-              ctx.assertNull(row.getUUID(0));
-              ctx.assertNull(row.getUUID("Text"));
-              ctx.assertNull(row.getIntegerArray(0));
-              ctx.assertNull(row.getIntegerArray("Text"));
-              ctx.assertEquals("Knock, knock.Who’s there?", row.getStringArray(0)[0]);
-              ctx.assertEquals("Knock, knock.Who’s there?", row.getStringArray("Text")[0]);
-              ctx.assertEquals("Knock, knock.Who’s there?", ((String[]) row.getValue(0))[0]);
-              ctx.assertEquals("Knock, knock.Who’s there?", ((String[]) row.getValue("Text"))[0]);
-              ctx.assertNull(row.getBooleanArray(0));
-              ctx.assertNull(row.getBooleanArray("Text"));
-              ctx.assertNull(row.getShortArray(0));
-              ctx.assertNull(row.getShortArray("Text"));
-              ctx.assertNull(row.getLongArray(0));
-              ctx.assertNull(row.getLongArray("Text"));
-              ctx.assertNull(row.getFloatArray(0));
-              ctx.assertNull(row.getFloatArray("Text"));
-              ctx.assertNull(row.getDoubleArray(0));
-              ctx.assertNull(row.getDoubleArray("Text"));
-              ctx.assertNull(row.getLocalDateArray(0));
-              ctx.assertNull(row.getLocalDateArray("Text"));
-              ctx.assertNull(row.getLocalTimeArray(0));
-              ctx.assertNull(row.getLocalTimeArray("Text"));
-              ctx.assertNull(row.getOffsetTimeArray(0));
-              ctx.assertNull(row.getOffsetTimeArray("Text"));
-              ctx.assertNull(row.getLocalDateTimeArray(0));
-              ctx.assertNull(row.getLocalDateTimeArray("Text"));
-              ctx.assertNull(row.getOffsetDateTimeArray(0));
-              ctx.assertNull(row.getOffsetDateTimeArray("Text"));
-              ctx.assertNull(row.getBufferArray(0));
-              ctx.assertNull(row.getBufferArray("Text"));
-              ctx.assertNull(row.getUUIDArray(0));
-              ctx.assertNull(row.getUUIDArray("Text"));
+              ColumnChecker.checkColumn(0, "Text")
+                .returns(Tuple::getValue, Row::getValue, new String[]{"Knock, knock.Who’s there?"})
+                .returns(Tuple::getStringArray, Row::getStringArray, new String[]{"Knock, knock.Who’s there?"})
+                .forRow(result.iterator().next());
               async.complete();
             }));
         }));
@@ -2292,73 +1439,11 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
-            Row row = result.iterator().next();
-            ctx.assertNull(row.getBoolean(0));
-            ctx.assertNull(row.getBoolean("LocalDate"));
-            ctx.assertNull(row.getLong(0));
-            ctx.assertNull(row.getLong("LocalDate"));
-            ctx.assertNull(row.getInteger(0));
-            ctx.assertNull(row.getInteger("LocalDate"));
-            ctx.assertNull(row.getFloat(0));
-            ctx.assertNull(row.getFloat("LocalDate"));
-            ctx.assertNull(row.getDouble(0));
-            ctx.assertNull(row.getDouble("LocalDate"));
-            ctx.assertNull(row.getString(0));
-            ctx.assertNull(row.getString("LocalDate"));
-            ctx.assertNull(row.getJsonObject(0));
-            ctx.assertNull(row.getJsonObject("LocalDate"));
-            ctx.assertNull(row.getJsonArray(0));
-            ctx.assertNull(row.getJsonArray("LocalDate"));
-            ctx.assertNull(row.getBuffer(0));
-            ctx.assertNull(row.getBuffer("LocalDate"));
-            ctx.assertNull(row.getTemporal(0));
-            ctx.assertNull(row.getTemporal("LocalDate"));
-            ctx.assertNull(row.getLocalDate(0));
-            ctx.assertNull(row.getLocalDate("LocalDate"));
-            ctx.assertNull(row.getLocalTime(0));
-            ctx.assertNull(row.getLocalTime("LocalDate"));
-            ctx.assertNull(row.getOffsetTime(0));
-            ctx.assertNull(row.getOffsetTime("LocalDate"));
-            ctx.assertNull(row.getLocalDateTime(0));
-            ctx.assertNull(row.getLocalDateTime("LocalDate"));
-            ctx.assertNull(row.getOffsetDateTime(0));
-            ctx.assertNull(row.getOffsetDateTime("LocalDate"));
-            ctx.assertNull(row.getUUID(0));
-            ctx.assertNull(row.getUUID("LocalDate"));
-            ctx.assertNull(row.getShortArray(0));
-            ctx.assertNull(row.getShortArray("LocalDate"));
-            final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            final LocalDate dt = LocalDate.parse("1998-05-11", dtf);
-            ctx.assertEquals(dt, row.getLocalDateArray(0)[0]);
-            ctx.assertEquals(dt, row.getLocalDateArray("LocalDate")[0]);
-            ctx.assertEquals(dt, ((LocalDate[]) row.getValue(0))[0]);
-            ctx.assertEquals(dt, ((LocalDate[]) row.getValue("LocalDate"))[0]);
-            ctx.assertNull(row.getBooleanArray(0));
-            ctx.assertNull(row.getBooleanArray("LocalDate"));
-            ctx.assertNull(row.getIntegerArray(0));
-            ctx.assertNull(row.getIntegerArray("LocalDate"));
-            ctx.assertNull(row.getLongArray(0));
-            ctx.assertNull(row.getLongArray("LocalDate"));
-            ctx.assertNull(row.getFloatArray(0));
-            ctx.assertNull(row.getFloatArray("LocalDate"));
-            ctx.assertNull(row.getDoubleArray(0));
-            ctx.assertNull(row.getDoubleArray("LocalDate"));
-            ctx.assertNull(row.getStringArray(0));
-            ctx.assertNull(row.getStringArray("LocalDate"));
-            ctx.assertNull(row.getLocalTimeArray(0));
-            ctx.assertNull(row.getLocalTimeArray("LocalDate"));
-            ctx.assertNull(row.getOffsetTimeArray(0));
-            ctx.assertNull(row.getOffsetTimeArray("LocalDate"));
-            ctx.assertNull(row.getLocalDateTimeArray(0));
-            ctx.assertNull(row.getLocalDateTimeArray("LocalDate"));
-            ctx.assertNull(row.getOffsetDateTimeArray(0));
-            ctx.assertNull(row.getOffsetDateTimeArray("LocalDate"));
-            ctx.assertNull(row.getBufferArray(0));
-            ctx.assertNull(row.getBufferArray("LocalDate"));
-            ctx.assertNull(row.getUUIDArray(0));
-            ctx.assertNull(row.getUUIDArray("LocalDate"));
+            final LocalDate dt = LocalDate.parse("1998-05-11");
+            ColumnChecker.checkColumn(0, "LocalDate")
+              .returns(Tuple::getValue, Row::getValue, new LocalDate[]{dt})
+              .returns(Tuple::getLocalDateArray, Row::getLocalDateArray, new LocalDate[]{dt})
+              .forRow(result.iterator().next());
             async.complete();
           }));
         }));
@@ -2371,77 +1456,15 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"LocalDate\" = $1  WHERE \"id\" = $2 RETURNING \"LocalDate\"",
         ctx.asyncAssertSuccess(p -> {
-          final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-          final LocalDate dt = LocalDate.parse("1998-05-12", dtf);
+          final LocalDate dt = LocalDate.parse("1998-05-12");
           p.execute(Tuple.tuple()
               .addLocalDateArray(new LocalDate[]{dt})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
-              ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.updatedCount());
-              Row row = result.iterator().next();
-              ctx.assertNull(row.getBoolean(0));
-              ctx.assertNull(row.getBoolean("LocalDate"));
-              ctx.assertNull(row.getLong(0));
-              ctx.assertNull(row.getLong("LocalDate"));
-              ctx.assertNull(row.getInteger(0));
-              ctx.assertNull(row.getInteger("LocalDate"));
-              ctx.assertNull(row.getFloat(0));
-              ctx.assertNull(row.getFloat("LocalDate"));
-              ctx.assertNull(row.getDouble(0));
-              ctx.assertNull(row.getDouble("LocalDate"));
-              ctx.assertNull(row.getString(0));
-              ctx.assertNull(row.getString("LocalDate"));
-              ctx.assertNull(row.getJsonObject(0));
-              ctx.assertNull(row.getJsonObject("LocalDate"));
-              ctx.assertNull(row.getJsonArray(0));
-              ctx.assertNull(row.getJsonArray("LocalDate"));
-              ctx.assertNull(row.getBuffer(0));
-              ctx.assertNull(row.getBuffer("LocalDate"));
-              ctx.assertNull(row.getTemporal(0));
-              ctx.assertNull(row.getTemporal("LocalDate"));
-              ctx.assertNull(row.getLocalDate(0));
-              ctx.assertNull(row.getLocalDate("LocalDate"));
-              ctx.assertNull(row.getLocalTime(0));
-              ctx.assertNull(row.getLocalTime("LocalDate"));
-              ctx.assertNull(row.getOffsetTime(0));
-              ctx.assertNull(row.getOffsetTime("LocalDate"));
-              ctx.assertNull(row.getLocalDateTime(0));
-              ctx.assertNull(row.getLocalDateTime("LocalDate"));
-              ctx.assertNull(row.getOffsetDateTime(0));
-              ctx.assertNull(row.getOffsetDateTime("LocalDate"));
-              ctx.assertNull(row.getUUID(0));
-              ctx.assertNull(row.getUUID("LocalDate"));
-              ctx.assertNull(row.getIntegerArray(0));
-              ctx.assertNull(row.getIntegerArray("LocalDate"));
-              ctx.assertEquals(dt, row.getLocalDateArray(0)[0]);
-              ctx.assertEquals(dt, row.getLocalDateArray("LocalDate")[0]);
-              ctx.assertEquals(dt, ((LocalDate[]) row.getValue(0))[0]);
-              ctx.assertEquals(dt, ((LocalDate[]) row.getValue("LocalDate"))[0]);
-              ctx.assertNull(row.getBooleanArray(0));
-              ctx.assertNull(row.getBooleanArray("LocalDate"));
-              ctx.assertNull(row.getShortArray(0));
-              ctx.assertNull(row.getShortArray("LocalDate"));
-              ctx.assertNull(row.getLongArray(0));
-              ctx.assertNull(row.getLongArray("LocalDate"));
-              ctx.assertNull(row.getFloatArray(0));
-              ctx.assertNull(row.getFloatArray("LocalDate"));
-              ctx.assertNull(row.getDoubleArray(0));
-              ctx.assertNull(row.getDoubleArray("LocalDate"));
-              ctx.assertNull(row.getStringArray(0));
-              ctx.assertNull(row.getStringArray("LocalDate"));
-              ctx.assertNull(row.getLocalTimeArray(0));
-              ctx.assertNull(row.getLocalTimeArray("LocalDate"));
-              ctx.assertNull(row.getOffsetTimeArray(0));
-              ctx.assertNull(row.getOffsetTimeArray("LocalDate"));
-              ctx.assertNull(row.getLocalDateTimeArray(0));
-              ctx.assertNull(row.getLocalDateTimeArray("LocalDate"));
-              ctx.assertNull(row.getOffsetDateTimeArray(0));
-              ctx.assertNull(row.getOffsetDateTimeArray("LocalDate"));
-              ctx.assertNull(row.getBufferArray(0));
-              ctx.assertNull(row.getBufferArray("LocalDate"));
-              ctx.assertNull(row.getUUIDArray(0));
-              ctx.assertNull(row.getUUIDArray("LocalDate"));
+              ColumnChecker.checkColumn(0, "LocalDate")
+                .returns(Tuple::getValue, Row::getValue, new LocalDate[]{dt})
+                .returns(Tuple::getLocalDateArray, Row::getLocalDateArray, new LocalDate[]{dt})
+                .forRow(result.iterator().next());
               async.complete();
             }));
         }));
@@ -2456,73 +1479,12 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
-            Row row = result.iterator().next();
-            ctx.assertNull(row.getBoolean(0));
-            ctx.assertNull(row.getBoolean("LocalTime"));
-            ctx.assertNull(row.getLong(0));
-            ctx.assertNull(row.getLong("LocalTime"));
-            ctx.assertNull(row.getInteger(0));
-            ctx.assertNull(row.getInteger("LocalTime"));
-            ctx.assertNull(row.getFloat(0));
-            ctx.assertNull(row.getFloat("LocalTime"));
-            ctx.assertNull(row.getDouble(0));
-            ctx.assertNull(row.getDouble("LocalTime"));
-            ctx.assertNull(row.getString(0));
-            ctx.assertNull(row.getString("LocalTime"));
-            ctx.assertNull(row.getJsonObject(0));
-            ctx.assertNull(row.getJsonObject("LocalTime"));
-            ctx.assertNull(row.getJsonArray(0));
-            ctx.assertNull(row.getJsonArray("LocalTime"));
-            ctx.assertNull(row.getBuffer(0));
-            ctx.assertNull(row.getBuffer("LocalTime"));
-            ctx.assertNull(row.getTemporal(0));
-            ctx.assertNull(row.getTemporal("LocalTime"));
-            ctx.assertNull(row.getLocalDate(0));
-            ctx.assertNull(row.getLocalDate("LocalTime"));
-            ctx.assertNull(row.getLocalTime(0));
-            ctx.assertNull(row.getLocalTime("LocalTime"));
-            ctx.assertNull(row.getOffsetTime(0));
-            ctx.assertNull(row.getOffsetTime("LocalTime"));
-            ctx.assertNull(row.getLocalDateTime(0));
-            ctx.assertNull(row.getLocalDateTime("LocalTime"));
-            ctx.assertNull(row.getOffsetDateTime(0));
-            ctx.assertNull(row.getOffsetDateTime("LocalTime"));
-            ctx.assertNull(row.getUUID(0));
-            ctx.assertNull(row.getUUID("LocalTime"));
-            ctx.assertNull(row.getShortArray(0));
-            ctx.assertNull(row.getShortArray("LocalTime"));
             final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSS");
             final LocalTime dt = LocalTime.parse("17:55:04.90512", dtf);
-            ctx.assertEquals(dt, row.getLocalTimeArray(0)[0]);
-            ctx.assertEquals(dt, row.getLocalTimeArray("LocalTime")[0]);
-            ctx.assertEquals(dt, ((LocalTime[]) row.getValue(0))[0]);
-            ctx.assertEquals(dt, ((LocalTime[]) row.getValue("LocalTime"))[0]);
-            ctx.assertNull(row.getBooleanArray(0));
-            ctx.assertNull(row.getBooleanArray("LocalTime"));
-            ctx.assertNull(row.getIntegerArray(0));
-            ctx.assertNull(row.getIntegerArray("LocalTime"));
-            ctx.assertNull(row.getLongArray(0));
-            ctx.assertNull(row.getLongArray("LocalTime"));
-            ctx.assertNull(row.getFloatArray(0));
-            ctx.assertNull(row.getFloatArray("LocalTime"));
-            ctx.assertNull(row.getDoubleArray(0));
-            ctx.assertNull(row.getDoubleArray("LocalTime"));
-            ctx.assertNull(row.getStringArray(0));
-            ctx.assertNull(row.getStringArray("LocalTime"));
-            ctx.assertNull(row.getLocalDateArray(0));
-            ctx.assertNull(row.getLocalDateArray("LocalTime"));
-            ctx.assertNull(row.getOffsetTimeArray(0));
-            ctx.assertNull(row.getOffsetTimeArray("LocalTime"));
-            ctx.assertNull(row.getLocalDateTimeArray(0));
-            ctx.assertNull(row.getLocalDateTimeArray("LocalTime"));
-            ctx.assertNull(row.getOffsetDateTimeArray(0));
-            ctx.assertNull(row.getOffsetDateTimeArray("LocalTime"));
-            ctx.assertNull(row.getBufferArray(0));
-            ctx.assertNull(row.getBufferArray("LocalTime"));
-            ctx.assertNull(row.getUUIDArray(0));
-            ctx.assertNull(row.getUUIDArray("LocalTime"));
+            ColumnChecker.checkColumn(0, "LocalTime")
+              .returns(Tuple::getValue, Row::getValue, new LocalTime[]{dt})
+              .returns(Tuple::getLocalTimeArray, Row::getLocalTimeArray, new LocalTime[]{dt})
+              .forRow(result.iterator().next());
             async.complete();
           }));
         }));
@@ -2541,71 +1503,10 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               .addLocalTimeArray(new LocalTime[]{dt})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
-              ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.updatedCount());
-              Row row = result.iterator().next();
-              ctx.assertNull(row.getBoolean(0));
-              ctx.assertNull(row.getBoolean("LocalTime"));
-              ctx.assertNull(row.getLong(0));
-              ctx.assertNull(row.getLong("LocalTime"));
-              ctx.assertNull(row.getInteger(0));
-              ctx.assertNull(row.getInteger("LocalTime"));
-              ctx.assertNull(row.getFloat(0));
-              ctx.assertNull(row.getFloat("LocalTime"));
-              ctx.assertNull(row.getDouble(0));
-              ctx.assertNull(row.getDouble("LocalTime"));
-              ctx.assertNull(row.getString(0));
-              ctx.assertNull(row.getString("LocalTime"));
-              ctx.assertNull(row.getJsonObject(0));
-              ctx.assertNull(row.getJsonObject("LocalTime"));
-              ctx.assertNull(row.getJsonArray(0));
-              ctx.assertNull(row.getJsonArray("LocalTime"));
-              ctx.assertNull(row.getBuffer(0));
-              ctx.assertNull(row.getBuffer("LocalTime"));
-              ctx.assertNull(row.getTemporal(0));
-              ctx.assertNull(row.getTemporal("LocalTime"));
-              ctx.assertNull(row.getLocalDate(0));
-              ctx.assertNull(row.getLocalDate("LocalTime"));
-              ctx.assertNull(row.getLocalTime(0));
-              ctx.assertNull(row.getLocalTime("LocalTime"));
-              ctx.assertNull(row.getOffsetTime(0));
-              ctx.assertNull(row.getOffsetTime("LocalTime"));
-              ctx.assertNull(row.getLocalDateTime(0));
-              ctx.assertNull(row.getLocalDateTime("LocalTime"));
-              ctx.assertNull(row.getOffsetDateTime(0));
-              ctx.assertNull(row.getOffsetDateTime("LocalTime"));
-              ctx.assertNull(row.getUUID(0));
-              ctx.assertNull(row.getUUID("LocalTime"));
-              ctx.assertNull(row.getIntegerArray(0));
-              ctx.assertNull(row.getIntegerArray("LocalTime"));
-              ctx.assertEquals(dt, row.getLocalTimeArray(0)[0]);
-              ctx.assertEquals(dt, row.getLocalTimeArray("LocalTime")[0]);
-              ctx.assertEquals(dt, ((LocalTime[]) row.getValue(0))[0]);
-              ctx.assertEquals(dt, ((LocalTime[]) row.getValue("LocalTime"))[0]);
-              ctx.assertNull(row.getBooleanArray(0));
-              ctx.assertNull(row.getBooleanArray("LocalTime"));
-              ctx.assertNull(row.getShortArray(0));
-              ctx.assertNull(row.getShortArray("LocalTime"));
-              ctx.assertNull(row.getLongArray(0));
-              ctx.assertNull(row.getLongArray("LocalTime"));
-              ctx.assertNull(row.getFloatArray(0));
-              ctx.assertNull(row.getFloatArray("LocalTime"));
-              ctx.assertNull(row.getDoubleArray(0));
-              ctx.assertNull(row.getDoubleArray("LocalTime"));
-              ctx.assertNull(row.getStringArray(0));
-              ctx.assertNull(row.getStringArray("LocalTime"));
-              ctx.assertNull(row.getLocalDateArray(0));
-              ctx.assertNull(row.getLocalDateArray("LocalTime"));
-              ctx.assertNull(row.getOffsetTimeArray(0));
-              ctx.assertNull(row.getOffsetTimeArray("LocalTime"));
-              ctx.assertNull(row.getLocalDateTimeArray(0));
-              ctx.assertNull(row.getLocalDateTimeArray("LocalTime"));
-              ctx.assertNull(row.getOffsetDateTimeArray(0));
-              ctx.assertNull(row.getOffsetDateTimeArray("LocalTime"));
-              ctx.assertNull(row.getBufferArray(0));
-              ctx.assertNull(row.getBufferArray("LocalTime"));
-              ctx.assertNull(row.getUUIDArray(0));
-              ctx.assertNull(row.getUUIDArray("LocalTime"));
+              ColumnChecker.checkColumn(0, "LocalTime")
+                .returns(Tuple::getValue, Row::getValue, new LocalTime[]{dt})
+                .returns(Tuple::getLocalTimeArray, Row::getLocalTimeArray, new LocalTime[]{dt})
+                .forRow(result.iterator().next());
               async.complete();
             }));
         }));
@@ -2620,72 +1521,11 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
-            Row row = result.iterator().next();
-            ctx.assertNull(row.getBoolean(0));
-            ctx.assertNull(row.getBoolean("OffsetTime"));
-            ctx.assertNull(row.getLong(0));
-            ctx.assertNull(row.getLong("OffsetTime"));
-            ctx.assertNull(row.getInteger(0));
-            ctx.assertNull(row.getInteger("OffsetTime"));
-            ctx.assertNull(row.getFloat(0));
-            ctx.assertNull(row.getFloat("OffsetTime"));
-            ctx.assertNull(row.getDouble(0));
-            ctx.assertNull(row.getDouble("OffsetTime"));
-            ctx.assertNull(row.getString(0));
-            ctx.assertNull(row.getString("OffsetTime"));
-            ctx.assertNull(row.getJsonObject(0));
-            ctx.assertNull(row.getJsonObject("OffsetTime"));
-            ctx.assertNull(row.getJsonArray(0));
-            ctx.assertNull(row.getJsonArray("OffsetTime"));
-            ctx.assertNull(row.getBuffer(0));
-            ctx.assertNull(row.getBuffer("OffsetTime"));
-            ctx.assertNull(row.getTemporal(0));
-            ctx.assertNull(row.getTemporal("OffsetTime"));
-            ctx.assertNull(row.getLocalDate(0));
-            ctx.assertNull(row.getLocalDate("OffsetTime"));
-            ctx.assertNull(row.getLocalTime(0));
-            ctx.assertNull(row.getLocalTime("OffsetTime"));
-            ctx.assertNull(row.getOffsetTime(0));
-            ctx.assertNull(row.getOffsetTime("OffsetTime"));
-            ctx.assertNull(row.getLocalDateTime(0));
-            ctx.assertNull(row.getLocalDateTime("OffsetTime"));
-            ctx.assertNull(row.getOffsetDateTime(0));
-            ctx.assertNull(row.getOffsetDateTime("OffsetTime"));
-            ctx.assertNull(row.getUUID(0));
-            ctx.assertNull(row.getUUID("OffsetTime"));
-            ctx.assertNull(row.getShortArray(0));
-            ctx.assertNull(row.getShortArray("OffsetTime"));
             final OffsetTime dt = OffsetTime.parse("17:55:04.90512+03:00");
-            ctx.assertEquals(dt, row.getOffsetTimeArray(0)[0]);
-            ctx.assertEquals(dt, row.getOffsetTimeArray("OffsetTime")[0]);
-            ctx.assertEquals(dt, ((OffsetTime[]) row.getValue(0))[0]);
-            ctx.assertEquals(dt, ((OffsetTime[]) row.getValue("OffsetTime"))[0]);
-            ctx.assertNull(row.getBooleanArray(0));
-            ctx.assertNull(row.getBooleanArray("OffsetTime"));
-            ctx.assertNull(row.getIntegerArray(0));
-            ctx.assertNull(row.getIntegerArray("OffsetTime"));
-            ctx.assertNull(row.getLongArray(0));
-            ctx.assertNull(row.getLongArray("OffsetTime"));
-            ctx.assertNull(row.getFloatArray(0));
-            ctx.assertNull(row.getFloatArray("OffsetTime"));
-            ctx.assertNull(row.getDoubleArray(0));
-            ctx.assertNull(row.getDoubleArray("OffsetTime"));
-            ctx.assertNull(row.getStringArray(0));
-            ctx.assertNull(row.getStringArray("OffsetTime"));
-            ctx.assertNull(row.getLocalDateArray(0));
-            ctx.assertNull(row.getLocalDateArray("OffsetTime"));
-            ctx.assertNull(row.getLocalTimeArray(0));
-            ctx.assertNull(row.getLocalTimeArray("OffsetTime"));
-            ctx.assertNull(row.getLocalDateTimeArray(0));
-            ctx.assertNull(row.getLocalDateTimeArray("OffsetTime"));
-            ctx.assertNull(row.getOffsetDateTimeArray(0));
-            ctx.assertNull(row.getOffsetDateTimeArray("OffsetTime"));
-            ctx.assertNull(row.getBufferArray(0));
-            ctx.assertNull(row.getBufferArray("OffsetTime"));
-            ctx.assertNull(row.getUUIDArray(0));
-            ctx.assertNull(row.getUUIDArray("OffsetTime"));
+            ColumnChecker.checkColumn(0, "OffsetTime")
+              .returns(Tuple::getValue, Row::getValue, new OffsetTime[]{dt})
+              .returns(Tuple::getOffsetTimeArray, Row::getOffsetTimeArray, new OffsetTime[]{dt})
+              .forRow(result.iterator().next());
             async.complete();
           }));
         }));
@@ -2703,71 +1543,10 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               .addOffsetTimeArray(new OffsetTime[]{dt})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
-              ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.updatedCount());
-              Row row = result.iterator().next();
-              ctx.assertNull(row.getBoolean(0));
-              ctx.assertNull(row.getBoolean("OffsetTime"));
-              ctx.assertNull(row.getLong(0));
-              ctx.assertNull(row.getLong("OffsetTime"));
-              ctx.assertNull(row.getInteger(0));
-              ctx.assertNull(row.getInteger("OffsetTime"));
-              ctx.assertNull(row.getFloat(0));
-              ctx.assertNull(row.getFloat("OffsetTime"));
-              ctx.assertNull(row.getDouble(0));
-              ctx.assertNull(row.getDouble("OffsetTime"));
-              ctx.assertNull(row.getString(0));
-              ctx.assertNull(row.getString("OffsetTime"));
-              ctx.assertNull(row.getJsonObject(0));
-              ctx.assertNull(row.getJsonObject("OffsetTime"));
-              ctx.assertNull(row.getJsonArray(0));
-              ctx.assertNull(row.getJsonArray("OffsetTime"));
-              ctx.assertNull(row.getBuffer(0));
-              ctx.assertNull(row.getBuffer("OffsetTime"));
-              ctx.assertNull(row.getTemporal(0));
-              ctx.assertNull(row.getTemporal("OffsetTime"));
-              ctx.assertNull(row.getLocalDate(0));
-              ctx.assertNull(row.getLocalDate("OffsetTime"));
-              ctx.assertNull(row.getLocalTime(0));
-              ctx.assertNull(row.getLocalTime("OffsetTime"));
-              ctx.assertNull(row.getOffsetTime(0));
-              ctx.assertNull(row.getOffsetTime("OffsetTime"));
-              ctx.assertNull(row.getLocalDateTime(0));
-              ctx.assertNull(row.getLocalDateTime("OffsetTime"));
-              ctx.assertNull(row.getOffsetDateTime(0));
-              ctx.assertNull(row.getOffsetDateTime("OffsetTime"));
-              ctx.assertNull(row.getUUID(0));
-              ctx.assertNull(row.getUUID("OffsetTime"));
-              ctx.assertNull(row.getIntegerArray(0));
-              ctx.assertNull(row.getIntegerArray("OffsetTime"));
-              ctx.assertEquals(dt, row.getOffsetTimeArray(0)[0]);
-              ctx.assertEquals(dt, row.getOffsetTimeArray("OffsetTime")[0]);
-              ctx.assertEquals(dt, ((OffsetTime[]) row.getValue(0))[0]);
-              ctx.assertEquals(dt, ((OffsetTime[]) row.getValue("OffsetTime"))[0]);
-              ctx.assertNull(row.getBooleanArray(0));
-              ctx.assertNull(row.getBooleanArray("OffsetTime"));
-              ctx.assertNull(row.getShortArray(0));
-              ctx.assertNull(row.getShortArray("OffsetTime"));
-              ctx.assertNull(row.getLongArray(0));
-              ctx.assertNull(row.getLongArray("OffsetTime"));
-              ctx.assertNull(row.getFloatArray(0));
-              ctx.assertNull(row.getFloatArray("OffsetTime"));
-              ctx.assertNull(row.getDoubleArray(0));
-              ctx.assertNull(row.getDoubleArray("OffsetTime"));
-              ctx.assertNull(row.getStringArray(0));
-              ctx.assertNull(row.getStringArray("OffsetTime"));
-              ctx.assertNull(row.getLocalDateArray(0));
-              ctx.assertNull(row.getLocalDateArray("OffsetTime"));
-              ctx.assertNull(row.getLocalTimeArray(0));
-              ctx.assertNull(row.getLocalTimeArray("OffsetTime"));
-              ctx.assertNull(row.getLocalDateTimeArray(0));
-              ctx.assertNull(row.getLocalDateTimeArray("OffsetTime"));
-              ctx.assertNull(row.getOffsetDateTimeArray(0));
-              ctx.assertNull(row.getOffsetDateTimeArray("OffsetTime"));
-              ctx.assertNull(row.getBufferArray(0));
-              ctx.assertNull(row.getBufferArray("OffsetTime"));
-              ctx.assertNull(row.getUUIDArray(0));
-              ctx.assertNull(row.getUUIDArray("OffsetTime"));
+              ColumnChecker.checkColumn(0, "OffsetTime")
+                .returns(Tuple::getValue, Row::getValue, new OffsetTime[]{dt})
+                .returns(Tuple::getOffsetTimeArray, Row::getOffsetTimeArray, new OffsetTime[]{dt})
+                .forRow(result.iterator().next());
               async.complete();
             }));
         }));
@@ -2782,72 +1561,11 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
-            Row row = result.iterator().next();
-            ctx.assertNull(row.getBoolean(0));
-            ctx.assertNull(row.getBoolean("LocalDateTime"));
-            ctx.assertNull(row.getLong(0));
-            ctx.assertNull(row.getLong("LocalDateTime"));
-            ctx.assertNull(row.getInteger(0));
-            ctx.assertNull(row.getInteger("LocalDateTime"));
-            ctx.assertNull(row.getFloat(0));
-            ctx.assertNull(row.getFloat("LocalDateTime"));
-            ctx.assertNull(row.getDouble(0));
-            ctx.assertNull(row.getDouble("LocalDateTime"));
-            ctx.assertNull(row.getString(0));
-            ctx.assertNull(row.getString("LocalDateTime"));
-            ctx.assertNull(row.getJsonObject(0));
-            ctx.assertNull(row.getJsonObject("LocalDateTime"));
-            ctx.assertNull(row.getJsonArray(0));
-            ctx.assertNull(row.getJsonArray("LocalDateTime"));
-            ctx.assertNull(row.getBuffer(0));
-            ctx.assertNull(row.getBuffer("LocalDateTime"));
-            ctx.assertNull(row.getTemporal(0));
-            ctx.assertNull(row.getTemporal("LocalDateTime"));
-            ctx.assertNull(row.getLocalDate(0));
-            ctx.assertNull(row.getLocalDate("LocalDateTime"));
-            ctx.assertNull(row.getLocalTime(0));
-            ctx.assertNull(row.getLocalTime("LocalDateTime"));
-            ctx.assertNull(row.getOffsetTime(0));
-            ctx.assertNull(row.getOffsetTime("LocalDateTime"));
-            ctx.assertNull(row.getLocalDateTime(0));
-            ctx.assertNull(row.getLocalDateTime("LocalDateTime"));
-            ctx.assertNull(row.getOffsetDateTime(0));
-            ctx.assertNull(row.getOffsetDateTime("LocalDateTime"));
-            ctx.assertNull(row.getUUID(0));
-            ctx.assertNull(row.getUUID("LocalDateTime"));
-            ctx.assertNull(row.getShortArray(0));
-            ctx.assertNull(row.getShortArray("LocalDateTime"));
             final LocalDateTime dt = LocalDateTime.parse("2017-05-14T19:35:58.237666");
-            ctx.assertEquals(dt, row.getLocalDateTimeArray(0)[0]);
-            ctx.assertEquals(dt, row.getLocalDateTimeArray("LocalDateTime")[0]);
-            ctx.assertEquals(dt, ((LocalDateTime[]) row.getValue(0))[0]);
-            ctx.assertEquals(dt, ((LocalDateTime[]) row.getValue("LocalDateTime"))[0]);
-            ctx.assertNull(row.getBooleanArray(0));
-            ctx.assertNull(row.getBooleanArray("LocalDateTime"));
-            ctx.assertNull(row.getIntegerArray(0));
-            ctx.assertNull(row.getIntegerArray("LocalDateTime"));
-            ctx.assertNull(row.getLongArray(0));
-            ctx.assertNull(row.getLongArray("LocalDateTime"));
-            ctx.assertNull(row.getFloatArray(0));
-            ctx.assertNull(row.getFloatArray("LocalDateTime"));
-            ctx.assertNull(row.getDoubleArray(0));
-            ctx.assertNull(row.getDoubleArray("LocalDateTime"));
-            ctx.assertNull(row.getStringArray(0));
-            ctx.assertNull(row.getStringArray("LocalDateTime"));
-            ctx.assertNull(row.getLocalDateArray(0));
-            ctx.assertNull(row.getLocalDateArray("LocalDateTime"));
-            ctx.assertNull(row.getLocalTimeArray(0));
-            ctx.assertNull(row.getLocalTimeArray("LocalDateTime"));
-            ctx.assertNull(row.getOffsetTimeArray(0));
-            ctx.assertNull(row.getOffsetTimeArray("LocalDateTime"));
-            ctx.assertNull(row.getOffsetDateTimeArray(0));
-            ctx.assertNull(row.getOffsetDateTimeArray("LocalDateTime"));
-            ctx.assertNull(row.getBufferArray(0));
-            ctx.assertNull(row.getBufferArray("LocalDateTime"));
-            ctx.assertNull(row.getUUIDArray(0));
-            ctx.assertNull(row.getUUIDArray("LocalDateTime"));
+            ColumnChecker.checkColumn(0, "LocalDateTime")
+              .returns(Tuple::getValue, Row::getValue, new LocalDateTime[]{dt})
+              .returns(Tuple::getLocalDateTimeArray, Row::getLocalDateTimeArray, new LocalDateTime[]{dt})
+              .forRow(result.iterator().next());
             async.complete();
           }));
         }));
@@ -2865,71 +1583,10 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               .addLocalDateTimeArray(new LocalDateTime[]{dt})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
-              ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.updatedCount());
-              Row row = result.iterator().next();
-              ctx.assertNull(row.getBoolean(0));
-              ctx.assertNull(row.getBoolean("LocalDateTime"));
-              ctx.assertNull(row.getLong(0));
-              ctx.assertNull(row.getLong("LocalDateTime"));
-              ctx.assertNull(row.getInteger(0));
-              ctx.assertNull(row.getInteger("LocalDateTime"));
-              ctx.assertNull(row.getFloat(0));
-              ctx.assertNull(row.getFloat("LocalDateTime"));
-              ctx.assertNull(row.getDouble(0));
-              ctx.assertNull(row.getDouble("LocalDateTime"));
-              ctx.assertNull(row.getString(0));
-              ctx.assertNull(row.getString("LocalDateTime"));
-              ctx.assertNull(row.getJsonObject(0));
-              ctx.assertNull(row.getJsonObject("LocalDateTime"));
-              ctx.assertNull(row.getJsonArray(0));
-              ctx.assertNull(row.getJsonArray("LocalDateTime"));
-              ctx.assertNull(row.getBuffer(0));
-              ctx.assertNull(row.getBuffer("LocalDateTime"));
-              ctx.assertNull(row.getTemporal(0));
-              ctx.assertNull(row.getTemporal("LocalDateTime"));
-              ctx.assertNull(row.getLocalDate(0));
-              ctx.assertNull(row.getLocalDate("LocalDateTime"));
-              ctx.assertNull(row.getLocalTime(0));
-              ctx.assertNull(row.getLocalTime("LocalDateTime"));
-              ctx.assertNull(row.getOffsetTime(0));
-              ctx.assertNull(row.getOffsetTime("LocalDateTime"));
-              ctx.assertNull(row.getLocalDateTime(0));
-              ctx.assertNull(row.getLocalDateTime("LocalDateTime"));
-              ctx.assertNull(row.getOffsetDateTime(0));
-              ctx.assertNull(row.getOffsetDateTime("LocalDateTime"));
-              ctx.assertNull(row.getUUID(0));
-              ctx.assertNull(row.getUUID("LocalDateTime"));
-              ctx.assertNull(row.getIntegerArray(0));
-              ctx.assertNull(row.getIntegerArray("LocalDateTime"));
-              ctx.assertEquals(dt, row.getLocalDateTimeArray(0)[0]);
-              ctx.assertEquals(dt, row.getLocalDateTimeArray("LocalDateTime")[0]);
-              ctx.assertEquals(dt, ((LocalDateTime[]) row.getValue(0))[0]);
-              ctx.assertEquals(dt, ((LocalDateTime[]) row.getValue("LocalDateTime"))[0]);
-              ctx.assertNull(row.getBooleanArray(0));
-              ctx.assertNull(row.getBooleanArray("LocalDateTime"));
-              ctx.assertNull(row.getShortArray(0));
-              ctx.assertNull(row.getShortArray("LocalDateTime"));
-              ctx.assertNull(row.getLongArray(0));
-              ctx.assertNull(row.getLongArray("LocalDateTime"));
-              ctx.assertNull(row.getFloatArray(0));
-              ctx.assertNull(row.getFloatArray("LocalDateTime"));
-              ctx.assertNull(row.getDoubleArray(0));
-              ctx.assertNull(row.getDoubleArray("LocalDateTime"));
-              ctx.assertNull(row.getStringArray(0));
-              ctx.assertNull(row.getStringArray("LocalDateTime"));
-              ctx.assertNull(row.getLocalDateArray(0));
-              ctx.assertNull(row.getLocalDateArray("LocalDateTime"));
-              ctx.assertNull(row.getLocalTimeArray(0));
-              ctx.assertNull(row.getLocalTimeArray("LocalDateTime"));
-              ctx.assertNull(row.getOffsetTimeArray(0));
-              ctx.assertNull(row.getOffsetTimeArray("LocalDateTime"));
-              ctx.assertNull(row.getOffsetDateTimeArray(0));
-              ctx.assertNull(row.getOffsetDateTimeArray("LocalDateTime"));
-              ctx.assertNull(row.getBufferArray(0));
-              ctx.assertNull(row.getBufferArray("LocalDateTime"));
-              ctx.assertNull(row.getUUIDArray(0));
-              ctx.assertNull(row.getUUIDArray("LocalDateTime"));
+              ColumnChecker.checkColumn(0, "LocalDateTime")
+                .returns(Tuple::getValue, Row::getValue, new LocalDateTime[]{dt})
+                .returns(Tuple::getLocalDateTimeArray, Row::getLocalDateTimeArray, new LocalDateTime[]{dt})
+                .forRow(result.iterator().next());
               async.complete();
             }));
         }));
@@ -2944,72 +1601,11 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
-            Row row = result.iterator().next();
-            ctx.assertNull(row.getBoolean(0));
-            ctx.assertNull(row.getBoolean("UUID"));
-            ctx.assertNull(row.getLong(0));
-            ctx.assertNull(row.getLong("OffsetDateTime"));
-            ctx.assertNull(row.getInteger(0));
-            ctx.assertNull(row.getInteger("OffsetDateTime"));
-            ctx.assertNull(row.getFloat(0));
-            ctx.assertNull(row.getFloat("OffsetDateTime"));
-            ctx.assertNull(row.getDouble(0));
-            ctx.assertNull(row.getDouble("OffsetDateTime"));
-            ctx.assertNull(row.getString(0));
-            ctx.assertNull(row.getString("OffsetDateTime"));
-            ctx.assertNull(row.getJsonObject(0));
-            ctx.assertNull(row.getJsonObject("OffsetDateTime"));
-            ctx.assertNull(row.getJsonArray(0));
-            ctx.assertNull(row.getJsonArray("OffsetDateTime"));
-            ctx.assertNull(row.getBuffer(0));
-            ctx.assertNull(row.getBuffer("OffsetDateTime"));
-            ctx.assertNull(row.getTemporal(0));
-            ctx.assertNull(row.getTemporal("OffsetDateTime"));
-            ctx.assertNull(row.getLocalDate(0));
-            ctx.assertNull(row.getLocalDate("OffsetDateTime"));
-            ctx.assertNull(row.getLocalTime(0));
-            ctx.assertNull(row.getLocalTime("OffsetDateTime"));
-            ctx.assertNull(row.getOffsetTime(0));
-            ctx.assertNull(row.getOffsetTime("OffsetDateTime"));
-            ctx.assertNull(row.getLocalDateTime(0));
-            ctx.assertNull(row.getLocalDateTime("OffsetDateTime"));
-            ctx.assertNull(row.getOffsetDateTime(0));
-            ctx.assertNull(row.getOffsetDateTime("OffsetDateTime"));
-            ctx.assertNull(row.getUUID(0));
-            ctx.assertNull(row.getUUID("OffsetDateTime"));
-            ctx.assertNull(row.getShortArray(0));
-            ctx.assertNull(row.getShortArray("OffsetDateTime"));
             final OffsetDateTime dt = OffsetDateTime.parse("2017-05-15T02:59:59.237666Z");
-            ctx.assertEquals(dt, row.getOffsetDateTimeArray(0)[0]);
-            ctx.assertEquals(dt, row.getOffsetDateTimeArray("OffsetDateTime")[0]);
-            ctx.assertEquals(dt, ((OffsetDateTime[]) row.getValue(0))[0]);
-            ctx.assertEquals(dt, ((OffsetDateTime[]) row.getValue("OffsetDateTime"))[0]);
-            ctx.assertNull(row.getBooleanArray(0));
-            ctx.assertNull(row.getBooleanArray("OffsetDateTime"));
-            ctx.assertNull(row.getIntegerArray(0));
-            ctx.assertNull(row.getIntegerArray("OffsetDateTime"));
-            ctx.assertNull(row.getLongArray(0));
-            ctx.assertNull(row.getLongArray("OffsetDateTime"));
-            ctx.assertNull(row.getFloatArray(0));
-            ctx.assertNull(row.getFloatArray("OffsetDateTime"));
-            ctx.assertNull(row.getDoubleArray(0));
-            ctx.assertNull(row.getDoubleArray("OffsetDateTime"));
-            ctx.assertNull(row.getStringArray(0));
-            ctx.assertNull(row.getStringArray("OffsetDateTime"));
-            ctx.assertNull(row.getLocalDateArray(0));
-            ctx.assertNull(row.getLocalDateArray("OffsetDateTime"));
-            ctx.assertNull(row.getLocalTimeArray(0));
-            ctx.assertNull(row.getLocalTimeArray("OffsetDateTime"));
-            ctx.assertNull(row.getLocalTimeArray(0));
-            ctx.assertNull(row.getLocalTimeArray("OffsetDateTime"));
-            ctx.assertNull(row.getLocalDateTimeArray(0));
-            ctx.assertNull(row.getLocalDateTimeArray("OffsetDateTime"));
-            ctx.assertNull(row.getBufferArray(0));
-            ctx.assertNull(row.getBufferArray("OffsetDateTime"));
-            ctx.assertNull(row.getUUIDArray(0));
-            ctx.assertNull(row.getUUIDArray("OffsetDateTime"));
+            ColumnChecker.checkColumn(0, "OffsetDateTime")
+              .returns(Tuple::getValue, Row::getValue, new OffsetDateTime[]{dt})
+              .returns(Tuple::getOffsetDateTimeArray, Row::getOffsetDateTimeArray, new OffsetDateTime[]{dt})
+              .forRow(result.iterator().next());
             async.complete();
           }));
         }));
@@ -3027,71 +1623,10 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               .addOffsetDateTimeArray(new OffsetDateTime[]{dt})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
-              ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.updatedCount());
-              Row row = result.iterator().next();
-              ctx.assertNull(row.getBoolean(0));
-              ctx.assertNull(row.getBoolean("OffsetDateTime"));
-              ctx.assertNull(row.getLong(0));
-              ctx.assertNull(row.getLong("OffsetDateTime"));
-              ctx.assertNull(row.getInteger(0));
-              ctx.assertNull(row.getInteger("OffsetDateTime"));
-              ctx.assertNull(row.getFloat(0));
-              ctx.assertNull(row.getFloat("OffsetDateTime"));
-              ctx.assertNull(row.getDouble(0));
-              ctx.assertNull(row.getDouble("OffsetDateTime"));
-              ctx.assertNull(row.getString(0));
-              ctx.assertNull(row.getString("OffsetDateTime"));
-              ctx.assertNull(row.getJsonObject(0));
-              ctx.assertNull(row.getJsonObject("OffsetDateTime"));
-              ctx.assertNull(row.getJsonArray(0));
-              ctx.assertNull(row.getJsonArray("OffsetDateTime"));
-              ctx.assertNull(row.getBuffer(0));
-              ctx.assertNull(row.getBuffer("OffsetDateTime"));
-              ctx.assertNull(row.getTemporal(0));
-              ctx.assertNull(row.getTemporal("OffsetDateTime"));
-              ctx.assertNull(row.getLocalDate(0));
-              ctx.assertNull(row.getLocalDate("OffsetDateTime"));
-              ctx.assertNull(row.getLocalTime(0));
-              ctx.assertNull(row.getLocalTime("OffsetDateTime"));
-              ctx.assertNull(row.getOffsetTime(0));
-              ctx.assertNull(row.getOffsetTime("OffsetDateTime"));
-              ctx.assertNull(row.getLocalDateTime(0));
-              ctx.assertNull(row.getLocalDateTime("OffsetDateTime"));
-              ctx.assertNull(row.getOffsetDateTime(0));
-              ctx.assertNull(row.getOffsetDateTime("OffsetDateTime"));
-              ctx.assertNull(row.getUUID(0));
-              ctx.assertNull(row.getUUID("OffsetDateTime"));
-              ctx.assertNull(row.getIntegerArray(0));
-              ctx.assertNull(row.getIntegerArray("OffsetDateTime"));
-              ctx.assertEquals(dt, row.getOffsetDateTimeArray(0)[0]);
-              ctx.assertEquals(dt, row.getOffsetDateTimeArray("OffsetDateTime")[0]);
-              ctx.assertEquals(dt, ((OffsetDateTime[]) row.getValue(0))[0]);
-              ctx.assertEquals(dt, ((OffsetDateTime[]) row.getValue("OffsetDateTime"))[0]);
-              ctx.assertNull(row.getBooleanArray(0));
-              ctx.assertNull(row.getBooleanArray("OffsetDateTime"));
-              ctx.assertNull(row.getShortArray(0));
-              ctx.assertNull(row.getShortArray("OffsetDateTime"));
-              ctx.assertNull(row.getLongArray(0));
-              ctx.assertNull(row.getLongArray("OffsetDateTime"));
-              ctx.assertNull(row.getFloatArray(0));
-              ctx.assertNull(row.getFloatArray("OffsetDateTime"));
-              ctx.assertNull(row.getDoubleArray(0));
-              ctx.assertNull(row.getDoubleArray("OffsetDateTime"));
-              ctx.assertNull(row.getStringArray(0));
-              ctx.assertNull(row.getStringArray("OffsetDateTime"));
-              ctx.assertNull(row.getLocalDateArray(0));
-              ctx.assertNull(row.getLocalDateArray("OffsetDateTime"));
-              ctx.assertNull(row.getLocalTimeArray(0));
-              ctx.assertNull(row.getLocalTimeArray("OffsetDateTime"));
-              ctx.assertNull(row.getLocalTimeArray(0));
-              ctx.assertNull(row.getLocalTimeArray("OffsetDateTime"));
-              ctx.assertNull(row.getLocalDateTimeArray(0));
-              ctx.assertNull(row.getLocalDateTimeArray("OffsetDateTime"));
-              ctx.assertNull(row.getBufferArray(0));
-              ctx.assertNull(row.getBufferArray("OffsetDateTime"));
-              ctx.assertNull(row.getUUIDArray(0));
-              ctx.assertNull(row.getUUIDArray("OffsetDateTime"));
+              ColumnChecker.checkColumn(0, "OffsetDateTime")
+                .returns(Tuple::getValue, Row::getValue, new OffsetDateTime[]{dt})
+                .returns(Tuple::getOffsetDateTimeArray, Row::getOffsetDateTimeArray, new OffsetDateTime[]{dt})
+                .forRow(result.iterator().next());
               async.complete();
             }));
         }));
@@ -3106,72 +1641,11 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
-            Row row = result.iterator().next();
-            ctx.assertNull(row.getBoolean(0));
-            ctx.assertNull(row.getBoolean("UUID"));
-            ctx.assertNull(row.getLong(0));
-            ctx.assertNull(row.getLong("UUID"));
-            ctx.assertNull(row.getInteger(0));
-            ctx.assertNull(row.getInteger("UUID"));
-            ctx.assertNull(row.getFloat(0));
-            ctx.assertNull(row.getFloat("UUID"));
-            ctx.assertNull(row.getDouble(0));
-            ctx.assertNull(row.getDouble("UUID"));
-            ctx.assertNull(row.getString(0));
-            ctx.assertNull(row.getString("UUID"));
-            ctx.assertNull(row.getJsonObject(0));
-            ctx.assertNull(row.getJsonObject("UUID"));
-            ctx.assertNull(row.getJsonArray(0));
-            ctx.assertNull(row.getJsonArray("UUID"));
-            ctx.assertNull(row.getBuffer(0));
-            ctx.assertNull(row.getBuffer("UUID"));
-            ctx.assertNull(row.getTemporal(0));
-            ctx.assertNull(row.getTemporal("UUID"));
-            ctx.assertNull(row.getLocalDate(0));
-            ctx.assertNull(row.getLocalDate("UUID"));
-            ctx.assertNull(row.getLocalTime(0));
-            ctx.assertNull(row.getLocalTime("UUID"));
-            ctx.assertNull(row.getOffsetTime(0));
-            ctx.assertNull(row.getOffsetTime("UUID"));
-            ctx.assertNull(row.getLocalDateTime(0));
-            ctx.assertNull(row.getLocalDateTime("UUID"));
-            ctx.assertNull(row.getOffsetDateTime(0));
-            ctx.assertNull(row.getOffsetDateTime("UUID"));
-            ctx.assertNull(row.getUUID(0));
-            ctx.assertNull(row.getUUID("UUID"));
-            ctx.assertNull(row.getShortArray(0));
-            ctx.assertNull(row.getShortArray("UUID"));
             final UUID uuid = UUID.fromString("6f790482-b5bd-438b-a8b7-4a0bed747011");
-            ctx.assertEquals(uuid, row.getUUIDArray(0)[0]);
-            ctx.assertEquals(uuid, row.getUUIDArray("UUID")[0]);
-            ctx.assertEquals(uuid, ((UUID[]) row.getValue(0))[0]);
-            ctx.assertEquals(uuid, ((UUID[]) row.getValue("UUID"))[0]);
-            ctx.assertNull(row.getBooleanArray(0));
-            ctx.assertNull(row.getBooleanArray("UUID"));
-            ctx.assertNull(row.getIntegerArray(0));
-            ctx.assertNull(row.getIntegerArray("UUID"));
-            ctx.assertNull(row.getLongArray(0));
-            ctx.assertNull(row.getLongArray("UUID"));
-            ctx.assertNull(row.getFloatArray(0));
-            ctx.assertNull(row.getFloatArray("UUID"));
-            ctx.assertNull(row.getDoubleArray(0));
-            ctx.assertNull(row.getDoubleArray("UUID"));
-            ctx.assertNull(row.getStringArray(0));
-            ctx.assertNull(row.getStringArray("UUID"));
-            ctx.assertNull(row.getLocalDateArray(0));
-            ctx.assertNull(row.getLocalDateArray("UUID"));
-            ctx.assertNull(row.getLocalTimeArray(0));
-            ctx.assertNull(row.getLocalTimeArray("UUID"));
-            ctx.assertNull(row.getLocalTimeArray(0));
-            ctx.assertNull(row.getLocalTimeArray("UUID"));
-            ctx.assertNull(row.getLocalDateTimeArray(0));
-            ctx.assertNull(row.getLocalDateTimeArray("UUID"));
-            ctx.assertNull(row.getBufferArray(0));
-            ctx.assertNull(row.getBufferArray("UUID"));
-            ctx.assertNull(row.getOffsetDateTimeArray(0));
-            ctx.assertNull(row.getOffsetDateTimeArray("UUID"));
+            ColumnChecker.checkColumn(0, "UUID")
+              .returns(Tuple::getValue, Row::getValue, new UUID[]{uuid})
+              .returns(Tuple::getUUIDArray, Row::getUUIDArray, new UUID[]{uuid})
+              .forRow(result.iterator().next());
             async.complete();
           }));
         }));
@@ -3189,74 +1663,35 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               .addUUIDArray(new UUID[]{uuid})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
-              ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.updatedCount());
-              Row row = result.iterator().next();
-              ctx.assertNull(row.getBoolean(0));
-              ctx.assertNull(row.getBoolean("UUID"));
-              ctx.assertNull(row.getLong(0));
-              ctx.assertNull(row.getLong("UUID"));
-              ctx.assertNull(row.getInteger(0));
-              ctx.assertNull(row.getInteger("UUID"));
-              ctx.assertNull(row.getFloat(0));
-              ctx.assertNull(row.getFloat("UUID"));
-              ctx.assertNull(row.getDouble(0));
-              ctx.assertNull(row.getDouble("UUID"));
-              ctx.assertNull(row.getString(0));
-              ctx.assertNull(row.getString("UUID"));
-              ctx.assertNull(row.getJsonObject(0));
-              ctx.assertNull(row.getJsonObject("UUID"));
-              ctx.assertNull(row.getJsonArray(0));
-              ctx.assertNull(row.getJsonArray("UUID"));
-              ctx.assertNull(row.getBuffer(0));
-              ctx.assertNull(row.getBuffer("UUID"));
-              ctx.assertNull(row.getTemporal(0));
-              ctx.assertNull(row.getTemporal("UUID"));
-              ctx.assertNull(row.getLocalDate(0));
-              ctx.assertNull(row.getLocalDate("UUID"));
-              ctx.assertNull(row.getLocalTime(0));
-              ctx.assertNull(row.getLocalTime("UUID"));
-              ctx.assertNull(row.getOffsetTime(0));
-              ctx.assertNull(row.getOffsetTime("UUID"));
-              ctx.assertNull(row.getLocalDateTime(0));
-              ctx.assertNull(row.getLocalDateTime("UUID"));
-              ctx.assertNull(row.getOffsetDateTime(0));
-              ctx.assertNull(row.getOffsetDateTime("UUID"));
-              ctx.assertNull(row.getUUID(0));
-              ctx.assertNull(row.getUUID("UUID"));
-              ctx.assertNull(row.getIntegerArray(0));
-              ctx.assertNull(row.getIntegerArray("UUID"));
-              ctx.assertEquals(uuid, row.getUUIDArray(0)[0]);
-              ctx.assertEquals(uuid, row.getUUIDArray("UUID")[0]);
-              ctx.assertEquals(uuid, ((UUID[]) row.getValue(0))[0]);
-              ctx.assertEquals(uuid, ((UUID[]) row.getValue("UUID"))[0]);
-              ctx.assertNull(row.getBooleanArray(0));
-              ctx.assertNull(row.getBooleanArray("UUID"));
-              ctx.assertNull(row.getShortArray(0));
-              ctx.assertNull(row.getShortArray("UUID"));
-              ctx.assertNull(row.getLongArray(0));
-              ctx.assertNull(row.getLongArray("UUID"));
-              ctx.assertNull(row.getFloatArray(0));
-              ctx.assertNull(row.getFloatArray("UUID"));
-              ctx.assertNull(row.getDoubleArray(0));
-              ctx.assertNull(row.getDoubleArray("UUID"));
-              ctx.assertNull(row.getStringArray(0));
-              ctx.assertNull(row.getStringArray("UUID"));
-              ctx.assertNull(row.getLocalDateArray(0));
-              ctx.assertNull(row.getLocalDateArray("UUID"));
-              ctx.assertNull(row.getLocalTimeArray(0));
-              ctx.assertNull(row.getLocalTimeArray("UUID"));
-              ctx.assertNull(row.getLocalTimeArray(0));
-              ctx.assertNull(row.getLocalTimeArray("UUID"));
-              ctx.assertNull(row.getLocalDateTimeArray(0));
-              ctx.assertNull(row.getLocalDateTimeArray("UUID"));
-              ctx.assertNull(row.getBufferArray(0));
-              ctx.assertNull(row.getBufferArray("UUID"));
-              ctx.assertNull(row.getOffsetDateTimeArray(0));
-              ctx.assertNull(row.getOffsetDateTimeArray("UUID"));
+              ColumnChecker.checkColumn(0, "UUID")
+                .returns(Tuple::getValue, Row::getValue, new UUID[]{uuid})
+                .returns(Tuple::getUUIDArray, Row::getUUIDArray, new UUID[]{uuid})
+                .forRow(result.iterator().next());
               async.complete();
             }));
         }));
     }));
   }
+
+  @Test
+  public void testBufferArray(TestContext ctx) {
+    Random r = new Random();
+    int len = 2048;
+    byte[] bytes = new byte[len];
+    r.nextBytes(bytes);
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT ARRAY[$1::BYTEA] \"Bytea\"",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.of(new Buffer[]{Buffer.buffer(bytes)}), ctx.asyncAssertSuccess(result -> {
+            ColumnChecker.checkColumn(0, "Bytea")
+              .returns(Tuple::getValue, Row::getValue, new Buffer[]{Buffer.buffer(bytes)})
+              .returns(Tuple::getBufferArray, Row::getBufferArray, new Buffer[]{Buffer.buffer(bytes)})
+              .forRow(result.iterator().next());
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
 }
