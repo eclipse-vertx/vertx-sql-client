@@ -199,12 +199,21 @@ Snapshots are deploy in Sonatype OSS repository: https://oss.sonatype.org/conten
 
 Apache License - Version 2.0
 
-== Publishing docs
+== Developers
 
-* mvn package -Pdocs
-* cp -r target/docs docs/
-* mv docs/reactive-pg-client docs/guide
+=== Documentation
 
+The online and published documentation is in `/docs` and is served by GitHub pages with Jekyll.
 
+You can find the actual guide source in [src/main/docs/index.md](src/main/docs/index.md). At compilation time, this
+source generates the [jekyll/guide/java/index.md](jekyll/guide/java/index.md).
 
+The current documentation is in `/jekyll` and can be preview using Docker and your browser
 
+* generate the documentation
+** `mvn compile` to generate [jekyll/guide/java/index.md](jekyll/guide/java/index.md)
+** `mvn site` to generate the javadoc in [jekyll/apidocs](jekyll/apidocs)
+* run Jekyll
+** `cd jekyll`
+** `docker-compose up`
+* open your browser at http://localhost:4000

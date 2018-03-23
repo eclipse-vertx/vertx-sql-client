@@ -328,11 +328,7 @@
  * More information can be found in the http://vertx.io/docs/vertx-core/java/#_using_a_proxy_for_client_connections[Vert.x documentation].
  *
  */
-@Document(fileName = "index.adoc")
 @ModuleGen(name = "reactive-pg-client", groupPackage = "io.reactiverse")
 package io.reactiverse.pgclient;
 
-import io.reactiverse.pgclient.PgPoolOptions;
-import io.reactiverse.pgclient.Row;
 import io.vertx.codegen.annotations.ModuleGen;
-import io.vertx.docgen.Document;

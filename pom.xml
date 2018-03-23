@@ -21,8 +21,8 @@
 
   <parent>
     <groupId>io.vertx</groupId>
-    <artifactId>vertx-ext-parent</artifactId>
-    <version>27</version>
+    <artifactId>vertx-parent</artifactId>
+    <version>12</version>
   </parent>
 
   <groupId>io.reactiverse</groupId>
@@ -61,6 +61,8 @@
   <properties>
     <stack.version>3.5.1</stack.version>
     <jmh.version>1.19</jmh.version>
+    <docs.dir>${project.basedir}/src/main/docs</docs.dir>
+    <generated.dir>${project.basedir}/src/main/generated</generated.dir>
   </properties>
 
   <dependencyManagement>
@@ -88,6 +90,7 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-docgen</artifactId>
+      <version>3.6.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -176,29 +179,42 @@
     <pluginManagement>
       <plugins>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-javadoc-plugin</artifactId>
-          <configuration>
-            <sourcepath>${project.build.sourceDirectory};${project.build.directory}/generated-sources/annotations</sourcepath>
-            <sourceFileIncludes>
-              <sourceFileInclude>com/julienviet/**/*.java</sourceFileInclude>
-            </sourceFileIncludes>
-            <sourceFileExcludes>
-              <sourceFileExclude>com/julienviet/groovy/**/*.java</sourceFileExclude>
-              <sourceFileExclude>**/package-info.java</sourceFileExclude>
-              <sourceFileExclude>**/impl/**</sourceFileExclude>
-            </sourceFileExcludes>
-            <detectLinks />
-            <detectJavaApiLink />
-            <links>
-              <link>http://vertx.io/docs/apidocs/</link>
-              <link>http://reactivex.io/RxJava/1.x/javadoc/</link>
-              <link>http://reactivex.io/RxJava/javadoc/</link>
-              <link>http://fasterxml.github.com/jackson-annotations/javadoc/2.9/</link>
-              <link>http://fasterxml.github.io/jackson-core/javadoc/2.9/</link>
-              <link>http://fasterxml.github.io/jackson-databind/javadoc/2.9/</link>
-            </links>
-          </configuration>
+          <artifactId>maven-clean-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>default-clean</id>
+              <configuration>
+                <filesets>
+                  <fileset>
+                    <directory>${generated.dir}</directory>
+                  </fileset>
+                </filesets>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>default-compile</id>
+              <configuration>
+                <annotationProcessors>
+                  <annotationProcessor>io.vertx.codegen.CodeGenProcessor</annotationProcessor>
+                  <annotationProcessor>io.vertx.docgen.JavaDocGenProcessor</annotationProcessor>
+                  <annotationProcessor>io.vertx.docgen.DocGenProcessor</annotationProcessor>
+                </annotationProcessors>
+                <compilerArgs>
+                  <arg>-Adocgen.source=${docs.dir}/*.md</arg>
+                  <arg>-Adocgen.output=${project.basedir}/jekyll/guide/$lang</arg>
+                  <arg>-Adocgen.syntax=markdown</arg>
+                  <arg>-Amaven.groupId=${project.groupId}</arg>
+                  <arg>-Amaven.artifactId=${project.artifactId}</arg>
+                  <arg>-Amaven.version=${project.version}</arg>
+                </compilerArgs>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
@@ -212,11 +228,67 @@
     </pluginManagement>
     <plugins>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <version>3.4</version>
+        <configuration>
+          <skip>true</skip>
+          <skipDeploy>true</skipDeploy>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
         <executions>
           <execution>
-            <id>add-benchmark</id>
+            <phase>site</phase>
+            <configuration>
+              <skip>false</skip>
+              <sourcepath>${project.build.sourceDirectory};${project.build.directory}/generated-sources/annotations</sourcepath>
+              <sourceFileIncludes>
+                <sourceFileInclude>io/reactiverse/**/*.java</sourceFileInclude>
+              </sourceFileIncludes>
+              <sourceFileExcludes>
+                <sourceFileExclude>io/reactiverse/groovy/**/*.java</sourceFileExclude>
+                <sourceFileExclude>**/package-info.java</sourceFileExclude>
+                <sourceFileExclude>**/impl/**</sourceFileExclude>
+              </sourceFileExcludes>
+              <detectLinks />
+              <detectJavaApiLink />
+              <links>
+                <link>http://vertx.io/docs/apidocs/</link>
+                <link>http://reactivex.io/RxJava/1.x/javadoc/</link>
+                <link>http://reactivex.io/RxJava/javadoc/</link>
+                <link>http://fasterxml.github.com/jackson-annotations/javadoc/2.9/</link>
+                <link>http://fasterxml.github.io/jackson-core/javadoc/2.9/</link>
+                <link>http://fasterxml.github.io/jackson-databind/javadoc/2.9/</link>
+              </links>
+              <reportOutputDirectory>${project.basedir}/jekyll</reportOutputDirectory>
+            </configuration>
+            <goals>
+              <goal>javadoc</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${generated.dir}</source>
+              </sources>
+            </configuration>
+          </execution>
+          <execution>
+            <id>add-test-source</id>
             <goals>
               <goal>add-test-source</goal>
             </goals>
