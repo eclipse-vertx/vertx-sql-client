@@ -1190,12 +1190,12 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Boolean\" = $1  WHERE \"id\" = $2 RETURNING \"Boolean\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
-              .addBooleanArray(new boolean[]{Boolean.FALSE})
+              .addBooleanArray(new boolean[]{Boolean.FALSE, Boolean.TRUE})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Boolean")
-                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new boolean[]{Boolean.FALSE}))
-                .returns(Tuple::getBooleanArray, Row::getBooleanArray, ColumnChecker.toObjectArray(new boolean[]{Boolean.FALSE}))
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new boolean[]{Boolean.FALSE, Boolean.TRUE}))
+                .returns(Tuple::getBooleanArray, Row::getBooleanArray, ColumnChecker.toObjectArray(new boolean[]{Boolean.FALSE, Boolean.TRUE}))
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -1228,12 +1228,12 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Short\" = $1  WHERE \"id\" = $2 RETURNING \"Short\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
-              .addShortArray(new short[]{2})
+              .addShortArray(new short[]{2,3,4})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Short")
-                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new short[]{2}))
-                .returns(Tuple::getShortArray, Row::getShortArray, ColumnChecker.toObjectArray(new short[]{2}))
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new short[]{2,3,4}))
+                .returns(Tuple::getShortArray, Row::getShortArray, ColumnChecker.toObjectArray(new short[]{2,3,4}))
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -1266,12 +1266,12 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Integer\" = $1  WHERE \"id\" = $2 RETURNING \"Integer\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
-              .addIntArray(new int[]{3,5})
+              .addIntArray(new int[]{3,4,5,6})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Integer")
-                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new int[]{3,5}))
-                .returns(Tuple::getIntegerArray, Row::getIntegerArray, ColumnChecker.toObjectArray(new int[]{3,5}))
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new int[]{3,4,5,6}))
+                .returns(Tuple::getIntegerArray, Row::getIntegerArray, ColumnChecker.toObjectArray(new int[]{3,4,5,6}))
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -1304,12 +1304,12 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Long\" = $1  WHERE \"id\" = $2 RETURNING \"Long\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
-              .addLongArray(new long[]{(long) 4})
+              .addLongArray(new long[]{4,5,6,7,8})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Long")
-                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new long[]{4}))
-                .returns(Tuple::getLongArray, Row::getLongArray, ColumnChecker.toObjectArray(new long[]{4}))
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new long[]{4,5,6,7,8}))
+                .returns(Tuple::getLongArray, Row::getLongArray, ColumnChecker.toObjectArray(new long[]{4,5,6,7,8}))
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -1342,12 +1342,12 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Float\" = $1  WHERE \"id\" = $2 RETURNING \"Float\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
-              .addFloatArray(new float[]{(float) 5.2})
+              .addFloatArray(new float[]{5.2f,5.3f,5.4f})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Float")
-                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new float[]{5.2f}))
-                .returns(Tuple::getFloatArray, Row::getFloatArray, ColumnChecker.toObjectArray(new float[]{5.2f}))
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new float[]{5.2f,5.3f,5.4f}))
+                .returns(Tuple::getFloatArray, Row::getFloatArray, ColumnChecker.toObjectArray(new float[]{5.2f,5.3f,5.4f}))
                 .forRow(result.iterator().next());
               async.complete();
             }));
