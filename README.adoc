@@ -211,8 +211,8 @@ source generates the [jekyll/guide/java/index.md](jekyll/guide/java/index.md).
 The current documentation is in `/jekyll` and can be preview using Docker and your browser
 
 * generate the documentation
-** `mvn compile` to generate `jekyll/guide/java/index.md
-** `mvn site` to generate the javadoc in `jekyll/apidocs`
+** `mvn compile` to generate `jekyll/guide/java/index.md`
+** `mvn site` to generate the javadoc in `jekyll/apidocs
 * run Jekyll
 ** `cd jekyll`
 ** `docker-compose up`
