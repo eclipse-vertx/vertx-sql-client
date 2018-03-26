@@ -64,7 +64,7 @@
     <div id="content"><div id='filecontents'><div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p><span class="image"><a class="image" href="https://travis-ci.org/vietj/reactive-pg-client"><img src="https://travis-ci.org/vietj/reactive-pg-client.svg?branch=master" alt="Build Status"></a></span></p>
+<p><span class="image"><a class="image" href="https://travis-ci.org/vietj/reactive-pg-client"><img src="https://travis-ci.org/reactiverse/reactive-pg-client.svg?branch=master" alt="Build Status"></a></span></p>
 </div>
 <div class="ulist">
 <ul>
@@ -204,22 +204,22 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -&gt; {
 <div class="ulist">
 <ul>
 <li>
-<p><a href="http://www.julienviet.com/reactive-pg-client/guide/java/index.html">Java docs</a></p>
+<p><a href="https://reactiverse.io/reactive-pg-client/guide/java/index.html">Java docs</a></p>
 </li>
 <li>
-<p><a href="https://www.julienviet.com/reactive-pg-client/apidocs/index.html">Javadoc</a></p>
+<p><a href="https://reactiverse.io/reactive-pg-client/apidocs/index.html">Javadoc</a></p>
 </li>
 <li>
-<p><a href="http://www.julienviet.com/reactive-pg-client/guide/kotlin/index.html">Kotlin docs</a></p>
+<p>https:/reactiverse.io/reactive-pg-client/guide/kotlin/index.html[Kotlin docs]</p>
 </li>
 <li>
-<p><a href="http://www.julienviet.com/reactive-pg-client/guide/groovy/index.html">Groovy docs</a></p>
+<p><a href="https://reactiverse.io/reactive-pg-client/guide/groovy/index.html">Groovy docs</a></p>
 </li>
 <li>
-<p><a href="http://www.julienviet.com/reactive-pg-client/guide/ruby/index.html">Ruby docs</a></p>
+<p><a href="https://reactiverse.io/reactive-pg-client/guide/ruby/index.html">Ruby docs</a></p>
 </li>
 <li>
-<p><a href="http://www.julienviet.com/reactive-pg-client/guide/js/index.html">JavaScript docs</a></p>
+<p><a href="https://reactiverse.io/reactive-pg-client/guide/js/index.html">JavaScript docs</a></p>
 </li>
 </ul>
 </div>
@@ -236,127 +236,203 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -&gt; {
 </div>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
-<col style="width: 25%;">
-<col style="width: 25%;">
-<col style="width: 25%;">
-<col style="width: 25%;">
+<col style="width: 14.2857%;">
+<col style="width: 14.2857%;">
+<col style="width: 14.2857%;">
+<col style="width: 14.2857%;">
+<col style="width: 14.2857%;">
+<col style="width: 14.2857%;">
+<col style="width: 14.2858%;">
 </colgroup>
 <thead>
 <tr>
-<th class="tableblock halign-center valign-top">Postgres</th>
-<th class="tableblock halign-center valign-top">Java</th>
-<th class="tableblock halign-center valign-top">TEXT</th>
-<th class="tableblock halign-center valign-top">BINARY</th>
+<th class="tableblock halign-center valign-top">_</th>
+<th class="tableblock halign-center valign-top">_</th>
+<th class="tableblock halign-center valign-top" colspan="2">Value</th>
+<th class="tableblock halign-center valign-top">_</th>
+<th class="tableblock halign-center valign-top" colspan="2">Array</th>
 </tr>
 </thead>
 <tbody>
 <tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Postgres</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Java</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">TEXT</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">BINARY</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">JAVA</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">TEXT</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">BINARY</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>BOOLEAN</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Boolean</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>boolean[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>INT2</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.lang.Short</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Short</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>short[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>INT4</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.lang.Integer</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Integer</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>int[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>INT8</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.lang.Long</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Long</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>long[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>FLOAT4</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.lang.Float</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Float</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>float[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>FLOAT8</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.lang.Double</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>NUMERIC</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.lang.Number</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Double</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>double[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>CHAR</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.lang.Character</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Character</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>char[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>VARCHAR</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.lang.String</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.String</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.String[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>TEXT</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.lang.String</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.String</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.String[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>NUMERIC</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.Numeric</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>UUID</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.util.UUID</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.u.UUID</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.u.UUID[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>DATE</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.time.LocalDate</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.LocalDate</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.LocalDate[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>TIME</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.time.LocalTime</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.LocalTime</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.LocalTime[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>TIMETZ</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.time.OffsetTime</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.OffsetTime</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.OffsetTime[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>TIMESTAMP</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.time.LocalDateTime</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.LocalDateTime</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.LocalDateTime[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>TIMESTAMPTZ</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>java.time.OffsetDateTime</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.OffsetDateTime</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.OffsetDateTime[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>BYTEA</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>io.vertx.core.buffer.Buffer</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.v.c.b.Buffer</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.v.c.b.Buffer[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>JSON</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>io.vertx.core.json.Json[Object/Array]</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.Json</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>JSONB</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>io.vertx.core.json.Json[Object/Array]</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">Yes</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.Json</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
 </tr>
 </tbody>
 </table>
@@ -378,7 +454,7 @@ The client uses <code>BINARY</code> protocol only for prepared queries <code>PgC
 <h2 id="_snapshots">Snapshots</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Snapshots are deploy in Sonatype OSS repository: <a href="https://oss.sonatype.org/content/repositories/snapshots/com/julienviet/reactive-pg-client/" class="bare">https://oss.sonatype.org/content/repositories/snapshots/com/julienviet/reactive-pg-client/</a></p>
+<p>Snapshots are deploy in Sonatype OSS repository: <a href="https://oss.sonatype.org/content/repositories/snapshots/io/reactiverse/reactive-pg-client/" class="bare">https://oss.sonatype.org/content/repositories/snapshots/io/reactiverse/reactive-pg-client/</a></p>
 </div>
 </div>
 </div>
@@ -391,26 +467,59 @@ The client uses <code>BINARY</code> protocol only for prepared queries <code>PgC
 </div>
 </div>
 <div class="sect1">
-<h2 id="_publishing_docs">Publishing docs</h2>
+<h2 id="_developers">Developers</h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="_documentation">Documentation</h3>
+<div class="paragraph">
+<p>The online and published documentation is in <code>/docs</code> and is served by GitHub pages with Jekyll.</p>
+</div>
+<div class="paragraph">
+<p>You can find the actual guide source in [src/main/docs/index.md](src/main/docs/index.md). At compilation time, this
+source generates the [jekyll/guide/java/index.md](jekyll/guide/java/index.md).</p>
+</div>
+<div class="paragraph">
+<p>The current documentation is in <code>/jekyll</code> and can be preview using Docker and your browser</p>
+</div>
 <div class="ulist">
 <ul>
 <li>
-<p>mvn package -Pdocs</p>
+<p>generate the documentation</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>mvn compile</code> to generate <code>jekyll/guide/java/index.md</code></p>
 </li>
 <li>
-<p>cp -r target/docs docs/</p>
-</li>
-<li>
-<p>mv docs/reactive-pg-client docs/guide</p>
+<p><code>mvn site</code> to generate the javadoc in <code>jekyll/apidocs</code></p>
 </li>
 </ul>
+</div>
+</li>
+<li>
+<p>run Jekyll</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>cd jekyll</code></p>
+</li>
+<li>
+<p><code>docker-compose up</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>open your browser at <a href="http://localhost:4000" class="bare">http://localhost:4000</a></p>
+</li>
+</ul>
+</div>
 </div>
 </div>
 </div></div></div>
 
     <div id="footer">
-  Generated on Fri Mar 16 11:44:49 2018 by
+  Generated on Mon Mar 26 18:29:51 2018 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.8.7.6 (ruby-2.3.3).
 </div>

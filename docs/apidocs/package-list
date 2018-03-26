@@ -1,6 +1,6 @@
-com.julienviet.pgclient
-com.julienviet.pgclient.pubsub
-com.julienviet.reactivex.pgclient
-com.julienviet.reactivex.pgclient.pubsub
-com.julienviet.rxjava.pgclient
-com.julienviet.rxjava.pgclient.pubsub
+io.reactiverse.pgclient
+io.reactiverse.pgclient.pubsub
+io.reactiverse.reactivex.pgclient
+io.reactiverse.reactivex.pgclient.pubsub
+io.reactiverse.rxjava.pgclient
+io.reactiverse.rxjava.pgclient.pubsub
