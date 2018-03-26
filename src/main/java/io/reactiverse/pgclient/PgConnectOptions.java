@@ -56,7 +56,7 @@ public class PgConnectOptions extends NetClientOptions {
     } else {
       host = getenv("PGHOSTADDR");
     }
-    if (getenv("PGPORT") != null) port = parseInt(getenv("PGPORT");
+    if (getenv("PGPORT") != null) port = parseInt(getenv("PGPORT"));
     if (getenv("PGDATABASE") != null) database = getenv("PGDATABASE");
     if (getenv("PGUSER") != null) username = getenv("PGUSER");
     if (getenv("PGPASSWORD") != null) password = getenv("PGPASSWORD");
