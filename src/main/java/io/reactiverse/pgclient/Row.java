@@ -222,7 +222,7 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore
-  int[] getIntegerArray(String name);
+  int[] getIntArray(String name);
 
   /**
    * Get {@link Boolean} value at {@code pos}.

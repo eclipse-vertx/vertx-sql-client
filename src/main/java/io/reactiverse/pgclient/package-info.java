@@ -275,6 +275,22 @@
  * {@link examples.Examples#numericExample(Row)}
  * ----
  *
+ * === Handling arrays
+ *
+ * You can map java arrays to Postgres arrays.
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#stringArrayExample(io.reactiverse.pgclient.Row)}
+ * ----
+ *
+ * Primitive arrays are used whenever possible.
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#intArrayExample(io.reactiverse.pgclient.Row)}
+ * ----
+ *
  * == Pub/sub
  *
  * Postgres supports pub/sub communication channels.

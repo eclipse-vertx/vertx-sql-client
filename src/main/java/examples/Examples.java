@@ -565,4 +565,12 @@ public class Examples {
       BigDecimal value = numeric.bigDecimalValue();
     }
   }
+
+  public void stringArrayExample(Row row) {
+    String[] array = row.getStringArray("strings");
+  }
+
+  public void intArrayExample(Row row) {
+    int[] array = row.getIntArray("ints");
+  }
 }

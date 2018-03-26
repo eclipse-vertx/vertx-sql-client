@@ -66,7 +66,7 @@ class ColumnChecker {
     tupleMethods.add(Tuple::getShortArray);
     rowMethods.add(Row::getShortArray);
     tupleMethods.add(Tuple::getIntegerArray);
-    rowMethods.add(Row::getIntegerArray);
+    rowMethods.add(Row::getIntArray);
     tupleMethods.add(Tuple::getLongArray);
     rowMethods.add(Row::getLongArray);
     tupleMethods.add(Tuple::getFloatArray);

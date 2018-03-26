@@ -174,7 +174,7 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public int[] getIntegerArray(String name) {
+  public int[] getIntArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getIntegerArray(pos);
   }
