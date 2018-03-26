@@ -34,6 +34,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
+import java.util.UUID;
 
 import static javax.xml.bind.DatatypeConverter.printHexBinary;
 
@@ -51,16 +52,8 @@ public class DataType<T> {
   }
   interface ArrayFactory<T> {
     T[] create(int size);
+    T[] empty();
   }
-
-  private static final ArrayFactory<String> STRING_ARRAY_FACTORY = String[]::new;
-  private static final ArrayFactory<LocalDate> LOCALDATE_ARRAY_FACTORY = LocalDate[]::new;
-  private static final ArrayFactory<LocalTime> LOCALTIME_ARRAY_FACTORY = LocalTime[]::new;
-  private static final ArrayFactory<OffsetTime> OFFSETTIME_ARRAY_FACTORY = OffsetTime[]::new;
-  private static final ArrayFactory<LocalDateTime> LOCALDATETIME_ARRAY_FACTORY = LocalDateTime[]::new;
-  private static final ArrayFactory<OffsetDateTime> OFFSETDATETIME_ARRAY_FACTORY = OffsetDateTime[]::new;
-  private static final ArrayFactory<Buffer> BUFFER_ARRAY_FACTORY = Buffer[]::new;
-  private static final ArrayFactory<java.util.UUID> UUID_ARRAY_FACTORY = java.util.UUID[]::new;
 
   // 1 byte
   public static final DataType<Boolean> BOOL = new DataType<Boolean>(Boolean.class, 16) {
@@ -1090,7 +1083,7 @@ public class DataType<T> {
 
   public static <T> T[] decodeBinary(ArrayFactory<T> supplier, DataType<T> type, int len, ByteBuf buff) {
     if (len == 12) {
-      return supplier.create(0);
+      return supplier.empty();
     }
     buff.skipBytes(4);
     int offset = buff.readInt();
@@ -1117,4 +1110,101 @@ public class DataType<T> {
     }
     buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
   }
+
+  private static final ArrayFactory<String> STRING_ARRAY_FACTORY = new ArrayFactory<String>() {
+    private String[] empty = new String[0];
+    @Override
+    public String[] create(int size) {
+      return new String[size];
+    }
+
+    @Override
+    public String[] empty() {
+      return empty;
+    }
+  };
+  private static final ArrayFactory<LocalDate> LOCALDATE_ARRAY_FACTORY = new ArrayFactory<LocalDate>() {
+    private LocalDate[] empty = new LocalDate[0];
+    @Override
+    public LocalDate[] create(int size) {
+      return new LocalDate[size];
+    }
+
+    @Override
+    public LocalDate[] empty() {
+      return empty;
+    }
+  };
+  private static final ArrayFactory<LocalTime> LOCALTIME_ARRAY_FACTORY = new ArrayFactory<LocalTime>() {
+    private LocalTime[] empty = new LocalTime[0];
+    @Override
+    public LocalTime[] create(int size) {
+      return new LocalTime[size];
+    }
+
+    @Override
+    public LocalTime[] empty() {
+      return empty;
+    }
+  };
+  private static final ArrayFactory<OffsetTime> OFFSETTIME_ARRAY_FACTORY = new ArrayFactory<OffsetTime>() {
+    private OffsetTime[] empty = new OffsetTime[0];
+    @Override
+    public OffsetTime[] create(int size) {
+      return new OffsetTime[size];
+    }
+
+    @Override
+    public OffsetTime[] empty() {
+      return empty;
+    }
+  };
+  private static final ArrayFactory<LocalDateTime> LOCALDATETIME_ARRAY_FACTORY = new ArrayFactory<LocalDateTime>() {
+    private LocalDateTime[] empty = new LocalDateTime[0];
+    @Override
+    public LocalDateTime[] create(int size) {
+      return new LocalDateTime[size];
+    }
+
+    @Override
+    public LocalDateTime[] empty() {
+      return empty;
+    }
+  };
+  private static final ArrayFactory<OffsetDateTime> OFFSETDATETIME_ARRAY_FACTORY = new ArrayFactory<OffsetDateTime>() {
+    private OffsetDateTime[] empty = new OffsetDateTime[0];
+    @Override
+    public OffsetDateTime[] create(int size) {
+      return new OffsetDateTime[size];
+    }
+
+    @Override
+    public OffsetDateTime[] empty() {
+      return empty;
+    }
+  };
+  private static final ArrayFactory<Buffer> BUFFER_ARRAY_FACTORY = new ArrayFactory<Buffer>() {
+    private Buffer[] empty = new Buffer[0];
+    @Override
+    public Buffer[] create(int size) {
+      return new Buffer[size];
+    }
+
+    @Override
+    public Buffer[] empty() {
+      return empty;
+    }
+  };
+  private static final ArrayFactory<java.util.UUID> UUID_ARRAY_FACTORY = new ArrayFactory<java.util.UUID>() {
+    private java.util.UUID[] empty = new java.util.UUID[0];
+    @Override
+    public UUID[] create(int size) {
+      return new UUID[size];
+    }
+
+    @Override
+    public UUID[] empty() {
+      return empty;
+    }
+  };
 }
