@@ -1049,7 +1049,7 @@ public class DataType<T> {
 
   public T decodeBinary(int len, ByteBuf buff) {
     // Default to null
-    buff.readerIndex(buff.readerIndex() + len);
+    buff.skipBytes(len);
     return null;
   }
 
@@ -1069,7 +1069,7 @@ public class DataType<T> {
 
   public T decodeText(int len, ByteBuf buff) {
     // Default to null
-    buff.readerIndex(buff.readerIndex() + len);
+    buff.skipBytes(len);
     return null;
   }
 
