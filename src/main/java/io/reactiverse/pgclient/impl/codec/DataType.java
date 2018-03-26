@@ -1089,9 +1089,6 @@ public class DataType<T> {
   }
 
   public static <T> T[] decodeBinary(ArrayFactory<T> supplier, DataType<T> type, int len, ByteBuf buff) {
-    if (len == 12) {
-      return supplier.create(0);
-    }
     buff.readerIndex(buff.readerIndex() + 4);
     int offset = buff.readInt();
     buff.readerIndex(buff.readerIndex() + 4);
