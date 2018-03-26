@@ -99,7 +99,7 @@ public class DataType<T> {
       buff.skipBytes(4);//Skip the oid cause we know what type it is
       int length = buff.readInt(); //Read the length to create a fixed length array
       boolean[] array = new boolean[length];//Create the array
-      buff.readerIndex(buff.readerIndex() + offset + 4);//Skip, if exists, the bitmap and the lower boundry
+      buff.skipBytes(offset+4);//Skip, if exists, the bitmap and the lower boundry
       for (int i = 0; i < array.length; i++) {
         array[i] = BOOL.decodeBinary(buff.readInt(), buff);//Decode the elements with the element decoder
       }
@@ -151,7 +151,7 @@ public class DataType<T> {
       buff.skipBytes(4);
       int length = buff.readInt();
       short[] array = new short[length];
-      buff.readerIndex(buff.readerIndex() + offset + 4);
+      buff.skipBytes(offset+4);
       for (int i = 0; i < array.length; i++) {
         array[i] = INT2.decodeBinary(buff.readInt(), buff);
       }
@@ -203,7 +203,7 @@ public class DataType<T> {
       buff.skipBytes(4);
       int length = buff.readInt();
       int[] array = new int[length];
-      buff.readerIndex(buff.readerIndex() + offset + 4);
+      buff.skipBytes(offset+4);
       for (int i = 0; i < array.length; i++) {
         array[i] = INT4.decodeBinary(buff.readInt(), buff);
       }
@@ -255,7 +255,7 @@ public class DataType<T> {
       buff.skipBytes(4);
       int length = buff.readInt();
       long[] array = new long[length];
-      buff.readerIndex(buff.readerIndex() + offset + 4);
+      buff.skipBytes(offset+4);
       for (int i = 0; i < array.length; i++) {
         array[i] = INT8.decodeBinary(buff.readInt(), buff);
       }
@@ -309,7 +309,7 @@ public class DataType<T> {
       buff.skipBytes(4);
       int length = buff.readInt();
       float[] array = new float[length];
-      buff.readerIndex(buff.readerIndex() + offset + 4);
+      buff.skipBytes(offset+4);
       for (int i = 0; i < array.length; i++) {
         array[i] = FLOAT4.decodeBinary(buff.readInt(), buff);
       }
@@ -363,7 +363,7 @@ public class DataType<T> {
       buff.skipBytes(4);
       int length = buff.readInt();
       double[] array = new double[length];
-      buff.readerIndex(buff.readerIndex() + offset + 4);
+      buff.skipBytes(offset+4);
       for (int i = 0; i < array.length; i++) {
         array[i] = FLOAT8.decodeBinary(buff.readInt(), buff);
       }
@@ -444,7 +444,7 @@ public class DataType<T> {
       buff.skipBytes(4);
       int length = buff.readInt();
       char[] array = new char[length];
-      buff.readerIndex(buff.readerIndex() + offset + 4);
+      buff.skipBytes(offset+4);
       for (int i = 0; i < array.length; i++) {
         array[i] = CHAR.decodeBinary(buff.readInt(), buff);
       }
@@ -1093,7 +1093,7 @@ public class DataType<T> {
     buff.skipBytes(4);
     int length = buff.readInt();
     T[] array = supplier.create(length);
-    buff.readerIndex(buff.readerIndex() + offset + 4);
+    buff.skipBytes(offset+4);
     for (int i = 0; i < array.length; i++) {
       array[i] = type.decodeBinary(buff.readInt(), buff);
     }
