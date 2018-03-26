@@ -53,14 +53,14 @@ public class DataType<T> {
     T[] create(int size);
   }
 
-  private static ArrayFactory<String> STRING_ARRAY_FACTORY = String[]::new;
-  private static ArrayFactory<LocalDate> LOCALDATE_ARRAY_FACTORY = LocalDate[]::new;
-  private static ArrayFactory<LocalTime> LOCALTIME_ARRAY_FACTORY = LocalTime[]::new;
-  private static ArrayFactory<OffsetTime> OFFSETTIME_ARRAY_FACTORY = OffsetTime[]::new;
-  private static ArrayFactory<LocalDateTime> LOCALDATETIME_ARRAY_FACTORY = LocalDateTime[]::new;
-  private static ArrayFactory<OffsetDateTime> OFFSETDATETIME_ARRAY_FACTORY = OffsetDateTime[]::new;
-  private static ArrayFactory<Buffer> BUFFER_ARRAY_FACTORY = Buffer[]::new;
-  private static ArrayFactory<java.util.UUID> UUID_ARRAY_FACTORY = java.util.UUID[]::new;
+  private static final ArrayFactory<String> STRING_ARRAY_FACTORY = String[]::new;
+  private static final ArrayFactory<LocalDate> LOCALDATE_ARRAY_FACTORY = LocalDate[]::new;
+  private static final ArrayFactory<LocalTime> LOCALTIME_ARRAY_FACTORY = LocalTime[]::new;
+  private static final ArrayFactory<OffsetTime> OFFSETTIME_ARRAY_FACTORY = OffsetTime[]::new;
+  private static final ArrayFactory<LocalDateTime> LOCALDATETIME_ARRAY_FACTORY = LocalDateTime[]::new;
+  private static final ArrayFactory<OffsetDateTime> OFFSETDATETIME_ARRAY_FACTORY = OffsetDateTime[]::new;
+  private static final ArrayFactory<Buffer> BUFFER_ARRAY_FACTORY = Buffer[]::new;
+  private static final ArrayFactory<java.util.UUID> UUID_ARRAY_FACTORY = java.util.UUID[]::new;
 
   // 1 byte
   public static final DataType<Boolean> BOOL = new DataType<Boolean>(Boolean.class, 16) {
@@ -88,11 +88,11 @@ public class DataType<T> {
   };
   //Commented version cause other datatypes are always the same procedure
   public static final DataType<boolean[]> BOOL_ARRAY = new DataType<boolean[]>(boolean[].class, 1000) {
-
+    public final boolean[] empty = new boolean[0];
     @Override
     public boolean[] decodeBinary(int len, ByteBuf buff) {
       if (len == 12) {
-        return new boolean[0];
+        return empty;
       }
       buff.skipBytes(4);//Skip dimensions cause its always 1
       int offset = buff.readInt();//Read the offset, used to skip the bitmap
@@ -140,11 +140,11 @@ public class DataType<T> {
   };
 
   public static final DataType<short[]> INT2_ARRAY = new DataType<short[]>(short[].class, 1005) {
-
+    public final short[] empty = new short[0];
     @Override
     public short[] decodeBinary(int len, ByteBuf buff) {
       if (len == 12) {
-        return new short[0];
+        return empty;
       }
       buff.skipBytes(4);
       int offset = buff.readInt();
@@ -192,11 +192,11 @@ public class DataType<T> {
   };
 
   public static final DataType<int[]> INT4_ARRAY = new DataType<int[]>(int[].class, 1007) {
-
+    public final int[] empty = new int[0];
     @Override
     public int[] decodeBinary(int len, ByteBuf buff) {
       if (len == 12) {
-        return new int[0];
+        return empty;
       }
       buff.skipBytes(4);
       int offset = buff.readInt();
@@ -244,11 +244,11 @@ public class DataType<T> {
   };
 
   public static final DataType<long[]> INT8_ARRAY = new DataType<long[]>(long[].class, 1016) {
-
+    public final long[] empty = new long[0];
     @Override
     public long[] decodeBinary(int len, ByteBuf buff) {
       if (len == 12) {
-        return new long[0];
+        return empty;
       }
       buff.skipBytes(4);
       int offset = buff.readInt();
@@ -298,11 +298,11 @@ public class DataType<T> {
   };
 
   public static final DataType<float[]> FLOAT4_ARRAY = new DataType<float[]>(float[].class, 1021) {
-
+    public final float[] empty = new float[0];
     @Override
     public float[] decodeBinary(int len, ByteBuf buff) {
       if (len == 12) {
-        return new float[0];
+        return empty;
       }
       buff.skipBytes(4);
       int offset = buff.readInt();
@@ -352,11 +352,11 @@ public class DataType<T> {
   };
 
   public static final DataType<double[]> FLOAT8_ARRAY = new DataType<double[]>(double[].class, 1022) {
-
+    public final double[] empty = new double[0];
     @Override
     public double[] decodeBinary(int len, ByteBuf buff) {
       if (len == 12) {
-        return new double[0];
+        return empty;
       }
       buff.skipBytes(4);
       int offset = buff.readInt();
@@ -436,9 +436,13 @@ public class DataType<T> {
   };
   // Single length character
   public static final DataType<char[]> CHAR_ARRAY = new DataType<char[]>(char[].class, 1002) {
+    public final char[] empty = new char[0];
 
     @Override
     public char[] decodeBinary(int len, ByteBuf buff) {
+      if(len == 12){
+        return empty;
+      }
       buff.skipBytes(4);
       int offset = buff.readInt();
       buff.skipBytes(4);
