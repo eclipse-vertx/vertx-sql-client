@@ -213,7 +213,7 @@ public class Examples {
   }
 
   public void queries04(PgClient client) {
-    client.preparedQuery("\"INSERT INTO users (first_name, last_name) VALUES ($1, $2)", Tuple.of("Julien", "Viet"),  ar -> {
+    client.preparedQuery("INSERT INTO users (first_name, last_name) VALUES ($1, $2)", Tuple.of("Julien", "Viet"),  ar -> {
       if (ar.succeeded()) {
         PgResult<Row> result = ar.result();
         System.out.println(result.updatedCount());

@@ -1,4 +1,10 @@
 jitwatch.out
+jekyll/apidocs
+jekyll/yardoc
+jekyll/guide
+jekyll/.*
+jekyll/_site
+jekyll/jsdoc
 *.log
 .vertx
 .DS_Store
