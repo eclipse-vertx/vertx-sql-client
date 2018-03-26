@@ -25,6 +25,7 @@ import io.reactiverse.pgclient.Json;
 import io.reactiverse.pgclient.Numeric;
 import io.reactiverse.pgclient.impl.codec.formatter.DateTimeFormatter;
 import io.reactiverse.pgclient.impl.codec.formatter.TimeFormatter;
+import io.reactiverse.pgclient.impl.codec.util.Util;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -35,8 +36,6 @@ import java.time.*;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
-
-import static javax.xml.bind.DatatypeConverter.printHexBinary;
 
 /**
  * PostgreSQL <a href="https://github.com/postgres/postgres/blob/master/src/include/catalog/pg_type.h">object
@@ -763,8 +762,7 @@ public class DataType<T> {
       int index = buff.writerIndex();
       buff.setByte(index + 4, '\\');
       buff.setByte(index + 5, 'x');
-      // todo : optimize - no need to create an intermediate string here
-      int len = buff.setCharSequence(index + 6, printHexBinary(value.getBytes()), StandardCharsets.UTF_8);
+      int len = Util.writeHexString(value, buff);
       buff.writeInt(2 + len);
       buff.writerIndex(index + 2 + len);
     }

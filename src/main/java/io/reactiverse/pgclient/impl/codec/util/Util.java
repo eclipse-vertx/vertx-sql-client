@@ -18,6 +18,8 @@
 package io.reactiverse.pgclient.impl.codec.util;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.core.buffer.Buffer;
+
 import java.nio.charset.Charset;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -69,5 +71,29 @@ public class Util {
       "] cannot be coerced to [" + types
       .map(Class::getSimpleName)
       .collect(Collectors.joining(", ")) + "]";
+  }
+
+  private static final int FIRST_HALF_BYTE_MASK = 0x0F;
+
+  public static int writeHexString(Buffer buffer, ByteBuf to) {
+    int len = buffer.length();
+    for (int i = 0; i < len; i++) {
+      final int b = Byte.toUnsignedInt(buffer.getByte(i));
+      final int firstDigit = b >> 4;
+      final byte firstHexDigit = (byte)bin2hex(firstDigit);
+      final int secondDigit = b & FIRST_HALF_BYTE_MASK;
+      final byte secondHexDigit = (byte)bin2hex(secondDigit);
+      to.writeByte(firstHexDigit);
+      to.writeByte(secondHexDigit);
+    }
+    return len;
+  }
+
+  private static int bin2hex(int digit){
+    final int isLessOrEqual9 =(digit-10)>>31;
+    //isLessOrEqual9==0xff<->digit<=9
+    //bin2hexAsciiDistance=digit<=9?48:87;
+    final int bin2hexAsciiDistance = 48+((~isLessOrEqual9)&39);
+    return digit+bin2hexAsciiDistance;
   }
 }
