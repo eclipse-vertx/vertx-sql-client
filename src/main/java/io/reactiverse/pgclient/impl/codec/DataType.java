@@ -49,6 +49,18 @@ public class DataType<T> {
   public interface Decoder<T> {
     T decode(int len, ByteBuf buff);
   }
+  interface ArrayFactory<T> {
+    T[] create(int size);
+  }
+
+  private static ArrayFactory<String> STRING_ARRAY_FACTORY = String[]::new;
+  private static ArrayFactory<LocalDate> LOCALDATE_ARRAY_FACTORY = LocalDate[]::new;
+  private static ArrayFactory<LocalTime> LOCALTIME_ARRAY_FACTORY = LocalTime[]::new;
+  private static ArrayFactory<OffsetTime> OFFSETTIME_ARRAY_FACTORY = OffsetTime[]::new;
+  private static ArrayFactory<LocalDateTime> LOCALDATETIME_ARRAY_FACTORY = LocalDateTime[]::new;
+  private static ArrayFactory<OffsetDateTime> OFFSETDATETIME_ARRAY_FACTORY = OffsetDateTime[]::new;
+  private static ArrayFactory<Buffer> BUFFER_ARRAY_FACTORY = Buffer[]::new;
+  private static ArrayFactory<java.util.UUID> UUID_ARRAY_FACTORY = java.util.UUID[]::new;
 
   // 1 byte
   public static final DataType<Boolean> BOOL = new DataType<Boolean>(Boolean.class, 16) {
@@ -83,7 +95,7 @@ public class DataType<T> {
       if (len == 12) {
         return new boolean[]{};
       }
-      buff.readerIndex(buff.readerIndex() + 4);//Skip dimensons cause its always 1
+      buff.readerIndex(buff.readerIndex() + 4);//Skip dimensions cause its always 1
       int offset = buff.readInt();//Read the offset, used to skip the bitmap
       buff.readerIndex(buff.readerIndex() + 4);//Skip the oid cause we know what type it is
       int length = buff.readInt(); //Read the length to create a fixed length array
@@ -478,34 +490,12 @@ public class DataType<T> {
 
     @Override
     public String[] decodeBinary(int len, ByteBuf buff) {
-      if (len == 12) {
-        return new String[]{};
-      }
-      buff.readerIndex(buff.readerIndex() + 4);
-      int offset = buff.readInt();
-      buff.readerIndex(buff.readerIndex() + 4);
-      int length = buff.readInt();
-      String[] array = new String[length];
-      buff.readerIndex(buff.readerIndex() + offset + 4);
-      for (int i = 0; i < array.length; i++) {
-        array[i] = VARCHAR.decodeBinary(buff.readInt(), buff);
-      }
-      return array;
+      return decodeBinary(STRING_ARRAY_FACTORY, DataType.VARCHAR, len, buff);
     }
 
     @Override
     public void encodeBinaryInternal(String[] values, ByteBuf buff) {
-      int startIndex = buff.writerIndex();
-      buff.writeInt(0);
-      buff.writeInt(1);
-      buff.writeInt(0);
-      buff.writeInt(VARCHAR.id);
-      buff.writeInt(values.length);
-      buff.writeInt(1);
-      for (String value : values) {
-        VARCHAR.encodeBinaryInternal(value, buff);
-      }
-      buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
+      encodeBinaryArray(values, DataType.VARCHAR, buff);
     }
   };
 
@@ -539,34 +529,12 @@ public class DataType<T> {
 
     @Override
     public String[] decodeBinary(int len, ByteBuf buff) {
-      if (len == 12) {
-        return new String[]{};
-      }
-      buff.readerIndex(buff.readerIndex() + 4);
-      int offset = buff.readInt();
-      buff.readerIndex(buff.readerIndex() + 4);
-      int length = buff.readInt();
-      String[] array = new String[length];
-      buff.readerIndex(buff.readerIndex() + offset + 4);
-      for (int i = 0; i < array.length; i++) {
-        array[i] = BPCHAR.decodeBinary(buff.readInt(), buff);
-      }
-      return array;
+      return decodeBinary(STRING_ARRAY_FACTORY, DataType.BPCHAR, len, buff);
     }
 
     @Override
     public void encodeBinaryInternal(String[] values, ByteBuf buff) {
-      int startIndex = buff.writerIndex();
-      buff.writeInt(0);
-      buff.writeInt(1);
-      buff.writeInt(0);
-      buff.writeInt(BPCHAR.id);
-      buff.writeInt(values.length);
-      buff.writeInt(1);
-      for (String value : values) {
-        BPCHAR.encodeBinaryInternal(value, buff);
-      }
-      buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
+      encodeBinaryArray(values, DataType.BPCHAR, buff);
     }
   };
 
@@ -589,34 +557,12 @@ public class DataType<T> {
 
     @Override
     public String[] decodeBinary(int len, ByteBuf buff) {
-      if (len == 12) {
-        return new String[]{};
-      }
-      buff.readerIndex(buff.readerIndex() + 4);
-      int offset = buff.readInt();
-      buff.readerIndex(buff.readerIndex() + 4);
-      int length = buff.readInt();
-      String[] array = new String[length];
-      buff.readerIndex(buff.readerIndex() + offset + 4);
-      for (int i = 0; i < array.length; i++) {
-        array[i] = TEXT.decodeBinary(buff.readInt(), buff);
-      }
-      return array;
+      return decodeBinary(STRING_ARRAY_FACTORY, DataType.TEXT, len, buff);
     }
 
     @Override
     public void encodeBinaryInternal(String[] values, ByteBuf buff) {
-      int startIndex = buff.writerIndex();
-      buff.writeInt(0);
-      buff.writeInt(1);
-      buff.writeInt(0);
-      buff.writeInt(TEXT.id);
-      buff.writeInt(values.length);
-      buff.writeInt(1);
-      for (String value : values) {
-        TEXT.encodeBinaryInternal(value, buff);
-      }
-      buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
+      encodeBinaryArray(values, DataType.TEXT, buff);
     }
   };
 
@@ -640,34 +586,12 @@ public class DataType<T> {
 
     @Override
     public String[] decodeBinary(int len, ByteBuf buff) {
-      if (len == 12) {
-        return new String[]{};
-      }
-      buff.readerIndex(buff.readerIndex() + 4);
-      int offset = buff.readInt();
-      buff.readerIndex(buff.readerIndex() + 4);
-      int length = buff.readInt();
-      String[] array = new String[length];
-      buff.readerIndex(buff.readerIndex() + offset + 4);
-      for (int i = 0; i < array.length; i++) {
-        array[i] = NAME.decodeBinary(buff.readInt(), buff);
-      }
-      return array;
+      return decodeBinary(STRING_ARRAY_FACTORY, DataType.NAME, len, buff);
     }
 
     @Override
     public void encodeBinaryInternal(String[] values, ByteBuf buff) {
-      int startIndex = buff.writerIndex();
-      buff.writeInt(0);
-      buff.writeInt(1);
-      buff.writeInt(0);
-      buff.writeInt(NAME.id);
-      buff.writeInt(values.length);
-      buff.writeInt(1);
-      for (String value : values) {
-        NAME.encodeBinaryInternal(value, buff);
-      }
-      buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
+      encodeBinaryArray(values, DataType.NAME, buff);
     }
   };
 
@@ -693,34 +617,12 @@ public class DataType<T> {
 
     @Override
     public LocalDate[] decodeBinary(int len, ByteBuf buff) {
-      if (len == 12) {
-        return new LocalDate[]{};
-      }
-      buff.readerIndex(buff.readerIndex() + 4);
-      int offset = buff.readInt();
-      buff.readerIndex(buff.readerIndex() + 4);
-      int length = buff.readInt();
-      LocalDate[] array = new LocalDate[length];
-      buff.readerIndex(buff.readerIndex() + offset + 4);
-      for (int i = 0; i < array.length; i++) {
-        array[i] = DATE.decodeBinary(buff.readInt(), buff);
-      }
-      return array;
+      return decodeBinary(LOCALDATE_ARRAY_FACTORY, DataType.DATE, len, buff);
     }
 
     @Override
     public void encodeBinaryInternal(LocalDate[] values, ByteBuf buff) {
-      int startIndex = buff.writerIndex();
-      buff.writeInt(0);
-      buff.writeInt(1);
-      buff.writeInt(0);
-      buff.writeInt(DATE.id);
-      buff.writeInt(values.length);
-      buff.writeInt(1);
-      for (LocalDate value : values) {
-        DATE.encodeBinaryInternal(value, buff);
-      }
-      buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
+      encodeBinaryArray(values, DataType.DATE, buff);
     }
   };
 
@@ -746,34 +648,12 @@ public class DataType<T> {
 
     @Override
     public LocalTime[] decodeBinary(int len, ByteBuf buff) {
-      if (len == 12) {
-        return new LocalTime[]{};
-      }
-      buff.readerIndex(buff.readerIndex() + 4);
-      int offset = buff.readInt();
-      buff.readerIndex(buff.readerIndex() + 4);
-      int length = buff.readInt();
-      LocalTime[] array = new LocalTime[length];
-      buff.readerIndex(buff.readerIndex() + offset + 4);
-      for (int i = 0; i < array.length; i++) {
-        array[i] = TIME.decodeBinary(buff.readInt(), buff);
-      }
-      return array;
+      return decodeBinary(LOCALTIME_ARRAY_FACTORY, DataType.TIME, len, buff);
     }
 
     @Override
     public void encodeBinaryInternal(LocalTime[] values, ByteBuf buff) {
-      int startIndex = buff.writerIndex();
-      buff.writeInt(0);
-      buff.writeInt(1);
-      buff.writeInt(0);
-      buff.writeInt(TIME.id);
-      buff.writeInt(values.length);
-      buff.writeInt(1);
-      for (LocalTime value : values) {
-        TIME.encodeBinaryInternal(value, buff);
-      }
-      buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
+      encodeBinaryArray(values, DataType.TIME, buff);
     }
   };
 
@@ -803,34 +683,12 @@ public class DataType<T> {
 
     @Override
     public OffsetTime[] decodeBinary(int len, ByteBuf buff) {
-      if (len == 12) {
-        return new OffsetTime[]{};
-      }
-      buff.readerIndex(buff.readerIndex() + 4);
-      int offset = buff.readInt();
-      buff.readerIndex(buff.readerIndex() + 4);
-      int length = buff.readInt();
-      OffsetTime[] array = new OffsetTime[length];
-      buff.readerIndex(buff.readerIndex() + offset + 4);
-      for (int i = 0; i < array.length; i++) {
-        array[i] = TIMETZ.decodeBinary(buff.readInt(), buff);
-      }
-      return array;
+      return decodeBinary(OFFSETTIME_ARRAY_FACTORY, DataType.TIMETZ, len, buff);
     }
 
     @Override
     public void encodeBinaryInternal(OffsetTime[] values, ByteBuf buff) {
-      int startIndex = buff.writerIndex();
-      buff.writeInt(0);
-      buff.writeInt(1);
-      buff.writeInt(0);
-      buff.writeInt(TIMETZ.id);
-      buff.writeInt(values.length);
-      buff.writeInt(1);
-      for (OffsetTime value : values) {
-        TIMETZ.encodeBinaryInternal(value, buff);
-      }
-      buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
+      encodeBinaryArray(values, DataType.TIMETZ, buff);
     }
   };
 
@@ -856,34 +714,12 @@ public class DataType<T> {
 
     @Override
     public LocalDateTime[] decodeBinary(int len, ByteBuf buff) {
-      if (len == 12) {
-        return new LocalDateTime[]{};
-      }
-      buff.readerIndex(buff.readerIndex() + 4);
-      int offset = buff.readInt();
-      buff.readerIndex(buff.readerIndex() + 4);
-      int length = buff.readInt();
-      LocalDateTime[] array = new LocalDateTime[length];
-      buff.readerIndex(buff.readerIndex() + offset + 4);
-      for (int i = 0; i < array.length; i++) {
-        array[i] = TIMESTAMP.decodeBinary(buff.readInt(), buff);
-      }
-      return array;
+      return decodeBinary(LOCALDATETIME_ARRAY_FACTORY, DataType.TIMESTAMP, len, buff);
     }
 
     @Override
     public void encodeBinaryInternal(LocalDateTime[] values, ByteBuf buff) {
-      int startIndex = buff.writerIndex();
-      buff.writeInt(0);
-      buff.writeInt(1);
-      buff.writeInt(0);
-      buff.writeInt(TIMESTAMP.id);
-      buff.writeInt(values.length);
-      buff.writeInt(1);
-      for (LocalDateTime value : values) {
-        TIMESTAMP.encodeBinaryInternal(value, buff);
-      }
-      buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
+      encodeBinaryArray(values, DataType.TIMESTAMP, buff);
     }
   };
 
@@ -909,34 +745,12 @@ public class DataType<T> {
 
     @Override
     public OffsetDateTime[] decodeBinary(int len, ByteBuf buff) {
-      if (len == 12) {
-        return new OffsetDateTime[]{};
-      }
-      buff.readerIndex(buff.readerIndex() + 4);
-      int offset = buff.readInt();
-      buff.readerIndex(buff.readerIndex() + 4);
-      int length = buff.readInt();
-      OffsetDateTime[] array = new OffsetDateTime[length];
-      buff.readerIndex(buff.readerIndex() + offset + 4);
-      for (int i = 0; i < array.length; i++) {
-        array[i] = TIMESTAMPTZ.decodeBinary(buff.readInt(), buff);
-      }
-      return array;
+      return decodeBinary(OFFSETDATETIME_ARRAY_FACTORY, DataType.TIMESTAMPTZ, len, buff);
     }
 
     @Override
     public void encodeBinaryInternal(OffsetDateTime[] values, ByteBuf buff) {
-      int startIndex = buff.writerIndex();
-      buff.writeInt(0);
-      buff.writeInt(1);
-      buff.writeInt(0);
-      buff.writeInt(TIMESTAMPTZ.id);
-      buff.writeInt(values.length);
-      buff.writeInt(1);
-      for (OffsetDateTime value : values) {
-        TIMESTAMPTZ.encodeBinaryInternal(value, buff);
-      }
-      buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
+      encodeBinaryArray(values, DataType.TIMESTAMPTZ, buff);
     }
   };
   // 16 bytes time interval
@@ -979,34 +793,12 @@ public class DataType<T> {
 
     @Override
     public Buffer[] decodeBinary(int len, ByteBuf buff) {
-      if (len == 12) {
-        return new Buffer[]{};
-      }
-      buff.readerIndex(buff.readerIndex() + 4);
-      int offset = buff.readInt();
-      buff.readerIndex(buff.readerIndex() + 4);
-      int length = buff.readInt();
-      Buffer[] array = new Buffer[length];
-      buff.readerIndex(buff.readerIndex() + offset + 4);
-      for (int i = 0; i < array.length; i++) {
-        array[i] = BYTEA.decodeBinary(buff.readInt(), buff);
-      }
-      return array;
+      return decodeBinary(BUFFER_ARRAY_FACTORY, DataType.BYTEA, len, buff);
     }
 
     @Override
     public void encodeBinaryInternal(Buffer[] values, ByteBuf buff) {
-      int startIndex = buff.writerIndex();
-      buff.writeInt(0);
-      buff.writeInt(1);
-      buff.writeInt(0);
-      buff.writeInt(BYTEA.id);
-      buff.writeInt(values.length);
-      buff.writeInt(1);
-      for (Buffer value : values) {
-        BYTEA.encodeBinaryInternal(value, buff);
-      }
-      buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
+      encodeBinaryArray(values, DataType.BYTEA, buff);
     }
   };
 
@@ -1043,34 +835,12 @@ public class DataType<T> {
 
     @Override
     public java.util.UUID[] decodeBinary(int len, ByteBuf buff) {
-      if (len == 12) {
-        return new java.util.UUID[]{};
-      }
-      buff.readerIndex(buff.readerIndex() + 4);
-      int offset = buff.readInt();
-      buff.readerIndex(buff.readerIndex() + 4);
-      int length = buff.readInt();
-      java.util.UUID[] array = new java.util.UUID[length];
-      buff.readerIndex(buff.readerIndex() + offset + 4);
-      for (int i = 0; i < array.length; i++) {
-        array[i] = UUID.decodeBinary(buff.readInt(), buff);
-      }
-      return array;
+      return decodeBinary(UUID_ARRAY_FACTORY, DataType.UUID, len, buff);
     }
 
     @Override
     public void encodeBinaryInternal(java.util.UUID[] values, ByteBuf buff) {
-      int startIndex = buff.writerIndex();
-      buff.writeInt(0);
-      buff.writeInt(1);
-      buff.writeInt(0);
-      buff.writeInt(UUID.id);
-      buff.writeInt(values.length);
-      buff.writeInt(1);
-      for (java.util.UUID value : values) {
-        UUID.encodeBinaryInternal(value, buff);
-      }
-      buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
+      encodeBinaryArray(values, DataType.UUID, buff);
     }
   };
 
@@ -1316,5 +1086,35 @@ public class DataType<T> {
     buff.writeInt(0); // Undetermined yet
     int len = buff.writeCharSequence(s, StandardCharsets.UTF_8);
     buff.setInt(index, len);
+  }
+
+  public static <T> T[] decodeBinary(ArrayFactory<T> supplier, DataType<T> type, int len, ByteBuf buff) {
+    if (len == 12) {
+      return supplier.create(0);
+    }
+    buff.readerIndex(buff.readerIndex() + 4);
+    int offset = buff.readInt();
+    buff.readerIndex(buff.readerIndex() + 4);
+    int length = buff.readInt();
+    T[] array = supplier.create(length);
+    buff.readerIndex(buff.readerIndex() + offset + 4);
+    for (int i = 0; i < array.length; i++) {
+      array[i] = type.decodeBinary(buff.readInt(), buff);
+    }
+    return array;
+  }
+
+  public static <T> void encodeBinaryArray(T[] values, DataType<T> type, ByteBuf buff){
+    int startIndex = buff.writerIndex();
+    buff.writeInt(0);
+    buff.writeInt(1);
+    buff.writeInt(0);
+    buff.writeInt(type.id);
+    buff.writeInt(values.length);
+    buff.writeInt(1);
+    for (T value : values) {
+      type.encodeBinaryInternal(value, buff);
+    }
+    buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
   }
 }
