@@ -31,9 +31,9 @@ To use the client, add the following dependency to the _dependencies_ section of
 [source,xml]
 ----
 <dependency>
-  <groupId>com.julienviet</groupId>
+  <groupId>io.reactiverse</groupId>
   <artifactId>reactive-pg-client</artifactId>
-  <version>0.6.0</version>
+  <version>0.7.0</version>
 </dependency>
 ----
 
@@ -42,7 +42,7 @@ To use the client, add the following dependency to the _dependencies_ section of
 [source,groovy]
 ----
 dependencies {
-  compile 'com.julienviet:reactive-pg-client:0.6.0'
+  compile 'io.reactiverse:reactive-pg-client:0.8.0'
 }
 ----
 
@@ -80,7 +80,6 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -> {
 
 * https://reactiverse.io/reactive-pg-client/guide/java/index.html[Java docs]
 * https://reactiverse.io/reactive-pg-client/apidocs/index.html[Javadoc]
-* https:/reactiverse.io/reactive-pg-client/guide/kotlin/index.html[Kotlin docs]
 * https://reactiverse.io/reactive-pg-client/guide/groovy/index.html[Groovy docs]
 * https://reactiverse.io/reactive-pg-client/guide/ruby/index.html[Ruby docs]
 * https://reactiverse.io/reactive-pg-client/guide/js/index.html[JavaScript docs]
