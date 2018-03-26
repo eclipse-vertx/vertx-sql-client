@@ -91,10 +91,6 @@ public class DataType<T> {
 
     @Override
     public boolean[] decodeBinary(int len, ByteBuf buff) {
-      //If length equals 12 then it is an empty array
-      if (len == 12) {
-        return new boolean[]{};
-      }
       buff.readerIndex(buff.readerIndex() + 4);//Skip dimensions cause its always 1
       int offset = buff.readInt();//Read the offset, used to skip the bitmap
       buff.readerIndex(buff.readerIndex() + 4);//Skip the oid cause we know what type it is
@@ -144,9 +140,6 @@ public class DataType<T> {
 
     @Override
     public short[] decodeBinary(int len, ByteBuf buff) {
-      if (len == 12) {
-        return new short[]{};
-      }
       buff.readerIndex(buff.readerIndex() + 4);
       int offset = buff.readInt();
       buff.readerIndex(buff.readerIndex() + 4);
@@ -196,9 +189,6 @@ public class DataType<T> {
 
     @Override
     public int[] decodeBinary(int len, ByteBuf buff) {
-      if (len == 12) {
-        return new int[]{};
-      }
       buff.readerIndex(buff.readerIndex() + 4);
       int offset = buff.readInt();
       buff.readerIndex(buff.readerIndex() + 4);
@@ -248,9 +238,6 @@ public class DataType<T> {
 
     @Override
     public long[] decodeBinary(int len, ByteBuf buff) {
-      if (len == 12) {
-        return new long[]{};
-      }
       buff.readerIndex(buff.readerIndex() + 4);
       int offset = buff.readInt();
       buff.readerIndex(buff.readerIndex() + 4);
@@ -302,9 +289,6 @@ public class DataType<T> {
 
     @Override
     public float[] decodeBinary(int len, ByteBuf buff) {
-      if (len == 12) {
-        return new float[]{};
-      }
       buff.readerIndex(buff.readerIndex() + 4);
       int offset = buff.readInt();
       buff.readerIndex(buff.readerIndex() + 4);
@@ -356,9 +340,6 @@ public class DataType<T> {
 
     @Override
     public double[] decodeBinary(int len, ByteBuf buff) {
-      if (len == 12) {
-        return new double[]{};
-      }
       buff.readerIndex(buff.readerIndex() + 4);
       int offset = buff.readInt();
       buff.readerIndex(buff.readerIndex() + 4);
@@ -440,9 +421,6 @@ public class DataType<T> {
 
     @Override
     public char[] decodeBinary(int len, ByteBuf buff) {
-      if (len == 12) {
-        return new char[]{};
-      }
       buff.readerIndex(buff.readerIndex() + 4);
       int offset = buff.readInt();
       buff.readerIndex(buff.readerIndex() + 4);
