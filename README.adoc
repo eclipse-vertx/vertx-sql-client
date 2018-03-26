@@ -91,55 +91,89 @@ Postgres has two protocols `TEXT` and `BINARY` to encode/decode data types.
 
 The *Reactive Postgres Client* currently supports the following data types
 
-[cols="^,^,^,^", options="header"]
+[cols="^,^,^,^,^,^", options="header"]
 |====
-| Postgres | Java | TEXT | BINARY
+| _
+| _
+2+| Value
+2+| Array
+
+| Postgres | Java | TEXT | BINARY | TEXT | BINARY
+
+|`BOOLEAN`
+|`java.lang.Boolean`
+|&#10004;
+|&#10004;
+|_
+|boolean[]
 
 |`INT2`
 |`java.lang.Short`
-|Yes
-|Yes
+|&#10004;
+|&#10004;
+|_
+|short[]
 
 |`INT4`
 |`java.lang.Integer`
-|Yes
-|Yes
+|&#10004;
+|&#10004;
+|_
+|int[]
 
 |`INT8`
 |`java.lang.Long`
-|Yes
-|Yes
+|&#10004;
+|&#10004;
+|_
+|long[]
 
 |`FLOAT4`
 |`java.lang.Float`
-|Yes
-|Yes
+|&#10004;
+|&#10004;
+|_
+|float[]
 
 |`FLOAT8`
 |`java.lang.Double`
-|Yes
-|Yes
+|&#10004;
+|&#10004;
+|_
+|double[]
+
+|`CHAR`
+|`java.lang.Character`
+|&#10004;
+|&#10004;
+|_
+|char[]
+
+|`VARCHAR`
+|`java.lang.String`
+|&#10004;
+|&#10004;
+|_
+|&#10004;
+
+|`TEXT`
+|`java.lang.String`
+|&#10004;
+|&#10004;
+|_
+|&#10004;
+
+|====
+
+
+[cols="^,^,^,^", options="header"]
+|====
+| Postgres | Java | TEXT | BINARY
 
 |`NUMERIC`
 |`java.lang.Number`
 |Yes
 |No
-
-|`CHAR`
-|`java.lang.Character`
-|Yes
-|No
-
-|`VARCHAR`
-|`java.lang.String`
-|Yes
-|Yes
-
-|`TEXT`
-|`java.lang.String`
-|Yes
-|Yes
-
 
 |`UUID`
 |`java.util.UUID`
@@ -166,7 +200,6 @@ The *Reactive Postgres Client* currently supports the following data types
 |Yes
 |Yes
 
-
 |`TIMESTAMPTZ`
 |`java.time.OffsetDateTime`
 |Yes
@@ -185,51 +218,6 @@ The *Reactive Postgres Client* currently supports the following data types
 |`JSONB`
 |`com.julienviet.pgclient.Json`
 |Yes
-|Yes
-
-|`BOOLEAN[]`
-|`java.lang.Boolean[]`
-|No
-|Yes
-
-|`INT2[]`
-|`java.lang.Short[]`
-|No
-|Yes
-
-|`INT4[]`
-|`java.lang.Integer[]`
-|No
-|Yes
-
-|`INT8[]`
-|`java.lang.Long[]`
-|No
-|Yes
-
-|`FLOAT4[]`
-|`java.lang.Float[]`
-|No
-|Yes
-
-|`FLOAT8[]`
-|`java.lang.Double[]`
-|No
-|Yes
-
-|`CHAR[]`
-|`java.lang.Character[]`
-|No
-|Yes
-
-|`VARCHAR[]`
-|`java.lang.String[]`
-|No
-|Yes
-
-|`TEXT[]`
-|`java.lang.String[]`
-|No
 |Yes
 
 |`UUID[]`
