@@ -91,9 +91,12 @@ public class DataType<T> {
 
     @Override
     public boolean[] decodeBinary(int len, ByteBuf buff) {
-      buff.readerIndex(buff.readerIndex() + 4);//Skip dimensions cause its always 1
+      if (len == 12) {
+        return new boolean[0];
+      }
+      buff.skipBytes(4);//Skip dimensions cause its always 1
       int offset = buff.readInt();//Read the offset, used to skip the bitmap
-      buff.readerIndex(buff.readerIndex() + 4);//Skip the oid cause we know what type it is
+      buff.skipBytes(4);//Skip the oid cause we know what type it is
       int length = buff.readInt(); //Read the length to create a fixed length array
       boolean[] array = new boolean[length];//Create the array
       buff.readerIndex(buff.readerIndex() + offset + 4);//Skip, if exists, the bitmap and the lower boundry
@@ -140,9 +143,12 @@ public class DataType<T> {
 
     @Override
     public short[] decodeBinary(int len, ByteBuf buff) {
-      buff.readerIndex(buff.readerIndex() + 4);
+      if (len == 12) {
+        return new short[0];
+      }
+      buff.skipBytes(4);
       int offset = buff.readInt();
-      buff.readerIndex(buff.readerIndex() + 4);
+      buff.skipBytes(4);
       int length = buff.readInt();
       short[] array = new short[length];
       buff.readerIndex(buff.readerIndex() + offset + 4);
@@ -189,9 +195,12 @@ public class DataType<T> {
 
     @Override
     public int[] decodeBinary(int len, ByteBuf buff) {
-      buff.readerIndex(buff.readerIndex() + 4);
+      if (len == 12) {
+        return new int[0];
+      }
+      buff.skipBytes(4);
       int offset = buff.readInt();
-      buff.readerIndex(buff.readerIndex() + 4);
+      buff.skipBytes(4);
       int length = buff.readInt();
       int[] array = new int[length];
       buff.readerIndex(buff.readerIndex() + offset + 4);
@@ -238,9 +247,12 @@ public class DataType<T> {
 
     @Override
     public long[] decodeBinary(int len, ByteBuf buff) {
-      buff.readerIndex(buff.readerIndex() + 4);
+      if (len == 12) {
+        return new long[0];
+      }
+      buff.skipBytes(4);
       int offset = buff.readInt();
-      buff.readerIndex(buff.readerIndex() + 4);
+      buff.skipBytes(4);
       int length = buff.readInt();
       long[] array = new long[length];
       buff.readerIndex(buff.readerIndex() + offset + 4);
@@ -289,9 +301,12 @@ public class DataType<T> {
 
     @Override
     public float[] decodeBinary(int len, ByteBuf buff) {
-      buff.readerIndex(buff.readerIndex() + 4);
+      if (len == 12) {
+        return new float[0];
+      }
+      buff.skipBytes(4);
       int offset = buff.readInt();
-      buff.readerIndex(buff.readerIndex() + 4);
+      buff.skipBytes(4);
       int length = buff.readInt();
       float[] array = new float[length];
       buff.readerIndex(buff.readerIndex() + offset + 4);
@@ -340,9 +355,12 @@ public class DataType<T> {
 
     @Override
     public double[] decodeBinary(int len, ByteBuf buff) {
-      buff.readerIndex(buff.readerIndex() + 4);
+      if (len == 12) {
+        return new double[0];
+      }
+      buff.skipBytes(4);
       int offset = buff.readInt();
-      buff.readerIndex(buff.readerIndex() + 4);
+      buff.skipBytes(4);
       int length = buff.readInt();
       double[] array = new double[length];
       buff.readerIndex(buff.readerIndex() + offset + 4);
@@ -421,9 +439,9 @@ public class DataType<T> {
 
     @Override
     public char[] decodeBinary(int len, ByteBuf buff) {
-      buff.readerIndex(buff.readerIndex() + 4);
+      buff.skipBytes(4);
       int offset = buff.readInt();
-      buff.readerIndex(buff.readerIndex() + 4);
+      buff.skipBytes(4);
       int length = buff.readInt();
       char[] array = new char[length];
       buff.readerIndex(buff.readerIndex() + offset + 4);
@@ -1067,9 +1085,12 @@ public class DataType<T> {
   }
 
   public static <T> T[] decodeBinary(ArrayFactory<T> supplier, DataType<T> type, int len, ByteBuf buff) {
-    buff.readerIndex(buff.readerIndex() + 4);
+    if (len == 12) {
+      return supplier.create(0);
+    }
+    buff.skipBytes(4);
     int offset = buff.readInt();
-    buff.readerIndex(buff.readerIndex() + 4);
+    buff.skipBytes(4);
     int length = buff.readInt();
     T[] array = supplier.create(length);
     buff.readerIndex(buff.readerIndex() + offset + 4);
