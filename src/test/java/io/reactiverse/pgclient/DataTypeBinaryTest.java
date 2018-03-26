@@ -7,12 +7,10 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.Random;
 import java.util.UUID;
 
@@ -1166,4 +1164,554 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
         }));
     }));
   }
+
+  @Test
+  public void testDecodeBooleanArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"Boolean\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+            .addInteger(1), ctx.asyncAssertSuccess(result -> {
+            ColumnChecker.checkColumn(0, "Boolean")
+              .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new boolean[]{Boolean.TRUE}))
+              .returns(Tuple::getBooleanArray, Row::getBooleanArray, ColumnChecker.toObjectArray(new boolean[]{Boolean.TRUE}))
+              .forRow(result.iterator().next());
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testEncodeBooleanArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Boolean\" = $1  WHERE \"id\" = $2 RETURNING \"Boolean\"",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+              .addBooleanArray(new boolean[]{Boolean.FALSE, Boolean.TRUE})
+              .addInteger(2)
+            , ctx.asyncAssertSuccess(result -> {
+              ColumnChecker.checkColumn(0, "Boolean")
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new boolean[]{Boolean.FALSE, Boolean.TRUE}))
+                .returns(Tuple::getBooleanArray, Row::getBooleanArray, ColumnChecker.toObjectArray(new boolean[]{Boolean.FALSE, Boolean.TRUE}))
+                .forRow(result.iterator().next());
+              async.complete();
+            }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testDecodeShortArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"Short\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+            .addInteger(1), ctx.asyncAssertSuccess(result -> {
+            ColumnChecker.checkColumn(0, "Short")
+              .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new short[]{1}))
+              .returns(Tuple::getShortArray, Row::getShortArray, ColumnChecker.toObjectArray(new short[]{1}))
+              .forRow(result.iterator().next());
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testEncodeShortArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Short\" = $1  WHERE \"id\" = $2 RETURNING \"Short\"",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+              .addShortArray(new short[]{2,3,4})
+              .addInteger(2)
+            , ctx.asyncAssertSuccess(result -> {
+              ColumnChecker.checkColumn(0, "Short")
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new short[]{2,3,4}))
+                .returns(Tuple::getShortArray, Row::getShortArray, ColumnChecker.toObjectArray(new short[]{2,3,4}))
+                .forRow(result.iterator().next());
+              async.complete();
+            }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testDecodeIntArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"Integer\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+            .addInteger(1), ctx.asyncAssertSuccess(result -> {
+            ColumnChecker.checkColumn(0, "Integer")
+              .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new int[]{2}))
+              .returns(Tuple::getIntegerArray, Row::getIntegerArray, ColumnChecker.toObjectArray(new int[]{2}))
+              .forRow(result.iterator().next());
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testEncodeIntArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Integer\" = $1  WHERE \"id\" = $2 RETURNING \"Integer\"",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+              .addIntArray(new int[]{3,4,5,6})
+              .addInteger(2)
+            , ctx.asyncAssertSuccess(result -> {
+              ColumnChecker.checkColumn(0, "Integer")
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new int[]{3,4,5,6}))
+                .returns(Tuple::getIntegerArray, Row::getIntegerArray, ColumnChecker.toObjectArray(new int[]{3,4,5,6}))
+                .forRow(result.iterator().next());
+              async.complete();
+            }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testDecodeLongArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"Long\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+            .addInteger(1), ctx.asyncAssertSuccess(result -> {
+            ColumnChecker.checkColumn(0, "Long")
+              .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new long[]{3}))
+              .returns(Tuple::getLongArray, Row::getLongArray, ColumnChecker.toObjectArray(new long[]{3}))
+              .forRow(result.iterator().next());
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testEncodeLongArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Long\" = $1  WHERE \"id\" = $2 RETURNING \"Long\"",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+              .addLongArray(new long[]{4,5,6,7,8})
+              .addInteger(2)
+            , ctx.asyncAssertSuccess(result -> {
+              ColumnChecker.checkColumn(0, "Long")
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new long[]{4,5,6,7,8}))
+                .returns(Tuple::getLongArray, Row::getLongArray, ColumnChecker.toObjectArray(new long[]{4,5,6,7,8}))
+                .forRow(result.iterator().next());
+              async.complete();
+            }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testDecodeFloatArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"Float\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+            .addInteger(1), ctx.asyncAssertSuccess(result -> {
+            ColumnChecker.checkColumn(0, "Float")
+              .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new float[]{4.1f}))
+              .returns(Tuple::getFloatArray, Row::getFloatArray, ColumnChecker.toObjectArray(new float[]{4.1f}))
+              .forRow(result.iterator().next());
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testEncodeFloatArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Float\" = $1  WHERE \"id\" = $2 RETURNING \"Float\"",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+              .addFloatArray(new float[]{5.2f,5.3f,5.4f})
+              .addInteger(2)
+            , ctx.asyncAssertSuccess(result -> {
+              ColumnChecker.checkColumn(0, "Float")
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new float[]{5.2f,5.3f,5.4f}))
+                .returns(Tuple::getFloatArray, Row::getFloatArray, ColumnChecker.toObjectArray(new float[]{5.2f,5.3f,5.4f}))
+                .forRow(result.iterator().next());
+              async.complete();
+            }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testDecodeDoubleArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"Double\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+            .addInteger(1), ctx.asyncAssertSuccess(result -> {
+            ColumnChecker.checkColumn(0, "Double")
+              .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new double[]{5.2}))
+              .returns(Tuple::getDoubleArray, Row::getDoubleArray, ColumnChecker.toObjectArray(new double[]{5.2}))
+              .forRow(result.iterator().next());
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testEncodeDoubleArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Double\" = $1  WHERE \"id\" = $2 RETURNING \"Double\"",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+              .addDoubleArray(new double[]{6.3})
+              .addInteger(2)
+            , ctx.asyncAssertSuccess(result -> {
+              ColumnChecker.checkColumn(0, "Double")
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new double[]{6.3}))
+                .returns(Tuple::getDoubleArray, Row::getDoubleArray, ColumnChecker.toObjectArray(new double[]{6.3}))
+                .forRow(result.iterator().next());
+              async.complete();
+            }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testEncodeEmptyArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Double\" = $1  WHERE \"id\" = $2 RETURNING \"Double\"",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+              .addDoubleArray(new double[]{})
+              .addInteger(2)
+            , ctx.asyncAssertSuccess(result -> {
+              ColumnChecker.checkColumn(0, "Double")
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new double[]{}))
+                .returns(Tuple::getDoubleArray, Row::getDoubleArray, ColumnChecker.toObjectArray(new double[]{}))
+                .forRow(result.iterator().next());
+              async.complete();
+            }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testDecodeStringArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"Text\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+            .addInteger(1), ctx.asyncAssertSuccess(result -> {
+            ColumnChecker.checkColumn(0, "Text")
+              .returns(Tuple::getValue, Row::getValue, new String[]{"Knock, knock.Who’s there?very long pause….Java."})
+              .returns(Tuple::getStringArray, Row::getStringArray, new String[]{"Knock, knock.Who’s there?very long pause….Java."})
+              .forRow(result.iterator().next());
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testEncodeStringArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Text\" = $1  WHERE \"id\" = $2 RETURNING \"Text\"",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+              .addStringArray(new String[]{"Knock, knock.Who’s there?"})
+              .addInteger(2)
+            , ctx.asyncAssertSuccess(result -> {
+              ColumnChecker.checkColumn(0, "Text")
+                .returns(Tuple::getValue, Row::getValue, new String[]{"Knock, knock.Who’s there?"})
+                .returns(Tuple::getStringArray, Row::getStringArray, new String[]{"Knock, knock.Who’s there?"})
+                .forRow(result.iterator().next());
+              async.complete();
+            }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testDecodeLocalDateArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"LocalDate\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+            .addInteger(1), ctx.asyncAssertSuccess(result -> {
+            final LocalDate dt = LocalDate.parse("1998-05-11");
+            ColumnChecker.checkColumn(0, "LocalDate")
+              .returns(Tuple::getValue, Row::getValue, new LocalDate[]{dt})
+              .returns(Tuple::getLocalDateArray, Row::getLocalDateArray, new LocalDate[]{dt})
+              .forRow(result.iterator().next());
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testEncodeLocalDateArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"LocalDate\" = $1  WHERE \"id\" = $2 RETURNING \"LocalDate\"",
+        ctx.asyncAssertSuccess(p -> {
+          final LocalDate dt = LocalDate.parse("1998-05-12");
+          p.execute(Tuple.tuple()
+              .addLocalDateArray(new LocalDate[]{dt})
+              .addInteger(2)
+            , ctx.asyncAssertSuccess(result -> {
+              ColumnChecker.checkColumn(0, "LocalDate")
+                .returns(Tuple::getValue, Row::getValue, new LocalDate[]{dt})
+                .returns(Tuple::getLocalDateArray, Row::getLocalDateArray, new LocalDate[]{dt})
+                .forRow(result.iterator().next());
+              async.complete();
+            }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testDecodeLocalTimeArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"LocalTime\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+            .addInteger(1), ctx.asyncAssertSuccess(result -> {
+            final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSS");
+            final LocalTime dt = LocalTime.parse("17:55:04.90512", dtf);
+            ColumnChecker.checkColumn(0, "LocalTime")
+              .returns(Tuple::getValue, Row::getValue, new LocalTime[]{dt})
+              .returns(Tuple::getLocalTimeArray, Row::getLocalTimeArray, new LocalTime[]{dt})
+              .forRow(result.iterator().next());
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testEncodeLocalTimeArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"LocalTime\" = $1  WHERE \"id\" = $2 RETURNING \"LocalTime\"",
+        ctx.asyncAssertSuccess(p -> {
+          final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSS");
+          final LocalTime dt = LocalTime.parse("17:55:04.90512", dtf);
+          p.execute(Tuple.tuple()
+              .addLocalTimeArray(new LocalTime[]{dt})
+              .addInteger(2)
+            , ctx.asyncAssertSuccess(result -> {
+              ColumnChecker.checkColumn(0, "LocalTime")
+                .returns(Tuple::getValue, Row::getValue, new LocalTime[]{dt})
+                .returns(Tuple::getLocalTimeArray, Row::getLocalTimeArray, new LocalTime[]{dt})
+                .forRow(result.iterator().next());
+              async.complete();
+            }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testDecodeOffsetTimeArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"OffsetTime\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+            .addInteger(1), ctx.asyncAssertSuccess(result -> {
+            final OffsetTime dt = OffsetTime.parse("17:55:04.90512+03:00");
+            ColumnChecker.checkColumn(0, "OffsetTime")
+              .returns(Tuple::getValue, Row::getValue, new OffsetTime[]{dt})
+              .returns(Tuple::getOffsetTimeArray, Row::getOffsetTimeArray, new OffsetTime[]{dt})
+              .forRow(result.iterator().next());
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testEncodeOffsetTimeArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"OffsetTime\" = $1  WHERE \"id\" = $2 RETURNING \"OffsetTime\"",
+        ctx.asyncAssertSuccess(p -> {
+          final OffsetTime dt = OffsetTime.parse("17:56:04.90512+03:07");
+          p.execute(Tuple.tuple()
+              .addOffsetTimeArray(new OffsetTime[]{dt})
+              .addInteger(2)
+            , ctx.asyncAssertSuccess(result -> {
+              ColumnChecker.checkColumn(0, "OffsetTime")
+                .returns(Tuple::getValue, Row::getValue, new OffsetTime[]{dt})
+                .returns(Tuple::getOffsetTimeArray, Row::getOffsetTimeArray, new OffsetTime[]{dt})
+                .forRow(result.iterator().next());
+              async.complete();
+            }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testDecodeLocalDateTimeArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"LocalDateTime\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+            .addInteger(1), ctx.asyncAssertSuccess(result -> {
+            final LocalDateTime dt = LocalDateTime.parse("2017-05-14T19:35:58.237666");
+            ColumnChecker.checkColumn(0, "LocalDateTime")
+              .returns(Tuple::getValue, Row::getValue, new LocalDateTime[]{dt})
+              .returns(Tuple::getLocalDateTimeArray, Row::getLocalDateTimeArray, new LocalDateTime[]{dt})
+              .forRow(result.iterator().next());
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testEncodeLocalDateTimeArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"LocalDateTime\" = $1  WHERE \"id\" = $2 RETURNING \"LocalDateTime\"",
+        ctx.asyncAssertSuccess(p -> {
+          final LocalDateTime dt = LocalDateTime.parse("2017-05-14T19:35:58.237666");
+          p.execute(Tuple.tuple()
+              .addLocalDateTimeArray(new LocalDateTime[]{dt})
+              .addInteger(2)
+            , ctx.asyncAssertSuccess(result -> {
+              ColumnChecker.checkColumn(0, "LocalDateTime")
+                .returns(Tuple::getValue, Row::getValue, new LocalDateTime[]{dt})
+                .returns(Tuple::getLocalDateTimeArray, Row::getLocalDateTimeArray, new LocalDateTime[]{dt})
+                .forRow(result.iterator().next());
+              async.complete();
+            }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testDecodeOffsetDateTimeArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"OffsetDateTime\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+            .addInteger(1), ctx.asyncAssertSuccess(result -> {
+            final OffsetDateTime dt = OffsetDateTime.parse("2017-05-15T02:59:59.237666Z");
+            ColumnChecker.checkColumn(0, "OffsetDateTime")
+              .returns(Tuple::getValue, Row::getValue, new OffsetDateTime[]{dt})
+              .returns(Tuple::getOffsetDateTimeArray, Row::getOffsetDateTimeArray, new OffsetDateTime[]{dt})
+              .forRow(result.iterator().next());
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testEncodeOffsetDateTimeArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"OffsetDateTime\" = $1  WHERE \"id\" = $2 RETURNING \"OffsetDateTime\"",
+        ctx.asyncAssertSuccess(p -> {
+          final OffsetDateTime dt = OffsetDateTime.parse("2017-05-14T19:35:58.237666Z");
+          p.execute(Tuple.tuple()
+              .addOffsetDateTimeArray(new OffsetDateTime[]{dt})
+              .addInteger(2)
+            , ctx.asyncAssertSuccess(result -> {
+              ColumnChecker.checkColumn(0, "OffsetDateTime")
+                .returns(Tuple::getValue, Row::getValue, new OffsetDateTime[]{dt})
+                .returns(Tuple::getOffsetDateTimeArray, Row::getOffsetDateTimeArray, new OffsetDateTime[]{dt})
+                .forRow(result.iterator().next());
+              async.complete();
+            }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testDecodeUUIDArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"UUID\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+            .addInteger(1), ctx.asyncAssertSuccess(result -> {
+            final UUID uuid = UUID.fromString("6f790482-b5bd-438b-a8b7-4a0bed747011");
+            ColumnChecker.checkColumn(0, "UUID")
+              .returns(Tuple::getValue, Row::getValue, new UUID[]{uuid})
+              .returns(Tuple::getUUIDArray, Row::getUUIDArray, new UUID[]{uuid})
+              .forRow(result.iterator().next());
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testEncodeUUIDArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"UUID\" = $1  WHERE \"id\" = $2 RETURNING \"UUID\"",
+        ctx.asyncAssertSuccess(p -> {
+          final UUID uuid = UUID.fromString("6f790482-b5bd-438b-a8b7-4a0bed747011");
+          p.execute(Tuple.tuple()
+              .addUUIDArray(new UUID[]{uuid})
+              .addInteger(2)
+            , ctx.asyncAssertSuccess(result -> {
+              ColumnChecker.checkColumn(0, "UUID")
+                .returns(Tuple::getValue, Row::getValue, new UUID[]{uuid})
+                .returns(Tuple::getUUIDArray, Row::getUUIDArray, new UUID[]{uuid})
+                .forRow(result.iterator().next());
+              async.complete();
+            }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testBufferArray(TestContext ctx) {
+    Random r = new Random();
+    int len = 2048;
+    byte[] bytes = new byte[len];
+    r.nextBytes(bytes);
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT ARRAY[$1::BYTEA] \"Bytea\"",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.of(new Buffer[]{Buffer.buffer(bytes)}), ctx.asyncAssertSuccess(result -> {
+            ColumnChecker.checkColumn(0, "Bytea")
+              .returns(Tuple::getValue, Row::getValue, new Buffer[]{Buffer.buffer(bytes)})
+              .returns(Tuple::getBufferArray, Row::getBufferArray, new Buffer[]{Buffer.buffer(bytes)})
+              .forRow(result.iterator().next());
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
 }

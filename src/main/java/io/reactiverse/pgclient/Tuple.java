@@ -26,11 +26,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
+import java.time.*;
 import java.time.temporal.Temporal;
 import java.util.UUID;
 
@@ -135,7 +131,7 @@ public interface Tuple {
    * @param elt3 the third value
    * @param elt4 the fourth value
    * @param elt5 the fifth value
-   * @param elt5 the sixth value
+   * @param elt6 the sixth value
    * @return the tuple
    */
   static Tuple of(Object elt1, Object elt2, Object elt3, Object elt4, Object elt5, Object elt6) {
@@ -331,6 +327,129 @@ public interface Tuple {
    */
   @GenIgnore
   BigDecimal getBigDecimal(int pos);
+
+  @GenIgnore
+  int[] getIntegerArray(int pos);
+
+  /**
+   * Get {@link Boolean} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  boolean[] getBooleanArray(int pos);
+
+  /**
+   * Get {@link Short} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  short[] getShortArray(int pos);
+
+  /**
+   * Get {@link Long} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  long[] getLongArray(int pos);
+
+  /**
+   * Get {@link Float} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  float[] getFloatArray(int pos);
+
+  /**
+   * Get {@link Double} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  double[] getDoubleArray(int pos);
+
+  /**
+   * Get {@link String} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  String[] getStringArray(int pos);
+
+  /**
+   * Get {@link LocalDate} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  LocalDate[] getLocalDateArray(int pos);
+
+  /**
+   * Get {@link LocalTime} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  LocalTime[] getLocalTimeArray(int pos);
+
+  /**
+   * Get {@link OffsetTime} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  OffsetTime[] getOffsetTimeArray(int pos);
+
+  /**
+   * Get {@link LocalDateTime} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  LocalDateTime[] getLocalDateTimeArray(int pos);
+
+  /**
+   * Get {@link OffsetDateTime} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  OffsetDateTime[] getOffsetDateTimeArray(int pos);
+
+  /**
+   * Get {@link Buffer} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Buffer[] getBufferArray(int pos);
+
+  /**
+   * Get {@link UUID} value at {@code pos}.
+   *
+   * @param pos the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  UUID[] getUUIDArray(int pos);
+
+  @GenIgnore
+  char[] getCharacterArray(int pos);
 
   /**
    * Get {@link Numeric} value at {@code pos}.
@@ -538,6 +657,140 @@ public interface Tuple {
   @GenIgnore
   Tuple addBigDecimal(BigDecimal value);
 
+  /**
+   * Add a {@link Integer} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addIntArray(int[] value);
+
+  /**
+   * Add a {@link Boolean} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addBooleanArray(boolean[] value);
+
+  /**
+   * Add a {@link Short} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addShortArray(short[] value);
+
+  /**
+   * Add a {@link Long} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addLongArray(long[] value);
+
+  /**
+   * Add a {@link Float} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addFloatArray(float[] value);
+
+  /**
+   * Add a {@link Double} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addDoubleArray(double[] value);
+
+  /**
+   * Add a {@link String} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addStringArray(String[] value);
+
+  /**
+   * Add a {@link LocalDate} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addLocalDateArray(LocalDate[] value);
+
+  /**
+   * Add a {@link LocalTime} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addLocalTimeArray(LocalTime[] value);
+
+  /**
+   * Add a {@link OffsetTime} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addOffsetTimeArray(OffsetTime[] value);
+
+  /**
+   * Add a {@link LocalDateTime} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addLocalDateTimeArray(LocalDateTime[] value);
+
+  /**
+   * Add a {@link OffsetDateTime} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addOffsetDateTimeArray(OffsetDateTime[] value);
+
+  /**
+   * Add a {@link Buffer} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addBufferArray(Buffer[] value);
+
+  /**
+   * Add a {@link Character} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addCharacterArray(char[] value);
+
+  /**
+   * Add a {@link UUID} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addUUIDArray(UUID[] value);
   /**
    * Add a {@link Numeric} value at the end of the tuple.
    *

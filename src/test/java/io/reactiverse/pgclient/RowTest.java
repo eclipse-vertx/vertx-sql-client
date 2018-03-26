@@ -54,8 +54,8 @@ public class RowTest extends PgTestBase {
           List<Function<String, ?>> functions = Arrays.asList(
             row::getValue,
             row::getString,
-            row::getBuffer,
             row::getCharacter,
+            row::getBuffer,
             row::getDouble,
             row::getShort,
             row::getInteger,
@@ -71,7 +71,22 @@ public class RowTest extends PgTestBase {
             row::getTemporal,
             row::getJsonArray,
             row::getJsonObject,
-            row::getUUID
+            row::getUUID,
+            row::getBooleanArray,
+            row::getShortArray,
+            row::getIntegerArray,
+            row::getLongArray,
+            row::getFloatArray,
+            row::getDoubleArray,
+            row::getCharacterArray,
+            row::getStringArray,
+            row::getLocalDateArray,
+            row::getLocalTimeArray,
+            row::getOffsetTimeArray,
+            row::getLocalDateTimeArray,
+            row::getOffsetDateTimeArray,
+            row::getBufferArray,
+            row::getUUIDArray
           );
           functions.forEach(f -> {
             ctx.assertEquals(null, f.apply("bar"));
