@@ -79,10 +79,14 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -> {
 == Documentations
 
 * https://reactiverse.io/reactive-pg-client/guide/java/index.html[Java docs]
-* https://reactiverse.io/reactive-pg-client/apidocs/index.html[Javadoc]
+* https://reactiverse.io/reactive-pg-client/guide/kotlin/[Kotlin docs]
 * https://reactiverse.io/reactive-pg-client/guide/groovy/index.html[Groovy docs]
 * https://reactiverse.io/reactive-pg-client/guide/ruby/index.html[Ruby docs]
 * https://reactiverse.io/reactive-pg-client/guide/js/index.html[JavaScript docs]
+
+== Javadoc
+
+* https://reactiverse.io/reactive-pg-client/apidocs/index.html[Javadoc]
 
 == Supported Data Types
 
