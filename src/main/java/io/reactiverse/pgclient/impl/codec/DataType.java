@@ -895,7 +895,7 @@ public class DataType<T> {
     }
     @Override
     public Json decodeBinary(int len, ByteBuf buff) {
-      buff.readerIndex(buff.readerIndex() + 1); // Skip 1 byte for version (which is 1)
+      buff.skipBytes(1); // Skip 1 byte for version (which is 1)
       return decodeText(len - 1, buff);
     }
   };
