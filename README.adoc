@@ -91,169 +91,167 @@ Postgres has two protocols `TEXT` and `BINARY` to encode/decode data types.
 
 The *Reactive Postgres Client* currently supports the following data types
 
-[cols="^,^,^,^,^,^", options="header"]
+[cols="^,^,^,^,^,^,^", options="header"]
 |====
 | _
 | _
 2+| Value
+| _
 2+| Array
 
-| Postgres | Java | TEXT | BINARY | TEXT | BINARY
+| Postgres | Java | TEXT | BINARY | JAVA | TEXT | BINARY
 
 |`BOOLEAN`
-|`java.lang.Boolean`
+|`j.l.Boolean`
 |&#10004;
 |&#10004;
+|`boolean[]`
 |_
-|boolean[]
+|&#10004;
 
 |`INT2`
-|`java.lang.Short`
+|`j.l.Short`
 |&#10004;
 |&#10004;
+|`short[]`
 |_
-|short[]
+|&#10004;
 
 |`INT4`
-|`java.lang.Integer`
+|`j.l.Integer`
 |&#10004;
 |&#10004;
+|`int[]`
 |_
-|int[]
+|&#10004;
 
 |`INT8`
-|`java.lang.Long`
+|`j.l.Long`
 |&#10004;
 |&#10004;
+|`long[]`
 |_
-|long[]
+|&#10004;
 
 |`FLOAT4`
-|`java.lang.Float`
+|`j.l.Float`
 |&#10004;
 |&#10004;
+|`float[]`
 |_
-|float[]
+|&#10004;
 
 |`FLOAT8`
-|`java.lang.Double`
+|`j.l.Double`
 |&#10004;
 |&#10004;
+|`double[]`
 |_
-|double[]
+|&#10004;
 
 |`CHAR`
-|`java.lang.Character`
+|`j.l.Character`
 |&#10004;
 |&#10004;
+|`char[]`
 |_
-|char[]
+|&#10004;
 
 |`VARCHAR`
-|`java.lang.String`
+|`j.l.String`
 |&#10004;
 |&#10004;
+|`j.l.String[]`
 |_
 |&#10004;
 
 |`TEXT`
-|`java.lang.String`
+|`j.l.String`
 |&#10004;
 |&#10004;
+|`j.l.String[]`
 |_
 |&#10004;
 
-|====
-
-
-[cols="^,^,^,^", options="header"]
-|====
-| Postgres | Java | TEXT | BINARY
-
 |`NUMERIC`
-|`java.lang.Number`
-|Yes
-|No
+|`i.r.p.Numeric`
+|&#10004;
+|&#10004;
+|_
+|_
+|_
 
 |`UUID`
-|`java.util.UUID`
-|Yes
-|Yes
+|`j.u.UUID`
+|&#10004;
+|&#10004;
+|`j.u.UUID[]`
+|_
+|&#10004;
 
 |`DATE`
-|`java.time.LocalDate`
-|Yes
-|Yes
+|`j.t.LocalDate`
+|&#10004;
+|&#10004;
+|`j.t.LocalDate[]`
+|_
+|&#10004;
 
 |`TIME`
-|`java.time.LocalTime`
-|Yes
-|Yes
+|`j.t.LocalTime`
+|&#10004;
+|&#10004;
+|`j.t.LocalTime[]`
+|_
+|&#10004;
 
 |`TIMETZ`
-|`java.time.OffsetTime`
-|Yes
-|Yes
+|`j.t.OffsetTime`
+|&#10004;
+|&#10004;
+|`j.t.OffsetTime[]`
+|_
+|&#10004;
 
 |`TIMESTAMP`
-|`java.time.LocalDateTime`
-|Yes
-|Yes
+|`j.t.LocalDateTime`
+|&#10004;
+|&#10004;
+|`j.t.LocalDateTime[]`
+|_
+|&#10004;
 
 |`TIMESTAMPTZ`
-|`java.time.OffsetDateTime`
-|Yes
-|Yes
+|`j.t.OffsetDateTime`
+|&#10004;
+|&#10004;
+|`j.t.OffsetDateTime[]`
+|_
+|&#10004;
 
 |`BYTEA`
-|`io.vertx.core.buffer.Buffer`
-|Yes
-|Yes
+|`i.v.c.b.Buffer`
+|&#10004;
+|&#10004;
+|`i.v.c.b.Buffer[]`
+|_
+|&#10004;
 
 |`JSON`
-|`com.julienviet.pgclient.Json`
-|Yes
-|Yes
+|`i.r.p.Json`
+|&#10004;
+|&#10004;
+|_
+|_
+|_
 
 |`JSONB`
-|`com.julienviet.pgclient.Json`
-|Yes
-|Yes
-
-|`UUID[]`
-|`java.util.UUID[]`
-|No
-|Yes
-
-|`DATE[]`
-|`java.time.LocalDate[]`
-|No
-|Yes
-
-|`TIME[]`
-|`java.time.LocalTime[]`
-|No
-|Yes
-
-|`TIMETZ[]`
-|`java.time.OffsetTime[]`
-|No
-|Yes
-
-|`TIMESTAMP[]`
-|`java.time.LocalDateTime[]`
-|No
-|Yes
-
-|`TIMESTAMPTZ[]`
-|`java.time.OffsetDateTime[]`
-|No
-|Yes
-
-|`BYTEA[]`
-|`io.vertx.core.buffer.Buffer[]`
-|No
-|Yes
+|`i.r.p.Json`
+|&#10004;
+|&#10004;
+|_
+|_
+|_
 
 |====
 
