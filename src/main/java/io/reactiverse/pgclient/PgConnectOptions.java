@@ -41,16 +41,25 @@ public class PgConnectOptions extends NetClientOptions {
   public static final boolean DEFAULT_CACHE_PREPARED_STATEMENTS = false;
   public static final int DEFAULT_PIPELINING_LIMIT = 256;
 
-  private String host = getenv("PGHOSTADDR") == null ? ((getenv("PGHOST") == null) ? DEFAULT_HOST : getenv("PGHOST")) : getenv("PGHOSTADDR");
-  private int port = getenv("PGPORT") == null ? DEFAULT_PORT : parseInt(getenv("PGPORT"));
-  private String database = getenv("PGDATABASE") == null ? DEFAULT_DATABASE : getenv("PGDATABASE");
-  private String username = getenv("PGUSER") == null ? DEFAULT_USERNAME : getenv("PGUSER");
-  private String password = getenv("PGPASSWORD") == null ? DEFAULT_PASSWORD : getenv("PGPASSWORD");
+  private String host = DEFAULT_HOST;
+  private int port = DEFAULT_PORT;
+  private String database = DEFAULT_DATABASE;
+  private String username = DEFAULT_USERNAME;
+  private String password = DEFAULT_PASSWORD;
   private boolean cachePreparedStatements = DEFAULT_CACHE_PREPARED_STATEMENTS;
   private int pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
 
   public PgConnectOptions() {
     super();
+    if (getenv("PGHOSTADDR") == null) {
+      host = getenv("PGHOST") == null ? DEFAULT_HOST : getenv("PGHOST");
+    } else {
+      host = getenv("PGHOSTADDR");
+    }
+    if (getenv("PGPORT") != null) port = parseInt(getenv("PGPORT");
+    if (getenv("PGDATABASE") != null) database = getenv("PGDATABASE");
+    if (getenv("PGUSER") != null) username = getenv("PGUSER");
+    if (getenv("PGPASSWORD") != null) password = getenv("PGPASSWORD");
   }
 
   public PgConnectOptions(JsonObject json) {
