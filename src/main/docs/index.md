@@ -50,7 +50,7 @@ Here is the simplest way to connect, query and disconnect
 {@link examples.Examples#gettingStarted()}
 ```
 
-Environment variables can also be used to set default connection setting values, this is useful
+You can also use environment variables to set default connection setting values, this is useful
 when you want to avoid hard-coding database connection information. 
 The following parameters are supported:
 
