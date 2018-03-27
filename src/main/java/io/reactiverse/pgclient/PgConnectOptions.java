@@ -372,4 +372,36 @@ public class PgConnectOptions extends NetClientOptions {
       password = getenv("PGPASSWORD");
     }
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof PgConnectOptions)) return false;
+    if (!super.equals(o)) return false;
+
+    PgConnectOptions that = (PgConnectOptions) o;
+
+    if (!host.equals(that.host)) return false;
+    if (port != that.port) return false;
+    if (!database.equals(that.database)) return false;
+    if (!username.equals(that.username)) return false;
+    if (!password.equals(that.password)) return false;
+    if (cachePreparedStatements != that.cachePreparedStatements) return false;
+    if (pipeliningLimit != that.pipeliningLimit) return false;
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = super.hashCode();
+    result = 31 * result + host.hashCode();
+    result = 31 * result + port;
+    result = 31 * result + database.hashCode();
+    result = 31 * result + username.hashCode();
+    result = 31 * result + password.hashCode();
+    result = 31 * result + (cachePreparedStatements ? 1 : 0);
+    result = 31 * result + pipeliningLimit;
+    return result;
+  }
 }
