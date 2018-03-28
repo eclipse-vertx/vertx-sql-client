@@ -50,6 +50,17 @@ Here is the simplest way to connect, query and disconnect
 {@link examples.Examples#gettingStarted()}
 ```
 
+You can also use environment variables to set default connection setting values, this is useful
+when you want to avoid hard-coding database connection information. You can refer to the [official documentation](https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING) for more details. 
+The following parameters are supported:
+
+* `PGHOST`
+* `PGHOSTADDR`
+* `PGPORT`
+* `PGDATABASE`
+* `PGUSER`
+* `PGPASSWORD`
+
 ## Connecting to Postgres
 
 Most of the time you will use a pool to connect to Postgres:
