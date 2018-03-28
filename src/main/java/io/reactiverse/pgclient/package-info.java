@@ -71,7 +71,7 @@
  * ----
  *
  * You can also use environment variables to set default connection setting values, this is useful
- * when you want to avoid hard-coding database connection information.
+ * when you want to avoid hard-coding database connection information.You can refer to the https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING[official documentation] for more details.
  * The following parameters are supported:
  *
  * * `PGHOST`
