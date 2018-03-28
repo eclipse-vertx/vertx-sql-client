@@ -51,24 +51,18 @@ public class PgConnectOptions extends NetClientOptions {
 
   public PgConnectOptions() {
     super();
-    if (getenv("PGHOSTADDR") == null) {
-      host = getenv("PGHOST") == null ? DEFAULT_HOST : getenv("PGHOST");
-    } else {
-      host = getenv("PGHOSTADDR");
-    }
-    if (getenv("PGPORT") != null) port = parseInt(getenv("PGPORT"));
-    if (getenv("PGDATABASE") != null) database = getenv("PGDATABASE");
-    if (getenv("PGUSER") != null) username = getenv("PGUSER");
-    if (getenv("PGPASSWORD") != null) password = getenv("PGPASSWORD");
+    configureWithEnvVars();
   }
 
   public PgConnectOptions(JsonObject json) {
     super(json);
+    configureWithEnvVars();
     PgConnectOptionsConverter.fromJson(json, this);
   }
 
   public PgConnectOptions(PgConnectOptions other) {
     super(other);
+    configureWithEnvVars();
     host = other.host;
     port = other.port;
     database = other.database;
@@ -341,5 +335,32 @@ public class PgConnectOptions extends NetClientOptions {
   @Override
   public PgConnectOptions setEnabledSecureTransportProtocols(Set<String> enabledSecureTransportProtocols) {
     return (PgConnectOptions) super.setEnabledSecureTransportProtocols(enabledSecureTransportProtocols);
+  }
+
+  /**
+   * Configure the connection with environment variables.
+   */
+  private void configureWithEnvVars() {
+    if (getenv("PGHOSTADDR") == null) {
+      host = getenv("PGHOST") == null ? DEFAULT_HOST : getenv("PGHOST");
+    } else {
+      host = getenv("PGHOSTADDR");
+    }
+    if (getenv("PGPORT") != null) {
+      try {
+        port = parseInt(getenv("PGPORT"));
+      } catch (NumberFormatException e) {
+        port = DEFAULT_PORT;
+      }
+    }
+    if (getenv("PGDATABASE") != null) {
+      database = getenv("PGDATABASE");
+    }
+    if (getenv("PGUSER") != null) {
+      username = getenv("PGUSER");
+    }
+    if (getenv("PGPASSWORD") != null) {
+      password = getenv("PGPASSWORD");
+    }
   }
 }
