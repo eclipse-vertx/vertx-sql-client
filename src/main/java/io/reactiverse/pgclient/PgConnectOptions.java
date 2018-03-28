@@ -338,6 +338,7 @@ public class PgConnectOptions extends NetClientOptions {
 
   /**
    * Configure the connection with environment variables.
+   * If environment variables are not set, then default options will be used.
    */
   private void init() {
     if (getenv("PGHOSTADDR") == null) {
