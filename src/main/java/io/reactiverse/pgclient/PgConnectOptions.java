@@ -41,13 +41,13 @@ public class PgConnectOptions extends NetClientOptions {
   public static final boolean DEFAULT_CACHE_PREPARED_STATEMENTS = false;
   public static final int DEFAULT_PIPELINING_LIMIT = 256;
 
-  private String host = DEFAULT_HOST;
-  private int port = DEFAULT_PORT;
-  private String database = DEFAULT_DATABASE;
-  private String username = DEFAULT_USERNAME;
-  private String password = DEFAULT_PASSWORD;
-  private boolean cachePreparedStatements = DEFAULT_CACHE_PREPARED_STATEMENTS;
-  private int pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
+  private String host;
+  private int port;
+  private String database;
+  private String username;
+  private String password;
+  private boolean cachePreparedStatements;
+  private int pipeliningLimit;
 
   public PgConnectOptions() {
     super();
@@ -340,6 +340,14 @@ public class PgConnectOptions extends NetClientOptions {
    * Initialize with the default options, if env variables are specified they take precedence over these options.
    */
   private void init() {
+    host = DEFAULT_HOST;
+    port = DEFAULT_PORT;
+    database = DEFAULT_DATABASE;
+    username = DEFAULT_USERNAME;
+    password = DEFAULT_PASSWORD;
+    cachePreparedStatements = DEFAULT_CACHE_PREPARED_STATEMENTS;
+    pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
+
     if (getenv("PGHOSTADDR") == null) {
       if (getenv("PGHOST") != null) {
         host = getenv("PGHOST");
