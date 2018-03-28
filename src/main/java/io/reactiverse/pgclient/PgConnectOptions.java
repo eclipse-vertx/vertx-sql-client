@@ -51,18 +51,17 @@ public class PgConnectOptions extends NetClientOptions {
 
   public PgConnectOptions() {
     super();
-    configureWithEnvVars();
+    init();
   }
 
   public PgConnectOptions(JsonObject json) {
     super(json);
-    configureWithEnvVars();
+    init();
     PgConnectOptionsConverter.fromJson(json, this);
   }
 
   public PgConnectOptions(PgConnectOptions other) {
     super(other);
-    configureWithEnvVars();
     host = other.host;
     port = other.port;
     database = other.database;
@@ -340,7 +339,7 @@ public class PgConnectOptions extends NetClientOptions {
   /**
    * Configure the connection with environment variables.
    */
-  private void configureWithEnvVars() {
+  private void init() {
     if (getenv("PGHOSTADDR") == null) {
       host = getenv("PGHOST") == null ? DEFAULT_HOST : getenv("PGHOST");
     } else {
