@@ -54,12 +54,12 @@ You can also use environment variables to set default connection setting values,
 when you want to avoid hard-coding database connection information. 
 The following parameters are supported:
 
-* PGHOST
-* PGHOSTADDR
-* PGPORT
-* PGDATABASE
-* PGUSER
-* PGPASSWORD
+* `PGHOST`
+* `PGHOSTADDR`
+* `PGPORT`
+* `PGDATABASE`
+* `PGUSER`
+* `PGPASSWORD`
 
 ## Connecting to Postgres
 
