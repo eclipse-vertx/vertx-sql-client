@@ -341,7 +341,9 @@ public class PgConnectOptions extends NetClientOptions {
    */
   private void init() {
     if (getenv("PGHOSTADDR") == null) {
-      host = getenv("PGHOST") == null ? DEFAULT_HOST : getenv("PGHOST");
+      if (getenv("PGHOST") != null) {
+        host = getenv("PGHOST");
+      }
     } else {
       host = getenv("PGHOSTADDR");
     }
@@ -349,7 +351,7 @@ public class PgConnectOptions extends NetClientOptions {
       try {
         port = parseInt(getenv("PGPORT"));
       } catch (NumberFormatException e) {
-        port = DEFAULT_PORT;
+        // port will be set to default
       }
     }
     if (getenv("PGDATABASE") != null) {
