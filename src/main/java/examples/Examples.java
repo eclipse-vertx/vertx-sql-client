@@ -62,6 +62,15 @@ public class Examples {
     });
   }
 
+  public void connectingWithUri() {
+
+    // Connection URI
+    String connectionUri = "postgresql://dbuser:secretpassword@database.server.com:3211/mydb";
+
+    // Create the pooled client
+    PgPool client = PgClient.pool(connectionUri);
+  }
+
   public void connecting01() {
 
     // Pool options
