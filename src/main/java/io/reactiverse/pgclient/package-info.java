@@ -81,6 +81,13 @@
  * * `PGUSER`
  * * `PGPASSWORD`
  *
+ * We also provide you an alternative when you want to configure with a connection uri:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#connectingWithUri()}
+ * ----
+ * 
  * == Connecting to Postgres
  *
  * Most of the time you will use a pool to connect to Postgres:

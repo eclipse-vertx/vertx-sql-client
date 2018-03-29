@@ -61,6 +61,12 @@ The following parameters are supported:
 * `PGUSER`
 * `PGPASSWORD`
 
+We also provide you an alternative way to connect when you want to configure with a connection URI:
+
+```$lang
+{@link examples.Examples#connectingWithUri}
+```
+
 ## Connecting to Postgres
 
 Most of the time you will use a pool to connect to Postgres:
