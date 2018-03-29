@@ -27,6 +27,8 @@ import io.vertx.core.*;
 
 import java.util.List;
 
+import static io.reactiverse.pgclient.impl.PgConnectionUriParser.*;
+
 /**
  * Defines the client operations with a Postgres Database.
  *
@@ -53,6 +55,23 @@ public interface PgClient {
    */
   static PgPool pool(Vertx vertx, PgPoolOptions options) {
     return new PgPoolImpl(vertx, false, options);
+  }
+
+  /**
+   * Create a connection pool to the database configured with the given {@code connectionUri}.
+   *
+   * @param connectionUri the connection URI
+   * @return the connection pool
+   */
+  static PgPool pool(String connectionUri) {
+    return PgClient.pool(translateToPgPoolOptions(connectionUri));
+  }
+
+  /**
+   * Like {@link #pool(String)} with a specific {@link Vertx} instance.
+   */
+  static PgPool pool(Vertx vertx, String connectionUri) {
+    return PgClient.pool(vertx, translateToPgPoolOptions(connectionUri));
   }
 
   /**
@@ -84,6 +103,13 @@ public interface PgClient {
         connect(vertx, options, handler);
       });
     }
+  }
+
+  /**
+   * Like {@link #connect(Vertx, PgConnectOptions, Handler)} with a specific connection URI to configure the connection.
+   */
+  static void connect(Vertx vertx, String connectionUri, Handler<AsyncResult<PgConnection>> handler) {
+    connect(vertx, translateToPgConnectOptions(connectionUri), handler);
   }
 
   /**
