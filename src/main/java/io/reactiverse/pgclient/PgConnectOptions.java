@@ -374,6 +374,13 @@ public class PgConnectOptions extends NetClientOptions {
   }
 
   @Override
+  public JsonObject toJson() {
+    JsonObject json = super.toJson();
+    PgConnectOptionsConverter.toJson(this, json);
+    return json;
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof PgConnectOptions)) return false;
