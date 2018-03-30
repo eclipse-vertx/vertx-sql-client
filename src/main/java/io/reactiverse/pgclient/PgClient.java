@@ -27,8 +27,6 @@ import io.vertx.core.*;
 
 import java.util.List;
 
-import static io.reactiverse.pgclient.PgConnectOptionsProvider.*;
-
 /**
  * Defines the client operations with a Postgres Database.
  *
@@ -86,13 +84,6 @@ public interface PgClient {
         connect(vertx, options, handler);
       });
     }
-  }
-
-  /**
-   * Like {@link #connect(Vertx, PgConnectOptions, Handler)} but with a specific connection URI to configure the connection.
-   */
-  static void connect(Vertx vertx, String connectionUri, Handler<AsyncResult<PgConnection>> handler) {
-    connect(vertx, fromUri(connectionUri), handler);
   }
 
   /**
