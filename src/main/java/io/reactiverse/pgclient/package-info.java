@@ -85,7 +85,7 @@
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#connectingWithUri()}
+ * {@link examples.Examples#configureFromUri}
  * ----
  *
  * More information about connection string formats can be found in the https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING[PostgreSQL Manuals].
