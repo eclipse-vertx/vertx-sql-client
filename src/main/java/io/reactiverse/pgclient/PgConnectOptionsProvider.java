@@ -29,7 +29,7 @@ import static java.lang.System.getenv;
 @VertxGen
 public interface PgConnectOptionsProvider {
   /**
-   * Provide an {@link PgConnectOptions} configured with a connection URI.
+   * Provide a {@link PgConnectOptions} configured from a connection URI.
    */
   static PgConnectOptions fromUri(String connectionUri) {
     JsonObject parsedConfiguration = PgConnectionUriParser.parse(connectionUri);
@@ -41,7 +41,8 @@ public interface PgConnectOptionsProvider {
   }
 
   /**
-   * Provide an {@link PgConnectOptions} configured with environment variables.
+   * Provide a {@link PgConnectOptions} configured with environment variables, if the environment variable
+   * is not set, then a default value will take precedence over this.
    */
   static PgConnectOptions fromEnv() {
     PgConnectOptions pgConnectOptions = new PgConnectOptions();
