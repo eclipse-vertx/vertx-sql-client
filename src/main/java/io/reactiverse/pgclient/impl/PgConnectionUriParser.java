@@ -1,7 +1,5 @@
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.PgConnectOptions;
-import io.reactiverse.pgclient.PgPoolOptions;
 import io.vertx.core.json.JsonObject;
 
 import java.io.UnsupportedEncodingException;
@@ -27,7 +25,7 @@ public class PgConnectionUriParser {
   private static final int DATABASE_GROUP = 4;
   private static final int PARAMETER_GROUP = 5;
 
-  private static JsonObject parse(String connectionUri) {
+  public static JsonObject parse(String connectionUri) {
     // if we get any exception during the parsing, then we return a null.
     try {
       JsonObject configuration = new JsonObject();
@@ -35,24 +33,6 @@ public class PgConnectionUriParser {
       return configuration;
     } catch (Exception e) {
       return null;
-    }
-  }
-
-  public static PgPoolOptions translateToPgPoolOptions(String connectionUri) {
-    JsonObject parsedConfiguration = parse(connectionUri);
-    if (parsedConfiguration == null) {
-      return new PgPoolOptions();
-    } else {
-      return new PgPoolOptions(parsedConfiguration);
-    }
-  }
-
-  public static PgConnectOptions translateToPgConnectOptions(String connectionUri) {
-    JsonObject parsedConfiguration = parse(connectionUri);
-    if (parsedConfiguration == null) {
-      return new PgConnectOptions();
-    } else {
-      return new PgConnectOptions(parsedConfiguration);
     }
   }
 
