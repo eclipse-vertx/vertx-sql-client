@@ -87,7 +87,9 @@
  * ----
  * {@link examples.Examples#connectingWithUri()}
  * ----
- * 
+ *
+ * More information about connection string formats can be found in the https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING[PostgreSQL Manuals].
+ *
  * == Connecting to Postgres
  *
  * Most of the time you will use a pool to connect to Postgres:

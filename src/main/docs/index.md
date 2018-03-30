@@ -67,6 +67,8 @@ We also provide you an alternative way to connect when you want to configure wit
 {@link examples.Examples#connectingWithUri}
 ```
 
+More information about connection string formats can be found in the [PostgreSQL Manuals](https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING).
+
 ## Connecting to Postgres
 
 Most of the time you will use a pool to connect to Postgres:
