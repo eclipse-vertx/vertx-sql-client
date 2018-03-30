@@ -30,14 +30,14 @@ import static java.lang.System.getenv;
 public interface PgConnectOptionsProvider {
   /**
    * Provide a {@link PgConnectOptions} configured from a connection URI.
+   *
+   * @param connectionUri the connection URI to configure from
+   * @return a {@code PgConnectOptions} parsed from the connection URI
+   * @throws IllegalArgumentException when the {@code connectionUri} is in an invalid format
    */
-  static PgConnectOptions fromUri(String connectionUri) {
+  static PgConnectOptions fromUri(String connectionUri) throws IllegalArgumentException {
     JsonObject parsedConfiguration = PgConnectionUriParser.parse(connectionUri);
-    if (parsedConfiguration == null) {
-      return new PgConnectOptions();
-    } else {
-      return new PgConnectOptions(parsedConfiguration);
-    }
+    return new PgConnectOptions(parsedConfiguration);
   }
 
   /**

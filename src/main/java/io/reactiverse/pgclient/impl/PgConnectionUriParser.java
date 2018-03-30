@@ -48,7 +48,7 @@ public class PgConnectionUriParser {
       doParse(connectionUri, configuration);
       return configuration;
     } catch (Exception e) {
-      return null;
+      throw new IllegalArgumentException("Can not parse an invalid connection URI");
     }
   }
 
