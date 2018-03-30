@@ -16,9 +16,10 @@
  */
 package io.reactiverse.pgclient;
 
+import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
-import static io.reactiverse.pgclient.PgConnectOptionsProvider.*;
+import static io.reactiverse.pgclient.impl.PgConnectionUriParser.*;
 import static org.junit.Assert.*;
 
 /**
@@ -26,376 +27,295 @@ import static org.junit.Assert.*;
  */
 public class PgConnectionUriParserTest {
   private String uri;
-  private PgConnectOptions actualParsedOptions;
-  private PgConnectOptions expectedParsedOptions;
+  private JsonObject actualParsedResult;
+  private JsonObject expectedParsedResult;
 
   @Test
   public void testParsingUriSchemeDesignator() {
     uri = "postgresql://";
-    actualParsedOptions = fromUri(uri);
+    actualParsedResult = parse(uri);
 
-    expectedParsedOptions = new PgConnectOptions();
+    expectedParsedResult = new JsonObject();
 
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    assertEquals(expectedParsedResult, actualParsedResult);
   }
 
   @Test
   public void testParsingAnotherUriSchemeDesignator() {
     uri = "postgres://";
-    actualParsedOptions = fromUri(uri);
+    actualParsedResult = parse(uri);
 
-    expectedParsedOptions = new PgConnectOptions();
+    expectedParsedResult = new JsonObject();
 
-    assertEquals(expectedParsedOptions, actualParsedOptions);
-
+    assertEquals(expectedParsedResult, actualParsedResult);
   }
 
-  @Test
-  public void testParsingWrongUriSchemeDesignator() {
+  @Test(expected = IllegalArgumentException.class)
+  public void testParsingInvalidUriSchemeDesignator() {
     uri = "posttgres://localhost";
-    actualParsedOptions = fromUri(uri);
-
-    expectedParsedOptions = new PgConnectOptions();
-
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    actualParsedResult = parse(uri);
   }
 
   @Test
   public void testParsingUsername() {
     uri = "postgres://user@";
-    actualParsedOptions = fromUri(uri);
+    actualParsedResult = parse(uri);
 
-    expectedParsedOptions = new PgConnectOptions()
-      .setUsername("user");
+    expectedParsedResult = new JsonObject()
+      .put("username", "user");
 
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    assertEquals(expectedParsedResult, actualParsedResult);
   }
 
   @Test
   public void testParsingPassword() {
-    uri = "postgresql://user:secret@localhost";
-    actualParsedOptions = fromUri(uri);
+    uri = "postgresql://user:secret@";
+    actualParsedResult = parse(uri);
 
-    expectedParsedOptions = new PgConnectOptions()
-      .setUsername("user")
-      .setPassword("secret")
-      .setHost("localhost");
+    expectedParsedResult = new JsonObject()
+      .put("username", "user")
+      .put("password", "secret");
 
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    assertEquals(expectedParsedResult, actualParsedResult);
   }
 
   @Test
   public void testParsingHost() {
     uri = "postgresql://localhost";
-    actualParsedOptions = fromUri(uri);
+    actualParsedResult = parse(uri);
 
-    expectedParsedOptions = new PgConnectOptions()
-      .setHost("localhost");
+    expectedParsedResult = new JsonObject()
+      .put("host", "localhost");
 
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    assertEquals(expectedParsedResult, actualParsedResult);
   }
 
   @Test
   public void testParsingIpv4Address() {
-    uri = "postgresql://192.168.1.1:1234";
-    actualParsedOptions = fromUri(uri);
+    uri = "postgresql://192.168.1.1";
+    actualParsedResult = parse(uri);
 
-    expectedParsedOptions = new PgConnectOptions()
-      .setHost("192.168.1.1")
-      .setPort(1234);
+    expectedParsedResult = new JsonObject()
+      .put("host", "192.168.1.1");
 
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    assertEquals(expectedParsedResult, actualParsedResult);
   }
 
   @Test
   public void testParsingIpv6Address() {
-    uri = "postgresql://[2001:db8::1234]/mydb";
-    actualParsedOptions = fromUri(uri);
+    uri = "postgresql://[2001:db8::1234]";
+    actualParsedResult = parse(uri);
 
-    expectedParsedOptions = new PgConnectOptions()
-      .setHost("2001:db8::1234")
-      .setDatabase("mydb");
+    expectedParsedResult = new JsonObject()
+      .put("host", "2001:db8::1234");
 
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    assertEquals(expectedParsedResult, actualParsedResult);
   }
 
   @Test
   public void testParsingPort() {
-    uri = "postgresql://localhost:1234";
-    actualParsedOptions = fromUri(uri);
+    uri = "postgresql://:1234";
+    actualParsedResult = parse(uri);
 
-    expectedParsedOptions = new PgConnectOptions()
-      .setHost("localhost")
-      .setPort(1234);
+    expectedParsedResult = new JsonObject()
+      .put("port", 1234);
 
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    assertEquals(expectedParsedResult, actualParsedResult);
   }
-
 
   @Test
   public void testParsingDbName() {
-    uri = "postgres://localhost/mydb";
-    actualParsedOptions = fromUri(uri);
+    uri = "postgres:///mydb";
+    actualParsedResult = parse(uri);
 
-    expectedParsedOptions = new PgConnectOptions()
-      .setHost("localhost")
-      .setDatabase("mydb");
+    expectedParsedResult = new JsonObject()
+      .put("database", "mydb");
 
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    assertEquals(expectedParsedResult, actualParsedResult);
   }
 
 
   @Test
-  public void testParsingParameter() {
-    uri = "postgresql://localhost/otherdb?user=other";
-    actualParsedOptions = fromUri(uri);
+  public void testParsingOneParameter() {
+    uri = "postgresql://?user=other";
+    actualParsedResult = parse(uri);
 
-    expectedParsedOptions = new PgConnectOptions()
-      .setUsername("other")
-      .setHost("localhost")
-      .setDatabase("otherdb");
+    expectedParsedResult = new JsonObject()
+      .put("username", "other");
 
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    assertEquals(expectedParsedResult, actualParsedResult);
   }
 
   @Test
   public void testParsingParameters() {
-    uri = "postgresql://localhost/otherdb?user=other&password=secret&port=1234";
-    actualParsedOptions = fromUri(uri);
+    uri = "postgresql://?user=other&password=secret&port=1234";
+    actualParsedResult = parse(uri);
 
-    expectedParsedOptions = new PgConnectOptions()
-      .setHost("localhost")
-      .setDatabase("otherdb")
-      .setUsername("other")
-      .setPassword("secret")
-      .setPort(1234);
+    expectedParsedResult = new JsonObject()
+      .put("username", "other")
+      .put("password", "secret")
+      .put("port", 1234);
 
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    assertEquals(expectedParsedResult, actualParsedResult);
   }
 
   @Test
   public void testParsingHostAndParameters() {
     uri = "postgresql://localhost?user=other&password=secret";
-    actualParsedOptions = fromUri(uri);
+    actualParsedResult = parse(uri);
 
-    expectedParsedOptions = new PgConnectOptions()
-      .setHost("localhost")
-      .setUsername("other")
-      .setPassword("secret");
+    expectedParsedResult = new JsonObject()
+      .put("host", "localhost")
+      .put("username", "other")
+      .put("password", "secret");
 
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    assertEquals(expectedParsedResult, actualParsedResult);
   }
 
   @Test
   public void testParsingUserWithoutPassword() {
     uri = "postgresql://user@";
-    actualParsedOptions = fromUri(uri);
+    actualParsedResult = parse(uri);
 
-    expectedParsedOptions = new PgConnectOptions()
-      .setUsername("user");
+    expectedParsedResult = new JsonObject()
+      .put("username", "user");
 
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    assertEquals(expectedParsedResult, actualParsedResult);
   }
 
-  @Test
+  @Test(expected = IllegalArgumentException.class)
   public void testParsingPasswordWithoutUsername() {
     uri = "postgresql://:secret@";
-    actualParsedOptions = fromUri(uri);
-
-    expectedParsedOptions = new PgConnectOptions();
-
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    actualParsedResult = parse(uri);
   }
 
   @Test
-  public void testParsingPortWithoutHost() {
-    // This URI is not valid in java.net.URI
-    uri = "postgresql://:1234";
-    actualParsedOptions = fromUri(uri);
+  public void testParsingHostWithPort() {
+    uri = "postgresql://localhost:1234";
+    actualParsedResult = parse(uri);
 
-    expectedParsedOptions = new PgConnectOptions()
-      .setPort(1234);
+    expectedParsedResult = new JsonObject()
+      .put("host", "localhost")
+      .put("port", 1234);
 
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    assertEquals(expectedParsedResult, actualParsedResult);
   }
 
   @Test
-  public void testParsingOnlyDbName() {
-    uri = "postgresql:///mydb";
-    actualParsedOptions = fromUri(uri);
+  public void testParsingPortAndDbName() {
+    uri = "postgresql://:1234/mydb";
+    actualParsedResult = parse(uri);
 
-    expectedParsedOptions = new PgConnectOptions()
-      .setDatabase("mydb");
+    expectedParsedResult = new JsonObject()
+      .put("port", 1234)
+      .put("database", "mydb");
 
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    assertEquals(expectedParsedResult, actualParsedResult);
   }
 
   @Test
-  public void testParsingOnlyParameters() {
-    uri = "postgresql://?host=localhost&port=1234";
-    actualParsedOptions = fromUri(uri);
+  public void testParsingUserAndParameters() {
+    uri = "postgresql://user@?host=localhost&port=1234";
+    actualParsedResult = parse(uri);
 
-    expectedParsedOptions = new PgConnectOptions()
-      .setHost("localhost")
-      .setPort(1234);
+    expectedParsedResult = new JsonObject()
+      .put("username", "user")
+      .put("host", "localhost")
+      .put("port", 1234);
 
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    assertEquals(expectedParsedResult, actualParsedResult);
   }
 
   @Test
   public void testParsingDomainSocket() {
-    uri = "postgresql://%2Fvar%2Flib%2Fpostgresql/dbname";
-    actualParsedOptions = fromUri(uri);
+    uri = "postgresql://%2Fvar%2Flib%2Fpostgresql";
+    actualParsedResult = parse(uri);
 
-    expectedParsedOptions = new PgConnectOptions()
-      .setDatabase("dbname");
+    expectedParsedResult = new JsonObject()
+      .put("domainsocket", "/var/lib/postgresql");
 
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    assertEquals(expectedParsedResult, actualParsedResult);
   }
 
   @Test
   public void testParsingDomainSocketInParameter() {
-    uri = "postgresql:///dbname?host=/var/lib/postgresql";
-    actualParsedOptions = fromUri(uri);
+    uri = "postgresql://?host=/var/lib/postgresql";
+    actualParsedResult = parse(uri);
 
-    expectedParsedOptions = new PgConnectOptions()
-      .setDatabase("dbname");
+    expectedParsedResult = new JsonObject()
+      .put("domainsocket", "/var/lib/postgresql");
 
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    assertEquals(expectedParsedResult, actualParsedResult);
   }
 
-  @Test
-  public void testParsingInvalidUri() {
-    uri = "postgresql://@@/dbname?host";
-    actualParsedOptions = fromUri(uri);
-
-    expectedParsedOptions = new PgConnectOptions();
-
-    assertEquals(expectedParsedOptions, actualParsedOptions);
-  }
 
   @Test
   public void testParsingUriWithOverridenParameters() {
     uri = "postgresql://localhost/mydb?host=myhost&port=1234";
-    actualParsedOptions = fromUri(uri);
+    actualParsedResult = parse(uri);
 
-    expectedParsedOptions = new PgConnectOptions()
-      .setHost("myhost")
-      .setDatabase("mydb")
-      .setPort(1234);
+    expectedParsedResult = new JsonObject()
+      .put("host", "myhost")
+      .put("database", "mydb")
+      .put("port", 1234);
 
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    assertEquals(expectedParsedResult, actualParsedResult);
   }
 
   @Test
   public void testParsingFullUri() {
     uri = "postgresql://dbuser:secretpassword@database.server.com:3211/mydb";
-    actualParsedOptions = fromUri(uri);
+    actualParsedResult = parse(uri);
 
-    expectedParsedOptions = new PgConnectOptions()
-      .setUsername("dbuser")
-      .setPassword("secretpassword")
-      .setHost("database.server.com")
-      .setPort(3211)
-      .setDatabase("mydb");
+    expectedParsedResult = new JsonObject()
+      .put("username", "dbuser")
+      .put("password", "secretpassword")
+      .put("host", "database.server.com")
+      .put("port", 3211)
+      .put("database", "mydb");
 
-    assertEquals(expectedParsedOptions, actualParsedOptions);
-
-    PgConnectOptions expectedPgConnectOptions = new PgConnectOptions()
-      .setUsername("dbuser")
-      .setPassword("secretpassword")
-      .setHost("database.server.com")
-      .setPort(3211)
-      .setDatabase("mydb");
-
-    PgConnectOptions actualPgConnectOptions = fromUri(uri);
-
-    assertEquals(expectedPgConnectOptions, actualPgConnectOptions);
+    assertEquals(expectedParsedResult, actualParsedResult);
   }
 
-  @Test
-  public void testProvidingPgConnectOptions() {
-    uri = "postgresql://pg@localhost?password=secret123&port=1234";
-
-    PgConnectOptions expectedOptions = new PgConnectOptions()
-      .setUsername("pg")
-      .setPassword("secret123")
-      .setHost("localhost")
-      .setPort(1234);
-
-    assertEquals(expectedOptions, fromUri(uri));
-  }
-
-  @Test
-  public void testProvidingWrongPgConnectOptions() {
-    uri = "postgresql://user:secret@localhost/mydb?port=1234";
-
-    PgConnectOptions wrongOptions = new PgConnectOptions()
-      .setUsername("pg")
-      .setPassword("secret123")
-      .setHost("localhost")
-      .setPort(1234);
-
-    assertNotEquals(wrongOptions, fromUri(uri));
-  }
-
-  @Test
-  public void testInvalidUri1() {
+  @Test(expected = IllegalArgumentException.class)
+  public void testParsingInvalidUri1() {
     uri = "postgresql://us@er@@";
-    actualParsedOptions = fromUri(uri);
-
-    expectedParsedOptions = new PgConnectOptions();
-
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    actualParsedResult = parse(uri);
   }
 
-  @Test
-  public void testInvalidUri2() {
+  @Test(expected = IllegalArgumentException.class)
+  public void testParsingInvalidUri2() {
     uri = "postgresql://user/mydb//";
-    actualParsedOptions = fromUri(uri);
-
-    expectedParsedOptions = new PgConnectOptions();
-
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    actualParsedResult = parse(uri);
   }
 
-  @Test
-  public void testInvalidUri3() {
+  @Test(expected = IllegalArgumentException.class)
+  public void testParsingInvalidUri3() {
     uri = "postgresql:///dbname/?host=localhost";
-    actualParsedOptions = fromUri(uri);
-
-    expectedParsedOptions = new PgConnectOptions();
-
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    actualParsedResult = parse(uri);
   }
 
-  @Test
-  public void testInvalidUri4() {
+  @Test(expected = IllegalArgumentException.class)
+  public void testParsingInvalidUri4() {
     uri = "postgresql://user::1234";
-    actualParsedOptions = fromUri(uri);
-
-    expectedParsedOptions = new PgConnectOptions();
-
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    actualParsedResult = parse(uri);
   }
 
-  @Test
-  public void testInvalidUri5() {
+  @Test(expected = IllegalArgumentException.class)
+  public void testParsingInvalidUri5() {
     uri = "postgresql://@:1234";
-    actualParsedOptions = fromUri(uri);
-
-    expectedParsedOptions = new PgConnectOptions();
-
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+    actualParsedResult = parse(uri);
   }
 
-  @Test
-  public void testInvalidUri6() {
+  @Test(expected = IllegalArgumentException.class)
+  public void testParsingInvalidUri6() {
     uri = "postgresql://:123:";
-    actualParsedOptions = fromUri(uri);
+    actualParsedResult = parse(uri);
+  }
 
-    expectedParsedOptions = new PgConnectOptions();
-
-    assertEquals(expectedParsedOptions, actualParsedOptions);
+  @Test(expected = IllegalArgumentException.class)
+  public void testParsingInvalidUri7() {
+    uri = "postgresql://@@/dbname?host";
+    actualParsedResult = parse(uri);
   }
 }
