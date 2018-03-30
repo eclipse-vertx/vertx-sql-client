@@ -58,23 +58,6 @@ public interface PgClient {
   }
 
   /**
-   * Create a connection pool to the database configured with the given {@code connectionUri}.
-   *
-   * @param connectionUri the connection URI
-   * @return the connection pool
-   */
-  static PgPool pool(String connectionUri) {
-    return PgClient.pool((PgPoolOptions) fromUri(connectionUri));
-  }
-
-  /**
-   * Like {@link #pool(String)} with a specific {@link Vertx} instance.
-   */
-  static PgPool pool(Vertx vertx, String connectionUri) {
-    return PgClient.pool(vertx, (PgPoolOptions) fromUri(connectionUri));
-  }
-
-  /**
    * Connects to the database and returns the connection if that succeeds.
    * <p/>
    * The connection interracts directly with the database is not a proxy, so closing the
@@ -106,7 +89,7 @@ public interface PgClient {
   }
 
   /**
-   * Like {@link #connect(Vertx, PgConnectOptions, Handler)} with a specific connection URI to configure the connection.
+   * Like {@link #connect(Vertx, PgConnectOptions, Handler)} but with a specific connection URI to configure the connection.
    */
   static void connect(Vertx vertx, String connectionUri, Handler<AsyncResult<PgConnection>> handler) {
     connect(vertx, fromUri(connectionUri), handler);
