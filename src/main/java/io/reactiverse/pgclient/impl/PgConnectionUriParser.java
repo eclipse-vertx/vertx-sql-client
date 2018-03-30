@@ -21,26 +21,18 @@ import static java.lang.String.*;
 public class PgConnectionUriParser {
   private static final String FULL_URI_REGEX = "^postgre(?:s|sql)://(?:(\\w+(?::\\S+)?)@)?([0-9.]+|\\[[A-Za-z0-9:]+]|[A-Za-z0-9.%\\-_]+)?(?::(\\d+))?(?:/([A-Za-z0-9_\\-]+))?(?:\\?(.*))?$";
 
-  private static int USER_INFO_GROUP = 1;
-  private static int NET_LOCATION_GROUP = 2;
-  private static int PORT_GROUP = 3;
-  private static int DATABASE_GROUP = 4;
-  private static int PARAMETER_GROUP = 5;
-
-  private final String connectionUri;
-
-  private JsonObject configuration = new JsonObject();
-
-  private PgConnectionUriParser(String connectionUri) {
-    this.connectionUri = connectionUri;
-    doParse();
-  }
+  private static final int USER_INFO_GROUP = 1;
+  private static final int NET_LOCATION_GROUP = 2;
+  private static final int PORT_GROUP = 3;
+  private static final int DATABASE_GROUP = 4;
+  private static final int PARAMETER_GROUP = 5;
 
   private static JsonObject parse(String connectionUri) {
     // if we get any exception during the parsing, then we return a null.
     try {
-      PgConnectionUriParser pgConnectionUriParser = new PgConnectionUriParser(connectionUri);
-      return pgConnectionUriParser.getConfiguration();
+      JsonObject configuration = new JsonObject();
+      doParse(connectionUri, configuration);
+      return configuration;
     } catch (Exception e) {
       return null;
     }
@@ -64,40 +56,33 @@ public class PgConnectionUriParser {
     }
   }
 
-  private JsonObject getConfiguration() {
-    return configuration;
-  }
-
-  public String getConnectionUri() {
-    return connectionUri;
-  }
-
-  private void doParse() {
+  // execute the parsing process and store options in the configuration
+  private static void doParse(String connectionUri, JsonObject configuration) {
     Pattern pattern = Pattern.compile(FULL_URI_REGEX);
     Matcher matcher = pattern.matcher(connectionUri);
 
     if (matcher.matches()) {
       // parse the username and password
-      parseUsernameAndPassword(matcher.group(USER_INFO_GROUP));
+      parseUsernameAndPassword(matcher.group(USER_INFO_GROUP), configuration);
 
       // parse the IP address/host/unix domainSocket address
-      parseNetLocation(matcher.group(NET_LOCATION_GROUP));
+      parseNetLocation(matcher.group(NET_LOCATION_GROUP), configuration);
 
       // parse the port
-      parsePort(matcher.group(PORT_GROUP));
+      parsePort(matcher.group(PORT_GROUP), configuration);
 
       // parse the database name
-      parseDatabaseName(matcher.group(DATABASE_GROUP));
+      parseDatabaseName(matcher.group(DATABASE_GROUP), configuration);
 
       // parse the parameters
-      parseParameters(matcher.group(PARAMETER_GROUP));
+      parseParameters(matcher.group(PARAMETER_GROUP), configuration);
 
     } else {
       throw new IllegalArgumentException("Wrong syntax of connection URI");
     }
   }
 
-  private void parseUsernameAndPassword(String userInfo) {
+  private static void parseUsernameAndPassword(String userInfo, JsonObject configuration) {
     if (userInfo == null || userInfo.isEmpty()) {
       return;
     }
@@ -117,14 +102,14 @@ public class PgConnectionUriParser {
     }
   }
 
-  private void parseNetLocation(String hostInfo) {
+  private static void parseNetLocation(String hostInfo, JsonObject configuration) {
     if (hostInfo == null || hostInfo.isEmpty()) {
       return;
     }
-    parseNetLocationValue(decodeUrl(hostInfo));
+    parseNetLocationValue(decodeUrl(hostInfo), configuration);
   }
 
-  private void parsePort(String portInfo) {
+  private static void parsePort(String portInfo, JsonObject configuration) {
     if (portInfo == null || portInfo.isEmpty()) {
       return;
     }
@@ -140,7 +125,7 @@ public class PgConnectionUriParser {
     configuration.put("port", port);
   }
 
-  private void parseDatabaseName(String databaseInfo) {
+  private static void parseDatabaseName(String databaseInfo, JsonObject configuration) {
     if (databaseInfo == null || databaseInfo.isEmpty()) {
       return;
     }
@@ -148,7 +133,7 @@ public class PgConnectionUriParser {
 
   }
 
-  private void parseParameters(String parametersInfo) {
+  private static void parseParameters(String parametersInfo, JsonObject configuration) {
     if (parametersInfo == null || parametersInfo.isEmpty()) {
       return;
     }
@@ -164,10 +149,10 @@ public class PgConnectionUriParser {
         String value = decodeUrl(parameterPair.substring(indexOfDelimiter + 1).trim());
         switch (key) {
           case "port":
-            parsePort(value);
+            parsePort(value, configuration);
             break;
           case "host":
-            parseNetLocationValue(value);
+            parseNetLocationValue(value, configuration);
             break;
           case "hostaddr":
             configuration.put("host", value);
@@ -189,7 +174,7 @@ public class PgConnectionUriParser {
     }
   }
 
-  private void parseNetLocationValue(String hostValue) {
+  private static void parseNetLocationValue(String hostValue, JsonObject configuration) {
     if (isRegardedAsDomainSocketAddress(hostValue)) {
       configuration.put("domainsocket", hostValue);
     } else if (isRegardedAsIpv6Address(hostValue)) {
@@ -199,15 +184,15 @@ public class PgConnectionUriParser {
     }
   }
 
-  private boolean isRegardedAsIpv6Address(String hostAddress) {
+  private static boolean isRegardedAsIpv6Address(String hostAddress) {
     return hostAddress.startsWith("[") && hostAddress.endsWith("]");
   }
 
-  private boolean isRegardedAsDomainSocketAddress(String hostAddress) {
+  private static boolean isRegardedAsDomainSocketAddress(String hostAddress) {
     return hostAddress.startsWith("/") || hostAddress.startsWith("%2F");
   }
 
-  private String decodeUrl(String url) {
+  private static String decodeUrl(String url) {
     try {
       return URLDecoder.decode(url, "UTF-8");
     } catch (UnsupportedEncodingException e) {
@@ -215,7 +200,7 @@ public class PgConnectionUriParser {
     }
   }
 
-  private boolean occurExactlyOnce(String uri, String character) {
+  private static boolean occurExactlyOnce(String uri, String character) {
     return uri.contains(character) && uri.indexOf(character) == uri.lastIndexOf(character);
   }
 }
