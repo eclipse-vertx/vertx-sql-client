@@ -24,9 +24,6 @@ import io.vertx.core.net.*;
 
 import java.util.Set;
 
-import static java.lang.Integer.*;
-import static java.lang.System.*;
-
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
@@ -337,7 +334,7 @@ public class PgConnectOptions extends NetClientOptions {
   }
 
   /**
-   * Initialize with the default options, if env variables are specified they take precedence over these options.
+   * Initialize with the default options.
    */
   private void init() {
     host = DEFAULT_HOST;
@@ -347,30 +344,6 @@ public class PgConnectOptions extends NetClientOptions {
     password = DEFAULT_PASSWORD;
     cachePreparedStatements = DEFAULT_CACHE_PREPARED_STATEMENTS;
     pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
-
-    if (getenv("PGHOSTADDR") == null) {
-      if (getenv("PGHOST") != null) {
-        host = getenv("PGHOST");
-      }
-    } else {
-      host = getenv("PGHOSTADDR");
-    }
-    if (getenv("PGPORT") != null) {
-      try {
-        port = parseInt(getenv("PGPORT"));
-      } catch (NumberFormatException e) {
-        // port will be set to default
-      }
-    }
-    if (getenv("PGDATABASE") != null) {
-      database = getenv("PGDATABASE");
-    }
-    if (getenv("PGUSER") != null) {
-      username = getenv("PGUSER");
-    }
-    if (getenv("PGPASSWORD") != null) {
-      password = getenv("PGPASSWORD");
-    }
   }
 
   @Override
