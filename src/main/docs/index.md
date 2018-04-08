@@ -51,8 +51,8 @@ Here is the simplest way to connect, query and disconnect
 ```
 
 You can also use environment variables to set default connection setting values, this is useful
-when you want to avoid hard-coding database connection information. You can refer to the [official documentation](https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING) for more details. 
-The following parameters are supported:
+when you want to avoid hard-coding database connection information. You can refer to the [official documentation](https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING)
+for more details.  The following parameters are supported:
 
 * `PGHOST`
 * `PGHOSTADDR`
@@ -60,6 +60,10 @@ The following parameters are supported:
 * `PGDATABASE`
 * `PGUSER`
 * `PGPASSWORD`
+
+```$lang
+{@link examples.Examples#configureFromEnv}
+```
 
 We also provide you an alternative way to connect when you want to configure with a connection URI:
 

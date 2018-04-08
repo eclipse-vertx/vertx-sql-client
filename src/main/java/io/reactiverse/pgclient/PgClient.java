@@ -36,6 +36,34 @@ import java.util.List;
 public interface PgClient {
 
   /**
+   * Like {@link #pool(PgPoolOptions)} with options build from the environment variables.
+   */
+  static PgPool pool() {
+    return pool(PgPoolOptions.fromEnv());
+  }
+
+  /**
+   * Like {@link #pool(PgPoolOptions)} with options build from {@code connectionUri}.
+   */
+  static PgPool pool(String connectionUri) {
+    return pool(PgPoolOptions.fromUri(connectionUri));
+  }
+
+  /**
+   * Like {@link #pool(Vertx, PgPoolOptions)} with options build from the environment variables.
+   */
+  static PgPool pool(Vertx vertx) {
+    return pool(vertx, PgPoolOptions.fromEnv());
+  }
+
+  /**
+   * Like {@link #pool(Vertx, PgPoolOptions)} with options build from {@code connectionUri}.
+   */
+  static PgPool pool(Vertx vertx, String connectionUri) {
+    return pool(vertx, PgPoolOptions.fromUri(connectionUri));
+  }
+
+  /**
    * Create a connection pool to the database configured with the given {@code options}.
    *
    * @param options the options for creating the pool
@@ -84,6 +112,20 @@ public interface PgClient {
         connect(vertx, options, handler);
       });
     }
+  }
+
+  /**
+   * Like {@link #connect(Vertx, PgConnectOptions, Handler)} with options build from the environment variables.
+   */
+  static void connect(Vertx vertx, Handler<AsyncResult<PgConnection>> handler) {
+    connect(vertx, PgConnectOptions.fromEnv(), handler);
+  }
+
+  /**
+   * Like {@link #connect(Vertx, PgConnectOptions, Handler)} with options build from {@code connectionUri}.
+   */
+  static void connect(Vertx vertx, String connectionUri, Handler<AsyncResult<PgConnection>> handler) {
+    connect(vertx, PgConnectOptions.fromUri(connectionUri), handler);
   }
 
   /**

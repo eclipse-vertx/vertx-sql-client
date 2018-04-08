@@ -62,13 +62,19 @@ public class Examples {
     });
   }
 
+  public void configureFromEnv(Vertx vertx) {
+
+    // Create the pool from the environment variables
+    PgPool pool = PgClient.pool(vertx);
+  }
+
   public void configureFromUri() {
 
     // Connection URI
     String connectionUri = "postgresql://dbuser:secretpassword@database.server.com:3211/mydb";
 
-    // Create the PgConnectOptions from the connection URI
-    PgConnectOptions pgConnectOptions = PgConnectOptions.fromUri(connectionUri);
+    // Create the pool from the connection URI
+    PgPool pool = PgClient.pool(connectionUri);
   }
 
   public void connecting01() {
