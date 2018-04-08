@@ -17,10 +17,14 @@
 
 package io.reactiverse.pgclient;
 
+import io.reactiverse.pgclient.impl.PgConnectionUriParser;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.*;
+
+import static java.lang.Integer.parseInt;
+import static java.lang.System.getenv;
 
 /**
  * The options for configuring a connection pool.
@@ -29,6 +33,25 @@ import io.vertx.core.net.*;
  */
 @DataObject(generateConverter = true)
 public class PgPoolOptions extends PgConnectOptions {
+
+  /**
+   * Provide a {@link PgPoolOptions} configured from a connection URI.
+   *
+   * @param connectionUri the connection URI to configure from
+   * @return a {@link PgPoolOptions} parsed from the connection URI
+   * @throws IllegalArgumentException when the {@code connectionUri} is in an invalid format
+   */
+  public static PgPoolOptions fromUri(String connectionUri) throws IllegalArgumentException {
+    return new PgPoolOptions(PgConnectOptions.fromUri(connectionUri));
+  }
+
+  /**
+   * Provide a {@link PgPoolOptions} configured with environment variables, if the environment variable
+   * is not set, then a default value will take precedence over this.
+   */
+  public static PgPoolOptions fromEnv() {
+    return new PgPoolOptions(PgConnectOptions.fromEnv());
+  }
 
   public static final int DEFAULT_MAX_POOL_SIZE = 4;
 

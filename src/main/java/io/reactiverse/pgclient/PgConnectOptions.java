@@ -39,7 +39,7 @@ public class PgConnectOptions extends NetClientOptions {
    * Provide a {@link PgConnectOptions} configured from a connection URI.
    *
    * @param connectionUri the connection URI to configure from
-   * @return a {@code PgConnectOptions} parsed from the connection URI
+   * @return a {@link PgConnectOptions} parsed from the connection URI
    * @throws IllegalArgumentException when the {@code connectionUri} is in an invalid format
    */
   public static PgConnectOptions fromUri(String connectionUri) throws IllegalArgumentException {
