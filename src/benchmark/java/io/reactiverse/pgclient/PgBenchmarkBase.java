@@ -53,7 +53,7 @@ public abstract class PgBenchmarkBase extends BenchmarkBase {
       .setHost(host)
       .setPort(port)
       .setDatabase(database)
-      .setUsername(username)
+      .setUser(username)
       .setPassword(password)
       .setCachePreparedStatements(true)
       .setPipeliningLimit(pipeliningLimit)

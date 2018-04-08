@@ -74,7 +74,7 @@ public class PgConnectOptions extends NetClientOptions {
       pgConnectOptions.setDatabase(getenv("PGDATABASE"));
     }
     if (getenv("PGUSER") != null) {
-      pgConnectOptions.setUsername(getenv("PGUSER"));
+      pgConnectOptions.setUser(getenv("PGUSER"));
     }
     if (getenv("PGPASSWORD") != null) {
       pgConnectOptions.setPassword(getenv("PGPASSWORD"));
@@ -85,7 +85,7 @@ public class PgConnectOptions extends NetClientOptions {
   public static final String DEFAULT_HOST = "localhost";
   public static int DEFAULT_PORT = 5432;
   public static final String DEFAULT_DATABASE = "db";
-  public static final String DEFAULT_USERNAME = "user";
+  public static final String DEFAULT_USER = "user";
   public static final String DEFAULT_PASSWORD = "pass";
   public static final boolean DEFAULT_CACHE_PREPARED_STATEMENTS = false;
   public static final int DEFAULT_PIPELINING_LIMIT = 256;
@@ -93,7 +93,7 @@ public class PgConnectOptions extends NetClientOptions {
   private String host;
   private int port;
   private String database;
-  private String username;
+  private String user;
   private String password;
   private boolean cachePreparedStatements;
   private int pipeliningLimit;
@@ -114,7 +114,7 @@ public class PgConnectOptions extends NetClientOptions {
     host = other.host;
     port = other.port;
     database = other.database;
-    username = other.username;
+    user = other.user;
     password = other.password;
     pipeliningLimit = other.pipeliningLimit;
   }
@@ -146,12 +146,12 @@ public class PgConnectOptions extends NetClientOptions {
     return this;
   }
 
-  public String getUsername() {
-    return username;
+  public String getUser() {
+    return user;
   }
 
-  public PgConnectOptions setUsername(String username) {
-    this.username = username;
+  public PgConnectOptions setUser(String user) {
+    this.user = user;
     return this;
   }
 
@@ -392,7 +392,7 @@ public class PgConnectOptions extends NetClientOptions {
     host = DEFAULT_HOST;
     port = DEFAULT_PORT;
     database = DEFAULT_DATABASE;
-    username = DEFAULT_USERNAME;
+    user = DEFAULT_USER;
     password = DEFAULT_PASSWORD;
     cachePreparedStatements = DEFAULT_CACHE_PREPARED_STATEMENTS;
     pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
@@ -416,7 +416,7 @@ public class PgConnectOptions extends NetClientOptions {
     if (!host.equals(that.host)) return false;
     if (port != that.port) return false;
     if (!database.equals(that.database)) return false;
-    if (!username.equals(that.username)) return false;
+    if (!user.equals(that.user)) return false;
     if (!password.equals(that.password)) return false;
     if (cachePreparedStatements != that.cachePreparedStatements) return false;
     if (pipeliningLimit != that.pipeliningLimit) return false;
@@ -430,7 +430,7 @@ public class PgConnectOptions extends NetClientOptions {
     result = 31 * result + host.hashCode();
     result = 31 * result + port;
     result = 31 * result + database.hashCode();
-    result = 31 * result + username.hashCode();
+    result = 31 * result + user.hashCode();
     result = 31 * result + password.hashCode();
     result = 31 * result + (cachePreparedStatements ? 1 : 0);
     result = 31 * result + pipeliningLimit;

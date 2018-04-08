@@ -41,7 +41,7 @@ public class Examples {
       .setPort(5432)
       .setHost("the-host")
       .setDatabase("the-db")
-      .setUsername("user")
+      .setUser("user")
       .setPassword("secret")
       .setMaxSize(5);
 
@@ -84,7 +84,7 @@ public class Examples {
       .setPort(5432)
       .setHost("the-host")
       .setDatabase("the-db")
-      .setUsername("user")
+      .setUser("user")
       .setPassword("secret")
       .setMaxSize(5);
 
@@ -99,7 +99,7 @@ public class Examples {
       .setPort(5432)
       .setHost("the-host")
       .setDatabase("the-db")
-      .setUsername("user")
+      .setUser("user")
       .setPassword("secret")
       .setMaxSize(5);
 
@@ -120,7 +120,7 @@ public class Examples {
       .setPort(5432)
       .setHost("the-host")
       .setDatabase("the-db")
-      .setUsername("user")
+      .setUser("user")
       .setPassword("secret")
       .setMaxSize(5);
 
@@ -162,7 +162,7 @@ public class Examples {
       .setPort(5432)
       .setHost("the-host")
       .setDatabase("the-db")
-      .setUsername("user")
+      .setUser("user")
       .setPassword("secret");
 
     // Connect to Postgres
@@ -481,7 +481,7 @@ public class Examples {
       .setPort(5432)
       .setHost("the-host")
       .setDatabase("the-db")
-      .setUsername("user")
+      .setUser("user")
       .setPassword("secret")
     );
 
@@ -507,7 +507,7 @@ public class Examples {
       .setPort(5432)
       .setHost("the-host")
       .setDatabase("the-db")
-      .setUsername("user")
+      .setUser("user")
       .setPassword("secret")
     );
 
@@ -527,7 +527,7 @@ public class Examples {
       .setPort(5432)
       .setHost("the-host")
       .setDatabase("the-db")
-      .setUsername("user")
+      .setUser("user")
       .setPassword("secret")
       .setSsl(true)
       .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/cert.pem"));

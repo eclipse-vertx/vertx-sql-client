@@ -37,7 +37,7 @@ public class RawBenchmark {
       .setHost("localhost")
       .setPort(5432)
       .setDatabase("postgres")
-      .setUsername("postgres")
+      .setUser("postgres")
       .setPassword("postgres");
     */
     largeSelectJDBC(options, 5_000);
@@ -140,7 +140,7 @@ public class RawBenchmark {
       .setHost(options.getHost())
       .setPort(options.getPort())
       .setDatabase(options.getDatabase())
-      .setUsername(options.getUsername())
+      .setUser(options.getUser())
       .setPassword(options.getPassword())
       .setCachePreparedStatements(true)
     );

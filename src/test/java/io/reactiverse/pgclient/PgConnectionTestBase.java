@@ -89,7 +89,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
   @Test
   public void testConnectInvalidUsername(TestContext ctx) {
     Async async = ctx.async();
-    options.setUsername("vertx");
+    options.setUser("vertx");
     connector.accept(ctx.asyncAssertFailure(conn -> {
       ctx.assertEquals("password authentication failed for user \"vertx\"", conn.getMessage());
       async.complete();

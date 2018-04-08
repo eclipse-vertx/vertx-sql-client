@@ -79,7 +79,7 @@ public class PgConnectOptionsProviderTest {
     actualConfiguration = PgConnectOptions.fromUri(connectionUri);
 
     expectedConfiguration = new PgConnectOptions()
-      .setUsername("user")
+      .setUser("user")
       .setHost("myhost");
 
     assertEquals(expectedConfiguration, actualConfiguration);
@@ -91,7 +91,7 @@ public class PgConnectOptionsProviderTest {
     actualConfiguration = PgConnectOptions.fromUri(connectionUri);
 
     expectedConfiguration = new PgConnectOptions()
-      .setUsername("user")
+      .setUser("user")
       .setPassword("secret")
       .setHost("myhost");
 
@@ -104,7 +104,7 @@ public class PgConnectOptionsProviderTest {
     actualConfiguration = PgConnectOptions.fromUri(connectionUri);
 
     expectedConfiguration = new PgConnectOptions()
-      .setUsername("other")
+      .setUser("other")
       .setPassword("secret")
       .setHost("localhost")
       .setPort(5433)

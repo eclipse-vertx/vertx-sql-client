@@ -35,7 +35,7 @@ public class Main {
     argv[len + 4] = "-p";
     argv[len + 5] = "database=" + options.getDatabase();
     argv[len + 6] = "-p";
-    argv[len + 7] = "username=" + options.getUsername();
+    argv[len + 7] = "username=" + options.getUser();
     argv[len + 8] = "-p";
     argv[len + 9] = "password=" + options.getPassword();
     try {

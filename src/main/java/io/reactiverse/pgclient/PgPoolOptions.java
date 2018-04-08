@@ -17,7 +17,6 @@
 
 package io.reactiverse.pgclient;
 
-import io.reactiverse.pgclient.impl.PgConnectionUriParser;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
@@ -103,8 +102,8 @@ public class PgPoolOptions extends PgConnectOptions {
   }
 
   @Override
-  public PgPoolOptions setUsername(String username) {
-    return (PgPoolOptions) super.setUsername(username);
+  public PgPoolOptions setUser(String user) {
+    return (PgPoolOptions) super.setUser(user);
   }
 
   @Override

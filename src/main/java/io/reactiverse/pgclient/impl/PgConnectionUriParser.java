@@ -58,8 +58,8 @@ public class PgConnectionUriParser {
     Matcher matcher = pattern.matcher(connectionUri);
 
     if (matcher.matches()) {
-      // parse the username and password
-      parseUsernameAndPassword(matcher.group(USER_INFO_GROUP), configuration);
+      // parse the user and password
+      parseUserandPassword(matcher.group(USER_INFO_GROUP), configuration);
 
       // parse the IP address/host/unix domainSocket address
       parseNetLocation(matcher.group(NET_LOCATION_GROUP), configuration);
@@ -78,23 +78,23 @@ public class PgConnectionUriParser {
     }
   }
 
-  private static void parseUsernameAndPassword(String userInfo, JsonObject configuration) {
+  private static void parseUserandPassword(String userInfo, JsonObject configuration) {
     if (userInfo == null || userInfo.isEmpty()) {
       return;
     }
     if (occurExactlyOnce(userInfo, ":")) {
       int index = userInfo.indexOf(":");
-      String username = userInfo.substring(0, index);
-      if (username.isEmpty()) {
-        throw new IllegalArgumentException("Can not only specify the password without a concrete username");
+      String user = userInfo.substring(0, index);
+      if (user.isEmpty()) {
+        throw new IllegalArgumentException("Can not only specify the password without a concrete user");
       }
       String password = userInfo.substring(index + 1);
-      configuration.put("username", decodeUrl(username));
+      configuration.put("user", decodeUrl(user));
       configuration.put("password", decodeUrl(password));
     } else if (!userInfo.contains(":")) {
-      configuration.put("username", decodeUrl(userInfo));
+      configuration.put("user", decodeUrl(userInfo));
     } else {
-      throw new IllegalArgumentException("Can not use multiple delimiters to delimit username and password");
+      throw new IllegalArgumentException("Can not use multiple delimiters to delimit user and password");
     }
   }
 
@@ -154,7 +154,7 @@ public class PgConnectionUriParser {
             configuration.put("host", value);
             break;
           case "user":
-            configuration.put("username", value);
+            configuration.put("user", value);
             break;
           case "password":
             configuration.put("password", value);

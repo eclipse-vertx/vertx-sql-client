@@ -115,7 +115,7 @@ public abstract class PgTestBase {
     PgConnectOptions options = new PgConnectOptions();
     options.setHost("localhost");
     options.setPort(8081);
-    options.setUsername("postgres");
+    options.setUser("postgres");
     options.setPassword("postgres");
     options.setDatabase("postgres");
     return options;

@@ -28,7 +28,7 @@ public class EnvTest {
     PgConnectOptions options = PgConnectOptions.fromEnv();
     assertEquals("test_host", options.getHost());
     assertEquals("test_database", options.getDatabase());
-    assertEquals("test_user", options.getUsername());
+    assertEquals("test_user", options.getUser());
     assertEquals("test_password", options.getPassword());
   }
 }

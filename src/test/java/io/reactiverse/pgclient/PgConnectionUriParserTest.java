@@ -57,12 +57,12 @@ public class PgConnectionUriParserTest {
   }
 
   @Test
-  public void testParsingUsername() {
+  public void testParsingUser() {
     uri = "postgres://user@";
     actualParsedResult = parse(uri);
 
     expectedParsedResult = new JsonObject()
-      .put("username", "user");
+      .put("user", "user");
 
     assertEquals(expectedParsedResult, actualParsedResult);
   }
@@ -73,7 +73,7 @@ public class PgConnectionUriParserTest {
     actualParsedResult = parse(uri);
 
     expectedParsedResult = new JsonObject()
-      .put("username", "user")
+      .put("user", "user")
       .put("password", "secret");
 
     assertEquals(expectedParsedResult, actualParsedResult);
@@ -141,7 +141,7 @@ public class PgConnectionUriParserTest {
     actualParsedResult = parse(uri);
 
     expectedParsedResult = new JsonObject()
-      .put("username", "other");
+      .put("user", "other");
 
     assertEquals(expectedParsedResult, actualParsedResult);
   }
@@ -152,7 +152,7 @@ public class PgConnectionUriParserTest {
     actualParsedResult = parse(uri);
 
     expectedParsedResult = new JsonObject()
-      .put("username", "other")
+      .put("user", "other")
       .put("password", "secret")
       .put("port", 1234);
 
@@ -166,7 +166,7 @@ public class PgConnectionUriParserTest {
 
     expectedParsedResult = new JsonObject()
       .put("host", "localhost")
-      .put("username", "other")
+      .put("user", "other")
       .put("password", "secret");
 
     assertEquals(expectedParsedResult, actualParsedResult);
@@ -178,13 +178,13 @@ public class PgConnectionUriParserTest {
     actualParsedResult = parse(uri);
 
     expectedParsedResult = new JsonObject()
-      .put("username", "user");
+      .put("user", "user");
 
     assertEquals(expectedParsedResult, actualParsedResult);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testParsingPasswordWithoutUsername() {
+  public void testParsingPasswordWithoutUser() {
     uri = "postgresql://:secret@";
     actualParsedResult = parse(uri);
   }
@@ -219,7 +219,7 @@ public class PgConnectionUriParserTest {
     actualParsedResult = parse(uri);
 
     expectedParsedResult = new JsonObject()
-      .put("username", "user")
+      .put("user", "user")
       .put("host", "localhost")
       .put("port", 1234);
 
@@ -268,7 +268,7 @@ public class PgConnectionUriParserTest {
     actualParsedResult = parse(uri);
 
     expectedParsedResult = new JsonObject()
-      .put("username", "dbuser")
+      .put("user", "dbuser")
       .put("password", "secretpassword")
       .put("host", "database.server.com")
       .put("port", 3211)

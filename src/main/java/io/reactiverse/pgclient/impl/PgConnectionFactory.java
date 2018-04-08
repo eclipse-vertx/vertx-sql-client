@@ -62,7 +62,7 @@ public class PgConnectionFactory {
     this.host = options.getHost();
     this.port = options.getPort();
     this.database = options.getDatabase();
-    this.username = options.getUsername();
+    this.username = options.getUser();
     this.password = options.getPassword();
     this.client = context.owner().createNetClient(netClientOptions);
     this.cachePreparedStatements = options.getCachePreparedStatements();
