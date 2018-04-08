@@ -222,6 +222,9 @@
             <systemPropertyVariables>
               <target.dir>${project.build.directory}</target.dir>
             </systemPropertyVariables>
+            <excludes>
+              <exclude>io/reactiverse/pgclient/it/**</exclude>
+            </excludes>
           </configuration>
         </plugin>
       </plugins>
@@ -276,6 +279,31 @@
                 <descriptor>src/benchmark/assembly/benchmarks.xml</descriptor>
               </descriptors>
               <attach>false</attach>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>2.21.0</version>
+        <executions>
+          <execution>
+            <id>it-tests</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+            <phase>integration-test</phase>
+            <configuration>
+              <includes>
+                <include>io/reactiverse/pgclient/it/**/*.java</include>
+              </includes>
+              <environmentVariables>
+                <PGHOSTADDR>test_host</PGHOSTADDR>
+                <PGDATABASE>test_database</PGDATABASE>
+                <PGPORT>1234</PGPORT>
+                <PGUSER>test_user</PGUSER>
+                <PGPASSWORD>test_password</PGPASSWORD>
+              </environmentVariables>
             </configuration>
           </execution>
         </executions>
