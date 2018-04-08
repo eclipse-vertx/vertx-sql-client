@@ -31,7 +31,7 @@ public class PgConnectOptionsProviderTest {
   @Test
   public void testValidUri1() {
     connectionUri = "postgresql://";
-    actualConfiguration = PgConnectOptionsProvider.fromUri(connectionUri);
+    actualConfiguration = PgConnectOptions.fromUri(connectionUri);
 
     expectedConfiguration = new PgConnectOptions();
 
@@ -41,7 +41,7 @@ public class PgConnectOptionsProviderTest {
   @Test
   public void testValidUri2() {
     connectionUri = "postgresql://myhost";
-    actualConfiguration = PgConnectOptionsProvider.fromUri(connectionUri);
+    actualConfiguration = PgConnectOptions.fromUri(connectionUri);
 
     expectedConfiguration = new PgConnectOptions()
       .setHost("myhost");
@@ -52,7 +52,7 @@ public class PgConnectOptionsProviderTest {
   @Test
   public void testValidUri3() {
     connectionUri = "postgresql://myhost:5433";
-    actualConfiguration = PgConnectOptionsProvider.fromUri(connectionUri);
+    actualConfiguration = PgConnectOptions.fromUri(connectionUri);
 
     expectedConfiguration = new PgConnectOptions()
       .setHost("myhost")
@@ -64,7 +64,7 @@ public class PgConnectOptionsProviderTest {
   @Test
   public void testValidUri4() {
     connectionUri = "postgresql://myhost/mydb";
-    actualConfiguration = PgConnectOptionsProvider.fromUri(connectionUri);
+    actualConfiguration = PgConnectOptions.fromUri(connectionUri);
 
     expectedConfiguration = new PgConnectOptions()
       .setHost("myhost")
@@ -76,7 +76,7 @@ public class PgConnectOptionsProviderTest {
   @Test
   public void testValidUri5() {
     connectionUri = "postgresql://user@myhost";
-    actualConfiguration = PgConnectOptionsProvider.fromUri(connectionUri);
+    actualConfiguration = PgConnectOptions.fromUri(connectionUri);
 
     expectedConfiguration = new PgConnectOptions()
       .setUsername("user")
@@ -88,7 +88,7 @@ public class PgConnectOptionsProviderTest {
   @Test
   public void testValidUri6() {
     connectionUri = "postgresql://user:secret@myhost";
-    actualConfiguration = PgConnectOptionsProvider.fromUri(connectionUri);
+    actualConfiguration = PgConnectOptions.fromUri(connectionUri);
 
     expectedConfiguration = new PgConnectOptions()
       .setUsername("user")
@@ -101,7 +101,7 @@ public class PgConnectOptionsProviderTest {
   @Test
   public void testValidUri7() {
     connectionUri = "postgresql://other@localhost/otherdb?port=5433&password=secret";
-    actualConfiguration = PgConnectOptionsProvider.fromUri(connectionUri);
+    actualConfiguration = PgConnectOptions.fromUri(connectionUri);
 
     expectedConfiguration = new PgConnectOptions()
       .setUsername("other")
@@ -117,30 +117,30 @@ public class PgConnectOptionsProviderTest {
   @Test(expected = IllegalArgumentException.class)
   public void testInvalidUri1() {
     connectionUri = "postgrsql://username";
-    actualConfiguration = PgConnectOptionsProvider.fromUri(connectionUri);
+    actualConfiguration = PgConnectOptions.fromUri(connectionUri);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testInvalidUri2() {
     connectionUri = "postgresql://username:password@loc//dbname";
-    actualConfiguration = PgConnectOptionsProvider.fromUri(connectionUri);
+    actualConfiguration = PgConnectOptions.fromUri(connectionUri);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testInvalidUri3() {
     connectionUri = "postgresql://user@:passowrd@localhost/dbname/qwer";
-    actualConfiguration = PgConnectOptionsProvider.fromUri(connectionUri);
+    actualConfiguration = PgConnectOptions.fromUri(connectionUri);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testInvalidUri4() {
     connectionUri = "postgresql://user:password@localhost:655355/dbname";
-    actualConfiguration = PgConnectOptionsProvider.fromUri(connectionUri);
+    actualConfiguration = PgConnectOptions.fromUri(connectionUri);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testInvalidUri5() {
     connectionUri = "postgresql://user@localhost?port=1234&port";
-    actualConfiguration = PgConnectOptionsProvider.fromUri(connectionUri);
+    actualConfiguration = PgConnectOptions.fromUri(connectionUri);
   }
 }
