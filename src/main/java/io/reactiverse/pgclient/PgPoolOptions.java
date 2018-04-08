@@ -300,4 +300,24 @@ public class PgPoolOptions extends PgConnectOptions {
     PgPoolOptionsConverter.toJson(this, json);
     return json;
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof PgPoolOptions)) return false;
+    if (!super.equals(o)) return false;
+
+    PgPoolOptions that = (PgPoolOptions) o;
+
+    if (maxSize != that.maxSize) return false;
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = super.hashCode();
+    result = 31 * result + maxSize;
+    return result;
+  }
 }

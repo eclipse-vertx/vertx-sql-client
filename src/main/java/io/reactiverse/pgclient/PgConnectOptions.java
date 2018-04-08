@@ -24,9 +24,6 @@ import io.vertx.core.net.*;
 
 import java.util.Set;
 
-import static java.lang.Integer.*;
-import static java.lang.System.*;
-
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
@@ -337,7 +334,7 @@ public class PgConnectOptions extends NetClientOptions {
   }
 
   /**
-   * Initialize with the default options, if env variables are specified they take precedence over these options.
+   * Initialize with the default options.
    */
   private void init() {
     host = DEFAULT_HOST;
@@ -347,29 +344,44 @@ public class PgConnectOptions extends NetClientOptions {
     password = DEFAULT_PASSWORD;
     cachePreparedStatements = DEFAULT_CACHE_PREPARED_STATEMENTS;
     pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
+  }
 
-    if (getenv("PGHOSTADDR") == null) {
-      if (getenv("PGHOST") != null) {
-        host = getenv("PGHOST");
-      }
-    } else {
-      host = getenv("PGHOSTADDR");
-    }
-    if (getenv("PGPORT") != null) {
-      try {
-        port = parseInt(getenv("PGPORT"));
-      } catch (NumberFormatException e) {
-        // port will be set to default
-      }
-    }
-    if (getenv("PGDATABASE") != null) {
-      database = getenv("PGDATABASE");
-    }
-    if (getenv("PGUSER") != null) {
-      username = getenv("PGUSER");
-    }
-    if (getenv("PGPASSWORD") != null) {
-      password = getenv("PGPASSWORD");
-    }
+  @Override
+  public JsonObject toJson() {
+    JsonObject json = super.toJson();
+    PgConnectOptionsConverter.toJson(this, json);
+    return json;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof PgConnectOptions)) return false;
+    if (!super.equals(o)) return false;
+
+    PgConnectOptions that = (PgConnectOptions) o;
+
+    if (!host.equals(that.host)) return false;
+    if (port != that.port) return false;
+    if (!database.equals(that.database)) return false;
+    if (!username.equals(that.username)) return false;
+    if (!password.equals(that.password)) return false;
+    if (cachePreparedStatements != that.cachePreparedStatements) return false;
+    if (pipeliningLimit != that.pipeliningLimit) return false;
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = super.hashCode();
+    result = 31 * result + host.hashCode();
+    result = 31 * result + port;
+    result = 31 * result + database.hashCode();
+    result = 31 * result + username.hashCode();
+    result = 31 * result + password.hashCode();
+    result = 31 * result + (cachePreparedStatements ? 1 : 0);
+    result = 31 * result + pipeliningLimit;
+    return result;
   }
 }

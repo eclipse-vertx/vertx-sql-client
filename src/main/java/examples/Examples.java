@@ -62,6 +62,15 @@ public class Examples {
     });
   }
 
+  public void configureFromUri() {
+
+    // Connection URI
+    String connectionUri = "postgresql://dbuser:secretpassword@database.server.com:3211/mydb";
+
+    // Create the PgConnectOptions from the connection URI
+    PgConnectOptions pgConnectOptions = PgConnectOptionsProvider.fromUri(connectionUri);
+  }
+
   public void connecting01() {
 
     // Pool options
