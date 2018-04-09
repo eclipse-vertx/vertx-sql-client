@@ -42,7 +42,7 @@ public class PgConnectionUriParser {
   private static final int PARAMETER_GROUP = 5;
 
   public static JsonObject parse(String connectionUri) {
-    // if we get any exception during the parsing, then we return a null.
+    // if we get any exception during the parsing, then we throw an IllegalArgumentException.
     try {
       JsonObject configuration = new JsonObject();
       doParse(connectionUri, configuration);
