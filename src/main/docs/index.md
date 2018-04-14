@@ -50,29 +50,6 @@ Here is the simplest way to connect, query and disconnect
 {@link examples.Examples#gettingStarted()}
 ```
 
-You can also use environment variables to set default connection setting values, this is useful
-when you want to avoid hard-coding database connection information. You can refer to the [official documentation](https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING)
-for more details.  The following parameters are supported:
-
-* `PGHOST`
-* `PGHOSTADDR`
-* `PGPORT`
-* `PGDATABASE`
-* `PGUSER`
-* `PGPASSWORD`
-
-```$lang
-{@link examples.Examples#configureFromEnv}
-```
-
-We also provide you an alternative way to connect when you want to configure with a connection URI:
-
-```$lang
-{@link examples.Examples#configureFromUri}
-```
-
-More information about connection string formats can be found in the [PostgreSQL Manuals](https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING).
-
 ## Connecting to Postgres
 
 Most of the time you will use a pool to connect to Postgres:
@@ -106,6 +83,43 @@ You can easily get one from the pool:
 ```
 
 Once you are done with the connection you must close it to release it to the pool, so it can be reused.
+
+## Configuration
+
+There are several options for you to configure the client.
+
+Apart from configuring with a `PgPoolOptions` data object, We also provide you an alternative way to connect when you want to configure with a connection URI:
+
+```$lang
+{@link examples.Examples#configureFromUri(io.vertx.core.Vertx)}
+```
+
+More information about connection string formats can be found in the [PostgreSQL Manuals](https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING).
+
+You can also use environment variables to set default connection setting values, this is useful
+when you want to avoid hard-coding database connection information. You can refer to the [official documentation](https://www.postgresql.org/docs/9.6/static/libpq-envars.html)
+for more details. The following parameters are supported:
+
+* `PGHOST`
+* `PGHOSTADDR`
+* `PGPORT`
+* `PGDATABASE`
+* `PGUSER`
+* `PGPASSWORD`
+
+If you don't specify a data object or a connection URI string to connect, environment variables will take precedence over them. 
+
+```
+$ PGUSER=user \
+  PGHOST=the-host \
+  PGPASSWORD=secret \
+  PGDATABASE=the-db \
+  PGPORT=5432
+```
+
+```$lang
+{@link examples.Examples#configureFromEnv(io.vertx.core.Vertx)}
+```
 
 ## Running queries
 
