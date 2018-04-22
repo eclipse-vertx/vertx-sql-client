@@ -113,6 +113,31 @@ public class PgConnectOptionsProviderTest {
     assertEquals(expectedConfiguration, actualConfiguration);
   }
 
+  @Test
+  public void testValidUri8() {
+    connectionUri = "postgresql:///dbname?host=/var/lib/postgresql";
+    actualConfiguration = PgConnectOptions.fromUri(connectionUri);
+
+    expectedConfiguration = new PgConnectOptions()
+      .setHost("/var/lib/postgresql")
+      .setDomainSocket(true)
+      .setDatabase("dbname");
+
+    assertEquals(expectedConfiguration, actualConfiguration);
+  }
+
+  @Test
+  public void testValidUri9() {
+    connectionUri = "postgresql://%2Fvar%2Flib%2Fpostgresql/dbname";
+    actualConfiguration = PgConnectOptions.fromUri(connectionUri);
+
+    expectedConfiguration = new PgConnectOptions()
+      .setHost("/var/lib/postgresql")
+      .setDomainSocket(true)
+      .setDatabase("dbname");
+
+    assertEquals(expectedConfiguration, actualConfiguration);
+  }
 
   @Test(expected = IllegalArgumentException.class)
   public void testInvalidUri1() {

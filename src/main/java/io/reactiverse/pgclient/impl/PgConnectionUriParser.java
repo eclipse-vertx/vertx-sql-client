@@ -172,7 +172,8 @@ public class PgConnectionUriParser {
 
   private static void parseNetLocationValue(String hostValue, JsonObject configuration) {
     if (isRegardedAsDomainSocketAddress(hostValue)) {
-      configuration.put("domainsocket", hostValue);
+      configuration.put("domainSocket", true);
+      configuration.put("host", hostValue);
     } else if (isRegardedAsIpv6Address(hostValue)) {
       configuration.put("host", hostValue.substring(1, hostValue.length() - 1));
     } else {
@@ -185,7 +186,7 @@ public class PgConnectionUriParser {
   }
 
   private static boolean isRegardedAsDomainSocketAddress(String hostAddress) {
-    return hostAddress.startsWith("/") || hostAddress.startsWith("%2F");
+    return hostAddress.startsWith("/");
   }
 
   private static String decodeUrl(String url) {
