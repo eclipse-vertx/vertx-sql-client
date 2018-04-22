@@ -22,6 +22,7 @@ import io.vertx.core.*;
 import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
+import io.vertx.core.net.SocketAddress;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -39,6 +40,7 @@ public class PgConnectionFactory {
   private final String password;
   private final boolean cachePreparedStatements;
   private final int pipeliningLimit;
+  private final boolean isUsingDomainSocket;
   private final Closeable hook;
 
   public PgConnectionFactory(Context context,
@@ -67,6 +69,7 @@ public class PgConnectionFactory {
     this.client = context.owner().createNetClient(netClientOptions);
     this.cachePreparedStatements = options.getCachePreparedStatements();
     this.pipeliningLimit = options.getPipeliningLimit();
+    this.isUsingDomainSocket = options.isDomainSocket();
   }
 
   // Called by hook
@@ -86,7 +89,13 @@ public class PgConnectionFactory {
     if (Vertx.currentContext() != ctx) {
       throw new IllegalStateException();
     }
-    client.connect(port, host, null, ar -> {
+    SocketAddress socketAddress;
+    if (!isUsingDomainSocket) {
+      socketAddress = SocketAddress.inetSocketAddress(port, host);
+    } else {
+      socketAddress = SocketAddress.domainSocketAddress(host + "/.s.PGSQL." + port);
+    }
+    client.connect(socketAddress, null, ar -> {
       if (ar.succeeded()) {
         NetSocketInternal socket = (NetSocketInternal) ar.result();
         SocketConnection conn = new SocketConnection(
@@ -101,4 +110,5 @@ public class PgConnectionFactory {
       }
     });
   }
+
 }

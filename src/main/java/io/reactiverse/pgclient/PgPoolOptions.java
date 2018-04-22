@@ -122,6 +122,11 @@ public class PgPoolOptions extends PgConnectOptions {
   }
 
   @Override
+  public PgPoolOptions setDomainSocket(boolean domainSocket) {
+    return (PgPoolOptions) super.setDomainSocket(domainSocket);
+  }
+
+  @Override
   public PgPoolOptions setSendBufferSize(int sendBufferSize) {
     return (PgPoolOptions) super.setSendBufferSize(sendBufferSize);
   }

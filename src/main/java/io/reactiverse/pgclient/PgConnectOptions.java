@@ -56,7 +56,11 @@ public class PgConnectOptions extends NetClientOptions {
 
     if (getenv("PGHOSTADDR") == null) {
       if (getenv("PGHOST") != null) {
-        pgConnectOptions.setHost(getenv("PGHOST"));
+        String host = getenv("PGHOST");
+        if (host.startsWith("/")) {
+          pgConnectOptions.setDomainSocket(true);
+        }
+        pgConnectOptions.setHost(host);
       }
     } else {
       pgConnectOptions.setHost(getenv("PGHOSTADDR"));
@@ -89,6 +93,7 @@ public class PgConnectOptions extends NetClientOptions {
   public static final String DEFAULT_PASSWORD = "pass";
   public static final boolean DEFAULT_CACHE_PREPARED_STATEMENTS = false;
   public static final int DEFAULT_PIPELINING_LIMIT = 256;
+  public static final boolean DEFAULT_DOMAIN_SOCKET_OPTION = false;
 
   private String host;
   private int port;
@@ -97,6 +102,7 @@ public class PgConnectOptions extends NetClientOptions {
   private String password;
   private boolean cachePreparedStatements;
   private int pipeliningLimit;
+  private boolean domainSocket;
 
   public PgConnectOptions() {
     super();
@@ -117,6 +123,7 @@ public class PgConnectOptions extends NetClientOptions {
     user = other.user;
     password = other.password;
     pipeliningLimit = other.pipeliningLimit;
+    domainSocket = other.domainSocket;
   }
 
   public String getHost() {
@@ -182,6 +189,15 @@ public class PgConnectOptions extends NetClientOptions {
 
   public PgConnectOptions setCachePreparedStatements(boolean cachePreparedStatements) {
     this.cachePreparedStatements = cachePreparedStatements;
+    return this;
+  }
+
+  public boolean isDomainSocket() {
+    return domainSocket;
+  }
+
+  public PgConnectOptions setDomainSocket(boolean domainSocket) {
+    this.domainSocket = domainSocket;
     return this;
   }
 
@@ -396,6 +412,7 @@ public class PgConnectOptions extends NetClientOptions {
     password = DEFAULT_PASSWORD;
     cachePreparedStatements = DEFAULT_CACHE_PREPARED_STATEMENTS;
     pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
+    domainSocket = DEFAULT_DOMAIN_SOCKET_OPTION;
   }
 
   @Override
@@ -420,6 +437,7 @@ public class PgConnectOptions extends NetClientOptions {
     if (!password.equals(that.password)) return false;
     if (cachePreparedStatements != that.cachePreparedStatements) return false;
     if (pipeliningLimit != that.pipeliningLimit) return false;
+    if (domainSocket != that.domainSocket) return false;
 
     return true;
   }
@@ -434,6 +452,7 @@ public class PgConnectOptions extends NetClientOptions {
     result = 31 * result + password.hashCode();
     result = 31 * result + (cachePreparedStatements ? 1 : 0);
     result = 31 * result + pipeliningLimit;
+    result = 31 * result + (domainSocket ? 1 : 0);
     return result;
   }
 }
