@@ -333,6 +333,50 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <version>0.25.2</version>
+        <configuration>
+          <images>
+            <image>
+              <name>postgres-db</name>
+              <build>
+                <from>postgres</from>
+              </build>
+              <run>
+                <env>
+                  <POSTGRES_USER>postgres</POSTGRES_USER>
+                  <POSTGRES_PASSWORD>postgres</POSTGRES_PASSWORD>
+                  <POSTGRES_DB>postgres</POSTGRES_DB>
+                </env>
+                <volumes>
+                  <bind>
+                    <volume>/var/run/postgresql:/var/run/postgresql</volume>
+                  </bind>
+                </volumes>
+              </run>
+            </image>
+          </images>
+        </configuration>
+        <executions>
+          <execution>
+            <id>start</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>build</goal>
+              <goal>start</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>stop</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>stop</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
