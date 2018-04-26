@@ -21,7 +21,6 @@ import io.reactiverse.pgclient.PgPool;
 import io.reactiverse.pgclient.PgPoolOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.ClassRule;
@@ -49,29 +48,21 @@ public class UnixDomainSocketTest {
 
   @Test
   public void envTest(TestContext context) {
-    Async async = context.async();
     options = PgPoolOptions.fromEnv();
     client = PgClient.pool(options);
-    client.getConnection(connection -> {
-      context.assertTrue(connection.succeeded());
-      async.complete();
-    });
+
+    client.getConnection(context.asyncAssertSuccess(pgConnection -> pgConnection.close()));
   }
 
   @Test
   public void uriTest(TestContext context) {
-    Async async = context.async();
     String uri = "postgresql://postgres:postgres@/postgres?host=/var/run/postgresql";
     client = PgClient.pool(uri);
-    client.getConnection(connection -> {
-      context.assertTrue(connection.succeeded());
-      async.complete();
-    });
+    client.getConnection(context.asyncAssertSuccess(pgConnection -> pgConnection.close()));
   }
 
   @Test
   public void simpleConnect(TestContext context) {
-    Async async = context.async();
     options = new PgPoolOptions()
       .setDomainSocket(true)
       .setHost(PG_HOST)
@@ -79,15 +70,11 @@ public class UnixDomainSocketTest {
       .setUser(PG_USER)
       .setPassword(PG_PASSWORD);
     client = PgClient.pool(options);
-    client.getConnection(connection -> {
-      context.assertTrue(connection.succeeded());
-      async.complete();
-    });
+    client.getConnection(context.asyncAssertSuccess(pgConnection -> pgConnection.close()));
   }
 
   @Test
   public void connectWithVertxInstance(TestContext context) {
-    Async async = context.async();
     VertxOptions vertxOptions = new VertxOptions().setPreferNativeTransport(true);
     Vertx vertx = Vertx.vertx(vertxOptions);
     options = new PgPoolOptions()
@@ -97,9 +84,6 @@ public class UnixDomainSocketTest {
       .setUser(PG_USER)
       .setPassword(PG_PASSWORD);
     client = PgClient.pool(vertx, options);
-    client.getConnection(connection -> {
-      context.assertTrue(connection.succeeded());
-      async.complete();
-    });
+    client.getConnection(context.asyncAssertSuccess(pgConnection -> pgConnection.close()));
   }
 }
