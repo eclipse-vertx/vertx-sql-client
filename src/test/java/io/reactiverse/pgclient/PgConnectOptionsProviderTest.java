@@ -120,7 +120,6 @@ public class PgConnectOptionsProviderTest {
 
     expectedConfiguration = new PgConnectOptions()
       .setHost("/var/lib/postgresql")
-      .setDomainSocket(true)
       .setDatabase("dbname");
 
     assertEquals(expectedConfiguration, actualConfiguration);
@@ -133,7 +132,6 @@ public class PgConnectOptionsProviderTest {
 
     expectedConfiguration = new PgConnectOptions()
       .setHost("/var/lib/postgresql")
-      .setDomainSocket(true)
       .setDatabase("dbname");
 
     assertEquals(expectedConfiguration, actualConfiguration);

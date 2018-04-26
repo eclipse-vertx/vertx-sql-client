@@ -22,9 +22,6 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.*;
 
-import static java.lang.Integer.parseInt;
-import static java.lang.System.getenv;
-
 /**
  * The options for configuring a connection pool.
  *
@@ -119,11 +116,6 @@ public class PgPoolOptions extends PgConnectOptions {
   @Override
   public PgPoolOptions setCachePreparedStatements(boolean cachePreparedStatements) {
     return (PgPoolOptions) super.setCachePreparedStatements(cachePreparedStatements);
-  }
-
-  @Override
-  public PgPoolOptions setDomainSocket(boolean domainSocket) {
-    return (PgPoolOptions) super.setDomainSocket(domainSocket);
   }
 
   @Override

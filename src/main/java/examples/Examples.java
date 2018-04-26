@@ -205,8 +205,8 @@ public class Examples {
   public void connecting06(Vertx vertx) {
 
     // Pool Options
+    // Socket file name will be /var/run/postgresql/.s.PGSQL.5432
     PgPoolOptions options = new PgPoolOptions()
-      .setDomainSocket(true)
       .setHost("/var/run/postgresql")
       .setPort(5432)
       .setDatabase("the-db");
@@ -215,7 +215,7 @@ public class Examples {
     PgPool client = PgClient.pool(options);
 
     // Create the pooled client with a vertx instance
-    // Make sure the vertx instance enables native transports
+    // Make sure the vertx instance has enabled native transports
     PgPool client2 = PgClient.pool(vertx, options);
   }
 

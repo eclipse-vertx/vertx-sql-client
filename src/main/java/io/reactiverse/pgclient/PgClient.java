@@ -74,7 +74,7 @@ public interface PgClient {
       throw new IllegalStateException("Running in a Vertx context => use PgPool#pool(Vertx, PgPoolOptions) instead");
     }
     VertxOptions vertxOptions = new VertxOptions();
-    if (options.isDomainSocket()) {
+    if (options.isUsingDomainSocket()) {
       vertxOptions.setPreferNativeTransport(true);
     }
     return new PgPoolImpl(Vertx.vertx(vertxOptions), true, options);

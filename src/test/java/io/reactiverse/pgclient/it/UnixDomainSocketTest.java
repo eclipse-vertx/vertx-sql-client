@@ -64,7 +64,6 @@ public class UnixDomainSocketTest {
   @Test
   public void simpleConnect(TestContext context) {
     options = new PgPoolOptions()
-      .setDomainSocket(true)
       .setHost(PG_HOST)
       .setDatabase(PG_DATABASE)
       .setUser(PG_USER)
@@ -78,7 +77,6 @@ public class UnixDomainSocketTest {
     VertxOptions vertxOptions = new VertxOptions().setPreferNativeTransport(true);
     Vertx vertx = Vertx.vertx(vertxOptions);
     options = new PgPoolOptions()
-      .setDomainSocket(true)
       .setHost(PG_HOST)
       .setDatabase(PG_DATABASE)
       .setUser(PG_USER)

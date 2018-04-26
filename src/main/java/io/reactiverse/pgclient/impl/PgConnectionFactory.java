@@ -69,7 +69,7 @@ public class PgConnectionFactory {
     this.client = context.owner().createNetClient(netClientOptions);
     this.cachePreparedStatements = options.getCachePreparedStatements();
     this.pipeliningLimit = options.getPipeliningLimit();
-    this.isUsingDomainSocket = options.isDomainSocket();
+    this.isUsingDomainSocket = options.isUsingDomainSocket();
   }
 
   // Called by hook
