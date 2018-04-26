@@ -24,11 +24,26 @@ import io.vertx.core.VertxOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.testcontainers.containers.BindMode;
+import org.testcontainers.containers.GenericContainer;
 
 @RunWith(VertxUnitRunner.class)
 public class UnixDomainSocketTest {
+  private static final String PG_HOST = "/var/run/postgresql";
+  private static final String PG_DATABASE = "postgres";
+  private static final String PG_USER = "postgres";
+  private static final String PG_PASSWORD = "postgres";
+
+  @ClassRule
+  public static GenericContainer postgres = new GenericContainer("postgres:latest")
+    .withFileSystemBind(PG_HOST, PG_HOST, BindMode.READ_WRITE)
+    .withEnv("POSTGRES_USER", PG_USER)
+    .withEnv("POSTGRES_PASSWORD", PG_PASSWORD)
+    .withEnv("POSTGRES_DB", PG_DATABASE);
+
   private PgPoolOptions options;
   private PgPool client;
 
@@ -59,10 +74,10 @@ public class UnixDomainSocketTest {
     Async async = context.async();
     options = new PgPoolOptions()
       .setDomainSocket(true)
-      .setHost("/var/run/postgresql")
-      .setDatabase("postgres")
-      .setUser("postgres")
-      .setPassword("postgres");
+      .setHost(PG_HOST)
+      .setDatabase(PG_DATABASE)
+      .setUser(PG_USER)
+      .setPassword(PG_PASSWORD);
     client = PgClient.pool(options);
     client.getConnection(connection -> {
       context.assertTrue(connection.succeeded());
@@ -77,10 +92,10 @@ public class UnixDomainSocketTest {
     Vertx vertx = Vertx.vertx(vertxOptions);
     options = new PgPoolOptions()
       .setDomainSocket(true)
-      .setHost("/var/run/postgresql")
-      .setDatabase("postgres")
-      .setUser("postgres")
-      .setPassword("postgres");
+      .setHost(PG_HOST)
+      .setDatabase(PG_DATABASE)
+      .setUser(PG_USER)
+      .setPassword(PG_PASSWORD);
     client = PgClient.pool(vertx, options);
     client.getConnection(connection -> {
       context.assertTrue(connection.succeeded());
