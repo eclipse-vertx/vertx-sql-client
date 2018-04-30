@@ -78,9 +78,6 @@ public interface PgClient {
       vertxOptions.setPreferNativeTransport(true);
     }
     Vertx vertx = Vertx.vertx(vertxOptions);
-    if (!vertx.isNativeTransportEnabled()) {
-      throw new VertxException("Native transport is not available");
-    }
     return new PgPoolImpl(vertx, true, options);
   }
 
