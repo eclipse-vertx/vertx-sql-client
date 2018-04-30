@@ -77,7 +77,11 @@ public interface PgClient {
     if (options.isUsingDomainSocket()) {
       vertxOptions.setPreferNativeTransport(true);
     }
-    return new PgPoolImpl(Vertx.vertx(vertxOptions), true, options);
+    Vertx vertx = Vertx.vertx(vertxOptions);
+    if (!vertx.isNativeTransportEnabled()) {
+      throw new VertxException("Native transport is not available");
+    }
+    return new PgPoolImpl(vertx, true, options);
   }
 
   /**
