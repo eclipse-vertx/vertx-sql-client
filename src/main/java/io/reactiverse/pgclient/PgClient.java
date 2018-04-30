@@ -114,7 +114,11 @@ public interface PgClient {
       });
     } else {
       vertx.runOnContext(v -> {
-        connect(vertx, options, handler);
+        if (options.isUsingDomainSocket() && !vertx.isNativeTransportEnabled()) {
+          handler.handle(Future.failedFuture("Native transport is not available"));
+        } else {
+          connect(vertx, options, handler);
+        }
       });
     }
   }

@@ -24,17 +24,18 @@ import de.flapdoodle.embed.process.store.IArtifactStore;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
+import ru.yandex.qatools.embed.postgresql.config.PostgresConfig;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermission;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
+import static org.junit.Assert.assertTrue;
 import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
 
 /**
@@ -57,16 +58,38 @@ public abstract class PgTestBase {
   }
 
   public synchronized static PgConnectOptions startPg() throws Exception {
+    return startPg(false);
+  }
+
+  public synchronized static PgConnectOptions startPg(boolean domainSockets) throws Exception {
     if (postgres != null) {
       throw new IllegalStateException();
     }
     IRuntimeConfig config;
-    String a = System.getProperty("target.dir");
-    File targetDir;
-    if (a != null && (targetDir = new File(a)).exists() && targetDir.isDirectory()) {
+    String a = System.getProperty("target.dir", "target");
+    File targetDir = new File(a);
+    if (targetDir.exists() && targetDir.isDirectory()) {
       config = EmbeddedPostgres.cachedRuntimeConfig(targetDir.toPath());
     } else {
-      config = EmbeddedPostgres.defaultRuntimeConfig();
+      throw new AssertionError("Cannot access target dir");
+    }
+
+    // Domain sockets
+    File sock;
+    if (domainSockets) {
+      sock = Files.createTempFile(targetDir.toPath(), "pg_", ".sock").toFile();
+      assertTrue(sock.delete());
+      assertTrue(sock.mkdir());
+      Files.setPosixFilePermissions(sock.toPath(), new HashSet<>(Arrays.asList(
+        PosixFilePermission.OWNER_EXECUTE,
+        PosixFilePermission.OWNER_READ,
+        PosixFilePermission.OWNER_WRITE,
+        PosixFilePermission.GROUP_EXECUTE,
+        PosixFilePermission.GROUP_READ,
+        PosixFilePermission.GROUP_WRITE
+      )));
+    } else {
+      sock = null;
     }
 
     // SSL
@@ -90,6 +113,9 @@ public abstract class PgTestBase {
             result.add("--ssl=on");
             result.add("--ssl_cert_file=" + sslCrt.getAbsolutePath());
             result.add("--ssl_key_file=" + sslKey.getAbsolutePath());
+            if (domainSockets) {
+              result.add("--unix_socket_directories=" + sock.getAbsolutePath());
+            }
           }
           return result;
         };
@@ -113,7 +139,7 @@ public abstract class PgTestBase {
     File setupFile = getResourceAsFile("create-postgres.sql");
     PgTestBase.postgres.getProcess().get().importFromFile(setupFile);
     PgConnectOptions options = new PgConnectOptions();
-    options.setHost("localhost");
+    options.setHost(domainSockets ? sock.getAbsolutePath() : "localhost");
     options.setPort(8081);
     options.setUser("postgres");
     options.setPassword("postgres");
