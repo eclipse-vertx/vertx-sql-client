@@ -18,11 +18,7 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.*;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 
 /**
  * Todo :
@@ -44,6 +40,9 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
     int maxSize = options.getMaxSize();
     if (maxSize < 1) {
       throw new IllegalArgumentException("Pool max size must be > 0");
+    }
+    if (options.isUsingDomainSocket() && !vertx.isNativeTransportEnabled()) {
+      throw new VertxException("Native transport is not available");
     }
     this.context = vertx.getOrCreateContext();
     this.factory = new PgConnectionFactory(context, Vertx.currentContext() != null, options);
