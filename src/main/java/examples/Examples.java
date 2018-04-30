@@ -202,6 +202,23 @@ public class Examples {
     });
   }
 
+  public void connecting06(Vertx vertx) {
+
+    // Pool Options
+    // Socket file name will be /var/run/postgresql/.s.PGSQL.5432
+    PgPoolOptions options = new PgPoolOptions()
+      .setHost("/var/run/postgresql")
+      .setPort(5432)
+      .setDatabase("the-db");
+
+    // Create the pooled client
+    PgPool client = PgClient.pool(options);
+
+    // Create the pooled client with a vertx instance
+    // Make sure the vertx instance has enabled native transports
+    PgPool client2 = PgClient.pool(vertx, options);
+  }
+
   public void queries01(PgClient client) {
     client.query("SELECT * FROM users WHERE id='julien'", ar -> {
       if (ar.succeeded()) {

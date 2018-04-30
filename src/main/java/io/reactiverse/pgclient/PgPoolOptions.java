@@ -22,9 +22,6 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.*;
 
-import static java.lang.Integer.parseInt;
-import static java.lang.System.getenv;
-
 /**
  * The options for configuring a connection pool.
  *

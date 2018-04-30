@@ -84,6 +84,16 @@ You can easily get one from the pool:
 
 Once you are done with the connection you must close it to release it to the pool, so it can be reused.
 
+Sometimes you want to improve performance via Unix domain socket connection, we achieve this with Vert.x Native transports.
+
+Make sure you have added the required `netty-transport-native` dependency in your classpath and enabled the Unix domain socket option.
+
+```$lang
+{@link examples.Examples#connecting06}
+```
+
+More information can be found in the [Vert.x documentation](https://vertx.io/docs/vertx-core/java/#_native_transports).
+
 ## Configuration
 
 There are several options for you to configure the client.
@@ -107,7 +117,7 @@ for more details. The following parameters are supported:
 * `PGUSER`
 * `PGPASSWORD`
 
-If you don't specify a data object or a connection URI string to connect, environment variables will take precedence over them. 
+If you don't specify a data object or a connection URI string to connect, environment variables will take precedence over them.
 
 ```
 $ PGUSER=user \

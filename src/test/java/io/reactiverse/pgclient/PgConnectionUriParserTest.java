@@ -232,7 +232,7 @@ public class PgConnectionUriParserTest {
     actualParsedResult = parse(uri);
 
     expectedParsedResult = new JsonObject()
-      .put("domainsocket", "/var/lib/postgresql");
+      .put("host", "/var/lib/postgresql");
 
     assertEquals(expectedParsedResult, actualParsedResult);
   }
@@ -243,7 +243,7 @@ public class PgConnectionUriParserTest {
     actualParsedResult = parse(uri);
 
     expectedParsedResult = new JsonObject()
-      .put("domainsocket", "/var/lib/postgresql");
+      .put("host", "/var/lib/postgresql");
 
     assertEquals(expectedParsedResult, actualParsedResult);
   }

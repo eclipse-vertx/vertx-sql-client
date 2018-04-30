@@ -108,6 +108,17 @@
  *
  * Once you are done with the connection you must close it to release it to the pool, so it can be reused.
  *
+ * Sometimes you want to improve performance via Unix domain socket connection, we achieve this with Vert.x Native transports.
+ *
+ * Make sure you have added the required `netty-transport-native` dependency in your classpath and enabled the Unix domain socket option.
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#connecting06}
+ * ----
+ *
+ * More information can be found in the https://vertx.io/docs/vertx-core/java/#_native_transports[Vert.x documentation].
+ *
  * == Configuration
  *
  * There are several options for you to configure the client.

@@ -148,9 +148,23 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-transport-native-epoll</artifactId>
+      <version>4.1.15.Final</version>
+      <classifier>linux-x86_64</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>ru.yandex.qatools.embed</groupId>
       <artifactId>postgresql-embedded</artifactId>
       <version>2.2</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers</artifactId>
+      <version>1.7.1</version>
       <scope>test</scope>
     </dependency>
 
@@ -288,14 +302,14 @@
         <version>2.21.0</version>
         <executions>
           <execution>
-            <id>it-tests</id>
+            <id>env-test</id>
             <goals>
               <goal>integration-test</goal>
             </goals>
             <phase>integration-test</phase>
             <configuration>
               <includes>
-                <include>io/reactiverse/pgclient/it/**/*.java</include>
+                <include>io/reactiverse/pgclient/it/EnvTest.java</include>
               </includes>
               <environmentVariables>
                 <PGHOSTADDR>test_host</PGHOSTADDR>
@@ -303,6 +317,24 @@
                 <PGPORT>1234</PGPORT>
                 <PGUSER>test_user</PGUSER>
                 <PGPASSWORD>test_password</PGPASSWORD>
+              </environmentVariables>
+            </configuration>
+          </execution>
+          <execution>
+            <id>domain-socket-tests</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+            <phase>integration-test</phase>
+            <configuration>
+              <includes>
+                <include>io/reactiverse/pgclient/it/UnixDomainSocketTest.java</include>
+              </includes>
+              <environmentVariables>
+                <PGHOST>/var/run/postgresql</PGHOST>
+                <PGDATABASE>postgres</PGDATABASE>
+                <PGUSER>postgres</PGUSER>
+                <PGPASSWORD>postgres</PGPASSWORD>
               </environmentVariables>
             </configuration>
           </execution>

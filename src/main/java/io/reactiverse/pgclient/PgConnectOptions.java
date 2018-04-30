@@ -436,4 +436,8 @@ public class PgConnectOptions extends NetClientOptions {
     result = 31 * result + pipeliningLimit;
     return result;
   }
+
+  public boolean isUsingDomainSocket() {
+    return this.getHost().startsWith("/");
+  }
 }
