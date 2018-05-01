@@ -17,7 +17,7 @@
 
 package io.reactiverse.pgclient.impl.codec.decoder.message;
 
-import io.reactiverse.pgclient.impl.codec.Column;
+import io.reactiverse.pgclient.impl.codec.ColumnDesc;
 import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
 
 import java.util.Arrays;
@@ -32,13 +32,13 @@ import java.util.stream.Stream;
 
 public class RowDescription implements InboundMessage {
 
-  private final Column[] columns;
+  private final ColumnDesc[] columns;
   private final List<String> columnNames;
 
-  public RowDescription(Column[] columns) {
+  public RowDescription(ColumnDesc[] columns) {
     this.columns = columns;
     this.columnNames = Collections.unmodifiableList(Stream.of(columns)
-      .map(Column::getName)
+      .map(ColumnDesc::getName)
       .collect(Collectors.toList()));
   }
 
@@ -49,7 +49,7 @@ public class RowDescription implements InboundMessage {
     return columnNames.indexOf(columnName);
   }
 
-  public Column[] columns() {
+  public ColumnDesc[] columns() {
     return columns;
   }
 

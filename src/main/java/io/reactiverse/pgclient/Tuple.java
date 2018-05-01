@@ -448,6 +448,15 @@ public interface Tuple {
   @GenIgnore
   UUID[] getUUIDArray(int pos);
 
+  /**
+   * Get {@link Numeric} value at {@code pos}.
+   *
+   * @param pos the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Numeric[] getNumericArray(int pos);
+
   @GenIgnore
   char[] getCharacterArray(int pos);
 
@@ -649,6 +658,15 @@ public interface Tuple {
   Tuple addUUID(UUID value);
 
   /**
+   * Add a {@link Numeric} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addNumeric(Numeric value);
+
+  /**
    * Add a {@link BigDecimal} value at the end of the tuple.
    *
    * @param value the value
@@ -791,6 +809,7 @@ public interface Tuple {
    */
   @GenIgnore
   Tuple addUUIDArray(UUID[] value);
+
   /**
    * Add a {@link Numeric} value at the end of the tuple.
    *
@@ -798,7 +817,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore
-  Tuple addNumeric(Numeric value);
+  Tuple addNumericArray(Numeric[] value);
 
   /**
    * @return the tuple size

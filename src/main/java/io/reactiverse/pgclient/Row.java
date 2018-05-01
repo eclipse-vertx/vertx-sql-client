@@ -342,6 +342,15 @@ public interface Row extends Tuple {
   UUID[] getUUIDArray(String name);
 
   /**
+   * Get {@link Numeric} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Numeric[] getNumericArray(String name);
+
+  /**
    * Get {@link Character} value at {@code pos}.
    *
    * @param name the column

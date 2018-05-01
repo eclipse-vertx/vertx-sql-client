@@ -16,6 +16,7 @@
  */
 package io.reactiverse.pgclient;
 
+import io.reactiverse.pgclient.impl.codec.util.Util;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -163,5 +164,23 @@ public class NumericTest {
       assertNotSame(Numeric.create(Double.NaN), l);
       assertNotSame(l, Numeric.create(Double.NaN));
     }
+  }
+
+  /**
+   * Compute the lenght of the array in bytes.
+   *
+   * @param size
+   * @return
+   */
+  private static int len(int size) {
+    int d = (int) (((double)size * Math.log(10000) / Math.log(2)));
+    return d;
+  }
+
+  @Test
+  public void testFoo() {
+
+
+
   }
 }

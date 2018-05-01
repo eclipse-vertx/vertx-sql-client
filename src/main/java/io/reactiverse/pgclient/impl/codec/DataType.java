@@ -33,86 +33,88 @@ import java.util.UUID;
  */
 public enum DataType {
 
-  BOOL(16, Boolean.class),
-  BOOL_ARRAY(1000, boolean[].class),
-  INT2(21, Short.class),
-  INT2_ARRAY(1005, short[].class),
-  INT4(23, Integer.class),
-  INT4_ARRAY(1007, int[].class),
-  INT8(20, Long.class),
-  INT8_ARRAY(1016, long[].class),
-  FLOAT4(700, Float.class),
-  FLOAT4_ARRAY(1021, float[].class),
-  FLOAT8(701, Double.class),
-  FLOAT8_ARRAY(1022, double[].class),
-  NUMERIC_ID(1700, Numeric.class),
-  NUMERIC_ARRAY_ID(1231, Numeric[].class),
-  MONEY_ID(790, Object.class),
-  MONEY_ARRAY_ID(791, Object[].class),
-  BITS_ID(1560, Object.class),
-  BIT_ARRAY_ID(1561, Object[].class),
-  VARBIT_ID(1562, Object.class),
-  VARBIT_ARRAY_ID(1563, Object[].class),
-  CHAR(18, Character.class),
-  CHAR_ARRAY(1002, char[].class),
-  VARCHAR(1043, String.class),
-  VARCHAR_ARRAY(1015, String[].class),
-  BPCHAR(1042, String.class),
-  BPCHAR_ARRAY(1014, String[].class),
-  TEXT(25, String.class),
-  TEXT_ARRAY(1009, String[].class),
-  NAME(19, String.class),
-  NAME_ARRAY(1003, String[].class),
-  DATE(1082, LocalDate.class),
-  DATE_ARRAY(1182, LocalDate[].class),
-  TIME(1083, LocalTime.class),
-  TIME_ARRAY(1183, LocalTime[].class),
-  TIMETZ(1266, OffsetTime.class),
-  TIMETZ_ARRAY(1270, OffsetTime[].class),
-  TIMESTAMP(1114, LocalDateTime.class),
-  TIMESTAMP_ARRAY(1115, LocalDateTime[].class),
-  TIMESTAMPTZ(1184, OffsetDateTime.class),
-  TIMESTAMPTZ_ARRAY(1185, OffsetDateTime[].class),
-  INTERVAL_ID(1186, Object.class),
-  INTERVAL_ARRAY_ID(1187, Object[].class),
-  BYTEA(17, Buffer.class),
-  BYTEA_ARRAY(1001, Buffer[].class),
-  MACADDR_ID(829, Object.class),
-  INET_ID(869, Object[].class),
-  CIDR_ID(650, Object.class),
-  MACADDR8_ID(774, Object[].class),
-  UUID(2950, UUID.class),
-  UUID_ARRAY(2951, UUID[].class),
-  JSON(114, Json.class),
-  JSONB(3802, Json.class),
-  XML_ID(142, Object.class),
-  XML_ARRAY_ID(143, Object[].class),
-  POINT_ID(600, Object.class),
-  BOX_ID(603, Object.class),
-  HSTORE_ID(33670, Object.class),
-  OID_ID(26, Object.class),
-  OID_ARRAY_ID(1028, Object[].class),
-  VOID_ID(2278, Object.class),
-  UNKNOWN_ID(705, Object.class);
+  BOOL(16, true, Boolean.class),
+  BOOL_ARRAY(1000, true, boolean[].class),
+  INT2(21, true, Short.class),
+  INT2_ARRAY(1005, true, short[].class),
+  INT4(23, true, Integer.class),
+  INT4_ARRAY(1007, true, int[].class),
+  INT8(20, true, Long.class),
+  INT8_ARRAY(1016, true, long[].class),
+  FLOAT4(700, true, Float.class),
+  FLOAT4_ARRAY(1021, true, float[].class),
+  FLOAT8(701, true, Double.class),
+  FLOAT8_ARRAY(1022, true, double[].class),
+  NUMERIC(1700, false, Numeric.class),
+  NUMERIC_ARRAY(1231, false, Numeric[].class),
+  MONEY(790, true, Object.class),
+  MONEY_ARRAY(791, true, Object[].class),
+  BITS(1560, true, Object.class),
+  BIT_ARRAY(1561, true, Object[].class),
+  VARBIT(1562, true, Object.class),
+  VARBIT_ARRAY(1563, true, Object[].class),
+  CHAR(18, true, Character.class),
+  CHAR_ARRAY(1002, true, char[].class),
+  VARCHAR(1043, true, String.class),
+  VARCHAR_ARRAY(1015, true, String[].class),
+  BPCHAR(1042, true, String.class),
+  BPCHAR_ARRAY(1014, true, String[].class),
+  TEXT(25, true, String.class),
+  TEXT_ARRAY(1009, true, String[].class),
+  NAME(19, true, String.class),
+  NAME_ARRAY(1003, true, String[].class),
+  DATE(1082, true, LocalDate.class),
+  DATE_ARRAY(1182, true, LocalDate[].class),
+  TIME(1083, true, LocalTime.class),
+  TIME_ARRAY(1183, true, LocalTime[].class),
+  TIMETZ(1266, true, OffsetTime.class),
+  TIMETZ_ARRAY(1270, true, OffsetTime[].class),
+  TIMESTAMP(1114, true, LocalDateTime.class),
+  TIMESTAMP_ARRAY(1115, true, LocalDateTime[].class),
+  TIMESTAMPTZ(1184, true, OffsetDateTime.class),
+  TIMESTAMPTZ_ARRAY(1185, true, OffsetDateTime[].class),
+  INTERVAL(1186, true, Object.class),
+  INTERVAL_ARRAY(1187, true, Object[].class),
+  BYTEA(17, true, Buffer.class),
+  BYTEA_ARRAY(1001, true, Buffer[].class),
+  MACADDR(829, true, Object.class),
+  INET(869, true, Object[].class),
+  CIDR(650, true, Object.class),
+  MACADDR8(774, true, Object[].class),
+  UUID(2950, true, UUID.class),
+  UUID_ARRAY(2951, true, UUID[].class),
+  JSON(114, true, Json.class),
+  JSONB(3802, true, Json.class),
+  XML(142, true, Object.class),
+  XML_ARRAY(143, true, Object[].class),
+  POINT(600, true, Object.class),
+  BOX(603, true, Object.class),
+  HSTORE(33670, true, Object.class),
+  OID(26, true, Object.class),
+  OID_ARRAY(1028, true, Object[].class),
+  VOID(2278, true, Object.class),
+  UNKNOWN(705, true, Object.class);
 
-  public final int value;
+  public final int id;
+  public final boolean supportsBinary;
   public Class<?> type;
 
-  DataType(int value, Class<?> type) {
-    this.value = value;
+  DataType(int id, boolean supportsBinary, Class<?> type) {
+    this.id = id;
+    this.supportsBinary = supportsBinary;
     this.type = type;
   }
 
   public static DataType valueOf(int id) {
     DataType value = oidToDataType.get(id);
-    return value != null ? value : UNKNOWN_ID;
+    return value != null ? value : UNKNOWN;
   }
 
   private static IntObjectMap<DataType> oidToDataType = new IntObjectHashMap<>();
 
   static {
     for (DataType dataType : values()) {
-      oidToDataType.put(dataType.value, dataType);
+      oidToDataType.put(dataType.id, dataType);
     }
   }
 }

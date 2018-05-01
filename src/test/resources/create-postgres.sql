@@ -134,7 +134,8 @@ CREATE TABLE "ArrayDataType" (
   "OffsetTime"     TIME WITH TIME ZONE [],
   "LocalDateTime"  TIMESTAMP WITHOUT TIME ZONE [],
   "OffsetDateTime" TIMESTAMP WITH TIME ZONE [],
-  "UUID"           UUID []
+  "UUID"           UUID [],
+  "Numeric"        NUMERIC []
 );
 INSERT INTO "ArrayDataType" VALUES (1, ARRAY [TRUE], ARRAY [1], ARRAY [2], ARRAY [3], ARRAY [4.1], ARRAY [5.2],
                                        ARRAY ['Knock, knock.Who’s there?very long pause….Java.'],
@@ -142,43 +143,13 @@ INSERT INTO "ArrayDataType" VALUES (1, ARRAY [TRUE], ARRAY [1], ARRAY [2], ARRAY
                                        ARRAY ['17:55:04.90512+03' :: TIME WITH TIME ZONE],
                                     ARRAY ['2017-05-14 19:35:58.237666' :: TIMESTAMP WITHOUT TIME ZONE],
                                     ARRAY ['2017-05-14 23:59:59.237666-03' :: TIMESTAMP WITH TIME ZONE],
-                                    ARRAY ['6f790482-b5bd-438b-a8b7-4a0bed747011' :: UUID]);
+                                    ARRAY ['6f790482-b5bd-438b-a8b7-4a0bed747011' :: UUID],
+                                    ARRAY [0,1,2,3]);
 INSERT INTO "ArrayDataType" VALUES (2, ARRAY [TRUE], ARRAY [1], ARRAY [2], ARRAY [3], ARRAY [4.1], ARRAY [5.2],
                                        ARRAY ['Knock, knock.Who’s there?very long pause….Java.'],
                                        ARRAY ['1998-05-11' :: DATE], ARRAY ['17:55:04.90512' :: TIME WITHOUT TIME ZONE],
                                        ARRAY ['17:55:04.90512+03' :: TIME WITH TIME ZONE],
                                     ARRAY ['2017-05-14 19:35:58.237666' :: TIMESTAMP WITHOUT TIME ZONE],
                                     ARRAY ['2017-05-14 23:59:59.237666-03' :: TIMESTAMP WITH TIME ZONE],
-                                    ARRAY ['6f790482-b5bd-438b-a8b7-4a0bed747011' :: UUID]);
-
-DROP TABLE IF EXISTS "ArrayDataType";
-CREATE TABLE "ArrayDataType" (
-  "id"             INTEGER NOT NULL PRIMARY KEY,
-  "Boolean"        BOOLEAN [],
-  "Short"          INT2 [],
-  "Integer"        INT4 [],
-  "Long"           INT8 [],
-  "Float"          FLOAT4 [],
-  "Double"         FLOAT8 [],
-  "Text"           TEXT [],
-  "LocalDate"      DATE [],
-  "LocalTime"      TIME WITHOUT TIME ZONE [],
-  "OffsetTime"     TIME WITH TIME ZONE [],
-  "LocalDateTime"  TIMESTAMP WITHOUT TIME ZONE [],
-  "OffsetDateTime" TIMESTAMP WITH TIME ZONE [],
-  "UUID"           UUID []
-);
-INSERT INTO "ArrayDataType" VALUES (1, ARRAY [TRUE], ARRAY [1], ARRAY [2], ARRAY [3], ARRAY [4.1], ARRAY [5.2],
-                                       ARRAY ['Knock, knock.Who’s there?very long pause….Java.'],
-                                       ARRAY ['1998-05-11' :: DATE], ARRAY ['17:55:04.90512' :: TIME WITHOUT TIME ZONE],
-                                       ARRAY ['17:55:04.90512+03' :: TIME WITH TIME ZONE],
-                                    ARRAY ['2017-05-14 19:35:58.237666' :: TIMESTAMP WITHOUT TIME ZONE],
-                                    ARRAY ['2017-05-14 23:59:59.237666-03' :: TIMESTAMP WITH TIME ZONE],
-                                    ARRAY ['6f790482-b5bd-438b-a8b7-4a0bed747011' :: UUID]);
-INSERT INTO "ArrayDataType" VALUES (2, ARRAY [TRUE], ARRAY [1], ARRAY [2], ARRAY [3], ARRAY [4.1], ARRAY [5.2],
-                                       ARRAY ['Knock, knock.Who’s there?very long pause….Java.'],
-                                       ARRAY ['1998-05-11' :: DATE], ARRAY ['17:55:04.90512' :: TIME WITHOUT TIME ZONE],
-                                       ARRAY ['17:55:04.90512+03' :: TIME WITH TIME ZONE],
-                                    ARRAY ['2017-05-14 19:35:58.237666' :: TIMESTAMP WITHOUT TIME ZONE],
-                                    ARRAY ['2017-05-14 23:59:59.237666-03' :: TIMESTAMP WITH TIME ZONE],
-                                    ARRAY ['6f790482-b5bd-438b-a8b7-4a0bed747011' :: UUID]);
+                                    ARRAY ['6f790482-b5bd-438b-a8b7-4a0bed747011' :: UUID],
+                                    ARRAY [0,1,2,3]);

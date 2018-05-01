@@ -23,17 +23,17 @@ import java.util.Objects;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class Column {
+public class ColumnDesc {
 
   private final String name;
   private final int relationId;
   private final DataType dataType;
-  private final DataFormat dataFormat;
+  private final DataFormat dataFormat; // are we sure of taht ????
   private final short relationAttributeNo;
   private final short length;
   private final int typeModifier;
 
-  public Column(String name, int relationId, short relationAttributeNo, DataType dataType, short length, int typeModifier, DataFormat dataFormat) {
+  public ColumnDesc(String name, int relationId, short relationAttributeNo, DataType dataType, short length, int typeModifier, DataFormat dataFormat) {
     this.name = name;
     this.dataType = dataType;
     this.dataFormat = dataFormat;
@@ -75,7 +75,7 @@ public class Column {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    Column column = (Column) o;
+    ColumnDesc column = (ColumnDesc) o;
     return relationId == column.relationId &&
       relationAttributeNo == column.relationAttributeNo &&
       length == column.length &&

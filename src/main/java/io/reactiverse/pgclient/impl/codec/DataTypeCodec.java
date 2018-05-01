@@ -33,6 +33,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.IntFunction;
 
@@ -46,6 +48,7 @@ public class DataTypeCodec {
   private static final OffsetDateTime[] empty_offset_date_time_array = new OffsetDateTime[0];
   private static final Buffer[] empty_buffer_array = new Buffer[0];
   private static final UUID[] empty_uuid_array = new UUID[0];
+  private static final Numeric[] empty_numeric_array = new Numeric[0];
   private static final boolean[] empty_boolean_array = new boolean[0];
   private static final int[] empty_int_array = new int[0];
   private static final short[] empty_short_array = new short[0];
@@ -123,6 +126,36 @@ public class DataTypeCodec {
       return new UUID[size];
     }
   };
+
+  private static final IntFunction<Numeric[]> NUMERIC_ARRAY_FACTORY = size -> {
+    if (size == 0) {
+      return empty_numeric_array;
+    } else {
+      return new Numeric[size];
+    }
+  };
+
+  public static void encodeText(DataType id, Object value, ByteBuf buff) {
+    int index = buff.writerIndex();
+    buff.writeInt(0);
+    textEncode(id, value, buff);
+    buff.setInt(index, buff.writerIndex() - index - 4);
+  }
+
+  private static void textEncode(DataType id, Object value, ByteBuf buff) {
+    switch (id) {
+      case NUMERIC:
+        textEncodeNUMERIC((Numeric) value, buff);
+        break;
+      case NUMERIC_ARRAY:
+        textEncodeNUMERIC_ARRAY((Numeric[]) value, buff);
+        break;
+      default:
+        System.out.println("Data type " + id + " does not support text encoding");
+        buff.writeCharSequence(String.valueOf(value), StandardCharsets.UTF_8);
+        break;
+    }
+  }
 
   public static void encodeBinary(DataType id, Object value, ByteBuf buff) {
     switch (id) {
@@ -326,7 +359,7 @@ public class DataTypeCodec {
       case JSONB:
         return binaryDecodeJSONB(len, buff);
       default:
-        System.out.println("Data type " + id + " does not support binary encoding");
+        System.out.println("Data type " + id + " does not support binary decoding");
         return defaultDecodeBinary(len, buff);
     }
   }
@@ -405,16 +438,16 @@ public class DataTypeCodec {
         return textDecodeUUID(len, buff);
       // case UUID_ARRAY:
       //   return binaryDecodeArray(UUID_ARRAY_FACTORY, DataTypeConstants.UUID, len, buff);
-      case NUMERIC_ID:
+      case NUMERIC:
         return textDecodeNUMERIC(len, buff);
-      // case NUMERIC_ARRAY_ID:
-      // TODO : reminder
+      case NUMERIC_ARRAY:
+        return textDecodeArray(NUMERIC_ARRAY_FACTORY, DataType.NUMERIC, len, buff);
       case JSON:
         return textDecodeJSON(len, buff);
       case JSONB:
          return textDecodeJSONB(len, buff);
       default:
-        System.out.println("Data type " + id + " does not support binary encoding");
+        System.out.println("Data type " + id + " does not support text decoding");
         return defaultDecodeText(len, buff);
     }
   }
@@ -447,14 +480,6 @@ public class DataTypeCodec {
     buff.writeInt(-1);
   }
 
-  private static void defaultEncodeText(Object value, ByteBuf buff) {
-    int index = buff.writerIndex();
-    String s = String.valueOf(value);
-    buff.writeInt(0); // Undetermined yet
-    int len = buff.writeCharSequence(s, StandardCharsets.UTF_8);
-    buff.setInt(index, len);
-  }
-
   private static Object defaultDecodeBinary(int len, ByteBuf buff) {
     // Default to null
     buff.skipBytes(len);
@@ -464,11 +489,6 @@ public class DataTypeCodec {
   private static void binaryEncodeBOOL(Boolean value, ByteBuf buff) {
     buff.writeInt(1);
     buff.writeBoolean(value);
-  }
-
-  private static void textEncodeBOOL(Boolean value, ByteBuf buff) {
-    buff.writeInt(1);
-    buff.writeByte(value == Boolean.TRUE ? 't' : 'f');
   }
 
   private static Boolean binaryDecodeBOOL(int len, ByteBuf buff) {
@@ -488,7 +508,7 @@ public class DataTypeCodec {
     buff.writeInt(0);//Write 0 as placeholder
     buff.writeInt(1);//write the dimension, always 1 because we only accept 1 dimensional arrays
     buff.writeInt(0);//Write the offset to skip the bitmap, always 0 because we dont write bitmaps
-    buff.writeInt(DataType.BOOL.value);//Write the oid
+    buff.writeInt(DataType.BOOL.id);//Write the oid
     buff.writeInt(values.length);//Write the length of the array
     buff.writeInt(1);//Write the lower boundry, seems to always be 1
     for (boolean value : values) {
@@ -547,7 +567,7 @@ public class DataTypeCodec {
     buff.writeInt(0);
     buff.writeInt(1);
     buff.writeInt(0);
-    buff.writeInt(DataType.INT2.value);
+    buff.writeInt(DataType.INT2.id);
     buff.writeInt(values.length);
     buff.writeInt(1);
     for (short value : values) {
@@ -590,7 +610,7 @@ public class DataTypeCodec {
     buff.writeInt(0);
     buff.writeInt(1);
     buff.writeInt(0);
-    buff.writeInt(DataType.INT4.value);
+    buff.writeInt(DataType.INT4.id);
     buff.writeInt(values.length);
     buff.writeInt(1);
     for (Integer value : values) {
@@ -633,7 +653,7 @@ public class DataTypeCodec {
     buff.writeInt(0);
     buff.writeInt(1);
     buff.writeInt(0);
-    buff.writeInt(DataType.INT8.value);
+    buff.writeInt(DataType.INT8.id);
     buff.writeInt(values.length);
     buff.writeInt(1);
     for (long value : values) {
@@ -678,7 +698,7 @@ public class DataTypeCodec {
     buff.writeInt(0);
     buff.writeInt(1);
     buff.writeInt(0);
-    buff.writeInt(DataType.FLOAT4.value);
+    buff.writeInt(DataType.FLOAT4.id);
     buff.writeInt(values.length);
     buff.writeInt(1);
     for (float value : values) {
@@ -723,7 +743,7 @@ public class DataTypeCodec {
     buff.writeInt(0);
     buff.writeInt(1);
     buff.writeInt(0);
-    buff.writeInt(DataType.FLOAT8.value);
+    buff.writeInt(DataType.FLOAT8.id);
     buff.writeInt(values.length);
     buff.writeInt(1);
     for (double value : values) {
@@ -738,8 +758,13 @@ public class DataTypeCodec {
     return Numeric.parse(cs.toString());
   }
 
-  private static void textEncodeCHAR(Character value, ByteBuf buff) {
-    binaryEncodeCHAR(value, buff);
+  private static void textEncodeNUMERIC(Numeric value, ByteBuf buff) {
+    String s = value.toString();
+    buff.writeCharSequence(s, StandardCharsets.UTF_8);
+  }
+
+  private static void textEncodeNUMERIC_ARRAY(Numeric[] value, ByteBuf buff) {
+    textEncodeArray(value, DataType.NUMERIC, buff);
   }
 
   private static void binaryEncodeCHAR(Character value, ByteBuf buff) {
@@ -778,7 +803,7 @@ public class DataTypeCodec {
     buff.writeInt(0);
     buff.writeInt(1);
     buff.writeInt(0);
-    buff.writeInt(DataType.CHAR.value);
+    buff.writeInt(DataType.CHAR.id);
     buff.writeInt(values.length);
     buff.writeInt(1);
     for (Character value : values) {
@@ -807,11 +832,6 @@ public class DataTypeCodec {
     return binaryDecodeBPCHAR(len, buff);
   }
 
-  private static void textEncodeBPCHAR(String value, ByteBuf buff) {
-    binaryEncodeBPCHAR(value, buff);
-  }
-
-
   private static void binaryEncodeBPCHAR(String value, ByteBuf buff) {
     int index = buff.writerIndex();
     buff.writeInt(0);
@@ -826,7 +846,6 @@ public class DataTypeCodec {
   private static String textdecodeTEXT(int len, ByteBuf buff) {
     return binaryDecodeTEXT(len, buff);
   }
-
 
   private static void binaryEncodeTEXT(String value, ByteBuf buff) {
     int index = buff.writerIndex();
@@ -952,15 +971,6 @@ public class DataTypeCodec {
     return Buffer.buffer(buff.readBytes(len));
   }
 
-  private static void textEncodeBYTEA(Buffer value, ByteBuf buff) {
-    int index = buff.writerIndex();
-    buff.setByte(index + 4, '\\');
-    buff.setByte(index + 5, 'x');
-    int len = Util.writeHexString(value, buff);
-    buff.writeInt(2 + len);
-    buff.writerIndex(index + 2 + len);
-  }
-
   private static void binaryEncodeUUID(UUID uuid, ByteBuf buff) {
     buff.writeInt(16);
     buff.writeLong(uuid.getMostSignificantBits());
@@ -984,7 +994,11 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeJSON(Json value, ByteBuf buff) {
-    defaultEncodeText(io.vertx.core.json.Json.encode(value.value()), buff);
+    int index = buff.writerIndex();
+    String s = io.vertx.core.json.Json.encode(value.value());
+    buff.writeInt(0); // Undetermined yet
+    int len = buff.writeCharSequence(s, StandardCharsets.UTF_8);
+    buff.setInt(index, len);
   }
 
   private static Json textDecodeJSONB(int len, ByteBuf buff) {
@@ -1091,17 +1105,53 @@ public class DataTypeCodec {
     return array;
   }
 
+  private static <T> T[] textDecodeArray(IntFunction<T[]> supplier, DataType type, int len, ByteBuf buff) {
+    if (len == 12) {
+      return supplier.apply(0);
+    }
+    List<T> list = new ArrayList<>();
+    buff.skipBytes(1); // {
+    int from = buff.readerIndex();
+    int to = buff.writerIndex() - 1;
+    while (true) {
+      int idx = buff.indexOf(from, to, (byte) ',');
+      if (idx == -1) {
+        break;
+      } else {
+        int l = idx - from;
+        T o = (T) decodeText(type, l, buff);
+        list.add(o);
+        buff.readerIndex(from = idx + 1);
+      }
+    }
+    T o = (T) decodeText(type, to - from, buff);
+    list.add(o);
+    return list.toArray(supplier.apply(list.size()));
+  }
+
   private static <T> void binaryEncodeArray(T[] values, DataType type, ByteBuf buff){
     int startIndex = buff.writerIndex();
     buff.writeInt(0);
     buff.writeInt(1);
     buff.writeInt(0);
-    buff.writeInt(type.value);
+    buff.writeInt(type.id);
     buff.writeInt(values.length);
     buff.writeInt(1);
     for (T value : values) {
       encodeBinary(type, value, buff);
     }
     buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
+  }
+
+  private static <T> void textEncodeArray(T[] values, DataType type, ByteBuf buff){
+    buff.writeByte('{');
+    int len = values.length;
+    for (int i = 0; i < len; i++) {
+      if (i > 0) {
+        buff.writeByte(',');
+      }
+      textEncode(type, values[i], buff);
+    }
+    buff.writeByte('}');
   }
 }

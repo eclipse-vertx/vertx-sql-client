@@ -19,7 +19,7 @@ package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.PgResult;
 import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.impl.codec.Column;
+import io.reactiverse.pgclient.impl.codec.ColumnDesc;
 import io.reactiverse.pgclient.impl.codec.DataFormat;
 import io.reactiverse.pgclient.impl.codec.DataTypeCodec;
 import io.reactiverse.pgclient.impl.codec.decoder.ResultDecoder;
@@ -47,7 +47,7 @@ public class RowResultDecoder implements ResultDecoder<Row> {
     for (int c = 0; c < len; ++c) {
       int length = in.readInt();
       if (length != -1) {
-        Column columnDesc = desc.columns()[c];
+        ColumnDesc columnDesc = desc.columns()[c];
         Object decoded;
         if (columnDesc.getDataFormat() == DataFormat.BINARY) {
           decoded = DataTypeCodec.decodeBinary(columnDesc.getDataType(), length, in);

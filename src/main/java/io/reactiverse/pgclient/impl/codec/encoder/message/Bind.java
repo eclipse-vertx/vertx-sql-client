@@ -17,6 +17,7 @@
 
 package io.reactiverse.pgclient.impl.codec.encoder.message;
 
+import io.reactiverse.pgclient.impl.codec.ColumnDesc;
 import io.reactiverse.pgclient.impl.codec.DataTypeCodec;
 import io.reactiverse.pgclient.impl.codec.DataType;
 import io.reactiverse.pgclient.impl.codec.decoder.message.BindComplete;
@@ -25,7 +26,6 @@ import io.reactiverse.pgclient.impl.codec.encoder.OutboundMessage;
 import io.netty.buffer.ByteBuf;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -50,12 +50,14 @@ public class Bind implements OutboundMessage {
   private final String portal;
   private final List<Object> paramValues;
   private final DataType[] paramDataTypes;
+  private final ColumnDesc[] resultColumns;
 
-  public Bind(long statement, String portal, List<Object> paramValues, DataType[] paramDataTypes) {
+  public Bind(long statement, String portal, List<Object> paramValues, DataType[] paramDataTypes, ColumnDesc[] resultColumns) {
     this.statement = statement;
     this.portal = portal;
     this.paramValues = paramValues;
     this.paramDataTypes = paramDataTypes;
+    this.resultColumns = resultColumns;
   }
 
   public long getStatement() {
@@ -64,10 +66,6 @@ public class Bind implements OutboundMessage {
 
   public String getPortal() {
     return portal;
-  }
-
-  public List<Object> getParamValues() {
-    return paramValues;
   }
 
   @Override
@@ -85,7 +83,8 @@ public class Bind implements OutboundMessage {
     return Objects.hash(statement, portal, paramValues);
   }
 
-  private static void encode(String portal, long statement, List<Object> paramValues, DataType[] dataTypes, ByteBuf out) {
+  @Override
+  public void encode(ByteBuf out) {
     int pos = out.writerIndex();
     out.writeByte(BIND);
     out.writeInt(0);
@@ -98,34 +97,42 @@ public class Bind implements OutboundMessage {
     } else {
       out.writeLong(statement);
     }
-    int len = paramValues.size();
-    out.writeShort(len);
+    int paramLen = paramValues.size();
+    out.writeShort(paramLen);
     // Parameter formats
-    for (int c = 0;c < len;c++) {
+    for (int c = 0;c < paramLen;c++) {
       // for now each format is Binary
-      out.writeShort(1);
+      out.writeShort(paramDataTypes[c].supportsBinary ? 1 : 0);
     }
-    out.writeShort(len);
-    for (int c = 0;c < len;c++) {
+    out.writeShort(paramLen);
+    for (int c = 0;c < paramLen;c++) {
       Object param = paramValues.get(c);
       if (param == null) {
         // NULL value
         out.writeInt(-1);
       } else {
-        DataType dataType = dataTypes[c];
-        DataTypeCodec.encodeBinary(dataType, param, out);
+        DataType dataType = paramDataTypes[c];
+        if (dataType.supportsBinary) {
+          DataTypeCodec.encodeBinary(dataType, param, out);
+        } else {
+          DataTypeCodec.encodeText(dataType, param, out);
+        }
       }
     }
 
-    // Result columns are all in Binary format
-    out.writeShort(1);
-    out.writeShort(1);
-    out.setInt(pos + 1, out.writerIndex() - pos - 1);
-  }
+    // MAKE resultColumsn non null to avoid null check
 
-  @Override
-  public void encode(ByteBuf out) {
-    encode(portal, statement, paramValues, paramDataTypes, out);
+    // Result columns are all in Binary format
+    if (resultColumns.length > 0) {
+      out.writeShort(resultColumns.length);
+      for (ColumnDesc resultColumn : resultColumns) {
+        out.writeShort(resultColumn.getDataType().supportsBinary ? 1 : 0);
+      }
+    } else {
+      out.writeShort(1);
+      out.writeShort(1);
+    }
+    out.setInt(pos + 1, out.writerIndex() - pos - 1);
   }
 
   @Override

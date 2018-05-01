@@ -94,171 +94,129 @@ Postgres has two protocols `TEXT` and `BINARY` to encode/decode data types.
 
 The *Reactive Postgres Client* currently supports the following data types
 
-[cols="^,^,^,^,^,^,^", options="header"]
+[cols="^,^,^,^,^", options="header"]
 |====
 | _
-| _
 2+| Value
-| _
 2+| Array
 
-| Postgres | Java | TEXT | BINARY | JAVA | TEXT | BINARY
+| Postgres | Java | Supported | JAVA | Supported
 
 |`BOOLEAN`
 |`j.l.Boolean`
 |&#10004;
-|&#10004;
 |`boolean[]`
-|_
 |&#10004;
 
 |`INT2`
 |`j.l.Short`
 |&#10004;
-|&#10004;
 |`short[]`
-|_
 |&#10004;
 
 |`INT4`
 |`j.l.Integer`
 |&#10004;
-|&#10004;
 |`int[]`
-|_
 |&#10004;
 
 |`INT8`
 |`j.l.Long`
 |&#10004;
-|&#10004;
 |`long[]`
-|_
 |&#10004;
 
 |`FLOAT4`
 |`j.l.Float`
 |&#10004;
-|&#10004;
 |`float[]`
-|_
 |&#10004;
 
 |`FLOAT8`
 |`j.l.Double`
 |&#10004;
-|&#10004;
 |`double[]`
-|_
 |&#10004;
 
 |`CHAR`
 |`j.l.Character`
 |&#10004;
-|&#10004;
 |`char[]`
-|_
 |&#10004;
 
 |`VARCHAR`
 |`j.l.String`
 |&#10004;
-|&#10004;
 |`j.l.String[]`
-|_
 |&#10004;
 
 |`TEXT`
 |`j.l.String`
 |&#10004;
-|&#10004;
 |`j.l.String[]`
-|_
 |&#10004;
 
 |`NUMERIC`
 |`i.r.p.Numeric`
 |&#10004;
+|`i.r.p.Numeric[]`
 |&#10004;
-|_
-|_
-|_
 
 |`UUID`
 |`j.u.UUID`
 |&#10004;
-|&#10004;
 |`j.u.UUID[]`
-|_
 |&#10004;
 
 |`DATE`
 |`j.t.LocalDate`
 |&#10004;
-|&#10004;
 |`j.t.LocalDate[]`
-|_
 |&#10004;
 
 |`TIME`
 |`j.t.LocalTime`
 |&#10004;
-|&#10004;
 |`j.t.LocalTime[]`
-|_
 |&#10004;
 
 |`TIMETZ`
 |`j.t.OffsetTime`
 |&#10004;
-|&#10004;
 |`j.t.OffsetTime[]`
-|_
 |&#10004;
 
 |`TIMESTAMP`
 |`j.t.LocalDateTime`
 |&#10004;
-|&#10004;
 |`j.t.LocalDateTime[]`
-|_
 |&#10004;
 
 |`TIMESTAMPTZ`
 |`j.t.OffsetDateTime`
 |&#10004;
-|&#10004;
 |`j.t.OffsetDateTime[]`
-|_
 |&#10004;
 
 |`BYTEA`
 |`i.v.c.b.Buffer`
 |&#10004;
-|&#10004;
 |`i.v.c.b.Buffer[]`
-|_
 |&#10004;
 
 |`JSON`
 |`i.r.p.Json`
 |&#10004;
-|&#10004;
-|_
 |_
 |_
 
 |`JSONB`
 |`i.r.p.Json`
 |&#10004;
-|&#10004;
-|_
 |_
 |_
 
 |====
-
-NOTE: The client uses `BINARY` protocol only for prepared queries `PgClient#preparedQuery` and `PgClient#preparedBatch`
 
 == Snapshots
 

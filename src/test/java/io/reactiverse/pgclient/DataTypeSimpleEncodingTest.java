@@ -18,7 +18,7 @@ import java.util.UUID;
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public class DataTypeTextTest extends DataTypeTestBase {
+public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
 
   @Override
   protected PgConnectOptions options() {

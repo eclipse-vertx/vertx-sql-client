@@ -10,14 +10,20 @@ import org.junit.Test;
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import java.util.function.BiFunction;
+import java.util.function.IntFunction;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class DataTypeBinaryTest extends DataTypeTestBase {
+public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
 
   @Override
   protected PgConnectOptions options() {
@@ -762,6 +768,71 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               .forRow(row);
             async.complete();
           }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testNumeric(TestContext ctx) {
+    testGeneric(ctx,
+      "SELECT c FROM (VALUES ($1 :: NUMERIC)) AS t (c)",
+      new Numeric[] {
+      Numeric.create(10),
+      Numeric.create(200030004),
+      Numeric.create(-500),
+      Numeric.NaN
+    }, Tuple::getNumeric);
+  }
+
+  @Test
+  public void testNumericArray(TestContext ctx) {
+    testGeneric(ctx,
+      "SELECT c FROM (VALUES ($1 :: NUMERIC[])) AS t (c)",
+      new Numeric[][] {new Numeric[]{Numeric.create(10), Numeric.create(200030004), Numeric.create(-500), Numeric.NaN}},
+      Tuple::getNumericArray);
+  }
+
+  @Test
+  public void testJson(TestContext ctx) {
+    testGeneric(ctx,
+      "SELECT c FROM (VALUES ($1 :: JSON)) AS t (c)",
+      new Json[] {
+        Json.create(10),
+        Json.create(true),
+        Json.create("hello"),
+        Json.create(new JsonObject().put("foo", "bar")),
+        Json.create(new JsonArray().add(0).add(1).add(2))
+      }, Tuple::getJson);
+  }
+
+  private static <T> void compare(TestContext ctx, T expected, T actual) {
+    if (expected != null && expected.getClass().isArray()) {
+      ctx.assertNotNull(actual);
+      ctx.assertTrue(actual.getClass().isArray());
+      List expectedList = Arrays.asList((Object[]) expected);
+      List actualList = Arrays.asList((Object[]) actual);
+      ctx.assertEquals(expectedList, actualList);
+    } else {
+      ctx.assertEquals(expected, actual);
+    }
+  }
+
+  private <T> void testGeneric(TestContext ctx, String sql, T[] expected, BiFunction<Row, Integer, T> getter) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      List<Tuple> batch = Stream.of(expected).map(Tuple::of).collect(Collectors.toList());
+      conn.preparedBatch(sql, batch,
+        ctx.asyncAssertSuccess(result -> {
+          for (T n : expected) {
+            ctx.assertEquals(result.size(), 1);
+            PgIterator<Row> it = result.iterator();
+            Row row = it.next();
+            compare(ctx, n, getter.apply(row, 0));
+            compare(ctx, n, row.getValue(0));
+            result = result.next();
+          }
+          ctx.assertNull(result);
+          async.complete();
         }));
     }));
   }
@@ -1685,6 +1756,54 @@ public class DataTypeBinaryTest extends DataTypeTestBase {
               ColumnChecker.checkColumn(0, "UUID")
                 .returns(Tuple::getValue, Row::getValue, new UUID[]{uuid})
                 .returns(Tuple::getUUIDArray, Row::getUUIDArray, new UUID[]{uuid})
+                .forRow(result.iterator().next());
+              async.complete();
+            }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testDecodeNumericArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"Numeric\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+            .addInteger(1), ctx.asyncAssertSuccess(result -> {
+            Numeric[] expected = {
+              Numeric.create(0),
+              Numeric.create(1),
+              Numeric.create(2),
+              Numeric.create(3)
+            };
+            ColumnChecker.checkColumn(0, "Numeric")
+              .returns(Tuple::getValue, Row::getValue, expected)
+              .returns(Tuple::getNumericArray, Row::getNumericArray, expected)
+              .forRow(result.iterator().next());
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testEncodeNumericArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Numeric\" = $1  WHERE \"id\" = $2 RETURNING \"Numeric\"",
+        ctx.asyncAssertSuccess(p -> {
+          Numeric[] expected = {
+            Numeric.create(0),
+            Numeric.create(10000),
+          };
+          p.execute(Tuple.tuple()
+              .addNumericArray(expected)
+              .addInteger(2)
+            , ctx.asyncAssertSuccess(result -> {
+              ColumnChecker.checkColumn(0, "Numeric")
+                .returns(Tuple::getValue, Row::getValue, expected)
+                .returns(Tuple::getNumericArray, Row::getNumericArray, expected)
                 .forRow(result.iterator().next());
               async.complete();
             }));

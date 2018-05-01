@@ -18,7 +18,7 @@
 package io.reactiverse.pgclient.impl.codec.decoder;
 
 import io.reactiverse.pgclient.PgResult;
-import io.reactiverse.pgclient.impl.codec.Column;
+import io.reactiverse.pgclient.impl.codec.ColumnDesc;
 import io.reactiverse.pgclient.impl.codec.DataFormat;
 import io.reactiverse.pgclient.impl.codec.DataType;
 import io.reactiverse.pgclient.impl.codec.decoder.message.*;
@@ -187,7 +187,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
   }
 
   private void decodeRowDescription(ByteBuf in, List<Object> out) {
-    Column[] columns = decodeRowDescription(in);
+    ColumnDesc[] columns = decodeRowDescription(in);
     rowDesc = new RowDescription(columns);
     out.add(rowDesc);
   }
@@ -349,8 +349,8 @@ public class MessageDecoder extends ByteToMessageDecoder {
     return processor.parse(in);
   }
 
-  private Column[]  decodeRowDescription(ByteBuf in) {
-    Column[] columns = new Column[in.readUnsignedShort()];
+  private ColumnDesc[]  decodeRowDescription(ByteBuf in) {
+    ColumnDesc[] columns = new ColumnDesc[in.readUnsignedShort()];
     for (int c = 0; c < columns.length; ++c) {
       String fieldName = Util.readCStringUTF8(in);
       int tableOID = in.readInt();
@@ -359,7 +359,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
       short typeSize = in.readShort();
       int typeModifier = in.readInt();
       int textOrBinary = in.readUnsignedShort(); // Useless for now
-      Column column = new Column(
+      ColumnDesc column = new ColumnDesc(
         fieldName,
         tableOID,
         columnAttributeNumber,
