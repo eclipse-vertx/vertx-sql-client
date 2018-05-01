@@ -29,12 +29,11 @@ public class Column {
   private final int relationId;
   private final DataType dataType;
   private final DataFormat dataFormat;
-  private final DataType.Decoder codec;
   private final short relationAttributeNo;
   private final short length;
   private final int typeModifier;
 
-  public Column(String name,  int relationId, short relationAttributeNo, DataType dataType, short length, int typeModifier, DataFormat dataFormat) {
+  public Column(String name, int relationId, short relationAttributeNo, DataType dataType, short length, int typeModifier, DataFormat dataFormat) {
     this.name = name;
     this.dataType = dataType;
     this.dataFormat = dataFormat;
@@ -42,11 +41,6 @@ public class Column {
     this.relationId = relationId;
     this.relationAttributeNo = relationAttributeNo;
     this.typeModifier = typeModifier;
-    if (dataFormat == DataFormat.TEXT) {
-      codec = dataType.textDecoder;
-    } else {
-      codec = dataType.binaryDecoder;
-    }
   }
 
   public String getName() {
@@ -75,10 +69,6 @@ public class Column {
 
   public int getTypeModifier() {
     return typeModifier;
-  }
-
-  public DataType.Decoder getCodec() {
-    return codec;
   }
 
   @Override

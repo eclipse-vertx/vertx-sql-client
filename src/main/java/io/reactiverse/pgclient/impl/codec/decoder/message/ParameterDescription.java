@@ -17,6 +17,7 @@
 
 package io.reactiverse.pgclient.impl.codec.decoder.message;
 
+import io.reactiverse.pgclient.impl.codec.DataTypeCodec;
 import io.reactiverse.pgclient.impl.codec.DataType;
 import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
 import io.reactiverse.pgclient.impl.codec.util.Util;
@@ -32,32 +33,37 @@ import java.util.stream.Stream;
 public class ParameterDescription implements InboundMessage {
 
   // OIDs
-  private final DataType<?>[] paramDataTypes;
+  private final DataType[] paramDataTypes;
 
-  public ParameterDescription(DataType<?>[] paramDataTypes) {
+  public ParameterDescription(DataType[] paramDataTypes) {
     this.paramDataTypes = paramDataTypes;
   }
 
-  public DataType<?>[] getParamDataTypes() {
+  public DataType[] getParamDataTypes() {
     return paramDataTypes;
   }
 
-  public String validate(List<Object> values) {
+  public String prepare(List<Object> values) {
     if (values.size() != paramDataTypes.length) {
       return buildReport(values);
     }
     for (int i = 0;i < paramDataTypes.length;i++) {
-      DataType<?> paramDataType = paramDataTypes[i];
+      DataType paramDataType = paramDataTypes[i];
       Object value = values.get(i);
-      if (!paramDataType.accept(value)) {
-        return buildReport(values);
+      Object val = DataTypeCodec.prepare(paramDataType, value);
+      if (val != value) {
+        if (val == DataTypeCodec.REFUSED_SENTINEL) {
+          return buildReport(values);
+        } else {
+          values.set(i, val);
+        }
       }
     }
     return null;
   }
 
   private String buildReport(List<Object> values) {
-    return Util.buildInvalidArgsError(values.stream(), Stream.of(paramDataTypes).map(DataType::getJavaType));
+    return Util.buildInvalidArgsError(values.stream(), Stream.of(paramDataTypes).map(type -> type.type));
   }
 
   @Override

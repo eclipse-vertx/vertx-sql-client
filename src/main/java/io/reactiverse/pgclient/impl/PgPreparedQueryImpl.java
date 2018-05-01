@@ -41,7 +41,7 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
 
   @Override
   public PgPreparedQuery execute(Tuple args, Handler<AsyncResult<PgResult<Row>>> handler) {
-    String msg = ps.paramDesc.validate((List<Object>) args);
+    String msg = ps.paramDesc.prepare((List<Object>) args);
     if (msg != null) {
       throw new IllegalArgumentException(msg);
     }
@@ -51,7 +51,7 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
 
   @Override
   public PgCursor cursor(Tuple args) {
-    String msg = ps.paramDesc.validate((List<Object>) args);
+    String msg = ps.paramDesc.prepare((List<Object>) args);
     if (msg != null) {
       throw new IllegalArgumentException(msg);
     }
@@ -74,7 +74,7 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
 
   public PgPreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<PgResult<Row>>> handler) {
     for  (Tuple args : argsList) {
-      String msg = ps.paramDesc.validate((List<Object>) args);
+      String msg = ps.paramDesc.prepare((List<Object>) args);
       if (msg != null) {
         throw new IllegalArgumentException(msg);
       }

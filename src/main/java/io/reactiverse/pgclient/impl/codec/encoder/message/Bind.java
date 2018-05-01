@@ -17,6 +17,7 @@
 
 package io.reactiverse.pgclient.impl.codec.encoder.message;
 
+import io.reactiverse.pgclient.impl.codec.DataTypeCodec;
 import io.reactiverse.pgclient.impl.codec.DataType;
 import io.reactiverse.pgclient.impl.codec.decoder.message.BindComplete;
 import io.reactiverse.pgclient.impl.codec.decoder.message.ErrorResponse;
@@ -115,7 +116,7 @@ public class Bind implements OutboundMessage {
     return Objects.hash(statement, portal, paramValues, paramFormats);
   }
 
-  private static void encode(String portal, long statement, List<Object> paramValues, DataType<?>[] dataTypes, ByteBuf out) {
+  private static void encode(String portal, long statement, List<Object> paramValues, DataType[] dataTypes, ByteBuf out) {
     int pos = out.writerIndex();
     out.writeByte(BIND);
     out.writeInt(0);
@@ -151,7 +152,7 @@ public class Bind implements OutboundMessage {
           out.writeInt(-1);
         } else {
           DataType dataType = dataTypes[c];
-          dataType.encodeBinary(param, out);
+          DataTypeCodec.encodeBinary(dataType, param, out);
         }
       }
     }
