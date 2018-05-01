@@ -129,31 +129,22 @@ public class Bind implements OutboundMessage {
     } else {
       out.writeLong(statement);
     }
-    if(paramValues == null) {
-      // No parameter formats
-      out.writeShort(0);
-      // No parameter values
-      out.writeShort(0);
-    } else {
-
-      // byte[][] foobar = Util.paramValues(paramValues);
-      int len = paramValues.size();
-      out.writeShort(len);
-      // Parameter formats
-      for (int c = 0;c < len;c++) {
-        // for now each format is Binary
-        out.writeShort(1);
-      }
-      out.writeShort(len);
-      for (int c = 0;c < len;c++) {
-        Object param = paramValues.get(c);
-        if (param == null) {
-          // NULL value
-          out.writeInt(-1);
-        } else {
-          DataType dataType = dataTypes[c];
-          DataTypeCodec.encodeBinary(dataType, param, out);
-        }
+    int len = paramValues.size();
+    out.writeShort(len);
+    // Parameter formats
+    for (int c = 0;c < len;c++) {
+      // for now each format is Binary
+      out.writeShort(1);
+    }
+    out.writeShort(len);
+    for (int c = 0;c < len;c++) {
+      Object param = paramValues.get(c);
+      if (param == null) {
+        // NULL value
+        out.writeInt(-1);
+      } else {
+        DataType dataType = dataTypes[c];
+        DataTypeCodec.encodeBinary(dataType, param, out);
       }
     }
 
