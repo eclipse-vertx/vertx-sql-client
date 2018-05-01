@@ -63,7 +63,7 @@ public class ExtendedBatchQueryCommand<T> extends ExtendedQueryCommandBase<T> {
       }
       while (paramsIterator.hasNext()) {
         List<Object> params = (List<Object>) paramsIterator.next();
-        conn.writeMessage(new Bind().setParamValues(params).setDataTypes(ps.paramDesc.getParamDataTypes()).setPortal(portal).setStatement(ps.statement));
+        conn.writeMessage(new Bind(ps.statement, portal, params, ps.paramDesc.getParamDataTypes()));
         conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
       }
       conn.writeMessage(Sync.INSTANCE);

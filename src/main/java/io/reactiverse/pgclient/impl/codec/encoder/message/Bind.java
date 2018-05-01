@@ -46,46 +46,16 @@ import static io.reactiverse.pgclient.impl.codec.encoder.message.type.MessageTyp
 
 public class Bind implements OutboundMessage {
 
-  private long statement;
-  private String portal;
-  private List<Object> paramValues;
-  private DataType[] dataTypes;
-  private int[] paramFormats;
+  private final long statement;
+  private final String portal;
+  private final List<Object> paramValues;
+  private final DataType[] paramDataTypes;
 
-  public Bind() {
-  }
-
-  public DataType[] getDataTypes() {
-    return dataTypes;
-  }
-
-  public Bind setDataTypes(DataType[] dataTypes) {
-    this.dataTypes = dataTypes;
-    return this;
-  }
-
-  public Bind setParamValues(List<Object> paramValues) {
-    this.paramValues = paramValues;
-    return this;
-  }
-
-  public Bind setParamFormats(int[] paramFormats) {
-    this.paramFormats = paramFormats;
-    return this;
-  }
-
-  public int[] getParamFormats() {
-    return paramFormats;
-  }
-
-  public Bind setStatement(long statement) {
+  public Bind(long statement, String portal, List<Object> paramValues, DataType[] paramDataTypes) {
     this.statement = statement;
-    return this;
-  }
-
-  public Bind setPortal(String portal) {
     this.portal = portal;
-    return this;
+    this.paramValues = paramValues;
+    this.paramDataTypes = paramDataTypes;
   }
 
   public long getStatement() {
@@ -107,13 +77,12 @@ public class Bind implements OutboundMessage {
     Bind bind = (Bind) o;
     return Objects.equals(statement, bind.statement) &&
       Objects.equals(portal, bind.portal) &&
-      Objects.equals(paramValues, bind.paramValues) &&
-      Arrays.equals(paramFormats, bind.paramFormats);
+      Objects.equals(paramValues, bind.paramValues);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(statement, portal, paramValues, paramFormats);
+    return Objects.hash(statement, portal, paramValues);
   }
 
   private static void encode(String portal, long statement, List<Object> paramValues, DataType[] dataTypes, ByteBuf out) {
@@ -156,7 +125,7 @@ public class Bind implements OutboundMessage {
 
   @Override
   public void encode(ByteBuf out) {
-    encode(portal, statement, paramValues, dataTypes, out);
+    encode(portal, statement, paramValues, paramDataTypes, out);
   }
 
   @Override
@@ -165,7 +134,6 @@ public class Bind implements OutboundMessage {
       "statement='" + statement + '\'' +
       ", portal='" + portal + '\'' +
       ", paramValues=" + paramValues +
-      ", paramFormats=" + Arrays.toString(paramFormats) +
       '}';
   }
 }
