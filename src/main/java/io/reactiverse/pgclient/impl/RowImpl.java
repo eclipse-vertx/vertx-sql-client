@@ -244,6 +244,12 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
+  public Json[] getJsonArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getJsonArray(pos);
+  }
+
+  @Override
   public Numeric[] getNumericArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getNumericArray(pos);

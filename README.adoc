@@ -207,14 +207,14 @@ The *Reactive Postgres Client* currently supports the following data types
 |`JSON`
 |`i.r.p.Json`
 |&#10004;
-|_
-|_
+|`i.r.p.Json[]`
+|&#10004;
 
 |`JSONB`
 |`i.r.p.Json`
 |&#10004;
-|_
-|_
+|`i.r.p.Json[]`
+|&#10004;
 
 |====
 

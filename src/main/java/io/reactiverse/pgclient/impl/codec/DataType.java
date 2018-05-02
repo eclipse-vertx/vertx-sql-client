@@ -84,7 +84,9 @@ public enum DataType {
   UUID(2950, true, UUID.class),
   UUID_ARRAY(2951, true, UUID[].class),
   JSON(114, true, Json.class),
+  JSON_ARRAY(199, true, Json[].class),
   JSONB(3802, true, Json.class),
+  JSONB_ARRAY(3807, true, Json.class),
   XML(142, true, Object.class),
   XML_ARRAY(143, true, Object[].class),
   POINT(600, true, Object.class),
@@ -105,9 +107,14 @@ public enum DataType {
     this.type = type;
   }
 
-  public static DataType valueOf(int id) {
-    DataType value = oidToDataType.get(id);
-    return value != null ? value : UNKNOWN;
+  public static DataType valueOf(int oid) {
+    DataType value = oidToDataType.get(oid);
+    if (value == null) {
+      System.out.println("Postgres type OID=" + oid + " not handled - using unknown type instead");
+      return UNKNOWN;
+    } else {
+      return value;
+    }
   }
 
   private static IntObjectMap<DataType> oidToDataType = new IntObjectHashMap<>();

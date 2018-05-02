@@ -792,9 +792,18 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
   }
 
   @Test
-  public void testJson(TestContext ctx) {
+  public void testJSON(TestContext ctx) {
+    testJson(ctx, "JSON");
+  }
+
+  @Test
+  public void testJSONB(TestContext ctx) {
+    testJson(ctx, "JSONB");
+  }
+
+  private void testJson(TestContext ctx, String jsonType) {
     testGeneric(ctx,
-      "SELECT c FROM (VALUES ($1 :: JSON)) AS t (c)",
+      "SELECT c FROM (VALUES ($1 :: " + jsonType + ")) AS t (c)",
       new Json[] {
         Json.create(10),
         Json.create(true),
@@ -802,6 +811,28 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
         Json.create(new JsonObject().put("foo", "bar")),
         Json.create(new JsonArray().add(0).add(1).add(2))
       }, Tuple::getJson);
+  }
+
+  @Test
+  public void testJSONArray(TestContext ctx) {
+    testJsonArray(ctx, "JSON");
+  }
+
+  @Test
+  public void testJSONBArray(TestContext ctx) {
+    testJsonArray(ctx, "JSONB");
+  }
+
+  private void testJsonArray(TestContext ctx, String jsonType) {
+    testGeneric(ctx,
+      "SELECT c FROM (VALUES ($1 :: " + jsonType + "[])) AS t (c)",
+      new Json[][] {
+        new Json[]{Json.create(10),
+          Json.create(true),
+          Json.create("hello"),
+          Json.create(new JsonObject().put("foo", "bar")),
+          Json.create(new JsonArray().add(0).add(1).add(2))}
+      }, Tuple::getJsonArray);
   }
 
   @Test

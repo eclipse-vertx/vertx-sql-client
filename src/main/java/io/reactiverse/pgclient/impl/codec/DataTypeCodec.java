@@ -47,6 +47,7 @@ public class DataTypeCodec {
   private static final OffsetDateTime[] empty_offset_date_time_array = new OffsetDateTime[0];
   private static final Buffer[] empty_buffer_array = new Buffer[0];
   private static final UUID[] empty_uuid_array = new UUID[0];
+  private static final Json[] empty_json_array = new Json[0];
   private static final Numeric[] empty_numeric_array = new Numeric[0];
   private static final Boolean[] empty_boolean_array = new Boolean[0];
   private static final Integer[] empty_integer_array = new Integer[0];
@@ -77,6 +78,7 @@ public class DataTypeCodec {
   private static final IntFunction<OffsetDateTime[]> OFFSETDATETIME_ARRAY_FACTORY = size -> size == 0 ? empty_offset_date_time_array : new OffsetDateTime[size];
   private static final IntFunction<Buffer[]> BUFFER_ARRAY_FACTORY =size -> size == 0 ? empty_buffer_array : new Buffer[size];
   private static final IntFunction<UUID[]> UUID_ARRAY_FACTORY = size -> size == 0 ? empty_uuid_array : new UUID[size];
+  private static final IntFunction<Json[]> JSON_ARRAY_FACTORY = size -> size == 0 ? empty_json_array : new Json[size];
   private static final IntFunction<Numeric[]> NUMERIC_ARRAY_FACTORY = size -> size == 0 ? empty_numeric_array : new Numeric[size];
 
   public static void encodeText(DataType id, Object value, ByteBuf buff) {
@@ -214,8 +216,14 @@ public class DataTypeCodec {
       case JSON:
         binaryEncodeJSON((Json) value, buff);
         break;
+      case JSON_ARRAY:
+        binaryEncodeArray((Json[]) value, DataType.JSON, buff);
+        break;
       case JSONB:
         binaryEncodeJSONB((Json) value, buff);
+        break;
+      case JSONB_ARRAY:
+        binaryEncodeArray((Json[]) value, DataType.JSONB, buff);
         break;
       default:
         System.out.println("Data type " + id + " does not support binary encoding");
@@ -300,8 +308,12 @@ public class DataTypeCodec {
         return binaryDecodeArray(UUID_ARRAY_FACTORY, DataType.UUID, len, buff);
       case JSON:
         return binaryDecodeJSON(len, buff);
+      case JSON_ARRAY:
+        return binaryDecodeArray(JSON_ARRAY_FACTORY, DataType.JSON, len, buff);
       case JSONB:
         return binaryDecodeJSONB(len, buff);
+      case JSONB_ARRAY:
+        return binaryDecodeArray(JSON_ARRAY_FACTORY, DataType.JSONB, len, buff);
       default:
         System.out.println("Data type " + id + " does not support binary decoding");
         return defaultDecodeBinary(len, buff);

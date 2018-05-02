@@ -428,13 +428,22 @@ public interface Tuple {
   Buffer[] getBufferArray(int pos);
 
   /**
-   * Get an array of  {@link UUID} value at {@code pos}.
+   * Get an array of {@link UUID} value at {@code pos}.
    *
    * @param pos the column
    * @return the value or {@code null}
    */
   @GenIgnore
   UUID[] getUUIDArray(int pos);
+
+  /**
+   * Get an array of {@link Json} value at {@code pos}.
+   *
+   * @param pos the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Json[] getJsonArray(int pos);
 
   /**
    * Get an array of {@link Numeric} value at {@code pos}.
@@ -785,6 +794,15 @@ public interface Tuple {
    */
   @GenIgnore
   Tuple addUUIDArray(UUID[] value);
+
+  /**
+   * Add an array of {@link Json} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addJsonArray(Json[] value);
 
   /**
    * Add an array of {@link Numeric} value at the end of the tuple.

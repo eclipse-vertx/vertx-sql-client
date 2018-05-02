@@ -264,6 +264,16 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
+  public Json[] getJsonArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Json[]) {
+      return (Json[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
   public Numeric[] getNumericArray(int pos) {
     Object val = get(pos);
     if (val instanceof Numeric[]) {
@@ -415,6 +425,7 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
       || value instanceof LocalDateTime[]
       || value instanceof OffsetDateTime[]
       || value instanceof UUID[]
+      || value instanceof Json[]
       || value instanceof Numeric[]
       || value instanceof Buffer[]) {
       add(value);
@@ -618,6 +629,12 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Tuple addUUIDArray(UUID[] value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addJsonArray(Json[] value) {
     add(value);
     return this;
   }
