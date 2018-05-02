@@ -145,9 +145,9 @@
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code class="language-xml" data-lang="xml">&lt;dependency&gt;
-  &lt;groupId&gt;com.julienviet&lt;/groupId&gt;
+  &lt;groupId&gt;io.reactiverse&lt;/groupId&gt;
   &lt;artifactId&gt;reactive-pg-client&lt;/artifactId&gt;
-  &lt;version&gt;0.6.0&lt;/version&gt;
+  &lt;version&gt;0.7.0&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
 </div>
 </div>
@@ -161,7 +161,7 @@
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code class="language-groovy" data-lang="groovy">dependencies {
-  compile 'com.julienviet:reactive-pg-client:0.6.0'
+  compile 'io.reactiverse:reactive-pg-client:0.8.0'
 }</code></pre>
 </div>
 </div>
@@ -207,10 +207,7 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -&gt; {
 <p><a href="https://reactiverse.io/reactive-pg-client/guide/java/index.html">Java docs</a></p>
 </li>
 <li>
-<p><a href="https://reactiverse.io/reactive-pg-client/apidocs/index.html">Javadoc</a></p>
-</li>
-<li>
-<p>https:/reactiverse.io/reactive-pg-client/guide/kotlin/index.html[Kotlin docs]</p>
+<p><a href="https://reactiverse.io/reactive-pg-client/guide/kotlin/">Kotlin docs</a></p>
 </li>
 <li>
 <p><a href="https://reactiverse.io/reactive-pg-client/guide/groovy/index.html">Groovy docs</a></p>
@@ -226,30 +223,35 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -&gt; {
 </div>
 </div>
 <div class="sect1">
+<h2 id="_javadoc">Javadoc</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://reactiverse.io/reactive-pg-client/apidocs/index.html">Javadoc</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="_supported_data_types">Supported Data Types</h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>Postgres has two protocols <code>TEXT</code> and <code>BINARY</code> to encode/decode data types.</p>
-</div>
 <div class="paragraph">
 <p>The <strong>Reactive Postgres Client</strong> currently supports the following data types</p>
 </div>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
-<col style="width: 14.2857%;">
-<col style="width: 14.2857%;">
-<col style="width: 14.2857%;">
-<col style="width: 14.2857%;">
-<col style="width: 14.2857%;">
-<col style="width: 14.2857%;">
-<col style="width: 14.2858%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
 </colgroup>
 <thead>
 <tr>
 <th class="tableblock halign-center valign-top">_</th>
-<th class="tableblock halign-center valign-top">_</th>
 <th class="tableblock halign-center valign-top" colspan="2">Value</th>
-<th class="tableblock halign-center valign-top">_</th>
 <th class="tableblock halign-center valign-top" colspan="2">Array</th>
 </tr>
 </thead>
@@ -257,196 +259,162 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -&gt; {
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">Postgres</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">Java</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">TEXT</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">BINARY</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Supported</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">JAVA</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">TEXT</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">BINARY</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Supported</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>BOOLEAN</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Boolean</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>boolean[]</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>INT2</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Short</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>short[]</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>INT4</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Integer</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>int[]</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>INT8</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Long</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>long[]</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>FLOAT4</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Float</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>float[]</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>FLOAT8</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Double</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>double[]</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>CHAR</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Character</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>char[]</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>VARCHAR</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.String</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.String[]</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>TEXT</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.String</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.String[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>NAME</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.String</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.String[]</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>NUMERIC</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.Numeric</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.Numeric[]</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>UUID</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.u.UUID</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.u.UUID[]</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>DATE</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.LocalDate</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.LocalDate[]</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>TIME</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.LocalTime</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.LocalTime[]</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>TIMETZ</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.OffsetTime</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.OffsetTime[]</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>TIMESTAMP</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.LocalDateTime</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.LocalDateTime[]</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>TIMESTAMPTZ</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.OffsetDateTime</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.OffsetDateTime[]</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>BYTEA</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.v.c.b.Buffer</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.v.c.b.Buffer[]</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>JSON</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.Json</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.Json[]</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>JSONB</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.Json</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.Json[]</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">_</p></td>
 </tr>
 </tbody>
 </table>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Note</div>
-</td>
-<td class="content">
-The client uses <code>BINARY</code> protocol only for prepared queries <code>PgClient#preparedQuery</code> and <code>PgClient#preparedBatch</code>
-</td>
-</tr>
-</table>
+<div class="paragraph">
+<p>The following types</p>
+</div>
+<div class="paragraph">
+<p><em>SERIAL2</em>, <em>SERIAL4</em>, <em>SERIAL8</em>, <em>MONEY</em>, <em>INTERVAL</em>, <em>BIT</em>, <em>VARBIT</em>, <em>MACADDR</em>, <em>INET</em>, <em>CIDR</em>, <em>MACADDR8</em>,
+<em>XML</em>, <em>POINT</em>, <em>PATH</em>, <em>BOX</em>, <em>LINE</em>, <em>POLYGON</em>, <em>LSEG</em>, <em>CIRCLE</em>, <em>HSTORE</em>, <em>OID</em>,
+<em>VOID</em>, <em>UNKOWN</em>, <em>TSQUERY</em>, <em>TSVECTOR</em></p>
+</div>
+<div class="paragraph">
+<p>are not implemented yet (PR are welcome).</p>
 </div>
 </div>
 </div>
@@ -519,7 +487,7 @@ source generates the [jekyll/guide/java/index.md](jekyll/guide/java/index.md).</
 </div></div></div>
 
     <div id="footer">
-  Generated on Mon Mar 26 18:29:51 2018 by
+  Generated on Wed May  2 21:43:01 2018 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.8.7.6 (ruby-2.3.3).
 </div>

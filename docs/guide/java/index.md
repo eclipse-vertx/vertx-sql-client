@@ -10,13 +10,14 @@ The client is reactive and non blocking, allowing to handle many database connec
 * Built-in connection pooling
 * Prepared queries caching
 * Publish / subscribe using Postgres `NOTIFY/LISTEN`
-* Batch and cursor support
+* Batch and cursor
 * Row streaming
 * Command pipeling
-* RxJava 1 and RxJava 2 support
+* RxJava 1 and RxJava 2
 * Direct memory to object without unnecessary copies
-* Java 8 Date and Time support
-* SSL/TLS support
+* Java 8 Date and Time
+* SSL/TLS
+* Unix domain socket
 * HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy support
 
 ## Usage
@@ -30,7 +31,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 <dependency>
  <groupId>io.reactiverse</groupId>
  <artifactId>reactive-pg-client</artifactId>
- <version>0.7.0</version>
+ <version>0.8.0</version>
 </dependency>
 ```
 
@@ -38,7 +39,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 
 ```groovy
 dependencies {
- compile 'io.reactiverse:reactive-pg-client:0.7.0'
+ compile 'io.reactiverse:reactive-pg-client:0.8.0'
 }
 ```
 
@@ -51,7 +52,7 @@ PgPoolOptions options = new PgPoolOptions()
   .setPort(5432)
   .setHost("the-host")
   .setDatabase("the-db")
-  .setUsername("user")
+  .setUser("user")
   .setPassword("secret")
   .setMaxSize(5);
 
@@ -81,7 +82,7 @@ PgPoolOptions options = new PgPoolOptions()
   .setPort(5432)
   .setHost("the-host")
   .setDatabase("the-db")
-  .setUsername("user")
+  .setUser("user")
   .setPassword("secret")
   .setMaxSize(5);
 
@@ -99,7 +100,7 @@ PgPoolOptions options = new PgPoolOptions()
   .setPort(5432)
   .setHost("the-host")
   .setDatabase("the-db")
-  .setUsername("user")
+  .setUser("user")
   .setPassword("secret")
   .setMaxSize(5);
 
@@ -123,7 +124,7 @@ PgPoolOptions options = new PgPoolOptions()
   .setPort(5432)
   .setHost("the-host")
   .setDatabase("the-db")
-  .setUsername("user")
+  .setUser("user")
   .setPassword("secret")
   .setMaxSize(5);
 
@@ -159,6 +160,76 @@ client.getConnection(ar1 -> {
 ```
 
 Once you are done with the connection you must close it to release it to the pool, so it can be reused.
+
+Sometimes you want to improve performance via Unix domain socket connection, we achieve this with Vert.x Native transports.
+
+Make sure you have added the required `netty-transport-native` dependency in your classpath and enabled the Unix domain socket option.
+
+```java
+PgPoolOptions options = new PgPoolOptions()
+  .setHost("/var/run/postgresql")
+  .setPort(5432)
+  .setDatabase("the-db");
+
+// Create the pooled client
+PgPool client = PgClient.pool(options);
+
+// Create the pooled client with a vertx instance
+// Make sure the vertx instance has enabled native transports
+PgPool client2 = PgClient.pool(vertx, options);
+```
+
+More information can be found in the [Vert.x documentation](https://vertx.io/docs/vertx-core/java/#_native_transports).
+
+## Configuration
+
+There are several options for you to configure the client.
+
+Apart from configuring with a `PgPoolOptions` data object, We also provide you an alternative way to connect when you want to configure with a connection URI:
+
+```java
+String connectionUri = "postgresql://dbuser:secretpassword@database.server.com:3211/mydb";
+
+// Create the pool from the connection URI
+PgPool pool = PgClient.pool(connectionUri);
+
+// Create the connection from the connection URI
+PgClient.connect(vertx, connectionUri, res -> {
+  // Handling your connection
+});
+```
+
+More information about connection string formats can be found in the [PostgreSQL Manuals](https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING).
+
+You can also use environment variables to set default connection setting values, this is useful
+when you want to avoid hard-coding database connection information. You can refer to the [official documentation](https://www.postgresql.org/docs/9.6/static/libpq-envars.html)
+for more details. The following parameters are supported:
+
+* `PGHOST`
+* `PGHOSTADDR`
+* `PGPORT`
+* `PGDATABASE`
+* `PGUSER`
+* `PGPASSWORD`
+
+If you don't specify a data object or a connection URI string to connect, environment variables will take precedence over them.
+
+```
+$ PGUSER=user \
+ PGHOST=the-host \
+ PGPASSWORD=secret \
+ PGDATABASE=the-db \
+ PGPORT=5432
+```
+
+```java
+PgPool pool = PgClient.pool();
+
+// Create the connection from the environment variables
+PgClient.connect(vertx, res -> {
+  // Handling your connection
+});
+```
 
 ## Running queries
 
@@ -485,6 +556,31 @@ pool.getConnection(res -> {
 
 ## Postgres type mapping
 
+Currently the client supports the following Postgres types
+
+* BOOLEAN (`java.lang.Boolean`)
+* INT2 (`java.lang.Short`)
+* INT4 (`java.lang.Integer`)
+* INT8 (`java.lang.Long`)
+* FLOAT4 (`java.lang.Float`)
+* FLOAT8 (`java.lang.Double`)
+* CHAR (`java.lang.String`)
+* VARCHAR (`java.lang.String`)
+* TEXT (`java.lang.String`)
+* NAME (`java.lang.String`)
+* NUMERIC (`io.reactiverse.pgclient.Numeric`)
+* UUID (`java.util.UUID`)
+* DATE (`java.time.LocalDate`)
+* TIME (`java.time.LocalTime`)
+* TIMETZ (`java.time.OffsetTime`)
+* TIMESTAMP (`java.time.LocalDateTime`)
+* TIMESTAMPTZ (`java.time.OffsetDateTime`)
+* BYTEA (`io.vertx.core.buffer.Buffer`)
+* JSON (`io.reactiverse.pgclient.Json`)
+* JSONB (`io.reactiverse.pgclient.Json`)
+
+Arrays of these types are supported.
+
 ### Handling JSON
 
 The [`Json`](../../apidocs/io/reactiverse/pgclient/Json.html) Java type is used to represent the Postgres `JSON` and `JSONB` type.
@@ -493,28 +589,15 @@ The main reason of this type is handling `null` JSON values.
 
 ```java
 Tuple tuple = Tuple.of(
-  Json.create(null),
-  Json.create(new JsonObject().put("foo", "bar")),
-  Json.create(3));
-
-//
-tuple = Tuple.tuple()
-  .addJson(Json.create(null))
-  .addJson(Json.create(new JsonObject().put("foo", "bar")))
-  .addJson(Json.create(3));
-
-// JSON object (and arrays) can also be added directly
-tuple = Tuple.tuple()
-  .addJson(Json.create(null))
-  .addJsonObject(new JsonObject().put("foo", "bar"))
-  .addJson(Json.create(3));
+  Json.create(Json.create(null)),
+  Json.create(Json.create(new JsonObject().put("foo", "bar"))),
+  Json.create(Json.create(null)));
 
 // Retrieving json
 Object value = tuple.getJson(0).value(); // Expect null
 
 //
 value = tuple.getJson(1).value(); // Expect JSON object
-value = tuple.getJsonObject(1); // Works too
 
 //
 value = tuple.getJson(3).value(); // Expect 3
@@ -531,6 +614,20 @@ if (numeric.isNaN()) {
 } else {
   BigDecimal value = numeric.bigDecimalValue();
 }
+```
+
+## Handling arrays
+
+Arrays are available on [`Tuple`](../../apidocs/io/reactiverse/pgclient/Tuple.html) and [`Row`](../../apidocs/io/reactiverse/pgclient/Row.html):
+
+```java
+Tuple tuple = Tuple.of(new String[]{ "a", "tuple", "with", "arrays" });
+
+// Add a string array to the tuple
+tuple.addStringArray(new String[]{"another", "array"});
+
+// Get the first array of string
+String[] array = tuple.getStringArray(0);
 ```
 
 ## Pub/sub
@@ -558,7 +655,7 @@ PgSubscriber subscriber = PgSubscriber.subscriber(vertx, new PgConnectOptions()
   .setPort(5432)
   .setHost("the-host")
   .setDatabase("the-db")
-  .setUsername("user")
+  .setUser("user")
   .setPassword("secret")
 );
 
@@ -590,7 +687,7 @@ PgSubscriber subscriber = PgSubscriber.subscriber(vertx, new PgConnectOptions()
   .setPort(5432)
   .setHost("the-host")
   .setDatabase("the-db")
-  .setUsername("user")
+  .setUser("user")
   .setPassword("secret")
 );
 
@@ -616,7 +713,7 @@ PgConnectOptions options = new PgConnectOptions()
   .setPort(5432)
   .setHost("the-host")
   .setDatabase("the-db")
-  .setUsername("user")
+  .setUser("user")
   .setPassword("secret")
   .setSsl(true)
   .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/cert.pem"));

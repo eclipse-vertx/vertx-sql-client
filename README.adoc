@@ -16,11 +16,12 @@ image:https://travis-ci.org/reactiverse/reactive-pg-client.svg?branch=master["Bu
 - Batch and cursor support
 - Row streaming
 - Command pipeling
-- RxJava 1 and RxJava 2 support
+- RxJava 1 and RxJava 2
 - Direct memory to object without unnecessary copies
-- Java 8 Date and Time support
-- SSL/TLS support
-- HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy support
+- Java 8 Date and Time
+- SSL/TLS
+- Unix domain socket
+- HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy
 
 == Usage
 
@@ -33,7 +34,7 @@ To use the client, add the following dependency to the _dependencies_ section of
 <dependency>
   <groupId>io.reactiverse</groupId>
   <artifactId>reactive-pg-client</artifactId>
-  <version>0.7.0</version>
+  <version>0.8.0</version>
 </dependency>
 ----
 

@@ -349,28 +349,6 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#add_character-instance_method" title="#add_character (instance method)">- (self) <strong>add_character</strong>(value = nil) </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'>Add a Character value at the end of the tuple.</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
       <a href="#add_double-instance_method" title="#add_double (instance method)">- (self) <strong>add_double</strong>(value = nil) </a>
     
 
@@ -452,50 +430,6 @@
 
   
     <span class="summary_desc"><div class='inline'>Add a json value at the end of the tuple.</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#add_json_array-instance_method" title="#add_json_array (instance method)">- (self) <strong>add_json_array</strong>(value = nil) </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'>Add a json array value at the end of the tuple.</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#add_json_object-instance_method" title="#add_json_object (instance method)">- (self) <strong>add_json_object</strong>(value = nil) </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'>Add a json object value at the end of the tuple.</div></span>
   
 </li>
 
@@ -635,28 +569,6 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#get_character-instance_method" title="#get_character (instance method)">- (Fixnum) <strong>get_character</strong>(pos = nil) </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'>Get a Character value at pos.</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
       <a href="#get_double-instance_method" title="#get_double (instance method)">- (Float) <strong>get_double</strong>(pos = nil) </a>
     
 
@@ -738,50 +650,6 @@
 
   
     <span class="summary_desc"><div class='inline'>Get a json value at pos.</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#get_json_array-instance_method" title="#get_json_array (instance method)">- (Array&lt;String,Object&gt;) <strong>get_json_array</strong>(pos = nil) </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'>Get a json array value at pos.</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#get_json_object-instance_method" title="#get_json_object (instance method)">- (Hash{String =&gt; Object}) <strong>get_json_object</strong>(pos = nil) </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'>Get a json object value at pos.</div></span>
   
 </li>
 
@@ -1421,16 +1289,16 @@
       <pre class="lines">
 
 
-185
-186
-187
-188
-189
-190
-191</pre>
+158
+159
+160
+161
+162
+163
+164</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 185</span>
+      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 158</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_add_boolean'>add_boolean</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>TrueClass</span> <span class='op'>||</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>FalseClass</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -1514,16 +1382,16 @@
       <pre class="lines">
 
 
-305
-306
-307
-308
-309
-310
-311</pre>
+248
+249
+250
+251
+252
+253
+254</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 305</span>
+      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 248</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_add_buffer'>add_buffer</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_method_defined?'>method_defined?</span><span class='lparen'>(</span><span class='symbol'>:j_del</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -1531,99 +1399,6 @@
     <span class='kw'>return</span> <span class='kw'>self</span>
   <span class='kw'>end</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid arguments when calling add_buffer(</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_value'>value</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="add_character-instance_method">
-  
-    - (<tt>self</tt>) <strong>add_character</strong>(value = nil) 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    Add a Character value at the end of the tuple.
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>value</span>
-      
-      
-        <span class='type'>(<tt>Fixnum</tt>)</span>
-      
-      
-        <em class="default">(defaults to: <tt>nil</tt>)</em>
-      
-      
-        &mdash;
-        <div class='inline'>the value</div>
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>self</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-<p class="tag_title">Raises:</p>
-<ul class="raise">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>ArgumentError</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-265
-266
-267
-268
-269
-270
-271</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 265</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_add_character'>add_character</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
-  <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>Fixnum</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span>
-    <span class='ivar'>@j_del</span><span class='period'>.</span><span class='id identifier rubyid_java_method'>java_method</span><span class='lparen'>(</span><span class='symbol'>:addCharacter</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>JavaLang</span><span class='op'>::</span><span class='const'>Character</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='op'>::</span><span class='const'>Vertx</span><span class='op'>::</span><span class='const'>Util</span><span class='op'>::</span><span class='const'>Utils</span><span class='period'>.</span><span class='id identifier rubyid_to_character'>to_character</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span><span class='rparen'>)</span>
-    <span class='kw'>return</span> <span class='kw'>self</span>
-  <span class='kw'>end</span>
-  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid arguments when calling add_character(</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_value'>value</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1700,16 +1475,16 @@
       <pre class="lines">
 
 
-245
-246
-247
-248
-249
-250
-251</pre>
+218
+219
+220
+221
+222
+223
+224</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 245</span>
+      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 218</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_add_double'>add_double</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>Float</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -1793,16 +1568,16 @@
       <pre class="lines">
 
 
-235
-236
-237
-238
-239
-240
-241</pre>
+208
+209
+210
+211
+212
+213
+214</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 235</span>
+      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 208</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_add_float'>add_float</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>Float</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -1886,16 +1661,16 @@
       <pre class="lines">
 
 
-215
-216
-217
-218
-219
-220
-221</pre>
+188
+189
+190
+191
+192
+193
+194</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 215</span>
+      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 188</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_add_integer'>add_integer</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>Fixnum</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -1979,16 +1754,16 @@
       <pre class="lines">
 
 
-295
-296
-297
-298
-299
-300
-301</pre>
+238
+239
+240
+241
+242
+243
+244</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 295</span>
+      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 238</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_add_json'>add_json</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_method_defined?'>method_defined?</span><span class='lparen'>(</span><span class='symbol'>:j_del</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -1996,192 +1771,6 @@
     <span class='kw'>return</span> <span class='kw'>self</span>
   <span class='kw'>end</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid arguments when calling add_json(</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_value'>value</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="add_json_array-instance_method">
-  
-    - (<tt>self</tt>) <strong>add_json_array</strong>(value = nil) 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    Add a json array value at the end of the tuple.
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>value</span>
-      
-      
-        <span class='type'>(<tt>Array&lt;String,Object&gt;</tt>)</span>
-      
-      
-        <em class="default">(defaults to: <tt>nil</tt>)</em>
-      
-      
-        &mdash;
-        <div class='inline'>the value</div>
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>self</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-<p class="tag_title">Raises:</p>
-<ul class="raise">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>ArgumentError</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-285
-286
-287
-288
-289
-290
-291</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 285</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_add_json_array'>add_json_array</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
-  <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>Array</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span>
-    <span class='ivar'>@j_del</span><span class='period'>.</span><span class='id identifier rubyid_java_method'>java_method</span><span class='lparen'>(</span><span class='symbol'>:addJsonArray</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoVertxCoreJson</span><span class='op'>::</span><span class='const'>JsonArray</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='op'>::</span><span class='const'>Vertx</span><span class='op'>::</span><span class='const'>Util</span><span class='op'>::</span><span class='const'>Utils</span><span class='period'>.</span><span class='id identifier rubyid_to_json_array'>to_json_array</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span><span class='rparen'>)</span>
-    <span class='kw'>return</span> <span class='kw'>self</span>
-  <span class='kw'>end</span>
-  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid arguments when calling add_json_array(</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_value'>value</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="add_json_object-instance_method">
-  
-    - (<tt>self</tt>) <strong>add_json_object</strong>(value = nil) 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    Add a json object value at the end of the tuple.
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>value</span>
-      
-      
-        <span class='type'>(<tt>Hash{String =&gt; Object}</tt>)</span>
-      
-      
-        <em class="default">(defaults to: <tt>nil</tt>)</em>
-      
-      
-        &mdash;
-        <div class='inline'>the value</div>
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>self</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-<p class="tag_title">Raises:</p>
-<ul class="raise">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>ArgumentError</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-275
-276
-277
-278
-279
-280
-281</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 275</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_add_json_object'>add_json_object</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
-  <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>Hash</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span>
-    <span class='ivar'>@j_del</span><span class='period'>.</span><span class='id identifier rubyid_java_method'>java_method</span><span class='lparen'>(</span><span class='symbol'>:addJsonObject</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoVertxCoreJson</span><span class='op'>::</span><span class='const'>JsonObject</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='op'>::</span><span class='const'>Vertx</span><span class='op'>::</span><span class='const'>Util</span><span class='op'>::</span><span class='const'>Utils</span><span class='period'>.</span><span class='id identifier rubyid_to_json_object'>to_json_object</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span><span class='rparen'>)</span>
-    <span class='kw'>return</span> <span class='kw'>self</span>
-  <span class='kw'>end</span>
-  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid arguments when calling add_json_object(</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_value'>value</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -2258,16 +1847,16 @@
       <pre class="lines">
 
 
-225
-226
-227
-228
-229
-230
-231</pre>
+198
+199
+200
+201
+202
+203
+204</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 225</span>
+      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 198</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_add_long'>add_long</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>Fixnum</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -2351,16 +1940,16 @@
       <pre class="lines">
 
 
-205
-206
-207
-208
-209
-210
-211</pre>
+178
+179
+180
+181
+182
+183
+184</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 205</span>
+      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 178</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_add_short'>add_short</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>Fixnum</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -2444,16 +2033,16 @@
       <pre class="lines">
 
 
-255
-256
-257
-258
-259
-260
-261</pre>
+228
+229
+230
+231
+232
+233
+234</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 255</span>
+      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 228</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_add_string'>add_string</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>String</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -2537,16 +2126,16 @@
       <pre class="lines">
 
 
-195
-196
-197
-198
-199
-200
-201</pre>
+168
+169
+170
+171
+172
+173
+174</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 195</span>
+      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 168</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_add_value'>add_value</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='op'>::</span><span class='const'>Vertx</span><span class='op'>::</span><span class='const'>Util</span><span class='op'>::</span><span class='id identifier rubyid_unknown_type'>unknown_type</span><span class='period'>.</span><span class='id identifier rubyid_accept?'>accept?</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -2727,115 +2316,21 @@
       <pre class="lines">
 
 
-176
-177
-178
-179
-180
-181</pre>
+149
+150
+151
+152
+153
+154</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 176</span>
+      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 149</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_get_buffer'>get_buffer</span><span class='lparen'>(</span><span class='id identifier rubyid_pos'>pos</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_pos'>pos</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>Fixnum</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span>
     <span class='kw'>return</span> <span class='op'>::</span><span class='const'>Vertx</span><span class='op'>::</span><span class='const'>Util</span><span class='op'>::</span><span class='const'>Utils</span><span class='period'>.</span><span class='id identifier rubyid_safe_create'>safe_create</span><span class='lparen'>(</span><span class='ivar'>@j_del</span><span class='period'>.</span><span class='id identifier rubyid_java_method'>java_method</span><span class='lparen'>(</span><span class='symbol'>:getBuffer</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>Java</span><span class='op'>::</span><span class='id identifier rubyid_int'>int</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_pos'>pos</span><span class='rparen'>)</span><span class='comma'>,</span><span class='op'>::</span><span class='const'>Vertx</span><span class='op'>::</span><span class='const'>Buffer</span><span class='rparen'>)</span>
   <span class='kw'>end</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid arguments when calling get_buffer(</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_pos'>pos</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="get_character-instance_method">
-  
-    - (<tt>Fixnum</tt>) <strong>get_character</strong>(pos = nil) 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    Get a Character value at <code>pos</code>.
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>pos</span>
-      
-      
-        <span class='type'>(<tt>Fixnum</tt>)</span>
-      
-      
-        <em class="default">(defaults to: <tt>nil</tt>)</em>
-      
-      
-        &mdash;
-        <div class='inline'>the position</div>
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Fixnum</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'>the value or <code>null</code></div>
-      
-    </li>
-  
-</ul>
-<p class="tag_title">Raises:</p>
-<ul class="raise">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>ArgumentError</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-140
-141
-142
-143
-144
-145</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 140</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_get_character'>get_character</span><span class='lparen'>(</span><span class='id identifier rubyid_pos'>pos</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
-  <span class='kw'>if</span> <span class='id identifier rubyid_pos'>pos</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>Fixnum</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span>
-    <span class='kw'>return</span> <span class='ivar'>@j_del</span><span class='period'>.</span><span class='id identifier rubyid_java_method'>java_method</span><span class='lparen'>(</span><span class='symbol'>:getCharacter</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>Java</span><span class='op'>::</span><span class='id identifier rubyid_int'>int</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_pos'>pos</span><span class='rparen'>)</span>
-  <span class='kw'>end</span>
-  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid arguments when calling get_character(</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_pos'>pos</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -3197,209 +2692,21 @@
       <pre class="lines">
 
 
-149
-150
-151
-152
-153
-154</pre>
+140
+141
+142
+143
+144
+145</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 149</span>
+      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 140</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_get_json'>get_json</span><span class='lparen'>(</span><span class='id identifier rubyid_pos'>pos</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_pos'>pos</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>Fixnum</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span>
     <span class='kw'>return</span> <span class='op'>::</span><span class='const'>Vertx</span><span class='op'>::</span><span class='const'>Util</span><span class='op'>::</span><span class='const'>Utils</span><span class='period'>.</span><span class='id identifier rubyid_safe_create'>safe_create</span><span class='lparen'>(</span><span class='ivar'>@j_del</span><span class='period'>.</span><span class='id identifier rubyid_java_method'>java_method</span><span class='lparen'>(</span><span class='symbol'>:getJson</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>Java</span><span class='op'>::</span><span class='id identifier rubyid_int'>int</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_pos'>pos</span><span class='rparen'>)</span><span class='comma'>,</span><span class='op'>::</span><span class='const'>ReactivePgClient</span><span class='op'>::</span><span class='const'>Json</span><span class='rparen'>)</span>
   <span class='kw'>end</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid arguments when calling get_json(</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_pos'>pos</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="get_json_array-instance_method">
-  
-    - (<tt>Array&lt;String,Object&gt;</tt>) <strong>get_json_array</strong>(pos = nil) 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    Get a json array value at <code>pos</code>.
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>pos</span>
-      
-      
-        <span class='type'>(<tt>Fixnum</tt>)</span>
-      
-      
-        <em class="default">(defaults to: <tt>nil</tt>)</em>
-      
-      
-        &mdash;
-        <div class='inline'>the position</div>
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Array&lt;String,Object&gt;</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'>the value or <code>null</code></div>
-      
-    </li>
-  
-</ul>
-<p class="tag_title">Raises:</p>
-<ul class="raise">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>ArgumentError</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-167
-168
-169
-170
-171
-172</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 167</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_get_json_array'>get_json_array</span><span class='lparen'>(</span><span class='id identifier rubyid_pos'>pos</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
-  <span class='kw'>if</span> <span class='id identifier rubyid_pos'>pos</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>Fixnum</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span>
-    <span class='kw'>return</span> <span class='ivar'>@j_del</span><span class='period'>.</span><span class='id identifier rubyid_java_method'>java_method</span><span class='lparen'>(</span><span class='symbol'>:getJsonArray</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>Java</span><span class='op'>::</span><span class='id identifier rubyid_int'>int</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_pos'>pos</span><span class='rparen'>)</span> <span class='op'>!=</span> <span class='kw'>nil</span> <span class='op'>?</span> <span class='const'>JSON</span><span class='period'>.</span><span class='id identifier rubyid_parse'>parse</span><span class='lparen'>(</span><span class='ivar'>@j_del</span><span class='period'>.</span><span class='id identifier rubyid_java_method'>java_method</span><span class='lparen'>(</span><span class='symbol'>:getJsonArray</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>Java</span><span class='op'>::</span><span class='id identifier rubyid_int'>int</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_pos'>pos</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_encode'>encode</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='kw'>nil</span>
-  <span class='kw'>end</span>
-  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid arguments when calling get_json_array(</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_pos'>pos</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="get_json_object-instance_method">
-  
-    - (<tt>Hash{String =&gt; Object}</tt>) <strong>get_json_object</strong>(pos = nil) 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    Get a json object value at <code>pos</code>.
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>pos</span>
-      
-      
-        <span class='type'>(<tt>Fixnum</tt>)</span>
-      
-      
-        <em class="default">(defaults to: <tt>nil</tt>)</em>
-      
-      
-        &mdash;
-        <div class='inline'>the position</div>
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Hash{String =&gt; Object}</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'>the value or <code>null</code></div>
-      
-    </li>
-  
-</ul>
-<p class="tag_title">Raises:</p>
-<ul class="raise">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>ArgumentError</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-158
-159
-160
-161
-162
-163</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 158</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_get_json_object'>get_json_object</span><span class='lparen'>(</span><span class='id identifier rubyid_pos'>pos</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
-  <span class='kw'>if</span> <span class='id identifier rubyid_pos'>pos</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>Fixnum</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span>
-    <span class='kw'>return</span> <span class='ivar'>@j_del</span><span class='period'>.</span><span class='id identifier rubyid_java_method'>java_method</span><span class='lparen'>(</span><span class='symbol'>:getJsonObject</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>Java</span><span class='op'>::</span><span class='id identifier rubyid_int'>int</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_pos'>pos</span><span class='rparen'>)</span> <span class='op'>!=</span> <span class='kw'>nil</span> <span class='op'>?</span> <span class='const'>JSON</span><span class='period'>.</span><span class='id identifier rubyid_parse'>parse</span><span class='lparen'>(</span><span class='ivar'>@j_del</span><span class='period'>.</span><span class='id identifier rubyid_java_method'>java_method</span><span class='lparen'>(</span><span class='symbol'>:getJsonObject</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>Java</span><span class='op'>::</span><span class='id identifier rubyid_int'>int</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_pos'>pos</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_encode'>encode</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='kw'>nil</span>
-  <span class='kw'>end</span>
-  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid arguments when calling get_json_object(</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_pos'>pos</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -3835,15 +3142,15 @@
       <pre class="lines">
 
 
-313
-314
-315
-316
-317
-318</pre>
+256
+257
+258
+259
+260
+261</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 313</span>
+      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/tuple.rb', line 256</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_size'>size</span>
   <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -3861,7 +3168,7 @@
 </div>
 
     <div id="footer">
-  Generated on Mon Mar 26 18:29:53 2018 by
+  Generated on Wed May  2 21:43:02 2018 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.8.7.6 (ruby-2.3.3).
 </div>
