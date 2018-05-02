@@ -787,7 +787,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
   public void testNumericArray(TestContext ctx) {
     testGeneric(ctx,
       "SELECT c FROM (VALUES ($1 :: NUMERIC[])) AS t (c)",
-      new Numeric[][] {new Numeric[]{Numeric.create(10), Numeric.create(200030004), Numeric.create(-500), Numeric.NaN}},
+      new Numeric[][] {new Numeric[]{Numeric.create(10), Numeric.create(200030004), null, Numeric.create(-500), Numeric.NaN, null}},
       Tuple::getNumericArray);
   }
 
@@ -808,28 +808,28 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
   public void testBooleanArray(TestContext ctx) {
     testGeneric(ctx,
       "SELECT c FROM (VALUES ($1 :: BOOL[])) AS t (c)",
-      new Boolean[][] { new Boolean[]{ true, false } }, Tuple::getBooleanArray);
+      new Boolean[][] { new Boolean[]{ true, null, false } }, Tuple::getBooleanArray);
   }
 
   @Test
   public void testShortArray(TestContext ctx) {
     testGeneric(ctx,
       "SELECT c FROM (VALUES ($1 :: INT2[])) AS t (c)",
-      new Short[][] { new Short[]{ 0, -10, Short.MAX_VALUE } }, Tuple::getShortArray);
+      new Short[][] { new Short[]{ 0, -10, null, Short.MAX_VALUE } }, Tuple::getShortArray);
   }
 
   @Test
   public void testIntegerArray(TestContext ctx) {
     testGeneric(ctx,
       "SELECT c FROM (VALUES ($1 :: INT4[])) AS t (c)",
-      new Integer[][] { new Integer[]{ 0, -10, Integer.MAX_VALUE } }, Tuple::getIntegerArray);
+      new Integer[][] { new Integer[]{ 0, -10, null, Integer.MAX_VALUE } }, Tuple::getIntegerArray);
   }
 
   @Test
   public void testLongArray(TestContext ctx) {
     testGeneric(ctx,
       "SELECT c FROM (VALUES ($1 :: INT8[])) AS t (c)",
-      new Long[][] { new Long[]{ 0L, -10L, Long.MAX_VALUE } }, Tuple::getLongArray);
+      new Long[][] { new Long[]{ 0L, -10L, null, Long.MAX_VALUE } }, Tuple::getLongArray);
   }
 
   @Test

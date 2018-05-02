@@ -827,16 +827,46 @@ public class DataTypeCodec {
     if (len == 12) {
       return supplier.apply(0);
     }
-    buff.skipBytes(4);
-    int offset = buff.readInt();
-    buff.skipBytes(4);
-    int length = buff.readInt();
+    int dim = buff.readInt();    // ndim
+    buff.skipBytes(4);           // dataoffset
+    buff.skipBytes(4);           // elemtype
+    int length = buff.readInt(); // dimensions
+    buff.skipBytes(4);           // lower bnds
+    if (dim != 1) {
+      System.out.println("Only arrays of dimension 1 are supported");
+      return null;
+    }
     T[] array = supplier.apply(length);
-    buff.skipBytes(offset+4);
     for (int i = 0; i < array.length; i++) {
-      array[i] = (T) decodeBinary(type, buff.readInt(), buff);
+      int l = buff.readInt();
+      if (l != -1) {
+        array[i] = (T) decodeBinary(type, l, buff);
+      }
     }
     return array;
+  }
+
+  private static <T> void binaryEncodeArray(T[] values, DataType type, ByteBuf buff){
+    int startIndex = buff.writerIndex();
+    buff.writeInt(0);
+    buff.writeInt(1);             // ndim
+    buff.writeInt(0);             // dataoffset
+    buff.writeInt(type.id);       // elemtype
+    buff.writeInt(values.length); // dimension
+    buff.writeInt(1);             // lower bnds
+    boolean hasNulls = false;
+    for (T value : values) {
+      if (value == null) {
+        hasNulls = true;
+        buff.writeInt(-1);
+      } else {
+        encodeBinary(type, value, buff);
+      }
+    }
+    if (hasNulls) {
+      buff.setInt(startIndex + 8, 1);
+    }
+    buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
   }
 
   private static <T> T[] textDecodeArray(IntFunction<T[]> supplier, DataType type, int len, ByteBuf buff) {
@@ -852,29 +882,29 @@ public class DataTypeCodec {
       if (idx == -1) {
         break;
       } else {
-        int l = idx - from;
-        T o = (T) decodeText(type, l, buff);
+        T o = textDecodeArrayElement(type, idx - from, buff);
         list.add(o);
         buff.readerIndex(from = idx + 1);
       }
     }
-    T o = (T) decodeText(type, to - from, buff);
-    list.add(o);
+    T elt = textDecodeArrayElement(type, to - from, buff);
+    list.add(elt);
     return list.toArray(supplier.apply(list.size()));
   }
 
-  private static <T> void binaryEncodeArray(T[] values, DataType type, ByteBuf buff){
-    int startIndex = buff.writerIndex();
-    buff.writeInt(0);
-    buff.writeInt(1);
-    buff.writeInt(0);
-    buff.writeInt(type.id);
-    buff.writeInt(values.length);
-    buff.writeInt(1);
-    for (T value : values) {
-      encodeBinary(type, value, buff);
+  private static <T> T textDecodeArrayElement(DataType type, int len, ByteBuf buff) {
+    int curr = buff.readerIndex();
+    T o;
+    if (len == 4
+      && Character.toUpperCase(buff.getByte(curr)) == 'N'
+      && Character.toUpperCase(buff.getByte(++curr)) == 'U'
+      && Character.toUpperCase(buff.getByte(++curr)) == 'L'
+      && Character.toUpperCase(buff.getByte(++curr)) == 'L'
+      ) {
+      return null;
+    } else {
+      return (T) decodeText(type, len, buff);
     }
-    buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
   }
 
   private static <T> void textEncodeArray(T[] values, DataType type, ByteBuf buff){
@@ -884,7 +914,15 @@ public class DataTypeCodec {
       if (i > 0) {
         buff.writeByte(',');
       }
-      textEncode(type, values[i], buff);
+      T value = values[i];
+      if (value != null) {
+        textEncode(type, value, buff);
+      } else {
+        buff.writeByte('N');
+        buff.writeByte('U');
+        buff.writeByte('L');
+        buff.writeByte('L');
+      }
     }
     buff.writeByte('}');
   }
