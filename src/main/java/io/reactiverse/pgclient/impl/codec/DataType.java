@@ -49,7 +49,7 @@ public enum DataType {
   NUMERIC_ARRAY(1231, false, Numeric[].class),
   MONEY(790, true, Object.class),
   MONEY_ARRAY(791, true, Object[].class),
-  BITS(1560, true, Object.class),
+  BIT(1560, true, Object.class),
   BIT_ARRAY(1561, true, Object[].class),
   VARBIT(1562, true, Object.class),
   VARBIT_ARRAY(1563, true, Object[].class),
