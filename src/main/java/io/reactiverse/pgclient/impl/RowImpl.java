@@ -160,37 +160,37 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public int[] getIntArray(String name) {
+  public Integer[] getInteterArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getIntegerArray(pos);
   }
 
   @Override
-  public boolean[] getBooleanArray(String name) {
+  public Boolean[] getBooleanArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getBooleanArray(pos);
   }
 
   @Override
-  public short[] getShortArray(String name) {
+  public Short[] getShortArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getShortArray(pos);
   }
 
   @Override
-  public long[] getLongArray(String name) {
+  public Long[] getLongArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getLongArray(pos);
   }
 
   @Override
-  public float[] getFloatArray(String name) {
+  public Float[] getFloatArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getFloatArray(pos);
   }
 
   @Override
-  public double[] getDoubleArray(String name) {
+  public Double[] getDoubleArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getDoubleArray(pos);
   }
@@ -250,7 +250,7 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public char[] getCharacterArray(String name) {
+  public Character[] getCharacterArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getCharacterArray(pos);
   }

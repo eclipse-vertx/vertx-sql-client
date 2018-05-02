@@ -23,7 +23,6 @@ import io.reactiverse.pgclient.Json;
 import io.reactiverse.pgclient.Numeric;
 import io.reactiverse.pgclient.impl.codec.formatter.DateTimeFormatter;
 import io.reactiverse.pgclient.impl.codec.formatter.TimeFormatter;
-import io.reactiverse.pgclient.impl.codec.util.Util;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -49,13 +48,13 @@ public class DataTypeCodec {
   private static final Buffer[] empty_buffer_array = new Buffer[0];
   private static final UUID[] empty_uuid_array = new UUID[0];
   private static final Numeric[] empty_numeric_array = new Numeric[0];
-  private static final boolean[] empty_boolean_array = new boolean[0];
-  private static final int[] empty_int_array = new int[0];
-  private static final short[] empty_short_array = new short[0];
-  private static final long[] empty_long_array = new long[0];
-  private static final float[] empty_float_array = new float[0];
-  private static final double[] empty_double_array = new double[0];
-  private static final char[] empty_char_array = new char[0];
+  private static final Boolean[] empty_boolean_array = new Boolean[0];
+  private static final Integer[] empty_integer_array = new Integer[0];
+  private static final Short[] empty_short_array = new Short[0];
+  private static final Long[] empty_long_array = new Long[0];
+  private static final Float[] empty_float_array = new Float[0];
+  private static final Double[] empty_double_array = new Double[0];
+  private static final Character[] empty_character_array = new Character[0];
   private static final LocalDate LOCAL_DATE_EPOCH = LocalDate.of(2000, 1, 1);
   private static final LocalDateTime LOCAL_DATE_TIME_EPOCH = LocalDateTime.of(2000, 1, 1, 0, 0, 0);
   private static final OffsetDateTime OFFSET_DATE_TIME_EPOCH = LocalDateTime.of(2000, 1, 1, 0, 0, 0).atOffset(ZoneOffset.UTC);
@@ -63,77 +62,22 @@ public class DataTypeCodec {
   // Sentinel used when an object is refused by the data type
   public static final Object REFUSED_SENTINEL = new Object();
 
-  private static final IntFunction<String[]> STRING_ARRAY_FACTORY = size -> {
-    if (size == 0) {
-      return empty_string_array;
-    } else {
-      return new String[size];
-    }
-  };
-
-  private static final IntFunction<LocalDate[]> LOCALDATE_ARRAY_FACTORY = size -> {
-    if (size == 0) {
-      return empty_local_date_array;
-    } else {
-      return new LocalDate[size];
-    }
-  };
-
-  private static final IntFunction<LocalTime[]> LOCALTIME_ARRAY_FACTORY = size -> {
-    if (size == 0) {
-      return empty_local_time_array;
-    } else {
-      return new LocalTime[size];
-    }
-  };
-
-  private static final IntFunction<OffsetTime[]> OFFSETTIME_ARRAY_FACTORY = size -> {
-    if (size == 0) {
-      return empty_offset_time_array;
-    } else {
-      return new OffsetTime[size];
-    }
-  };
-
-  private static final IntFunction<LocalDateTime[]> LOCALDATETIME_ARRAY_FACTORY = size -> {
-    if (size == 0) {
-      return empty_local_date_time_array;
-    } else {
-      return new LocalDateTime[size];
-    }
-  };
-
-  private static final IntFunction<OffsetDateTime[]> OFFSETDATETIME_ARRAY_FACTORY = size -> {
-    if (size == 0) {
-      return empty_offset_date_time_array;
-    } else {
-      return new OffsetDateTime[size];
-    }
-  };
-
-  private static final IntFunction<Buffer[]> BUFFER_ARRAY_FACTORY = size -> {
-    if (size == 0) {
-      return empty_buffer_array;
-    } else {
-      return new Buffer[size];
-    }
-  };
-
-  private static final IntFunction<UUID[]> UUID_ARRAY_FACTORY = size -> {
-    if (size == 0) {
-      return empty_uuid_array;
-    } else {
-      return new UUID[size];
-    }
-  };
-
-  private static final IntFunction<Numeric[]> NUMERIC_ARRAY_FACTORY = size -> {
-    if (size == 0) {
-      return empty_numeric_array;
-    } else {
-      return new Numeric[size];
-    }
-  };
+  private static final IntFunction<Boolean[]> BOOLEAN_ARRAY_FACTORY = size -> size == 0 ? empty_boolean_array : new Boolean[size];
+  private static final IntFunction<Short[]> SHORT_ARRAY_FACTORY = size -> size == 0 ? empty_short_array : new Short[size];
+  private static final IntFunction<Integer[]> INTEGER_ARRAY_FACTORY = size -> size == 0 ? empty_integer_array : new Integer[size];
+  private static final IntFunction<Long[]> LONG_ARRAY_FACTORY = size -> size == 0 ? empty_long_array : new Long[size];
+  private static final IntFunction<Float[]> FLOAT_ARRAY_FACTORY = size -> size == 0 ? empty_float_array : new Float[size];
+  private static final IntFunction<Double[]> DOUBLE_ARRAY_FACTORY = size -> size == 0 ? empty_double_array : new Double[size];
+  private static final IntFunction<Character[]> CHARACTER_ARRAY_FACTORY = size -> size == 0 ? empty_character_array : new Character[size];
+  private static final IntFunction<String[]> STRING_ARRAY_FACTORY = size -> size == 0 ? empty_string_array : new String[size];
+  private static final IntFunction<LocalDate[]> LOCALDATE_ARRAY_FACTORY = size -> size == 0 ? empty_local_date_array : new LocalDate[size];
+  private static final IntFunction<LocalTime[]> LOCALTIME_ARRAY_FACTORY = size -> size == 0 ? empty_local_time_array : new LocalTime[size];
+  private static final IntFunction<OffsetTime[]> OFFSETTIME_ARRAY_FACTORY = size -> size == 0 ? empty_offset_time_array : new OffsetTime[size];
+  private static final IntFunction<LocalDateTime[]> LOCALDATETIME_ARRAY_FACTORY = size -> size == 0 ? empty_local_date_time_array : new LocalDateTime[size];
+  private static final IntFunction<OffsetDateTime[]> OFFSETDATETIME_ARRAY_FACTORY = size -> size == 0 ? empty_offset_date_time_array : new OffsetDateTime[size];
+  private static final IntFunction<Buffer[]> BUFFER_ARRAY_FACTORY =size -> size == 0 ? empty_buffer_array : new Buffer[size];
+  private static final IntFunction<UUID[]> UUID_ARRAY_FACTORY = size -> size == 0 ? empty_uuid_array : new UUID[size];
+  private static final IntFunction<Numeric[]> NUMERIC_ARRAY_FACTORY = size -> size == 0 ? empty_numeric_array : new Numeric[size];
 
   public static void encodeText(DataType id, Object value, ByteBuf buff) {
     int index = buff.writerIndex();
@@ -163,43 +107,43 @@ public class DataTypeCodec {
         binaryEncodeBOOL((Boolean) value, buff);
         break;
       case BOOL_ARRAY:
-        binaryEncodeBOOL_ARRAY((boolean[]) value, buff);
+        binaryEncodeArray((Boolean[]) value, DataType.BOOL, buff);
         break;
       case INT2:
         binaryEncodeINT2((Short) value, buff);
         break;
       case INT2_ARRAY:
-        binaryEncodeINT2_ARRAY((short[]) value, buff);
+        binaryEncodeArray((Short[]) value, DataType.INT2, buff);
         break;
       case INT4:
         binaryEncodeINT4((Integer) value, buff);
         break;
       case INT4_ARRAY:
-        binaryEncodeINT4_ARRAY((int[]) value, buff);
+        binaryEncodeArray((Integer[]) value, DataType.INT4, buff);
         break;
       case INT8:
         binaryEncodeINT8((Long) value, buff);
         break;
       case INT8_ARRAY:
-        binaryEncodeINT8_ARRAY((long[]) value, buff);
+        binaryEncodeArray((Long[]) value, DataType.INT8, buff);
         break;
       case FLOAT4:
         binaryEncodeFLOAT4((Float) value, buff);
         break;
       case FLOAT4_ARRAY:
-        binaryEncodeFLOAT4_ARRAY((float[]) value, buff);
+        binaryEncodeArray((Float[]) value, DataType.FLOAT4, buff);
         break;
       case FLOAT8:
         binaryEncodeFLOAT8((Double) value, buff);
         break;
       case FLOAT8_ARRAY:
-        binaryEncodeFLOAT8_ARRAY((double[]) value, buff);
+        binaryEncodeArray((Double[]) value, DataType.FLOAT8, buff);
         break;
       case CHAR:
         binaryEncodeCHAR((Character) value, buff);
         break;
       case CHAR_ARRAY:
-        binaryEncodeCHAR_ARRAY((char[]) value, buff);
+        binaryEncodeArray((Character[]) value, DataType.CHAR, buff);
         break;
       case VARCHAR:
         binaryEncodeVARCHAR((String) value, buff);
@@ -285,31 +229,31 @@ public class DataTypeCodec {
       case BOOL:
         return binaryDecodeBOOL(len, buff);
       case BOOL_ARRAY:
-        return binaryDecodeBOOL_ARRAY(len, buff);
+        return binaryDecodeArray(BOOLEAN_ARRAY_FACTORY, DataType.BOOL, len, buff);
       case INT2:
         return binaryDecodeINT2(len, buff);
       case INT2_ARRAY:
-        return binaryDecodeINT2_ARRAY(len, buff);
+        return binaryDecodeArray(SHORT_ARRAY_FACTORY, DataType.INT2, len, buff);
       case INT4:
         return binaryDecodeINT4(len, buff);
       case INT4_ARRAY:
-        return binaryDecodeINT4_ARRAY(len, buff);
+        return binaryDecodeArray(INTEGER_ARRAY_FACTORY, DataType.INT4, len, buff);
       case INT8:
         return binaryDecodeINT8(len, buff);
       case INT8_ARRAY:
-        return binaryDecodeINT8_ARRAY(len, buff);
+        return binaryDecodeArray(LONG_ARRAY_FACTORY, DataType.INT8, len, buff);
       case FLOAT4:
         return binaryDecodeFLOAT4(len, buff);
       case FLOAT4_ARRAY:
-        return binaryDecodeFLOAT4_ARRAY(len, buff);
+        return binaryDecodeArray(FLOAT_ARRAY_FACTORY, DataType.FLOAT4, len, buff);
       case FLOAT8:
         return binaryDecodeFLOAT8(len, buff);
       case FLOAT8_ARRAY:
-        return binaryDecodeFLOAT8_ARRAY(len, buff);
+        return binaryDecodeArray(DOUBLE_ARRAY_FACTORY, DataType.FLOAT8, len, buff);
       case CHAR:
         return binaryDecodeCHAR(len, buff);
       case CHAR_ARRAY:
-        return binaryDecodeCHAR_ARRAY(len, buff);
+        return binaryDecodeArray(CHARACTER_ARRAY_FACTORY, DataType.CHAR, len, buff);
       case VARCHAR:
         return binaryDecodeVARCHAR(len, buff);
       case VARCHAR_ARRAY:
@@ -503,36 +447,6 @@ public class DataTypeCodec {
     }
   }
 
-  private static void binaryEncodeBOOL_ARRAY(boolean[] values, ByteBuf buff) {
-    int startIndex = buff.writerIndex();//Mark for later to insert the length
-    buff.writeInt(0);//Write 0 as placeholder
-    buff.writeInt(1);//write the dimension, always 1 because we only accept 1 dimensional arrays
-    buff.writeInt(0);//Write the offset to skip the bitmap, always 0 because we dont write bitmaps
-    buff.writeInt(DataType.BOOL.id);//Write the oid
-    buff.writeInt(values.length);//Write the length of the array
-    buff.writeInt(1);//Write the lower boundry, seems to always be 1
-    for (boolean value : values) {
-      binaryEncodeBOOL(value, buff);//Encode the element with the element encoder
-    }
-    buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);//Set the length of the header plus body minus the length of the length attribute
-  }
-
-  private static boolean[] binaryDecodeBOOL_ARRAY(int len, ByteBuf buff) {
-    if (len == 12) {
-      return empty_boolean_array;
-    }
-    buff.skipBytes(4);//Skip dimensions cause its always 1
-    int offset = buff.readInt();//Read the offset, used to skip the bitmap
-    buff.skipBytes(4);//Skip the oid cause we know what type it is
-    int length = buff.readInt(); //Read the length to create a fixed length array
-    boolean[] array = new boolean[length];//Create the array
-    buff.skipBytes(offset+4);//Skip, if exists, the bitmap and the lower boundry
-    for (int i = 0; i < array.length; i++) {
-      array[i] = binaryDecodeBOOL(buff.readInt(), buff); //Decode the elements with the element decoder
-    }
-    return array;
-  }
-
   private static Short textDecodeINT2(int len, ByteBuf buff) {
     return (short) DataTypeCodec.decodeDecStringToLong(len, buff);
   }
@@ -544,36 +458,6 @@ public class DataTypeCodec {
   private static void binaryEncodeINT2(Short value, ByteBuf buff) {
     buff.writeInt(2);
     buff.writeShort(value);
-  }
-
-  private static short[] binaryDecodeINT2_ARRAY(int len, ByteBuf buff) {
-    if (len == 12) {
-      return empty_short_array;
-    }
-    buff.skipBytes(4);
-    int offset = buff.readInt();
-    buff.skipBytes(4);
-    int length = buff.readInt();
-    short[] array = new short[length];
-    buff.skipBytes(offset+4);
-    for (int i = 0; i < array.length; i++) {
-      array[i] = binaryDecodeINT2(buff.readInt(), buff);
-    }
-    return array;
-  }
-
-  private static void binaryEncodeINT2_ARRAY(short[] values, ByteBuf buff) {
-    int startIndex = buff.writerIndex();
-    buff.writeInt(0);
-    buff.writeInt(1);
-    buff.writeInt(0);
-    buff.writeInt(DataType.INT2.id);
-    buff.writeInt(values.length);
-    buff.writeInt(1);
-    for (short value : values) {
-      binaryEncodeINT2(value, buff);
-    }
-    buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
   }
 
   private static Integer textDecodeINT4(int len, ByteBuf buff) {
@@ -589,36 +473,6 @@ public class DataTypeCodec {
     buff.writeInt(value);
   }
 
-  private static int[] binaryDecodeINT4_ARRAY(int len, ByteBuf buff) {
-    if (len == 12) {
-      return empty_int_array;
-    }
-    buff.skipBytes(4);
-    int offset = buff.readInt();
-    buff.skipBytes(4);
-    int length = buff.readInt();
-    int[] array = new int[length];
-    buff.skipBytes(offset+4);
-    for (int i = 0; i < array.length; i++) {
-      array[i] = binaryDecodeINT4(buff.readInt(), buff);
-    }
-    return array;
-  }
-
-  private static void binaryEncodeINT4_ARRAY(int[] values, ByteBuf buff) {
-    int startIndex = buff.writerIndex();
-    buff.writeInt(0);
-    buff.writeInt(1);
-    buff.writeInt(0);
-    buff.writeInt(DataType.INT4.id);
-    buff.writeInt(values.length);
-    buff.writeInt(1);
-    for (Integer value : values) {
-      binaryEncodeINT4(value, buff);
-    }
-    buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
-  }
-
   private static Long textDecodeINT8(int len, ByteBuf buff) {
     return decodeDecStringToLong(len, buff);
   }
@@ -630,36 +484,6 @@ public class DataTypeCodec {
   private static void binaryEncodeINT8(Long value, ByteBuf buff) {
     buff.writeInt(8);
     buff.writeLong(value);
-  }
-
-  private static long[] binaryDecodeINT8_ARRAY(int len, ByteBuf buff) {
-    if (len == 12) {
-      return empty_long_array;
-    }
-    buff.skipBytes(4);
-    int offset = buff.readInt();
-    buff.skipBytes(4);
-    int length = buff.readInt();
-    long[] array = new long[length];
-    buff.skipBytes(offset+4);
-    for (int i = 0; i < array.length; i++) {
-      array[i] = binaryDecodeINT8(buff.readInt(), buff);
-    }
-    return array;
-  }
-
-  private static void binaryEncodeINT8_ARRAY(long[] values, ByteBuf buff) {
-    int startIndex = buff.writerIndex();
-    buff.writeInt(0);
-    buff.writeInt(1);
-    buff.writeInt(0);
-    buff.writeInt(DataType.INT8.id);
-    buff.writeInt(values.length);
-    buff.writeInt(1);
-    for (long value : values) {
-      binaryEncodeINT8(value, buff);
-    }
-    buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
   }
 
   private static Float textDecodeFLOAT4(int len, ByteBuf buff) {
@@ -677,36 +501,6 @@ public class DataTypeCodec {
     buff.writeFloat(value);
   }
 
-  private static float[] binaryDecodeFLOAT4_ARRAY(int len, ByteBuf buff) {
-    if (len == 12) {
-      return empty_float_array;
-    }
-    buff.skipBytes(4);
-    int offset = buff.readInt();
-    buff.skipBytes(4);
-    int length = buff.readInt();
-    float[] array = new float[length];
-    buff.skipBytes(offset+4);
-    for (int i = 0; i < array.length; i++) {
-      array[i] = binaryDecodeFLOAT4(buff.readInt(), buff);
-    }
-    return array;
-  }
-
-  private static void binaryEncodeFLOAT4_ARRAY(float[] values, ByteBuf buff) {
-    int startIndex = buff.writerIndex();
-    buff.writeInt(0);
-    buff.writeInt(1);
-    buff.writeInt(0);
-    buff.writeInt(DataType.FLOAT4.id);
-    buff.writeInt(values.length);
-    buff.writeInt(1);
-    for (float value : values) {
-      binaryEncodeFLOAT4(value, buff);
-    }
-    buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
-  }
-
   private static void binaryEncodeFLOAT8(Double value, ByteBuf buff) {
     buff.writeInt(8);
     buff.writeDouble(value);
@@ -720,36 +514,6 @@ public class DataTypeCodec {
     // Todo optimize that
     CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
     return Double.parseDouble(cs.toString());
-  }
-
-  private static double[] binaryDecodeFLOAT8_ARRAY(int len, ByteBuf buff) {
-    if (len == 12) {
-      return empty_double_array;
-    }
-    buff.skipBytes(4);
-    int offset = buff.readInt();
-    buff.skipBytes(4);
-    int length = buff.readInt();
-    double[] array = new double[length];
-    buff.skipBytes(offset+4);
-    for (int i = 0; i < array.length; i++) {
-      array[i] = binaryDecodeFLOAT8(buff.readInt(), buff);
-    }
-    return array;
-  }
-
-  private static void binaryEncodeFLOAT8_ARRAY(double[] values, ByteBuf buff) {
-    int startIndex = buff.writerIndex();
-    buff.writeInt(0);
-    buff.writeInt(1);
-    buff.writeInt(0);
-    buff.writeInt(DataType.FLOAT8.id);
-    buff.writeInt(values.length);
-    buff.writeInt(1);
-    for (double value : values) {
-      binaryEncodeFLOAT8(value, buff);
-    }
-    buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
   }
 
   private static Number textDecodeNUMERIC(int len, ByteBuf buff) {
@@ -780,36 +544,6 @@ public class DataTypeCodec {
 
   private static Character binaryDecodeCHAR(int len, ByteBuf buff) {
     return (char)buff.readByte();
-  }
-
-  private static char[] binaryDecodeCHAR_ARRAY(int len, ByteBuf buff) {
-    if(len == 12){
-      return empty_char_array;
-    }
-    buff.skipBytes(4);
-    int offset = buff.readInt();
-    buff.skipBytes(4);
-    int length = buff.readInt();
-    char[] array = new char[length];
-    buff.skipBytes(offset+4);
-    for (int i = 0; i < array.length; i++) {
-      array[i] = binaryDecodeCHAR(buff.readInt(), buff);
-    }
-    return array;
-  }
-
-  private static void binaryEncodeCHAR_ARRAY(char[] values, ByteBuf buff) {
-    int startIndex = buff.writerIndex();
-    buff.writeInt(0);
-    buff.writeInt(1);
-    buff.writeInt(0);
-    buff.writeInt(DataType.CHAR.id);
-    buff.writeInt(values.length);
-    buff.writeInt(1);
-    for (Character value : values) {
-      binaryEncodeCHAR(value, buff);
-    }
-    buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
   }
 
   private static void binaryEncodeVARCHAR(String value, ByteBuf buff) {

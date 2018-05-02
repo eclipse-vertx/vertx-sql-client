@@ -62,7 +62,7 @@ class ColumnChecker {
     tupleMethods.add(Tuple::getShortArray);
     rowMethods.add(Row::getShortArray);
     tupleMethods.add(Tuple::getIntegerArray);
-    rowMethods.add(Row::getIntArray);
+    rowMethods.add(Row::getInteterArray);
     tupleMethods.add(Tuple::getLongArray);
     rowMethods.add(Row::getLongArray);
     tupleMethods.add(Tuple::getFloatArray);
@@ -126,9 +126,9 @@ class ColumnChecker {
     blackList.add(byNameMeth);
     expects.add(row -> {
       Object[] actual = toObjectArray(byIndexGetter.apply(row, index));
-      assertArrayEquals("Expected that " + byIndexMeth + " returns " + expected + " instead of " + actual, actual, expected);
+      assertArrayEquals("Expected that " + byIndexMeth + " returns " + Arrays.toString(expected) + " instead of " + Arrays.toString(actual), actual, expected);
       actual = toObjectArray(byNameGetter.apply(row, name));
-      assertArrayEquals("Expected that " + byNameMeth + " returns " + expected + " instead of " + actual, actual, expected);
+      assertArrayEquals("Expected that " + byNameMeth + " returns " + Arrays.toString(expected) + " instead of " + Arrays.toString(actual), actual, expected);
 
     });
     return this;

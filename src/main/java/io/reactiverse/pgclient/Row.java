@@ -198,61 +198,61 @@ public interface Row extends Tuple {
   Numeric getNumeric(String name);
 
   /**
-   * Get {@link Integer} value at {@code pos}.
+   * Get an array of {@link Integer} value at {@code pos}.
    *
    * @param name the column
    * @return the value or {@code null}
    */
   @GenIgnore
-  int[] getIntArray(String name);
+  Integer[] getInteterArray(String name);
 
   /**
-   * Get {@link Boolean} value at {@code pos}.
+   * Get an array of {@link Boolean} value at {@code pos}.
    *
    * @param name the column
    * @return the value or {@code null}
    */
   @GenIgnore
-  boolean[] getBooleanArray(String name);
+  Boolean[] getBooleanArray(String name);
 
   /**
-   * Get {@link Short} value at {@code pos}.
+   * Get an array of {@link Short} value at {@code pos}.
    *
    * @param name the column
    * @return the value or {@code null}
    */
   @GenIgnore
-  short[] getShortArray(String name);
+  Short[] getShortArray(String name);
 
   /**
-   * Get {@link Long} value at {@code pos}.
+   * Get an array of {@link Long} value at {@code pos}.
    *
    * @param name the column
    * @return the value or {@code null}
    */
   @GenIgnore
-  long[] getLongArray(String name);
+  Long[] getLongArray(String name);
 
   /**
-   * Get {@link Float} value at {@code pos}.
+   * Get an array of {@link Float} value at {@code pos}.
    *
    * @param name the column
    * @return the value or {@code null}
    */
   @GenIgnore
-  float[] getFloatArray(String name);
+  Float[] getFloatArray(String name);
 
   /**
-   * Get {@link Double} value at {@code pos}.
+   * Get an array of {@link Double} value at {@code pos}.
    *
    * @param name the column
    * @return the value or {@code null}
    */
   @GenIgnore
-  double[] getDoubleArray(String name);
+  Double[] getDoubleArray(String name);
 
   /**
-   * Get {@link String} value at {@code pos}.
+   * Get an array of {@link String} value at {@code pos}.
    *
    * @param name the column
    * @return the value or {@code null}
@@ -261,7 +261,7 @@ public interface Row extends Tuple {
   String[] getStringArray(String name);
 
   /**
-   * Get {@link LocalDate} value at {@code pos}.
+   * Get an array of {@link LocalDate} value at {@code pos}.
    *
    * @param name the column
    * @return the value or {@code null}
@@ -270,7 +270,7 @@ public interface Row extends Tuple {
   LocalDate[] getLocalDateArray(String name);
 
   /**
-   * Get {@link LocalTime} value at {@code pos}.
+   * Get an array of {@link LocalTime} value at {@code pos}.
    *
    * @param name the column
    * @return the value or {@code null}
@@ -279,7 +279,7 @@ public interface Row extends Tuple {
   LocalTime[] getLocalTimeArray(String name);
 
   /**
-   * Get {@link OffsetTime} value at {@code pos}.
+   * Get an array of {@link OffsetTime} value at {@code pos}.
    *
    * @param name the column
    * @return the value or {@code null}
@@ -288,7 +288,7 @@ public interface Row extends Tuple {
   OffsetTime[] getOffsetTimeArray(String name);
 
   /**
-   * Get {@link LocalDateTime} value at {@code pos}.
+   * Get an array of {@link LocalDateTime} value at {@code pos}.
    *
    * @param name the column
    * @return the value or {@code null}
@@ -297,7 +297,7 @@ public interface Row extends Tuple {
   LocalDateTime[] getLocalDateTimeArray(String name);
 
   /**
-   * Get {@link OffsetDateTime} value at {@code pos}.
+   * Get an array of {@link OffsetDateTime} value at {@code pos}.
    *
    * @param name the column
    * @return the value or {@code null}
@@ -306,7 +306,7 @@ public interface Row extends Tuple {
   OffsetDateTime[] getOffsetDateTimeArray(String name);
 
   /**
-   * Get {@link Buffer} value at {@code pos}.
+   * Get an array of {@link Buffer} value at {@code pos}.
    *
    * @param name the column
    * @return the value or {@code null}
@@ -315,7 +315,7 @@ public interface Row extends Tuple {
   Buffer[] getBufferArray(String name);
 
   /**
-   * Get {@link UUID} value at {@code pos}.
+   * Get an array of {@link UUID} value at {@code pos}.
    *
    * @param name the column
    * @return the value or {@code null}
@@ -324,7 +324,7 @@ public interface Row extends Tuple {
   UUID[] getUUIDArray(String name);
 
   /**
-   * Get {@link Numeric} value at {@code pos}.
+   * Get an array of {@link Numeric} value at {@code pos}.
    *
    * @param name the column
    * @return the value or {@code null}
@@ -333,12 +333,12 @@ public interface Row extends Tuple {
   Numeric[] getNumericArray(String name);
 
   /**
-   * Get {@link Character} value at {@code pos}.
+   * Get an array of {@link Character} value at {@code pos}.
    *
    * @param name the column
    * @return the value or {@code null}
    */
   @GenIgnore
-  char[] getCharacterArray(String name);
+  Character[] getCharacterArray(String name);
 
 }

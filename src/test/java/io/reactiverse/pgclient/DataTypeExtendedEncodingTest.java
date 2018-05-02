@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.function.BiFunction;
-import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -805,6 +804,41 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
       }, Tuple::getJson);
   }
 
+  @Test
+  public void testBooleanArray(TestContext ctx) {
+    testGeneric(ctx,
+      "SELECT c FROM (VALUES ($1 :: BOOL[])) AS t (c)",
+      new Boolean[][] { new Boolean[]{ true, false } }, Tuple::getBooleanArray);
+  }
+
+  @Test
+  public void testShortArray(TestContext ctx) {
+    testGeneric(ctx,
+      "SELECT c FROM (VALUES ($1 :: INT2[])) AS t (c)",
+      new Short[][] { new Short[]{ 0, -10, Short.MAX_VALUE } }, Tuple::getShortArray);
+  }
+
+  @Test
+  public void testIntegerArray(TestContext ctx) {
+    testGeneric(ctx,
+      "SELECT c FROM (VALUES ($1 :: INT4[])) AS t (c)",
+      new Integer[][] { new Integer[]{ 0, -10, Integer.MAX_VALUE } }, Tuple::getIntegerArray);
+  }
+
+  @Test
+  public void testLongArray(TestContext ctx) {
+    testGeneric(ctx,
+      "SELECT c FROM (VALUES ($1 :: INT8[])) AS t (c)",
+      new Long[][] { new Long[]{ 0L, -10L, Long.MAX_VALUE } }, Tuple::getLongArray);
+  }
+
+  @Test
+  public void testFloatArray(TestContext ctx) {
+    testGeneric(ctx,
+      "SELECT c FROM (VALUES ($1 :: FLOAT4[])) AS t (c)",
+      new Float[][] { new Float[]{ 0f, -10f, Float.MAX_VALUE } }, Tuple::getFloatArray);
+  }
+
   private static <T> void compare(TestContext ctx, T expected, T actual) {
     if (expected != null && expected.getClass().isArray()) {
       ctx.assertNotNull(actual);
@@ -1250,7 +1284,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Boolean\" = $1  WHERE \"id\" = $2 RETURNING \"Boolean\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
-              .addBooleanArray(new boolean[]{Boolean.FALSE, Boolean.TRUE})
+              .addBooleanArray(new Boolean[]{Boolean.FALSE, Boolean.TRUE})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Boolean")
@@ -1288,7 +1322,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Short\" = $1  WHERE \"id\" = $2 RETURNING \"Short\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
-              .addShortArray(new short[]{2,3,4})
+              .addShortArray(new Short[]{2,3,4})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Short")
@@ -1311,7 +1345,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Integer")
               .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new int[]{2}))
-              .returns(Tuple::getIntegerArray, Row::getIntArray, ColumnChecker.toObjectArray(new int[]{2}))
+              .returns(Tuple::getIntegerArray, Row::getInteterArray, ColumnChecker.toObjectArray(new int[]{2}))
               .forRow(result.iterator().next());
             async.complete();
           }));
@@ -1326,12 +1360,12 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Integer\" = $1  WHERE \"id\" = $2 RETURNING \"Integer\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
-              .addIntArray(new int[]{3,4,5,6})
+              .addIntegerArray(new Integer[]{3,4,5,6})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Integer")
                 .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new int[]{3,4,5,6}))
-                .returns(Tuple::getIntegerArray, Row::getIntArray, ColumnChecker.toObjectArray(new int[]{3,4,5,6}))
+                .returns(Tuple::getIntegerArray, Row::getInteterArray, ColumnChecker.toObjectArray(new int[]{3,4,5,6}))
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -1348,8 +1382,8 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
           p.execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Long")
-              .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new long[]{3}))
-              .returns(Tuple::getLongArray, Row::getLongArray, ColumnChecker.toObjectArray(new long[]{3}))
+              .returns(Tuple::getValue, Row::getValue, new Long[]{3L})
+              .returns(Tuple::getLongArray, Row::getLongArray, new Long[]{3L})
               .forRow(result.iterator().next());
             async.complete();
           }));
@@ -1364,7 +1398,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Long\" = $1  WHERE \"id\" = $2 RETURNING \"Long\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
-              .addLongArray(new long[]{4,5,6,7,8})
+              .addLongArray(new Long[]{4L,5L,6L,7L,8L})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Long")
@@ -1402,7 +1436,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Float\" = $1  WHERE \"id\" = $2 RETURNING \"Float\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
-              .addFloatArray(new float[]{5.2f,5.3f,5.4f})
+              .addFloatArray(new Float[]{5.2f,5.3f,5.4f})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Float")
@@ -1440,7 +1474,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Double\" = $1  WHERE \"id\" = $2 RETURNING \"Double\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
-              .addDoubleArray(new double[]{6.3})
+              .addDoubleArray(new Double[]{6.3})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Double")
@@ -1460,7 +1494,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Double\" = $1  WHERE \"id\" = $2 RETURNING \"Double\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
-              .addDoubleArray(new double[]{})
+              .addDoubleArray(new Double[]{})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Double")

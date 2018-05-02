@@ -124,60 +124,60 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
-  public int[] getIntegerArray(int pos) {
+  public Integer[] getIntegerArray(int pos) {
     Object val = get(pos);
-    if (val instanceof int[]) {
-      return (int[]) val;
+    if (val instanceof Integer[]) {
+      return (Integer[]) val;
     } else {
       return null;
     }
   }
 
   @Override
-  public boolean[] getBooleanArray(int pos) {
+  public Boolean[] getBooleanArray(int pos) {
     Object val = get(pos);
-    if (val instanceof boolean[]) {
-      return (boolean[]) val;
+    if (val instanceof Boolean[]) {
+      return (Boolean[]) val;
     } else {
       return null;
     }
   }
 
   @Override
-  public short[] getShortArray(int pos) {
+  public Short[] getShortArray(int pos) {
     Object val = get(pos);
-    if (val instanceof short[]) {
-      return (short[]) val;
+    if (val instanceof Short[]) {
+      return (Short[]) val;
     } else {
       return null;
     }
   }
 
   @Override
-  public long[] getLongArray(int pos) {
+  public Long[] getLongArray(int pos) {
     Object val = get(pos);
-    if (val instanceof long[]) {
-      return (long[]) val;
+    if (val instanceof Long[]) {
+      return (Long[]) val;
     } else {
       return null;
     }
   }
 
   @Override
-  public float[] getFloatArray(int pos) {
+  public Float[] getFloatArray(int pos) {
     Object val = get(pos);
-    if (val instanceof float[]) {
-      return (float[]) val;
+    if (val instanceof Float[]) {
+      return (Float[]) val;
     } else {
       return null;
     }
   }
 
   @Override
-  public double[] getDoubleArray(int pos) {
+  public Double[] getDoubleArray(int pos) {
     Object val = get(pos);
-    if (val instanceof double[]) {
-      return (double[]) val;
+    if (val instanceof Double[]) {
+      return (Double[]) val;
     } else {
       return null;
     }
@@ -373,10 +373,10 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
-  public char[] getCharacterArray(int pos) {
+  public Character[] getCharacterArray(int pos) {
     Object val = get(pos);
-    if (val instanceof char[]) {
-      return (char[]) val;
+    if (val instanceof Character[]) {
+      return (Character[]) val;
     }
     return null;
   }
@@ -401,13 +401,13 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
       || value instanceof OffsetDateTime
       || value instanceof UUID
       || value instanceof Json
-      || value instanceof boolean[]
-      || value instanceof short[]
-      || value instanceof int[]
-      || value instanceof long[]
-      || value instanceof float[]
-      || value instanceof double[]
-      || value instanceof char[]
+      || value instanceof Boolean[]
+      || value instanceof Short[]
+      || value instanceof Integer[]
+      || value instanceof Long[]
+      || value instanceof Float[]
+      || value instanceof Double[]
+      || value instanceof Character[]
       || value instanceof String[]
       || value instanceof LocalDate[]
       || value instanceof LocalTime[]
@@ -539,37 +539,37 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
-  public Tuple addIntArray(int[] value) {
+  public Tuple addIntegerArray(Integer[] value) {
     add(value);
     return this;
   }
 
   @Override
-  public Tuple addBooleanArray(boolean[] value) {
+  public Tuple addBooleanArray(Boolean[] value) {
     add(value);
     return this;
   }
 
   @Override
-  public Tuple addShortArray(short[] value) {
+  public Tuple addShortArray(Short[] value) {
     add(value);
     return this;
   }
 
   @Override
-  public Tuple addLongArray(long[] value) {
+  public Tuple addLongArray(Long[] value) {
     add(value);
     return this;
   }
 
   @Override
-  public Tuple addFloatArray(float[] value) {
+  public Tuple addFloatArray(Float[] value) {
     add(value);
     return this;
   }
 
   @Override
-  public Tuple addDoubleArray(double[] value) {
+  public Tuple addDoubleArray(Double[] value) {
     add(value);
     return this;
   }
