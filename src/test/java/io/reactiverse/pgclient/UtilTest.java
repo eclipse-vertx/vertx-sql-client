@@ -18,6 +18,7 @@ package io.reactiverse.pgclient;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.reactiverse.pgclient.impl.codec.util.UTF8StringEndDetector;
 import io.reactiverse.pgclient.impl.codec.util.Util;
 import io.vertx.core.buffer.Buffer;
 import org.junit.Test;
@@ -48,4 +49,23 @@ public class UtilTest {
     String hex = buff.toString(StandardCharsets.UTF_8);
     assertEquals(expected, hex);
   }
+
+  @Test
+  public void testUTF8StringEndDetector() throws Exception {
+    assertSeparator("", -1);
+    assertSeparator("\"", -1);
+    assertSeparator("\"\"", 1);
+    assertSeparator("\"a\"", 2);
+    assertSeparator("\"€\"", 4);
+    assertSeparator("\"\\\"\"", 3);
+  }
+
+  private void assertSeparator(String s, int expected) throws Exception {
+    ByteBuf buf = Unpooled.buffer();
+    buf.writeCharSequence(s, StandardCharsets.UTF_8);
+    UTF8StringEndDetector processor = new UTF8StringEndDetector();
+    int actual = buf.forEachByte(processor);
+    assertEquals(expected, actual);
+  }
+
 }

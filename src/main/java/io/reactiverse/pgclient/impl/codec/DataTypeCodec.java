@@ -19,10 +19,12 @@ package io.reactiverse.pgclient.impl.codec;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.reactiverse.pgclient.Json;
 import io.reactiverse.pgclient.Numeric;
 import io.reactiverse.pgclient.impl.codec.formatter.DateTimeFormatter;
 import io.reactiverse.pgclient.impl.codec.formatter.TimeFormatter;
+import io.reactiverse.pgclient.impl.codec.util.UTF8StringEndDetector;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -322,84 +324,88 @@ public class DataTypeCodec {
     switch (id) {
       case BOOL:
         return textDecodeBOOL(len, buff);
-      // case BOOL_ARRAY:
-      //   return textDecodeBOOL_ARRAY(len, buff);
+      case BOOL_ARRAY:
+        return textDecodeArray(BOOLEAN_ARRAY_FACTORY, DataType.BOOL, len, buff);
       case INT2:
         return textDecodeINT2(len, buff);
-      // case INT2_ARRAY:
-      //   return textDecodeINT2_ARRAY(len, buff);
+      case INT2_ARRAY:
+        return textDecodeArray(SHORT_ARRAY_FACTORY, DataType.INT2, len, buff);
       case INT4:
         return textDecodeINT4(len, buff);
-      // case INT4_ARRAY:
-      //   return textDecodeINT4_ARRAY(len, buff);
+      case INT4_ARRAY:
+        return textDecodeArray(INTEGER_ARRAY_FACTORY, DataType.INT4, len, buff);
       case INT8:
         return textDecodeINT8(len, buff);
-      // case INT8_ARRAY:
-      //   return textDecodeINT8_ARRAY(len, buff);
+      case INT8_ARRAY:
+        return textDecodeArray(LONG_ARRAY_FACTORY, DataType.INT8, len, buff);
       case FLOAT4:
         return textDecodeFLOAT4(len, buff);
-      // case FLOAT4_ARRAY:
-      //   return textDecodeFLOAT4_ARRAY(len, buff);
+      case FLOAT4_ARRAY:
+        return textDecodeArray(FLOAT_ARRAY_FACTORY, DataType.FLOAT4, len, buff);
       case FLOAT8:
         return textDecodeFLOAT8(len, buff);
-      // case FLOAT8_ARRAY:
-      //   return textDecodeFLOAT8_ARRAY(len, buff);
+      case FLOAT8_ARRAY:
+        return textDecodeArray(DOUBLE_ARRAY_FACTORY, DataType.FLOAT8, len, buff);
       case CHAR:
         return textDecodeCHAR(len, buff);
       // case CHAR_ARRAY:
       //   return textDecodeCHAR_ARRAY(len, buff);
       case VARCHAR:
         return textDecodeVARCHAR(len, buff);
-      // case VARCHAR_ARRAY:
-      //   return binaryDecodeArray(STRING_ARRAY_FACTORY, DataTypeConstants.VARCHAR, len, buff);
+      case VARCHAR_ARRAY:
+        return textDecodeArray(STRING_ARRAY_FACTORY, DataType.VARCHAR, len, buff);
       case BPCHAR:
         return textDecodeBPCHAR(len, buff);
-      // case BPCHAR_ARRAY:
-      //   return binaryDecodeArray(STRING_ARRAY_FACTORY, DataTypeConstants.BPCHAR, len, buff);
+      case BPCHAR_ARRAY:
+        return textDecodeArray(STRING_ARRAY_FACTORY, DataType.BPCHAR, len, buff);
       case TEXT:
         return textdecodeTEXT(len, buff);
-      // case TEXT_ARRAY:
-      //   return binaryDecodeArray(STRING_ARRAY_FACTORY, DataTypeConstants.TEXT, len, buff);
+      case TEXT_ARRAY:
+        return textDecodeArray(STRING_ARRAY_FACTORY, DataType.TEXT, len, buff);
       case NAME:
         return textDecodeNAME(len, buff);
-      // case NAME_ARRAY:
-      //   return binaryDecodeArray(STRING_ARRAY_FACTORY, DataTypeConstants.NAME, len, buff);
+      case NAME_ARRAY:
+        return textDecodeArray(STRING_ARRAY_FACTORY, DataType.NAME, len, buff);
       case DATE:
         return textDecodeDATE(len, buff);
-      // case DATE_ARRAY:
-      //   return binaryDecodeArray(LOCALDATE_ARRAY_FACTORY, DataTypeConstants.DATE, len, buff);
+      case DATE_ARRAY:
+        return textDecodeArray(LOCALDATE_ARRAY_FACTORY, DataType.DATE, len, buff);
       case TIME:
         return textDecodeTIME(len, buff);
-      // case TIME_ARRAY:
-      //   return binaryDecodeArray(LOCALTIME_ARRAY_FACTORY, DataTypeConstants.TIME, len, buff);
+      case TIME_ARRAY:
+        return textDecodeArray(LOCALTIME_ARRAY_FACTORY, DataType.TIME, len, buff);
       case TIMETZ:
         return textDecodeTIMETZ(len, buff);
-      // case TIMETZ_ARRAY:
-      //   return binaryDecodeArray(OFFSETTIME_ARRAY_FACTORY, DataTypeConstants.TIMETZ, len, buff);
+      case TIMETZ_ARRAY:
+        return textDecodeArray(OFFSETTIME_ARRAY_FACTORY, DataType.TIMETZ, len, buff);
       case TIMESTAMP:
         return textDecodeTIMESTAMP(len, buff);
-      // case TIMESTAMP_ARRAY:
-      //   return binaryDecodeArray(LOCALDATETIME_ARRAY_FACTORY, DataTypeConstants.TIMESTAMP, len, buff);
+      case TIMESTAMP_ARRAY:
+        return textDecodeArray(LOCALDATETIME_ARRAY_FACTORY, DataType.TIMESTAMP, len, buff);
       case TIMESTAMPTZ:
         return textDecodeTIMESTAMPTZ(len, buff);
-      // case TIMESTAMPTZ_ARRAY:
-      //   return binaryDecodeArray(OFFSETDATETIME_ARRAY_FACTORY, DataTypeConstants.TIMESTAMPTZ, len, buff);
+      case TIMESTAMPTZ_ARRAY:
+        return textDecodeArray(OFFSETDATETIME_ARRAY_FACTORY, DataType.TIMESTAMPTZ, len, buff);
       case BYTEA:
         return textDecodeBYTEA(len, buff);
-      // case BYTEA_ARRAY:
-      //   return binaryDecodeArray(BUFFER_ARRAY_FACTORY, DataTypeConstants.BYTEA, len, buff);
+      case BYTEA_ARRAY:
+        return textDecodeArray(BUFFER_ARRAY_FACTORY, DataType.BYTEA, len, buff);
       case UUID:
         return textDecodeUUID(len, buff);
-      // case UUID_ARRAY:
-      //   return binaryDecodeArray(UUID_ARRAY_FACTORY, DataTypeConstants.UUID, len, buff);
+      case UUID_ARRAY:
+        return textDecodeArray(UUID_ARRAY_FACTORY, DataType.UUID, len, buff);
       case NUMERIC:
         return textDecodeNUMERIC(len, buff);
       case NUMERIC_ARRAY:
         return textDecodeArray(NUMERIC_ARRAY_FACTORY, DataType.NUMERIC, len, buff);
       case JSON:
         return textDecodeJSON(len, buff);
+      case JSON_ARRAY:
+        return textDecodeArray(JSON_ARRAY_FACTORY, DataType.JSON, len, buff);
       case JSONB:
          return textDecodeJSONB(len, buff);
+      case JSONB_ARRAY:
+        return textDecodeArray(JSON_ARRAY_FACTORY, DataType.JSONB, len, buff);
       default:
         System.out.println("Data type " + id + " does not support text decoding");
         return defaultDecodeText(len, buff);
@@ -885,7 +891,15 @@ public class DataTypeCodec {
     int from = buff.readerIndex();
     int to = buff.writerIndex() - 1;
     while (true) {
-      int idx = buff.indexOf(from, to, (byte) ',');
+      // Escaped content ?
+      boolean escaped = buff.getByte(from) == '"';
+      int idx;
+      if (escaped) {
+        idx = buff.forEachByte(from, to - from, new UTF8StringEndDetector());
+        idx = buff.indexOf(idx, to, (byte) ','); // SEEE iF WE CAN GET RID oF IT
+      } else {
+        idx = buff.indexOf(from, to, (byte) ',');
+      }
       if (idx == -1) {
         break;
       } else {
@@ -900,16 +914,30 @@ public class DataTypeCodec {
   }
 
   private static <T> T textDecodeArrayElement(DataType type, int len, ByteBuf buff) {
-    int curr = buff.readerIndex();
-    T o;
+    final int curr = buff.readerIndex();
     if (len == 4
       && Character.toUpperCase(buff.getByte(curr)) == 'N'
-      && Character.toUpperCase(buff.getByte(++curr)) == 'U'
-      && Character.toUpperCase(buff.getByte(++curr)) == 'L'
-      && Character.toUpperCase(buff.getByte(++curr)) == 'L'
+      && Character.toUpperCase(buff.getByte(curr + 1)) == 'U'
+      && Character.toUpperCase(buff.getByte(curr + 2)) == 'L'
+      && Character.toUpperCase(buff.getByte(curr + 3)) == 'L'
       ) {
       return null;
     } else {
+      boolean escaped = buff.getByte(curr) == '"';
+      if (escaped) {
+        // Some escaping - improve that later...
+        String s = buff.toString(curr + 1, len - 2, StandardCharsets.UTF_8);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0;i < s.length();i++) {
+          char c = s.charAt(i);
+          if (c == '\\') {
+            c = s.charAt(++i);
+          }
+          sb.append(c);
+        }
+        buff = Unpooled.copiedBuffer(sb, StandardCharsets.UTF_8);
+        len = buff.readableBytes();
+      }
       return (T) decodeText(type, len, buff);
     }
   }

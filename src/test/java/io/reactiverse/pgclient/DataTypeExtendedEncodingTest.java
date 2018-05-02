@@ -486,7 +486,6 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
     }));
   }
 
-
   @Test
   public void testDecodeTimeTz(TestContext ctx) {
     Async async = ctx.async();
@@ -494,10 +493,10 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
       conn.prepare("SELECT \"TimeTz\" FROM \"TemporalDataType\" WHERE \"id\" = $1",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
-            OffsetTime ot = OffsetTime.parse("17:55:04.905120+03:07");
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.updatedCount());
             Row row = result.iterator().next();
+            OffsetTime ot = OffsetTime.parse("17:55:04.905120+03:07");
             ColumnChecker.checkColumn(0, "TimeTz")
               .returns(Tuple::getValue, Row::getValue, ot)
               .returns(Tuple::getOffsetTime, Row::getOffsetTime, ot)
@@ -540,10 +539,10 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
       conn.prepare("SELECT \"Timestamp\" FROM \"TemporalDataType\" WHERE \"id\" = $1",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple().addInteger(3), ctx.asyncAssertSuccess(result -> {
-            LocalDateTime ldt = LocalDateTime.parse("1800-01-01T23:57:53.237666");
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.updatedCount());
             Row row = result.iterator().next();
+            LocalDateTime ldt = LocalDateTime.parse("1800-01-01T23:57:53.237666");
             ColumnChecker.checkColumn(0, "Timestamp")
               .returns(Tuple::getValue, Row::getValue, ldt)
               .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, ldt)
@@ -579,6 +578,8 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
     }));
   }
 
+  static final LocalDateTime ldt = LocalDateTime.parse("2017-05-14T19:35:58.237666");
+
   @Test
   public void testDecodeTimestampAfterPgEpoch(TestContext ctx) {
     Async async = ctx.async();
@@ -588,7 +589,6 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
           p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.updatedCount());
-            LocalDateTime ldt = LocalDateTime.parse("2017-05-14T19:35:58.237666");
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Timestamp")
               .returns(Tuple::getValue, Row::getValue, ldt)
@@ -727,6 +727,8 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
     }));
   }
 
+  static final UUID uuid = UUID.fromString("6f790482-b5bd-438b-a8b7-4a0bed747011");
+
   @Test
   public void testDecodeUUID(TestContext ctx) {
     Async async = ctx.async();
@@ -737,7 +739,6 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.updatedCount());
             Row row = result.iterator().next();
-            UUID uuid = UUID.fromString("6f790482-b5bd-438b-a8b7-4a0bed747011");
             ColumnChecker.checkColumn(0, "uuid")
               .returns(Tuple::getValue, Row::getValue, uuid)
               .returns(Tuple::getUUID, Row::getUUID, uuid)
@@ -1376,7 +1377,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Integer")
               .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new int[]{2}))
-              .returns(Tuple::getIntegerArray, Row::getInteterArray, ColumnChecker.toObjectArray(new int[]{2}))
+              .returns(Tuple::getIntegerArray, Row::getIntegerArray, ColumnChecker.toObjectArray(new int[]{2}))
               .forRow(result.iterator().next());
             async.complete();
           }));
@@ -1396,7 +1397,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Integer")
                 .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new int[]{3,4,5,6}))
-                .returns(Tuple::getIntegerArray, Row::getInteterArray, ColumnChecker.toObjectArray(new int[]{3,4,5,6}))
+                .returns(Tuple::getIntegerArray, Row::getIntegerArray, ColumnChecker.toObjectArray(new int[]{3,4,5,6}))
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -1586,8 +1587,8 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
             final LocalDate dt = LocalDate.parse("1998-05-11");
             ColumnChecker.checkColumn(0, "LocalDate")
-              .returns(Tuple::getValue, Row::getValue, new LocalDate[]{dt})
-              .returns(Tuple::getLocalDateArray, Row::getLocalDateArray, new LocalDate[]{dt})
+              .returns(Tuple::getValue, Row::getValue, dt, dt)
+              .returns(Tuple::getLocalDateArray, Row::getLocalDateArray, dt, dt)
               .forRow(result.iterator().next());
             async.complete();
           }));
@@ -1616,6 +1617,9 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
     }));
   }
 
+  static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSS");
+  static final LocalTime lt = LocalTime.parse("17:55:04.90512", dtf);
+
   @Test
   public void testDecodeLocalTimeArray(TestContext ctx) {
     Async async = ctx.async();
@@ -1624,11 +1628,9 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSS");
-            final LocalTime dt = LocalTime.parse("17:55:04.90512", dtf);
             ColumnChecker.checkColumn(0, "LocalTime")
-              .returns(Tuple::getValue, Row::getValue, new LocalTime[]{dt})
-              .returns(Tuple::getLocalTimeArray, Row::getLocalTimeArray, new LocalTime[]{dt})
+              .returns(Tuple::getValue, Row::getValue, new LocalTime[]{lt})
+              .returns(Tuple::getLocalTimeArray, Row::getLocalTimeArray, new LocalTime[]{lt})
               .forRow(result.iterator().next());
             async.complete();
           }));
@@ -1658,6 +1660,8 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
     }));
   }
 
+  static final OffsetTime dt = OffsetTime.parse("17:55:04.90512+03:00");
+
   @Test
   public void testDecodeOffsetTimeArray(TestContext ctx) {
     Async async = ctx.async();
@@ -1666,7 +1670,6 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            final OffsetTime dt = OffsetTime.parse("17:55:04.90512+03:00");
             ColumnChecker.checkColumn(0, "OffsetTime")
               .returns(Tuple::getValue, Row::getValue, new OffsetTime[]{dt})
               .returns(Tuple::getOffsetTimeArray, Row::getOffsetTimeArray, new OffsetTime[]{dt})
@@ -1738,6 +1741,8 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
     }));
   }
 
+  static final OffsetDateTime odt = OffsetDateTime.parse("2017-05-15T02:59:59.237666Z");
+
   @Test
   public void testDecodeOffsetDateTimeArray(TestContext ctx) {
     Async async = ctx.async();
@@ -1746,10 +1751,9 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            final OffsetDateTime dt = OffsetDateTime.parse("2017-05-15T02:59:59.237666Z");
             ColumnChecker.checkColumn(0, "OffsetDateTime")
-              .returns(Tuple::getValue, Row::getValue, new OffsetDateTime[]{dt})
-              .returns(Tuple::getOffsetDateTimeArray, Row::getOffsetDateTimeArray, new OffsetDateTime[]{dt})
+              .returns(Tuple::getValue, Row::getValue, new OffsetDateTime[]{odt})
+              .returns(Tuple::getOffsetDateTimeArray, Row::getOffsetDateTimeArray, new OffsetDateTime[]{odt})
               .forRow(result.iterator().next());
             async.complete();
           }));

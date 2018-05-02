@@ -154,12 +154,6 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public Integer[] getInteterArray(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getIntegerArray(pos);
-  }
-
-  @Override
   public Boolean[] getBooleanArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getBooleanArray(pos);
@@ -169,6 +163,12 @@ public class RowImpl extends ArrayTuple implements Row {
   public Short[] getShortArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getShortArray(pos);
+  }
+
+  @Override
+  public Integer[] getIntegerArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getIntegerArray(pos);
   }
 
   @Override

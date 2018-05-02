@@ -60,7 +60,7 @@ class ColumnChecker {
     tupleMethods.add(Tuple::getShortArray);
     rowMethods.add(Row::getShortArray);
     tupleMethods.add(Tuple::getIntegerArray);
-    rowMethods.add(Row::getInteterArray);
+    rowMethods.add(Row::getIntegerArray);
     tupleMethods.add(Tuple::getLongArray);
     rowMethods.add(Row::getLongArray);
     tupleMethods.add(Tuple::getFloatArray);
@@ -115,7 +115,7 @@ class ColumnChecker {
 
   ColumnChecker returns(SerializableBiFunction<Tuple, Integer, Object> byIndexGetter,
                             SerializableBiFunction<Row, String, Object> byNameGetter,
-                            Object[] expected) {
+                            Object... expected) {
     Method byIndexMeth = byIndexGetter.method();
     blackList.add(byIndexMeth);
     Method byNameMeth = byNameGetter.method();

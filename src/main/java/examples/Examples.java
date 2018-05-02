@@ -600,6 +600,6 @@ public class Examples {
   }
 
   public void intArrayExample(Row row) {
-    Integer[] array = row.getInteterArray("integers");
+    Integer[] array = row.getIntegerArray("integers");
   }
 }

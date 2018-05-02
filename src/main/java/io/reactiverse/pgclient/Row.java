@@ -196,7 +196,7 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore
-  Integer[] getInteterArray(String name);
+  Integer[] getIntegerArray(String name);
 
   /**
    * Get an array of {@link Boolean} value at {@code pos}.
