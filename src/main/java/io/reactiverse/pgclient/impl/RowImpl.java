@@ -22,8 +22,6 @@ import io.reactiverse.pgclient.Numeric;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.impl.codec.decoder.message.RowDescription;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
 import java.math.BigDecimal;
 import java.time.*;
@@ -99,18 +97,6 @@ public class RowImpl extends ArrayTuple implements Row {
   public Json getJson(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getJson(pos);
-  }
-
-  @Override
-  public JsonObject getJsonObject(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getJsonObject(pos);
-  }
-
-  @Override
-  public JsonArray getJsonArray(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getJsonArray(pos);
   }
 
   @Override

@@ -41,10 +41,6 @@ class ColumnChecker {
     rowMethods.add(Row::getCharacter);
     tupleMethods.add(Tuple::getBoolean);
     rowMethods.add(Row::getBoolean);
-    tupleMethods.add(Tuple::getJsonObject);
-    rowMethods.add(Row::getJsonObject);
-    tupleMethods.add(Tuple::getJsonArray);
-    rowMethods.add(Row::getJsonArray);
     tupleMethods.add(Tuple::getBuffer);
     rowMethods.add(Row::getBuffer);
     tupleMethods.add(Tuple::getBuffer);

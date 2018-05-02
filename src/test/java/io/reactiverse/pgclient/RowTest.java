@@ -69,8 +69,6 @@ public class RowTest extends PgTestBase {
             row::getLocalDateTime,
             row::getOffsetTime,
             row::getTemporal,
-            row::getJsonArray,
-            row::getJsonObject,
             row::getUUID,
             row::getBooleanArray,
             row::getShortArray,

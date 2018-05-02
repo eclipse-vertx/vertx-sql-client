@@ -21,8 +21,6 @@ import io.reactiverse.pgclient.Json;
 import io.reactiverse.pgclient.Numeric;
 import io.reactiverse.pgclient.Tuple;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
 import java.math.BigDecimal;
 import java.time.*;
@@ -37,9 +35,6 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   @Override
   public Boolean getBoolean(int pos) {
     Object val = get(pos);
-    if (val instanceof Json) {
-      val = ((Json)val).value();
-    }
     if (val instanceof Boolean) {
       return (Boolean) val;
     }
@@ -54,9 +49,6 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   @Override
   public Short getShort(int pos) {
     Object val = get(pos);
-    if (val instanceof Json) {
-      val = ((Json) val).value();
-    }
     if (val instanceof Short) {
       return (Short) val;
     } else if (val instanceof Number) {
@@ -68,9 +60,6 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   @Override
   public Integer getInteger(int pos) {
     Object val = get(pos);
-    if (val instanceof Json) {
-      val = ((Json)val).value();
-    }
     if (val instanceof Integer) {
       return (Integer) val;
     } else if (val instanceof Number) {
@@ -82,9 +71,6 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   @Override
   public Long getLong(int pos) {
     Object val = get(pos);
-    if (val instanceof Json) {
-      val = ((Json)val).value();
-    }
     if (val instanceof Long) {
       return (Long) val;
     } else if (val instanceof Number) {
@@ -96,9 +82,6 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   @Override
   public Float getFloat(int pos) {
     Object val = get(pos);
-    if (val instanceof Json) {
-      val = ((Json)val).value();
-    }
     if (val instanceof Float) {
       return (Float) val;
     } else if (val instanceof Number) {
@@ -110,9 +93,6 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   @Override
   public Double getDouble(int pos) {
     Object val = get(pos);
-    if (val instanceof Json) {
-      val = ((Json)val).value();
-    }
     if (val instanceof Double) {
       return (Double) val;
     } else if (val instanceof Number) {
@@ -124,9 +104,6 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   @Override
   public BigDecimal getBigDecimal(int pos) {
     Object val = get(pos);
-    if (val instanceof Json) {
-      val = ((Json)val).value();
-    }
     if (val instanceof BigDecimal) {
       return (BigDecimal) val;
     } else if (val instanceof Number) {
@@ -138,9 +115,6 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   @Override
   public Numeric getNumeric(int pos) {
     Object val = get(pos);
-    if (val instanceof Json) {
-      val = ((Json)val).value();
-    }
     if (val instanceof Numeric) {
       return (Numeric) val;
     } else if (val instanceof Number) {
@@ -302,9 +276,6 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   @Override
   public String getString(int pos) {
     Object val = get(pos);
-    if (val instanceof Json) {
-      val = ((Json)val).value();
-    }
     if (val instanceof String) {
       return (String) val;
     }
@@ -325,30 +296,6 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
     Object val = get(pos);
     if (val instanceof Json) {
       return (Json) val;
-    }
-    return null;
-  }
-
-  @Override
-  public JsonObject getJsonObject(int pos) {
-    Object val = get(pos);
-    if (val instanceof Json) {
-      val = ((Json) val).value();
-      if (val instanceof JsonObject) {
-        return (JsonObject) val;
-      }
-    }
-    return null;
-  }
-
-  @Override
-  public JsonArray getJsonArray(int pos) {
-    Object val = get(pos);
-    if (val instanceof Json) {
-      val = ((Json) val).value();
-      if (val instanceof JsonArray) {
-        return (JsonArray) val;
-      }
     }
     return null;
   }
@@ -446,8 +393,6 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
       || value instanceof Number
       || value instanceof String
       || value instanceof Character
-      || value instanceof JsonObject
-      || value instanceof JsonArray
       || value instanceof Buffer
       || value instanceof LocalTime
       || value instanceof OffsetTime
@@ -518,18 +463,6 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   @Override
   public Tuple addCharacter(Character value) {
     add(value);
-    return this;
-  }
-
-  @Override
-  public Tuple addJsonObject(JsonObject value) {
-    add(Json.create(value));
-    return this;
-  }
-
-  @Override
-  public Tuple addJsonArray(JsonArray value) {
-    add(Json.create(value));
     return this;
   }
 

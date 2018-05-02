@@ -19,8 +19,6 @@ package io.reactiverse.pgclient;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
 import java.math.BigDecimal;
 import java.time.*;
@@ -109,22 +107,6 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   Json getJson(String name);
-
-  /**
-   * Get a json object value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  JsonObject getJsonObject(String name);
-
-  /**
-   * Get a json array value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  JsonArray getJsonArray(String name);
 
   /**
    * Get a buffer value at {@code pos}.

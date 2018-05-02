@@ -454,46 +454,32 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
         Row row = result.iterator().next();
         ColumnChecker.checkColumn(0, "JsonObject")
           .returns(Tuple::getValue, Row::getValue, Json.create(object))
-          .returns(Tuple::getJsonObject, Row::getJsonObject, object)
           .forRow(row);
         ColumnChecker.checkColumn(1, "JsonArray")
           .returns(Tuple::getValue, Row::getValue, Json.create(array))
-          .returns(Tuple::getJsonArray, Row::getJsonArray, array)
           .forRow(row);
         ColumnChecker.checkColumn(2, "TrueValue")
           .returns(Tuple::getValue, Row::getValue, Json.create(true))
-          .returns(Tuple::getBoolean, Row::getBoolean, true)
+          .returns(Tuple::getJson, Row::getJson, Json.create(true))
           .forRow(row);
         ColumnChecker.checkColumn(3, "FalseValue")
           .returns(Tuple::getValue, Row::getValue, Json.create(false))
-          .returns(Tuple::getBoolean, Row::getBoolean, false)
+          .returns(Tuple::getJson, Row::getJson, Json.create(false))
           .forRow(row);
         ColumnChecker.checkColumn(4, "NullValue")
           .returns(Tuple::getValue, Row::getValue, Json.create(null))
           .forRow(row);
         ColumnChecker.checkColumn(5, "Number1")
           .returns(Tuple::getValue, Row::getValue, Json.create(7.502d))
-          .returns(Tuple::getShort, Row::getShort, (short)7)
-          .returns(Tuple::getInteger, Row::getInteger, 7)
-          .returns(Tuple::getLong, Row::getLong, 7L)
-          .returns(Tuple::getFloat, Row::getFloat, 7.502f)
-          .returns(Tuple::getDouble, Row::getDouble, 7.502d)
-          .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("7.502"))
-          .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("7.502"))
+          .returns(Tuple::getJson, Row::getJson, Json.create(7.502d))
           .forRow(row);
         ColumnChecker.checkColumn(6, "Number2")
           .returns(Tuple::getValue, Row::getValue, Json.create(8))
-          .returns(Tuple::getShort, Row::getShort, (short) 8)
-          .returns(Tuple::getInteger, Row::getInteger, 8)
-          .returns(Tuple::getLong, Row::getLong, 8L)
-          .returns(Tuple::getFloat, Row::getFloat, 8f)
-          .returns(Tuple::getDouble, Row::getDouble, 8d)
-          .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(8))
-          .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("8"))
+          .returns(Tuple::getJson, Row::getJson, Json.create(8))
           .forRow(row);
         ColumnChecker.checkColumn(7, "Text")
           .returns(Tuple::getValue, Row::getValue, Json.create(" Really Awesome! "))
-          .returns(Tuple::getString, Row::getString, " Really Awesome! ")
+          .returns(Tuple::getJson, Row::getJson, Json.create(" Really Awesome! "))
           .forRow(row);
         async.complete();
       }));

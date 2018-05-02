@@ -572,28 +572,15 @@ public class Examples {
 
     // Create a tuple
     Tuple tuple = Tuple.of(
-      Json.create(null),
-      Json.create(new JsonObject().put("foo", "bar")),
-      Json.create(3));
-
-    //
-    tuple = Tuple.tuple()
-      .addJson(Json.create(null))
-      .addJson(Json.create(new JsonObject().put("foo", "bar")))
-      .addJson(Json.create(3));
-
-    // JSON object (and arrays) can also be added directly
-    tuple = Tuple.tuple()
-      .addJson(Json.create(null))
-      .addJsonObject(new JsonObject().put("foo", "bar"))
-      .addJson(Json.create(3));
+      Json.create(Json.create(null)),
+      Json.create(Json.create(new JsonObject().put("foo", "bar"))),
+      Json.create(Json.create(null)));
 
     // Retrieving json
     Object value = tuple.getJson(0).value(); // Expect null
 
     //
     value = tuple.getJson(1).value(); // Expect JSON object
-    value = tuple.getJsonObject(1); // Works too
 
     //
     value = tuple.getJson(3).value(); // Expect 3

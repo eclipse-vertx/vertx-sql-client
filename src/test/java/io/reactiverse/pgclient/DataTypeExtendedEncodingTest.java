@@ -860,36 +860,31 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
             JsonArray array = new JsonArray("[1,true,null,9.5,\"Hi\"]");
             ColumnChecker.checkColumn(0, "JsonObject")
               .returns(Tuple::getValue, Row::getValue, Json.create(object))
-              .returns(Tuple::getJsonObject, Row::getJsonObject, object)
+              .returns(Tuple::getJson, Row::getJson, Json.create(object))
               .forRow(row);
             ColumnChecker.checkColumn(1, "JsonArray")
               .returns(Tuple::getValue, Row::getValue, Json.create(array))
-              .returns(Tuple::getJsonArray, Row::getJsonArray, array)
+              .returns(Tuple::getJson, Row::getJson, Json.create(array))
               .forRow(row);
             ColumnChecker.checkColumn(2, "Number")
               .returns(Tuple::getValue, Row::getValue, Json.create(4))
-              .returns(Tuple::getShort, Row::getShort, (short) 4)
-              .returns(Tuple::getInteger, Row::getInteger, 4)
-              .returns(Tuple::getLong, Row::getLong, 4L)
-              .returns(Tuple::getFloat, Row::getFloat, 4f)
-              .returns(Tuple::getDouble, Row::getDouble, 4d)
-              .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("4"))
-              .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("4"))
+              .returns(Tuple::getJson, Row::getJson, Json.create(4))
               .forRow(row);
             ColumnChecker.checkColumn(3, "String")
               .returns(Tuple::getValue, Row::getValue, Json.create("Hello World"))
-              .returns(Tuple::getString, Row::getString, "Hello World")
+              .returns(Tuple::getJson, Row::getJson, Json.create("Hello World"))
               .forRow(row);
             ColumnChecker.checkColumn(4, "BooleanTrue")
               .returns(Tuple::getValue, Row::getValue, Json.create(true))
-              .returns(Tuple::getBoolean, Row::getBoolean, true)
+              .returns(Tuple::getJson, Row::getJson, Json.create(true))
               .forRow(row);
             ColumnChecker.checkColumn(5, "BooleanFalse")
               .returns(Tuple::getValue, Row::getValue, Json.create(false))
-              .returns(Tuple::getBoolean, Row::getBoolean, false)
+              .returns(Tuple::getJson, Row::getJson, Json.create(false))
               .forRow(row);
             ColumnChecker.checkColumn(6, "Null")
               .returns(Tuple::getValue, Row::getValue, Json.create(null))
+              .returns(Tuple::getJson, Row::getJson, Json.create(null))
               .forRow(row);
             async.complete();
           }));
@@ -923,12 +918,12 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
           JsonObject object = new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []}");
           JsonArray array = new JsonArray("[1,true,null,9.5,\"Hi\"]");
           p.execute(Tuple.tuple()
-            .addJsonObject(object)
-            .addJsonArray(array)
-            .addInteger(4)
-            .addString("Hello World")
-            .addBoolean(true)
-            .addBoolean(false)
+            .addJson(Json.create(object))
+            .addJson(Json.create(array))
+            .addJson(Json.create(4))
+            .addJson(Json.create("Hello World"))
+            .addJson(Json.create(true))
+            .addJson(Json.create(false))
             .addJson(Json.create(null))
             .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
@@ -936,36 +931,31 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "JsonObject")
               .returns(Tuple::getValue, Row::getValue, Json.create(object))
-              .returns(Tuple::getJsonObject, Row::getJsonObject, object)
+              .returns(Tuple::getJson, Row::getJson, Json.create(object))
               .forRow(row);
             ColumnChecker.checkColumn(1, "JsonArray")
               .returns(Tuple::getValue, Row::getValue, Json.create(array))
-              .returns(Tuple::getJsonArray, Row::getJsonArray, array)
+              .returns(Tuple::getJson, Row::getJson, Json.create(array))
               .forRow(row);
             ColumnChecker.checkColumn(2, "Number")
               .returns(Tuple::getValue, Row::getValue, Json.create(4))
-              .returns(Tuple::getShort, Row::getShort, (short) 4)
-              .returns(Tuple::getInteger, Row::getInteger, 4)
-              .returns(Tuple::getLong, Row::getLong, 4L)
-              .returns(Tuple::getFloat, Row::getFloat, 4f)
-              .returns(Tuple::getDouble, Row::getDouble, 4d)
-              .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("4"))
-              .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("4"))
+              .returns(Tuple::getJson, Row::getJson, Json.create(4))
               .forRow(row);
             ColumnChecker.checkColumn(3, "String")
               .returns(Tuple::getValue, Row::getValue, Json.create("Hello World"))
-              .returns(Tuple::getString, Row::getString, "Hello World")
+              .returns(Tuple::getJson, Row::getJson, Json.create("Hello World"))
               .forRow(row);
             ColumnChecker.checkColumn(4, "BooleanTrue")
               .returns(Tuple::getValue, Row::getValue, Json.create(true))
-              .returns(Tuple::getBoolean, Row::getBoolean, true)
+              .returns(Tuple::getJson, Row::getJson, Json.create(true))
               .forRow(row);
             ColumnChecker.checkColumn(5, "BooleanFalse")
               .returns(Tuple::getValue, Row::getValue, Json.create(false))
-              .returns(Tuple::getBoolean, Row::getBoolean, false)
+              .returns(Tuple::getJson, Row::getJson, Json.create(false))
               .forRow(row);
             ColumnChecker.checkColumn(6, "Null")
               .returns(Tuple::getValue, Row::getValue, Json.create(null))
+              .returns(Tuple::getJson, Row::getJson, Json.create(null))
               .forRow(row);
             async.complete();
           }));

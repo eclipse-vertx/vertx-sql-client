@@ -22,8 +22,6 @@ import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
 import java.math.BigDecimal;
 import java.time.*;
@@ -239,22 +237,6 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   Json getJson(int pos);
-
-  /**
-   * Get a json object value at {@code pos}.
-   *
-   * @param pos the position
-   * @return the value or {@code null}
-   */
-  JsonObject getJsonObject(int pos);
-
-  /**
-   * Get a json array value at {@code pos}.
-   *
-   * @param pos the position
-   * @return the value or {@code null}
-   */
-  JsonArray getJsonArray(int pos);
 
   /**
    * Get a {@link java.time.temporal.Temporal} value at {@code pos}.
@@ -557,24 +539,6 @@ public interface Tuple {
    */
   @Fluent
   Tuple addCharacter(Character value);
-
-  /**
-   * Add a json object value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  Tuple addJsonObject(JsonObject value);
-
-  /**
-   * Add a json array value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  Tuple addJsonArray(JsonArray value);
 
   /**
    * Add a json value at the end of the tuple.
