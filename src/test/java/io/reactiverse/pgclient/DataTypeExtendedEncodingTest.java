@@ -1587,8 +1587,8 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
             final LocalDate dt = LocalDate.parse("1998-05-11");
             ColumnChecker.checkColumn(0, "LocalDate")
-              .returns(Tuple::getValue, Row::getValue, dt, dt)
-              .returns(Tuple::getLocalDateArray, Row::getLocalDateArray, dt, dt)
+              .returns(Tuple::getValue, Row::getValue, new Object[]{dt, dt})
+              .returns(Tuple::getLocalDateArray, Row::getLocalDateArray, new Object[]{dt, dt})
               .forRow(result.iterator().next());
             async.complete();
           }));
@@ -1880,7 +1880,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT ARRAY[$1::BYTEA] \"Bytea\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.of(new Buffer[]{Buffer.buffer(bytes)}), ctx.asyncAssertSuccess(result -> {
+          p.execute(Tuple.of(Buffer.buffer(bytes)), ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Bytea")
               .returns(Tuple::getValue, Row::getValue, new Buffer[]{Buffer.buffer(bytes)})
               .returns(Tuple::getBufferArray, Row::getBufferArray, new Buffer[]{Buffer.buffer(bytes)})

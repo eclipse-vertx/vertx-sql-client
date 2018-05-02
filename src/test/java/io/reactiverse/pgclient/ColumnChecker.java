@@ -115,7 +115,7 @@ class ColumnChecker {
 
   ColumnChecker returns(SerializableBiFunction<Tuple, Integer, Object> byIndexGetter,
                             SerializableBiFunction<Row, String, Object> byNameGetter,
-                            Object... expected) {
+                            Object[] expected) {
     Method byIndexMeth = byIndexGetter.method();
     blackList.add(byIndexMeth);
     Method byNameMeth = byNameGetter.method();
@@ -125,7 +125,6 @@ class ColumnChecker {
       assertArrayEquals("Expected that " + byIndexMeth + " returns " + Arrays.toString(expected) + " instead of " + Arrays.toString(actual), actual, expected);
       actual = toObjectArray(byNameGetter.apply(row, name));
       assertArrayEquals("Expected that " + byNameMeth + " returns " + Arrays.toString(expected) + " instead of " + Arrays.toString(actual), actual, expected);
-
     });
     return this;
   }

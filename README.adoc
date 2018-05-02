@@ -90,8 +90,6 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -> {
 
 == Supported Data Types
 
-Postgres has two protocols `TEXT` and `BINARY` to encode/decode data types.
-
 The *Reactive Postgres Client* currently supports the following data types
 
 [cols="^,^,^,^,^", options="header"]
@@ -151,6 +149,12 @@ The *Reactive Postgres Client* currently supports the following data types
 |&#10004;
 
 |`TEXT`
+|`j.l.String`
+|&#10004;
+|`j.l.String[]`
+|&#10004;
+
+|`NAME`
 |`j.l.String`
 |&#10004;
 |`j.l.String[]`

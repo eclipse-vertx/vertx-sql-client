@@ -595,11 +595,14 @@ public class Examples {
     }
   }
 
-  public void stringArrayExample(Row row) {
-    String[] array = row.getStringArray("strings");
-  }
+  public void arrayExample() {
+    // Create a tuple with a single array
+    Tuple tuple = Tuple.of(new String[]{ "a", "tuple", "with", "arrays" });
 
-  public void intArrayExample(Row row) {
-    Integer[] array = row.getIntegerArray("integers");
+    // Add a string array to the tuple
+    tuple.addStringArray(new String[]{"another", "array"});
+
+    // Get the first array of string
+    String[] array = tuple.getStringArray(0);
   }
 }

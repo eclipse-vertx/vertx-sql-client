@@ -146,13 +146,15 @@ public interface Tuple {
   /**
    * Create a tuple of an arbitrary number of elements.
    *
-   * @param elements the elements
+   * @param elt1 the first element
+   * @param elts the remaining elements
    * @return the tuple
    */
   @GenIgnore
-  static Tuple of(Object... elements) {
-    ArrayTuple tuple = new ArrayTuple(elements.length);
-    for (Object elt: elements) {
+  static Tuple of(Object elt1, Object... elts) {
+    ArrayTuple tuple = new ArrayTuple(1 + elts.length);
+    tuple.addValue(elt1);
+    for (Object elt: elts) {
       tuple.addValue(elt);
     }
     return tuple;

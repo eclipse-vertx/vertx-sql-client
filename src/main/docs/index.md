@@ -261,6 +261,31 @@ is called:
 
 ## Postgres type mapping
 
+Currently the client supports the following Postgres types
+
+* BOOLEAN (`java.lang.Boolean`)
+* INT2 (`java.lang.Short`)
+* INT4 (`java.lang.Integer`)
+* INT8 (`java.lang.Long`)
+* FLOAT4 (`java.lang.Float`)
+* FLOAT8 (`java.lang.Double`)
+* CHAR (`java.lang.String`)
+* VARCHAR (`java.lang.String`)
+* TEXT (`java.lang.String`)
+* NAME (`java.lang.String`)
+* NUMERIC (`io.reactiverse.pgclient.Numeric`)
+* UUID (`java.util.UUID`)
+* DATE (`java.time.LocalDate`)
+* TIME (`java.time.LocalTime`)
+* TIMETZ (`java.time.OffsetTime`)
+* TIMESTAMP (`java.time.LocalDateTime`)
+* TIMESTAMPTZ (`java.time.OffsetDateTime`)
+* BYTEA (`io.vertx.core.buffer.Buffer`)
+* JSON (`io.reactiverse.pgclient.Json`)
+* JSONB (`io.reactiverse.pgclient.Json`)
+
+Arrays of these types are supported.
+
 ### Handling JSON
 
 The {@link io.reactiverse.pgclient.Json} Java type is used to represent the Postgres `JSON` and `JSONB` type.
@@ -276,7 +301,15 @@ The main reason of this type is handling `null` JSON values.
 The {@link io.reactiverse.pgclient.Numeric} Java type is used to represent the Postgres `NUMERIC` type.
 
 ```$lang
-{@link examples.Examples#numericExample(Row)}
+{@link examples.Examples#numericExample}
+```
+
+## Handling arrays
+
+Arrays are available on {@link io.reactiverse.pgclient.Tuple} and {@link io.reactiverse.pgclient.Row}:
+
+```$lang
+{@link examples.Examples#arrayExample}
 ```
 
 ## Pub/sub
