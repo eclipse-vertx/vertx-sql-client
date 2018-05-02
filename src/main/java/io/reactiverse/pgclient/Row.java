@@ -90,14 +90,6 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  Character getCharacter(String name);
-
-  /**
-   * Get a string value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
   String getString(String name);
 
   /**
@@ -340,14 +332,5 @@ public interface Row extends Tuple {
    */
   @GenIgnore
   Numeric[] getNumericArray(String name);
-
-  /**
-   * Get an array of {@link Character} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore
-  Character[] getCharacterArray(String name);
 
 }

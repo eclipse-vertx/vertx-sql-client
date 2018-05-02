@@ -54,7 +54,6 @@ public class RowTest extends PgTestBase {
           List<Function<String, ?>> functions = Arrays.asList(
             row::getValue,
             row::getString,
-            row::getCharacter,
             row::getBuffer,
             row::getDouble,
             row::getShort,
@@ -76,7 +75,6 @@ public class RowTest extends PgTestBase {
             row::getLongArray,
             row::getFloatArray,
             row::getDoubleArray,
-            row::getCharacterArray,
             row::getStringArray,
             row::getLocalDateArray,
             row::getLocalTimeArray,

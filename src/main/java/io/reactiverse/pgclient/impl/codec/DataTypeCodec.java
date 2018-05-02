@@ -55,7 +55,6 @@ public class DataTypeCodec {
   private static final Long[] empty_long_array = new Long[0];
   private static final Float[] empty_float_array = new Float[0];
   private static final Double[] empty_double_array = new Double[0];
-  private static final Character[] empty_character_array = new Character[0];
   private static final LocalDate LOCAL_DATE_EPOCH = LocalDate.of(2000, 1, 1);
   private static final LocalDateTime LOCAL_DATE_TIME_EPOCH = LocalDateTime.of(2000, 1, 1, 0, 0, 0);
   private static final OffsetDateTime OFFSET_DATE_TIME_EPOCH = LocalDateTime.of(2000, 1, 1, 0, 0, 0).atOffset(ZoneOffset.UTC);
@@ -69,7 +68,6 @@ public class DataTypeCodec {
   private static final IntFunction<Long[]> LONG_ARRAY_FACTORY = size -> size == 0 ? empty_long_array : new Long[size];
   private static final IntFunction<Float[]> FLOAT_ARRAY_FACTORY = size -> size == 0 ? empty_float_array : new Float[size];
   private static final IntFunction<Double[]> DOUBLE_ARRAY_FACTORY = size -> size == 0 ? empty_double_array : new Double[size];
-  private static final IntFunction<Character[]> CHARACTER_ARRAY_FACTORY = size -> size == 0 ? empty_character_array : new Character[size];
   private static final IntFunction<String[]> STRING_ARRAY_FACTORY = size -> size == 0 ? empty_string_array : new String[size];
   private static final IntFunction<LocalDate[]> LOCALDATE_ARRAY_FACTORY = size -> size == 0 ? empty_local_date_array : new LocalDate[size];
   private static final IntFunction<LocalTime[]> LOCALTIME_ARRAY_FACTORY = size -> size == 0 ? empty_local_time_array : new LocalTime[size];
@@ -142,10 +140,10 @@ public class DataTypeCodec {
         binaryEncodeArray((Double[]) value, DataType.FLOAT8, buff);
         break;
       case CHAR:
-        binaryEncodeCHAR((Character) value, buff);
+        binaryEncodeCHAR((String) value, buff);
         break;
       case CHAR_ARRAY:
-        binaryEncodeArray((Character[]) value, DataType.CHAR, buff);
+        binaryEncodeArray((String[]) value, DataType.CHAR, buff);
         break;
       case VARCHAR:
         binaryEncodeVARCHAR((String) value, buff);
@@ -261,7 +259,7 @@ public class DataTypeCodec {
       case CHAR:
         return binaryDecodeCHAR(len, buff);
       case CHAR_ARRAY:
-        return binaryDecodeArray(CHARACTER_ARRAY_FACTORY, DataType.CHAR, len, buff);
+        return binaryDecodeArray(STRING_ARRAY_FACTORY, DataType.CHAR, len, buff);
       case VARCHAR:
         return binaryDecodeVARCHAR(len, buff);
       case VARCHAR_ARRAY:
@@ -543,19 +541,16 @@ public class DataTypeCodec {
     textEncodeArray(value, DataType.NUMERIC, buff);
   }
 
-  private static void binaryEncodeCHAR(Character value, ByteBuf buff) {
-    int index = buff.writerIndex();
-    buff.writeInt(0);
-    buff.writeChar(value);
-    buff.setInt(index, buff.writerIndex() - 4 - index);
+  private static void binaryEncodeCHAR(String value, ByteBuf buff) {
+    binaryEncodeTEXT(value, buff);
   }
 
-  private static Character textDecodeCHAR(int len, ByteBuf buff) {
+  private static String textDecodeCHAR(int len, ByteBuf buff) {
     return binaryDecodeCHAR(len, buff);
   }
 
-  private static Character binaryDecodeCHAR(int len, ByteBuf buff) {
-    return (char)buff.readByte();
+  private static String binaryDecodeCHAR(int len, ByteBuf buff) {
+    return binaryDecodeTEXT(len, buff);
   }
 
   private static void binaryEncodeVARCHAR(String value, ByteBuf buff) {

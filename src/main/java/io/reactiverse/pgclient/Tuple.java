@@ -223,14 +223,6 @@ public interface Tuple {
   String getString(int pos);
 
   /**
-   * Get a {@link Character} value at {@code pos}.
-   *
-   * @param pos the position
-   * @return the value or {@code null}
-   */
-  Character getCharacter(int pos);
-
-  /**
    * Get a json value at {@code pos}.
    *
    * @param pos the position
@@ -455,15 +447,6 @@ public interface Tuple {
   Numeric[] getNumericArray(int pos);
 
   /**
-   * Get an array of {@link Character} value at {@code pos}.
-   *
-   * @param pos the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore
-  Character[] getCharacterArray(int pos);
-
-  /**
    * Get {@link Numeric} value at {@code pos}.
    *
    * @param pos the position
@@ -551,15 +534,6 @@ public interface Tuple {
    */
   @Fluent
   Tuple addString(String value);
-
-  /**
-   * Add a {@link Character} value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  Tuple addCharacter(Character value);
 
   /**
    * Add a json value at the end of the tuple.
@@ -776,15 +750,6 @@ public interface Tuple {
    */
   @GenIgnore
   Tuple addBufferArray(Buffer[] value);
-
-  /**
-   * Add an array of {@link Character} value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
-  @GenIgnore
-  Tuple addCharacterArray(char[] value);
 
   /**
    * Add an array of {@link UUID} value at the end of the tuple.

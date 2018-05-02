@@ -293,15 +293,6 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
-  public Character getCharacter(int pos) {
-    Object val = get(pos);
-    if (val instanceof Character) {
-      return (Character) val;
-    }
-    return null;
-  }
-
-  @Override
   public Json getJson(int pos) {
     Object val = get(pos);
     if (val instanceof Json) {
@@ -383,15 +374,6 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
-  public Character[] getCharacterArray(int pos) {
-    Object val = get(pos);
-    if (val instanceof Character[]) {
-      return (Character[]) val;
-    }
-    return null;
-  }
-
-  @Override
   public Tuple addBoolean(Boolean value) {
     add(value);
     return this;
@@ -402,7 +384,6 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
     if(value instanceof Boolean
       || value instanceof Number
       || value instanceof String
-      || value instanceof Character
       || value instanceof Buffer
       || value instanceof LocalTime
       || value instanceof OffsetTime
@@ -417,7 +398,6 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
       || value instanceof Long[]
       || value instanceof Float[]
       || value instanceof Double[]
-      || value instanceof Character[]
       || value instanceof String[]
       || value instanceof LocalDate[]
       || value instanceof LocalTime[]
@@ -467,12 +447,6 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Tuple addString(String value) {
-    add(value);
-    return this;
-  }
-
-  @Override
-  public Tuple addCharacter(Character value) {
     add(value);
     return this;
   }
@@ -635,12 +609,6 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Tuple addJsonArray(Json[] value) {
-    add(value);
-    return this;
-  }
-
-  @Override
-  public Tuple addCharacterArray(char[] value) {
     add(value);
     return this;
   }

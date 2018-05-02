@@ -270,8 +270,8 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "Character")
-            .returns(Tuple::getValue, Row::getValue, 'X')
-            .returns(Tuple::getCharacter, Row::getCharacter, 'X')
+            .returns(Tuple::getValue, Row::getValue, "X")
+            .returns(Tuple::getString, Row::getString, "X")
             .forRow(row);
           async.complete();
         }));

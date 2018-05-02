@@ -37,8 +37,6 @@ class ColumnChecker {
     rowMethods.add(Row::getNumeric);
     tupleMethods.add(Tuple::getString);
     rowMethods.add(Row::getString);
-    tupleMethods.add(Tuple::getCharacter);
-    rowMethods.add(Row::getCharacter);
     tupleMethods.add(Tuple::getBoolean);
     rowMethods.add(Row::getBoolean);
     tupleMethods.add(Tuple::getBuffer);
@@ -79,8 +77,6 @@ class ColumnChecker {
     rowMethods.add(Row::getOffsetTimeArray);
     tupleMethods.add(Tuple::getLocalDateTimeArray);
     rowMethods.add(Row::getLocalDateTimeArray);
-    tupleMethods.add(Tuple::getCharacterArray);
-    rowMethods.add(Row::getCharacterArray);
     tupleMethods.add(Tuple::getBufferArray);
     rowMethods.add(Row::getBufferArray);
     tupleMethods.add(Tuple::getUUIDArray);

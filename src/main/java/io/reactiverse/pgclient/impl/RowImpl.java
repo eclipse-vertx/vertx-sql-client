@@ -82,12 +82,6 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public Character getCharacter(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getCharacter(pos);
-  }
-
-  @Override
   public String getString(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getString(pos);
@@ -254,11 +248,4 @@ public class RowImpl extends ArrayTuple implements Row {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getNumericArray(pos);
   }
-
-  @Override
-  public Character[] getCharacterArray(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getCharacterArray(pos);
-  }
-
 }
