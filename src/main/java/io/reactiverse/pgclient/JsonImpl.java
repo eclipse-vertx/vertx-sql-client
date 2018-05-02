@@ -18,7 +18,7 @@ package io.reactiverse.pgclient;
 
 import java.util.Objects;
 
-public class JsonImpl implements Json {
+class JsonImpl implements Json {
 
   public static final JsonImpl NULL = new JsonImpl(null);
 
