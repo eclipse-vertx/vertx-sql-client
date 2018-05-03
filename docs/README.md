@@ -11,14 +11,15 @@
 * Lightweight
 * Built-in connection pooling
 * Prepared queries caching
-* Publish / subscribe using Postgres `LISTEN/NOTIFY`
-* Batch and cursor support
+* Publish / subscribe using Postgres `NOTIFY/LISTEN`
+* Batch and cursor
 * Row streaming
 * Command pipeling
-* RxJava 1 and RxJava 2 support
+* RxJava 1 and RxJava 2
 * Direct memory to object without unnecessary copies
-* Java 8 Date and Time support
-* SSL/TLS support
+* Java 8 Date and Time
+* SSL/TLS
+* Unix domain socket
 * HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy support
 
 ## Documentation
