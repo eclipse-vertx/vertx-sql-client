@@ -347,7 +347,7 @@ The default policy is to not reconnect.
 ## Using SSL/TLS
 
 To configure the client to use SSL connection, you can configure the {@link io.reactiverse.pgclient.PgConnectOptions}
-like a Vert.x `NetClient`}.
+like a Vert.x `NetClient`.
 
 ```$lang
 {@link examples.Examples#ex10}
