@@ -393,11 +393,7 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
       || value instanceof UUID
       || value instanceof Json
       || value instanceof Boolean[]
-      || value instanceof Short[]
-      || value instanceof Integer[]
-      || value instanceof Long[]
-      || value instanceof Float[]
-      || value instanceof Double[]
+      || value instanceof Number[]
       || value instanceof String[]
       || value instanceof LocalDate[]
       || value instanceof LocalTime[]
@@ -406,7 +402,6 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
       || value instanceof OffsetDateTime[]
       || value instanceof UUID[]
       || value instanceof Json[]
-      || value instanceof Numeric[]
       || value instanceof Buffer[]) {
       add(value);
     } else {
