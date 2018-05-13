@@ -447,7 +447,6 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeBOOL(Boolean value, ByteBuf buff) {
-    buff.writeInt(1);
     buff.writeBoolean(value);
   }
 
@@ -472,7 +471,6 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeINT2(Short value, ByteBuf buff) {
-    buff.writeInt(2);
     buff.writeShort(value);
   }
 
@@ -485,7 +483,6 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeINT4(Integer value, ByteBuf buff) {
-    buff.writeInt(4);
     buff.writeInt(value);
   }
 
@@ -498,7 +495,6 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeINT8(Long value, ByteBuf buff) {
-    buff.writeInt(8);
     buff.writeLong(value);
   }
 
@@ -513,12 +509,10 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeFLOAT4(Float value, ByteBuf buff) {
-    buff.writeInt(4);
     buff.writeFloat(value);
   }
 
   private static void binaryEncodeFLOAT8(Double value, ByteBuf buff) {
-    buff.writeInt(8);
     buff.writeDouble(value);
   }
 
@@ -560,11 +554,8 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeVARCHAR(String value, ByteBuf buff) {
-    int index = buff.writerIndex();
     String s = String.valueOf(value);
-    buff.writeInt(0); // Undetermined yet
-    int len = buff.writeCharSequence(s, StandardCharsets.UTF_8);
-    buff.setInt(index, len);
+    buff.writeCharSequence(s, StandardCharsets.UTF_8);
   }
 
   private static String textDecodeVARCHAR(int len, ByteBuf buff) {
@@ -580,10 +571,7 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeBPCHAR(String value, ByteBuf buff) {
-    int index = buff.writerIndex();
-    buff.writeInt(0);
     buff.writeCharSequence(value, StandardCharsets.UTF_8);
-    buff.setInt(index, buff.writerIndex() - 4 - index);
   }
 
   private static String binaryDecodeBPCHAR(int len, ByteBuf buff) {
@@ -595,11 +583,8 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeTEXT(String value, ByteBuf buff) {
-    int index = buff.writerIndex();
     String s = String.valueOf(value);
-    buff.writeInt(0); // Undetermined yet
-    int len = buff.writeCharSequence(s, StandardCharsets.UTF_8);
-    buff.setInt(index, len);
+    buff.writeCharSequence(s, StandardCharsets.UTF_8);
   }
 
   private static String binaryDecodeTEXT(int len, ByteBuf buff) {
@@ -612,11 +597,8 @@ public class DataTypeCodec {
 
 
   private static void binaryEncodeNAME(String value, ByteBuf buff) {
-    int index = buff.writerIndex();
     String s = String.valueOf(value);
-    buff.writeInt(0); // Undetermined yet
-    int len = buff.writeCharSequence(s, StandardCharsets.UTF_8);
-    buff.setInt(index, len);
+    buff.writeCharSequence(s, StandardCharsets.UTF_8);
   }
 
   private static String binaryDecodeNAME(int len, ByteBuf buff) {
@@ -624,7 +606,6 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeDATE(LocalDate value, ByteBuf buff) {
-    buff.writeInt(4);
     buff.writeInt((int) -value.until(LOCAL_DATE_EPOCH, ChronoUnit.DAYS));
   }
 
@@ -638,7 +619,6 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeTIME(LocalTime value, ByteBuf buff) {
-    buff.writeInt(8);
     buff.writeLong(value.getLong(ChronoField.MICRO_OF_DAY));
   }
 
@@ -653,7 +633,6 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeTIMETZ(OffsetTime value, ByteBuf buff) {
-    buff.writeInt(12);
     buff.writeLong(value.toLocalTime().getLong(ChronoField.MICRO_OF_DAY));
     // zone offset in seconds (should we change it to UTC ?)
     buff.writeInt(-value.getOffset().getTotalSeconds());
@@ -672,7 +651,6 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeTIMESTAMP(LocalDateTime value, ByteBuf buff) {
-    buff.writeInt(8);
     buff.writeLong(-value.until(LOCAL_DATE_TIME_EPOCH, ChronoUnit.MICROS));
   }
 
@@ -690,7 +668,6 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeTIMESTAMPTZ(OffsetDateTime value, ByteBuf buff) {
-    buff.writeInt(8);
     buff.writeLong(-value.until(OFFSET_DATE_TIME_EPOCH, ChronoUnit.MICROS));
   }
 
@@ -706,12 +683,8 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeBYTEA(Buffer value, ByteBuf buff) {
-    int index = buff.writerIndex();
-    buff.writeInt(0);
     ByteBuf byteBuf = value.getByteBuf();
-    int len = byteBuf.readableBytes();
     buff.writeBytes(byteBuf);
-    buff.setInt(index, len);
   }
 
   private static Buffer binaryDecodeBYTEA(int len, ByteBuf buff) {
@@ -719,7 +692,6 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeUUID(UUID uuid, ByteBuf buff) {
-    buff.writeInt(16);
     buff.writeLong(uuid.getMostSignificantBits());
     buff.writeLong(uuid.getLeastSignificantBits());
   }
@@ -741,11 +713,8 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeJSON(Json value, ByteBuf buff) {
-    int index = buff.writerIndex();
     String s = io.vertx.core.json.Json.encode(value.value());
-    buff.writeInt(0); // Undetermined yet
-    int len = buff.writeCharSequence(s, StandardCharsets.UTF_8);
-    buff.setInt(index, len);
+    buff.writeCharSequence(s, StandardCharsets.UTF_8);
   }
 
   private static Json textDecodeJSONB(int len, ByteBuf buff) {
@@ -787,12 +756,9 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeJSONB(Json value, ByteBuf buff) {
-    int index = buff.writerIndex();
     String s = io.vertx.core.json.Json.encode(value.value());
-    buff.writeInt(0); // Undetermined yet
     buff.writeByte(1); // version
-    int len = buff.writeCharSequence(s, StandardCharsets.UTF_8);
-    buff.setInt(index, len + 1);
+    buff.writeCharSequence(s, StandardCharsets.UTF_8);
   }
 
   /**
@@ -861,7 +827,6 @@ public class DataTypeCodec {
 
   private static <T> void binaryEncodeArray(T[] values, DataType type, ByteBuf buff){
     int startIndex = buff.writerIndex();
-    buff.writeInt(0);
     buff.writeInt(1);             // ndim
     buff.writeInt(0);             // dataoffset
     buff.writeInt(type.id);       // elemtype
@@ -873,13 +838,15 @@ public class DataTypeCodec {
         hasNulls = true;
         buff.writeInt(-1);
       } else {
+        int idx = buff.writerIndex();
+        buff.writeInt(0);
         encodeBinary(type, value, buff);
+        buff.setInt(idx, buff.writerIndex() - idx - 4);
       }
     }
     if (hasNulls) {
-      buff.setInt(startIndex + 8, 1);
+      buff.setInt(startIndex + 4, 1);
     }
-    buff.setInt(startIndex, buff.writerIndex() - 4 - startIndex);
   }
 
   private static <T> T[] textDecodeArray(IntFunction<T[]> supplier, DataType type, int len, ByteBuf buff) {

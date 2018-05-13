@@ -113,7 +113,10 @@ public class Bind implements OutboundMessage {
       } else {
         DataType dataType = paramDataTypes[c];
         if (dataType.supportsBinary) {
+          int idx = out.writerIndex();
+          out.writeInt(0);
           DataTypeCodec.encodeBinary(dataType, param, out);
+          out.setInt(idx, out.writerIndex() - idx - 4);
         } else {
           DataTypeCodec.encodeText(dataType, param, out);
         }
