@@ -21,6 +21,7 @@ import io.reactiverse.pgclient.Json;
 import io.reactiverse.pgclient.Numeric;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.impl.codec.decoder.message.RowDescription;
+import io.reactiverse.pgclient.data.Point;
 import io.vertx.core.buffer.Buffer;
 
 import java.math.BigDecimal;
@@ -154,6 +155,12 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
+  public Point getPoint(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getPoint(pos);
+  }
+
+  @Override
   public Boolean[] getBooleanArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getBooleanArray(pos);
@@ -247,5 +254,11 @@ public class RowImpl extends ArrayTuple implements Row {
   public Numeric[] getNumericArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getNumericArray(pos);
+  }
+
+  @Override
+  public Point[] getPointArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getPointArray(pos);
   }
 }

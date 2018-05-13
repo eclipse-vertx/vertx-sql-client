@@ -16,6 +16,7 @@
  */
 package io.reactiverse.pgclient;
 
+import io.reactiverse.pgclient.data.Point;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.buffer.Buffer;
@@ -190,6 +191,15 @@ public interface Row extends Tuple {
   Numeric getNumeric(String name);
 
   /**
+   * Get {@link Point} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Point getPoint(String name);
+
+  /**
    * Get an array of {@link Integer} value at {@code pos}.
    *
    * @param name the column
@@ -333,4 +343,12 @@ public interface Row extends Tuple {
   @GenIgnore
   Numeric[] getNumericArray(String name);
 
+  /**
+   * Get an array of {@link Point} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Point[] getPointArray(String name);
 }

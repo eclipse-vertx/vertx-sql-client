@@ -35,6 +35,8 @@ class ColumnChecker {
     rowMethods.add(Row::getBigDecimal);
     tupleMethods.add(Tuple::getNumeric);
     rowMethods.add(Row::getNumeric);
+    tupleMethods.add(Tuple::getPoint);
+    rowMethods.add(Row::getPoint);
     tupleMethods.add(Tuple::getString);
     rowMethods.add(Row::getString);
     tupleMethods.add(Tuple::getBoolean);
@@ -81,6 +83,8 @@ class ColumnChecker {
     rowMethods.add(Row::getBufferArray);
     tupleMethods.add(Tuple::getUUIDArray);
     rowMethods.add(Row::getUUIDArray);
+    tupleMethods.add(Tuple::getPointArray);
+    rowMethods.add(Row::getPointArray);
   }
 
   static ColumnChecker checkColumn(int index, String name) {

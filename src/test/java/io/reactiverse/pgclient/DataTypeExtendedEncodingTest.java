@@ -1,5 +1,6 @@
 package io.reactiverse.pgclient;
 
+import io.reactiverse.pgclient.data.Point;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -869,6 +870,21 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
     testGeneric(ctx,
       "SELECT c FROM (VALUES ($1 :: FLOAT4[])) AS t (c)",
       new Float[][] { new Float[]{ 0f, -10f, Float.MAX_VALUE } }, Tuple::getFloatArray);
+  }
+
+  @Test
+  public void testPoint(TestContext ctx) {
+    testGeneric(ctx,
+      "SELECT c FROM (VALUES ($1 :: POINT)) AS t (c)",
+      new Point[] { new Point(0, 0),  new Point(10.45, 20.178)}, Tuple::getPoint);
+  }
+
+  @Test
+  public void testPointArray(TestContext ctx) {
+    testGeneric(ctx,
+      "SELECT c FROM (VALUES ($1 :: POINT[])) AS t (c)",
+      new Point[][] {new Point[]{new Point(4, 5), null, new Point(3.4, -4.5), null}},
+      Tuple::getPointArray);
   }
 
   private static <T> void compare(TestContext ctx, T expected, T actual) {

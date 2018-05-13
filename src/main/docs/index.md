@@ -284,6 +284,7 @@ Currently the client supports the following Postgres types
 * BYTEA (`io.vertx.core.buffer.Buffer`)
 * JSON (`io.reactiverse.pgclient.Json`)
 * JSONB (`io.reactiverse.pgclient.Json`)
+* POINT (`io.reactiverse.pgclient.data.Point`)
 
 Arrays of these types are supported.
 

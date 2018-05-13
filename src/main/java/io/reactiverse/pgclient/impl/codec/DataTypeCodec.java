@@ -25,6 +25,7 @@ import io.reactiverse.pgclient.Numeric;
 import io.reactiverse.pgclient.impl.codec.formatter.DateTimeFormatter;
 import io.reactiverse.pgclient.impl.codec.formatter.TimeFormatter;
 import io.reactiverse.pgclient.impl.codec.util.UTF8StringEndDetector;
+import io.reactiverse.pgclient.data.Point;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -51,6 +52,7 @@ public class DataTypeCodec {
   private static final UUID[] empty_uuid_array = new UUID[0];
   private static final Json[] empty_json_array = new Json[0];
   private static final Numeric[] empty_numeric_array = new Numeric[0];
+  private static final Point[] empty_point_array = new Point[0];
   private static final Boolean[] empty_boolean_array = new Boolean[0];
   private static final Integer[] empty_integer_array = new Integer[0];
   private static final Short[] empty_short_array = new Short[0];
@@ -80,6 +82,7 @@ public class DataTypeCodec {
   private static final IntFunction<UUID[]> UUID_ARRAY_FACTORY = size -> size == 0 ? empty_uuid_array : new UUID[size];
   private static final IntFunction<Json[]> JSON_ARRAY_FACTORY = size -> size == 0 ? empty_json_array : new Json[size];
   private static final IntFunction<Numeric[]> NUMERIC_ARRAY_FACTORY = size -> size == 0 ? empty_numeric_array : new Numeric[size];
+  private static final IntFunction<Point[]> POINT_ARRAY_FACTORY = size -> size == 0 ? empty_point_array : new Point[size];
 
   public static void encodeText(DataType id, Object value, ByteBuf buff) {
     int index = buff.writerIndex();
@@ -225,6 +228,12 @@ public class DataTypeCodec {
       case JSONB_ARRAY:
         binaryEncodeArray((Json[]) value, DataType.JSONB, buff);
         break;
+      case POINT:
+        binaryEncodePoint((Point) value, buff);
+        break;
+      case POINT_ARRAY:
+        binaryEncodeArray((Point[]) value, DataType.POINT, buff);
+        break;
       default:
         System.out.println("Data type " + id + " does not support binary encoding");
         defaultEncodeBinary(value, buff);
@@ -314,6 +323,10 @@ public class DataTypeCodec {
         return binaryDecodeJSONB(len, buff);
       case JSONB_ARRAY:
         return binaryDecodeArray(JSON_ARRAY_FACTORY, DataType.JSONB, len, buff);
+      case POINT:
+        return binaryDecodePoint(len, buff);
+      case POINT_ARRAY:
+        return binaryDecodeArray(POINT_ARRAY_FACTORY, DataType.POINT, len, buff);
       default:
         System.out.println("Data type " + id + " does not support binary decoding");
         return defaultDecodeBinary(len, buff);
@@ -406,6 +419,10 @@ public class DataTypeCodec {
          return textDecodeJSONB(len, buff);
       case JSONB_ARRAY:
         return textDecodeArray(JSON_ARRAY_FACTORY, DataType.JSONB, len, buff);
+      case POINT:
+        return textDecodePOINT(len, buff);
+      case POINT_ARRAY:
+        return textDecodeArray(POINT_ARRAY_FACTORY, DataType.POINT, len, buff);
       default:
         System.out.println("Data type " + id + " does not support text decoding");
         return defaultDecodeText(len, buff);
@@ -512,7 +529,7 @@ public class DataTypeCodec {
     buff.writeFloat(value);
   }
 
-  private static void binaryEncodeFLOAT8(Double value, ByteBuf buff) {
+  private static void binaryEncodeFLOAT8(double value, ByteBuf buff) {
     buff.writeDouble(value);
   }
 
@@ -520,7 +537,7 @@ public class DataTypeCodec {
     return buff.readDouble();
   }
 
-  private static Double textDecodeFLOAT8(int len, ByteBuf buff) {
+  private static double textDecodeFLOAT8(int len, ByteBuf buff) {
     // Todo optimize that
     CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
     return Double.parseDouble(cs.toString());
@@ -530,6 +547,17 @@ public class DataTypeCodec {
     // Todo optimize that
     CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
     return Numeric.parse(cs.toString());
+  }
+
+  private static Point textDecodePOINT(int len, ByteBuf buff) {
+    buff.skipBytes(1);
+    int idx = buff.readerIndex();
+    int s = buff.indexOf(idx, idx + len, (byte) ',');
+    int t = s - idx;
+    double x = textDecodeFLOAT8(t, buff);
+    buff.skipBytes(1);
+    double y = textDecodeFLOAT8(len - t - 3, buff);
+    return new Point(x, y);
   }
 
   private static void textEncodeNUMERIC(Numeric value, ByteBuf buff) {
@@ -694,6 +722,17 @@ public class DataTypeCodec {
   private static void binaryEncodeUUID(UUID uuid, ByteBuf buff) {
     buff.writeLong(uuid.getMostSignificantBits());
     buff.writeLong(uuid.getLeastSignificantBits());
+  }
+
+  private static void binaryEncodePoint(Point point, ByteBuf buff) {
+    binaryEncodeFLOAT8(point.x, buff);
+    binaryEncodeFLOAT8(point.y, buff);
+  }
+
+  private static Point binaryDecodePoint(int len, ByteBuf buff) {
+    double x = binaryDecodeFLOAT8(8, buff);
+    double y = binaryDecodeFLOAT8(8, buff);
+    return new Point(x, y);
   }
 
   private static UUID binaryDecodeUUID(int len, ByteBuf buff) {

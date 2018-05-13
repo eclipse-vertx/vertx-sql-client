@@ -1,5 +1,6 @@
 package io.reactiverse.pgclient;
 
+import io.reactiverse.pgclient.data.Point;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -204,6 +205,40 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
             .returns(Tuple::getDouble, Row::getDouble, Double.NaN)
             .fails(Tuple::getBigDecimal, Row::getBigDecimal)
             .returns(Tuple::getNumeric, Row::getNumeric, nan)
+            .forRow(row);
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testPoint(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT Point(10.1,20.45) \"p\"", ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.size());
+          Row row = result.iterator().next();
+          ColumnChecker.checkColumn(0, "p")
+            .returns(Tuple::getValue, Row::getValue, new Point(10.1, 20.45))
+            .returns(Tuple::getPoint, Row::getPoint, new Point(10.1, 20.45))
+            .forRow(row);
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testPointArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT (ARRAY[Point(10.1,20.45)]) \"p\"", ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.size());
+          Row row = result.iterator().next();
+          ColumnChecker.checkColumn(0, "p")
+            .returns(Tuple::getValue, Row::getValue, new Point[] {new Point(10.1, 20.45)})
+            .returns(Tuple::getPointArray, Row::getPointArray, new Point[] {new Point(10.1, 20.45)})
             .forRow(row);
           async.complete();
         }));

@@ -18,6 +18,7 @@
 package io.reactiverse.pgclient;
 
 import io.reactiverse.pgclient.impl.ArrayTuple;
+import io.reactiverse.pgclient.data.Point;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
@@ -449,6 +450,15 @@ public interface Tuple {
   Numeric[] getNumericArray(int pos);
 
   /**
+   * Get an array of {@link Point} value at {@code pos}.
+   *
+   * @param pos the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Point[] getPointArray(int pos);
+
+  /**
    * Get {@link Numeric} value at {@code pos}.
    *
    * @param pos the position
@@ -456,6 +466,15 @@ public interface Tuple {
    */
   @GenIgnore
   Numeric getNumeric(int pos);
+
+  /**
+   * Get {@link Point} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Point getPoint(int pos);
 
   /**
    * Get a buffer value at {@code pos}.
@@ -637,6 +656,15 @@ public interface Tuple {
   Tuple addBigDecimal(BigDecimal value);
 
   /**
+   * Add a {@link Point} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple adPoint(Point value);
+
+  /**
    * Add an array of {@code Integer} value at the end of the tuple.
    *
    * @param value the value
@@ -779,6 +807,15 @@ public interface Tuple {
    */
   @GenIgnore
   Tuple addNumericArray(Numeric[] value);
+
+  /**
+   * Add an array of {@link Point} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addPointArray(Point[] value);
 
   /**
    * @return the tuple size

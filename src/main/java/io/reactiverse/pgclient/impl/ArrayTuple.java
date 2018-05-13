@@ -20,6 +20,7 @@ package io.reactiverse.pgclient.impl;
 import io.reactiverse.pgclient.Json;
 import io.reactiverse.pgclient.Numeric;
 import io.reactiverse.pgclient.Tuple;
+import io.reactiverse.pgclient.data.Point;
 import io.vertx.core.buffer.Buffer;
 
 import java.math.BigDecimal;
@@ -121,6 +122,16 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
       return Numeric.parse(val.toString());
     }
     return null;
+  }
+
+  @Override
+  public Point getPoint(int pos) {
+    Object val = get(pos);
+    if (val instanceof Point) {
+      return (Point) val;
+    } else {
+      return null;
+    }
   }
 
   @Override
@@ -284,6 +295,16 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
+  public Point[] getPointArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Point[]) {
+      return (Point[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
   public String getString(int pos) {
     Object val = get(pos);
     if (val instanceof String) {
@@ -392,6 +413,7 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
       || value instanceof OffsetDateTime
       || value instanceof UUID
       || value instanceof Json
+      || value instanceof Point
       || value instanceof Boolean[]
       || value instanceof Number[]
       || value instanceof String[]
@@ -402,6 +424,7 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
       || value instanceof OffsetDateTime[]
       || value instanceof UUID[]
       || value instanceof Json[]
+      || value instanceof Point[]
       || value instanceof Buffer[]) {
       add(value);
     } else {
@@ -507,6 +530,12 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
+  public Tuple adPoint(Point value) {
+    add(value);
+    return this;
+  }
+
+  @Override
   public Tuple addNumeric(Numeric value) {
     add(value);
     return this;
@@ -514,6 +543,12 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Tuple addNumericArray(Numeric[] value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addPointArray(Point[] value) {
     add(value);
     return this;
   }

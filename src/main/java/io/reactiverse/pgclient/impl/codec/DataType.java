@@ -20,6 +20,7 @@ import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
 import io.reactiverse.pgclient.Json;
 import io.reactiverse.pgclient.Numeric;
+import io.reactiverse.pgclient.data.Point;
 import io.vertx.core.buffer.Buffer;
 
 import java.time.*;
@@ -89,7 +90,8 @@ public enum DataType {
   JSONB_ARRAY(3807, true, Json.class),
   XML(142, true, Object.class),
   XML_ARRAY(143, true, Object[].class),
-  POINT(600, true, Object.class),
+  POINT(600, true, Point.class),
+  POINT_ARRAY(1017, true, Point[].class),
   BOX(603, true, Object.class),
   HSTORE(33670, true, Object.class),
   OID(26, true, Object.class),
