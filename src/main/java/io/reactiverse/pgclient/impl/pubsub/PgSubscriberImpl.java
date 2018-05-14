@@ -95,7 +95,7 @@ public class PgSubscriberImpl implements PgSubscriber {
   private void checkReconnect(int count) {
     if (!closed) {
       Long val = reconnectPolicy.apply(count);
-      if (val > 0) {
+      if (val >= 0) {
         tryConnect(val, ar -> {
           if (ar.failed()) {
             checkReconnect(count + 1);

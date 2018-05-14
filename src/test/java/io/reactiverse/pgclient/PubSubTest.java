@@ -126,7 +126,16 @@ public class PubSubTest extends PgTestBase {
   }
 
   @Test
-  public void testReconnect(TestContext ctx) {
+  public void testReconnectImmediately(TestContext ctx) {
+    testReconnect(ctx, 0);
+  }
+
+  @Test
+  public void testReconnectWithDelay(TestContext ctx) {
+    testReconnect(ctx, 100);
+  }
+
+  public void testReconnect(TestContext ctx, long delay) {
     PgConnectOptions options = new PgConnectOptions(PgTestBase.options);
     ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
     AtomicReference<ProxyServer.Connection> connRef = new AtomicReference<>();
@@ -167,7 +176,7 @@ public class PubSubTest extends PgTestBase {
       ctx.assertEquals(0, retries);
       ctx.assertFalse(subscriber.closed());
       if (count.getAndIncrement() < 2) {
-        return 100L;
+        return delay;
       } else {
         return -1L;
       }
