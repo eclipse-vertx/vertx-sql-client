@@ -145,7 +145,7 @@ public interface PgClient {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  PgClient query(String sql, Handler<AsyncResult<PgResult<Row>>> handler);
+  PgClient query(String sql, Handler<AsyncResult<PgResult<PgRowSet>>> handler);
 
   /**
    * Prepare and execute a query.
@@ -155,7 +155,7 @@ public interface PgClient {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  PgClient preparedQuery(String sql, Handler<AsyncResult<PgResult<Row>>> handler);
+  PgClient preparedQuery(String sql, Handler<AsyncResult<PgResult<PgRowSet>>> handler);
 
   /**
    * Prepare and execute a query.
@@ -166,7 +166,7 @@ public interface PgClient {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  PgClient preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<Row>>> handler);
+  PgClient preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<PgRowSet>>> handler);
 
   /**
    * Prepare and execute a createBatch.
@@ -177,6 +177,6 @@ public interface PgClient {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  PgClient preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgResult<Row>>> handler);
+  PgClient preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgResult<PgRowSet>>> handler);
 
 }

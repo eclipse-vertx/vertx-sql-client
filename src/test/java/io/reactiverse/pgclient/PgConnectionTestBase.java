@@ -29,6 +29,7 @@ import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
@@ -102,7 +103,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(10000, result.size());
-        PgIterator<Row> it = result.iterator();
+        Iterator<Row> it = result.get().iterator();
         for (int i = 0; i < 10000; i++) {
           Row row = it.next();
           ctx.assertEquals(2, row.size());
@@ -123,14 +124,14 @@ public abstract class PgConnectionTestBase extends PgTestBase {
       conn.query("SELECT id, message from FORTUNE LIMIT 1;SELECT message, id from FORTUNE LIMIT 1", ctx.asyncAssertSuccess(result1 -> {
         ctx.assertEquals(1, result1.size());
         ctx.assertEquals(Arrays.asList("id", "message"), result1.columnsNames());
-        Tuple row1 = result1.iterator().next();
+        Tuple row1 = result1.get().iterator().next();
         ctx.assertTrue(row1.getValue(0) instanceof Integer);
         ctx.assertTrue(row1.getValue(1) instanceof String);
-        PgResult<Row> result2 = result1.next();
+        PgResult<PgRowSet> result2 = result1.next();
         ctx.assertNotNull(result2);
         ctx.assertEquals(1, result2.size());
         ctx.assertEquals(Arrays.asList("message", "id"), result2.columnsNames());
-        Tuple row2 = result2.iterator().next();
+        Tuple row2 = result2.get().iterator().next();
         ctx.assertTrue(row2.getValue(0) instanceof String);
         ctx.assertTrue(row2.getValue(1) instanceof Integer);
         ctx.assertNull(result2.next());
@@ -192,7 +193,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
         ctx.assertEquals("23505", ((PgException) err).getCode());
         conn.query("SELECT 1000", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
-          ctx.assertEquals(1000, result.iterator().next().getInteger(0));
+          ctx.assertEquals(1000, result.get().iterator().next().getInteger(0));
           async.complete();
         }));
       }));
@@ -215,7 +216,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("INSERT INTO Fortune (id, message) VALUES ($1, $2) RETURNING id", Tuple.of(14, "SomeMessage"), ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(14, result.iterator().next().getInteger("id"));
+        ctx.assertEquals(14, result.get().iterator().next().getInteger("id"));
         async.complete();
       }));
     }));
@@ -226,7 +227,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("INSERT INTO Fortune (id, message) VALUES ($1, $2) RETURNING id", Tuple.of(15, "SomeMessage"), ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(15, result.iterator().next().getInteger("id"));
+        ctx.assertEquals(15, result.get().iterator().next().getInteger("id"));
         conn.preparedQuery("INSERT INTO Fortune (id, message) VALUES ($1, $2) RETURNING id", Tuple.of(15, "SomeMessage"), ctx.asyncAssertFailure(err -> {
           ctx.assertEquals("23505", ((PgException) err).getCode());
           async.complete();
@@ -284,7 +285,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
           ctx.assertEquals("23505", ((PgException) err).getCode());
           conn.query("SELECT 1000", ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1000, result.iterator().next().getInteger(0));
+            ctx.assertEquals(1000, result.get().iterator().next().getInteger(0));
             async.complete();
           }));
         }));
@@ -428,7 +429,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       conn.query("BEGIN", ctx.asyncAssertSuccess(result1 -> {
         ctx.assertEquals(0, result1.size());
-        ctx.assertNotNull(result1.iterator());
+        ctx.assertNotNull(result1.get().iterator());
         conn.query("COMMIT", ctx.asyncAssertSuccess(result2 -> {
           ctx.assertEquals(0, result2.size());
           async.complete();
@@ -600,7 +601,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
           ctx.assertEquals(1, result.updatedCount());
           conn.prepare("SELECT message FROM Fortune WHERE id = 2", ctx.asyncAssertSuccess(ps2 -> {
             ps2.execute(ctx.asyncAssertSuccess(r -> {
-                ctx.assertEquals("PgClient Rocks!", r.iterator().next().getValue(0));
+                ctx.assertEquals("PgClient Rocks!", r.get().iterator().next().getValue(0));
                 async.complete();
               }));
           }));
@@ -618,7 +619,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
           ctx.assertEquals(1, result.updatedCount());
           conn.prepare("SELECT message FROM Fortune WHERE id = $1", ctx.asyncAssertSuccess(ps2 -> {
             ps2.execute(Tuple.of(2), ctx.asyncAssertSuccess(r -> {
-                ctx.assertEquals("PgClient Rocks Again!!", r.iterator().next().getValue(0));
+                ctx.assertEquals("PgClient Rocks Again!!", r.get().iterator().next().getValue(0));
                 async.complete();
               }));
           }));
@@ -692,7 +693,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
       PgTransaction tx = conn.begin();
       AtomicInteger failures = new AtomicInteger();
       tx.abortHandler(v -> ctx.assertEquals(0, failures.getAndIncrement()));
-      AtomicReference<AsyncResult<PgResult<Row>>> queryAfterFailed = new AtomicReference<>();
+      AtomicReference<AsyncResult<PgResult<PgRowSet>>> queryAfterFailed = new AtomicReference<>();
       AtomicReference<AsyncResult<Void>> commit = new AtomicReference<>();
       conn.query("INSERT INTO TxTest (id) VALUES (5)", ar1 -> { });
       conn.query("INSERT INTO TxTest (id) VALUES (5)", ar2 -> {

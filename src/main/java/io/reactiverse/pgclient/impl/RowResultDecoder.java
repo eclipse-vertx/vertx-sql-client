@@ -26,14 +26,22 @@ import io.reactiverse.pgclient.impl.codec.decoder.ResultDecoder;
 import io.reactiverse.pgclient.impl.codec.decoder.message.RowDescription;
 import io.netty.buffer.ByteBuf;
 
-public class RowResultDecoder implements ResultDecoder<Row> {
+import java.util.function.BiConsumer;
+import java.util.stream.Collector;
+
+public class RowResultDecoder<C, R> implements ResultDecoder<R> {
+
+  private final Collector<Row, C, R> collector;
+  private final BiConsumer<C, Row> accumulator;
 
   private RowDescription desc;
-  private RowImpl head;
-  private RowImpl tail;
   private int size;
+  private RowImpl row;
+  private C container;
 
-  public RowResultDecoder() {
+  public RowResultDecoder(Collector<Row, C, R> collector) {
+    this.collector = collector;
+    this.accumulator = collector.accumulator();
   }
 
   @Override
@@ -43,7 +51,14 @@ public class RowResultDecoder implements ResultDecoder<Row> {
 
   @Override
   public void decodeRow(int len, ByteBuf in) {
-    RowImpl row = new RowImpl(desc);
+    if (row == null) {
+      row = new RowImpl(desc);
+    } else {
+      row.clear();
+    }
+    if (container == null) {
+      container = collector.supplier().get();
+    }
     for (int c = 0; c < len; ++c) {
       int length = in.readInt();
       Object decoded = null;
@@ -57,19 +72,19 @@ public class RowResultDecoder implements ResultDecoder<Row> {
       }
       row.add(decoded);
     }
-    if (head == null) {
-      head = tail = row;
-    } else {
-      tail.next = row;
-      tail = row;
-    }
+    accumulator.accept(container, row);
     size++;
   }
 
   @Override
-  public PgResult<Row> complete(int updated) {
-    PgResultImpl result = new PgResultImpl(updated, desc != null ? desc.columnNames() : null, head, size);
-    head = null;
+  public PgResult<R> complete(int updated) {
+    if (container == null) {
+      container = collector.supplier().get();
+    }
+    R r = collector.finisher().apply(container);
+    PgResultImpl<R> result = new PgResultImpl<>(updated, desc != null ? desc.columnNames() : null, r, size);
+    container = null;
+    // head = null;
     size = 0;
     return result;
   }

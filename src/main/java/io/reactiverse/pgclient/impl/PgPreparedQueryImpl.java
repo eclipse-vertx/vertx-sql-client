@@ -40,7 +40,7 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
   }
 
   @Override
-  public PgPreparedQuery execute(Tuple args, Handler<AsyncResult<PgResult<Row>>> handler) {
+  public PgPreparedQuery execute(Tuple args, Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
     String msg = ps.paramDesc.prepare((List<Object>) args);
     if (msg != null) {
       throw new IllegalArgumentException(msg);
@@ -68,18 +68,18 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
                int fetch,
                String portal,
                boolean suspended,
-               QueryResultHandler<Row> handler) {
-    conn.schedule(new ExtendedQueryCommand<>(ps, params, fetch, portal, suspended, new RowResultDecoder(), handler));
+               QueryResultHandler<PgRowSet> handler) {
+    conn.schedule(new ExtendedQueryCommand<>(ps, params, fetch, portal, suspended, new RowResultDecoder<>(PgRowSetImpl.COLLECTOR), handler));
   }
 
-  public PgPreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<PgResult<Row>>> handler) {
+  public PgPreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
     for  (Tuple args : argsList) {
       String msg = ps.paramDesc.prepare((List<Object>) args);
       if (msg != null) {
         throw new IllegalArgumentException(msg);
       }
     }
-    conn.schedule(new ExtendedBatchQueryCommand<>(ps, argsList.iterator(), new RowResultDecoder(), new BatchQueryResultHandler(argsList.size(), handler)));
+    conn.schedule(new ExtendedBatchQueryCommand<>(ps, argsList.iterator(), new RowResultDecoder<>(PgRowSetImpl.COLLECTOR), new BatchQueryResultHandler(argsList.size(), handler)));
     return this;
   }
 

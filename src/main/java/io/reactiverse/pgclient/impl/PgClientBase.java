@@ -29,16 +29,16 @@ public abstract class PgClientBase<C extends PgClient> implements PgClient {
   protected abstract void schedule(CommandBase<?> cmd);
 
   @Override
-  public C query(String sql, Handler<AsyncResult<PgResult<Row>>> handler) {
-    schedule(new SimpleQueryCommand<>(sql, new RowResultDecoder(), new SimpleQueryResultHandler<>(handler)));
+  public C query(String sql, Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
+    schedule(new SimpleQueryCommand<>(sql, new RowResultDecoder<>(PgRowSetImpl.COLLECTOR), new SimpleQueryResultHandler<>(handler)));
     return (C) this;
   }
 
   @Override
-  public C preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<Row>>> handler) {
+  public C preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
     schedule(new PrepareStatementCommand(sql, ar -> {
       if (ar.succeeded()) {
-        schedule(new ExtendedQueryCommand<>(ar.result(), arguments, new RowResultDecoder(), new ExtendedQueryResultHandler<>(handler)));
+        schedule(new ExtendedQueryCommand<>(ar.result(), arguments, new RowResultDecoder<>(PgRowSetImpl.COLLECTOR), new ExtendedQueryResultHandler<>(handler)));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
       }
@@ -47,18 +47,18 @@ public abstract class PgClientBase<C extends PgClient> implements PgClient {
   }
 
   @Override
-  public C preparedQuery(String sql, Handler<AsyncResult<PgResult<Row>>> handler) {
+  public C preparedQuery(String sql, Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
     return preparedQuery(sql, ArrayTuple.EMPTY, handler);
   }
 
   @Override
-  public C preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgResult<Row>>> handler) {
+  public C preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
     schedule(new PrepareStatementCommand(sql, ar -> {
       if (ar.succeeded()) {
-        schedule(new ExtendedBatchQueryCommand<Row>(
+        schedule(new ExtendedBatchQueryCommand<>(
           ar.result(),
           batch.iterator(),
-          new RowResultDecoder()
+          new RowResultDecoder<>(PgRowSetImpl.COLLECTOR)
           , new BatchQueryResultHandler(batch.size(), handler)));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));

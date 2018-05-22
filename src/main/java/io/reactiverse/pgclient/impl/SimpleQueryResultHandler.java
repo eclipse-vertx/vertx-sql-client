@@ -17,8 +17,8 @@
 
 package io.reactiverse.pgclient.impl;
 
+import io.reactiverse.pgclient.PgRowSet;
 import io.reactiverse.pgclient.PgResult;
-import io.reactiverse.pgclient.Row;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
@@ -38,7 +38,7 @@ public class SimpleQueryResultHandler<T> implements QueryResultHandler<T> {
       head = result;
       tail = (PgResultImpl) result;
     } else {
-      tail.next = (PgResult<Row>) result;
+      tail.next = (PgResult<PgRowSet>) result;
       tail = (PgResultImpl) result;
     }
   }

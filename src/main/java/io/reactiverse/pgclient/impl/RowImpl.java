@@ -40,6 +40,11 @@ public class RowImpl extends ArrayTuple implements Row {
     this.desc = desc;
   }
 
+  public RowImpl(RowImpl row) {
+    super(row);
+    this.desc = row.desc;
+  }
+
   @Override
   public Boolean getBoolean(String name) {
     int pos = desc.columnIndex(name);

@@ -17,10 +17,7 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.PgStream;
-import io.reactiverse.pgclient.PgResult;
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
+import io.reactiverse.pgclient.*;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
@@ -39,7 +36,7 @@ public class PgCursorStreamImpl implements PgStream<Row> {
   private boolean paused;
   private QueryCursor cursor;
 
-  class QueryCursor implements QueryResultHandler<Row> {
+  class QueryCursor implements QueryResultHandler<PgRowSet> {
 
     final String portal = UUID.randomUUID().toString();
     Iterator<Row> result;
@@ -47,8 +44,8 @@ public class PgCursorStreamImpl implements PgStream<Row> {
     boolean closed;
 
     @Override
-    public void handleResult(PgResult<Row> result) {
-      this.result = result.iterator();
+    public void handleResult(PgResult<PgRowSet> result) {
+      this.result = result.get().iterator();
     }
 
     @Override

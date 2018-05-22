@@ -15,18 +15,17 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec.decoder;
+package io.reactiverse.pgclient;
 
-import io.reactiverse.pgclient.PgResult;
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.impl.codec.decoder.message.RowDescription;
-import io.netty.buffer.ByteBuf;
+import io.vertx.codegen.annotations.VertxGen;
 
-import java.util.stream.Collector;
+/**
+ * A set of rows.
+ */
+@VertxGen
+public interface PgRowSet extends Iterable<Row> {
 
-public interface ResultDecoder<T> {
+  @Override
+  PgIterator iterator();
 
-  void init(RowDescription desc);
-  void decodeRow(int len, ByteBuf in);
-  PgResult<T> complete(int updated);
 }

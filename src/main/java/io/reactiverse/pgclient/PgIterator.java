@@ -14,23 +14,22 @@
  * limitations under the License.
  *
  */
-
 package io.reactiverse.pgclient;
 
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.json.JsonArray;
 
 import java.util.Iterator;
 
 /**
  * An iterator for processing postgres items synchronously.
- * @param <T>
  */
 @VertxGen
-public interface PgIterator<T> extends Iterator<T> {
+public interface PgIterator extends Iterator<Row> {
 
+  @Override
   boolean hasNext();
 
-  T next();
+  @Override
+  Row next();
 
 }

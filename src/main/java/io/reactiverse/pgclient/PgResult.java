@@ -26,7 +26,7 @@ import java.util.List;
  * @param <T>
  */
 @VertxGen
-public interface PgResult<T> extends Iterable<T> {
+public interface PgResult<T> {
 
   /**
    * Get the number of the affected rows in the operation to this PgResult.
@@ -50,11 +50,11 @@ public interface PgResult<T> extends Iterable<T> {
   int size();
 
   /**
-   * Get the iterator of the PgResult.
+   * Get the result value.
    *
-   * @return the iterator.
+   * @return the result
    */
-  PgIterator<T> iterator();
+  T get();
 
   /**
    * Return the next available result or {@code null}, e.g for a simple query that executed multiple queries or for

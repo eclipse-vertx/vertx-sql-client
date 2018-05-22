@@ -167,7 +167,7 @@ class Transaction implements PgTransaction {
     return this;
   }
 
-  private CommandBase query(String sql, Handler<AsyncResult<PgResult<Row>>> handler) {
-    return new SimpleQueryCommand<>(sql, new RowResultDecoder(), new SimpleQueryResultHandler<>(handler));
+  private CommandBase query(String sql, Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
+    return new SimpleQueryCommand<>(sql, new RowResultDecoder<>(PgRowSetImpl.COLLECTOR), new SimpleQueryResultHandler<>(handler));
   }
 }

@@ -32,16 +32,16 @@ import java.util.List;
 public interface PgPool extends PgClient {
 
   @Override
-  PgPool preparedQuery(String sql, Handler<AsyncResult<PgResult<Row>>> handler);
+  PgPool preparedQuery(String sql, Handler<AsyncResult<PgResult<PgRowSet>>> handler);
 
   @Override
-  PgPool query(String sql, Handler<AsyncResult<PgResult<Row>>> handler);
+  PgPool query(String sql, Handler<AsyncResult<PgResult<PgRowSet>>> handler);
 
   @Override
-  PgPool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<Row>>> handler);
+  PgPool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<PgRowSet>>> handler);
 
   @Override
-  PgPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgResult<Row>>> handler);
+  PgPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgResult<PgRowSet>>> handler);
 
   /**
    * Get a connection from the pool.

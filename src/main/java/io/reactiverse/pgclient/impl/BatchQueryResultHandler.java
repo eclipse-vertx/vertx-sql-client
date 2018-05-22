@@ -17,23 +17,23 @@
 
 package io.reactiverse.pgclient.impl;
 
+import io.reactiverse.pgclient.PgRowSet;
 import io.reactiverse.pgclient.PgResult;
-import io.reactiverse.pgclient.Row;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
-class BatchQueryResultHandler implements QueryResultHandler<Row> {
+class BatchQueryResultHandler implements QueryResultHandler<PgRowSet> {
 
-  private final Handler<AsyncResult<PgResult<Row>>> handler;
-  private PgResult<Row> head;
+  private final Handler<AsyncResult<PgResult<PgRowSet>>> handler;
+  private PgResult<PgRowSet> head;
   private PgResultImpl tail;
 
-  public BatchQueryResultHandler(int size, Handler<AsyncResult<PgResult<Row>>> handler) {
+  public BatchQueryResultHandler(int size, Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
     this.handler = handler;
   }
 
   @Override
-  public void handleResult(PgResult<Row> result) {
+  public void handleResult(PgResult<PgRowSet> result) {
     if (head == null) {
       head = result;
       tail = (PgResultImpl) result;

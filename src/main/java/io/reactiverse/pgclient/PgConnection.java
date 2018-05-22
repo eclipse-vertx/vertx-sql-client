@@ -92,15 +92,15 @@ public interface PgConnection extends PgClient {
   void close();
 
   @Override
-  PgConnection preparedQuery(String sql, Handler<AsyncResult<PgResult<Row>>> handler);
+  PgConnection preparedQuery(String sql, Handler<AsyncResult<PgResult<PgRowSet>>> handler);
 
   @Override
-  PgConnection query(String sql, Handler<AsyncResult<PgResult<Row>>> handler);
+  PgConnection query(String sql, Handler<AsyncResult<PgResult<PgRowSet>>> handler);
 
   @Override
-  PgConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<Row>>> handler);
+  PgConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<PgRowSet>>> handler);
 
   @Override
-  PgConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgResult<Row>>> handler);
+  PgConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgResult<PgRowSet>>> handler);
 
 }

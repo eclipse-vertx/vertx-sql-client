@@ -37,7 +37,7 @@ public interface PgPreparedQuery {
    * @return create a query with no arguments
    */
   @Fluent
-  default PgPreparedQuery execute(Handler<AsyncResult<PgResult<Row>>> handler) {
+  default PgPreparedQuery execute(Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
     return execute(ArrayTuple.EMPTY, handler);
   }
 
@@ -48,7 +48,7 @@ public interface PgPreparedQuery {
    * @return the query
    */
   @Fluent
-  PgPreparedQuery execute(Tuple args, Handler<AsyncResult<PgResult<Row>>> handler);
+  PgPreparedQuery execute(Tuple args, Handler<AsyncResult<PgResult<PgRowSet>>> handler);
 
   /**
    * @return create a query cursor with a {@code fetch} size and empty arguments
@@ -84,7 +84,7 @@ public interface PgPreparedQuery {
    * @return the createBatch
    */
   @Fluent
-  PgPreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<PgResult<Row>>> handler);
+  PgPreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<PgResult<PgRowSet>>> handler);
 
   /**
    * Close the prepared query and release its resources.

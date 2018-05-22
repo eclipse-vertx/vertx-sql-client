@@ -17,33 +17,30 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.PgIterator;
 import io.reactiverse.pgclient.PgResult;
-import io.reactiverse.pgclient.Row;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.NoSuchElementException;
 
-public class PgResultImpl implements PgResult<Row> {
+public class PgResultImpl<T> implements PgResult<T> {
 
   final int updated;
   final List<String> columnNames;
-  final RowImpl rows;
+  final T value;
   final int size;
-  PgResult<Row> next;
+  PgResult<T> next;
 
   public PgResultImpl(int updated) {
     this.updated = updated;
-    this.rows = null;
+    this.value = null;
     this.size = 0;
     this.columnNames = Collections.emptyList();
   }
 
-  public PgResultImpl(int updated, List<String> columnNames, RowImpl rows, int size) {
+  public PgResultImpl(int updated, List<String> columnNames, T value, int size) {
     this.updated = updated;
     this.columnNames = columnNames;
-    this.rows = rows;
+    this.value = value;
     this.size = size;
   }
 
@@ -63,8 +60,9 @@ public class PgResultImpl implements PgResult<Row> {
   }
 
   @Override
-  public PgIterator<Row> iterator() {
-    return new PgIterator<Row>() {
+  public T get() {
+    /*
+    return () -> new PgIterator() {
       RowImpl current = rows;
       @Override
       public boolean hasNext() {
@@ -80,10 +78,12 @@ public class PgResultImpl implements PgResult<Row> {
         return r;
       }
     };
+    */
+    return value;
   }
 
   @Override
-  public PgResult<Row> next() {
+  public PgResult<T> next() {
     return next;
   }
 }
