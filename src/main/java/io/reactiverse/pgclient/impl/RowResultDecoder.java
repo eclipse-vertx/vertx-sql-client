@@ -46,22 +46,16 @@ public class RowResultDecoder implements ResultDecoder<Row> {
     RowImpl row = new RowImpl(desc);
     for (int c = 0; c < len; ++c) {
       int length = in.readInt();
+      Object decoded = null;
       if (length != -1) {
         ColumnDesc columnDesc = desc.columns()[c];
-        Object decoded;
         if (columnDesc.getDataFormat() == DataFormat.BINARY) {
           decoded = DataTypeCodec.decodeBinary(columnDesc.getDataType(), length, in);
         } else {
           decoded = DataTypeCodec.decodeText(columnDesc.getDataType(), length, in);
         }
-        if(decoded != null) {
-          row.add(decoded);
-        } else {
-          row.add(null);
-        }
-      } else {
-        row.add(null);
       }
+      row.add(decoded);
     }
     if (head == null) {
       head = tail = row;
