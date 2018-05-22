@@ -36,6 +36,7 @@ public interface PgPreparedQuery {
   /**
    * @return create a query with no arguments
    */
+  @Fluent
   default PgPreparedQuery execute(Handler<AsyncResult<PgResult<Row>>> handler) {
     return execute(ArrayTuple.EMPTY, handler);
   }
@@ -46,6 +47,7 @@ public interface PgPreparedQuery {
    * @param args the list of arguments
    * @return the query
    */
+  @Fluent
   PgPreparedQuery execute(Tuple args, Handler<AsyncResult<PgResult<Row>>> handler);
 
   /**
