@@ -22,13 +22,10 @@ import io.reactiverse.pgclient.impl.codec.decoder.message.RowDescription;
 
 public class DecodeContext {
 
-  final RowDescription rowDesc;
   final DataFormat dataFormat;
   final ResultDecoder decoder;
-  RowDescription current;
 
-  public DecodeContext(RowDescription rowDesc, DataFormat dataFormat, ResultDecoder decoder) {
-    this.rowDesc = rowDesc;
+  public DecodeContext(DataFormat dataFormat, ResultDecoder decoder) {
     this.dataFormat = dataFormat;
     this.decoder = decoder;
   }

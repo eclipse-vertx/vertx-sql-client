@@ -51,9 +51,4 @@ abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
       super.handleMessage(msg);
     }
   }
-
-  @Override
-  void fail(Throwable cause) {
-    handler.handle(CommandResponse.failure(cause));
-  }
 }

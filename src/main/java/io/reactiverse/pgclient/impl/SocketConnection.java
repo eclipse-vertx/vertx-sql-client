@@ -50,10 +50,10 @@ public class SocketConnection implements Connection {
   private final Context context;
   private Status status = Status.CONNECTED;
   private Holder holder;
-  final Map<String, CachedPreparedStatement> psCache;
+  private final Map<String, CachedPreparedStatement> psCache;
+  private final StringLongSequence psSeq = new StringLongSequence();
   private final int pipeliningLimit;
   final Deque<DecodeContext> decodeQueue = new ArrayDeque<>();
-  final StringLongSequence psSeq = new StringLongSequence();
 
   public SocketConnection(NetSocketInternal socket,
                           boolean cachePreparedStatements,
@@ -102,24 +102,25 @@ public class SocketConnection implements Connection {
     schedule(new InitCommand(username, password, database, completionHandler));
   }
 
-  static class CachedPreparedStatement implements Handler<AsyncResult<PreparedStatement>> {
+  static class CachedPreparedStatement implements Handler<CommandResponse<PreparedStatement>> {
 
-    final Future<PreparedStatement> fut = Future.<PreparedStatement>future().setHandler(this);
-    final ArrayDeque<Handler<AsyncResult<PreparedStatement>>> waiters = new ArrayDeque<>();
+    private CommandResponse<PreparedStatement> resp;
+    private final ArrayDeque<Handler<? super CommandResponse<PreparedStatement>>> waiters = new ArrayDeque<>();
 
-    void get(Handler<AsyncResult<PreparedStatement>> handler) {
-      if (fut.isComplete()) {
-        handler.handle(fut);
+    void get(Handler<? super CommandResponse<PreparedStatement>> handler) {
+      if (resp != null) {
+        handler.handle(resp);
       } else {
         waiters.add(handler);
       }
     }
 
     @Override
-    public void handle(AsyncResult<PreparedStatement> event) {
-      Handler<AsyncResult<PreparedStatement>> waiter;
+    public void handle(CommandResponse<PreparedStatement> event) {
+      resp = event;
+      Handler<? super CommandResponse<PreparedStatement>> waiter;
       while ((waiter = waiters.poll()) != null) {
-        waiter.handle(fut);
+        waiter.handle(resp);
       }
     }
   }
@@ -186,12 +187,16 @@ public class SocketConnection implements Connection {
       if (psCache != null) {
         SocketConnection.CachedPreparedStatement cached = psCache.get(psCmd.sql);
         if (cached != null) {
-          cached.get(psCmd.handler);
+          Handler<? super CommandResponse<PreparedStatement>> handler = psCmd.handler;
+          cached.get(handler);
           return;
         } else {
           psCmd.statement = psSeq.next();
           psCmd.cached = cached = new SocketConnection.CachedPreparedStatement();
           psCache.put(psCmd.sql, cached);
+          Handler<? super CommandResponse<PreparedStatement>> a = psCmd.handler;
+          psCmd.cached.get(a);
+          psCmd.handler = psCmd.cached;
         }
       }
     }
@@ -199,9 +204,10 @@ public class SocketConnection implements Connection {
     //
     if (status == Status.CONNECTED) {
       pending.add(cmd);
-      cmd.completionHandler = v -> {
+      cmd.completionHandler = resp -> {
         inflight.poll();
         checkPending();
+        ((Handler<CommandResponse>)cmd.handler).handle(resp);
       };
       checkPending();
     } else {

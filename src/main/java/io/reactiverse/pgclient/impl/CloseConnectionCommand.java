@@ -32,7 +32,4 @@ class CloseConnectionCommand extends CommandBase<Void> {
     conn.writeMessage(Terminate.INSTANCE);
   }
 
-  @Override
-  void fail(Throwable err) {
-  }
 }

@@ -32,11 +32,14 @@ class SimpleQueryCommand<T> extends QueryCommandBase<T> {
 
   private ResultDecoder<T> decoder;
   private final String sql;
+  private final DecodeContext ctx;
+
 
   SimpleQueryCommand(String sql, ResultDecoder<T> decoder, QueryResultHandler<T> handler) {
     super(handler);
     this.sql = sql;
     this.decoder = decoder;
+    this.ctx = new DecodeContext(DataFormat.TEXT, decoder);
   }
 
   @Override
@@ -46,14 +49,14 @@ class SimpleQueryCommand<T> extends QueryCommandBase<T> {
 
   @Override
   void exec(SocketConnection conn) {
-    conn.decodeQueue.add(new DecodeContext(null, DataFormat.TEXT, decoder));
+    conn.decodeQueue.add(ctx);
     conn.writeMessage(new Query(sql));
   }
 
   @Override
   public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == RowDescription.class) {
-      // Expected
+      decoder.init((RowDescription) msg);
     } else {
       super.handleMessage(msg);
     }

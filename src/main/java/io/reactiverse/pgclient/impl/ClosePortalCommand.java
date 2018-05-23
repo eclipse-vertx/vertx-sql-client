@@ -38,7 +38,7 @@ class ClosePortalCommand extends CommandBase<Void> {
 
   @Override
   void exec(SocketConnection conn) {
-    conn.decodeQueue.add(new DecodeContext(null, null, null));
+    conn.decodeQueue.add(new DecodeContext(null, null));
     conn.writeMessage(new Close().setPortal(portal));
     conn.writeMessage(Sync.INSTANCE);
   }
@@ -50,10 +50,5 @@ class ClosePortalCommand extends CommandBase<Void> {
     } else {
       super.handleMessage(msg);
     }
-  }
-
-  @Override
-  void fail(Throwable err) {
-    handler.handle(CommandResponse.failure(err));
   }
 }

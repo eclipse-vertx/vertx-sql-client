@@ -37,23 +37,15 @@ public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
   SocketConnection.CachedPreparedStatement cached;
   private ParameterDescription parameterDesc;
   private RowDescription rowDesc;
-  final Handler<AsyncResult<PreparedStatement>> handler;
 
-  PrepareStatementCommand(String sql, Handler<AsyncResult<PreparedStatement>> handler) {
-    super(null); // Not pretty but well, that's fine for now
+  PrepareStatementCommand(String sql, Handler<? super CommandResponse<PreparedStatement>> handler) {
+    super(handler);
     this.sql = sql;
-    this.handler = handler;
-    super.handler = ar -> {
-      handler.handle(ar);
-      if (cached != null) {
-        cached.fut.handle(ar);
-      }
-    };
   }
 
   @Override
   void exec(SocketConnection conn) {
-    conn.decodeQueue.add(new DecodeContext(null, null, null));
+    conn.decodeQueue.add(new DecodeContext(null, null));
     conn.writeMessage(new Parse(sql).setStatement(statement));
     conn.writeMessage(new Describe().setStatement(statement));
     conn.writeMessage(Sync.INSTANCE);
@@ -79,15 +71,6 @@ public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
         result = new PreparedStatement(sql, statement, parameterDesc, rowDesc);
       }
       super.handleMessage(msg);
-    }
-  }
-
-  @Override
-  void fail(Throwable err) {
-    Future<PreparedStatement> failure = Future.failedFuture(err);
-    handler.handle(failure);
-    if (cached != null) {
-      cached.fut.handle(failure);
     }
   }
 }

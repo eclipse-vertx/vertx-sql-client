@@ -39,12 +39,11 @@ public class RowResultDecoder<C, R> implements ResultDecoder<R> {
   private RowImpl row;
   private C container;
 
-  public RowResultDecoder(Collector<Row, C, R> collector) {
+  RowResultDecoder(Collector<Row, C, R> collector) {
     this.collector = collector;
     this.accumulator = collector.accumulator();
   }
 
-  @Override
   public void init(RowDescription desc) {
     this.desc = desc;
   }

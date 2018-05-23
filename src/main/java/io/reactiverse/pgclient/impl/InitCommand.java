@@ -55,7 +55,7 @@ public class InitCommand extends CommandBase<Connection> {
   @Override
   void exec(SocketConnection c) {
     conn = c;
-    conn.decodeQueue.add(new DecodeContext(null, null, null));
+    conn.decodeQueue.add(new DecodeContext(null, null));
     c.writeMessage(new StartupMessage(username, database));
   }
 
@@ -77,8 +77,8 @@ public class InitCommand extends CommandBase<Connection> {
     } else if (msg.getClass() == BackendKeyData.class) {
     }  else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;
-      completionHandler.handle(null);
-      handler.handle(CommandResponse.failure(new PgException(error)));
+      CommandResponse<Connection> resp = CommandResponse.failure(new PgException(error));
+      completionHandler.handle(resp);
     } else if (msg.getClass() == ReadyForQuery.class) {
       // The final phase before returning the connection
       // We should make sure we are supporting only UTF8
@@ -89,15 +89,9 @@ public class InitCommand extends CommandBase<Connection> {
       } else {
         fut = CommandResponse.success(conn);
       }
-      completionHandler.handle(null);
-      handler.handle(fut);
+      completionHandler.handle(fut);
     } else {
       super.handleMessage(msg);
     }
-  }
-
-  @Override
-  public void fail(Throwable err) {
-    handler.handle(CommandResponse.failure(err));
   }
 }

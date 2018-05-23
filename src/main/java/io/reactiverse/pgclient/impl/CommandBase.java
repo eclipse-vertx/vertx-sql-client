@@ -27,7 +27,7 @@ import io.vertx.core.Handler;
 
 public abstract class CommandBase<R> {
 
-  protected Handler<Void> completionHandler;
+  Handler<? super CommandResponse<R>> completionHandler;
   Handler<? super CommandResponse<R>> handler;
   Throwable failure;
   R result;
@@ -39,12 +39,13 @@ public abstract class CommandBase<R> {
   public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == ReadyForQuery.class) {
       ReadyForQuery readyForQuery = (ReadyForQuery) msg;
-      completionHandler.handle(null);
+      CommandResponse<R> resp;
       if (failure != null) {
-        handler.handle(CommandResponse.failure(failure, readyForQuery.txStatus()));
+        resp = CommandResponse.failure(this.failure, readyForQuery.txStatus());
       } else {
-        handler.handle(CommandResponse.success(result, readyForQuery.txStatus()));
+        resp = CommandResponse.success(result, readyForQuery.txStatus());
       }
+      completionHandler.handle(resp);
     } else {
       System.out.println(getClass().getSimpleName() + " should handle message " + msg);
     }
@@ -52,6 +53,7 @@ public abstract class CommandBase<R> {
 
   abstract void exec(SocketConnection conn);
 
-  abstract void fail(Throwable err);
-
+  final void fail(Throwable err) {
+    handler.handle(CommandResponse.failure(err));
+  }
 }

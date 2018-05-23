@@ -47,6 +47,8 @@ abstract class ExtendedQueryCommandBase<T> extends QueryCommandBase<T> {
     this.portal = portal;
     this.suspended = suspended;
     this.decoder = decoder;
+
+    decoder.init(ps.rowDesc);
   }
 
   @Override
