@@ -17,11 +17,10 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.impl.codec.DataFormat;
-import io.reactiverse.pgclient.impl.codec.decoder.DecodeContext;
 import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
 import io.reactiverse.pgclient.impl.codec.decoder.ResultDecoder;
 import io.reactiverse.pgclient.impl.codec.decoder.message.RowDescription;
+import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
 import io.reactiverse.pgclient.impl.codec.encoder.message.Query;
 
 /**
@@ -30,16 +29,11 @@ import io.reactiverse.pgclient.impl.codec.encoder.message.Query;
 
 class SimpleQueryCommand<T> extends QueryCommandBase<T> {
 
-  private ResultDecoder<T> decoder;
   private final String sql;
-  private final DecodeContext ctx;
-
 
   SimpleQueryCommand(String sql, ResultDecoder<T> decoder, QueryResultHandler<T> handler) {
-    super(handler);
+    super(handler, decoder);
     this.sql = sql;
-    this.decoder = decoder;
-    this.ctx = new DecodeContext(DataFormat.TEXT, decoder);
   }
 
   @Override
@@ -48,9 +42,8 @@ class SimpleQueryCommand<T> extends QueryCommandBase<T> {
   }
 
   @Override
-  void exec(SocketConnection conn) {
-    conn.decodeQueue.add(ctx);
-    conn.writeMessage(new Query(sql));
+  void exec(MessageEncoder out) {
+    out.writeMessage(new Query(sql));
   }
 
   @Override

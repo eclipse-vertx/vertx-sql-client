@@ -18,10 +18,7 @@
 package io.reactiverse.pgclient.impl.codec.decoder.message;
 
 
-import io.reactiverse.pgclient.PgResult;
 import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
-
-import java.util.Objects;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
@@ -29,12 +26,11 @@ import java.util.Objects;
 
 public class CommandComplete implements InboundMessage {
 
-  // private final String command;
-  private final PgResult<?> result;
+  private final int updated;
 
-  public CommandComplete(/*String command, */PgResult<?> result) {
+  public CommandComplete(/*String command, */int updated) {
     // this.command = command;
-    this.result = result;
+    this.updated = updated;
   }
 
   /*
@@ -43,28 +39,15 @@ public class CommandComplete implements InboundMessage {
   }
   */
 
-  public PgResult<?> result() {
-    return result;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    CommandComplete that = (CommandComplete) o;
-    return Objects.equals(result, that.result);
-  }
-
-  @Override
-  public int hashCode() {
-    return result == null ? 0 : result.hashCode();
+  public int updated() {
+    return updated;
   }
 
   @Override
   public String toString() {
     return "CommandComplete{" +
       // "command='" + command + '\'' +
-      ", result=" + result +
+      "updated=" + updated +
       '}';
   }
 

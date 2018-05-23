@@ -33,7 +33,6 @@ abstract class ExtendedQueryCommandBase<T> extends QueryCommandBase<T> {
   protected final int fetch;
   protected final String portal;
   protected final boolean suspended;
-  protected final ResultDecoder<T> decoder;
 
   ExtendedQueryCommandBase(PreparedStatement ps,
                            int fetch,
@@ -41,12 +40,11 @@ abstract class ExtendedQueryCommandBase<T> extends QueryCommandBase<T> {
                            boolean suspended,
                            ResultDecoder<T> decoder,
                            QueryResultHandler<T> handler) {
-    super(handler);
+    super(handler, decoder);
     this.ps = ps;
     this.fetch = fetch;
     this.portal = portal;
     this.suspended = suspended;
-    this.decoder = decoder;
 
     decoder.init(ps.rowDesc);
   }
@@ -61,8 +59,8 @@ abstract class ExtendedQueryCommandBase<T> extends QueryCommandBase<T> {
     if (msg.getClass() == ParseComplete.class) {
       // Response to Parse
     } else if (msg.getClass() == PortalSuspended.class) {
+      PgResult<T> result = decoder.complete(0);
       this.result = true;
-      PgResult<T> result = (PgResult<T>) ((PortalSuspended) msg).result();
       resultHandler.handleResult(result);
     } else if (msg.getClass() == BindComplete.class) {
       // Response to Bind

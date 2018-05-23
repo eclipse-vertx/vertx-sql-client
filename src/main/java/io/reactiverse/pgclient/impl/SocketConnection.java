@@ -17,13 +17,11 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.impl.codec.decoder.DecodeContext;
 import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
 import io.reactiverse.pgclient.impl.codec.decoder.MessageDecoder;
 import io.reactiverse.pgclient.impl.codec.decoder.InitiateSslHandler;
-import io.reactiverse.pgclient.impl.codec.encoder.OutboundMessage;
+import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
 import io.reactiverse.pgclient.impl.codec.decoder.message.NotificationResponse;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.*;
@@ -53,7 +51,8 @@ public class SocketConnection implements Connection {
   private final Map<String, CachedPreparedStatement> psCache;
   private final StringLongSequence psSeq = new StringLongSequence();
   private final int pipeliningLimit;
-  final Deque<DecodeContext> decodeQueue = new ArrayDeque<>();
+  private MessageDecoder decoder;
+  private MessageEncoder encoder;
 
   public SocketConnection(NetSocketInternal socket,
                           boolean cachePreparedStatements,
@@ -94,12 +93,18 @@ public class SocketConnection implements Connection {
   }
 
   private void initiateProtocol(String username, String password, String database, Handler<? super CommandResponse<Connection>> completionHandler) {
-    ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
-    pipeline.addBefore("handler", "decoder", new MessageDecoder(decodeQueue));
+    decoder = new MessageDecoder(inflight, this::handleMessage, socket.channelHandlerContext().alloc());
+    encoder = new MessageEncoder(socket);
     socket.closeHandler(this::handleClosed);
     socket.exceptionHandler(this::handleException);
-    socket.messageHandler(this::handleMessage);
-    schedule(new InitCommand(username, password, database, completionHandler));
+    socket.messageHandler(msg -> {
+      try {
+        handleMessage(msg);
+      } catch (Exception e) {
+        handleException(e);
+      }
+    });
+    schedule(new InitCommand(this, username, password, database, completionHandler));
   }
 
   static class CachedPreparedStatement implements Handler<CommandResponse<PreparedStatement>> {
@@ -140,26 +145,6 @@ public class SocketConnection implements Connection {
     this.holder = holder;
   }
 
-  private boolean cork = false;
-  private ArrayDeque<OutboundMessage> outbound = new ArrayDeque<>();
-
-  void writeMessage(OutboundMessage cmd) {
-    if (cork) {
-      outbound.add(cmd);
-    } else {
-      ByteBuf out = null;
-      try {
-        out = socket.channelHandlerContext().alloc().ioBuffer();
-        cmd.encode(out);
-        socket.writeMessage(out);
-        out = null;
-      } finally {
-        if (out != null) {
-          out.release();
-        }
-      }
-    }
-  }
 
   @Override
   public void close(Holder holder) {
@@ -219,39 +204,26 @@ public class SocketConnection implements Connection {
     if (inflight.size() < pipeliningLimit) {
       CommandBase<?> cmd;
       while (inflight.size() < pipeliningLimit && (cmd = pending.poll()) != null) {
-        cork = true;
         inflight.add(cmd);
-        cmd.exec(this);
-        if (outbound.size() > 0) {
-          ByteBuf out = null;
-          try {
-            out = socket.channelHandlerContext().alloc().ioBuffer();
-            OutboundMessage msg;
-            while ((msg = outbound.poll()) != null) {
-              msg.encode(out);
-            }
-            socket.writeMessage(out);
-            out = null;
-          } finally {
-            if (out != null) {
-              out.release();
-            }
-          }
-        }
-        cork = false;
+        encoder.begin();
+        cmd.exec(encoder);
+        encoder.end();
       }
     }
   }
 
   private void handleMessage(Object msg) {
+    decoder.channelRead(msg);
+  }
+
+  private void handleMessage(InboundMessage msg) {
     // System.out.println("<-- " + msg);
     if (msg instanceof NotificationResponse) {
       handleNotification((NotificationResponse) msg);
     } else {
-      InboundMessage pgMsg = (InboundMessage) msg;
       CommandBase<?> cmd = inflight.peek();
       if (cmd != null) {
-        cmd.handleMessage(pgMsg);
+        cmd.handleMessage(msg);
       } else {
         System.out.println("Uh oh, no inflight command for " + msg);
       }

@@ -17,21 +17,21 @@
 
 package io.reactiverse.pgclient.impl.codec.decoder;
 
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.CompositeByteBuf;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.reactiverse.pgclient.PgResult;
+import io.reactiverse.pgclient.impl.CommandBase;
+import io.reactiverse.pgclient.impl.QueryCommandBase;
 import io.reactiverse.pgclient.impl.codec.ColumnDesc;
 import io.reactiverse.pgclient.impl.codec.DataFormat;
 import io.reactiverse.pgclient.impl.codec.DataType;
 import io.reactiverse.pgclient.impl.codec.decoder.message.*;
 import io.reactiverse.pgclient.impl.codec.util.Util;
-import io.reactiverse.pgclient.impl.PgResultImpl;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.ByteProcessor;
 import io.reactiverse.pgclient.impl.codec.decoder.message.type.AuthenticationType;
 import io.reactiverse.pgclient.impl.codec.decoder.message.type.ErrorOrNoticeType;
 import io.reactiverse.pgclient.impl.codec.decoder.message.type.MessageType;
+import io.vertx.core.Handler;
 
 import java.util.Deque;
 
@@ -42,18 +42,21 @@ import java.util.Deque;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class MessageDecoder extends ChannelInboundHandlerAdapter {
+public class MessageDecoder {
 
-  private final Deque<DecodeContext> decodeQueue;
+  private final Deque<CommandBase<?>> inflight;
+  private final Handler<InboundMessage> handler;
+  private final ByteBufAllocator alloc;
 
   private ByteBuf in;
 
-  public MessageDecoder(Deque<DecodeContext> decodeQueue) {
-    this.decodeQueue = decodeQueue;
+  public MessageDecoder(Deque<CommandBase<?>> inflight, Handler<InboundMessage> handler, ByteBufAllocator alloc) {
+    this.inflight = inflight;
+    this.handler = handler;
+    this.alloc = alloc;
   }
 
-  @Override
-  public void channelRead(ChannelHandlerContext ctx, Object msg) {
+  public void channelRead(Object msg) {
     ByteBuf buff = (ByteBuf) msg;
     if (in == null) {
       in = buff;
@@ -62,7 +65,7 @@ public class MessageDecoder extends ChannelInboundHandlerAdapter {
       if (in instanceof CompositeByteBuf) {
         composite = (CompositeByteBuf) in;
       } else {
-        composite = ctx.alloc().compositeBuffer();
+        composite = alloc.compositeBuffer();
         composite.addComponent(true, in);
         in = composite;
       }
@@ -85,7 +88,7 @@ public class MessageDecoder extends ChannelInboundHandlerAdapter {
         in.setIndex(beginIdx + 5, endIdx);
         switch (id) {
           case MessageType.READY_FOR_QUERY: {
-            decodeReadyForQuery(ctx, in);
+            decodeReadyForQuery(in);
             break;
           }
           case MessageType.DATA_ROW: {
@@ -93,15 +96,15 @@ public class MessageDecoder extends ChannelInboundHandlerAdapter {
             break;
           }
           case MessageType.COMMAND_COMPLETE: {
-            decodeCommandComplete(ctx, in);
+            decodeCommandComplete(in);
             break;
           }
           case MessageType.BIND_COMPLETE: {
-            decodeBindComplete(ctx);
+            decodeBindComplete();
             break;
           }
           default: {
-            decodeMessage(ctx, id, in);
+            decodeMessage(id, in);
           }
         }
       } finally {
@@ -114,58 +117,58 @@ public class MessageDecoder extends ChannelInboundHandlerAdapter {
     }
   }
 
-  private void decodeMessage(ChannelHandlerContext ctx, byte id, ByteBuf in) {
+  private void decodeMessage(byte id, ByteBuf in) {
     switch (id) {
       case MessageType.ROW_DESCRIPTION: {
-        decodeRowDescription(ctx, in);
+        decodeRowDescription(in);
         break;
       }
       case MessageType.ERROR_RESPONSE: {
-        decodeError(ctx, in);
+        decodeError(in);
         break;
       }
       case MessageType.NOTICE_RESPONSE: {
-        decodeNotice(ctx, in);
+        decodeNotice(in);
         break;
       }
       case MessageType.AUTHENTICATION: {
-        decodeAuthentication(ctx, in);
+        decodeAuthentication(in);
         break;
       }
       case MessageType.EMPTY_QUERY_RESPONSE: {
-        decodeEmptyQueryResponse(ctx);
+        decodeEmptyQueryResponse();
         break;
       }
       case MessageType.PARSE_COMPLETE: {
-        decodeParseComplete(ctx);
+        decodeParseComplete();
         break;
       }
       case MessageType.CLOSE_COMPLETE: {
-        decodeCloseComplete(ctx);
+        decodeCloseComplete();
         break;
       }
       case MessageType.NO_DATA: {
-        decodeNoData(ctx);
+        decodeNoData();
         break;
       }
       case MessageType.PORTAL_SUSPENDED: {
-        decodePortalSuspended(ctx);
+        decodePortalSuspended();
         break;
       }
       case MessageType.PARAMETER_DESCRIPTION: {
-        decodeParameterDescription(ctx, in);
+        decodeParameterDescription(in);
         break;
       }
       case MessageType.PARAMETER_STATUS: {
-        decodeParameterStatus(ctx, in);
+        decodeParameterStatus(in);
         break;
       }
       case MessageType.BACKEND_KEY_DATA: {
-        decodeBackendKeyData(ctx, in);
+        decodeBackendKeyData(in);
         break;
       }
       case MessageType.NOTIFICATION_RESPONSE: {
-        decodeNotificationResponse(ctx, in);
+        decodeNotificationResponse(in);
         break;
       }
       default: {
@@ -174,50 +177,59 @@ public class MessageDecoder extends ChannelInboundHandlerAdapter {
     }
   }
 
-  private void decodePortalSuspended(ChannelHandlerContext ctx_) {
-    DecodeContext ctx = decodeQueue.peek();
-    PgResult result = ctx.decoder.complete(0);
-    ctx_.fireChannelRead(new PortalSuspended(result));
+  private void decodePortalSuspended() {
+    handler.handle(PortalSuspended.INSTANCE);
   }
 
-  private void decodeCommandComplete(ChannelHandlerContext ctx_, ByteBuf in) {
-    DecodeContext ctx = decodeQueue.peek();
-    int updated = decodeCommandComplete(in);
-    CommandComplete complete;
-    if (ctx.decoder == null) {
-      complete = new CommandComplete(new PgResultImpl(updated));
-    } else {
-      complete = new CommandComplete(ctx.decoder.complete(updated));
-    }
-    ctx_.fireChannelRead(complete);
+  private void decodeCommandComplete(ByteBuf in) {
+    int updated = processor.parse(in);
+    handler.handle(new CommandComplete(updated));
   }
 
   private void decodeDataRow(ByteBuf in) {
-    DecodeContext decodeCtx = decodeQueue.peek();
+    QueryCommandBase<?> cmd = (QueryCommandBase<?>) inflight.peek();
     int len = in.readUnsignedShort();
-    decodeCtx.decoder.decodeRow(len, in);
+    cmd.decoder.decodeRow(len, in);
   }
 
-  private void decodeRowDescription(ChannelHandlerContext ctx, ByteBuf in) {
-    ColumnDesc[] columns = decodeRowDescription(in);
+  private void  decodeRowDescription(ByteBuf in) {
+    ColumnDesc[] columns = new ColumnDesc[in.readUnsignedShort()];
+    for (int c = 0; c < columns.length; ++c) {
+      String fieldName = Util.readCStringUTF8(in);
+      int tableOID = in.readInt();
+      short columnAttributeNumber = in.readShort();
+      int typeOID = in.readInt();
+      short typeSize = in.readShort();
+      int typeModifier = in.readInt();
+      int textOrBinary = in.readUnsignedShort(); // Useless for now
+      ColumnDesc column = new ColumnDesc(
+        fieldName,
+        tableOID,
+        columnAttributeNumber,
+        DataType.valueOf(typeOID),
+        typeSize,
+        typeModifier,
+        DataFormat.valueOf(textOrBinary)
+      );
+      columns[c] = column;
+    }
     RowDescription rowDesc = new RowDescription(columns);
-    ctx.fireChannelRead(rowDesc);
+    handler.handle(rowDesc);
   }
 
-  private void decodeReadyForQuery(ChannelHandlerContext ctx, ByteBuf in) {
-    ctx.fireChannelRead(ReadyForQuery.decode(in.readByte()));
-    decodeQueue.poll();
+  private void decodeReadyForQuery(ByteBuf in) {
+    handler.handle(ReadyForQuery.decode(in.readByte()));
   }
 
-  private void decodeError(ChannelHandlerContext ctx, ByteBuf in) {
-    decodeErrorOrNotice(ctx, ErrorResponse.INSTANCE, in);
+  private void decodeError(ByteBuf in) {
+    decodeErrorOrNotice(ErrorResponse.INSTANCE, in);
   }
 
-  private void decodeNotice(ChannelHandlerContext ctx, ByteBuf in) {
-    decodeErrorOrNotice(ctx, NoticeResponse.INSTANCE, in);
+  private void decodeNotice(ByteBuf in) {
+    decodeErrorOrNotice(NoticeResponse.INSTANCE, in);
   }
 
-  private void decodeErrorOrNotice(ChannelHandlerContext ctx, Response response, ByteBuf in) {
+  private void decodeErrorOrNotice(Response response, ByteBuf in) {
 
     byte type;
 
@@ -298,25 +310,25 @@ public class MessageDecoder extends ChannelInboundHandlerAdapter {
           break;
       }
     }
-    ctx.fireChannelRead(response);
+    handler.handle(response);
   }
 
-  private void decodeAuthentication(ChannelHandlerContext ctx, ByteBuf in) {
+  private void decodeAuthentication(ByteBuf in) {
 
     int type = in.readInt();
     switch (type) {
       case AuthenticationType.OK: {
-        ctx.fireChannelRead(AuthenticationOk.INSTANCE);
+        handler.handle(AuthenticationOk.INSTANCE);
       }
       break;
       case AuthenticationType.MD5_PASSWORD: {
         byte[] salt = new byte[4];
         in.readBytes(salt);
-        ctx.fireChannelRead(new AuthenticationMD5Password(salt));
+        handler.handle(new AuthenticationMD5Password(salt));
       }
       break;
       case AuthenticationType.CLEARTEXT_PASSWORD: {
-        ctx.fireChannelRead(AuthenticationClearTextPassword.INSTANCE);
+        handler.handle(AuthenticationClearTextPassword.INSTANCE);
       }
       break;
       case AuthenticationType.KERBEROS_V5:
@@ -325,7 +337,7 @@ public class MessageDecoder extends ChannelInboundHandlerAdapter {
       case AuthenticationType.GSS_CONTINUE:
       case AuthenticationType.SSPI:
       default:
-        throw new UnsupportedOperationException("Authentication type is not supported in the client");
+        throw new UnsupportedOperationException("Authentication type " + type + " is not supported in the client");
     }
   }
 
@@ -357,71 +369,43 @@ public class MessageDecoder extends ChannelInboundHandlerAdapter {
     }
   }
 
-  private int decodeCommandComplete(ByteBuf in) {
-    return processor.parse(in);
+  private void decodeParseComplete() {
+    handler.handle(ParseComplete.INSTANCE);
   }
 
-  private ColumnDesc[]  decodeRowDescription(ByteBuf in) {
-    ColumnDesc[] columns = new ColumnDesc[in.readUnsignedShort()];
-    for (int c = 0; c < columns.length; ++c) {
-      String fieldName = Util.readCStringUTF8(in);
-      int tableOID = in.readInt();
-      short columnAttributeNumber = in.readShort();
-      int typeOID = in.readInt();
-      short typeSize = in.readShort();
-      int typeModifier = in.readInt();
-      int textOrBinary = in.readUnsignedShort(); // Useless for now
-      ColumnDesc column = new ColumnDesc(
-        fieldName,
-        tableOID,
-        columnAttributeNumber,
-        DataType.valueOf(typeOID),
-        typeSize,
-        typeModifier,
-        DataFormat.valueOf(textOrBinary)
-      );
-      columns[c] = column;
-    }
-    return columns;
+  private void decodeBindComplete() {
+    handler.handle(BindComplete.INSTANCE);
   }
 
-  private void decodeParseComplete(ChannelHandlerContext ctx) {
-    ctx.fireChannelRead(ParseComplete.INSTANCE);
+  private void decodeCloseComplete() {
+    handler.handle(CloseComplete.INSTANCE);
   }
 
-  private void decodeBindComplete(ChannelHandlerContext ctx) {
-    ctx.fireChannelRead(BindComplete.INSTANCE);
+  private void decodeNoData() {
+    handler.handle(NoData.INSTANCE);
   }
 
-  private void decodeCloseComplete(ChannelHandlerContext ctx) {
-    ctx.fireChannelRead(CloseComplete.INSTANCE);
-  }
-
-  private void decodeNoData(ChannelHandlerContext ctx) {
-    ctx.fireChannelRead(NoData.INSTANCE);
-  }
-
-  private void decodeParameterDescription(ChannelHandlerContext ctx, ByteBuf in) {
+  private void decodeParameterDescription(ByteBuf in) {
     DataType[] paramDataTypes = new DataType[in.readUnsignedShort()];
     for (int c = 0; c < paramDataTypes.length; ++c) {
       paramDataTypes[c] = DataType.valueOf(in.readInt());
     }
-    ctx.fireChannelRead(new ParameterDescription(paramDataTypes));
+    handler.handle(new ParameterDescription(paramDataTypes));
   }
 
-  private void decodeParameterStatus(ChannelHandlerContext ctx, ByteBuf in) {
-    ctx.fireChannelRead(new ParameterStatus(Util.readCStringUTF8(in), Util.readCStringUTF8(in)));
+  private void decodeParameterStatus(ByteBuf in) {
+    handler.handle(new ParameterStatus(Util.readCStringUTF8(in), Util.readCStringUTF8(in)));
   }
 
-  private void decodeEmptyQueryResponse(ChannelHandlerContext ctx) {
-    ctx.fireChannelRead(EmptyQueryResponse.INSTANCE);
+  private void decodeEmptyQueryResponse() {
+    handler.handle(EmptyQueryResponse.INSTANCE);
   }
 
-  private void decodeBackendKeyData(ChannelHandlerContext ctx, ByteBuf in) {
-    ctx.fireChannelRead(new BackendKeyData(in.readInt(), in.readInt()));
+  private void decodeBackendKeyData(ByteBuf in) {
+    handler.handle(new BackendKeyData(in.readInt(), in.readInt()));
   }
 
-  private void decodeNotificationResponse(ChannelHandlerContext ctx, ByteBuf in) {
-    ctx.fireChannelRead(new NotificationResponse(in.readInt(), Util.readCStringUTF8(in), Util.readCStringUTF8(in)));
+  private void decodeNotificationResponse(ByteBuf in) {
+    handler.handle(new NotificationResponse(in.readInt(), Util.readCStringUTF8(in), Util.readCStringUTF8(in)));
   }
 }

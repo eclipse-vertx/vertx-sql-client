@@ -18,17 +18,13 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.PgException;
-import io.reactiverse.pgclient.impl.codec.decoder.DecodeContext;
 import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
 import io.reactiverse.pgclient.impl.codec.decoder.message.*;
+import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
 import io.reactiverse.pgclient.impl.codec.encoder.message.Describe;
 import io.reactiverse.pgclient.impl.codec.encoder.message.Parse;
 import io.reactiverse.pgclient.impl.codec.encoder.message.Sync;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
-
-import java.util.Map;
 
 public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
 
@@ -44,11 +40,10 @@ public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
   }
 
   @Override
-  void exec(SocketConnection conn) {
-    conn.decodeQueue.add(new DecodeContext(null, null));
-    conn.writeMessage(new Parse(sql).setStatement(statement));
-    conn.writeMessage(new Describe().setStatement(statement));
-    conn.writeMessage(Sync.INSTANCE);
+  void exec(MessageEncoder out) {
+    out.writeMessage(new Parse(sql).setStatement(statement));
+    out.writeMessage(new Describe().setStatement(statement));
+    out.writeMessage(Sync.INSTANCE);
   }
 
   @Override

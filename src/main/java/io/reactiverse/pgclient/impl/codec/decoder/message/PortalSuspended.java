@@ -17,7 +17,6 @@
 
 package io.reactiverse.pgclient.impl.codec.decoder.message;
 
-import io.reactiverse.pgclient.PgResult;
 import io.reactiverse.pgclient.impl.codec.encoder.message.Execute;
 import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
 
@@ -33,14 +32,9 @@ import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
 
 public class PortalSuspended implements InboundMessage {
 
-  private final PgResult<?> result;
+  public static final PortalSuspended INSTANCE = new PortalSuspended();
 
-  public PortalSuspended(PgResult<?> result) {
-    this.result = result;
-  }
-
-  public PgResult<?> result() {
-    return result;
+  private PortalSuspended() {
   }
 
   @Override

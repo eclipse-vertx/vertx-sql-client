@@ -17,6 +17,7 @@
 
 package io.reactiverse.pgclient.impl;
 
+import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
 import io.reactiverse.pgclient.impl.codec.encoder.message.Terminate;
 
 class CloseConnectionCommand extends CommandBase<Void> {
@@ -28,8 +29,8 @@ class CloseConnectionCommand extends CommandBase<Void> {
   }
 
   @Override
-  void exec(SocketConnection conn) {
-    conn.writeMessage(Terminate.INSTANCE);
+  void exec(MessageEncoder out) {
+    out.writeMessage(Terminate.INSTANCE);
   }
 
 }

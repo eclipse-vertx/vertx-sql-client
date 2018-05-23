@@ -18,9 +18,8 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.Tuple;
-import io.reactiverse.pgclient.impl.codec.DataFormat;
-import io.reactiverse.pgclient.impl.codec.decoder.DecodeContext;
 import io.reactiverse.pgclient.impl.codec.decoder.ResultDecoder;
+import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
 import io.reactiverse.pgclient.impl.codec.encoder.message.Bind;
 import io.reactiverse.pgclient.impl.codec.encoder.message.Execute;
 import io.reactiverse.pgclient.impl.codec.encoder.message.Parse;
@@ -52,21 +51,20 @@ public class ExtendedBatchQueryCommand<T> extends ExtendedQueryCommandBase<T> {
   }
 
   @Override
-  void exec(SocketConnection conn) {
-    conn.decodeQueue.add(new DecodeContext(DataFormat.BINARY, decoder));
+  void exec(MessageEncoder out) {
     if (suspended) {
-      conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
-      conn.writeMessage(Sync.INSTANCE);
+      out.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
+      out.writeMessage(Sync.INSTANCE);
     } else {
       if (ps.statement!= 0) {
-        conn.writeMessage(new Parse(ps.sql));
+        out.writeMessage(new Parse(ps.sql));
       }
       while (paramsIterator.hasNext()) {
         List<Object> params = (List<Object>) paramsIterator.next();
-        conn.writeMessage(new Bind(ps.statement, portal, params, ps.paramDesc.getParamDataTypes(), ps.columnDescs()));
-        conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
+        out.writeMessage(new Bind(ps.statement, portal, params, ps.paramDesc.getParamDataTypes(), ps.columnDescs()));
+        out.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
       }
-      conn.writeMessage(Sync.INSTANCE);
+      out.writeMessage(Sync.INSTANCE);
     }
   }
 }

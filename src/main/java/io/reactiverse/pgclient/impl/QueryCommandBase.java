@@ -20,6 +20,7 @@ package io.reactiverse.pgclient.impl;
 import io.reactiverse.pgclient.PgException;
 import io.reactiverse.pgclient.PgResult;
 import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
+import io.reactiverse.pgclient.impl.codec.decoder.ResultDecoder;
 import io.reactiverse.pgclient.impl.codec.decoder.message.CommandComplete;
 import io.reactiverse.pgclient.impl.codec.decoder.message.ErrorResponse;
 
@@ -27,12 +28,14 @@ import io.reactiverse.pgclient.impl.codec.decoder.message.ErrorResponse;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
-abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
+public abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
 
+  public ResultDecoder<T> decoder;
   protected final QueryResultHandler<T> resultHandler;
 
-  public QueryCommandBase(QueryResultHandler<T> handler) {
+  public QueryCommandBase(QueryResultHandler<T> handler, ResultDecoder<T> decoder) {
     super(handler);
+    this.decoder = decoder;
     this.resultHandler = handler;
   }
 
@@ -42,7 +45,7 @@ abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
   public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == CommandComplete.class) {
       this.result = false;
-      PgResult<T> result = (PgResult<T>) ((CommandComplete) msg).result();
+      PgResult<T> result = decoder.complete(((CommandComplete)msg).updated());
       resultHandler.handleResult(result);
     } else if (msg.getClass() == ErrorResponse.class) {
       ErrorResponse error = (ErrorResponse) msg;

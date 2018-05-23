@@ -18,7 +18,6 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.PgException;
-import io.reactiverse.pgclient.impl.codec.decoder.DecodeContext;
 import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
 import io.reactiverse.pgclient.impl.codec.decoder.message.AuthenticationClearTextPassword;
 import io.reactiverse.pgclient.impl.codec.decoder.message.AuthenticationMD5Password;
@@ -27,6 +26,7 @@ import io.reactiverse.pgclient.impl.codec.decoder.message.BackendKeyData;
 import io.reactiverse.pgclient.impl.codec.decoder.message.ErrorResponse;
 import io.reactiverse.pgclient.impl.codec.decoder.message.ParameterStatus;
 import io.reactiverse.pgclient.impl.codec.decoder.message.ReadyForQuery;
+import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
 import io.reactiverse.pgclient.impl.codec.encoder.message.PasswordMessage;
 import io.reactiverse.pgclient.impl.codec.encoder.message.StartupMessage;
 import io.vertx.core.Handler;
@@ -39,33 +39,39 @@ import io.vertx.core.Handler;
 public class InitCommand extends CommandBase<Connection> {
 
   private static final String UTF8 = "UTF8";
+  final SocketConnection conn;
   final String username;
   final String password;
   final String database;
   private String CLIENT_ENCODING;
-  private SocketConnection conn;
+  private MessageEncoder out;
 
-  InitCommand(String username, String password, String database, Handler<? super CommandResponse<Connection>> handler) {
+  InitCommand(
+    SocketConnection conn,
+    String username,
+    String password,
+    String database,
+    Handler<? super CommandResponse<Connection>> handler) {
     super(handler);
+    this.conn = conn;
     this.username = username;
     this.password = password;
     this.database = database;
   }
 
   @Override
-  void exec(SocketConnection c) {
-    conn = c;
-    conn.decodeQueue.add(new DecodeContext(null, null));
-    c.writeMessage(new StartupMessage(username, database));
+  void exec(MessageEncoder out) {
+    this.out = out;
+    out.writeMessage(new StartupMessage(username, database));
   }
 
   @Override
   public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == AuthenticationMD5Password.class) {
       AuthenticationMD5Password authMD5 = (AuthenticationMD5Password) msg;
-      conn.writeMessage(new PasswordMessage(username, password, authMD5.getSalt()));
+      out.writeMessage(new PasswordMessage(username, password, authMD5.getSalt()));
     } else if (msg.getClass() == AuthenticationClearTextPassword.class) {
-      conn.writeMessage(new PasswordMessage(username, password, null));
+      out.writeMessage(new PasswordMessage(username, password, null));
     } else if (msg.getClass() == AuthenticationOk.class) {
 //      handler.handle(Future.succeededFuture(conn));
 //      handler = null;
