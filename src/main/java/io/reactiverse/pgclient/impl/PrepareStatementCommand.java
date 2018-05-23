@@ -71,7 +71,7 @@ public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
 
   @Override
   void exec(SocketConnection conn) {
-    conn.decodeQueue.add(new DecodeContext(false, null, null, null));
+    conn.decodeQueue.add(new DecodeContext(null, null, null));
     conn.writeMessage(new Parse(sql).setStatement(statement));
     conn.writeMessage(new Describe().setStatement(statement));
     conn.writeMessage(Sync.INSTANCE);

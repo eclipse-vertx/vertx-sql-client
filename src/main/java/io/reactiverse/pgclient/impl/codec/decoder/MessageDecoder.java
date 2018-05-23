@@ -178,7 +178,10 @@ public class MessageDecoder extends ByteToMessageDecoder {
     DecodeContext decodeCtx = decodeQueue.peek();
     RowDescription desc = decodeCtx.current;
     if (desc == null) {
-      desc = decodeCtx.peekDesc ? rowDesc : decodeCtx.rowDesc;
+      desc = decodeCtx.rowDesc;
+      if (desc == null) {
+        desc = rowDesc;
+      }
       decodeCtx.current = desc;
       decodeCtx.decoder.init(decodeCtx.current);
     }

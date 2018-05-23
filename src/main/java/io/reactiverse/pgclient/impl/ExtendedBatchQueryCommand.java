@@ -53,7 +53,7 @@ public class ExtendedBatchQueryCommand<T> extends ExtendedQueryCommandBase<T> {
 
   @Override
   void exec(SocketConnection conn) {
-    conn.decodeQueue.add(new DecodeContext(false, ps.rowDesc, DataFormat.BINARY, decoder));
+    conn.decodeQueue.add(new DecodeContext(ps.rowDesc, DataFormat.BINARY, decoder));
     if (suspended) {
       conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
       conn.writeMessage(Sync.INSTANCE);
