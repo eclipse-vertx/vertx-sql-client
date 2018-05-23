@@ -33,11 +33,11 @@ import java.util.Map;
 public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
 
   final String sql;
-  private long statement; // 0 means unamed statement otherwise CString
+  long statement; // 0 means unamed statement otherwise CString
+  SocketConnection.CachedPreparedStatement cached;
   private ParameterDescription parameterDesc;
   private RowDescription rowDesc;
-  private SocketConnection.CachedPreparedStatement cached;
-  private Handler<AsyncResult<PreparedStatement>> handler;
+  final Handler<AsyncResult<PreparedStatement>> handler;
 
   PrepareStatementCommand(String sql, Handler<AsyncResult<PreparedStatement>> handler) {
     super(null); // Not pretty but well, that's fine for now
@@ -49,24 +49,6 @@ public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
         cached.fut.handle(ar);
       }
     };
-  }
-
-  @Override
-  void foo(SocketConnection conn) {
-    Map<String, SocketConnection.CachedPreparedStatement> psCache = conn.psCache;
-    if (psCache != null) {
-      cached = psCache.get(sql);
-      if (cached != null) {
-        cached.get(handler);
-      } else {
-        statement = conn.psSeq.next();
-        cached = new SocketConnection.CachedPreparedStatement();
-        psCache.put(sql, this.cached);
-        super.foo(conn);
-      }
-    } else {
-      super.foo(conn);
-    }
   }
 
   @Override

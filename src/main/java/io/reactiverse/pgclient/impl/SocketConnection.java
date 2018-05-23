@@ -178,10 +178,25 @@ public class SocketConnection implements Connection {
     if (Vertx.currentContext() != context) {
       throw new IllegalStateException();
     }
-    cmd.foo(this);
-  }
 
-  void bilto(CommandBase<?> cmd) {
+    // Special handling for cache
+    if (cmd instanceof PrepareStatementCommand) {
+      PrepareStatementCommand psCmd = (PrepareStatementCommand) cmd;
+      Map<String, SocketConnection.CachedPreparedStatement> psCache = this.psCache;
+      if (psCache != null) {
+        SocketConnection.CachedPreparedStatement cached = psCache.get(psCmd.sql);
+        if (cached != null) {
+          cached.get(psCmd.handler);
+          return;
+        } else {
+          psCmd.statement = psSeq.next();
+          psCmd.cached = cached = new SocketConnection.CachedPreparedStatement();
+          psCache.put(psCmd.sql, cached);
+        }
+      }
+    }
+
+    //
     if (status == Status.CONNECTED) {
       pending.add(cmd);
       cmd.completionHandler = v -> {

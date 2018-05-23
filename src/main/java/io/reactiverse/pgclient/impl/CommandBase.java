@@ -50,10 +50,6 @@ public abstract class CommandBase<R> {
     }
   }
 
-  void foo(SocketConnection conn) {
-    conn.bilto(this);
-  }
-
   abstract void exec(SocketConnection conn);
 
   abstract void fail(Throwable err);
