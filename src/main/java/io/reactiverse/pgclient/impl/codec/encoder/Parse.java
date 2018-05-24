@@ -15,12 +15,23 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec;
+package io.reactiverse.pgclient.impl.codec.encoder;
 
-import io.reactiverse.pgclient.impl.codec.decoder.message.RowDescription;
+/**
+ * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
+ */
+public final class Parse {
 
-public class DecodeContext {
-  public boolean query;
-  public DataFormat dataFormat;
-  public RowDescription rowDesc;
+  public final String query;
+  public final long statement;
+
+  public Parse(String query, long statement) {
+    this.query = query;
+    this.statement = statement;
+  }
+
+  public Parse(String query) {
+    this.query = query;
+    this.statement = 0;
+  }
 }

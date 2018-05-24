@@ -27,13 +27,10 @@ import io.reactiverse.pgclient.impl.codec.decoder.message.RowDescription;
 import io.netty.buffer.ByteBuf;
 
 import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collector;
 
 public class RowResultDecoder<C, R> implements ResultDecoder<R> {
 
-  private final boolean copy;
   private final Collector<Row, C, R> collector;
   private final BiConsumer<C, Row> accumulator;
 
@@ -41,17 +38,9 @@ public class RowResultDecoder<C, R> implements ResultDecoder<R> {
   private int size;
   private C container;
 
-  RowResultDecoder(Collector<Row, C, R> collector, boolean copy) {
+  RowResultDecoder(Collector<Row, C, R> collector, RowDescription desc) {
     this.collector = collector;
     this.accumulator = collector.accumulator();
-    this.copy = copy;
-  }
-
-  RowResultDecoder(Collector<Row, C, R> collector) {
-    this(collector, true);
-  }
-
-  public void init(RowDescription desc) {
     this.desc = desc;
   }
 

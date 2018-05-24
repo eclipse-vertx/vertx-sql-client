@@ -15,18 +15,23 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec.decoder;
+package io.reactiverse.pgclient.impl.codec.encoder;
 
-import io.reactiverse.pgclient.impl.codec.DataFormat;
-import io.reactiverse.pgclient.impl.codec.decoder.message.RowDescription;
+/**
+ * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
+ */
+public class Describe {
 
-public class DecodeContext {
+  public final long statement;
+  public final String portal;
 
-  final DataFormat dataFormat;
-  final ResultDecoder decoder;
+  public Describe(long statement, String portal) {
+    this.statement = statement;
+    this.portal = portal;
+  }
 
-  public DecodeContext(DataFormat dataFormat, ResultDecoder decoder) {
-    this.dataFormat = dataFormat;
-    this.decoder = decoder;
+  public Describe(long statement) {
+    this.statement = statement;
+    this.portal = null;
   }
 }

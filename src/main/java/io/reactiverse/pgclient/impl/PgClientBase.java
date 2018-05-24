@@ -30,7 +30,7 @@ public abstract class PgClientBase<C extends PgClient> implements PgClient {
 
   @Override
   public C query(String sql, Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
-    schedule(new SimpleQueryCommand<>(sql, new RowResultDecoder<>(PgRowSetImpl.COLLECTOR), new SimpleQueryResultHandler<>(handler)));
+    schedule(new SimpleQueryCommand<>(sql, PgRowSetImpl.COLLECTOR, new SimpleQueryResultHandler<>(handler)));
     return (C) this;
   }
 
@@ -38,7 +38,7 @@ public abstract class PgClientBase<C extends PgClient> implements PgClient {
   public C preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
     schedule(new PrepareStatementCommand(sql, ar -> {
       if (ar.succeeded()) {
-        schedule(new ExtendedQueryCommand<>(ar.result(), arguments, new RowResultDecoder<>(PgRowSetImpl.COLLECTOR), new ExtendedQueryResultHandler<>(handler)));
+        schedule(new ExtendedQueryCommand<>(ar.result(), arguments, PgRowSetImpl.COLLECTOR, new ExtendedQueryResultHandler<>(handler)));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
       }
@@ -58,8 +58,8 @@ public abstract class PgClientBase<C extends PgClient> implements PgClient {
         schedule(new ExtendedBatchQueryCommand<>(
           ar.result(),
           batch.iterator(),
-          new RowResultDecoder<>(PgRowSetImpl.COLLECTOR)
-          , new BatchQueryResultHandler(batch.size(), handler)));
+          PgRowSetImpl.COLLECTOR,
+          new BatchQueryResultHandler(batch.size(), handler)));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
       }

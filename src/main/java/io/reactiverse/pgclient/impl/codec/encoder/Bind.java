@@ -17,18 +17,26 @@
 
 package io.reactiverse.pgclient.impl.codec.encoder;
 
-import io.netty.buffer.ByteBuf;
+import io.reactiverse.pgclient.impl.codec.ColumnDesc;
+import io.reactiverse.pgclient.impl.codec.DataType;
 
 /**
- * An interface that should be implemented for decoding and encoding messages
- *
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
+public class Bind {
 
-public interface OutboundMessage {
+  public final long statement;
+  public final DataType[] paramTypes;
+  public final ColumnDesc[] resultColumns;
 
+  public Bind(long statement, DataType[] paramTypes, ColumnDesc[] resultColumns) {
+    this.statement = statement;
+    this.paramTypes = paramTypes;
+    this.resultColumns = resultColumns;
+  }
 
-  void encode(ByteBuf out);
-
+  public long getStatement() {
+    return statement;
+  }
 
 }

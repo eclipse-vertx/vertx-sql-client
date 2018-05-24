@@ -17,11 +17,13 @@
 
 package io.reactiverse.pgclient.impl;
 
+import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
-import io.reactiverse.pgclient.impl.codec.decoder.ResultDecoder;
 import io.reactiverse.pgclient.impl.codec.decoder.message.RowDescription;
 import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
-import io.reactiverse.pgclient.impl.codec.encoder.message.Query;
+import io.reactiverse.pgclient.impl.codec.encoder.Query;
+
+import java.util.stream.Collector;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -31,8 +33,8 @@ class SimpleQueryCommand<T> extends QueryCommandBase<T> {
 
   private final String sql;
 
-  SimpleQueryCommand(String sql, ResultDecoder<T> decoder, QueryResultHandler<T> handler) {
-    super(handler, decoder);
+  SimpleQueryCommand(String sql, Collector<Row, ?, T> collector, QueryResultHandler<T> handler) {
+    super(collector, handler);
     this.sql = sql;
   }
 
@@ -43,13 +45,13 @@ class SimpleQueryCommand<T> extends QueryCommandBase<T> {
 
   @Override
   void exec(MessageEncoder out) {
-    out.writeMessage(new Query(sql));
+    out.writeQuery(new Query(sql));
   }
 
   @Override
   public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == RowDescription.class) {
-      decoder.init((RowDescription) msg);
+      decoder = new RowResultDecoder<>(collector, (RowDescription) msg);
     } else {
       super.handleMessage(msg);
     }

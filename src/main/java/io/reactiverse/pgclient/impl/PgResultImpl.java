@@ -30,13 +30,6 @@ public class PgResultImpl<T> implements PgResult<T> {
   final int size;
   PgResult<T> next;
 
-  public PgResultImpl(int updated) {
-    this.updated = updated;
-    this.value = null;
-    this.size = 0;
-    this.columnNames = Collections.emptyList();
-  }
-
   public PgResultImpl(int updated, List<String> columnNames, T value, int size) {
     this.updated = updated;
     this.columnNames = columnNames;

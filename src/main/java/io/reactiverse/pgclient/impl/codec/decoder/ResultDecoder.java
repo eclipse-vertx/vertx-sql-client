@@ -18,15 +18,12 @@
 package io.reactiverse.pgclient.impl.codec.decoder;
 
 import io.reactiverse.pgclient.PgResult;
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.impl.codec.decoder.message.RowDescription;
 import io.netty.buffer.ByteBuf;
-
-import java.util.stream.Collector;
 
 public interface ResultDecoder<T> {
 
-  void init(RowDescription desc);
   void decodeRow(int len, ByteBuf in);
+
   PgResult<T> complete(int updated);
+
 }

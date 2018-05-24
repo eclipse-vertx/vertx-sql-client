@@ -18,11 +18,13 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.PgResult;
+import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
-import io.reactiverse.pgclient.impl.codec.decoder.ResultDecoder;
 import io.reactiverse.pgclient.impl.codec.decoder.message.BindComplete;
 import io.reactiverse.pgclient.impl.codec.decoder.message.ParseComplete;
 import io.reactiverse.pgclient.impl.codec.decoder.message.PortalSuspended;
+
+import java.util.stream.Collector;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -38,15 +40,14 @@ abstract class ExtendedQueryCommandBase<T> extends QueryCommandBase<T> {
                            int fetch,
                            String portal,
                            boolean suspended,
-                           ResultDecoder<T> decoder,
+                           Collector<Row, ?, T> collector,
                            QueryResultHandler<T> handler) {
-    super(handler, decoder);
+    super(collector, handler);
     this.ps = ps;
     this.fetch = fetch;
     this.portal = portal;
     this.suspended = suspended;
-
-    decoder.init(ps.rowDesc);
+    this.decoder = new RowResultDecoder<>(collector, ps.rowDesc);
   }
 
   @Override

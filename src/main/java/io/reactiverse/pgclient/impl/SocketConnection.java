@@ -203,12 +203,11 @@ public class SocketConnection implements Connection {
   private void checkPending() {
     if (inflight.size() < pipeliningLimit) {
       CommandBase<?> cmd;
-      encoder.begin();
       while (inflight.size() < pipeliningLimit && (cmd = pending.poll()) != null) {
         inflight.add(cmd);
         cmd.exec(encoder);
       }
-      encoder.end();
+      encoder.flush();
     }
   }
 

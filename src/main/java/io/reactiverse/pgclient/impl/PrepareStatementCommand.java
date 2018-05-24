@@ -21,9 +21,8 @@ import io.reactiverse.pgclient.PgException;
 import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
 import io.reactiverse.pgclient.impl.codec.decoder.message.*;
 import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
-import io.reactiverse.pgclient.impl.codec.encoder.message.Describe;
-import io.reactiverse.pgclient.impl.codec.encoder.message.Parse;
-import io.reactiverse.pgclient.impl.codec.encoder.message.Sync;
+import io.reactiverse.pgclient.impl.codec.encoder.Describe;
+import io.reactiverse.pgclient.impl.codec.encoder.Parse;
 import io.vertx.core.Handler;
 
 public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
@@ -41,9 +40,9 @@ public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
 
   @Override
   void exec(MessageEncoder out) {
-    out.writeMessage(new Parse(sql).setStatement(statement));
-    out.writeMessage(new Describe().setStatement(statement));
-    out.writeMessage(Sync.INSTANCE);
+    out.writeParse(new Parse(sql, statement));
+    out.writeDescribe(new Describe(statement, null));
+    out.writeSync();
   }
 
   @Override

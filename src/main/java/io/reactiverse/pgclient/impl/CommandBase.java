@@ -20,10 +20,7 @@ package io.reactiverse.pgclient.impl;
 import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
 import io.reactiverse.pgclient.impl.codec.decoder.message.ReadyForQuery;
 import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
-import io.reactiverse.pgclient.impl.codec.encoder.OutboundMessage;
 import io.vertx.core.Handler;
-
-import java.util.function.Consumer;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>

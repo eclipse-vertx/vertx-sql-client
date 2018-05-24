@@ -20,8 +20,6 @@ package io.reactiverse.pgclient.impl;
 import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
 import io.reactiverse.pgclient.impl.codec.decoder.message.CloseComplete;
 import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
-import io.reactiverse.pgclient.impl.codec.encoder.message.Close;
-import io.reactiverse.pgclient.impl.codec.encoder.message.Sync;
 import io.vertx.core.Handler;
 
 /**
@@ -38,8 +36,8 @@ class ClosePortalCommand extends CommandBase<Void> {
 
   @Override
   void exec(MessageEncoder out) {
-    out.writeMessage(new Close().setPortal(portal));
-    out.writeMessage(Sync.INSTANCE);
+    out.writeClosePortal(portal);
+    out.writeSync();
   }
 
   @Override

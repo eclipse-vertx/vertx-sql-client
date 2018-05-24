@@ -27,8 +27,8 @@ import io.reactiverse.pgclient.impl.codec.decoder.message.ErrorResponse;
 import io.reactiverse.pgclient.impl.codec.decoder.message.ParameterStatus;
 import io.reactiverse.pgclient.impl.codec.decoder.message.ReadyForQuery;
 import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
-import io.reactiverse.pgclient.impl.codec.encoder.message.PasswordMessage;
-import io.reactiverse.pgclient.impl.codec.encoder.message.StartupMessage;
+import io.reactiverse.pgclient.impl.codec.encoder.PasswordMessage;
+import io.reactiverse.pgclient.impl.codec.encoder.StartupMessage;
 import io.vertx.core.Handler;
 
 /**
@@ -62,16 +62,18 @@ public class InitCommand extends CommandBase<Connection> {
   @Override
   void exec(MessageEncoder out) {
     this.out = out;
-    out.writeMessage(new StartupMessage(username, database));
+    out.writeStartupMessage(new StartupMessage(username, database));
   }
 
   @Override
   public void handleMessage(InboundMessage msg) {
     if (msg.getClass() == AuthenticationMD5Password.class) {
       AuthenticationMD5Password authMD5 = (AuthenticationMD5Password) msg;
-      out.writeMessage(new PasswordMessage(username, password, authMD5.getSalt()));
+      out.writePasswordMessage(new PasswordMessage(username, password, authMD5.getSalt()));
+      out.flush();
     } else if (msg.getClass() == AuthenticationClearTextPassword.class) {
-      out.writeMessage(new PasswordMessage(username, password, null));
+      out.writePasswordMessage(new PasswordMessage(username, password, null));
+      out.flush();
     } else if (msg.getClass() == AuthenticationOk.class) {
 //      handler.handle(Future.succeededFuture(conn));
 //      handler = null;

@@ -15,29 +15,17 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec.decoder.message;
-
-import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
+package io.reactiverse.pgclient.impl.codec.encoder;
 
 /**
- *
- * <p>
- * The appearance of this message tells the frontend that another {@link Execute} should be issued against the
- * same portal to complete the operation. The {@link CommandComplete} message indicating completion of the source
- * SQL command is not sent until the portal's execution is completed
- *
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
+public class Query {
 
-public class PortalSuspended implements InboundMessage {
+  public final String sql;
 
-  public static final PortalSuspended INSTANCE = new PortalSuspended();
-
-  private PortalSuspended() {
+  public Query(String sql) {
+    this.sql = sql;
   }
 
-  @Override
-  public String toString() {
-    return "PortalSuspended{}";
-  }
 }

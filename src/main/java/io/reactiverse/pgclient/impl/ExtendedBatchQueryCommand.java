@@ -17,16 +17,14 @@
 
 package io.reactiverse.pgclient.impl;
 
+import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
-import io.reactiverse.pgclient.impl.codec.decoder.ResultDecoder;
 import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
-import io.reactiverse.pgclient.impl.codec.encoder.message.Bind;
-import io.reactiverse.pgclient.impl.codec.encoder.message.Execute;
-import io.reactiverse.pgclient.impl.codec.encoder.message.Parse;
-import io.reactiverse.pgclient.impl.codec.encoder.message.Sync;
+import io.reactiverse.pgclient.impl.codec.encoder.Parse;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collector;
 
 public class ExtendedBatchQueryCommand<T> extends ExtendedQueryCommandBase<T> {
 
@@ -34,9 +32,9 @@ public class ExtendedBatchQueryCommand<T> extends ExtendedQueryCommandBase<T> {
 
   ExtendedBatchQueryCommand(PreparedStatement ps,
                             Iterator<Tuple> paramsIterator,
-                            ResultDecoder<T> decoder,
+                            Collector<Row, ?, T> collector,
                             QueryResultHandler<T> handler) {
-    this(ps, paramsIterator, 0, null, false, decoder, handler);
+    this(ps, paramsIterator, 0, null, false, collector, handler);
   }
 
   ExtendedBatchQueryCommand(PreparedStatement ps,
@@ -44,27 +42,27 @@ public class ExtendedBatchQueryCommand<T> extends ExtendedQueryCommandBase<T> {
                             int fetch,
                             String portal,
                             boolean suspended,
-                            ResultDecoder<T> decoder,
+                            Collector<Row, ?, T> collector,
                             QueryResultHandler<T> handler) {
-    super(ps, fetch, portal, suspended, decoder, handler);
+    super(ps, fetch, portal, suspended, collector, handler);
     this.paramsIterator = paramsIterator;
   }
 
   @Override
   void exec(MessageEncoder out) {
     if (suspended) {
-      out.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
-      out.writeMessage(Sync.INSTANCE);
+      out.writeExecute(portal, fetch);
+      out.writeSync();
     } else {
-      if (ps.statement!= 0) {
-        out.writeMessage(new Parse(ps.sql));
+      if (ps.bind.statement == 0) {
+        out.writeParse(new Parse(ps.sql));
       }
       while (paramsIterator.hasNext()) {
         List<Object> params = (List<Object>) paramsIterator.next();
-        out.writeMessage(new Bind(ps.statement, portal, params, ps.paramDesc.getParamDataTypes(), ps.columnDescs()));
-        out.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
+        out.writeBind(ps.bind, portal, params);
+        out.writeExecute(portal, fetch);
       }
-      out.writeMessage(Sync.INSTANCE);
+      out.writeSync();
     }
   }
 }
