@@ -27,21 +27,28 @@ import io.reactiverse.pgclient.impl.codec.decoder.message.RowDescription;
 import io.netty.buffer.ByteBuf;
 
 import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collector;
 
 public class RowResultDecoder<C, R> implements ResultDecoder<R> {
 
+  private final boolean copy;
   private final Collector<Row, C, R> collector;
   private final BiConsumer<C, Row> accumulator;
 
   private RowDescription desc;
   private int size;
-  private RowImpl row;
   private C container;
 
-  RowResultDecoder(Collector<Row, C, R> collector) {
+  RowResultDecoder(Collector<Row, C, R> collector, boolean copy) {
     this.collector = collector;
     this.accumulator = collector.accumulator();
+    this.copy = copy;
+  }
+
+  RowResultDecoder(Collector<Row, C, R> collector) {
+    this(collector, true);
   }
 
   public void init(RowDescription desc) {
@@ -50,14 +57,10 @@ public class RowResultDecoder<C, R> implements ResultDecoder<R> {
 
   @Override
   public void decodeRow(int len, ByteBuf in) {
-    if (row == null) {
-      row = new RowImpl(desc);
-    } else {
-      row.clear();
-    }
     if (container == null) {
       container = collector.supplier().get();
     }
+    Row row = new RowImpl(desc);
     for (int c = 0; c < len; ++c) {
       int length = in.readInt();
       Object decoded = null;
@@ -69,7 +72,7 @@ public class RowResultDecoder<C, R> implements ResultDecoder<R> {
           decoded = DataTypeCodec.decodeText(columnDesc.getDataType(), length, in);
         }
       }
-      row.add(decoded);
+      row.addValue(decoded);
     }
     accumulator.accept(container, row);
     size++;

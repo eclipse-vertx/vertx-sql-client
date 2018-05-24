@@ -822,4 +822,6 @@ public interface Tuple {
    */
   int size();
 
+  void clear();
+
 }

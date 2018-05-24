@@ -24,6 +24,7 @@ import io.vertx.core.Handler;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collector;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -41,12 +42,12 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
 
   @Override
   public PgPreparedQuery execute(Tuple args, Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
-    String msg = ps.paramDesc.prepare((List<Object>) args);
-    if (msg != null) {
-      throw new IllegalArgumentException(msg);
-    }
-    execute(args, 0, null, false, new ExtendedQueryResultHandler<>(handler));
-    return  this;
+    return execute(args, 0, null, false, new RowResultDecoder<>(PgRowSetImpl.COLLECTOR), new ExtendedQueryResultHandler<>(handler));
+  }
+
+  @Override
+  public <R> PgPreparedQuery execute(Tuple args, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler) {
+    return execute(args, 0, null, false, new RowResultDecoder<>(collector, false), new ExtendedQueryResultHandler<>(handler));
   }
 
   @Override
@@ -64,12 +65,25 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
     });
   }
 
-  void execute(Tuple params,
-               int fetch,
-               String portal,
-               boolean suspended,
-               QueryResultHandler<PgRowSet> handler) {
-    conn.schedule(new ExtendedQueryCommand<>(ps, params, fetch, portal, suspended, new RowResultDecoder<>(PgRowSetImpl.COLLECTOR), handler));
+  <A, R> PgPreparedQuery execute(Tuple args,
+                      int fetch,
+                      String portal,
+                      boolean suspended,
+                      RowResultDecoder<A, R> decoder,
+                      QueryResultHandler<R> handler) {
+    String msg = ps.paramDesc.prepare((List<Object>) args);
+    if (msg != null) {
+      throw new IllegalArgumentException(msg);
+    }
+    conn.schedule(new ExtendedQueryCommand<>(
+      ps,
+      args,
+      fetch,
+      portal,
+      suspended,
+      decoder,
+      handler));
+    return this;
   }
 
   public PgPreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<PgResult<PgRowSet>>> handler) {

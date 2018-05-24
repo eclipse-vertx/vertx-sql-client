@@ -30,6 +30,7 @@ import org.junit.runner.RunWith;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -84,6 +85,25 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
       }));
     }));
   }
+
+  @Test
+  public void testCollectorQuery(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6", ctx.asyncAssertSuccess(ps -> {
+        ps.execute(Tuple.of(1, 8, 4, 11, 2, 9), Collectors.toList(), ctx.asyncAssertSuccess(results -> {
+          ctx.assertEquals(6, results.size());
+          List<Row> list = results.get();
+          ctx.assertEquals(list.size(), 6);
+          ctx.assertEquals(6L, list.stream().distinct().count());
+          ps.close(ctx.asyncAssertSuccess(result -> {
+            async.complete();
+          }));
+        }));
+      }));
+    }));
+  }
+
 /*
   @Test
   public void testQueryStream(TestContext ctx) {

@@ -53,12 +53,12 @@ public class ExtendedPgQueryImpl implements PgCursor {
   @Override
   public void read(int count, Handler<AsyncResult<PgResult<Row>>> handler) {
     if (result == null) {
-      result = new ExtendedQueryResultHandler(handler);
+      result = new ExtendedQueryResultHandler<>(handler);
       portal = UUID.randomUUID().toString();
-      ps.execute(params, count, portal, false, result);
+      ps.execute(params, count, portal, false, new RowResultDecoder<>(PgRowSetImpl.COLLECTOR), result);
     } else if (result.isSuspended()) {
-      result = new ExtendedQueryResultHandler(handler);
-      ps.execute(params, count, portal, true, result);
+      result = new ExtendedQueryResultHandler<>(handler);
+      ps.execute(params, count, portal, true, new RowResultDecoder<>(PgRowSetImpl.COLLECTOR), result);
     } else {
       throw new IllegalStateException();
     }

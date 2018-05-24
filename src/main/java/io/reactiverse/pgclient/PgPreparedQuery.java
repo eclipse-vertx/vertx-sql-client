@@ -19,11 +19,13 @@ package io.reactiverse.pgclient;
 
 import io.reactiverse.pgclient.impl.ArrayTuple;
 import io.vertx.codegen.annotations.Fluent;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
 import java.util.List;
+import java.util.stream.Collector;
 
 /**
  * A prepared query.
@@ -49,6 +51,16 @@ public interface PgPreparedQuery {
    */
   @Fluent
   PgPreparedQuery execute(Tuple args, Handler<AsyncResult<PgResult<PgRowSet>>> handler);
+
+  /**
+   * Create a cursor with the provided {@code arguments}.
+   *
+   * @param args the list of arguments
+   * @param collector the collector
+   * @return the query
+   */
+  @GenIgnore
+  <R> PgPreparedQuery execute(Tuple args, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
 
   /**
    * @return create a query cursor with a {@code fetch} size and empty arguments

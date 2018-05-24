@@ -74,7 +74,7 @@ public class PgCursorStreamImpl implements PgStream<Row> {
         } else {
           result = null;
           if (suspended) {
-            ps.execute(params, fetch, portal, true, this);
+            ps.execute(params, fetch, portal, true, new RowResultDecoder<>(PgRowSetImpl.COLLECTOR), this);
           } else {
             cursor = null;
             close();
@@ -116,7 +116,7 @@ public class PgCursorStreamImpl implements PgStream<Row> {
       if (cursor == null) {
         rowHandler = handler;
         cursor = new QueryCursor();
-        ps.execute(params, fetch, cursor.portal, false, cursor);
+        ps.execute(params, fetch, cursor.portal, false, new RowResultDecoder<>(PgRowSetImpl.COLLECTOR), cursor);
       } else {
         throw new UnsupportedOperationException("Handle me gracefully");
       }
