@@ -17,8 +17,6 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
-import io.reactiverse.pgclient.impl.codec.decoder.message.CloseComplete;
 import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
 import io.vertx.core.Handler;
 
@@ -41,11 +39,7 @@ class ClosePortalCommand extends CommandBase<Void> {
   }
 
   @Override
-  public void handleMessage(InboundMessage msg) {
-    if (msg.getClass() == CloseComplete.class) {
-      // Expected
-    } else {
-      super.handleMessage(msg);
-    }
+  public void handleCloseComplete() {
+    // Expected
   }
 }

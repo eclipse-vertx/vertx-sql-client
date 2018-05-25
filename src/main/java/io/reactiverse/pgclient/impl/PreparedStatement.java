@@ -19,8 +19,8 @@ package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.impl.codec.ColumnDesc;
 import io.reactiverse.pgclient.impl.codec.DataFormat;
-import io.reactiverse.pgclient.impl.codec.decoder.message.ParameterDescription;
-import io.reactiverse.pgclient.impl.codec.decoder.message.RowDescription;
+import io.reactiverse.pgclient.impl.codec.decoder.ParameterDescription;
+import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.reactiverse.pgclient.impl.codec.encoder.Bind;
 
 import java.util.Arrays;

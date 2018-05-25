@@ -15,10 +15,9 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec.decoder.message;
+package io.reactiverse.pgclient.impl.codec.decoder;
 
 import io.reactiverse.pgclient.impl.codec.ColumnDesc;
-import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,7 +29,7 @@ import java.util.stream.Stream;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class RowDescription implements InboundMessage {
+public class RowDescription {
 
   private final ColumnDesc[] columns;
   private final List<String> columnNames;

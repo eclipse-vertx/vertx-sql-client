@@ -15,7 +15,7 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec.decoder.message.type;
+package io.reactiverse.pgclient.impl.codec.decoder.type;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>

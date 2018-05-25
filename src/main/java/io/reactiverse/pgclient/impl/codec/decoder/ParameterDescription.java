@@ -15,11 +15,10 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec.decoder.message;
+package io.reactiverse.pgclient.impl.codec.decoder;
 
 import io.reactiverse.pgclient.impl.codec.DataTypeCodec;
 import io.reactiverse.pgclient.impl.codec.DataType;
-import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
 import io.reactiverse.pgclient.impl.codec.util.Util;
 
 import java.util.Arrays;
@@ -30,7 +29,7 @@ import java.util.stream.Stream;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class ParameterDescription implements InboundMessage {
+public class ParameterDescription {
 
   // OIDs
   private final DataType[] paramDataTypes;

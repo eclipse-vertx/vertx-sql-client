@@ -42,9 +42,4 @@ class CloseStatementCommand extends CommandBase<Void> {
     CommandResponse<Void> resp = CommandResponse.success(null);
     completionHandler.handle(resp);
   }
-
-  @Override
-  public void handleMessage(InboundMessage msg) {
-    throw new UnsupportedOperationException("Uh");
-  }
 }

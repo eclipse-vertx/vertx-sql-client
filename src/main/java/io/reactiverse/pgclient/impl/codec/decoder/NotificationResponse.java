@@ -15,62 +15,59 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec.decoder.message;
-
-import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
+package io.reactiverse.pgclient.impl.codec.decoder;
 
 import java.util.Objects;
 
 /**
- *
- * <p>
- * This message provides secret-key data that the frontend must save if it wants to be able to issue cancel requests
- * later. The frontend should not respond to this message, but should continue listening
- * for a {@link ReadyForQuery} message.
- *
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
- *
  */
 
-public class BackendKeyData implements InboundMessage {
+public class NotificationResponse {
 
   private final int processId;
-  private final int secretKey;
+  private final String channel;
+  private final String payload;
 
-  public BackendKeyData(int processId, int secretKey) {
+  public NotificationResponse(int processId, String channel, String payload) {
     this.processId = processId;
-    this.secretKey = secretKey;
+    this.channel = channel;
+    this.payload = payload;
   }
 
   public int getProcessId() {
     return processId;
   }
 
-  public int getSecretKey() {
-    return secretKey;
+  public String getChannel() {
+    return channel;
   }
 
+  public String getPayload() {
+    return payload;
+  }
 
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    BackendKeyData that = (BackendKeyData) o;
+    NotificationResponse that = (NotificationResponse) o;
     return processId == that.processId &&
-      secretKey == that.secretKey;
+      Objects.equals(channel, that.channel) &&
+      Objects.equals(payload, that.payload);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(processId, secretKey);
+    return Objects.hash(processId, channel, payload);
   }
-
 
   @Override
   public String toString() {
-    return "BackendKeyData{" +
+    return "NotificationResponse{" +
       "processId=" + processId +
-      ", secretKey=" + secretKey +
+      ", channel='" + channel + '\'' +
+      ", payload='" + payload + '\'' +
       '}';
   }
 }

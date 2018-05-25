@@ -15,10 +15,8 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec.decoder.message;
+package io.reactiverse.pgclient.impl.codec.decoder;
 
-
-import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
 
 import java.util.Objects;
 
@@ -31,7 +29,7 @@ import java.util.Objects;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class Response implements InboundMessage {
+public abstract class Response {
 
   private String severity;
   private String code;

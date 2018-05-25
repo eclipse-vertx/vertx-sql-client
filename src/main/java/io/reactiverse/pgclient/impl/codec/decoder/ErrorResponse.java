@@ -15,21 +15,17 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec.decoder.message;
+package io.reactiverse.pgclient.impl.codec.decoder;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class NoticeResponse extends Response {
-
-  public static final NoticeResponse INSTANCE = new NoticeResponse();
-
-  private NoticeResponse() {}
+public class ErrorResponse extends Response {
 
   @Override
   public String toString() {
-    return "NoticeResponse{" +
+    return "ErrorResponse{" +
       "severity='" + getSeverity() + '\'' +
       ", code='" + getCode() + '\'' +
       ", message='" + getMessage() + '\'' +

@@ -18,8 +18,7 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
-import io.reactiverse.pgclient.impl.codec.decoder.message.RowDescription;
+import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
 import io.reactiverse.pgclient.impl.codec.encoder.Query;
 
@@ -49,12 +48,8 @@ class SimpleQueryCommand<T> extends QueryCommandBase<T> {
   }
 
   @Override
-  public void handleMessage(InboundMessage msg) {
-    if (msg.getClass() == RowDescription.class) {
-      decoder = new RowResultDecoder<>(collector, (RowDescription) msg);
-    } else {
-      super.handleMessage(msg);
-    }
+  public void handleRowDescription(RowDescription rowDescription) {
+    decoder = new RowResultDecoder<>(collector, rowDescription);
   }
 
   public String getSql() {

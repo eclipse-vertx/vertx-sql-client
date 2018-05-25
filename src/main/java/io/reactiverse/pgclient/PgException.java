@@ -17,7 +17,7 @@
 
 package io.reactiverse.pgclient;
 
-import io.reactiverse.pgclient.impl.codec.decoder.message.ErrorResponse;
+import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>

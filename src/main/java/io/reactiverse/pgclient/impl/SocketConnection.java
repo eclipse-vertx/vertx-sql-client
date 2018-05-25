@@ -17,11 +17,10 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
 import io.reactiverse.pgclient.impl.codec.decoder.MessageDecoder;
 import io.reactiverse.pgclient.impl.codec.decoder.InitiateSslHandler;
 import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
-import io.reactiverse.pgclient.impl.codec.decoder.message.NotificationResponse;
+import io.reactiverse.pgclient.impl.codec.decoder.NotificationResponse;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.*;
@@ -93,8 +92,12 @@ public class SocketConnection implements Connection {
   }
 
   private void initiateProtocol(String username, String password, String database, Handler<? super CommandResponse<Connection>> completionHandler) {
-    decoder = new MessageDecoder(inflight, this::handleMessage, socket.channelHandlerContext().alloc());
+    decoder = new MessageDecoder(inflight, socket.channelHandlerContext().alloc());
     encoder = new MessageEncoder(socket);
+
+    ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
+    pipeline.addBefore("handler", "decoder", decoder);
+
     socket.closeHandler(this::handleClosed);
     socket.exceptionHandler(this::handleException);
     socket.messageHandler(msg -> {
@@ -189,11 +192,6 @@ public class SocketConnection implements Connection {
     //
     if (status == Status.CONNECTED) {
       pending.add(cmd);
-      cmd.completionHandler = resp -> {
-        inflight.poll();
-        checkPending();
-        ((Handler<CommandResponse>)cmd.handler).handle(resp);
-      };
       checkPending();
     } else {
       cmd.fail(new VertxException("Connection not open " + status));
@@ -205,6 +203,7 @@ public class SocketConnection implements Connection {
       CommandBase<?> cmd;
       while (inflight.size() < pipeliningLimit && (cmd = pending.poll()) != null) {
         inflight.add(cmd);
+        decoder.run(cmd);
         cmd.exec(encoder);
       }
       encoder.flush();
@@ -212,20 +211,12 @@ public class SocketConnection implements Connection {
   }
 
   private void handleMessage(Object msg) {
-    decoder.channelRead(msg);
-  }
-
-  private void handleMessage(InboundMessage msg) {
-    // System.out.println("<-- " + msg);
-    if (msg instanceof NotificationResponse) {
+    if (msg instanceof CommandResponse) {
+      CommandBase cmd = inflight.poll();
+      checkPending();
+      cmd.handler.handle(msg);
+    } else if (msg instanceof NotificationResponse) {
       handleNotification((NotificationResponse) msg);
-    } else {
-      CommandBase<?> cmd = inflight.peek();
-      if (cmd != null) {
-        cmd.handleMessage(msg);
-      } else {
-        System.out.println("Uh oh, no inflight command for " + msg);
-      }
     }
   }
 

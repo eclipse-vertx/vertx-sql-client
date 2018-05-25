@@ -21,7 +21,10 @@ import io.reactiverse.pgclient.impl.codec.ColumnDesc;
 import io.reactiverse.pgclient.impl.codec.DataType;
 import io.reactiverse.pgclient.impl.codec.DataTypeCodec;
 import io.reactiverse.pgclient.impl.codec.TxStatus;
-import io.reactiverse.pgclient.impl.codec.decoder.message.*;
+import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
+import io.reactiverse.pgclient.impl.codec.decoder.NoticeResponse;
+import io.reactiverse.pgclient.impl.codec.decoder.ParameterDescription;
+import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.reactiverse.pgclient.impl.codec.util.Util;
 import io.vertx.core.impl.NetSocketInternal;
 

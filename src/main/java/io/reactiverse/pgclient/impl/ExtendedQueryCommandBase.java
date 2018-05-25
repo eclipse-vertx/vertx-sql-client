@@ -19,10 +19,6 @@ package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.PgResult;
 import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
-import io.reactiverse.pgclient.impl.codec.decoder.message.BindComplete;
-import io.reactiverse.pgclient.impl.codec.decoder.message.ParseComplete;
-import io.reactiverse.pgclient.impl.codec.decoder.message.PortalSuspended;
 
 import java.util.stream.Collector;
 
@@ -56,17 +52,19 @@ abstract class ExtendedQueryCommandBase<T> extends QueryCommandBase<T> {
   }
 
   @Override
-  public void handleMessage(InboundMessage msg) {
-    if (msg.getClass() == ParseComplete.class) {
-      // Response to Parse
-    } else if (msg.getClass() == PortalSuspended.class) {
-      PgResult<T> result = decoder.complete(0);
-      this.result = true;
-      resultHandler.handleResult(result);
-    } else if (msg.getClass() == BindComplete.class) {
-      // Response to Bind
-    } else {
-      super.handleMessage(msg);
-    }
+  public void handleParseComplete() {
+    // Response to Parse
+  }
+
+  @Override
+  public void handlePortalSuspended() {
+    PgResult<T> result = decoder.complete(0);
+    this.result = true;
+    resultHandler.handleResult(result);
+  }
+
+  @Override
+  public void handleBindComplete() {
+    // Response to Bind
   }
 }

@@ -15,25 +15,18 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec.decoder.message;
-
-import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
+package io.reactiverse.pgclient.impl.codec.decoder.type;
 
 /**
- *
- * The Authentication is succeeded
- *
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class AuthenticationOk implements InboundMessage {
-
-  public static final AuthenticationOk INSTANCE = new AuthenticationOk();
-
-  private AuthenticationOk() {}
-
-  @Override
-  public String toString() {
-    return "AuthenticationOk{}";
-  }
+public class CommandCompleteType {
+  public static final String INSERT = "INSERT";
+  public static final String DELETE = "DELETE";
+  public static final String UPDATE = "UPDATE";
+  public static final String SELECT = "SELECT";
+  public static final String MOVE = "MOVE";
+  public static final String FETCH = "FETCH";
+  public static final String COPY = "COPY";
 }

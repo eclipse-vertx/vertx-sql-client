@@ -20,10 +20,8 @@ package io.reactiverse.pgclient.impl;
 import io.reactiverse.pgclient.PgException;
 import io.reactiverse.pgclient.PgResult;
 import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
 import io.reactiverse.pgclient.impl.codec.decoder.ResultDecoder;
-import io.reactiverse.pgclient.impl.codec.decoder.message.CommandComplete;
-import io.reactiverse.pgclient.impl.codec.decoder.message.ErrorResponse;
+import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
 
 import java.util.Collections;
 import java.util.stream.Collector;
@@ -47,23 +45,20 @@ public abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
   abstract String sql();
 
   @Override
-  public void handleMessage(InboundMessage msg) {
-    if (msg.getClass() == CommandComplete.class) {
-      this.result = false;
-      int updated = ((CommandComplete) msg).updated();
-      PgResult<T> result;
-      if (decoder != null) {
-        result = decoder.complete(updated);
-      } else {
-        result = new PgResultImpl<T>(updated, Collections.emptyList(), emptyResult(collector), 0);
-      }
-      resultHandler.handleResult(result);
-    } else if (msg.getClass() == ErrorResponse.class) {
-      ErrorResponse error = (ErrorResponse) msg;
-      failure = new PgException(error);
+  public void handleCommandComplete(int updated) {
+    this.result = false;
+    PgResult<T> result;
+    if (decoder != null) {
+      result = decoder.complete(updated);
     } else {
-      super.handleMessage(msg);
+      result = new PgResultImpl<T>(updated, Collections.emptyList(), emptyResult(collector), 0);
     }
+    resultHandler.handleResult(result);
+  }
+
+  @Override
+  public void handleErrorResponse(ErrorResponse errorResponse) {
+    failure = new PgException(errorResponse);
   }
 
   private static <A, T> T emptyResult(Collector<Row, A, T> collector) {

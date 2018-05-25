@@ -18,8 +18,10 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.PgException;
-import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
-import io.reactiverse.pgclient.impl.codec.decoder.message.*;
+import io.reactiverse.pgclient.impl.codec.TxStatus;
+import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
+import io.reactiverse.pgclient.impl.codec.decoder.ParameterDescription;
+import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
 import io.reactiverse.pgclient.impl.codec.encoder.Describe;
 import io.reactiverse.pgclient.impl.codec.encoder.Parse;
@@ -46,25 +48,35 @@ public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
   }
 
   @Override
-  public void handleMessage(InboundMessage msg) {
-    if (msg.getClass() == ParseComplete.class) {
-      // Response to Parse
-    } else if (msg.getClass() == ParameterDescription.class) {
-      // Response to Describe
-      parameterDesc = (ParameterDescription) msg;
-    } else if (msg.getClass() == RowDescription.class) {
-      // Response to Describe
-      rowDesc = (RowDescription) msg;
-    } else if (msg.getClass() == NoData.class) {
-      // Response to Describe
-    } else if (msg.getClass() == ErrorResponse.class) {
-      ErrorResponse error = (ErrorResponse) msg;
-      failure = new PgException(error);
-    } else {
-      if (msg.getClass() == ReadyForQuery.class) {
-        result = new PreparedStatement(sql, statement, parameterDesc, rowDesc);
-      }
-      super.handleMessage(msg);
-    }
+  public void handleParseComplete() {
+    // Response to parse
+  }
+
+  @Override
+  public void handleParameterDescription(ParameterDescription parameterDesc) {
+    // Response to Describe
+    this.parameterDesc = parameterDesc;
+  }
+
+  @Override
+  public void handleRowDescription(RowDescription rowDesc) {
+    // Response to Describe
+    this.rowDesc = rowDesc;
+  }
+
+  @Override
+  public void handleNoData() {
+    // Response to Describe
+  }
+
+  @Override
+  public void handleErrorResponse(ErrorResponse errorResponse) {
+    failure = new PgException(errorResponse);
+  }
+
+  @Override
+  public void handleReadyForQuery(TxStatus txStatus) {
+    result = new PreparedStatement(sql, statement, parameterDesc, rowDesc);
+    super.handleReadyForQuery(txStatus);
   }
 }

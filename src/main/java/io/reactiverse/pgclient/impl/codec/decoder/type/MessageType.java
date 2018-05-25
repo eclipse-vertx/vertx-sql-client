@@ -15,7 +15,7 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec.decoder.message.type;
+package io.reactiverse.pgclient.impl.codec.decoder.type;
 
 import io.reactiverse.pgclient.impl.codec.decoder.MessageDecoder;
 
