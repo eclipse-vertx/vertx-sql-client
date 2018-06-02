@@ -17,13 +17,10 @@
 
 package io.reactiverse.pgclient.impl.codec.decoder;
 
-import io.reactiverse.pgclient.PgResult;
 import io.netty.buffer.ByteBuf;
 
-public interface ResultDecoder<T> {
+public interface RowDecoder {
 
   void decodeRow(int len, ByteBuf in);
-
-  PgResult<T> complete(int updated);
 
 }

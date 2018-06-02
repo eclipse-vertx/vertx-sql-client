@@ -17,19 +17,18 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.PgResult;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.impl.codec.ColumnDesc;
 import io.reactiverse.pgclient.impl.codec.DataFormat;
 import io.reactiverse.pgclient.impl.codec.DataTypeCodec;
-import io.reactiverse.pgclient.impl.codec.decoder.ResultDecoder;
+import io.reactiverse.pgclient.impl.codec.decoder.RowDecoder;
 import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.netty.buffer.ByteBuf;
 
 import java.util.function.BiConsumer;
 import java.util.stream.Collector;
 
-public class RowResultDecoder<C, R> implements ResultDecoder<R> {
+public class RowResultDecoder<C, R> implements RowDecoder {
 
   private final Collector<Row, C, R> collector;
   private final BiConsumer<C, Row> accumulator;
@@ -67,8 +66,7 @@ public class RowResultDecoder<C, R> implements ResultDecoder<R> {
     size++;
   }
 
-  @Override
-  public PgResult<R> complete(int updated) {
+  PgResultImpl<R> complete(int updated) {
     if (container == null) {
       container = collector.supplier().get();
     }

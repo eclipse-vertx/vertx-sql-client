@@ -20,7 +20,6 @@ package io.reactiverse.pgclient.impl;
 import io.reactiverse.pgclient.PgException;
 import io.reactiverse.pgclient.PgResult;
 import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.impl.codec.decoder.ResultDecoder;
 import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
 
 import java.util.Collections;
@@ -32,7 +31,7 @@ import java.util.stream.Collector;
 
 public abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
 
-  public ResultDecoder<T> decoder;
+  public RowResultDecoder<?, T> decoder;
   final QueryResultHandler<T> resultHandler;
   final Collector<Row, ?, T> collector;
 
@@ -51,7 +50,7 @@ public abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
     if (decoder != null) {
       result = decoder.complete(updated);
     } else {
-      result = new PgResultImpl<T>(updated, Collections.emptyList(), emptyResult(collector), 0);
+      result = new PgResultImpl<>(updated, Collections.emptyList(), emptyResult(collector), 0);
     }
     resultHandler.handleResult(result);
   }
