@@ -42,12 +42,12 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
 
   @Override
   public PgPreparedQuery execute(Tuple args, Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
-    return execute(args, 0, null, false, PgRowSetImpl.COLLECTOR, new ExtendedQueryResultHandler<>(handler));
+    return execute(args, 0, null, false, PgRowSetImpl.COLLECTOR, new PgResultBuilder<>(handler));
   }
 
   @Override
   public <R> PgPreparedQuery execute(Tuple args, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler) {
-    return execute(args, 0, null, false, collector, new ExtendedQueryResultHandler<>(handler));
+    return execute(args, 0, null, false, collector, new PgResultBuilder<>(handler));
   }
 
   @Override
@@ -93,7 +93,7 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
         throw new IllegalArgumentException(msg);
       }
     }
-    conn.schedule(new ExtendedBatchQueryCommand<>(ps, argsList.iterator(), PgRowSetImpl.COLLECTOR, new BatchQueryResultHandler(handler)));
+    conn.schedule(new ExtendedBatchQueryCommand<>(ps, argsList.iterator(), PgRowSetImpl.COLLECTOR, new PgResultBuilder<>(handler)));
     return this;
   }
 

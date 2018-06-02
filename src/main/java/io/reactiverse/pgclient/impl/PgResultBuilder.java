@@ -17,39 +17,47 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.PgRowSet;
 import io.reactiverse.pgclient.PgResult;
 import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
-class BatchQueryResultHandler implements QueryResultHandler<PgRowSet> {
+/**
+ * A query result handler for building a {@link PgResult}.
+ */
+public class PgResultBuilder<T> implements QueryResultHandler<T> {
 
-  private final Handler<AsyncResult<PgResult<PgRowSet>>> handler;
-  private PgResult<PgRowSet> head;
+  private final Handler<AsyncResult<PgResult<T>>> handler;
+  private PgResult<T> head;
   private PgResultImpl tail;
+  private boolean suspended;
 
-  public BatchQueryResultHandler(Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
+  PgResultBuilder(Handler<AsyncResult<PgResult<T>>> handler) {
     this.handler = handler;
   }
 
   @Override
-  public void handleResult(int updatedCount, int size, RowDescription desc, PgRowSet result) {
+  public void handleResult(int updatedCount, int size, RowDescription desc, T result) {
     handleResult(new PgResultImpl<>(updatedCount, desc != null ? desc.columnNames() : null, result, size));
   }
 
-  private void handleResult(PgResult<PgRowSet> result) {
+  private void handleResult(PgResultImpl<T> result) {
     if (head == null) {
       head = result;
-      tail = (PgResultImpl) result;
+      tail = result;
     } else {
       tail.next = result;
-      tail = (PgResultImpl) result;
+      tail = result;
     }
   }
 
   @Override
   public void handle(AsyncResult<Boolean> res) {
+    suspended = res.succeeded() && res.result();
     handler.handle(res.map(head));
+  }
+
+  public boolean isSuspended() {
+    return suspended;
   }
 }

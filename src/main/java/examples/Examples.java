@@ -356,7 +356,7 @@ public class Examples {
         // Read 50 rows
         cursor.read(50, ar2 -> {
           if (ar2.succeeded()) {
-            PgResult<Row> result = ar2.result();
+            PgResult<PgRowSet> result = ar2.result();
 
             // Check for more ?
             if (cursor.hasMore()) {

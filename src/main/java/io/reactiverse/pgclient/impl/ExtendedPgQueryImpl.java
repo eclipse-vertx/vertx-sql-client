@@ -17,10 +17,7 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.PgCursor;
-import io.reactiverse.pgclient.PgResult;
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
+import io.reactiverse.pgclient.*;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -38,7 +35,7 @@ public class ExtendedPgQueryImpl implements PgCursor {
   private String portal;
   private boolean completed;
   private boolean closed;
-  private ExtendedQueryResultHandler result;
+  private PgResultBuilder<PgRowSet> result;
 
   ExtendedPgQueryImpl(PgPreparedQueryImpl ps, Tuple params) {
     this.ps = ps;
@@ -51,13 +48,13 @@ public class ExtendedPgQueryImpl implements PgCursor {
   }
 
   @Override
-  public void read(int count, Handler<AsyncResult<PgResult<Row>>> handler) {
+  public void read(int count, Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
     if (result == null) {
-      result = new ExtendedQueryResultHandler<>(handler);
+      result = new PgResultBuilder<>(handler);
       portal = UUID.randomUUID().toString();
       ps.execute(params, count, portal, false, PgRowSetImpl.COLLECTOR, result);
     } else if (result.isSuspended()) {
-      result = new ExtendedQueryResultHandler<>(handler);
+      result = new PgResultBuilder<>(handler);
       ps.execute(params, count, portal, true, PgRowSetImpl.COLLECTOR, result);
     } else {
       throw new IllegalStateException();
