@@ -17,15 +17,15 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.PgResult;
 import io.reactiverse.pgclient.Row;
+import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 
 import java.util.stream.Collector;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-abstract class ExtendedQueryCommandBase<T> extends QueryCommandBase<T> {
+abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
 
   protected final PreparedStatement ps;
   protected final int fetch;
@@ -36,8 +36,8 @@ abstract class ExtendedQueryCommandBase<T> extends QueryCommandBase<T> {
                            int fetch,
                            String portal,
                            boolean suspended,
-                           Collector<Row, ?, T> collector,
-                           QueryResultHandler<T> handler) {
+                           Collector<Row, ?, R> collector,
+                           QueryResultHandler<R> handler) {
     super(collector, handler);
     this.ps = ps;
     this.fetch = fetch;
@@ -58,9 +58,12 @@ abstract class ExtendedQueryCommandBase<T> extends QueryCommandBase<T> {
 
   @Override
   public void handlePortalSuspended() {
-    PgResult<T> result = decoder.complete(0);
+    R result = decoder.complete();
+    RowDescription desc = decoder.description();
+    int size = decoder.size();
+    decoder.reset();
     this.result = true;
-    resultHandler.handleResult(result);
+    resultHandler.handleResult(0, size, desc, result);
   }
 
   @Override

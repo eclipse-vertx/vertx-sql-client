@@ -18,11 +18,10 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.PgException;
-import io.reactiverse.pgclient.PgResult;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
+import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 
-import java.util.Collections;
 import java.util.stream.Collector;
 
 /**
@@ -46,13 +45,20 @@ public abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
   @Override
   public void handleCommandComplete(int updated) {
     this.result = false;
-    PgResult<T> result;
+    T result;
+    int size;
+    RowDescription desc;
     if (decoder != null) {
-      result = decoder.complete(updated);
+      result = decoder.complete();
+      desc = decoder.description();
+      size = decoder.size();
+      decoder.reset();
     } else {
-      result = new PgResultImpl<>(updated, Collections.emptyList(), emptyResult(collector), 0);
+      result = emptyResult(collector);
+      size = 0;
+      desc = null;
     }
-    resultHandler.handleResult(result);
+    resultHandler.handleResult(updated, size, desc, result);
   }
 
   @Override

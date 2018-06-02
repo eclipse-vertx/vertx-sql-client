@@ -93,7 +93,7 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
         throw new IllegalArgumentException(msg);
       }
     }
-    conn.schedule(new ExtendedBatchQueryCommand<>(ps, argsList.iterator(), PgRowSetImpl.COLLECTOR, new BatchQueryResultHandler(argsList.size(), handler)));
+    conn.schedule(new ExtendedBatchQueryCommand<>(ps, argsList.iterator(), PgRowSetImpl.COLLECTOR, new BatchQueryResultHandler(handler)));
     return this;
   }
 

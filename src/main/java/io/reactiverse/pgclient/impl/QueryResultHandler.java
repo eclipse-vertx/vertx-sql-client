@@ -17,7 +17,7 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.PgResult;
+import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
@@ -26,7 +26,7 @@ import io.vertx.core.Handler;
  */
 public interface QueryResultHandler<T> extends Handler<AsyncResult<Boolean>> {
 
-  void handleResult(PgResult<T> result);
+  void handleResult(int updatedCount, int size, RowDescription desc, T result);
 
   @Override
   void handle(AsyncResult<Boolean> res);

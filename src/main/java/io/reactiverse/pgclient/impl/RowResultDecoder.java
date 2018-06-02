@@ -43,6 +43,14 @@ public class RowResultDecoder<C, R> implements RowDecoder {
     this.desc = desc;
   }
 
+  public RowDescription description() {
+    return desc;
+  }
+
+  public int size() {
+    return size;
+  }
+
   @Override
   public void decodeRow(int len, ByteBuf in) {
     if (container == null) {
@@ -66,15 +74,15 @@ public class RowResultDecoder<C, R> implements RowDecoder {
     size++;
   }
 
-  PgResultImpl<R> complete(int updated) {
+  R complete() {
     if (container == null) {
       container = collector.supplier().get();
     }
-    R r = collector.finisher().apply(container);
-    PgResultImpl<R> result = new PgResultImpl<>(updated, desc != null ? desc.columnNames() : null, r, size);
+    return collector.finisher().apply(container);
+  }
+
+  void reset() {
     container = null;
-    // head = null;
     size = 0;
-    return result;
   }
 }

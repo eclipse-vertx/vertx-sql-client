@@ -59,7 +59,7 @@ public abstract class PgClientBase<C extends PgClient> implements PgClient {
           ar.result(),
           batch.iterator(),
           PgRowSetImpl.COLLECTOR,
-          new BatchQueryResultHandler(batch.size(), handler)));
+          new BatchQueryResultHandler(handler)));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
       }

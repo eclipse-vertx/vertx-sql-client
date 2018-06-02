@@ -17,8 +17,8 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.PgRowSet;
 import io.reactiverse.pgclient.PgResult;
+import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
@@ -28,17 +28,21 @@ public class SimpleQueryResultHandler<T> implements QueryResultHandler<T> {
   private PgResult<T> head;
   private PgResultImpl tail;
 
-  public SimpleQueryResultHandler(Handler<AsyncResult<PgResult<T>>> handler) {
+  SimpleQueryResultHandler(Handler<AsyncResult<PgResult<T>>> handler) {
     this.handler = handler;
   }
 
   @Override
-  public void handleResult(PgResult<T> result) {
+  public void handleResult(int updatedCount, int size, RowDescription desc, T result) {
+    handleResult(new PgResultImpl<>(updatedCount, desc != null ? desc.columnNames() : null, result, size));
+  }
+
+  private void handleResult(PgResult<T> result) {
     if (head == null) {
       head = result;
       tail = (PgResultImpl) result;
     } else {
-      tail.next = (PgResult<PgRowSet>) result;
+      tail.next = result;
       tail = (PgResultImpl) result;
     }
   }

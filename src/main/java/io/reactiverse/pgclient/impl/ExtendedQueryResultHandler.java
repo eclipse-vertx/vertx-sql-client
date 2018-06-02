@@ -18,6 +18,7 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.PgResult;
+import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
@@ -36,8 +37,8 @@ public class ExtendedQueryResultHandler<T> implements QueryResultHandler<T> {
   }
 
   @Override
-  public void handleResult(PgResult<T> result) {
-    this.result = result;
+  public void handleResult(int updatedCount, int size, RowDescription desc, T result) {
+    this.result = new PgResultImpl<T>(updatedCount, desc != null ? desc.columnNames() : null, result, size);
   }
 
   @Override

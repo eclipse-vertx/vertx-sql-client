@@ -19,6 +19,7 @@ package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.PgRowSet;
 import io.reactiverse.pgclient.PgResult;
+import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
@@ -28,12 +29,16 @@ class BatchQueryResultHandler implements QueryResultHandler<PgRowSet> {
   private PgResult<PgRowSet> head;
   private PgResultImpl tail;
 
-  public BatchQueryResultHandler(int size, Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
+  public BatchQueryResultHandler(Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
     this.handler = handler;
   }
 
   @Override
-  public void handleResult(PgResult<PgRowSet> result) {
+  public void handleResult(int updatedCount, int size, RowDescription desc, PgRowSet result) {
+    handleResult(new PgResultImpl<>(updatedCount, desc != null ? desc.columnNames() : null, result, size));
+  }
+
+  private void handleResult(PgResult<PgRowSet> result) {
     if (head == null) {
       head = result;
       tail = (PgResultImpl) result;

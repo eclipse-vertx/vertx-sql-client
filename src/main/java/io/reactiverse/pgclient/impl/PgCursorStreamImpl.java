@@ -18,6 +18,7 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.*;
+import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
@@ -44,8 +45,8 @@ public class PgCursorStreamImpl implements PgStream<Row> {
     boolean closed;
 
     @Override
-    public void handleResult(PgResult<PgRowSet> result) {
-      this.result = result.get().iterator();
+    public void handleResult(int updatedCount, int size, RowDescription desc, PgRowSet result) {
+      this.result = result.iterator();
     }
 
     @Override
