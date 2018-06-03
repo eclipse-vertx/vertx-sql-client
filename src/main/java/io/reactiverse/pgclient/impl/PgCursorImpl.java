@@ -27,7 +27,7 @@ import java.util.*;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class ExtendedPgQueryImpl implements PgCursor {
+public class PgCursorImpl implements PgCursor {
 
   private final PgPreparedQueryImpl ps;
   private final Tuple params;
@@ -37,7 +37,7 @@ public class ExtendedPgQueryImpl implements PgCursor {
   private boolean closed;
   private PgResultBuilder<PgRowSet> result;
 
-  ExtendedPgQueryImpl(PgPreparedQueryImpl ps, Tuple params) {
+  PgCursorImpl(PgPreparedQueryImpl ps, Tuple params) {
     this.ps = ps;
     this.params = params;
   }

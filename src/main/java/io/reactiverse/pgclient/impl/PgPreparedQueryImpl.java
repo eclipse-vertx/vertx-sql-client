@@ -56,7 +56,7 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
     if (msg != null) {
       throw new IllegalArgumentException(msg);
     }
-    return new ExtendedPgQueryImpl(this, args);
+    return new PgCursorImpl(this, args);
   }
 
   @Override
