@@ -43,27 +43,29 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
 
   @Override
   public PgPreparedQuery execute(Tuple args, Handler<AsyncResult<PgRowSet>> handler) {
-    return execute(args, PgRowSetImpl.FACTORY, PgRowSetImpl.COLLECTOR, handler);
+    return execute(args, false, PgRowSetImpl.FACTORY, PgRowSetImpl.COLLECTOR, handler);
   }
 
   @Override
   public <R> PgPreparedQuery execute(Tuple args, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler) {
-    PgResultBuilder<R, PgResultImpl<R>, PgResult<R>> b = new PgResultBuilder<>(PgResultImpl::new, handler);
-    return execute(args, PgResultImpl::new, collector, handler);
+    return execute(args, true, PgResultImpl::new, collector, handler);
   }
 
   private <R1, R2 extends PgResultBase<R1, R2>, R3 extends PgResult<R1>> PgPreparedQuery execute(
     Tuple args,
-    Function<R1, R2> factory, Collector<Row, ?, R1> collector,
+    boolean singleton,
+    Function<R1, R2> factory,
+    Collector<Row, ?, R1> collector,
     Handler<AsyncResult<R3>> handler) {
     PgResultBuilder<R1, R2, R3> b = new PgResultBuilder<>(factory, handler);
-    return execute(args, 0, null, false, collector, b, b);
+    return execute(args, 0, null, false, singleton, collector, b, b);
   }
 
   <A, R> PgPreparedQuery execute(Tuple args,
                                  int fetch,
                                  String portal,
                                  boolean suspended,
+                                 boolean singleton,
                                  Collector<Row, A, R> collector,
                                  QueryResultHandler<R> resultHandler,
                                  Handler<AsyncResult<Boolean>> handler) {
@@ -77,6 +79,7 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
       fetch,
       portal,
       suspended,
+      singleton,
       collector,
       resultHandler,
       handler));
@@ -99,15 +102,20 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
   }
 
   public PgPreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<PgRowSet>> handler) {
-    return batch(argsList, PgRowSetImpl.FACTORY, PgRowSetImpl.COLLECTOR, handler);
+    return batch(argsList, false, PgRowSetImpl.FACTORY, PgRowSetImpl.COLLECTOR, handler);
   }
 
   @Override
   public <R> PgPreparedQuery batch(List<Tuple> argsList, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler) {
-    return batch(argsList, PgResultImpl::new, collector, handler);
+    return batch(argsList, true, PgResultImpl::new, collector, handler);
   }
 
-  private <R1, R2 extends PgResultBase<R1, R2>, R3 extends PgResult<R1>> PgPreparedQuery batch(List<Tuple> argsList, Function<R1, R2> factory, Collector<Row, ?, R1> collector, Handler<AsyncResult<R3>> handler) {
+  private <R1, R2 extends PgResultBase<R1, R2>, R3 extends PgResult<R1>> PgPreparedQuery batch(
+    List<Tuple> argsList,
+    boolean singleton,
+    Function<R1, R2> factory,
+    Collector<Row, ?, R1> collector,
+    Handler<AsyncResult<R3>> handler) {
     for  (Tuple args : argsList) {
       String msg = ps.prepare((List<Object>) args);
       if (msg != null) {
@@ -115,7 +123,7 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
       }
     }
     PgResultBuilder<R1, R2, R3> b = new PgResultBuilder<>(factory, handler);
-    conn.schedule(new ExtendedBatchQueryCommand<>(ps, argsList.iterator(), collector, b, b));
+    conn.schedule(new ExtendedBatchQueryCommand<>(ps, argsList.iterator(), singleton, collector, b, b));
     return this;
   }
 

@@ -52,10 +52,10 @@ public class PgCursorImpl implements PgCursor {
     if (result == null) {
       portal = UUID.randomUUID().toString();
       result = new PgResultBuilder<>(PgRowSetImpl.FACTORY, handler);
-      ps.execute(params, count, portal, false, PgRowSetImpl.COLLECTOR, result, result);
+      ps.execute(params, count, portal, false, false, PgRowSetImpl.COLLECTOR, result, result);
     } else if (result.isSuspended()) {
       result = new PgResultBuilder<>(PgRowSetImpl.FACTORY, handler);
-      ps.execute(params, count, portal, true, PgRowSetImpl.COLLECTOR, result, result);
+      ps.execute(params, count, portal, true, false, PgRowSetImpl.COLLECTOR, result, result);
     } else {
       throw new IllegalStateException();
     }

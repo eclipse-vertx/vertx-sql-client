@@ -38,6 +38,7 @@ abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
                            int fetch,
                            String portal,
                            boolean suspended,
+                           boolean singleton,
                            Collector<Row, ?, R> collector,
                            QueryResultHandler<R> resultHandler,
                            Handler<AsyncResult<Boolean>> handler) {
@@ -46,7 +47,7 @@ abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
     this.fetch = fetch;
     this.portal = portal;
     this.suspended = suspended;
-    this.decoder = new RowResultDecoder<>(collector, ps.rowDesc);
+    this.decoder = new RowResultDecoder<>(collector, singleton, ps.rowDesc);
   }
 
   @Override

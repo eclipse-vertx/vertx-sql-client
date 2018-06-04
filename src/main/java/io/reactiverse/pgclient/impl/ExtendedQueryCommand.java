@@ -33,10 +33,11 @@ public class ExtendedQueryCommand<T> extends ExtendedQueryCommandBase<T> {
 
   ExtendedQueryCommand(PreparedStatement ps,
                        Tuple params,
+                       boolean singleton,
                        Collector<Row, ?, T> collector,
                        QueryResultHandler<T> resultHandler,
                        Handler<AsyncResult<Boolean>> handler) {
-    this(ps, params, 0, null, false, collector, resultHandler, handler);
+    this(ps, params, 0, null, false, singleton, collector, resultHandler, handler);
   }
 
   ExtendedQueryCommand(PreparedStatement ps,
@@ -44,10 +45,11 @@ public class ExtendedQueryCommand<T> extends ExtendedQueryCommandBase<T> {
                        int fetch,
                        String portal,
                        boolean suspended,
+                       boolean singleton,
                        Collector<Row, ?, T> collector,
                        QueryResultHandler<T> resultHandler,
                        Handler<AsyncResult<Boolean>> handler) {
-    super(ps, fetch, portal, suspended, collector, resultHandler, handler);
+    super(ps, fetch, portal, suspended, singleton, collector, resultHandler, handler);
     this.params = params;
   }
 

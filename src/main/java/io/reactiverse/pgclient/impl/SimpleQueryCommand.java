@@ -33,10 +33,16 @@ import java.util.stream.Collector;
 class SimpleQueryCommand<T> extends QueryCommandBase<T> {
 
   private final String sql;
+  private final boolean singleton;
 
-  SimpleQueryCommand(String sql, Collector<Row, ?, T> collector, QueryResultHandler<T> resultHandler, Handler<AsyncResult<Boolean>> handler) {
+  SimpleQueryCommand(String sql,
+                     boolean singleton,
+                     Collector<Row, ?, T> collector,
+                     QueryResultHandler<T> resultHandler,
+                     Handler<AsyncResult<Boolean>> handler) {
     super(collector, resultHandler, handler);
     this.sql = sql;
+    this.singleton = singleton;
   }
 
   @Override
@@ -51,7 +57,7 @@ class SimpleQueryCommand<T> extends QueryCommandBase<T> {
 
   @Override
   public void handleRowDescription(RowDescription rowDescription) {
-    decoder = new RowResultDecoder<>(collector, rowDescription);
+    decoder = new RowResultDecoder<>(collector, singleton, rowDescription);
   }
 
   public String getSql() {

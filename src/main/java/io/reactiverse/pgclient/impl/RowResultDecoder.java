@@ -31,14 +31,17 @@ import java.util.stream.Collector;
 public class RowResultDecoder<C, R> implements RowDecoder {
 
   private final Collector<Row, C, R> collector;
+  private final boolean singleton;
   private final BiConsumer<C, Row> accumulator;
 
   private RowDescription desc;
   private int size;
   private C container;
+  private Row row;
 
-  RowResultDecoder(Collector<Row, C, R> collector, RowDescription desc) {
+  RowResultDecoder(Collector<Row, C, R> collector, boolean singleton, RowDescription desc) {
     this.collector = collector;
+    this.singleton = singleton;
     this.accumulator = collector.accumulator();
     this.desc = desc;
   }
@@ -55,6 +58,15 @@ public class RowResultDecoder<C, R> implements RowDecoder {
   public void decodeRow(int len, ByteBuf in) {
     if (container == null) {
       container = collector.supplier().get();
+    }
+    if (singleton) {
+      if (row == null) {
+        row = new RowImpl(desc);
+      } else {
+        row.clear();
+      }
+    } else {
+      row = new RowImpl(desc);
     }
     Row row = new RowImpl(desc);
     for (int c = 0; c < len; ++c) {

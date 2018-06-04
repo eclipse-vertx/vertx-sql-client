@@ -30,9 +30,9 @@ class PgRowSetImpl extends PgResultBase<PgRowSet, PgRowSetImpl> implements PgRow
     PgRowSetImpl::new,
     (set, row) -> {
       if (set.head == null) {
-        set.head = set.tail = new RowImpl((RowImpl) row);
+        set.head = set.tail = (RowImpl) row;
       } else {
-        set.tail.next = new RowImpl((RowImpl) row);
+        set.tail.next = (RowImpl) row;
         set.tail = set.tail.next;
       }
     },
