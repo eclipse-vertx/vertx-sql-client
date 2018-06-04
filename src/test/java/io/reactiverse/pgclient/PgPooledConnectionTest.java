@@ -76,7 +76,7 @@ public class PgPooledConnectionTest extends PgConnectionTestBase {
       conn1.begin();
       conn1.query("INSERT INTO TxTest (id) VALUES (5)", ctx.asyncAssertSuccess());
       conn1.query("SELECT txid_current()", ctx.asyncAssertSuccess(result -> {
-        Long txid1 = result.get().iterator().next().getLong(0);
+        Long txid1 = result.iterator().next().getLong(0);
         conn1.close();
         // It will be the same connection
         connector.accept(ctx.asyncAssertSuccess(conn2 -> {
@@ -85,7 +85,7 @@ public class PgPooledConnectionTest extends PgConnectionTestBase {
             done.countDown();
           }));
           conn2.query("SELECT txid_current()", ctx.asyncAssertSuccess(result2 -> {
-            Long txid2 = result.get().iterator().next().getLong(0);
+            Long txid2 = result.iterator().next().getLong(0);
             ctx.assertEquals(txid1, txid2);
             done.countDown();
           }));

@@ -22,39 +22,48 @@ import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
+import java.util.function.Function;
+
 /**
  * A query result handler for building a {@link PgResult}.
  */
-public class PgResultBuilder<T> implements QueryResultHandler<T> {
+public class PgResultBuilder<T, R extends PgResultBase<T, R>, L extends PgResult<T>> implements QueryResultHandler<T>, Handler<AsyncResult<Boolean>> {
 
-  private final Handler<AsyncResult<PgResult<T>>> handler;
-  private PgResult<T> head;
-  private PgResultImpl tail;
+  private final Handler<AsyncResult<L>> handler;
+  private final Function<T, R> factory;
+  private R first;
   private boolean suspended;
 
-  PgResultBuilder(Handler<AsyncResult<PgResult<T>>> handler) {
+  PgResultBuilder(Function<T, R> factory, Handler<AsyncResult<L>> handler) {
+    this.factory = factory;
     this.handler = handler;
   }
 
   @Override
   public void handleResult(int updatedCount, int size, RowDescription desc, T result) {
-    handleResult(new PgResultImpl<>(updatedCount, desc != null ? desc.columnNames() : null, result, size));
+    R r = factory.apply(result);
+    r.updated = updatedCount;
+    r.size = size;
+    r.columnNames = desc != null ? desc.columnNames() : null;
+    handleResult(r);
   }
 
-  private void handleResult(PgResultImpl<T> result) {
-    if (head == null) {
-      head = result;
-      tail = result;
+  private void handleResult(R result) {
+    if (first == null) {
+      first = result;
     } else {
-      tail.next = result;
-      tail = result;
+      R h = first;
+      while (h.next != null) {
+        h = h.next;
+      }
+      h.next = result;
     }
   }
 
   @Override
   public void handle(AsyncResult<Boolean> res) {
     suspended = res.succeeded() && res.result();
-    handler.handle(res.map(head));
+    handler.handle((AsyncResult<L>) res.map(first));
   }
 
   public boolean isSuspended() {

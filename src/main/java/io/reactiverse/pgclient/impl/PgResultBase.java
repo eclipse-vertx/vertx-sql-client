@@ -17,15 +17,34 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import io.reactiverse.pgclient.PgResult;
 
-/**
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
- */
-public interface QueryResultHandler<T> {
+import java.util.List;
 
-  void handleResult(int updatedCount, int size, RowDescription desc, T result);
+public abstract class PgResultBase<T, R extends PgResultBase<T, R>> implements PgResult<T> {
 
+  int updated;
+  List<String> columnNames;
+  int size;
+  R next;
+
+  @Override
+  public List<String> columnsNames() {
+    return columnNames;
+  }
+
+  @Override
+  public int updatedCount() {
+    return updated;
+  }
+
+  @Override
+  public int size() {
+    return size;
+  }
+
+  @Override
+  public R next() {
+    return next;
+  }
 }

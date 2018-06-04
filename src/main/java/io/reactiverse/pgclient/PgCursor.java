@@ -33,7 +33,7 @@ public interface PgCursor {
    * @param count the amount of rows to read
    * @param handler the handler for the result
    */
-  void read(int count, Handler<AsyncResult<PgResult<PgRowSet>>> handler);
+  void read(int count, Handler<AsyncResult<PgRowSet>> handler);
 
   /**
    * Returns {@code true} when the cursor has results in progress and the {@link #execute} should be called to retrieve

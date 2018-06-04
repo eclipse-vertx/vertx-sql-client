@@ -53,7 +53,7 @@ public class TLSTest extends PgTestBase {
       ctx.assertTrue(conn.isSSL());
       conn.query("SELECT * FROM Fortune WHERE id=1", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
-        Tuple row = result.get().iterator().next();
+        Tuple row = result.iterator().next();
         ctx.assertEquals(1, row.getInteger(0));
         ctx.assertEquals("fortune: No such file or directory", row.getString(1));
         async.complete();

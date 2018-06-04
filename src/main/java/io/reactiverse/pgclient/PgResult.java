@@ -54,7 +54,7 @@ public interface PgResult<T> {
    *
    * @return the result
    */
-  T get();
+  T value();
 
   /**
    * Return the next available result or {@code null}, e.g for a simple query that executed multiple queries or for

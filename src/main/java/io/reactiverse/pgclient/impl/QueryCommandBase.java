@@ -21,6 +21,8 @@ import io.reactiverse.pgclient.PgException;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
 import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 
 import java.util.stream.Collector;
 
@@ -34,9 +36,9 @@ public abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
   final QueryResultHandler<T> resultHandler;
   final Collector<Row, ?, T> collector;
 
-  QueryCommandBase(Collector<Row, ?, T> collector, QueryResultHandler<T> handler) {
+  QueryCommandBase(Collector<Row, ?, T> collector, QueryResultHandler<T> resultHandler, Handler<AsyncResult<Boolean>> handler) {
     super(handler);
-    this.resultHandler = handler;
+    this.resultHandler = resultHandler;
     this.collector = collector;
   }
 

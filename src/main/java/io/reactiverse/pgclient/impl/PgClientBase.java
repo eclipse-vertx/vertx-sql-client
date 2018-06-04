@@ -23,22 +23,44 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collector;
 
 public abstract class PgClientBase<C extends PgClient> implements PgClient {
 
   protected abstract void schedule(CommandBase<?> cmd);
 
   @Override
-  public C query(String sql, Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
-    schedule(new SimpleQueryCommand<>(sql, PgRowSetImpl.COLLECTOR, new PgResultBuilder<>(handler)));
+  public C query(String sql, Handler<AsyncResult<PgRowSet>> handler) {
+    return query(sql, PgRowSetImpl.FACTORY, PgRowSetImpl.COLLECTOR, handler);
+  }
+
+  @Override
+  public <R> C query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler) {
+    return query(sql, PgResultImpl::new, collector, handler);
+  }
+
+  private <R1, R2 extends PgResultBase<R1, R2>, R3 extends PgResult<R1>> C query(String sql, Function<R1, R2> factory, Collector<Row, ?, R1> collector, Handler<AsyncResult<R3>> handler) {
+    PgResultBuilder<R1, R2, R3> b = new PgResultBuilder<>(factory, handler);
+    schedule(new SimpleQueryCommand<>(sql, collector, b, b));
     return (C) this;
   }
 
   @Override
-  public C preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
+  public C preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgRowSet>> handler) {
+    return preparedQuery(sql, arguments, PgRowSetImpl.FACTORY, PgRowSetImpl.COLLECTOR, handler);
+  }
+
+  @Override
+  public <R> C preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler) {
+    return preparedQuery(sql, arguments, PgResultImpl::new, collector, handler);
+  }
+
+  private <R1, R2 extends PgResultBase<R1, R2>, R3 extends PgResult<R1>> C preparedQuery(String sql, Tuple arguments, Function<R1, R2> factory, Collector<Row, ?, R1> collector, Handler<AsyncResult<R3>> handler) {
     schedule(new PrepareStatementCommand(sql, ar -> {
       if (ar.succeeded()) {
-        schedule(new ExtendedQueryCommand<>(ar.result(), arguments, PgRowSetImpl.COLLECTOR, new PgResultBuilder<>(handler)));
+        PgResultBuilder<R1, R2, R3> b = new PgResultBuilder<>(factory, handler);
+        schedule(new ExtendedQueryCommand<>(ar.result(), arguments, collector, b, b));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
       }
@@ -47,19 +69,40 @@ public abstract class PgClientBase<C extends PgClient> implements PgClient {
   }
 
   @Override
-  public C preparedQuery(String sql, Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
+  public C preparedQuery(String sql, Handler<AsyncResult<PgRowSet>> handler) {
     return preparedQuery(sql, ArrayTuple.EMPTY, handler);
   }
 
   @Override
-  public C preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
+  public <R> C preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler) {
+    return preparedQuery(sql, ArrayTuple.EMPTY, collector, handler);
+  }
+
+  @Override
+  public C preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgRowSet>> handler) {
+    return preparedBatch(sql, batch, PgRowSetImpl.FACTORY, PgRowSetImpl.COLLECTOR, handler);
+  }
+
+  @Override
+  public <R> C preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler) {
+    return preparedBatch(sql, batch, PgResultImpl::new, collector, handler);
+  }
+
+  private <R1, R2 extends PgResultBase<R1, R2>, R3 extends PgResult<R1>> C preparedBatch(
+    String sql,
+    List<Tuple> batch,
+    Function<R1, R2> factory,
+    Collector<Row, ?, R1> collector,
+    Handler<AsyncResult<R3>> handler) {
     schedule(new PrepareStatementCommand(sql, ar -> {
       if (ar.succeeded()) {
+        PgResultBuilder<R1, R2, R3> b = new PgResultBuilder<>(factory, handler);
         schedule(new ExtendedBatchQueryCommand<>(
           ar.result(),
           batch.iterator(),
-          PgRowSetImpl.COLLECTOR,
-          new PgResultBuilder<>(handler)));
+          collector,
+          b,
+          b));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
       }

@@ -39,8 +39,16 @@ public interface PgPreparedQuery {
    * @return create a query with no arguments
    */
   @Fluent
-  default PgPreparedQuery execute(Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
+  default PgPreparedQuery execute(Handler<AsyncResult<PgRowSet>> handler) {
     return execute(ArrayTuple.EMPTY, handler);
+  }
+
+  /**
+   * @return create a query with no arguments
+   */
+  @GenIgnore
+  default <R> PgPreparedQuery execute(Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler) {
+    return execute(ArrayTuple.EMPTY, collector, handler);
   }
 
   /**
@@ -50,7 +58,7 @@ public interface PgPreparedQuery {
    * @return the query
    */
   @Fluent
-  PgPreparedQuery execute(Tuple args, Handler<AsyncResult<PgResult<PgRowSet>>> handler);
+  PgPreparedQuery execute(Tuple args, Handler<AsyncResult<PgRowSet>> handler);
 
   /**
    * Create a cursor with the provided {@code arguments}.
@@ -96,7 +104,17 @@ public interface PgPreparedQuery {
    * @return the createBatch
    */
   @Fluent
-  PgPreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<PgResult<PgRowSet>>> handler);
+  PgPreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<PgRowSet>> handler);
+
+  /**
+   * Execute a batch.
+   *
+   * @param argsList the list of tuple for the batch
+   * @param collector the collector
+   * @return the createBatch
+   */
+  @GenIgnore
+  <R> PgPreparedQuery batch(List<Tuple> argsList, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
 
   /**
    * Close the prepared query and release its resources.

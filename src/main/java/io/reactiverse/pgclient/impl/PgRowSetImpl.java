@@ -21,9 +21,10 @@ import io.reactiverse.pgclient.PgRowSet;
 import io.reactiverse.pgclient.Row;
 
 import java.util.NoSuchElementException;
+import java.util.function.Function;
 import java.util.stream.Collector;
 
-class PgRowSetImpl implements PgRowSet {
+class PgRowSetImpl extends PgResultBase<PgRowSet, PgRowSetImpl> implements PgRowSet {
 
   static Collector<Row, PgRowSetImpl, PgRowSet> COLLECTOR = Collector.of(
     PgRowSetImpl::new,
@@ -39,8 +40,15 @@ class PgRowSetImpl implements PgRowSet {
     (set) -> set
   );
 
+  static Function<PgRowSet, PgRowSetImpl> FACTORY = rs -> (PgRowSetImpl) rs;
+
   private RowImpl head;
   private RowImpl tail;
+
+  @Override
+  public PgRowSet value() {
+    return this;
+  }
 
   @Override
   public PgIterator iterator() {

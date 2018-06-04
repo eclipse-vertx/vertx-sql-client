@@ -60,7 +60,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
         ps.execute(Tuple.of(1), ctx.asyncAssertSuccess(results -> {
           ctx.assertEquals(1, results.size());
-          Tuple row = results.get().iterator().next();
+          Tuple row = results.iterator().next();
           ctx.assertEquals(1, row.getInteger(0));
           ctx.assertEquals("fortune: No such file or directory", row.getString(1));
           ps.close(ctx.asyncAssertSuccess(ar -> {
@@ -93,7 +93,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6", ctx.asyncAssertSuccess(ps -> {
         ps.execute(Tuple.of(1, 8, 4, 11, 2, 9), Collectors.toList(), ctx.asyncAssertSuccess(results -> {
           ctx.assertEquals(6, results.size());
-          List<Row> list = results.get();
+          List<Row> list = results.value();
           ctx.assertEquals(list.size(), 6);
           ctx.assertEquals(6L, list.stream().distinct().count());
           ps.close(ctx.asyncAssertSuccess(result -> {

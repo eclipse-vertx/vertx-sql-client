@@ -17,66 +17,16 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.PgResult;
+public class PgResultImpl<T> extends PgResultBase<T, PgResultImpl<T>> {
 
-import java.util.Collections;
-import java.util.List;
+  private final T value;
 
-public class PgResultImpl<T> implements PgResult<T> {
-
-  final int updated;
-  final List<String> columnNames;
-  final T value;
-  final int size;
-  PgResult<T> next;
-
-  public PgResultImpl(int updated, List<String> columnNames, T value, int size) {
-    this.updated = updated;
-    this.columnNames = columnNames;
+  public PgResultImpl(T value) {
     this.value = value;
-    this.size = size;
   }
 
   @Override
-  public List<String> columnsNames() {
-    return columnNames;
-  }
-
-  @Override
-  public int updatedCount() {
-    return updated;
-  }
-
-  @Override
-  public int size() {
-    return size;
-  }
-
-  @Override
-  public T get() {
-    /*
-    return () -> new PgIterator() {
-      RowImpl current = rows;
-      @Override
-      public boolean hasNext() {
-        return current != null;
-      }
-      @Override
-      public Row next() {
-        if (current == null) {
-          throw new NoSuchElementException();
-        }
-        RowImpl r = current;
-        current = current.next;
-        return r;
-      }
-    };
-    */
+  public T value() {
     return value;
-  }
-
-  @Override
-  public PgResult<T> next() {
-    return next;
   }
 }

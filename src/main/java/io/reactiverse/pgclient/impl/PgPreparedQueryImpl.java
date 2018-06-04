@@ -24,6 +24,7 @@ import io.vertx.core.Handler;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.stream.Collector;
 
 /**
@@ -41,13 +42,45 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
   }
 
   @Override
-  public PgPreparedQuery execute(Tuple args, Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
-    return execute(args, 0, null, false, PgRowSetImpl.COLLECTOR, new PgResultBuilder<>(handler));
+  public PgPreparedQuery execute(Tuple args, Handler<AsyncResult<PgRowSet>> handler) {
+    return execute(args, PgRowSetImpl.FACTORY, PgRowSetImpl.COLLECTOR, handler);
   }
 
   @Override
   public <R> PgPreparedQuery execute(Tuple args, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler) {
-    return execute(args, 0, null, false, collector, new PgResultBuilder<>(handler));
+    PgResultBuilder<R, PgResultImpl<R>, PgResult<R>> b = new PgResultBuilder<>(PgResultImpl::new, handler);
+    return execute(args, PgResultImpl::new, collector, handler);
+  }
+
+  private <R1, R2 extends PgResultBase<R1, R2>, R3 extends PgResult<R1>> PgPreparedQuery execute(
+    Tuple args,
+    Function<R1, R2> factory, Collector<Row, ?, R1> collector,
+    Handler<AsyncResult<R3>> handler) {
+    PgResultBuilder<R1, R2, R3> b = new PgResultBuilder<>(factory, handler);
+    return execute(args, 0, null, false, collector, b, b);
+  }
+
+  <A, R> PgPreparedQuery execute(Tuple args,
+                                 int fetch,
+                                 String portal,
+                                 boolean suspended,
+                                 Collector<Row, A, R> collector,
+                                 QueryResultHandler<R> resultHandler,
+                                 Handler<AsyncResult<Boolean>> handler) {
+    String msg = ps.prepare((List<Object>) args);
+    if (msg != null) {
+      throw new IllegalArgumentException(msg);
+    }
+    conn.schedule(new ExtendedQueryCommand<>(
+      ps,
+      args,
+      fetch,
+      portal,
+      suspended,
+      collector,
+      resultHandler,
+      handler));
+    return this;
   }
 
   @Override
@@ -65,35 +98,24 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
     });
   }
 
-  <A, R> PgPreparedQuery execute(Tuple args,
-                      int fetch,
-                      String portal,
-                      boolean suspended,
-                      Collector<Row, A, R> collector,
-                      QueryResultHandler<R> handler) {
-    String msg = ps.prepare((List<Object>) args);
-    if (msg != null) {
-      throw new IllegalArgumentException(msg);
-    }
-    conn.schedule(new ExtendedQueryCommand<>(
-      ps,
-      args,
-      fetch,
-      portal,
-      suspended,
-      collector,
-      handler));
-    return this;
+  public PgPreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<PgRowSet>> handler) {
+    return batch(argsList, PgRowSetImpl.FACTORY, PgRowSetImpl.COLLECTOR, handler);
   }
 
-  public PgPreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
+  @Override
+  public <R> PgPreparedQuery batch(List<Tuple> argsList, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler) {
+    return batch(argsList, PgResultImpl::new, collector, handler);
+  }
+
+  private <R1, R2 extends PgResultBase<R1, R2>, R3 extends PgResult<R1>> PgPreparedQuery batch(List<Tuple> argsList, Function<R1, R2> factory, Collector<Row, ?, R1> collector, Handler<AsyncResult<R3>> handler) {
     for  (Tuple args : argsList) {
       String msg = ps.prepare((List<Object>) args);
       if (msg != null) {
         throw new IllegalArgumentException(msg);
       }
     }
-    conn.schedule(new ExtendedBatchQueryCommand<>(ps, argsList.iterator(), PgRowSetImpl.COLLECTOR, new PgResultBuilder<>(handler)));
+    PgResultBuilder<R1, R2, R3> b = new PgResultBuilder<>(factory, handler);
+    conn.schedule(new ExtendedBatchQueryCommand<>(ps, argsList.iterator(), collector, b, b));
     return this;
   }
 

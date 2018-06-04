@@ -35,7 +35,7 @@ public class PgCursorImpl implements PgCursor {
   private String portal;
   private boolean completed;
   private boolean closed;
-  private PgResultBuilder<PgRowSet> result;
+  private PgResultBuilder<PgRowSet, PgRowSetImpl, PgRowSet> result;
 
   PgCursorImpl(PgPreparedQueryImpl ps, Tuple params) {
     this.ps = ps;
@@ -48,14 +48,14 @@ public class PgCursorImpl implements PgCursor {
   }
 
   @Override
-  public void read(int count, Handler<AsyncResult<PgResult<PgRowSet>>> handler) {
+  public void read(int count, Handler<AsyncResult<PgRowSet>> handler) {
     if (result == null) {
-      result = new PgResultBuilder<>(handler);
       portal = UUID.randomUUID().toString();
-      ps.execute(params, count, portal, false, PgRowSetImpl.COLLECTOR, result);
+      result = new PgResultBuilder<>(PgRowSetImpl.FACTORY, handler);
+      ps.execute(params, count, portal, false, PgRowSetImpl.COLLECTOR, result, result);
     } else if (result.isSuspended()) {
-      result = new PgResultBuilder<>(handler);
-      ps.execute(params, count, portal, true, PgRowSetImpl.COLLECTOR, result);
+      result = new PgResultBuilder<>(PgRowSetImpl.FACTORY, handler);
+      ps.execute(params, count, portal, true, PgRowSetImpl.COLLECTOR, result, result);
     } else {
       throw new IllegalStateException();
     }

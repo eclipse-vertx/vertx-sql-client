@@ -21,6 +21,8 @@ import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
 import io.reactiverse.pgclient.impl.codec.encoder.Query;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 
 import java.util.stream.Collector;
 
@@ -32,8 +34,8 @@ class SimpleQueryCommand<T> extends QueryCommandBase<T> {
 
   private final String sql;
 
-  SimpleQueryCommand(String sql, Collector<Row, ?, T> collector, QueryResultHandler<T> handler) {
-    super(collector, handler);
+  SimpleQueryCommand(String sql, Collector<Row, ?, T> collector, QueryResultHandler<T> resultHandler, Handler<AsyncResult<Boolean>> handler) {
+    super(collector, resultHandler, handler);
     this.sql = sql;
   }
 

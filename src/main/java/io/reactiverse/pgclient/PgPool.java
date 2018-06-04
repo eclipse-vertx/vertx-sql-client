@@ -17,11 +17,13 @@
 
 package io.reactiverse.pgclient;
 
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
 import java.util.List;
+import java.util.stream.Collector;
 
 /**
  * A pool of connection.
@@ -32,16 +34,32 @@ import java.util.List;
 public interface PgPool extends PgClient {
 
   @Override
-  PgPool preparedQuery(String sql, Handler<AsyncResult<PgResult<PgRowSet>>> handler);
+  PgPool preparedQuery(String sql, Handler<AsyncResult<PgRowSet>> handler);
 
   @Override
-  PgPool query(String sql, Handler<AsyncResult<PgResult<PgRowSet>>> handler);
+  @GenIgnore
+  <R> PgPool preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
 
   @Override
-  PgPool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgResult<PgRowSet>>> handler);
+  PgPool query(String sql, Handler<AsyncResult<PgRowSet>> handler);
 
   @Override
-  PgPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgResult<PgRowSet>>> handler);
+  @GenIgnore
+  <R> PgPool query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+
+  @Override
+  PgPool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgRowSet>> handler);
+
+  @Override
+  @GenIgnore
+  <R> PgPool preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+
+  @Override
+  PgPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgRowSet>> handler);
+
+  @Override
+  @GenIgnore
+  <R> PgClient preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
 
   /**
    * Get a connection from the pool.

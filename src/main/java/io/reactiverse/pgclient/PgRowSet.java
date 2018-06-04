@@ -23,9 +23,12 @@ import io.vertx.codegen.annotations.VertxGen;
  * A set of rows.
  */
 @VertxGen
-public interface PgRowSet extends Iterable<Row> {
+public interface PgRowSet extends Iterable<Row>, PgResult<PgRowSet> {
 
   @Override
   PgIterator iterator();
+
+  @Override
+  PgRowSet next();
 
 }

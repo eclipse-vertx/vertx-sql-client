@@ -19,6 +19,8 @@ package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 
 import java.util.stream.Collector;
 
@@ -37,8 +39,9 @@ abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
                            String portal,
                            boolean suspended,
                            Collector<Row, ?, R> collector,
-                           QueryResultHandler<R> handler) {
-    super(collector, handler);
+                           QueryResultHandler<R> resultHandler,
+                           Handler<AsyncResult<Boolean>> handler) {
+    super(collector, resultHandler, handler);
     this.ps = ps;
     this.fetch = fetch;
     this.portal = portal;

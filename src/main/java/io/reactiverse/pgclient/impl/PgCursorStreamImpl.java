@@ -37,7 +37,7 @@ public class PgCursorStreamImpl implements PgStream<Row> {
   private boolean paused;
   private QueryCursor cursor;
 
-  class QueryCursor implements QueryResultHandler<PgRowSet> {
+  class QueryCursor implements QueryResultHandler<PgRowSet>, Handler<AsyncResult<Boolean>> {
 
     final String portal = UUID.randomUUID().toString();
     Iterator<Row> result;
@@ -75,7 +75,7 @@ public class PgCursorStreamImpl implements PgStream<Row> {
         } else {
           result = null;
           if (suspended) {
-            ps.execute(params, fetch, portal, true, PgRowSetImpl.COLLECTOR, this);
+            ps.execute(params, fetch, portal, true, PgRowSetImpl.COLLECTOR, this, this);
           } else {
             cursor = null;
             close();
@@ -117,7 +117,7 @@ public class PgCursorStreamImpl implements PgStream<Row> {
       if (cursor == null) {
         rowHandler = handler;
         cursor = new QueryCursor();
-        ps.execute(params, fetch, cursor.portal, false, PgRowSetImpl.COLLECTOR, cursor);
+        ps.execute(params, fetch, cursor.portal, false, PgRowSetImpl.COLLECTOR, cursor, cursor);
       } else {
         throw new UnsupportedOperationException("Handle me gracefully");
       }

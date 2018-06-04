@@ -50,7 +50,7 @@ public class RowTest extends PgTestBase {
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT 1 \"foo\"",
         ctx.asyncAssertSuccess(result -> {
-          Row row = result.get().iterator().next();
+          Row row = result.iterator().next();
           List<Function<String, ?>> functions = Arrays.asList(
             row::getValue,
             row::getString,

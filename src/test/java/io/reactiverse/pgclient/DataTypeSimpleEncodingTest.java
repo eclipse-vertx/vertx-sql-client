@@ -33,7 +33,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
       conn
         .query("SELECT null \"NullValue\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
-          Row row = result.get().iterator().next();
+          Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "NullValue").forRow(row);
           async.complete();
         }));
@@ -47,7 +47,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
       conn
         .query("SELECT true \"TrueValue\", false \"FalseValue\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
-          Row row = result.get().iterator().next();
+          Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "TrueValue")
             .returns(Tuple::getValue, Row::getValue, true)
             .returns(Tuple::getBoolean, Row::getBoolean, true)
@@ -68,7 +68,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
       conn
         .query("SELECT 32767::INT2 \"Short\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
-          Row row = result.get().iterator().next();
+          Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "Short")
             .returns(Tuple::getValue, Row::getValue, (short) 32767)
             .returns(Tuple::getShort, Row::getShort, (short) 32767)
@@ -91,7 +91,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
       conn
         .query("SELECT 2147483647::INT4 \"Integer\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
-          Row row = result.get().iterator().next();
+          Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "Integer")
             .returns(Tuple::getShort, Row::getShort, (short) -1)
             .returns(Tuple::getInteger, Row::getInteger, 2147483647)
@@ -114,7 +114,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
       conn
         .query("SELECT 9223372036854775807::INT8 \"Long\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
-          Row row = result.get().iterator().next();
+          Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "Long")
             .returns(Tuple::getValue, Row::getValue, 9223372036854775807L)
             .returns(Tuple::getShort, Row::getShort, (short) -1)
@@ -137,7 +137,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
       conn
         .query("SELECT 3.4028235E38::FLOAT4 \"Float\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
-          Row row = result.get().iterator().next();
+          Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "Float")
             .returns(Tuple::getValue, Row::getValue, 3.4028235E38f)
             .returns(Tuple::getShort, Row::getShort, (short) -1)
@@ -160,7 +160,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
       conn
         .query("SELECT 1.7976931348623157E308::FLOAT8 \"Double\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
-          Row row = result.get().iterator().next();
+          Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "Double")
             .returns(Tuple::getValue, Row::getValue, 1.7976931348623157E308d)
             .returns(Tuple::getShort, Row::getShort, (short) -1)
@@ -185,7 +185,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
           Numeric numeric = Numeric.parse("919.999999999999999999999999999999999999");
           Numeric nan = Numeric.parse("NaN");
           ctx.assertEquals(1, result.size());
-          Row row = result.get().iterator().next();
+          Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "Numeric")
             .returns(Tuple::getValue, Row::getValue, numeric)
             .returns(Tuple::getShort, Row::getShort, (short) 919)
@@ -218,7 +218,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
       conn
         .query("SELECT Point(10.1,20.45) \"p\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
-          Row row = result.get().iterator().next();
+          Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "p")
             .returns(Tuple::getValue, Row::getValue, new Point(10.1, 20.45))
             .returns(Tuple::getPoint, Row::getPoint, new Point(10.1, 20.45))
@@ -235,7 +235,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
       conn
         .query("SELECT (ARRAY[Point(10.1,20.45)]) \"p\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
-          Row row = result.get().iterator().next();
+          Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "p")
             .returns(Tuple::getValue, Row::getValue, new Point[] {new Point(10.1, 20.45)})
             .returns(Tuple::getPointArray, Row::getPointArray, new Point[] {new Point(10.1, 20.45)})
@@ -252,7 +252,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
       conn
         .query("SELECT 'VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X & VERT.X'::NAME \"Name\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
-          Row row = result.get().iterator().next();
+          Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "Name")
             .returns(Tuple::getValue, Row::getValue, "VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X ")
             .returns(Tuple::getString, Row::getString, "VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X ")
@@ -269,7 +269,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
       conn
         .query("SELECT 'pgClient'::CHAR(15) \"Char\" ", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
-          Row row = result.get().iterator().next();
+          Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "Char")
             .returns(Tuple::getValue, Row::getValue, "pgClient       ")
             .returns(Tuple::getString, Row::getString, "pgClient       ")
@@ -286,7 +286,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
       conn
         .query("SELECT 'V'::CHAR \"Char\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
-          Row row = result.get().iterator().next();
+          Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "Char")
             .returns(Tuple::getValue, Row::getValue, "V")
             .returns(Tuple::getString, Row::getString, "V")
@@ -303,7 +303,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
       conn
         .query("SELECT 'X'::\"char\" \"Character\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
-          Row row = result.get().iterator().next();
+          Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "Character")
             .returns(Tuple::getValue, Row::getValue, "X")
             .returns(Tuple::getString, Row::getString, "X")
@@ -320,7 +320,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
       conn
         .query("SELECT 'pgClient'::VARCHAR(15) \"Driver\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
-          Row row = result.get().iterator().next();
+          Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "Driver")
             .returns(Tuple::getValue, Row::getValue, "pgClient")
             .returns(Tuple::getString, Row::getString, "pgClient")
@@ -337,7 +337,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
       conn
         .query("SELECT 'Vert.x PostgreSQL Client'::TEXT \"Text\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
-          Row row = result.get().iterator().next();
+          Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "Text")
             .returns(Tuple::getValue, Row::getValue, "Vert.x PostgreSQL Client")
             .returns(Tuple::getString, Row::getString, "Vert.x PostgreSQL Client")
@@ -355,7 +355,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
         .query("SELECT '50867d3d-0098-4f61-bd31-9309ebf53475'::UUID \"uuid\"", ctx.asyncAssertSuccess(result -> {
           UUID uuid = UUID.fromString("50867d3d-0098-4f61-bd31-9309ebf53475");
           ctx.assertEquals(1, result.size());
-          Row row = result.get().iterator().next();
+          Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "uuid")
             .returns(Tuple::getValue, Row::getValue, uuid)
             .returns(Tuple::getUUID, Row::getUUID, uuid)
@@ -373,7 +373,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
         .query("SELECT '1981-05-30'::DATE \"LocalDate\"", ctx.asyncAssertSuccess(result -> {
           LocalDate ld = LocalDate.parse("1981-05-30");
           ctx.assertEquals(1, result.size());
-          Row row = result.get().iterator().next();
+          Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "LocalDate")
             .returns(Tuple::getValue, Row::getValue, ld)
             .returns(Tuple::getLocalDate, Row::getLocalDate, ld)
@@ -392,7 +392,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
         .query("SELECT '17:55:04.905120'::TIME \"LocalTime\"", ctx.asyncAssertSuccess(result -> {
           LocalTime lt = LocalTime.parse("17:55:04.905120");
           ctx.assertEquals(1, result.size());
-          Row row = result.get().iterator().next();
+          Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "LocalTime")
             .returns(Tuple::getValue, Row::getValue, lt)
             .returns(Tuple::getLocalTime, Row::getLocalTime, lt)
@@ -411,7 +411,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
         .query("SELECT '17:55:04.90512+03:07'::TIMETZ \"OffsetTime\"", ctx.asyncAssertSuccess(result -> {
           OffsetTime ot = OffsetTime.parse("17:55:04.905120+03:07");
           ctx.assertEquals(1, result.size());
-          Row row = result.get().iterator().next();
+          Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "OffsetTime")
             .returns(Tuple::getOffsetTime, Row::getOffsetTime, ot)
             .returns(Tuple::getTemporal, Row::getTemporal, ot)
@@ -430,7 +430,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
         .query("SELECT '2017-05-14 19:35:58.237666'::TIMESTAMP \"LocalDateTime\"", ctx.asyncAssertSuccess(result -> {
           LocalDateTime ldt = LocalDateTime.parse("2017-05-14T19:35:58.237666");
           ctx.assertEquals(1, result.size());
-          Row row = result.get().iterator().next();
+          Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "LocalDateTime")
             .returns(Tuple::getValue, Row::getValue, ldt)
             .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, ldt)
@@ -449,7 +449,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
         conn.query("SELECT '2017-05-14 22:35:58.237666-03'::TIMESTAMPTZ \"OffsetDateTime\"", ctx.asyncAssertSuccess(result -> {
           OffsetDateTime odt = OffsetDateTime.parse("2017-05-15T01:35:58.237666Z");
           ctx.assertEquals(1, result.size());
-          Row row = result.get().iterator().next();
+          Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "OffsetDateTime")
             .returns(Tuple::getValue, Row::getValue, odt)
             .returns(Tuple::getOffsetDateTime, Row::getOffsetDateTime, odt)
@@ -486,7 +486,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
         JsonObject object =  new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []}");
         JsonArray array = new JsonArray("[1,true,null,9.5,\"Hi\"]");
         ctx.assertEquals(1, result.size());
-        Row row = result.get().iterator().next();
+        Row row = result.iterator().next();
         ColumnChecker.checkColumn(0, "JsonObject")
           .returns(Tuple::getValue, Row::getValue, Json.create(object))
           .forRow(row);
@@ -527,7 +527,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT '12345678910'::BYTEA \"Buffer1\", '\u00DE\u00AD\u00BE\u00EF'::BYTEA \"Buffer2\"", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
-        Row row = result.get().iterator().next();
+        Row row = result.iterator().next();
         ColumnChecker.checkColumn(0, "Buffer1")
           .returns(Tuple::getValue, Row::getValue, Buffer.buffer("12345678910"))
           .returns(Tuple::getBuffer, Row::getBuffer, Buffer.buffer("12345678910"))
@@ -664,7 +664,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
           ColumnChecker.checkColumn(0, columnName)
             .returns(Tuple::getValue, Row::getValue, expected)
             .returns(byIndexGetter, byNameGetter, expected)
-            .forRow(result.get().iterator().next());
+            .forRow(result.iterator().next());
           async.complete();
         }));
     }));

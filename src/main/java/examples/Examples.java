@@ -244,8 +244,8 @@ public class Examples {
   public void queries03(PgClient client) {
     client.preparedQuery("SELECT first_name, last_name FROM users", ar -> {
       if (ar.succeeded()) {
-        PgResult<PgRowSet> result = ar.result();
-        for (Row row : result.get()) {
+        PgRowSet result = ar.result();
+        for (Row row : result) {
           System.out.println("User " + row.getString(0) + " " + row.getString(1));
         }
       } else {

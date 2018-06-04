@@ -36,7 +36,7 @@ public class PreparedStatementCachedTest extends PreparedStatementTestBase {
         conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
           ps.execute(Tuple.of(1), ctx.asyncAssertSuccess(results -> {
             ctx.assertEquals(1, results.size());
-            Tuple row = results.get().iterator().next();
+            Tuple row = results.iterator().next();
             ctx.assertEquals(1, row.getInteger(0));
             ctx.assertEquals("fortune: No such file or directory", row.getString(1));
             async.complete();
