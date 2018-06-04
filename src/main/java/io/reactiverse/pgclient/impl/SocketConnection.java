@@ -93,7 +93,7 @@ public class SocketConnection implements Connection {
 
   private void initiateProtocol(String username, String password, String database, Handler<? super CommandResponse<Connection>> completionHandler) {
     decoder = new MessageDecoder(inflight, socket.channelHandlerContext().alloc());
-    encoder = new MessageEncoder(socket);
+    encoder = new MessageEncoder(socket.channelHandlerContext());
 
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     pipeline.addBefore("handler", "decoder", decoder);

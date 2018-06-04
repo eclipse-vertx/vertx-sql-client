@@ -17,6 +17,7 @@
 package io.reactiverse.pgclient.impl.codec.encoder;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
 import io.reactiverse.pgclient.impl.codec.ColumnDesc;
 import io.reactiverse.pgclient.impl.codec.DataType;
 import io.reactiverse.pgclient.impl.codec.DataTypeCodec;
@@ -51,18 +52,18 @@ public final class MessageEncoder {
   private static final byte CLOSE = 'C';
   private static final byte SYNC = 'S';
 
-  private final NetSocketInternal socket;
+  private final ChannelHandlerContext ctx;
   private ByteBuf out;
 
-  public MessageEncoder(NetSocketInternal socket) {
-    this.socket = socket;
+  public MessageEncoder(ChannelHandlerContext ctx) {
+    this.ctx = ctx;
   }
 
   public void flush() {
     if (out != null) {
       ByteBuf buff = out;
       out = null;
-      socket.writeMessage(buff);
+      ctx.writeAndFlush(buff);
     }
   }
 
@@ -329,7 +330,7 @@ public final class MessageEncoder {
 
   private void ensureBuffer() {
     if (out == null) {
-      out = socket.channelHandlerContext().alloc().ioBuffer();
+      out = ctx.alloc().ioBuffer();
     }
   }
 }
