@@ -36,7 +36,7 @@ import java.util.stream.Collector;
 public interface PgPreparedQuery {
 
   /**
-   * @return create a query with no arguments
+   * Calls {@link #execute(Tuple, Handler)} with an empty tuple argument.
    */
   @Fluent
   default PgPreparedQuery execute(Handler<AsyncResult<PgRowSet>> handler) {
@@ -44,7 +44,7 @@ public interface PgPreparedQuery {
   }
 
   /**
-   * @return create a query with no arguments
+   * Calls {@link #execute(Tuple, Collector, Handler)} with an empty tuple argument.
    */
   @GenIgnore
   default <R> PgPreparedQuery execute(Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler) {
