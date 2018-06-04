@@ -51,7 +51,7 @@ public class Examples {
     // A simple query
     client.query("SELECT * FROM users WHERE id='julien'", ar -> {
       if (ar.succeeded()) {
-        PgResult<PgRowSet> result = ar.result();
+        PgRowSet result = ar.result();
         System.out.println("Got " + result.size() + " results ");
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
@@ -222,7 +222,7 @@ public class Examples {
   public void queries01(PgClient client) {
     client.query("SELECT * FROM users WHERE id='julien'", ar -> {
       if (ar.succeeded()) {
-        PgResult<PgRowSet> result = ar.result();
+        PgRowSet result = ar.result();
         System.out.println("Got " + result.size() + " results ");
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
@@ -233,7 +233,7 @@ public class Examples {
   public void queries02(PgClient client) {
     client.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"),  ar -> {
       if (ar.succeeded()) {
-        PgResult<PgRowSet> result = ar.result();
+        PgRowSet result = ar.result();
         System.out.println("Got " + result.size() + " results ");
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
@@ -257,7 +257,7 @@ public class Examples {
   public void queries04(PgClient client) {
     client.preparedQuery("INSERT INTO users (first_name, last_name) VALUES ($1, $2)", Tuple.of("Julien", "Viet"),  ar -> {
       if (ar.succeeded()) {
-        PgResult<PgRowSet> result = ar.result();
+        PgRowSet result = ar.result();
         System.out.println(result.updatedCount());
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
@@ -295,7 +295,7 @@ public class Examples {
       if (res.succeeded()) {
 
         // Process results
-        PgResult<PgRowSet> results = res.result();
+        PgRowSet results = res.result();
       } else {
         System.out.println("Batch failed " + res.cause());
       }
@@ -338,7 +338,7 @@ public class Examples {
         pq.execute(Tuple.of("julien"), ar2 -> {
           if (ar2.succeeded()) {
             // All rows
-            PgResult<PgRowSet> result = ar2.result();
+            PgRowSet result = ar2.result();
           }
         });
       }
@@ -356,7 +356,7 @@ public class Examples {
         // Read 50 rows
         cursor.read(50, ar2 -> {
           if (ar2.succeeded()) {
-            PgResult<PgRowSet> result = ar2.result();
+            PgRowSet result = ar2.result();
 
             // Check for more ?
             if (cursor.hasMore()) {
@@ -427,7 +427,7 @@ public class Examples {
           if (res.succeeded()) {
 
             // Process results
-            PgResult<PgRowSet> results = res.result();
+            PgRowSet results = res.result();
           } else {
             System.out.println("Batch failed " + res.cause());
           }
