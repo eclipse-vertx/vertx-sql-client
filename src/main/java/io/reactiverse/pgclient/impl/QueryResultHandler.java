@@ -17,17 +17,15 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.PgResult;
+import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public interface QueryResultHandler<T> extends Handler<AsyncResult<Boolean>> {
+public interface QueryResultHandler<T> {
 
-  void handleResult(PgResult<T> result);
+  void handleResult(int updatedCount, int size, RowDescription desc, T result);
 
-  @Override
-  void handle(AsyncResult<Boolean> res);
 }

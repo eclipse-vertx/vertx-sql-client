@@ -17,12 +17,14 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.impl.codec.DataFormat;
-import io.reactiverse.pgclient.impl.codec.decoder.DecodeContext;
-import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
-import io.reactiverse.pgclient.impl.codec.decoder.ResultDecoder;
-import io.reactiverse.pgclient.impl.codec.decoder.message.RowDescription;
-import io.reactiverse.pgclient.impl.codec.encoder.message.Query;
+import io.reactiverse.pgclient.Row;
+import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
+import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
+import io.reactiverse.pgclient.impl.codec.encoder.Query;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+
+import java.util.stream.Collector;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -30,13 +32,17 @@ import io.reactiverse.pgclient.impl.codec.encoder.message.Query;
 
 class SimpleQueryCommand<T> extends QueryCommandBase<T> {
 
-  private ResultDecoder<T> decoder;
   private final String sql;
+  private final boolean singleton;
 
-  SimpleQueryCommand(String sql, ResultDecoder<T> decoder, QueryResultHandler<T> handler) {
-    super(handler);
+  SimpleQueryCommand(String sql,
+                     boolean singleton,
+                     Collector<Row, ?, T> collector,
+                     QueryResultHandler<T> resultHandler,
+                     Handler<AsyncResult<Boolean>> handler) {
+    super(collector, resultHandler, handler);
     this.sql = sql;
-    this.decoder = decoder;
+    this.singleton = singleton;
   }
 
   @Override
@@ -45,18 +51,13 @@ class SimpleQueryCommand<T> extends QueryCommandBase<T> {
   }
 
   @Override
-  void exec(SocketConnection conn) {
-    conn.decodeQueue.add(new DecodeContext(null, DataFormat.TEXT, decoder));
-    conn.writeMessage(new Query(sql));
+  void exec(MessageEncoder out) {
+    out.writeQuery(new Query(sql));
   }
 
   @Override
-  public void handleMessage(InboundMessage msg) {
-    if (msg.getClass() == RowDescription.class) {
-      // Expected
-    } else {
-      super.handleMessage(msg);
-    }
+  public void handleRowDescription(RowDescription rowDescription) {
+    decoder = new RowResultDecoder<>(collector, singleton, rowDescription);
   }
 
   public String getSql() {

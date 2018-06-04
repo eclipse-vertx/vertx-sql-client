@@ -18,94 +18,65 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.PgException;
-import io.reactiverse.pgclient.impl.codec.decoder.DecodeContext;
-import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
-import io.reactiverse.pgclient.impl.codec.decoder.message.*;
-import io.reactiverse.pgclient.impl.codec.encoder.message.Describe;
-import io.reactiverse.pgclient.impl.codec.encoder.message.Parse;
-import io.reactiverse.pgclient.impl.codec.encoder.message.Sync;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
+import io.reactiverse.pgclient.impl.codec.TxStatus;
+import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
+import io.reactiverse.pgclient.impl.codec.decoder.ParameterDescription;
+import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
+import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
+import io.reactiverse.pgclient.impl.codec.encoder.Describe;
+import io.reactiverse.pgclient.impl.codec.encoder.Parse;
 import io.vertx.core.Handler;
-
-import java.util.Map;
 
 public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
 
   final String sql;
-  private long statement; // 0 means unamed statement otherwise CString
+  long statement; // 0 means unamed statement otherwise CString
+  SocketConnection.CachedPreparedStatement cached;
   private ParameterDescription parameterDesc;
   private RowDescription rowDesc;
-  private SocketConnection.CachedPreparedStatement cached;
-  private Handler<AsyncResult<PreparedStatement>> handler;
 
-  PrepareStatementCommand(String sql, Handler<AsyncResult<PreparedStatement>> handler) {
-    super(null); // Not pretty but well, that's fine for now
+  PrepareStatementCommand(String sql, Handler<? super CommandResponse<PreparedStatement>> handler) {
+    super(handler);
     this.sql = sql;
-    this.handler = handler;
-    super.handler = ar -> {
-      handler.handle(ar);
-      if (cached != null) {
-        cached.fut.handle(ar);
-      }
-    };
   }
 
   @Override
-  void foo(SocketConnection conn) {
-    Map<String, SocketConnection.CachedPreparedStatement> psCache = conn.psCache;
-    if (psCache != null) {
-      cached = psCache.get(sql);
-      if (cached != null) {
-        cached.get(handler);
-      } else {
-        statement = conn.psSeq.next();
-        cached = new SocketConnection.CachedPreparedStatement();
-        psCache.put(sql, this.cached);
-        super.foo(conn);
-      }
-    } else {
-      super.foo(conn);
-    }
+  void exec(MessageEncoder out) {
+    out.writeParse(new Parse(sql, statement));
+    out.writeDescribe(new Describe(statement, null));
+    out.writeSync();
   }
 
   @Override
-  void exec(SocketConnection conn) {
-    conn.decodeQueue.add(new DecodeContext(null, null, null));
-    conn.writeMessage(new Parse(sql).setStatement(statement));
-    conn.writeMessage(new Describe().setStatement(statement));
-    conn.writeMessage(Sync.INSTANCE);
+  public void handleParseComplete() {
+    // Response to parse
   }
 
   @Override
-  public void handleMessage(InboundMessage msg) {
-    if (msg.getClass() == ParseComplete.class) {
-      // Response to Parse
-    } else if (msg.getClass() == ParameterDescription.class) {
-      // Response to Describe
-      parameterDesc = (ParameterDescription) msg;
-    } else if (msg.getClass() == RowDescription.class) {
-      // Response to Describe
-      rowDesc = (RowDescription) msg;
-    } else if (msg.getClass() == NoData.class) {
-      // Response to Describe
-    } else if (msg.getClass() == ErrorResponse.class) {
-      ErrorResponse error = (ErrorResponse) msg;
-      failure = new PgException(error);
-    } else {
-      if (msg.getClass() == ReadyForQuery.class) {
-        result = new PreparedStatement(sql, statement, parameterDesc, rowDesc);
-      }
-      super.handleMessage(msg);
-    }
+  public void handleParameterDescription(ParameterDescription parameterDesc) {
+    // Response to Describe
+    this.parameterDesc = parameterDesc;
   }
 
   @Override
-  void fail(Throwable err) {
-    Future<PreparedStatement> failure = Future.failedFuture(err);
-    handler.handle(failure);
-    if (cached != null) {
-      cached.fut.handle(failure);
-    }
+  public void handleRowDescription(RowDescription rowDesc) {
+    // Response to Describe
+    this.rowDesc = rowDesc;
+  }
+
+  @Override
+  public void handleNoData() {
+    // Response to Describe
+  }
+
+  @Override
+  public void handleErrorResponse(ErrorResponse errorResponse) {
+    failure = new PgException(errorResponse);
+  }
+
+  @Override
+  public void handleReadyForQuery(TxStatus txStatus) {
+    result = new PreparedStatement(sql, statement, parameterDesc, rowDesc);
+    super.handleReadyForQuery(txStatus);
   }
 }

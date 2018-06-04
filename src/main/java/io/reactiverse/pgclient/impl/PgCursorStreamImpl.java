@@ -17,10 +17,8 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.PgStream;
-import io.reactiverse.pgclient.PgResult;
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
+import io.reactiverse.pgclient.*;
+import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
@@ -39,7 +37,7 @@ public class PgCursorStreamImpl implements PgStream<Row> {
   private boolean paused;
   private QueryCursor cursor;
 
-  class QueryCursor implements QueryResultHandler<Row> {
+  class QueryCursor implements QueryResultHandler<PgRowSet>, Handler<AsyncResult<Boolean>> {
 
     final String portal = UUID.randomUUID().toString();
     Iterator<Row> result;
@@ -47,7 +45,7 @@ public class PgCursorStreamImpl implements PgStream<Row> {
     boolean closed;
 
     @Override
-    public void handleResult(PgResult<Row> result) {
+    public void handleResult(int updatedCount, int size, RowDescription desc, PgRowSet result) {
       this.result = result.iterator();
     }
 
@@ -77,7 +75,7 @@ public class PgCursorStreamImpl implements PgStream<Row> {
         } else {
           result = null;
           if (suspended) {
-            ps.execute(params, fetch, portal, true, this);
+            ps.execute(params, fetch, portal, true, false, PgRowSetImpl.COLLECTOR, this, this);
           } else {
             cursor = null;
             close();
@@ -119,7 +117,7 @@ public class PgCursorStreamImpl implements PgStream<Row> {
       if (cursor == null) {
         rowHandler = handler;
         cursor = new QueryCursor();
-        ps.execute(params, fetch, cursor.portal, false, cursor);
+        ps.execute(params, fetch, cursor.portal, false, false, PgRowSetImpl.COLLECTOR, cursor, cursor);
       } else {
         throw new UnsupportedOperationException("Handle me gracefully");
       }

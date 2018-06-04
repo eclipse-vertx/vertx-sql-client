@@ -18,6 +18,7 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
+import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
 import io.vertx.core.Handler;
 
 /**
@@ -30,7 +31,7 @@ class CloseStatementCommand extends CommandBase<Void> {
   }
 
   @Override
-  void exec(SocketConnection conn) {
+  void exec(MessageEncoder out) {
     /*
     if (conn.psCache == null) {
       conn.writeMessage(new Close().setStatement(statement));
@@ -38,17 +39,7 @@ class CloseStatementCommand extends CommandBase<Void> {
     } else {
     }
     */
-    handler.handle(CommandResponse.success(null));
-    completionHandler.handle(null);
-  }
-
-  @Override
-  public void handleMessage(InboundMessage msg) {
-    throw new UnsupportedOperationException("Uh");
-  }
-
-  @Override
-  void fail(Throwable err) {
-    handler.handle(CommandResponse.failure(err));
+    CommandResponse<Void> resp = CommandResponse.success(null);
+    completionHandler.handle(resp);
   }
 }

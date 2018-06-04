@@ -15,27 +15,18 @@
  *
  */
 
-package io.reactiverse.pgclient;
-
-import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
+package io.reactiverse.pgclient.impl.codec.decoder.type;
 
 /**
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
+ * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public class PgException extends RuntimeException {
 
-  private final ErrorResponse error;
-
-  public PgException(ErrorResponse error) {
-    super(error.getMessage());
-    this.error = error;
-  }
-
-  public String getSeverity() {
-    return error.getSeverity();
-  }
-
-  public String getCode() {
-    return error.getCode();
-  }
+public class CommandCompleteType {
+  public static final String INSERT = "INSERT";
+  public static final String DELETE = "DELETE";
+  public static final String UPDATE = "UPDATE";
+  public static final String SELECT = "SELECT";
+  public static final String MOVE = "MOVE";
+  public static final String FETCH = "FETCH";
+  public static final String COPY = "COPY";
 }

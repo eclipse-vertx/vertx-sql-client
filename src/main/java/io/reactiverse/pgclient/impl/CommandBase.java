@@ -17,8 +17,12 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
-import io.reactiverse.pgclient.impl.codec.decoder.message.ReadyForQuery;
+import io.reactiverse.pgclient.impl.codec.TxStatus;
+import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
+import io.reactiverse.pgclient.impl.codec.decoder.NoticeResponse;
+import io.reactiverse.pgclient.impl.codec.decoder.ParameterDescription;
+import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
+import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
 import io.vertx.core.Handler;
 
 /**
@@ -27,7 +31,7 @@ import io.vertx.core.Handler;
 
 public abstract class CommandBase<R> {
 
-  protected Handler<Void> completionHandler;
+  public Handler<? super CommandResponse<R>> completionHandler;
   Handler<? super CommandResponse<R>> handler;
   Throwable failure;
   R result;
@@ -36,26 +40,94 @@ public abstract class CommandBase<R> {
     this.handler = handler;
   }
 
-  public void handleMessage(InboundMessage msg) {
-    if (msg.getClass() == ReadyForQuery.class) {
-      ReadyForQuery readyForQuery = (ReadyForQuery) msg;
-      completionHandler.handle(null);
-      if (failure != null) {
-        handler.handle(CommandResponse.failure(failure, readyForQuery.txStatus()));
-      } else {
-        handler.handle(CommandResponse.success(result, readyForQuery.txStatus()));
-      }
+  public void handleBackendKeyData(int processId, int secretKey) {
+    System.out.println(getClass().getSimpleName() + " should handle message BackendKeyData");
+  }
+
+  public void handleEmptyQueryResponse() {
+    System.out.println(getClass().getSimpleName() + " should handle message EmptyQueryResponse");
+  }
+
+  public void handleParameterDescription(ParameterDescription parameterDesc) {
+    System.out.println(getClass().getSimpleName() + " should handle message " + parameterDesc);
+  }
+
+  public void handleParseComplete() {
+    System.out.println(getClass().getSimpleName() + " should handle message ParseComplete");
+  }
+
+  public void handleCloseComplete() {
+    System.out.println(getClass().getSimpleName() + " should handle message CloseComplete");
+  }
+
+  public void handleRowDescription(RowDescription rowDescription) {
+    System.out.println(getClass().getSimpleName() + " should handle message " + rowDescription);
+  }
+
+  public void handleNoData() {
+    System.out.println(getClass().getSimpleName() + " should handle message NoData");
+  }
+
+  public void handleNoticeResponse(NoticeResponse noticeResponse) {
+    System.out.println(getClass().getSimpleName() + " should handle message " + noticeResponse);
+  }
+
+  public void handleErrorResponse(ErrorResponse errorResponse) {
+    System.out.println(getClass().getSimpleName() + " should handle message " + errorResponse);
+  }
+
+  public void handlePortalSuspended() {
+    System.out.println(getClass().getSimpleName() + " should handle message PortalSuspended");
+  }
+
+  public void handleBindComplete() {
+    System.out.println(getClass().getSimpleName() + " should handle message BindComplete");
+  }
+
+  public void handleCommandComplete(int updated) {
+    System.out.println(getClass().getSimpleName() + " should handle message CommandComplete");
+  }
+
+  public void handleAuthenticationMD5Password(byte[] salt) {
+    System.out.println(getClass().getSimpleName() + " should handle message AuthenticationMD5Password");
+  }
+
+  public void handleAuthenticationClearTextPassword() {
+    System.out.println(getClass().getSimpleName() + " should handle message AuthenticationClearTextPassword");
+  }
+
+  public void handleAuthenticationOk() {
+    System.out.println(getClass().getSimpleName() + " should handle message AuthenticationOk");
+  }
+
+  public void handleParameterStatus(String key, String value) {
+    System.out.println(getClass().getSimpleName() + " should handle message ParameterStatus");
+  }
+
+  /**
+   * <p>
+   * The frontend can issue commands. Every message returned from the backend has transaction status
+   * that would be one of the following
+   * <p>
+   * IDLE : Not in a transaction block
+   * <p>
+   * ACTIVE : In transaction block
+   * <p>
+   * FAILED : Failed transaction block (queries will be rejected until block is ended)
+   */
+  public void handleReadyForQuery(TxStatus txStatus) {
+    CommandResponse<R> resp;
+    if (failure != null) {
+      resp = CommandResponse.failure(this.failure, txStatus);
     } else {
-      System.out.println(getClass().getSimpleName() + " should handle message " + msg);
+      resp = CommandResponse.success(result, txStatus);
     }
+    completionHandler.handle(resp);
   }
 
-  void foo(SocketConnection conn) {
-    conn.bilto(this);
+  abstract void exec(MessageEncoder out);
+
+  final void fail(Throwable err) {
+    handler.handle(CommandResponse.failure(err));
   }
-
-  abstract void exec(SocketConnection conn);
-
-  abstract void fail(Throwable err);
-
 }

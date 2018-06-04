@@ -40,7 +40,6 @@ class Transaction implements PgTransaction {
   private Deque<CommandBase<?>> pending = new ArrayDeque<>();
   private Handler<Void> failedHandler;
   private int status = ST_BEGIN;
-  private boolean rollbacked;
 
   Transaction(Context context, Connection conn, Handler<Void> disposeHandler) {
     this.context = context;
@@ -167,7 +166,8 @@ class Transaction implements PgTransaction {
     return this;
   }
 
-  private CommandBase query(String sql, Handler<AsyncResult<PgResult<Row>>> handler) {
-    return new SimpleQueryCommand<>(sql, new RowResultDecoder(), new SimpleQueryResultHandler<>(handler));
+  private CommandBase query(String sql, Handler<AsyncResult<PgRowSet>> handler) {
+    PgResultBuilder<PgRowSet, PgRowSetImpl, PgRowSet> b = new PgResultBuilder<>(PgRowSetImpl.FACTORY, handler);
+    return new SimpleQueryCommand<>(sql, false, PgRowSetImpl.COLLECTOR, b, b);
   }
 }

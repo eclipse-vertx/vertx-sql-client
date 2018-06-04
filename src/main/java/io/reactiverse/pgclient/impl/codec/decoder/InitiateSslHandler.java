@@ -23,7 +23,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.DecoderException;
-import io.reactiverse.pgclient.impl.codec.decoder.message.type.MessageType;
+import io.reactiverse.pgclient.impl.codec.decoder.type.MessageType;
 import io.vertx.core.Future;
 
 public class InitiateSslHandler extends ChannelInboundHandlerAdapter {

@@ -17,25 +17,18 @@
 
 package io.reactiverse.pgclient;
 
-import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
+import io.vertx.codegen.annotations.VertxGen;
 
 /**
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
+ * A set of rows.
  */
-public class PgException extends RuntimeException {
+@VertxGen
+public interface PgRowSet extends Iterable<Row>, PgResult<PgRowSet> {
 
-  private final ErrorResponse error;
+  @Override
+  PgIterator iterator();
 
-  public PgException(ErrorResponse error) {
-    super(error.getMessage());
-    this.error = error;
-  }
+  @Override
+  PgRowSet next();
 
-  public String getSeverity() {
-    return error.getSeverity();
-  }
-
-  public String getCode() {
-    return error.getCode();
-  }
 }

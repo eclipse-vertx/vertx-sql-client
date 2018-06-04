@@ -11,10 +11,7 @@ import org.junit.Test;
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -907,7 +904,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(result -> {
           for (T n : expected) {
             ctx.assertEquals(result.size(), 1);
-            PgIterator<Row> it = result.iterator();
+            Iterator<Row> it = result.iterator();
             Row row = it.next();
             compare(ctx, n, getter.apply(row, 0));
             compare(ctx, n, row.getValue(0));

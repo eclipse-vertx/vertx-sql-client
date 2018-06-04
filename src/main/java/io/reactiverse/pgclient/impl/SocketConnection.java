@@ -17,13 +17,10 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.impl.codec.decoder.DecodeContext;
-import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
 import io.reactiverse.pgclient.impl.codec.decoder.MessageDecoder;
 import io.reactiverse.pgclient.impl.codec.decoder.InitiateSslHandler;
-import io.reactiverse.pgclient.impl.codec.encoder.OutboundMessage;
-import io.reactiverse.pgclient.impl.codec.decoder.message.NotificationResponse;
-import io.netty.buffer.ByteBuf;
+import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
+import io.reactiverse.pgclient.impl.codec.decoder.NotificationResponse;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.*;
@@ -50,10 +47,11 @@ public class SocketConnection implements Connection {
   private final Context context;
   private Status status = Status.CONNECTED;
   private Holder holder;
-  final Map<String, CachedPreparedStatement> psCache;
+  private final Map<String, CachedPreparedStatement> psCache;
+  private final StringLongSequence psSeq = new StringLongSequence();
   private final int pipeliningLimit;
-  final Deque<DecodeContext> decodeQueue = new ArrayDeque<>();
-  final StringLongSequence psSeq = new StringLongSequence();
+  private MessageDecoder decoder;
+  private MessageEncoder encoder;
 
   public SocketConnection(NetSocketInternal socket,
                           boolean cachePreparedStatements,
@@ -94,32 +92,43 @@ public class SocketConnection implements Connection {
   }
 
   private void initiateProtocol(String username, String password, String database, Handler<? super CommandResponse<Connection>> completionHandler) {
+    decoder = new MessageDecoder(inflight, socket.channelHandlerContext().alloc());
+    encoder = new MessageEncoder(socket.channelHandlerContext());
+
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
-    pipeline.addBefore("handler", "decoder", new MessageDecoder(decodeQueue));
+    pipeline.addBefore("handler", "decoder", decoder);
+
     socket.closeHandler(this::handleClosed);
     socket.exceptionHandler(this::handleException);
-    socket.messageHandler(this::handleMessage);
-    schedule(new InitCommand(username, password, database, completionHandler));
+    socket.messageHandler(msg -> {
+      try {
+        handleMessage(msg);
+      } catch (Exception e) {
+        handleException(e);
+      }
+    });
+    schedule(new InitCommand(this, username, password, database, completionHandler));
   }
 
-  static class CachedPreparedStatement implements Handler<AsyncResult<PreparedStatement>> {
+  static class CachedPreparedStatement implements Handler<CommandResponse<PreparedStatement>> {
 
-    final Future<PreparedStatement> fut = Future.<PreparedStatement>future().setHandler(this);
-    final ArrayDeque<Handler<AsyncResult<PreparedStatement>>> waiters = new ArrayDeque<>();
+    private CommandResponse<PreparedStatement> resp;
+    private final ArrayDeque<Handler<? super CommandResponse<PreparedStatement>>> waiters = new ArrayDeque<>();
 
-    void get(Handler<AsyncResult<PreparedStatement>> handler) {
-      if (fut.isComplete()) {
-        handler.handle(fut);
+    void get(Handler<? super CommandResponse<PreparedStatement>> handler) {
+      if (resp != null) {
+        handler.handle(resp);
       } else {
         waiters.add(handler);
       }
     }
 
     @Override
-    public void handle(AsyncResult<PreparedStatement> event) {
-      Handler<AsyncResult<PreparedStatement>> waiter;
+    public void handle(CommandResponse<PreparedStatement> event) {
+      resp = event;
+      Handler<? super CommandResponse<PreparedStatement>> waiter;
       while ((waiter = waiters.poll()) != null) {
-        waiter.handle(fut);
+        waiter.handle(resp);
       }
     }
   }
@@ -139,26 +148,6 @@ public class SocketConnection implements Connection {
     this.holder = holder;
   }
 
-  private boolean cork = false;
-  private ArrayDeque<OutboundMessage> outbound = new ArrayDeque<>();
-
-  void writeMessage(OutboundMessage cmd) {
-    if (cork) {
-      outbound.add(cmd);
-    } else {
-      ByteBuf out = null;
-      try {
-        out = socket.channelHandlerContext().alloc().ioBuffer();
-        cmd.encode(out);
-        socket.writeMessage(out);
-        out = null;
-      } finally {
-        if (out != null) {
-          out.release();
-        }
-      }
-    }
-  }
 
   @Override
   public void close(Holder holder) {
@@ -178,16 +167,31 @@ public class SocketConnection implements Connection {
     if (Vertx.currentContext() != context) {
       throw new IllegalStateException();
     }
-    cmd.foo(this);
-  }
 
-  void bilto(CommandBase<?> cmd) {
+    // Special handling for cache
+    if (cmd instanceof PrepareStatementCommand) {
+      PrepareStatementCommand psCmd = (PrepareStatementCommand) cmd;
+      Map<String, SocketConnection.CachedPreparedStatement> psCache = this.psCache;
+      if (psCache != null) {
+        SocketConnection.CachedPreparedStatement cached = psCache.get(psCmd.sql);
+        if (cached != null) {
+          Handler<? super CommandResponse<PreparedStatement>> handler = psCmd.handler;
+          cached.get(handler);
+          return;
+        } else {
+          psCmd.statement = psSeq.next();
+          psCmd.cached = cached = new SocketConnection.CachedPreparedStatement();
+          psCache.put(psCmd.sql, cached);
+          Handler<? super CommandResponse<PreparedStatement>> a = psCmd.handler;
+          psCmd.cached.get(a);
+          psCmd.handler = psCmd.cached;
+        }
+      }
+    }
+
+    //
     if (status == Status.CONNECTED) {
       pending.add(cmd);
-      cmd.completionHandler = v -> {
-        inflight.poll();
-        checkPending();
-      };
       checkPending();
     } else {
       cmd.fail(new VertxException("Connection not open " + status));
@@ -198,42 +202,21 @@ public class SocketConnection implements Connection {
     if (inflight.size() < pipeliningLimit) {
       CommandBase<?> cmd;
       while (inflight.size() < pipeliningLimit && (cmd = pending.poll()) != null) {
-        cork = true;
         inflight.add(cmd);
-        cmd.exec(this);
-        if (outbound.size() > 0) {
-          ByteBuf out = null;
-          try {
-            out = socket.channelHandlerContext().alloc().ioBuffer();
-            OutboundMessage msg;
-            while ((msg = outbound.poll()) != null) {
-              msg.encode(out);
-            }
-            socket.writeMessage(out);
-            out = null;
-          } finally {
-            if (out != null) {
-              out.release();
-            }
-          }
-        }
-        cork = false;
+        decoder.run(cmd);
+        cmd.exec(encoder);
       }
+      encoder.flush();
     }
   }
 
   private void handleMessage(Object msg) {
-    // System.out.println("<-- " + msg);
-    if (msg instanceof NotificationResponse) {
+    if (msg instanceof CommandResponse) {
+      CommandBase cmd = inflight.poll();
+      checkPending();
+      cmd.handler.handle(msg);
+    } else if (msg instanceof NotificationResponse) {
       handleNotification((NotificationResponse) msg);
-    } else {
-      InboundMessage pgMsg = (InboundMessage) msg;
-      CommandBase<?> cmd = inflight.peek();
-      if (cmd != null) {
-        cmd.handleMessage(pgMsg);
-      } else {
-        System.out.println("Uh oh, no inflight command for " + msg);
-      }
     }
   }
 

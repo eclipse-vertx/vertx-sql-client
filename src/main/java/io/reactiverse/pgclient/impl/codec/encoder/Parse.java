@@ -15,27 +15,23 @@
  *
  */
 
-package io.reactiverse.pgclient;
-
-import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
+package io.reactiverse.pgclient.impl.codec.encoder;
 
 /**
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
+ * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public class PgException extends RuntimeException {
+public final class Parse {
 
-  private final ErrorResponse error;
+  public final String query;
+  public final long statement;
 
-  public PgException(ErrorResponse error) {
-    super(error.getMessage());
-    this.error = error;
+  public Parse(String query, long statement) {
+    this.query = query;
+    this.statement = statement;
   }
 
-  public String getSeverity() {
-    return error.getSeverity();
-  }
-
-  public String getCode() {
-    return error.getCode();
+  public Parse(String query) {
+    this.query = query;
+    this.statement = 0;
   }
 }

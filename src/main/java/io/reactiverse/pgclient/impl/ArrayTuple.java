@@ -27,11 +27,20 @@ import java.math.BigDecimal;
 import java.time.*;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.UUID;
 
 public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   public static Tuple EMPTY = new ArrayTuple(0);
+
+  public ArrayTuple(int len) {
+    super(len);
+  }
+
+  public ArrayTuple(Collection<?> c) {
+    super(c);
+  }
 
   @Override
   public Boolean getBoolean(int pos) {
@@ -642,10 +651,5 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
     add(value);
     return this;
   }
-
-  public ArrayTuple(int len) {
-    super(len);
-  }
-
 
 }

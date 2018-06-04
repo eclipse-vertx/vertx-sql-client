@@ -15,27 +15,18 @@
  *
  */
 
-package io.reactiverse.pgclient;
+package io.reactiverse.pgclient.impl.codec.encoder;
 
-import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
+import io.reactiverse.pgclient.impl.codec.util.MD5Authentication;
 
 /**
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
+ * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public class PgException extends RuntimeException {
+public class PasswordMessage {
 
-  private final ErrorResponse error;
+  public final String hash;
 
-  public PgException(ErrorResponse error) {
-    super(error.getMessage());
-    this.error = error;
-  }
-
-  public String getSeverity() {
-    return error.getSeverity();
-  }
-
-  public String getCode() {
-    return error.getCode();
+  public PasswordMessage(String username, String password, byte[] salt) {
+    this.hash = salt != null ? MD5Authentication.encode(username, password, salt) : password;
   }
 }

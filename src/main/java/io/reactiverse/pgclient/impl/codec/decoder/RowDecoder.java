@@ -15,27 +15,12 @@
  *
  */
 
-package io.reactiverse.pgclient;
+package io.reactiverse.pgclient.impl.codec.decoder;
 
-import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
+import io.netty.buffer.ByteBuf;
 
-/**
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
- */
-public class PgException extends RuntimeException {
+public interface RowDecoder {
 
-  private final ErrorResponse error;
+  void decodeRow(int len, ByteBuf in);
 
-  public PgException(ErrorResponse error) {
-    super(error.getMessage());
-    this.error = error;
-  }
-
-  public String getSeverity() {
-    return error.getSeverity();
-  }
-
-  public String getCode() {
-    return error.getCode();
-  }
 }

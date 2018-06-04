@@ -15,27 +15,28 @@
  *
  */
 
-package io.reactiverse.pgclient;
+package io.reactiverse.pgclient.impl.codec.encoder;
 
-import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
+import io.reactiverse.pgclient.impl.codec.ColumnDesc;
+import io.reactiverse.pgclient.impl.codec.DataType;
 
 /**
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
+ * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public class PgException extends RuntimeException {
+public class Bind {
 
-  private final ErrorResponse error;
+  public final long statement;
+  public final DataType[] paramTypes;
+  public final ColumnDesc[] resultColumns;
 
-  public PgException(ErrorResponse error) {
-    super(error.getMessage());
-    this.error = error;
+  public Bind(long statement, DataType[] paramTypes, ColumnDesc[] resultColumns) {
+    this.statement = statement;
+    this.paramTypes = paramTypes;
+    this.resultColumns = resultColumns;
   }
 
-  public String getSeverity() {
-    return error.getSeverity();
+  public long getStatement() {
+    return statement;
   }
 
-  public String getCode() {
-    return error.getCode();
-  }
 }

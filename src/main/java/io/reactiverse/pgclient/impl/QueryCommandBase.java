@@ -18,42 +18,57 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.PgException;
-import io.reactiverse.pgclient.PgResult;
-import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
-import io.reactiverse.pgclient.impl.codec.decoder.message.CommandComplete;
-import io.reactiverse.pgclient.impl.codec.decoder.message.ErrorResponse;
+import io.reactiverse.pgclient.Row;
+import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
+import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+
+import java.util.stream.Collector;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
-abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
+public abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
 
-  protected final QueryResultHandler<T> resultHandler;
+  public RowResultDecoder<?, T> decoder;
+  final QueryResultHandler<T> resultHandler;
+  final Collector<Row, ?, T> collector;
 
-  public QueryCommandBase(QueryResultHandler<T> handler) {
+  QueryCommandBase(Collector<Row, ?, T> collector, QueryResultHandler<T> resultHandler, Handler<AsyncResult<Boolean>> handler) {
     super(handler);
-    this.resultHandler = handler;
+    this.resultHandler = resultHandler;
+    this.collector = collector;
   }
 
   abstract String sql();
 
   @Override
-  public void handleMessage(InboundMessage msg) {
-    if (msg.getClass() == CommandComplete.class) {
-      this.result = false;
-      PgResult<T> result = (PgResult<T>) ((CommandComplete) msg).result();
-      resultHandler.handleResult(result);
-    } else if (msg.getClass() == ErrorResponse.class) {
-      ErrorResponse error = (ErrorResponse) msg;
-      failure = new PgException(error);
+  public void handleCommandComplete(int updated) {
+    this.result = false;
+    T result;
+    int size;
+    RowDescription desc;
+    if (decoder != null) {
+      result = decoder.complete();
+      desc = decoder.description();
+      size = decoder.size();
+      decoder.reset();
     } else {
-      super.handleMessage(msg);
+      result = emptyResult(collector);
+      size = 0;
+      desc = null;
     }
+    resultHandler.handleResult(updated, size, desc, result);
   }
 
   @Override
-  void fail(Throwable cause) {
-    handler.handle(CommandResponse.failure(cause));
+  public void handleErrorResponse(ErrorResponse errorResponse) {
+    failure = new PgException(errorResponse);
+  }
+
+  private static <A, T> T emptyResult(Collector<Row, A, T> collector) {
+    return collector.finisher().apply(collector.supplier().get());
   }
 }

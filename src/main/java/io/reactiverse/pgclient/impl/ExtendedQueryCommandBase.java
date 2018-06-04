@@ -17,36 +17,37 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.PgResult;
-import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
-import io.reactiverse.pgclient.impl.codec.decoder.ResultDecoder;
-import io.reactiverse.pgclient.impl.codec.decoder.message.BindComplete;
-import io.reactiverse.pgclient.impl.codec.decoder.message.ParseComplete;
-import io.reactiverse.pgclient.impl.codec.decoder.message.PortalSuspended;
+import io.reactiverse.pgclient.Row;
+import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+
+import java.util.stream.Collector;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-abstract class ExtendedQueryCommandBase<T> extends QueryCommandBase<T> {
+abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
 
   protected final PreparedStatement ps;
   protected final int fetch;
   protected final String portal;
   protected final boolean suspended;
-  protected final ResultDecoder<T> decoder;
 
   ExtendedQueryCommandBase(PreparedStatement ps,
                            int fetch,
                            String portal,
                            boolean suspended,
-                           ResultDecoder<T> decoder,
-                           QueryResultHandler<T> handler) {
-    super(handler);
+                           boolean singleton,
+                           Collector<Row, ?, R> collector,
+                           QueryResultHandler<R> resultHandler,
+                           Handler<AsyncResult<Boolean>> handler) {
+    super(collector, resultHandler, handler);
     this.ps = ps;
     this.fetch = fetch;
     this.portal = portal;
     this.suspended = suspended;
-    this.decoder = decoder;
+    this.decoder = new RowResultDecoder<>(collector, singleton, ps.rowDesc);
   }
 
   @Override
@@ -55,17 +56,22 @@ abstract class ExtendedQueryCommandBase<T> extends QueryCommandBase<T> {
   }
 
   @Override
-  public void handleMessage(InboundMessage msg) {
-    if (msg.getClass() == ParseComplete.class) {
-      // Response to Parse
-    } else if (msg.getClass() == PortalSuspended.class) {
-      this.result = true;
-      PgResult<T> result = (PgResult<T>) ((PortalSuspended) msg).result();
-      resultHandler.handleResult(result);
-    } else if (msg.getClass() == BindComplete.class) {
-      // Response to Bind
-    } else {
-      super.handleMessage(msg);
-    }
+  public void handleParseComplete() {
+    // Response to Parse
+  }
+
+  @Override
+  public void handlePortalSuspended() {
+    R result = decoder.complete();
+    RowDescription desc = decoder.description();
+    int size = decoder.size();
+    decoder.reset();
+    this.result = true;
+    resultHandler.handleResult(0, size, desc, result);
+  }
+
+  @Override
+  public void handleBindComplete() {
+    // Response to Bind
   }
 }

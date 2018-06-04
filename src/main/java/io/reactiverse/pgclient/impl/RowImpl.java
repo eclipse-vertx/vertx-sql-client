@@ -20,7 +20,7 @@ package io.reactiverse.pgclient.impl;
 import io.reactiverse.pgclient.Json;
 import io.reactiverse.pgclient.Numeric;
 import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.impl.codec.decoder.message.RowDescription;
+import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.reactiverse.pgclient.data.Point;
 import io.vertx.core.buffer.Buffer;
 
@@ -38,6 +38,11 @@ public class RowImpl extends ArrayTuple implements Row {
   public RowImpl(RowDescription desc) {
     super(desc.columns().length);
     this.desc = desc;
+  }
+
+  public RowImpl(RowImpl row) {
+    super(row);
+    this.desc = row.desc;
   }
 
   @Override

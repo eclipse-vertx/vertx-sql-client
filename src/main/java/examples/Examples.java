@@ -27,6 +27,9 @@ import io.vertx.docgen.Source;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -51,8 +54,8 @@ public class Examples {
     // A simple query
     client.query("SELECT * FROM users WHERE id='julien'", ar -> {
       if (ar.succeeded()) {
-        PgResult<Row> result = ar.result();
-        System.out.println("Got " + result.size() + " results ");
+        PgRowSet result = ar.result();
+        System.out.println("Got " + result.size() + " rows ");
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
       }
@@ -222,8 +225,8 @@ public class Examples {
   public void queries01(PgClient client) {
     client.query("SELECT * FROM users WHERE id='julien'", ar -> {
       if (ar.succeeded()) {
-        PgResult<Row> result = ar.result();
-        System.out.println("Got " + result.size() + " results ");
+        PgRowSet result = ar.result();
+        System.out.println("Got " + result.size() + " rows ");
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
       }
@@ -233,8 +236,8 @@ public class Examples {
   public void queries02(PgClient client) {
     client.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"),  ar -> {
       if (ar.succeeded()) {
-        PgResult<Row> result = ar.result();
-        System.out.println("Got " + result.size() + " results ");
+        PgRowSet rows = ar.result();
+        System.out.println("Got " + rows.size() + " rows ");
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
       }
@@ -244,8 +247,8 @@ public class Examples {
   public void queries03(PgClient client) {
     client.preparedQuery("SELECT first_name, last_name FROM users", ar -> {
       if (ar.succeeded()) {
-        PgResult<Row> result = ar.result();
-        for (Row row : result) {
+        PgRowSet rows = ar.result();
+        for (Row row : rows) {
           System.out.println("User " + row.getString(0) + " " + row.getString(1));
         }
       } else {
@@ -257,8 +260,8 @@ public class Examples {
   public void queries04(PgClient client) {
     client.preparedQuery("INSERT INTO users (first_name, last_name) VALUES ($1, $2)", Tuple.of("Julien", "Viet"),  ar -> {
       if (ar.succeeded()) {
-        PgResult<Row> result = ar.result();
-        System.out.println(result.updatedCount());
+        PgRowSet rows = ar.result();
+        System.out.println(rows.updatedCount());
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
       }
@@ -294,8 +297,8 @@ public class Examples {
     client.preparedBatch("INSERT INTO USERS (id, name) VALUES ($1, $2)", batch, res -> {
       if (res.succeeded()) {
 
-        // Process results
-        PgResult<Row> results = res.result();
+        // Process rows
+        PgRowSet rows = res.result();
       } else {
         System.out.println("Batch failed " + res.cause());
       }
@@ -319,7 +322,7 @@ public class Examples {
         connection.query("SELECT * FROM users WHERE id='julien'", ar2 -> {
           if (ar1.succeeded()) {
             connection.query("SELECT * FROM users WHERE id='paulo'", ar3 -> {
-              // Do something with results and return the connection to the pool
+              // Do something with rows and return the connection to the pool
               connection.close();
             });
           } else {
@@ -338,7 +341,7 @@ public class Examples {
         pq.execute(Tuple.of("julien"), ar2 -> {
           if (ar2.succeeded()) {
             // All rows
-            PgResult<Row> result = ar2.result();
+            PgRowSet rows = ar2.result();
           }
         });
       }
@@ -356,17 +359,17 @@ public class Examples {
         // Read 50 rows
         cursor.read(50, ar2 -> {
           if (ar2.succeeded()) {
-            PgResult<Row> result = ar2.result();
+            PgRowSet rows = ar2.result();
 
             // Check for more ?
             if (cursor.hasMore()) {
 
               // Read the next 50
               cursor.read(50, ar3 -> {
-                // More results, and so on...
+                // More rows, and so on...
               });
             } else {
-              // No more results
+              // No more rows
             }
           }
         });
@@ -426,8 +429,8 @@ public class Examples {
         prepared.batch(batch, res -> {
           if (res.succeeded()) {
 
-            // Process results
-            PgResult<Row> results = res.result();
+            // Process rows
+            PgRowSet rows = res.result();
           } else {
             System.out.println("Batch failed " + res.cause());
           }
@@ -604,5 +607,52 @@ public class Examples {
 
     // Get the first array of string
     String[] array = tuple.getStringArray(0);
+  }
+
+  public void collector01Example(PgClient client) {
+
+    // Create a collector projecting a row set to a map
+    Collector<Row, ?, Map<Long, String>> collector = Collectors.toMap(
+      row -> row.getLong("id"),
+      row -> row.getString("last_name"));
+
+    // Run the query with the collector
+    client.query("SELECT * FROM users",
+      collector,
+      ar -> {
+      if (ar.succeeded()) {
+        PgResult<Map<Long, String>> result = ar.result();
+
+        // Get the map created by the collector
+        Map<Long, String> map = result.value();
+        System.out.println("Got " + map);
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
+  }
+
+  public void collector02Example(PgClient client) {
+
+    // Create a collector projecting a row set to a (last_name_1,last_name_2,...)
+    Collector<Row, ?, String> collector = Collectors.mapping(
+      row -> row.getString("last_name"),
+      Collectors.joining(",", "(", ")")
+    );
+
+    // Run the query with the collector
+    client.query("SELECT * FROM users",
+      collector,
+      ar -> {
+        if (ar.succeeded()) {
+          PgResult<String> result = ar.result();
+
+          // Get the string created by the collector
+          String list = result.value();
+          System.out.println("Got " + list);
+        } else {
+          System.out.println("Failure: " + ar.cause().getMessage());
+        }
+      });
   }
 }

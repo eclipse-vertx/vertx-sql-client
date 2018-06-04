@@ -15,27 +15,19 @@
  *
  */
 
-package io.reactiverse.pgclient;
-
-import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
+package io.reactiverse.pgclient.impl.codec.decoder.type;
 
 /**
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
+ * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public class PgException extends RuntimeException {
 
-  private final ErrorResponse error;
-
-  public PgException(ErrorResponse error) {
-    super(error.getMessage());
-    this.error = error;
-  }
-
-  public String getSeverity() {
-    return error.getSeverity();
-  }
-
-  public String getCode() {
-    return error.getCode();
-  }
+public class AuthenticationType {
+  public static final int OK = 0;
+  public static final int KERBEROS_V5 = 2;
+  public static final int CLEARTEXT_PASSWORD = 3;
+  public static final int MD5_PASSWORD = 5;
+  public static final int SCM_CREDENTIAL = 6;
+  public static final int GSS = 7;
+  public static final int GSS_CONTINUE = 8;
+  public static final int SSPI = 9;
 }

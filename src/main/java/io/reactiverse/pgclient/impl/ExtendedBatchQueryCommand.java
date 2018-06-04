@@ -17,17 +17,16 @@
 
 package io.reactiverse.pgclient.impl;
 
+import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
-import io.reactiverse.pgclient.impl.codec.DataFormat;
-import io.reactiverse.pgclient.impl.codec.decoder.DecodeContext;
-import io.reactiverse.pgclient.impl.codec.decoder.ResultDecoder;
-import io.reactiverse.pgclient.impl.codec.encoder.message.Bind;
-import io.reactiverse.pgclient.impl.codec.encoder.message.Execute;
-import io.reactiverse.pgclient.impl.codec.encoder.message.Parse;
-import io.reactiverse.pgclient.impl.codec.encoder.message.Sync;
+import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
+import io.reactiverse.pgclient.impl.codec.encoder.Parse;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collector;
 
 public class ExtendedBatchQueryCommand<T> extends ExtendedQueryCommandBase<T> {
 
@@ -35,9 +34,11 @@ public class ExtendedBatchQueryCommand<T> extends ExtendedQueryCommandBase<T> {
 
   ExtendedBatchQueryCommand(PreparedStatement ps,
                             Iterator<Tuple> paramsIterator,
-                            ResultDecoder<T> decoder,
-                            QueryResultHandler<T> handler) {
-    this(ps, paramsIterator, 0, null, false, decoder, handler);
+                            boolean singleton,
+                            Collector<Row, ?, T> collector,
+                            QueryResultHandler<T> resultHandler,
+                            Handler<AsyncResult<Boolean>> handler) {
+    this(ps, paramsIterator, 0, null, false, singleton, collector, resultHandler, handler);
   }
 
   ExtendedBatchQueryCommand(PreparedStatement ps,
@@ -45,28 +46,29 @@ public class ExtendedBatchQueryCommand<T> extends ExtendedQueryCommandBase<T> {
                             int fetch,
                             String portal,
                             boolean suspended,
-                            ResultDecoder<T> decoder,
-                            QueryResultHandler<T> handler) {
-    super(ps, fetch, portal, suspended, decoder, handler);
+                            boolean singleton,
+                            Collector<Row, ?, T> collector,
+                            QueryResultHandler<T> resultHandler,
+                            Handler<AsyncResult<Boolean>> handler) {
+    super(ps, fetch, portal, suspended, singleton, collector, resultHandler, handler);
     this.paramsIterator = paramsIterator;
   }
 
   @Override
-  void exec(SocketConnection conn) {
-    conn.decodeQueue.add(new DecodeContext(ps.rowDesc, DataFormat.BINARY, decoder));
+  void exec(MessageEncoder out) {
     if (suspended) {
-      conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
-      conn.writeMessage(Sync.INSTANCE);
+      out.writeExecute(portal, fetch);
+      out.writeSync();
     } else {
-      if (ps.statement!= 0) {
-        conn.writeMessage(new Parse(ps.sql));
+      if (ps.bind.statement == 0) {
+        out.writeParse(new Parse(ps.sql));
       }
       while (paramsIterator.hasNext()) {
         List<Object> params = (List<Object>) paramsIterator.next();
-        conn.writeMessage(new Bind(ps.statement, portal, params, ps.paramDesc.getParamDataTypes(), ps.columnDescs()));
-        conn.writeMessage(new Execute().setPortal(portal).setRowCount(fetch));
+        out.writeBind(ps.bind, portal, params);
+        out.writeExecute(portal, fetch);
       }
-      conn.writeMessage(Sync.INSTANCE);
+      out.writeSync();
     }
   }
 }

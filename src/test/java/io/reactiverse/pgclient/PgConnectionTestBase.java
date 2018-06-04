@@ -29,6 +29,7 @@ import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
@@ -102,7 +103,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(10000, result.size());
-        PgIterator<Row> it = result.iterator();
+        Iterator<Row> it = result.iterator();
         for (int i = 0; i < 10000; i++) {
           Row row = it.next();
           ctx.assertEquals(2, row.size());
@@ -126,7 +127,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
         Tuple row1 = result1.iterator().next();
         ctx.assertTrue(row1.getValue(0) instanceof Integer);
         ctx.assertTrue(row1.getValue(1) instanceof String);
-        PgResult<Row> result2 = result1.next();
+        PgRowSet result2 = result1.next();
         ctx.assertNotNull(result2);
         ctx.assertEquals(1, result2.size());
         ctx.assertEquals(Arrays.asList("message", "id"), result2.columnsNames());
@@ -692,7 +693,7 @@ public abstract class PgConnectionTestBase extends PgTestBase {
       PgTransaction tx = conn.begin();
       AtomicInteger failures = new AtomicInteger();
       tx.abortHandler(v -> ctx.assertEquals(0, failures.getAndIncrement()));
-      AtomicReference<AsyncResult<PgResult<Row>>> queryAfterFailed = new AtomicReference<>();
+      AtomicReference<AsyncResult<PgRowSet>> queryAfterFailed = new AtomicReference<>();
       AtomicReference<AsyncResult<Void>> commit = new AtomicReference<>();
       conn.query("INSERT INTO TxTest (id) VALUES (5)", ar1 -> { });
       conn.query("INSERT INTO TxTest (id) VALUES (5)", ar2 -> {

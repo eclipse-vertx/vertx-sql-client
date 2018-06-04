@@ -15,27 +15,36 @@
  *
  */
 
-package io.reactiverse.pgclient;
+package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
+import io.reactiverse.pgclient.PgResult;
 
-/**
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
- */
-public class PgException extends RuntimeException {
+import java.util.List;
 
-  private final ErrorResponse error;
+public abstract class PgResultBase<T, R extends PgResultBase<T, R>> implements PgResult<T> {
 
-  public PgException(ErrorResponse error) {
-    super(error.getMessage());
-    this.error = error;
+  int updated;
+  List<String> columnNames;
+  int size;
+  R next;
+
+  @Override
+  public List<String> columnsNames() {
+    return columnNames;
   }
 
-  public String getSeverity() {
-    return error.getSeverity();
+  @Override
+  public int updatedCount() {
+    return updated;
   }
 
-  public String getCode() {
-    return error.getCode();
+  @Override
+  public int size() {
+    return size;
+  }
+
+  @Override
+  public R next() {
+    return next;
   }
 }

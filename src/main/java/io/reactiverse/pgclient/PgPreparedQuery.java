@@ -19,11 +19,13 @@ package io.reactiverse.pgclient;
 
 import io.reactiverse.pgclient.impl.ArrayTuple;
 import io.vertx.codegen.annotations.Fluent;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
 import java.util.List;
+import java.util.stream.Collector;
 
 /**
  * A prepared query.
@@ -34,11 +36,19 @@ import java.util.List;
 public interface PgPreparedQuery {
 
   /**
-   * @return create a query with no arguments
+   * Calls {@link #execute(Tuple, Handler)} with an empty tuple argument.
    */
   @Fluent
-  default PgPreparedQuery execute(Handler<AsyncResult<PgResult<Row>>> handler) {
+  default PgPreparedQuery execute(Handler<AsyncResult<PgRowSet>> handler) {
     return execute(ArrayTuple.EMPTY, handler);
+  }
+
+  /**
+   * Calls {@link #execute(Tuple, Collector, Handler)} with an empty tuple argument.
+   */
+  @GenIgnore
+  default <R> PgPreparedQuery execute(Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler) {
+    return execute(ArrayTuple.EMPTY, collector, handler);
   }
 
   /**
@@ -48,7 +58,17 @@ public interface PgPreparedQuery {
    * @return the query
    */
   @Fluent
-  PgPreparedQuery execute(Tuple args, Handler<AsyncResult<PgResult<Row>>> handler);
+  PgPreparedQuery execute(Tuple args, Handler<AsyncResult<PgRowSet>> handler);
+
+  /**
+   * Create a cursor with the provided {@code arguments}.
+   *
+   * @param args the list of arguments
+   * @param collector the collector
+   * @return the query
+   */
+  @GenIgnore
+  <R> PgPreparedQuery execute(Tuple args, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
 
   /**
    * @return create a query cursor with a {@code fetch} size and empty arguments
@@ -84,7 +104,17 @@ public interface PgPreparedQuery {
    * @return the createBatch
    */
   @Fluent
-  PgPreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<PgResult<Row>>> handler);
+  PgPreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<PgRowSet>> handler);
+
+  /**
+   * Execute a batch.
+   *
+   * @param argsList the list of tuple for the batch
+   * @param collector the collector
+   * @return the createBatch
+   */
+  @GenIgnore
+  <R> PgPreparedQuery batch(List<Tuple> argsList, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
 
   /**
    * Close the prepared query and release its resources.

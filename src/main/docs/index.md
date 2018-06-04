@@ -151,7 +151,7 @@ The SQL string can refer to parameters by position, using `$1`, `$2`, etc…​
 {@link examples.Examples#queries02(io.reactiverse.pgclient.PgClient)}
 ```
 
-Query methods provides an asynchronous {@link io.reactiverse.pgclient.PgResult} instance that works for _SELECT_ queries
+Query methods provides an asynchronous {@link io.reactiverse.pgclient.PgRowSet} instance that works for _SELECT_ queries
 
 ```$lang
 {@link examples.Examples#queries03(io.reactiverse.pgclient.PgClient)}
@@ -211,7 +211,7 @@ Prepared queries can be created:
 NOTE: prepared query caching depends on the {@link io.reactiverse.pgclient.PgConnectOptions#setCachePreparedStatements(boolean)} and
 does not depend on whether you are creating prepared queries or use {@link io.reactiverse.pgclient.PgClient#preparedQuery(java.lang.String, io.vertx.core.Handler) direct prepared queries}
 
-By default prepared query executions fetch all results, you can use a {@link io.reactiverse.pgclient.PgCursor} to control the amount of rows you want to read:
+By default prepared query executions fetch all rows, you can use a {@link io.reactiverse.pgclient.PgCursor} to control the amount of rows you want to read:
 
 ```$lang
 {@link examples.Examples#usingConnections03(io.reactiverse.pgclient.PgConnection)}
@@ -312,6 +312,24 @@ Arrays are available on {@link io.reactiverse.pgclient.Tuple} and {@link io.reac
 
 ```$lang
 {@link examples.Examples#arrayExample}
+```
+
+## Collector queries
+
+You can use Java collectors with the query API:
+
+```$lang
+{@link examples.Examples#collector01Example}
+```
+
+The collector processing must not keep a reference on the {@link io.reactiverse.pgclient.Row} as
+there is a single row used for processing the entire set.
+
+The Java `Collectors` provides many interesting predefined collectors, for example you can
+create easily create a string directly from the row set:
+
+```$lang
+{@link examples.Examples#collector02Example}
 ```
 
 ## Pub/sub
