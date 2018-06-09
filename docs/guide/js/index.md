@@ -31,7 +31,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 <dependency>
  <groupId>io.reactiverse</groupId>
  <artifactId>reactive-pg-client</artifactId>
- <version>0.8.0</version>
+ <version>0.9.0</version>
 </dependency>
 ```
 
@@ -39,7 +39,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 
 ```groovy
 dependencies {
- compile 'io.reactiverse:reactive-pg-client:0.8.0'
+ compile 'io.reactiverse:reactive-pg-client:0.9.0'
 }
 ```
 
@@ -67,7 +67,7 @@ var client = PgClient.pool(options);
 client.query("SELECT * FROM users WHERE id='julien'", function (ar, ar_err) {
   if (ar_err == null) {
     var result = ar;
-    console.log("Got " + result.size() + " results ");
+    console.log("Got " + result.size() + " rows ");
   } else {
     console.log("Failure: " + ar_err.getMessage());
   }
@@ -279,7 +279,7 @@ Here is how to run simple queries:
 client.query("SELECT * FROM users WHERE id='julien'", function (ar, ar_err) {
   if (ar_err == null) {
     var result = ar;
-    console.log("Got " + result.size() + " results ");
+    console.log("Got " + result.size() + " rows ");
   } else {
     console.log("Failure: " + ar_err.getMessage());
   }
@@ -295,8 +295,8 @@ The SQL string can refer to parameters by position, using `$1`, `$2`, etc…​
 var Tuple = require("reactive-pg-client-js/tuple");
 client.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"), function (ar, ar_err) {
   if (ar_err == null) {
-    var result = ar;
-    console.log("Got " + result.size() + " results ");
+    var rows = ar;
+    console.log("Got " + rows.size() + " rows ");
   } else {
     console.log("Failure: " + ar_err.getMessage());
   }
@@ -304,13 +304,13 @@ client.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"), func
 
 ```
 
-Query methods provides an asynchronous [`PgResult`](../../jsdoc/module-reactive-pg-client-js_pg_result-PgResult.html) instance that works for _SELECT_ queries
+Query methods provides an asynchronous [`PgRowSet`](../../jsdoc/module-reactive-pg-client-js_pg_row_set-PgRowSet.html) instance that works for _SELECT_ queries
 
 ```js
 client.preparedQuery("SELECT first_name, last_name FROM users", function (ar, ar_err) {
   if (ar_err == null) {
-    var result = ar;
-    Array.prototype.forEach.call(result, function(row) {
+    var rows = ar;
+    Array.prototype.forEach.call(rows, function(row) {
       console.log("User " + row.getString(0) + " " + row.getString(1));
     });
   } else {
@@ -326,8 +326,8 @@ or _UPDATE_/_INSERT_ queries:
 var Tuple = require("reactive-pg-client-js/tuple");
 client.preparedQuery("INSERT INTO users (first_name, last_name) VALUES ($1, $2)", Tuple.of("Julien", "Viet"), function (ar, ar_err) {
   if (ar_err == null) {
-    var result = ar;
-    console.log(result.updatedCount());
+    var rows = ar;
+    console.log(rows.updatedCount());
   } else {
     console.log("Failure: " + ar_err.getMessage());
   }
@@ -376,8 +376,8 @@ batch.push(Tuple.of("emad", "Emad Alblueshi"));
 client.preparedBatch("INSERT INTO USERS (id, name) VALUES ($1, $2)", batch, function (res, res_err) {
   if (res_err == null) {
 
-    // Process results
-    var results = res;
+    // Process rows
+    var rows = res;
   } else {
     console.log("Batch failed " + res_err);
   }
@@ -416,7 +416,7 @@ connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1
     pq.execute(Tuple.of("julien"), function (ar2, ar2_err) {
       if (ar2_err == null) {
         // All rows
-        var result = ar2;
+        var rows = ar2;
       }
     });
   }
@@ -427,7 +427,7 @@ connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1
 NOTE: prepared query caching depends on the [`cachePreparedStatements`](../dataobjects.html#PgConnectOptions#setCachePreparedStatements) and
 does not depend on whether you are creating prepared queries or use [`direct prepared queries`](../../jsdoc/module-reactive-pg-client-js_pg_client-PgClient.html#preparedQuery)
 
-By default prepared query executions fetch all results, you can use a [`PgCursor`](../../jsdoc/module-reactive-pg-client-js_pg_cursor-PgCursor.html) to control the amount of rows you want to read:
+By default prepared query executions fetch all rows, you can use a [`PgCursor`](../../jsdoc/module-reactive-pg-client-js_pg_cursor-PgCursor.html) to control the amount of rows you want to read:
 
 ```js
 var Tuple = require("reactive-pg-client-js/tuple");
@@ -441,17 +441,17 @@ connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1
     // Read 50 rows
     cursor.read(50, function (ar2, ar2_err) {
       if (ar2_err == null) {
-        var result = ar2;
+        var rows = ar2;
 
         // Check for more ?
         if (cursor.hasMore()) {
 
           // Read the next 50
           cursor.read(50, function (ar3, ar3_err) {
-            // More results, and so on...
+            // More rows, and so on...
           });
         } else {
-          // No more results
+          // No more rows
         }
       }
     });
@@ -529,8 +529,8 @@ connection.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", function (ar1
     prepared.batch(batch, function (res, res_err) {
       if (res_err == null) {
 
-        // Process results
-        var results = res;
+        // Process rows
+        var rows = res;
       } else {
         console.log("Batch failed " + res_err);
       }
@@ -607,6 +607,7 @@ Currently the client supports the following Postgres types
 * BYTEA (`io.vertx.core.buffer.Buffer`)
 * JSON (`io.reactiverse.pgclient.Json`)
 * JSONB (`io.reactiverse.pgclient.Json`)
+* POINT (`io.reactiverse.pgclient.data.Point`)
 
 Arrays of these types are supported.
 
@@ -653,6 +654,24 @@ if (numeric.isNaN()) {
 ## Handling arrays
 
 Arrays are available on [`Tuple`](../../jsdoc/module-reactive-pg-client-js_tuple-Tuple.html) and [`Row`](../../jsdoc/module-reactive-pg-client-js_row-Row.html):
+
+```js
+Code not translatable
+```
+
+## Collector queries
+
+You can use Java collectors with the query API:
+
+```js
+Code not translatable
+```
+
+The collector processing must not keep a reference on the [`Row`](../../jsdoc/module-reactive-pg-client-js_row-Row.html) as
+there is a single row used for processing the entire set.
+
+The Java `Collectors` provides many interesting predefined collectors, for example you can
+create easily create a string directly from the row set:
 
 ```js
 Code not translatable
@@ -742,7 +761,7 @@ The default policy is to not reconnect.
 ## Using SSL/TLS
 
 To configure the client to use SSL connection, you can configure the [`PgConnectOptions`](../dataobjects.html#PgConnectOptions)
-like a Vert.x `NetClient`}.
+like a Vert.x `NetClient`.
 
 ```js
 var PgClient = require("reactive-pg-client-js/pg_client");

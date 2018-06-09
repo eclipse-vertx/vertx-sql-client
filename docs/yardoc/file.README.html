@@ -111,19 +111,22 @@
 <p>Command pipeling</p>
 </li>
 <li>
-<p>RxJava 1 and RxJava 2 support</p>
+<p>RxJava 1 and RxJava 2</p>
 </li>
 <li>
 <p>Direct memory to object without unnecessary copies</p>
 </li>
 <li>
-<p>Java 8 Date and Time support</p>
+<p>Java 8 Date and Time</p>
 </li>
 <li>
-<p>SSL/TLS support</p>
+<p>SSL/TLS</p>
 </li>
 <li>
-<p>HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy support</p>
+<p>Unix domain socket</p>
+</li>
+<li>
+<p>HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy</p>
 </li>
 </ul>
 </div>
@@ -147,7 +150,7 @@
 <pre class="highlight"><code class="language-xml" data-lang="xml">&lt;dependency&gt;
   &lt;groupId&gt;io.reactiverse&lt;/groupId&gt;
   &lt;artifactId&gt;reactive-pg-client&lt;/artifactId&gt;
-  &lt;version&gt;0.7.0&lt;/version&gt;
+  &lt;version&gt;0.8.0&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
 </div>
 </div>
@@ -267,49 +270,49 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -&gt; {
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>BOOLEAN</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Boolean</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>boolean[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Boolean[]</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>INT2</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Short</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>short[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Short[]</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>INT4</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Integer</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>int[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Integer[]</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>INT8</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Long</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>long[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Long[]</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>FLOAT4</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Float</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>float[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Float[]</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>FLOAT8</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Double</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>double[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Double[]</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>CHAR</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Character</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>char[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Character[]</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
@@ -487,7 +490,7 @@ source generates the [jekyll/guide/java/index.md](jekyll/guide/java/index.md).</
 </div></div></div>
 
     <div id="footer">
-  Generated on Wed May  2 21:43:01 2018 by
+  Generated on Sat Jun  9 14:38:13 2018 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.8.7.6 (ruby-2.3.3).
 </div>

@@ -31,7 +31,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 <dependency>
  <groupId>io.reactiverse</groupId>
  <artifactId>reactive-pg-client</artifactId>
- <version>0.8.0</version>
+ <version>0.9.0</version>
 </dependency>
 ```
 
@@ -39,7 +39,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 
 ```groovy
 dependencies {
- compile 'io.reactiverse:reactive-pg-client:0.8.0'
+ compile 'io.reactiverse:reactive-pg-client:0.9.0'
 }
 ```
 
@@ -67,7 +67,7 @@ client = ReactivePgClient::PgClient.pool(options)
 client.query("SELECT * FROM users WHERE id='julien'") { |ar_err,ar|
   if (ar_err == nil)
     result = ar
-    puts "Got #{result.size()} results "
+    puts "Got #{result.size()} rows "
   else
     puts "Failure: #{ar_err.get_message()}"
   end
@@ -279,7 +279,7 @@ Here is how to run simple queries:
 client.query("SELECT * FROM users WHERE id='julien'") { |ar_err,ar|
   if (ar_err == nil)
     result = ar
-    puts "Got #{result.size()} results "
+    puts "Got #{result.size()} rows "
   else
     puts "Failure: #{ar_err.get_message()}"
   end
@@ -295,8 +295,8 @@ The SQL string can refer to parameters by position, using `$1`, `$2`, etc…​
 require 'reactive-pg-client/tuple'
 client.prepared_query("SELECT * FROM users WHERE id=$1", ReactivePgClient::Tuple.of("julien")) { |ar_err,ar|
   if (ar_err == nil)
-    result = ar
-    puts "Got #{result.size()} results "
+    rows = ar
+    puts "Got #{rows.size()} rows "
   else
     puts "Failure: #{ar_err.get_message()}"
   end
@@ -304,13 +304,13 @@ client.prepared_query("SELECT * FROM users WHERE id=$1", ReactivePgClient::Tuple
 
 ```
 
-Query methods provides an asynchronous [`PgResult`](../../yardoc/ReactivePgClient/PgResult.html) instance that works for _SELECT_ queries
+Query methods provides an asynchronous [`PgRowSet`](../../yardoc/ReactivePgClient/PgRowSet.html) instance that works for _SELECT_ queries
 
 ```ruby
 client.prepared_query("SELECT first_name, last_name FROM users") { |ar_err,ar|
   if (ar_err == nil)
-    result = ar
-    result.each do |row|
+    rows = ar
+    rows.each do |row|
       puts "User #{row.get_string(0)} #{row.get_string(1)}"
     end
   else
@@ -326,8 +326,8 @@ or _UPDATE_/_INSERT_ queries:
 require 'reactive-pg-client/tuple'
 client.prepared_query("INSERT INTO users (first_name, last_name) VALUES ($1, $2)", ReactivePgClient::Tuple.of("Julien", "Viet")) { |ar_err,ar|
   if (ar_err == nil)
-    result = ar
-    puts result.updated_count()
+    rows = ar
+    puts rows.updated_count()
   else
     puts "Failure: #{ar_err.get_message()}"
   end
@@ -376,8 +376,8 @@ batch.push(ReactivePgClient::Tuple.of("emad", "Emad Alblueshi"))
 client.prepared_batch("INSERT INTO USERS (id, name) VALUES ($1, $2)", batch) { |res_err,res|
   if (res_err == nil)
 
-    # Process results
-    results = res
+    # Process rows
+    rows = res
   else
     puts "Batch failed #{res_err}"
   end
@@ -416,7 +416,7 @@ connection.prepare("SELECT * FROM users WHERE first_name LIKE $1") { |ar1_err,ar
     pq.execute(ReactivePgClient::Tuple.of("julien")) { |ar2_err,ar2|
       if (ar2_err == nil)
         # All rows
-        result = ar2
+        rows = ar2
       end
     }
   end
@@ -427,7 +427,7 @@ connection.prepare("SELECT * FROM users WHERE first_name LIKE $1") { |ar1_err,ar
 NOTE: prepared query caching depends on the [`cachePreparedStatements`](../dataobjects.html#PgConnectOptions#set_cache_prepared_statements-instance_method) and
 does not depend on whether you are creating prepared queries or use [`direct prepared queries`](../../yardoc/ReactivePgClient/PgClient.html#prepared_query-instance_method)
 
-By default prepared query executions fetch all results, you can use a [`PgCursor`](../../yardoc/ReactivePgClient/PgCursor.html) to control the amount of rows you want to read:
+By default prepared query executions fetch all rows, you can use a [`PgCursor`](../../yardoc/ReactivePgClient/PgCursor.html) to control the amount of rows you want to read:
 
 ```ruby
 require 'reactive-pg-client/tuple'
@@ -441,17 +441,17 @@ connection.prepare("SELECT * FROM users WHERE first_name LIKE $1") { |ar1_err,ar
     # Read 50 rows
     cursor.read(50) { |ar2_err,ar2|
       if (ar2_err == nil)
-        result = ar2
+        rows = ar2
 
         # Check for more ?
         if (cursor.has_more?())
 
           # Read the next 50
           cursor.read(50) { |ar3_err,ar3|
-            # More results, and so on...
+            # More rows, and so on...
           }
         else
-          # No more results
+          # No more rows
         end
       end
     }
@@ -529,8 +529,8 @@ connection.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)") { |ar1_err,ar
     prepared.batch(batch) { |res_err,res|
       if (res_err == nil)
 
-        # Process results
-        results = res
+        # Process rows
+        rows = res
       else
         puts "Batch failed #{res_err}"
       end
@@ -607,6 +607,7 @@ Currently the client supports the following Postgres types
 * BYTEA (`io.vertx.core.buffer.Buffer`)
 * JSON (`io.reactiverse.pgclient.Json`)
 * JSONB (`io.reactiverse.pgclient.Json`)
+* POINT (`io.reactiverse.pgclient.data.Point`)
 
 Arrays of these types are supported.
 
@@ -653,6 +654,24 @@ end
 ## Handling arrays
 
 Arrays are available on [`Tuple`](../../yardoc/ReactivePgClient/Tuple.html) and [`Row`](../../yardoc/ReactivePgClient/Row.html):
+
+```ruby
+Code not translatable
+```
+
+## Collector queries
+
+You can use Java collectors with the query API:
+
+```ruby
+Code not translatable
+```
+
+The collector processing must not keep a reference on the [`Row`](../../yardoc/ReactivePgClient/Row.html) as
+there is a single row used for processing the entire set.
+
+The Java `Collectors` provides many interesting predefined collectors, for example you can
+create easily create a string directly from the row set:
 
 ```ruby
 Code not translatable
@@ -742,7 +761,7 @@ The default policy is to not reconnect.
 ## Using SSL/TLS
 
 To configure the client to use SSL connection, you can configure the [`PgConnectOptions`](../dataobjects.html#PgConnectOptions)
-like a Vert.x `NetClient`}.
+like a Vert.x `NetClient`.
 
 ```ruby
 require 'reactive-pg-client/pg_client'

@@ -15,6 +15,7 @@ image:https://travis-ci.org/reactiverse/reactive-pg-client.svg?branch=master["Bu
 - Publish / subscribe using Postgres `LISTEN/NOTIFY`
 - Batch and cursor support
 - Row streaming
+- `java.util.stream.Collector` row set transformation
 - Command pipeling
 - RxJava 1 and RxJava 2
 - Direct memory to object without unnecessary copies
@@ -34,7 +35,7 @@ To use the client, add the following dependency to the _dependencies_ section of
 <dependency>
   <groupId>io.reactiverse</groupId>
   <artifactId>reactive-pg-client</artifactId>
-  <version>0.8.0</version>
+  <version>0.9.0</version>
 </dependency>
 ----
 

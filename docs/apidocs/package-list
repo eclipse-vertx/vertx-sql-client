@@ -1,4 +1,5 @@
 io.reactiverse.pgclient
+io.reactiverse.pgclient.data
 io.reactiverse.pgclient.pubsub
 io.reactiverse.reactivex.pgclient
 io.reactiverse.reactivex.pgclient.pubsub

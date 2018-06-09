@@ -47,7 +47,7 @@ var utils = require('vertx-js/util/utils');
 var Row = require('reactive-pg-client-js/row');
 var Tuple = require('reactive-pg-client-js/tuple');
 var PgCursor = require('reactive-pg-client-js/pg_cursor');
-var PgResult = require('reactive-pg-client-js/pg_result');
+var PgRowSet = require('reactive-pg-client-js/pg_row_set');
 var PgStream = require('reactive-pg-client-js/pg_stream');
 
 var io = Packages.io;
@@ -75,21 +75,23 @@ var PgPreparedQuery = function(j_val) {
   this.execute = function() {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] === 'function') {
-      return utils.convReturnVertxGen(PgPreparedQuery, j_pgPreparedQuery["execute(io.vertx.core.Handler)"](function(ar) {
+      j_pgPreparedQuery["execute(io.vertx.core.Handler)"](function(ar) {
       if (ar.succeeded()) {
-        __args[0](utils.convReturnVertxGen(PgResult, ar.result(), Row._jtype), null);
+        __args[0](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
       } else {
         __args[0](null, ar.cause());
       }
-    }));
+    });
+      return that;
     }  else if (__args.length === 2 &amp;&amp; typeof __args[0] === 'object' &amp;&amp; __args[0]._jdel &amp;&amp; typeof __args[1] === 'function') {
-      return utils.convReturnVertxGen(PgPreparedQuery, j_pgPreparedQuery["execute(io.reactiverse.pgclient.Tuple,io.vertx.core.Handler)"](__args[0]._jdel, function(ar) {
+      j_pgPreparedQuery["execute(io.reactiverse.pgclient.Tuple,io.vertx.core.Handler)"](__args[0]._jdel, function(ar) {
       if (ar.succeeded()) {
-        __args[1](utils.convReturnVertxGen(PgResult, ar.result(), Row._jtype), null);
+        __args[1](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
       } else {
         __args[1](null, ar.cause());
       }
-    }));
+    });
+      return that;
     } else throw new TypeError('function invoked with invalid arguments');
   };
 
@@ -140,7 +142,7 @@ var PgPreparedQuery = function(j_val) {
     if (__args.length === 2 &amp;&amp; typeof __args[0] === 'object' &amp;&amp; __args[0] instanceof Array &amp;&amp; typeof __args[1] === 'function') {
       j_pgPreparedQuery["batch(java.util.List,io.vertx.core.Handler)"](utils.convParamListVertxGen(argsList), function(ar) {
       if (ar.succeeded()) {
-        handler(utils.convReturnVertxGen(PgResult, ar.result(), Row._jtype), null);
+        handler(utils.convReturnVertxGen(PgRowSet, ar.result()), null);
       } else {
         handler(null, ar.cause());
       }
@@ -205,13 +207,13 @@ module.exports = PgPreparedQuery;</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-reactive-pg-client-js_json.html">reactive-pg-client-js/json</a></li><li><a href="module-reactive-pg-client-js_pg_channel.html">reactive-pg-client-js/pg_channel</a></li><li><a href="module-reactive-pg-client-js_pg_client.html">reactive-pg-client-js/pg_client</a></li><li><a href="module-reactive-pg-client-js_pg_connection.html">reactive-pg-client-js/pg_connection</a></li><li><a href="module-reactive-pg-client-js_pg_cursor.html">reactive-pg-client-js/pg_cursor</a></li><li><a href="module-reactive-pg-client-js_pg_iterator.html">reactive-pg-client-js/pg_iterator</a></li><li><a href="module-reactive-pg-client-js_pg_pool.html">reactive-pg-client-js/pg_pool</a></li><li><a href="module-reactive-pg-client-js_pg_prepared_query.html">reactive-pg-client-js/pg_prepared_query</a></li><li><a href="module-reactive-pg-client-js_pg_result.html">reactive-pg-client-js/pg_result</a></li><li><a href="module-reactive-pg-client-js_pg_stream.html">reactive-pg-client-js/pg_stream</a></li><li><a href="module-reactive-pg-client-js_pg_subscriber.html">reactive-pg-client-js/pg_subscriber</a></li><li><a href="module-reactive-pg-client-js_pg_transaction.html">reactive-pg-client-js/pg_transaction</a></li><li><a href="module-reactive-pg-client-js_row.html">reactive-pg-client-js/row</a></li><li><a href="module-reactive-pg-client-js_tuple.html">reactive-pg-client-js/tuple</a></li></ul><h3>Classes</h3><ul><li><a href="module-reactive-pg-client-js_json-Json.html">Json</a></li><li><a href="module-reactive-pg-client-js_pg_channel-PgChannel.html">PgChannel</a></li><li><a href="module-reactive-pg-client-js_pg_client-PgClient.html">PgClient</a></li><li><a href="module-reactive-pg-client-js_pg_connection-PgConnection.html">PgConnection</a></li><li><a href="module-reactive-pg-client-js_pg_cursor-PgCursor.html">PgCursor</a></li><li><a href="module-reactive-pg-client-js_pg_iterator-PgIterator.html">PgIterator</a></li><li><a href="module-reactive-pg-client-js_pg_pool-PgPool.html">PgPool</a></li><li><a href="module-reactive-pg-client-js_pg_prepared_query-PgPreparedQuery.html">PgPreparedQuery</a></li><li><a href="module-reactive-pg-client-js_pg_result-PgResult.html">PgResult</a></li><li><a href="module-reactive-pg-client-js_pg_stream-PgStream.html">PgStream</a></li><li><a href="module-reactive-pg-client-js_pg_subscriber-PgSubscriber.html">PgSubscriber</a></li><li><a href="module-reactive-pg-client-js_pg_transaction-PgTransaction.html">PgTransaction</a></li><li><a href="module-reactive-pg-client-js_row-Row.html">Row</a></li><li><a href="module-reactive-pg-client-js_tuple-Tuple.html">Tuple</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-reactive-pg-client-js_json.html">reactive-pg-client-js/json</a></li><li><a href="module-reactive-pg-client-js_pg_channel.html">reactive-pg-client-js/pg_channel</a></li><li><a href="module-reactive-pg-client-js_pg_client.html">reactive-pg-client-js/pg_client</a></li><li><a href="module-reactive-pg-client-js_pg_connection.html">reactive-pg-client-js/pg_connection</a></li><li><a href="module-reactive-pg-client-js_pg_cursor.html">reactive-pg-client-js/pg_cursor</a></li><li><a href="module-reactive-pg-client-js_pg_iterator.html">reactive-pg-client-js/pg_iterator</a></li><li><a href="module-reactive-pg-client-js_pg_pool.html">reactive-pg-client-js/pg_pool</a></li><li><a href="module-reactive-pg-client-js_pg_prepared_query.html">reactive-pg-client-js/pg_prepared_query</a></li><li><a href="module-reactive-pg-client-js_pg_result.html">reactive-pg-client-js/pg_result</a></li><li><a href="module-reactive-pg-client-js_pg_row_set.html">reactive-pg-client-js/pg_row_set</a></li><li><a href="module-reactive-pg-client-js_pg_stream.html">reactive-pg-client-js/pg_stream</a></li><li><a href="module-reactive-pg-client-js_pg_subscriber.html">reactive-pg-client-js/pg_subscriber</a></li><li><a href="module-reactive-pg-client-js_pg_transaction.html">reactive-pg-client-js/pg_transaction</a></li><li><a href="module-reactive-pg-client-js_row.html">reactive-pg-client-js/row</a></li><li><a href="module-reactive-pg-client-js_tuple.html">reactive-pg-client-js/tuple</a></li></ul><h3>Classes</h3><ul><li><a href="module-reactive-pg-client-js_json-Json.html">Json</a></li><li><a href="module-reactive-pg-client-js_pg_channel-PgChannel.html">PgChannel</a></li><li><a href="module-reactive-pg-client-js_pg_client-PgClient.html">PgClient</a></li><li><a href="module-reactive-pg-client-js_pg_connection-PgConnection.html">PgConnection</a></li><li><a href="module-reactive-pg-client-js_pg_cursor-PgCursor.html">PgCursor</a></li><li><a href="module-reactive-pg-client-js_pg_iterator-PgIterator.html">PgIterator</a></li><li><a href="module-reactive-pg-client-js_pg_pool-PgPool.html">PgPool</a></li><li><a href="module-reactive-pg-client-js_pg_prepared_query-PgPreparedQuery.html">PgPreparedQuery</a></li><li><a href="module-reactive-pg-client-js_pg_result-PgResult.html">PgResult</a></li><li><a href="module-reactive-pg-client-js_pg_row_set-PgRowSet.html">PgRowSet</a></li><li><a href="module-reactive-pg-client-js_pg_stream-PgStream.html">PgStream</a></li><li><a href="module-reactive-pg-client-js_pg_subscriber-PgSubscriber.html">PgSubscriber</a></li><li><a href="module-reactive-pg-client-js_pg_transaction-PgTransaction.html">PgTransaction</a></li><li><a href="module-reactive-pg-client-js_row-Row.html">Row</a></li><li><a href="module-reactive-pg-client-js_tuple-Tuple.html">Tuple</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Wed May 02 2018 21:43:07 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Sat Jun 09 2018 14:38:20 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>
