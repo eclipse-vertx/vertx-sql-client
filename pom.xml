@@ -217,6 +217,7 @@
                   <annotationProcessor>io.vertx.docgen.DocGenProcessor</annotationProcessor>
                 </annotationProcessors>
                 <compilerArgs>
+                  <arg>-Acodegen.output=${project.basedir}/src/main</arg>
                   <arg>-Adocgen.source=${docs.dir}/*.md</arg>
                   <arg>-Adocgen.output=${project.basedir}/jekyll/guide/$lang</arg>
                   <arg>-Adocgen.syntax=markdown</arg>
