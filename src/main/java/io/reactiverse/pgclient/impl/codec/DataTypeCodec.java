@@ -234,6 +234,12 @@ public class DataTypeCodec {
       case POINT_ARRAY:
         binaryEncodeArray((Point[]) value, DataType.POINT, buff);
         break;
+      case ENUM:
+        binaryEncodeTEXT((String) value, buff);
+        break;
+      case ENUM_ARRAY:
+        binaryEncodeArray((String[]) value, DataType.ENUM, buff);
+        break;
       default:
         System.out.println("Data type " + id + " does not support binary encoding");
         defaultEncodeBinary(value, buff);
@@ -327,6 +333,10 @@ public class DataTypeCodec {
         return binaryDecodePoint(len, buff);
       case POINT_ARRAY:
         return binaryDecodeArray(POINT_ARRAY_FACTORY, DataType.POINT, len, buff);
+      case ENUM:
+        return binaryDecodeTEXT(len, buff);
+      case ENUM_ARRAY:
+        return binaryDecodeArray(STRING_ARRAY_FACTORY, DataType.ENUM, len, buff);
       default:
         System.out.println("Data type " + id + " does not support binary decoding");
         return defaultDecodeBinary(len, buff);
@@ -423,6 +433,10 @@ public class DataTypeCodec {
         return textDecodePOINT(len, buff);
       case POINT_ARRAY:
         return textDecodeArray(POINT_ARRAY_FACTORY, DataType.POINT, len, buff);
+      case ENUM:
+        return textdecodeTEXT(len, buff);
+      case ENUM_ARRAY:
+        return textDecodeArray(STRING_ARRAY_FACTORY, DataType.ENUM, len, buff);
       default:
         System.out.println("Data type " + id + " does not support text decoding");
         return defaultDecodeText(len, buff);

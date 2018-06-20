@@ -97,6 +97,8 @@ public enum DataType {
   OID(26, true, Object.class),
   OID_ARRAY(1028, true, Object[].class),
   VOID(2278, true, Object.class),
+  ENUM(16385, true, String.class),
+  ENUM_ARRAY(16384, true, String[].class),
   UNKNOWN(705, true, Object.class);
 
   public final int id;
