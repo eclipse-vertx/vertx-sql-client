@@ -1,3 +1,5 @@
+DROP TYPE IF EXISTS mood CASCADE;
+CREATE TYPE mood AS ENUM ('unhappy', 'ok', 'happy');
 DROP TABLE IF EXISTS World;
 CREATE TABLE  World (
   id integer NOT NULL,
@@ -118,7 +120,6 @@ CREATE TABLE TxTest (
   id integer NOT NULL,
   PRIMARY KEY (id)
 );
-
 DROP TABLE IF EXISTS "ArrayDataType";
 CREATE TABLE "ArrayDataType" (
   "id"             INTEGER NOT NULL PRIMARY KEY,
@@ -141,7 +142,8 @@ CREATE TABLE "ArrayDataType" (
   "Numeric"        NUMERIC [],
   "Bytea"          BYTEA[],
   "JSON"           JSON[],
-  "JSONB"          JSONB[]
+  "JSONB"          JSONB[],
+  "Enum"           mood[]
 );
 INSERT INTO "ArrayDataType" VALUES (1, ARRAY [TRUE],
                                        ARRAY [1],
@@ -162,7 +164,8 @@ INSERT INTO "ArrayDataType" VALUES (1, ARRAY [TRUE],
                                        ARRAY [0,1,2,3],
                                        ARRAY [decode('48454c4c4f', 'hex')],
                                        ARRAY ['  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }' :: JSON, '[1,true,null,9.5,"Hi"]' :: JSON, '4' :: JSON, '"Hello World"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON],
-                                       ARRAY ['  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }' :: JSON, '[1,true,null,9.5,"Hi"]' :: JSON, '4' :: JSON, '"Hello World"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON]);
+                                       ARRAY ['  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }' :: JSON, '[1,true,null,9.5,"Hi"]' :: JSON, '4' :: JSON, '"Hello World"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON],
+                                       ARRAY['ok'::mood,'unhappy'::mood, 'happy'::mood]);
 INSERT INTO "ArrayDataType" VALUES (2, ARRAY [TRUE],
                                        ARRAY [1],
                                        ARRAY [2],
@@ -181,4 +184,17 @@ INSERT INTO "ArrayDataType" VALUES (2, ARRAY [TRUE],
                                        ARRAY [0,1,2,3],
                                        ARRAY [decode('48454c4c4f', 'hex')],
                                        ARRAY ['  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }' :: JSON, '[1,true,null,9.5,"Hi"]' :: JSON, '4' :: JSON, '"Hello World"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON],
-                                       ARRAY ['  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }' :: JSON, '[1,true,null,9.5,"Hi"]' :: JSON, '4' :: JSON, '"Hello World"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON]);
+                                       ARRAY ['  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }' :: JSON, '[1,true,null,9.5,"Hi"]' :: JSON, '4' :: JSON, '"Hello World"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON],
+                                       ARRAY['unhappy'::mood, 'happy'::mood]);
+
+
+DROP TABLE IF EXISTS "EnumDataType";
+CREATE TABLE "EnumDataType" (
+  "id" INTEGER NOT NULL PRIMARY KEY,
+  "currentMood" mood
+);
+INSERT INTO "EnumDataType" ("id", "currentMood") VALUES (1, 'ok');
+INSERT INTO "EnumDataType" ("id", "currentMood") VALUES (2, 'unhappy');
+INSERT INTO "EnumDataType" ("id", "currentMood") VALUES (3, 'happy');
+INSERT INTO "EnumDataType" ("id", "currentMood") VALUES (4, null);
+INSERT INTO "EnumDataType" ("id", "currentMood") VALUES (5, 'ok');

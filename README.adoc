@@ -156,6 +156,12 @@ The *Reactive Postgres Client* currently supports the following data types
 |`j.l.String[]`
 |&#10004;
 
+|`ENUM`
+|`j.l.String`
+|&#10004;
+|`j.l.String[]`
+|&#10004;
+
 |`NAME`
 |`j.l.String`
 |&#10004;
