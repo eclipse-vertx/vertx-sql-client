@@ -273,6 +273,7 @@ Currently the client supports the following Postgres types
 * CHAR (`java.lang.String`)
 * VARCHAR (`java.lang.String`)
 * TEXT (`java.lang.String`)
+* ENUM (`java.lang.String`)
 * NAME (`java.lang.String`)
 * NUMERIC (`io.reactiverse.pgclient.Numeric`)
 * UUID (`java.util.UUID`)
