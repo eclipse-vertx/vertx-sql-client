@@ -17,7 +17,6 @@
 
 package io.reactiverse.pgclient.impl.codec.util;
 
-import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -25,9 +24,19 @@ import static java.nio.charset.StandardCharsets.*;
 
 public class MD5Authentication {
 
-  public static String encode(String username, String password, byte[] salt) {
+  private final static char[] HEX_ALPHABET = "0123456789abcdef".toCharArray();
 
-    HexBinaryAdapter hex = new HexBinaryAdapter();
+  private static String toHex(byte[] bytes) {
+    char[] hexChars = new char[bytes.length * 2];
+    for ( int j = 0; j < bytes.length; j++ ) {
+      int v = bytes[j] & 0xFF;
+      hexChars[j * 2] = HEX_ALPHABET[v >>> 4];
+      hexChars[j * 2 + 1] = HEX_ALPHABET[v & 0x0F];
+    }
+    return new String(hexChars);
+  }
+
+  public static String encode(String username, String password, byte[] salt) {
 
     byte[] digest, passDigest;
 
@@ -44,12 +53,12 @@ public class MD5Authentication {
     messageDigest.update(username.getBytes(UTF_8));
     digest = messageDigest.digest();
 
-    byte[] hexDigest = hex.marshal(digest).toLowerCase().getBytes(US_ASCII);
+    byte[] hexDigest = toHex(digest).getBytes(US_ASCII);
 
     messageDigest.update(hexDigest);
     messageDigest.update(salt);
     passDigest = messageDigest.digest();
 
-    return "md5" + hex.marshal(passDigest).toLowerCase();
+    return "md5" + toHex(passDigest);
   }
 }
