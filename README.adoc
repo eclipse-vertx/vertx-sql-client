@@ -57,7 +57,7 @@ PgPoolOptions options = new PgPoolOptions()
   .setPort(5432)
   .setHost("the-host")
   .setDatabase("the-db")
-  .setUsername("user")
+  .setUser("user")
   .setPassword("secret")
   .setMaxSize(5);
 
