@@ -61,6 +61,19 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
   }
 
   @Override
+  public void begin(Handler<AsyncResult<PgTransaction>> handler) {
+    getConnection(ar -> {
+      if (ar.succeeded()) {
+        PgConnectionImpl conn = (PgConnectionImpl) ar.result();
+        PgTransaction tx = conn.begin(true);
+        handler.handle(Future.succeededFuture(tx));
+      } else {
+        handler.handle(Future.failedFuture(ar.cause()));
+      }
+    });
+  }
+
+  @Override
   protected void schedule(CommandBase<?> cmd) {
     Context current = Vertx.currentContext();
     if (current == context) {

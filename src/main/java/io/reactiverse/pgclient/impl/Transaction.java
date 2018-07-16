@@ -18,16 +18,13 @@ package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.*;
 import io.reactiverse.pgclient.impl.codec.TxStatus;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import io.vertx.core.*;
 import io.vertx.core.impl.NoStackTraceThrowable;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-class Transaction implements PgTransaction {
+class Transaction extends PgClientBase<Transaction> implements PgTransaction {
 
   private static final int ST_BEGIN = 0;
   private static final int ST_PENDING = 1;
@@ -45,7 +42,7 @@ class Transaction implements PgTransaction {
     this.context = context;
     this.disposeHandler = disposeHandler;
     this.conn = conn;
-    conn.schedule(query("BEGIN", this::afterBegin));
+    conn.schedule(doQuery("BEGIN", this::afterBegin));
   }
 
   private synchronized void afterBegin(AsyncResult<?> ar) {
@@ -85,16 +82,19 @@ class Transaction implements PgTransaction {
       case ST_PROCESSING:
         break;
       case ST_COMPLETED: {
-        CommandBase<?> cmd;
-        while ((cmd = pending.poll()) != null) {
-          cmd.fail(new NoStackTraceThrowable("uhhh"));
+        if (pending.size() > 0) {
+          VertxException err = new VertxException("Transaction already completed");
+          CommandBase<?> cmd;
+          while ((cmd = pending.poll()) != null) {
+            cmd.fail(err);
+          }
         }
         break;
       }
     }
   }
 
-  void schedule(CommandBase<?> cmd) {
+  public void schedule(CommandBase<?> cmd) {
     synchronized (this) {
       pending.add(cmd);
     }
@@ -116,7 +116,7 @@ class Transaction implements PgTransaction {
           if (h != null) {
             context.runOnContext(h);
           }
-          schedule(query("ROLLBACK", ar2 -> {
+          schedule(doQuery("ROLLBACK", ar2 -> {
             disposeHandler.handle(null);
             handler.handle(ar);
           }));
@@ -134,7 +134,7 @@ class Transaction implements PgTransaction {
   }
 
   public void commit(Handler<AsyncResult<Void>> handler) {
-    schedule(query("COMMIT", ar -> {
+    schedule(doQuery("COMMIT", ar -> {
       disposeHandler.handle(null);
       if (ar.succeeded()) {
         handler.handle(Future.succeededFuture());
@@ -150,7 +150,7 @@ class Transaction implements PgTransaction {
   }
 
   public void rollback(Handler<AsyncResult<Void>> handler) {
-    schedule(query("ROLLBACK", ar -> {
+    schedule(doQuery("ROLLBACK", ar -> {
       disposeHandler.handle(null);
       if (ar.succeeded()) {
         handler.handle(Future.succeededFuture());
@@ -166,7 +166,7 @@ class Transaction implements PgTransaction {
     return this;
   }
 
-  private CommandBase query(String sql, Handler<AsyncResult<PgRowSet>> handler) {
+  private CommandBase doQuery(String sql, Handler<AsyncResult<PgRowSet>> handler) {
     PgResultBuilder<PgRowSet, PgRowSetImpl, PgRowSet> b = new PgResultBuilder<>(PgRowSetImpl.FACTORY, handler);
     return new SimpleQueryCommand<>(sql, false, PgRowSetImpl.COLLECTOR, b, b);
   }

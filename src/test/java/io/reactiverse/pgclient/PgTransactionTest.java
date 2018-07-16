@@ -16,6 +16,10 @@
  */
 package io.reactiverse.pgclient;
 
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
+import org.junit.Test;
+
 public class PgTransactionTest extends PgClientTestBase<PgTransaction> {
 
   private PgPool pool;
@@ -27,5 +31,50 @@ public class PgTransactionTest extends PgClientTestBase<PgTransaction> {
       }
       pool.begin(handler);
     };
+  }
+
+  @Test
+  public void testReleaseConnectionOnCommit(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      conn.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.updatedCount());
+        conn.commit(ctx.asyncAssertSuccess(v1 -> {
+          // Try acquire a connection
+          pool.getConnection(ctx.asyncAssertSuccess(v2 -> {
+            async.complete();
+          }));
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testReleaseConnectionOnRollback(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      conn.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.updatedCount());
+        conn.rollback(ctx.asyncAssertSuccess(v1 -> {
+          // Try acquire a connection
+          pool.getConnection(ctx.asyncAssertSuccess(v2 -> {
+            async.complete();
+          }));
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testReleaseConnectionOnSetRollback(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(result -> {
+        // Try acquire a connection
+        pool.getConnection(ctx.asyncAssertSuccess(v2 -> {
+          async.complete();
+        }));
+      }));
+    }));
   }
 }

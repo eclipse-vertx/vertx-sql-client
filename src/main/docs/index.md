@@ -243,6 +243,8 @@ will stop iterating.
 
 ## Using transactions
 
+### Transactions with connections
+
 You can execute transaction using SQL `BEGIN`/`COMMIT`/`ROLLBACK`, if you do so you must use
 a {@link io.reactiverse.pgclient.PgConnection} and manage it yourself.
 
@@ -258,6 +260,16 @@ is called:
 
 ```$lang
 {@link examples.Examples#transaction02(io.reactiverse.pgclient.PgPool)}
+```
+
+### Simplified transaction API
+
+When you use a pool, you can start a transaction directly on the pool.
+
+It borrows a connection from the pool, begins the transaction and releases the connection to the pool when the transaction ends.
+
+```$lang
+{@link examples.Examples#transaction03(io.reactiverse.pgclient.PgPool)}
 ```
 
 ## Postgres type mapping
@@ -343,6 +355,9 @@ Most asynchronous constructs are available as methods prefixed by `rx`:
 {@link examples.RxExamples#simpleQuery01Example}
 ```
 
+
+### Streaming
+
 RxJava 2 supports `Observable` and `Flowable` types, these are exposed using
 the {@link io.reactiverse.reactivex.pgclient.PgStream} that you can get
 from a {@link io.reactiverse.reactivex.pgclient.PgPreparedQuery}:
@@ -355,6 +370,15 @@ The same example using `Flowable`:
 
 ```$lang
 {@link examples.RxExamples#streamingQuery02Example}
+```
+
+### Transaction
+
+The simplified transaction API allows to easily write transactional
+asynchronous flows:
+
+```$lang
+{@link examples.RxExamples#transaction01Example}
 ```
 
 ## Pub/sub

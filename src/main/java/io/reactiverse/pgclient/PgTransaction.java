@@ -17,15 +17,19 @@
 package io.reactiverse.pgclient;
 
 import io.vertx.codegen.annotations.Fluent;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+
+import java.util.List;
+import java.util.stream.Collector;
 
 /**
  * A transaction that allows to control the transaction and receive events.
  */
 @VertxGen
-public interface PgTransaction {
+public interface PgTransaction extends PgClient {
 
   /**
    * Commit the current transaction.
@@ -55,4 +59,31 @@ public interface PgTransaction {
   @Fluent
   PgTransaction abortHandler(Handler<Void> handler);
 
+  @Override
+  PgTransaction query(String sql, Handler<AsyncResult<PgRowSet>> handler);
+
+  @Override
+  @GenIgnore
+  <R> PgTransaction query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+
+  @Override
+  PgTransaction preparedQuery(String sql, Handler<AsyncResult<PgRowSet>> handler);
+
+  @Override
+  @GenIgnore
+  <R> PgTransaction preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+
+  @Override
+  PgTransaction preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgRowSet>> handler);
+
+  @Override
+  @GenIgnore
+  <R> PgTransaction preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+
+  @Override
+  PgTransaction preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgRowSet>> handler);
+
+  @Override
+  @GenIgnore
+  <R> PgTransaction preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
 }

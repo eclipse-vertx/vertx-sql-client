@@ -460,6 +460,9 @@ public class Examples {
           } else {
             System.out.println("Transaction failed " + ar.cause().getMessage());
           }
+
+          // Return the connection to the pool
+          conn.close();
         });
       }
     });
@@ -481,6 +484,12 @@ public class Examples {
 
         conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {
           // Works fine of course
+          if (ar.succeeded()) {
+
+          } else {
+            tx.rollback();
+            conn.close();
+          }
         });
         conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {
           // Fails and triggers transaction aborts
@@ -489,6 +498,34 @@ public class Examples {
         // Attempt to commit the transaction
         tx.commit(ar -> {
           // But transaction abortion fails it
+
+          // Return the connection to the pool
+          conn.close();
+        });
+      }
+    });
+  }
+
+  public void transaction03(PgPool pool) {
+
+    // Acquire a transaction and begin the transaction
+    pool.begin(res -> {
+      if (res.succeeded()) {
+
+        // Get the transaction
+        PgTransaction tx = res.result();
+
+        // Various statements
+        tx.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
+        tx.query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')", ar -> {});
+
+        // Commit the transaction and return the connection to the pool
+        tx.commit(ar -> {
+          if (ar.succeeded()) {
+            System.out.println("Transaction succeeded");
+          } else {
+            System.out.println("Transaction failed " + ar.cause().getMessage());
+          }
         });
       }
     });

@@ -69,6 +69,14 @@ public interface PgPool extends PgClient {
   void getConnection(Handler<AsyncResult<PgConnection>> handler);
 
   /**
+   * Borrow a connection from the pool and begin a transaction, the underlying connection will be returned
+   * to the pool when the transaction ends.
+   *
+   * @return the transaction
+   */
+  void begin(Handler<AsyncResult<PgTransaction>> handler);
+
+  /**
    * Close the pool and release the associated resources.
    */
   void close();

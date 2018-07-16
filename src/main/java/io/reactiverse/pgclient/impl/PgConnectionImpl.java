@@ -103,11 +103,18 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
 
   @Override
   public PgTransaction begin() {
+    return begin(false);
+  }
+
+  PgTransaction begin(boolean closeOnEnd) {
     if (tx != null) {
       throw new IllegalStateException();
     }
     tx = new Transaction(context, conn, v -> {
       tx = null;
+      if (closeOnEnd) {
+        close();
+      }
     });
     return tx;
   }

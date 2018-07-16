@@ -17,6 +17,7 @@
 package examples;
 
 import io.reactiverse.reactivex.pgclient.*;
+import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -98,6 +99,22 @@ public class RxExamples {
       public void onComplete() {
         System.out.println("End of stream");
       }
+    });
+  }
+
+  public void transaction01Example(PgPool pool) {
+
+    Completable completable = pool
+      .rxBegin()
+      .flatMapCompletable(tx -> tx
+        .rxQuery("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
+        .flatMap(result -> tx.rxQuery("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')"))
+        .flatMapCompletable(result -> tx.rxCommit()));
+
+    completable.subscribe(() -> {
+      // Transaction succeeded
+    }, err -> {
+      // Transaction failed
     });
   }
 }
