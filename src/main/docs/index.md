@@ -403,7 +403,7 @@ You can provide a reconnect policy as a function that takes the number of `retri
 value:
 
 * when `amountOfTime < 0`: the subscriber is closed and there is no retry
-* when `amountOfTime ## 0`: the subscriber retries to connect immediately
+* when `amountOfTime = 0`: the subscriber retries to connect immediately
 * when `amountOfTime > 0`: the subscriber retries after `amountOfTime` milliseconds
 
 ```$lang
