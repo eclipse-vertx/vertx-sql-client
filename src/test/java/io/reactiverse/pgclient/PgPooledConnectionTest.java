@@ -29,7 +29,7 @@ public class PgPooledConnectionTest extends PgConnectionTestBase {
   private PgPool pool;
 
   public PgPooledConnectionTest() {
-    connector = (handler) -> {
+    connector = handler -> {
       if (pool == null) {
         pool = PgClient.pool(vertx, new PgPoolOptions(options).setMaxSize(1));
       }
@@ -43,26 +43,6 @@ public class PgPooledConnectionTest extends PgConnectionTestBase {
       pool.close();
     }
     super.teardown(ctx);
-  }
-
-  @Override
-  public void testBatchUpdate(TestContext ctx) {
-  }
-
-  @Override
-  public void testClose(TestContext ctx) {
-  }
-
-  @Override
-  public void testCloseWithErrorInProgress(TestContext ctx) {
-  }
-
-  @Override
-  public void testCloseWithQueryInProgress(TestContext ctx) {
-  }
-
-  @Override
-  public void testQueueQueries(TestContext ctx) {
   }
 
   @Test

@@ -22,319 +22,21 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
 @RunWith(VertxUnitRunner.class)
-public abstract class PgConnectionTestBase extends PgTestBase {
-
-  Vertx vertx;
-  Consumer<Handler<AsyncResult<PgConnection>>> connector;
-  PgConnectOptions options;
-
-  @Before
-  public void setup() {
-    vertx = Vertx.vertx();
-    options = new PgConnectOptions(PgTestBase.options);
-  }
-
-  @After
-  public void teardown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
-  }
-
-  @Test
-  public void testConnect(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      async.complete();
-    }));
-  }
-
-  @Test
-  public void testConnectInvalidDatabase(TestContext ctx) {
-    Async async = ctx.async();
-    options.setDatabase("blah_db");
-    connector.accept(ctx.asyncAssertFailure(conn -> {
-      ctx.assertEquals("database \"blah_db\" does not exist", conn.getMessage());
-      async.complete();
-    }));
-  }
-
-  @Test
-  public void testConnectInvalidPassword(TestContext ctx) {
-    Async async = ctx.async();
-    options.setPassword("incorrect");
-    connector.accept(ctx.asyncAssertFailure(conn -> {
-      ctx.assertEquals("password authentication failed for user \"postgres\"", conn.getMessage());
-      async.complete();
-    }));
-  }
-
-  @Test
-  public void testConnectInvalidUsername(TestContext ctx) {
-    Async async = ctx.async();
-    options.setUser("vertx");
-    connector.accept(ctx.asyncAssertFailure(conn -> {
-      ctx.assertEquals("password authentication failed for user \"vertx\"", conn.getMessage());
-      async.complete();
-    }));
-  }
-
-  @Test
-  public void testQuery(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(10000, result.size());
-        Iterator<Row> it = result.iterator();
-        for (int i = 0; i < 10000; i++) {
-          Row row = it.next();
-          ctx.assertEquals(2, row.size());
-          ctx.assertTrue(row.getValue(0) instanceof Integer);
-          ctx.assertEquals(row.getValue("id"), row.getValue(0));
-          ctx.assertTrue(row.getValue(1) instanceof Integer);
-          ctx.assertEquals(row.getValue("randomnumber"), row.getValue(1));
-        }
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testMultipleQuery(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT id, message from FORTUNE LIMIT 1;SELECT message, id from FORTUNE LIMIT 1", ctx.asyncAssertSuccess(result1 -> {
-        ctx.assertEquals(1, result1.size());
-        ctx.assertEquals(Arrays.asList("id", "message"), result1.columnsNames());
-        Tuple row1 = result1.iterator().next();
-        ctx.assertTrue(row1.getValue(0) instanceof Integer);
-        ctx.assertTrue(row1.getValue(1) instanceof String);
-        PgRowSet result2 = result1.next();
-        ctx.assertNotNull(result2);
-        ctx.assertEquals(1, result2.size());
-        ctx.assertEquals(Arrays.asList("message", "id"), result2.columnsNames());
-        Tuple row2 = result2.iterator().next();
-        ctx.assertTrue(row2.getValue(0) instanceof String);
-        ctx.assertTrue(row2.getValue(1) instanceof Integer);
-        ctx.assertNull(result2.next());
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testQueueQueries(TestContext ctx) {
-    int num = 1000;
-    Async async = ctx.async(num + 1);
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      for (int i = 0;i < num;i++) {
-        conn.query("SELECT id, randomnumber from WORLD", ar -> {
-          if (ar.succeeded()) {
-            PgResult result = ar.result();
-            ctx.assertEquals(10000, result.size());
-          } else {
-            ctx.assertEquals("closed", ar.cause().getMessage());
-          }
-          async.countDown();
-        });
-      }
-      conn.closeHandler(v -> {
-        ctx.assertEquals(1, async.count());
-        async.countDown();
-      });
-      conn.close();
-    }));
-  }
-
-  @Test
-  public void testQueryError(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(err -> {
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testUpdate(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.updatedCount());
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testUpdateError(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("INSERT INTO Fortune (id, message) VALUES (1, 'Duplicate')", ctx.asyncAssertFailure(err -> {
-        ctx.assertEquals("23505", ((PgException) err).getCode());
-        conn.query("SELECT 1000", ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.size());
-          ctx.assertEquals(1000, result.iterator().next().getInteger(0));
-          async.complete();
-        }));
-      }));
-    }));
-  }
-
-  @Test
-  public void testInsert(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("INSERT INTO Fortune (id, message) VALUES (13, 'Whatever')", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.updatedCount());
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testInsertReturning(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("INSERT INTO Fortune (id, message) VALUES ($1, $2) RETURNING id", Tuple.of(14, "SomeMessage"), ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(14, result.iterator().next().getInteger("id"));
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testInsertReturningError(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("INSERT INTO Fortune (id, message) VALUES ($1, $2) RETURNING id", Tuple.of(15, "SomeMessage"), ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(15, result.iterator().next().getInteger("id"));
-        conn.preparedQuery("INSERT INTO Fortune (id, message) VALUES ($1, $2) RETURNING id", Tuple.of(15, "SomeMessage"), ctx.asyncAssertFailure(err -> {
-          ctx.assertEquals("23505", ((PgException) err).getCode());
-          async.complete();
-        }));
-      }));
-      }));
-  }
-
-  @Test
-  public void testDelete(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("DELETE FROM Fortune where id = 6", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.updatedCount());
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testBatchUpdate(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE Fortune SET message=$1 WHERE id=$2", ctx.asyncAssertSuccess(ps -> {
-        List<Tuple> batch = new ArrayList<>();
-        batch.add(Tuple.of("val0", 1));
-        batch.add(Tuple.of("val1", 2));
-        ps.batch(batch, ctx.asyncAssertSuccess(result -> {
-          for (int i = 0;i < 2;i++) {
-            ctx.assertEquals(1, result.updatedCount());
-            result = result.next();
-          }
-          ctx.assertNull(result);
-          ps.close(ctx.asyncAssertSuccess(v -> {
-            async.complete();
-          }));
-        }));
-      }));
-    }));
-  }
-
-  private static int randomWorld() {
-    return 1 + ThreadLocalRandom.current().nextInt(10000);
-  }
-
-  @Test
-  public void testBatchInsertError(TestContext ctx) throws Exception {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      int id = randomWorld();
-      conn.prepare("INSERT INTO World (id, randomnumber) VALUES ($1, $2)", ctx.asyncAssertSuccess(worldUpdate -> {
-        List<Tuple> batch = new ArrayList<>();
-        batch.add(Tuple.of(id, 3));
-        worldUpdate.batch(batch, ctx.asyncAssertFailure(err -> {
-          ctx.assertEquals("23505", ((PgException) err).getCode());
-          conn.query("SELECT 1000", ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1000, result.iterator().next().getInteger(0));
-            async.complete();
-          }));
-        }));
-      }));
-    }));
-  }
-
-  @Test
-  public void testBatchSelect(TestContext ctx) throws Exception {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      int id = randomWorld();
-      conn.prepare("SELECT count(id) FROM World", ctx.asyncAssertSuccess(worldUpdate -> {
-        List<Tuple> batch = new ArrayList<>();
-        batch.add(Tuple.tuple());
-        batch.add(Tuple.tuple());
-        worldUpdate.batch(batch, ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(result.size(), result.next().size());
-          async.complete();
-        }));
-      }));
-    }));
-  }
-
-  @Test
-  public void testClose(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.closeHandler(v -> {
-        async.complete();
-      });
-      conn.close();
-    }));
-  }
-
-  @Test
-  public void testDisconnectAbruptlyDuringStartup(TestContext ctx) {
-    Async async = ctx.async();
-    ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
-    proxy.proxyHandler(conn -> {
-      conn.clientSocket().handler(buff -> {
-        conn.clientSocket().close();
-      });
-    });
-    proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
-      options.setPort(8080).setHost("localhost");
-      connector.accept(ctx.asyncAssertFailure(err -> async.complete()));
-    }));
-  }
+public abstract class PgConnectionTestBase extends PgClientTestBase<PgConnection> {
 
   @Test
   public void testDisconnectAbruptly(TestContext ctx) {
@@ -387,39 +89,6 @@ public abstract class PgConnectionTestBase extends PgTestBase {
         });
         connected.complete(null);
       }));
-    }));
-  }
-
-  @Test
-  public void testCloseWithQueryInProgress(TestContext ctx) {
-    Async async = ctx.async(2);
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(2, async.count());
-        ctx.assertEquals(10000, result.size());
-        async.countDown();
-      }));
-      conn.closeHandler(v -> {
-        ctx.assertEquals(1, async.count());
-        async.countDown();
-      });
-      conn.close();
-    }));
-  }
-
-  @Test
-  public void testCloseWithErrorInProgress(TestContext ctx) {
-    Async async = ctx.async(2);
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(err -> {
-        ctx.assertEquals(2, async.count());
-        async.countDown();
-      }));
-      conn.closeHandler(v -> {
-        ctx.assertEquals(1, async.count());
-        async.countDown();
-      });
-      conn.close();
     }));
   }
 
@@ -592,37 +261,35 @@ public abstract class PgConnectionTestBase extends PgTestBase {
     });
   }
 */
+
   @Test
-  public void testPreparedUpdate(TestContext ctx) {
+  public void testUpdateError(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE Fortune SET message = 'PgClient Rocks!' WHERE id = 2", ctx.asyncAssertSuccess(ps -> {
-        ps.execute(ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.updatedCount());
-          conn.prepare("SELECT message FROM Fortune WHERE id = 2", ctx.asyncAssertSuccess(ps2 -> {
-            ps2.execute(ctx.asyncAssertSuccess(r -> {
-                ctx.assertEquals("PgClient Rocks!", r.iterator().next().getValue(0));
-                async.complete();
-              }));
-          }));
+      conn.query("INSERT INTO Fortune (id, message) VALUES (1, 'Duplicate')", ctx.asyncAssertFailure(err -> {
+        ctx.assertEquals("23505", ((PgException) err).getCode());
+        conn.query("SELECT 1000", ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.size());
+          ctx.assertEquals(1000, result.iterator().next().getInteger(0));
+          async.complete();
         }));
       }));
     }));
   }
 
   @Test
-  public void testPreparedUpdateWithParams(TestContext ctx) {
+  public void testBatchInsertError(TestContext ctx) throws Exception {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE Fortune SET message = $1 WHERE id = $2", ctx.asyncAssertSuccess(ps -> {
-        ps.execute(Tuple.of("PgClient Rocks Again!!", 2), ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.updatedCount());
-          conn.prepare("SELECT message FROM Fortune WHERE id = $1", ctx.asyncAssertSuccess(ps2 -> {
-            ps2.execute(Tuple.of(2), ctx.asyncAssertSuccess(r -> {
-                ctx.assertEquals("PgClient Rocks Again!!", r.iterator().next().getValue(0));
-                async.complete();
-              }));
-          }));
+      int id = randomWorld();
+      List<Tuple> batch = new ArrayList<>();
+      batch.add(Tuple.of(id, 3));
+      conn.preparedBatch("INSERT INTO World (id, randomnumber) VALUES ($1, $2)", batch, ctx.asyncAssertFailure(err -> {
+        ctx.assertEquals("23505", ((PgException) err).getCode());
+        conn.query("SELECT 1000", ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.size());
+          ctx.assertEquals(1000, result.iterator().next().getInteger(0));
+          async.complete();
         }));
       }));
     }));
@@ -713,127 +380,4 @@ public abstract class PgConnectionTestBase extends PgTestBase {
       tx.commit(commit::set);
     }));
   }
-
-  /*
-  @Test
-  public void testServerUpdate(TestContext ctx) {
-
-    ctx.async();
-
-    PostgresClient client = PostgresClient.create(vertx, options);
-    PostgresConnectionPool pool = client.createPool(1);
-    HttpServer server = vertx.createHttpServer();
-    server.requestHandler(req -> {
-      new Update(pool).handle(req);
-    });
-    server.listen(8080, ctx.asyncAssertSuccess());
-
-
-  }
-
-  class Update {
-
-    boolean failed;
-    JsonArray worlds = new JsonArray();
-    PostgresConnectionPool pool;
-
-    public Update(PostgresConnectionPool pool) {
-      this.pool = pool;
-    }
-
-    public void handle(HttpServerRequest req) {
-      HttpServerResponse resp = req.response();
-      final int queries = getQueries(req);
-
-      pool.connect(ar1 -> {
-        if (ar1.succeeded()) {
-          PostgresConnection conn = ar1.result();
-
-          int[] ids = new int[queries];
-          Row[] rows = new Row[queries];
-          for (int i = 0; i < queries; i++) {
-            int index = i;
-            int id = randomWorld();
-            ids[i] = id;
-            conn.execute("SELECT id, randomnumber from WORLD where id = " + id, ar2 -> {
-              if (!failed) {
-                if (ar2.failed()) {
-                  failed = true;
-                  resp.setStatusCode(500).end(ar2.cause().getMessage());
-                  conn.close();
-                  return;
-                }
-                rows[index] = ar2.result().get(0);
-              }
-            });
-          }
-
-          conn.execute("BEGIN", ar2 -> {
-            if (!failed) {
-              if (ar2.failed()) {
-                failed = true;
-                resp.setStatusCode(500).end(ar2.cause().getMessage());
-                conn.close();
-              }
-
-              for (int i = 0;i < queries;i++) {
-                int index = i;
-                int randomNumber = randomWorld();
-
-                conn.execute("UPDATE world SET randomnumber = " + randomNumber + " WHERE id = " + ids[i], ar4 -> {
-                  if (!failed) {
-                    if (ar4.failed()) {
-                      failed = true;
-                      resp.setStatusCode(500).end(ar4.cause().getMessage());
-                      conn.close();
-                      return;
-                    }
-                    Row row = rows[index];
-                    worlds.add(new JsonObject().put("id", "" + row.get(0)).put("randomNumber", "" + randomNumber));
-                  }
-                });
-              }
-
-              conn.execute("COMMIT", ar5 -> {
-                if (!failed) {
-                  if (ar5.failed()) {
-                    failed = true;
-                    resp.setStatusCode(500).end(ar5.cause().getMessage());
-                    conn.close();
-                    return;
-                  }
-                  conn.close();
-                  resp
-                    .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                    .end(Json.encode(worlds.encode()));
-                }
-              });
-            }
-          });
-        } else {
-          resp.setStatusCode(500).end(ar1.cause().getMessage());
-        }
-      });
-    }
-
-    int getQueries(HttpServerRequest request) {
-      String param = request.getParam("queries");
-
-      if (param == null) {
-        return 1;
-      }
-      try {
-        int parsedValue = Integer.parseInt(param);
-        return Math.min(500, Math.max(1, parsedValue));
-      } catch (NumberFormatException e) {
-        return 1;
-      }
-    }
-
-    private int randomWorld() {
-      return 1 + ThreadLocalRandom.current().nextInt(10000);
-    }
-  }
-*/
-
 }

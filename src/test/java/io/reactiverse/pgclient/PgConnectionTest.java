@@ -17,6 +17,13 @@
 
 package io.reactiverse.pgclient;
 
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
@@ -24,5 +31,95 @@ public class PgConnectionTest extends PgConnectionTestBase {
 
   public PgConnectionTest() {
     connector = (handler) -> PgClient.connect(vertx, options, handler);
+  }
+
+  @Test
+  public void testBatchUpdate(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE Fortune SET message=$1 WHERE id=$2", ctx.asyncAssertSuccess(ps -> {
+        List<Tuple> batch = new ArrayList<>();
+        batch.add(Tuple.of("val0", 1));
+        batch.add(Tuple.of("val1", 2));
+        ps.batch(batch, ctx.asyncAssertSuccess(result -> {
+          for (int i = 0;i < 2;i++) {
+            ctx.assertEquals(1, result.updatedCount());
+            result = result.next();
+          }
+          ctx.assertNull(result);
+          ps.close(ctx.asyncAssertSuccess(v -> {
+            async.complete();
+          }));
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testClose(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      conn.closeHandler(v -> {
+        async.complete();
+      });
+      conn.close();
+    }));
+  }
+
+  @Test
+  public void testCloseWithErrorInProgress(TestContext ctx) {
+    Async async = ctx.async(2);
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(err -> {
+        ctx.assertEquals(2, async.count());
+        async.countDown();
+      }));
+      conn.closeHandler(v -> {
+        ctx.assertEquals(1, async.count());
+        async.countDown();
+      });
+      conn.close();
+    }));
+  }
+
+  @Test
+  public void testCloseWithQueryInProgress(TestContext ctx) {
+    Async async = ctx.async(2);
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(2, async.count());
+        ctx.assertEquals(10000, result.size());
+        async.countDown();
+      }));
+      conn.closeHandler(v -> {
+        ctx.assertEquals(1, async.count());
+        async.countDown();
+      });
+      conn.close();
+    }));
+  }
+
+  @Test
+  public void testQueueQueries(TestContext ctx) {
+    int num = 1000;
+    Async async = ctx.async(num + 1);
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      for (int i = 0;i < num;i++) {
+        conn.query("SELECT id, randomnumber from WORLD", ar -> {
+          if (ar.succeeded()) {
+            PgResult result = ar.result();
+            ctx.assertEquals(10000, result.size());
+          } else {
+            ctx.assertEquals("closed", ar.cause().getMessage());
+          }
+          async.countDown();
+        });
+      }
+      conn.closeHandler(v -> {
+        ctx.assertEquals(1, async.count());
+        async.countDown();
+      });
+      conn.close();
+    }));
   }
 }
