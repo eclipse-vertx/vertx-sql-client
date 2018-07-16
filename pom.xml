@@ -59,7 +59,7 @@
   </developers>
 
   <properties>
-    <stack.version>3.5.2</stack.version>
+    <stack.version>3.5.3</stack.version>
     <jmh.version>1.19</jmh.version>
     <docs.dir>${project.basedir}/src/main/docs</docs.dir>
     <generated.dir>${project.basedir}/src/main/generated</generated.dir>
