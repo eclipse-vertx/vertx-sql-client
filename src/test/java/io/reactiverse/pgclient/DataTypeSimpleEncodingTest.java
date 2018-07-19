@@ -632,9 +632,7 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
 
   @Test
   public void testDecodeTIMESTAMPTZArray(TestContext ctx) {
-    // timestamp issue to investigate
-    // org.junit.internal.ArrayComparisonFailure: Expected that public abstract java.lang.Object io.reactiverse.pgclient.Tuple.getValue(int) returns [2017-05-15T02:59:59.237666Z] instead of [2017-05-15T04:59:59.237666+02:00]: arrays first differed at element [0]; expected:<2017-05-15T04:59:59.237666+02:00> but was:<2017-05-15T02:59:59.237666Z>
-    // testDecodeXXXArray(ctx, "OffsetDateTime", "ArrayDataType", Tuple::getOffsetDateTimeArray, Row::getOffsetDateTimeArray, DataTypeExtendedEncodingTest.odt);
+     testDecodeXXXArray(ctx, "OffsetDateTime", "ArrayDataType", Tuple::getOffsetDateTimeArray, Row::getOffsetDateTimeArray, DataTypeExtendedEncodingTest.odt);
   }
 
   @Test
@@ -682,13 +680,16 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
                                       Object... expected) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT \"" + columnName + "\" FROM \"" + tableName + "\" WHERE \"id\" = 1",
-        ctx.asyncAssertSuccess(result -> {
-          ColumnChecker.checkColumn(0, columnName)
-            .returns(Tuple::getValue, Row::getValue, expected)
-            .returns(byIndexGetter, byNameGetter, expected)
-            .forRow(result.iterator().next());
-          async.complete();
+      conn.query("SET TIME ZONE 'UTC'",
+        ctx.asyncAssertSuccess(res -> {
+          conn.query("SELECT \"" + columnName + "\" FROM \"" + tableName + "\" WHERE \"id\" = 1",
+            ctx.asyncAssertSuccess(result -> {
+            ColumnChecker.checkColumn(0, columnName)
+              .returns(Tuple::getValue, Row::getValue, expected)
+              .returns(byIndexGetter, byNameGetter, expected)
+              .forRow(result.iterator().next());
+            async.complete();
+            }));
         }));
     }));
   }
