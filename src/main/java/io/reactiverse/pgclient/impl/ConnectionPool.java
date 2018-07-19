@@ -131,6 +131,8 @@ public class ConnectionPool {
     public void handleException(Throwable err) {
       if (holder != null) {
         holder.handleException(err);
+      } else {
+        err.printStackTrace();
       }
     }
   }
