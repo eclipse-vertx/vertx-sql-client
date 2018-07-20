@@ -132,7 +132,7 @@ public class ConnectionPool {
       if (holder != null) {
         holder.handleException(err);
       } else {
-        err.printStackTrace();
+        throw new RuntimeException(err);
       }
     }
   }
