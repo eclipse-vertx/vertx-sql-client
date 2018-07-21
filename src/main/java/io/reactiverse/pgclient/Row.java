@@ -28,6 +28,13 @@ import java.util.UUID;
 
 @VertxGen
 public interface Row extends Tuple {
+  /**
+   * Get a column name at {@code pos}.
+   *
+   * @param pos the position
+   * @return the column name or {@code null}
+   */
+  String getColumnName(int pos);
 
   /**
    * Get a boolean value at {@code pos}.
