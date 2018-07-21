@@ -104,7 +104,7 @@ public class RowTest extends PgTestBase {
       conn.query("SELECT 2 \"foo\"",
         ctx.asyncAssertSuccess(result -> {
           Row row = result.iterator().next();
-          ctx.assertEquals("foo",row.getColumnName(1));
+          ctx.assertEquals("foo",row.getColumnName(0));
           async.complete();
         }));
     }));
