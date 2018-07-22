@@ -111,7 +111,7 @@ public class RowTest extends PgTestBase {
   }
 
   @Test
-  public void testNegativeNotEqualGetColumnNameRows(TestContext ctx) {
+  public void testNotEqualGetColumnNameRows(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT 2 \"foo\"",
@@ -125,6 +125,19 @@ public class RowTest extends PgTestBase {
 
   @Test
   public void testNegativeGetColumnNameRows(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT 2 \"foo\"",
+        ctx.asyncAssertSuccess(result -> {
+          Row row = result.iterator().next();
+          ctx.assertEquals(null,row.getColumnName(-1));
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testPreventLengthMaxIndexOutOfBoundGetColumnNameRows(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT 2 \"foo\"",
