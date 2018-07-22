@@ -49,7 +49,7 @@ public class RowImpl extends ArrayTuple implements Row {
   @Override
   public String getColumnName(int pos) {
     final ColumnDesc[] columnDescs = desc.columns();
-    return pos == -1 || columnDescs.length < pos ? null : columnDescs[pos].getName();
+    return pos < 0 || columnDescs.length - 1 < pos ? null : columnDescs[pos].getName();
   }
 
   @Override

@@ -110,5 +110,31 @@ public class RowTest extends PgTestBase {
     }));
   }
 
+  @Test
+  public void testNegativeNotEqualGetColumnNameRows(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT 2 \"foo\"",
+        ctx.asyncAssertSuccess(result -> {
+          Row row = result.iterator().next();
+          ctx.assertNotEquals("bar",row.getColumnName(0));
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testNegativeGetColumnNameRows(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT 2 \"foo\"",
+        ctx.asyncAssertSuccess(result -> {
+          Row row = result.iterator().next();
+          ctx.assertEquals("foo",row.getColumnName(1));
+          async.complete();
+        }));
+    }));
+  }
+
 
 }
