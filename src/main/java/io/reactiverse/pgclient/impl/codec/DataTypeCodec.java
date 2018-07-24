@@ -845,7 +845,7 @@ public class DataTypeCodec {
       .plusSeconds(interval.getSeconds())
       .plus(interval.getMicroseconds(), ChronoUnit.MICROS);
     // days won't be changed
-    Period monthYear = Period.of(interval.getYears(), interval.getMonths(), interval.getDays()).normalized();;
+    Period monthYear = Period.of(interval.getYears(), interval.getMonths(), interval.getDays()).normalized();
     binaryEncodeINT8(NANOSECONDS.toMicros(duration.toNanos()), buff);
     binaryEncodeINT4(monthYear.getDays(), buff);
     binaryEncodeINT4((int) monthYear.toTotalMonths(), buff);
