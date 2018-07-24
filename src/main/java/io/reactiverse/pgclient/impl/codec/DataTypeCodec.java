@@ -38,8 +38,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.function.IntFunction;
+
+import static java.util.concurrent.TimeUnit.*;
 
 public class DataTypeCodec {
 
@@ -607,8 +608,8 @@ public class DataTypeCodec {
       idx = newIdx + 1;
     }
     boolean hasTime = chunks.size() % 2 == 1;
-    int dateIdx = hasTime ? chunks.size() - 1 : chunks.size();
-    for (int i = 0; i < dateIdx; i += 2) {
+    int dateChunkMax = hasTime ? chunks.size() - 1 : chunks.size();
+    for (int i = 0; i < dateChunkMax; i += 2) {
       int val = Integer.parseInt(chunks.get(i));
       switch (chunks.get(i + 1)) {
         case "year":
@@ -845,7 +846,7 @@ public class DataTypeCodec {
       .plus(interval.getMicroseconds(), ChronoUnit.MICROS);
     // days won't be changed
     Period monthYear = Period.of(interval.getYears(), interval.getMonths(), interval.getDays()).normalized();;
-    binaryEncodeINT8(TimeUnit.NANOSECONDS.toMicros(duration.toNanos()), buff);
+    binaryEncodeINT8(NANOSECONDS.toMicros(duration.toNanos()), buff);
     binaryEncodeINT4(monthYear.getDays(), buff);
     binaryEncodeINT4((int) monthYear.toTotalMonths(), buff);
   }
@@ -856,15 +857,14 @@ public class DataTypeCodec {
     duration = duration.minusHours(hours);
     final long minutes = duration.toMinutes();
     duration = duration.minusMinutes(minutes);
-    final long seconds = TimeUnit.NANOSECONDS.toSeconds(duration.toNanos());
+    final long seconds = NANOSECONDS.toSeconds(duration.toNanos());
     duration = duration.minusSeconds(seconds);
-    final long microseconds = TimeUnit.NANOSECONDS.toMicros(duration.toNanos());
+    final long microseconds = NANOSECONDS.toMicros(duration.toNanos());
     int days = buff.readInt();
     int months = buff.readInt();
     Period monthYear = Period.of(0, months, days).normalized();
-    Interval interval=  new Interval(monthYear.getYears(), monthYear.getMonths(), monthYear.getDays(),
+    return new Interval(monthYear.getYears(), monthYear.getMonths(), monthYear.getDays(),
       (int) hours, (int) minutes, (int) seconds, (int) microseconds);
-    return interval;
   }
 
   private static UUID binaryDecodeUUID(int len, ByteBuf buff) {
