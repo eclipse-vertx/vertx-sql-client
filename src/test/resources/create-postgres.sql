@@ -69,7 +69,7 @@ VALUES (2, 32767, 2147483647, 9223372036854775807, 3.4028235E38, 1.7976931348623
 
 DROP TABLE IF EXISTS "TemporalDataType";
 CREATE TABLE "TemporalDataType" ("id" INTEGER NOT NULL PRIMARY KEY, "Date" date, "Time" time without time zone, "TimeTz" time with time zone, "Timestamp" timestamp without time zone, "TimestampTz" timestamp with time zone, "Interval" interval);
-INSERT INTO "TemporalDataType" ("id" ,"Date", "Time", "TimeTz", "Timestamp", "TimestampTz", "Interval") VALUES (1 ,'1981-05-30', '17:55:04.90512', '17:55:04.90512+03:07', '2017-05-14 19:35:58.237666', '2017-05-14 23:59:59.237666-03', '17:22:05');
+INSERT INTO "TemporalDataType" ("id" ,"Date", "Time", "TimeTz", "Timestamp", "TimestampTz", "Interval") VALUES (1 ,'1981-05-30', '17:55:04.90512', '17:55:04.90512+03:07', '2017-05-14 19:35:58.237666', '2017-05-14 23:59:59.237666-03', '10 years 3 months 332 days 20 hours 20 minutes 20.999999 seconds');
 INSERT INTO "TemporalDataType" ("id" ,"Date", "Time", "TimeTz", "Timestamp", "TimestampTz", "Interval") VALUES (2 ,'2017-05-30', '12:55:04.90512', '02:55:04.90512+03:07', '1909-05-14 19:35:58.237666', '1909-05-14 22:35:58.237666-03', '02:01:33');
 INSERT INTO "TemporalDataType" ("id" ,"Date", "Time", "TimeTz", "Timestamp", "TimestampTz", "Interval") VALUES (3 ,'1900-01-01', '23:59:04.90512', '08:08:03.90512+03:07', '1800-01-01 23:57:53.237666', '1800-01-01 23:59:59.237666-03', '04:33:59');
 INSERT INTO "TemporalDataType" ("id" ,"Date", "Time", "TimeTz", "Timestamp", "TimestampTz", "Interval") VALUES (4 ,'1900-01-01', '23:59:04.90512', '08:08:03.90512+03:07', '1800-01-01 23:57:53.237666', '1800-01-01 23:59:59.237666-03', '04:33:59');
@@ -143,7 +143,8 @@ CREATE TABLE "ArrayDataType" (
   "Bytea"          BYTEA[],
   "JSON"           JSON[],
   "JSONB"          JSONB[],
-  "Enum"           mood[]
+  "Enum"           mood[],
+  "Interval"       INTERVAL []
 );
 INSERT INTO "ArrayDataType" VALUES (1, ARRAY [TRUE],
                                        ARRAY [1],
@@ -165,7 +166,8 @@ INSERT INTO "ArrayDataType" VALUES (1, ARRAY [TRUE],
                                        ARRAY [decode('48454c4c4f', 'hex')],
                                        ARRAY ['  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }' :: JSON, '[1,true,null,9.5,"Hi"]' :: JSON, '4' :: JSON, '"Hello World"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON],
                                        ARRAY ['  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }' :: JSON, '[1,true,null,9.5,"Hi"]' :: JSON, '4' :: JSON, '"Hello World"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON],
-                                       ARRAY['ok'::mood,'unhappy'::mood, 'happy'::mood]);
+                                       ARRAY['ok'::mood,'unhappy'::mood, 'happy'::mood],
+                                       ARRAY['10 years 3 months 332 days 20 hours 20 minutes 20.999991 seconds'::INTERVAL, '20 minutes 20.123456 seconds'::INTERVAL, '30 months ago'::INTERVAL]);
 INSERT INTO "ArrayDataType" VALUES (2, ARRAY [TRUE],
                                        ARRAY [1],
                                        ARRAY [2],
@@ -185,7 +187,8 @@ INSERT INTO "ArrayDataType" VALUES (2, ARRAY [TRUE],
                                        ARRAY [decode('48454c4c4f', 'hex')],
                                        ARRAY ['  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }' :: JSON, '[1,true,null,9.5,"Hi"]' :: JSON, '4' :: JSON, '"Hello World"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON],
                                        ARRAY ['  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }' :: JSON, '[1,true,null,9.5,"Hi"]' :: JSON, '4' :: JSON, '"Hello World"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON],
-                                       ARRAY['unhappy'::mood, 'happy'::mood]);
+                                       ARRAY['unhappy'::mood, 'happy'::mood],
+                                       ARRAY['0 years 0 months 0 days 0 hours 0 minutes 0 seconds'::INTERVAL]);
 
 
 DROP TABLE IF EXISTS "EnumDataType";
