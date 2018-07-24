@@ -22,10 +22,10 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.reactiverse.pgclient.Json;
 import io.reactiverse.pgclient.Numeric;
+import io.reactiverse.pgclient.data.*;
 import io.reactiverse.pgclient.impl.codec.formatter.DateTimeFormatter;
 import io.reactiverse.pgclient.impl.codec.formatter.TimeFormatter;
 import io.reactiverse.pgclient.impl.codec.util.UTF8StringEndDetector;
-import io.reactiverse.pgclient.data.Point;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -38,6 +38,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.function.IntFunction;
 
 public class DataTypeCodec {
@@ -53,6 +54,7 @@ public class DataTypeCodec {
   private static final Json[] empty_json_array = new Json[0];
   private static final Numeric[] empty_numeric_array = new Numeric[0];
   private static final Point[] empty_point_array = new Point[0];
+  private static final Interval[] empty_interval_array = new Interval[0];
   private static final Boolean[] empty_boolean_array = new Boolean[0];
   private static final Integer[] empty_integer_array = new Integer[0];
   private static final Short[] empty_short_array = new Short[0];
@@ -83,6 +85,7 @@ public class DataTypeCodec {
   private static final IntFunction<Json[]> JSON_ARRAY_FACTORY = size -> size == 0 ? empty_json_array : new Json[size];
   private static final IntFunction<Numeric[]> NUMERIC_ARRAY_FACTORY = size -> size == 0 ? empty_numeric_array : new Numeric[size];
   private static final IntFunction<Point[]> POINT_ARRAY_FACTORY = size -> size == 0 ? empty_point_array : new Point[size];
+  private static final IntFunction<Interval[]> INTERVAL_ARRAY_FACTORY = size -> size == 0 ? empty_interval_array : new Interval[size];
 
   public static void encodeText(DataType id, Object value, ByteBuf buff) {
     int index = buff.writerIndex();
@@ -234,6 +237,12 @@ public class DataTypeCodec {
       case POINT_ARRAY:
         binaryEncodeArray((Point[]) value, DataType.POINT, buff);
         break;
+      case INTERVAL:
+        binaryEncodeINTERVAL((Interval) value, buff);
+        break;
+      case INTERVAL_ARRAY:
+        binaryEncodeArray((Interval[]) value, DataType.INTERVAL, buff);
+        break;
       case ENUM:
         binaryEncodeTEXT((String) value, buff);
         break;
@@ -333,6 +342,10 @@ public class DataTypeCodec {
         return binaryDecodePoint(len, buff);
       case POINT_ARRAY:
         return binaryDecodeArray(POINT_ARRAY_FACTORY, DataType.POINT, len, buff);
+      case INTERVAL:
+        return binaryDecodeINTERVAL(len, buff);
+      case INTERVAL_ARRAY:
+        return binaryDecodeArray(INTERVAL_ARRAY_FACTORY, DataType.INTERVAL, len, buff);
       case ENUM:
         return binaryDecodeTEXT(len, buff);
       case ENUM_ARRAY:
@@ -433,6 +446,10 @@ public class DataTypeCodec {
         return textDecodePOINT(len, buff);
       case POINT_ARRAY:
         return textDecodeArray(POINT_ARRAY_FACTORY, DataType.POINT, len, buff);
+      case INTERVAL:
+        return textDecodeINTERVAL(len, buff);
+      case INTERVAL_ARRAY:
+        return textDecodeArray(INTERVAL_ARRAY_FACTORY, DataType.INTERVAL, len, buff);
       case ENUM:
         return textdecodeTEXT(len, buff);
       case ENUM_ARRAY:
@@ -572,6 +589,77 @@ public class DataTypeCodec {
     buff.skipBytes(1);
     double y = textDecodeFLOAT8(len - t - 3, buff);
     return new Point(x, y);
+  }
+
+  private static Interval textDecodeINTERVAL(int len, ByteBuf buff) {
+    CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
+    String value = cs.toString();
+    int years = 0, months = 0, days = 0, hours = 0, minutes = 0, seconds = 0, microseconds = 0;
+    final List<String> chunks = new ArrayList<>(7);
+    int idx = 0;
+    for (;;) {
+      int newIdx = value.indexOf(' ', idx);
+      if (newIdx == -1) {
+        chunks.add(value.substring(idx));
+        break;
+      }
+      chunks.add(value.substring(idx, newIdx));
+      idx = newIdx + 1;
+    }
+    boolean hasTime = chunks.size() % 2 == 1;
+    int dateIdx = hasTime ? chunks.size() - 1 : chunks.size();
+    for (int i = 0; i < dateIdx; i += 2) {
+      int val = Integer.parseInt(chunks.get(i));
+      switch (chunks.get(i + 1)) {
+        case "year":
+        case "years":
+          years = val;
+          break;
+        case "mon":
+        case "mons":
+          months = val;
+          break;
+        case "day":
+        case "days":
+          days = val;
+          break;
+      }
+    }
+    if (hasTime) {
+      String timeChunk = chunks.get(chunks.size() - 1);
+      boolean isNeg = timeChunk.charAt(0) == '-';
+      if (isNeg) timeChunk = timeChunk.substring(1);
+      int sidx = 0;
+      for (;;) {
+        int newIdx = timeChunk.indexOf(':', sidx);
+        if (newIdx == -1) {
+          int m = timeChunk.substring(sidx).indexOf('.');
+          if(m == -1) {
+            // seconds without microseconds
+            seconds = isNeg ? -Integer.parseInt(timeChunk.substring(sidx))
+              : Integer.parseInt(timeChunk.substring(sidx));
+          } else {
+            // seconds with microseconds
+            seconds =  isNeg ? -Integer.parseInt(timeChunk.substring(sidx).substring(0, m))
+              : Integer.parseInt(timeChunk.substring(sidx).substring(0, m));
+            microseconds = isNeg ? -Integer.parseInt(timeChunk.substring(sidx).substring(m + 1))
+              : Integer.parseInt(timeChunk.substring(sidx).substring(m + 1));
+          }
+          break;
+        }
+        // hours
+        if(sidx == 0) {
+          hours = isNeg ? -Integer.parseInt(timeChunk.substring(sidx, newIdx))
+            : Integer.parseInt(timeChunk.substring(sidx, newIdx));
+        } else {
+          // minutes
+          minutes = isNeg ? -Integer.parseInt(timeChunk.substring(sidx, newIdx))
+            : Integer.parseInt(timeChunk.substring(sidx, newIdx));
+        }
+        sidx = newIdx + 1;
+      }
+    }
+    return new Interval(years, months, days, hours, minutes, seconds, microseconds);
   }
 
   private static void textEncodeNUMERIC(Numeric value, ByteBuf buff) {
@@ -747,6 +835,36 @@ public class DataTypeCodec {
     double x = binaryDecodeFLOAT8(8, buff);
     double y = binaryDecodeFLOAT8(8, buff);
     return new Point(x, y);
+  }
+
+  private static void binaryEncodeINTERVAL(Interval interval, ByteBuf buff) {
+    Duration duration = Duration
+      .ofHours(interval.getHours())
+      .plusMinutes(interval.getMinutes())
+      .plusSeconds(interval.getSeconds())
+      .plus(interval.getMicroseconds(), ChronoUnit.MICROS);
+    // days won't be changed
+    Period monthYear = Period.of(interval.getYears(), interval.getMonths(), interval.getDays()).normalized();;
+    binaryEncodeINT8(TimeUnit.NANOSECONDS.toMicros(duration.toNanos()), buff);
+    binaryEncodeINT4(monthYear.getDays(), buff);
+    binaryEncodeINT4((int) monthYear.toTotalMonths(), buff);
+  }
+
+  private static Interval binaryDecodeINTERVAL(int len, ByteBuf buff) {
+    Duration duration = Duration.of(buff.readLong(), ChronoUnit.MICROS);
+    final long hours = duration.toHours();
+    duration = duration.minusHours(hours);
+    final long minutes = duration.toMinutes();
+    duration = duration.minusMinutes(minutes);
+    final long seconds = TimeUnit.NANOSECONDS.toSeconds(duration.toNanos());
+    duration = duration.minusSeconds(seconds);
+    final long microseconds = TimeUnit.NANOSECONDS.toMicros(duration.toNanos());
+    int days = buff.readInt();
+    int months = buff.readInt();
+    Period monthYear = Period.of(0, months, days).normalized();
+    Interval interval=  new Interval(monthYear.getYears(), monthYear.getMonths(), monthYear.getDays(),
+      (int) hours, (int) minutes, (int) seconds, (int) microseconds);
+    return interval;
   }
 
   private static UUID binaryDecodeUUID(int len, ByteBuf buff) {
