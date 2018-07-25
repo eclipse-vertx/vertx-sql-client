@@ -681,7 +681,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore
-  Tuple adPoint(Point value);
+  Tuple addPoint(Point value);
 
   /**
    * Add a {@link Point} value at the end of the tuple.
