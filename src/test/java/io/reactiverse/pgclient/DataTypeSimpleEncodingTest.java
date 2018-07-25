@@ -1,5 +1,6 @@
 package io.reactiverse.pgclient;
 
+import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.data.Point;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
@@ -479,6 +480,31 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
   }
 
   @Test
+  public void testInterval(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT '10 years 3 months 332 days 20 hours 20 minutes 20.999991 seconds'::INTERVAL \"Interval\"",
+          ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.size());
+          Row row = result.iterator().next();
+            Interval interval = Interval.of()
+              .years(10)
+              .months(3)
+              .days(332)
+              .hours(20)
+              .minutes(20)
+              .seconds(20)
+              .microseconds(999991);
+            ColumnChecker.checkColumn(0, "Interval")
+              .returns(Tuple::getValue, Row::getValue, interval)
+              .returns(Tuple::getInterval, Row::getInterval, interval)
+              .forRow(row);
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
   public void testJSONB(TestContext ctx) {
     testJson(ctx, "JSONB");
   }
@@ -649,6 +675,11 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
   public void testDecodeENUMArray(TestContext ctx) {
     String [] moods = new String [] {"ok", "unhappy", "happy"};
     testDecodeXXXArray(ctx, "Enum", "ArrayDataType", Tuple::getStringArray, Row::getStringArray, moods);
+  }
+
+  @Test
+  public void testDecodeINTERVALArray(TestContext ctx) {
+    testDecodeXXXArray(ctx, "Interval", "ArrayDataType", Tuple::getIntervalArray, Row::getIntervalArray, DataTypeExtendedEncodingTest.intervals);
   }
 
 
