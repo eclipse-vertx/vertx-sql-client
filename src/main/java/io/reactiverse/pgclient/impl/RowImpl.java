@@ -21,6 +21,7 @@ import io.reactiverse.pgclient.Json;
 import io.reactiverse.pgclient.Numeric;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.impl.codec.ColumnDesc;
+import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.reactiverse.pgclient.data.Point;
 import io.vertx.core.buffer.Buffer;
@@ -173,6 +174,12 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
+  public Interval getInterval(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getInterval(pos);
+  }
+
+  @Override
   public Boolean[] getBooleanArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getBooleanArray(pos);
@@ -272,5 +279,11 @@ public class RowImpl extends ArrayTuple implements Row {
   public Point[] getPointArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getPointArray(pos);
+  }
+
+  @Override
+  public Interval[] getIntervalArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getIntervalArray(pos);
   }
 }

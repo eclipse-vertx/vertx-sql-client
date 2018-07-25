@@ -20,6 +20,7 @@ import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
 import io.reactiverse.pgclient.Json;
 import io.reactiverse.pgclient.Numeric;
+import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.data.Point;
 import io.vertx.core.buffer.Buffer;
 
@@ -74,8 +75,8 @@ public enum DataType {
   TIMESTAMP_ARRAY(1115, true, LocalDateTime[].class),
   TIMESTAMPTZ(1184, true, OffsetDateTime.class),
   TIMESTAMPTZ_ARRAY(1185, true, OffsetDateTime[].class),
-  INTERVAL(1186, true, Object.class),
-  INTERVAL_ARRAY(1187, true, Object[].class),
+  INTERVAL(1186, true, Interval.class),
+  INTERVAL_ARRAY(1187, true, Interval[].class),
   BYTEA(17, true, Buffer.class),
   BYTEA_ARRAY(1001, true, Buffer[].class),
   MACADDR(829, true, Object.class),

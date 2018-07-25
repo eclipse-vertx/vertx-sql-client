@@ -1,5 +1,6 @@
 package io.reactiverse.pgclient;
 
+import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.data.Point;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
@@ -815,22 +816,83 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
   }
 
   @Test
+  public void testDecodeInterval(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"Interval\" FROM \"TemporalDataType\" WHERE \"id\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          // 10 years 3 months 332 days 20 hours 20 minutes 20.999999 seconds
+          Interval expected = Interval.of()
+            .years(10)
+            .months(3)
+            .days(332)
+            .hours(20)
+            .minutes(20)
+            .seconds(20)
+            .microseconds(999999);
+          p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.size());
+            ctx.assertEquals(1, result.updatedCount());
+            Row row = result.iterator().next();
+            ColumnChecker.checkColumn(0, "Interval")
+              .returns(Tuple::getValue, Row::getValue, expected)
+              .returns(Tuple::getInterval, Row::getInterval, expected)
+              .forRow(row);
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testEncodeInterval(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"TemporalDataType\" SET \"Interval\" = $1 WHERE \"id\" = $2 RETURNING \"Interval\"",
+        ctx.asyncAssertSuccess(p -> {
+          // 2000 years 1 months 403 days 59 hours 35 minutes 13.999998 seconds
+          Interval expected = Interval.of()
+            .years(2000)
+            .months(1)
+            .days(403)
+            .hours(59)
+            .minutes(35)
+            .seconds(13)
+            .microseconds(999998);
+          p.execute(Tuple.tuple()
+            .addInterval(expected)
+            .addInteger(2), ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.size());
+            ctx.assertEquals(1, result.updatedCount());
+            Row row = result.iterator().next();
+            ColumnChecker.checkColumn(0, "Interval")
+              .returns(Tuple::getValue, Row::getValue, expected)
+              .returns(Tuple::getInterval, Row::getInterval, expected)
+              .forRow(row);
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
+
+  @Test
   public void testNumeric(TestContext ctx) {
     testGeneric(ctx,
       "SELECT c FROM (VALUES ($1 :: NUMERIC)) AS t (c)",
-      new Numeric[] {
-      Numeric.create(10),
-      Numeric.create(200030004),
-      Numeric.create(-500),
-      Numeric.NaN
-    }, Tuple::getNumeric);
+      new Numeric[]{
+        Numeric.create(10),
+        Numeric.create(200030004),
+        Numeric.create(-500),
+        Numeric.NaN
+      }, Tuple::getNumeric);
   }
 
   @Test
   public void testNumericArray(TestContext ctx) {
     testGeneric(ctx,
       "SELECT c FROM (VALUES ($1 :: NUMERIC[])) AS t (c)",
-      new Numeric[][] {new Numeric[]{Numeric.create(10), Numeric.create(200030004), null, Numeric.create(-500), Numeric.NaN, null}},
+      new Numeric[][]{new Numeric[]{Numeric.create(10), Numeric.create(200030004), null, Numeric.create(-500), Numeric.NaN, null}},
       Tuple::getNumericArray);
   }
 
@@ -847,7 +909,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
   private void testJson(TestContext ctx, String jsonType) {
     testGeneric(ctx,
       "SELECT c FROM (VALUES ($1 :: " + jsonType + ")) AS t (c)",
-      new Json[] {
+      new Json[]{
         Json.create(10),
         Json.create(true),
         Json.create("hello"),
@@ -869,7 +931,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
   private void testJsonArray(TestContext ctx, String jsonType) {
     testGeneric(ctx,
       "SELECT c FROM (VALUES ($1 :: " + jsonType + "[])) AS t (c)",
-      new Json[][] {
+      new Json[][]{
         new Json[]{Json.create(10),
           Json.create(true),
           Json.create("hello"),
@@ -882,49 +944,49 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
   public void testBooleanArray(TestContext ctx) {
     testGeneric(ctx,
       "SELECT c FROM (VALUES ($1 :: BOOL[])) AS t (c)",
-      new Boolean[][] { new Boolean[]{ true, null, false } }, Tuple::getBooleanArray);
+      new Boolean[][]{new Boolean[]{true, null, false}}, Tuple::getBooleanArray);
   }
 
   @Test
   public void testShortArray(TestContext ctx) {
     testGeneric(ctx,
       "SELECT c FROM (VALUES ($1 :: INT2[])) AS t (c)",
-      new Short[][] { new Short[]{ 0, -10, null, Short.MAX_VALUE } }, Tuple::getShortArray);
+      new Short[][]{new Short[]{0, -10, null, Short.MAX_VALUE}}, Tuple::getShortArray);
   }
 
   @Test
   public void testIntegerArray(TestContext ctx) {
     testGeneric(ctx,
       "SELECT c FROM (VALUES ($1 :: INT4[])) AS t (c)",
-      new Integer[][] { new Integer[]{ 0, -10, null, Integer.MAX_VALUE } }, Tuple::getIntegerArray);
+      new Integer[][]{new Integer[]{0, -10, null, Integer.MAX_VALUE}}, Tuple::getIntegerArray);
   }
 
   @Test
   public void testLongArray(TestContext ctx) {
     testGeneric(ctx,
       "SELECT c FROM (VALUES ($1 :: INT8[])) AS t (c)",
-      new Long[][] { new Long[]{ 0L, -10L, null, Long.MAX_VALUE } }, Tuple::getLongArray);
+      new Long[][]{new Long[]{0L, -10L, null, Long.MAX_VALUE}}, Tuple::getLongArray);
   }
 
   @Test
   public void testFloatArray(TestContext ctx) {
     testGeneric(ctx,
       "SELECT c FROM (VALUES ($1 :: FLOAT4[])) AS t (c)",
-      new Float[][] { new Float[]{ 0f, -10f, Float.MAX_VALUE } }, Tuple::getFloatArray);
+      new Float[][]{new Float[]{0f, -10f, Float.MAX_VALUE}}, Tuple::getFloatArray);
   }
 
   @Test
   public void testPoint(TestContext ctx) {
     testGeneric(ctx,
       "SELECT c FROM (VALUES ($1 :: POINT)) AS t (c)",
-      new Point[] { new Point(0, 0),  new Point(10.45, 20.178)}, Tuple::getPoint);
+      new Point[]{new Point(0, 0), new Point(10.45, 20.178)}, Tuple::getPoint);
   }
 
   @Test
   public void testPointArray(TestContext ctx) {
     testGeneric(ctx,
       "SELECT c FROM (VALUES ($1 :: POINT[])) AS t (c)",
-      new Point[][] {new Point[]{new Point(4, 5), null, new Point(3.4, -4.5), null}},
+      new Point[][]{new Point[]{new Point(4, 5), null, new Point(3.4, -4.5), null}},
       Tuple::getPointArray);
   }
 
@@ -1311,8 +1373,8 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
   public void testEncodeLargeVarchar(TestContext ctx) {
     int len = 2048;
     StringBuilder builder = new StringBuilder();
-    for (int i = 0;i < len;i++) {
-      builder.append((char)('A' + (i % 26)));
+    for (int i = 0; i < len; i++) {
+      builder.append((char) ('A' + (i % 26)));
     }
     String value = builder.toString();
     Async async = ctx.async();
@@ -1411,12 +1473,12 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Short\" = $1  WHERE \"id\" = $2 RETURNING \"Short\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
-              .addShortArray(new Short[]{2,3,4})
+              .addShortArray(new Short[]{2, 3, 4})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Short")
-                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new short[]{2,3,4}))
-                .returns(Tuple::getShortArray, Row::getShortArray, ColumnChecker.toObjectArray(new short[]{2,3,4}))
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new short[]{2, 3, 4}))
+                .returns(Tuple::getShortArray, Row::getShortArray, ColumnChecker.toObjectArray(new short[]{2, 3, 4}))
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -1449,12 +1511,12 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Integer\" = $1  WHERE \"id\" = $2 RETURNING \"Integer\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
-              .addIntegerArray(new Integer[]{3,4,5,6})
+              .addIntegerArray(new Integer[]{3, 4, 5, 6})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Integer")
-                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new int[]{3,4,5,6}))
-                .returns(Tuple::getIntegerArray, Row::getIntegerArray, ColumnChecker.toObjectArray(new int[]{3,4,5,6}))
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new int[]{3, 4, 5, 6}))
+                .returns(Tuple::getIntegerArray, Row::getIntegerArray, ColumnChecker.toObjectArray(new int[]{3, 4, 5, 6}))
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -1487,12 +1549,12 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Long\" = $1  WHERE \"id\" = $2 RETURNING \"Long\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
-              .addLongArray(new Long[]{4L,5L,6L,7L,8L})
+              .addLongArray(new Long[]{4L, 5L, 6L, 7L, 8L})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Long")
-                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new long[]{4,5,6,7,8}))
-                .returns(Tuple::getLongArray, Row::getLongArray, ColumnChecker.toObjectArray(new long[]{4,5,6,7,8}))
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new long[]{4, 5, 6, 7, 8}))
+                .returns(Tuple::getLongArray, Row::getLongArray, ColumnChecker.toObjectArray(new long[]{4, 5, 6, 7, 8}))
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -1525,12 +1587,12 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Float\" = $1  WHERE \"id\" = $2 RETURNING \"Float\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
-              .addFloatArray(new Float[]{5.2f,5.3f,5.4f})
+              .addFloatArray(new Float[]{5.2f, 5.3f, 5.4f})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Float")
-                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new float[]{5.2f,5.3f,5.4f}))
-                .returns(Tuple::getFloatArray, Row::getFloatArray, ColumnChecker.toObjectArray(new float[]{5.2f,5.3f,5.4f}))
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new float[]{5.2f, 5.3f, 5.4f}))
+                .returns(Tuple::getFloatArray, Row::getFloatArray, ColumnChecker.toObjectArray(new float[]{5.2f, 5.3f, 5.4f}))
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -1983,6 +2045,57 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
               .forRow(result.iterator().next());
             async.complete();
           }));
+        }));
+    }));
+  }
+
+
+  static final Interval[] intervals = new Interval[] {
+    Interval.of().years(10).months(3).days(332).hours(20).minutes(20).seconds(20).microseconds(999991),
+    Interval.of().minutes(20).seconds(20).microseconds(123456),
+    Interval.of().years(-2).months(-6)
+  };
+
+  @Test
+  public void testDecodeIntervalArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"Interval\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+            .addInteger(1), ctx.asyncAssertSuccess(result -> {
+            ColumnChecker.checkColumn(0, "Interval")
+              .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(intervals))
+              .returns(Tuple::getIntervalArray, Row::getIntervalArray, ColumnChecker.toObjectArray(intervals))
+              .forRow(result.iterator().next());
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testEncodeIntervalArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Interval\" = $1  WHERE \"id\" = $2 RETURNING \"Interval\"",
+        ctx.asyncAssertSuccess(p -> {
+          Interval[] intervals = new Interval[] {
+            Interval.of().years(10).months(3).days(332).hours(20).minutes(20).seconds(20).microseconds(999991),
+            Interval.of().minutes(20).seconds(20).microseconds(123456),
+            Interval.of().years(-2).months(-6),
+            Interval.of()
+          };
+          p.execute(Tuple.tuple()
+              .addIntervalArray(intervals)
+              .addInteger(2)
+            , ctx.asyncAssertSuccess(result -> {
+              ColumnChecker.checkColumn(0, "Interval")
+                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(intervals))
+                .returns(Tuple::getIntervalArray, Row::getIntervalArray, ColumnChecker.toObjectArray(intervals))
+                .forRow(result.iterator().next());
+              async.complete();
+            }));
         }));
     }));
   }

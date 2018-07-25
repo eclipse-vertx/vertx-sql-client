@@ -117,6 +117,7 @@ public class PgConnectOptions extends NetClientOptions {
     user = other.user;
     password = other.password;
     pipeliningLimit = other.pipeliningLimit;
+    cachePreparedStatements = other.cachePreparedStatements;
   }
 
   public String getHost() {

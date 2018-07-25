@@ -27,7 +27,6 @@ import io.reactiverse.pgclient.impl.codec.decoder.NoticeResponse;
 import io.reactiverse.pgclient.impl.codec.decoder.ParameterDescription;
 import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.reactiverse.pgclient.impl.codec.util.Util;
-import io.vertx.core.impl.NetSocketInternal;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -135,6 +134,8 @@ public final class MessageEncoder {
     writeCString(out, StartupMessage.BUFF_UTF8);
     writeCString(out, StartupMessage.BUFF_DATE_STYLE);
     writeCString(out, StartupMessage.BUFF_ISO);
+    writeCString(out, StartupMessage.BUFF_INTERVAL_STYLE);
+    writeCString(out, StartupMessage.BUFF_INTERVAL_STYLE_TYPE);
     writeCString(out, StartupMessage.BUFF_EXTRA_FLOAT_DIGITS);
     writeCString(out, StartupMessage.BUFF_2);
 

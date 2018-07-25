@@ -294,6 +294,7 @@ Currently the client supports the following Postgres types
 * TIMETZ (`java.time.OffsetTime`)
 * TIMESTAMP (`java.time.LocalDateTime`)
 * TIMESTAMPTZ (`java.time.OffsetDateTime`)
+* INTERVAL (`io.reactiverse.pgclient.data.Interval`)
 * BYTEA (`io.vertx.core.buffer.Buffer`)
 * JSON (`io.reactiverse.pgclient.Json`)
 * JSONB (`io.reactiverse.pgclient.Json`)

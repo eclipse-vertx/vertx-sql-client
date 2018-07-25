@@ -17,6 +17,7 @@
 
 package io.reactiverse.pgclient;
 
+import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.impl.ArrayTuple;
 import io.reactiverse.pgclient.data.Point;
 import io.vertx.codegen.annotations.Fluent;
@@ -459,6 +460,15 @@ public interface Tuple {
   Point[] getPointArray(int pos);
 
   /**
+   * Get an array of {@link Interval} value at {@code pos}.
+   *
+   * @param pos the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Interval[] getIntervalArray(int pos);
+
+  /**
    * Get {@link Numeric} value at {@code pos}.
    *
    * @param pos the position
@@ -475,6 +485,15 @@ public interface Tuple {
    */
   @GenIgnore
   Point getPoint(int pos);
+
+  /**
+   * Get {@link Interval} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Interval getInterval(int pos);
 
   /**
    * Get a buffer value at {@code pos}.
@@ -665,6 +684,15 @@ public interface Tuple {
   Tuple adPoint(Point value);
 
   /**
+   * Add a {@link Point} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addInterval(Interval value);
+
+  /**
    * Add an array of {@code Integer} value at the end of the tuple.
    *
    * @param value the value
@@ -816,6 +844,15 @@ public interface Tuple {
    */
   @GenIgnore
   Tuple addPointArray(Point[] value);
+
+  /**
+   * Add an array of {@link Interval} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addIntervalArray(Interval[] value);
 
   /**
    * @return the tuple size
