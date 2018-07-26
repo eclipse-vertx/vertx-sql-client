@@ -562,7 +562,7 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
-  public Tuple adPoint(Point value) {
+  public Tuple addPoint(Point value) {
     add(value);
     return this;
   }

@@ -20,6 +20,7 @@ package io.reactiverse.pgclient.impl;
 import io.reactiverse.pgclient.Json;
 import io.reactiverse.pgclient.Numeric;
 import io.reactiverse.pgclient.Row;
+import io.reactiverse.pgclient.impl.codec.ColumnDesc;
 import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.reactiverse.pgclient.data.Point;
@@ -44,6 +45,12 @@ public class RowImpl extends ArrayTuple implements Row {
   public RowImpl(RowImpl row) {
     super(row);
     this.desc = row.desc;
+  }
+
+  @Override
+  public String getColumnName(int pos) {
+    final ColumnDesc[] columnDescs = desc.columns();
+    return pos < 0 || columnDescs.length - 1 < pos ? null : columnDescs[pos].getName();
   }
 
   @Override
