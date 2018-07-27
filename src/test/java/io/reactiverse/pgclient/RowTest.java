@@ -69,6 +69,8 @@ public class RowTest extends PgTestBase {
             row::getOffsetTime,
             row::getTemporal,
             row::getUUID,
+            row::getPoint,
+            row::getInterval,
             row::getBooleanArray,
             row::getShortArray,
             row::getIntegerArray,
@@ -82,7 +84,9 @@ public class RowTest extends PgTestBase {
             row::getLocalDateTimeArray,
             row::getOffsetDateTimeArray,
             row::getBufferArray,
-            row::getUUIDArray
+            row::getUUIDArray,
+            row::getPointArray,
+            row::getIntervalArray
           );
           functions.forEach(f -> {
             ctx.assertEquals(null, f.apply("bar"));
@@ -130,7 +134,7 @@ public class RowTest extends PgTestBase {
       conn.query("SELECT 2 \"foo\"",
         ctx.asyncAssertSuccess(result -> {
           Row row = result.iterator().next();
-          ctx.assertEquals(null,row.getColumnName(-1));
+          ctx.assertNull(row.getColumnName(-1));
           async.complete();
         }));
     }));
@@ -143,7 +147,7 @@ public class RowTest extends PgTestBase {
       conn.query("SELECT 2 \"foo\"",
         ctx.asyncAssertSuccess(result -> {
           Row row = result.iterator().next();
-          ctx.assertEquals(null,row.getColumnName(1));
+          ctx.assertNull(row.getColumnName(1));
           async.complete();
         }));
     }));
