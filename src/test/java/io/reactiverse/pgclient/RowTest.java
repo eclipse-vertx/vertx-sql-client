@@ -70,6 +70,7 @@ public class RowTest extends PgTestBase {
             row::getTemporal,
             row::getUUID,
             row::getPoint,
+            row::getInterval,
             row::getBooleanArray,
             row::getShortArray,
             row::getIntegerArray,
@@ -84,7 +85,8 @@ public class RowTest extends PgTestBase {
             row::getOffsetDateTimeArray,
             row::getBufferArray,
             row::getUUIDArray,
-            row::getPointArray
+            row::getPointArray,
+            row::getIntervalArray
           );
           functions.forEach(f -> {
             ctx.assertEquals(null, f.apply("bar"));
