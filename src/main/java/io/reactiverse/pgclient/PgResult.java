@@ -30,10 +30,18 @@ public interface PgResult<T> {
 
   /**
    * Get the number of the affected rows in the operation to this PgResult.
+   * <p/>
+   * The meaning depends on the executed statement:
+   * <ul>
+   *   <li>INSERT: the number of rows inserted</li>
+   *   <li>DELETE: the number of rows deleted</li>
+   *   <li>UPDATE: the number of rows updated</li>
+   *   <li>SELECT: the number of rows retrieved</li>
+   * </ul>
    *
    * @return the count of affected rows.
    */
-  int updatedCount();
+  int rowCount();
 
   /**
    * Get the names of columns in the PgResult.

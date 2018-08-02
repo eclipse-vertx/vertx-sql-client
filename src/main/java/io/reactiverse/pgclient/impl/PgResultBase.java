@@ -34,7 +34,7 @@ public abstract class PgResultBase<T, R extends PgResultBase<T, R>> implements P
   }
 
   @Override
-  public int updatedCount() {
+  public int rowCount() {
     return updated;
   }
 

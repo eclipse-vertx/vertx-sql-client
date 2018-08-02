@@ -57,7 +57,7 @@ public class PreparedBatchTest extends PgTestBase {
       batch.add(Tuple.of(79993, "batch three"));
       batch.add(Tuple.of(79994, "batch four"));
       conn.preparedBatch("INSERT INTO Fortune (id, message) VALUES ($1, $2)", batch, ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.updatedCount());
+        ctx.assertEquals(1, result.rowCount());
         conn.preparedQuery("SELECT * FROM Fortune WHERE id=$1", Tuple.of(79991), ctx.asyncAssertSuccess(ar1 -> {
           ctx.assertEquals(1, ar1.size());
           Row one = ar1.iterator().next();
@@ -97,7 +97,7 @@ public class PreparedBatchTest extends PgTestBase {
       batch.add(Tuple.of(78883, "batch three"));
       batch.add(Tuple.of(78884, "batch four"));
       conn.preparedBatch("INSERT INTO Fortune (id, message) VALUES ($1, upper($2))", batch, ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.updatedCount());
+        ctx.assertEquals(1, result.rowCount());
         conn.preparedQuery("SELECT * FROM Fortune WHERE id=$1", Tuple.of(78881), ctx.asyncAssertSuccess(ar1 -> {
           ctx.assertEquals(1, ar1.size());
           Row one = ar1.iterator().next();

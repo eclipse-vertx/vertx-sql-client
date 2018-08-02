@@ -151,7 +151,7 @@ public abstract class PgClientTestBase<C extends PgClient> extends PgTestBase {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       conn.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.updatedCount());
+        ctx.assertEquals(1, result.rowCount());
         async.complete();
       }));
     }));
@@ -162,7 +162,7 @@ public abstract class PgClientTestBase<C extends PgClient> extends PgTestBase {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       conn.query("INSERT INTO Fortune (id, message) VALUES (13, 'Whatever')", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.updatedCount());
+        ctx.assertEquals(1, result.rowCount());
         async.complete();
       }));
     }));
@@ -198,7 +198,7 @@ public abstract class PgClientTestBase<C extends PgClient> extends PgTestBase {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       conn.query("DELETE FROM Fortune where id = 6", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.updatedCount());
+        ctx.assertEquals(1, result.rowCount());
         async.complete();
       }));
     }));
@@ -257,7 +257,7 @@ public abstract class PgClientTestBase<C extends PgClient> extends PgTestBase {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("UPDATE Fortune SET message = 'PgClient Rocks!' WHERE id = 2", ctx.asyncAssertSuccess(res1 -> {
-        ctx.assertEquals(1, res1.updatedCount());
+        ctx.assertEquals(1, res1.rowCount());
         conn.preparedQuery("SELECT message FROM Fortune WHERE id = 2", ctx.asyncAssertSuccess(res2 -> {
           ctx.assertEquals("PgClient Rocks!", res2.iterator().next().getValue(0));
           async.complete();
@@ -271,7 +271,7 @@ public abstract class PgClientTestBase<C extends PgClient> extends PgTestBase {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("UPDATE Fortune SET message = $1 WHERE id = $2", Tuple.of("PgClient Rocks Again!!", 2), ctx.asyncAssertSuccess(res1 -> {
-        ctx.assertEquals(1, res1.updatedCount());
+        ctx.assertEquals(1, res1.rowCount());
         conn.preparedQuery("SELECT message FROM Fortune WHERE id = $1", Tuple.of(2), ctx.asyncAssertSuccess(res2 -> {
           ctx.assertEquals("PgClient Rocks Again!!", res2.iterator().next().getValue(0));
           async.complete();

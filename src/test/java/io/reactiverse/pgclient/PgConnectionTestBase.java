@@ -320,8 +320,8 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<PgConnection
       PgTransaction tx = conn.begin();
       AtomicInteger u1 = new AtomicInteger();
       AtomicInteger u2 = new AtomicInteger();
-      conn.query("INSERT INTO TxTest (id) VALUES (1)", ctx.asyncAssertSuccess(res -> u1.addAndGet(res.updatedCount())));
-      conn.query("INSERT INTO TxTest (id) VALUES (2)", ctx.asyncAssertSuccess(res -> u2.addAndGet(res.updatedCount())));
+      conn.query("INSERT INTO TxTest (id) VALUES (1)", ctx.asyncAssertSuccess(res -> u1.addAndGet(res.rowCount())));
+      conn.query("INSERT INTO TxTest (id) VALUES (2)", ctx.asyncAssertSuccess(res -> u2.addAndGet(res.rowCount())));
       tx.commit(ctx.asyncAssertSuccess(v -> {
         ctx.assertEquals(1, u1.get());
         ctx.assertEquals(1, u2.get());
@@ -340,8 +340,8 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<PgConnection
       PgTransaction tx = conn.begin();
       AtomicInteger u1 = new AtomicInteger();
       AtomicInteger u2 = new AtomicInteger();
-      conn.query("INSERT INTO TxTest (id) VALUES (3)", ctx.asyncAssertSuccess(res -> u1.addAndGet(res.updatedCount())));
-      conn.query("INSERT INTO TxTest (id) VALUES (4)", ctx.asyncAssertSuccess(res -> u2.addAndGet(res.updatedCount())));
+      conn.query("INSERT INTO TxTest (id) VALUES (3)", ctx.asyncAssertSuccess(res -> u1.addAndGet(res.rowCount())));
+      conn.query("INSERT INTO TxTest (id) VALUES (4)", ctx.asyncAssertSuccess(res -> u2.addAndGet(res.rowCount())));
       tx.rollback(ctx.asyncAssertSuccess(v -> {
         ctx.assertEquals(1, u1.get());
         ctx.assertEquals(1, u2.get());

@@ -37,7 +37,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
           p.execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Boolean")
               .returns(Tuple::getValue, Row::getValue, true)
@@ -60,7 +60,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.updatedCount());
+              ctx.assertEquals(1, result.rowCount());
               Row row = result.iterator().next();
               ColumnChecker.checkColumn(0, "Boolean")
                 .returns(Tuple::getValue, Row::getValue, false)
@@ -81,7 +81,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
           p.execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "currentMood")
               .returns(Tuple::getValue, Row::getValue, "ok")
@@ -104,7 +104,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.updatedCount());
+              ctx.assertEquals(1, result.rowCount());
               Row row = result.iterator().next();
               ColumnChecker.checkColumn(0, "currentMood")
                 .returns(Tuple::getValue, Row::getValue, "happy")
@@ -124,7 +124,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.of(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Short")
               .returns(Tuple::getValue, Row::getValue, (short) 32767)
@@ -150,7 +150,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.of(Short.MIN_VALUE, 2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Short")
               .returns(Tuple::getValue, Row::getValue, (short) -32768)
@@ -176,7 +176,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Integer")
               .returns(Tuple::getValue, Row::getValue, Integer.MAX_VALUE)
@@ -205,7 +205,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.updatedCount());
+              ctx.assertEquals(1, result.rowCount());
               Row row = result.iterator().next();
               ColumnChecker.checkColumn(0, "Integer")
                 .returns(Tuple::getValue, Row::getValue, Integer.MIN_VALUE)
@@ -231,7 +231,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Long")
               .returns(Tuple::getValue, Row::getValue, Long.MAX_VALUE)
@@ -260,7 +260,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.updatedCount());
+              ctx.assertEquals(1, result.rowCount());
               Row row = result.iterator().next();
               ColumnChecker.checkColumn(0, "Long")
                 .returns(Tuple::getValue, Row::getValue, Long.MIN_VALUE)
@@ -286,7 +286,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Float")
               .returns(Tuple::getValue, Row::getValue, Float.MAX_VALUE)
@@ -315,7 +315,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.updatedCount());
+              ctx.assertEquals(1, result.rowCount());
               Row row = result.iterator().next();
               ColumnChecker.checkColumn(0, "Float")
                 .returns(Tuple::getValue, Row::getValue, Float.MIN_VALUE)
@@ -341,7 +341,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Double")
               .returns(Tuple::getValue, Row::getValue, Double.MAX_VALUE)
@@ -370,7 +370,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.updatedCount());
+              ctx.assertEquals(1, result.rowCount());
               Row row = result.iterator().next();
               ColumnChecker.checkColumn(0, "Double")
                 .returns(Tuple::getValue, Row::getValue, Double.MIN_VALUE)
@@ -396,7 +396,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             LocalDate ld = LocalDate.parse("1981-05-30");
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Date")
@@ -421,7 +421,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
             .addLocalDate(ld)
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Date")
               .returns(Tuple::getValue, Row::getValue, ld)
@@ -442,7 +442,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple().addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             LocalDate ld = LocalDate.parse("2017-05-30");
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Date")
@@ -468,7 +468,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
               .addInteger(4)
             , ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.updatedCount());
+              ctx.assertEquals(1, result.rowCount());
               Row row = result.iterator().next();
               ColumnChecker.checkColumn(0, "Date")
                 .returns(Tuple::getValue, Row::getValue, ld)
@@ -490,7 +490,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
           p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             LocalTime lt = LocalTime.parse("17:55:04.905120");
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Time")
               .returns(Tuple::getValue, Row::getValue, lt)
@@ -516,7 +516,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.updatedCount());
+              ctx.assertEquals(1, result.rowCount());
               Row row = result.iterator().next();
               ColumnChecker.checkColumn(0, "Time")
                 .returns(Tuple::getValue, Row::getValue, lt)
@@ -537,7 +537,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             OffsetTime ot = OffsetTime.parse("17:55:04.905120+03:07");
             ColumnChecker.checkColumn(0, "TimeTz")
@@ -562,7 +562,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
             .addOffsetTime(ot)
             .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "TimeTz")
               .returns(Tuple::getValue, Row::getValue, ot)
@@ -583,7 +583,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple().addInteger(3), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             LocalDateTime ldt = LocalDateTime.parse("1800-01-01T23:57:53.237666");
             ColumnChecker.checkColumn(0, "Timestamp")
@@ -608,7 +608,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
             .addLocalDateTime(ldt)
             .addInteger(4), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Timestamp")
               .returns(Tuple::getValue, Row::getValue, ldt)
@@ -631,7 +631,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Timestamp")
               .returns(Tuple::getValue, Row::getValue, ldt)
@@ -678,7 +678,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
             p.execute(Tuple.tuple().addInteger(3), ctx.asyncAssertSuccess(result -> {
               OffsetDateTime odt = OffsetDateTime.parse("1800-01-02T02:59:59.237666Z");
               ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.updatedCount());
+              ctx.assertEquals(1, result.rowCount());
               Row row = result.iterator().next();
               ColumnChecker.checkColumn(0, "TimestampTz")
                 .returns(Tuple::getValue, Row::getValue, odt)
@@ -704,7 +704,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
                 .addInteger(3)
               , ctx.asyncAssertSuccess(result -> {
                 OffsetDateTime odt = OffsetDateTime.parse("1800-02-02T02:59:59.237666Z");
-                ctx.assertEquals(1, result.updatedCount());
+                ctx.assertEquals(1, result.rowCount());
                 ctx.assertEquals(1, result.size());
                 Row row = result.iterator().next();
                 ColumnChecker.checkColumn(0, "TimestampTz")
@@ -728,7 +728,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
           ctx.asyncAssertSuccess(p -> {
             p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.updatedCount());
+              ctx.assertEquals(1, result.rowCount());
               OffsetDateTime odt = OffsetDateTime.parse("2017-05-15T02:59:59.237666Z");
               Row row = result.iterator().next();
               ColumnChecker.checkColumn(0, "TimestampTz")
@@ -755,7 +755,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
                 .addInteger(1)
               , ctx.asyncAssertSuccess(result -> {
                 ctx.assertEquals(1, result.size());
-                ctx.assertEquals(1, result.updatedCount());
+                ctx.assertEquals(1, result.rowCount());
                 OffsetDateTime odt = OffsetDateTime.parse("2017-06-15T02:59:59.237666Z");
                 Row row = result.iterator().next();
                 ColumnChecker.checkColumn(0, "TimestampTz")
@@ -780,7 +780,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "uuid")
               .returns(Tuple::getValue, Row::getValue, uuid)
@@ -803,7 +803,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
             .addUUID(uuid)
             .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "uuid")
               .returns(Tuple::getValue, Row::getValue, uuid)
@@ -832,7 +832,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
             .microseconds(999999);
           p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Interval")
               .returns(Tuple::getValue, Row::getValue, expected)
@@ -863,7 +863,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
             .addInterval(expected)
             .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Interval")
               .returns(Tuple::getValue, Row::getValue, expected)
@@ -1039,7 +1039,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             JsonObject object = new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []}");
             JsonArray array = new JsonArray("[1,true,null,9.5,\"Hi\"]");
@@ -1112,7 +1112,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
             .addJson(Json.create(null))
             .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "JsonObject")
               .returns(Tuple::getValue, Row::getValue, Json.create(object))
@@ -1156,7 +1156,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             String name = "What is my name ?";
             ColumnChecker.checkColumn(0, "Name")
@@ -1179,7 +1179,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
             .addString("vert.x")
             .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             String name = "VERT.X";
             ColumnChecker.checkColumn(0, "Name")
@@ -1201,7 +1201,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             String singleChar = "A";
             ColumnChecker.checkColumn(0, "SingleChar")
@@ -1224,7 +1224,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
             .addString("b")
             .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             String singleChar = "B";
             ColumnChecker.checkColumn(0, "SingleChar")
@@ -1245,7 +1245,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             String name = "YES";
             ColumnChecker.checkColumn(0, "FixedChar")
@@ -1268,7 +1268,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
             .addString("no")
             .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             String name = "NO ";
             ColumnChecker.checkColumn(0, "FixedChar")
@@ -1289,7 +1289,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             String name = "Hello World";
             ColumnChecker.checkColumn(0, "Text")
@@ -1312,7 +1312,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
             .addString("Hello World")
             .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             String name = "HELLO WORLD";
             ColumnChecker.checkColumn(0, "Text")
@@ -1333,7 +1333,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             String name = "Great!";
             ColumnChecker.checkColumn(0, "VarCharacter")
@@ -1356,7 +1356,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
             .addString("Great!")
             .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.updatedCount());
+            ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             String name = "GREAT!";
             ColumnChecker.checkColumn(0, "VarCharacter")

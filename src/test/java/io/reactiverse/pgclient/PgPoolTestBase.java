@@ -115,7 +115,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
       pool.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9", ar -> {
         if (ar.succeeded()) {
           PgResult result = ar.result();
-          ctx.assertEquals(1, result.updatedCount());
+          ctx.assertEquals(1, result.rowCount());
         } else {
           ctx.assertEquals("closed", ar.cause().getMessage());
         }
@@ -133,7 +133,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
       pool.preparedQuery("UPDATE Fortune SET message = 'Whatever' WHERE id = $1", Tuple.of(9), ar -> {
         if (ar.succeeded()) {
           PgResult result = ar.result();
-          ctx.assertEquals(1, result.updatedCount());
+          ctx.assertEquals(1, result.rowCount());
         } else {
           ctx.assertEquals("closed", ar.cause().getMessage());
         }

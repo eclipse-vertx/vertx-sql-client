@@ -38,7 +38,7 @@ public class PgTransactionTest extends PgClientTestBase<PgTransaction> {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       conn.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.updatedCount());
+        ctx.assertEquals(1, result.rowCount());
         conn.commit(ctx.asyncAssertSuccess(v1 -> {
           // Try acquire a connection
           pool.getConnection(ctx.asyncAssertSuccess(v2 -> {
@@ -54,7 +54,7 @@ public class PgTransactionTest extends PgClientTestBase<PgTransaction> {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       conn.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.updatedCount());
+        ctx.assertEquals(1, result.rowCount());
         conn.rollback(ctx.asyncAssertSuccess(v1 -> {
           // Try acquire a connection
           pool.getConnection(ctx.asyncAssertSuccess(v2 -> {

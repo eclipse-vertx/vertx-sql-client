@@ -261,7 +261,7 @@ public class Examples {
     client.preparedQuery("INSERT INTO users (first_name, last_name) VALUES ($1, $2)", Tuple.of("Julien", "Viet"),  ar -> {
       if (ar.succeeded()) {
         PgRowSet rows = ar.result();
-        System.out.println(rows.updatedCount());
+        System.out.println(rows.rowCount());
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
       }
