@@ -287,7 +287,7 @@ Currently the client supports the following Postgres types
 * TEXT (`java.lang.String`)
 * ENUM (`java.lang.String`)
 * NAME (`java.lang.String`)
-* NUMERIC (`io.reactiverse.pgclient.Numeric`)
+* NUMERIC (`io.reactiverse.pgclient.data.Numeric`)
 * UUID (`java.util.UUID`)
 * DATE (`java.time.LocalDate`)
 * TIME (`java.time.LocalTime`)
@@ -296,15 +296,15 @@ Currently the client supports the following Postgres types
 * TIMESTAMPTZ (`java.time.OffsetDateTime`)
 * INTERVAL (`io.reactiverse.pgclient.data.Interval`)
 * BYTEA (`io.vertx.core.buffer.Buffer`)
-* JSON (`io.reactiverse.pgclient.Json`)
-* JSONB (`io.reactiverse.pgclient.Json`)
+* JSON (`io.reactiverse.pgclient.data.Json`)
+* JSONB (`io.reactiverse.pgclient.data.Json`)
 * POINT (`io.reactiverse.pgclient.data.Point`)
 
 Arrays of these types are supported.
 
 ### Handling JSON
 
-The {@link io.reactiverse.pgclient.Json} Java type is used to represent the Postgres `JSON` and `JSONB` type.
+The {@link io.reactiverse.pgclient.data.Json} Java type is used to represent the Postgres `JSON` and `JSONB` type.
 
 The main reason of this type is handling `null` JSON values.
 
@@ -314,7 +314,7 @@ The main reason of this type is handling `null` JSON values.
 
 ### Handling NUMERIC
 
-The {@link io.reactiverse.pgclient.Numeric} Java type is used to represent the Postgres `NUMERIC` type.
+The {@link io.reactiverse.pgclient.data.Numeric} Java type is used to represent the Postgres `NUMERIC` type.
 
 ```$lang
 {@link examples.Examples#numericExample}

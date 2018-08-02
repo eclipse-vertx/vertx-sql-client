@@ -16,7 +16,7 @@
  */
 package io.reactiverse.pgclient;
 
-import io.reactiverse.pgclient.impl.codec.util.Util;
+import io.reactiverse.pgclient.data.Numeric;
 import org.junit.Test;
 
 import java.math.BigDecimal;

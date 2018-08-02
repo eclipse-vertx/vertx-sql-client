@@ -14,8 +14,9 @@
  * limitations under the License.
  *
  */
-package io.reactiverse.pgclient;
+package io.reactiverse.pgclient.data;
 
+import io.reactiverse.pgclient.impl.data.JsonImpl;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;

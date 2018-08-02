@@ -18,6 +18,8 @@
 package examples;
 
 import io.reactiverse.pgclient.*;
+import io.reactiverse.pgclient.data.Json;
+import io.reactiverse.pgclient.data.Numeric;
 import io.reactiverse.pgclient.pubsub.PgSubscriber;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;

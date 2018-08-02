@@ -18,8 +18,8 @@ package io.reactiverse.pgclient.impl.codec;
 
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
-import io.reactiverse.pgclient.Json;
-import io.reactiverse.pgclient.Numeric;
+import io.reactiverse.pgclient.data.Json;
+import io.reactiverse.pgclient.data.Numeric;
 import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.data.Point;
 import io.vertx.core.buffer.Buffer;

@@ -1,5 +1,27 @@
 = Cheatsheets
 
+[[Interval]]
+== Interval
+
+++++
+ Postgres Interval is date and time based
+ such as 120 years 3 months 332 days 20 hours 20 minutes 20.999999 seconds
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[days]]`days`|`Number (int)`|-
+|[[hours]]`hours`|`Number (int)`|-
+|[[microseconds]]`microseconds`|`Number (int)`|-
+|[[minutes]]`minutes`|`Number (int)`|-
+|[[months]]`months`|`Number (int)`|-
+|[[seconds]]`seconds`|`Number (int)`|-
+|[[years]]`years`|`Number (int)`|-
+|===
+
 [[PgConnectOptions]]
 == PgConnectOptions
 

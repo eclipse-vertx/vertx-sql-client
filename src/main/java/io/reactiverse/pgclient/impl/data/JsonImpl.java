@@ -14,17 +14,19 @@
  * limitations under the License.
  *
  */
-package io.reactiverse.pgclient;
+package io.reactiverse.pgclient.impl.data;
+
+import io.reactiverse.pgclient.data.Json;
 
 import java.util.Objects;
 
-class JsonImpl implements Json {
+public class JsonImpl implements Json {
 
   public static final JsonImpl NULL = new JsonImpl(null);
 
   private final Object value;
 
-  JsonImpl(Object value) {
+  public JsonImpl(Object value) {
     this.value = value;
   }
 

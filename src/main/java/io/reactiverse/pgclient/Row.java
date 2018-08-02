@@ -17,6 +17,8 @@
 package io.reactiverse.pgclient;
 
 import io.reactiverse.pgclient.data.Interval;
+import io.reactiverse.pgclient.data.Json;
+import io.reactiverse.pgclient.data.Numeric;
 import io.reactiverse.pgclient.data.Point;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;

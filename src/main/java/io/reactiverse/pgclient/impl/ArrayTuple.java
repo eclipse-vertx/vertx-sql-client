@@ -17,8 +17,8 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.Json;
-import io.reactiverse.pgclient.Numeric;
+import io.reactiverse.pgclient.data.Json;
+import io.reactiverse.pgclient.data.Numeric;
 import io.reactiverse.pgclient.Tuple;
 import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.data.Point;

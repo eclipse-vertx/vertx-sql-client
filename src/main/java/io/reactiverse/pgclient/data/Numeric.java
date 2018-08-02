@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package io.reactiverse.pgclient;
+package io.reactiverse.pgclient.data;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
