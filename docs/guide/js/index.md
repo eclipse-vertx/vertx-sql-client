@@ -31,7 +31,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 <dependency>
  <groupId>io.reactiverse</groupId>
  <artifactId>reactive-pg-client</artifactId>
- <version>0.9.0</version>
+ <version>0.10.0</version>
 </dependency>
 ```
 
@@ -39,7 +39,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 
 ```groovy
 dependencies {
- compile 'io.reactiverse:reactive-pg-client:0.9.0'
+ compile 'io.reactiverse:reactive-pg-client:0.10.0'
 }
 ```
 
@@ -327,7 +327,7 @@ var Tuple = require("reactive-pg-client-js/tuple");
 client.preparedQuery("INSERT INTO users (first_name, last_name) VALUES ($1, $2)", Tuple.of("Julien", "Viet"), function (ar, ar_err) {
   if (ar_err == null) {
     var rows = ar;
-    console.log(rows.updatedCount());
+    console.log(rows.rowCount());
   } else {
     console.log("Failure: " + ar_err.getMessage());
   }
@@ -542,6 +542,8 @@ connection.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", function (ar1
 
 ## Using transactions
 
+### Transactions with connections
+
 You can execute transaction using SQL `BEGIN`/`COMMIT`/`ROLLBACK`, if you do so you must use
 a [`PgConnection`](../../jsdoc/module-reactive-pg-client-js_pg_connection-PgConnection.html) and manage it yourself.
 
@@ -569,6 +571,12 @@ pool.getConnection(function (res, res_err) {
 
     conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", function (ar, ar_err) {
       // Works fine of course
+      if (ar_err == null) {
+
+      } else {
+        tx.rollback();
+        conn.close();
+      }
     });
     conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", function (ar, ar_err) {
       // Fails and triggers transaction aborts
@@ -577,10 +585,23 @@ pool.getConnection(function (res, res_err) {
     // Attempt to commit the transaction
     tx.commit(function (ar, ar_err) {
       // But transaction abortion fails it
+
+      // Return the connection to the pool
+      conn.close();
     });
   }
 });
 
+```
+
+### Simplified transaction API
+
+When you use a pool, you can start a transaction directly on the pool.
+
+It borrows a connection from the pool, begins the transaction and releases the connection to the pool when the transaction ends.
+
+```js
+Code not translatable
 ```
 
 ## Postgres type mapping
@@ -596,17 +617,19 @@ Currently the client supports the following Postgres types
 * CHAR (`java.lang.String`)
 * VARCHAR (`java.lang.String`)
 * TEXT (`java.lang.String`)
+* ENUM (`java.lang.String`)
 * NAME (`java.lang.String`)
-* NUMERIC (`io.reactiverse.pgclient.Numeric`)
+* NUMERIC (`io.reactiverse.pgclient.data.Numeric`)
 * UUID (`java.util.UUID`)
 * DATE (`java.time.LocalDate`)
 * TIME (`java.time.LocalTime`)
 * TIMETZ (`java.time.OffsetTime`)
 * TIMESTAMP (`java.time.LocalDateTime`)
 * TIMESTAMPTZ (`java.time.OffsetDateTime`)
+* INTERVAL (`io.reactiverse.pgclient.data.Interval`)
 * BYTEA (`io.vertx.core.buffer.Buffer`)
-* JSON (`io.reactiverse.pgclient.Json`)
-* JSONB (`io.reactiverse.pgclient.Json`)
+* JSON (`io.reactiverse.pgclient.data.Json`)
+* JSONB (`io.reactiverse.pgclient.data.Json`)
 * POINT (`io.reactiverse.pgclient.data.Point`)
 
 Arrays of these types are supported.
@@ -677,6 +700,42 @@ create easily create a string directly from the row set:
 Code not translatable
 ```
 
+## RxJava support
+
+The rxified API supports RxJava 1 and RxJava 2, the following examples use RxJava 2.
+
+Most asynchronous constructs are available as methods prefixed by `rx`:
+
+```js
+Code not translatable
+```
+
+
+### Streaming
+
+RxJava 2 supports `Observable` and `Flowable` types, these are exposed using
+the `PgStream` that you can get
+from a `PgPreparedQuery`:
+
+```js
+Code not translatable
+```
+
+The same example using `Flowable`:
+
+```js
+Code not translatable
+```
+
+### Transaction
+
+The simplified transaction API allows to easily write transactional
+asynchronous flows:
+
+```js
+Code not translatable
+```
+
 ## Pub/sub
 
 Postgres supports pub/sub communication channels.
@@ -731,7 +790,7 @@ You can provide a reconnect policy as a function that takes the number of `retri
 value:
 
 * when `amountOfTime < 0`: the subscriber is closed and there is no retry
-* when `amountOfTime ## 0`: the subscriber retries to connect immediately
+* when `amountOfTime = 0`: the subscriber retries to connect immediately
 * when `amountOfTime > 0`: the subscriber retries after `amountOfTime` milliseconds
 
 ```js

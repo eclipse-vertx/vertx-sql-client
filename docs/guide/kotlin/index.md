@@ -31,7 +31,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 <dependency>
  <groupId>io.reactiverse</groupId>
  <artifactId>reactive-pg-client</artifactId>
- <version>0.9.0</version>
+ <version>0.10.0</version>
 </dependency>
 ```
 
@@ -39,7 +39,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 
 ```groovy
 dependencies {
- compile 'io.reactiverse:reactive-pg-client:0.9.0'
+ compile 'io.reactiverse:reactive-pg-client:0.10.0'
 }
 ```
 
@@ -313,7 +313,7 @@ or _UPDATE_/_INSERT_ queries:
 client.preparedQuery("INSERT INTO users (first_name, last_name) VALUES (\$$1, \$$2)", Tuple.of("Julien", "Viet"), { ar ->
   if (ar.succeeded()) {
     var rows = ar.result()
-    println(rows.updatedCount())
+    println(rows.rowCount())
   } else {
     println("Failure: ${ar.cause().getMessage()}")
   }
@@ -521,6 +521,8 @@ connection.prepare("INSERT INTO USERS (id, name) VALUES (\$$1, \$$2)", { ar1 ->
 
 ## Using transactions
 
+### Transactions with connections
+
 You can execute transaction using SQL `BEGIN`/`COMMIT`/`ROLLBACK`, if you do so you must use
 a [`PgConnection`](../../apidocs/io/reactiverse/pgclient/PgConnection.html) and manage it yourself.
 
@@ -548,6 +550,12 @@ pool.getConnection({ res ->
 
     conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", { ar ->
       // Works fine of course
+      if (ar.succeeded()) {
+
+      } else {
+        tx.rollback()
+        conn.close()
+      }
     })
     conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", { ar ->
       // Fails and triggers transaction aborts
@@ -556,10 +564,23 @@ pool.getConnection({ res ->
     // Attempt to commit the transaction
     tx.commit({ ar ->
       // But transaction abortion fails it
+
+      // Return the connection to the pool
+      conn.close()
     })
   }
 })
 
+```
+
+### Simplified transaction API
+
+When you use a pool, you can start a transaction directly on the pool.
+
+It borrows a connection from the pool, begins the transaction and releases the connection to the pool when the transaction ends.
+
+```kotlin
+Code not translatable
 ```
 
 ## Postgres type mapping
@@ -575,24 +596,26 @@ Currently the client supports the following Postgres types
 * CHAR (`java.lang.String`)
 * VARCHAR (`java.lang.String`)
 * TEXT (`java.lang.String`)
+* ENUM (`java.lang.String`)
 * NAME (`java.lang.String`)
-* NUMERIC (`io.reactiverse.pgclient.Numeric`)
+* NUMERIC (`io.reactiverse.pgclient.data.Numeric`)
 * UUID (`java.util.UUID`)
 * DATE (`java.time.LocalDate`)
 * TIME (`java.time.LocalTime`)
 * TIMETZ (`java.time.OffsetTime`)
 * TIMESTAMP (`java.time.LocalDateTime`)
 * TIMESTAMPTZ (`java.time.OffsetDateTime`)
+* INTERVAL (`io.reactiverse.pgclient.data.Interval`)
 * BYTEA (`io.vertx.core.buffer.Buffer`)
-* JSON (`io.reactiverse.pgclient.Json`)
-* JSONB (`io.reactiverse.pgclient.Json`)
+* JSON (`io.reactiverse.pgclient.data.Json`)
+* JSONB (`io.reactiverse.pgclient.data.Json`)
 * POINT (`io.reactiverse.pgclient.data.Point`)
 
 Arrays of these types are supported.
 
 ### Handling JSON
 
-The [`Json`](../../apidocs/io/reactiverse/pgclient/Json.html) Java type is used to represent the Postgres `JSON` and `JSONB` type.
+The [`Json`](../../apidocs/io/reactiverse/pgclient/data/Json.html) Java type is used to represent the Postgres `JSON` and `JSONB` type.
 
 The main reason of this type is handling `null` JSON values.
 
@@ -616,7 +639,7 @@ value = tuple.getJson(3).value()
 
 ### Handling NUMERIC
 
-The [`Numeric`](../../apidocs/io/reactiverse/pgclient/Numeric.html) Java type is used to represent the Postgres `NUMERIC` type.
+The [`Numeric`](../../apidocs/io/reactiverse/pgclient/data/Numeric.html) Java type is used to represent the Postgres `NUMERIC` type.
 
 ```kotlin
 var numeric = row.getNumeric("value")
@@ -649,6 +672,42 @@ there is a single row used for processing the entire set.
 
 The Java `Collectors` provides many interesting predefined collectors, for example you can
 create easily create a string directly from the row set:
+
+```kotlin
+Code not translatable
+```
+
+## RxJava support
+
+The rxified API supports RxJava 1 and RxJava 2, the following examples use RxJava 2.
+
+Most asynchronous constructs are available as methods prefixed by `rx`:
+
+```kotlin
+Code not translatable
+```
+
+
+### Streaming
+
+RxJava 2 supports `Observable` and `Flowable` types, these are exposed using
+the [`PgStream`](../../apidocs/io/reactiverse/reactivex/pgclient/PgStream.html) that you can get
+from a [`PgPreparedQuery`](../../apidocs/io/reactiverse/reactivex/pgclient/PgPreparedQuery.html):
+
+```kotlin
+Code not translatable
+```
+
+The same example using `Flowable`:
+
+```kotlin
+Code not translatable
+```
+
+### Transaction
+
+The simplified transaction API allows to easily write transactional
+asynchronous flows:
 
 ```kotlin
 Code not translatable
@@ -706,7 +765,7 @@ You can provide a reconnect policy as a function that takes the number of `retri
 value:
 
 * when `amountOfTime < 0`: the subscriber is closed and there is no retry
-* when `amountOfTime ## 0`: the subscriber retries to connect immediately
+* when `amountOfTime = 0`: the subscriber retries to connect immediately
 * when `amountOfTime > 0`: the subscriber retries after `amountOfTime` milliseconds
 
 ```kotlin

@@ -26,6 +26,8 @@ image:https://travis-ci.org/reactiverse/reactive-pg-client.svg?branch=master["Bu
 
 == Usage
 
+Latest release is https://github.com/reactiverse/reactive-pg-client/blob/master/RELEASES.adoc[0.10.0].
+
 To use the client, add the following dependency to the _dependencies_ section of your build descriptor:
 
 * Maven (in your `pom.xml`):
@@ -35,7 +37,7 @@ To use the client, add the following dependency to the _dependencies_ section of
 <dependency>
   <groupId>io.reactiverse</groupId>
   <artifactId>reactive-pg-client</artifactId>
-  <version>0.9.0</version>
+  <version>0.10.0</version>
 </dependency>
 ----
 
@@ -44,7 +46,7 @@ To use the client, add the following dependency to the _dependencies_ section of
 [source,groovy]
 ----
 dependencies {
-  compile 'io.reactiverse:reactive-pg-client:0.8.0'
+  compile 'io.reactiverse:reactive-pg-client:0.10.0'
 }
 ----
 
