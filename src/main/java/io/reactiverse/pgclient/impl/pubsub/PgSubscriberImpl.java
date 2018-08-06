@@ -171,7 +171,7 @@ public class PgSubscriberImpl implements PgSubscriber {
           .stream()
           .map(channel -> {
             channel.subscribed = true;
-            return channel.name;
+            return channel.quotedName;
           })
           .collect(Collectors.joining(";LISTEN ", "LISTEN ", ""));
         conn.query(sql, ar2 -> {
@@ -192,11 +192,13 @@ public class PgSubscriberImpl implements PgSubscriber {
   private class ChannelList {
 
     final String name;
+	final String quotedName;
     final ArrayList<ChannelImpl> subs = new ArrayList<>();
     boolean subscribed;
 
     ChannelList(String name) {
       this.name = name;
+	  quotedName = "\"" + name + "\"";
     }
 
     void add(ChannelImpl sub) {
@@ -204,7 +206,7 @@ public class PgSubscriberImpl implements PgSubscriber {
       if (!subscribed) {
         if (conn != null) {
           subscribed = true;
-          String sql = "LISTEN " + name;
+          String sql = "LISTEN " + quotedName;
           conn.query(sql, ar -> {
             if (ar.succeeded()) {
               Handler<Void> handler = sub.subscribeHandler;
@@ -224,7 +226,7 @@ public class PgSubscriberImpl implements PgSubscriber {
       if (subs.isEmpty()) {
         channels.remove(name, this);
         if (conn != null) {
-          conn.query("UNLISTEN " + name, ar -> {
+          conn.query("UNLISTEN " + quotedName, ar -> {
             if (ar.failed()) {
               log.error("Cannot UNLISTEN channel " + name, ar.cause());
             }
