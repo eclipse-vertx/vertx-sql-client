@@ -198,7 +198,7 @@ public class PgSubscriberImpl implements PgSubscriber {
 
     ChannelList(String name) {
       this.name = name;
-	  quotedName = "\"" + name + "\"";
+	  quotedName = "\"" + name.replace("\"", "\"\"") + "\"";
     }
 
     void add(ChannelImpl sub) {
