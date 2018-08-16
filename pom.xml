@@ -63,6 +63,8 @@
     <jmh.version>1.19</jmh.version>
     <docs.dir>${project.basedir}/src/main/docs</docs.dir>
     <generated.dir>${project.basedir}/src/main/generated</generated.dir>
+    <!-- Set to a value for testing with a specific database -->
+    <connection.uri></connection.uri>
   </properties>
 
   <dependencyManagement>
@@ -234,6 +236,7 @@
           <configuration>
             <systemPropertyVariables>
               <target.dir>${project.build.directory}</target.dir>
+              <connection.uri>${connection.uri}</connection.uri>
             </systemPropertyVariables>
             <excludes>
               <exclude>io/reactiverse/pgclient/it/**</exclude>

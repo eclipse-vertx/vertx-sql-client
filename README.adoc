@@ -256,6 +256,42 @@ Apache License - Version 2.0
 
 == Developers
 
+=== Testing
+
+Out of the box, the test suite runs an embedded Postgres by default.
+
+=== Testing with an external database
+
+You can run tests with an external database:
+
+- the script `docker/postgres/resources/create-postgres.sql` creates the test data
+- the `TLSTest` expects the database to be configured with SSL with `docker/postgres/resources/server.key` / `docker/postgres/resources/server.cert``
+
+You need to override the default connection uri for testing:
+
+```
+> mvn test -Dconnection.uri=postgres://$username:$password@$host:$port/$database
+```
+
+NOTE: unix domain sockets are not testable (yet).
+
+=== Testing with Docker
+
+Create and run the following docker image:
+
+```
+> docker build -t test/postgres docker/postgres
+> docker run --rm --name test-postgres -p 5432:5432 test/postgres
+```
+
+Run tests:
+
+```
+> mvn test -Dconnection.uri=postgres://postgres:postgres@localhost/postgres
+```
+
+NOTE: unix domain sockets are not testable (yet).
+
 === Documentation
 
 The online and published documentation is in `/docs` and is served by GitHub pages with Jekyll.

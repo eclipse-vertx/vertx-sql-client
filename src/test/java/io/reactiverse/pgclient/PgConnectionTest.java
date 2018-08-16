@@ -37,21 +37,25 @@ public class PgConnectionTest extends PgConnectionTestBase {
   public void testBatchUpdate(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE Fortune SET message=$1 WHERE id=$2", ctx.asyncAssertSuccess(ps -> {
-        List<Tuple> batch = new ArrayList<>();
-        batch.add(Tuple.of("val0", 1));
-        batch.add(Tuple.of("val1", 2));
-        ps.batch(batch, ctx.asyncAssertSuccess(result -> {
-          for (int i = 0;i < 2;i++) {
-            ctx.assertEquals(1, result.rowCount());
-            result = result.next();
-          }
-          ctx.assertNull(result);
-          ps.close(ctx.asyncAssertSuccess(v -> {
-            async.complete();
+      deleteFromTestTable(ctx, conn, () -> {
+        insertIntoTestTable(ctx, conn, 10, () -> {
+          conn.prepare("UPDATE Test SET val=$1 WHERE id=$2", ctx.asyncAssertSuccess(ps -> {
+            List<Tuple> batch = new ArrayList<>();
+            batch.add(Tuple.of("val0", 0));
+            batch.add(Tuple.of("val1", 1));
+            ps.batch(batch, ctx.asyncAssertSuccess(result -> {
+              for (int i = 0;i < 2;i++) {
+                ctx.assertEquals(1, result.rowCount());
+                result = result.next();
+              }
+              ctx.assertNull(result);
+              ps.close(ctx.asyncAssertSuccess(v -> {
+                async.complete();
+              }));
+            }));
           }));
-        }));
-      }));
+        });
+      });
     }));
   }
 

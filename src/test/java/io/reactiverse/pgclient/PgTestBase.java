@@ -21,19 +21,20 @@ import de.flapdoodle.embed.process.config.IRuntimeConfig;
 import de.flapdoodle.embed.process.config.io.ProcessOutput;
 import de.flapdoodle.embed.process.runtime.ICommandLinePostProcessor;
 import de.flapdoodle.embed.process.store.IArtifactStore;
+import io.vertx.ext.unit.TestContext;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
-import ru.yandex.qatools.embed.postgresql.config.PostgresConfig;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertTrue;
 import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
@@ -44,6 +45,7 @@ import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
 
 public abstract class PgTestBase {
 
+  private static final String connectionUri = System.getProperty("connection.uri");
   private static EmbeddedPostgres postgres;
   static PgConnectOptions options;
 
@@ -62,6 +64,9 @@ public abstract class PgTestBase {
   }
 
   public synchronized static PgConnectOptions startPg(boolean domainSockets) throws Exception {
+    if (connectionUri != null && !connectionUri.isEmpty()) {
+      return PgConnectOptions.fromUri(connectionUri);
+    }
     if (postgres != null) {
       throw new IllegalStateException();
     }
@@ -93,9 +98,9 @@ public abstract class PgTestBase {
     }
 
     // SSL
-    File sslKey = getResourceAsFile("tls/server.key");
+    File sslKey = getTestResource("server.key");
     Files.setPosixFilePermissions(sslKey.toPath(), Collections.singleton(PosixFilePermission.OWNER_READ));
-    File sslCrt = getResourceAsFile("tls/server.crt");
+    File sslCrt = getTestResource("server.crt");
 
     postgres = new EmbeddedPostgres(V9_6);
     IRuntimeConfig sslConfig = new IRuntimeConfig() {
@@ -136,7 +141,7 @@ public abstract class PgTestBase {
       "postgres",
       "postgres",
       Collections.emptyList());
-    File setupFile = getResourceAsFile("create-postgres.sql");
+    File setupFile = getTestResource("create-postgres.sql");
     PgTestBase.postgres.getProcess().get().importFromFile(setupFile);
     PgConnectOptions options = new PgConnectOptions();
     options.setHost(domainSockets ? sock.getAbsolutePath() : "localhost");
@@ -157,12 +162,30 @@ public abstract class PgTestBase {
     }
   }
 
-  private static File getResourceAsFile(String name) throws Exception {
-    InputStream in = PgTestBase.class.getClassLoader().getResourceAsStream(name);
+  private static File getTestResource(String name) throws Exception {
+    InputStream in = new FileInputStream(new File("docker" + File.separator + "postgres" + File.separator + "resources" + File.separator + name));
     Path path = Files.createTempFile("pg-client", ".tmp");
     Files.copy(in, path, StandardCopyOption.REPLACE_EXISTING);
     File file = path.toFile();
     file.deleteOnExit();
     return file;
+  }
+
+  static void deleteFromTestTable(TestContext ctx, PgClient client, Runnable completionHandler) {
+    client.query(
+      "DELETE FROM Test",
+      ctx.asyncAssertSuccess(result -> completionHandler.run()));
+  }
+
+  static void insertIntoTestTable(TestContext ctx, PgClient client, int amount, Runnable completionHandler) {
+    AtomicInteger count = new AtomicInteger();
+    for (int i = 0;i < 10;i++) {
+      client.query("INSERT INTO Test (id, val) VALUES (" + i + ", 'Whatever-" + i + "')", ctx.asyncAssertSuccess(r1 -> {
+        ctx.assertEquals(1, r1.rowCount());
+        if (count.incrementAndGet() == amount) {
+          completionHandler.run();
+        }
+      }));
+    }
   }
 }

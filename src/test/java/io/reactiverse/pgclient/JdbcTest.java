@@ -18,6 +18,7 @@
 package io.reactiverse.pgclient;
 
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.sql.PreparedStatement;
@@ -29,10 +30,11 @@ import static org.junit.Assert.assertEquals;
 
 public class JdbcTest extends JdbcTestBase {
 
+  @Ignore
   @Test
   public void testInsertBatch() throws SQLException {
 
-    PreparedStatement ps = con.prepareStatement("INSERT INTO Fortune (id, message) VALUES (?, ?)");
+    PreparedStatement ps = con.prepareStatement("INSERT INTO Test (id, val) VALUES (?, ?)");
 
     ps.setInt(1, 2000);
     ps.setString(2, "Hello");
@@ -56,6 +58,7 @@ public class JdbcTest extends JdbcTestBase {
 
   }
 
+  @Ignore
   @Test
   public void testInsertPreparedStmtWithId() throws SQLException {
     PreparedStatement ps = con.prepareStatement("INSERT INTO Fortune (id , message) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
@@ -69,6 +72,7 @@ public class JdbcTest extends JdbcTestBase {
     ps.close();
   }
 
+  @Ignore
   @Test
   public void testUpdatePreparedStmtWithId() throws SQLException {
     con.setAutoCommit(false);

@@ -26,11 +26,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 /**
@@ -87,8 +85,11 @@ public abstract class PgClientTestBase<C extends PgClient> extends PgTestBase {
   public void testConnectInvalidUsername(TestContext ctx) {
     Async async = ctx.async();
     options.setUser("vertx");
-    connector.accept(ctx.asyncAssertFailure(conn -> {
-      ctx.assertEquals("password authentication failed for user \"vertx\"", conn.getMessage());
+    connector.accept(ctx.asyncAssertFailure(err -> {
+      PgException ex = (PgException) err;
+      // Class 28 — Invalid Authorization Specification
+      ctx.assertEquals(ex.getCode().substring(0, 2), "28");
+      ctx.assertEquals(ex.getSeverity(), "FATAL");
       async.complete();
     }));
   }
@@ -149,58 +150,73 @@ public abstract class PgClientTestBase<C extends PgClient> extends PgTestBase {
   @Test
   public void testUpdate(TestContext ctx) {
     Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.rowCount());
-        async.complete();
-      }));
+    connector.accept(ctx.asyncAssertSuccess(client -> {
+      deleteFromTestTable(ctx, client, () -> {
+        client.query("INSERT INTO Test (id, val) VALUES (1, 'Whatever')", ctx.asyncAssertSuccess(r1 -> {
+          ctx.assertEquals(1, r1.rowCount());
+          client.query("UPDATE Test SET val = 'Whatever' WHERE id = 1", ctx.asyncAssertSuccess(r2 -> {
+            ctx.assertEquals(1, r2.rowCount());
+            async.complete();
+          }));
+        }));
+      });
     }));
   }
 
   @Test
   public void testInsert(TestContext ctx) {
     Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("INSERT INTO Fortune (id, message) VALUES (13, 'Whatever')", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.rowCount());
-        async.complete();
-      }));
+    connector.accept(ctx.asyncAssertSuccess(client -> {
+      deleteFromTestTable(ctx, client, () -> {
+        client.query("INSERT INTO Test (id, val) VALUES (1, 'Whatever')", ctx.asyncAssertSuccess(r1 -> {
+          ctx.assertEquals(1, r1.rowCount());
+          async.complete();
+        }));
+      });
     }));
   }
 
   @Test
   public void testInsertReturning(TestContext ctx) {
     Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("INSERT INTO Fortune (id, message) VALUES ($1, $2) RETURNING id", Tuple.of(14, "SomeMessage"), ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(14, result.iterator().next().getInteger("id"));
-        async.complete();
-      }));
+    connector.accept(ctx.asyncAssertSuccess(client -> {
+      deleteFromTestTable(ctx, client, () -> {
+        client.preparedQuery("INSERT INTO Test (id, val) VALUES ($1, $2) RETURNING id", Tuple.of(14, "SomeMessage"), ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(14, result.iterator().next().getInteger("id"));
+          async.complete();
+        }));
+      });
     }));
   }
 
   @Test
   public void testInsertReturningError(TestContext ctx) {
     Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("INSERT INTO Fortune (id, message) VALUES ($1, $2) RETURNING id", Tuple.of(15, "SomeMessage"), ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(15, result.iterator().next().getInteger("id"));
-        conn.preparedQuery("INSERT INTO Fortune (id, message) VALUES ($1, $2) RETURNING id", Tuple.of(15, "SomeMessage"), ctx.asyncAssertFailure(err -> {
-          ctx.assertEquals("23505", ((PgException) err).getCode());
-          async.complete();
+    connector.accept(ctx.asyncAssertSuccess(client -> {
+      deleteFromTestTable(ctx, client, () -> {
+        client.preparedQuery("INSERT INTO Test (id, val) VALUES ($1, $2) RETURNING id", Tuple.of(15, "SomeMessage"), ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(15, result.iterator().next().getInteger("id"));
+          client.preparedQuery("INSERT INTO Test (id, val) VALUES ($1, $2) RETURNING id", Tuple.of(15, "SomeMessage"), ctx.asyncAssertFailure(err -> {
+            ctx.assertEquals("23505", ((PgException) err).getCode());
+            async.complete();
+          }));
         }));
-      }));
-      }));
+      });
+    }));
   }
 
   @Test
   public void testDelete(TestContext ctx) {
     Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("DELETE FROM Fortune where id = 6", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.rowCount());
-        async.complete();
-      }));
+    connector.accept(ctx.asyncAssertSuccess(client -> {
+      deleteFromTestTable(ctx, client, () -> {
+        insertIntoTestTable(ctx, client, 10, () -> {
+          client.query("DELETE FROM Test where id = 6", ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.rowCount());
+            async.complete();
+          }));
+        });
+      });
     }));
   }
 
@@ -209,7 +225,7 @@ public abstract class PgClientTestBase<C extends PgClient> extends PgTestBase {
   }
 
   @Test
-  public void testBatchSelect(TestContext ctx) throws Exception {
+  public void testBatchSelect(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       List<Tuple> batch = new ArrayList<>();
@@ -255,26 +271,34 @@ public abstract class PgClientTestBase<C extends PgClient> extends PgTestBase {
   @Test
   public void testPreparedUpdate(TestContext ctx) {
     Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("UPDATE Fortune SET message = 'PgClient Rocks!' WHERE id = 2", ctx.asyncAssertSuccess(res1 -> {
-        ctx.assertEquals(1, res1.rowCount());
-        conn.preparedQuery("SELECT message FROM Fortune WHERE id = 2", ctx.asyncAssertSuccess(res2 -> {
-          ctx.assertEquals("PgClient Rocks!", res2.iterator().next().getValue(0));
-          async.complete();
+    connector.accept(ctx.asyncAssertSuccess(client -> {
+      deleteFromTestTable(ctx, client, () -> {
+        client.query("INSERT INTO Test (id, val) VALUES (2, 'Whatever')", ctx.asyncAssertSuccess(r1 -> {
+          ctx.assertEquals(1, r1.rowCount());
+          client.preparedQuery("UPDATE Test SET val = 'PgClient Rocks!' WHERE id = 2", ctx.asyncAssertSuccess(res1 -> {
+            ctx.assertEquals(1, res1.rowCount());
+            client.preparedQuery("SELECT val FROM Test WHERE id = 2", ctx.asyncAssertSuccess(res2 -> {
+              ctx.assertEquals("PgClient Rocks!", res2.iterator().next().getValue(0));
+              async.complete();
+            }));
+          }));
         }));
-      }));
+      });
     }));
   }
 
   @Test
   public void testPreparedUpdateWithParams(TestContext ctx) {
     Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("UPDATE Fortune SET message = $1 WHERE id = $2", Tuple.of("PgClient Rocks Again!!", 2), ctx.asyncAssertSuccess(res1 -> {
-        ctx.assertEquals(1, res1.rowCount());
-        conn.preparedQuery("SELECT message FROM Fortune WHERE id = $1", Tuple.of(2), ctx.asyncAssertSuccess(res2 -> {
-          ctx.assertEquals("PgClient Rocks Again!!", res2.iterator().next().getValue(0));
-          async.complete();
+    connector.accept(ctx.asyncAssertSuccess(client -> {
+      client.query("INSERT INTO Test (id, val) VALUES (2, 'Whatever')", ctx.asyncAssertSuccess(r1 -> {
+        ctx.assertEquals(1, r1.rowCount());
+        client.preparedQuery("UPDATE Test SET val = $1 WHERE id = $2", Tuple.of("PgClient Rocks Again!!", 2), ctx.asyncAssertSuccess(res1 -> {
+          ctx.assertEquals(1, res1.rowCount());
+          client.preparedQuery("SELECT val FROM Test WHERE id = $1", Tuple.of(2), ctx.asyncAssertSuccess(res2 -> {
+            ctx.assertEquals("PgClient Rocks Again!!", res2.iterator().next().getValue(0));
+            async.complete();
+          }));
         }));
       }));
     }));
