@@ -1,0 +1,19 @@
+version: "{build}"
+image: Ubuntu
+skip_tags: true
+
+build:
+  verbosity: detailed
+
+build_script:
+  - mvn clean install -DskipTests=true
+
+before_test:
+  - docker build -t test/postgres docker/postgres
+  - docker run -d --name test-postgres -p 5432:5432 test/postgres
+
+test_script:
+  - mvn verify -Dconnection.uri=postgres://postgres:postgres@localhost/postgres
+
+services:
+  - docker
