@@ -133,6 +133,25 @@ public class PubSubTest extends PgTestBase {
 	    subscriber.actualConnection().query("NOTIFY \"" + channelName + "\", 'msg'", ctx.asyncAssertSuccess());
 	    notifiedLatch.awaitSuccess(10000);
 	  }
+  
+  @Test
+  public void testSubscribeNotifyWithUnquotedId(TestContext ctx) {
+	    subscriber = PgSubscriber.subscriber(vertx, options);
+	    Async connectLatch = ctx.async();
+	    subscriber.connect(ctx.asyncAssertSuccess(v -> connectLatch.complete()));
+	    connectLatch.awaitSuccess(10000);
+	    PgChannel channel = subscriber.channel("the_channel");
+	    Async subscribedLatch = ctx.async();
+	    ctx.assertEquals(channel, channel.subscribeHandler(v -> subscribedLatch.complete()));
+	    Async notifiedLatch = ctx.async();
+	    channel.handler(notif -> {
+	      ctx.assertEquals("msg", notif);
+	      notifiedLatch.countDown();
+	    });
+	    subscribedLatch.awaitSuccess(10000);
+	    subscriber.actualConnection().query("NOTIFY The_Channel, 'msg'", ctx.asyncAssertSuccess());
+	    notifiedLatch.awaitSuccess(10000);
+	  }
 
   @Test
   public void testUnsubscribe(TestContext ctx) {
