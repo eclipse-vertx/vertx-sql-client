@@ -60,15 +60,16 @@ public class PubSubTest extends PgTestBase {
   }
   
   public void testNotify(TestContext ctx, String channelName) {
+    String quotedChannelName = "\"" + channelName.replace("\"", "\"\"") + "\"";
     Async async = ctx.async(2);
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("LISTEN \"" + channelName + "\"", ctx.asyncAssertSuccess(result1 -> {
+      conn.query("LISTEN " + quotedChannelName, ctx.asyncAssertSuccess(result1 -> {
         conn.notificationHandler(notification -> {
           ctx.assertEquals(channelName, notification.getChannel());
           ctx.assertEquals("the message", notification.getPayload());
           async.countDown();
         });
-        conn.query("NOTIFY \"" + channelName + "\", 'the message'", ctx.asyncAssertSuccess(result2 -> {
+        conn.query("NOTIFY " + quotedChannelName + ", 'the message'", ctx.asyncAssertSuccess(result2 -> {
           async.countDown();
         }));
       }));
@@ -86,6 +87,8 @@ public class PubSubTest extends PgTestBase {
   }
   
   private void testConnect(TestContext ctx, String channel1Name, String channel2Name) {
+    String quotedChannel1Name = "\"" + channel1Name.replace("\"", "\"\"") + "\"";
+    String quotedChannel2Name = "\"" + channel2Name.replace("\"", "\"\"") + "\"";
     subscriber = PgSubscriber.subscriber(vertx, options);
     Async notifiedLatch = ctx.async();
     PgChannel sub1 = subscriber.channel(channel1Name);
@@ -101,8 +104,8 @@ public class PubSubTest extends PgTestBase {
     Async connectLatch = ctx.async();
     subscriber.connect(ctx.asyncAssertSuccess(v -> connectLatch.complete()));
     connectLatch.awaitSuccess(10000);
-    subscriber.actualConnection().query("NOTIFY \"" + channel1Name + "\", 'msg1'", ctx.asyncAssertSuccess());
-    subscriber.actualConnection().query("NOTIFY \"" + channel2Name + "\", 'msg2'", ctx.asyncAssertSuccess());
+    subscriber.actualConnection().query("NOTIFY " + quotedChannel1Name + ", 'msg1'", ctx.asyncAssertSuccess());
+    subscriber.actualConnection().query("NOTIFY " + quotedChannel2Name + ", 'msg2'", ctx.asyncAssertSuccess());
     notifiedLatch.awaitSuccess(10000);
   }
 
@@ -116,7 +119,13 @@ public class PubSubTest extends PgTestBase {
     testSubscribe(ctx, "The.Channel");
   }
   
+  @Test
+  public void testSubscribeChannelContainsQuotes(TestContext ctx) {
+    testSubscribe(ctx, "\"The\".\"Channel\"");
+  }
+  
   public void testSubscribe(TestContext ctx, String channelName) {
+	    String quotedChannelName = "\"" + channelName.replace("\"", "\"\"") + "\"";
 	    subscriber = PgSubscriber.subscriber(vertx, options);
 	    Async connectLatch = ctx.async();
 	    subscriber.connect(ctx.asyncAssertSuccess(v -> connectLatch.complete()));
@@ -130,7 +139,7 @@ public class PubSubTest extends PgTestBase {
 	      notifiedLatch.countDown();
 	    });
 	    subscribedLatch.awaitSuccess(10000);
-	    subscriber.actualConnection().query("NOTIFY \"" + channelName + "\", 'msg'", ctx.asyncAssertSuccess());
+	    subscriber.actualConnection().query("NOTIFY " + quotedChannelName + ", 'msg'", ctx.asyncAssertSuccess());
 	    notifiedLatch.awaitSuccess(10000);
 	  }
   
