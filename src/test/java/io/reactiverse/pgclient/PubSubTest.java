@@ -17,6 +17,7 @@
 package io.reactiverse.pgclient;
 
 import io.reactiverse.pgclient.pubsub.PgSubscriber;
+import io.reactiverse.pgclient.impl.pubsub.PgSubscriberImpl;
 import io.reactiverse.pgclient.pubsub.PgChannel;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
@@ -27,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -122,6 +124,16 @@ public class PubSubTest extends PgTestBase {
   @Test
   public void testSubscribeChannelContainsQuotes(TestContext ctx) {
     testSubscribe(ctx, "\"The\".\"Channel\"");
+  }
+  
+  @Test
+  public void testSubscribeChannelExceedsLengthLimit(TestContext ctx) {
+	char[] channelNameChars = new char[PgSubscriberImpl.MAX_CHANNEL_NAME_LENGTH + 5];
+	Arrays.fill(channelNameChars, 0, PgSubscriberImpl.MAX_CHANNEL_NAME_LENGTH, 'a');
+	Arrays.fill(channelNameChars, PgSubscriberImpl.MAX_CHANNEL_NAME_LENGTH,
+			channelNameChars.length, 'b');
+	String channelName = new String(channelNameChars);
+    testSubscribe(ctx, channelName);
   }
   
   public void testSubscribe(TestContext ctx, String channelName) {

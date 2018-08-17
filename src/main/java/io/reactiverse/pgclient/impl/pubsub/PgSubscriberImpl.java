@@ -47,6 +47,15 @@ public class PgSubscriberImpl implements PgSubscriber {
     this.options = new PgConnectOptions(options);
   }
 
+  // Identifiers in PostgreSQL are currently limited to NAMEDATALEN-1 = 63
+  // characters (see PostgreSQL lexical structure documentation)
+  public static final int NAMEDATALEN = 64;
+  public static final int MAX_CHANNEL_NAME_LENGTH = NAMEDATALEN - 1;
+  public static String applyIdLengthLimit(String channelName) {
+  	return channelName.length() > MAX_CHANNEL_NAME_LENGTH
+  			? channelName.substring(0, MAX_CHANNEL_NAME_LENGTH) : channelName;
+  }
+
   private void handleNotification(PgNotification notif) {
     List<Handler<String>> handlers = new ArrayList<>();
     synchronized (this) {
@@ -195,7 +204,7 @@ public class PgSubscriberImpl implements PgSubscriber {
 	final String quotedName;
     final ArrayList<ChannelImpl> subs = new ArrayList<>();
     boolean subscribed;
-
+    
     ChannelList(String name) {
       this.name = name;
 	  quotedName = "\"" + name.replace("\"", "\"\"") + "\"";
@@ -246,7 +255,7 @@ public class PgSubscriberImpl implements PgSubscriber {
     private boolean paused;
 
     ChannelImpl(String name) {
-      this.name = name;
+      this.name = applyIdLengthLimit(name);
     }
 
     @Override
