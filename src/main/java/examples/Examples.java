@@ -569,8 +569,54 @@ public class Examples {
       }
     });
   }
-
+  
   public void pubsub03(Vertx vertx) {
+
+    PgSubscriber subscriber = PgSubscriber.subscriber(vertx, new PgConnectOptions()
+      .setPort(5432)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUser("user")
+      .setPassword("secret")
+    );
+    
+    subscriber.connect(ar -> {
+        if (ar.succeeded()) {
+          // Complex channel name - name in PostgreSQL requires a quoted ID
+          subscriber.channel("Complex.Channel.Name").handler(payload -> {
+            System.out.println("Received " + payload);
+          });
+          subscriber.channel("Complex.Channel.Name").subscribeHandler(subscribed -> {
+        	  subscriber.actualConnection().query(
+        			  "NOTIFY \"Complex.Channel.Name\", 'msg'", notified -> {
+        		  System.out.println("Notified \"Complex.Channel.Name\"");
+        	  });
+          });
+
+          // PostgreSQL simple ID's are forced lower-case 
+          subscriber.channel("simple_channel").handler(payload -> {
+              System.out.println("Received " + payload);
+          });
+          subscriber.channel("simple_channel").subscribeHandler(subscribed -> {
+        	  // The following simple channel identifier is forced to lower case
+              subscriber.actualConnection().query(
+            		"NOTIFY Simple_CHANNEL, 'msg'", notified -> {
+          		  System.out.println("Notified simple_channel");
+          	  });
+          });
+          
+          // The following channel name is longer than the current
+          // (NAMEDATALEN = 64) - 1 == 63 character limit and will be truncated
+          subscriber.channel(
+        		  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbb"
+        		  ).handler(payload -> {
+              System.out.println("Received " + payload);
+          });          
+        }
+      });
+  }
+
+  public void pubsub04(Vertx vertx) {
 
     PgSubscriber subscriber = PgSubscriber.subscriber(vertx, new PgConnectOptions()
       .setPort(5432)
