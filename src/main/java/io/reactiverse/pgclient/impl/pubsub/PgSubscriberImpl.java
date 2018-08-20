@@ -47,6 +47,15 @@ public class PgSubscriberImpl implements PgSubscriber {
     this.options = new PgConnectOptions(options);
   }
 
+  // Identifiers in PostgreSQL are currently limited to NAMEDATALEN-1 = 63
+  // characters (see PostgreSQL lexical structure documentation)
+  public static final int NAMEDATALEN = 64;
+  public static final int MAX_CHANNEL_NAME_LENGTH = NAMEDATALEN - 1;
+  public static String applyIdLengthLimit(String channelName) {
+  	return channelName.length() > MAX_CHANNEL_NAME_LENGTH
+  			? channelName.substring(0, MAX_CHANNEL_NAME_LENGTH) : channelName;
+  }
+
   private void handleNotification(PgNotification notif) {
     List<Handler<String>> handlers = new ArrayList<>();
     synchronized (this) {
@@ -171,7 +180,7 @@ public class PgSubscriberImpl implements PgSubscriber {
           .stream()
           .map(channel -> {
             channel.subscribed = true;
-            return channel.name;
+            return channel.quotedName;
           })
           .collect(Collectors.joining(";LISTEN ", "LISTEN ", ""));
         conn.query(sql, ar2 -> {
@@ -192,11 +201,13 @@ public class PgSubscriberImpl implements PgSubscriber {
   private class ChannelList {
 
     final String name;
+	final String quotedName;
     final ArrayList<ChannelImpl> subs = new ArrayList<>();
     boolean subscribed;
-
+    
     ChannelList(String name) {
       this.name = name;
+	  quotedName = "\"" + name.replace("\"", "\"\"") + "\"";
     }
 
     void add(ChannelImpl sub) {
@@ -204,7 +215,7 @@ public class PgSubscriberImpl implements PgSubscriber {
       if (!subscribed) {
         if (conn != null) {
           subscribed = true;
-          String sql = "LISTEN " + name;
+          String sql = "LISTEN " + quotedName;
           conn.query(sql, ar -> {
             if (ar.succeeded()) {
               Handler<Void> handler = sub.subscribeHandler;
@@ -224,7 +235,7 @@ public class PgSubscriberImpl implements PgSubscriber {
       if (subs.isEmpty()) {
         channels.remove(name, this);
         if (conn != null) {
-          conn.query("UNLISTEN " + name, ar -> {
+          conn.query("UNLISTEN " + quotedName, ar -> {
             if (ar.failed()) {
               log.error("Cannot UNLISTEN channel " + name, ar.cause());
             }
@@ -244,7 +255,7 @@ public class PgSubscriberImpl implements PgSubscriber {
     private boolean paused;
 
     ChannelImpl(String name) {
-      this.name = name;
+      this.name = applyIdLengthLimit(name);
     }
 
     @Override

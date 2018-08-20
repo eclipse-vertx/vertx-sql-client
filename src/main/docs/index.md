@@ -400,6 +400,13 @@ provides per channel subscription:
 {@link examples.Examples#pubsub02(io.vertx.core.Vertx)}
 ```
 
+The channel name that is given to the channel method will be the exact name of the channel as held by Postgres for sending
+notifications.  Note this is different than the representation of the channel name in SQL, and
+internally {@link io.reactiverse.pgclient.pubsub.PgSubscriber} will prepare the submitted channel name as a quoted identifier:
+
+```$lang
+{@link examples.Examples#pubsub03(io.vertx.core.Vertx)}
+```
 You can provide a reconnect policy as a function that takes the number of `retries` as argument and returns an `amountOfTime`
 value:
 
@@ -408,7 +415,7 @@ value:
 * when `amountOfTime > 0`: the subscriber retries after `amountOfTime` milliseconds
 
 ```$lang
-{@link examples.Examples#pubsub03(io.vertx.core.Vertx)}
+{@link examples.Examples#pubsub04(io.vertx.core.Vertx)}
 ```
 
 The default policy is to not reconnect.

@@ -17,6 +17,7 @@
 package io.reactiverse.pgclient;
 
 import io.reactiverse.pgclient.pubsub.PgSubscriber;
+import io.reactiverse.pgclient.impl.pubsub.PgSubscriberImpl;
 import io.reactiverse.pgclient.pubsub.PgChannel;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
@@ -27,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -51,15 +53,25 @@ public class PubSubTest extends PgTestBase {
 
   @Test
   public void testNotify(TestContext ctx) {
+	  testNotify(ctx, "the_channel");
+  }
+  
+  @Test
+  public void testNotifyChannelRequiresQuotedID(TestContext ctx) {
+	  testNotify(ctx, "The.Channel");
+  }
+  
+  public void testNotify(TestContext ctx, String channelName) {
+    String quotedChannelName = "\"" + channelName.replace("\"", "\"\"") + "\"";
     Async async = ctx.async(2);
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("LISTEN the_channel", ctx.asyncAssertSuccess(result1 -> {
+      conn.query("LISTEN " + quotedChannelName, ctx.asyncAssertSuccess(result1 -> {
         conn.notificationHandler(notification -> {
-          ctx.assertEquals("the_channel", notification.getChannel());
+          ctx.assertEquals(channelName, notification.getChannel());
           ctx.assertEquals("the message", notification.getPayload());
           async.countDown();
         });
-        conn.query("NOTIFY the_channel, 'the message'", ctx.asyncAssertSuccess(result2 -> {
+        conn.query("NOTIFY " + quotedChannelName + ", 'the message'", ctx.asyncAssertSuccess(result2 -> {
           async.countDown();
         }));
       }));
@@ -68,10 +80,21 @@ public class PubSubTest extends PgTestBase {
 
   @Test
   public void testConnect(TestContext ctx) {
+    testConnect(ctx, "channel1", "channel2");
+  }
+  
+  @Test
+  public void testConnectChannelRequiresQuotedID(TestContext ctx) {
+    testConnect(ctx, "Channel.Test.1", "Channel.Test.2");
+  }
+  
+  private void testConnect(TestContext ctx, String channel1Name, String channel2Name) {
+    String quotedChannel1Name = "\"" + channel1Name.replace("\"", "\"\"") + "\"";
+    String quotedChannel2Name = "\"" + channel2Name.replace("\"", "\"\"") + "\"";
     subscriber = PgSubscriber.subscriber(vertx, options);
     Async notifiedLatch = ctx.async();
-    PgChannel sub1 = subscriber.channel("channel1");
-    PgChannel sub2 = subscriber.channel("channel2");
+    PgChannel sub1 = subscriber.channel(channel1Name);
+    PgChannel sub2 = subscriber.channel(channel2Name);
     sub1.handler(notif -> {
       ctx.assertEquals("msg1", notif);
       notifiedLatch.countDown();
@@ -83,32 +106,85 @@ public class PubSubTest extends PgTestBase {
     Async connectLatch = ctx.async();
     subscriber.connect(ctx.asyncAssertSuccess(v -> connectLatch.complete()));
     connectLatch.awaitSuccess(10000);
-    subscriber.actualConnection().query("NOTIFY channel1, 'msg1'", ctx.asyncAssertSuccess());
-    subscriber.actualConnection().query("NOTIFY channel2, 'msg2'", ctx.asyncAssertSuccess());
+    subscriber.actualConnection().query("NOTIFY " + quotedChannel1Name + ", 'msg1'", ctx.asyncAssertSuccess());
+    subscriber.actualConnection().query("NOTIFY " + quotedChannel2Name + ", 'msg2'", ctx.asyncAssertSuccess());
     notifiedLatch.awaitSuccess(10000);
   }
 
   @Test
   public void testSubscribe(TestContext ctx) {
-    subscriber = PgSubscriber.subscriber(vertx, options);
-    Async connectLatch = ctx.async();
-    subscriber.connect(ctx.asyncAssertSuccess(v -> connectLatch.complete()));
-    connectLatch.awaitSuccess(10000);
-    PgChannel channel = subscriber.channel("the_channel");
-    Async subscribedLatch = ctx.async();
-    ctx.assertEquals(channel, channel.subscribeHandler(v -> subscribedLatch.complete()));
-    Async notifiedLatch = ctx.async();
-    channel.handler(notif -> {
-      ctx.assertEquals("msg", notif);
-      notifiedLatch.countDown();
-    });
-    subscribedLatch.awaitSuccess(10000);
-    subscriber.actualConnection().query("NOTIFY the_channel, 'msg'", ctx.asyncAssertSuccess());
-    notifiedLatch.awaitSuccess(10000);
+    testSubscribe(ctx, "the_channel");
   }
+  
+  @Test
+  public void testSubscribeChannelRequiresQuotedID(TestContext ctx) {
+    testSubscribe(ctx, "The.Channel");
+  }
+  
+  @Test
+  public void testSubscribeChannelContainsQuotes(TestContext ctx) {
+    testSubscribe(ctx, "\"The\".\"Channel\"");
+  }
+  
+  @Test
+  public void testSubscribeChannelExceedsLengthLimit(TestContext ctx) {
+	char[] channelNameChars = new char[PgSubscriberImpl.MAX_CHANNEL_NAME_LENGTH + 5];
+	Arrays.fill(channelNameChars, 0, PgSubscriberImpl.MAX_CHANNEL_NAME_LENGTH, 'a');
+	Arrays.fill(channelNameChars, PgSubscriberImpl.MAX_CHANNEL_NAME_LENGTH,
+			channelNameChars.length, 'b');
+	String channelName = new String(channelNameChars);
+    testSubscribe(ctx, channelName);
+  }
+  
+  public void testSubscribe(TestContext ctx, String channelName) {
+	    String quotedChannelName = "\"" + channelName.replace("\"", "\"\"") + "\"";
+	    subscriber = PgSubscriber.subscriber(vertx, options);
+	    Async connectLatch = ctx.async();
+	    subscriber.connect(ctx.asyncAssertSuccess(v -> connectLatch.complete()));
+	    connectLatch.awaitSuccess(10000);
+	    PgChannel channel = subscriber.channel(channelName);
+	    Async subscribedLatch = ctx.async();
+	    ctx.assertEquals(channel, channel.subscribeHandler(v -> subscribedLatch.complete()));
+	    Async notifiedLatch = ctx.async();
+	    channel.handler(notif -> {
+	      ctx.assertEquals("msg", notif);
+	      notifiedLatch.countDown();
+	    });
+	    subscribedLatch.awaitSuccess(10000);
+	    subscriber.actualConnection().query("NOTIFY " + quotedChannelName + ", 'msg'", ctx.asyncAssertSuccess());
+	    notifiedLatch.awaitSuccess(10000);
+	  }
+  
+  @Test
+  public void testSubscribeNotifyWithUnquotedId(TestContext ctx) {
+	    subscriber = PgSubscriber.subscriber(vertx, options);
+	    Async connectLatch = ctx.async();
+	    subscriber.connect(ctx.asyncAssertSuccess(v -> connectLatch.complete()));
+	    connectLatch.awaitSuccess(10000);
+	    PgChannel channel = subscriber.channel("the_channel");
+	    Async subscribedLatch = ctx.async();
+	    ctx.assertEquals(channel, channel.subscribeHandler(v -> subscribedLatch.complete()));
+	    Async notifiedLatch = ctx.async();
+	    channel.handler(notif -> {
+	      ctx.assertEquals("msg", notif);
+	      notifiedLatch.countDown();
+	    });
+	    subscribedLatch.awaitSuccess(10000);
+	    subscriber.actualConnection().query("NOTIFY The_Channel, 'msg'", ctx.asyncAssertSuccess());
+	    notifiedLatch.awaitSuccess(10000);
+	  }
 
   @Test
   public void testUnsubscribe(TestContext ctx) {
+	testUnsubscribe(ctx, "the_channel");
+  }
+  
+  @Test
+  public void testUnsubscribeChannelRequiresQuotedID(TestContext ctx) {
+	testUnsubscribe(ctx, "The.Channel");
+  }
+  
+  public void testUnsubscribe(TestContext ctx, String channelName) {
     subscriber = PgSubscriber.subscriber(vertx, options);
     Async connectLatch = ctx.async();
     subscriber.connect(ctx.asyncAssertSuccess(v -> connectLatch.complete()));
@@ -127,15 +203,25 @@ public class PubSubTest extends PgTestBase {
 
   @Test
   public void testReconnectImmediately(TestContext ctx) {
-    testReconnect(ctx, 0);
+    testReconnect(ctx, 0, "the_channel");
+  }
+  
+  @Test
+  public void testReconnectImmediatelyChannelRequiresQuotedID(TestContext ctx) {
+    testReconnect(ctx, 0, "The.Channel");
   }
 
   @Test
   public void testReconnectWithDelay(TestContext ctx) {
-    testReconnect(ctx, 100);
+    testReconnect(ctx, 100, "the_channel");
   }
 
-  public void testReconnect(TestContext ctx, long delay) {
+  @Test
+  public void testReconnectWithDelayChannelRequiresQuotedID(TestContext ctx) {
+    testReconnect(ctx, 100, "The.Channel");
+  }
+
+  public void testReconnect(TestContext ctx, long delay, String channelName) {
     PgConnectOptions options = new PgConnectOptions(PgTestBase.options);
     ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
     AtomicReference<ProxyServer.Connection> connRef = new AtomicReference<>();
@@ -150,7 +236,7 @@ public class PubSubTest extends PgTestBase {
     }));
     listenLatch.awaitSuccess(10000);
     subscriber = PgSubscriber.subscriber(vertx, options);
-    PgChannel sub = subscriber.channel("the_channel");
+    PgChannel sub = subscriber.channel(channelName);
     Async connect1Latch = ctx.async();
     Async connect2Latch = ctx.async();
     Async connect3Latch = ctx.async();
@@ -195,8 +281,17 @@ public class PubSubTest extends PgTestBase {
 
   @Test
   public void testClose(TestContext ctx) {
+	  testClose(ctx, "the_channel");
+  }
+  
+  @Test
+  public void testCloseChannelRequiresQuotedID(TestContext ctx) {
+	  testClose(ctx, "The.Channel");
+  }
+  
+  public void testClose(TestContext ctx, String channelName) {
     PgSubscriber subscriber = PgSubscriber.subscriber(vertx, options);
-    PgChannel sub = subscriber.channel("the_channel");
+    PgChannel sub = subscriber.channel(channelName);
     Async endLatch = ctx.async();
     sub.endHandler(v -> endLatch.complete());
     sub.handler(notif -> {

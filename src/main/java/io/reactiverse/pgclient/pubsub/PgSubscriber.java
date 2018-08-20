@@ -50,6 +50,23 @@ public interface PgSubscriber {
    * Return a channel for the given {@code name}.
    *
    * @param name the channel name
+   * <p/>
+   * This will be the name of the channel exactly as held by Postgres for sending
+   * notifications.  Internally this name will be truncated to the Postgres identifier
+   * maxiumum length of {@code (NAMEDATALEN = 64) - 1 == 63} characters, and prepared
+   * as a quoted identifier without unicode escape sequence support for use in
+   * {@code LISTEN/UNLISTEN} commands.  Examples of channel names and corresponding
+   * {@code NOTIFY} commands:
+   * <ul>
+   *   <li>when {@code name == "the_channel"}: {@code NOTIFY the_channel, 'msg'},
+   *   {@code NOTIFY The_Channel, 'msg'}, or {@code NOTIFY "the_channel", 'msg'}
+   *   succeed in delivering a message to the created channel
+   *   </li>
+   *   <li>when {@code name == "The_Channel"}: {@code NOTIFY "The_Channel", 'msg'},
+   *   succeeds in delivering a message to the created channel
+   *   </li>
+   *   <li></li>
+   * </ul>
    * @return the channel
    */
   PgChannel channel(String name);
