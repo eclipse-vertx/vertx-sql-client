@@ -25,6 +25,9 @@ import io.reactiverse.pgclient.impl.codec.encoder.PasswordMessage;
 import io.reactiverse.pgclient.impl.codec.encoder.StartupMessage;
 import io.vertx.core.Handler;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 /**
  * Initialize the connection so it can be used to interact with the database.
  *
@@ -32,12 +35,11 @@ import io.vertx.core.Handler;
  */
 public class InitCommand extends CommandBase<Connection> {
 
-  private static final String UTF8 = "UTF8";
   private final SocketConnection conn;
   private final String username;
   private final String password;
   private final String database;
-  private String CLIENT_ENCODING;
+  private String encoding;
   private MessageEncoder out;
 
   InitCommand(
@@ -80,7 +82,7 @@ public class InitCommand extends CommandBase<Connection> {
   @Override
   public void handleParameterStatus(String key, String value) {
     if(key.equals("client_encoding")) {
-      CLIENT_ENCODING = value;
+      encoding = value;
     }
   }
 
@@ -99,9 +101,14 @@ public class InitCommand extends CommandBase<Connection> {
     // The final phase before returning the connection
     // We should make sure we are supporting only UTF8
     // https://www.postgresql.org/docs/9.5/static/multibyte.html#MULTIBYTE-CHARSET-SUPPORTED
+    Charset cs = null;
+    try {
+      cs = Charset.forName(encoding);
+    } catch (Exception ignore) {
+    }
     CommandResponse<Connection> fut;
-    if(!CLIENT_ENCODING.equals(UTF8)) {
-      fut = CommandResponse.failure(CLIENT_ENCODING + " is not supported in the client only " + UTF8);
+    if(cs == null || !cs.equals(StandardCharsets.UTF_8)) {
+      fut = CommandResponse.failure(encoding + " is not supported in the client only UTF8");
     } else {
       fut = CommandResponse.success(conn);
     }
