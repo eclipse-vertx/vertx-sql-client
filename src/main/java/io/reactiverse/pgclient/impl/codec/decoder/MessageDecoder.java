@@ -50,6 +50,7 @@ public class MessageDecoder extends ChannelInboundHandlerAdapter {
   private final Deque<CommandBase<?>> inflight;
   private final ByteBufAllocator alloc;
   private Handler<? super CommandResponse<?>> commandResponseHandler;
+  private Handler<NoticeResponse> noticeHandler;
 
   private ByteBuf in;
 
@@ -60,11 +61,13 @@ public class MessageDecoder extends ChannelInboundHandlerAdapter {
 
   public void run(CommandBase<?> cmd) {
     cmd.completionHandler = commandResponseHandler;
+    cmd.noticeHandler = noticeHandler;
   }
 
   @Override
   public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
     commandResponseHandler = ctx::fireChannelRead;
+    noticeHandler = ctx::fireChannelRead;
   }
 
   @Override

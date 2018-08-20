@@ -32,6 +32,7 @@ import io.vertx.core.Handler;
 public abstract class CommandBase<R> {
 
   public Handler<? super CommandResponse<R>> completionHandler;
+  public Handler<NoticeResponse> noticeHandler;
   Handler<? super CommandResponse<R>> handler;
   Throwable failure;
   R result;
@@ -69,7 +70,7 @@ public abstract class CommandBase<R> {
   }
 
   public void handleNoticeResponse(NoticeResponse noticeResponse) {
-    System.out.println(getClass().getSimpleName() + " should handle message " + noticeResponse);
+    noticeHandler.handle(noticeResponse);
   }
 
   public void handleErrorResponse(ErrorResponse errorResponse) {
