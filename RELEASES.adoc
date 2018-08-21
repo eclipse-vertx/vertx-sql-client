@@ -1,4 +1,12 @@
 
+== 0.10.1
+
+Fixed issues: https://github.com/reactiverse/reactive-pg-client/milestone/8?closed=1
+
+=== Bug fixes
+
+- Connection client encoding parsing should be case insensitive for supporting Greenplum
+- Use quoted identifiers in LISTEN / UNLISTEN
 
 == 0.10.0
 

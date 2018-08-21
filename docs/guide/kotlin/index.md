@@ -31,7 +31,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 <dependency>
  <groupId>io.reactiverse</groupId>
  <artifactId>reactive-pg-client</artifactId>
- <version>0.10.0</version>
+ <version>0.10.1</version>
 </dependency>
 ```
 
@@ -39,7 +39,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 
 ```groovy
 dependencies {
- compile 'io.reactiverse:reactive-pg-client:0.10.0'
+ compile 'io.reactiverse:reactive-pg-client:0.10.1'
 }
 ```
 
@@ -761,6 +761,51 @@ subscriber.connect({ ar ->
 
 ```
 
+The channel name that is given to the channel method will be the exact name of the channel as held by Postgres for sending
+notifications.  Note this is different than the representation of the channel name in SQL, and
+internally [`PgSubscriber`](../../apidocs/io/reactiverse/pgclient/pubsub/PgSubscriber.html) will prepare the submitted channel name as a quoted identifier:
+
+```kotlin
+
+var subscriber = PgSubscriber.subscriber(vertx, PgConnectOptions(
+  port = 5432,
+  host = "the-host",
+  database = "the-db",
+  user = "user",
+  password = "secret"))
+
+subscriber.connect({ ar ->
+  if (ar.succeeded()) {
+    // Complex channel name - name in PostgreSQL requires a quoted ID
+    subscriber.channel("Complex.Channel.Name").handler({ payload ->
+      println("Received ${payload}")
+    })
+    subscriber.channel("Complex.Channel.Name").subscribeHandler({ subscribed ->
+      subscriber.actualConnection().query("NOTIFY \"Complex.Channel.Name\", 'msg'", { notified ->
+        println("Notified \"Complex.Channel.Name\"")
+      })
+    })
+
+    // PostgreSQL simple ID's are forced lower-case 
+    subscriber.channel("simple_channel").handler({ payload ->
+      println("Received ${payload}")
+    })
+    subscriber.channel("simple_channel").subscribeHandler({ subscribed ->
+      // The following simple channel identifier is forced to lower case
+      subscriber.actualConnection().query("NOTIFY Simple_CHANNEL, 'msg'", { notified ->
+        println("Notified simple_channel")
+      })
+    })
+
+    // The following channel name is longer than the current
+    // (NAMEDATALEN = 64) - 1 == 63 character limit and will be truncated
+    subscriber.channel("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbb").handler({ payload ->
+      println("Received ${payload}")
+    })
+  }
+})
+
+```
 You can provide a reconnect policy as a function that takes the number of `retries` as argument and returns an `amountOfTime`
 value:
 
