@@ -1,4 +1,7 @@
+DROP TYPE IF EXISTS weather CASCADE;
 DROP TYPE IF EXISTS mood CASCADE;
+
+CREATE TYPE weather AS ENUM ('sunny', 'cloudy', 'rainy');
 CREATE TYPE mood AS ENUM ('unhappy', 'ok', 'happy');
 
 -- World table
@@ -170,10 +173,11 @@ INSERT INTO "ArrayDataType" VALUES (2, ARRAY [TRUE],
 DROP TABLE IF EXISTS "EnumDataType";
 CREATE TABLE "EnumDataType" (
   "id" INTEGER NOT NULL PRIMARY KEY,
-  "currentMood" mood
+  "currentMood" mood,
+  "currentWeather" weather
 );
-INSERT INTO "EnumDataType" ("id", "currentMood") VALUES (1, 'ok');
-INSERT INTO "EnumDataType" ("id", "currentMood") VALUES (2, 'unhappy');
-INSERT INTO "EnumDataType" ("id", "currentMood") VALUES (3, 'happy');
-INSERT INTO "EnumDataType" ("id", "currentMood") VALUES (4, null);
-INSERT INTO "EnumDataType" ("id", "currentMood") VALUES (5, 'ok');
+INSERT INTO "EnumDataType" ("id", "currentMood", "currentWeather") VALUES (1, 'ok', 'sunny');
+INSERT INTO "EnumDataType" ("id", "currentMood", "currentWeather") VALUES (2, 'unhappy', 'cloudy');
+INSERT INTO "EnumDataType" ("id", "currentMood", "currentWeather") VALUES (3, 'happy', 'rainy');
+INSERT INTO "EnumDataType" ("id", "currentMood", "currentWeather") VALUES (4, null, null);
+INSERT INTO "EnumDataType" ("id", "currentMood", "currentWeather") VALUES (5, 'ok', 'sunny');

@@ -1738,6 +1738,46 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
   }
 
   @Test
+  public void testEncodeEnumArrayMultipleValues(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Enum\" = $1 WHERE \"id\" = $2 RETURNING \"Enum\"",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+              .addStringArray(new String[]{"unhappy", "ok"})
+              .addInteger(2)
+            , ctx.asyncAssertSuccess(result -> {
+              ColumnChecker.checkColumn(0, "Enum")
+                .returns(Tuple::getValue, Row::getValue, new String[]{"unhappy", "ok"})
+                .returns(Tuple::getStringArray, Row::getStringArray, new String[]{"unhappy", "ok"})
+                .forRow(result.iterator().next());
+              async.complete();
+            }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testEncodeEnumArrayEmptyValues(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Enum\" = $1 WHERE \"id\" = $2 RETURNING \"Enum\"",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+              .addStringArray(new String[]{})
+              .addInteger(2)
+            , ctx.asyncAssertSuccess(result -> {
+              ColumnChecker.checkColumn(0, "Enum")
+                .returns(Tuple::getValue, Row::getValue, new String[]{})
+                .returns(Tuple::getStringArray, Row::getStringArray, new String[]{})
+                .forRow(result.iterator().next());
+              async.complete();
+            }));
+        }));
+    }));
+  }
+
+  @Test
   public void testDecodeLocalDateArray(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {

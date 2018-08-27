@@ -36,9 +36,11 @@ import java.time.*;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.IntFunction;
+import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.*;
 
@@ -102,6 +104,10 @@ public class DataTypeCodec {
         break;
       case NUMERIC_ARRAY:
         textEncodeNUMERIC_ARRAY((Numeric[]) value, buff);
+        break;
+      case UNKNOWN:
+        //default to treating unknown as a string
+        buff.writeCharSequence(String.valueOf(value), StandardCharsets.UTF_8);
         break;
       default:
         System.out.println("Data type " + id + " does not support text encoding");
@@ -244,12 +250,6 @@ public class DataTypeCodec {
       case INTERVAL_ARRAY:
         binaryEncodeArray((Interval[]) value, DataType.INTERVAL, buff);
         break;
-      case ENUM:
-        binaryEncodeTEXT((String) value, buff);
-        break;
-      case ENUM_ARRAY:
-        binaryEncodeArray((String[]) value, DataType.ENUM, buff);
-        break;
       default:
         System.out.println("Data type " + id + " does not support binary encoding");
         defaultEncodeBinary(value, buff);
@@ -347,10 +347,6 @@ public class DataTypeCodec {
         return binaryDecodeINTERVAL(len, buff);
       case INTERVAL_ARRAY:
         return binaryDecodeArray(INTERVAL_ARRAY_FACTORY, DataType.INTERVAL, len, buff);
-      case ENUM:
-        return binaryDecodeTEXT(len, buff);
-      case ENUM_ARRAY:
-        return binaryDecodeArray(STRING_ARRAY_FACTORY, DataType.ENUM, len, buff);
       default:
         System.out.println("Data type " + id + " does not support binary decoding");
         return defaultDecodeBinary(len, buff);
@@ -451,12 +447,7 @@ public class DataTypeCodec {
         return textDecodeINTERVAL(len, buff);
       case INTERVAL_ARRAY:
         return textDecodeArray(INTERVAL_ARRAY_FACTORY, DataType.INTERVAL, len, buff);
-      case ENUM:
-        return textdecodeTEXT(len, buff);
-      case ENUM_ARRAY:
-        return textDecodeArray(STRING_ARRAY_FACTORY, DataType.ENUM, len, buff);
       default:
-        System.out.println("Data type " + id + " does not support text decoding");
         return defaultDecodeText(len, buff);
     }
   }
@@ -472,6 +463,14 @@ public class DataTypeCodec {
         } else {
           return REFUSED_SENTINEL;
         }
+      case UNKNOWN:
+        if (value instanceof String[]) {
+          return Arrays.stream((String[]) value).collect(Collectors.joining(",", "{", "}"));
+        } else if (value instanceof String) {
+          return value;
+        } else {
+          return REFUSED_SENTINEL;
+        }
       default:
         Class<?> javaType = type.type;
         return javaType.isInstance(value) ? javaType.cast(value) : REFUSED_SENTINEL;
@@ -479,9 +478,14 @@ public class DataTypeCodec {
   }
 
   private static Object defaultDecodeText(int len, ByteBuf buff) {
-    // Default to null
-    buff.skipBytes(len);
-    return null;
+    // decode unknown text values as text or as an array if it begins with `{`
+    if (buff.getByte(buff.readerIndex()) == '{') {
+      if (len == 2) {
+        return empty_string_array;
+      }
+      return textDecodeArray(STRING_ARRAY_FACTORY, DataType.TEXT, len - 1, buff);
+    }
+    return textdecodeTEXT(len, buff);
   }
 
   private static void defaultEncodeBinary(Object value, ByteBuf buff) {
