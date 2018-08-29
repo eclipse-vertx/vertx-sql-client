@@ -42,7 +42,15 @@ class Transaction extends PgClientBase<Transaction> implements PgTransaction {
     this.context = context;
     this.disposeHandler = disposeHandler;
     this.conn = conn;
-    conn.schedule(doQuery("BEGIN", this::afterBegin));
+    doSchedule(doQuery("BEGIN", this::afterBegin));
+  }
+
+  private void doSchedule(CommandBase<?> cmd) {
+    if (context == Vertx.currentContext()) {
+      conn.schedule(cmd);
+    } else {
+      context.runOnContext(v -> conn.schedule(cmd));
+    }
   }
 
   private synchronized void afterBegin(AsyncResult<?> ar) {
@@ -75,7 +83,7 @@ class Transaction extends PgClientBase<Transaction> implements PgTransaction {
             wrap(cmd);
             status = ST_PROCESSING;
           }
-          conn.schedule(cmd);
+          doSchedule(cmd);
         }
         break;
       }
