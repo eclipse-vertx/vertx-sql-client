@@ -367,18 +367,25 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<PgConnection
           PgTransaction tx = conn.begin();
           AtomicInteger u1 = new AtomicInteger();
           AtomicInteger u2 = new AtomicInteger();
-          conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-1')", ctx.asyncAssertSuccess(res -> u1.addAndGet(res.rowCount())));
-          conn.query("INSERT INTO Test (id, val) VALUES (2, 'val-2')", ctx.asyncAssertSuccess(res -> u2.addAndGet(res.rowCount())));
-          exec.execute(() -> {
-            tx.rollback(ctx.asyncAssertSuccess(v -> {
-              ctx.assertEquals(1, u1.get());
-              ctx.assertEquals(1, u2.get());
-              conn.query("SELECT id FROM Test WHERE id=1 OR id=2", ctx.asyncAssertSuccess(result -> {
-                ctx.assertEquals(0, result.size());
-                done.complete();
-              }));
+          conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-1')", ctx.asyncAssertSuccess(res1 -> {
+            u1.addAndGet(res1.rowCount());
+            exec.execute(() -> {
+
+            });
+            conn.query("INSERT INTO Test (id, val) VALUES (2, 'val-2')", ctx.asyncAssertSuccess(res2 -> {
+              u2.addAndGet(res2.rowCount());
+              exec.execute(() -> {
+                tx.rollback(ctx.asyncAssertSuccess(v -> {
+                  ctx.assertEquals(1, u1.get());
+                  ctx.assertEquals(1, u2.get());
+                  conn.query("SELECT id FROM Test WHERE id=1 OR id=2", ctx.asyncAssertSuccess(result -> {
+                    ctx.assertEquals(0, result.size());
+                    done.complete();
+                  }));
+                }));
+              });
             }));
-          });
+          }));
         });
       });
     }));
