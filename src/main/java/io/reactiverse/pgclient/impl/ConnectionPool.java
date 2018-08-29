@@ -57,7 +57,7 @@ public class ConnectionPool {
     }
   }
 
-  class PooledConnection implements Connection, Connection.Holder  {
+  private class PooledConnection implements Connection, Connection.Holder  {
 
     private final Connection conn;
     private Holder holder;
@@ -84,7 +84,7 @@ public class ConnectionPool {
     /**
      * Close the underlying connection
      */
-    void close() {
+    private void close() {
       conn.close(this);
     }
 
