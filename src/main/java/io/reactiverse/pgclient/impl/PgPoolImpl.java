@@ -155,10 +155,15 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
 
   @Override
   public void close() {
-    pool.close();
-    factory.close();
-    if (closeVertx) {
-      context.owner().close();
+    Context current = Vertx.currentContext();
+    if (current == context) {
+      pool.close();
+      factory.close();
+      if (closeVertx) {
+        context.owner().close();
+      }
+    } else {
+      context.runOnContext(v -> close());
     }
   }
 }
