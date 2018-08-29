@@ -33,7 +33,6 @@ public class PgCursorImpl implements PgCursor {
   private final Tuple params;
 
   private String portal;
-  private boolean completed;
   private boolean closed;
   private PgResultBuilder<PgRowSet, PgRowSetImpl, PgRowSet> result;
 
@@ -43,13 +42,16 @@ public class PgCursorImpl implements PgCursor {
   }
 
   @Override
-  public boolean hasMore() {
+  public synchronized boolean hasMore() {
+    if (result == null) {
+      throw new IllegalStateException("No current cursor read");
+    }
     return result.isSuspended();
   }
 
   @Override
-  public void read(int count, Handler<AsyncResult<PgRowSet>> handler) {
-    if (result == null) {
+  public synchronized void read(int count, Handler<AsyncResult<PgRowSet>> handler) {
+    if (portal == null) {
       portal = UUID.randomUUID().toString();
       result = new PgResultBuilder<>(PgRowSetImpl.FACTORY, handler);
       ps.execute(params, count, portal, false, false, PgRowSetImpl.COLLECTOR, result, result);
@@ -62,17 +64,16 @@ public class PgCursorImpl implements PgCursor {
   }
 
   @Override
-  public void close(Handler<AsyncResult<Void>> completionHandler) {
+  public synchronized void close(Handler<AsyncResult<Void>> completionHandler) {
     if (!closed) {
       closed = true;
       if (portal == null) {
-        // Nothing to do
         completionHandler.handle(Future.succeededFuture());
       } else {
-        if (!completed) {
-          completed = true;
-          ps.closePortal(portal, completionHandler);
-        }
+        String p = portal;
+        portal = null;
+        result = null;
+        ps.closePortal(p, completionHandler);
       }
     }
   }

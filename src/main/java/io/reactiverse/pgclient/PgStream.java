@@ -18,9 +18,13 @@
 package io.reactiverse.pgclient;
 
 import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.streams.ReadStream;
 
+/**
+ * A row oriented stream.
+ */
 @VertxGen
 public interface PgStream<T> extends ReadStream<T> {
 
@@ -38,5 +42,17 @@ public interface PgStream<T> extends ReadStream<T> {
 
   @Override
   PgStream<T> endHandler(Handler<Void> endHandler);
+
+  /**
+   * Close the stream and release the resources.
+   */
+  void close();
+
+  /**
+   * Close the stream and release the resources.
+   *
+   * @param completionHandler the completion handler for this operation
+   */
+  void close(Handler<AsyncResult<Void>> completionHandler);
 
 }

@@ -133,7 +133,7 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
 
   @Override
   public PgStream<Row> createStream(int fetch, Tuple args) {
-    return new PgCursorStreamImpl(this, fetch, args);
+    return new PgStreamImpl(this, fetch, args);
   }
 
   @Override
