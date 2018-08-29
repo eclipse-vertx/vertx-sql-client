@@ -18,9 +18,7 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.*;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import io.vertx.core.*;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -33,11 +31,13 @@ import java.util.stream.Collector;
 class PgPreparedQueryImpl implements PgPreparedQuery {
 
   private final Connection conn;
+  private final Context context;
   private final PreparedStatement ps;
   private final AtomicBoolean closed = new AtomicBoolean();
 
-  PgPreparedQueryImpl(Connection conn, PreparedStatement ps) {
+  PgPreparedQueryImpl(Connection conn, Context context, PreparedStatement ps) {
     this.conn = conn;
+    this.context = context;
     this.ps = ps;
   }
 
@@ -73,16 +73,20 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
     if (msg != null) {
       throw new IllegalArgumentException(msg);
     }
-    conn.schedule(new ExtendedQueryCommand<>(
-      ps,
-      args,
-      fetch,
-      portal,
-      suspended,
-      singleton,
-      collector,
-      resultHandler,
-      handler));
+    if (context == Vertx.currentContext()) {
+      conn.schedule(new ExtendedQueryCommand<>(
+        ps,
+        args,
+        fetch,
+        portal,
+        suspended,
+        singleton,
+        collector,
+        resultHandler,
+        handler));
+    } else {
+      context.runOnContext(v -> execute(args, fetch, portal, suspended, singleton, collector, resultHandler, handler));
+    }
     return this;
   }
 

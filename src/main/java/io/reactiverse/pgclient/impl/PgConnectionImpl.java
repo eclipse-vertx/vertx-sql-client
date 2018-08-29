@@ -143,7 +143,7 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
   public PgConnection prepare(String sql, Handler<AsyncResult<PgPreparedQuery>> handler) {
     schedule(new PrepareStatementCommand(sql, ar -> {
       if (ar.succeeded()) {
-        handler.handle(Future.succeededFuture(new PgPreparedQueryImpl(conn, ar.result())));
+        handler.handle(Future.succeededFuture(new PgPreparedQueryImpl(conn, context, ar.result())));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
       }

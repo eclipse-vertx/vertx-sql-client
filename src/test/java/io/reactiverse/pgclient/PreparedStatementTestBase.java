@@ -19,6 +19,7 @@ package io.reactiverse.pgclient;
 
 import io.reactiverse.pgclient.impl.codec.util.Util;
 import io.vertx.core.Vertx;
+import io.vertx.core.streams.ReadStream;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -28,8 +29,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -240,26 +244,39 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
 
   @Test
   public void testStreamQueryPauseInBatch(TestContext ctx) {
+    testStreamQueryPauseInBatch(ctx, Runnable::run);
+  }
+
+  @Test
+  public void testStreamQueryPauseInBatchFromAnotherThread(TestContext ctx) {
+    testStreamQueryPauseInBatch(ctx, t -> new Thread(t).start());
+  }
+
+  private void testStreamQueryPauseInBatch(TestContext ctx, Executor executor) {
     Async async = ctx.async();
     PgClient.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
       conn.query("BEGIN", ctx.asyncAssertSuccess(begin -> {
         conn.prepare("SELECT * FROM Fortune", ctx.asyncAssertSuccess(ps -> {
           PgStream<Row> stream = ps.createStream(4, Tuple.tuple());
-          List<Tuple> rows = new ArrayList<>();
+          List<Tuple> rows = Collections.synchronizedList(new ArrayList<>());
           AtomicInteger ended = new AtomicInteger();
-          stream.endHandler(v -> {
-            ctx.assertEquals(0, ended.getAndIncrement());
-            ctx.assertEquals(12, rows.size());
-            async.complete();
-          });
-          stream.handler(tuple -> {
-            rows.add(tuple);
-            if (rows.size() == 2) {
-              stream.pause();
-              vertx.setTimer(100, v -> {
-                stream.resume();
+          executor.execute(() -> {
+            stream.endHandler(v -> {
+              ctx.assertEquals(0, ended.getAndIncrement());
+              ctx.assertEquals(12, rows.size());
+              async.complete();
+            });
+            stream.handler(tuple -> {
+              executor.execute(() -> {
+                rows.add(tuple);
+                if (rows.size() == 2) {
+                  stream.pause();
+                  vertx.setTimer(100, v -> {
+                    executor.execute(stream::resume);
+                  });
+                }
               });
-            }
+            });
           });
         }));
       }));
@@ -282,7 +299,10 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
       }));
     }));
   }
-/*
+
+
+
+  /*
   @Test
   public void testStreamQueryCancel(TestContext ctx) {
     Async async = ctx.async();
