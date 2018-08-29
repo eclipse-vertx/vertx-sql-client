@@ -152,10 +152,8 @@ class Transaction extends PgClientBase<Transaction> implements PgTransaction {
   public void rollback(Handler<AsyncResult<Void>> handler) {
     schedule(doQuery("ROLLBACK", ar -> {
       disposeHandler.handle(null);
-      if (ar.succeeded()) {
-        handler.handle(Future.succeededFuture());
-      } else {
-        handler.handle(Future.failedFuture(ar.cause()));
+      if (handler != null) {
+        handler.handle(ar.mapEmpty());
       }
     }));
   }
