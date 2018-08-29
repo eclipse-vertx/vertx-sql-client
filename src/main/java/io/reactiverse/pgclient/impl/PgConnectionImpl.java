@@ -52,8 +52,7 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
 
   @Override
   protected void schedule(CommandBase<?> cmd) {
-    Context current = Vertx.currentContext();
-    if (current == context) {
+    if (context == Vertx.currentContext()) {
       if (tx != null) {
         tx.schedule(cmd);
       } else {
@@ -128,11 +127,15 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
 
   @Override
   public void close() {
-    if (tx != null) {
-      tx.rollback(ar -> conn.close(this));
-      tx = null;
+    if (context == Vertx.currentContext()) {
+      if (tx != null) {
+        tx.rollback(ar -> conn.close(this));
+        tx = null;
+      } else {
+        conn.close(this);
+      }
     } else {
-      conn.close(this);
+      context.runOnContext(v -> close());
     }
   }
 
