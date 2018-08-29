@@ -36,6 +36,7 @@ public class ConnectionPool {
   private final Set<PooledConnection> all = new HashSet<>();
   private final ArrayDeque<PooledConnection> available = new ArrayDeque<>();
   private int size;
+  private boolean checkInProgress;
 
   public ConnectionPool(Consumer<Handler<AsyncResult<Connection>>> connector, int maxSize) {
     this.maxSize = maxSize;
@@ -141,29 +142,38 @@ public class ConnectionPool {
   }
 
   private void check() {
-    if (waiters.size() > 0) {
-      if (available.size() > 0) {
-        PooledConnection proxy = available.poll();
-        Future<Connection> waiter = waiters.poll();
-        waiter.complete(proxy);
-      } else {
-        if (size < maxSize) {
-          size++;
-          connector.accept(ar -> {
-            if (ar.succeeded()) {
-              Connection conn = ar.result();
-              PooledConnection proxy = new PooledConnection(conn);
-              all.add(proxy);
-              conn.init(proxy);
-              release(proxy);
+    if (!checkInProgress) {
+      checkInProgress = true;
+      try {
+        while (waiters.size() > 0) {
+          if (available.size() > 0) {
+            PooledConnection proxy = available.poll();
+            Future<Connection> waiter = waiters.poll();
+            waiter.complete(proxy);
+          } else {
+            if (size < maxSize) {
+              size++;
+              connector.accept(ar -> {
+                if (ar.succeeded()) {
+                  Connection conn = ar.result();
+                  PooledConnection proxy = new PooledConnection(conn);
+                  all.add(proxy);
+                  conn.init(proxy);
+                  release(proxy);
+                } else {
+                  Future<Connection> waiter;
+                  while ((waiter = waiters.poll()) != null) {
+                    waiter.fail(ar.cause());
+                  }
+                }
+              });
             } else {
-              Future<Connection> waiter;
-              while ((waiter = waiters.poll()) != null) {
-                waiter.fail(ar.cause());
-              }
+              break;
             }
-          });
+          }
         }
+      } finally {
+        checkInProgress = false;
       }
     }
   }

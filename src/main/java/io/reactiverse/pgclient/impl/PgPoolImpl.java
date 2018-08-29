@@ -80,11 +80,8 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
       pool.acquire(new CommandWaiter() {
         @Override
         protected void onSuccess(Connection conn) {
-          // Work around stack over flow
-          context.runOnContext(v -> {
-            conn.schedule(cmd);
-            conn.close(this);
-          });
+          conn.schedule(cmd);
+          conn.close(this);
         }
         @Override
         protected void onFailure(Throwable cause) {
