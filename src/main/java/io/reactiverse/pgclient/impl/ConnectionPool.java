@@ -37,6 +37,7 @@ public class ConnectionPool {
   private final ArrayDeque<PooledConnection> available = new ArrayDeque<>();
   private int size;
   private boolean checkInProgress;
+  private boolean closed;
 
   public ConnectionPool(Consumer<Handler<AsyncResult<Connection>>> connector, int maxSize) {
     this.maxSize = maxSize;
@@ -48,13 +49,27 @@ public class ConnectionPool {
   }
 
   public void acquire(Handler<AsyncResult<Connection>> holder) {
+    if (closed) {
+      throw new IllegalStateException("Connection pool closed");
+    }
     waiters.add(Future.<Connection>future().setHandler(holder));
     check();
   }
 
   public void close() {
+    if (closed) {
+      throw new IllegalStateException("Connection pool already closed");
+    }
+    closed = true;
     for (PooledConnection pooled : new ArrayList<>(all)) {
       pooled.close();
+    }
+    Future<Connection> failure = Future.failedFuture("Connection pool close");
+    for (Future<Connection> pending : waiters) {
+      try {
+        pending.handle(failure);
+      } catch (Exception ignore) {
+      }
     }
   }
 
@@ -142,6 +157,9 @@ public class ConnectionPool {
   }
 
   private void check() {
+    if (closed) {
+      return;
+    }
     if (!checkInProgress) {
       checkInProgress = true;
       try {
