@@ -267,15 +267,15 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
               async.complete();
             });
             stream.handler(tuple -> {
-              executor.execute(() -> {
-                rows.add(tuple);
-                if (rows.size() == 2) {
-                  stream.pause();
+              rows.add(tuple);
+              if (rows.size() == 2) {
+                stream.pause();
+                executor.execute(() -> {
                   vertx.setTimer(100, v -> {
                     executor.execute(stream::resume);
                   });
-                }
-              });
+                });
+              }
             });
           });
         }));
