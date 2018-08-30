@@ -834,7 +834,7 @@
       
       
         &mdash;
-        <div class='inline'>the channel name</div>
+        <div class='inline'>the channel name <p/> This will be the name of the channel exactly as held by Postgres for sending notifications. Internally this name will be truncated to the Postgres identifier maxiumum length of <code>(NAMEDATALEN = 64) - 1 == 63</code> characters, and prepared as a quoted identifier without unicode escape sequence support for use in <code>LISTEN/UNLISTEN</code> commands. Examples of channel names and corresponding <code>NOTIFY</code> commands: <ul> <li>when <code>name == "the_channel"</code>: <code>NOTIFY the_channel, 'msg'</code>, <code>NOTIFY The_Channel, 'msg'</code>, or <code>NOTIFY "the_channel", 'msg'</code> succeed in delivering a message to the created channel </li> <li>when <code>name == "The_Channel"</code>: <code>NOTIFY "The_Channel", 'msg'</code>, succeeds in delivering a message to the created channel </li> <li></li> </ul></div>
       
     </li>
   
@@ -1311,7 +1311,7 @@
 </div>
 
     <div id="footer">
-  Generated on Fri Aug  3 14:00:21 2018 by
+  Generated on Thu Aug 30 16:55:26 2018 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.8.7.6 (ruby-2.3.3).
 </div>

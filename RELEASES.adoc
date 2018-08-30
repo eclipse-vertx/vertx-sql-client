@@ -1,4 +1,16 @@
 
+== 0.10.2
+
+Fixed issues: https://github.com/reactiverse/reactive-pg-client/milestone/9?closed=1
+
+=== Bug fixes
+
+- Fixed issues: https://github.com/reactiverse/reactive-pg-client/milestone/8?closed=1
+- Missing prepared statement tuple validation
+- JSONB array treated as non array
+- PreparedQuery should schedule commands from the event loop thread
+- Calling Transaction rollback() leads to an NPE
+
 == 0.10.1
 
 Fixed issues: https://github.com/reactiverse/reactive-pg-client/milestone/8?closed=1

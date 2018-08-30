@@ -139,6 +139,9 @@
 <h2 id="_usage">Usage</h2>
 <div class="sectionbody">
 <div class="paragraph">
+<p>Latest release is <a href="https://github.com/reactiverse/reactive-pg-client/blob/master/RELEASES.adoc">0.10.1</a>.</p>
+</div>
+<div class="paragraph">
 <p>To use the client, add the following dependency to the <em>dependencies</em> section of your build descriptor:</p>
 </div>
 <div class="ulist">
@@ -153,7 +156,7 @@
 <pre class="highlight"><code class="language-xml" data-lang="xml">&lt;dependency&gt;
   &lt;groupId&gt;io.reactiverse&lt;/groupId&gt;
   &lt;artifactId&gt;reactive-pg-client&lt;/artifactId&gt;
-  &lt;version&gt;0.9.0&lt;/version&gt;
+  &lt;version&gt;0.10.1&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
 </div>
 </div>
@@ -167,7 +170,7 @@
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code class="language-groovy" data-lang="groovy">dependencies {
-  compile 'io.reactiverse:reactive-pg-client:0.8.0'
+  compile 'io.reactiverse:reactive-pg-client:0.10.1'
 }</code></pre>
 </div>
 </div>
@@ -458,6 +461,80 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -&gt; {
 <h2 id="_developers">Developers</h2>
 <div class="sectionbody">
 <div class="sect2">
+<h3 id="_testing">Testing</h3>
+<div class="paragraph">
+<p>Out of the box, the test suite runs an embedded Postgres by default.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_testing_with_an_external_database">Testing with an external database</h3>
+<div class="paragraph">
+<p>You can run tests with an external database:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>the script <code>docker/postgres/resources/create-postgres.sql</code> creates the test data</p>
+</li>
+<li>
+<p>the <code>TLSTest</code> expects the database to be configured with SSL with <code>docker/postgres/resources/server.key</code> / <code>docker/postgres/resources/server.cert`</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>You need to override the default connection uri for testing:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>&gt; mvn test -Dconnection.uri=postgres://$username:$password@$host:$port/$database</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+unix domain sockets are not testable (yet).
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_testing_with_docker">Testing with Docker</h3>
+<div class="paragraph">
+<p>Create and run the following docker image:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>&gt; docker build -t test/postgres docker/postgres
+&gt; docker run --rm --name test-postgres -p 5432:5432 test/postgres</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Run tests:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>&gt; mvn test -Dconnection.uri=postgres://postgres:postgres@localhost/postgres</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+unix domain sockets are not testable (yet).
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
 <h3 id="_documentation">Documentation</h3>
 <div class="paragraph">
 <p>The online and published documentation is in <code>/docs</code> and is served by GitHub pages with Jekyll.</p>
@@ -507,7 +584,7 @@ source generates the [jekyll/guide/java/index.md](jekyll/guide/java/index.md).</
 </div></div></div>
 
     <div id="footer">
-  Generated on Fri Aug  3 14:00:18 2018 by
+  Generated on Thu Aug 30 16:55:23 2018 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.8.7.6 (ruby-2.3.3).
 </div>
