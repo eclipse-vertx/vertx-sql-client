@@ -5,14 +5,14 @@
 Runs query operations with 8 threads
 
 ```
-> mvn clean package
-> java -jar target/vertx-pg-client-0.3.1-SNAPSHOT-benchmarks.jar
+> mvn clean package -Pbenchmark
+> java -jar target/vertx-pg-client-0.3.1-SNAPSHOT-benchmark.jar
 ```
 
 You can profile the benchmark
 
 ```
-> java -jar target/vertx-pg-client-0.3.1-SNAPSHOT-benchmarks.jar SingleSelectBenchmark.poolPreparedQuery -jvmArgsAppend "-XX:+UnlockCommercialFeatures -XX:+FlightRecorder -XX:StartFlightRecording=duration=60s,filename=./profiling-data.jfr,name=profile,settings=profile"
+> java -jar target/vertx-pg-client-0.3.1-SNAPSHOT-benchmark.jar SingleSelectBenchmark.poolPreparedQuery -jvmArgsAppend "-XX:+UnlockCommercialFeatures -XX:+FlightRecorder -XX:StartFlightRecording=duration=60s,filename=./profiling-data.jfr,name=profile,settings=profile"
 ```
 
 just make sure to run one benchmark at a time.
@@ -25,4 +25,4 @@ Some messages are really small, and it would be good allocate the right size ins
 
 ### Row decoding
 
-Investigate plugability of row decoder that can operate on `@DataObject` directly. 
+Investigate plugability of row decoder that can operate on `@DataObject` directly.

@@ -277,29 +277,6 @@
         </executions>
       </plugin>
       <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>assemble-benchmarks</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <archive>
-                <manifest>
-                  <mainClass>io.reactiverse.pgclient.RawBenchmark</mainClass>
-                </manifest>
-              </archive>
-              <descriptors>
-                <descriptor>src/benchmark/assembly/benchmarks.xml</descriptor>
-              </descriptors>
-              <attach>false</attach>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>2.21.0</version>
         <executions>
@@ -352,6 +329,38 @@
   </build>
 
   <profiles>
+
+    <profile>
+      <id>benchmark</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>assemble-benchmark</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <configuration>
+                  <archive>
+                    <manifest>
+                      <mainClass>io.reactiverse.pgclient.RawBenchmark</mainClass>
+                    </manifest>
+                  </archive>
+                  <descriptors>
+                    <descriptor>src/benchmark/assembly/benchmark.xml</descriptor>
+                  </descriptors>
+                  <attach>false</attach>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
     <profile>
       <id>jitwatch</id>
       <dependencies>
