@@ -182,4 +182,20 @@ public class ConnectionPoolTest {
     // The connection should be put back in the pool
     assertEquals(1, pool.available());
   }
+
+  @Test
+  public void testReleaseClosedConnectionShouldNotAddBackTheConnectionToThePool() {
+    ConnectionQueue queue = new ConnectionQueue();
+    ConnectionPool pool = new ConnectionPool(queue, 1);
+    // Acquire a connection from the pool for holder1
+    SimpleHolder holder1 = new SimpleHolder();
+    pool.acquire(holder1);
+    SimpleConnection conn1 = new SimpleConnection();
+    queue.connect(conn1);
+    holder1.init();
+    // Close connection
+    conn1.close();
+    holder1.close();
+    assertEquals(pool.available(), 0);
+  }
 }

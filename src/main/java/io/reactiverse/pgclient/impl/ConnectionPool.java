@@ -152,8 +152,10 @@ public class ConnectionPool {
   }
 
   private void release(PooledConnection proxy) {
-    available.add(proxy);
-    check();
+    if (all.contains(proxy)) {
+      available.add(proxy);
+      check();
+    }
   }
 
   private void check() {
