@@ -70,8 +70,14 @@ public abstract class PgClientBase<C extends PgClient> implements PgClient {
     Handler<AsyncResult<R3>> handler) {
     schedule(new PrepareStatementCommand(sql, ar -> {
       if (ar.succeeded()) {
-        PgResultBuilder<R1, R2, R3> b = new PgResultBuilder<>(factory, handler);
-        schedule(new ExtendedQueryCommand<>(ar.result(), arguments, singleton, collector, b, b));
+        PreparedStatement ps = ar.result();
+        String msg = ps.prepare((List<Object>) arguments);
+        if (msg != null) {
+          handler.handle(Future.failedFuture(msg));
+        } else {
+          PgResultBuilder<R1, R2, R3> b = new PgResultBuilder<>(factory, handler);
+          schedule(new ExtendedQueryCommand<>(ps, arguments, singleton, collector, b, b));
+        }
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
       }
@@ -108,9 +114,17 @@ public abstract class PgClientBase<C extends PgClient> implements PgClient {
     Handler<AsyncResult<R3>> handler) {
     schedule(new PrepareStatementCommand(sql, ar -> {
       if (ar.succeeded()) {
+        PreparedStatement ps = ar.result();
+        for  (Tuple args : batch) {
+          String msg = ps.prepare((List<Object>) args);
+          if (msg != null) {
+            handler.handle(Future.failedFuture(msg));
+            return;
+          }
+        }
         PgResultBuilder<R1, R2, R3> b = new PgResultBuilder<>(factory, handler);
         schedule(new ExtendedBatchQueryCommand<>(
-          ar.result(),
+          ps,
           batch.iterator(),
           singleton,
           collector,

@@ -69,21 +69,22 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
                                  Collector<Row, A, R> collector,
                                  QueryResultHandler<R> resultHandler,
                                  Handler<AsyncResult<Boolean>> handler) {
-    String msg = ps.prepare((List<Object>) args);
-    if (msg != null) {
-      throw new IllegalArgumentException(msg);
-    }
     if (context == Vertx.currentContext()) {
-      conn.schedule(new ExtendedQueryCommand<>(
-        ps,
-        args,
-        fetch,
-        portal,
-        suspended,
-        singleton,
-        collector,
-        resultHandler,
-        handler));
+      String msg = ps.prepare((List<Object>) args);
+      if (msg != null) {
+        handler.handle(Future.failedFuture(msg));
+      } else {
+        conn.schedule(new ExtendedQueryCommand<>(
+          ps,
+          args,
+          fetch,
+          portal,
+          suspended,
+          singleton,
+          collector,
+          resultHandler,
+          handler));
+      }
     } else {
       context.runOnContext(v -> execute(args, fetch, portal, suspended, singleton, collector, resultHandler, handler));
     }
@@ -123,7 +124,8 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
     for  (Tuple args : argsList) {
       String msg = ps.prepare((List<Object>) args);
       if (msg != null) {
-        throw new IllegalArgumentException(msg);
+        handler.handle(Future.failedFuture(msg));
+        return this;
       }
     }
     PgResultBuilder<R1, R2, R3> b = new PgResultBuilder<>(factory, handler);

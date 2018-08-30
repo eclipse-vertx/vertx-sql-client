@@ -88,7 +88,7 @@ public enum DataType {
   JSON(114, true, Json.class),
   JSON_ARRAY(199, true, Json[].class),
   JSONB(3802, true, Json.class),
-  JSONB_ARRAY(3807, true, Json.class),
+  JSONB_ARRAY(3807, true, Json[].class),
   XML(142, true, Object.class),
   XML_ARRAY(143, true, Object[].class),
   POINT(600, true, Point.class),

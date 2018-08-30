@@ -18,6 +18,7 @@
 package io.reactiverse.pgclient;
 
 import io.reactiverse.pgclient.impl.codec.util.Util;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.ext.unit.Async;
@@ -33,6 +34,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -140,19 +142,64 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     }));
   }
 
-  @Test
-  public void testQueryBindError(TestContext ctx) {
+  private static final String validationErrorSql = "SELECT * FROM Fortune WHERE id=$1";
+  private static final Tuple validationErrorTuple = Tuple.of("invalid-id");
+
+  private void testValidationError(TestContext ctx, BiConsumer<PgConnection, Handler<Throwable>> test) {
     Async async = ctx.async();
     PgClient.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
-        try {
-          ps.execute(Tuple.of("invalid-id"), ar -> {});
-        } catch (IllegalArgumentException e) {
-          ctx.assertEquals(Util.buildInvalidArgsError(Stream.of("invalid-id"), Stream.of(Integer.class)), e.getMessage());
-          async.complete();
-        }
+      test.accept(conn, failure -> {
+        ctx.assertEquals(Util.buildInvalidArgsError(Stream.of("invalid-id"), Stream.of(Integer.class)), failure.getMessage());
+        async.complete();
+      });
+      conn.preparedQuery("SELECT * FROM Fortune WHERE id=$1", Tuple.of("invalid-id"), ctx.asyncAssertFailure(failure -> {
       }));
     }));
+  }
+
+  @Test
+  public void testPrepareExecuteValidationError(TestContext ctx) {
+    testValidationError(ctx, (conn, cont) -> {
+      conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
+        ps.execute(Tuple.of("invalid-id"), ctx.asyncAssertFailure(cont));
+      }));
+    });
+  }
+
+  @Test
+  public void testPrepareCursorValidationError(TestContext ctx) {
+    testValidationError(ctx, (conn, cont) -> {
+      conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
+        try {
+          ps.cursor(Tuple.of("invalid-id"));
+        } catch (Exception e) {
+          cont.handle(e);
+        }
+      }));
+    });
+  }
+
+  @Test
+  public void testPrepareBatchValidationError(TestContext ctx) {
+    testValidationError(ctx, (conn, cont) -> {
+      conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
+        ps.batch(Collections.singletonList(Tuple.of("invalid-id")), ctx.asyncAssertFailure(cont));
+      }));
+    });
+  }
+
+  @Test
+  public void testPreparedQueryValidationError(TestContext ctx) {
+    testValidationError(ctx, (conn, cont) -> {
+      conn.preparedQuery("SELECT * FROM Fortune WHERE id=$1", Tuple.of("invalid-id"), ctx.asyncAssertFailure(cont));
+    });
+  }
+
+  @Test
+  public void testPreparedBatchValidationError(TestContext ctx) {
+    testValidationError(ctx, (conn, cont) -> {
+      conn.preparedBatch("SELECT * FROM Fortune WHERE id=$1", Collections.singletonList(Tuple.of("invalid-id")), ctx.asyncAssertFailure(cont));
+    });
   }
 
   // Need to test partial query close or abortion ?
