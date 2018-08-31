@@ -5,7 +5,6 @@ Fixed issues: https://github.com/reactiverse/reactive-pg-client/milestone/9?clos
 
 === Bug fixes
 
-- Fixed issues: https://github.com/reactiverse/reactive-pg-client/milestone/8?closed=1
 - Missing prepared statement tuple validation
 - JSONB array treated as non array
 - PreparedQuery should schedule commands from the event loop thread
