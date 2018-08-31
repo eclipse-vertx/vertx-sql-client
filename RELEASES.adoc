@@ -5,6 +5,7 @@ Fixed issues: https://github.com/reactiverse/reactive-pg-client/milestone/9?clos
 
 === Bug fixes
 
+- When a pooled connection is closed, the actual connection should not be made available after it has been closed internally
 - Missing prepared statement tuple validation
 - JSONB array treated as non array
 - PreparedQuery should schedule commands from the event loop thread
