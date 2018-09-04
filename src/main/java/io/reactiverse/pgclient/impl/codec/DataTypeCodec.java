@@ -479,7 +479,8 @@ public class DataTypeCodec {
 
   private static Object defaultDecodeText(int len, ByteBuf buff) {
     // decode unknown text values as text or as an array if it begins with `{`
-    if (buff.readableBytes() > 0 && buff.getByte(buff.readerIndex()) == '{') {
+    final int idx = buff.readerIndex();
+    if (idx < buff.writerIndex() && buff.getByte(idx) == '{') {
       if (len == 2) {
         buff.skipBytes(2);
         return empty_string_array;
