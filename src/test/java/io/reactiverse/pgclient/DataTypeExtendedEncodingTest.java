@@ -281,6 +281,30 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
   }
 
   @Test
+  public void testEncodeCustomType(TestContext ctx) {
+    Async async = ctx.async();
+    String actual = "('Othercity',\" 'Second Ave'\",f)";
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"CustomDataType\" SET \"address\" = $1  WHERE \"id\" = $2 RETURNING \"address\"",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple()
+              .addString("('Othercity', 'Second Ave', false)")
+              .addInteger(2)
+            , ctx.asyncAssertSuccess(result -> {
+              ctx.assertEquals(1, result.size());
+              ctx.assertEquals(1, result.rowCount());
+              Row row = result.iterator().next();
+              ColumnChecker.checkColumn(0, "address")
+                .returns(Tuple::getValue, Row::getValue, actual)
+                .returns(Tuple::getString, Row::getString, actual)
+                .forRow(row);
+              async.complete();
+            }));
+        }));
+    }));
+  }
+
+  @Test
   public void testDecodeFloat4(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
@@ -1761,7 +1785,7 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
   public void testEncodeEnumArrayEmptyValues(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"ArrayDataType\" SET \"Enum\" = $1 WHERE \"id\" = $2 RETURNING \"Enum\"",
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Enum\" = $1 WHERE \"id\" = $2 RETURNING \"Enum\", \"Boolean\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
               .addStringArray(new String[]{})
@@ -1770,6 +1794,10 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
               ColumnChecker.checkColumn(0, "Enum")
                 .returns(Tuple::getValue, Row::getValue, new String[]{})
                 .returns(Tuple::getStringArray, Row::getStringArray, new String[]{})
+                .forRow(result.iterator().next());
+              ColumnChecker.checkColumn(1, "Boolean")
+                .returns(Tuple::getValue, Row::getValue, new Boolean[]{true})
+                .returns(Tuple::getBooleanArray, Row::getBooleanArray, new Boolean[]{true})
                 .forRow(result.iterator().next());
               async.complete();
             }));
