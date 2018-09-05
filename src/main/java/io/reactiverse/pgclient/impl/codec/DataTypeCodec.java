@@ -474,7 +474,7 @@ public class DataTypeCodec {
         }
       default:
         Class<?> javaType = type.type;
-        return javaType.isInstance(value) ? javaType.cast(value) : REFUSED_SENTINEL;
+        return value == null || javaType.isInstance(value) ? value : REFUSED_SENTINEL;
     }
   }
 

@@ -202,6 +202,18 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     });
   }
 
+  @Test
+  public void testNullValueIsAlwaysValid(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery("SELECT 1 WHERE $1::INT4 IS NULL", Tuple.tuple().addInteger(null), ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.size());
+          async.complete();
+        }));
+    }));
+  }
+
   // Need to test partial query close or abortion ?
   @Test
   public void testQueryCursor(TestContext ctx) {
