@@ -234,6 +234,7 @@
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
+            <argLine>-Xmx1024M</argLine>
             <systemPropertyVariables>
               <target.dir>${project.build.directory}</target.dir>
               <connection.uri>${connection.uri}</connection.uri>
