@@ -631,6 +631,7 @@ Currently the client supports the following Postgres types
 * JSON (`io.reactiverse.pgclient.data.Json`)
 * JSONB (`io.reactiverse.pgclient.data.Json`)
 * POINT (`io.reactiverse.pgclient.data.Point`)
+* UNKNOWN (`java.lang.String`)
 
 Arrays of these types are supported.
 
@@ -680,6 +681,34 @@ Arrays are available on [`Tuple`](../../jsdoc/module-reactive-pg-client-js_tuple
 
 ```js
 Code not translatable
+```
+
+## Handling Custom Types
+
+Java `String` is used to represent custom types, both sent to and returned from Postgres.
+
+```js
+client.preparedQuery("INSERT INTO address_book (id, address) VALUES ($1, $2)", Tuple.of(3, "('Anytown', 'Second Ave', false)"),  function (res, res_err) {
+  if (res_err == null) {
+    // Process rows
+    var rows = res;
+  } else {
+    console.log("Batch failed " + res_err);
+  }
+});
+```
+
+```js
+client.preparedQuery("SELECT address, (address).city FROM address_book WHERE id=$1", Tuple.of(3),  function (res, res_err) {
+  if (ar_err == null) {
+    var rows = ar;
+    Array.prototype.forEach.call(rows, function(row) {
+      console.log("Full Address " + row.getString(0) + ", City " + row.getString(1));
+    });
+  } else {
+    console.log("Failure: " + ar_err.getMessage());
+  }
+});
 ```
 
 ## Collector queries

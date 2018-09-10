@@ -631,6 +631,7 @@ Currently the client supports the following Postgres types
 * JSON (`io.reactiverse.pgclient.data.Json`)
 * JSONB (`io.reactiverse.pgclient.data.Json`)
 * POINT (`io.reactiverse.pgclient.data.Point`)
+* UNKNOWN (`java.lang.String`)
 
 Arrays of these types are supported.
 
@@ -680,6 +681,36 @@ Arrays are available on [`Tuple`](../../yardoc/ReactivePgClient/Tuple.html) and 
 
 ```ruby
 Code not translatable
+```
+
+## Handling Custom Types
+
+Java `String` is used to represent custom types, both sent to and returned from Postgres.
+
+```ruby
+require 'reactive-pg-client/tuple'
+client.preparedQuery("INSERT INTO address_book (id, address) VALUES ($1, $2)", ReactivePgClient::Tuple.of(3, "('Anytown', 'Second Ave', false)"),  { |ar_err,ar|
+  if (ar_err == nil)
+    rows = ar
+    puts rows.row_count()
+  else
+    puts "Failure: #{ar_err.get_message()}"
+  end
+}
+```
+
+```ruby
+require 'reactive-pg-client/tuple'
+client.preparedQuery("SELECT address, (address).city FROM address_book WHERE id=$1", ReactivePgClient::Tuple.of(3), { |ar_err,ar|
+  if (ar_err == nil)
+    rows = ar
+    rows.each do |row|
+      puts "Full Address #{row.get_string(0)}, City #{row.get_string(1)}"
+    end
+  else
+    puts "Failure: #{ar_err.get_message()}"
+  end
+}
 ```
 
 ## Collector queries

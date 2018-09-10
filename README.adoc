@@ -236,13 +236,19 @@ The *Reactive Postgres Client* currently supports the following data types
 |`i.r.p.Json[]`
 |&#10004;
 
+|`UNKNOWN`
+|`j.l.String`
+|&#10004;
+|`j.l.String[]`
+|&#10004;
+
 |====
 
 The following types
 
 _SERIAL2_, _SERIAL4_, _SERIAL8_, _MONEY_, _BIT_, _VARBIT_, _MACADDR_, _INET_, _CIDR_, _MACADDR8_,
 _XML_, _POINT_, _PATH_, _BOX_, _LINE_, _POLYGON_, _LSEG_, _CIRCLE_, _HSTORE_, _OID_,
-_VOID_, _UNKOWN_, _TSQUERY_, _TSVECTOR_
+_VOID_, _TSQUERY_, _TSVECTOR_
 
 are not implemented yet (PR are welcome).
 

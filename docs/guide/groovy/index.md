@@ -615,6 +615,7 @@ Currently the client supports the following Postgres types
 * JSON (`io.reactiverse.pgclient.data.Json`)
 * JSONB (`io.reactiverse.pgclient.data.Json`)
 * POINT (`io.reactiverse.pgclient.data.Point`)
+* UNKNOWN (`java.lang.String`)
 
 Arrays of these types are supported.
 
@@ -662,6 +663,34 @@ Arrays are available on [`Tuple`](../../apidocs/io/reactiverse/pgclient/Tuple.ht
 
 ```groovy
 Code not translatable
+```
+
+## Handling Custom Types
+
+Java `String` is used to represent custom types, both sent to and returned from Postgres.
+
+```groovy
+client.preparedQuery("INSERT INTO address_book (id, address) VALUES ($1, $2)", Tuple.of(3, "('Anytown', 'Second Ave', false)"),  { ar ->
+  if (ar.succeeded()) {
+    def rows = ar.result()
+    println(rows.rowCount())
+  } else {
+    println("Failure: ${ar.cause().getMessage()}")
+  }
+})
+```
+
+```groovy
+client.preparedQuery("SELECT address, (address).city FROM address_book WHERE id=$1", Tuple.of(3),  { ar ->
+ if (ar.succeeded()) {
+    def rows = ar.result()
+    rows.each { row ->
+      println("Full Address ${row.getString(0)}, City ${row.getString(1)}")
+    }
+  } else {
+    println("Failure: ${ar.cause().getMessage()}")
+  }
+})
 ```
 
 ## Collector queries
