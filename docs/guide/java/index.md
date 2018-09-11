@@ -31,7 +31,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 <dependency>
  <groupId>io.reactiverse</groupId>
  <artifactId>reactive-pg-client</artifactId>
- <version>0.10.2</version>
+ <version>0.10.3</version>
 </dependency>
 ```
 
@@ -39,7 +39,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 
 ```groovy
 dependencies {
- compile 'io.reactiverse:reactive-pg-client:0.10.2'
+ compile 'io.reactiverse:reactive-pg-client:0.10.3'
 }
 ```
 
@@ -624,7 +624,6 @@ Currently the client supports the following Postgres types
 * JSON (`io.reactiverse.pgclient.data.Json`)
 * JSONB (`io.reactiverse.pgclient.data.Json`)
 * POINT (`io.reactiverse.pgclient.data.Point`)
-* UNKNOWN (`java.lang.String`)
 
 Arrays of these types are supported.
 
@@ -677,28 +676,32 @@ tuple.addStringArray(new String[]{"another", "array"});
 String[] array = tuple.getStringArray(0);
 ```
 
-## Handling Custom Types
+## Handling custom types
 
-Java `String` is used to represent custom types, both sent to and returned from Postgres.
+Strings are used to represent custom types, both sent to and returned from Postgres.
 
-```java
-client.preparedQuery("INSERT INTO address_book (id, address) VALUES ($1, $2)", Tuple.of(3, "('Anytown', 'Second Ave', false)"),  ar -> {
-  if (ar.succeeded()) {
-    PgRowSet rows = ar.result();
-    System.out.println(rows.rowCount());
-  } else {
-    System.out.println("Failure: " + ar.cause().getMessage());
-  }
-});
-```
+You can read from Postgres and get the custom type as a string
 
 ```java
 client.preparedQuery("SELECT address, (address).city FROM address_book WHERE id=$1", Tuple.of(3),  ar -> {
   if (ar.succeeded()) {
     PgRowSet rows = ar.result();
     for (Row row : rows) {
-       System.out.println("Full Address " + row.getString(0) + ", City " + row.getString(1));
+      System.out.println("Full Address " + row.getString(0) + ", City " + row.getString(1));
     }
+  } else {
+    System.out.println("Failure: " + ar.cause().getMessage());
+  }
+});
+```
+
+You can also write to Postgres by providing a string
+
+```java
+client.preparedQuery("INSERT INTO address_book (id, address) VALUES ($1, $2)", Tuple.of(3, "('Anytown', 'Second Ave', false)"),  ar -> {
+  if (ar.succeeded()) {
+    PgRowSet rows = ar.result();
+    System.out.println(rows.rowCount());
   } else {
     System.out.println("Failure: " + ar.cause().getMessage());
   }
@@ -932,7 +935,7 @@ subscriber.connect(ar -> {
     	  });
       });
 
-      // PostgreSQL simple ID's are forced lower-case 
+      // PostgreSQL simple ID's are forced lower-case
       subscriber.channel("simple_channel").handler(payload -> {
           System.out.println("Received " + payload);
       });
@@ -943,14 +946,14 @@ subscriber.connect(ar -> {
       		  System.out.println("Notified simple_channel");
       	  });
       });
-      
+
       // The following channel name is longer than the current
       // (NAMEDATALEN = 64) - 1 == 63 character limit and will be truncated
       subscriber.channel(
     		  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbb"
     		  ).handler(payload -> {
           System.out.println("Received " + payload);
-      });          
+      });
     }
   });
 ```

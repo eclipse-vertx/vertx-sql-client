@@ -64,7 +64,7 @@
     <div id="content"><div id='filecontents'><div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p><span class="image"><a class="image" href="https://travis-ci.org/vietj/reactive-pg-client"><img src="https://travis-ci.org/reactiverse/reactive-pg-client.svg?branch=master" alt="Build Status"></a></span></p>
+<p><span class="image"><a class="image" href="https://travis-ci.org/reactiverse/reactive-pg-client"><img src="https://travis-ci.org/reactiverse/reactive-pg-client.svg?branch=master" alt="Build Status"></a></span> <span class="image"><a class="image" href="https://semaphoreci.com/vietj/reactive-pg-client"><img src="https://semaphoreci.com/api/v1/vietj/reactive-pg-client/branches/master/badge.svg" alt="Build Status"></a></span></p>
 </div>
 <div class="ulist">
 <ul>
@@ -139,7 +139,7 @@
 <h2 id="_usage">Usage</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Latest release is <a href="https://github.com/reactiverse/reactive-pg-client/blob/master/RELEASES.adoc">0.10.1</a>.</p>
+<p>Latest release is <a href="https://github.com/reactiverse/reactive-pg-client/blob/master/RELEASES.adoc">0.10.2</a>.</p>
 </div>
 <div class="paragraph">
 <p>To use the client, add the following dependency to the <em>dependencies</em> section of your build descriptor:</p>
@@ -156,7 +156,7 @@
 <pre class="highlight"><code class="language-xml" data-lang="xml">&lt;dependency&gt;
   &lt;groupId&gt;io.reactiverse&lt;/groupId&gt;
   &lt;artifactId&gt;reactive-pg-client&lt;/artifactId&gt;
-  &lt;version&gt;0.10.1&lt;/version&gt;
+  &lt;version&gt;0.10.2&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
 </div>
 </div>
@@ -170,7 +170,7 @@
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code class="language-groovy" data-lang="groovy">dependencies {
-  compile 'io.reactiverse:reactive-pg-client:0.10.1'
+  compile 'io.reactiverse:reactive-pg-client:0.10.2'
 }</code></pre>
 </div>
 </div>
@@ -426,6 +426,13 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -&gt; {
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.Json[]</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>UNKNOWN</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.String</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.String[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
 </tbody>
 </table>
 <div class="paragraph">
@@ -434,7 +441,7 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -&gt; {
 <div class="paragraph">
 <p><em>SERIAL2</em>, <em>SERIAL4</em>, <em>SERIAL8</em>, <em>MONEY</em>, <em>BIT</em>, <em>VARBIT</em>, <em>MACADDR</em>, <em>INET</em>, <em>CIDR</em>, <em>MACADDR8</em>,
 <em>XML</em>, <em>POINT</em>, <em>PATH</em>, <em>BOX</em>, <em>LINE</em>, <em>POLYGON</em>, <em>LSEG</em>, <em>CIRCLE</em>, <em>HSTORE</em>, <em>OID</em>,
-<em>VOID</em>, <em>UNKOWN</em>, <em>TSQUERY</em>, <em>TSVECTOR</em></p>
+<em>VOID</em>, <em>TSQUERY</em>, <em>TSVECTOR</em></p>
 </div>
 <div class="paragraph">
 <p>are not implemented yet (PR are welcome).</p>
@@ -584,7 +591,7 @@ source generates the [jekyll/guide/java/index.md](jekyll/guide/java/index.md).</
 </div></div></div>
 
     <div id="footer">
-  Generated on Thu Aug 30 16:55:23 2018 by
+  Generated on Tue Sep 11 16:46:53 2018 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.8.7.6 (ruby-2.3.3).
 </div>

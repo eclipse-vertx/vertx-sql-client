@@ -31,7 +31,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 <dependency>
  <groupId>io.reactiverse</groupId>
  <artifactId>reactive-pg-client</artifactId>
- <version>0.10.2</version>
+ <version>0.10.3</version>
 </dependency>
 ```
 
@@ -39,7 +39,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 
 ```groovy
 dependencies {
- compile 'io.reactiverse:reactive-pg-client:0.10.2'
+ compile 'io.reactiverse:reactive-pg-client:0.10.3'
 }
 ```
 
@@ -610,7 +610,6 @@ Currently the client supports the following Postgres types
 * JSON (`io.reactiverse.pgclient.data.Json`)
 * JSONB (`io.reactiverse.pgclient.data.Json`)
 * POINT (`io.reactiverse.pgclient.data.Point`)
-* UNKNOWN (`java.lang.String`)
 
 Arrays of these types are supported.
 
@@ -660,24 +659,14 @@ Arrays are available on [`Tuple`](../../apidocs/io/reactiverse/pgclient/Tuple.ht
 Code not translatable
 ```
 
+## Handling custom types
 
-## Handling Custom Types
+Strings are used to represent custom types, both sent to and returned from Postgres.
 
-Java `String` is used to represent custom types, both sent to and returned from Postgres.
-
-```kotlin
-client.preparedQuery("INSERT INTO address_book (id, address) VALUES (\$$1, \$$2)", Tuple.of(3, "('Anytown', 'Second Ave', false)"), { ar ->
-  if (ar.succeeded()) {
-    var rows = ar.result()
-    println("Got ${rows.size()} rows ")
-  } else {
-    println("Failure: ${ar.cause().getMessage()}")
-  }
-})
-```
+You can read from Postgres and get the custom type as a string
 
 ```kotlin
-client.preparedQuery("SELECT address, (address).city FROM address_book WHERE id=\$$1", Tuple.of(3),  { ar ->
+client.preparedQuery("SELECT address, (address).city FROM address_book WHERE id=\$$1", Tuple.of(3), { ar ->
   if (ar.succeeded()) {
     var rows = ar.result()
     for (row in rows) {
@@ -687,6 +676,21 @@ client.preparedQuery("SELECT address, (address).city FROM address_book WHERE id=
     println("Failure: ${ar.cause().getMessage()}")
   }
 })
+
+```
+
+You can also write to Postgres by providing a string
+
+```kotlin
+client.preparedQuery("INSERT INTO address_book (id, address) VALUES (\$$1, \$$2)", Tuple.of(3, "('Anytown', 'Second Ave', false)"), { ar ->
+  if (ar.succeeded()) {
+    var rows = ar.result()
+    println(rows.rowCount())
+  } else {
+    println("Failure: ${ar.cause().getMessage()}")
+  }
+})
+
 ```
 
 ## Collector queries
@@ -816,7 +820,7 @@ subscriber.connect({ ar ->
       })
     })
 
-    // PostgreSQL simple ID's are forced lower-case 
+    // PostgreSQL simple ID's are forced lower-case
     subscriber.channel("simple_channel").handler({ payload ->
       println("Received ${payload}")
     })

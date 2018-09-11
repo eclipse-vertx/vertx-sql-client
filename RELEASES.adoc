@@ -1,4 +1,13 @@
 
+== 0.10.3
+
+Fixed issues: https://github.com/reactiverse/reactive-pg-client/milestone/10?closed=1
+
+=== Bug fixes
+
+- Treat unknown datatypes as text instead of binary
+- Null values should always be valid in prepared statement parameters
+
 == 0.10.2
 
 Fixed issues: https://github.com/reactiverse/reactive-pg-client/milestone/9?closed=1

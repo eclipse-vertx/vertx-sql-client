@@ -31,7 +31,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 <dependency>
  <groupId>io.reactiverse</groupId>
  <artifactId>reactive-pg-client</artifactId>
- <version>0.10.2</version>
+ <version>0.10.3</version>
 </dependency>
 ```
 
@@ -39,7 +39,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 
 ```groovy
 dependencies {
- compile 'io.reactiverse:reactive-pg-client:0.10.2'
+ compile 'io.reactiverse:reactive-pg-client:0.10.3'
 }
 ```
 
@@ -631,7 +631,6 @@ Currently the client supports the following Postgres types
 * JSON (`io.reactiverse.pgclient.data.Json`)
 * JSONB (`io.reactiverse.pgclient.data.Json`)
 * POINT (`io.reactiverse.pgclient.data.Point`)
-* UNKNOWN (`java.lang.String`)
 
 Arrays of these types are supported.
 
@@ -683,25 +682,15 @@ Arrays are available on [`Tuple`](../../yardoc/ReactivePgClient/Tuple.html) and 
 Code not translatable
 ```
 
-## Handling Custom Types
+## Handling custom types
 
-Java `String` is used to represent custom types, both sent to and returned from Postgres.
+Strings are used to represent custom types, both sent to and returned from Postgres.
 
-```ruby
-require 'reactive-pg-client/tuple'
-client.preparedQuery("INSERT INTO address_book (id, address) VALUES ($1, $2)", ReactivePgClient::Tuple.of(3, "('Anytown', 'Second Ave', false)"),  { |ar_err,ar|
-  if (ar_err == nil)
-    rows = ar
-    puts rows.row_count()
-  else
-    puts "Failure: #{ar_err.get_message()}"
-  end
-}
-```
+You can read from Postgres and get the custom type as a string
 
 ```ruby
 require 'reactive-pg-client/tuple'
-client.preparedQuery("SELECT address, (address).city FROM address_book WHERE id=$1", ReactivePgClient::Tuple.of(3), { |ar_err,ar|
+client.prepared_query("SELECT address, (address).city FROM address_book WHERE id=$1", ReactivePgClient::Tuple.of(3)) { |ar_err,ar|
   if (ar_err == nil)
     rows = ar
     rows.each do |row|
@@ -711,6 +700,22 @@ client.preparedQuery("SELECT address, (address).city FROM address_book WHERE id=
     puts "Failure: #{ar_err.get_message()}"
   end
 }
+
+```
+
+You can also write to Postgres by providing a string
+
+```ruby
+require 'reactive-pg-client/tuple'
+client.prepared_query("INSERT INTO address_book (id, address) VALUES ($1, $2)", ReactivePgClient::Tuple.of(3, "('Anytown', 'Second Ave', false)")) { |ar_err,ar|
+  if (ar_err == nil)
+    rows = ar
+    puts rows.row_count()
+  else
+    puts "Failure: #{ar_err.get_message()}"
+  end
+}
+
 ```
 
 ## Collector queries
@@ -844,7 +849,7 @@ subscriber.connect() { |ar_err,ar|
       }
     }
 
-    # PostgreSQL simple ID's are forced lower-case 
+    # PostgreSQL simple ID's are forced lower-case
     subscriber.channel("simple_channel").handler() { |payload|
       puts "Received #{payload}"
     }

@@ -31,7 +31,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 <dependency>
  <groupId>io.reactiverse</groupId>
  <artifactId>reactive-pg-client</artifactId>
- <version>0.10.2</version>
+ <version>0.10.3</version>
 </dependency>
 ```
 
@@ -39,7 +39,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 
 ```groovy
 dependencies {
- compile 'io.reactiverse:reactive-pg-client:0.10.2'
+ compile 'io.reactiverse:reactive-pg-client:0.10.3'
 }
 ```
 
@@ -631,7 +631,6 @@ Currently the client supports the following Postgres types
 * JSON (`io.reactiverse.pgclient.data.Json`)
 * JSONB (`io.reactiverse.pgclient.data.Json`)
 * POINT (`io.reactiverse.pgclient.data.Point`)
-* UNKNOWN (`java.lang.String`)
 
 Arrays of these types are supported.
 
@@ -683,23 +682,15 @@ Arrays are available on [`Tuple`](../../jsdoc/module-reactive-pg-client-js_tuple
 Code not translatable
 ```
 
-## Handling Custom Types
+## Handling custom types
 
-Java `String` is used to represent custom types, both sent to and returned from Postgres.
+Strings are used to represent custom types, both sent to and returned from Postgres.
 
-```js
-client.preparedQuery("INSERT INTO address_book (id, address) VALUES ($1, $2)", Tuple.of(3, "('Anytown', 'Second Ave', false)"),  function (res, res_err) {
-  if (res_err == null) {
-    // Process rows
-    var rows = res;
-  } else {
-    console.log("Batch failed " + res_err);
-  }
-});
-```
+You can read from Postgres and get the custom type as a string
 
 ```js
-client.preparedQuery("SELECT address, (address).city FROM address_book WHERE id=$1", Tuple.of(3),  function (res, res_err) {
+var Tuple = require("reactive-pg-client-js/tuple");
+client.preparedQuery("SELECT address, (address).city FROM address_book WHERE id=$1", Tuple.of(3), function (ar, ar_err) {
   if (ar_err == null) {
     var rows = ar;
     Array.prototype.forEach.call(rows, function(row) {
@@ -709,6 +700,22 @@ client.preparedQuery("SELECT address, (address).city FROM address_book WHERE id=
     console.log("Failure: " + ar_err.getMessage());
   }
 });
+
+```
+
+You can also write to Postgres by providing a string
+
+```js
+var Tuple = require("reactive-pg-client-js/tuple");
+client.preparedQuery("INSERT INTO address_book (id, address) VALUES ($1, $2)", Tuple.of(3, "('Anytown', 'Second Ave', false)"), function (ar, ar_err) {
+  if (ar_err == null) {
+    var rows = ar;
+    console.log(rows.rowCount());
+  } else {
+    console.log("Failure: " + ar_err.getMessage());
+  }
+});
+
 ```
 
 ## Collector queries
@@ -842,7 +849,7 @@ subscriber.connect(function (ar, ar_err) {
       });
     });
 
-    // PostgreSQL simple ID's are forced lower-case 
+    // PostgreSQL simple ID's are forced lower-case
     subscriber.channel("simple_channel").handler(function (payload) {
       console.log("Received " + payload);
     });
