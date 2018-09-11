@@ -624,6 +624,7 @@ Currently the client supports the following Postgres types
 * JSON (`io.reactiverse.pgclient.data.Json`)
 * JSONB (`io.reactiverse.pgclient.data.Json`)
 * POINT (`io.reactiverse.pgclient.data.Point`)
+* UNKNOWN (`java.lang.String`)
 
 Arrays of these types are supported.
 
@@ -674,6 +675,34 @@ tuple.addStringArray(new String[]{"another", "array"});
 
 // Get the first array of string
 String[] array = tuple.getStringArray(0);
+```
+
+## Handling Custom Types
+
+Java `String` is used to represent custom types, both sent to and returned from Postgres.
+
+```java
+client.preparedQuery("INSERT INTO address_book (id, address) VALUES ($1, $2)", Tuple.of(3, "('Anytown', 'Second Ave', false)"),  ar -> {
+  if (ar.succeeded()) {
+    PgRowSet rows = ar.result();
+    System.out.println(rows.rowCount());
+  } else {
+    System.out.println("Failure: " + ar.cause().getMessage());
+  }
+});
+```
+
+```java
+client.preparedQuery("SELECT address, (address).city FROM address_book WHERE id=$1", Tuple.of(3),  ar -> {
+  if (ar.succeeded()) {
+    PgRowSet rows = ar.result();
+    for (Row row : rows) {
+       System.out.println("Full Address " + row.getString(0) + ", City " + row.getString(1));
+    }
+  } else {
+    System.out.println("Failure: " + ar.cause().getMessage());
+  }
+});
 ```
 
 ## Collector queries

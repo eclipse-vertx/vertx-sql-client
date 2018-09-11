@@ -1,5 +1,11 @@
+DROP TYPE IF EXISTS weather CASCADE;
 DROP TYPE IF EXISTS mood CASCADE;
+DROP TYPE IF EXISTS full_address CASCADE;
+
+CREATE TYPE weather AS ENUM ('sunny', 'cloudy', 'rainy');
 CREATE TYPE mood AS ENUM ('unhappy', 'ok', 'happy');
+
+CREATE TYPE full_address AS (city TEXT, street TEXT, home BOOLEAN);
 
 -- World table
 DROP TABLE IF EXISTS World;
@@ -120,7 +126,8 @@ CREATE TABLE "ArrayDataType" (
   "JSON"           JSON[],
   "JSONB"          JSONB[],
   "Enum"           mood[],
-  "Interval"       INTERVAL []
+  "Interval"       INTERVAL [],
+  "CustomType"     full_address[]
 );
 INSERT INTO "ArrayDataType" VALUES (1, ARRAY [TRUE],
                                        ARRAY [1],
@@ -143,7 +150,8 @@ INSERT INTO "ArrayDataType" VALUES (1, ARRAY [TRUE],
                                        ARRAY ['  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }' :: JSON, '[1,true,null,9.5,"Hi"]' :: JSON, '4' :: JSON, '"Hello World"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON],
                                        ARRAY ['  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }' :: JSON, '[1,true,null,9.5,"Hi"]' :: JSON, '4' :: JSON, '"Hello World"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON],
                                        ARRAY['ok'::mood,'unhappy'::mood, 'happy'::mood],
-                                       ARRAY['10 years 3 months 332 days 20 hours 20 minutes 20.999991 seconds'::INTERVAL, '20 minutes 20.123456 seconds'::INTERVAL, '30 months ago'::INTERVAL]);
+                                       ARRAY['10 years 3 months 332 days 20 hours 20 minutes 20.999991 seconds'::INTERVAL, '20 minutes 20.123456 seconds'::INTERVAL, '30 months ago'::INTERVAL],
+                                       ARRAY [ROW('Anytown', 'Main St', true)::full_address, ('Anytown', 'First St', false)::full_address]);
 INSERT INTO "ArrayDataType" VALUES (2, ARRAY [TRUE],
                                        ARRAY [1],
                                        ARRAY [2],
@@ -164,16 +172,25 @@ INSERT INTO "ArrayDataType" VALUES (2, ARRAY [TRUE],
                                        ARRAY ['  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }' :: JSON, '[1,true,null,9.5,"Hi"]' :: JSON, '4' :: JSON, '"Hello World"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON],
                                        ARRAY ['  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }' :: JSON, '[1,true,null,9.5,"Hi"]' :: JSON, '4' :: JSON, '"Hello World"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON],
                                        ARRAY['unhappy'::mood, 'happy'::mood],
-                                       ARRAY['0 years 0 months 0 days 0 hours 0 minutes 0 seconds'::INTERVAL]);
-
+                                       ARRAY['0 years 0 months 0 days 0 hours 0 minutes 0 seconds'::INTERVAL],
+                                       ARRAY [ROW('Anytown', 'Main St', true)::full_address, ('Anytown', 'First St', false)::full_address]);
 
 DROP TABLE IF EXISTS "EnumDataType";
 CREATE TABLE "EnumDataType" (
   "id" INTEGER NOT NULL PRIMARY KEY,
-  "currentMood" mood
+  "currentMood" mood,
+  "currentWeather" weather
 );
-INSERT INTO "EnumDataType" ("id", "currentMood") VALUES (1, 'ok');
-INSERT INTO "EnumDataType" ("id", "currentMood") VALUES (2, 'unhappy');
-INSERT INTO "EnumDataType" ("id", "currentMood") VALUES (3, 'happy');
-INSERT INTO "EnumDataType" ("id", "currentMood") VALUES (4, null);
-INSERT INTO "EnumDataType" ("id", "currentMood") VALUES (5, 'ok');
+INSERT INTO "EnumDataType" ("id", "currentMood", "currentWeather") VALUES (1, 'ok', 'sunny');
+INSERT INTO "EnumDataType" ("id", "currentMood", "currentWeather") VALUES (2, 'unhappy', 'cloudy');
+INSERT INTO "EnumDataType" ("id", "currentMood", "currentWeather") VALUES (3, 'happy', 'rainy');
+INSERT INTO "EnumDataType" ("id", "currentMood", "currentWeather") VALUES (4, null, null);
+INSERT INTO "EnumDataType" ("id", "currentMood", "currentWeather") VALUES (5, 'ok', 'sunny');
+
+DROP TABLE IF EXISTS "CustomDataType";
+CREATE TABLE "CustomDataType" (
+  "id" INTEGER NOT NULL PRIMARY KEY,
+  "address" full_address
+);
+INSERT INTO "CustomDataType" ("id", "address") VALUES (1, ('Anytown', 'Main St', true));
+INSERT INTO "CustomDataType" ("id", "address") VALUES (2, ('Anytown', 'First St', false));
