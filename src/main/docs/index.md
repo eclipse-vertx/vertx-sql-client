@@ -328,6 +328,22 @@ Arrays are available on {@link io.reactiverse.pgclient.Tuple} and {@link io.reac
 {@link examples.Examples#arrayExample}
 ```
 
+## Handling custom types
+
+Strings are used to represent custom types, both sent to and returned from Postgres.
+
+You can read from Postgres and get the custom type as a string
+
+```$lang
+{@link examples.Examples#customType01Example}
+```
+
+You can also write to Postgres by providing a string
+
+```$lang
+{@link examples.Examples#customType02Example}
+```
+
 ## Collector queries
 
 You can use Java collectors with the query API:

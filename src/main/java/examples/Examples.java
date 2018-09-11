@@ -569,7 +569,7 @@ public class Examples {
       }
     });
   }
-  
+
   public void pubsub03(Vertx vertx) {
 
     PgSubscriber subscriber = PgSubscriber.subscriber(vertx, new PgConnectOptions()
@@ -579,7 +579,7 @@ public class Examples {
       .setUser("user")
       .setPassword("secret")
     );
-    
+
     subscriber.connect(ar -> {
         if (ar.succeeded()) {
           // Complex channel name - name in PostgreSQL requires a quoted ID
@@ -593,7 +593,7 @@ public class Examples {
         	  });
           });
 
-          // PostgreSQL simple ID's are forced lower-case 
+          // PostgreSQL simple ID's are forced lower-case
           subscriber.channel("simple_channel").handler(payload -> {
               System.out.println("Received " + payload);
           });
@@ -604,14 +604,14 @@ public class Examples {
           		  System.out.println("Notified simple_channel");
           	  });
           });
-          
+
           // The following channel name is longer than the current
           // (NAMEDATALEN = 64) - 1 == 63 character limit and will be truncated
           subscriber.channel(
         		  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbb"
         		  ).handler(payload -> {
               System.out.println("Received " + payload);
-          });          
+          });
         }
       });
   }
@@ -692,6 +692,30 @@ public class Examples {
 
     // Get the first array of string
     String[] array = tuple.getStringArray(0);
+  }
+
+  public void customType01Example(PgClient client) {
+    client.preparedQuery("SELECT address, (address).city FROM address_book WHERE id=$1", Tuple.of(3),  ar -> {
+      if (ar.succeeded()) {
+        PgRowSet rows = ar.result();
+        for (Row row : rows) {
+          System.out.println("Full Address " + row.getString(0) + ", City " + row.getString(1));
+        }
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
+  }
+
+  public void customType02Example(PgClient client) {
+    client.preparedQuery("INSERT INTO address_book (id, address) VALUES ($1, $2)", Tuple.of(3, "('Anytown', 'Second Ave', false)"),  ar -> {
+      if (ar.succeeded()) {
+        PgRowSet rows = ar.result();
+        System.out.println(rows.rowCount());
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
   }
 
   public void collector01Example(PgClient client) {
