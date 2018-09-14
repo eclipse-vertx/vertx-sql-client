@@ -257,198 +257,198 @@ public class DataTypeCodec {
     }
   }
 
-  public static Object decodeBinary(DataType id, int len, ByteBuf buff) {
+  public static Object decodeBinary(DataType id, int index, int len, ByteBuf buff) {
     switch (id) {
       case BOOL:
-        return binaryDecodeBOOL(len, buff);
+        return binaryDecodeBOOL(index, len, buff);
       case BOOL_ARRAY:
-        return binaryDecodeArray(BOOLEAN_ARRAY_FACTORY, DataType.BOOL, len, buff);
+        return binaryDecodeArray(BOOLEAN_ARRAY_FACTORY, DataType.BOOL, index, len, buff);
       case INT2:
-        return binaryDecodeINT2(len, buff);
+        return binaryDecodeINT2(index, len, buff);
       case INT2_ARRAY:
-        return binaryDecodeArray(SHORT_ARRAY_FACTORY, DataType.INT2, len, buff);
+        return binaryDecodeArray(SHORT_ARRAY_FACTORY, DataType.INT2, index, len, buff);
       case INT4:
-        return binaryDecodeINT4(len, buff);
+        return binaryDecodeINT4(index, len, buff);
       case INT4_ARRAY:
-        return binaryDecodeArray(INTEGER_ARRAY_FACTORY, DataType.INT4, len, buff);
+        return binaryDecodeArray(INTEGER_ARRAY_FACTORY, DataType.INT4, index, len, buff);
       case INT8:
-        return binaryDecodeINT8(len, buff);
+        return binaryDecodeINT8(index, len, buff);
       case INT8_ARRAY:
-        return binaryDecodeArray(LONG_ARRAY_FACTORY, DataType.INT8, len, buff);
+        return binaryDecodeArray(LONG_ARRAY_FACTORY, DataType.INT8, index, len, buff);
       case FLOAT4:
-        return binaryDecodeFLOAT4(len, buff);
+        return binaryDecodeFLOAT4(index, len, buff);
       case FLOAT4_ARRAY:
-        return binaryDecodeArray(FLOAT_ARRAY_FACTORY, DataType.FLOAT4, len, buff);
+        return binaryDecodeArray(FLOAT_ARRAY_FACTORY, DataType.FLOAT4, index, len, buff);
       case FLOAT8:
-        return binaryDecodeFLOAT8(len, buff);
+        return binaryDecodeFLOAT8(index, len, buff);
       case FLOAT8_ARRAY:
-        return binaryDecodeArray(DOUBLE_ARRAY_FACTORY, DataType.FLOAT8, len, buff);
+        return binaryDecodeArray(DOUBLE_ARRAY_FACTORY, DataType.FLOAT8, index, len, buff);
       case CHAR:
-        return binaryDecodeCHAR(len, buff);
+        return binaryDecodeCHAR(index, len, buff);
       case CHAR_ARRAY:
-        return binaryDecodeArray(STRING_ARRAY_FACTORY, DataType.CHAR, len, buff);
+        return binaryDecodeArray(STRING_ARRAY_FACTORY, DataType.CHAR, index, len, buff);
       case VARCHAR:
-        return binaryDecodeVARCHAR(len, buff);
+        return binaryDecodeVARCHAR(index, len, buff);
       case VARCHAR_ARRAY:
-        return binaryDecodeArray(STRING_ARRAY_FACTORY, DataType.VARCHAR, len, buff);
+        return binaryDecodeArray(STRING_ARRAY_FACTORY, DataType.VARCHAR, index, len, buff);
       case BPCHAR:
-        return binaryDecodeBPCHAR(len, buff);
+        return binaryDecodeBPCHAR(index, len, buff);
       case BPCHAR_ARRAY:
-        return binaryDecodeArray(STRING_ARRAY_FACTORY, DataType.BPCHAR, len, buff);
+        return binaryDecodeArray(STRING_ARRAY_FACTORY, DataType.BPCHAR, index, len, buff);
       case TEXT:
-        return binaryDecodeTEXT(len, buff);
+        return binaryDecodeTEXT(index, len, buff);
       case TEXT_ARRAY:
-        return binaryDecodeArray(STRING_ARRAY_FACTORY, DataType.TEXT, len, buff);
+        return binaryDecodeArray(STRING_ARRAY_FACTORY, DataType.TEXT, index, len, buff);
       case NAME:
-        return binaryDecodeNAME(len, buff);
+        return binaryDecodeNAME(index, len, buff);
       case NAME_ARRAY:
-        return binaryDecodeArray(STRING_ARRAY_FACTORY, DataType.NAME, len, buff);
+        return binaryDecodeArray(STRING_ARRAY_FACTORY, DataType.NAME, index, len, buff);
       case DATE:
-        return binaryDecodeDATE(len, buff);
+        return binaryDecodeDATE(index, len, buff);
       case DATE_ARRAY:
-        return binaryDecodeArray(LOCALDATE_ARRAY_FACTORY, DataType.DATE, len, buff);
+        return binaryDecodeArray(LOCALDATE_ARRAY_FACTORY, DataType.DATE, index, len, buff);
       case TIME:
-        return binaryDecodeTIME(len, buff);
+        return binaryDecodeTIME(index, len, buff);
       case TIME_ARRAY:
-        return binaryDecodeArray(LOCALTIME_ARRAY_FACTORY, DataType.TIME, len, buff);
+        return binaryDecodeArray(LOCALTIME_ARRAY_FACTORY, DataType.TIME, index, len, buff);
       case TIMETZ:
-        return binaryDecodeTIMETZ(len, buff);
+        return binaryDecodeTIMETZ(index, len, buff);
       case TIMETZ_ARRAY:
-        return binaryDecodeArray(OFFSETTIME_ARRAY_FACTORY, DataType.TIMETZ, len, buff);
+        return binaryDecodeArray(OFFSETTIME_ARRAY_FACTORY, DataType.TIMETZ, index, len, buff);
       case TIMESTAMP:
-        return binaryDecodeTIMESTAMP(len, buff);
+        return binaryDecodeTIMESTAMP(index, len, buff);
       case TIMESTAMP_ARRAY:
-        return binaryDecodeArray(LOCALDATETIME_ARRAY_FACTORY, DataType.TIMESTAMP, len, buff);
+        return binaryDecodeArray(LOCALDATETIME_ARRAY_FACTORY, DataType.TIMESTAMP, index, len, buff);
       case TIMESTAMPTZ:
-        return binaryDecodeTIMESTAMPTZ(len, buff);
+        return binaryDecodeTIMESTAMPTZ(index, len, buff);
       case TIMESTAMPTZ_ARRAY:
-        return binaryDecodeArray(OFFSETDATETIME_ARRAY_FACTORY, DataType.TIMESTAMPTZ, len, buff);
+        return binaryDecodeArray(OFFSETDATETIME_ARRAY_FACTORY, DataType.TIMESTAMPTZ, index, len, buff);
       case BYTEA:
-        return binaryDecodeBYTEA(len, buff);
+        return binaryDecodeBYTEA(index, len, buff);
       case BYTEA_ARRAY:
-        return binaryDecodeArray(BUFFER_ARRAY_FACTORY, DataType.BYTEA, len, buff);
+        return binaryDecodeArray(BUFFER_ARRAY_FACTORY, DataType.BYTEA, index, len, buff);
       case UUID:
-        return binaryDecodeUUID(len, buff);
+        return binaryDecodeUUID(index, len, buff);
       case UUID_ARRAY:
-        return binaryDecodeArray(UUID_ARRAY_FACTORY, DataType.UUID, len, buff);
+        return binaryDecodeArray(UUID_ARRAY_FACTORY, DataType.UUID, index, len, buff);
       case JSON:
-        return binaryDecodeJSON(len, buff);
+        return binaryDecodeJSON(index, len, buff);
       case JSON_ARRAY:
-        return binaryDecodeArray(JSON_ARRAY_FACTORY, DataType.JSON, len, buff);
+        return binaryDecodeArray(JSON_ARRAY_FACTORY, DataType.JSON, index, len, buff);
       case JSONB:
-        return binaryDecodeJSONB(len, buff);
+        return binaryDecodeJSONB(index, len, buff);
       case JSONB_ARRAY:
-        return binaryDecodeArray(JSON_ARRAY_FACTORY, DataType.JSONB, len, buff);
+        return binaryDecodeArray(JSON_ARRAY_FACTORY, DataType.JSONB, index, len, buff);
       case POINT:
-        return binaryDecodePoint(len, buff);
+        return binaryDecodePoint(index, len, buff);
       case POINT_ARRAY:
-        return binaryDecodeArray(POINT_ARRAY_FACTORY, DataType.POINT, len, buff);
+        return binaryDecodeArray(POINT_ARRAY_FACTORY, DataType.POINT, index, len, buff);
       case INTERVAL:
-        return binaryDecodeINTERVAL(len, buff);
+        return binaryDecodeINTERVAL(index, len, buff);
       case INTERVAL_ARRAY:
-        return binaryDecodeArray(INTERVAL_ARRAY_FACTORY, DataType.INTERVAL, len, buff);
+        return binaryDecodeArray(INTERVAL_ARRAY_FACTORY, DataType.INTERVAL, index, len, buff);
       default:
         System.out.println("Data type " + id + " does not support binary decoding");
-        return defaultDecodeBinary(len, buff);
+        return defaultDecodeBinary(index, len, buff);
     }
   }
 
-  public static Object decodeText(DataType id, int len, ByteBuf buff) {
+  public static Object decodeText(DataType id, int index, int len, ByteBuf buff) {
     switch (id) {
       case BOOL:
-        return textDecodeBOOL(len, buff);
+        return textDecodeBOOL(index, len, buff);
       case BOOL_ARRAY:
-        return textDecodeArray(BOOLEAN_ARRAY_FACTORY, DataType.BOOL, len, buff);
+        return textDecodeArray(BOOLEAN_ARRAY_FACTORY, DataType.BOOL, index, len, buff);
       case INT2:
-        return textDecodeINT2(len, buff);
+        return textDecodeINT2(index, len, buff);
       case INT2_ARRAY:
-        return textDecodeArray(SHORT_ARRAY_FACTORY, DataType.INT2, len, buff);
+        return textDecodeArray(SHORT_ARRAY_FACTORY, DataType.INT2, index, len, buff);
       case INT4:
-        return textDecodeINT4(len, buff);
+        return textDecodeINT4(index, len, buff);
       case INT4_ARRAY:
-        return textDecodeArray(INTEGER_ARRAY_FACTORY, DataType.INT4, len, buff);
+        return textDecodeArray(INTEGER_ARRAY_FACTORY, DataType.INT4, index, len, buff);
       case INT8:
-        return textDecodeINT8(len, buff);
+        return textDecodeINT8(index, len, buff);
       case INT8_ARRAY:
-        return textDecodeArray(LONG_ARRAY_FACTORY, DataType.INT8, len, buff);
+        return textDecodeArray(LONG_ARRAY_FACTORY, DataType.INT8, index, len, buff);
       case FLOAT4:
-        return textDecodeFLOAT4(len, buff);
+        return textDecodeFLOAT4(index, len, buff);
       case FLOAT4_ARRAY:
-        return textDecodeArray(FLOAT_ARRAY_FACTORY, DataType.FLOAT4, len, buff);
+        return textDecodeArray(FLOAT_ARRAY_FACTORY, DataType.FLOAT4, index, len, buff);
       case FLOAT8:
-        return textDecodeFLOAT8(len, buff);
+        return textDecodeFLOAT8(index, len, buff);
       case FLOAT8_ARRAY:
-        return textDecodeArray(DOUBLE_ARRAY_FACTORY, DataType.FLOAT8, len, buff);
+        return textDecodeArray(DOUBLE_ARRAY_FACTORY, DataType.FLOAT8, index, len, buff);
       case CHAR:
-        return textDecodeCHAR(len, buff);
+        return textDecodeCHAR(index, len, buff);
       // case CHAR_ARRAY:
       //   return textDecodeCHAR_ARRAY(len, buff);
       case VARCHAR:
-        return textDecodeVARCHAR(len, buff);
+        return textDecodeVARCHAR(index, len, buff);
       case VARCHAR_ARRAY:
-        return textDecodeArray(STRING_ARRAY_FACTORY, DataType.VARCHAR, len, buff);
+        return textDecodeArray(STRING_ARRAY_FACTORY, DataType.VARCHAR, index, len, buff);
       case BPCHAR:
-        return textDecodeBPCHAR(len, buff);
+        return textDecodeBPCHAR(index, len, buff);
       case BPCHAR_ARRAY:
-        return textDecodeArray(STRING_ARRAY_FACTORY, DataType.BPCHAR, len, buff);
+        return textDecodeArray(STRING_ARRAY_FACTORY, DataType.BPCHAR, index, len, buff);
       case TEXT:
-        return textdecodeTEXT(len, buff);
+        return textdecodeTEXT(index, len, buff);
       case TEXT_ARRAY:
-        return textDecodeArray(STRING_ARRAY_FACTORY, DataType.TEXT, len, buff);
+        return textDecodeArray(STRING_ARRAY_FACTORY, DataType.TEXT, index, len, buff);
       case NAME:
-        return textDecodeNAME(len, buff);
+        return textDecodeNAME(index, len, buff);
       case NAME_ARRAY:
-        return textDecodeArray(STRING_ARRAY_FACTORY, DataType.NAME, len, buff);
+        return textDecodeArray(STRING_ARRAY_FACTORY, DataType.NAME, index, len, buff);
       case DATE:
-        return textDecodeDATE(len, buff);
+        return textDecodeDATE(index, len, buff);
       case DATE_ARRAY:
-        return textDecodeArray(LOCALDATE_ARRAY_FACTORY, DataType.DATE, len, buff);
+        return textDecodeArray(LOCALDATE_ARRAY_FACTORY, DataType.DATE, index, len, buff);
       case TIME:
-        return textDecodeTIME(len, buff);
+        return textDecodeTIME(index, len, buff);
       case TIME_ARRAY:
-        return textDecodeArray(LOCALTIME_ARRAY_FACTORY, DataType.TIME, len, buff);
+        return textDecodeArray(LOCALTIME_ARRAY_FACTORY, DataType.TIME, index, len, buff);
       case TIMETZ:
-        return textDecodeTIMETZ(len, buff);
+        return textDecodeTIMETZ(index, len, buff);
       case TIMETZ_ARRAY:
-        return textDecodeArray(OFFSETTIME_ARRAY_FACTORY, DataType.TIMETZ, len, buff);
+        return textDecodeArray(OFFSETTIME_ARRAY_FACTORY, DataType.TIMETZ, index, len, buff);
       case TIMESTAMP:
-        return textDecodeTIMESTAMP(len, buff);
+        return textDecodeTIMESTAMP(index, len, buff);
       case TIMESTAMP_ARRAY:
-        return textDecodeArray(LOCALDATETIME_ARRAY_FACTORY, DataType.TIMESTAMP, len, buff);
+        return textDecodeArray(LOCALDATETIME_ARRAY_FACTORY, DataType.TIMESTAMP, index, len, buff);
       case TIMESTAMPTZ:
-        return textDecodeTIMESTAMPTZ(len, buff);
+        return textDecodeTIMESTAMPTZ(index, len, buff);
       case TIMESTAMPTZ_ARRAY:
-        return textDecodeArray(OFFSETDATETIME_ARRAY_FACTORY, DataType.TIMESTAMPTZ, len, buff);
+        return textDecodeArray(OFFSETDATETIME_ARRAY_FACTORY, DataType.TIMESTAMPTZ, index, len, buff);
       case BYTEA:
-        return textDecodeBYTEA(len, buff);
+        return textDecodeBYTEA(index, len, buff);
       case BYTEA_ARRAY:
-        return textDecodeArray(BUFFER_ARRAY_FACTORY, DataType.BYTEA, len, buff);
+        return textDecodeArray(BUFFER_ARRAY_FACTORY, DataType.BYTEA, index, len, buff);
       case UUID:
-        return textDecodeUUID(len, buff);
+        return textDecodeUUID(index, len, buff);
       case UUID_ARRAY:
-        return textDecodeArray(UUID_ARRAY_FACTORY, DataType.UUID, len, buff);
+        return textDecodeArray(UUID_ARRAY_FACTORY, DataType.UUID, index, len, buff);
       case NUMERIC:
-        return textDecodeNUMERIC(len, buff);
+        return textDecodeNUMERIC(index, len, buff);
       case NUMERIC_ARRAY:
-        return textDecodeArray(NUMERIC_ARRAY_FACTORY, DataType.NUMERIC, len, buff);
+        return textDecodeArray(NUMERIC_ARRAY_FACTORY, DataType.NUMERIC, index, len, buff);
       case JSON:
-        return textDecodeJSON(len, buff);
+        return textDecodeJSON(index, len, buff);
       case JSON_ARRAY:
-        return textDecodeArray(JSON_ARRAY_FACTORY, DataType.JSON, len, buff);
+        return textDecodeArray(JSON_ARRAY_FACTORY, DataType.JSON, index, len, buff);
       case JSONB:
-         return textDecodeJSONB(len, buff);
+         return textDecodeJSONB(index, len, buff);
       case JSONB_ARRAY:
-        return textDecodeArray(JSON_ARRAY_FACTORY, DataType.JSONB, len, buff);
+        return textDecodeArray(JSON_ARRAY_FACTORY, DataType.JSONB, index, len, buff);
       case POINT:
-        return textDecodePOINT(len, buff);
+        return textDecodePOINT(index, len, buff);
       case POINT_ARRAY:
-        return textDecodeArray(POINT_ARRAY_FACTORY, DataType.POINT, len, buff);
+        return textDecodeArray(POINT_ARRAY_FACTORY, DataType.POINT, index, len, buff);
       case INTERVAL:
-        return textDecodeINTERVAL(len, buff);
+        return textDecodeINTERVAL(index, len, buff);
       case INTERVAL_ARRAY:
-        return textDecodeArray(INTERVAL_ARRAY_FACTORY, DataType.INTERVAL, len, buff);
+        return textDecodeArray(INTERVAL_ARRAY_FACTORY, DataType.INTERVAL, index, len, buff);
       default:
-        return defaultDecodeText(len, buff);
+        return defaultDecodeText(index, len, buff);
     }
   }
 
@@ -477,17 +477,15 @@ public class DataTypeCodec {
     }
   }
 
-  private static Object defaultDecodeText(int len, ByteBuf buff) {
+  private static Object defaultDecodeText(int index, int len, ByteBuf buff) {
     // decode unknown text values as text or as an array if it begins with `{`
-    final int idx = buff.readerIndex();
-    if (idx < buff.writerIndex() && buff.getByte(idx) == '{') {
+    if (index < buff.writerIndex() && buff.getByte(index) == '{') {
       if (len == 2) {
-        buff.skipBytes(2);
         return empty_string_array;
       }
-      return textDecodeArray(STRING_ARRAY_FACTORY, DataType.TEXT, len - 1, buff);
+      return textDecodeArray(STRING_ARRAY_FACTORY, DataType.TEXT, index, len - 1, buff);
     }
-    return textdecodeTEXT(len, buff);
+    return textdecodeTEXT(index, len, buff);
   }
 
   private static void defaultEncodeBinary(Object value, ByteBuf buff) {
@@ -495,9 +493,8 @@ public class DataTypeCodec {
     buff.writeInt(-1);
   }
 
-  private static Object defaultDecodeBinary(int len, ByteBuf buff) {
+  private static Object defaultDecodeBinary(int index, int len, ByteBuf buff) {
     // Default to null
-    buff.skipBytes(len);
     return null;
   }
 
@@ -505,62 +502,62 @@ public class DataTypeCodec {
     buff.writeBoolean(value);
   }
 
-  private static Boolean binaryDecodeBOOL(int len, ByteBuf buff) {
-    return buff.readBoolean();
+  private static Boolean binaryDecodeBOOL(int index, int len, ByteBuf buff) {
+    return buff.getBoolean(index);
   }
 
-  private static Boolean textDecodeBOOL(int len, ByteBuf buff) {
-    if(buff.readByte() == 't') {
+  private static Boolean textDecodeBOOL(int index, int len, ByteBuf buff) {
+    if(buff.getByte(index) == 't') {
       return Boolean.TRUE;
     } else {
       return Boolean.FALSE;
     }
   }
 
-  private static Short textDecodeINT2(int len, ByteBuf buff) {
-    return (short) DataTypeCodec.decodeDecStringToLong(len, buff);
+  private static Short textDecodeINT2(int index, int len, ByteBuf buff) {
+    return (short) DataTypeCodec.decodeDecStringToLong(index, len, buff);
   }
 
-  private static Short binaryDecodeINT2(int len, ByteBuf buff) {
-    return buff.readShort();
+  private static Short binaryDecodeINT2(int index, int len, ByteBuf buff) {
+    return buff.getShort(index);
   }
 
   private static void binaryEncodeINT2(Short value, ByteBuf buff) {
     buff.writeShort(value);
   }
 
-  private static Integer textDecodeINT4(int len, ByteBuf buff) {
-    return (int) decodeDecStringToLong(len, buff);
+  private static Integer textDecodeINT4(int index, int len, ByteBuf buff) {
+    return (int) decodeDecStringToLong(index, len, buff);
   }
 
-  private static Integer binaryDecodeINT4(int len, ByteBuf buff) {
-    return buff.readInt();
+  private static Integer binaryDecodeINT4(int index, int len, ByteBuf buff) {
+    return buff.getInt(index);
   }
 
   private static void binaryEncodeINT4(Integer value, ByteBuf buff) {
     buff.writeInt(value);
   }
 
-  private static Long textDecodeINT8(int len, ByteBuf buff) {
-    return decodeDecStringToLong(len, buff);
+  private static Long textDecodeINT8(int index, int len, ByteBuf buff) {
+    return decodeDecStringToLong(index, len, buff);
   }
 
-  private static Long binaryDecodeINT8(int len, ByteBuf buff) {
-    return buff.readLong();
+  private static Long binaryDecodeINT8(int index, int len, ByteBuf buff) {
+    return buff.getLong(index);
   }
 
   private static void binaryEncodeINT8(Long value, ByteBuf buff) {
     buff.writeLong(value);
   }
 
-  private static Float textDecodeFLOAT4(int len, ByteBuf buff) {
+  private static Float textDecodeFLOAT4(int index, int len, ByteBuf buff) {
     // Todo optimize that
-    CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
+    CharSequence cs = buff.getCharSequence(index, len, StandardCharsets.UTF_8);
     return Float.parseFloat(cs.toString());
   }
 
-  private static Float binaryDecodeFLOAT4(int len, ByteBuf buff) {
-    return buff.readFloat();
+  private static Float binaryDecodeFLOAT4(int index, int len, ByteBuf buff) {
+    return buff.getFloat(index);
   }
 
   private static void binaryEncodeFLOAT4(Float value, ByteBuf buff) {
@@ -571,35 +568,33 @@ public class DataTypeCodec {
     buff.writeDouble(value);
   }
 
-  private static Double binaryDecodeFLOAT8(int len, ByteBuf buff) {
-    return buff.readDouble();
+  private static Double binaryDecodeFLOAT8(int index, int len, ByteBuf buff) {
+    return buff.getDouble(index);
   }
 
-  private static double textDecodeFLOAT8(int len, ByteBuf buff) {
+  private static double textDecodeFLOAT8(int index, int len, ByteBuf buff) {
     // Todo optimize that
-    CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
+    CharSequence cs = buff.getCharSequence(index, len, StandardCharsets.UTF_8);
     return Double.parseDouble(cs.toString());
   }
 
-  private static Number textDecodeNUMERIC(int len, ByteBuf buff) {
+  private static Number textDecodeNUMERIC(int index, int len, ByteBuf buff) {
     // Todo optimize that
-    CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
+    CharSequence cs = buff.getCharSequence(index, len, StandardCharsets.UTF_8);
     return Numeric.parse(cs.toString());
   }
 
-  private static Point textDecodePOINT(int len, ByteBuf buff) {
-    buff.skipBytes(1);
-    int idx = buff.readerIndex();
+  private static Point textDecodePOINT(int index, int len, ByteBuf buff) {
+    int idx = ++index;
     int s = buff.indexOf(idx, idx + len, (byte) ',');
     int t = s - idx;
-    double x = textDecodeFLOAT8(t, buff);
-    buff.skipBytes(1);
-    double y = textDecodeFLOAT8(len - t - 3, buff);
+    double x = textDecodeFLOAT8(idx, t, buff);
+    double y = textDecodeFLOAT8(s + 1, len - t - 3, buff);
     return new Point(x, y);
   }
 
-  private static Interval textDecodeINTERVAL(int len, ByteBuf buff) {
-    CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
+  private static Interval textDecodeINTERVAL(int index, int len, ByteBuf buff) {
+    CharSequence cs = buff.getCharSequence(index, len, StandardCharsets.UTF_8);
     String value = cs.toString();
     int years = 0, months = 0, days = 0, hours = 0, minutes = 0, seconds = 0, microseconds = 0;
     final List<String> chunks = new ArrayList<>(7);
@@ -682,12 +677,12 @@ public class DataTypeCodec {
     binaryEncodeTEXT(value, buff);
   }
 
-  private static String textDecodeCHAR(int len, ByteBuf buff) {
-    return binaryDecodeCHAR(len, buff);
+  private static String textDecodeCHAR(int index, int len, ByteBuf buff) {
+    return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
   }
 
-  private static String binaryDecodeCHAR(int len, ByteBuf buff) {
-    return binaryDecodeTEXT(len, buff);
+  private static String binaryDecodeCHAR(int index, int len, ByteBuf buff) {
+    return binaryDecodeTEXT(index, len, buff);
   }
 
   private static void binaryEncodeVARCHAR(String value, ByteBuf buff) {
@@ -695,28 +690,28 @@ public class DataTypeCodec {
     buff.writeCharSequence(s, StandardCharsets.UTF_8);
   }
 
-  private static String textDecodeVARCHAR(int len, ByteBuf buff) {
-    return binaryDecodeVARCHAR(len, buff);
+  private static String textDecodeVARCHAR(int index, int len, ByteBuf buff) {
+    return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
   }
 
-  private static String binaryDecodeVARCHAR(int len, ByteBuf buff) {
-    return buff.readCharSequence(len, StandardCharsets.UTF_8).toString();
+  private static String binaryDecodeVARCHAR(int index, int len, ByteBuf buff) {
+    return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
   }
 
-  private static String textDecodeBPCHAR(int len, ByteBuf buff) {
-    return binaryDecodeBPCHAR(len, buff);
+  private static String textDecodeBPCHAR(int index, int len, ByteBuf buff) {
+    return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
   }
 
   private static void binaryEncodeBPCHAR(String value, ByteBuf buff) {
     buff.writeCharSequence(value, StandardCharsets.UTF_8);
   }
 
-  private static String binaryDecodeBPCHAR(int len, ByteBuf buff) {
-    return buff.readCharSequence(len, StandardCharsets.UTF_8).toString();
+  private static String binaryDecodeBPCHAR(int index, int len, ByteBuf buff) {
+    return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
   }
 
-  private static String textdecodeTEXT(int len, ByteBuf buff) {
-    return binaryDecodeTEXT(len, buff);
+  private static String textdecodeTEXT(int index, int len, ByteBuf buff) {
+    return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
   }
 
   private static void binaryEncodeTEXT(String value, ByteBuf buff) {
@@ -724,12 +719,12 @@ public class DataTypeCodec {
     buff.writeCharSequence(s, StandardCharsets.UTF_8);
   }
 
-  private static String binaryDecodeTEXT(int len, ByteBuf buff) {
-    return buff.readCharSequence(len, StandardCharsets.UTF_8).toString();
+  private static String binaryDecodeTEXT(int index, int len, ByteBuf buff) {
+    return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
   }
 
-  private static String textDecodeNAME(int len, ByteBuf buff) {
-    return binaryDecodeNAME(len, buff);
+  private static String textDecodeNAME(int index, int len, ByteBuf buff) {
+    return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
   }
 
 
@@ -738,20 +733,20 @@ public class DataTypeCodec {
     buff.writeCharSequence(s, StandardCharsets.UTF_8);
   }
 
-  private static String binaryDecodeNAME(int len, ByteBuf buff) {
-    return buff.readCharSequence(len, StandardCharsets.UTF_8).toString();
+  private static String binaryDecodeNAME(int index, int len, ByteBuf buff) {
+    return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
   }
 
   private static void binaryEncodeDATE(LocalDate value, ByteBuf buff) {
     buff.writeInt((int) -value.until(LOCAL_DATE_EPOCH, ChronoUnit.DAYS));
   }
 
-  private static LocalDate binaryDecodeDATE(int len, ByteBuf buff) {
-    return LOCAL_DATE_EPOCH.plus(buff.readInt(), ChronoUnit.DAYS);
+  private static LocalDate binaryDecodeDATE(int index, int len, ByteBuf buff) {
+    return LOCAL_DATE_EPOCH.plus(buff.getInt(index), ChronoUnit.DAYS);
   }
 
-  private static LocalDate textDecodeDATE(int len, ByteBuf buff) {
-    CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
+  private static LocalDate textDecodeDATE(int index, int len, ByteBuf buff) {
+    CharSequence cs = buff.getCharSequence(index, len, StandardCharsets.UTF_8);
     return LocalDate.parse(cs);
   }
 
@@ -759,13 +754,13 @@ public class DataTypeCodec {
     buff.writeLong(value.getLong(ChronoField.MICRO_OF_DAY));
   }
 
-  private static LocalTime binaryDecodeTIME(int len, ByteBuf buff) {
+  private static LocalTime binaryDecodeTIME(int index, int len, ByteBuf buff) {
     // micros to nanos
-    return LocalTime.ofNanoOfDay(buff.readLong() * 1000);
+    return LocalTime.ofNanoOfDay(buff.getLong(index) * 1000);
   }
 
-  private static LocalTime textDecodeTIME(int len, ByteBuf buff) {
-    CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
+  private static LocalTime textDecodeTIME(int index, int len, ByteBuf buff) {
+    CharSequence cs = buff.getCharSequence(index, len, StandardCharsets.UTF_8);
     return LocalTime.parse(cs);
   }
 
@@ -775,15 +770,15 @@ public class DataTypeCodec {
     buff.writeInt(-value.getOffset().getTotalSeconds());
   }
 
-  private static OffsetTime binaryDecodeTIMETZ(int len, ByteBuf buff) {
+  private static OffsetTime binaryDecodeTIMETZ(int index, int len, ByteBuf buff) {
     // micros to nanos
-    return OffsetTime.of(LocalTime.ofNanoOfDay(buff.readLong() * 1000),
+    return OffsetTime.of(LocalTime.ofNanoOfDay(buff.getLong(index) * 1000),
       // zone offset in seconds (should we change it to UTC ?)
-      ZoneOffset.ofTotalSeconds(-buff.readInt()));
+      ZoneOffset.ofTotalSeconds(-buff.getInt(index + 8)));
   }
 
-  private static OffsetTime textDecodeTIMETZ(int len, ByteBuf buff) {
-    CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
+  private static OffsetTime textDecodeTIMETZ(int index, int len, ByteBuf buff) {
+    CharSequence cs = buff.getCharSequence(index, len, StandardCharsets.UTF_8);
     return OffsetTime.parse(cs, TimeFormatter.TIMETZ_FORMAT);
   }
 
@@ -791,32 +786,31 @@ public class DataTypeCodec {
     buff.writeLong(-value.until(LOCAL_DATE_TIME_EPOCH, ChronoUnit.MICROS));
   }
 
-  private static LocalDateTime binaryDecodeTIMESTAMP(int len, ByteBuf buff) {
-    return LOCAL_DATE_TIME_EPOCH.plus(buff.readLong(), ChronoUnit.MICROS);
+  private static LocalDateTime binaryDecodeTIMESTAMP(int index, int len, ByteBuf buff) {
+    return LOCAL_DATE_TIME_EPOCH.plus(buff.getLong(index), ChronoUnit.MICROS);
   }
 
-  private static LocalDateTime textDecodeTIMESTAMP(int len, ByteBuf buff) {
-    CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
+  private static LocalDateTime textDecodeTIMESTAMP(int index, int len, ByteBuf buff) {
+    CharSequence cs = buff.getCharSequence(index, len, StandardCharsets.UTF_8);
     return LocalDateTime.parse(cs, DateTimeFormatter.TIMESTAMP_FORMAT);
   }
 
-  private static OffsetDateTime binaryDecodeTIMESTAMPTZ(int len, ByteBuf buff) {
-    return OFFSET_DATE_TIME_EPOCH.plus(buff.readLong(), ChronoUnit.MICROS);
+  private static OffsetDateTime binaryDecodeTIMESTAMPTZ(int index, int len, ByteBuf buff) {
+    return OFFSET_DATE_TIME_EPOCH.plus(buff.getLong(index), ChronoUnit.MICROS);
   }
 
   private static void binaryEncodeTIMESTAMPTZ(OffsetDateTime value, ByteBuf buff) {
     buff.writeLong(-value.until(OFFSET_DATE_TIME_EPOCH, ChronoUnit.MICROS));
   }
 
-  private static OffsetDateTime textDecodeTIMESTAMPTZ(int len, ByteBuf buff) {
-    CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
+  private static OffsetDateTime textDecodeTIMESTAMPTZ(int index, int len, ByteBuf buff) {
+    CharSequence cs = buff.getCharSequence(index, len, StandardCharsets.UTF_8);
     return OffsetDateTime.parse(cs, DateTimeFormatter.TIMESTAMPTZ_FORMAT);
   }
 
-  private static Buffer textDecodeBYTEA(int len, ByteBuf buff) {
-    buff.readByte(); // \
-    buff.readByte(); // x
-    return Buffer.buffer(decodeHexStringToBytes(len - 2, buff));
+  private static Buffer textDecodeBYTEA(int index, int len, ByteBuf buff) {
+    // Shift 2 bytes: skip \x prolog
+    return Buffer.buffer(decodeHexStringToBytes(index + 2, len - 2, buff));
   }
 
   private static void binaryEncodeBYTEA(Buffer value, ByteBuf buff) {
@@ -824,8 +818,8 @@ public class DataTypeCodec {
     buff.writeBytes(byteBuf);
   }
 
-  private static Buffer binaryDecodeBYTEA(int len, ByteBuf buff) {
-    return Buffer.buffer(buff.readBytes(len));
+  private static Buffer binaryDecodeBYTEA(int index, int len, ByteBuf buff) {
+    return Buffer.buffer(buff.copy(index, len));
   }
 
   private static void binaryEncodeUUID(UUID uuid, ByteBuf buff) {
@@ -838,9 +832,9 @@ public class DataTypeCodec {
     binaryEncodeFLOAT8(point.y, buff);
   }
 
-  private static Point binaryDecodePoint(int len, ByteBuf buff) {
-    double x = binaryDecodeFLOAT8(8, buff);
-    double y = binaryDecodeFLOAT8(8, buff);
+  private static Point binaryDecodePoint(int index, int len, ByteBuf buff) {
+    double x = binaryDecodeFLOAT8(index, 8, buff);
+    double y = binaryDecodeFLOAT8(index + 8, 8, buff);
     return new Point(x, y);
   }
 
@@ -857,8 +851,8 @@ public class DataTypeCodec {
     binaryEncodeINT4((int) monthYear.toTotalMonths(), buff);
   }
 
-  private static Interval binaryDecodeINTERVAL(int len, ByteBuf buff) {
-    Duration duration = Duration.of(buff.readLong(), ChronoUnit.MICROS);
+  private static Interval binaryDecodeINTERVAL(int index, int len, ByteBuf buff) {
+    Duration duration = Duration.of(buff.getLong(index), ChronoUnit.MICROS);
     final long hours = duration.toHours();
     duration = duration.minusHours(hours);
     final long minutes = duration.toMinutes();
@@ -866,27 +860,27 @@ public class DataTypeCodec {
     final long seconds = NANOSECONDS.toSeconds(duration.toNanos());
     duration = duration.minusSeconds(seconds);
     final long microseconds = NANOSECONDS.toMicros(duration.toNanos());
-    int days = buff.readInt();
-    int months = buff.readInt();
+    int days = buff.getInt(index + 8);
+    int months = buff.getInt(index + 12);
     Period monthYear = Period.of(0, months, days).normalized();
     return new Interval(monthYear.getYears(), monthYear.getMonths(), monthYear.getDays(),
       (int) hours, (int) minutes, (int) seconds, (int) microseconds);
   }
 
-  private static UUID binaryDecodeUUID(int len, ByteBuf buff) {
-    return new UUID(buff.readLong(), buff.readLong());
+  private static UUID binaryDecodeUUID(int index, int len, ByteBuf buff) {
+    return new UUID(buff.getLong(index), buff.getLong(index + 8));
   }
 
-  private static UUID textDecodeUUID(int len, ByteBuf buff) {
-    return java.util.UUID.fromString(buff.readCharSequence(len, StandardCharsets.UTF_8).toString());
+  private static UUID textDecodeUUID(int index, int len, ByteBuf buff) {
+    return java.util.UUID.fromString(buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString());
   }
 
-  private static Json textDecodeJSON(int len, ByteBuf buff) {
-    return textDecodeJSONB(len, buff);
+  private static Json textDecodeJSON(int index, int len, ByteBuf buff) {
+    return textDecodeJSONB(index, len, buff);
   }
 
-  private static Json binaryDecodeJSON(int len, ByteBuf buff) {
-    return textDecodeJSONB(len, buff);
+  private static Json binaryDecodeJSON(int index, int len, ByteBuf buff) {
+    return textDecodeJSONB(index, len, buff);
   }
 
   private static void binaryEncodeJSON(Json value, ByteBuf buff) {
@@ -894,10 +888,10 @@ public class DataTypeCodec {
     buff.writeCharSequence(s, StandardCharsets.UTF_8);
   }
 
-  private static Json textDecodeJSONB(int len, ByteBuf buff) {
+  private static Json textDecodeJSONB(int index, int len, ByteBuf buff) {
 
     // Try to do without the intermediary String (?)
-    CharSequence cs = buff.readCharSequence(len, StandardCharsets.UTF_8);
+    CharSequence cs = buff.getCharSequence(index, len, StandardCharsets.UTF_8);
     Object value = null;
     String s = cs.toString();
     int pos = 0;
@@ -927,9 +921,9 @@ public class DataTypeCodec {
     return Json.create(value);
   }
 
-  private static Json binaryDecodeJSONB(int len, ByteBuf buff) {
-    buff.skipBytes(1); // Skip 1 byte for version (which is 1)
-    return textDecodeJSONB(len - 1, buff);
+  private static Json binaryDecodeJSONB(int index, int len, ByteBuf buff) {
+    // Skip 1 byte for version (which is 1)
+    return textDecodeJSONB(index + 1, len - 1, buff);
   }
 
   private static void binaryEncodeJSONB(Json value, ByteBuf buff) {
@@ -942,14 +936,15 @@ public class DataTypeCodec {
    * Decode the specified {@code buff} formatted as a decimal string starting at the readable index
    * with the specified {@code length} to a long.
    *
+   * @param index the hex string index
    * @param len the hex string length
    * @param buff the byte buff to read from
    * @return the decoded value as a long
    */
-  private static long decodeDecStringToLong(int len, ByteBuf buff) {
+  private static long decodeDecStringToLong(int index, int len, ByteBuf buff) {
     long value = 0;
     for (int i = 0;i < len;i++) {
-      byte ch = buff.readByte();
+      byte ch = buff.getByte(index++);
       byte nibble = (byte)(ch - '0');
       value = value * 10 + nibble;
     }
@@ -964,12 +959,12 @@ public class DataTypeCodec {
    * @param buff the byte buff to read from
    * @return the decoded value as a byte array
    */
-  private static byte[] decodeHexStringToBytes(int len, ByteBuf buff) {
+  private static byte[] decodeHexStringToBytes(int index, int len, ByteBuf buff) {
     len = len >> 1;
     byte[] bytes = new byte[len];
     for (int i = 0;i < len;i++) {
-      byte b0 = decodeHexChar(buff.readByte());
-      byte b1 = decodeHexChar(buff.readByte());
+      byte b0 = decodeHexChar(buff.getByte(index++));
+      byte b1 = decodeHexChar(buff.getByte(index++));
       bytes[i] = (byte)(b0 * 16 + b1);
     }
     return bytes;
@@ -979,24 +974,28 @@ public class DataTypeCodec {
     return (byte)(((ch & 0x1F) + ((ch >> 6) * 0x19) - 0x10) & 0x0F);
   }
 
-  private static <T> T[] binaryDecodeArray(IntFunction<T[]> supplier, DataType type, int len, ByteBuf buff) {
+  private static <T> T[] binaryDecodeArray(IntFunction<T[]> supplier, DataType type, int index, int len, ByteBuf buff) {
     if (len == 12) {
       return supplier.apply(0);
     }
-    int dim = buff.readInt();    // ndim
-    buff.skipBytes(4);           // dataoffset
-    buff.skipBytes(4);           // elemtype
-    int length = buff.readInt(); // dimensions
-    buff.skipBytes(4);           // lower bnds
+    int dim = buff.getInt(index);    // read ndim
+    index += 4;
+    index += 4;                      // skip dataoffset
+    index += 4;                      // skip elemtype
+    int length = buff.getInt(index); // read dimensions
+    index += 4;
+    index += 4;                      // skip lower bnds
     if (dim != 1) {
       System.out.println("Only arrays of dimension 1 are supported");
       return null;
     }
     T[] array = supplier.apply(length);
     for (int i = 0; i < array.length; i++) {
-      int l = buff.readInt();
+      int l = buff.getInt(index);
+      index += 4;
       if (l != -1) {
-        array[i] = (T) decodeBinary(type, l, buff);
+        array[i] = (T) decodeBinary(type, index, l, buff);
+        index += l;
       }
     }
     return array;
@@ -1026,13 +1025,12 @@ public class DataTypeCodec {
     }
   }
 
-  private static <T> T[] textDecodeArray(IntFunction<T[]> supplier, DataType type, int len, ByteBuf buff) {
+  private static <T> T[] textDecodeArray(IntFunction<T[]> supplier, DataType type, int index, int len, ByteBuf buff) {
     if (len == 12) {
       return supplier.apply(0);
     }
     List<T> list = new ArrayList<>();
-    buff.skipBytes(1); // {
-    int from = buff.readerIndex();
+    int from = index + 1; // Set index after '{'
     int to = buff.writerIndex() - 1;
     while (true) {
       // Escaped content ?
@@ -1040,37 +1038,36 @@ public class DataTypeCodec {
       int idx;
       if (escaped) {
         idx = buff.forEachByte(from, to - from, new UTF8StringEndDetector());
-        idx = buff.indexOf(idx, to, (byte) ','); // SEEE iF WE CAN GET RID oF IT
+        idx = buff.indexOf(idx, to, (byte) ','); // SEE iF WE CAN GET RID oF IT
       } else {
         idx = buff.indexOf(from, to, (byte) ',');
       }
       if (idx == -1) {
         break;
       } else {
-        T o = textDecodeArrayElement(type, idx - from, buff);
+        T o = textDecodeArrayElement(type, from, idx - from, buff);
         list.add(o);
-        buff.readerIndex(from = idx + 1);
+        from = idx + 1;
       }
     }
-    T elt = textDecodeArrayElement(type, to - from, buff);
+    T elt = textDecodeArrayElement(type, from, to - from, buff);
     list.add(elt);
     return list.toArray(supplier.apply(list.size()));
   }
 
-  private static <T> T textDecodeArrayElement(DataType type, int len, ByteBuf buff) {
-    final int curr = buff.readerIndex();
+  private static <T> T textDecodeArrayElement(DataType type, int index, int len, ByteBuf buff) {
     if (len == 4
-      && Character.toUpperCase(buff.getByte(curr)) == 'N'
-      && Character.toUpperCase(buff.getByte(curr + 1)) == 'U'
-      && Character.toUpperCase(buff.getByte(curr + 2)) == 'L'
-      && Character.toUpperCase(buff.getByte(curr + 3)) == 'L'
+      && Character.toUpperCase(buff.getByte(index)) == 'N'
+      && Character.toUpperCase(buff.getByte(index + 1)) == 'U'
+      && Character.toUpperCase(buff.getByte(index + 2)) == 'L'
+      && Character.toUpperCase(buff.getByte(index + 3)) == 'L'
       ) {
       return null;
     } else {
-      boolean escaped = buff.getByte(curr) == '"';
+      boolean escaped = buff.getByte(index) == '"';
       if (escaped) {
         // Some escaping - improve that later...
-        String s = buff.toString(curr + 1, len - 2, StandardCharsets.UTF_8);
+        String s = buff.toString(index + 1, len - 2, StandardCharsets.UTF_8);
         StringBuilder sb = new StringBuilder();
         for (int i = 0;i < s.length();i++) {
           char c = s.charAt(i);
@@ -1080,9 +1077,10 @@ public class DataTypeCodec {
           sb.append(c);
         }
         buff = Unpooled.copiedBuffer(sb, StandardCharsets.UTF_8);
+        index = 0;
         len = buff.readableBytes();
       }
-      return (T) decodeText(type, len, buff);
+      return (T) decodeText(type, index, len, buff);
     }
   }
 

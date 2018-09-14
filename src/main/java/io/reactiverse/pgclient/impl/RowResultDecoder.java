@@ -75,10 +75,11 @@ public class RowResultDecoder<C, R> implements RowDecoder {
       if (length != -1) {
         ColumnDesc columnDesc = desc.columns()[c];
         if (columnDesc.getDataFormat() == DataFormat.BINARY) {
-          decoded = DataTypeCodec.decodeBinary(columnDesc.getDataType(), length, in);
+          decoded = DataTypeCodec.decodeBinary(columnDesc.getDataType(), in.readerIndex(), length, in);
         } else {
-          decoded = DataTypeCodec.decodeText(columnDesc.getDataType(), length, in);
+          decoded = DataTypeCodec.decodeText(columnDesc.getDataType(), in.readerIndex(), length, in);
         }
+        in.skipBytes(length);
       }
       row.addValue(decoded);
     }
