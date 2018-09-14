@@ -479,11 +479,8 @@ public class DataTypeCodec {
 
   private static Object defaultDecodeText(int index, int len, ByteBuf buff) {
     // decode unknown text values as text or as an array if it begins with `{`
-    if (index < buff.writerIndex() && buff.getByte(index) == '{') {
-      if (len == 2) {
-        return empty_string_array;
-      }
-      return textDecodeArray(STRING_ARRAY_FACTORY, DataType.TEXT, index, len - 1, buff);
+    if (len > 1 && buff.getByte(index) == '{') {
+      return textDecodeArray(STRING_ARRAY_FACTORY, DataType.TEXT, index, len, buff);
     }
     return textdecodeTEXT(index, len, buff);
   }
@@ -1026,13 +1023,10 @@ public class DataTypeCodec {
   }
 
   private static <T> T[] textDecodeArray(IntFunction<T[]> supplier, DataType type, int index, int len, ByteBuf buff) {
-    if (len == 12) {
-      return supplier.apply(0);
-    }
     List<T> list = new ArrayList<>();
     int from = index + 1; // Set index after '{'
-    int to = buff.writerIndex() - 1;
-    while (true) {
+    int to = index + len - 1; // Set index before '}'
+    while (from < to) {
       // Escaped content ?
       boolean escaped = buff.getByte(from) == '"';
       int idx;
@@ -1043,15 +1037,12 @@ public class DataTypeCodec {
         idx = buff.indexOf(from, to, (byte) ',');
       }
       if (idx == -1) {
-        break;
-      } else {
-        T o = textDecodeArrayElement(type, from, idx - from, buff);
-        list.add(o);
-        from = idx + 1;
+        idx = to;
       }
+      T elt = textDecodeArrayElement(type, from, idx - from, buff);
+      list.add(elt);
+      from = idx + 1;
     }
-    T elt = textDecodeArrayElement(type, from, to - from, buff);
-    list.add(elt);
     return list.toArray(supplier.apply(list.size()));
   }
 

@@ -751,4 +751,21 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
         }));
     }));
   }
+
+  @Test
+  public void testDecodeEmptyArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      // The extra column makes sure that reading the array remains confined in the value since we are doing
+      // parsing of the array value
+      conn.query("SELECT '{}'::bigint[] \"array\", 1 \"Extra\"",
+        ctx.asyncAssertSuccess(result -> {
+          ColumnChecker.checkColumn(0, "array")
+            .returns(Tuple::getValue, Row::getValue, (Object[]) new Long[0])
+            .returns(Tuple::getLongArray, Row::getLongArray, (Object[]) new Long[0])
+            .forRow(result.iterator().next());
+          async.complete();
+        }));
+    }));
+  }
 }
