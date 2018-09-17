@@ -29,6 +29,8 @@ import io.reactiverse.pgclient.impl.codec.util.UTF8StringEndDetector;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -46,6 +48,8 @@ import static java.util.concurrent.TimeUnit.*;
 
 public class DataTypeCodec {
 
+  private static final Logger logger = LoggerFactory.getLogger(DataTypeCodec.class);
+  
   private static final String[] empty_string_array = new String[0];
   private static final LocalDate[] empty_local_date_array = new LocalDate[0];
   private static final LocalTime[] empty_local_time_array = new LocalTime[0];
@@ -110,7 +114,7 @@ public class DataTypeCodec {
         buff.writeCharSequence(String.valueOf(value), StandardCharsets.UTF_8);
         break;
       default:
-        System.out.println("Data type " + id + " does not support text encoding");
+        logger.warn("Data type " + id + " does not support text encoding");
         buff.writeCharSequence(String.valueOf(value), StandardCharsets.UTF_8);
         break;
     }
@@ -251,7 +255,7 @@ public class DataTypeCodec {
         binaryEncodeArray((Interval[]) value, DataType.INTERVAL, buff);
         break;
       default:
-        System.out.println("Data type " + id + " does not support binary encoding");
+        logger.warn("Data type " + id + " does not support binary encoding");
         defaultEncodeBinary(value, buff);
         break;
     }
@@ -348,7 +352,7 @@ public class DataTypeCodec {
       case INTERVAL_ARRAY:
         return binaryDecodeArray(INTERVAL_ARRAY_FACTORY, DataType.INTERVAL, index, len, buff);
       default:
-        System.out.println("Data type " + id + " does not support binary decoding");
+        logger.warn("Data type " + id + " does not support binary decoding");
         return defaultDecodeBinary(index, len, buff);
     }
   }
@@ -983,7 +987,7 @@ public class DataTypeCodec {
     index += 4;
     index += 4;                      // skip lower bnds
     if (dim != 1) {
-      System.out.println("Only arrays of dimension 1 are supported");
+      logger.warn("Only arrays of dimension 1 are supported");
       return null;
     }
     T[] array = supplier.apply(length);

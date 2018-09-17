@@ -24,12 +24,16 @@ import io.reactiverse.pgclient.impl.codec.decoder.ParameterDescription;
 import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
 import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
 public abstract class CommandBase<R> {
+
+  private static final Logger logger = LoggerFactory.getLogger(CommandBase.class);
 
   public Handler<? super CommandResponse<R>> completionHandler;
   public Handler<NoticeResponse> noticeHandler;
@@ -42,31 +46,31 @@ public abstract class CommandBase<R> {
   }
 
   public void handleBackendKeyData(int processId, int secretKey) {
-    System.out.println(getClass().getSimpleName() + " should handle message BackendKeyData");
+    logger.warn(getClass().getSimpleName() + " should handle message BackendKeyData");
   }
 
   public void handleEmptyQueryResponse() {
-    System.out.println(getClass().getSimpleName() + " should handle message EmptyQueryResponse");
+    logger.warn(getClass().getSimpleName() + " should handle message EmptyQueryResponse");
   }
 
   public void handleParameterDescription(ParameterDescription parameterDesc) {
-    System.out.println(getClass().getSimpleName() + " should handle message " + parameterDesc);
+    logger.warn(getClass().getSimpleName() + " should handle message " + parameterDesc);
   }
 
   public void handleParseComplete() {
-    System.out.println(getClass().getSimpleName() + " should handle message ParseComplete");
+    logger.warn(getClass().getSimpleName() + " should handle message ParseComplete");
   }
 
   public void handleCloseComplete() {
-    System.out.println(getClass().getSimpleName() + " should handle message CloseComplete");
+    logger.warn(getClass().getSimpleName() + " should handle message CloseComplete");
   }
 
   public void handleRowDescription(RowDescription rowDescription) {
-    System.out.println(getClass().getSimpleName() + " should handle message " + rowDescription);
+    logger.warn(getClass().getSimpleName() + " should handle message " + rowDescription);
   }
 
   public void handleNoData() {
-    System.out.println(getClass().getSimpleName() + " should handle message NoData");
+    logger.warn(getClass().getSimpleName() + " should handle message NoData");
   }
 
   public void handleNoticeResponse(NoticeResponse noticeResponse) {
@@ -74,35 +78,35 @@ public abstract class CommandBase<R> {
   }
 
   public void handleErrorResponse(ErrorResponse errorResponse) {
-    System.out.println(getClass().getSimpleName() + " should handle message " + errorResponse);
+    logger.warn(getClass().getSimpleName() + " should handle message " + errorResponse);
   }
 
   public void handlePortalSuspended() {
-    System.out.println(getClass().getSimpleName() + " should handle message PortalSuspended");
+    logger.warn(getClass().getSimpleName() + " should handle message PortalSuspended");
   }
 
   public void handleBindComplete() {
-    System.out.println(getClass().getSimpleName() + " should handle message BindComplete");
+    logger.warn(getClass().getSimpleName() + " should handle message BindComplete");
   }
 
   public void handleCommandComplete(int updated) {
-    System.out.println(getClass().getSimpleName() + " should handle message CommandComplete");
+    logger.warn(getClass().getSimpleName() + " should handle message CommandComplete");
   }
 
   public void handleAuthenticationMD5Password(byte[] salt) {
-    System.out.println(getClass().getSimpleName() + " should handle message AuthenticationMD5Password");
+    logger.warn(getClass().getSimpleName() + " should handle message AuthenticationMD5Password");
   }
 
   public void handleAuthenticationClearTextPassword() {
-    System.out.println(getClass().getSimpleName() + " should handle message AuthenticationClearTextPassword");
+    logger.warn(getClass().getSimpleName() + " should handle message AuthenticationClearTextPassword");
   }
 
   public void handleAuthenticationOk() {
-    System.out.println(getClass().getSimpleName() + " should handle message AuthenticationOk");
+    logger.warn(getClass().getSimpleName() + " should handle message AuthenticationOk");
   }
 
   public void handleParameterStatus(String key, String value) {
-    System.out.println(getClass().getSimpleName() + " should handle message ParameterStatus");
+    logger.warn(getClass().getSimpleName() + " should handle message ParameterStatus");
   }
 
   /**
