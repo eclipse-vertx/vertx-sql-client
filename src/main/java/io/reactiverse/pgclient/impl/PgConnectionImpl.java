@@ -73,7 +73,7 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
         handler.handle(err);
       });
     } else {
-      err.printStackTrace();
+      throw new RuntimeException(err);
     }
   }
 
