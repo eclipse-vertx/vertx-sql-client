@@ -7,6 +7,8 @@ image:https://travis-ci.org/reactiverse/reactive-pg-client.svg?branch=master["Bu
 * Reactive and non blocking which able to handle many database connections with a single thread.
 * Ranked *#1* in the https://www.techempower.com/benchmarks/#section=data-r15&hw=ph&test=db[TechEmpower Benchmark Round 15] _Single query_ benchmark.
 
+Some change
+
 == Features
 
 - Event driven
