@@ -46,31 +46,31 @@ public abstract class CommandBase<R> {
   }
 
   public void handleBackendKeyData(int processId, int secretKey) {
-    logger.warn("{} should handle message BackendKeyData", getClass().getSimpleName());
+    logger.warn(getClass().getSimpleName() + " should handle message BackendKeyData");
   }
 
   public void handleEmptyQueryResponse() {
-    logger.warn("{} should handle message EmptyQueryResponse", getClass().getSimpleName());
+    logger.warn(getClass().getSimpleName() + " should handle message EmptyQueryResponse");
   }
 
   public void handleParameterDescription(ParameterDescription parameterDesc) {
-    logger.warn("{} should handle message {}", getClass().getSimpleName(), parameterDesc);
+    logger.warn(getClass().getSimpleName() + " should handle message " + parameterDesc);
   }
 
   public void handleParseComplete() {
-    logger.warn("{} should handle message ParseComplete", getClass().getSimpleName());
+    logger.warn(getClass().getSimpleName() + " should handle message ParseComplete");
   }
 
   public void handleCloseComplete() {
-    logger.warn("{} should handle message CloseComplete", getClass().getSimpleName());
+    logger.warn(getClass().getSimpleName() + " should handle message CloseComplete");
   }
 
   public void handleRowDescription(RowDescription rowDescription) {
-    logger.warn("{} should handle message {}", getClass().getSimpleName(), rowDescription);
+    logger.warn(getClass().getSimpleName() + " should handle message " + rowDescription);
   }
 
   public void handleNoData() {
-    logger.warn("{} should handle message NoData", getClass().getSimpleName());
+    logger.warn(getClass().getSimpleName() + " should handle message NoData");
   }
 
   public void handleNoticeResponse(NoticeResponse noticeResponse) {
@@ -78,35 +78,35 @@ public abstract class CommandBase<R> {
   }
 
   public void handleErrorResponse(ErrorResponse errorResponse) {
-    logger.warn("{} should handle message {}", getClass().getSimpleName(), errorResponse);
+    logger.warn(getClass().getSimpleName() + " should handle message " + errorResponse);
   }
 
   public void handlePortalSuspended() {
-    logger.warn("{} should handle message PortalSuspended", getClass().getSimpleName());
+    logger.warn(getClass().getSimpleName() + " should handle message PortalSuspended");
   }
 
   public void handleBindComplete() {
-    logger.warn("{} should handle message BindComplete", getClass().getSimpleName());
+    logger.warn(getClass().getSimpleName() + " should handle message BindComplete");
   }
 
   public void handleCommandComplete(int updated) {
-    logger.warn("{} should handle message CommandComplete", getClass().getSimpleName());
+    logger.warn(getClass().getSimpleName() + " should handle message CommandComplete");
   }
 
   public void handleAuthenticationMD5Password(byte[] salt) {
-    logger.warn("{} should handle message AuthenticationMD5Password", getClass().getSimpleName());
+    logger.warn(getClass().getSimpleName() + " should handle message AuthenticationMD5Password");
   }
 
   public void handleAuthenticationClearTextPassword() {
-    logger.warn("{} should handle message AuthenticationClearTextPassword", getClass().getSimpleName());
+    logger.warn(getClass().getSimpleName() + " should handle message AuthenticationClearTextPassword");
   }
 
   public void handleAuthenticationOk() {
-    logger.warn("{} should handle message AuthenticationOk", getClass().getSimpleName());
+    logger.warn(getClass().getSimpleName() + " should handle message AuthenticationOk");
   }
 
   public void handleParameterStatus(String key, String value) {
-    logger.warn("{} should handle message ParameterStatus", getClass().getSimpleName());
+    logger.warn(getClass().getSimpleName() + " should handle message ParameterStatus");
   }
 
   /**
