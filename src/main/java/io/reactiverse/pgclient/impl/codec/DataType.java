@@ -23,6 +23,8 @@ import io.reactiverse.pgclient.data.Numeric;
 import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.data.Point;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.time.*;
 import java.util.UUID;
@@ -100,6 +102,8 @@ public enum DataType {
   VOID(2278, true, Object.class),
   UNKNOWN(705, false, String.class);
 
+  private static final Logger logger = LoggerFactory.getLogger(DataType.class);
+  
   public final int id;
   public final boolean supportsBinary;
   public Class<?> type;
@@ -113,7 +117,7 @@ public enum DataType {
   public static DataType valueOf(int oid) {
     DataType value = oidToDataType.get(oid);
     if (value == null) {
-      System.out.println("Postgres type OID=" + oid + " not handled - using unknown type instead");
+      logger.warn("Postgres type OID={} not handled - using unknown type instead", oid);
       return UNKNOWN;
     } else {
       return value;
