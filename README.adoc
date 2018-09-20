@@ -1,7 +1,7 @@
 = Reactive Postgres Client
 
 
-image:https://travis-ci.org/reactiverse/reactive-pg-client.svg?branch=master["Build Status",link="https://travis-ci.org/reactiverse/reactive-pg-client"] image:https://semaphoreci.com/api/v1/vietj/reactive-pg-client/branches/master/badge.svg["Build Status",link="https://semaphoreci.com/vietj/reactive-pg-client"]
+image:https://travis-ci.org/reactiverse/reactive-pg-client.svg?branch=master["Build Status",link="https://travis-ci.org/reactiverse/reactive-pg-client"]
 
 * Simple API focusing on scalability and low overhead.
 * Reactive and non blocking which able to handle many database connections with a single thread.
