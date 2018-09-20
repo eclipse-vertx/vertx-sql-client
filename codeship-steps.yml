@@ -1,3 +1,0 @@
-- name: ci
-  service: reactive-pg-client
-  command: mvn test -B -Dconnection.uri=postgres://postgres:postgres@postgres/postgres
