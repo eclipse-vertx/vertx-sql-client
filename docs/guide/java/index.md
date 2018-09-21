@@ -31,7 +31,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 <dependency>
  <groupId>io.reactiverse</groupId>
  <artifactId>reactive-pg-client</artifactId>
- <version>0.10.4</version>
+ <version>0.10.5</version>
 </dependency>
 ```
 
@@ -39,7 +39,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 
 ```groovy
 dependencies {
- compile 'io.reactiverse:reactive-pg-client:0.10.4'
+ compile 'io.reactiverse:reactive-pg-client:0.10.5'
 }
 ```
 
@@ -787,12 +787,15 @@ from a [`PgPreparedQuery`](../../apidocs/io/reactiverse/reactivex/pgclient/PgPre
 
 ```java
 Observable<Row> observable = pool.rxGetConnection()
-  .flatMapObservable(conn -> conn.rxPrepare("SELECT * FROM users WHERE first_name LIKE $1")
+  .flatMapObservable(conn -> conn
+    .rxPrepare("SELECT * FROM users WHERE first_name LIKE $1")
     .flatMapObservable(pq -> {
       // Fetch 50 rows at a time
       PgStream<Row> stream = pq.createStream(50, Tuple.of("julien"));
       return stream.toObservable();
-    }));
+    })
+    // Close the connection after usage
+    .doAfterTerminate(conn::close));
 
 // Then subscribe
 observable.subscribe(row -> {

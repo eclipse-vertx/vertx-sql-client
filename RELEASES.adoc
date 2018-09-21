@@ -1,10 +1,18 @@
 
+== 0.10.5
+
+Fixed issues: https://github.com/reactiverse/reactive-pg-client/milestone/12?closed=1
+
+- Connection pool queue boundary
+- Pool does not handle connection failure correctly
+- Rx Stream API documentation unclear
+
 == 0.10.4
 
-Fixed issues: https://github.com/reactiverse/reactive-pg-client/milestone/10?closed=1
+Fixed issues: https://github.com/reactiverse/reactive-pg-client/milestone/11?closed=1
 
 - RowResultDecoder does not correctly decode empty text arrays
-- Move to Vertx logger for warnings instead of Sysout 
+- Move to Vertx logger for warnings instead of Sysout
 
 === Bug fixes
 
