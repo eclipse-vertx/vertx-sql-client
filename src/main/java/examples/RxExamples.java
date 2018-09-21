@@ -45,12 +45,15 @@ public class RxExamples {
 
     // Create a flowable
     Observable<Row> observable = pool.rxGetConnection()
-      .flatMapObservable(conn -> conn.rxPrepare("SELECT * FROM users WHERE first_name LIKE $1")
+      .flatMapObservable(conn -> conn
+        .rxPrepare("SELECT * FROM users WHERE first_name LIKE $1")
         .flatMapObservable(pq -> {
           // Fetch 50 rows at a time
           PgStream<Row> stream = pq.createStream(50, Tuple.of("julien"));
           return stream.toObservable();
-        }));
+        })
+        // Close the connection after usage
+        .doAfterTerminate(conn::close));
 
     // Then subscribe
     observable.subscribe(row -> {
