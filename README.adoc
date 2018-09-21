@@ -304,7 +304,7 @@ NOTE: unix domain sockets are not testable (yet).
 The online and published documentation is in `/docs` and is served by GitHub pages with Jekyll.
 
 You can find the actual guide source in [src/main/docs/index.md](src/main/docs/index.md). At compilation time, this
-source generates the [jekyll/guide/java/index.md](jekyll/guide/java/index.md).
+source generates the `jekyll/guide/java/index.md`.
 
 The current documentation is in `/jekyll` and can be preview using Docker and your browser
 
