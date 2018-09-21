@@ -61,6 +61,10 @@ public class ConnectionPool {
     return available.size();
   }
 
+  public int size() {
+    return size;
+  }
+
   public void acquire(Handler<AsyncResult<Connection>> holder) {
     if (closed) {
       throw new IllegalStateException("Connection pool closed");
@@ -194,6 +198,7 @@ public class ConnectionPool {
                   conn.init(proxy);
                   release(proxy);
                 } else {
+                  size--;
                   Future<Connection> waiter;
                   while ((waiter = waiters.poll()) != null) {
                     waiter.fail(ar.cause());

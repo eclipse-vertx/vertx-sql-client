@@ -56,6 +56,30 @@ public class PgPoolTest extends PgPoolTestBase {
   }
 
   @Test
+  public void testConnectionFailure(TestContext ctx) {
+    Async async = ctx.async();
+    ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
+    AtomicReference<ProxyServer.Connection> proxyConn = new AtomicReference<>();
+    proxy.proxyHandler(conn -> {
+      proxyConn.set(conn);
+      conn.connect();
+    });
+    PgPool pool = PgClient.pool(vertx, new PgPoolOptions(options)
+      .setPort(8080)
+      .setHost("localhost")
+      .setMaxSize(1)
+      .setMaxWaitQueueSize(0)
+    );
+    pool.getConnection(ctx.asyncAssertFailure(err -> {
+      proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
+        pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+          async.complete();
+        }));
+      }));
+    }));
+  }
+
+  @Test
   public void testRunWithExisting(TestContext ctx) {
     Async async = ctx.async();
     vertx.runOnContext(v -> {

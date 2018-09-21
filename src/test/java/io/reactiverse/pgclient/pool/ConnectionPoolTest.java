@@ -231,4 +231,25 @@ public class ConnectionPoolTest {
     assertTrue(holder1.isComplete());
     assertTrue(holder2.isFailed());
   }
+
+  @Test
+  public void testConnectionFailure() {
+    ConnectionQueue queue = new ConnectionQueue();
+    ConnectionPool pool = new ConnectionPool(queue, 1, 0);
+    SimpleHolder holder1 = new SimpleHolder();
+    pool.acquire(holder1);
+    Exception cause = new Exception();
+    queue.fail(cause);
+    assertTrue(holder1.isFailed());
+    assertSame(cause, holder1.failure());
+    assertEquals(0, pool.available());
+    assertEquals(0, pool.size());
+    SimpleHolder holder2 = new SimpleHolder();
+    pool.acquire(holder2);
+    SimpleConnection conn = new SimpleConnection();
+    queue.connect(conn);
+    assertTrue(holder2.isConnected());
+    assertEquals(0, pool.available());
+    assertEquals(1, pool.size());
+  }
 }

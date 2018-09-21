@@ -24,7 +24,7 @@ import io.vertx.core.Handler;
 class SimpleHolder implements Connection.Holder, Handler<AsyncResult<Connection>> {
 
   private Connection conn;
-  private Throwable acquireFailure;
+  private Throwable failure;
   private int closed;
 
   SimpleHolder() {
@@ -43,7 +43,11 @@ class SimpleHolder implements Connection.Holder, Handler<AsyncResult<Connection>
   }
 
   boolean isFailed() {
-    return acquireFailure != null;
+    return failure != null;
+  }
+
+  Throwable failure() {
+    return failure;
   }
 
   void init() {
@@ -55,7 +59,7 @@ class SimpleHolder implements Connection.Holder, Handler<AsyncResult<Connection>
     if (ar.succeeded()) {
       conn = ar.result();
     } else {
-      acquireFailure = ar.cause();
+      failure = ar.cause();
     }
   }
 
