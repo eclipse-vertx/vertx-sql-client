@@ -17,7 +17,10 @@
 
 package io.reactiverse.pgclient.impl;
 
+import io.reactiverse.pgclient.PgException;
+import io.reactiverse.pgclient.PgPoolOptions;
 import io.vertx.core.*;
+import io.vertx.core.impl.NoStackTraceThrowable;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -36,11 +39,21 @@ public class ConnectionPool {
   private final Set<PooledConnection> all = new HashSet<>();
   private final ArrayDeque<PooledConnection> available = new ArrayDeque<>();
   private int size;
+  private final int maxWaitQueueSize;
   private boolean checkInProgress;
   private boolean closed;
 
+  public ConnectionPool(Consumer<Handler<AsyncResult<Connection>>> connector) {
+    this(connector, PgPoolOptions.DEFAULT_MAX_SIZE, PgPoolOptions.DEFAULT_MAX_WAIT_QUEUE_SIZE);
+  }
+
   public ConnectionPool(Consumer<Handler<AsyncResult<Connection>>> connector, int maxSize) {
+    this(connector, maxSize, PgPoolOptions.DEFAULT_MAX_WAIT_QUEUE_SIZE);
+  }
+
+  public ConnectionPool(Consumer<Handler<AsyncResult<Connection>>> connector, int maxSize, int maxWaitQueueSize) {
     this.maxSize = maxSize;
+    this.maxWaitQueueSize = maxWaitQueueSize;
     this.connector = connector;
   }
 
@@ -188,6 +201,14 @@ public class ConnectionPool {
                 }
               });
             } else {
+              if (maxWaitQueueSize >= 0) {
+                int numInProgress = size - all.size();
+                int numToFail = waiters.size() - (maxWaitQueueSize + numInProgress);
+                while (numToFail-- > 0) {
+                  Future<Connection> waiter = waiters.pollLast();
+                  waiter.fail(new NoStackTraceThrowable("Max waiter size reached"));
+                }
+              }
               break;
             }
           }

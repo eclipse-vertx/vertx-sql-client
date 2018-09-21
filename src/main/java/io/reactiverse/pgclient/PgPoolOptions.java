@@ -49,9 +49,18 @@ public class PgPoolOptions extends PgConnectOptions {
     return new PgPoolOptions(PgConnectOptions.fromEnv());
   }
 
-  public static final int DEFAULT_MAX_POOL_SIZE = 4;
+  /**
+   * The default maximum number of connections a client will pool = 4
+   */
+  public static final int DEFAULT_MAX_SIZE = 4;
 
-  private int maxSize = DEFAULT_MAX_POOL_SIZE;
+  /**
+   * Default max wait queue size = -1 (unbounded)
+   */
+  public static final int DEFAULT_MAX_WAIT_QUEUE_SIZE = -1;
+
+  private int maxSize = DEFAULT_MAX_SIZE;
+  private int maxWaitQueueSize = DEFAULT_MAX_WAIT_QUEUE_SIZE;
 
   public PgPoolOptions() {
   }
@@ -64,11 +73,11 @@ public class PgPoolOptions extends PgConnectOptions {
   public PgPoolOptions(PgPoolOptions other) {
     super(other);
     maxSize = other.maxSize;
+    maxWaitQueueSize = other.maxWaitQueueSize;
   }
 
   public PgPoolOptions(PgConnectOptions other) {
     super(other);
-    maxSize = DEFAULT_MAX_POOL_SIZE;
   }
 
   public int getMaxSize() {
@@ -80,6 +89,25 @@ public class PgPoolOptions extends PgConnectOptions {
       throw new IllegalArgumentException("Max size cannot be negative");
     }
     this.maxSize = maxSize;
+    return this;
+  }
+
+  /**
+   * @return the maximum wait queue size
+   */
+  public int getMaxWaitQueueSize() {
+    return maxWaitQueueSize;
+  }
+
+  /**
+   * Set the maximum connection request allowed in the wait queue, any requests beyond the max size will result in
+   * an failure.  If the value is set to a negative number then the queue will be unbounded.
+   *
+   * @param maxWaitQueueSize the maximum number of waiting requests
+   * @return a reference to this, so the API can be used fluently
+   */
+  public PgPoolOptions setMaxWaitQueueSize(int maxWaitQueueSize) {
+    this.maxWaitQueueSize = maxWaitQueueSize;
     return this;
   }
 

@@ -46,7 +46,7 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
     }
     this.context = vertx.getOrCreateContext();
     this.factory = new PgConnectionFactory(context, Vertx.currentContext() != null, options);
-    this.pool = new ConnectionPool(factory::connect, maxSize);
+    this.pool = new ConnectionPool(factory::connect, maxSize, options.getMaxWaitQueueSize());
     this.closeVertx = closeVertx;
   }
 

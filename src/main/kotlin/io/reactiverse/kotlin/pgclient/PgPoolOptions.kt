@@ -29,6 +29,7 @@ import io.vertx.core.net.ProxyOptions
  * @param localAddress 
  * @param logActivity 
  * @param maxSize 
+ * @param maxWaitQueueSize 
  * @param metricsName 
  * @param openSslEngineOptions 
  * @param password 
@@ -78,6 +79,7 @@ fun PgPoolOptions(
   localAddress: String? = null,
   logActivity: Boolean? = null,
   maxSize: Int? = null,
+  maxWaitQueueSize: Int? = null,
   metricsName: String? = null,
   openSslEngineOptions: io.vertx.core.net.OpenSSLEngineOptions? = null,
   password: String? = null,
@@ -158,6 +160,9 @@ fun PgPoolOptions(
   }
   if (maxSize != null) {
     this.setMaxSize(maxSize)
+  }
+  if (maxWaitQueueSize != null) {
+    this.setMaxWaitQueueSize(maxWaitQueueSize)
   }
   if (metricsName != null) {
     this.setMetricsName(metricsName)

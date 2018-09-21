@@ -132,6 +132,7 @@ Set the process id.
 |[[localAddress]]`localAddress`|`String`|-
 |[[logActivity]]`logActivity`|`Boolean`|-
 |[[maxSize]]`maxSize`|`Number (int)`|-
+|[[maxWaitQueueSize]]`maxWaitQueueSize`|`Number (int)`|-
 |[[metricsName]]`metricsName`|`String`|-
 |[[openSslEngineOptions]]`openSslEngineOptions`|`link:dataobjects.html#OpenSSLEngineOptions[OpenSSLEngineOptions]`|-
 |[[password]]`password`|`String`|-

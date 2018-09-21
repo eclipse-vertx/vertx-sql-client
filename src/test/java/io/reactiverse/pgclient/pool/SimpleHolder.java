@@ -39,7 +39,11 @@ class SimpleHolder implements Connection.Holder, Handler<AsyncResult<Connection>
   }
 
   boolean isComplete() {
-    return conn != null || acquireFailure != null;
+    return isConnected() || isFailed();
+  }
+
+  boolean isFailed() {
+    return acquireFailure != null;
   }
 
   void init() {

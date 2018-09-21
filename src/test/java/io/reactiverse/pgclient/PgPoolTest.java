@@ -81,4 +81,20 @@ public class PgPoolTest extends PgPoolTestBase {
       pool.close();
     }
   }
+
+  @Test
+  public void testMaxWaitQueueSize(TestContext ctx) {
+    Async async = ctx.async();
+    PgPool pool = PgClient.pool(new PgPoolOptions(options).setMaxSize(1).setMaxWaitQueueSize(0));
+    try {
+      pool.getConnection(ctx.asyncAssertSuccess(v -> {
+        pool.getConnection(ctx.asyncAssertFailure(err -> {
+          async.complete();
+        }));
+      }));
+      async.await(4000000);
+    } finally {
+      pool.close();
+    }
+  }
 }

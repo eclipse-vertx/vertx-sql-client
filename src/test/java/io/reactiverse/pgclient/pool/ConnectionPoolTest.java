@@ -18,6 +18,7 @@
 package io.reactiverse.pgclient.pool;
 
 import io.reactiverse.pgclient.impl.ConnectionPool;
+import io.vertx.core.Future;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -197,5 +198,37 @@ public class ConnectionPoolTest {
     conn1.close();
     holder1.close();
     assertEquals(pool.available(), 0);
+  }
+
+  @Test
+  public void testMaxQueueSize1() {
+    ConnectionQueue queue = new ConnectionQueue();
+    ConnectionPool pool = new ConnectionPool(queue, 1, 0);
+    SimpleHolder holder1 = new SimpleHolder();
+    pool.acquire(holder1);
+    SimpleConnection conn = new SimpleConnection();
+    queue.connect(conn);
+    holder1.init();
+    SimpleHolder holder2 = new SimpleHolder();
+    pool.acquire(holder2);
+    assertTrue(holder2.isFailed());
+  }
+
+  @Test
+  public void testMaxQueueSize2() {
+    SimpleHolder holder2 = new SimpleHolder();
+    SimpleConnection conn = new SimpleConnection();
+    ConnectionPool[] poolRef = new ConnectionPool[1];
+    ConnectionPool pool = new ConnectionPool(ar -> {
+      poolRef[0].acquire(holder2);
+      assertFalse(holder2.isComplete());
+      ar.handle(Future.succeededFuture(conn));
+      assertFalse(holder2.isComplete());
+    }, 1, 0);
+    poolRef[0] = pool;
+    SimpleHolder holder1 = new SimpleHolder();
+    pool.acquire(holder1);
+    assertTrue(holder1.isComplete());
+    assertTrue(holder2.isFailed());
   }
 }
