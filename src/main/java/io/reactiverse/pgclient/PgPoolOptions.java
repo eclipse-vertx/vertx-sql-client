@@ -80,10 +80,19 @@ public class PgPoolOptions extends PgConnectOptions {
     super(other);
   }
 
+  /**
+   * @return  the maximum pool size
+   */
   public int getMaxSize() {
     return maxSize;
   }
 
+  /**
+   * Set the maximum pool size
+   *
+   * @param maxSize  the maximum pool size
+   * @return a reference to this, so the API can be used fluently
+   */
   public PgPoolOptions setMaxSize(int maxSize) {
     if (maxSize < 0) {
       throw new IllegalArgumentException("Max size cannot be negative");
