@@ -62,7 +62,7 @@ public class ParameterDescription {
   }
 
   private String buildReport(List<Object> values) {
-    return Util.buildInvalidArgsError(values.stream(), Stream.of(paramDataTypes).map(type -> type.type));
+    return Util.buildInvalidArgsError(values.stream(), Stream.of(paramDataTypes).map(type -> type.decodingType));
   }
 
   @Override

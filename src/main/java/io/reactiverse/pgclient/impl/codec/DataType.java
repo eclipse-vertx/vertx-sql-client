@@ -39,18 +39,18 @@ public enum DataType {
 
   BOOL(16, true, Boolean.class),
   BOOL_ARRAY(1000, true, Boolean[].class),
-  INT2(21, true, Short.class),
-  INT2_ARRAY(1005, true, Short[].class),
-  INT4(23, true, Integer.class),
-  INT4_ARRAY(1007, true, Integer[].class),
-  INT8(20, true, Long.class),
-  INT8_ARRAY(1016, true, Long[].class),
-  FLOAT4(700, true, Float.class),
-  FLOAT4_ARRAY(1021, true, Float[].class),
-  FLOAT8(701, true, Double.class),
-  FLOAT8_ARRAY(1022, true, Double[].class),
-  NUMERIC(1700, false, Numeric.class),
-  NUMERIC_ARRAY(1231, false, Numeric[].class),
+  INT2(21, true, Short.class, Number.class),
+  INT2_ARRAY(1005, true, Short[].class, Number[].class),
+  INT4(23, true, Integer.class, Number.class),
+  INT4_ARRAY(1007, true, Integer[].class, Number[].class),
+  INT8(20, true, Long.class, Number.class),
+  INT8_ARRAY(1016, true, Long[].class, Number[].class),
+  FLOAT4(700, true, Float.class, Number.class),
+  FLOAT4_ARRAY(1021, true, Float[].class, Number[].class),
+  FLOAT8(701, true, Double.class, Number.class),
+  FLOAT8_ARRAY(1022, true, Double[].class, Number[].class),
+  NUMERIC(1700, false, Numeric.class, Number.class),
+  NUMERIC_ARRAY(1231, false, Numeric[].class, Number[].class),
   MONEY(790, true, Object.class),
   MONEY_ARRAY(791, true, Object[].class),
   BIT(1560, true, Object.class),
@@ -103,15 +103,24 @@ public enum DataType {
   UNKNOWN(705, false, String.class);
 
   private static final Logger logger = LoggerFactory.getLogger(DataType.class);
-  
+
   public final int id;
   public final boolean supportsBinary;
-  public Class<?> type;
+  public final Class<?> encodingType; // Not really used for now
+  public final Class<?> decodingType;
 
   DataType(int id, boolean supportsBinary, Class<?> type) {
     this.id = id;
     this.supportsBinary = supportsBinary;
-    this.type = type;
+    this.decodingType = type;
+    this.encodingType = type;
+  }
+
+  DataType(int id, boolean supportsBinary, Class<?> encodingType, Class<?> decodingType) {
+    this.id = id;
+    this.supportsBinary = supportsBinary;
+    this.encodingType = encodingType;
+    this.decodingType = decodingType;
   }
 
   public static DataType valueOf(int oid) {

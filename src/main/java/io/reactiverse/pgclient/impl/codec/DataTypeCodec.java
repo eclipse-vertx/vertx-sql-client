@@ -49,7 +49,7 @@ import static java.util.concurrent.TimeUnit.*;
 public class DataTypeCodec {
 
   private static final Logger logger = LoggerFactory.getLogger(DataTypeCodec.class);
-  
+
   private static final String[] empty_string_array = new String[0];
   private static final LocalDate[] empty_local_date_array = new LocalDate[0];
   private static final LocalTime[] empty_local_time_array = new LocalTime[0];
@@ -104,10 +104,10 @@ public class DataTypeCodec {
   private static void textEncode(DataType id, Object value, ByteBuf buff) {
     switch (id) {
       case NUMERIC:
-        textEncodeNUMERIC((Numeric) value, buff);
+        textEncodeNUMERIC((Number) value, buff);
         break;
       case NUMERIC_ARRAY:
-        textEncodeNUMERIC_ARRAY((Numeric[]) value, buff);
+        textEncodeNUMERIC_ARRAY((Number[]) value, buff);
         break;
       case UNKNOWN:
         //default to treating unknown as a string
@@ -129,34 +129,34 @@ public class DataTypeCodec {
         binaryEncodeArray((Boolean[]) value, DataType.BOOL, buff);
         break;
       case INT2:
-        binaryEncodeINT2((Short) value, buff);
+        binaryEncodeINT2((Number) value, buff);
         break;
       case INT2_ARRAY:
-        binaryEncodeArray((Short[]) value, DataType.INT2, buff);
+        binaryEncodeArray((Number[]) value, DataType.INT2, buff);
         break;
       case INT4:
-        binaryEncodeINT4((Integer) value, buff);
+        binaryEncodeINT4((Number) value, buff);
         break;
       case INT4_ARRAY:
-        binaryEncodeArray((Integer[]) value, DataType.INT4, buff);
+        binaryEncodeArray((Number[]) value, DataType.INT4, buff);
         break;
       case INT8:
-        binaryEncodeINT8((Long) value, buff);
+        binaryEncodeINT8((Number) value, buff);
         break;
       case INT8_ARRAY:
-        binaryEncodeArray((Long[]) value, DataType.INT8, buff);
+        binaryEncodeArray((Number[]) value, DataType.INT8, buff);
         break;
       case FLOAT4:
-        binaryEncodeFLOAT4((Float) value, buff);
+        binaryEncodeFLOAT4((Number) value, buff);
         break;
       case FLOAT4_ARRAY:
-        binaryEncodeArray((Float[]) value, DataType.FLOAT4, buff);
+        binaryEncodeArray((Number[]) value, DataType.FLOAT4, buff);
         break;
       case FLOAT8:
-        binaryEncodeFLOAT8((Double) value, buff);
+        binaryEncodeFLOAT8((Number) value, buff);
         break;
       case FLOAT8_ARRAY:
-        binaryEncodeArray((Double[]) value, DataType.FLOAT8, buff);
+        binaryEncodeArray((Number[]) value, DataType.FLOAT8, buff);
         break;
       case CHAR:
         binaryEncodeCHAR((String) value, buff);
@@ -476,7 +476,7 @@ public class DataTypeCodec {
           return REFUSED_SENTINEL;
         }
       default:
-        Class<?> javaType = type.type;
+        Class<?> javaType = type.decodingType;
         return value == null || javaType.isInstance(value) ? value : REFUSED_SENTINEL;
     }
   }
@@ -523,8 +523,8 @@ public class DataTypeCodec {
     return buff.getShort(index);
   }
 
-  private static void binaryEncodeINT2(Short value, ByteBuf buff) {
-    buff.writeShort(value);
+  private static void binaryEncodeINT2(Number value, ByteBuf buff) {
+    buff.writeShort(value.shortValue());
   }
 
   private static Integer textDecodeINT4(int index, int len, ByteBuf buff) {
@@ -535,8 +535,8 @@ public class DataTypeCodec {
     return buff.getInt(index);
   }
 
-  private static void binaryEncodeINT4(Integer value, ByteBuf buff) {
-    buff.writeInt(value);
+  private static void binaryEncodeINT4(Number value, ByteBuf buff) {
+    buff.writeInt(value.intValue());
   }
 
   private static Long textDecodeINT8(int index, int len, ByteBuf buff) {
@@ -547,8 +547,8 @@ public class DataTypeCodec {
     return buff.getLong(index);
   }
 
-  private static void binaryEncodeINT8(Long value, ByteBuf buff) {
-    buff.writeLong(value);
+  private static void binaryEncodeINT8(Number value, ByteBuf buff) {
+    buff.writeLong(value.longValue());
   }
 
   private static Float textDecodeFLOAT4(int index, int len, ByteBuf buff) {
@@ -561,12 +561,12 @@ public class DataTypeCodec {
     return buff.getFloat(index);
   }
 
-  private static void binaryEncodeFLOAT4(Float value, ByteBuf buff) {
-    buff.writeFloat(value);
+  private static void binaryEncodeFLOAT4(Number value, ByteBuf buff) {
+    buff.writeFloat(value.floatValue());
   }
 
-  private static void binaryEncodeFLOAT8(double value, ByteBuf buff) {
-    buff.writeDouble(value);
+  private static void binaryEncodeFLOAT8(Number value, ByteBuf buff) {
+    buff.writeDouble(value.doubleValue());
   }
 
   private static Double binaryDecodeFLOAT8(int index, int len, ByteBuf buff) {
@@ -665,12 +665,12 @@ public class DataTypeCodec {
     return new Interval(years, months, days, hours, minutes, seconds, microseconds);
   }
 
-  private static void textEncodeNUMERIC(Numeric value, ByteBuf buff) {
+  private static void textEncodeNUMERIC(Number value, ByteBuf buff) {
     String s = value.toString();
     buff.writeCharSequence(s, StandardCharsets.UTF_8);
   }
 
-  private static void textEncodeNUMERIC_ARRAY(Numeric[] value, ByteBuf buff) {
+  private static void textEncodeNUMERIC_ARRAY(Number[] value, ByteBuf buff) {
     textEncodeArray(value, DataType.NUMERIC, buff);
   }
 

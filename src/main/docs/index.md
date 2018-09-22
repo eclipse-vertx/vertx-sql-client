@@ -300,6 +300,18 @@ Currently the client supports the following Postgres types
 * JSONB (`io.reactiverse.pgclient.data.Json`)
 * POINT (`io.reactiverse.pgclient.data.Point`)
 
+Tuple decoding uses the above types when storing values, it also performs on the flu conversion the actual value when possible:
+
+```$lang
+{@link examples.Examples#typeMapping01}
+```
+
+Tuple encoding uses the above type mapping for encoding, unless the type is numeric in which case `java.lang.Number` is used instead:
+
+```$lang
+{@link examples.Examples#typeMapping02}
+```
+
 Arrays of these types are supported.
 
 ### Handling JSON
