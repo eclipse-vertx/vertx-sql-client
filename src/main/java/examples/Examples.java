@@ -533,6 +533,33 @@ public class Examples {
     });
   }
 
+  public void typeMapping01(PgPool pool) {
+    pool.query("SELECT 1::BIGINT \"VAL\"", ar -> {
+      PgRowSet rowSet = ar.result();
+      Row row = rowSet.iterator().next();
+
+      // Stored as java.lang.Long
+      Object value = row.getValue(0);
+
+      // Convert to java.lang.Integer
+      Integer intValue = row.getInteger(0);
+    });
+  }
+
+  public void typeMapping02(PgPool pool) {
+    pool.query("SELECT 1::BIGINT \"VAL\"", ar -> {
+      PgRowSet rowSet = ar.result();
+      Row row = rowSet.iterator().next();
+
+      // Stored as java.lang.Long
+      Object value = row.getValue(0);
+
+      // Convert to java.lang.Integer
+      Integer intValue = row.getInteger(0);
+    });
+
+  }
+
   public void pubsub01(PgConnection connection) {
 
     connection.notificationHandler(notification -> {

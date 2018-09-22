@@ -28,8 +28,8 @@ import io.vertx.core.net.ProxyOptions
  * @param keyStoreOptions 
  * @param localAddress 
  * @param logActivity 
- * @param maxSize 
- * @param maxWaitQueueSize 
+ * @param maxSize  Set the maximum pool size
+ * @param maxWaitQueueSize  Set the maximum connection request allowed in the wait queue, any requests beyond the max size will result in an failure.  If the value is set to a negative number then the queue will be unbounded.
  * @param metricsName 
  * @param openSslEngineOptions 
  * @param password 

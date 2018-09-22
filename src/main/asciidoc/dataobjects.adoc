@@ -131,8 +131,15 @@ Set the process id.
 |[[keyStoreOptions]]`keyStoreOptions`|`link:dataobjects.html#JksOptions[JksOptions]`|-
 |[[localAddress]]`localAddress`|`String`|-
 |[[logActivity]]`logActivity`|`Boolean`|-
-|[[maxSize]]`maxSize`|`Number (int)`|-
-|[[maxWaitQueueSize]]`maxWaitQueueSize`|`Number (int)`|-
+|[[maxSize]]`maxSize`|`Number (int)`|
++++
+Set the maximum pool size
++++
+|[[maxWaitQueueSize]]`maxWaitQueueSize`|`Number (int)`|
++++
+Set the maximum connection request allowed in the wait queue, any requests beyond the max size will result in
+ an failure.  If the value is set to a negative number then the queue will be unbounded.
++++
 |[[metricsName]]`metricsName`|`String`|-
 |[[openSslEngineOptions]]`openSslEngineOptions`|`link:dataobjects.html#OpenSSLEngineOptions[OpenSSLEngineOptions]`|-
 |[[password]]`password`|`String`|-
