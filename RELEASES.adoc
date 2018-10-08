@@ -1,3 +1,9 @@
+== 0.10.6
+
+Fixed issues: https://github.com/reactiverse/reactive-pg-client/milestone/13?closed=1
+
+- PgPool#preparedQuery operation should always use the same connection
+- Numeric type prepared statement parameters needs to be coerced
 
 == 0.10.5
 

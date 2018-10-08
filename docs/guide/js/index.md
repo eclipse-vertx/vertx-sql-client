@@ -31,7 +31,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 <dependency>
  <groupId>io.reactiverse</groupId>
  <artifactId>reactive-pg-client</artifactId>
- <version>0.10.5</version>
+ <version>0.10.6</version>
 </dependency>
 ```
 
@@ -39,7 +39,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 
 ```groovy
 dependencies {
- compile 'io.reactiverse:reactive-pg-client:0.10.5'
+ compile 'io.reactiverse:reactive-pg-client:0.10.6'
 }
 ```
 
@@ -631,6 +631,39 @@ Currently the client supports the following Postgres types
 * JSON (`io.reactiverse.pgclient.data.Json`)
 * JSONB (`io.reactiverse.pgclient.data.Json`)
 * POINT (`io.reactiverse.pgclient.data.Point`)
+
+Tuple decoding uses the above types when storing values, it also performs on the flu conversion the actual value when possible:
+
+```js
+pool.query("SELECT 1::BIGINT \"VAL\"", function (ar, ar_err) {
+  var rowSet = ar;
+  var row = rowSet.iterator().next();
+
+  // Stored as java.lang.Long
+  var value = row.getValue(0);
+
+  // Convert to java.lang.Integer
+  var intValue = row.getInteger(0);
+});
+
+```
+
+Tuple encoding uses the above type mapping for encoding, unless the type is numeric in which case `java.lang.Number` is used instead:
+
+```js
+pool.query("SELECT 1::BIGINT \"VAL\"", function (ar, ar_err) {
+  var rowSet = ar;
+  var row = rowSet.iterator().next();
+
+  // Stored as java.lang.Long
+  var value = row.getValue(0);
+
+  // Convert to java.lang.Integer
+  var intValue = row.getInteger(0);
+});
+
+
+```
 
 Arrays of these types are supported.
 
