@@ -40,9 +40,8 @@ abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
                            boolean suspended,
                            boolean singleton,
                            Collector<Row, ?, R> collector,
-                           QueryResultHandler<R> resultHandler,
-                           Handler<AsyncResult<Boolean>> handler) {
-    super(collector, resultHandler, handler);
+                           QueryResultHandler<R> resultHandler) {
+    super(collector, resultHandler);
     this.ps = ps;
     this.fetch = fetch;
     this.portal = portal;

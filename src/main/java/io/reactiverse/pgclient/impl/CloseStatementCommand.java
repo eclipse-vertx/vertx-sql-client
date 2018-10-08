@@ -17,18 +17,12 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.impl.codec.decoder.InboundMessage;
 import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
-import io.vertx.core.Handler;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 class CloseStatementCommand extends CommandBase<Void> {
-
-  CloseStatementCommand(Handler<? super CommandResponse<Void>> handler) {
-    super(handler);
-  }
 
   @Override
   void exec(MessageEncoder out) {

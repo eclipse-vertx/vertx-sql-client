@@ -35,8 +35,7 @@ public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
   private ParameterDescription parameterDesc;
   private RowDescription rowDesc;
 
-  PrepareStatementCommand(String sql, Handler<? super CommandResponse<PreparedStatement>> handler) {
-    super(handler);
+  PrepareStatementCommand(String sql) {
     this.sql = sql;
   }
 

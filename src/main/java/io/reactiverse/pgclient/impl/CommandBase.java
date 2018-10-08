@@ -41,10 +41,6 @@ public abstract class CommandBase<R> {
   Throwable failure;
   R result;
 
-  public CommandBase(Handler<? super CommandResponse<R>> handler) {
-    this.handler = handler;
-  }
-
   public void handleBackendKeyData(int processId, int secretKey) {
     logger.warn(getClass().getSimpleName() + " should handle message BackendKeyData");
   }

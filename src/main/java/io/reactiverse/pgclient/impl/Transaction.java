@@ -19,10 +19,10 @@ package io.reactiverse.pgclient.impl;
 import io.reactiverse.pgclient.*;
 import io.reactiverse.pgclient.impl.codec.TxStatus;
 import io.vertx.core.*;
-import io.vertx.core.impl.NoStackTraceThrowable;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.function.BiConsumer;
 
 class Transaction extends PgClientBase<Transaction> implements PgTransaction {
 
@@ -102,6 +102,15 @@ class Transaction extends PgClientBase<Transaction> implements PgTransaction {
     }
   }
 
+  @Override
+  public <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
+    cmd.handler = cr -> {
+      cr.scheduler = this;
+      handler.handle(cr);
+    };
+    schedule(cmd);
+  }
+
   public void schedule(CommandBase<?> cmd) {
     synchronized (this) {
       pending.add(cmd);
@@ -174,6 +183,8 @@ class Transaction extends PgClientBase<Transaction> implements PgTransaction {
 
   private CommandBase doQuery(String sql, Handler<AsyncResult<PgRowSet>> handler) {
     PgResultBuilder<PgRowSet, PgRowSetImpl, PgRowSet> b = new PgResultBuilder<>(PgRowSetImpl.FACTORY, handler);
-    return new SimpleQueryCommand<>(sql, false, PgRowSetImpl.COLLECTOR, b, b);
+    SimpleQueryCommand<PgRowSet> cmd = new SimpleQueryCommand<>(sql, false, PgRowSetImpl.COLLECTOR, b);
+    cmd.handler = b;
+    return cmd;
   }
 }

@@ -21,8 +21,6 @@ import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
 import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
 import io.reactiverse.pgclient.impl.codec.encoder.Parse;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 
 import java.util.List;
 import java.util.stream.Collector;
@@ -35,9 +33,8 @@ public class ExtendedQueryCommand<T> extends ExtendedQueryCommandBase<T> {
                        Tuple params,
                        boolean singleton,
                        Collector<Row, ?, T> collector,
-                       QueryResultHandler<T> resultHandler,
-                       Handler<AsyncResult<Boolean>> handler) {
-    this(ps, params, 0, null, false, singleton, collector, resultHandler, handler);
+                       QueryResultHandler<T> resultHandler) {
+    this(ps, params, 0, null, false, singleton, collector, resultHandler);
   }
 
   ExtendedQueryCommand(PreparedStatement ps,
@@ -47,9 +44,8 @@ public class ExtendedQueryCommand<T> extends ExtendedQueryCommandBase<T> {
                        boolean suspended,
                        boolean singleton,
                        Collector<Row, ?, T> collector,
-                       QueryResultHandler<T> resultHandler,
-                       Handler<AsyncResult<Boolean>> handler) {
-    super(ps, fetch, portal, suspended, singleton, collector, resultHandler, handler);
+                       QueryResultHandler<T> resultHandler) {
+    super(ps, fetch, portal, suspended, singleton, collector, resultHandler);
     this.params = params;
   }
 

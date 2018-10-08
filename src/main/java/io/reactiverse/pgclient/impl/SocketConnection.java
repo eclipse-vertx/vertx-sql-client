@@ -112,7 +112,9 @@ public class SocketConnection implements Connection {
         handleException(e);
       }
     });
-    schedule(new InitCommand(this, username, password, database, completionHandler));
+    InitCommand cmd = new InitCommand(this, username, password, database);
+    cmd.handler = completionHandler;
+    schedule(cmd);
   }
 
   static class CachedPreparedStatement implements Handler<CommandResponse<PreparedStatement>> {
@@ -169,6 +171,9 @@ public class SocketConnection implements Connection {
   }
 
   public void schedule(CommandBase<?> cmd) {
+    if (cmd.handler == null) {
+      throw new IllegalArgumentException();
+    }
     if (Vertx.currentContext() != context) {
       throw new IllegalStateException();
     }

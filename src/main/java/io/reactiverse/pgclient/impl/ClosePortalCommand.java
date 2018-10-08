@@ -27,8 +27,7 @@ class ClosePortalCommand extends CommandBase<Void> {
 
   private final String portal;
 
-  ClosePortalCommand(String portal, Handler<? super CommandResponse<Void>> handler) {
-    super(handler);
+  ClosePortalCommand(String portal) {
     this.portal = portal;
   }
 

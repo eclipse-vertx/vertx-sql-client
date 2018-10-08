@@ -26,9 +26,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
-public abstract class PgClientBase<C extends PgClient> implements PgClient {
-
-  protected abstract void schedule(CommandBase<?> cmd);
+public abstract class PgClientBase<C extends PgClient> implements PgClient, CommandScheduler {
 
   @Override
   public C query(String sql, Handler<AsyncResult<PgRowSet>> handler) {
@@ -47,7 +45,7 @@ public abstract class PgClientBase<C extends PgClient> implements PgClient {
     Collector<Row, ?, R1> collector,
     Handler<AsyncResult<R3>> handler) {
     PgResultBuilder<R1, R2, R3> b = new PgResultBuilder<>(factory, handler);
-    schedule(new SimpleQueryCommand<>(sql, singleton, collector, b, b));
+    schedule(new SimpleQueryCommand<>(sql, singleton, collector, b), b);
     return (C) this;
   }
 
@@ -68,20 +66,20 @@ public abstract class PgClientBase<C extends PgClient> implements PgClient {
     Function<R1, R2> factory,
     Collector<Row, ?, R1> collector,
     Handler<AsyncResult<R3>> handler) {
-    schedule(new PrepareStatementCommand(sql, ar -> {
-      if (ar.succeeded()) {
-        PreparedStatement ps = ar.result();
+    schedule(new PrepareStatementCommand(sql), cr -> {
+      if (cr.succeeded()) {
+        PreparedStatement ps = cr.result();
         String msg = ps.prepare((List<Object>) arguments);
         if (msg != null) {
           handler.handle(Future.failedFuture(msg));
         } else {
           PgResultBuilder<R1, R2, R3> b = new PgResultBuilder<>(factory, handler);
-          schedule(new ExtendedQueryCommand<>(ps, arguments, singleton, collector, b, b));
+          cr.scheduler.schedule(new ExtendedQueryCommand<>(ps, arguments, singleton, collector, b), b);
         }
       } else {
-        handler.handle(Future.failedFuture(ar.cause()));
+        handler.handle(Future.failedFuture(cr.cause()));
       }
-    }));
+    });
     return (C) this;
   }
 
@@ -112,9 +110,9 @@ public abstract class PgClientBase<C extends PgClient> implements PgClient {
     Function<R1, R2> factory,
     Collector<Row, ?, R1> collector,
     Handler<AsyncResult<R3>> handler) {
-    schedule(new PrepareStatementCommand(sql, ar -> {
-      if (ar.succeeded()) {
-        PreparedStatement ps = ar.result();
+    schedule(new PrepareStatementCommand(sql), cr -> {
+      if (cr.succeeded()) {
+        PreparedStatement ps = cr.result();
         for  (Tuple args : batch) {
           String msg = ps.prepare((List<Object>) args);
           if (msg != null) {
@@ -123,17 +121,16 @@ public abstract class PgClientBase<C extends PgClient> implements PgClient {
           }
         }
         PgResultBuilder<R1, R2, R3> b = new PgResultBuilder<>(factory, handler);
-        schedule(new ExtendedBatchQueryCommand<>(
+        cr.scheduler.schedule(new ExtendedBatchQueryCommand<>(
           ps,
           batch.iterator(),
           singleton,
           collector,
-          b,
-          b));
+          b), b);
       } else {
-        handler.handle(Future.failedFuture(ar.cause()));
+        handler.handle(Future.failedFuture(cr.cause()));
       }
-    }));
+    });
     return (C) this;
   }
 }

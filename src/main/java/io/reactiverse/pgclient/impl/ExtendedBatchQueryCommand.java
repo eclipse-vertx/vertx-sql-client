@@ -36,9 +36,8 @@ public class ExtendedBatchQueryCommand<T> extends ExtendedQueryCommandBase<T> {
                             Iterator<Tuple> paramsIterator,
                             boolean singleton,
                             Collector<Row, ?, T> collector,
-                            QueryResultHandler<T> resultHandler,
-                            Handler<AsyncResult<Boolean>> handler) {
-    this(ps, paramsIterator, 0, null, false, singleton, collector, resultHandler, handler);
+                            QueryResultHandler<T> resultHandler) {
+    this(ps, paramsIterator, 0, null, false, singleton, collector, resultHandler);
   }
 
   ExtendedBatchQueryCommand(PreparedStatement ps,
@@ -48,9 +47,8 @@ public class ExtendedBatchQueryCommand<T> extends ExtendedQueryCommandBase<T> {
                             boolean suspended,
                             boolean singleton,
                             Collector<Row, ?, T> collector,
-                            QueryResultHandler<T> resultHandler,
-                            Handler<AsyncResult<Boolean>> handler) {
-    super(ps, fetch, portal, suspended, singleton, collector, resultHandler, handler);
+                            QueryResultHandler<T> resultHandler) {
+    super(ps, fetch, portal, suspended, singleton, collector, resultHandler);
     this.paramsIterator = paramsIterator;
   }
 

@@ -14,21 +14,13 @@
  * limitations under the License.
  *
  */
-
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
+import io.vertx.core.Handler;
 
-class CloseConnectionCommand extends CommandBase<Void> {
+@FunctionalInterface
+interface CommandScheduler {
 
-  static final CloseConnectionCommand INSTANCE = new CloseConnectionCommand();
+  <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler);
 
-  private CloseConnectionCommand() {
-    handler = ar -> {};
-  }
-
-  @Override
-  void exec(MessageEncoder out) {
-    out.writeTerminate();
-  }
 }

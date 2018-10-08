@@ -20,6 +20,8 @@ package io.reactiverse.pgclient.impl;
 import io.reactiverse.pgclient.*;
 import io.vertx.core.*;
 
+import java.util.function.BiConsumer;
+
 /**
  * Todo :
  *
@@ -74,12 +76,25 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
   }
 
   @Override
-  protected void schedule(CommandBase<?> cmd) {
+  public <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
     Context current = Vertx.currentContext();
     if (current == context) {
-      pool.acquire(new CommandWaiter() {
+      pool.acquire(new CommandWaiter() { // SHOULD BE IT !!!!!
         @Override
         protected void onSuccess(Connection conn) {
+          cmd.handler = ar -> {
+            ar.scheduler = new CommandScheduler() {
+              @Override
+              public <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
+                cmd.handler = cr -> {
+                  cr.scheduler = this;
+                  handler.handle(cr);
+                };
+                conn.schedule(cmd);
+              }
+            };
+            handler.handle(ar);
+          };
           conn.schedule(cmd);
           conn.close(this);
         }
@@ -89,7 +104,7 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
         }
       });
     } else {
-      context.runOnContext(v -> schedule(cmd));
+      context.runOnContext(v -> schedule(cmd, handler));
     }
   }
 

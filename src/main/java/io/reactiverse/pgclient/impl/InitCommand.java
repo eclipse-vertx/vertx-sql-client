@@ -46,9 +46,7 @@ public class InitCommand extends CommandBase<Connection> {
     SocketConnection conn,
     String username,
     String password,
-    String database,
-    Handler<? super CommandResponse<Connection>> handler) {
-    super(handler);
+    String database) {
     this.conn = conn;
     this.username = username;
     this.password = password;

@@ -38,9 +38,8 @@ class SimpleQueryCommand<T> extends QueryCommandBase<T> {
   SimpleQueryCommand(String sql,
                      boolean singleton,
                      Collector<Row, ?, T> collector,
-                     QueryResultHandler<T> resultHandler,
-                     Handler<AsyncResult<Boolean>> handler) {
-    super(collector, resultHandler, handler);
+                     QueryResultHandler<T> resultHandler) {
+    super(collector, resultHandler);
     this.sql = sql;
     this.singleton = singleton;
   }

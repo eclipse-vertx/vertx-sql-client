@@ -74,7 +74,7 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
       if (msg != null) {
         handler.handle(Future.failedFuture(msg));
       } else {
-        conn.schedule(new ExtendedQueryCommand<>(
+        ExtendedQueryCommand cmd = new ExtendedQueryCommand<>(
           ps,
           args,
           fetch,
@@ -82,8 +82,9 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
           suspended,
           singleton,
           collector,
-          resultHandler,
-          handler));
+          resultHandler);
+        cmd.handler = handler;
+        conn.schedule(cmd);
       }
     } else {
       context.runOnContext(v -> execute(args, fetch, portal, suspended, singleton, collector, resultHandler, handler));
@@ -129,7 +130,9 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
       }
     }
     PgResultBuilder<R1, R2, R3> b = new PgResultBuilder<>(factory, handler);
-    conn.schedule(new ExtendedBatchQueryCommand<>(ps, argsList.iterator(), singleton, collector, b, b));
+    ExtendedBatchQueryCommand cmd = new ExtendedBatchQueryCommand<>(ps, argsList.iterator(), singleton, collector, b);
+    cmd.handler = b;
+    conn.schedule(cmd);
     return this;
   }
 
@@ -141,14 +144,18 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
   @Override
   public void close(Handler<AsyncResult<Void>> completionHandler) {
     if (closed.compareAndSet(false, true)) {
-      conn.schedule(new CloseStatementCommand(completionHandler));
+      CloseStatementCommand cmd = new CloseStatementCommand();
+      cmd.handler = completionHandler;
+      conn.schedule(cmd);
     } else {
       completionHandler.handle(Future.failedFuture("Already closed"));
     }
   }
 
   void closePortal(String portal, Handler<AsyncResult<Void>> handler) {
-    conn.schedule(new ClosePortalCommand(portal, handler));
+    ClosePortalCommand cmd = new ClosePortalCommand(portal);
+    cmd.handler = handler;
+    conn.schedule(cmd);
   }
 
 }

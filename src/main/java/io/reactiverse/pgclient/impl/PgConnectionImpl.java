@@ -51,6 +51,15 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
   }
 
   @Override
+  public <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
+    cmd.handler = cr -> {
+      // Tx might be gone ???
+      cr.scheduler = this;
+      handler.handle(cr);
+    };
+    schedule(cmd);
+  }
+
   protected void schedule(CommandBase<?> cmd) {
     if (context == Vertx.currentContext()) {
       if (tx != null) {
@@ -141,13 +150,13 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
 
   @Override
   public PgConnection prepare(String sql, Handler<AsyncResult<PgPreparedQuery>> handler) {
-    schedule(new PrepareStatementCommand(sql, ar -> {
-      if (ar.succeeded()) {
-        handler.handle(Future.succeededFuture(new PgPreparedQueryImpl(conn, context, ar.result())));
+    schedule(new PrepareStatementCommand(sql), cr -> {
+      if (cr.succeeded()) {
+        handler.handle(Future.succeededFuture(new PgPreparedQueryImpl(conn, context, cr.result())));
       } else {
-        handler.handle(Future.failedFuture(ar.cause()));
+        handler.handle(Future.failedFuture(cr.cause()));
       }
-    }));
+    });
     return this;
   }
 }
