@@ -263,7 +263,7 @@ Apache License - Version 2.0
 
 == Integration / Usages
 
-- [vertx-jooq](https://github.com/jklingsporn/vertx-jooq): writing type safe queries and let them run at high speed using jOOQ, vertx and the reactive-pg-client.
+- https://github.com/jklingsporn/vertx-jooq[vertx-jooq]: writing type safe queries and let them run at high speed using jOOQ, vertx and the reactive-pg-client.
 
 == Developers
 
