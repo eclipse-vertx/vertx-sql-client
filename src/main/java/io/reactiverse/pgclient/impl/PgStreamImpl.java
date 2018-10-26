@@ -80,6 +80,11 @@ public class PgStreamImpl implements PgStream<Row>, Handler<AsyncResult<PgRowSet
     return this;
   }
 
+  // Since Vert.x 3.6.0 : todo
+  public PgStream<Row> fetch(long amount) {
+    throw new UnsupportedOperationException();
+  }
+
   @Override
   public PgStream<Row> resume() {
     synchronized (this) {

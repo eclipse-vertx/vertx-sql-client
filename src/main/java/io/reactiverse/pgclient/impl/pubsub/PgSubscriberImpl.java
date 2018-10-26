@@ -22,6 +22,7 @@ import io.reactiverse.pgclient.pubsub.PgChannel;
 import io.vertx.core.*;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.streams.ReadStream;
 
 import java.util.*;
 import java.util.function.Function;
@@ -204,7 +205,7 @@ public class PgSubscriberImpl implements PgSubscriber {
 	final String quotedName;
     final ArrayList<ChannelImpl> subs = new ArrayList<>();
     boolean subscribed;
-    
+
     ChannelList(String name) {
       this.name = name;
 	  quotedName = "\"" + name.replace("\"", "\"\"") + "\"";
@@ -317,6 +318,11 @@ public class PgSubscriberImpl implements PgSubscriber {
         paused = false;
       }
       return this;
+    }
+
+    // Since Vert.x 3.6.0 : todo
+    public ReadStream<String> fetch(long amount) {
+      throw new UnsupportedOperationException();
     }
   }
 

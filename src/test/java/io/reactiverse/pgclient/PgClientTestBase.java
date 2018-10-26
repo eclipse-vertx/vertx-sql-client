@@ -18,6 +18,7 @@
 package io.reactiverse.pgclient;
 
 import io.vertx.core.*;
+import io.vertx.core.net.NetSocket;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -243,9 +244,11 @@ public abstract class PgClientTestBase<C extends PgClient> extends PgTestBase {
     Async async = ctx.async();
     ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
     proxy.proxyHandler(conn -> {
-      conn.clientSocket().handler(buff -> {
-        conn.clientSocket().close();
+      NetSocket clientSo = conn.clientSocket();
+      clientSo.handler(buff -> {
+        clientSo.close();
       });
+      clientSo.resume();
     });
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
       options.setPort(8080).setHost("localhost");

@@ -73,6 +73,8 @@ class ProxyServer {
       serverSocket.handler(buff -> clientSocket.write(clientSocketFilter.apply(buff)));
       clientSocket.closeHandler(v -> serverSocket.close());
       serverSocket.closeHandler(v -> clientSocket.close());
+      serverSocket.resume();
+      clientSocket.resume();
     }
 
     void close() {
@@ -109,9 +111,9 @@ class ProxyServer {
   private void handle(NetSocket clientSocket) {
     clientSocket.pause();
     client.connect(pgPort, pgHost, ar -> {
-      clientSocket.resume();
       if (ar.succeeded()) {
         NetSocket serverSocket = ar.result();
+        serverSocket.pause();
         Connection conn = new Connection(clientSocket, serverSocket);
         proxyHandler.handle(conn);
       } else {
