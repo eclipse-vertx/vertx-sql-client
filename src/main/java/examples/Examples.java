@@ -351,72 +351,6 @@ public class Examples {
   }
 
   public void usingConnections03(PgConnection connection) {
-    connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
-      if (ar1.succeeded()) {
-        PgPreparedQuery pq = ar1.result();
-
-        // Create a cursor
-        PgCursor cursor = pq.cursor(Tuple.of("julien"));
-
-        // Read 50 rows
-        cursor.read(50, ar2 -> {
-          if (ar2.succeeded()) {
-            PgRowSet rows = ar2.result();
-
-            // Check for more ?
-            if (cursor.hasMore()) {
-
-              // Read the next 50
-              cursor.read(50, ar3 -> {
-                // More rows, and so on...
-              });
-            } else {
-              // No more rows
-            }
-          }
-        });
-      }
-    });
-  }
-
-  public void usingConnections04(PgConnection connection) {
-    connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
-      if (ar1.succeeded()) {
-        PgPreparedQuery pq = ar1.result();
-        PgCursor cursor = pq.cursor(Tuple.of("julien"));
-        cursor.read(50, ar2 -> {
-          if (ar2.succeeded()) {
-            // Close the cursor
-            cursor.close();
-          }
-        });
-      }
-    });
-  }
-
-  public void usingConnections05(PgConnection connection) {
-    connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
-      if (ar1.succeeded()) {
-        PgPreparedQuery pq = ar1.result();
-
-        // Fetch 50 rows at a time
-        PgStream<Row> stream = pq.createStream(50, Tuple.of("julien"));
-
-        // Use the stream
-        stream.exceptionHandler(err -> {
-          System.out.println("Error: " + err.getMessage());
-        });
-        stream.endHandler(v -> {
-          System.out.println("End of stream");
-        });
-        stream.handler(row -> {
-          System.out.println("User: " + row.getString("last_name"));
-        });
-      }
-    });
-  }
-
-  public void usingConnections06(PgConnection connection) {
     connection.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", ar1 -> {
       if (ar1.succeeded()) {
         PgPreparedQuery prepared = ar1.result();
@@ -528,6 +462,70 @@ public class Examples {
           } else {
             System.out.println("Transaction failed " + ar.cause().getMessage());
           }
+        });
+      }
+    });
+  }
+
+  public void usingCursors01(PgConnection connection) {
+    connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
+      if (ar1.succeeded()) {
+        PgPreparedQuery pq = ar1.result();
+
+        // Cursors require to run within a transaction
+        PgTransaction tx = connection.begin();
+
+        // Create a cursor
+        PgCursor cursor = pq.cursor(Tuple.of("julien"));
+
+        // Read 50 rows
+        cursor.read(50, ar2 -> {
+          if (ar2.succeeded()) {
+            PgRowSet rows = ar2.result();
+
+            // Check for more ?
+            if (cursor.hasMore()) {
+              // Repeat the process...
+            } else {
+              // No more rows - commit the transaction
+              tx.commit();
+            }
+          }
+        });
+      }
+    });
+  }
+
+  public void usingCursors02(PgCursor cursor) {
+    cursor.read(50, ar2 -> {
+      if (ar2.succeeded()) {
+        // Close the cursor
+        cursor.close();
+      }
+    });
+  }
+
+  public void usingCursors03(PgConnection connection) {
+    connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
+      if (ar1.succeeded()) {
+        PgPreparedQuery pq = ar1.result();
+
+        // Streams require to run within a transaction
+        PgTransaction tx = connection.begin();
+
+        // Fetch 50 rows at a time
+        PgStream<Row> stream = pq.createStream(50, Tuple.of("julien"));
+
+        // Use the stream
+        stream.exceptionHandler(err -> {
+          System.out.println("Error: " + err.getMessage());
+        });
+        stream.endHandler(v -> {
+          tx.commit();
+          System.out.println("End of stream");
+        });
+        stream.handler(row -> {
+          System.out.println("User: " + row.getString("last_name"));
         });
       }
     });

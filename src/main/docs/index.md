@@ -211,35 +211,12 @@ Prepared queries can be created:
 NOTE: prepared query caching depends on the {@link io.reactiverse.pgclient.PgConnectOptions#setCachePreparedStatements(boolean)} and
 does not depend on whether you are creating prepared queries or use {@link io.reactiverse.pgclient.PgClient#preparedQuery(java.lang.String, io.vertx.core.Handler) direct prepared queries}
 
-By default prepared query executions fetch all rows, you can use a {@link io.reactiverse.pgclient.PgCursor} to control the amount of rows you want to read:
+{@link io.reactiverse.pgclient.PgPreparedQuery} can perform efficient batching:
 
 ```$lang
 {@link examples.Examples#usingConnections03(io.reactiverse.pgclient.PgConnection)}
 ```
 
-Cursors shall be closed when they are released prematurely:
-
-```$lang
-{@link examples.Examples#usingConnections04(io.reactiverse.pgclient.PgConnection)}
-```
-
-A stream API is also available for cursors, which can be more convenient, specially with the Rxified version.
-
-```$lang
-{@link examples.Examples#usingConnections05(io.reactiverse.pgclient.PgConnection)}
-```
-
-The stream read the rows by batch of `50` and stream them, when the rows have been passed to the handler,
-a new batch of `50` is read and so on.
-
-The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
-will stop iterating.
-
-{@link io.reactiverse.pgclient.PgPreparedQuery} can perform efficient batching:
-
-```$lang
-{@link examples.Examples#usingConnections06(io.reactiverse.pgclient.PgConnection)}
-```
 
 ## Using transactions
 
@@ -271,6 +248,36 @@ It borrows a connection from the pool, begins the transaction and releases the c
 ```$lang
 {@link examples.Examples#transaction03(io.reactiverse.pgclient.PgPool)}
 ```
+
+## Cursors and streaming
+
+By default prepared query execution fetches all rows, you can use a
+{@link io.reactiverse.pgclient.PgCursor} to control the amount of rows you want to read:
+
+```$lang
+{@link examples.Examples#usingCursors01(io.reactiverse.pgclient.PgConnection)}
+```
+
+PostreSQL destroys cursors at the end of a transaction, so the cursor API shall be used
+within a transaction, otherwise you will likely get the `34000` PostgreSQL error.
+
+Cursors shall be closed when they are released prematurely:
+
+```$lang
+{@link examples.Examples#usingCursors02(io.reactiverse.pgclient.PgCursor)}
+```
+
+A stream API is also available for cursors, which can be more convenient, specially with the Rxified version.
+
+```$lang
+{@link examples.Examples#usingCursors03(io.reactiverse.pgclient.PgConnection)}
+```
+
+The stream read the rows by batch of `50` and stream them, when the rows have been passed to the handler,
+a new batch of `50` is read and so on.
+
+The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
+will stop iterating.
 
 ## Postgres type mapping
 
