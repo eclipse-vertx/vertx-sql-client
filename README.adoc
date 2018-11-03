@@ -172,9 +172,9 @@ The *Reactive Postgres Client* currently supports the following data types
 |&#10004;
 
 |`NUMERIC`
-|`i.r.p.Numeric`
+|`i.r.p.data.Numeric`
 |&#10004;
-|`i.r.p.Numeric[]`
+|`i.r.p.data.Numeric[]`
 |&#10004;
 
 |`UUID`
@@ -214,9 +214,9 @@ The *Reactive Postgres Client* currently supports the following data types
 |&#10004;
 
 |`INTERVAL`
-|`i.r.p.d.Interval`
+|`i.r.p.data.Interval`
 |&#10004;
-|`i.r.p.d.Interval[]`
+|`i.r.p.data.Interval[]`
 |&#10004;
 
 |`BYTEA`
@@ -226,15 +226,15 @@ The *Reactive Postgres Client* currently supports the following data types
 |&#10004;
 
 |`JSON`
-|`i.r.p.Json`
+|`i.r.p.data.Json`
 |&#10004;
-|`i.r.p.Json[]`
+|`i.r.p.data.Json[]`
 |&#10004;
 
 |`JSONB`
-|`i.r.p.Json`
+|`i.r.p.data.Json`
 |&#10004;
-|`i.r.p.Json[]`
+|`i.r.p.data.Json[]`
 |&#10004;
 
 |`UNKNOWN`
