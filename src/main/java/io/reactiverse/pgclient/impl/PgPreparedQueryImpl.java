@@ -130,7 +130,7 @@ class PgPreparedQueryImpl implements PgPreparedQuery {
       }
     }
     PgResultBuilder<R1, R2, R3> b = new PgResultBuilder<>(factory, handler);
-    ExtendedBatchQueryCommand cmd = new ExtendedBatchQueryCommand<>(ps, argsList.iterator(), singleton, collector, b);
+    ExtendedBatchQueryCommand cmd = new ExtendedBatchQueryCommand<>(ps, argsList, singleton, collector, b);
     cmd.handler = b;
     conn.schedule(cmd);
     return this;

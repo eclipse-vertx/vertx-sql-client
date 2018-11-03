@@ -21,27 +21,24 @@ import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
 import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
 import io.reactiverse.pgclient.impl.codec.encoder.Parse;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collector;
 
 public class ExtendedBatchQueryCommand<T> extends ExtendedQueryCommandBase<T> {
 
-  private final Iterator<Tuple> paramsIterator;
+  private final List<Tuple> params;
 
   ExtendedBatchQueryCommand(PreparedStatement ps,
-                            Iterator<Tuple> paramsIterator,
+                            List<Tuple> params,
                             boolean singleton,
                             Collector<Row, ?, T> collector,
                             QueryResultHandler<T> resultHandler) {
-    this(ps, paramsIterator, 0, null, false, singleton, collector, resultHandler);
+    this(ps, params, 0, null, false, singleton, collector, resultHandler);
   }
 
-  ExtendedBatchQueryCommand(PreparedStatement ps,
-                            Iterator<Tuple> paramsIterator,
+  private ExtendedBatchQueryCommand(PreparedStatement ps,
+                            List<Tuple> params,
                             int fetch,
                             String portal,
                             boolean suspended,
@@ -49,7 +46,7 @@ public class ExtendedBatchQueryCommand<T> extends ExtendedQueryCommandBase<T> {
                             Collector<Row, ?, T> collector,
                             QueryResultHandler<T> resultHandler) {
     super(ps, fetch, portal, suspended, singleton, collector, resultHandler);
-    this.paramsIterator = paramsIterator;
+    this.params = params;
   }
 
   @Override
@@ -61,10 +58,14 @@ public class ExtendedBatchQueryCommand<T> extends ExtendedQueryCommandBase<T> {
       if (ps.bind.statement == 0) {
         out.writeParse(new Parse(ps.sql));
       }
-      while (paramsIterator.hasNext()) {
-        List<Object> params = (List<Object>) paramsIterator.next();
-        out.writeBind(ps.bind, portal, params);
-        out.writeExecute(portal, fetch);
+      if (params.isEmpty()) {
+        // We set suspended to false as we won't get a command complete command back from Postgres
+        result = false;
+      } else {
+        for (Tuple  param : params) {
+          out.writeBind(ps.bind, portal, (List<Object>) param);
+          out.writeExecute(portal, fetch);
+        }
       }
       out.writeSync();
     }

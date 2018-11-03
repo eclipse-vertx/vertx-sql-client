@@ -123,7 +123,7 @@ public abstract class PgClientBase<C extends PgClient> implements PgClient, Comm
         PgResultBuilder<R1, R2, R3> b = new PgResultBuilder<>(factory, handler);
         cr.scheduler.schedule(new ExtendedBatchQueryCommand<>(
           ps,
-          batch.iterator(),
+          batch,
           singleton,
           collector,
           b), b);
