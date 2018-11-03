@@ -100,6 +100,7 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
         }
         @Override
         protected void onFailure(Throwable cause) {
+          cmd.handler = handler;
           cmd.fail(cause);
         }
       });

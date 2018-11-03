@@ -56,6 +56,15 @@ public class PgPoolTest extends PgPoolTestBase {
   }
 
   @Test
+  public void testAuthFailure(TestContext ctx) {
+    Async async = ctx.async();
+    PgPool pool = createPool(new PgConnectOptions(options).setPassword("wrong"), 1);
+    pool.query("SELECT id, randomnumber from WORLD", ctx.asyncAssertFailure(v2 -> {
+      async.complete();
+    }));
+  }
+
+  @Test
   public void testConnectionFailure(TestContext ctx) {
     Async async = ctx.async();
     ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
