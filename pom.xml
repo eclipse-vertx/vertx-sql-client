@@ -65,6 +65,8 @@
     <generated.dir>${project.basedir}/src/main/generated</generated.dir>
     <!-- Set to a value for testing with a specific database -->
     <connection.uri />
+    <!-- We skip sources jar generation as we do it with the assembly plugin to have greater control over the content -->
+    <source.skip>true</source.skip>
   </properties>
 
   <dependencyManagement>
@@ -326,6 +328,30 @@
           </links>
         </configuration>
       </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+
+          <execution>
+            <id>package-sources</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <attach>true</attach>
+              <archive>
+                <!-- Need a manifest to avoid empty archive -->
+                <manifest>
+                </manifest>
+              </archive>
+              <descriptors>
+                <descriptor>src/assembly/sources.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
@@ -339,7 +365,7 @@
             <artifactId>maven-assembly-plugin</artifactId>
             <executions>
               <execution>
-                <id>assemble-benchmark</id>
+                <id>package-benchmark</id>
                 <phase>package</phase>
                 <goals>
                   <goal>single</goal>
@@ -351,7 +377,7 @@
                     </manifest>
                   </archive>
                   <descriptors>
-                    <descriptor>src/benchmark/assembly/benchmark.xml</descriptor>
+                    <descriptor>src/assembly/benchmark.xml</descriptor>
                   </descriptors>
                   <attach>false</attach>
                 </configuration>
