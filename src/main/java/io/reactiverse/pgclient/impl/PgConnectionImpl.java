@@ -23,18 +23,15 @@ import io.vertx.core.*;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements PgConnection, Connection.Holder {
+public class PgConnectionImpl extends PgConnectionBase<PgConnectionImpl> implements PgConnection, Connection.Holder {
 
-  private final Context context;
-  public final Connection conn;
   private volatile Handler<Throwable> exceptionHandler;
   private volatile Handler<Void> closeHandler;
   private Transaction tx;
   private volatile Handler<PgNotification> notificationHandler;
 
   public PgConnectionImpl(Context context, Connection conn) {
-    this.context = context;
-    this.conn = conn;
+    super(context, conn);
   }
 
   @Override
@@ -146,17 +143,5 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
     } else {
       context.runOnContext(v -> close());
     }
-  }
-
-  @Override
-  public PgConnection prepare(String sql, Handler<AsyncResult<PgPreparedQuery>> handler) {
-    schedule(new PrepareStatementCommand(sql), cr -> {
-      if (cr.succeeded()) {
-        handler.handle(Future.succeededFuture(new PgPreparedQueryImpl(conn, context, cr.result())));
-      } else {
-        handler.handle(Future.failedFuture(cr.cause()));
-      }
-    });
-    return this;
   }
 }

@@ -43,17 +43,17 @@ public class RxExamples {
 
   public void streamingQuery01Example(PgPool pool) {
 
-    // Create a flowable
-    Observable<Row> observable = pool.rxGetConnection()
-      .flatMapObservable(conn -> conn
+    // Create an Observable
+    Observable<Row> observable = pool.rxBegin() // Cursors require a transaction
+      .flatMapObservable(tx -> tx
         .rxPrepare("SELECT * FROM users WHERE first_name LIKE $1")
-        .flatMapObservable(pq -> {
+        .flatMapObservable(preparedQuery -> {
           // Fetch 50 rows at a time
-          PgStream<Row> stream = pq.createStream(50, Tuple.of("julien"));
+          PgStream<Row> stream = preparedQuery.createStream(50, Tuple.of("julien"));
           return stream.toObservable();
         })
-        // Close the connection after usage
-        .doAfterTerminate(conn::close));
+        // Commit the transaction after usage
+        .doAfterTerminate(tx::commit));
 
     // Then subscribe
     observable.subscribe(row -> {
@@ -67,14 +67,16 @@ public class RxExamples {
 
   public void streamingQuery02Example(PgPool pool) {
 
-    // Create a flowable
-    Flowable<Row> flowable = pool.rxGetConnection()
-      .flatMapPublisher(conn -> conn.rxPrepare("SELECT * FROM users WHERE first_name LIKE $1")
-        .flatMapPublisher(pq -> {
+    // Create a Flowable
+      Flowable<Row> flowable = pool.rxBegin()  // Cursors require a transaction
+      .flatMapPublisher(tx -> tx.rxPrepare("SELECT * FROM users WHERE first_name LIKE $1")
+        .flatMapPublisher(preparedQuery -> {
           // Fetch 50 rows at a time
-          PgStream<Row> stream = pq.createStream(50, Tuple.of("julien"));
+          PgStream<Row> stream = preparedQuery.createStream(50, Tuple.of("julien"));
           return stream.toFlowable();
-        }));
+        })
+        // Commit the transaction after usage
+        .doAfterTerminate(tx::commit));
 
     // Then subscribe
     flowable.subscribe(new Subscriber<Row>() {

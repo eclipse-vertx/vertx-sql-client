@@ -32,6 +32,15 @@ import java.util.stream.Collector;
 public interface PgTransaction extends PgClient {
 
   /**
+   * Create a prepared query.
+   *
+   * @param sql the sql
+   * @param handler the handler notified with the prepared query asynchronously
+   */
+  @Fluent
+  PgTransaction prepare(String sql, Handler<AsyncResult<PgPreparedQuery>> handler);
+
+  /**
    * Commit the current transaction.
    */
   void commit();
