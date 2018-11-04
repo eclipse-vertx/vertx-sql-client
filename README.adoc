@@ -81,6 +81,10 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -> {
 });
 ----
 
+== Integration / Usages
+
+* https://github.com/jklingsporn/vertx-jooq[vertx-jooq]: writing type safe queries and let them run at high speed using jOOQ, vertx and the reactive-pg-client.
+
 == Documentations
 
 * https://reactiverse.io/reactive-pg-client/guide/java/index.html[Java docs]
