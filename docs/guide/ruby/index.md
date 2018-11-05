@@ -31,7 +31,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 <dependency>
  <groupId>io.reactiverse</groupId>
  <artifactId>reactive-pg-client</artifactId>
- <version>0.10.6</version>
+ <version>0.10.7</version>
 </dependency>
 ```
 
@@ -39,7 +39,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 
 ```groovy
 dependencies {
- compile 'io.reactiverse:reactive-pg-client:0.10.6'
+ compile 'io.reactiverse:reactive-pg-client:0.10.7'
 }
 ```
 
@@ -427,90 +427,6 @@ connection.prepare("SELECT * FROM users WHERE first_name LIKE $1") { |ar1_err,ar
 NOTE: prepared query caching depends on the [`cachePreparedStatements`](../dataobjects.html#PgConnectOptions#set_cache_prepared_statements-instance_method) and
 does not depend on whether you are creating prepared queries or use [`direct prepared queries`](../../yardoc/ReactivePgClient/PgClient.html#prepared_query-instance_method)
 
-By default prepared query executions fetch all rows, you can use a [`PgCursor`](../../yardoc/ReactivePgClient/PgCursor.html) to control the amount of rows you want to read:
-
-```ruby
-require 'reactive-pg-client/tuple'
-connection.prepare("SELECT * FROM users WHERE first_name LIKE $1") { |ar1_err,ar1|
-  if (ar1_err == nil)
-    pq = ar1
-
-    # Create a cursor
-    cursor = pq.cursor(ReactivePgClient::Tuple.of("julien"))
-
-    # Read 50 rows
-    cursor.read(50) { |ar2_err,ar2|
-      if (ar2_err == nil)
-        rows = ar2
-
-        # Check for more ?
-        if (cursor.has_more?())
-
-          # Read the next 50
-          cursor.read(50) { |ar3_err,ar3|
-            # More rows, and so on...
-          }
-        else
-          # No more rows
-        end
-      end
-    }
-  end
-}
-
-```
-
-Cursors shall be closed when they are released prematurely:
-
-```ruby
-require 'reactive-pg-client/tuple'
-connection.prepare("SELECT * FROM users WHERE first_name LIKE $1") { |ar1_err,ar1|
-  if (ar1_err == nil)
-    pq = ar1
-    cursor = pq.cursor(ReactivePgClient::Tuple.of("julien"))
-    cursor.read(50) { |ar2_err,ar2|
-      if (ar2_err == nil)
-        # Close the cursor
-        cursor.close()
-      end
-    }
-  end
-}
-
-```
-
-A stream API is also available for cursors, which can be more convenient, specially with the Rxified version.
-
-```ruby
-require 'reactive-pg-client/tuple'
-connection.prepare("SELECT * FROM users WHERE first_name LIKE $1") { |ar1_err,ar1|
-  if (ar1_err == nil)
-    pq = ar1
-
-    # Fetch 50 rows at a time
-    stream = pq.create_stream(50, ReactivePgClient::Tuple.of("julien"))
-
-    # Use the stream
-    stream.exception_handler() { |err|
-      puts "Error: #{err.get_message()}"
-    }
-    stream.end_handler() { |v|
-      puts "End of stream"
-    }
-    stream.handler() { |row|
-      puts "User: #{row.get_string("last_name")}"
-    }
-  end
-}
-
-```
-
-The stream read the rows by batch of `50` and stream them, when the rows have been passed to the handler,
-a new batch of `50` is read and so on.
-
-The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
-will stop iterating.
-
 [`PgPreparedQuery`](../../yardoc/ReactivePgClient/PgPreparedQuery.html)can perform efficient batching:
 
 ```ruby
@@ -539,6 +455,7 @@ connection.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)") { |ar1_err,ar
 }
 
 ```
+
 
 ## Using transactions
 
@@ -603,6 +520,93 @@ It borrows a connection from the pool, begins the transaction and releases the c
 ```ruby
 Code not translatable
 ```
+
+## Cursors and streaming
+
+By default prepared query execution fetches all rows, you can use a
+[`PgCursor`](../../yardoc/ReactivePgClient/PgCursor.html)to control the amount of rows you want to read:
+
+```ruby
+require 'reactive-pg-client/tuple'
+connection.prepare("SELECT * FROM users WHERE first_name LIKE $1") { |ar1_err,ar1|
+  if (ar1_err == nil)
+    pq = ar1
+
+    # Cursors require to run within a transaction
+    tx = connection.begin()
+
+    # Create a cursor
+    cursor = pq.cursor(ReactivePgClient::Tuple.of("julien"))
+
+    # Read 50 rows
+    cursor.read(50) { |ar2_err,ar2|
+      if (ar2_err == nil)
+        rows = ar2
+
+        # Check for more ?
+        if (cursor.has_more?())
+          # Repeat the process...
+        else
+          # No more rows - commit the transaction
+          tx.commit()
+        end
+      end
+    }
+  end
+}
+
+```
+
+PostreSQL destroys cursors at the end of a transaction, so the cursor API shall be used
+within a transaction, otherwise you will likely get the `34000` PostgreSQL error.
+
+Cursors shall be closed when they are released prematurely:
+
+```ruby
+cursor.read(50) { |ar2_err,ar2|
+  if (ar2_err == nil)
+    # Close the cursor
+    cursor.close()
+  end
+}
+
+```
+
+A stream API is also available for cursors, which can be more convenient, specially with the Rxified version.
+
+```ruby
+require 'reactive-pg-client/tuple'
+connection.prepare("SELECT * FROM users WHERE first_name LIKE $1") { |ar1_err,ar1|
+  if (ar1_err == nil)
+    pq = ar1
+
+    # Streams require to run within a transaction
+    tx = connection.begin()
+
+    # Fetch 50 rows at a time
+    stream = pq.create_stream(50, ReactivePgClient::Tuple.of("julien"))
+
+    # Use the stream
+    stream.exception_handler() { |err|
+      puts "Error: #{err.get_message()}"
+    }
+    stream.end_handler() { |v|
+      tx.commit()
+      puts "End of stream"
+    }
+    stream.handler() { |row|
+      puts "User: #{row.get_string("last_name")}"
+    }
+  end
+}
+
+```
+
+The stream read the rows by batch of `50` and stream them, when the rows have been passed to the handler,
+a new batch of `50` is read and so on.
+
+The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
+will stop iterating.
 
 ## Postgres type mapping
 

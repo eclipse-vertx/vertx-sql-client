@@ -139,7 +139,7 @@
 <h2 id="_usage">Usage</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Latest release is <a href="https://github.com/reactiverse/reactive-pg-client/blob/master/RELEASES.adoc">0.10.5</a>.</p>
+<p>Latest release is <a href="https://github.com/reactiverse/reactive-pg-client/blob/master/RELEASES.adoc">0.10.6</a>.</p>
 </div>
 <div class="paragraph">
 <p>To use the client, add the following dependency to the <em>dependencies</em> section of your build descriptor:</p>
@@ -156,7 +156,7 @@
 <pre class="highlight"><code class="language-xml" data-lang="xml">&lt;dependency&gt;
   &lt;groupId&gt;io.reactiverse&lt;/groupId&gt;
   &lt;artifactId&gt;reactive-pg-client&lt;/artifactId&gt;
-  &lt;version&gt;0.10.5&lt;/version&gt;
+  &lt;version&gt;0.10.6&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
 </div>
 </div>
@@ -170,7 +170,7 @@
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code class="language-groovy" data-lang="groovy">dependencies {
-  compile 'io.reactiverse:reactive-pg-client:0.10.5'
+  compile 'io.reactiverse:reactive-pg-client:0.10.6'
 }</code></pre>
 </div>
 </div>
@@ -204,6 +204,18 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -&gt; {
   client.close();
 });</code></pre>
 </div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_integration_usages">Integration / Usages</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://github.com/jklingsporn/vertx-jooq">vertx-jooq</a>: writing type safe queries and let them run at high speed using jOOQ, vertx and the reactive-pg-client.</p>
+</li>
+</ul>
 </div>
 </div>
 </div>
@@ -351,9 +363,9 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -&gt; {
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>NUMERIC</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.Numeric</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Numeric</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.Numeric[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Numeric[]</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
@@ -400,9 +412,9 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -&gt; {
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>INTERVAL</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.d.Interval</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Interval</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.d.Interval[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Interval[]</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
@@ -414,16 +426,16 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -&gt; {
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>JSON</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.Json</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Json</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.Json[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Json[]</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>JSONB</code></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.Json</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Json</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.Json[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Json[]</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
@@ -591,7 +603,7 @@ source generates the <code>jekyll/guide/java/index.md</code>.</p>
 </div></div></div>
 
     <div id="footer">
-  Generated on Mon Oct  8 16:28:35 2018 by
+  Generated on Mon Nov  5 08:36:20 2018 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.8.7.6 (ruby-2.3.3).
 </div>

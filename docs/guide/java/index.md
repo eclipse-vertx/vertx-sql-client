@@ -31,7 +31,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 <dependency>
  <groupId>io.reactiverse</groupId>
  <artifactId>reactive-pg-client</artifactId>
- <version>0.10.6</version>
+ <version>0.10.7</version>
 </dependency>
 ```
 
@@ -39,7 +39,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 
 ```groovy
 dependencies {
- compile 'io.reactiverse:reactive-pg-client:0.10.6'
+ compile 'io.reactiverse:reactive-pg-client:0.10.7'
 }
 ```
 
@@ -383,84 +383,6 @@ connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
 NOTE: prepared query caching depends on the [`setCachePreparedStatements`](../../apidocs/io/reactiverse/pgclient/PgConnectOptions.html#setCachePreparedStatements-boolean-) and
 does not depend on whether you are creating prepared queries or use [`direct prepared queries`](../../apidocs/io/reactiverse/pgclient/PgClient.html#preparedQuery-java.lang.String-io.vertx.core.Handler-)
 
-By default prepared query executions fetch all rows, you can use a [`PgCursor`](../../apidocs/io/reactiverse/pgclient/PgCursor.html) to control the amount of rows you want to read:
-
-```java
-connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
-  if (ar1.succeeded()) {
-    PgPreparedQuery pq = ar1.result();
-
-    // Create a cursor
-    PgCursor cursor = pq.cursor(Tuple.of("julien"));
-
-    // Read 50 rows
-    cursor.read(50, ar2 -> {
-      if (ar2.succeeded()) {
-        PgRowSet rows = ar2.result();
-
-        // Check for more ?
-        if (cursor.hasMore()) {
-
-          // Read the next 50
-          cursor.read(50, ar3 -> {
-            // More rows, and so on...
-          });
-        } else {
-          // No more rows
-        }
-      }
-    });
-  }
-});
-```
-
-Cursors shall be closed when they are released prematurely:
-
-```java
-connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
-  if (ar1.succeeded()) {
-    PgPreparedQuery pq = ar1.result();
-    PgCursor cursor = pq.cursor(Tuple.of("julien"));
-    cursor.read(50, ar2 -> {
-      if (ar2.succeeded()) {
-        // Close the cursor
-        cursor.close();
-      }
-    });
-  }
-});
-```
-
-A stream API is also available for cursors, which can be more convenient, specially with the Rxified version.
-
-```java
-connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
-  if (ar1.succeeded()) {
-    PgPreparedQuery pq = ar1.result();
-
-    // Fetch 50 rows at a time
-    PgStream<Row> stream = pq.createStream(50, Tuple.of("julien"));
-
-    // Use the stream
-    stream.exceptionHandler(err -> {
-      System.out.println("Error: " + err.getMessage());
-    });
-    stream.endHandler(v -> {
-      System.out.println("End of stream");
-    });
-    stream.handler(row -> {
-      System.out.println("User: " + row.getString("last_name"));
-    });
-  }
-});
-```
-
-The stream read the rows by batch of `50` and stream them, when the rows have been passed to the handler,
-a new batch of `50` is read and so on.
-
-The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
-will stop iterating.
-
 [`PgPreparedQuery`](../../apidocs/io/reactiverse/pgclient/PgPreparedQuery.html)can perform efficient batching:
 
 ```java
@@ -487,6 +409,7 @@ connection.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", ar1 -> {
   }
 });
 ```
+
 
 ## Using transactions
 
@@ -596,6 +519,88 @@ pool.begin(res -> {
   }
 });
 ```
+
+## Cursors and streaming
+
+By default prepared query execution fetches all rows, you can use a
+[`PgCursor`](../../apidocs/io/reactiverse/pgclient/PgCursor.html)to control the amount of rows you want to read:
+
+```java
+connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
+  if (ar1.succeeded()) {
+    PgPreparedQuery pq = ar1.result();
+
+    // Cursors require to run within a transaction
+    PgTransaction tx = connection.begin();
+
+    // Create a cursor
+    PgCursor cursor = pq.cursor(Tuple.of("julien"));
+
+    // Read 50 rows
+    cursor.read(50, ar2 -> {
+      if (ar2.succeeded()) {
+        PgRowSet rows = ar2.result();
+
+        // Check for more ?
+        if (cursor.hasMore()) {
+          // Repeat the process...
+        } else {
+          // No more rows - commit the transaction
+          tx.commit();
+        }
+      }
+    });
+  }
+});
+```
+
+PostreSQL destroys cursors at the end of a transaction, so the cursor API shall be used
+within a transaction, otherwise you will likely get the `34000` PostgreSQL error.
+
+Cursors shall be closed when they are released prematurely:
+
+```java
+cursor.read(50, ar2 -> {
+  if (ar2.succeeded()) {
+    // Close the cursor
+    cursor.close();
+  }
+});
+```
+
+A stream API is also available for cursors, which can be more convenient, specially with the Rxified version.
+
+```java
+connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
+  if (ar1.succeeded()) {
+    PgPreparedQuery pq = ar1.result();
+
+    // Streams require to run within a transaction
+    PgTransaction tx = connection.begin();
+
+    // Fetch 50 rows at a time
+    PgStream<Row> stream = pq.createStream(50, Tuple.of("julien"));
+
+    // Use the stream
+    stream.exceptionHandler(err -> {
+      System.out.println("Error: " + err.getMessage());
+    });
+    stream.endHandler(v -> {
+      tx.commit();
+      System.out.println("End of stream");
+    });
+    stream.handler(row -> {
+      System.out.println("User: " + row.getString("last_name"));
+    });
+  }
+});
+```
+
+The stream read the rows by batch of `50` and stream them, when the rows have been passed to the handler,
+a new batch of `50` is read and so on.
+
+The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
+will stop iterating.
 
 ## Postgres type mapping
 
@@ -816,16 +821,16 @@ the [`PgStream`](../../apidocs/io/reactiverse/reactivex/pgclient/PgStream.html) 
 from a [`PgPreparedQuery`](../../apidocs/io/reactiverse/reactivex/pgclient/PgPreparedQuery.html):
 
 ```java
-Observable<Row> observable = pool.rxGetConnection()
-  .flatMapObservable(conn -> conn
+Observable<Row> observable = pool.rxBegin() // Cursors require a transaction
+  .flatMapObservable(tx -> tx
     .rxPrepare("SELECT * FROM users WHERE first_name LIKE $1")
-    .flatMapObservable(pq -> {
+    .flatMapObservable(preparedQuery -> {
       // Fetch 50 rows at a time
-      PgStream<Row> stream = pq.createStream(50, Tuple.of("julien"));
+      PgStream<Row> stream = preparedQuery.createStream(50, Tuple.of("julien"));
       return stream.toObservable();
     })
-    // Close the connection after usage
-    .doAfterTerminate(conn::close));
+    // Commit the transaction after usage
+    .doAfterTerminate(tx::commit));
 
 // Then subscribe
 observable.subscribe(row -> {
@@ -840,13 +845,15 @@ observable.subscribe(row -> {
 The same example using `Flowable`:
 
 ```java
-Flowable<Row> flowable = pool.rxGetConnection()
-  .flatMapPublisher(conn -> conn.rxPrepare("SELECT * FROM users WHERE first_name LIKE $1")
-    .flatMapPublisher(pq -> {
+  Flowable<Row> flowable = pool.rxBegin()  // Cursors require a transaction
+  .flatMapPublisher(tx -> tx.rxPrepare("SELECT * FROM users WHERE first_name LIKE $1")
+    .flatMapPublisher(preparedQuery -> {
       // Fetch 50 rows at a time
-      PgStream<Row> stream = pq.createStream(50, Tuple.of("julien"));
+      PgStream<Row> stream = preparedQuery.createStream(50, Tuple.of("julien"));
       return stream.toFlowable();
-    }));
+    })
+    // Commit the transaction after usage
+    .doAfterTerminate(tx::commit));
 
 // Then subscribe
 flowable.subscribe(new Subscriber<Row>() {

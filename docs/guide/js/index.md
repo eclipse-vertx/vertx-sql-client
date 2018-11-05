@@ -31,7 +31,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 <dependency>
  <groupId>io.reactiverse</groupId>
  <artifactId>reactive-pg-client</artifactId>
- <version>0.10.6</version>
+ <version>0.10.7</version>
 </dependency>
 ```
 
@@ -39,7 +39,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 
 ```groovy
 dependencies {
- compile 'io.reactiverse:reactive-pg-client:0.10.6'
+ compile 'io.reactiverse:reactive-pg-client:0.10.7'
 }
 ```
 
@@ -427,90 +427,6 @@ connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1
 NOTE: prepared query caching depends on the [`cachePreparedStatements`](../dataobjects.html#PgConnectOptions#setCachePreparedStatements) and
 does not depend on whether you are creating prepared queries or use [`direct prepared queries`](../../jsdoc/module-reactive-pg-client-js_pg_client-PgClient.html#preparedQuery)
 
-By default prepared query executions fetch all rows, you can use a [`PgCursor`](../../jsdoc/module-reactive-pg-client-js_pg_cursor-PgCursor.html) to control the amount of rows you want to read:
-
-```js
-var Tuple = require("reactive-pg-client-js/tuple");
-connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1, ar1_err) {
-  if (ar1_err == null) {
-    var pq = ar1;
-
-    // Create a cursor
-    var cursor = pq.cursor(Tuple.of("julien"));
-
-    // Read 50 rows
-    cursor.read(50, function (ar2, ar2_err) {
-      if (ar2_err == null) {
-        var rows = ar2;
-
-        // Check for more ?
-        if (cursor.hasMore()) {
-
-          // Read the next 50
-          cursor.read(50, function (ar3, ar3_err) {
-            // More rows, and so on...
-          });
-        } else {
-          // No more rows
-        }
-      }
-    });
-  }
-});
-
-```
-
-Cursors shall be closed when they are released prematurely:
-
-```js
-var Tuple = require("reactive-pg-client-js/tuple");
-connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1, ar1_err) {
-  if (ar1_err == null) {
-    var pq = ar1;
-    var cursor = pq.cursor(Tuple.of("julien"));
-    cursor.read(50, function (ar2, ar2_err) {
-      if (ar2_err == null) {
-        // Close the cursor
-        cursor.close();
-      }
-    });
-  }
-});
-
-```
-
-A stream API is also available for cursors, which can be more convenient, specially with the Rxified version.
-
-```js
-var Tuple = require("reactive-pg-client-js/tuple");
-connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1, ar1_err) {
-  if (ar1_err == null) {
-    var pq = ar1;
-
-    // Fetch 50 rows at a time
-    var stream = pq.createStream(50, Tuple.of("julien"));
-
-    // Use the stream
-    stream.exceptionHandler(function (err) {
-      console.log("Error: " + err.getMessage());
-    });
-    stream.endHandler(function (v) {
-      console.log("End of stream");
-    });
-    stream.handler(function (row) {
-      console.log("User: " + row.getString("last_name"));
-    });
-  }
-});
-
-```
-
-The stream read the rows by batch of `50` and stream them, when the rows have been passed to the handler,
-a new batch of `50` is read and so on.
-
-The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
-will stop iterating.
-
 [`PgPreparedQuery`](../../jsdoc/module-reactive-pg-client-js_pg_prepared_query-PgPreparedQuery.html)can perform efficient batching:
 
 ```js
@@ -539,6 +455,7 @@ connection.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", function (ar1
 });
 
 ```
+
 
 ## Using transactions
 
@@ -603,6 +520,93 @@ It borrows a connection from the pool, begins the transaction and releases the c
 ```js
 Code not translatable
 ```
+
+## Cursors and streaming
+
+By default prepared query execution fetches all rows, you can use a
+[`PgCursor`](../../jsdoc/module-reactive-pg-client-js_pg_cursor-PgCursor.html)to control the amount of rows you want to read:
+
+```js
+var Tuple = require("reactive-pg-client-js/tuple");
+connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1, ar1_err) {
+  if (ar1_err == null) {
+    var pq = ar1;
+
+    // Cursors require to run within a transaction
+    var tx = connection.begin();
+
+    // Create a cursor
+    var cursor = pq.cursor(Tuple.of("julien"));
+
+    // Read 50 rows
+    cursor.read(50, function (ar2, ar2_err) {
+      if (ar2_err == null) {
+        var rows = ar2;
+
+        // Check for more ?
+        if (cursor.hasMore()) {
+          // Repeat the process...
+        } else {
+          // No more rows - commit the transaction
+          tx.commit();
+        }
+      }
+    });
+  }
+});
+
+```
+
+PostreSQL destroys cursors at the end of a transaction, so the cursor API shall be used
+within a transaction, otherwise you will likely get the `34000` PostgreSQL error.
+
+Cursors shall be closed when they are released prematurely:
+
+```js
+cursor.read(50, function (ar2, ar2_err) {
+  if (ar2_err == null) {
+    // Close the cursor
+    cursor.close();
+  }
+});
+
+```
+
+A stream API is also available for cursors, which can be more convenient, specially with the Rxified version.
+
+```js
+var Tuple = require("reactive-pg-client-js/tuple");
+connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", function (ar1, ar1_err) {
+  if (ar1_err == null) {
+    var pq = ar1;
+
+    // Streams require to run within a transaction
+    var tx = connection.begin();
+
+    // Fetch 50 rows at a time
+    var stream = pq.createStream(50, Tuple.of("julien"));
+
+    // Use the stream
+    stream.exceptionHandler(function (err) {
+      console.log("Error: " + err.getMessage());
+    });
+    stream.endHandler(function (v) {
+      tx.commit();
+      console.log("End of stream");
+    });
+    stream.handler(function (row) {
+      console.log("User: " + row.getString("last_name"));
+    });
+  }
+});
+
+```
+
+The stream read the rows by batch of `50` and stream them, when the rows have been passed to the handler,
+a new batch of `50` is read and so on.
+
+The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
+will stop iterating.
 
 ## Postgres type mapping
 
