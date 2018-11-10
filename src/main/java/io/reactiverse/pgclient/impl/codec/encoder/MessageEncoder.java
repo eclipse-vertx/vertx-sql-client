@@ -19,7 +19,7 @@ package io.reactiverse.pgclient.impl.codec.encoder;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.reactiverse.pgclient.impl.codec.ColumnDesc;
-import io.reactiverse.pgclient.impl.codec.DataType;
+import io.reactiverse.pgclient.codec.DataType;
 import io.reactiverse.pgclient.impl.codec.DataTypeCodec;
 import io.reactiverse.pgclient.impl.codec.TxStatus;
 import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
@@ -30,6 +30,7 @@ import io.reactiverse.pgclient.impl.codec.util.Util;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static io.reactiverse.pgclient.impl.codec.util.Util.writeCString;
 
@@ -50,6 +51,10 @@ public final class MessageEncoder {
   private static final byte EXECUTE = 'E';
   private static final byte CLOSE = 'C';
   private static final byte SYNC = 'S';
+  private static final byte COPY_FAIL = 'f';
+  private static final byte COPY_DONE = 'c';
+  private static final byte COPY_DATA = 'd';
+
 
   private final ChannelHandlerContext ctx;
   private ByteBuf out;
@@ -327,6 +332,29 @@ public final class MessageEncoder {
       out.writeShort(1);
     }
     out.setInt(pos + 1, out.writerIndex() - pos - 1);
+  }
+
+  public void writeCopyData(Consumer<ByteBuf> writer) {
+    ensureBuffer();
+    int pos = out.writerIndex();
+    out.writeByte(COPY_DATA);
+    out.writeInt(0); //for the calculated size
+    writer.accept(out);
+    out.setInt(pos + 1, out.writerIndex() - pos - 1);
+  }
+
+  public void writeCopyFailed(Throwable t) {
+    out.writeByte(COPY_FAIL);
+    ByteBuf localBuffer = ctx.alloc().ioBuffer();
+    localBuffer.writeCharSequence(t.getMessage(), StandardCharsets.UTF_8);
+    out.writeInt(localBuffer.readableBytes());
+    out.writeBytes(localBuffer);
+  }
+
+  public void writeCopyEnd() {
+    ensureBuffer();
+    out.writeByte(COPY_DONE);
+    out.writeInt(4);
   }
 
   private void ensureBuffer() {

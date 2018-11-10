@@ -38,6 +38,10 @@ public class MessageType {
   public static final byte PARAMETER_DESCRIPTION = 't';
   public static final byte ROW_DESCRIPTION = 'T';
   public static final byte DATA_ROW = 'D';
+  public static final byte COPY_IN = 'G';
+  public static final byte COPY_DONE = 'c';
+  public static final byte COPY_OUT = 'H';
+  public static final byte COPY_BOTH = 'W';
   public static final byte PORTAL_SUSPENDED = 's';
   public static final byte NO_DATA = 'n';
   public static final byte EMPTY_QUERY_RESPONSE = 'I';

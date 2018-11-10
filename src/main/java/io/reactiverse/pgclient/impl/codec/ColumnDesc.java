@@ -17,6 +17,7 @@
 
 package io.reactiverse.pgclient.impl.codec;
 
+import io.reactiverse.pgclient.codec.DataType;
 import java.util.Objects;
 
 /**

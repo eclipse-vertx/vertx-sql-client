@@ -17,25 +17,24 @@
 
 package io.reactiverse.pgclient.impl.codec.decoder;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.util.ByteProcessor;
 import io.reactiverse.pgclient.impl.CommandBase;
 import io.reactiverse.pgclient.impl.CommandResponse;
 import io.reactiverse.pgclient.impl.QueryCommandBase;
 import io.reactiverse.pgclient.impl.codec.ColumnDesc;
 import io.reactiverse.pgclient.impl.codec.DataFormat;
-import io.reactiverse.pgclient.impl.codec.DataType;
+import io.reactiverse.pgclient.codec.DataType;
 import io.reactiverse.pgclient.impl.codec.TxStatus;
-import io.reactiverse.pgclient.impl.codec.util.Util;
-import io.netty.buffer.ByteBuf;
-import io.netty.util.ByteProcessor;
 import io.reactiverse.pgclient.impl.codec.decoder.type.AuthenticationType;
 import io.reactiverse.pgclient.impl.codec.decoder.type.ErrorOrNoticeType;
 import io.reactiverse.pgclient.impl.codec.decoder.type.MessageType;
+import io.reactiverse.pgclient.impl.codec.util.Util;
 import io.vertx.core.Handler;
-
 import java.util.Deque;
 
 /**
@@ -116,6 +115,10 @@ public class MessageDecoder extends ChannelInboundHandlerAdapter {
           }
           case MessageType.BIND_COMPLETE: {
             decodeBindComplete();
+            break;
+          }
+          case MessageType.COPY_IN: {
+            startCopyIn();
             break;
           }
           default: {
@@ -413,6 +416,11 @@ public class MessageDecoder extends ChannelInboundHandlerAdapter {
   private void decodeNoData() {
     inflight.peek().handleNoData();
   }
+
+  private void startCopyIn() {
+    inflight.peek().handleCopyIn();
+  }
+
 
   private void decodeParameterDescription(ByteBuf in) {
     DataType[] paramDataTypes = new DataType[in.readUnsignedShort()];

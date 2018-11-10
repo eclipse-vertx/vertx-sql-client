@@ -18,7 +18,15 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.*;
+import io.reactiverse.pgclient.copy.CopyFormat;
+import io.reactiverse.pgclient.copy.PgBinaryReadStream;
+import io.reactiverse.pgclient.copy.PgCopyReadStream;
+import io.reactiverse.pgclient.copy.PgTextReadStream;
 import io.vertx.core.*;
+import io.vertx.core.streams.Pump;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -157,6 +165,43 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
         handler.handle(Future.failedFuture(cr.cause()));
       }
     });
+    return this;
+  }
+
+  @Override
+  public PgConnection copyIn(String table, PgCopyReadStream<?> data,
+    Handler<AsyncResult<Integer>> handler) {
+    return copyIn(table, Collections.emptyList(), data, handler);
+  }
+
+  @Override
+  public PgConnection copyIn(String table, List<String> columns,
+    PgCopyReadStream<?> data, Handler<AsyncResult<Integer>> handler) {
+    schedule(new CopyInCommand(table, columns, data.getFormat()),
+      res -> {
+        if (res.failed()) {
+          handler.handle(Future.failedFuture(res.cause()));
+        } else {
+          Supplier<Pump> pumpSupplier;
+          PgCopyWriteStreamBase<?> writeStream;
+          if (data.getFormat() == CopyFormat.BINARY) {
+            writeStream = new PgBinaryWriteStream(conn);
+            pumpSupplier = () -> Pump.pump((PgBinaryReadStream) data, (PgBinaryWriteStream)writeStream);
+          } else {
+            writeStream = new PgTextWriteStream(conn);
+            pumpSupplier = () -> Pump.pump((PgTextReadStream) data, (PgTextWriteStream)writeStream);
+          }
+          writeStream.exceptionHandler(exp -> handler.handle(Future.failedFuture(exp)));
+          writeStream.endHandler(c -> handler.handle(Future.succeededFuture(c)));
+          writeStream.writeHeader();
+          Pump pump = pumpSupplier.get();
+          data.endHandler(end -> {
+            writeStream.end();
+            pump.stop();
+          });
+          pump.start();
+        }
+      });
     return this;
   }
 }

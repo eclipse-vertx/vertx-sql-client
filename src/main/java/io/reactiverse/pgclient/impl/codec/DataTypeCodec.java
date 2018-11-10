@@ -20,6 +20,7 @@ package io.reactiverse.pgclient.impl.codec;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.reactiverse.pgclient.codec.DataType;
 import io.reactiverse.pgclient.data.Json;
 import io.reactiverse.pgclient.data.Numeric;
 import io.reactiverse.pgclient.data.*;

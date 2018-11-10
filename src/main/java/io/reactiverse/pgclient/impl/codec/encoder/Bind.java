@@ -18,7 +18,7 @@
 package io.reactiverse.pgclient.impl.codec.encoder;
 
 import io.reactiverse.pgclient.impl.codec.ColumnDesc;
-import io.reactiverse.pgclient.impl.codec.DataType;
+import io.reactiverse.pgclient.codec.DataType;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>

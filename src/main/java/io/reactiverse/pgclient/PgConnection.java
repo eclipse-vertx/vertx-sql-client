@@ -17,11 +17,12 @@
 
 package io.reactiverse.pgclient;
 
+import io.reactiverse.pgclient.copy.PgCopyReadStream;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.*;
-
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import java.util.List;
 import java.util.stream.Collector;
 
@@ -34,6 +35,7 @@ import java.util.stream.Collector;
 @VertxGen
 public interface PgConnection extends PgClient {
 
+
   /**
    * Create a prepared query.
    *
@@ -42,6 +44,12 @@ public interface PgConnection extends PgClient {
    */
   @Fluent
   PgConnection prepare(String sql, Handler<AsyncResult<PgPreparedQuery>> handler);
+
+  @Fluent
+  PgConnection copyIn(String table, PgCopyReadStream<?> data, Handler<AsyncResult<Integer>> handler);
+
+  @Fluent
+  PgConnection copyIn(String table, List<String> columns, PgCopyReadStream<?> data, Handler<AsyncResult<Integer>> handler);
 
   /**
    * Set an handler called with connection errors.

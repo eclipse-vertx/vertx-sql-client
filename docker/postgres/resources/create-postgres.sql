@@ -194,3 +194,30 @@ CREATE TABLE "CustomDataType" (
 );
 INSERT INTO "CustomDataType" ("id", "address") VALUES (1, ('Anytown', 'Main St', true));
 INSERT INTO "CustomDataType" ("id", "address") VALUES (2, ('Anytown', 'First St', false));
+
+DROP TABLE IF EXISTS "CopyTable";
+CREATE TABLE "CopyTable" (
+  "id"             INTEGER,
+  "Boolean"        BOOLEAN,
+  "Short"          INT2,
+  "Integer"        INT4,
+  "Long"           INT8,
+  "Float"          FLOAT4,
+  "Double"         FLOAT8,
+  "Char"           VARCHAR,
+  "Varchar"        VARCHAR,
+  "Text"           TEXT,
+  "Name"           NAME,
+  "LocalDate"      DATE,
+  "LocalTime"      TIME WITHOUT TIME ZONE,
+  "OffsetTime"     TIME WITH TIME ZONE,
+  "LocalDateTime"  TIMESTAMP WITHOUT TIME ZONE,
+  "OffsetDateTime" TIMESTAMP WITH TIME ZONE,
+  "UUID"           UUID,
+  "Bytea"          BYTEA,
+  "JSON"           JSON,
+  "JSONB"          JSONB,
+  "Enum"           mood,
+  "Interval"       INTERVAL
+);
+

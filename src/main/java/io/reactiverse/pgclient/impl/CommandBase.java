@@ -105,6 +105,10 @@ public abstract class CommandBase<R> {
     logger.warn(getClass().getSimpleName() + " should handle message ParameterStatus");
   }
 
+  public void handleCopyIn() {
+    logger.warn(getClass().getSimpleName() + " should handle message CopyIn");
+  }
+
   /**
    * <p>
    * The frontend can issue commands. Every message returned from the backend has transaction status

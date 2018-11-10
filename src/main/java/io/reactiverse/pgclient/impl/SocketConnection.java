@@ -212,6 +212,10 @@ public class SocketConnection implements Connection {
     if (inflight.size() < pipeliningLimit) {
       CommandBase<?> cmd;
       while (inflight.size() < pipeliningLimit && (cmd = pending.poll()) != null) {
+        if (inflight.peek() instanceof CopyDataCommand) {
+          //remove copy data command once a new command has been added, they don't complete
+          ((CopyDataCommand)inflight.pop()).dataAccepted();
+        }
         inflight.add(cmd);
         decoder.run(cmd);
         cmd.exec(encoder);
