@@ -122,4 +122,18 @@ public class RxTest extends PgTestBase {
       }, ctx::fail);
     });
   }
+
+  @Test
+  public void testGetNegativeInteger(TestContext ctx) {
+    Async async = ctx.async();
+    pool.rxQuery("INSERT INTO Fortune (id, message) VALUES (-1, 'Yes')")
+        .flatMap(s -> pool.rxQuery("SELECT * FROM Fortune WHERE id=-1"))
+        .subscribe(result -> {
+          ctx.assertEquals(1, result.size());
+          Integer idFromDb = result.iterator().next().getInteger(0);
+          ctx.assertEquals(-1, idFromDb);
+          async.complete();
+        }, ctx::fail);
+
+  }
 }
