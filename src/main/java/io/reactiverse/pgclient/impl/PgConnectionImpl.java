@@ -17,16 +17,23 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.*;
-import io.reactiverse.pgclient.copy.CopyFormat;
-import io.reactiverse.pgclient.copy.PgBinaryReadStream;
-import io.reactiverse.pgclient.copy.PgCopyReadStream;
-import io.reactiverse.pgclient.copy.PgTextReadStream;
-import io.vertx.core.*;
+import io.reactiverse.pgclient.PgConnection;
+import io.reactiverse.pgclient.PgNotification;
+import io.reactiverse.pgclient.PgPreparedQuery;
+import io.reactiverse.pgclient.PgTransaction;
+import io.reactiverse.pgclient.copy.CopyInOptions;
+import io.reactiverse.pgclient.copy.CopyTextFormat;
+import io.reactiverse.pgclient.copy.CopyTuple;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.streams.Pump;
+import io.vertx.core.streams.ReadStream;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -169,33 +176,42 @@ public class PgConnectionImpl extends PgClientBase<PgConnectionImpl> implements 
   }
 
   @Override
-  public PgConnection copyIn(String table, PgCopyReadStream<?> data,
+  public PgConnection copyIn(String table, ReadStream<CopyTuple> data,
     Handler<AsyncResult<Integer>> handler) {
     return copyIn(table, Collections.emptyList(), data, handler);
   }
 
   @Override
   public PgConnection copyIn(String table, List<String> columns,
-    PgCopyReadStream<?> data, Handler<AsyncResult<Integer>> handler) {
-    schedule(new CopyInCommand(table, columns, data.getFormat()),
+    ReadStream<CopyTuple> data, Handler<AsyncResult<Integer>> handler) {
+    return pumpCopyData(table, columns, data, new PgBinaryWriteStream(conn), null, handler);
+  }
+
+  @Override
+  public PgConnection copyIn(String table, ReadStream<Buffer> data, CopyInOptions options,
+    Handler<AsyncResult<Integer>> handler) {
+    return copyIn(table, Collections.emptyList(), data, options, handler);
+  }
+
+  @Override
+  public PgConnection copyIn(String table, List<String> columns, ReadStream<Buffer> data,
+    CopyInOptions options, Handler<AsyncResult<Integer>> handler) {
+    return pumpCopyData(table, columns, data, new PgTextWriteStream(conn), options, handler);
+  }
+
+  private <T> PgConnection pumpCopyData(String table, List<String> columns, ReadStream<T> readStream,
+    PgCopyWriteStreamBase<T> writeStream, CopyInOptions options, Handler<AsyncResult<Integer>> handler) {
+
+    schedule(options != null ? new CopyInCommand(table, columns, options) : new CopyInCommand(table, columns),
       res -> {
         if (res.failed()) {
           handler.handle(Future.failedFuture(res.cause()));
         } else {
-          Supplier<Pump> pumpSupplier;
-          PgCopyWriteStreamBase<?> writeStream;
-          if (data.getFormat() == CopyFormat.BINARY) {
-            writeStream = new PgBinaryWriteStream(conn);
-            pumpSupplier = () -> Pump.pump((PgBinaryReadStream) data, (PgBinaryWriteStream)writeStream);
-          } else {
-            writeStream = new PgTextWriteStream(conn);
-            pumpSupplier = () -> Pump.pump((PgTextReadStream) data, (PgTextWriteStream)writeStream);
-          }
           writeStream.exceptionHandler(exp -> handler.handle(Future.failedFuture(exp)));
           writeStream.endHandler(c -> handler.handle(Future.succeededFuture(c)));
           writeStream.writeHeader();
-          Pump pump = pumpSupplier.get();
-          data.endHandler(end -> {
+          Pump pump = Pump.pump(readStream, writeStream);
+          readStream.endHandler(end -> {
             writeStream.end();
             pump.stop();
           });

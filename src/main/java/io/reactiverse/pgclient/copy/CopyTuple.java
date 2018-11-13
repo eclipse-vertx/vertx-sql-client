@@ -139,9 +139,25 @@ public interface CopyTuple extends Tuple {
 
   CopyTuple addVarChar(String value);
 
+  default String getVarChar(int index) {
+    return getString(index);
+  }
+
   CopyTuple addVarCharArray(String[] value);
+
+  default String[] getVarCharArray(int index) {
+    return getStringArray(index);
+  }
 
   CopyTuple addJsonb(Json value);
 
+  default Json getJsonb(int index) {
+    return getJson(index);
+  }
+
   CopyTuple addJsonbArray(Json[] value);
+
+  default Json[] getJsonbArray(int index) {
+    return getJsonArray(index);
+  }
 }

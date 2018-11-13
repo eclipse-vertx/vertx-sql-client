@@ -2,14 +2,16 @@ package io.reactiverse.pgclient;
 
 import io.reactiverse.pgclient.codec.DataType;
 import io.reactiverse.pgclient.copy.CopyData;
+import io.reactiverse.pgclient.copy.CopyInOptions;
+import io.reactiverse.pgclient.copy.CopyTextFormat;
 import io.reactiverse.pgclient.copy.CopyTuple;
-import io.reactiverse.pgclient.copy.PgBinaryReadStream;
 import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.data.Json;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.OpenOptions;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -31,10 +33,44 @@ import org.junit.runner.RunWith;
 public class CopyInTest extends PgTestBase {
 
   private enum Mood {
-    unhappy, ok, happy
+    happy
   }
 
-  private static class TupleReadStream implements PgBinaryReadStream {
+  private static class EmptyReadStream implements ReadStream<Buffer> {
+
+    private Handler<Void> endHandler;
+
+    @Override
+    public ReadStream<Buffer> exceptionHandler(Handler<Throwable> handler) {
+      return this;
+    }
+
+    @Override
+    public ReadStream<Buffer> handler(@Nullable Handler<Buffer> handler) {
+     if (handler != null) {
+       endHandler.handle(null);
+     }
+      return this;
+    }
+
+    @Override
+    public ReadStream<Buffer> pause() {
+      return this;
+    }
+
+    @Override
+    public ReadStream<Buffer> resume() {
+      return this;
+    }
+
+    @Override
+    public ReadStream<Buffer> endHandler(@Nullable Handler<Void> handler) {
+      this.endHandler = handler;
+      return this;
+    }
+  }
+
+  private static class TupleReadStream implements ReadStream<CopyTuple> {
 
     private final Stream<CopyTuple> stream;
     private Handler<Void> endHandler;
@@ -90,7 +126,13 @@ public class CopyInTest extends PgTestBase {
   @Test
   public void testCopyInEmptyStream(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnectOptions opts = new PgConnectOptions();
+    opts.setHost("localhost");
+    opts.setPort(5432);
+    opts.setPassword("password");
+    opts.setUser("postgres");
+    opts.setDatabase("davidz");
+    PgClient.connect(vertx, opts, ctx.asyncAssertSuccess(conn -> {
 
       conn.copyIn("CopyTable", new TupleReadStream(Stream.empty()), handler -> {
         if (handler.succeeded()) {
@@ -104,8 +146,60 @@ public class CopyInTest extends PgTestBase {
   }
 
   @Test
+  public void testCopyInText(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      vertx.fileSystem().open("copy/copy-text-input.txt", new OpenOptions(),
+        ctx.asyncAssertSuccess(file -> {
+          conn.copyIn("CopyTable", file, new CopyInOptions().setDelimiter(","), handler -> {
+            if (handler.succeeded()) {
+              ctx.assertEquals(2, handler.result());
+              async.complete();
+            } else {
+              ctx.fail(handler.cause());
+            }
+          });
+      }));
+    }));
+  }
+
+  @Test
+  public void testCopyInCsv(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      vertx.fileSystem().open("copy/copy-csv-input.csv", new OpenOptions(),
+        ctx.asyncAssertSuccess(file -> {
+          conn.copyIn("CopyTable", file, CopyInOptions.csv(), handler -> {
+            if (handler.succeeded()) {
+              ctx.assertEquals(2, handler.result());
+              async.complete();
+            } else {
+              ctx.fail(handler.cause());
+            }
+          });
+        }));
+    }));
+  }
+
+  @Test
+  public void testCopyInEmptyText(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+        conn.copyIn("CopyTable", new EmptyReadStream(), new CopyInOptions(), handler -> {
+          if (handler.succeeded()) {
+            ctx.assertEquals(0, handler.result());
+            async.complete();
+          } else {
+            ctx.fail(handler.cause());
+          }
+        });
+    }));
+  }
+
+  @Test
   public void testCopyIn(TestContext ctx) {
     Async async = ctx.async();
+
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       CopyTuple tuple = CopyTuple.of(
         CopyData.create((int) (Math.random() * 1000)),
@@ -183,5 +277,4 @@ public class CopyInTest extends PgTestBase {
       });
     }));
   }
-
 }

@@ -17,12 +17,16 @@
 
 package io.reactiverse.pgclient;
 
-import io.reactiverse.pgclient.copy.PgCopyReadStream;
+import io.reactiverse.pgclient.copy.CopyInOptions;
+import io.reactiverse.pgclient.copy.CopyTextFormat;
+import io.reactiverse.pgclient.copy.CopyTuple;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.streams.ReadStream;
 import java.util.List;
 import java.util.stream.Collector;
 
@@ -46,10 +50,17 @@ public interface PgConnection extends PgClient {
   PgConnection prepare(String sql, Handler<AsyncResult<PgPreparedQuery>> handler);
 
   @Fluent
-  PgConnection copyIn(String table, PgCopyReadStream<?> data, Handler<AsyncResult<Integer>> handler);
+  PgConnection copyIn(String table, ReadStream<CopyTuple> data, Handler<AsyncResult<Integer>> handler);
 
   @Fluent
-  PgConnection copyIn(String table, List<String> columns, PgCopyReadStream<?> data, Handler<AsyncResult<Integer>> handler);
+  PgConnection copyIn(String table, List<String> columns, ReadStream<CopyTuple> data, Handler<AsyncResult<Integer>> handler);
+
+  @Fluent
+  PgConnection copyIn(String table, ReadStream<Buffer> data, CopyInOptions options, Handler<AsyncResult<Integer>> handler);
+
+  @Fluent
+  PgConnection copyIn(String table, List<String> columns, ReadStream<Buffer> data, CopyInOptions options, Handler<AsyncResult<Integer>> handler);
+
 
   /**
    * Set an handler called with connection errors.

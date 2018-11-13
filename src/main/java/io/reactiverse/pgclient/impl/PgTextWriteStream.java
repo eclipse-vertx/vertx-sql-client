@@ -17,7 +17,7 @@ class PgTextWriteStream extends PgCopyWriteStreamBase<Buffer> {
 
   @Override
   protected void writeEnd(ByteBuf buffer) {
-    buffer.writeCharSequence("\\.", StandardCharsets.UTF_8);
+      buffer.writeCharSequence("\\.\n", StandardCharsets.UTF_8);
   }
 
   @Override
