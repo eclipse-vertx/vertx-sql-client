@@ -2,8 +2,7 @@ package io.reactiverse.pgclient;
 
 import io.reactiverse.pgclient.codec.DataType;
 import io.reactiverse.pgclient.copy.CopyData;
-import io.reactiverse.pgclient.copy.CopyInOptions;
-import io.reactiverse.pgclient.copy.CopyTextFormat;
+import io.reactiverse.pgclient.copy.CopyFromOptions;
 import io.reactiverse.pgclient.copy.CopyTuple;
 import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.data.Json;
@@ -30,7 +29,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
-public class CopyInTest extends PgTestBase {
+public class CopyFromTest extends PgTestBase {
 
   private enum Mood {
     happy
@@ -124,7 +123,7 @@ public class CopyInTest extends PgTestBase {
   }
 
   @Test
-  public void testCopyInEmptyStream(TestContext ctx) {
+  public void testCopyFromEmptyStream(TestContext ctx) {
     Async async = ctx.async();
     PgConnectOptions opts = new PgConnectOptions();
     opts.setHost("localhost");
@@ -134,7 +133,7 @@ public class CopyInTest extends PgTestBase {
     opts.setDatabase("davidz");
     PgClient.connect(vertx, opts, ctx.asyncAssertSuccess(conn -> {
 
-      conn.copyIn("CopyTable", new TupleReadStream(Stream.empty()), handler -> {
+      conn.copyFrom("CopyTable", new TupleReadStream(Stream.empty()), handler -> {
         if (handler.succeeded()) {
           ctx.assertEquals(0, handler.result());
           async.complete();
@@ -146,12 +145,12 @@ public class CopyInTest extends PgTestBase {
   }
 
   @Test
-  public void testCopyInText(TestContext ctx) {
+  public void testCopyFromText(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       vertx.fileSystem().open("copy/copy-text-input.txt", new OpenOptions(),
         ctx.asyncAssertSuccess(file -> {
-          conn.copyIn("CopyTable", file, new CopyInOptions().setDelimiter(","), handler -> {
+          conn.copyFrom("CopyTable", file, new CopyFromOptions().setDelimiter(","), handler -> {
             if (handler.succeeded()) {
               ctx.assertEquals(2, handler.result());
               async.complete();
@@ -164,12 +163,12 @@ public class CopyInTest extends PgTestBase {
   }
 
   @Test
-  public void testCopyInCsv(TestContext ctx) {
+  public void testCopyFromCsv(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       vertx.fileSystem().open("copy/copy-csv-input.csv", new OpenOptions(),
         ctx.asyncAssertSuccess(file -> {
-          conn.copyIn("CopyTable", file, CopyInOptions.csv(), handler -> {
+          conn.copyFrom("CopyTable", file, CopyFromOptions.csv(), handler -> {
             if (handler.succeeded()) {
               ctx.assertEquals(2, handler.result());
               async.complete();
@@ -182,10 +181,10 @@ public class CopyInTest extends PgTestBase {
   }
 
   @Test
-  public void testCopyInEmptyText(TestContext ctx) {
+  public void testCopyFromEmptyText(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-        conn.copyIn("CopyTable", new EmptyReadStream(), new CopyInOptions(), handler -> {
+        conn.copyFrom("CopyTable", new EmptyReadStream(), new CopyFromOptions(), handler -> {
           if (handler.succeeded()) {
             ctx.assertEquals(0, handler.result());
             async.complete();
@@ -197,7 +196,7 @@ public class CopyInTest extends PgTestBase {
   }
 
   @Test
-  public void testCopyIn(TestContext ctx) {
+  public void testCopyFrom(TestContext ctx) {
     Async async = ctx.async();
 
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
@@ -226,7 +225,7 @@ public class CopyInTest extends PgTestBase {
         CopyData.create(new Interval())
       );
 
-      conn.copyIn("CopyTable", new TupleReadStream(Stream.of(tuple, tuple)), handler -> {
+      conn.copyFrom("CopyTable", new TupleReadStream(Stream.of(tuple, tuple)), handler -> {
         if (handler.succeeded()) {
           ctx.assertEquals(2, handler.result());
           async.complete();
@@ -238,14 +237,14 @@ public class CopyInTest extends PgTestBase {
   }
 
   @Test
-  public void testCopyInMissingTuples(TestContext ctx) {
+  public void testCopyFromMissingTuples(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       CopyTuple tuple = CopyTuple.of(
         CopyData.create((int) (Math.random() * 1000))
       );
 
-      conn.copyIn("CopyTable", new TupleReadStream(Stream.of(tuple, tuple)), handler -> {
+      conn.copyFrom("CopyTable", new TupleReadStream(Stream.of(tuple, tuple)), handler -> {
         if (handler.succeeded()) {
           ctx.fail("Copy operation should have failed");
         }
@@ -255,7 +254,7 @@ public class CopyInTest extends PgTestBase {
   }
 
   @Test
-  public void testCopyInColumnNames(TestContext ctx) {
+  public void testCopyFromColumnNames(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       CopyTuple tuple = CopyTuple.of(
@@ -267,7 +266,7 @@ public class CopyInTest extends PgTestBase {
       columns.add("Varchar");
       columns.add("UUID");
       columns.add("JSONB");
-      conn.copyIn("CopyTable", columns, new TupleReadStream(Stream.of(tuple, tuple)), handler -> {
+      conn.copyFrom("CopyTable", columns, new TupleReadStream(Stream.of(tuple, tuple)), handler -> {
         if (handler.succeeded()) {
           ctx.assertEquals(2, handler.result());
           async.complete();

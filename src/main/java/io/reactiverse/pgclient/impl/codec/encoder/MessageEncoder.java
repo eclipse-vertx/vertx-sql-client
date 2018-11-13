@@ -16,10 +16,12 @@
  */
 package io.reactiverse.pgclient.impl.codec.encoder;
 
+import static io.reactiverse.pgclient.impl.codec.util.Util.writeCString;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.reactiverse.pgclient.impl.codec.ColumnDesc;
 import io.reactiverse.pgclient.codec.DataType;
+import io.reactiverse.pgclient.impl.codec.ColumnDesc;
 import io.reactiverse.pgclient.impl.codec.DataTypeCodec;
 import io.reactiverse.pgclient.impl.codec.TxStatus;
 import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
@@ -27,12 +29,9 @@ import io.reactiverse.pgclient.impl.codec.decoder.NoticeResponse;
 import io.reactiverse.pgclient.impl.codec.decoder.ParameterDescription;
 import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.reactiverse.pgclient.impl.codec.util.Util;
-
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.function.Consumer;
-
-import static io.reactiverse.pgclient.impl.codec.util.Util.writeCString;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
@@ -51,7 +50,6 @@ public final class MessageEncoder {
   private static final byte EXECUTE = 'E';
   private static final byte CLOSE = 'C';
   private static final byte SYNC = 'S';
-  private static final byte COPY_FAIL = 'f';
   private static final byte COPY_DONE = 'c';
   private static final byte COPY_DATA = 'd';
 
@@ -341,14 +339,6 @@ public final class MessageEncoder {
     out.writeInt(0); //for the calculated size
     writer.accept(out);
     out.setInt(pos + 1, out.writerIndex() - pos - 1);
-  }
-
-  public void writeCopyFailed(Throwable t) {
-    out.writeByte(COPY_FAIL);
-    ByteBuf localBuffer = ctx.alloc().ioBuffer();
-    localBuffer.writeCharSequence(t.getMessage(), StandardCharsets.UTF_8);
-    out.writeInt(localBuffer.readableBytes());
-    out.writeBytes(localBuffer);
   }
 
   public void writeCopyEnd() {

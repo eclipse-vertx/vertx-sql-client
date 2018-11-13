@@ -17,15 +17,31 @@
 
 package examples;
 
-import io.reactiverse.pgclient.*;
+import io.reactiverse.pgclient.PgClient;
+import io.reactiverse.pgclient.PgConnectOptions;
+import io.reactiverse.pgclient.PgConnection;
+import io.reactiverse.pgclient.PgCursor;
+import io.reactiverse.pgclient.PgPool;
+import io.reactiverse.pgclient.PgPoolOptions;
+import io.reactiverse.pgclient.PgPreparedQuery;
+import io.reactiverse.pgclient.PgResult;
+import io.reactiverse.pgclient.PgRowSet;
+import io.reactiverse.pgclient.PgStream;
+import io.reactiverse.pgclient.PgTransaction;
+import io.reactiverse.pgclient.Row;
+import io.reactiverse.pgclient.Tuple;
+import io.reactiverse.pgclient.codec.DataType;
+import io.reactiverse.pgclient.copy.CopyData;
+import io.reactiverse.pgclient.copy.CopyFromOptions;
+import io.reactiverse.pgclient.copy.CopyTuple;
 import io.reactiverse.pgclient.data.Json;
 import io.reactiverse.pgclient.data.Numeric;
 import io.reactiverse.pgclient.pubsub.PgSubscriber;
 import io.vertx.core.Vertx;
+import io.vertx.core.file.OpenOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -439,6 +455,30 @@ public class Examples {
         });
       }
     });
+  }
+
+  public void usingCopyFrom1(Vertx vertx, PgConnection connection) {
+    //in this example, we are reading from a txt file
+    vertx.fileSystem().open("copy-input.txt", new OpenOptions(),
+      ar1 -> {
+        if (ar1.succeeded()) {
+          connection.copyFrom("DestinationTable", ar1.result(),
+            CopyFromOptions.text().setDelimiter(","), res -> {
+            if (res.succeeded()) {
+              System.out.println("Copy inserted " + res.result() + " rows");
+            } else {
+              System.out.println("Copy failed " + res.cause());
+            }
+          });
+        }
+      });
+  }
+
+  public CopyTuple createCopyTuple1() {
+   return CopyTuple.of(
+     CopyData.create(true, DataType.BOOL),
+     CopyData.create((short)100, DataType.INT2),
+     CopyData.create(Json.create("{\"a\": 100"), DataType.JSONB));
   }
 
   public void transaction01(PgPool pool) {

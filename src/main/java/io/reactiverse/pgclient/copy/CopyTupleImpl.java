@@ -6,6 +6,7 @@ import io.reactiverse.pgclient.data.Json;
 import io.reactiverse.pgclient.data.Numeric;
 import io.reactiverse.pgclient.data.Point;
 import io.reactiverse.pgclient.impl.ArrayTuple;
+import io.vertx.codegen.annotations.Fluent;
 import io.vertx.core.buffer.Buffer;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -41,7 +42,7 @@ class CopyTupleImpl extends ArrayTuple implements CopyTuple {
   }
 
   @Override
-  public DataType getDateType(int index) {
+  public DataType getDataType(int index) {
     Object o = super.get(index);
     if (o instanceof CopyData) {
       return ((CopyData) o).getDataType();

@@ -3,21 +3,26 @@ package io.reactiverse.pgclient.copy;
 import io.reactiverse.pgclient.Tuple;
 import io.reactiverse.pgclient.codec.DataType;
 import io.reactiverse.pgclient.data.Json;
+import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.buffer.Buffer;
 
+/**
+ * A tuple for use with binary data for the COPY FROM command.
+ */
 @VertxGen
 public interface CopyTuple extends Tuple {
 
   /**
-   * @return a new empty tuple
+   * @return a new empty CopyTuple
    */
   static CopyTuple tuple() {
     return new CopyTupleImpl(10);
   }
 
   /**
-   * Create a tuple of one element.
+   * Create a CopyTuple of one element.
    *
    * @param elt1 the first value
    * @return the tuple
@@ -29,7 +34,7 @@ public interface CopyTuple extends Tuple {
   }
 
   /**
-   * Create a tuple of two elements.
+   * Create a CopyTuple of two elements.
    *
    * @param elt1 the first value
    * @param elt2 the second value
@@ -43,7 +48,7 @@ public interface CopyTuple extends Tuple {
   }
 
   /**
-   * Create a tuple of three elements.
+   * Create a CopyTuple of three elements.
    *
    * @param elt1 the first value
    * @param elt2 the second value
@@ -59,7 +64,7 @@ public interface CopyTuple extends Tuple {
   }
 
   /**
-   * Create a tuple of four elements.
+   * Create a CopyTuple of four elements.
    *
    * @param elt1 the first value
    * @param elt2 the second value
@@ -77,7 +82,7 @@ public interface CopyTuple extends Tuple {
   }
 
   /**
-   * Create a tuple of five elements.
+   * Create a CopyTuple of five elements.
    *
    * @param elt1 the first value
    * @param elt2 the second value
@@ -97,7 +102,7 @@ public interface CopyTuple extends Tuple {
   }
 
   /**
-   * Create a tuple of six elements.
+   * Create a CopyTuple of six elements.
    *
    * @param elt1 the first value
    * @param elt2 the second value
@@ -119,7 +124,7 @@ public interface CopyTuple extends Tuple {
   }
 
   /**
-   * Create a tuple of an arbitrary number of elements.
+   * Create a CopyTuple of an arbitrary number of elements.
    *
    * @param elt1 the first element
    * @param elts the remaining elements
@@ -135,29 +140,88 @@ public interface CopyTuple extends Tuple {
     return tuple;
   }
 
-  DataType getDateType(int index);
+  /**
+   * Gets the {@link DataType} at {@code pos}.
+   * @param pos the position
+   * @return the {@link DataType} or {@link DataType#UNKNOWN}
+   */
+  DataType getDataType(int pos);
 
+  /**
+   * Add a jsonb value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
   CopyTuple addVarChar(String value);
 
-  default String getVarChar(int index) {
-    return getString(index);
-  }
-
+  /**
+   * Add an array of {@code String} VarChar values at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
   CopyTuple addVarCharArray(String[] value);
 
-  default String[] getVarCharArray(int index) {
-    return getStringArray(index);
-  }
-
-  CopyTuple addJsonb(Json value);
-
-  default Json getJsonb(int index) {
-    return getJson(index);
-  }
-
+  /**
+   * Add an array of {@code Json} Jsonb values at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
   CopyTuple addJsonbArray(Json[] value);
 
-  default Json[] getJsonbArray(int index) {
-    return getJsonArray(index);
+  /**
+   * Add a jsonb value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  CopyTuple addJsonb(Json value);
+
+  /**
+   * Get a json value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  default Json getJsonb(int pos) {
+    return getJson(pos);
+  }
+
+  /**
+   * Get a String VarChar value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  default String getVarChar(int pos) {
+    return getString(pos);
+  }
+
+  /**
+   * Get an array of {@link Json} Jsonb value at {@code pos}.
+   *
+   * @param pos the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  default Json[] getJsonbArray(int pos) {
+    return getJsonArray(pos);
+  }
+
+  /**
+   * Get an array of {@link String} VarChar value at {@code pos}.
+   *
+   * @param pos the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  default String[] getVarCharArray(int pos) {
+    return getStringArray(pos);
   }
 }

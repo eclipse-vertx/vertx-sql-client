@@ -17,8 +17,7 @@
 
 package io.reactiverse.pgclient;
 
-import io.reactiverse.pgclient.copy.CopyInOptions;
-import io.reactiverse.pgclient.copy.CopyTextFormat;
+import io.reactiverse.pgclient.copy.CopyFromOptions;
 import io.reactiverse.pgclient.copy.CopyTuple;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
@@ -49,17 +48,49 @@ public interface PgConnection extends PgClient {
   @Fluent
   PgConnection prepare(String sql, Handler<AsyncResult<PgPreparedQuery>> handler);
 
+  /**
+   * Copies binary data from a stream of CopyTuples into Postgres.
+   * @param table the destination table for this copy
+   * @param stream a stream of CopyTuples
+   * @param handler the handler notified with the total rows copied asynchronously
+   * @return a reference to this, so the API can be used fluently
+   */
   @Fluent
-  PgConnection copyIn(String table, ReadStream<CopyTuple> data, Handler<AsyncResult<Integer>> handler);
+  PgConnection copyFrom(String table, ReadStream<CopyTuple> stream, Handler<AsyncResult<Integer>> handler);
 
+  /**
+   * Copies binary data from a stream of CopyTuples into Postgres.
+   * @param table the destination table for this copy
+   * @param columns a list of target columns for this copy
+   * @param stream a stream of CopyTuples
+   * @param handler the handler notified with the total rows copied asynchronously
+   * @return a reference to this, so the API can be used fluently
+   */
   @Fluent
-  PgConnection copyIn(String table, List<String> columns, ReadStream<CopyTuple> data, Handler<AsyncResult<Integer>> handler);
+  PgConnection copyFrom(String table, List<String> columns, ReadStream<CopyTuple> stream, Handler<AsyncResult<Integer>> handler);
 
+  /**
+   * Copies data from a stream into Postgres.
+   * @param table the destination table for this copy
+   * @param stream a stream of CopyTuples
+   * @param options options for this copy operation
+   * @param handler the handler notified with the total rows copied asynchronously
+   * @return a reference to this, so the API can be used fluently
+   */
   @Fluent
-  PgConnection copyIn(String table, ReadStream<Buffer> data, CopyInOptions options, Handler<AsyncResult<Integer>> handler);
+  PgConnection copyFrom(String table, ReadStream<Buffer> stream, CopyFromOptions options, Handler<AsyncResult<Integer>> handler);
 
+  /**
+   * Copies data from a stream into Postgres.
+   * @param table the destination table for this copy
+   * @param columns a list of target columns for this copy
+   * @param stream a stream of CopyTuples
+   * @param options options for this copy operation
+   * @param handler the handler notified with the total rows copied asynchronously
+   * @return a reference to this, so the API can be used fluently
+   */
   @Fluent
-  PgConnection copyIn(String table, List<String> columns, ReadStream<Buffer> data, CopyInOptions options, Handler<AsyncResult<Integer>> handler);
+  PgConnection copyFrom(String table, List<String> columns, ReadStream<Buffer> stream, CopyFromOptions options, Handler<AsyncResult<Integer>> handler);
 
 
   /**

@@ -44,10 +44,10 @@ class PgBinaryWriteStream extends PgCopyWriteStreamBase<CopyTuple> {
   protected void writeCopyData(CopyTuple tuple, ByteBuf buffer) {
     int copySize = tuple.size();
     synchronized (this) {
-      if (tupleTypes == null) {
+      if (tupleTypes == null) { //cache this, it has to be the same each time
         ArrayList<DataType> types = new ArrayList<>(copySize);
         for (int c = 0; c < copySize; c++) {
-          types.add(tuple.getDateType(c));
+          types.add(tuple.getDataType(c));
         }
         tupleTypes = types;
       }

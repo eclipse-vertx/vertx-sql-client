@@ -19,6 +19,7 @@ The client is reactive and non blocking, allowing to handle many database connec
 * SSL/TLS
 * Unix domain socket
 * HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy support
+* COPY FROM support
 
 ## Usage
 
@@ -372,6 +373,32 @@ create easily create a string directly from the row set:
 
 ```$lang
 {@link examples.Examples#collector02Example}
+```
+
+## `Copy From` Support
+
+When you want to bulk-insert large amounts of data, you can use the `copyFrom` API. 
+
+It is possible to copy from a stream of data, formatted either as binary, CSV or text.
+
+
+### Text and CSV
+
+When copying from text or CSV, the input data must meet the formatting requirements set by Postgres. 
+Both the delimiter and the null character can be specified.
+
+```$lang
+{@link examples.Examples#usingCopyFrom1}
+```
+
+### Binary
+
+When copying binary data, we need to know exactly how to encode each tuple of data as we transfer it.
+To facilitate this, a `CopyTuple` is used to explicitly set the data type of each parameter. These
+`CopyTuple` objects are streamed to Postgres, with each tuple representing a row of data.
+
+```$lang
+{@link examples.Examples#usingCopyFrom1}
 ```
 
 ## RxJava support

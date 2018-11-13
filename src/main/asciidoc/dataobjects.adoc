@@ -1,5 +1,32 @@
 = Cheatsheets
 
+[[CopyFromOptions]]
+== CopyFromOptions
+
+++++
+ The options for configuring a text or CSV COPY FROM command
+
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[delimiter]]`delimiter`|`String`|
++++
+Set the delimiter for copying from a file. Must be one character.
++++
+|[[format]]`format`|`link:enums.html#CopyFormat[CopyFormat]`|
++++
+Set the format of this COPY FROM operation.
++++
+|[[nullCharacter]]`nullCharacter`|`String`|
++++
+Set the null character for copying from a file. Must be one character.
++++
+|===
+
 [[Interval]]
 == Interval
 

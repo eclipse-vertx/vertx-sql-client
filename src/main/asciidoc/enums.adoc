@@ -1,0 +1,28 @@
+= Enums
+
+[[CopyFormat]]
+== CopyFormat
+
+++++
+ Represents the format of a COPY.
+++++
+'''
+
+[cols=">25%,75%"]
+[frame="topbot"]
+|===
+^|Name | Description
+|[[TEXT]]`TEXT`|
++++
+Indicates a standard text format.
++++
+|[[CSV]]`CSV`|
++++
+Indicates CSV format.
++++
+|[[BINARY]]`BINARY`|
++++
+Indicates binary format.
++++
+|===
+

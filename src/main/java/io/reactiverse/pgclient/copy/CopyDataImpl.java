@@ -4,6 +4,7 @@ import io.reactiverse.pgclient.codec.DataType;
 
 class CopyDataImpl implements CopyData {
 
+  // take our best guess at the type of this data
   static DataType guessDataType(Object obj) {
     for (DataType dataType : DataType.values()) {
       if (dataType.encodingType != Object.class && dataType.encodingType.isAssignableFrom(obj.getClass())) {

@@ -1,12 +1,9 @@
 package io.reactiverse.pgclient.impl;
 
 import io.netty.buffer.ByteBuf;
-import io.reactiverse.pgclient.codec.DataType;
-import io.reactiverse.pgclient.copy.CopyTuple;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.Handler;
 import io.vertx.core.streams.WriteStream;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 abstract class PgCopyWriteStreamBase<T> implements WriteStream<T>{
@@ -20,7 +17,7 @@ abstract class PgCopyWriteStreamBase<T> implements WriteStream<T>{
     closed = new AtomicBoolean(false);
   }
 
-  void handleCopyDone(int copyCount) {
+  private void handleCopyDone(int copyCount) {
     if (endHandler != null) {
       endHandler.handle(copyCount);
     }
