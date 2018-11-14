@@ -22,26 +22,22 @@ import io.vertx.core.*;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.function.BiConsumer;
 
-class Transaction extends PgClientBase<Transaction> implements PgTransaction {
+class Transaction extends PgConnectionBase<Transaction> implements PgTransaction {
 
   private static final int ST_BEGIN = 0;
   private static final int ST_PENDING = 1;
   private static final int ST_PROCESSING = 2;
   private static final int ST_COMPLETED = 3;
 
-  private final Context context;
   private final Handler<Void> disposeHandler;
-  private Connection conn;
   private Deque<CommandBase<?>> pending = new ArrayDeque<>();
   private Handler<Void> failedHandler;
   private int status = ST_BEGIN;
 
   Transaction(Context context, Connection conn, Handler<Void> disposeHandler) {
-    this.context = context;
+    super(context, conn);
     this.disposeHandler = disposeHandler;
-    this.conn = conn;
     doSchedule(doQuery("BEGIN", this::afterBegin));
   }
 
@@ -151,14 +147,27 @@ class Transaction extends PgClientBase<Transaction> implements PgTransaction {
   }
 
   public void commit(Handler<AsyncResult<Void>> handler) {
-    schedule(doQuery("COMMIT", ar -> {
-      disposeHandler.handle(null);
-      if (ar.succeeded()) {
-        handler.handle(Future.succeededFuture());
-      } else {
-        handler.handle(Future.failedFuture(ar.cause()));
-      }
-    }));
+    switch (status) {
+      case ST_BEGIN:
+      case ST_PENDING:
+      case ST_PROCESSING:
+        schedule(doQuery("COMMIT", ar -> {
+          disposeHandler.handle(null);
+          if (handler != null) {
+            if (ar.succeeded()) {
+              handler.handle(Future.succeededFuture());
+            } else {
+              handler.handle(Future.failedFuture(ar.cause()));
+            }
+          }
+        }));
+        break;
+      case ST_COMPLETED:
+        if (handler != null) {
+          handler.handle(Future.failedFuture("Transaction already completed"));
+        }
+        break;
+    }
   }
 
   @Override

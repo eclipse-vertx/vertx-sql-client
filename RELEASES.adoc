@@ -1,3 +1,14 @@
+== 0.10.7
+
+Fixed issues: https://github.com/reactiverse/reactive-pg-client/milestone/14?closed=1
+
+- Batch execution incorrectly handles batch result when the batch list is empty
+- Pool connection acquisition failure is not propagated to the scheduled command
+- Upgrade to Vertx 3.5.4
+- Source code for rxjava and reactivex API variants missing from -sources.jar
+- Allow to prepare query from a transaction object
+- Rework cursor/stream documentation
+
 == 0.10.6
 
 Fixed issues: https://github.com/reactiverse/reactive-pg-client/milestone/13?closed=1

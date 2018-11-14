@@ -28,7 +28,7 @@ image:https://travis-ci.org/reactiverse/reactive-pg-client.svg?branch=master["Bu
 
 == Usage
 
-Latest release is https://github.com/reactiverse/reactive-pg-client/blob/master/RELEASES.adoc[0.10.6].
+Latest release is https://github.com/reactiverse/reactive-pg-client/blob/master/RELEASES.adoc[0.10.7].
 
 To use the client, add the following dependency to the _dependencies_ section of your build descriptor:
 
@@ -39,7 +39,7 @@ To use the client, add the following dependency to the _dependencies_ section of
 <dependency>
   <groupId>io.reactiverse</groupId>
   <artifactId>reactive-pg-client</artifactId>
-  <version>0.10.6</version>
+  <version>0.10.7</version>
 </dependency>
 ----
 
@@ -48,7 +48,7 @@ To use the client, add the following dependency to the _dependencies_ section of
 [source,groovy]
 ----
 dependencies {
-  compile 'io.reactiverse:reactive-pg-client:0.10.6'
+  compile 'io.reactiverse:reactive-pg-client:0.10.7'
 }
 ----
 
@@ -81,6 +81,10 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -> {
   client.close();
 });
 ----
+
+== Integration / Usages
+
+* https://github.com/jklingsporn/vertx-jooq[vertx-jooq]: writing type safe queries and let them run at high speed using jOOQ, vertx and the reactive-pg-client.
 
 == Documentations
 
@@ -173,9 +177,9 @@ The *Reactive Postgres Client* currently supports the following data types
 |&#10004;
 
 |`NUMERIC`
-|`i.r.p.Numeric`
+|`i.r.p.data.Numeric`
 |&#10004;
-|`i.r.p.Numeric[]`
+|`i.r.p.data.Numeric[]`
 |&#10004;
 
 |`UUID`
@@ -215,9 +219,9 @@ The *Reactive Postgres Client* currently supports the following data types
 |&#10004;
 
 |`INTERVAL`
-|`i.r.p.d.Interval`
+|`i.r.p.data.Interval`
 |&#10004;
-|`i.r.p.d.Interval[]`
+|`i.r.p.data.Interval[]`
 |&#10004;
 
 |`BYTEA`
@@ -227,15 +231,15 @@ The *Reactive Postgres Client* currently supports the following data types
 |&#10004;
 
 |`JSON`
-|`i.r.p.Json`
+|`i.r.p.data.Json`
 |&#10004;
-|`i.r.p.Json[]`
+|`i.r.p.data.Json[]`
 |&#10004;
 
 |`JSONB`
-|`i.r.p.Json`
+|`i.r.p.data.Json`
 |&#10004;
-|`i.r.p.Json[]`
+|`i.r.p.data.Json[]`
 |&#10004;
 
 |`UNKNOWN`

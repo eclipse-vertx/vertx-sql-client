@@ -359,6 +359,21 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     }));
   }
 
+  @Test
+  public void testCursorNoTx(TestContext ctx) {
+    PgClient.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT * FROM Fortune", ctx.asyncAssertSuccess(ps -> {
+        PgCursor cursor = ps.cursor(Tuple.tuple());
+        cursor.read(1, ctx.asyncAssertSuccess(rowSet -> {
+          cursor.read(1, ctx.asyncAssertFailure(err -> {
+            PgException pgErr = (PgException) err;
+            // This fails expectedly because the portal is closed
+            ctx.assertEquals("34000", pgErr.getCode()); // invalid_cursor_name
+          }));
+        }));
+      }));
+    }));
+  }
 
 
   /*

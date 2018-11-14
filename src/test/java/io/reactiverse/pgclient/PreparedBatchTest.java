@@ -48,6 +48,17 @@ public class PreparedBatchTest extends PgTestBase {
   }
 
   @Test
+  public void testEmptyBatch(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      List<Tuple> batch = new ArrayList<>();
+      conn.preparedBatch("INSERT INTO Test (id, val) VALUES ($1, $2)", batch, ctx.asyncAssertSuccess(result -> {
+        async.complete();
+      }));
+    }));
+  }
+
+  @Test
   public void testInsert(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
