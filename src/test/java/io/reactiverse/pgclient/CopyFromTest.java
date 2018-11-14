@@ -125,13 +125,7 @@ public class CopyFromTest extends PgTestBase {
   @Test
   public void testCopyFromEmptyStream(TestContext ctx) {
     Async async = ctx.async();
-    PgConnectOptions opts = new PgConnectOptions();
-    opts.setHost("localhost");
-    opts.setPort(5432);
-    opts.setPassword("password");
-    opts.setUser("postgres");
-    opts.setDatabase("davidz");
-    PgClient.connect(vertx, opts, ctx.asyncAssertSuccess(conn -> {
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
 
       conn.copyFrom("CopyTable", new TupleReadStream(Stream.empty()), handler -> {
         if (handler.succeeded()) {
