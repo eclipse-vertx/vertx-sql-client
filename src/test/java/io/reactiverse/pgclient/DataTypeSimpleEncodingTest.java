@@ -64,119 +64,53 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
     }));
   }
 
+  private void testNumber(TestContext ctx, Number[] values, String type) {
+    Async async = ctx.async(values.length);
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      for (Number value : values) {
+        conn
+          .query("SELECT " + value +"::" + type + " \"col\"", ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.size());
+            Row row = result.iterator().next();
+            ColumnChecker.checkColumn(0, "col")
+              .returns(Tuple::getValue, Row::getValue, value)
+              .returns(Tuple::getShort, Row::getShort, value.shortValue())
+              .returns(Tuple::getInteger, Row::getInteger, value.intValue())
+              .returns(Tuple::getLong, Row::getLong, value.longValue())
+              .returns(Tuple::getFloat, Row::getFloat, value.floatValue())
+              .returns(Tuple::getDouble, Row::getDouble, value.doubleValue())
+              .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("" + value))
+              .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("" + value))
+              .forRow(row);
+            async.countDown();
+          }));
+      }
+    }));
+  }
+
   @Test
   public void testInt2(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn
-        .query("SELECT 32767::INT2 \"Short\"", ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.size());
-          Row row = result.iterator().next();
-          ColumnChecker.checkColumn(0, "Short")
-            .returns(Tuple::getValue, Row::getValue, (short) 32767)
-            .returns(Tuple::getShort, Row::getShort, (short) 32767)
-            .returns(Tuple::getInteger, Row::getInteger, 32767)
-            .returns(Tuple::getLong, Row::getLong, 32767L)
-            .returns(Tuple::getFloat, Row::getFloat, 32767f)
-            .returns(Tuple::getDouble, Row::getDouble, 32767d)
-            .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("32767"))
-            .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("32767"))
-            .forRow(row);
-          async.complete();
-        }));
-    }));
+    testNumber(ctx, new Number[] { (short)32767, (short) -1 }, "INT2");
   }
 
   @Test
   public void testInt4(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn
-        .query("SELECT 2147483647::INT4 \"Integer\"", ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.size());
-          Row row = result.iterator().next();
-          ColumnChecker.checkColumn(0, "Integer")
-            .returns(Tuple::getShort, Row::getShort, (short) -1)
-            .returns(Tuple::getInteger, Row::getInteger, 2147483647)
-            .returns(Tuple::getValue, Row::getValue, 2147483647)
-            .returns(Tuple::getLong, Row::getLong, 2147483647L)
-            .returns(Tuple::getFloat, Row::getFloat, 2147483647f)
-            .returns(Tuple::getDouble, Row::getDouble, 2147483647D)
-            .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("2147483647"))
-            .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("2147483647"))
-            .forRow(row);
-          async.complete();
-        }));
-    }));
+    testNumber(ctx, new Number[] { 2147483647, -1 }, "INT4");
   }
 
   @Test
   public void testInt8(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn
-        .query("SELECT 9223372036854775807::INT8 \"Long\"", ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.size());
-          Row row = result.iterator().next();
-          ColumnChecker.checkColumn(0, "Long")
-            .returns(Tuple::getValue, Row::getValue, 9223372036854775807L)
-            .returns(Tuple::getShort, Row::getShort, (short) -1)
-            .returns(Tuple::getInteger, Row::getInteger, -1)
-            .returns(Tuple::getLong, Row::getLong, 9223372036854775807L)
-            .returns(Tuple::getFloat, Row::getFloat, 9223372036854775807f)
-            .returns(Tuple::getDouble, Row::getDouble, 9223372036854775807d)
-            .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("9223372036854775807"))
-            .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("9223372036854775807"))
-            .forRow(row);
-          async.complete();
-        }));
-    }));
+    testNumber(ctx, new Number[] { 9223372036854775807L, -1L }, "INT8");
   }
 
   @Test
   public void testFloat4(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn
-        .query("SELECT 3.4028235E38::FLOAT4 \"Float\"", ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.size());
-          Row row = result.iterator().next();
-          ColumnChecker.checkColumn(0, "Float")
-            .returns(Tuple::getValue, Row::getValue, 3.4028235E38f)
-            .returns(Tuple::getShort, Row::getShort, (short) -1)
-            .returns(Tuple::getInteger, Row::getInteger, 2147483647)
-            .returns(Tuple::getLong, Row::getLong, 9223372036854775807L)
-            .returns(Tuple::getFloat, Row::getFloat, 3.4028235E38f)
-            .returns(Tuple::getDouble, Row::getDouble, 3.4028234663852886E38d)
-            .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("3.4028235E38"))
-            .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("3.4028235E38"))
-            .forRow(row);
-          async.complete();
-        }));
-    }));
+    testNumber(ctx, new Number[] { 3.4028235E38f, -1f }, "FLOAT4");
   }
 
   @Test
   public void testFloat8(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn
-        .query("SELECT 1.7976931348623157E308::FLOAT8 \"Double\"", ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.size());
-          Row row = result.iterator().next();
-          ColumnChecker.checkColumn(0, "Double")
-            .returns(Tuple::getValue, Row::getValue, 1.7976931348623157E308d)
-            .returns(Tuple::getShort, Row::getShort, (short) -1)
-            .returns(Tuple::getInteger, Row::getInteger, 2147483647)
-            .returns(Tuple::getLong, Row::getLong, 9223372036854775807L)
-            .returns(Tuple::getFloat, Row::getFloat, Float.POSITIVE_INFINITY)
-            .returns(Tuple::getDouble, Row::getDouble, 1.7976931348623157E308d)
-            .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("1.7976931348623157E308"))
-            .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("1.7976931348623157E308"))
-            .forRow(row);
-          async.complete();
-        }));
-    }));
+    testNumber(ctx, new Number[] { 1.7976931348623157E308D, -1D }, "FLOAT8");
   }
 
   @Test
