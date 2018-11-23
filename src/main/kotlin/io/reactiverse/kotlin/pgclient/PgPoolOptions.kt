@@ -1,6 +1,7 @@
 package io.reactiverse.kotlin.pgclient
 
 import io.reactiverse.pgclient.PgPoolOptions
+import io.reactiverse.pgclient.SslMode
 import io.vertx.core.net.JdkSSLEngineOptions
 import io.vertx.core.net.JksOptions
 import io.vertx.core.net.OpenSSLEngineOptions
@@ -50,6 +51,7 @@ import java.util.concurrent.TimeUnit
  * @param sendBufferSize 
  * @param soLinger 
  * @param ssl 
+ * @param sslMode 
  * @param tcpCork 
  * @param tcpFastOpen 
  * @param tcpKeepAlive 
@@ -101,6 +103,7 @@ fun PgPoolOptions(
   sendBufferSize: Int? = null,
   soLinger: Int? = null,
   ssl: Boolean? = null,
+  sslMode: SslMode? = null,
   tcpCork: Boolean? = null,
   tcpFastOpen: Boolean? = null,
   tcpKeepAlive: Boolean? = null,
@@ -223,6 +226,9 @@ fun PgPoolOptions(
   }
   if (ssl != null) {
     this.setSsl(ssl)
+  }
+  if (sslMode != null) {
+    this.setSslMode(sslMode)
   }
   if (tcpCork != null) {
     this.setTcpCork(tcpCork)

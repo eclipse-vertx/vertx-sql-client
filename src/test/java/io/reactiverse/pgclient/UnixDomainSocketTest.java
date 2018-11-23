@@ -24,6 +24,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.*;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assume.assumeTrue;
 
 @RunWith(VertxUnitRunner.class)
@@ -94,5 +95,15 @@ public class UnixDomainSocketTest {
     } finally {
       vertx.close();
     }
+  }
+
+  @Test
+  public void testIgnoreSslMode(TestContext context) {
+    assumeTrue(options.isUsingDomainSocket());
+    client = PgClient.pool(new PgPoolOptions(options).setSslMode(SslMode.REQUIRE));
+    client.getConnection(context.asyncAssertSuccess(pgConnection -> {
+      assertFalse(pgConnection.isSSL());
+      pgConnection.close();
+    }));
   }
 }

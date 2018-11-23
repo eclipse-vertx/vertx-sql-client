@@ -79,6 +79,9 @@ public class PgConnectOptions extends NetClientOptions {
     if (getenv("PGPASSWORD") != null) {
       pgConnectOptions.setPassword(getenv("PGPASSWORD"));
     }
+    if (getenv("PGSSLMODE") != null) {
+      pgConnectOptions.setSslMode(SslMode.of(getenv("PGSSLMODE")));
+    }
     return pgConnectOptions;
   }
 
@@ -89,6 +92,7 @@ public class PgConnectOptions extends NetClientOptions {
   public static final String DEFAULT_PASSWORD = "pass";
   public static final boolean DEFAULT_CACHE_PREPARED_STATEMENTS = false;
   public static final int DEFAULT_PIPELINING_LIMIT = 256;
+  public static final SslMode DEFAULT_SSLMODE = SslMode.DISABLE;
 
   private String host;
   private int port;
@@ -97,6 +101,7 @@ public class PgConnectOptions extends NetClientOptions {
   private String password;
   private boolean cachePreparedStatements;
   private int pipeliningLimit;
+  private SslMode sslMode;
 
   public PgConnectOptions() {
     super();
@@ -118,6 +123,7 @@ public class PgConnectOptions extends NetClientOptions {
     password = other.password;
     pipeliningLimit = other.pipeliningLimit;
     cachePreparedStatements = other.cachePreparedStatements;
+    sslMode = other.sslMode;
   }
 
   public String getHost() {
@@ -186,6 +192,15 @@ public class PgConnectOptions extends NetClientOptions {
     return this;
   }
 
+  public SslMode getSslMode() {
+    return sslMode;
+  }
+
+  public PgConnectOptions setSslMode(SslMode sslmode) {
+    this.sslMode = sslmode;
+    return this;
+  }
+
   @Override
   public PgConnectOptions setSendBufferSize(int sendBufferSize) {
     return (PgConnectOptions)super.setSendBufferSize(sendBufferSize);
@@ -231,8 +246,15 @@ public class PgConnectOptions extends NetClientOptions {
     return (PgConnectOptions)super.setIdleTimeout(idleTimeout);
   }
 
+  @Deprecated
   @Override
   public PgConnectOptions setSsl(boolean ssl) {
+    // keep consistence with Vert.x NetClient behavior to avoid breaking changes, try setSslMode() instead.
+    if (ssl) {
+      setSslMode(SslMode.REQUIRE);
+    } else {
+      setSslMode(SslMode.DISABLE);
+    }
     return (PgConnectOptions)super.setSsl(ssl);
   }
 
@@ -397,6 +419,7 @@ public class PgConnectOptions extends NetClientOptions {
     password = DEFAULT_PASSWORD;
     cachePreparedStatements = DEFAULT_CACHE_PREPARED_STATEMENTS;
     pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
+    sslMode = DEFAULT_SSLMODE;
   }
 
   @Override
@@ -421,6 +444,7 @@ public class PgConnectOptions extends NetClientOptions {
     if (!password.equals(that.password)) return false;
     if (cachePreparedStatements != that.cachePreparedStatements) return false;
     if (pipeliningLimit != that.pipeliningLimit) return false;
+    if (sslMode != that.sslMode) return false;
 
     return true;
   }
@@ -435,6 +459,7 @@ public class PgConnectOptions extends NetClientOptions {
     result = 31 * result + password.hashCode();
     result = 31 * result + (cachePreparedStatements ? 1 : 0);
     result = 31 * result + pipeliningLimit;
+    result = 31 * result + sslMode.hashCode();
     return result;
   }
 

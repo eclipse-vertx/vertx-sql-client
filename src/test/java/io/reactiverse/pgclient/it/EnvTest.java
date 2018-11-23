@@ -17,6 +17,7 @@
 package io.reactiverse.pgclient.it;
 
 import io.reactiverse.pgclient.PgConnectOptions;
+import io.reactiverse.pgclient.SslMode;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -30,5 +31,6 @@ public class EnvTest {
     assertEquals("test_database", options.getDatabase());
     assertEquals("test_user", options.getUser());
     assertEquals("test_password", options.getPassword());
+    assertEquals(SslMode.REQUIRE, options.getSslMode());
   }
 }

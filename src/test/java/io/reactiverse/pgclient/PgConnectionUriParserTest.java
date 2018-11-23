@@ -277,6 +277,20 @@ public class PgConnectionUriParserTest {
     assertEquals(expectedParsedResult, actualParsedResult);
   }
 
+  @Test
+  public void testParsingParameterSslMode() {
+    uri = "postgresql://?host=localhost&port=1234&sslmode=require";
+
+    actualParsedResult = parse(uri);
+
+    expectedParsedResult = new JsonObject()
+      .put("host", "localhost")
+      .put("port", 1234)
+      .put("sslMode", "REQUIRE");
+
+    assertEquals(expectedParsedResult, actualParsedResult);
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void testParsingInvalidUri1() {
     uri = "postgresql://us@er@@";
@@ -316,6 +330,12 @@ public class PgConnectionUriParserTest {
   @Test(expected = IllegalArgumentException.class)
   public void testParsingInvalidUri7() {
     uri = "postgresql://@@/dbname?host";
+    actualParsedResult = parse(uri);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testParsingInvalidSslmode() {
+    uri = "postgresql://?sslmode=invalidsslmode";
     actualParsedResult = parse(uri);
   }
 }

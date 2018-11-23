@@ -117,6 +117,7 @@ for more details. The following parameters are supported:
 * `PGDATABASE`
 * `PGUSER`
 * `PGPASSWORD`
+* `PGSSLMODE`
 
 If you don't specify a data object or a connection URI string to connect, environment variables will take precedence over them.
 
@@ -125,7 +126,8 @@ $ PGUSER=user \
   PGHOST=the-host \
   PGPASSWORD=secret \
   PGDATABASE=the-db \
-  PGPORT=5432
+  PGPORT=5432 \
+  PGSSLMODE=DISABLE
 ```
 
 ```$lang
@@ -468,6 +470,9 @@ The default policy is to not reconnect.
 
 To configure the client to use SSL connection, you can configure the {@link io.reactiverse.pgclient.PgConnectOptions}
 like a Vert.x `NetClient`.
+All [SSL modes](https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-PROTECTION) are supported and you should always use 
+`setSslMode` instead of `setSsl` because `ssl` parameter is deprecated. `setSsl(true)` is equivalent to `setSslMode(REQUIRE)` and `setSsl(false)` is equivalent to `setSslMode(DISABLE)`.
+The client is in `DISABLE` SSL mode by default.
 
 ```$lang
 {@link examples.Examples#ex10}

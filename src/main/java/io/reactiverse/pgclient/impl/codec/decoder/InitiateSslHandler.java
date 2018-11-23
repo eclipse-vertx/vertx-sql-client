@@ -81,7 +81,9 @@ public class InitiateSslHandler extends ChannelInboundHandlerAdapter {
       DecoderException err = (DecoderException) cause;
       cause = err.getCause();
     }
-    upgradeFuture.fail(cause);
+    if (!upgradeFuture.isComplete()) {
+      upgradeFuture.fail(cause);
+    }
   }
 
   @Override

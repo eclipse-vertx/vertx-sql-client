@@ -18,12 +18,10 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.PgConnectOptions;
+import io.reactiverse.pgclient.SslMode;
 import io.vertx.core.*;
 import io.vertx.core.impl.NetSocketInternal;
-import io.vertx.core.net.NetClient;
-import io.vertx.core.net.NetClientOptions;
-import io.vertx.core.net.NetSocket;
-import io.vertx.core.net.SocketAddress;
+import io.vertx.core.net.*;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -35,7 +33,9 @@ public class PgConnectionFactory {
   private final boolean registerCloseHook;
   private final String host;
   private final int port;
-  private final boolean ssl;
+  private final SslMode sslMode;
+  private final TrustOptions trustOptions;
+  private final String hostnameVerificationAlgorithm;
   private final String database;
   private final String username;
   private final String password;
@@ -61,16 +61,19 @@ public class PgConnectionFactory {
     // Make sure ssl=false as we will use STARTLS
     netClientOptions.setSsl(false);
 
-    this.ssl = options.isSsl();
+    this.sslMode = options.getSslMode();
+    this.hostnameVerificationAlgorithm = netClientOptions.getHostnameVerificationAlgorithm();
+    this.trustOptions = netClientOptions.getTrustOptions();
     this.host = options.getHost();
     this.port = options.getPort();
     this.database = options.getDatabase();
     this.username = options.getUser();
     this.password = options.getPassword();
-    this.client = context.owner().createNetClient(netClientOptions);
     this.cachePreparedStatements = options.getCachePreparedStatements();
     this.pipeliningLimit = options.getPipeliningLimit();
     this.isUsingDomainSocket = options.isUsingDomainSocket();
+
+    this.client = context.owner().createNetClient(netClientOptions);
   }
 
   // Called by hook
@@ -96,25 +99,76 @@ public class PgConnectionFactory {
     } else {
       socketAddress = SocketAddress.domainSocketAddress(host + "/.s.PGSQL." + port);
     }
+
+    doConnect(socketAddress, sslMode, completionHandler);
+  }
+
+  private void doConnect(SocketAddress socketAddress, SslMode sslMode, Handler<? super CommandResponse<Connection>> completionHandler) {
+    switch (sslMode) {
+      case DISABLE:
+        doConnect(socketAddress, false, completionHandler);
+        break;
+      case ALLOW:
+        doConnect(socketAddress, false, ar -> {
+          if (ar.succeeded()) {
+            completionHandler.handle(ar);
+          } else {
+            doConnect(socketAddress, true, completionHandler);
+          }
+        });
+        break;
+      case PREFER:
+        doConnect(socketAddress, true, ar -> {
+          if (ar.succeeded()) {
+            completionHandler.handle(ar);
+          } else {
+            doConnect(socketAddress, false, completionHandler);
+          }
+        });
+        break;
+      case VERIFY_FULL:
+        if (hostnameVerificationAlgorithm == null || hostnameVerificationAlgorithm.isEmpty()) {
+          completionHandler.handle(CommandResponse.failure(new IllegalArgumentException("Host verification algorithm must be specified under verify-full sslmode")));
+          return;
+        }
+      case VERIFY_CA:
+        if (trustOptions == null) {
+          completionHandler.handle(CommandResponse.failure(new IllegalArgumentException("Trust options must be specified under verify-full or verify-ca sslmode")));
+          return;
+        }
+      case REQUIRE:
+        doConnect(socketAddress, true, completionHandler);
+        break;
+      default:
+        throw new IllegalArgumentException("Unsupported SSL mode");
+    }
+  }
+
+  private void doConnect(SocketAddress socketAddress, boolean ssl, Handler<? super CommandResponse<Connection>> completionHandler) {
     Future<NetSocket> fut = Future.<NetSocket>future().setHandler(ar -> {
       if (ar.succeeded()) {
         NetSocketInternal socket = (NetSocketInternal) ar.result();
-        SocketConnection conn = new SocketConnection(
-          socket,
-          cachePreparedStatements,
-          pipeliningLimit,
-          ssl,
-          ctx);
+        SocketConnection conn = newSocketConnection(socket, ssl, isUsingDomainSocket);
         conn.initiateProtocolOrSsl(username, password, database, completionHandler);
       } else {
         completionHandler.handle(CommandResponse.failure(ar.cause()));
       }
     });
+
     try {
       client.connect(socketAddress, null, fut);
     } catch (Exception e) {
       // Client is closed
       fut.fail(e);
     }
+  }
+
+  private SocketConnection newSocketConnection(NetSocketInternal socket, boolean ssl, boolean isUsingDomainSocket) {
+    return new SocketConnection(socket,
+      ssl,
+      isUsingDomainSocket,
+      this.cachePreparedStatements,
+      this.pipeliningLimit,
+      this.ctx);
   }
 }
