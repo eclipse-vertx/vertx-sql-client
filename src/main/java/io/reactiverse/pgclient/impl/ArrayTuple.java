@@ -18,6 +18,7 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.data.Json;
+import io.reactiverse.pgclient.data.LineSegment;
 import io.reactiverse.pgclient.data.Numeric;
 import io.reactiverse.pgclient.Tuple;
 import io.reactiverse.pgclient.data.Interval;
@@ -139,6 +140,16 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
     Object val = get(pos);
     if (val instanceof Point) {
       return (Point) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public LineSegment getLineSegment(int pos) {
+    Object val = get(pos);
+    if (val instanceof LineSegment) {
+      return (LineSegment) val;
     } else {
       return null;
     }
@@ -325,6 +336,16 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
+  public LineSegment[] getLineSegmentArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof LineSegment[]) {
+      return (LineSegment[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
   public Interval[] getIntervalArray(int pos) {
     Object val = get(pos);
     if (val instanceof Interval[]) {
@@ -444,6 +465,7 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
       || value instanceof UUID
       || value instanceof Json
       || value instanceof Point
+      || value instanceof LineSegment
       || value instanceof Interval
       || value instanceof Boolean[]
       || value instanceof Number[]
@@ -456,6 +478,7 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
       || value instanceof UUID[]
       || value instanceof Json[]
       || value instanceof Point[]
+      || value instanceof LineSegment[]
       || value instanceof Interval[]
       || value instanceof Buffer[]) {
       add(value);
@@ -568,6 +591,12 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
+  public Tuple addLineSegment(LineSegment value) {
+    add(value);
+    return this;
+  }
+
+  @Override
   public Tuple addInterval(Interval value) {
     add(value);
     return this;
@@ -587,6 +616,12 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Tuple addPointArray(Point[] value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addLineSegmentArray(LineSegment[] value) {
     add(value);
     return this;
   }

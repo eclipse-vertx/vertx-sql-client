@@ -22,6 +22,22 @@
 |[[years]]`years`|`Number (int)`|-
 |===
 
+[[LineSegment]]
+== LineSegment
+
+++++
+ Finite line segment data type in Postgres represented by pairs of links that are the endpoints of the segment.
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[p1]]`p1`|`link:dataobjects.html#Point[Point]`|-
+|[[p2]]`p2`|`link:dataobjects.html#Point[Point]`|-
+|===
+
 [[PgConnectOptions]]
 == PgConnectOptions
 

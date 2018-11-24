@@ -18,6 +18,7 @@ package io.reactiverse.pgclient;
 
 import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.data.Json;
+import io.reactiverse.pgclient.data.LineSegment;
 import io.reactiverse.pgclient.data.Numeric;
 import io.reactiverse.pgclient.data.Point;
 import io.vertx.codegen.annotations.GenIgnore;
@@ -210,6 +211,15 @@ public interface Row extends Tuple {
   Point getPoint(String name);
 
   /**
+   * Get {@link LineSegment} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  LineSegment getLineSegment(String name);
+
+  /**
    * Get {@link Interval} value at {@code pos}.
    *
    * @param name the column
@@ -370,6 +380,15 @@ public interface Row extends Tuple {
    */
   @GenIgnore
   Point[] getPointArray(String name);
+
+  /**
+   * Get an array of {@link LineSegment} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  LineSegment[] getLineSegmentArray(String name);
 
   /**
    * Get an array of {@link Point} value at {@code pos}.

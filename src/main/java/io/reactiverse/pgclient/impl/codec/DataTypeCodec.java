@@ -61,6 +61,7 @@ public class DataTypeCodec {
   private static final Json[] empty_json_array = new Json[0];
   private static final Numeric[] empty_numeric_array = new Numeric[0];
   private static final Point[] empty_point_array = new Point[0];
+  private static final LineSegment[] empty_lseg_array = new LineSegment[0];
   private static final Interval[] empty_interval_array = new Interval[0];
   private static final Boolean[] empty_boolean_array = new Boolean[0];
   private static final Integer[] empty_integer_array = new Integer[0];
@@ -92,6 +93,7 @@ public class DataTypeCodec {
   private static final IntFunction<Json[]> JSON_ARRAY_FACTORY = size -> size == 0 ? empty_json_array : new Json[size];
   private static final IntFunction<Numeric[]> NUMERIC_ARRAY_FACTORY = size -> size == 0 ? empty_numeric_array : new Numeric[size];
   private static final IntFunction<Point[]> POINT_ARRAY_FACTORY = size -> size == 0 ? empty_point_array : new Point[size];
+  private static final IntFunction<LineSegment[]> LSEG_ARRAY_FACTORY = size -> size ==0 ? empty_lseg_array : new LineSegment[size];
   private static final IntFunction<Interval[]> INTERVAL_ARRAY_FACTORY = size -> size == 0 ? empty_interval_array : new Interval[size];
 
   public static void encodeText(DataType id, Object value, ByteBuf buff) {
@@ -248,6 +250,12 @@ public class DataTypeCodec {
       case POINT_ARRAY:
         binaryEncodeArray((Point[]) value, DataType.POINT, buff);
         break;
+      case LSEG:
+        binaryEncodeLseg((LineSegment) value, buff);
+        break;
+      case LSEG_ARRAY:
+        binaryEncodeArray((LineSegment[]) value, DataType.LSEG, buff);
+        break;
       case INTERVAL:
         binaryEncodeINTERVAL((Interval) value, buff);
         break;
@@ -347,6 +355,10 @@ public class DataTypeCodec {
         return binaryDecodePoint(index, len, buff);
       case POINT_ARRAY:
         return binaryDecodeArray(POINT_ARRAY_FACTORY, DataType.POINT, index, len, buff);
+      case LSEG:
+        return binaryDecodeLseg(index, len, buff);
+      case LSEG_ARRAY:
+        return binaryDecodeArray(LSEG_ARRAY_FACTORY, DataType.LSEG, index, len, buff);
       case INTERVAL:
         return binaryDecodeINTERVAL(index, len, buff);
       case INTERVAL_ARRAY:
@@ -447,6 +459,10 @@ public class DataTypeCodec {
         return textDecodePOINT(index, len, buff);
       case POINT_ARRAY:
         return textDecodeArray(POINT_ARRAY_FACTORY, DataType.POINT, index, len, buff);
+      case LSEG:
+        return textDecodeLseg(index, len, buff);
+      case LSEG_ARRAY:
+        return textDecodeArray(LSEG_ARRAY_FACTORY, DataType.LSEG, index, len, buff);
       case INTERVAL:
         return textDecodeINTERVAL(index, len, buff);
       case INTERVAL_ARRAY:
@@ -592,6 +608,17 @@ public class DataTypeCodec {
     double x = textDecodeFLOAT8(idx, t, buff);
     double y = textDecodeFLOAT8(s + 1, len - t - 3, buff);
     return new Point(x, y);
+  }
+
+  private static LineSegment textDecodeLseg(int index, int len, ByteBuf buff) {
+    // Lseg text sample: [(1.0,1.0),(2.0,2.0)]
+    int idx = ++index;
+    int separatorOfP1Idx = buff.indexOf(index, idx + len, (byte) ',');
+    int separatorOfLsegIdx = buff.indexOf(++separatorOfP1Idx, idx + len, (byte) ',');
+    int lenOfP1 = separatorOfLsegIdx - idx;
+    Point p1 = textDecodePOINT(idx, lenOfP1, buff);
+    Point p2 = textDecodePOINT(separatorOfLsegIdx + 1, len - lenOfP1 - 3, buff);
+    return new LineSegment(p1, p2);
   }
 
   private static Interval textDecodeINTERVAL(int index, int len, ByteBuf buff) {
@@ -837,6 +864,17 @@ public class DataTypeCodec {
     double x = binaryDecodeFLOAT8(index, 8, buff);
     double y = binaryDecodeFLOAT8(index + 8, 8, buff);
     return new Point(x, y);
+  }
+
+  private static void binaryEncodeLseg(LineSegment lseg, ByteBuf buff) {
+    binaryEncodePoint(lseg.getP1(), buff);
+    binaryEncodePoint(lseg.getP2(), buff);
+  }
+
+  private static LineSegment binaryDecodeLseg(int index, int len, ByteBuf buff) {
+    Point p1 = binaryDecodePoint(index, 16, buff);
+    Point p2 = binaryDecodePoint(index + 16, 16, buff);
+    return new LineSegment(p1, p2);
   }
 
   private static void binaryEncodeINTERVAL(Interval interval, ByteBuf buff) {
