@@ -391,7 +391,7 @@ public interface Row extends Tuple {
   LineSegment[] getLineSegmentArray(String name);
 
   /**
-   * Get an array of {@link Point} value at {@code pos}.
+   * Get an array of {@link Interval} value at {@code pos}.
    *
    * @param name the column
    * @return the value or {@code null}
