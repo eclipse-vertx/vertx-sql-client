@@ -2,6 +2,7 @@ package io.reactiverse.pgclient;
 
 import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.data.Json;
+import io.reactiverse.pgclient.data.LineSegment;
 import io.reactiverse.pgclient.data.Numeric;
 import io.reactiverse.pgclient.data.Point;
 import io.vertx.core.buffer.Buffer;
@@ -1014,6 +1015,22 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
       "SELECT c FROM (VALUES ($1 :: POINT[])) AS t (c)",
       new Point[][]{new Point[]{new Point(4, 5), null, new Point(3.4, -4.5), null}},
       Tuple::getPointArray);
+  }
+
+  @Test
+  public void testLineSegment(TestContext ctx) {
+    testGeneric(ctx,
+      "SELECT c FROM (VALUES ($1 :: LSEG)) AS t (c)",
+      new LineSegment[]{new LineSegment(new Point(0.0, 0.0), new Point(1.0, 1.0)), new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0))},
+      Tuple::getLineSegment);
+  }
+
+  @Test
+  public void testLineSegmentArray(TestContext ctx) {
+    testGeneric(ctx,
+      "SELECT c FROM (VALUES ($1 :: LSEG[])) AS t (c)",
+      new LineSegment[][]{new LineSegment[]{new LineSegment(new Point(0.0, 0.0), new Point(1.0, 1.0)), new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0))}},
+      Tuple::getLineSegmentArray);
   }
 
   private static <T> void compare(TestContext ctx, T expected, T actual) {

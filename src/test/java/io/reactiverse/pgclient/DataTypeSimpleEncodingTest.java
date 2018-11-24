@@ -2,6 +2,7 @@ package io.reactiverse.pgclient;
 
 import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.data.Json;
+import io.reactiverse.pgclient.data.LineSegment;
 import io.reactiverse.pgclient.data.Numeric;
 import io.reactiverse.pgclient.data.Point;
 import io.vertx.core.buffer.Buffer;
@@ -176,6 +177,40 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
           ColumnChecker.checkColumn(0, "p")
             .returns(Tuple::getValue, Row::getValue, new Point[] {new Point(10.1, 20.45)})
             .returns(Tuple::getPointArray, Row::getPointArray, new Point[] {new Point(10.1, 20.45)})
+            .forRow(row);
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testLineSegment(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT lseg(point(1.0,1.0),point(2.0,2.0)) \"Lseg\"", ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.size());
+          Row row = result.iterator().next();
+          ColumnChecker.checkColumn(0, "Lseg")
+            .returns(Tuple::getValue, Row::getValue, new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0)))
+            .returns(Tuple::getLineSegment, Row::getLineSegment, new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0)))
+            .forRow(row);
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testLineSegmentArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT (ARRAY[lseg(point(1.0,1.0),point(2.0,2.0))]) \"Lseg\"", ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.size());
+          Row row = result.iterator().next();
+          ColumnChecker.checkColumn(0, "Lseg")
+            .returns(Tuple::getValue, Row::getValue, new LineSegment[]{new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0))})
+            .returns(Tuple::getLineSegmentArray, Row::getLineSegmentArray, new LineSegment[]{new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0))})
             .forRow(row);
           async.complete();
         }));
