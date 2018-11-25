@@ -684,6 +684,7 @@ public class DataTypeCodec {
   }
 
   private static Point textDecodePOINT(int index, int len, ByteBuf buff) {
+    // Point representation: (x,y)
     int idx = ++index;
     int s = buff.indexOf(idx, idx + len, (byte) ',');
     int t = s - idx;
@@ -698,7 +699,7 @@ public class DataTypeCodec {
   }
 
   private static LineSegment textDecodeLseg(int index, int len, ByteBuf buff) {
-    // Lseg representation: [(1.0,1.0),(2.0,2.0)]
+    // Lseg representation: [p1,p2]
     int idxOfPointsSeparator = Util.nthIndexOf(buff, index, index + len, (byte) ',', 2);
     int lenOfP1 = idxOfPointsSeparator - index - 1;
     Point p1 = textDecodePOINT(index + 1, lenOfP1, buff);
@@ -707,7 +708,7 @@ public class DataTypeCodec {
   }
 
   private static Box textDecodeBox(int index, int len, ByteBuf buff) {
-    // Box representation: (2.0,2.0),(1.0,1.0)
+    // Box representation: p1,p2
     int idxOfPointsSeparator = Util.nthIndexOf(buff, index, index + len, (byte) ',', 2);
     int lenOfUpperRightCornerPoint = idxOfPointsSeparator - index;
     Point upperRightCorner = textDecodePOINT(index, lenOfUpperRightCornerPoint, buff);
