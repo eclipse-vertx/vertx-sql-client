@@ -87,6 +87,8 @@ class ColumnChecker {
     rowMethods.add(Row::getPointArray);
     tupleMethods.add(Tuple::getLine);
     rowMethods.add(Row::getLine);
+    tupleMethods.add(Tuple::getLineArray);
+    rowMethods.add(Row::getLineArray);
     tupleMethods.add(Tuple::getLineSegment);
     rowMethods.add(Row::getLineSegment);
     tupleMethods.add(Tuple::getLineSegmentArray);
@@ -97,10 +99,16 @@ class ColumnChecker {
     rowMethods.add(Row::getBoxArray);
     tupleMethods.add(Tuple::getPath);
     rowMethods.add(Row::getPath);
+    tupleMethods.add(Tuple::getPathArray);
+    rowMethods.add(Row::getPathArray);
     tupleMethods.add(Tuple::getPolygon);
     rowMethods.add(Row::getPolygon);
+    tupleMethods.add(Tuple::getPolygonArray);
+    rowMethods.add(Row::getPolygonArray);
     tupleMethods.add(Tuple::getCircle);
     rowMethods.add(Row::getCircle);
+    tupleMethods.add(Tuple::getCircleArray);
+    rowMethods.add(Row::getCircleArray);
   }
 
   static ColumnChecker checkColumn(int index, String name) {
@@ -126,9 +134,9 @@ class ColumnChecker {
     blackList.add(byNameMeth);
     expects.add(row -> {
       Object actual = byIndexGetter.apply(row, index);
-      assertEquals("Expected that " + byIndexMeth + " returns " + expected + " instead of " + actual, actual, expected);
+      assertEquals("Expected that " + byIndexMeth + " returns " + expected + " instead of " + actual, expected, actual);
       actual = byNameGetter.apply(row, name);
-      assertEquals("Expected that " + byNameMeth + " returns " + expected + " instead of " + actual, actual, expected);
+      assertEquals("Expected that " + byNameMeth + " returns " + expected + " instead of " + actual, expected, actual);
     });
     return this;
   }
@@ -142,9 +150,9 @@ class ColumnChecker {
     blackList.add(byNameMeth);
     expects.add(row -> {
       Object[] actual = toObjectArray(byIndexGetter.apply(row, index));
-      assertArrayEquals("Expected that " + byIndexMeth + " returns " + Arrays.toString(expected) + " instead of " + Arrays.toString(actual), actual, expected);
+      assertArrayEquals("Expected that " + byIndexMeth + " returns " + Arrays.toString(expected) + " instead of " + Arrays.toString(actual), expected, actual);
       actual = toObjectArray(byNameGetter.apply(row, name));
-      assertArrayEquals("Expected that " + byNameMeth + " returns " + Arrays.toString(expected) + " instead of " + Arrays.toString(actual), actual, expected);
+      assertArrayEquals("Expected that " + byNameMeth + " returns " + Arrays.toString(expected) + " instead of " + Arrays.toString(actual), expected, actual);
     });
     return this;
   }
@@ -156,9 +164,9 @@ class ColumnChecker {
     blackList.add(byNameGetter.method());
     expects.add(row -> {
       Object actual = byIndexGetter.apply(row, index);
-      assertEquals("Expected that " + byIndexGetter.method() + " returns " + expected + " instead of " + actual, (double)actual, expected, delta);
+      assertEquals("Expected that " + byIndexGetter.method() + " returns " + expected + " instead of " + actual, expected, (double)actual, delta);
       actual = byNameGetter.apply(row, name);
-      assertEquals("Expected that " + byNameGetter.method() + " returns " + expected + " instead of " + actual, (double)actual, expected, delta);
+      assertEquals("Expected that " + byNameGetter.method() + " returns " + expected + " instead of " + actual, expected, (double)actual, delta);
     });
     return this;
   }
@@ -170,9 +178,9 @@ class ColumnChecker {
     blackList.add(byNameGetter.method());
     expects.add(row -> {
       Object actual = byIndexGetter.apply(row, index);
-      assertEquals("Expected that " + byIndexGetter.method() + " returns " + expected + " instead of " + actual, (float)actual, expected, delta);
+      assertEquals("Expected that " + byIndexGetter.method() + " returns " + expected + " instead of " + actual, expected, (float)actual, delta);
       actual = byNameGetter.apply(row, name);
-      assertEquals("Expected that " + byNameGetter.method() + " returns " + expected + " instead of " + actual, (float)actual, expected, delta);
+      assertEquals("Expected that " + byNameGetter.method() + " returns " + expected + " instead of " + actual, expected, (float)actual, delta);
     });
     return this;
   }
