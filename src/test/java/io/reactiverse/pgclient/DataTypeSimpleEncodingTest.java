@@ -1,11 +1,15 @@
 package io.reactiverse.pgclient;
 
 import io.reactiverse.pgclient.data.Box;
+import io.reactiverse.pgclient.data.Circle;
 import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.data.Json;
+import io.reactiverse.pgclient.data.Line;
 import io.reactiverse.pgclient.data.LineSegment;
 import io.reactiverse.pgclient.data.Numeric;
+import io.reactiverse.pgclient.data.Path;
 import io.reactiverse.pgclient.data.Point;
+import io.reactiverse.pgclient.data.Polygon;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -19,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.util.Arrays;
 import java.util.UUID;
 
 /**
@@ -152,100 +157,128 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
 
   @Test
   public void testPoint(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn
-        .query("SELECT Point(10.1,20.45) \"p\"", ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.size());
-          Row row = result.iterator().next();
-          ColumnChecker.checkColumn(0, "p")
-            .returns(Tuple::getValue, Row::getValue, new Point(10.1, 20.45))
-            .returns(Tuple::getPoint, Row::getPoint, new Point(10.1, 20.45))
-            .forRow(row);
-          async.complete();
-        }));
-    }));
+    testDecodeGeometricDataType(ctx, "Point", "\"GeometricDataType\"", Tuple::getPoint, Row::getPoint,
+      new Point(1.0, 2.0));
   }
 
   @Test
   public void testPointArray(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn
-        .query("SELECT (ARRAY[Point(10.1,20.45)]) \"p\"", ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.size());
-          Row row = result.iterator().next();
-          ColumnChecker.checkColumn(0, "p")
-            .returns(Tuple::getValue, Row::getValue, new Point[] {new Point(10.1, 20.45)})
-            .returns(Tuple::getPointArray, Row::getPointArray, new Point[] {new Point(10.1, 20.45)})
-            .forRow(row);
-          async.complete();
-        }));
-    }));
+    Point[] points = {new Point(1.0, 1.0), new Point(2.0, 2.0)};
+    testDecodeGeometricDataType(ctx, "Point", "\"ArrayDataType\"", Tuple::getPointArray, Row::getPointArray,
+      points);
+  }
+
+  @Test
+  public void testLine(TestContext ctx) {
+    testDecodeGeometricDataType(ctx, "Line", "\"GeometricDataType\"", Tuple::getLine, Row::getLine,
+      new Line(1.0, 2.0, 3.0));
+  }
+
+  @Test
+  public void testLineArray(TestContext ctx) {
+    Line[] lines = {new Line(1.0, 2.0, 3.0), new Line(2.0, 3.0, 4.0)};
+    testDecodeGeometricDataType(ctx, "Line", "\"ArrayDataType\"", Tuple::getLineArray, Row::getLineArray,
+      lines);
   }
 
   @Test
   public void testLineSegment(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn
-        .query("SELECT lseg(point(1.0,1.0),point(2.0,2.0)) \"Lseg\"", ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.size());
-          Row row = result.iterator().next();
-          ColumnChecker.checkColumn(0, "Lseg")
-            .returns(Tuple::getValue, Row::getValue, new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0)))
-            .returns(Tuple::getLineSegment, Row::getLineSegment, new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0)))
-            .forRow(row);
-          async.complete();
-        }));
-    }));
+    testDecodeGeometricDataType(ctx, "Lseg", "\"GeometricDataType\"", Tuple::getLineSegment, Row::getLineSegment,
+      new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0)));
   }
 
   @Test
   public void testLineSegmentArray(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn
-        .query("SELECT (ARRAY[lseg(point(1.0,1.0),point(2.0,2.0)),lseg(point(2.0,2.0),point(3.0,3.0))]) \"Lseg\"", ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.size());
-          Row row = result.iterator().next();
-          ColumnChecker.checkColumn(0, "Lseg")
-            .returns(Tuple::getValue, Row::getValue, new LineSegment[]{new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0)), new LineSegment(new Point(2.0, 2.0), new Point(3.0, 3.0))})
-            .returns(Tuple::getLineSegmentArray, Row::getLineSegmentArray, new LineSegment[]{new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0)), new LineSegment(new Point(2.0, 2.0), new Point(3.0, 3.0))})
-            .forRow(row);
-          async.complete();
-        }));
-    }));
+    LineSegment[] lineSegments = {new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0)), new LineSegment(new Point(2.0, 2.0), new Point(3.0, 3.0))};
+    testDecodeGeometricDataType(ctx, "Lseg", "\"ArrayDataType\"", Tuple::getLineSegmentArray, Row::getLineSegmentArray,
+      lineSegments);
   }
 
   @Test
   public void testBox(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn
-        .query("SELECT box(point(2.0,2.0),point(1.0,1.0)) \"Box\"", ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.size());
-          Row row = result.iterator().next();
-          ColumnChecker.checkColumn(0, "Box")
-            .returns(Tuple::getValue, Row::getValue, new Box(new Point(2.0, 2.0), new Point(1.0, 1.0)))
-            .returns(Tuple::getBox, Row::getBox, new Box(new Point(2.0, 2.0), new Point(1.0, 1.0)))
-            .forRow(row);
-          async.complete();
-        }));
-    }));
+    testDecodeGeometricDataType(ctx, "Box", "\"GeometricDataType\"", Tuple::getBox, Row::getBox,
+      new Box(new Point(2.0, 2.0), new Point(1.0, 1.0)));
   }
 
   @Test
   public void testBoxArray(TestContext ctx) {
+    Box[] boxes = {new Box(new Point(2.0, 2.0), new Point(1.0, 1.0)), new Box(new Point(3.0, 3.0), new Point(2.0, 2.0))};
+    testDecodeGeometricDataType(ctx, "Box", "\"ArrayDataType\"", Tuple::getBoxArray, Row::getBoxArray,
+      boxes);
+  }
+
+  @Test
+  public void testClosedPath(TestContext ctx) {
+    testDecodeGeometricDataType(ctx, "ClosedPath", "\"GeometricDataType\"", Tuple::getPath, Row::getPath,
+      new Path(false, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0))));
+  }
+
+  @Test
+  public void testClosedPathArray(TestContext ctx) {
+    Path[] closedPaths = {new Path(false, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0))),
+      new Path(false, Arrays.asList(new Point(2.0, 2.0), new Point(3.0, 2.0), new Point(3.0, 3.0), new Point(3.0, 2.0)))};
+    testDecodeGeometricDataType(ctx, "ClosedPath", "\"ArrayDataType\"", Tuple::getPathArray, Row::getPathArray,
+      closedPaths);
+  }
+
+
+  @Test
+  public void testOpenPath(TestContext ctx) {
+    testDecodeGeometricDataType(ctx, "OpenPath", "\"GeometricDataType\"", Tuple::getPath, Row::getPath,
+      new Path(true, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0))));
+  }
+
+  @Test
+  public void testOpenPathArray(TestContext ctx) {
+    Path[] openPaths = {new Path(true, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0))),
+      new Path(true, Arrays.asList(new Point(2.0, 2.0), new Point(3.0, 2.0), new Point(3.0, 3.0), new Point(3.0, 2.0)))};
+    testDecodeGeometricDataType(ctx, "OpenPath", "\"ArrayDataType\"", Tuple::getPathArray, Row::getPathArray,
+      openPaths);
+  }
+
+
+  @Test
+  public void testPolygon(TestContext ctx) {
+    testDecodeGeometricDataType(ctx, "Polygon", "\"GeometricDataType\"", Tuple::getPolygon, Row::getPolygon,
+      new Polygon(Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 2.0), new Point(3.0, 1.0))));
+  }
+
+  @Test
+  public void testPolygonArray(TestContext ctx) {
+    Polygon[] polygons = {new Polygon(Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 2.0), new Point(3.0, 1.0))),
+      new Polygon(Arrays.asList(new Point(0.0, 0.0), new Point(0.0, 1.0), new Point(1.0, 2.0), new Point(2.0, 1.0), new Point(2.0, 0.0)))};
+    testDecodeGeometricDataType(ctx, "Polygon", "\"ArrayDataType\"", Tuple::getPolygonArray, Row::getPolygonArray,
+      polygons);
+  }
+
+  @Test
+  public void testCircle(TestContext ctx) {
+    testDecodeGeometricDataType(ctx, "Circle", "\"GeometricDataType\"", Tuple::getCircle, Row::getCircle,
+      new Circle(new Point(1.0, 1.0), 1.0));
+  }
+
+  @Test
+  public void testCircleArray(TestContext ctx) {
+    Circle[] circles = {new Circle(new Point(1.0, 1.0), 1.0), new Circle(new Point(0.0, 0.0), 2.0)};
+    testDecodeGeometricDataType(ctx, "Circle", "\"ArrayDataType\"", Tuple::getCircleArray, Row::getCircleArray,
+      circles);
+  }
+
+  private <T> void testDecodeGeometricDataType(TestContext ctx,
+                                               String columnName,
+                                               String tableName,
+                                               ColumnChecker.SerializableBiFunction<Tuple, Integer, Object> byIndexGetter,
+                                               ColumnChecker.SerializableBiFunction<Row, String, Object> byNameGetter,
+                                               T expected) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("SELECT (ARRAY[box(point(2.0,2.0),point(1.0,1.0)),box(point(3.0,3.0),point(2.0,2.0))]) \"Box\"", ctx.asyncAssertSuccess(result -> {
+        .query("SELECT \"" + columnName + "\" FROM \"" + tableName + "\" WHERE \"id\" = 1", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
-          ColumnChecker.checkColumn(0, "Box")
-            .returns(Tuple::getValue, Row::getValue, new Box[]{new Box(new Point(2.0, 2.0), new Point(1.0, 1.0)),new Box(new Point(3.0, 3.0), new Point(2.0, 2.0))})
-            .returns(Tuple::getBoxArray, Row::getBoxArray, new Box[]{new Box(new Point(2.0, 2.0), new Point(1.0, 1.0)),new Box(new Point(3.0, 3.0), new Point(2.0, 2.0))})
+          ColumnChecker.checkColumn(0, columnName)
+            .returns(Tuple::getValue, Row::getValue, expected)
+            .returns(byIndexGetter, byNameGetter, expected)
             .forRow(row);
           async.complete();
         }));
