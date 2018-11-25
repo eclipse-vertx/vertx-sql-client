@@ -17,11 +17,15 @@
 package io.reactiverse.pgclient;
 
 import io.reactiverse.pgclient.data.Box;
+import io.reactiverse.pgclient.data.Circle;
 import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.data.Json;
+import io.reactiverse.pgclient.data.Line;
 import io.reactiverse.pgclient.data.LineSegment;
 import io.reactiverse.pgclient.data.Numeric;
+import io.reactiverse.pgclient.data.Path;
 import io.reactiverse.pgclient.data.Point;
+import io.reactiverse.pgclient.data.Polygon;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.buffer.Buffer;
@@ -212,6 +216,15 @@ public interface Row extends Tuple {
   Point getPoint(String name);
 
   /**
+   * Get {@link Line} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Line getLine(String name);
+
+  /**
    * Get {@link LineSegment} value at {@code pos}.
    *
    * @param name the column
@@ -228,6 +241,33 @@ public interface Row extends Tuple {
    */
   @GenIgnore
   Box getBox(String name);
+
+  /**
+   * Get {@link Path} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Path getPath(String name);
+
+  /**
+   * Get {@link Polygon} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Polygon getPolygon(String name);
+
+  /**
+   * Get {@link Circle} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Circle getCircle(String name);
 
   /**
    * Get {@link Interval} value at {@code pos}.
@@ -392,6 +432,15 @@ public interface Row extends Tuple {
   Point[] getPointArray(String name);
 
   /**
+   * Get an array of {@link Line} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Line[] getLineArray(String name);
+
+  /**
    * Get an array of {@link LineSegment} value at {@code pos}.
    *
    * @param name the column
@@ -408,6 +457,33 @@ public interface Row extends Tuple {
    */
   @GenIgnore
   Box[] getBoxArray(String name);
+
+  /**
+   * Get an array of {@link Path} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Path[] getPathArray(String name);
+
+  /**
+   * Get an array of {@link Polygon} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Polygon[] getPolygonArray(String name);
+
+  /**
+   * Get an array of {@link Circle} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Circle[] getCircleArray(String name);
 
   /**
    * Get an array of {@link Interval} value at {@code pos}.

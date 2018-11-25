@@ -20,6 +20,7 @@ package io.reactiverse.pgclient.impl.codec;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.handler.codec.DecoderException;
 import io.reactiverse.pgclient.data.Json;
 import io.reactiverse.pgclient.data.Numeric;
 import io.reactiverse.pgclient.data.*;
@@ -34,7 +35,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.time.temporal.ChronoField;
@@ -63,8 +63,12 @@ public class DataTypeCodec {
   private static final Json[] empty_json_array = new Json[0];
   private static final Numeric[] empty_numeric_array = new Numeric[0];
   private static final Point[] empty_point_array = new Point[0];
+  private static final Line[] empty_line_array = new Line[0];
   private static final LineSegment[] empty_lseg_array = new LineSegment[0];
   private static final Box[] empty_box_array = new Box[0];
+  private static final Path[] empty_path_array = new Path[0];
+  private static final Polygon[] empty_polygon_array = new Polygon[0];
+  private static final Circle[] empty_circle_array = new Circle[0];
   private static final Interval[] empty_interval_array = new Interval[0];
   private static final Boolean[] empty_boolean_array = new Boolean[0];
   private static final Integer[] empty_integer_array = new Integer[0];
@@ -96,8 +100,12 @@ public class DataTypeCodec {
   private static final IntFunction<Json[]> JSON_ARRAY_FACTORY = size -> size == 0 ? empty_json_array : new Json[size];
   private static final IntFunction<Numeric[]> NUMERIC_ARRAY_FACTORY = size -> size == 0 ? empty_numeric_array : new Numeric[size];
   private static final IntFunction<Point[]> POINT_ARRAY_FACTORY = size -> size == 0 ? empty_point_array : new Point[size];
+  private static final IntFunction<Line[]> LINE_ARRAY_FACTORY = size -> size == 0 ? empty_line_array : new Line[size];
   private static final IntFunction<LineSegment[]> LSEG_ARRAY_FACTORY = size -> size == 0 ? empty_lseg_array : new LineSegment[size];
   private static final IntFunction<Box[]> BOX_ARRAY_FACTORY = size -> size == 0 ? empty_box_array : new Box[size];
+  private static final IntFunction<Path[]> PATH_ARRAY_FACTORY = size -> size == 0 ? empty_path_array : new Path[size];
+  private static final IntFunction<Polygon[]> POLYGON_ARRAY_FACTORY = size -> size == 0 ? empty_polygon_array : new Polygon[size];
+  private static final IntFunction<Circle[]> CIRCLE_ARRAY_FACTORY = size -> size == 0 ? empty_circle_array : new Circle[size];
   private static final IntFunction<Interval[]> INTERVAL_ARRAY_FACTORY = size -> size == 0 ? empty_interval_array : new Interval[size];
 
   public static void encodeText(DataType id, Object value, ByteBuf buff) {
@@ -254,6 +262,12 @@ public class DataTypeCodec {
       case POINT_ARRAY:
         binaryEncodeArray((Point[]) value, DataType.POINT, buff);
         break;
+      case LINE:
+        binaryEncodeLine((Line) value, buff);
+        break;
+      case LINE_ARRAY:
+        binaryEncodeArray((Line[]) value, DataType.LINE, buff);
+        break;
       case LSEG:
         binaryEncodeLseg((LineSegment) value, buff);
         break;
@@ -265,6 +279,24 @@ public class DataTypeCodec {
         break;
       case BOX_ARRAY:
         binaryEncodeArray((Box[]) value, DataType.BOX, buff);
+        break;
+      case PATH:
+        binaryEncodePath((Path) value, buff);
+        break;
+      case PATH_ARRAY:
+        binaryEncodeArray((Path[]) value, DataType.PATH, buff);
+        break;
+      case POLYGON:
+        binaryEncodePolygon((Polygon) value, buff);
+        break;
+      case POLYGON_ARRAY:
+        binaryEncodeArray((Polygon[]) value, DataType.POLYGON, buff);
+        break;
+      case CIRCLE:
+        binaryEncodeCircle((Circle) value, buff);
+        break;
+      case CIRCLE_ARRAY:
+        binaryEncodeArray((Circle[]) value, DataType.CIRCLE, buff);
         break;
       case INTERVAL:
         binaryEncodeINTERVAL((Interval) value, buff);
@@ -365,6 +397,10 @@ public class DataTypeCodec {
         return binaryDecodePoint(index, len, buff);
       case POINT_ARRAY:
         return binaryDecodeArray(POINT_ARRAY_FACTORY, DataType.POINT, index, len, buff);
+      case LINE:
+        return binaryDecodeLine(index, len, buff);
+      case LINE_ARRAY:
+        return binaryDecodeArray(LINE_ARRAY_FACTORY, DataType.LINE, index, len, buff);
       case LSEG:
         return binaryDecodeLseg(index, len, buff);
       case LSEG_ARRAY:
@@ -373,6 +409,18 @@ public class DataTypeCodec {
         return binaryDecodeBox(index, len, buff);
       case BOX_ARRAY:
         return binaryDecodeArray(BOX_ARRAY_FACTORY, DataType.BOX, index, len, buff);
+      case PATH:
+        return binaryDecodePath(index, len, buff);
+      case PATH_ARRAY:
+        return binaryDecodeArray(PATH_ARRAY_FACTORY, DataType.PATH, index, len, buff);
+      case POLYGON:
+        return binaryDecodePolygon(index, len, buff);
+      case POLYGON_ARRAY:
+        return binaryDecodeArray(POLYGON_ARRAY_FACTORY, DataType.POLYGON, index, len, buff);
+      case CIRCLE:
+        return binaryDecodeCircle(index, len, buff);
+      case CIRCLE_ARRAY:
+        return binaryDecodeArray(CIRCLE_ARRAY_FACTORY, DataType.CIRCLE, index, len, buff);
       case INTERVAL:
         return binaryDecodeINTERVAL(index, len, buff);
       case INTERVAL_ARRAY:
@@ -473,6 +521,10 @@ public class DataTypeCodec {
         return textDecodePOINT(index, len, buff);
       case POINT_ARRAY:
         return textDecodeArray(POINT_ARRAY_FACTORY, DataType.POINT, index, len, buff);
+      case LINE:
+        return textDecodeLine(index, len, buff);
+      case LINE_ARRAY:
+        return textDecodeArray(LINE_ARRAY_FACTORY, DataType.LINE, index, len, buff);
       case LSEG:
         return textDecodeLseg(index, len, buff);
       case LSEG_ARRAY:
@@ -481,6 +533,18 @@ public class DataTypeCodec {
         return textDecodeBox(index, len, buff);
       case BOX_ARRAY:
         return textDecodeBoxArray(BOX_ARRAY_FACTORY, index, len, buff);
+      case PATH:
+        return textDecodePath(index, len, buff);
+      case PATH_ARRAY:
+        return textDecodeArray(PATH_ARRAY_FACTORY, DataType.PATH, index, len, buff);
+      case POLYGON:
+        return textDecodePolygon(index, len, buff);
+      case POLYGON_ARRAY:
+        return textDecodeArray(POLYGON_ARRAY_FACTORY, DataType.POLYGON, index, len, buff);
+      case CIRCLE:
+        return textDecodeCircle(index, len, buff);
+      case CIRCLE_ARRAY:
+        return textDecodeArray(CIRCLE_ARRAY_FACTORY, DataType.CIRCLE, index, len, buff);
       case INTERVAL:
         return textDecodeINTERVAL(index, len, buff);
       case INTERVAL_ARRAY:
@@ -628,6 +692,11 @@ public class DataTypeCodec {
     return new Point(x, y);
   }
 
+  private static Line textDecodeLine(int index, int len, ByteBuf buff) {
+    // Line representation: {a,b,c}
+    throw new UnsupportedOperationException();
+  }
+
   private static LineSegment textDecodeLseg(int index, int len, ByteBuf buff) {
     // Lseg representation: [(1.0,1.0),(2.0,2.0)]
     int idxOfPointsSeparator = Util.nthIndexOf(buff, index, index + len, (byte) ',', 2);
@@ -648,6 +717,21 @@ public class DataTypeCodec {
 
   private static Box textDecodeBoxArray(IntFunction<Box[]> supplier, int index, int len, ByteBuf buff) {
     throw new UnsupportedOperationException("can not reuse the textDecodeArray method for now");
+  }
+
+  private static Line textDecodePath(int index, int len, ByteBuf buff) {
+    // Path representation: (p1,p2...pn) or [p1,p2...pn]
+    throw new UnsupportedOperationException();
+  }
+
+  private static Line textDecodePolygon(int index, int len, ByteBuf buff) {
+    // Polygon representation: (p1,p2...pn)
+    throw new UnsupportedOperationException();
+  }
+
+  private static Line textDecodeCircle(int index, int len, ByteBuf buff) {
+    // Circle representation: <p,r>
+    throw new UnsupportedOperationException();
   }
 
   private static Interval textDecodeINTERVAL(int index, int len, ByteBuf buff) {
@@ -895,6 +979,19 @@ public class DataTypeCodec {
     return new Point(x, y);
   }
 
+  private static void binaryEncodeLine(Line line, ByteBuf buff) {
+    binaryEncodeFLOAT8(line.getA(), buff);
+    binaryEncodeFLOAT8(line.getB(), buff);
+    binaryEncodeFLOAT8(line.getC(), buff);
+  }
+
+  private static Line binaryDecodeLine(int index, int len, ByteBuf buff) {
+    double a = binaryDecodeFLOAT8(index, 8, buff);
+    double b = binaryDecodeFLOAT8(index + 8, 8, buff);
+    double c = binaryDecodeFLOAT8(index + 16, 8, buff);
+    return new Line(a, b, c);
+  }
+
   private static void binaryEncodeLseg(LineSegment lseg, ByteBuf buff) {
     binaryEncodePoint(lseg.getP1(), buff);
     binaryEncodePoint(lseg.getP2(), buff);
@@ -915,6 +1012,74 @@ public class DataTypeCodec {
     Point upperRightCorner = binaryDecodePoint(index, 16, buff);
     Point lowerLeftCorner = binaryDecodePoint(index + 16, 16, buff);
     return new Box(upperRightCorner, lowerLeftCorner);
+  }
+
+  private static void binaryEncodePath(Path path, ByteBuf buff) {
+    if (path.isOpen()) {
+      buff.writeByte(0);
+    } else {
+      buff.writeByte(1);
+    }
+    List<Point> points = path.getPoints();
+    binaryEncodeINT4(points.size(), buff);
+    for (Point point : points) {
+      binaryEncodePoint(point, buff);
+    }
+  }
+
+  private static Path binaryDecodePath(int index, int len, ByteBuf buff) {
+    byte first = buff.getByte(index);
+    boolean isOpen;
+    if (first == 0) {
+      isOpen = true;
+    } else if (first == 1) {
+      isOpen = false;
+    } else {
+      throw new DecoderException("Decoding Path exception");
+    }
+    int idx = ++index;
+    int numberOfPoints = binaryDecodeINT4(idx, 4, buff);
+    idx += 4;
+    List<Point> points = new ArrayList<>();
+    // maybe we need some check?
+    for (int i = 0; i < numberOfPoints; i++) {
+      points.add(binaryDecodePoint(idx, 16, buff));
+      idx += 16;
+    }
+    return new Path(isOpen, points);
+  }
+
+  private static void binaryEncodePolygon(Polygon polygon, ByteBuf buff) {
+    List<Point> points = polygon.getPoints();
+    int numberOfPoints = points.size();
+    binaryEncodeINT4(numberOfPoints, buff);
+    for (Point point : points) {
+      binaryEncodeFLOAT8(point.x, buff);
+      binaryEncodeFLOAT8(point.y, buff);
+    }
+  }
+
+  private static Polygon binaryDecodePolygon(int index, int len, ByteBuf buff) {
+    int idx = index;
+    int numberOfPoints = binaryDecodeINT4(index, 4, buff);
+    idx += 4;
+    List<Point> points = new ArrayList<>();
+    for (int i = 0; i < numberOfPoints; i++) {
+      points.add(binaryDecodePoint(idx, 16, buff));
+      idx += 16;
+    }
+    return new Polygon(points);
+  }
+
+  private static void binaryEncodeCircle(Circle circle, ByteBuf buff) {
+    binaryEncodePoint(circle.getCenterPoint(), buff);
+    binaryEncodeFLOAT8(circle.getRadius(), buff);
+  }
+
+  private static Circle binaryDecodeCircle(int index, int len, ByteBuf buff) {
+    Point center = binaryDecodePoint(index, 16, buff);
+    double radius = binaryDecodeFLOAT8(index + 16, 8, buff);
+    return new Circle(center, radius);
   }
 
   private static void binaryEncodeINTERVAL(Interval interval, ByteBuf buff) {

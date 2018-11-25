@@ -18,12 +18,16 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.data.Box;
+import io.reactiverse.pgclient.data.Circle;
 import io.reactiverse.pgclient.data.Json;
+import io.reactiverse.pgclient.data.Line;
 import io.reactiverse.pgclient.data.LineSegment;
 import io.reactiverse.pgclient.data.Numeric;
 import io.reactiverse.pgclient.Tuple;
 import io.reactiverse.pgclient.data.Interval;
+import io.reactiverse.pgclient.data.Path;
 import io.reactiverse.pgclient.data.Point;
+import io.reactiverse.pgclient.data.Polygon;
 import io.vertx.core.buffer.Buffer;
 
 import java.math.BigDecimal;
@@ -147,6 +151,16 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
+  public Line getLine(int pos) {
+    Object val = get(pos);
+    if (val instanceof Line) {
+      return (Line) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
   public LineSegment getLineSegment(int pos) {
     Object val = get(pos);
     if (val instanceof LineSegment) {
@@ -161,6 +175,36 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
     Object val = get(pos);
     if (val instanceof Box) {
       return (Box) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public Path getPath(int pos) {
+    Object val = get(pos);
+    if (val instanceof Path) {
+      return (Path) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public Polygon getPolygon(int pos) {
+    Object val = get(pos);
+    if (val instanceof Polygon) {
+      return (Polygon) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public Circle getCircle(int pos) {
+    Object val = get(pos);
+    if (val instanceof Circle) {
+      return (Circle) val;
     } else {
       return null;
     }
@@ -347,6 +391,16 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
+  public Line[] getLineArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Line[]) {
+      return (Line[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
   public LineSegment[] getLineSegmentArray(int pos) {
     Object val = get(pos);
     if (val instanceof LineSegment[]) {
@@ -361,6 +415,36 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
     Object val = get(pos);
     if (val instanceof Box[]) {
       return (Box[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public Path[] getPathArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Path[]) {
+      return (Path[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public Polygon[] getPolygonArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Polygon[]) {
+      return (Polygon[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public Circle[] getCircleArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Circle[]) {
+      return (Circle[]) val;
     } else {
       return null;
     }
@@ -486,8 +570,12 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
       || value instanceof UUID
       || value instanceof Json
       || value instanceof Point
+      || value instanceof Line
       || value instanceof LineSegment
       || value instanceof Box
+      || value instanceof Path
+      || value instanceof Polygon
+      || value instanceof Circle
       || value instanceof Interval
       || value instanceof Boolean[]
       || value instanceof Number[]
@@ -500,8 +588,12 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
       || value instanceof UUID[]
       || value instanceof Json[]
       || value instanceof Point[]
+      || value instanceof Line[]
       || value instanceof LineSegment[]
       || value instanceof Box[]
+      || value instanceof Path[]
+      || value instanceof Polygon[]
+      || value instanceof Circle[]
       || value instanceof Interval[]
       || value instanceof Buffer[]) {
       add(value);
@@ -614,6 +706,12 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
+  public Tuple addLine(Line value) {
+    add(value);
+    return this;
+  }
+
+  @Override
   public Tuple addLineSegment(LineSegment value) {
     add(value);
     return this;
@@ -621,6 +719,24 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Tuple addBox(Box value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addPath(Path value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addPolygon(Polygon value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addCircle(Circle value) {
     add(value);
     return this;
   }
@@ -650,6 +766,12 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
+  public Tuple addLineArray(Line[] value) {
+    add(value);
+    return this;
+  }
+
+  @Override
   public Tuple addLineSegmentArray(LineSegment[] value) {
     add(value);
     return this;
@@ -657,6 +779,24 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Tuple addBoxArray(Box[] value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addPathArray(Path[] value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addPolygonArray(Polygon[] value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addCircleArray(Circle[] value) {
     add(value);
     return this;
   }

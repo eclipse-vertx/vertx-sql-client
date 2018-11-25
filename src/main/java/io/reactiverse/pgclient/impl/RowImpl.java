@@ -18,10 +18,14 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.data.Box;
+import io.reactiverse.pgclient.data.Circle;
 import io.reactiverse.pgclient.data.Json;
+import io.reactiverse.pgclient.data.Line;
 import io.reactiverse.pgclient.data.LineSegment;
 import io.reactiverse.pgclient.data.Numeric;
 import io.reactiverse.pgclient.Row;
+import io.reactiverse.pgclient.data.Path;
+import io.reactiverse.pgclient.data.Polygon;
 import io.reactiverse.pgclient.impl.codec.ColumnDesc;
 import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
@@ -176,6 +180,12 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
+  public Line getLine(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getLine(pos);
+  }
+
+  @Override
   public LineSegment getLineSegment(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getLineSegment(pos);
@@ -185,6 +195,24 @@ public class RowImpl extends ArrayTuple implements Row {
   public Box getBox(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getBox(pos);
+  }
+
+  @Override
+  public Path getPath(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getPath(pos);
+  }
+
+  @Override
+  public Polygon getPolygon(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getPolygon(pos);
+  }
+
+  @Override
+  public Circle getCircle(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getCircle(pos);
   }
 
   @Override
@@ -296,6 +324,12 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
+  public Line[] getLineArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getLineArray(pos);
+  }
+
+  @Override
   public LineSegment[] getLineSegmentArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getLineSegmentArray(pos);
@@ -305,6 +339,24 @@ public class RowImpl extends ArrayTuple implements Row {
   public Box[] getBoxArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getBoxArray(pos);
+  }
+
+  @Override
+  public Path[] getPathArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getPathArray(pos);
+  }
+
+  @Override
+  public Polygon[] getPolygonArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getPolygonArray(pos);
+  }
+
+  @Override
+  public Circle[] getCircleArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getCircleArray(pos);
   }
 
   @Override
