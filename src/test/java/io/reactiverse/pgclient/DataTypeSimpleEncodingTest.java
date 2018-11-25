@@ -157,59 +157,59 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
 
   @Test
   public void testPoint(TestContext ctx) {
-    testDecodeGeometricDataType(ctx, "Point", "\"GeometricDataType\"", Tuple::getPoint, Row::getPoint,
+    testDecodeGeometricDataType(ctx, "\"Point\"", "\"GeometricDataType\"", Tuple::getPoint, Row::getPoint,
       new Point(1.0, 2.0));
   }
 
   @Test
   public void testPointArray(TestContext ctx) {
     Point[] points = {new Point(1.0, 1.0), new Point(2.0, 2.0)};
-    testDecodeGeometricDataType(ctx, "Point", "\"ArrayDataType\"", Tuple::getPointArray, Row::getPointArray,
+    testDecodeGeometricDataType(ctx, "\"Point\"", "\"ArrayDataType\"", Tuple::getPointArray, Row::getPointArray,
       points);
   }
 
   @Test
   public void testLine(TestContext ctx) {
-    testDecodeGeometricDataType(ctx, "Line", "\"GeometricDataType\"", Tuple::getLine, Row::getLine,
+    testDecodeGeometricDataType(ctx, "\"Line\"", "\"GeometricDataType\"", Tuple::getLine, Row::getLine,
       new Line(1.0, 2.0, 3.0));
   }
 
   @Test
   public void testLineArray(TestContext ctx) {
     Line[] lines = {new Line(1.0, 2.0, 3.0), new Line(2.0, 3.0, 4.0)};
-    testDecodeGeometricDataType(ctx, "Line", "\"ArrayDataType\"", Tuple::getLineArray, Row::getLineArray,
+    testDecodeGeometricDataType(ctx, "\"Line\"", "\"ArrayDataType\"", Tuple::getLineArray, Row::getLineArray,
       lines);
   }
 
   @Test
   public void testLineSegment(TestContext ctx) {
-    testDecodeGeometricDataType(ctx, "Lseg", "\"GeometricDataType\"", Tuple::getLineSegment, Row::getLineSegment,
+    testDecodeGeometricDataType(ctx, "\"Lseg\"", "\"GeometricDataType\"", Tuple::getLineSegment, Row::getLineSegment,
       new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0)));
   }
 
   @Test
   public void testLineSegmentArray(TestContext ctx) {
     LineSegment[] lineSegments = {new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0)), new LineSegment(new Point(2.0, 2.0), new Point(3.0, 3.0))};
-    testDecodeGeometricDataType(ctx, "Lseg", "\"ArrayDataType\"", Tuple::getLineSegmentArray, Row::getLineSegmentArray,
+    testDecodeGeometricDataType(ctx, "\"Lseg\"", "\"ArrayDataType\"", Tuple::getLineSegmentArray, Row::getLineSegmentArray,
       lineSegments);
   }
 
   @Test
   public void testBox(TestContext ctx) {
-    testDecodeGeometricDataType(ctx, "Box", "\"GeometricDataType\"", Tuple::getBox, Row::getBox,
+    testDecodeGeometricDataType(ctx, "\"Box\"", "\"GeometricDataType\"", Tuple::getBox, Row::getBox,
       new Box(new Point(2.0, 2.0), new Point(1.0, 1.0)));
   }
 
   @Test
   public void testBoxArray(TestContext ctx) {
     Box[] boxes = {new Box(new Point(2.0, 2.0), new Point(1.0, 1.0)), new Box(new Point(3.0, 3.0), new Point(2.0, 2.0))};
-    testDecodeGeometricDataType(ctx, "Box", "\"ArrayDataType\"", Tuple::getBoxArray, Row::getBoxArray,
+    testDecodeGeometricDataType(ctx, "\"Box\"", "\"ArrayDataType\"", Tuple::getBoxArray, Row::getBoxArray,
       boxes);
   }
 
   @Test
   public void testClosedPath(TestContext ctx) {
-    testDecodeGeometricDataType(ctx, "ClosedPath", "\"GeometricDataType\"", Tuple::getPath, Row::getPath,
+    testDecodeGeometricDataType(ctx, "\"ClosedPath\"", "\"GeometricDataType\"", Tuple::getPath, Row::getPath,
       new Path(false, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0))));
   }
 
@@ -217,14 +217,14 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
   public void testClosedPathArray(TestContext ctx) {
     Path[] closedPaths = {new Path(false, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0))),
       new Path(false, Arrays.asList(new Point(2.0, 2.0), new Point(3.0, 2.0), new Point(3.0, 3.0), new Point(3.0, 2.0)))};
-    testDecodeGeometricDataType(ctx, "ClosedPath", "\"ArrayDataType\"", Tuple::getPathArray, Row::getPathArray,
+    testDecodeGeometricDataType(ctx, "\"ClosedPath\"", "\"ArrayDataType\"", Tuple::getPathArray, Row::getPathArray,
       closedPaths);
   }
 
 
   @Test
   public void testOpenPath(TestContext ctx) {
-    testDecodeGeometricDataType(ctx, "OpenPath", "\"GeometricDataType\"", Tuple::getPath, Row::getPath,
+    testDecodeGeometricDataType(ctx, "\"OpenPath\"", "\"GeometricDataType\"", Tuple::getPath, Row::getPath,
       new Path(true, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0))));
   }
 
@@ -232,14 +232,14 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
   public void testOpenPathArray(TestContext ctx) {
     Path[] openPaths = {new Path(true, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0))),
       new Path(true, Arrays.asList(new Point(2.0, 2.0), new Point(3.0, 2.0), new Point(3.0, 3.0), new Point(3.0, 2.0)))};
-    testDecodeGeometricDataType(ctx, "OpenPath", "\"ArrayDataType\"", Tuple::getPathArray, Row::getPathArray,
+    testDecodeGeometricDataType(ctx, "\"OpenPath\"", "\"ArrayDataType\"", Tuple::getPathArray, Row::getPathArray,
       openPaths);
   }
 
 
   @Test
   public void testPolygon(TestContext ctx) {
-    testDecodeGeometricDataType(ctx, "Polygon", "\"GeometricDataType\"", Tuple::getPolygon, Row::getPolygon,
+    testDecodeGeometricDataType(ctx, "\"Polygon\"", "\"GeometricDataType\"", Tuple::getPolygon, Row::getPolygon,
       new Polygon(Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 2.0), new Point(3.0, 1.0))));
   }
 
@@ -247,20 +247,20 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
   public void testPolygonArray(TestContext ctx) {
     Polygon[] polygons = {new Polygon(Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 2.0), new Point(3.0, 1.0))),
       new Polygon(Arrays.asList(new Point(0.0, 0.0), new Point(0.0, 1.0), new Point(1.0, 2.0), new Point(2.0, 1.0), new Point(2.0, 0.0)))};
-    testDecodeGeometricDataType(ctx, "Polygon", "\"ArrayDataType\"", Tuple::getPolygonArray, Row::getPolygonArray,
+    testDecodeGeometricDataType(ctx, "\"Polygon\"", "\"ArrayDataType\"", Tuple::getPolygonArray, Row::getPolygonArray,
       polygons);
   }
 
   @Test
   public void testCircle(TestContext ctx) {
-    testDecodeGeometricDataType(ctx, "Circle", "\"GeometricDataType\"", Tuple::getCircle, Row::getCircle,
+    testDecodeGeometricDataType(ctx, "\"Circle\"", "\"GeometricDataType\"", Tuple::getCircle, Row::getCircle,
       new Circle(new Point(1.0, 1.0), 1.0));
   }
 
   @Test
   public void testCircleArray(TestContext ctx) {
     Circle[] circles = {new Circle(new Point(1.0, 1.0), 1.0), new Circle(new Point(0.0, 0.0), 2.0)};
-    testDecodeGeometricDataType(ctx, "Circle", "\"ArrayDataType\"", Tuple::getCircleArray, Row::getCircleArray,
+    testDecodeGeometricDataType(ctx, "\"Circle\"", "\"ArrayDataType\"", Tuple::getCircleArray, Row::getCircleArray,
       circles);
   }
 
@@ -269,11 +269,11 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
                                                String tableName,
                                                ColumnChecker.SerializableBiFunction<Tuple, Integer, Object> byIndexGetter,
                                                ColumnChecker.SerializableBiFunction<Row, String, Object> byNameGetter,
-                                               T expected) {
+                                               Object expected) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("SELECT \"" + columnName + "\" FROM \"" + tableName + "\" WHERE \"id\" = 1", ctx.asyncAssertSuccess(result -> {
+        .query("SELECT " + columnName + " FROM " + tableName + " WHERE \"id\" = 1", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, columnName)
