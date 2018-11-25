@@ -630,12 +630,10 @@ public class DataTypeCodec {
 
   private static LineSegment textDecodeLseg(int index, int len, ByteBuf buff) {
     // Lseg representation: [(1.0,1.0),(2.0,2.0)]
-    int idx = ++index;
-    int separatorOfP1Idx = buff.indexOf(index, idx + len, (byte) ',');
-    int separatorOfLsegIdx = buff.indexOf(++separatorOfP1Idx, idx + len, (byte) ',');
-    int lenOfP1 = separatorOfLsegIdx - idx;
-    Point p1 = textDecodePOINT(idx, lenOfP1, buff);
-    Point p2 = textDecodePOINT(separatorOfLsegIdx + 1, len - lenOfP1 - 3, buff);
+    int idxOfPointsSeparator = Util.nthIndexOf(buff, index, index + len, (byte) ',', 2);
+    int lenOfP1 = idxOfPointsSeparator - index - 1;
+    Point p1 = textDecodePOINT(index + 1, lenOfP1, buff);
+    Point p2 = textDecodePOINT(idxOfPointsSeparator + 1, len - lenOfP1 - 3, buff);
     return new LineSegment(p1, p2);
   }
 
