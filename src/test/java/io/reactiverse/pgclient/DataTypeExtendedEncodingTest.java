@@ -1,21 +1,13 @@
 package io.reactiverse.pgclient;
 
-import io.reactiverse.pgclient.data.Box;
-import io.reactiverse.pgclient.data.Circle;
 import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.data.Json;
-import io.reactiverse.pgclient.data.Line;
-import io.reactiverse.pgclient.data.LineSegment;
 import io.reactiverse.pgclient.data.Numeric;
-import io.reactiverse.pgclient.data.Path;
-import io.reactiverse.pgclient.data.Point;
-import io.reactiverse.pgclient.data.Polygon;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -1006,134 +998,6 @@ public class DataTypeExtendedEncodingTest extends DataTypeTestBase {
     testGeneric(ctx,
       "SELECT c FROM (VALUES ($1 :: FLOAT4[])) AS t (c)",
       new Float[][]{new Float[]{0f, -10f, Float.MAX_VALUE}}, Tuple::getFloatArray);
-  }
-
-  @Test
-  public void testEncodeGeometric(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"" + "GeometricDataType" + "\" SET " +
-          "\"Point\" = $1, " +
-          "\"Line\" = $2, " +
-          "\"Lseg\" = $3, " +
-          "\"Box\" = $4, " +
-          "\"ClosedPath\" = $5, " +
-          "\"OpenPath\" = $6, " +
-          "\"Polygon\" = $7, " +
-          "\"Circle\" = $8 " +
-          "WHERE \"id\" = $9 RETURNING \"Point\", \"Line\", \"Lseg\", \"Box\", \"ClosedPath\", \"OpenPath\", \"Polygon\", \"Circle\"",
-        ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
-            .addPoint(new Point(2.0, 3.0))
-            .addLine(new Line(2.0, 3.0, 4.0))
-            .addLineSegment(new LineSegment(new Point(2.0, 2.0), new Point(3.0, 3.0)))
-            .addBox(new Box(new Point(3.0, 3.0), new Point(2.0, 2.0)))
-            .addPath(new Path(true, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0))))
-            .addPath(new Path(false, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0))))
-            .addPolygon(new Polygon(Arrays.asList(new Point(2.0, 2.0), new Point(3.0, 3.0), new Point(4.0, 2.0))))
-            .addCircle(new Circle(new Point(1.0, 1.0), 3.0))
-            .addInteger(2), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
-            Row row = result.iterator().next();
-            ColumnChecker.checkColumn(0, "Point")
-              .returns(Tuple::getValue, Row::getValue, new Point(2.0, 3.0))
-              .returns(Tuple::getPoint, Row::getPoint, new Point(2.0, 3.0))
-              .forRow(row);
-            ColumnChecker.checkColumn(1, "Line")
-              .returns(Tuple::getValue, Row::getValue, new Line(2.0, 3.0, 4.0))
-              .returns(Tuple::getLine, Row::getLine, new Line(2.0, 3.0, 4.0))
-              .forRow(row);
-            ColumnChecker.checkColumn(2, "Lseg")
-              .returns(Tuple::getValue, Row::getValue, new LineSegment(new Point(2.0, 2.0), new Point(3.0, 3.0)))
-              .returns(Tuple::getLineSegment, Row::getLineSegment, new LineSegment(new Point(2.0, 2.0), new Point(3.0, 3.0)))
-              .forRow(row);
-            ColumnChecker.checkColumn(3, "Box")
-              .returns(Tuple::getValue, Row::getValue, new Box(new Point(3.0, 3.0), new Point(2.0, 2.0)))
-              .returns(Tuple::getBox, Row::getBox, new Box(new Point(3.0, 3.0), new Point(2.0, 2.0)))
-              .forRow(row);
-            ColumnChecker.checkColumn(4, "ClosedPath")
-              .returns(Tuple::getValue, Row::getValue, new Path(true, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0))))
-              .returns(Tuple::getPath, Row::getPath, new Path(true, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0))))
-              .forRow(row);
-            ColumnChecker.checkColumn(5, "OpenPath")
-              .returns(Tuple::getValue, Row::getValue, new Path(false, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0))))
-              .returns(Tuple::getPath, Row::getPath, new Path(false, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0))))
-              .forRow(row);
-            ColumnChecker.checkColumn(6, "Polygon")
-              .returns(Tuple::getValue, Row::getValue, new Polygon(Arrays.asList(new Point(2.0, 2.0), new Point(3.0, 3.0), new Point(4.0, 2.0))))
-              .returns(Tuple::getPolygon, Row::getPolygon, new Polygon(Arrays.asList(new Point(2.0, 2.0), new Point(3.0, 3.0), new Point(4.0, 2.0))))
-              .forRow(row);
-            ColumnChecker.checkColumn(7, "Circle")
-              .returns(Tuple::getValue, Row::getValue, new Circle(new Point(1.0, 1.0), 3.0))
-              .returns(Tuple::getCircle, Row::getCircle, new Circle(new Point(1.0, 1.0), 3.0))
-              .forRow(row);
-            async.complete();
-          }));
-        }));
-    }));
-  }
-
-  @Test
-  public void testDecodeGeometric(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Point\", \"Line\", \"Lseg\", \"Box\", \"ClosedPath\", \"OpenPath\", \"Polygon\", \"Circle\" FROM \"GeometricDataType\" WHERE \"id\" = $1",
-        ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
-            Row row = result.iterator().next();
-
-            ColumnChecker.checkColumn(0, "Point")
-              .returns(Tuple::getValue, Row::getValue, new Point(1.0, 2.0))
-              .returns(Tuple::getPoint, Row::getPoint, new Point(1.0, 2.0))
-              .forRow(row);
-            ColumnChecker.checkColumn(1, "Line")
-              .returns(Tuple::getValue, Row::getValue, new Line(1.0, 2.0, 3.0))
-              .returns(Tuple::getLine, Row::getLine, new Line(1.0, 2.0, 3.0))
-              .forRow(row);
-            ColumnChecker.checkColumn(2, "Lseg")
-              .returns(Tuple::getValue, Row::getValue, new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0)))
-              .returns(Tuple::getLineSegment, Row::getLineSegment, new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0)))
-              .forRow(row);
-            ColumnChecker.checkColumn(3, "Box")
-              .returns(Tuple::getValue, Row::getValue, new Box(new Point(2.0, 2.0), new Point(1.0, 1.0)))
-              .returns(Tuple::getBox, Row::getBox, new Box(new Point(2.0, 2.0), new Point(1.0, 1.0)))
-              .forRow(row);
-            ColumnChecker.checkColumn(4, "ClosedPath")
-              .returns(Tuple::getValue, Row::getValue, new Path(false, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0))))
-              .returns(Tuple::getPath, Row::getPath, new Path(false, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0))))
-              .forRow(row);
-            ColumnChecker.checkColumn(5, "OpenPath")
-              .returns(Tuple::getValue, Row::getValue, new Path(true, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0))))
-              .returns(Tuple::getPath, Row::getPath, new Path(true, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0))))
-              .forRow(row);
-            ColumnChecker.checkColumn(6, "Polygon")
-              .returns(Tuple::getValue, Row::getValue, new Polygon(Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 2.0), new Point(3.0, 1.0))))
-              .returns(Tuple::getPolygon, Row::getPolygon, new Polygon(Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 2.0), new Point(3.0, 1.0))))
-              .forRow(row);
-            ColumnChecker.checkColumn(7, "Circle")
-              .returns(Tuple::getValue, Row::getValue, new Circle(new Point(1.0, 1.0), 1.0))
-              .returns(Tuple::getCircle, Row::getCircle, new Circle(new Point(1.0, 1.0), 1.0))
-              .forRow(row);
-            async.complete();
-          }));
-        }));
-    }));
-  }
-
-
-  @Ignore("to be implemented")
-  @Test
-  public void testEncodeGeometricArray() {
-    //TODO tests needed
-  }
-
-  @Ignore("to be implemented")
-  @Test
-  public void testDecodeGeometricArray() {
-    //TODO tests needed
   }
 
   private static <T> void compare(TestContext ctx, T expected, T actual) {
