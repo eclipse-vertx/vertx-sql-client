@@ -16,6 +16,7 @@
  */
 package io.reactiverse.pgclient;
 
+import io.reactiverse.pgclient.data.Box;
 import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.data.Json;
 import io.reactiverse.pgclient.data.LineSegment;
@@ -220,6 +221,15 @@ public interface Row extends Tuple {
   LineSegment getLineSegment(String name);
 
   /**
+   * Get {@link Box} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Box getBox(String name);
+
+  /**
    * Get {@link Interval} value at {@code pos}.
    *
    * @param name the column
@@ -389,6 +399,15 @@ public interface Row extends Tuple {
    */
   @GenIgnore
   LineSegment[] getLineSegmentArray(String name);
+
+  /**
+   * Get an array of {@link Box} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Box[] getBoxArray(String name);
 
   /**
    * Get an array of {@link Interval} value at {@code pos}.

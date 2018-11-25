@@ -18,6 +18,7 @@ package io.reactiverse.pgclient.impl.codec;
 
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
+import io.reactiverse.pgclient.data.Box;
 import io.reactiverse.pgclient.data.Json;
 import io.reactiverse.pgclient.data.LineSegment;
 import io.reactiverse.pgclient.data.Numeric;
@@ -98,7 +99,8 @@ public enum DataType {
   POINT_ARRAY(1017, true, Point[].class),
   LSEG(601, true, LineSegment.class),
   LSEG_ARRAY(1018, true, LineSegment[].class),
-  BOX(603, true, Object.class),
+  BOX(603, true, Box.class),
+  BOX_ARRAY(1020, true, Box[].class),
   HSTORE(33670, true, Object.class),
   OID(26, true, Object.class),
   OID_ARRAY(1028, true, Object[].class),

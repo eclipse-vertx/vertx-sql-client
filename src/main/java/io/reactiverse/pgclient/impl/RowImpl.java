@@ -17,6 +17,7 @@
 
 package io.reactiverse.pgclient.impl;
 
+import io.reactiverse.pgclient.data.Box;
 import io.reactiverse.pgclient.data.Json;
 import io.reactiverse.pgclient.data.LineSegment;
 import io.reactiverse.pgclient.data.Numeric;
@@ -181,6 +182,12 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
+  public Box getBox(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getBox(pos);
+  }
+
+  @Override
   public Interval getInterval(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getInterval(pos);
@@ -292,6 +299,12 @@ public class RowImpl extends ArrayTuple implements Row {
   public LineSegment[] getLineSegmentArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getLineSegmentArray(pos);
+  }
+
+  @Override
+  public Box[] getBoxArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getBoxArray(pos);
   }
 
   @Override

@@ -1,5 +1,6 @@
 package io.reactiverse.pgclient;
 
+import io.reactiverse.pgclient.data.Box;
 import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.data.Json;
 import io.reactiverse.pgclient.data.LineSegment;
@@ -211,6 +212,40 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
           ColumnChecker.checkColumn(0, "Lseg")
             .returns(Tuple::getValue, Row::getValue, new LineSegment[]{new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0))})
             .returns(Tuple::getLineSegmentArray, Row::getLineSegmentArray, new LineSegment[]{new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0))})
+            .forRow(row);
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testBox(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT box(point(2.0,2.0),point(1.0,1.0)) \"Box\"", ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.size());
+          Row row = result.iterator().next();
+          ColumnChecker.checkColumn(0, "Box")
+            .returns(Tuple::getValue, Row::getValue, new Box(new Point(2.0, 2.0), new Point(1.0, 1.0)))
+            .returns(Tuple::getBox, Row::getBox, new Box(new Point(2.0, 2.0), new Point(1.0, 1.0)))
+            .forRow(row);
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testBoxArray(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT (ARRAY[box(point(2.0,2.0),point(1.0,1.0)),box(point(3.0,3.0),point(2.0,2.0))]) \"Box\"", ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.size());
+          Row row = result.iterator().next();
+          ColumnChecker.checkColumn(0, "Box")
+            .returns(Tuple::getValue, Row::getValue, new Box[]{new Box(new Point(2.0, 2.0), new Point(1.0, 1.0)),new Box(new Point(3.0, 3.0), new Point(2.0, 2.0))})
+            .returns(Tuple::getBoxArray, Row::getBoxArray, new Box[]{new Box(new Point(2.0, 2.0), new Point(1.0, 1.0)),new Box(new Point(3.0, 3.0), new Point(2.0, 2.0))})
             .forRow(row);
           async.complete();
         }));

@@ -17,6 +17,7 @@
 
 package io.reactiverse.pgclient;
 
+import io.reactiverse.pgclient.data.Box;
 import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.data.Json;
 import io.reactiverse.pgclient.data.LineSegment;
@@ -472,6 +473,15 @@ public interface Tuple {
   LineSegment[] getLineSegmentArray(int pos);
 
   /**
+   * Get an array of {@link Box} value at {@code pos}.
+   *
+   * @param pos the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Box[] getBoxArray(int pos);
+
+  /**
    * Get an array of {@link Interval} value at {@code pos}.
    *
    * @param pos the column
@@ -506,6 +516,15 @@ public interface Tuple {
    */
   @GenIgnore
   LineSegment getLineSegment(int pos);
+
+  /**
+   * Get {@link Box} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Box getBox(int pos);
 
   /**
    * Get {@link Interval} value at {@code pos}.
@@ -714,6 +733,15 @@ public interface Tuple {
   Tuple addLineSegment(LineSegment value);
 
   /**
+   * Add a {@link Box} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addBox(Box value);
+
+  /**
    * Add a {@link Point} value at the end of the tuple.
    *
    * @param value the value
@@ -883,6 +911,15 @@ public interface Tuple {
    */
   @GenIgnore
   Tuple addLineSegmentArray(LineSegment[] value);
+
+  /**
+   * Add an array of {@link Box} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addBoxArray(Box[] value);
 
   /**
    * Add an array of {@link Interval} value at the end of the tuple.

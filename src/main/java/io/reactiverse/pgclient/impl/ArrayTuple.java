@@ -17,6 +17,7 @@
 
 package io.reactiverse.pgclient.impl;
 
+import io.reactiverse.pgclient.data.Box;
 import io.reactiverse.pgclient.data.Json;
 import io.reactiverse.pgclient.data.LineSegment;
 import io.reactiverse.pgclient.data.Numeric;
@@ -150,6 +151,16 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
     Object val = get(pos);
     if (val instanceof LineSegment) {
       return (LineSegment) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public Box getBox(int pos) {
+    Object val = get(pos);
+    if (val instanceof Box) {
+      return (Box) val;
     } else {
       return null;
     }
@@ -346,6 +357,16 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
+  public Box[] getBoxArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Box[]) {
+      return (Box[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
   public Interval[] getIntervalArray(int pos) {
     Object val = get(pos);
     if (val instanceof Interval[]) {
@@ -466,6 +487,7 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
       || value instanceof Json
       || value instanceof Point
       || value instanceof LineSegment
+      || value instanceof Box
       || value instanceof Interval
       || value instanceof Boolean[]
       || value instanceof Number[]
@@ -479,6 +501,7 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
       || value instanceof Json[]
       || value instanceof Point[]
       || value instanceof LineSegment[]
+      || value instanceof Box[]
       || value instanceof Interval[]
       || value instanceof Buffer[]) {
       add(value);
@@ -597,6 +620,12 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   }
 
   @Override
+  public Tuple addBox(Box value) {
+    add(value);
+    return this;
+  }
+
+  @Override
   public Tuple addInterval(Interval value) {
     add(value);
     return this;
@@ -622,6 +651,12 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public Tuple addLineSegmentArray(LineSegment[] value) {
+    add(value);
+    return this;
+  }
+
+  @Override
+  public Tuple addBoxArray(Box[] value) {
     add(value);
     return this;
   }

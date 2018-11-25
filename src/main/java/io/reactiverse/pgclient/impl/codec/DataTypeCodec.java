@@ -26,6 +26,7 @@ import io.reactiverse.pgclient.data.*;
 import io.reactiverse.pgclient.impl.codec.formatter.DateTimeFormatter;
 import io.reactiverse.pgclient.impl.codec.formatter.TimeFormatter;
 import io.reactiverse.pgclient.impl.codec.util.UTF8StringEndDetector;
+import io.reactiverse.pgclient.impl.codec.util.Util;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -33,6 +34,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.time.temporal.ChronoField;
@@ -62,6 +64,7 @@ public class DataTypeCodec {
   private static final Numeric[] empty_numeric_array = new Numeric[0];
   private static final Point[] empty_point_array = new Point[0];
   private static final LineSegment[] empty_lseg_array = new LineSegment[0];
+  private static final Box[] empty_box_array = new Box[0];
   private static final Interval[] empty_interval_array = new Interval[0];
   private static final Boolean[] empty_boolean_array = new Boolean[0];
   private static final Integer[] empty_integer_array = new Integer[0];
@@ -93,7 +96,8 @@ public class DataTypeCodec {
   private static final IntFunction<Json[]> JSON_ARRAY_FACTORY = size -> size == 0 ? empty_json_array : new Json[size];
   private static final IntFunction<Numeric[]> NUMERIC_ARRAY_FACTORY = size -> size == 0 ? empty_numeric_array : new Numeric[size];
   private static final IntFunction<Point[]> POINT_ARRAY_FACTORY = size -> size == 0 ? empty_point_array : new Point[size];
-  private static final IntFunction<LineSegment[]> LSEG_ARRAY_FACTORY = size -> size ==0 ? empty_lseg_array : new LineSegment[size];
+  private static final IntFunction<LineSegment[]> LSEG_ARRAY_FACTORY = size -> size == 0 ? empty_lseg_array : new LineSegment[size];
+  private static final IntFunction<Box[]> BOX_ARRAY_FACTORY = size -> size == 0 ? empty_box_array : new Box[size];
   private static final IntFunction<Interval[]> INTERVAL_ARRAY_FACTORY = size -> size == 0 ? empty_interval_array : new Interval[size];
 
   public static void encodeText(DataType id, Object value, ByteBuf buff) {
@@ -256,6 +260,12 @@ public class DataTypeCodec {
       case LSEG_ARRAY:
         binaryEncodeArray((LineSegment[]) value, DataType.LSEG, buff);
         break;
+      case BOX:
+        binaryEncodeBox((Box) value, buff);
+        break;
+      case BOX_ARRAY:
+        binaryEncodeArray((Box[]) value, DataType.BOX, buff);
+        break;
       case INTERVAL:
         binaryEncodeINTERVAL((Interval) value, buff);
         break;
@@ -359,6 +369,10 @@ public class DataTypeCodec {
         return binaryDecodeLseg(index, len, buff);
       case LSEG_ARRAY:
         return binaryDecodeArray(LSEG_ARRAY_FACTORY, DataType.LSEG, index, len, buff);
+      case BOX:
+        return binaryDecodeBox(index, len, buff);
+      case BOX_ARRAY:
+        return binaryDecodeArray(BOX_ARRAY_FACTORY, DataType.BOX, index, len, buff);
       case INTERVAL:
         return binaryDecodeINTERVAL(index, len, buff);
       case INTERVAL_ARRAY:
@@ -463,6 +477,10 @@ public class DataTypeCodec {
         return textDecodeLseg(index, len, buff);
       case LSEG_ARRAY:
         return textDecodeArray(LSEG_ARRAY_FACTORY, DataType.LSEG, index, len, buff);
+      case BOX:
+        return textDecodeBox(index, len, buff);
+      case BOX_ARRAY:
+        return textDecodeBoxArray(BOX_ARRAY_FACTORY, index, len, buff);
       case INTERVAL:
         return textDecodeINTERVAL(index, len, buff);
       case INTERVAL_ARRAY:
@@ -611,7 +629,7 @@ public class DataTypeCodec {
   }
 
   private static LineSegment textDecodeLseg(int index, int len, ByteBuf buff) {
-    // Lseg text sample: [(1.0,1.0),(2.0,2.0)]
+    // Lseg representation: [(1.0,1.0),(2.0,2.0)]
     int idx = ++index;
     int separatorOfP1Idx = buff.indexOf(index, idx + len, (byte) ',');
     int separatorOfLsegIdx = buff.indexOf(++separatorOfP1Idx, idx + len, (byte) ',');
@@ -619,6 +637,19 @@ public class DataTypeCodec {
     Point p1 = textDecodePOINT(idx, lenOfP1, buff);
     Point p2 = textDecodePOINT(separatorOfLsegIdx + 1, len - lenOfP1 - 3, buff);
     return new LineSegment(p1, p2);
+  }
+
+  private static Box textDecodeBox(int index, int len, ByteBuf buff) {
+    // Box representation: (2.0,2.0),(1.0,1.0)
+    int idxOfPointsSeparator = Util.nthIndexOf(buff, index, index + len, (byte) ',', 2);
+    int lenOfUpperRightCornerPoint = idxOfPointsSeparator - index;
+    Point upperRightCorner = textDecodePOINT(index, lenOfUpperRightCornerPoint, buff);
+    Point lowerLeftCorner = textDecodePOINT(idxOfPointsSeparator + 1, len - lenOfUpperRightCornerPoint - 1, buff);
+    return new Box(upperRightCorner, lowerLeftCorner);
+  }
+
+  private static Box textDecodeBoxArray(IntFunction<Box[]> supplier, int index, int len, ByteBuf buff) {
+    throw new UnsupportedOperationException("can not reuse the textDecodeArray method for now");
   }
 
   private static Interval textDecodeINTERVAL(int index, int len, ByteBuf buff) {
@@ -875,6 +906,17 @@ public class DataTypeCodec {
     Point p1 = binaryDecodePoint(index, 16, buff);
     Point p2 = binaryDecodePoint(index + 16, 16, buff);
     return new LineSegment(p1, p2);
+  }
+
+  private static void binaryEncodeBox(Box box, ByteBuf buff) {
+    binaryEncodePoint(box.getUpperRightCorner(), buff);
+    binaryEncodePoint(box.getLowerLeftCorner(), buff);
+  }
+
+  private static Box binaryDecodeBox(int index, int len, ByteBuf buff) {
+    Point upperRightCorner = binaryDecodePoint(index, 16, buff);
+    Point lowerLeftCorner = binaryDecodePoint(index + 16, 16, buff);
+    return new Box(upperRightCorner, lowerLeftCorner);
   }
 
   private static void binaryEncodeINTERVAL(Interval interval, ByteBuf buff) {

@@ -89,6 +89,10 @@ class ColumnChecker {
     rowMethods.add(Row::getLineSegment);
     tupleMethods.add(Tuple::getLineSegmentArray);
     rowMethods.add(Row::getLineSegmentArray);
+    tupleMethods.add(Tuple::getBox);
+    rowMethods.add(Row::getBox);
+    tupleMethods.add(Tuple::getBoxArray);
+    rowMethods.add(Row::getBoxArray);
   }
 
   static ColumnChecker checkColumn(int index, String name) {

@@ -1,5 +1,21 @@
 = Cheatsheets
 
+[[Box]]
+== Box
+
+++++
+ Rectangular box data type in Postgres represented by pairs of links that are opposite corners of the box.
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[lowerLeftCorner]]`lowerLeftCorner`|`link:dataobjects.html#Point[Point]`|-
+|[[upperRightCorner]]`upperRightCorner`|`link:dataobjects.html#Point[Point]`|-
+|===
+
 [[Interval]]
 == Interval
 
