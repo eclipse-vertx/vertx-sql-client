@@ -206,12 +206,12 @@ public class DataTypeSimpleEncodingTest extends DataTypeTestBase {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("SELECT (ARRAY[lseg(point(1.0,1.0),point(2.0,2.0))]) \"Lseg\"", ctx.asyncAssertSuccess(result -> {
+        .query("SELECT (ARRAY[lseg(point(1.0,1.0),point(2.0,2.0)),lseg(point(2.0,2.0),point(3.0,3.0))]) \"Lseg\"", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "Lseg")
-            .returns(Tuple::getValue, Row::getValue, new LineSegment[]{new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0))})
-            .returns(Tuple::getLineSegmentArray, Row::getLineSegmentArray, new LineSegment[]{new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0))})
+            .returns(Tuple::getValue, Row::getValue, new LineSegment[]{new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0)), new LineSegment(new Point(2.0, 2.0), new Point(3.0, 3.0))})
+            .returns(Tuple::getLineSegmentArray, Row::getLineSegmentArray, new LineSegment[]{new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0)), new LineSegment(new Point(2.0, 2.0), new Point(3.0, 3.0))})
             .forRow(row);
           async.complete();
         }));

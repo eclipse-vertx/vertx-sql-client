@@ -109,17 +109,17 @@ CREATE TABLE "GeometricDataType" (
   "Point" POINT,
   "Line" LINE,
   "Lseg" LSEG,
-  "BOX" BOX,
+  "Box" BOX,
   "ClosedPath" PATH,
   "OpenPath" PATH,
   "Polygon" POLYGON,
   "Circle" CIRCLE
 );
 
-INSERT INTO "GeometricDataType" ("id", "Point", "Line", "Lseg", "BOX", "ClosedPath", "OpenPath", "Polygon", "Circle")
-VALUES (1, '(1.0,2.0)':: POINT, '{1.0,2.0,3.0}':: LINE, '((1.0,1.0),(2.0,2.0))':: LSEG, '((1.0,1.0),(2.0,2.0))':: BOX, '((1.0,1.0),(2.0,1.0),(2.0,2.0),(2.0,1.0))':: PATH,'[(1.0,1.0),(2.0,1.0),(2.0,2.0),(2.0,1.0)]':: PATH, '((1.0,1.0),(2.0,2.0),(3.0,1.0))':: POLYGON, '<(1.0,1.0),1.0>':: CIRCLE);
-INSERT INTO "GeometricDataType" ("id", "Point", "Line", "Lseg", "BOX", "ClosedPath", "OpenPath", "Polygon", "Circle")
-VALUES (2, '(1.0,2.0)':: POINT, '{1.0,2.0,3.0}':: LINE, '((1.0,1.0),(2.0,2.0))':: LSEG, '((1.0,1.0),(2.0,2.0))':: BOX, '((1.0,1.0),(2.0,1.0),(2.0,2.0),(2.0,1.0))':: PATH,'[(1.0,1.0),(2.0,1.0),(2.0,2.0),(2.0,1.0)]':: PATH, '((1.0,1.0),(2.0,2.0),(3.0,1.0))':: POLYGON, '<(1.0,1.0),1.0>':: CIRCLE);
+INSERT INTO "GeometricDataType" ("id", "Point", "Line", "Lseg", "Box", "ClosedPath", "OpenPath", "Polygon", "Circle")
+VALUES (1, '(1.0,2.0)':: POINT, '{1.0,2.0,3.0}':: LINE, '((1.0,1.0),(2.0,2.0))':: LSEG, '((2.0,2.0),(1.0,1.0))':: BOX, '((1.0,1.0),(2.0,1.0),(2.0,2.0),(2.0,1.0))':: PATH,'[(1.0,1.0),(2.0,1.0),(2.0,2.0),(2.0,1.0)]':: PATH, '((1.0,1.0),(2.0,2.0),(3.0,1.0))':: POLYGON, '<(1.0,1.0),1.0>':: CIRCLE);
+INSERT INTO "GeometricDataType" ("id", "Point", "Line", "Lseg", "Box", "ClosedPath", "OpenPath", "Polygon", "Circle")
+VALUES (2, '(1.0,2.0)':: POINT, '{1.0,2.0,3.0}':: LINE, '((1.0,1.0),(2.0,2.0))':: LSEG, '((2.0,2.0),(1.0,1.0))':: BOX, '((1.0,1.0),(2.0,1.0),(2.0,2.0),(2.0,1.0))':: PATH,'[(1.0,1.0),(2.0,1.0),(2.0,2.0),(2.0,1.0)]':: PATH, '((1.0,1.0),(2.0,2.0),(3.0,1.0))':: POLYGON, '<(1.0,1.0),1.0>':: CIRCLE);
 
 
 DROP TABLE IF EXISTS "ArrayDataType";
@@ -148,7 +148,7 @@ CREATE TABLE "ArrayDataType" (
   "Point"          POINT[],
   "Line"           LINE[],
   "Lseg"           LSEG[],
-  "BOX"            BOX[],
+  "Box"            BOX[],
   "ClosedPath"     PATH[],
   "OpenPath"       PATH[],
   "Polygon"        POLYGON[],
@@ -180,7 +180,7 @@ INSERT INTO "ArrayDataType" VALUES (1, ARRAY [TRUE],
                                        ARRAY ['(1.0,1.0)':: POINT, '(2.0,2.0)' :: POINT],
                                        ARRAY ['{1.0,2.0,3.0}':: LINE, '{2.0,3.0,4.0}':: LINE],
                                        ARRAY ['((1.0,1.0),(2.0,2.0))':: LSEG, '((2.0,2.0),(3.0,3.0))':: LSEG],
-                                       ARRAY ['((1.0,1.0),(2.0,2.0))':: BOX, '((2.0,2.0),(3.0,3.0))':: BOX],
+                                       ARRAY ['((2.0,2.0),(1.0,1.0))':: BOX, '((3.0,3.0),(2.0,2.0))':: BOX],
                                        ARRAY ['((1.0,1.0),(2.0,1.0),(2.0,2.0),(2.0,1.0))':: PATH, '((2.0,2.0),(3.0,2.0),(3.0,3.0),(3.0,2.0))':: PATH],
                                        ARRAY ['[(1.0,1.0),(2.0,1.0),(2.0,2.0),(2.0,1.0)]':: PATH, '[(2.0,2.0),(3.0,2.0),(3.0,3.0),(3.0,2.0)]':: PATH],
                                        ARRAY ['((1.0,1.0),(2.0,2.0),(3.0,1.0))':: POLYGON, '((0.0,0.0),(0.0,1.0),(1.0,2.0),(2.0,1.0),(2.0,0.0))':: POLYGON],
@@ -210,7 +210,7 @@ INSERT INTO "ArrayDataType" VALUES (2, ARRAY [TRUE],
                                        ARRAY ['(1.0,1.0)':: POINT, '(2.0,2.0)' :: POINT],
                                        ARRAY ['{1.0,2.0,3.0}':: LINE, '{2.0,3.0,4.0}':: LINE],
                                        ARRAY ['((1.0,1.0),(2.0,2.0))':: LSEG, '((2.0,2.0),(3.0,3.0))':: LSEG],
-                                       ARRAY ['((1.0,1.0),(2.0,2.0))':: BOX, '((2.0,2.0),(3.0,3.0))':: BOX],
+                                       ARRAY ['((2.0,2.0),(1.0,1.0))':: BOX, '((3.0,3.0),(2.0,2.0))':: BOX],
                                        ARRAY ['((1.0,1.0),(2.0,1.0),(2.0,2.0),(2.0,1.0))':: PATH, '((2.0,2.0),(3.0,2.0),(3.0,3.0),(3.0,2.0))':: PATH],
                                        ARRAY ['[(1.0,1.0),(2.0,1.0),(2.0,2.0),(2.0,1.0)]':: PATH, '[(2.0,2.0),(3.0,2.0),(3.0,3.0),(3.0,2.0)]':: PATH],
                                        ARRAY ['((1.0,1.0),(2.0,2.0),(3.0,1.0))':: POLYGON, '((0.0,0.0),(0.0,1.0),(1.0,2.0),(2.0,1.0),(2.0,0.0))':: POLYGON],
