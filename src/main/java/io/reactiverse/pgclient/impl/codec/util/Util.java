@@ -97,27 +97,4 @@ public class Util {
     final int bin2hexAsciiDistance = 48+((~isLessOrEqual9)&39);
     return digit+bin2hexAsciiDistance;
   }
-
-  /**
-   * Locate the index of the Nth {@param value} appeared in {@param buffer},
-   * return -1 if the byte value does not exist in buffer or n is larger than the times value appears in buffer.
-   */
-  public static int nthIndexOf(ByteBuf buffer, int fromIndex, int toIndex, byte value, int n) {
-    fromIndex = Math.max(fromIndex, 0);
-    if (fromIndex >= toIndex || buffer.capacity() == 0) {
-      return -1;
-    }
-
-    return buffer.forEachByte(fromIndex, toIndex - fromIndex, new ByteProcessor() {
-      private int count = 0;
-
-      @Override
-      public boolean process(byte current) throws Exception {
-        if (value == current) {
-          count++;
-        }
-        return count != n;
-      }
-    });
-  }
 }

@@ -27,7 +27,6 @@ import io.reactiverse.pgclient.data.*;
 import io.reactiverse.pgclient.impl.codec.formatter.DateTimeFormatter;
 import io.reactiverse.pgclient.impl.codec.formatter.TimeFormatter;
 import io.reactiverse.pgclient.impl.codec.util.UTF8StringEndDetector;
-import io.reactiverse.pgclient.impl.codec.util.Util;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -695,12 +694,19 @@ public class DataTypeCodec {
 
   private static Line textDecodeLine(int index, int len, ByteBuf buff) {
     // Line representation: {a,b,c}
-    throw new UnsupportedOperationException();
+    int idxOfFirstSeparator = buff.indexOf(index, index + len, (byte) ',');
+    int idxOfLastSeparator = buff.indexOf(index + len, index, (byte) ',');
+
+    int idx = index + 1;
+    double a = textDecodeFLOAT8(idx, idxOfFirstSeparator - idx, buff);
+    double b = textDecodeFLOAT8(idxOfFirstSeparator + 1, idxOfLastSeparator - idxOfFirstSeparator - 1, buff);
+    double c = textDecodeFLOAT8(idxOfLastSeparator + 1, index + len - idxOfLastSeparator - 2, buff);
+    return new Line(a, b, c);
   }
 
   private static LineSegment textDecodeLseg(int index, int len, ByteBuf buff) {
     // Lseg representation: [p1,p2]
-    int idxOfPointsSeparator = Util.nthIndexOf(buff, index, index + len, (byte) ',', 2);
+    int idxOfPointsSeparator = buff.indexOf(index, index+len, (byte) ')') + 1;
     int lenOfP1 = idxOfPointsSeparator - index - 1;
     Point p1 = textDecodePOINT(index + 1, lenOfP1, buff);
     Point p2 = textDecodePOINT(idxOfPointsSeparator + 1, len - lenOfP1 - 3, buff);
@@ -709,7 +715,7 @@ public class DataTypeCodec {
 
   private static Box textDecodeBox(int index, int len, ByteBuf buff) {
     // Box representation: p1,p2
-    int idxOfPointsSeparator = Util.nthIndexOf(buff, index, index + len, (byte) ',', 2);
+    int idxOfPointsSeparator = buff.indexOf(index, index+len, (byte) ')') + 1;
     int lenOfUpperRightCornerPoint = idxOfPointsSeparator - index;
     Point upperRightCorner = textDecodePOINT(index, lenOfUpperRightCornerPoint, buff);
     Point lowerLeftCorner = textDecodePOINT(idxOfPointsSeparator + 1, len - lenOfUpperRightCornerPoint - 1, buff);
