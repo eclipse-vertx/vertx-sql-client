@@ -716,9 +716,26 @@ public class DataTypeCodec {
     return new Box(upperRightCorner, lowerLeftCorner);
   }
 
-  private static Box textDecodeBoxArray(IntFunction<Box[]> supplier, int index, int len, ByteBuf buff) {
+  private static Box[] textDecodeBoxArray(IntFunction<Box[]> supplier, int index, int len, ByteBuf buff) {
     // Box Array representation: {box1;box2;...boxN}
-    throw new UnsupportedOperationException("can not reuse the textDecodeArray method for now");
+    List<Box> boxes = new ArrayList<>();
+    int start = index + 1;
+    int end = index + len - 1;
+    while (start < end) {
+      int idxOfBoxSeparator = buff.indexOf(start, end + 1, (byte) ';');
+      if (idxOfBoxSeparator == -1) {
+        // the last box
+        System.out.println(buff.getCharSequence(start, end - start, StandardCharsets.UTF_8));
+        Box box = textDecodeBox(start, end - start, buff);
+        boxes.add(box);
+        break;
+      }
+      int lenOfBox = idxOfBoxSeparator - start;
+      Box box = textDecodeBox(start, lenOfBox, buff);
+      boxes.add(box);
+      start = idxOfBoxSeparator + 1;
+    }
+    return boxes.toArray(supplier.apply(boxes.size()));
   }
 
   private static Path textDecodePath(int index, int len, ByteBuf buff) {
