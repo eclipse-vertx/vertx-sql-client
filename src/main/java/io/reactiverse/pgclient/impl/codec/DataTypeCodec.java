@@ -731,7 +731,6 @@ public class DataTypeCodec {
       int idxOfBoxSeparator = buff.indexOf(start, end + 1, (byte) ';');
       if (idxOfBoxSeparator == -1) {
         // the last box
-        System.out.println(buff.getCharSequence(start, end - start, StandardCharsets.UTF_8));
         Box box = textDecodeBox(start, end - start, buff);
         boxes.add(box);
         break;
