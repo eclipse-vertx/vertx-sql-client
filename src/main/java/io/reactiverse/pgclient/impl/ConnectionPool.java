@@ -189,6 +189,7 @@ public class ConnectionPool {
             waiter.complete(proxy);
           } else {
             if (size < maxSize) {
+              Future<Connection> waiter = waiters.poll();
               size++;
               connector.accept(ar -> {
                 if (ar.succeeded()) {
@@ -196,13 +197,11 @@ public class ConnectionPool {
                   PooledConnection proxy = new PooledConnection(conn);
                   all.add(proxy);
                   conn.init(proxy);
-                  release(proxy);
+                  waiter.complete(proxy);
                 } else {
                   size--;
-                  Future<Connection> waiter;
-                  while ((waiter = waiters.poll()) != null) {
-                    waiter.fail(ar.cause());
-                  }
+                  waiter.fail(ar.cause());
+                  check();
                 }
               });
             } else {
