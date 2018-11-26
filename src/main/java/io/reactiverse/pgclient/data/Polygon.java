@@ -53,6 +53,7 @@ public class Polygon {
   @Override
   public String toString() {
     StringBuilder stringBuilder = new StringBuilder();
+    stringBuilder.append("Polygon");
     stringBuilder.append("(");
     for (int i = 0; i < points.size(); i++) {
       Point point = points.get(i);

@@ -76,6 +76,7 @@ public class Path {
       right = ")";
     }
     StringBuilder stringBuilder = new StringBuilder();
+    stringBuilder.append("Path");
     stringBuilder.append(left);
     for (int i = 0; i < points.size(); i++) {
       Point point = points.get(i);
