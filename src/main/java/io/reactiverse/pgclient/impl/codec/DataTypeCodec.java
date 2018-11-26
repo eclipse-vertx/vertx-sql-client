@@ -730,9 +730,14 @@ public class DataTypeCodec {
     throw new UnsupportedOperationException();
   }
 
-  private static Line textDecodeCircle(int index, int len, ByteBuf buff) {
+  private static Circle textDecodeCircle(int index, int len, ByteBuf buff) {
     // Circle representation: <p,r>
-    throw new UnsupportedOperationException();
+    int idxOfLastComma = buff.indexOf(index + len - 1, index, (byte) ',');
+    int lenOfPoint = idxOfLastComma - index - 1;
+    Point center = textDecodePOINT(index + 1, lenOfPoint, buff);
+    int lenOfRadius = len - lenOfPoint - 3;
+    double radius = textDecodeFLOAT8(idxOfLastComma + 1, lenOfRadius, buff);
+    return new Circle(center, radius);
   }
 
   private static Interval textDecodeINTERVAL(int index, int len, ByteBuf buff) {
