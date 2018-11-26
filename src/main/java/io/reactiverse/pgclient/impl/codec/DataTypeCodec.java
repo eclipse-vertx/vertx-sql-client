@@ -717,17 +717,47 @@ public class DataTypeCodec {
   }
 
   private static Box textDecodeBoxArray(IntFunction<Box[]> supplier, int index, int len, ByteBuf buff) {
+    // Box Array representation: {box1;box2;...boxN}
     throw new UnsupportedOperationException("can not reuse the textDecodeArray method for now");
   }
 
-  private static Line textDecodePath(int index, int len, ByteBuf buff) {
+  private static Path textDecodePath(int index, int len, ByteBuf buff) {
     // Path representation: (p1,p2...pn) or [p1,p2...pn]
-    throw new UnsupportedOperationException();
+    byte first = buff.getByte(index);
+    byte last = buff.getByte(index + len - 1);
+    boolean isOpen;
+    if (first == '(' && last == ')') {
+      isOpen = false;
+    } else if (first == '[' && last == ']') {
+      isOpen = true;
+    } else {
+      throw new DecoderException("Decoding Path is in wrong syntax");
+    }
+    List<Point> points = textDecodeMultiplePoints(index + 1, len - 2, buff);
+    return new Path(isOpen, points);
   }
 
-  private static Line textDecodePolygon(int index, int len, ByteBuf buff) {
+  private static Polygon textDecodePolygon(int index, int len, ByteBuf buff) {
     // Polygon representation: (p1,p2...pn)
-    throw new UnsupportedOperationException();
+    List<Point> points = textDecodeMultiplePoints(index + 1, len - 2, buff);
+    return new Polygon(points);
+  }
+
+  // this might be useful for decoding Lseg, Box, Path, Polygon Data Type.
+  private static List<Point> textDecodeMultiplePoints(int index, int len, ByteBuf buff) {
+    // representation: p1,p2,p3...pn
+    List<Point> points = new ArrayList<>();
+    int start = index;
+    int end = index + len - 1;
+    while (start < end) {
+      int rightParenthesis = buff.indexOf(start, end + 1, (byte) ')');
+      int idxOfPointSeparator = rightParenthesis + 1;
+      int lenOfPoint = idxOfPointSeparator - start;
+      Point point = textDecodePOINT(start, lenOfPoint, buff);
+      points.add(point);
+      start = idxOfPointSeparator + 1;
+    }
+    return points;
   }
 
   private static Circle textDecodeCircle(int index, int len, ByteBuf buff) {
