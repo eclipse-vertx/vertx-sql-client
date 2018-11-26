@@ -252,4 +252,13 @@ public class ConnectionPoolTest {
     assertEquals(0, pool.available());
     assertEquals(1, pool.size());
   }
+
+  @Test
+  public void testAcquireOnlyConnectOnce() {
+    ConnectionQueue queue = new ConnectionQueue();
+    ConnectionPool pool = new ConnectionPool(queue, 10, 0);
+    SimpleHolder holder1 = new SimpleHolder();
+    pool.acquire(holder1);
+    assertEquals(1, queue.size());
+  }
 }
