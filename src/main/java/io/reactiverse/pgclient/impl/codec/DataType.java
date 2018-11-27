@@ -18,10 +18,16 @@ package io.reactiverse.pgclient.impl.codec;
 
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
+import io.reactiverse.pgclient.data.Box;
+import io.reactiverse.pgclient.data.Circle;
 import io.reactiverse.pgclient.data.Json;
+import io.reactiverse.pgclient.data.Line;
+import io.reactiverse.pgclient.data.LineSegment;
 import io.reactiverse.pgclient.data.Numeric;
 import io.reactiverse.pgclient.data.Interval;
+import io.reactiverse.pgclient.data.Path;
 import io.reactiverse.pgclient.data.Point;
+import io.reactiverse.pgclient.data.Polygon;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -95,7 +101,18 @@ public enum DataType {
   XML_ARRAY(143, true, Object[].class),
   POINT(600, true, Point.class),
   POINT_ARRAY(1017, true, Point[].class),
-  BOX(603, true, Object.class),
+  LINE(628, true, Line.class),
+  LINE_ARRAY(629, true, Line[].class),
+  LSEG(601, true, LineSegment.class),
+  LSEG_ARRAY(1018, true, LineSegment[].class),
+  BOX(603, true, Box.class),
+  BOX_ARRAY(1020, true, Box[].class),
+  PATH(602, true, Path.class),
+  PATH_ARRAY(1019, true, Path[].class),
+  POLYGON(604, true, Polygon.class),
+  POLYGON_ARRAY(1027, true, Polygon[].class),
+  CIRCLE(718, true, Circle.class),
+  CIRCLE_ARRAY(719, true, Circle[].class),
   HSTORE(33670, true, Object.class),
   OID(26, true, Object.class),
   OID_ARRAY(1028, true, Object[].class),

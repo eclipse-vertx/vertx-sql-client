@@ -17,9 +17,15 @@
 
 package io.reactiverse.pgclient;
 
+import io.reactiverse.pgclient.data.Box;
+import io.reactiverse.pgclient.data.Circle;
 import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.data.Json;
+import io.reactiverse.pgclient.data.Line;
+import io.reactiverse.pgclient.data.LineSegment;
 import io.reactiverse.pgclient.data.Numeric;
+import io.reactiverse.pgclient.data.Path;
+import io.reactiverse.pgclient.data.Polygon;
 import io.reactiverse.pgclient.impl.ArrayTuple;
 import io.reactiverse.pgclient.data.Point;
 import io.vertx.codegen.annotations.Fluent;
@@ -129,7 +135,7 @@ public interface Tuple {
    * Create a tuple of six elements.
    *
    * @param elt1 the first value
-   * @param elt2 the second value
+   * @param elt2 the second valueg
    * @param elt3 the third value
    * @param elt4 the fourth value
    * @param elt5 the fifth value
@@ -462,6 +468,60 @@ public interface Tuple {
   Point[] getPointArray(int pos);
 
   /**
+   * Get an array of {@link Line} value at {@code pos}.
+   *
+   * @param pos the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Line[] getLineArray(int pos);
+
+  /**
+   * Get an array of {@link LineSegment} value at {@code pos}.
+   *
+   * @param pos the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  LineSegment[] getLineSegmentArray(int pos);
+
+  /**
+   * Get an array of {@link Box} value at {@code pos}.
+   *
+   * @param pos the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Box[] getBoxArray(int pos);
+
+  /**
+   * Get an array of {@link Path} value at {@code pos}.
+   *
+   * @param pos the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Path[] getPathArray(int pos);
+
+  /**
+   * Get an array of {@link Polygon} value at {@code pos}.
+   *
+   * @param pos the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Polygon[] getPolygonArray(int pos);
+
+  /**
+   * Get an array of {@link Circle} value at {@code pos}.
+   *
+   * @param pos the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Circle[] getCircleArray(int pos);
+
+  /**
    * Get an array of {@link Interval} value at {@code pos}.
    *
    * @param pos the column
@@ -487,6 +547,60 @@ public interface Tuple {
    */
   @GenIgnore
   Point getPoint(int pos);
+
+  /**
+   * Get {@link Line} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Line getLine(int pos);
+
+  /**
+   * Get {@link LineSegment} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  LineSegment getLineSegment(int pos);
+
+  /**
+   * Get {@link Box} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Box getBox(int pos);
+
+  /**
+   * Get {@link Path} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Path getPath(int pos);
+
+  /**
+   * Get {@link Polygon} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Polygon getPolygon(int pos);
+
+  /**
+   * Get {@link Circle} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore
+  Circle getCircle(int pos);
 
   /**
    * Get {@link Interval} value at {@code pos}.
@@ -686,6 +800,60 @@ public interface Tuple {
   Tuple addPoint(Point value);
 
   /**
+   * Add a {@link Line} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addLine(Line value);
+
+  /**
+   * Add a {@link LineSegment} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addLineSegment(LineSegment value);
+
+  /**
+   * Add a {@link Box} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addBox(Box value);
+
+  /**
+   * Add a {@link Path} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addPath(Path value);
+
+  /**
+   * Add a {@link Polygon} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addPolygon(Polygon value);
+
+  /**
+   * Add a {@link Circle} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addCircle(Circle value);
+
+  /**
    * Add a {@link Point} value at the end of the tuple.
    *
    * @param value the value
@@ -846,6 +1014,60 @@ public interface Tuple {
    */
   @GenIgnore
   Tuple addPointArray(Point[] value);
+
+  /**
+   * Add an array of {@link io.reactiverse.pgclient.data.Line} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addLineArray(Line[] value);
+
+  /**
+   * Add an array of {@link LineSegment} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addLineSegmentArray(LineSegment[] value);
+
+  /**
+   * Add an array of {@link Box} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addBoxArray(Box[] value);
+
+  /**
+   * Add an array of {@link Path} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addPathArray(Path[] value);
+
+  /**
+   * Add an array of {@link Polygon} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addPolygonArray(Polygon[] value);
+
+  /**
+   * Add an array of {@link Circle} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  Tuple addCircleArray(Circle[] value);
 
   /**
    * Add an array of {@link Interval} value at the end of the tuple.

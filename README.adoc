@@ -241,6 +241,48 @@ The *Reactive Postgres Client* currently supports the following data types
 |`i.r.p.data.Json[]`
 |&#10004;
 
+|`POINT`
+|`i.r.p.data.Point`
+|&#10004;
+|`i.r.p.data.Point[]`
+|&#10004;
+
+|`LINE`
+|`i.r.p.data.Line`
+|&#10004;
+|`i.r.p.data.Line[]`
+|&#10004;
+
+|`LSEG`
+|`i.r.p.data.LineSegment`
+|&#10004;
+|`i.r.p.data.LineSegment[]`
+|&#10004;
+
+|`BOX`
+|`i.r.p.data.Box`
+|&#10004;
+|`i.r.p.data.Box[]`
+|&#10004;
+
+|`PATH`
+|`i.r.p.data.Path`
+|&#10004;
+|`i.r.p.data.Path[]`
+|&#10004;
+
+|`POLYGON`
+|`i.r.p.data.Polygon`
+|&#10004;
+|`i.r.p.data.Polygon[]`
+|&#10004;
+
+|`CIRCLE`
+|`i.r.p.data.Circle`
+|&#10004;
+|`i.r.p.data.Circle[]`
+|&#10004;
+
 |`UNKNOWN`
 |`j.l.String`
 |&#10004;
@@ -252,7 +294,7 @@ The *Reactive Postgres Client* currently supports the following data types
 The following types
 
 _SERIAL2_, _SERIAL4_, _SERIAL8_, _MONEY_, _BIT_, _VARBIT_, _MACADDR_, _INET_, _CIDR_, _MACADDR8_,
-_XML_, _POINT_, _PATH_, _BOX_, _LINE_, _POLYGON_, _LSEG_, _CIRCLE_, _HSTORE_, _OID_,
+_XML_, _HSTORE_, _OID_,
 _VOID_, _TSQUERY_, _TSVECTOR_
 
 are not implemented yet (PR are welcome).
