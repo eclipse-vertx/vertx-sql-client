@@ -1,4 +1,7 @@
-package io.reactiverse.pgclient;
+package io.reactiverse.pgclient.codec;
+
+import io.reactiverse.pgclient.Row;
+import io.reactiverse.pgclient.Tuple;
 
 import java.io.Serializable;
 import java.lang.invoke.SerializedLambda;
@@ -13,7 +16,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-class ColumnChecker {
+public class ColumnChecker {
 
   private static List<SerializableBiFunction<Tuple, Integer, ?>> tupleMethods = new ArrayList<>();
   private static List<SerializableBiFunction<Row, String, ?>> rowMethods = new ArrayList<>();
@@ -111,7 +114,7 @@ class ColumnChecker {
     rowMethods.add(Row::getCircleArray);
   }
 
-  static ColumnChecker checkColumn(int index, String name) {
+  public static ColumnChecker checkColumn(int index, String name) {
     return new ColumnChecker(index, name);
   }
 
@@ -125,7 +128,7 @@ class ColumnChecker {
     this.name = name;
   }
 
-  <R> ColumnChecker returns(SerializableBiFunction<Tuple, Integer, R> byIndexGetter,
+  public <R> ColumnChecker returns(SerializableBiFunction<Tuple, Integer, R> byIndexGetter,
                             SerializableBiFunction<Row, String, R> byNameGetter,
                             R expected) {
     Method byIndexMeth = byIndexGetter.method();
@@ -141,7 +144,7 @@ class ColumnChecker {
     return this;
   }
 
-  ColumnChecker returns(SerializableBiFunction<Tuple, Integer, Object> byIndexGetter,
+  public ColumnChecker returns(SerializableBiFunction<Tuple, Integer, Object> byIndexGetter,
                             SerializableBiFunction<Row, String, Object> byNameGetter,
                             Object[] expected) {
     Method byIndexMeth = byIndexGetter.method();
@@ -157,7 +160,7 @@ class ColumnChecker {
     return this;
   }
 
-  ColumnChecker returns(SerializableBiFunction<Tuple, Integer, Double> byIndexGetter,
+  public ColumnChecker returns(SerializableBiFunction<Tuple, Integer, Double> byIndexGetter,
                             SerializableBiFunction<Row, String, Double> byNameGetter,
                         double expected, double delta) {
     blackList.add(byIndexGetter.method());
@@ -171,7 +174,7 @@ class ColumnChecker {
     return this;
   }
 
-  ColumnChecker returns(SerializableBiFunction<Tuple, Integer, Float> byIndexGetter,
+  public ColumnChecker returns(SerializableBiFunction<Tuple, Integer, Float> byIndexGetter,
                         SerializableBiFunction<Row, String, Float> byNameGetter,
                         float expected, float delta) {
     blackList.add(byIndexGetter.method());
@@ -185,7 +188,7 @@ class ColumnChecker {
     return this;
   }
 
-  <R> ColumnChecker fails(SerializableBiFunction<Tuple, Integer, R> byIndexGetter,
+  public <R> ColumnChecker fails(SerializableBiFunction<Tuple, Integer, R> byIndexGetter,
                             SerializableBiFunction<Row, String, R> byNameGetter) {
     blackList.add(byIndexGetter.method());
     blackList.add(byNameGetter.method());
@@ -204,7 +207,7 @@ class ColumnChecker {
     return this;
   }
 
-  void forRow(Row row) {
+  public void forRow(Row row) {
     for (SerializableBiFunction<Tuple, Integer, ?> m : tupleMethods) {
       if (!blackList.contains(m.method())) {
         Object v = m.apply(row, index);
@@ -262,7 +265,7 @@ class ColumnChecker {
     class UnableToGuessMethodException extends RuntimeException {}
   }
 
-  interface SerializableBiFunction<O, T, R> extends BiFunction<O, T, R>, Serializable, MethodReferenceReflection {}
+  public interface SerializableBiFunction<O, T, R> extends BiFunction<O, T, R>, Serializable, MethodReferenceReflection {}
 
   public static Object[] toObjectArray(Object source) {
     if (source instanceof Object[]) {

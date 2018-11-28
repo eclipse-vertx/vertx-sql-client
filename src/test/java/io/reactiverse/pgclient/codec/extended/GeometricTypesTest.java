@@ -1,5 +1,10 @@
-package io.reactiverse.pgclient;
+package io.reactiverse.pgclient.codec.extended;
 
+import io.reactiverse.pgclient.PgClient;
+import io.reactiverse.pgclient.Row;
+import io.reactiverse.pgclient.Tuple;
+import io.reactiverse.pgclient.codec.ColumnChecker;
+import io.reactiverse.pgclient.codec.ExtendedQueryDataTypeCodecTestBase;
 import io.reactiverse.pgclient.data.Box;
 import io.reactiverse.pgclient.data.Circle;
 import io.reactiverse.pgclient.data.Line;
@@ -13,12 +18,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 
-public class GeometricDataTypeExtendedCodecTest extends DataTypeTestBase {
-  @Override
-  protected PgConnectOptions options() {
-    return new PgConnectOptions(options).setCachePreparedStatements(false);
-  }
-
+public class GeometricTypesTest extends ExtendedQueryDataTypeCodecTestBase {
   @Test
   public void testDecodeGeometric(TestContext ctx) {
     Async async = ctx.async();

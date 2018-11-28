@@ -47,7 +47,7 @@ public abstract class PgTestBase {
 
   private static final String connectionUri = System.getProperty("connection.uri");
   private static EmbeddedPostgres postgres;
-  static PgConnectOptions options;
+  protected static PgConnectOptions options;
 
   @BeforeClass
   public static void before() throws Exception {
