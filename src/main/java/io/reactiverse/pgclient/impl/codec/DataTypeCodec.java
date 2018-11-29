@@ -557,7 +557,7 @@ public class DataTypeCodec {
     switch (type) {
       case JSON:
       case JSONB:
-        if (value instanceof Json) {
+        if (value == null || value instanceof Json) {
           return value;
         } else if (value instanceof String || value instanceof Boolean || value instanceof Number) {
           return Json.create(value);
@@ -567,7 +567,7 @@ public class DataTypeCodec {
       case UNKNOWN:
         if (value instanceof String[]) {
           return Arrays.stream((String[]) value).collect(Collectors.joining(",", "{", "}"));
-        } else if (value instanceof String) {
+        } else if (value == null || value instanceof String) {
           return value;
         } else {
           return REFUSED_SENTINEL;

@@ -17,6 +17,7 @@
 
 package io.reactiverse.pgclient;
 
+import io.reactiverse.pgclient.impl.ArrayTuple;
 import io.vertx.core.*;
 import io.vertx.core.net.NetSocket;
 import io.vertx.ext.unit.Async;
@@ -31,6 +32,8 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -305,5 +308,21 @@ public abstract class PgClientTestBase<C extends PgClient> extends PgTestBase {
         }));
       }));
     }));
+  }
+
+  @Test
+  public void testPreparedUpdateWithNullParams(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(client ->
+      client.preparedQuery(
+        "INSERT INTO \"AllDataTypes\" (boolean, int2, int4, int8, float4, float8, char, varchar, text, enum, name, numeric, uuid, date, time, timetz, timestamp, timestamptz, interval, bytea, json, jsonb, point, line, lseg, box, path, polygon, circle) " +
+          "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29)",
+        new ArrayTuple(IntStream.range(1, 30).mapToObj(index -> null).collect(Collectors.toList())),
+        ctx.asyncAssertSuccess(insertResult -> {
+          ctx.assertEquals(1, insertResult.rowCount());
+          async.complete();
+        })
+      )
+    ));
   }
 }

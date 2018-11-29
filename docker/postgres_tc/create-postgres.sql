@@ -227,3 +227,36 @@ CREATE TABLE "CustomDataType" (
 );
 INSERT INTO "CustomDataType" ("id", "address") VALUES (1, ('Anytown', 'Main St', true));
 INSERT INTO "CustomDataType" ("id", "address") VALUES (2, ('Anytown', 'First St', false));
+
+CREATE TABLE "AllDataTypes"
+(
+  boolean     BOOLEAN,
+  int2        INT2,
+  int4        INT4,
+  int8        INT8,
+  float4      FLOAT4,
+  float8      FLOAT8,
+  char        CHAR,
+  varchar     VARCHAR,
+  text        TEXT,
+  enum        mood,
+  name        NAME,
+  numeric     NUMERIC,
+  uuid        UUID,
+  date        DATE,
+  time        TIME,
+  timetz      TIMETZ,
+  timestamp   TIMESTAMP,
+  timestamptz TIMESTAMPTZ,
+  interval    INTERVAL,
+  bytea       BYTEA,
+  json        JSON,
+  jsonb       JSONB,
+  point       POINT,
+  line        LINE,
+  lseg        LSEG,
+  box         BOX,
+  path        PATH,
+  polygon     POLYGON,
+  circle      CIRCLE
+);
