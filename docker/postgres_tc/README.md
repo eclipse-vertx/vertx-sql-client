@@ -15,5 +15,5 @@ Running the container
 Add one 1 ms latency to eth0
 
 ```
-> docker exec -it julien-test tc qdisc add dev eth0 root netem delay 1ms
+> docker exec -it test-postgres_tc tc qdisc add dev eth0 root netem delay 1ms
 ```
