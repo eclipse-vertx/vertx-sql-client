@@ -31,7 +31,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 <dependency>
  <groupId>io.reactiverse</groupId>
  <artifactId>reactive-pg-client</artifactId>
- <version>0.10.8</version>
+ <version>0.10.9</version>
 </dependency>
 ```
 
@@ -39,7 +39,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 
 ```groovy
 dependencies {
- compile 'io.reactiverse:reactive-pg-client:0.10.8'
+ compile 'io.reactiverse:reactive-pg-client:0.10.9'
 }
 ```
 
@@ -620,6 +620,12 @@ Currently the client supports the following Postgres types
 * JSON (`io.reactiverse.pgclient.data.Json`)
 * JSONB (`io.reactiverse.pgclient.data.Json`)
 * POINT (`io.reactiverse.pgclient.data.Point`)
+* LINE (`io.reactiverse.pgclient.data.Line`)
+* LSEG (`io.reactiverse.pgclient.data.LineSegment`)
+* BOX (`io.reactiverse.pgclient.data.Box`)
+* PATH (`io.reactiverse.pgclient.data.Path`)
+* POLYGON (`io.reactiverse.pgclient.data.Polygon`)
+* CIRCLE (`io.reactiverse.pgclient.data.Circle`)
 
 Tuple decoding uses the above types when storing values, it also performs on the flu conversion the actual value when possible:
 
