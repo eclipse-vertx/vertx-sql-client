@@ -67,6 +67,7 @@
     <connection.uri />
     <!-- We skip sources jar generation as we do it with the assembly plugin to have greater control over the content -->
     <source.skip>true</source.skip>
+    <kotlin.version>1.2.51</kotlin.version>
   </properties>
 
   <dependencyManagement>
@@ -329,9 +330,27 @@
         </configuration>
       </plugin>
       <plugin>
+        <artifactId>kotlin-maven-plugin</artifactId>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <version>${kotlin.version}</version>
+        <executions>
+          <execution>
+            <configuration>
+              <jvmTarget>1.8</jvmTarget>
+              <sourceDirs>
+                <sourceDir>${basedir}/src/main/kotlin</sourceDir>
+              </sourceDirs>
+            </configuration>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <phase>compile</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <executions>
-
           <execution>
             <id>package-sources</id>
             <phase>package</phase>
