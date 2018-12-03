@@ -27,7 +27,7 @@
 
   <groupId>io.reactiverse</groupId>
   <artifactId>reactive-pg-client</artifactId>
-  <version>0.10.9</version>
+  <version>0.10.10-SNAPSHOT</version>
 
   <name>Reactive Postgres Client</name>
   <url>https://github.com/reactiverse/reactive-pg-client</url>
