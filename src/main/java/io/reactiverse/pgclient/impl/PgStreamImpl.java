@@ -32,7 +32,7 @@ public class PgStreamImpl implements PgStream<Row>, Handler<AsyncResult<PgRowSet
   private Handler<Void> endHandler;
   private Handler<Row> rowHandler;
   private Handler<Throwable> exceptionHandler;
-  private boolean paused;
+  private long demand;
   private boolean emitting;
   private PgCursor cursor;
 
@@ -42,6 +42,7 @@ public class PgStreamImpl implements PgStream<Row>, Handler<AsyncResult<PgRowSet
     this.ps = ps;
     this.fetch = fetch;
     this.params = params;
+    this.demand = Long.MAX_VALUE;
   }
 
   @Override
@@ -76,25 +77,30 @@ public class PgStreamImpl implements PgStream<Row>, Handler<AsyncResult<PgRowSet
 
   @Override
   public synchronized PgStream<Row> pause() {
-    paused = true;
+    demand = 0L;
     return this;
   }
 
-  // Since Vert.x 3.6.0 : todo
   public PgStream<Row> fetch(long amount) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public PgStream<Row> resume() {
+    if (amount < 0L) {
+      throw new IllegalArgumentException("Invalid fetch amount " + amount);
+    }
     synchronized (this) {
-      paused = false;
+      demand += amount;
+      if (demand < 0L) {
+        demand = Long.MAX_VALUE;
+      }
       if (cursor == null) {
         return this;
       }
     }
     checkPending();
     return this;
+  }
+
+  @Override
+  public PgStream<Row> resume() {
+    return fetch(Long.MAX_VALUE);
   }
 
   @Override
@@ -142,10 +148,11 @@ public class PgStreamImpl implements PgStream<Row>, Handler<AsyncResult<PgRowSet
       if (emitting) {
         return;
       }
+      emitting = true;
     }
     while (true) {
       synchronized (PgStreamImpl.this) {
-        if (paused || result == null) {
+        if (demand == 0L || result == null) {
           emitting = false;
           break;
         }
@@ -154,6 +161,9 @@ public class PgStreamImpl implements PgStream<Row>, Handler<AsyncResult<PgRowSet
         if (result.hasNext()) {
           handler = rowHandler;
           event = result.next();
+          if (demand != Long.MAX_VALUE) {
+            demand--;
+          }
         } else {
           result = null;
           emitting = false;
