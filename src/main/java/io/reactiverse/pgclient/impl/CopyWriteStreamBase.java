@@ -1,18 +1,18 @@
 package io.reactiverse.pgclient.impl;
 
 import io.netty.buffer.ByteBuf;
+import io.reactiverse.pgclient.copy.CopyWriteStream;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.Handler;
-import io.vertx.core.streams.WriteStream;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-abstract class PgCopyWriteStreamBase<T> implements WriteStream<T>{
+abstract class CopyWriteStreamBase<T> implements CopyWriteStream<T> {
   private final AtomicBoolean closed;
   protected final Connection conn;
   protected Handler<Throwable> expHandler;
   protected Handler<Integer> endHandler;
 
-  PgCopyWriteStreamBase(Connection conn) {
+  CopyWriteStreamBase(Connection conn) {
     this.conn = conn;
     closed = new AtomicBoolean(false);
   }
@@ -23,19 +23,20 @@ abstract class PgCopyWriteStreamBase<T> implements WriteStream<T>{
     }
   }
 
-  public PgCopyWriteStreamBase<T> endHandler(Handler<Integer> endHandler) {
+  @Override
+  public CopyWriteStreamBase<T> endHandler(Handler<Integer> endHandler) {
     this.endHandler = endHandler;
     return this;
   }
 
   @Override
-  public PgCopyWriteStreamBase<T> exceptionHandler(Handler<Throwable> handler) {
+  public CopyWriteStreamBase<T> exceptionHandler(Handler<Throwable> handler) {
     expHandler = handler;
     return this;
   }
 
   @Override
-  public PgCopyWriteStreamBase<T> write(T tuple) {
+  public CopyWriteStreamBase<T> write(T tuple) {
     if (closed.get()) {
       expHandler.handle(new IllegalStateException("Close message has already been sent"));
     } else {
@@ -70,7 +71,7 @@ abstract class PgCopyWriteStreamBase<T> implements WriteStream<T>{
   protected abstract void writeHeader();
 
   @Override
-  public PgCopyWriteStreamBase setWriteQueueMaxSize(int i) {
+  public CopyWriteStreamBase<T> setWriteQueueMaxSize(int i) {
     return this;
   }
 
@@ -80,7 +81,7 @@ abstract class PgCopyWriteStreamBase<T> implements WriteStream<T>{
   }
 
   @Override
-  public PgCopyWriteStreamBase drainHandler(@Nullable Handler<Void> handler) {
+  public CopyWriteStreamBase<T> drainHandler(@Nullable Handler<Void> handler) {
     return this;
   }
 }

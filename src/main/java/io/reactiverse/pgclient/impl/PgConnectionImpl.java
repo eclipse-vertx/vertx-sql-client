@@ -19,20 +19,19 @@ package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.PgConnection;
 import io.reactiverse.pgclient.PgNotification;
-import io.reactiverse.pgclient.PgPreparedQuery;
 import io.reactiverse.pgclient.PgTransaction;
 import io.reactiverse.pgclient.copy.CopyFromOptions;
 import io.reactiverse.pgclient.copy.CopyTuple;
+import io.reactiverse.pgclient.copy.CopyWriteStream;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.streams.Pump;
-import io.vertx.core.streams.ReadStream;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -160,46 +159,38 @@ public class PgConnectionImpl extends PgConnectionBase<PgConnectionImpl> impleme
   }
 
   @Override
-  public PgConnection copyFrom(String table, ReadStream<CopyTuple> data,
-    Handler<AsyncResult<Integer>> handler) {
-    return copyFrom(table, Collections.emptyList(), data, handler);
+  public PgConnection copyFrom(String table, Handler<AsyncResult<CopyWriteStream<CopyTuple>>> stream) {
+    return copyFrom(table, Collections.emptyList(), stream);
   }
 
   @Override
   public PgConnection copyFrom(String table, List<String> columns,
-    ReadStream<CopyTuple> data, Handler<AsyncResult<Integer>> handler) {
-    return pumpCopyData(table, columns, data, new PgBinaryWriteStream(conn), CopyFromOptions.binary(), handler);
+    Handler<AsyncResult<CopyWriteStream<CopyTuple>>> handler) {
+    return beginCopy(table, columns, handler, CopyTupleWriteStreamImpl::new, CopyFromOptions.binary());
   }
 
   @Override
-  public PgConnection copyFrom(String table, ReadStream<Buffer> data, CopyFromOptions options,
-    Handler<AsyncResult<Integer>> handler) {
-    return copyFrom(table, Collections.emptyList(), data, options, handler);
+  public PgConnection copyFrom(String table, CopyFromOptions options, Handler<AsyncResult<CopyWriteStream<Buffer>>> handler) {
+    return copyFrom(table, Collections.emptyList(), options, handler);
   }
 
   @Override
-  public PgConnection copyFrom(String table, List<String> columns, ReadStream<Buffer> data,
-    CopyFromOptions options, Handler<AsyncResult<Integer>> handler) {
-    return pumpCopyData(table, columns, data, new PgTextWriteStream(conn), options, handler);
+  public PgConnection copyFrom(String table, List<String> columns, CopyFromOptions options, Handler<AsyncResult<CopyWriteStream<Buffer>>> stream) {
+    return beginCopy(table, columns, stream, CopyTextWriteStreamImpl::new, options);
   }
 
-  private <T> PgConnection pumpCopyData(String table, List<String> columns, ReadStream<T> readStream,
-    PgCopyWriteStreamBase<T> writeStream, CopyFromOptions options, Handler<AsyncResult<Integer>> handler) {
+  private <T> PgConnection beginCopy(String table, List<String> columns,
+    Handler<AsyncResult<CopyWriteStream<T>>> streamHandler,
+    Function<Connection, CopyWriteStreamBase<T>> writeStreamSupplier, CopyFromOptions options) {
 
     schedule(new CopyInCommand(table, columns, options),
       res -> {
         if (res.failed()) {
-          handler.handle(Future.failedFuture(res.cause()));
+          streamHandler.handle(Future.failedFuture(res.cause()));
         } else {
-          writeStream.exceptionHandler(exp -> handler.handle(Future.failedFuture(exp)));
-          writeStream.endHandler(c -> handler.handle(Future.succeededFuture(c)));
-          writeStream.writeHeader();
-          Pump pump = Pump.pump(readStream, writeStream);
-          readStream.endHandler(end -> {
-            writeStream.end();
-            pump.stop();
-          });
-          pump.start();
+          CopyWriteStreamBase<T> stream = writeStreamSupplier.apply(conn);
+          stream.writeHeader();
+          streamHandler.handle(Future.succeededFuture(stream));
         }
       });
     return this;

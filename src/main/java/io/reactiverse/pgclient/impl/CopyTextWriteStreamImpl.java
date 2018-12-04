@@ -1,12 +1,14 @@
 package io.reactiverse.pgclient.impl;
 
 import io.netty.buffer.ByteBuf;
+import io.reactiverse.pgclient.copy.CopyWriteStream;
 import io.vertx.core.buffer.Buffer;
 import java.nio.charset.StandardCharsets;
 
-class PgTextWriteStream extends PgCopyWriteStreamBase<Buffer> {
+class CopyTextWriteStreamImpl extends CopyWriteStreamBase<Buffer> implements
+  CopyWriteStream<Buffer> {
 
-  PgTextWriteStream(Connection conn) {
+  CopyTextWriteStreamImpl(Connection conn) {
     super(conn);
   }
 
@@ -22,6 +24,5 @@ class PgTextWriteStream extends PgCopyWriteStreamBase<Buffer> {
 
   @Override
   protected void writeHeader() {
-
   }
 }

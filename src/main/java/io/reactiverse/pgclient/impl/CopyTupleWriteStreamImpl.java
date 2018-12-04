@@ -3,15 +3,17 @@ package io.reactiverse.pgclient.impl;
 import io.netty.buffer.ByteBuf;
 import io.reactiverse.pgclient.codec.DataType;
 import io.reactiverse.pgclient.copy.CopyTuple;
+import io.reactiverse.pgclient.copy.CopyWriteStream;
 import io.reactiverse.pgclient.impl.codec.DataTypeCodec;
 import java.util.ArrayList;
 import java.util.List;
 
-class PgBinaryWriteStream extends PgCopyWriteStreamBase<CopyTuple> {
+class CopyTupleWriteStreamImpl extends CopyWriteStreamBase<CopyTuple> implements
+  CopyWriteStream<CopyTuple> {
 
   private List<DataType> tupleTypes;
 
-  PgBinaryWriteStream(Connection conn) {
+  CopyTupleWriteStreamImpl(Connection conn) {
     super(conn);
   }
 
@@ -24,13 +26,7 @@ class PgBinaryWriteStream extends PgCopyWriteStreamBase<CopyTuple> {
   }
 
   private void writeCopyHeader(ByteBuf buffer) {
-    buffer.writeByte('P');
-    buffer.writeByte('G');
-    buffer.writeByte('C');
-    buffer.writeByte('O');
-    buffer.writeByte('P');
-    buffer.writeByte('Y');
-    buffer.writeByte('\n');
+    buffer.writeBytes(new byte[] {'P', 'G', 'C', 'O', 'P', 'Y', '\n'});
     buffer.writeByte('\377');
     buffer.writeByte('\r');
     buffer.writeByte('\n');

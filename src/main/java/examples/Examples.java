@@ -34,13 +34,17 @@ import io.reactiverse.pgclient.codec.DataType;
 import io.reactiverse.pgclient.copy.CopyData;
 import io.reactiverse.pgclient.copy.CopyFromOptions;
 import io.reactiverse.pgclient.copy.CopyTuple;
+import io.reactiverse.pgclient.copy.CopyWriteStream;
 import io.reactiverse.pgclient.data.Json;
 import io.reactiverse.pgclient.data.Numeric;
 import io.reactiverse.pgclient.pubsub.PgSubscriber;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.PemTrustOptions;
+import io.vertx.core.streams.Pump;
 import io.vertx.docgen.Source;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -396,12 +400,19 @@ public class Examples {
     vertx.fileSystem().open("copy-input.txt", new OpenOptions(),
       ar1 -> {
         if (ar1.succeeded()) {
-          connection.copyFrom("DestinationTable", ar1.result(),
-            CopyFromOptions.text().setDelimiter(","), res -> {
+          connection.copyFrom("DestinationTable", CopyFromOptions.text().setDelimiter(","), res -> {
             if (res.succeeded()) {
-              System.out.println("Copy inserted " + res.result() + " rows");
-            } else {
-              System.out.println("Copy failed " + res.cause());
+              CopyWriteStream<Buffer> copyWriteStream = res.result();
+              AsyncFile file = ar1.result();
+              Pump pump = Pump.pump(file, copyWriteStream);
+              file.endHandler(end -> copyWriteStream.end());
+              copyWriteStream.endHandler(count -> {
+                System.out.println("Rows copied: " + count);
+              });
+              copyWriteStream.exceptionHandler(t -> {
+                System.out.println("Copy failed " + t.getMessage());
+              });
+              pump.start();
             }
           });
         }

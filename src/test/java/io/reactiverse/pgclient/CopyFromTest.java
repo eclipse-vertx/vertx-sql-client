@@ -6,15 +6,14 @@ import io.reactiverse.pgclient.copy.CopyFromOptions;
 import io.reactiverse.pgclient.copy.CopyTuple;
 import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.data.Json;
-import io.vertx.codegen.annotations.Nullable;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.OpenOptions;
-import io.vertx.core.streams.ReadStream;
+import io.vertx.core.streams.Pump;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -22,7 +21,6 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.util.ArrayList;
 import java.util.UUID;
-import java.util.stream.Stream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,81 +31,6 @@ public class CopyFromTest extends PgTestBase {
 
   private enum Mood {
     happy
-  }
-
-  private static class EmptyReadStream implements ReadStream<Buffer> {
-
-    private Handler<Void> endHandler;
-
-    @Override
-    public ReadStream<Buffer> exceptionHandler(Handler<Throwable> handler) {
-      return this;
-    }
-
-    @Override
-    public ReadStream<Buffer> handler(@Nullable Handler<Buffer> handler) {
-     if (handler != null) {
-       endHandler.handle(null);
-     }
-      return this;
-    }
-
-    @Override
-    public ReadStream<Buffer> pause() {
-      return this;
-    }
-
-    @Override
-    public ReadStream<Buffer> resume() {
-      return this;
-    }
-
-    @Override
-    public ReadStream<Buffer> endHandler(@Nullable Handler<Void> handler) {
-      this.endHandler = handler;
-      return this;
-    }
-  }
-
-  private static class TupleReadStream implements ReadStream<CopyTuple> {
-
-    private final Stream<CopyTuple> stream;
-    private Handler<Void> endHandler;
-
-    TupleReadStream(Stream<CopyTuple> stream) {
-      this.stream = stream;
-    }
-
-    @Override
-    public ReadStream<CopyTuple> exceptionHandler(Handler<Throwable> handler) {
-      return this;
-    }
-
-    @Override
-    public ReadStream<CopyTuple> handler(@Nullable Handler<CopyTuple> handler) {
-      if (handler == null) {
-        return this;
-      }
-      stream.forEach(handler::handle);
-      endHandler.handle(null);
-      return this;
-    }
-
-    @Override
-    public ReadStream<CopyTuple> pause() {
-      return this;
-    }
-
-    @Override
-    public ReadStream<CopyTuple> resume() {
-      return this;
-    }
-
-    @Override
-    public ReadStream<CopyTuple> endHandler(@Nullable Handler<Void> handler) {
-      endHandler = handler;
-      return this;
-    }
   }
 
   Vertx vertx;
@@ -125,17 +48,15 @@ public class CopyFromTest extends PgTestBase {
   @Test
   public void testCopyFromEmptyStream(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-
-      conn.copyFrom("CopyTable", new TupleReadStream(Stream.empty()), handler -> {
-        if (handler.succeeded()) {
-          ctx.assertEquals(0, handler.result());
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn ->
+      conn.copyFrom("CopyTable", ctx.asyncAssertSuccess(writeStream -> {
+        writeStream.endHandler(count -> {
+          ctx.assertEquals(0, count);
           async.complete();
-        } else {
-          ctx.fail(handler.cause());
-        }
-      });
-    }));
+        });
+        writeStream.exceptionHandler(ctx::fail);
+        writeStream.end();
+      }))));
   }
 
   @Test
@@ -143,15 +64,18 @@ public class CopyFromTest extends PgTestBase {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       vertx.fileSystem().open("copy/copy-text-input.txt", new OpenOptions(),
-        ctx.asyncAssertSuccess(file -> {
-          conn.copyFrom("CopyTable", file, new CopyFromOptions().setDelimiter(","), handler -> {
-            if (handler.succeeded()) {
-              ctx.assertEquals(2, handler.result());
-              async.complete();
-            } else {
-              ctx.fail(handler.cause());
-            }
-          });
+          ctx.asyncAssertSuccess(file -> {
+          conn.copyFrom("CopyTable", new CopyFromOptions().setDelimiter(","),
+            ctx.asyncAssertSuccess(copyStream -> {
+              Pump p = Pump.pump(file, copyStream);
+              copyStream.endHandler(count -> {
+                ctx.assertEquals(2, count);
+                async.complete();
+              });
+              file.endHandler(v -> copyStream.end());
+              copyStream.exceptionHandler(ctx::fail);
+              p.start();
+          }));
       }));
     }));
   }
@@ -162,14 +86,16 @@ public class CopyFromTest extends PgTestBase {
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       vertx.fileSystem().open("copy/copy-csv-input.csv", new OpenOptions(),
         ctx.asyncAssertSuccess(file -> {
-          conn.copyFrom("CopyTable", file, CopyFromOptions.csv(), handler -> {
-            if (handler.succeeded()) {
-              ctx.assertEquals(2, handler.result());
+          conn.copyFrom("CopyTable", CopyFromOptions.csv(), ctx.asyncAssertSuccess(copyStream -> {
+            Pump p = Pump.pump(file, copyStream);
+            copyStream.endHandler(count -> {
+              ctx.assertEquals(2, count);
               async.complete();
-            } else {
-              ctx.fail(handler.cause());
-            }
-          });
+            });
+            file.endHandler(v -> copyStream.end());
+            copyStream.exceptionHandler(ctx::fail);
+            p.start();
+          }));
         }));
     }));
   }
@@ -178,14 +104,14 @@ public class CopyFromTest extends PgTestBase {
   public void testCopyFromEmptyText(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-        conn.copyFrom("CopyTable", new EmptyReadStream(), new CopyFromOptions(), handler -> {
-          if (handler.succeeded()) {
-            ctx.assertEquals(0, handler.result());
+        conn.copyFrom("CopyTable", new CopyFromOptions(), ctx.asyncAssertSuccess(copyStream -> {
+          copyStream.endHandler(rows -> {
+            ctx.assertEquals(0, rows);
             async.complete();
-          } else {
-            ctx.fail(handler.cause());
-          }
-        });
+          });
+          copyStream.exceptionHandler(ctx::fail);
+          copyStream.end();
+        }));
     }));
   }
 
@@ -219,14 +145,15 @@ public class CopyFromTest extends PgTestBase {
         CopyData.create(new Interval())
       );
 
-      conn.copyFrom("CopyTable", new TupleReadStream(Stream.of(tuple, tuple)), handler -> {
-        if (handler.succeeded()) {
-          ctx.assertEquals(2, handler.result());
+      conn.copyFrom("CopyTable",  ctx.asyncAssertSuccess(copyStream -> {
+        copyStream.endHandler(count -> {
+          ctx.assertEquals(2, count);
           async.complete();
-        } else {
-          ctx.fail(handler.cause());
-        }
-      });
+        });
+        copyStream.exceptionHandler(ctx::fail);
+        copyStream.write(tuple);
+        copyStream.end(tuple);
+      }));
     }));
   }
 
@@ -234,16 +161,15 @@ public class CopyFromTest extends PgTestBase {
   public void testCopyFromMissingTuples(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      CopyTuple tuple = CopyTuple.of(
-        CopyData.create((int) (Math.random() * 1000))
-      );
+      CopyTuple tuple = CopyTuple.of(CopyData.create((int) (Math.random() * 1000)));
 
-      conn.copyFrom("CopyTable", new TupleReadStream(Stream.of(tuple, tuple)), handler -> {
-        if (handler.succeeded()) {
+      conn.copyFrom("CopyTable", ctx.asyncAssertSuccess(copyStream -> {
+        copyStream.endHandler(count -> {
           ctx.fail("Copy operation should have failed");
-        }
-        async.complete();
-      });
+        });
+        copyStream.exceptionHandler(t -> async.complete());
+        copyStream.end(tuple);
+      }));
     }));
   }
 
@@ -260,14 +186,15 @@ public class CopyFromTest extends PgTestBase {
       columns.add("Varchar");
       columns.add("UUID");
       columns.add("JSONB");
-      conn.copyFrom("CopyTable", columns, new TupleReadStream(Stream.of(tuple, tuple)), handler -> {
-        if (handler.succeeded()) {
-          ctx.assertEquals(2, handler.result());
+      conn.copyFrom("CopyTable", columns,  ctx.asyncAssertSuccess(copyStream -> {
+        copyStream.endHandler(count -> {
+          ctx.assertEquals(2, count);
           async.complete();
-        } else {
-          ctx.fail(handler.cause());
-        }
-      });
+        });
+        copyStream.exceptionHandler(ctx::fail);
+        copyStream.write(tuple);
+        copyStream.end(tuple);
+      }));
     }));
   }
 }
