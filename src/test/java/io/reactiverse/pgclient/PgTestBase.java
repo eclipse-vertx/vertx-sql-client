@@ -51,7 +51,7 @@ public abstract class PgTestBase {
 
   @BeforeClass
   public static void before() throws Exception {
-    options = startPg();
+    options = startPg(false, false);
   }
 
   @AfterClass
