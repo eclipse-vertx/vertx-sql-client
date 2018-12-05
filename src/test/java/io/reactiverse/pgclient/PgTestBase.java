@@ -60,10 +60,10 @@ public abstract class PgTestBase {
   }
 
   public synchronized static PgConnectOptions startPg() throws Exception {
-    return startPg(false);
+    return startPg(false, true);
   }
 
-  public synchronized static PgConnectOptions startPg(boolean domainSockets) throws Exception {
+  public synchronized static PgConnectOptions startPg(boolean domainSockets, boolean ssl) throws Exception {
     if (connectionUri != null && !connectionUri.isEmpty()) {
       return PgConnectOptions.fromUri(connectionUri);
     }
@@ -77,6 +77,11 @@ public abstract class PgTestBase {
       config = EmbeddedPostgres.cachedRuntimeConfig(targetDir.toPath());
     } else {
       throw new AssertionError("Cannot access target dir");
+    }
+
+    // SSL
+    if (ssl) {
+      config = useSSLRuntimeConfig(config);
     }
 
     // Domain sockets
@@ -93,48 +98,13 @@ public abstract class PgTestBase {
         PosixFilePermission.GROUP_READ,
         PosixFilePermission.GROUP_WRITE
       )));
+      config = useDomainSocketRunTimeConfig(config, sock);
     } else {
       sock = null;
     }
 
-    // SSL
-    File sslKey = getTestResource("server.key");
-    Files.setPosixFilePermissions(sslKey.toPath(), Collections.singleton(PosixFilePermission.OWNER_READ));
-    File sslCrt = getTestResource("server.crt");
-
     postgres = new EmbeddedPostgres(V9_6);
-    IRuntimeConfig sslConfig = new IRuntimeConfig() {
-      @Override
-      public ProcessOutput getProcessOutput() {
-        return config.getProcessOutput();
-      }
-      @Override
-      public ICommandLinePostProcessor getCommandLinePostProcessor() {
-        ICommandLinePostProcessor commandLinePostProcessor = config.getCommandLinePostProcessor();
-        return (distribution, args) -> {
-          List<String> result = commandLinePostProcessor.process(distribution, args);
-          if (result.get(0).endsWith("postgres")) {
-            result = new ArrayList<>(result);
-            result.add("--ssl=on");
-            result.add("--ssl_cert_file=" + sslCrt.getAbsolutePath());
-            result.add("--ssl_key_file=" + sslKey.getAbsolutePath());
-            if (domainSockets) {
-              result.add("--unix_socket_directories=" + sock.getAbsolutePath());
-            }
-          }
-          return result;
-        };
-      }
-      @Override
-      public IArtifactStore getArtifactStore() {
-        return config.getArtifactStore();
-      }
-      @Override
-      public boolean isDaemonProcess() {
-        return config.isDaemonProcess();
-      }
-    };
-    PgTestBase.postgres.start(sslConfig,
+    PgTestBase.postgres.start(config,
       "localhost",
       8081,
       "postgres",
@@ -186,6 +156,69 @@ public abstract class PgTestBase {
           completionHandler.run();
         }
       }));
+    }
+  }
+
+  private static IRuntimeConfig useSSLRuntimeConfig(IRuntimeConfig config) throws Exception {
+    File sslKey = getTestResource("server.key");
+    Files.setPosixFilePermissions(sslKey.toPath(), Collections.singleton(PosixFilePermission.OWNER_READ));
+    File sslCrt = getTestResource("server.crt");
+
+    return new RunTimeConfigBase(config) {
+      @Override
+      public ICommandLinePostProcessor getCommandLinePostProcessor() {
+        ICommandLinePostProcessor commandLinePostProcessor = config.getCommandLinePostProcessor();
+        return (distribution, args) -> {
+          List<String> result = commandLinePostProcessor.process(distribution, args);
+          if (result.get(0).endsWith("postgres")) {
+            result = new ArrayList<>(result);
+            result.add("--ssl=on");
+            result.add("--ssl_cert_file=" + sslCrt.getAbsolutePath());
+            result.add("--ssl_key_file=" + sslKey.getAbsolutePath());
+          }
+          return result;
+        };
+      }
+    };
+  }
+
+  private static IRuntimeConfig useDomainSocketRunTimeConfig(IRuntimeConfig config, File sock) throws Exception {
+    return new RunTimeConfigBase(config) {
+      @Override
+      public ICommandLinePostProcessor getCommandLinePostProcessor() {
+        ICommandLinePostProcessor commandLinePostProcessor = config.getCommandLinePostProcessor();
+        return (distribution, args) -> {
+          List<String> result = commandLinePostProcessor.process(distribution, args);
+          if (result.get(0).endsWith("postgres")) {
+            result = new ArrayList<>(result);
+            result.add("--unix_socket_directories=" + sock.getAbsolutePath());
+          }
+          return result;
+        };
+      }
+    };
+  }
+
+  private static abstract class RunTimeConfigBase implements IRuntimeConfig {
+    private final IRuntimeConfig config;
+
+    private RunTimeConfigBase(IRuntimeConfig config) {
+      this.config = config;
+    }
+
+    @Override
+    public ProcessOutput getProcessOutput() {
+      return config.getProcessOutput();
+    }
+
+    @Override
+    public IArtifactStore getArtifactStore() {
+      return config.getArtifactStore();
+    }
+
+    @Override
+    public boolean isDaemonProcess() {
+      return config.isDaemonProcess();
     }
   }
 }

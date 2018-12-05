@@ -39,7 +39,7 @@ public class UnixDomainSocketTest {
     Vertx vertx = Vertx.vertx(new VertxOptions().setPreferNativeTransport(true));
     boolean nativeTransportEnabled = vertx.isNativeTransportEnabled();
     vertx.close();
-    options = PgTestBase.startPg(nativeTransportEnabled);
+    options = PgTestBase.startPg(nativeTransportEnabled, false);
   }
 
   @AfterClass
