@@ -1,3 +1,24 @@
+== 0.11.0
+
+Fixed issues: https://github.com/reactiverse/reactive-pg-client/issues?q=is%3Aclosed+milestone%3A0.11.0
+
+- Upgrade to Vert.x 3.6
+- Example for Kotlin throws compilation errors
+
+== 0.10.9
+
+Fixed issues: https://github.com/reactiverse/reactive-pg-client/issues?q=is%3Aclosed+milestone%3A0.10.9
+
+- Geometric types supports
+- Accept null value for json parameter
+
+== 0.10.8
+
+Fixed issues: https://github.com/reactiverse/reactive-pg-client/issues?q=is%3Aclosed+milestone%3A0.10.8
+
+- Connection pool opens more connections than necessary
+- Negative numeric values are not simple queries are not properly decoded
+
 == 0.10.7
 
 Fixed issues: https://github.com/reactiverse/reactive-pg-client/milestone/14?closed=1

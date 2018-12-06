@@ -175,13 +175,12 @@ public class ConnectionPoolTest {
     pool.acquire(holder2);
     // Release the first connection so the second waiter gets the connection
     holder1.close();
-    holder2.init();
-    assertEquals(0, pool.available());
+    // The connection should be put back in the pool
+    assertEquals(1, pool.available());
     // Satisfy the holder with connection it actually asked for
     SimpleConnection conn2 = new SimpleConnection();
     queue.connect(conn2);
-    // The connection should be put back in the pool
-    assertEquals(1, pool.available());
+    holder2.init();
   }
 
   @Test
@@ -251,5 +250,14 @@ public class ConnectionPoolTest {
     assertTrue(holder2.isConnected());
     assertEquals(0, pool.available());
     assertEquals(1, pool.size());
+  }
+
+  @Test
+  public void testAcquireOnlyConnectOnce() {
+    ConnectionQueue queue = new ConnectionQueue();
+    ConnectionPool pool = new ConnectionPool(queue, 10, 0);
+    SimpleHolder holder1 = new SimpleHolder();
+    pool.acquire(holder1);
+    assertEquals(1, queue.size());
   }
 }

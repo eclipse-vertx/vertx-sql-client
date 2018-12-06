@@ -102,6 +102,26 @@ CREATE TABLE "JsonbDataType" (
 INSERT INTO "JsonbDataType" ("id" ,"JsonObject", "JsonArray", "Number", "String", "BooleanTrue", "BooleanFalse", "Null") VALUES (1, '  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }', '[1,true,null,9.5,"Hi"]', '4', '"Hello World"', 'true', 'false', 'null');
 INSERT INTO "JsonbDataType" ("id" ,"JsonObject", "JsonArray", "Number", "String", "BooleanTrue", "BooleanFalse", "Null") VALUES (2, '  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }', '[1,true,null,9.5,"Hi"]', '4', '"Hello World"', 'true', 'false', 'null');
 
+-- Geometric table
+DROP TABLE IF EXISTS "GeometricDataType";
+CREATE TABLE "GeometricDataType" (
+  "id" INTEGER NOT NULL PRIMARY KEY,
+  "Point" POINT,
+  "Line" LINE,
+  "Lseg" LSEG,
+  "Box" BOX,
+  "ClosedPath" PATH,
+  "OpenPath" PATH,
+  "Polygon" POLYGON,
+  "Circle" CIRCLE
+);
+
+INSERT INTO "GeometricDataType" ("id", "Point", "Line", "Lseg", "Box", "ClosedPath", "OpenPath", "Polygon", "Circle")
+VALUES (1, '(1.0,2.0)':: POINT, '{1.0,2.0,3.0}':: LINE, '((1.0,1.0),(2.0,2.0))':: LSEG, '((2.0,2.0),(1.0,1.0))':: BOX, '((1.0,1.0),(2.0,1.0),(2.0,2.0),(2.0,1.0))':: PATH,'[(1.0,1.0),(2.0,1.0),(2.0,2.0),(2.0,1.0)]':: PATH, '((1.0,1.0),(2.0,2.0),(3.0,1.0))':: POLYGON, '<(1.0,1.0),1.0>':: CIRCLE);
+INSERT INTO "GeometricDataType" ("id", "Point", "Line", "Lseg", "Box", "ClosedPath", "OpenPath", "Polygon", "Circle")
+VALUES (2, '(1.0,2.0)':: POINT, '{1.0,2.0,3.0}':: LINE, '((1.0,1.0),(2.0,2.0))':: LSEG, '((2.0,2.0),(1.0,1.0))':: BOX, '((1.0,1.0),(2.0,1.0),(2.0,2.0),(2.0,1.0))':: PATH,'[(1.0,1.0),(2.0,1.0),(2.0,2.0),(2.0,1.0)]':: PATH, '((1.0,1.0),(2.0,2.0),(3.0,1.0))':: POLYGON, '<(1.0,1.0),1.0>':: CIRCLE);
+
+
 DROP TABLE IF EXISTS "ArrayDataType";
 CREATE TABLE "ArrayDataType" (
   "id"             INTEGER NOT NULL PRIMARY KEY,
@@ -125,6 +145,14 @@ CREATE TABLE "ArrayDataType" (
   "Bytea"          BYTEA[],
   "JSON"           JSON[],
   "JSONB"          JSONB[],
+  "Point"          POINT[],
+  "Line"           LINE[],
+  "Lseg"           LSEG[],
+  "Box"            BOX[],
+  "ClosedPath"     PATH[],
+  "OpenPath"       PATH[],
+  "Polygon"        POLYGON[],
+  "Circle"         CIRCLE[],
   "Enum"           mood[],
   "Interval"       INTERVAL [],
   "CustomType"     full_address[]
@@ -149,6 +177,14 @@ INSERT INTO "ArrayDataType" VALUES (1, ARRAY [TRUE],
                                        ARRAY [decode('48454c4c4f', 'hex')],
                                        ARRAY ['  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }' :: JSON, '[1,true,null,9.5,"Hi"]' :: JSON, '4' :: JSON, '"Hello World"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON],
                                        ARRAY ['  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }' :: JSON, '[1,true,null,9.5,"Hi"]' :: JSON, '4' :: JSON, '"Hello World"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON],
+                                       ARRAY ['(1.0,1.0)':: POINT, '(2.0,2.0)' :: POINT],
+                                       ARRAY ['{1.0,2.0,3.0}':: LINE, '{2.0,3.0,4.0}':: LINE],
+                                       ARRAY ['((1.0,1.0),(2.0,2.0))':: LSEG, '((2.0,2.0),(3.0,3.0))':: LSEG],
+                                       ARRAY ['((2.0,2.0),(1.0,1.0))':: BOX, '((3.0,3.0),(2.0,2.0))':: BOX],
+                                       ARRAY ['((1.0,1.0),(2.0,1.0),(2.0,2.0),(2.0,1.0))':: PATH, '((2.0,2.0),(3.0,2.0),(3.0,3.0),(3.0,2.0))':: PATH],
+                                       ARRAY ['[(1.0,1.0),(2.0,1.0),(2.0,2.0),(2.0,1.0)]':: PATH, '[(2.0,2.0),(3.0,2.0),(3.0,3.0),(3.0,2.0)]':: PATH],
+                                       ARRAY ['((1.0,1.0),(2.0,2.0),(3.0,1.0))':: POLYGON, '((0.0,0.0),(0.0,1.0),(1.0,2.0),(2.0,1.0),(2.0,0.0))':: POLYGON],
+                                       ARRAY ['<(1.0,1.0),1.0>':: CIRCLE, '<(0.0,0.0),2.0>':: CIRCLE],
                                        ARRAY['ok'::mood,'unhappy'::mood, 'happy'::mood],
                                        ARRAY['10 years 3 months 332 days 20 hours 20 minutes 20.999991 seconds'::INTERVAL, '20 minutes 20.123456 seconds'::INTERVAL, '30 months ago'::INTERVAL],
                                        ARRAY [ROW('Anytown', 'Main St', true)::full_address, ('Anytown', 'First St', false)::full_address]);
@@ -171,6 +207,14 @@ INSERT INTO "ArrayDataType" VALUES (2, ARRAY [TRUE],
                                        ARRAY [decode('48454c4c4f', 'hex')],
                                        ARRAY ['  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }' :: JSON, '[1,true,null,9.5,"Hi"]' :: JSON, '4' :: JSON, '"Hello World"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON],
                                        ARRAY ['  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }' :: JSON, '[1,true,null,9.5,"Hi"]' :: JSON, '4' :: JSON, '"Hello World"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON],
+                                       ARRAY ['(1.0,1.0)':: POINT, '(2.0,2.0)' :: POINT],
+                                       ARRAY ['{1.0,2.0,3.0}':: LINE, '{2.0,3.0,4.0}':: LINE],
+                                       ARRAY ['((1.0,1.0),(2.0,2.0))':: LSEG, '((2.0,2.0),(3.0,3.0))':: LSEG],
+                                       ARRAY ['((2.0,2.0),(1.0,1.0))':: BOX, '((3.0,3.0),(2.0,2.0))':: BOX],
+                                       ARRAY ['((1.0,1.0),(2.0,1.0),(2.0,2.0),(2.0,1.0))':: PATH, '((2.0,2.0),(3.0,2.0),(3.0,3.0),(3.0,2.0))':: PATH],
+                                       ARRAY ['[(1.0,1.0),(2.0,1.0),(2.0,2.0),(2.0,1.0)]':: PATH, '[(2.0,2.0),(3.0,2.0),(3.0,3.0),(3.0,2.0)]':: PATH],
+                                       ARRAY ['((1.0,1.0),(2.0,2.0),(3.0,1.0))':: POLYGON, '((0.0,0.0),(0.0,1.0),(1.0,2.0),(2.0,1.0),(2.0,0.0))':: POLYGON],
+                                       ARRAY ['<(1.0,1.0),1.0>':: CIRCLE, '<(0.0,0.0),2.0>':: CIRCLE],
                                        ARRAY['unhappy'::mood, 'happy'::mood],
                                        ARRAY['0 years 0 months 0 days 0 hours 0 minutes 0 seconds'::INTERVAL],
                                        ARRAY [ROW('Anytown', 'Main St', true)::full_address, ('Anytown', 'First St', false)::full_address]);
@@ -195,29 +239,35 @@ CREATE TABLE "CustomDataType" (
 INSERT INTO "CustomDataType" ("id", "address") VALUES (1, ('Anytown', 'Main St', true));
 INSERT INTO "CustomDataType" ("id", "address") VALUES (2, ('Anytown', 'First St', false));
 
-DROP TABLE IF EXISTS "CopyTable";
-CREATE TABLE "CopyTable" (
-  "id"             INTEGER,
-  "Boolean"        BOOLEAN,
-  "Short"          INT2,
-  "Integer"        INT4,
-  "Long"           INT8,
-  "Float"          FLOAT4,
-  "Double"         FLOAT8,
-  "Char"           VARCHAR,
-  "Varchar"        VARCHAR,
-  "Text"           TEXT,
-  "Name"           NAME,
-  "LocalDate"      DATE,
-  "LocalTime"      TIME WITHOUT TIME ZONE,
-  "OffsetTime"     TIME WITH TIME ZONE,
-  "LocalDateTime"  TIMESTAMP WITHOUT TIME ZONE,
-  "OffsetDateTime" TIMESTAMP WITH TIME ZONE,
-  "UUID"           UUID,
-  "Bytea"          BYTEA,
-  "JSON"           JSON,
-  "JSONB"          JSONB,
-  "Enum"           mood,
-  "Interval"       INTERVAL
+CREATE TABLE "AllDataTypes"
+(
+  boolean     BOOLEAN,
+  int2        INT2,
+  int4        INT4,
+  int8        INT8,
+  float4      FLOAT4,
+  float8      FLOAT8,
+  char        CHAR,
+  varchar     VARCHAR,
+  text        TEXT,
+  enum        mood,
+  name        NAME,
+  numeric     NUMERIC,
+  uuid        UUID,
+  date        DATE,
+  time        TIME,
+  timetz      TIMETZ,
+  timestamp   TIMESTAMP,
+  timestamptz TIMESTAMPTZ,
+  interval    INTERVAL,
+  bytea       BYTEA,
+  json        JSON,
+  jsonb       JSONB,
+  point       POINT,
+  line        LINE,
+  lseg        LSEG,
+  box         BOX,
+  path        PATH,
+  polygon     POLYGON,
+  circle      CIRCLE
 );
-

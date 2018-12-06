@@ -70,6 +70,12 @@ public class RowTest extends PgTestBase {
             row::getTemporal,
             row::getUUID,
             row::getPoint,
+            row::getLine,
+            row::getLineSegment,
+            row::getBox,
+            row::getPath,
+            row::getPolygon,
+            row::getCircle,
             row::getInterval,
             row::getBooleanArray,
             row::getShortArray,
@@ -86,6 +92,12 @@ public class RowTest extends PgTestBase {
             row::getBufferArray,
             row::getUUIDArray,
             row::getPointArray,
+            row::getLineArray,
+            row::getLineSegmentArray,
+            row::getBoxArray,
+            row::getPathArray,
+            row::getPolygonArray,
+            row::getCircleArray,
             row::getIntervalArray
           );
           functions.forEach(f -> {

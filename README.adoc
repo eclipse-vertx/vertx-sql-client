@@ -28,29 +28,31 @@ image:https://travis-ci.org/reactiverse/reactive-pg-client.svg?branch=master["Bu
 
 == Usage
 
-Latest release is https://github.com/reactiverse/reactive-pg-client/blob/master/RELEASES.adoc[0.10.7].
+Latest release is https://github.com/reactiverse/reactive-pg-client/blob/master/RELEASES.adoc[0.11.0].
 
 To use the client, add the following dependency to the _dependencies_ section of your build descriptor:
 
-* Maven (in your `pom.xml`):
+* Maven (in your `pom.xml`) for Vert.x 3.6.x:
 
 [source,xml]
 ----
 <dependency>
   <groupId>io.reactiverse</groupId>
   <artifactId>reactive-pg-client</artifactId>
-  <version>0.10.7</version>
+  <version>0.11.0</version>
 </dependency>
 ----
 
-* Gradle (in your `build.gradle` file):
+* Gradle (in your `build.gradle` file)  for Vert.x 3.6.x:
 
 [source,groovy]
 ----
 dependencies {
-  compile 'io.reactiverse:reactive-pg-client:0.10.7'
+  compile 'io.reactiverse:reactive-pg-client:0.11.0'
 }
 ----
+
+If you are using Vertx 3.5.x you should use instead `0.10.9`
 
 Then the code is quite straightforward:
 
@@ -242,6 +244,48 @@ The *Reactive Postgres Client* currently supports the following data types
 |`i.r.p.data.Json[]`
 |&#10004;
 
+|`POINT`
+|`i.r.p.data.Point`
+|&#10004;
+|`i.r.p.data.Point[]`
+|&#10004;
+
+|`LINE`
+|`i.r.p.data.Line`
+|&#10004;
+|`i.r.p.data.Line[]`
+|&#10004;
+
+|`LSEG`
+|`i.r.p.data.LineSegment`
+|&#10004;
+|`i.r.p.data.LineSegment[]`
+|&#10004;
+
+|`BOX`
+|`i.r.p.data.Box`
+|&#10004;
+|`i.r.p.data.Box[]`
+|&#10004;
+
+|`PATH`
+|`i.r.p.data.Path`
+|&#10004;
+|`i.r.p.data.Path[]`
+|&#10004;
+
+|`POLYGON`
+|`i.r.p.data.Polygon`
+|&#10004;
+|`i.r.p.data.Polygon[]`
+|&#10004;
+
+|`CIRCLE`
+|`i.r.p.data.Circle`
+|&#10004;
+|`i.r.p.data.Circle[]`
+|&#10004;
+
 |`UNKNOWN`
 |`j.l.String`
 |&#10004;
@@ -253,7 +297,7 @@ The *Reactive Postgres Client* currently supports the following data types
 The following types
 
 _SERIAL2_, _SERIAL4_, _SERIAL8_, _MONEY_, _BIT_, _VARBIT_, _MACADDR_, _INET_, _CIDR_, _MACADDR8_,
-_XML_, _POINT_, _PATH_, _BOX_, _LINE_, _POLYGON_, _LSEG_, _CIRCLE_, _HSTORE_, _OID_,
+_XML_, _HSTORE_, _OID_,
 _VOID_, _TSQUERY_, _TSVECTOR_
 
 are not implemented yet (PR are welcome).

@@ -25,6 +25,9 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.DecoderException;
 import io.reactiverse.pgclient.impl.codec.decoder.type.MessageType;
 import io.vertx.core.Future;
+import io.vertx.core.VertxException;
+
+import java.nio.channels.ClosedChannelException;
 
 public class InitiateSslHandler extends ChannelInboundHandlerAdapter {
 
@@ -80,5 +83,12 @@ public class InitiateSslHandler extends ChannelInboundHandlerAdapter {
       cause = err.getCause();
     }
     upgradeFuture.fail(cause);
+  }
+
+  @Override
+  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    super.channelInactive(ctx);
+    // Work around for https://github.com/eclipse-vertx/vert.x/issues/2748
+    upgradeFuture.fail(new VertxException("SSL handshake failed", true));
   }
 }

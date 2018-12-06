@@ -18,6 +18,7 @@
 package io.reactiverse.pgclient;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxException;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -74,7 +75,8 @@ public class TLSTest extends PgTestBase {
   public void testTLSInvalidCertificate(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, new PgConnectOptions(options).setSsl(true), ctx.asyncAssertFailure(err -> {
-      ctx.assertEquals(err.getClass(), SSLHandshakeException.class);
+      ctx.assertEquals(err.getClass(), VertxException.class);
+      ctx.assertEquals(err.getMessage(), "SSL handshake failed");
       async.complete();
     }));
   }

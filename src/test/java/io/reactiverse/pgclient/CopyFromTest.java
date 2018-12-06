@@ -4,8 +4,15 @@ import io.reactiverse.pgclient.codec.DataType;
 import io.reactiverse.pgclient.copy.CopyData;
 import io.reactiverse.pgclient.copy.CopyFromOptions;
 import io.reactiverse.pgclient.copy.CopyTuple;
+import io.reactiverse.pgclient.data.Box;
+import io.reactiverse.pgclient.data.Circle;
 import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.data.Json;
+import io.reactiverse.pgclient.data.Line;
+import io.reactiverse.pgclient.data.LineSegment;
+import io.reactiverse.pgclient.data.Path;
+import io.reactiverse.pgclient.data.Point;
+import io.reactiverse.pgclient.data.Polygon;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.OpenOptions;
@@ -20,6 +27,8 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.UUID;
 import org.junit.After;
 import org.junit.Before;
@@ -49,7 +58,7 @@ public class CopyFromTest extends PgTestBase {
   public void testCopyFromEmptyStream(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn ->
-      conn.copyFrom("CopyTable", ctx.asyncAssertSuccess(writeStream -> {
+      conn.copyFrom("AllDataTypes", ctx.asyncAssertSuccess(writeStream -> {
         writeStream.endHandler(count -> {
           ctx.assertEquals(0, count);
           async.complete();
@@ -65,7 +74,7 @@ public class CopyFromTest extends PgTestBase {
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       vertx.fileSystem().open("copy/copy-text-input.txt", new OpenOptions(),
           ctx.asyncAssertSuccess(file -> {
-          conn.copyFrom("CopyTable", new CopyFromOptions().setDelimiter(","),
+          conn.copyFrom("AllDataTypes", new CopyFromOptions().setDelimiter(","),
             ctx.asyncAssertSuccess(copyStream -> {
               Pump p = Pump.pump(file, copyStream);
               copyStream.endHandler(count -> {
@@ -86,7 +95,7 @@ public class CopyFromTest extends PgTestBase {
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       vertx.fileSystem().open("copy/copy-csv-input.csv", new OpenOptions(),
         ctx.asyncAssertSuccess(file -> {
-          conn.copyFrom("CopyTable", CopyFromOptions.csv(), ctx.asyncAssertSuccess(copyStream -> {
+          conn.copyFrom("AllDataTypes", CopyFromOptions.csv(), ctx.asyncAssertSuccess(copyStream -> {
             Pump p = Pump.pump(file, copyStream);
             copyStream.endHandler(count -> {
               ctx.assertEquals(2, count);
@@ -104,7 +113,7 @@ public class CopyFromTest extends PgTestBase {
   public void testCopyFromEmptyText(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-        conn.copyFrom("CopyTable", new CopyFromOptions(), ctx.asyncAssertSuccess(copyStream -> {
+        conn.copyFrom("AllDataTypes", new CopyFromOptions(), ctx.asyncAssertSuccess(copyStream -> {
           copyStream.endHandler(rows -> {
             ctx.assertEquals(0, rows);
             async.complete();
@@ -118,34 +127,71 @@ public class CopyFromTest extends PgTestBase {
   @Test
   public void testCopyFrom(TestContext ctx) {
     Async async = ctx.async();
-
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       CopyTuple tuple = CopyTuple.of(
-        CopyData.create((int) (Math.random() * 1000)),
         CopyData.create(true),
         CopyData.create((short) 1, DataType.INT2),
         CopyData.create(32),
         CopyData.create(300L),
         CopyData.create(300.3f),
         CopyData.create(10.50),
+        CopyData.create("a", DataType.CHAR),
         CopyData.create("a", DataType.VARCHAR),
         CopyData.create("b"),
-        CopyData.create("c"),
-        CopyData.create("d"),
+        CopyData.create(Mood.happy),
+        CopyData.create("c", DataType.NAME),
+        CopyData.create(UUID.randomUUID()),
         CopyData.create(LocalDate.now()),
         CopyData.create(LocalTime.now()),
         CopyData.create(OffsetTime.now()),
         CopyData.create(LocalDateTime.now()),
         CopyData.create(OffsetDateTime.now()),
-        CopyData.create(UUID.randomUUID()),
+        CopyData.create(new Interval()),
         CopyData.create(Buffer.buffer("hello"), DataType.BYTEA),
         CopyData.create(Json.create("{\"address\": {\"city\": \"AnyTown\"}}")),
         CopyData.create(Json.create("{\"address\": {\"street\": \"Main St\"}}"), DataType.JSONB),
-        CopyData.create(Mood.happy),
-        CopyData.create(new Interval())
-      );
+        CopyData.create(new Point()),
+        CopyData.create(new Line(10, 20, 30)),
+        CopyData.create(new LineSegment()),
+        CopyData.create(new Box()),
+        CopyData.create(new Path(true, Collections.singletonList(new Point(1, 1)))),
+        CopyData.create(new Polygon(Collections.singletonList(new Point(1, 1)))),
+        CopyData.create(new Circle())
+        );
+      ArrayList<String> columns = new ArrayList<>(Arrays.asList(
+        "boolean",
+        "int2",
+        "int4",
+        "int8",
+        "float4",
+        "float8",
+        "char",
+        "varchar",
+        "text",
+        "enum",
+        "name",
+        // "numeric", TODO numeric binary encoding support
+        "uuid",
+        "date",
+        "time",
+        "timetz",
+        "timestamp",
+        "timestamptz",
+        "interval",
+        "bytea",
+        "json",
+        "jsonb",
+        "point",
+        "line",
+        "lseg",
+        "box",
+        "path",
+        "polygon",
+        "circle"
+      ));
 
-      conn.copyFrom("CopyTable",  ctx.asyncAssertSuccess(copyStream -> {
+
+   conn.copyFrom("AllDataTypes",  columns, ctx.asyncAssertSuccess(copyStream -> {
         copyStream.endHandler(count -> {
           ctx.assertEquals(2, count);
           async.complete();
@@ -161,38 +207,13 @@ public class CopyFromTest extends PgTestBase {
   public void testCopyFromMissingTuples(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      CopyTuple tuple = CopyTuple.of(CopyData.create((int) (Math.random() * 1000)));
+      CopyTuple tuple = CopyTuple.of(CopyData.create(true));
 
-      conn.copyFrom("CopyTable", ctx.asyncAssertSuccess(copyStream -> {
+      conn.copyFrom("AllDataTypes", ctx.asyncAssertSuccess(copyStream -> {
         copyStream.endHandler(count -> {
           ctx.fail("Copy operation should have failed");
         });
         copyStream.exceptionHandler(t -> async.complete());
-        copyStream.end(tuple);
-      }));
-    }));
-  }
-
-  @Test
-  public void testCopyFromColumnNames(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      CopyTuple tuple = CopyTuple.of(
-        CopyData.create("a", DataType.VARCHAR),
-        CopyData.create(UUID.randomUUID()),
-        CopyData.create(Json.create("{\"address\": {\"street\": \"Main St\"}}"), DataType.JSONB)
-      );
-      ArrayList<String> columns = new ArrayList<>();
-      columns.add("Varchar");
-      columns.add("UUID");
-      columns.add("JSONB");
-      conn.copyFrom("CopyTable", columns,  ctx.asyncAssertSuccess(copyStream -> {
-        copyStream.endHandler(count -> {
-          ctx.assertEquals(2, count);
-          async.complete();
-        });
-        copyStream.exceptionHandler(ctx::fail);
-        copyStream.write(tuple);
         copyStream.end(tuple);
       }));
     }));

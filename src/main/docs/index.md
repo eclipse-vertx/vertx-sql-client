@@ -307,6 +307,12 @@ Currently the client supports the following Postgres types
 * JSON (`io.reactiverse.pgclient.data.Json`)
 * JSONB (`io.reactiverse.pgclient.data.Json`)
 * POINT (`io.reactiverse.pgclient.data.Point`)
+* LINE (`io.reactiverse.pgclient.data.Line`)
+* LSEG (`io.reactiverse.pgclient.data.LineSegment`)
+* BOX (`io.reactiverse.pgclient.data.Box`)
+* PATH (`io.reactiverse.pgclient.data.Path`)
+* POLYGON (`io.reactiverse.pgclient.data.Polygon`)
+* CIRCLE (`io.reactiverse.pgclient.data.Circle`)
 
 Tuple decoding uses the above types when storing values, it also performs on the flu conversion the actual value when possible:
 

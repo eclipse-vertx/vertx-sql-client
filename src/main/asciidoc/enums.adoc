@@ -12,16 +12,13 @@
 [frame="topbot"]
 |===
 ^|Name | Description
-|[[TEXT]]`TEXT`|
-+++
+|[[TEXT]]`TEXT`|+++
 Indicates a standard text format.
 +++
-|[[CSV]]`CSV`|
-+++
+|[[CSV]]`CSV`|+++
 Indicates CSV format.
 +++
-|[[BINARY]]`BINARY`|
-+++
+|[[BINARY]]`BINARY`|+++
 Indicates binary format.
 +++
 |===
