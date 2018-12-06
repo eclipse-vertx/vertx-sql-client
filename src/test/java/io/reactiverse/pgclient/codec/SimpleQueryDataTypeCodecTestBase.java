@@ -17,6 +17,27 @@ public abstract class SimpleQueryDataTypeCodecTestBase extends DataTypeTestBase 
     return new PgConnectOptions(options).setCachePreparedStatements(false);
   }
 
+  protected <T> void testDecodeGeneric(TestContext ctx,
+                                       String data,
+                                       String dataType,
+                                       String columnName,
+                                       ColumnChecker.SerializableBiFunction<Tuple, Integer, T> byIndexGetter,
+                                       ColumnChecker.SerializableBiFunction<Row, String, T> byNameGetter,
+                                       T expected) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT '" + data + "' :: " + dataType + " \"" + columnName + "\"", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.size());
+        Row row = result.iterator().next();
+        ColumnChecker.checkColumn(0, columnName)
+          .returns(Tuple::getValue, Row::getValue, expected)
+          .returns(byIndexGetter, byNameGetter, expected)
+          .forRow(row);
+        async.complete();
+      }));
+    }));
+  }
+
   protected <T> void testDecodeXXXArray(TestContext ctx,
                                         String columnName,
                                         String tableName,
