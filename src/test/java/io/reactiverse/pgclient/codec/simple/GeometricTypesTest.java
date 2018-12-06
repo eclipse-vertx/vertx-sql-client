@@ -20,58 +20,51 @@ import java.util.Arrays;
 
 public class GeometricTypesTest extends SimpleQueryDataTypeCodecTestBase {
   @Test
-  public void testGeometric(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn
-        .query("SELECT \"Point\", \"Line\", \"Lseg\", \"Box\", \"ClosedPath\", \"OpenPath\", \"Polygon\", \"Circle\" FROM \"GeometricDataType\" WHERE \"id\" = 1",
-          ctx.asyncAssertSuccess(result -> {
-            Point point = new Point(1.0, 2.0);
-            Line line = new Line(1.0, 2.0, 3.0);
-            LineSegment lineSegment = new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0));
-            Box box = new Box(new Point(2.0, 2.0), new Point(1.0, 1.0));
-            Path closedPath = new Path(false, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0)));
-            Path openPath = new Path(true, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0)));
-            Polygon polygon = new Polygon(Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 2.0), new Point(3.0, 1.0)));
-            Circle circle = new Circle(new Point(1.0, 1.0), 1.0);
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
-            Row row = result.iterator().next();
-            ColumnChecker.checkColumn(0, "Point")
-              .returns(Tuple::getValue, Row::getValue, point)
-              .returns(Tuple::getPoint, Row::getPoint, point)
-              .forRow(row);
-            ColumnChecker.checkColumn(1, "Line")
-              .returns(Tuple::getValue, Row::getValue, line)
-              .returns(Tuple::getLine, Row::getLine, line)
-              .forRow(row);
-            ColumnChecker.checkColumn(2, "Lseg")
-              .returns(Tuple::getValue, Row::getValue, lineSegment)
-              .returns(Tuple::getLineSegment, Row::getLineSegment, lineSegment)
-              .forRow(row);
-            ColumnChecker.checkColumn(3, "Box")
-              .returns(Tuple::getValue, Row::getValue, box)
-              .returns(Tuple::getBox, Row::getBox, box)
-              .forRow(row);
-            ColumnChecker.checkColumn(4, "ClosedPath")
-              .returns(Tuple::getValue, Row::getValue, closedPath)
-              .returns(Tuple::getPath, Row::getPath, closedPath)
-              .forRow(row);
-            ColumnChecker.checkColumn(5, "OpenPath")
-              .returns(Tuple::getValue, Row::getValue, openPath)
-              .returns(Tuple::getPath, Row::getPath, openPath)
-              .forRow(row);
-            ColumnChecker.checkColumn(6, "Polygon")
-              .returns(Tuple::getValue, Row::getValue, polygon)
-              .returns(Tuple::getPolygon, Row::getPolygon, polygon)
-              .forRow(row);
-            ColumnChecker.checkColumn(7, "Circle")
-              .returns(Tuple::getValue, Row::getValue, circle)
-              .returns(Tuple::getCircle, Row::getCircle, circle)
-              .forRow(row);
-            async.complete();
-          }));
-    }));
+  public void testPoint(TestContext ctx) {
+    Point expected = new Point(1.0, 2.0);
+    testDecodeGeneric(ctx, "(1.0,2.0)", "POINT", "Point", Tuple::getPoint, Row::getPoint, expected);
+  }
+
+  @Test
+  public void testLine(TestContext ctx) {
+    Line expected = new Line(1.0, 2.0, 3.0);
+    testDecodeGeneric(ctx, "{1.0,2.0,3.0}", "LINE", "Line", Tuple::getLine, Row::getLine, expected);
+  }
+
+  @Test
+  public void testLineSegment(TestContext ctx) {
+    LineSegment expected = new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0));
+    testDecodeGeneric(ctx, "((1.0,1.0),(2.0,2.0))", "LSEG", "Lseg", Tuple::getLineSegment, Row::getLineSegment, expected);
+  }
+
+  @Test
+  public void testBox(TestContext ctx) {
+    Box expected = new Box(new Point(2.0, 2.0), new Point(1.0, 1.0));
+    testDecodeGeneric(ctx, "((2.0,2.0),(1.0,1.0))", "BOX", "Box", Tuple::getBox, Row::getBox, expected);
+  }
+
+  @Test
+  public void testClosedPath(TestContext ctx) {
+    Path expected = new Path(false, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0)));
+    testDecodeGeneric(ctx, "((1.0,1.0),(2.0,1.0),(2.0,2.0),(2.0,1.0))", "PATH", "ClosedPath", Tuple::getPath, Row::getPath, expected);
+  }
+
+  @Test
+  public void testOpenPath(TestContext ctx) {
+    Path expected = new Path(true, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0)));
+    testDecodeGeneric(ctx, "[(1.0,1.0),(2.0,1.0),(2.0,2.0),(2.0,1.0)]", "PATH", "OpenPath", Tuple::getPath, Row::getPath, expected);
+  }
+
+  @Test
+  public void testPolygon(TestContext ctx) {
+    Polygon expected = new Polygon(Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 2.0), new Point(3.0, 1.0)));
+    testDecodeGeneric(ctx, "((1.0,1.0),(2.0,2.0),(3.0,1.0))", "POLYGON", "Polygon", Tuple::getPolygon, Row::getPolygon, expected);
+  }
+
+  @Test
+  public void testCircle(TestContext ctx) {
+    Circle expected = new Circle(new Point(1.0, 1.0), 1.0);
+    testDecodeGeneric(ctx, "<(1.0,1.0),1.0>", "CIRCLE", "Circle", Tuple::getCircle, Row::getCircle, expected);
   }
 
   @Test
