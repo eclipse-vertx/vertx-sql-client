@@ -4,7 +4,6 @@ import io.reactiverse.pgclient.PgClient;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
 import io.reactiverse.pgclient.codec.ColumnChecker;
-import io.reactiverse.pgclient.codec.ExtendedQueryDataTypeCodecTestBase;
 import io.reactiverse.pgclient.codec.SimpleQueryDataTypeCodecTestBase;
 import io.reactiverse.pgclient.data.Interval;
 import io.vertx.ext.unit.Async;
@@ -141,31 +140,32 @@ public class DateTimeTypesTest extends SimpleQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeDATEArray(TestContext ctx) {
-    testDecodeXXXArray(ctx, "LocalDate", "ArrayDataType", Tuple::getLocalDateArray, Row::getLocalDateArray, LocalDate.parse("1998-05-11"), LocalDate.parse("1998-05-11"));
+    testDecodeGenericArray(ctx, "ARRAY ['1998-05-11' :: DATE, '1998-05-11' :: DATE]", "LocalDate", Tuple::getLocalDateArray, Row::getLocalDateArray, LocalDate.parse("1998-05-11"), LocalDate.parse("1998-05-11"));
   }
 
   @Test
   public void testDecodeTIMEArray(TestContext ctx) {
-    testDecodeXXXArray(ctx, "LocalTime", "ArrayDataType", Tuple::getLocalTimeArray, Row::getLocalTimeArray, ExtendedQueryDataTypeCodecTestBase.lt);
+    testDecodeGenericArray(ctx, "ARRAY ['17:55:04.90512' :: TIME WITHOUT TIME ZONE]", "LocalTime", Tuple::getLocalTimeArray, Row::getLocalTimeArray, lt);
   }
 
   @Test
   public void testDecodeTIMETZArray(TestContext ctx) {
-    testDecodeXXXArray(ctx, "OffsetTime", "ArrayDataType", Tuple::getOffsetTimeArray, Row::getOffsetTimeArray, ExtendedQueryDataTypeCodecTestBase.dt);
+    testDecodeGenericArray(ctx, "ARRAY ['17:55:04.90512+03' :: TIME WITH TIME ZONE]", "OffsetTime", Tuple::getOffsetTimeArray, Row::getOffsetTimeArray, dt);
   }
 
   @Test
   public void testDecodeTIMESTAMPArray(TestContext ctx) {
-    testDecodeXXXArray(ctx, "LocalDateTime", "ArrayDataType", Tuple::getLocalDateTimeArray, Row::getLocalDateTimeArray, ExtendedQueryDataTypeCodecTestBase.ldt);
+    testDecodeGenericArray(ctx, "ARRAY ['2017-05-14 19:35:58.237666' :: TIMESTAMP WITHOUT TIME ZONE]", "LocalDateTime", Tuple::getLocalDateTimeArray, Row::getLocalDateTimeArray, ldt);
+
   }
 
   @Test
   public void testDecodeTIMESTAMPTZArray(TestContext ctx) {
-    testDecodeXXXArray(ctx, "OffsetDateTime", "ArrayDataType", Tuple::getOffsetDateTimeArray, Row::getOffsetDateTimeArray, ExtendedQueryDataTypeCodecTestBase.odt);
+    testDecodeGenericArray(ctx, "ARRAY ['2017-05-14 23:59:59.237666-03' :: TIMESTAMP WITH TIME ZONE]", "OffsetDateTime", Tuple::getOffsetDateTimeArray, Row::getOffsetDateTimeArray, odt);
   }
 
   @Test
   public void testDecodeINTERVALArray(TestContext ctx) {
-    testDecodeXXXArray(ctx, "Interval", "ArrayDataType", Tuple::getIntervalArray, Row::getIntervalArray, ExtendedQueryDataTypeCodecTestBase.intervals);
+    testDecodeGenericArray(ctx, "ARRAY ['10 years 3 months 332 days 20 hours 20 minutes 20.999991 seconds'::INTERVAL, '20 minutes 20.123456 seconds'::INTERVAL, '30 months ago'::INTERVAL]", "Interval", Tuple::getIntervalArray, Row::getIntervalArray, intervals);
   }
 }

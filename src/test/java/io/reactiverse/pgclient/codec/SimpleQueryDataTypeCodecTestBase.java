@@ -38,6 +38,29 @@ public abstract class SimpleQueryDataTypeCodecTestBase extends DataTypeTestBase 
     }));
   }
 
+  protected void testDecodeGenericArray(TestContext ctx,
+                                        String arrayData,
+                                        String columnName,
+                                        ColumnChecker.SerializableBiFunction<Tuple, Integer, Object> byIndexGetter,
+                                        ColumnChecker.SerializableBiFunction<Row, String, Object> byNameGetter,
+                                        Object... expected) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SET TIME ZONE 'UTC'",
+        ctx.asyncAssertSuccess(res -> {
+          conn.query("SELECT " + arrayData + " \"" + columnName + "\"", ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.size());
+            Row row = result.iterator().next();
+            ColumnChecker.checkColumn(0, columnName)
+              .returns(Tuple::getValue, Row::getValue, expected)
+              .returns(byIndexGetter, byNameGetter, expected)
+              .forRow(row);
+            async.complete();
+          }));
+        }));
+    }));
+  }
+
   protected <T> void testDecodeXXXArray(TestContext ctx,
                                         String columnName,
                                         String tableName,

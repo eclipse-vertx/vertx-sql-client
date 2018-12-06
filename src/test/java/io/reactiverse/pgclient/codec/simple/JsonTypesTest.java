@@ -83,13 +83,13 @@ public class JsonTypesTest extends SimpleQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeJSONArray(TestContext ctx) {
-    testDecodeXXXArray(ctx, "JSON", "ArrayDataType", Tuple::getJsonArray, Row::getJsonArray,
-      expected);
+    testDecodeGenericArray(ctx, "ARRAY ['  {\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []   }' :: JSON, '[1,true,null,9.5,\"Hi\"]' :: JSON, '4' :: JSON, '\"Hello World\"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON]",
+      "JSON", Tuple::getJsonArray, Row::getJsonArray, expected);
   }
 
   @Test
   public void testDecodeJSONBArray(TestContext ctx) {
-    testDecodeXXXArray(ctx, "JSONB", "ArrayDataType", Tuple::getJsonArray, Row::getJsonArray,
-      expected);
+    testDecodeGenericArray(ctx, "ARRAY ['  {\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []   }' :: JSON, '[1,true,null,9.5,\"Hi\"]' :: JSON, '4' :: JSON, '\"Hello World\"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON]",
+      "JSONB", Tuple::getJsonArray, Row::getJsonArray, expected);
   }
 }

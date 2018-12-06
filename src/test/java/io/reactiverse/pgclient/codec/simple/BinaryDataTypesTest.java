@@ -20,6 +20,6 @@ public class BinaryDataTypesTest extends SimpleQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeBYTEAArray(TestContext ctx) {
-    testDecodeXXXArray(ctx, "Bytea", "ArrayDataType", Tuple::getBufferArray, Row::getBufferArray, Buffer.buffer("HELLO"));
+    testDecodeGenericArray(ctx, "ARRAY [decode('48454c4c4f', 'hex') :: BYTEA]", "BufferArray", Tuple::getBufferArray, Row::getBufferArray, Buffer.buffer("HELLO"));
   }
 }

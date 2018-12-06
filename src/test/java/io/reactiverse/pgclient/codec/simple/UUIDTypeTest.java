@@ -17,6 +17,6 @@ public class UUIDTypeTest extends SimpleQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeUUIDArray(TestContext ctx) {
-    testDecodeXXXArray(ctx, "UUID", "ArrayDataType", Tuple::getUUIDArray, Row::getUUIDArray, uuid);
+    testDecodeGenericArray(ctx, "ARRAY ['6f790482-b5bd-438b-a8b7-4a0bed747011' :: UUID]", "UUID", Tuple::getUUIDArray, Row::getUUIDArray, uuid);
   }
 }

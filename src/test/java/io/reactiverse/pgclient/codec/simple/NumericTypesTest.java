@@ -99,27 +99,27 @@ public class NumericTypesTest extends SimpleQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeINT2Array(TestContext ctx) {
-    testDecodeXXXArray(ctx, "Short", "ArrayDataType", Tuple::getShortArray, Row::getShortArray, (short)1);
+    testDecodeGenericArray(ctx, "ARRAY [1 :: INT2]", "Short", Tuple::getShortArray, Row::getShortArray, (short) 1);
   }
 
   @Test
   public void testDecodeINT4Array(TestContext ctx) {
-    testDecodeXXXArray(ctx, "Integer", "ArrayDataType", Tuple::getIntegerArray, Row::getIntegerArray, 2);
+    testDecodeGenericArray(ctx, "ARRAY [2 :: INT4]", "Integer", Tuple::getIntegerArray, Row::getIntegerArray, 2);
   }
 
   @Test
   public void testDecodeINT8Array(TestContext ctx) {
-    testDecodeXXXArray(ctx, "Long", "ArrayDataType", Tuple::getLongArray, Row::getLongArray, 3L);
+    testDecodeGenericArray(ctx, "ARRAY [3 :: INT8]", "Long", Tuple::getLongArray, Row::getLongArray, 3L);
   }
 
   @Test
   public void testDecodeFLOAT4Array(TestContext ctx) {
-    testDecodeXXXArray(ctx, "Float", "ArrayDataType", Tuple::getFloatArray, Row::getFloatArray, 4.1f);
+    testDecodeGenericArray(ctx, "ARRAY [4.1 :: FLOAT4]", "Float", Tuple::getFloatArray, Row::getFloatArray, 4.1f);
   }
 
   @Test
   public void testDecodeFLOAT8Array(TestContext ctx) {
-    testDecodeXXXArray(ctx, "Double", "ArrayDataType", Tuple::getDoubleArray, Row::getDoubleArray, 5.2d);
+    testDecodeGenericArray(ctx, "ARRAY [5.2 :: FLOAT8]", "Double", Tuple::getDoubleArray, Row::getDoubleArray, 5.2d);
   }
 
   @Test

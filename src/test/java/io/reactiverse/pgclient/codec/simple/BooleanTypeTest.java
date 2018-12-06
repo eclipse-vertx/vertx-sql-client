@@ -19,6 +19,6 @@ public class BooleanTypeTest extends SimpleQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeBOOLArray(TestContext ctx) {
-    testDecodeXXXArray(ctx, "Boolean", "ArrayDataType", Tuple::getBooleanArray, Row::getBooleanArray, true);
+    testDecodeGenericArray(ctx, "ARRAY ['TRUE' :: BOOLEAN,'FALSE' :: BOOLEAN]", "BooleanArray", Tuple::getBooleanArray, Row::getBooleanArray, true, false);
   }
 }
