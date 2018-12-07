@@ -12,23 +12,7 @@ import org.junit.Test;
 public class CharacterTypesTest extends ExtendedQueryDataTypeCodecTestBase {
   @Test
   public void testDecodeName(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Name\" FROM \"CharacterDataType\" WHERE \"id\" = $1",
-        ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
-            Row row = result.iterator().next();
-            String name = "What is my name ?";
-            ColumnChecker.checkColumn(0, "Name")
-              .returns(Tuple::getValue, Row::getValue, name)
-              .returns(Tuple::getString, Row::getString, name)
-              .forRow(row);
-            async.complete();
-          }));
-        }));
-    }));
+    testGeneric(ctx, "SELECT $1::NAME \"Name\"", new String[]{"What is my name ?"}, Tuple::getString);
   }
 
   @Test
@@ -57,23 +41,7 @@ public class CharacterTypesTest extends ExtendedQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeChar(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"SingleChar\" FROM \"CharacterDataType\" WHERE \"id\" = $1",
-        ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
-            Row row = result.iterator().next();
-            String singleChar = "A";
-            ColumnChecker.checkColumn(0, "SingleChar")
-              .returns(Tuple::getValue, Row::getValue, singleChar)
-              .returns(Tuple::getString, Row::getString, singleChar)
-              .forRow(row);
-            async.complete();
-          }));
-        }));
-    }));
+    testGeneric(ctx, "SELECT $1::CHAR \"SingleChar\"", new String[]{"A"}, Tuple::getString);
   }
 
   @Test
@@ -101,23 +69,7 @@ public class CharacterTypesTest extends ExtendedQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeFixedChar(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"FixedChar\" FROM \"CharacterDataType\" WHERE \"id\" = $1",
-        ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
-            Row row = result.iterator().next();
-            String name = "YES";
-            ColumnChecker.checkColumn(0, "FixedChar")
-              .returns(Tuple::getValue, Row::getValue, name)
-              .returns(Tuple::getString, Row::getString, name)
-              .forRow(row);
-            async.complete();
-          }));
-        }));
-    }));
+    testGeneric(ctx, "SELECT $1::CHAR(3) \"FixedChar\"", new String[]{"YES"}, Tuple::getString);
   }
 
   @Test
@@ -145,23 +97,7 @@ public class CharacterTypesTest extends ExtendedQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeText(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Text\" FROM \"CharacterDataType\" WHERE \"id\" = $1",
-        ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
-            Row row = result.iterator().next();
-            String name = "Hello World";
-            ColumnChecker.checkColumn(0, "Text")
-              .returns(Tuple::getValue, Row::getValue, name)
-              .returns(Tuple::getString, Row::getString, name)
-              .forRow(row);
-            async.complete();
-          }));
-        }));
-    }));
+    testGeneric(ctx, "SELECT $1::TEXT \"Text\"", new String[]{"Hello World"}, Tuple::getString);
   }
 
   @Test
@@ -189,23 +125,7 @@ public class CharacterTypesTest extends ExtendedQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeVarCharacter(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"VarCharacter\" FROM \"CharacterDataType\" WHERE \"id\" = $1",
-        ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
-            Row row = result.iterator().next();
-            String name = "Great!";
-            ColumnChecker.checkColumn(0, "VarCharacter")
-              .returns(Tuple::getValue, Row::getValue, name)
-              .returns(Tuple::getString, Row::getString, name)
-              .forRow(row);
-            async.complete();
-          }));
-        }));
-    }));
+    testGeneric(ctx, "SELECT $1::VARCHAR \"VarCharacter\"", new String[]{"Great!"}, Tuple::getString);
   }
 
   @Test
@@ -253,20 +173,7 @@ public class CharacterTypesTest extends ExtendedQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeStringArray(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Text\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
-        ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
-            .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ColumnChecker.checkColumn(0, "Text")
-              .returns(Tuple::getValue, Row::getValue, new String[]{"Knock, knock.Who’s there?very long pause….Java."})
-              .returns(Tuple::getStringArray, Row::getStringArray, new String[]{"Knock, knock.Who’s there?very long pause….Java."})
-              .forRow(result.iterator().next());
-            async.complete();
-          }));
-        }));
-    }));
+    testGeneric(ctx, "SELECT $1::TEXT[]\"Text\"", new String[][]{new String[]{"Knock, knock.Who’s there?very long pause….Java."}}, Tuple::getStringArray);
   }
 
   @Test

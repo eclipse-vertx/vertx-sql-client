@@ -20,24 +20,7 @@ import java.time.format.DateTimeFormatter;
 public class DateTimeTypesTest extends ExtendedQueryDataTypeCodecTestBase {
   @Test
   public void testDecodeDateBeforePgEpoch(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Date\" FROM \"TemporalDataType\" WHERE \"id\" = $1",
-        ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
-            LocalDate ld = LocalDate.parse("1981-05-30");
-            Row row = result.iterator().next();
-            ColumnChecker.checkColumn(0, "Date")
-              .returns(Tuple::getValue, Row::getValue, ld)
-              .returns(Tuple::getLocalDate, Row::getLocalDate, ld)
-              .returns(Tuple::getTemporal, Row::getTemporal, ld)
-              .forRow(row);
-            async.complete();
-          }));
-        }));
-    }));
+    testDecodeDataTimeGeneric(ctx, "DATE", "Date", Tuple::getLocalDate, Row::getLocalDate, LocalDate.parse("1981-05-30"));
   }
 
   @Test
@@ -66,24 +49,7 @@ public class DateTimeTypesTest extends ExtendedQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeDateAfterPgEpoch(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Date\" FROM \"TemporalDataType\" WHERE \"id\" = $1",
-        ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addInteger(2), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
-            LocalDate ld = LocalDate.parse("2017-05-30");
-            Row row = result.iterator().next();
-            ColumnChecker.checkColumn(0, "Date")
-              .returns(Tuple::getValue, Row::getValue, ld)
-              .returns(Tuple::getLocalDate, Row::getLocalDate, ld)
-              .returns(Tuple::getTemporal, Row::getTemporal, ld)
-              .forRow(row);
-            async.complete();
-          }));
-        }));
-    }));
+    testDecodeDataTimeGeneric(ctx, "DATE", "Date", Tuple::getLocalDate, Row::getLocalDate, LocalDate.parse("2017-05-30"));
   }
 
   @Test
@@ -113,26 +79,8 @@ public class DateTimeTypesTest extends ExtendedQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeTime(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Time\" FROM \"TemporalDataType\" WHERE \"id\" = $1",
-        ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
-            LocalTime lt = LocalTime.parse("17:55:04.905120");
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
-            Row row = result.iterator().next();
-            ColumnChecker.checkColumn(0, "Time")
-              .returns(Tuple::getValue, Row::getValue, lt)
-              .returns(Tuple::getLocalTime, Row::getLocalTime, lt)
-              .returns(Tuple::getTemporal, Row::getTemporal, lt)
-              .forRow(row);
-            async.complete();
-          }));
-        }));
-    }));
+    testDecodeDataTimeGeneric(ctx, "TIME WITHOUT TIME ZONE", "Time", Tuple::getLocalTime, Row::getLocalTime, LocalTime.parse("17:55:04.905120"));
   }
-
 
   @Test
   public void testEncodeTime(TestContext ctx) {
@@ -161,24 +109,7 @@ public class DateTimeTypesTest extends ExtendedQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeTimeTz(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"TimeTz\" FROM \"TemporalDataType\" WHERE \"id\" = $1",
-        ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
-            Row row = result.iterator().next();
-            OffsetTime ot = OffsetTime.parse("17:55:04.905120+03:07");
-            ColumnChecker.checkColumn(0, "TimeTz")
-              .returns(Tuple::getValue, Row::getValue, ot)
-              .returns(Tuple::getOffsetTime, Row::getOffsetTime, ot)
-              .returns(Tuple::getTemporal, Row::getTemporal, ot)
-              .forRow(row);
-            async.complete();
-          }));
-        }));
-    }));
+    testDecodeDataTimeGeneric(ctx, "TIME WITH TIME ZONE", "TimeTz", Tuple::getOffsetTime, Row::getOffsetTime, OffsetTime.parse("17:55:04.905120+03:07"));
   }
 
   @Test
@@ -207,24 +138,7 @@ public class DateTimeTypesTest extends ExtendedQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeTimestampBeforePgEpoch(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Timestamp\" FROM \"TemporalDataType\" WHERE \"id\" = $1",
-        ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addInteger(3), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
-            Row row = result.iterator().next();
-            LocalDateTime ldt = LocalDateTime.parse("1800-01-01T23:57:53.237666");
-            ColumnChecker.checkColumn(0, "Timestamp")
-              .returns(Tuple::getValue, Row::getValue, ldt)
-              .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, ldt)
-              .returns(Tuple::getTemporal, Row::getTemporal, ldt)
-              .forRow(row);
-            async.complete();
-          }));
-        }));
-    }));
+    testDecodeDataTimeGeneric(ctx, "TIMESTAMP WITHOUT TIME ZONE", "Timestamp", Tuple::getLocalDateTime, Row::getLocalDateTime, LocalDateTime.parse("1800-01-01T23:57:53.237666"));
   }
 
   @Test
@@ -254,23 +168,7 @@ public class DateTimeTypesTest extends ExtendedQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeTimestampAfterPgEpoch(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Timestamp\" FROM \"TemporalDataType\" WHERE \"id\" = $1",
-        ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
-            Row row = result.iterator().next();
-            ColumnChecker.checkColumn(0, "Timestamp")
-              .returns(Tuple::getValue, Row::getValue, ldt)
-              .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, ldt)
-              .returns(Tuple::getTemporal, Row::getTemporal, ldt)
-              .forRow(row);
-            async.complete();
-          }));
-        }));
-    }));
+    testDecodeDataTimeGeneric(ctx, "TIMESTAMP WITHOUT TIME ZONE", "Timestamp", Tuple::getLocalDateTime, Row::getLocalDateTime, ldt);
   }
 
   @Test
@@ -299,26 +197,7 @@ public class DateTimeTypesTest extends ExtendedQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeTimestampTzBeforePgEpoch(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SET TIME ZONE 'UTC'", ctx.asyncAssertSuccess(v -> {
-        conn.prepare("SELECT \"TimestampTz\" FROM \"TemporalDataType\" WHERE \"id\" = $1",
-          ctx.asyncAssertSuccess(p -> {
-            p.execute(Tuple.tuple().addInteger(3), ctx.asyncAssertSuccess(result -> {
-              OffsetDateTime odt = OffsetDateTime.parse("1800-01-02T02:59:59.237666Z");
-              ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.rowCount());
-              Row row = result.iterator().next();
-              ColumnChecker.checkColumn(0, "TimestampTz")
-                .returns(Tuple::getValue, Row::getValue, odt)
-                .returns(Tuple::getOffsetDateTime, Row::getOffsetDateTime, odt)
-                .returns(Tuple::getTemporal, Row::getTemporal, odt)
-                .forRow(row);
-              async.complete();
-            }));
-          }));
-      }));
-    }));
+    testDecodeDataTimeGeneric(ctx, "TIMESTAMP WITH TIME ZONE", "TimestampTz", Tuple::getOffsetDateTime, Row::getOffsetDateTime, OffsetDateTime.parse("1800-01-02T02:59:59.237666Z"));
   }
 
   @Test
@@ -350,26 +229,7 @@ public class DateTimeTypesTest extends ExtendedQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeTimestampTzAfterPgEpoch(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SET TIME ZONE 'UTC'", ctx.asyncAssertSuccess(v -> {
-        conn.prepare("SELECT \"TimestampTz\" FROM \"TemporalDataType\" WHERE \"id\" = $1",
-          ctx.asyncAssertSuccess(p -> {
-            p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
-              ctx.assertEquals(1, result.size());
-              ctx.assertEquals(1, result.rowCount());
-              OffsetDateTime odt = OffsetDateTime.parse("2017-05-15T02:59:59.237666Z");
-              Row row = result.iterator().next();
-              ColumnChecker.checkColumn(0, "TimestampTz")
-                .returns(Tuple::getValue, Row::getValue, odt)
-                .returns(Tuple::getOffsetDateTime, Row::getOffsetDateTime, odt)
-                .returns(Tuple::getTemporal, Row::getTemporal, odt)
-                .forRow(row);
-              async.complete();
-            }));
-          }));
-      }));
-    }));
+    testDecodeDataTimeGeneric(ctx, "TIMESTAMP WITH TIME ZONE", "TimestampTz", Tuple::getOffsetDateTime, Row::getOffsetDateTime, OffsetDateTime.parse("2017-05-15T02:59:59.237666Z"));
   }
 
   @Test
@@ -401,26 +261,26 @@ public class DateTimeTypesTest extends ExtendedQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeInterval(TestContext ctx) {
+    Interval interval = Interval.of()
+      .years(10)
+      .months(3)
+      .days(332)
+      .hours(20)
+      .minutes(20)
+      .seconds(20)
+      .microseconds(999999);
+
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Interval\" FROM \"TemporalDataType\" WHERE \"id\" = $1",
+      conn.prepare("SELECT $1 :: INTERVAL \"Interval\"",
         ctx.asyncAssertSuccess(p -> {
-          // 10 years 3 months 332 days 20 hours 20 minutes 20.999999 seconds
-          Interval expected = Interval.of()
-            .years(10)
-            .months(3)
-            .days(332)
-            .hours(20)
-            .minutes(20)
-            .seconds(20)
-            .microseconds(999999);
-          p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
+          p.execute(Tuple.tuple().addInterval(interval), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Interval")
-              .returns(Tuple::getValue, Row::getValue, expected)
-              .returns(Tuple::getInterval, Row::getInterval, expected)
+              .returns(Tuple::getValue, Row::getValue, interval)
+              .returns(Tuple::getInterval, Row::getInterval, interval)
               .forRow(row);
             async.complete();
           }));
@@ -461,21 +321,7 @@ public class DateTimeTypesTest extends ExtendedQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeLocalDateArray(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"LocalDate\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
-        ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
-            .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            final LocalDate dt = LocalDate.parse("1998-05-11");
-            ColumnChecker.checkColumn(0, "LocalDate")
-              .returns(Tuple::getValue, Row::getValue, new Object[]{dt, dt})
-              .returns(Tuple::getLocalDateArray, Row::getLocalDateArray, new Object[]{dt, dt})
-              .forRow(result.iterator().next());
-            async.complete();
-          }));
-        }));
-    }));
+    testGeneric(ctx, "SELECT $1 :: DATE [] \"LocalDate\"", new LocalDate[][]{new LocalDate[]{LocalDate.parse("1998-05-11"), LocalDate.parse("1998-05-11")}}, Row::getLocalDateArray);
   }
 
   @Test
@@ -501,20 +347,7 @@ public class DateTimeTypesTest extends ExtendedQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeLocalTimeArray(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"LocalTime\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
-        ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
-            .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ColumnChecker.checkColumn(0, "LocalTime")
-              .returns(Tuple::getValue, Row::getValue, new LocalTime[]{lt})
-              .returns(Tuple::getLocalTimeArray, Row::getLocalTimeArray, new LocalTime[]{lt})
-              .forRow(result.iterator().next());
-            async.complete();
-          }));
-        }));
-    }));
+    testGeneric(ctx, "SELECT $1 :: TIME WITHOUT TIME ZONE [] \"LocalTime\"", new LocalTime[][]{new LocalTime[]{lt}}, Row::getLocalTimeArray);
   }
 
   @Test
@@ -541,20 +374,7 @@ public class DateTimeTypesTest extends ExtendedQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeOffsetTimeArray(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"OffsetTime\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
-        ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
-            .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ColumnChecker.checkColumn(0, "OffsetTime")
-              .returns(Tuple::getValue, Row::getValue, new OffsetTime[]{dt})
-              .returns(Tuple::getOffsetTimeArray, Row::getOffsetTimeArray, new OffsetTime[]{dt})
-              .forRow(result.iterator().next());
-            async.complete();
-          }));
-        }));
-    }));
+    testGeneric(ctx, "SELECT $1 :: TIME WITH TIME ZONE [] \"OffsetTime\"", new OffsetTime[][]{new OffsetTime[]{dt}}, Row::getOffsetTimeArray);
   }
 
   @Test
@@ -580,21 +400,7 @@ public class DateTimeTypesTest extends ExtendedQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeLocalDateTimeArray(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"LocalDateTime\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
-        ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
-            .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            final LocalDateTime dt = LocalDateTime.parse("2017-05-14T19:35:58.237666");
-            ColumnChecker.checkColumn(0, "LocalDateTime")
-              .returns(Tuple::getValue, Row::getValue, new LocalDateTime[]{dt})
-              .returns(Tuple::getLocalDateTimeArray, Row::getLocalDateTimeArray, new LocalDateTime[]{dt})
-              .forRow(result.iterator().next());
-            async.complete();
-          }));
-        }));
-    }));
+    testGeneric(ctx, "SELECT $1 :: TIMESTAMP WITHOUT TIME ZONE [] \"LocalDateTime\"", new LocalDateTime[][]{new LocalDateTime[]{LocalDateTime.parse("2017-05-14T19:35:58.237666")}}, Row::getLocalDateTimeArray);
   }
 
   @Test
@@ -620,20 +426,7 @@ public class DateTimeTypesTest extends ExtendedQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeOffsetDateTimeArray(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"OffsetDateTime\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
-        ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
-            .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ColumnChecker.checkColumn(0, "OffsetDateTime")
-              .returns(Tuple::getValue, Row::getValue, new OffsetDateTime[]{odt})
-              .returns(Tuple::getOffsetDateTimeArray, Row::getOffsetDateTimeArray, new OffsetDateTime[]{odt})
-              .forRow(result.iterator().next());
-            async.complete();
-          }));
-        }));
-    }));
+    testGeneric(ctx, "SELECT $1 :: TIMESTAMP WITH TIME ZONE [] \"OffsetDateTime\"", new OffsetDateTime[][]{new OffsetDateTime[]{odt}}, Row::getOffsetDateTimeArray);
   }
 
   @Test
@@ -659,20 +452,7 @@ public class DateTimeTypesTest extends ExtendedQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeIntervalArray(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Interval\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
-        ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
-            .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ColumnChecker.checkColumn(0, "Interval")
-              .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(intervals))
-              .returns(Tuple::getIntervalArray, Row::getIntervalArray, ColumnChecker.toObjectArray(intervals))
-              .forRow(result.iterator().next());
-            async.complete();
-          }));
-        }));
-    }));
+    testGeneric(ctx, "SELECT $1 :: INTERVAL [] \"Interval\"", new Interval[][]{intervals}, Row::getIntervalArray);
   }
 
   @Test
@@ -681,7 +461,7 @@ public class DateTimeTypesTest extends ExtendedQueryDataTypeCodecTestBase {
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Interval\" = $1  WHERE \"id\" = $2 RETURNING \"Interval\"",
         ctx.asyncAssertSuccess(p -> {
-          Interval[] intervals = new Interval[] {
+          Interval[] intervals = new Interval[]{
             Interval.of().years(10).months(3).days(332).hours(20).minutes(20).seconds(20).microseconds(999991),
             Interval.of().minutes(20).seconds(20).microseconds(123456),
             Interval.of().years(-2).months(-6),
@@ -697,6 +477,31 @@ public class DateTimeTypesTest extends ExtendedQueryDataTypeCodecTestBase {
                 .forRow(result.iterator().next());
               async.complete();
             }));
+        }));
+    }));
+  }
+
+  private <T> void testDecodeDataTimeGeneric(TestContext ctx,
+                                             String dataType,
+                                             String columnName,
+                                             ColumnChecker.SerializableBiFunction<Tuple, Integer, T> byIndexGetter,
+                                             ColumnChecker.SerializableBiFunction<Row, String, T> byNameGetter,
+                                             T expected) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT $1 :: " + dataType + " \"" + columnName + "\"",
+        ctx.asyncAssertSuccess(p -> {
+          p.execute(Tuple.tuple().addValue(expected), ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.size());
+            ctx.assertEquals(1, result.rowCount());
+            Row row = result.iterator().next();
+            ColumnChecker.checkColumn(0, columnName)
+              .returns(Tuple::getValue, Row::getValue, expected)
+              .returns(byIndexGetter, byNameGetter, expected)
+              .returns(Tuple::getTemporal, Row::getTemporal, expected)
+              .forRow(row);
+            async.complete();
+          }));
         }));
     }));
   }

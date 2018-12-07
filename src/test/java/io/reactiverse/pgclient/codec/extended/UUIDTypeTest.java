@@ -14,22 +14,7 @@ import java.util.UUID;
 public class UUIDTypeTest extends ExtendedQueryDataTypeCodecTestBase {
   @Test
   public void testDecodeUUID(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"uuid\" FROM \"CharacterDataType\" WHERE \"id\" = $1",
-        ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
-            Row row = result.iterator().next();
-            ColumnChecker.checkColumn(0, "uuid")
-              .returns(Tuple::getValue, Row::getValue, uuid)
-              .returns(Tuple::getUUID, Row::getUUID, uuid)
-              .forRow(row);
-            async.complete();
-          }));
-        }));
-    }));
+    testGeneric(ctx, "SELECT $1::UUID \"uuid\"", new UUID[]{uuid}, Tuple::getUUID);
   }
 
   @Test
@@ -57,21 +42,7 @@ public class UUIDTypeTest extends ExtendedQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeUUIDArray(TestContext ctx) {
-    Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"UUID\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
-        ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
-            .addInteger(1), ctx.asyncAssertSuccess(result -> {
-            final UUID uuid = UUID.fromString("6f790482-b5bd-438b-a8b7-4a0bed747011");
-            ColumnChecker.checkColumn(0, "UUID")
-              .returns(Tuple::getValue, Row::getValue, new UUID[]{uuid})
-              .returns(Tuple::getUUIDArray, Row::getUUIDArray, new UUID[]{uuid})
-              .forRow(result.iterator().next());
-            async.complete();
-          }));
-        }));
-    }));
+    testGeneric(ctx, "SELECT $1::UUID[] \"UUID\"", new UUID[][]{new UUID[]{uuid}}, Tuple::getUUIDArray);
   }
 
   @Test

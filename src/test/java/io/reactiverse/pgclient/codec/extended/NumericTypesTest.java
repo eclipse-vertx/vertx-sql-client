@@ -17,9 +17,9 @@ public class NumericTypesTest extends ExtendedQueryDataTypeCodecTestBase {
   public void testDecodeInt2(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Short\" FROM \"NumericDataType\" WHERE \"id\" = $1",
+      conn.prepare("SELECT $1 :: INT2 \"Short\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.of(1), ctx.asyncAssertSuccess(result -> {
+          p.execute(Tuple.tuple().addShort((short) 32767), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -69,9 +69,9 @@ public class NumericTypesTest extends ExtendedQueryDataTypeCodecTestBase {
   public void testDecodeInt4(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Integer\" FROM \"NumericDataType\" WHERE \"id\" = $1",
+      conn.prepare("SELECT $1 :: INT4 \"Integer\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
+          p.execute(Tuple.tuple().addInteger(Integer.MAX_VALUE), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -124,9 +124,9 @@ public class NumericTypesTest extends ExtendedQueryDataTypeCodecTestBase {
   public void testDecodeInt8(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Long\" FROM \"NumericDataType\" WHERE \"id\" = $1",
+      conn.prepare("SELECT $1 :: INT8 \"Long\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
+          p.execute(Tuple.tuple().addLong(Long.MAX_VALUE), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -179,9 +179,9 @@ public class NumericTypesTest extends ExtendedQueryDataTypeCodecTestBase {
   public void testDecodeFloat4(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Float\" FROM \"NumericDataType\" WHERE \"id\" = $1",
+      conn.prepare("SELECT $1 :: FLOAT4\"Float\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
+          p.execute(Tuple.tuple().addFloat(Float.MAX_VALUE), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -234,9 +234,9 @@ public class NumericTypesTest extends ExtendedQueryDataTypeCodecTestBase {
   public void testDecodeFloat8(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Double\" FROM \"NumericDataType\" WHERE \"id\" = $1",
+      conn.prepare("SELECT $1 :: FLOAT8\"Double\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
+          p.execute(Tuple.tuple().addDouble(Double.MAX_VALUE), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
