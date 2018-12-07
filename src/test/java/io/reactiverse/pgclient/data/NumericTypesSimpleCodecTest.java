@@ -1,18 +1,15 @@
-package io.reactiverse.pgclient.codec.simple;
+package io.reactiverse.pgclient.data;
 
 import io.reactiverse.pgclient.PgClient;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
-import io.reactiverse.pgclient.codec.ColumnChecker;
-import io.reactiverse.pgclient.codec.SimpleQueryDataTypeCodecTestBase;
-import io.reactiverse.pgclient.data.Numeric;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
 import java.math.BigDecimal;
 
-public class NumericTypesTest extends SimpleQueryDataTypeCodecTestBase {
+public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   @Test
   public void testInt2(TestContext ctx) {
     testNumber(ctx, new Number[]{(short) 32767, (short) -1}, "INT2");

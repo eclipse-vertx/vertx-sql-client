@@ -1,4 +1,4 @@
-package io.reactiverse.pgclient.codec;
+package io.reactiverse.pgclient.data;
 
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
@@ -7,14 +7,14 @@ import java.io.Serializable;
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class ColumnChecker {
 

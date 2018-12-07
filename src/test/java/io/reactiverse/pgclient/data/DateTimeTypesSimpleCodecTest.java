@@ -1,11 +1,8 @@
-package io.reactiverse.pgclient.codec.simple;
+package io.reactiverse.pgclient.data;
 
 import io.reactiverse.pgclient.PgClient;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
-import io.reactiverse.pgclient.codec.ColumnChecker;
-import io.reactiverse.pgclient.codec.SimpleQueryDataTypeCodecTestBase;
-import io.reactiverse.pgclient.data.Interval;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
@@ -16,7 +13,7 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 
-public class DateTimeTypesTest extends SimpleQueryDataTypeCodecTestBase {
+public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   @Test
   public void testDate(TestContext ctx) {
     Async async = ctx.async();

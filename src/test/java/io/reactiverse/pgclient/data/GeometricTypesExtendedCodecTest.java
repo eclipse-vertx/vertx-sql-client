@@ -1,24 +1,15 @@
-package io.reactiverse.pgclient.codec.extended;
+package io.reactiverse.pgclient.data;
 
 import io.reactiverse.pgclient.PgClient;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
-import io.reactiverse.pgclient.codec.ColumnChecker;
-import io.reactiverse.pgclient.codec.ExtendedQueryDataTypeCodecTestBase;
-import io.reactiverse.pgclient.data.Box;
-import io.reactiverse.pgclient.data.Circle;
-import io.reactiverse.pgclient.data.Line;
-import io.reactiverse.pgclient.data.LineSegment;
-import io.reactiverse.pgclient.data.Path;
-import io.reactiverse.pgclient.data.Point;
-import io.reactiverse.pgclient.data.Polygon;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
 import java.util.Arrays;
 
-public class GeometricTypesTest extends ExtendedQueryDataTypeCodecTestBase {
+public class GeometricTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase {
   @Test
   public void testDecodePoint(TestContext ctx) {
     testGeneric(ctx, "SELECT $1 :: POINT \"Point\"", new Point[]{new Point(1.0, 2.0)}, Row::getPoint);

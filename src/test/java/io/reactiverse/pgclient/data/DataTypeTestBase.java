@@ -1,8 +1,7 @@
-package io.reactiverse.pgclient.codec;
+package io.reactiverse.pgclient.data;
 
 import io.reactiverse.pgclient.PgConnectOptions;
 import io.reactiverse.pgclient.PgTestBase;
-import io.reactiverse.pgclient.data.Interval;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;

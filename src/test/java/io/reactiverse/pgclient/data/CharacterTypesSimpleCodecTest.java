@@ -1,12 +1,11 @@
-package io.reactiverse.pgclient.codec.simple;
+package io.reactiverse.pgclient.data;
 
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
-import io.reactiverse.pgclient.codec.SimpleQueryDataTypeCodecTestBase;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
-public class CharacterTypesTest extends SimpleQueryDataTypeCodecTestBase {
+public class CharacterTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   @Test
   public void testName(TestContext ctx) {
     testDecodeGeneric(ctx, "VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X VERT.X & VERT.X", "NAME", "Name", Tuple::getString, Row::getString,

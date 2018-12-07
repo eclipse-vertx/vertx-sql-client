@@ -1,14 +1,13 @@
-package io.reactiverse.pgclient.codec.simple;
+package io.reactiverse.pgclient.data;
 
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
-import io.reactiverse.pgclient.codec.SimpleQueryDataTypeCodecTestBase;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
 import java.util.UUID;
 
-public class UUIDTypeTest extends SimpleQueryDataTypeCodecTestBase {
+public class UUIDTypeSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   @Test
   public void testUUID(TestContext ctx) {
     UUID expected = UUID.fromString("50867d3d-0098-4f61-bd31-9309ebf53475");

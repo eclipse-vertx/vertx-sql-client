@@ -1,18 +1,15 @@
-package io.reactiverse.pgclient.codec.extended;
+package io.reactiverse.pgclient.data;
 
 import io.reactiverse.pgclient.PgClient;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
-import io.reactiverse.pgclient.codec.ColumnChecker;
-import io.reactiverse.pgclient.codec.ExtendedQueryDataTypeCodecTestBase;
-import io.reactiverse.pgclient.data.Numeric;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
 import java.math.BigDecimal;
 
-public class NumericTypesTest extends ExtendedQueryDataTypeCodecTestBase {
+public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase {
   @Test
   public void testDecodeInt2(TestContext ctx) {
     Async async = ctx.async();

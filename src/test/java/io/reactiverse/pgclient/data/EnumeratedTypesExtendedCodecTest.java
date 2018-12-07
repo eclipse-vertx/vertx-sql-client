@@ -1,15 +1,13 @@
-package io.reactiverse.pgclient.codec.extended;
+package io.reactiverse.pgclient.data;
 
 import io.reactiverse.pgclient.PgClient;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
-import io.reactiverse.pgclient.codec.ColumnChecker;
-import io.reactiverse.pgclient.codec.ExtendedQueryDataTypeCodecTestBase;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
-public class EnumeratedTypesTest extends ExtendedQueryDataTypeCodecTestBase {
+public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase {
   @Test
   public void testDecodeEnum(TestContext ctx) {
     Async async = ctx.async();

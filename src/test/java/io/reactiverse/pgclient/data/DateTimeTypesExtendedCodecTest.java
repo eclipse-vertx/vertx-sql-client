@@ -1,11 +1,8 @@
-package io.reactiverse.pgclient.codec.extended;
+package io.reactiverse.pgclient.data;
 
 import io.reactiverse.pgclient.PgClient;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
-import io.reactiverse.pgclient.codec.ColumnChecker;
-import io.reactiverse.pgclient.codec.ExtendedQueryDataTypeCodecTestBase;
-import io.reactiverse.pgclient.data.Interval;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
@@ -17,7 +14,7 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.format.DateTimeFormatter;
 
-public class DateTimeTypesTest extends ExtendedQueryDataTypeCodecTestBase {
+public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase {
   @Test
   public void testDecodeDateBeforePgEpoch(TestContext ctx) {
     testDecodeDataTimeGeneric(ctx, "DATE", "Date", Tuple::getLocalDate, Row::getLocalDate, LocalDate.parse("1981-05-30"));

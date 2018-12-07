@@ -1,14 +1,12 @@
-package io.reactiverse.pgclient.codec.simple;
+package io.reactiverse.pgclient.data;
 
 import io.reactiverse.pgclient.PgClient;
 import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.codec.ColumnChecker;
-import io.reactiverse.pgclient.codec.SimpleQueryDataTypeCodecTestBase;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
-public class NullTest extends SimpleQueryDataTypeCodecTestBase {
+public class NullSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   @Test
   public void testNull(TestContext ctx) {
     Async async = ctx.async();

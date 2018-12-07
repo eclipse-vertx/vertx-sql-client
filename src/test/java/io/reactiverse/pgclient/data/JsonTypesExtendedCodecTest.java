@@ -1,18 +1,15 @@
-package io.reactiverse.pgclient.codec.extended;
+package io.reactiverse.pgclient.data;
 
 import io.reactiverse.pgclient.PgClient;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
-import io.reactiverse.pgclient.codec.ColumnChecker;
-import io.reactiverse.pgclient.codec.ExtendedQueryDataTypeCodecTestBase;
-import io.reactiverse.pgclient.data.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
-public class JsonTypesTest extends ExtendedQueryDataTypeCodecTestBase {
+public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase {
   @Test
   public void testJSON(TestContext ctx) {
     testJson(ctx, "JSON");

@@ -1,18 +1,15 @@
-package io.reactiverse.pgclient.codec.simple;
+package io.reactiverse.pgclient.data;
 
 import io.reactiverse.pgclient.PgClient;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
-import io.reactiverse.pgclient.codec.ColumnChecker;
-import io.reactiverse.pgclient.codec.SimpleQueryDataTypeCodecTestBase;
-import io.reactiverse.pgclient.data.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
-public class JsonTypesTest extends SimpleQueryDataTypeCodecTestBase {
+public class JsonTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   @Test
   public void testJSONB(TestContext ctx) {
     testJson(ctx, "JSONB");
