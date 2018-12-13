@@ -59,7 +59,7 @@ public interface PgPool extends PgClient {
 
   @Override
   @GenIgnore
-  <R> PgClient preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+  <R> PgPool preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
 
   /**
    * Get a connection from the pool.
