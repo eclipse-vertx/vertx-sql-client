@@ -38,4 +38,8 @@ public class PgException extends RuntimeException {
   public String getCode() {
     return error.getCode();
   }
+
+  public ErrorResponse getError() {
+    return error;
+  }
 }
