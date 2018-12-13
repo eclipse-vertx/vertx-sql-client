@@ -104,7 +104,7 @@ public interface PgClient {
     Context ctx = Vertx.currentContext();
     if (ctx != null) {
       PgConnectionFactory client = new PgConnectionFactory(ctx, false, options);
-      client.connect(ar -> {
+      client.create(ar -> {
         if (ar.succeeded()) {
           Connection conn = ar.result();
           PgConnectionImpl p = new PgConnectionImpl(ctx, conn);

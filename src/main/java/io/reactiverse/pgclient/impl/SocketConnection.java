@@ -50,8 +50,6 @@ public class SocketConnection implements Connection {
   private final NetSocketInternal socket;
   private final ArrayDeque<CommandBase<?>> inflight = new ArrayDeque<>();
   private final ArrayDeque<CommandBase<?>> pending = new ArrayDeque<>();
-  private final boolean ssl;
-  private final boolean isUsingDomainSocket;
   private final Context context;
   private Status status = Status.CONNECTED;
   private Holder holder;
@@ -62,14 +60,10 @@ public class SocketConnection implements Connection {
   private MessageEncoder encoder;
 
   public SocketConnection(NetSocketInternal socket,
-                          boolean ssl,
-                          boolean isUsingDomainSocket,
                           boolean cachePreparedStatements,
                           int pipeliningLimit,
                           Context context) {
     this.socket = socket;
-    this.ssl = ssl;
-    this.isUsingDomainSocket = isUsingDomainSocket;
     this.context = context;
     this.psCache = cachePreparedStatements ? new ConcurrentHashMap<>() : null;
     this.pipeliningLimit = pipeliningLimit;
@@ -79,37 +73,14 @@ public class SocketConnection implements Connection {
     return context;
   }
 
-  void initiateProtocolOrSsl(String username, String password, String database, Handler<? super CommandResponse<Connection>> completionHandler) {
-    if (isUsingDomainSocket) {
-      initiateProtocol(username, password, database, completionHandler);
-    } else {
-      if (ssl) {
-        trySslConnection(socket, ar -> {
-          if (ar.succeeded()) {
-            initiateProtocol(username, password, database, completionHandler);
-          } else {
-            Throwable cause = ar.cause();
-            if (cause instanceof DecoderException) {
-              DecoderException err = (DecoderException) cause;
-              cause = err.getCause();
-            }
-            completionHandler.handle(CommandResponse.failure(cause));
-          }
-        });
-      } else {
-        initiateProtocol(username, password, database, completionHandler);
-      }
-    }
-  }
-
-  private void trySslConnection(NetSocketInternal socket, Handler<AsyncResult<Void>> sslUpgradeHandler) {
+  void upgradeToSSLConnection(Handler<AsyncResult<Void>> sslUpgradeHandler) {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     Future<Void> upgradeFuture = Future.future();
     upgradeFuture.setHandler(sslUpgradeHandler);
     pipeline.addBefore("handler", "initiate-ssl-handler", new InitiateSslHandler(this, upgradeFuture));
   }
 
-  private void initiateProtocol(String username, String password, String database, Handler<? super CommandResponse<Connection>> completionHandler) {
+  void initializeCodec() {
     decoder = new MessageDecoder(inflight, socket.channelHandlerContext().alloc());
     encoder = new MessageEncoder(socket.channelHandlerContext());
 
@@ -125,6 +96,9 @@ public class SocketConnection implements Connection {
         handleException(e);
       }
     });
+  }
+
+  void sendStartupMessage(String username, String password, String database, Handler<? super CommandResponse<Connection>> completionHandler) {
     InitCommand cmd = new InitCommand(this, username, password, database);
     cmd.handler = completionHandler;
     schedule(cmd);
@@ -153,14 +127,12 @@ public class SocketConnection implements Connection {
     }
   }
 
-  public boolean isSsl() {
-    return socket.isSsl();
+  public NetSocketInternal socket() {
+    return socket;
   }
 
-  public void upgradeToSSL(Handler<Void> handler) {
-    socket.upgradeToSsl(v -> {
-      handler.handle(null);
-    });
+  public boolean isSsl() {
+    return socket.isSsl();
   }
 
   @Override

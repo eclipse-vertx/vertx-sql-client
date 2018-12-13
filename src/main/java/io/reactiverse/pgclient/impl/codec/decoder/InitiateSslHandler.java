@@ -27,8 +27,6 @@ import io.reactiverse.pgclient.impl.codec.decoder.type.MessageType;
 import io.vertx.core.Future;
 import io.vertx.core.VertxException;
 
-import java.nio.channels.ClosedChannelException;
-
 public class InitiateSslHandler extends ChannelInboundHandlerAdapter {
 
   private static final int code = 80877103;
@@ -59,7 +57,7 @@ public class InitiateSslHandler extends ChannelInboundHandlerAdapter {
     byteBuf.release();
     switch (b) {
       case MessageType.SSL_YES: {
-        conn.upgradeToSSL(v -> {
+        conn.socket().upgradeToSsl(v -> {
           ctx.pipeline().remove(this);
           upgradeFuture.complete();
         });

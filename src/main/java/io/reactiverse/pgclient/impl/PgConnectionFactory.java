@@ -17,6 +17,7 @@
 
 package io.reactiverse.pgclient.impl;
 
+import io.netty.handler.codec.DecoderException;
 import io.reactiverse.pgclient.PgConnectOptions;
 import io.reactiverse.pgclient.SslMode;
 import io.vertx.core.*;
@@ -89,7 +90,88 @@ public class PgConnectionFactory {
     client.close();
   }
 
-  public void connect(Handler<? super CommandResponse<Connection>> completionHandler) {
+  public void create(Handler<? super CommandResponse<Connection>> completionHandler) {
+    connect(ar -> {
+      if (ar.succeeded()) {
+        SocketConnection conn = ar.result();
+        conn.initializeCodec();
+        conn.sendStartupMessage(username, password, database, completionHandler);
+      } else {
+        completionHandler.handle(CommandResponse.failure(ar.cause()));
+      }
+    });
+  }
+
+  public void connect(Handler<AsyncResult<SocketConnection>> handler) {
+    switch (sslMode) {
+      case DISABLE:
+        initiateConnection(false, handler);
+        break;
+      case ALLOW:
+        initiateConnection(false, ar -> {
+          if (ar.succeeded()) {
+            handler.handle(Future.succeededFuture(ar.result()));
+          } else {
+            initiateConnection(true, handler);
+          }
+        });
+        break;
+      case PREFER:
+        initiateConnection(true, ar -> {
+          if (ar.succeeded()) {
+            handler.handle(Future.succeededFuture(ar.result()));
+          } else {
+            initiateConnection(false, handler);
+          }
+        });
+        break;
+      case VERIFY_FULL:
+        if (hostnameVerificationAlgorithm == null || hostnameVerificationAlgorithm.isEmpty()) {
+          handler.handle(Future.failedFuture(new IllegalArgumentException("Host verification algorithm must be specified under verify-full sslmode")));
+          return;
+        }
+      case VERIFY_CA:
+        if (trustOptions == null) {
+          handler.handle(Future.failedFuture(new IllegalArgumentException("Trust options must be specified under verify-full or verify-ca sslmode")));
+          return;
+        }
+      case REQUIRE:
+        initiateConnection(true, handler);
+        break;
+      default:
+        throw new IllegalArgumentException("Unsupported SSL mode");
+    }
+  }
+
+  private void initiateConnection(boolean ssl, Handler<AsyncResult<SocketConnection>> handler) {
+    doConnect(ar -> {
+      if (ar.succeeded()) {
+        SocketConnection conn = ar.result();
+
+        if (ssl && !isUsingDomainSocket) {
+          // upgrade connection to SSL if needed
+          conn.upgradeToSSLConnection(ar2 -> {
+            if (ar2.succeeded()) {
+              handler.handle(Future.succeededFuture(conn));
+            } else {
+              Throwable cause = ar2.cause();
+              if (cause instanceof DecoderException) {
+                DecoderException err = (DecoderException) cause;
+                cause = err.getCause();
+              }
+              handler.handle(Future.failedFuture(cause));
+            }
+          });
+        } else {
+          handler.handle(Future.succeededFuture(conn));
+        }
+      } else {
+        handler.handle(Future.failedFuture(ar.cause()));
+      }
+    });
+  }
+
+  private void doConnect(Handler<AsyncResult<SocketConnection>> handler) {
     if (Vertx.currentContext() != ctx) {
       throw new IllegalStateException();
     }
@@ -100,75 +182,25 @@ public class PgConnectionFactory {
       socketAddress = SocketAddress.domainSocketAddress(host + "/.s.PGSQL." + port);
     }
 
-    doConnect(socketAddress, sslMode, completionHandler);
-  }
-
-  private void doConnect(SocketAddress socketAddress, SslMode sslMode, Handler<? super CommandResponse<Connection>> completionHandler) {
-    switch (sslMode) {
-      case DISABLE:
-        doConnect(socketAddress, false, completionHandler);
-        break;
-      case ALLOW:
-        doConnect(socketAddress, false, ar -> {
-          if (ar.succeeded()) {
-            completionHandler.handle(ar);
-          } else {
-            doConnect(socketAddress, true, completionHandler);
-          }
-        });
-        break;
-      case PREFER:
-        doConnect(socketAddress, true, ar -> {
-          if (ar.succeeded()) {
-            completionHandler.handle(ar);
-          } else {
-            doConnect(socketAddress, false, completionHandler);
-          }
-        });
-        break;
-      case VERIFY_FULL:
-        if (hostnameVerificationAlgorithm == null || hostnameVerificationAlgorithm.isEmpty()) {
-          completionHandler.handle(CommandResponse.failure(new IllegalArgumentException("Host verification algorithm must be specified under verify-full sslmode")));
-          return;
-        }
-      case VERIFY_CA:
-        if (trustOptions == null) {
-          completionHandler.handle(CommandResponse.failure(new IllegalArgumentException("Trust options must be specified under verify-full or verify-ca sslmode")));
-          return;
-        }
-      case REQUIRE:
-        doConnect(socketAddress, true, completionHandler);
-        break;
-      default:
-        throw new IllegalArgumentException("Unsupported SSL mode");
-    }
-  }
-
-  private void doConnect(SocketAddress socketAddress, boolean ssl, Handler<? super CommandResponse<Connection>> completionHandler) {
-    Future<NetSocket> fut = Future.<NetSocket>future().setHandler(ar -> {
+    Future<NetSocket> future = Future.<NetSocket>future().setHandler(ar -> {
       if (ar.succeeded()) {
         NetSocketInternal socket = (NetSocketInternal) ar.result();
-        SocketConnection conn = newSocketConnection(socket, ssl, isUsingDomainSocket);
-        conn.initiateProtocolOrSsl(username, password, database, completionHandler);
+        SocketConnection conn = newSocketConnection(socket);
+        handler.handle(Future.succeededFuture(conn));
       } else {
-        completionHandler.handle(CommandResponse.failure(ar.cause()));
+        handler.handle(Future.failedFuture(ar.cause()));
       }
     });
 
     try {
-      client.connect(socketAddress, null, fut);
+      client.connect(socketAddress, null, future);
     } catch (Exception e) {
       // Client is closed
-      fut.fail(e);
+      future.fail(e);
     }
   }
 
-  private SocketConnection newSocketConnection(NetSocketInternal socket, boolean ssl, boolean isUsingDomainSocket) {
-    return new SocketConnection(socket,
-      ssl,
-      isUsingDomainSocket,
-      this.cachePreparedStatements,
-      this.pipeliningLimit,
-      this.ctx);
+  private SocketConnection newSocketConnection(NetSocketInternal socket) {
+    return new SocketConnection(socket, cachePreparedStatements, pipeliningLimit, ctx);
   }
 }
