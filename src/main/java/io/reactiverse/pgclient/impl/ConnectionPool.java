@@ -166,6 +166,16 @@ public class ConnectionPool {
         holder.handleException(err);
       }
     }
+
+    @Override
+    public int getProcessId() {
+      return conn.getProcessId();
+    }
+
+    @Override
+    public int getSecretKey() {
+      return conn.getSecretKey();
+    }
   }
 
   private void release(PooledConnection proxy) {

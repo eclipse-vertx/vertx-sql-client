@@ -25,6 +25,7 @@ import io.reactiverse.pgclient.impl.codec.decoder.NoticeResponse;
 import io.reactiverse.pgclient.impl.codec.decoder.NotificationResponse;
 import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
 import io.vertx.core.*;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -58,6 +59,9 @@ public class SocketConnection implements Connection {
   private final int pipeliningLimit;
   private MessageDecoder decoder;
   private MessageEncoder encoder;
+
+  int processId;
+  int secretKey;
 
   public SocketConnection(NetSocketInternal socket,
                           boolean cachePreparedStatements,
@@ -113,6 +117,28 @@ public class SocketConnection implements Connection {
     InitCommand cmd = new InitCommand(this, username, password, database);
     cmd.handler = completionHandler;
     schedule(cmd);
+  }
+
+  void sendCancelRequestMessage(int processId, int secretKey, Handler<AsyncResult<Void>> handler) {
+    Buffer buffer = Buffer.buffer(16);
+    buffer.appendInt(16);
+    // cancel request code
+    buffer.appendInt(80877102);
+    buffer.appendInt(processId);
+    buffer.appendInt(secretKey);
+
+    socket.write(buffer, ar -> {
+      if (ar.succeeded()) {
+        // directly close this connection
+        if (status == Status.CONNECTED) {
+          status = Status.CLOSING;
+          socket.close();
+        }
+        handler.handle(Future.succeededFuture());
+      } else {
+        handler.handle(Future.failedFuture(ar.cause()));
+      }
+    });
   }
 
   static class CachedPreparedStatement implements Handler<CommandResponse<PreparedStatement>> {
@@ -202,6 +228,16 @@ public class SocketConnection implements Connection {
     } else {
       cmd.fail(new VertxException("Connection not open " + status));
     }
+  }
+
+  @Override
+  public int getProcessId() {
+    return processId;
+  }
+
+  @Override
+  public int getSecretKey() {
+    return secretKey;
   }
 
   private void checkPending() {

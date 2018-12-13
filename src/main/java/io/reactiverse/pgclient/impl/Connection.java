@@ -27,6 +27,10 @@ public interface Connection {
 
   void close(Holder holder);
 
+  int getProcessId();
+
+  int getSecretKey();
+
   interface Holder {
 
     Connection connection();

@@ -84,6 +84,29 @@ public interface PgConnection extends PgClient {
   PgConnection notificationHandler(Handler<PgNotification> handler);
 
   /**
+   * @return The process ID of the target backend
+   */
+  int getProcessId();
+
+  /**
+   * @return The secret key for the target backend
+   */
+  int getSecretKey();
+
+  /**
+   * Open a new connection to the server and send a CancelRequest message
+   * to tell the server to cancel processing requests in the connection with the processId and the secretKey,
+   * then this new connection will be closed without any directly reply.
+   * <br>Note: Use this with caution because the cancellation signal may or may not have any effect.
+   *
+   * @param processId the process ID of the connection
+   * @param secretKey the secret key of the connection
+   * @param handler   the handler notified if cancelling request is sent
+   * @return a reference to this, so the API can be used fluently
+   */
+  PgConnection cancelRequest(int processId, int secretKey, Handler<AsyncResult<Void>> handler);
+
+  /**
    * @return whether the connection uses SSL
    */
   boolean isSSL();

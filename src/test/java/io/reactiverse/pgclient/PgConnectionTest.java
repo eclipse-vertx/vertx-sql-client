@@ -126,4 +126,22 @@ public class PgConnectionTest extends PgConnectionTestBase {
       conn.close();
     }));
   }
+
+  @Test(timeout = 10000L)
+  public void testCancelRequest(TestContext ctx) {
+    Async async = ctx.async(2);
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT pg_sleep(20)", ctx.asyncAssertFailure(error -> {
+        ctx.assertEquals("canceling statement due to user request", error.getMessage());
+        async.countDown();
+      }));
+      conn.cancelRequest(conn.getProcessId(), conn.getSecretKey(), ctx.asyncAssertSuccess());
+
+      conn.closeHandler(v -> {
+        ctx.assertEquals(1, async.count());
+        async.countDown();
+      });
+      conn.close();
+    }));
+  }
 }

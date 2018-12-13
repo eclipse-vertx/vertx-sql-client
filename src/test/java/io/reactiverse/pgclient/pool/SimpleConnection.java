@@ -48,4 +48,14 @@ class SimpleConnection implements Connection {
   public void schedule(CommandBase<?> cmd) {
     throw new UnsupportedOperationException();
   }
+
+  @Override
+  public int getProcessId() {
+    return -1;
+  }
+
+  @Override
+  public int getSecretKey() {
+    return -1;
+  }
 }

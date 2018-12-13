@@ -471,6 +471,18 @@ value:
 
 The default policy is to not reconnect.
 
+## Cancelling Request
+
+Postgres supports cancelling requests in progress. In order to cancel query in processing of a connection, each {@link io.reactiverse.pgclient.PgConnection} is assigned a processId and a secretKey after connecting to the server, the client will open a new connection to the server and send a CancelRequest message with a processId and a secretKey to tell the server on which connection the query in processing should be cancelled.
+
+```$lang
+{@link examples.Examples#cancelRequest(io.reactiverse.pgclient.PgConnection)}
+```
+
+> The cancellation signal might or might not have any effect — for example, if it arrives after the backend has finished processing the query, then it will have no effect. If the cancellation is effective, it results in the current command being terminated early with an error message.
+
+More information can be found in the [official documentation](https://www.postgresql.org/docs/11/protocol-flow.html#id-1.10.5.7.9).
+
 ## Using SSL/TLS
 
 To configure the client to use SSL connection, you can configure the {@link io.reactiverse.pgclient.PgConnectOptions}

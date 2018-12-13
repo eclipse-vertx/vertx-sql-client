@@ -107,7 +107,7 @@ public interface PgClient {
       client.create(ar -> {
         if (ar.succeeded()) {
           Connection conn = ar.result();
-          PgConnectionImpl p = new PgConnectionImpl(ctx, conn);
+          PgConnectionImpl p = new PgConnectionImpl(client, ctx, conn);
           conn.init(p);
           handler.handle(Future.succeededFuture(p));
         } else {
@@ -226,5 +226,4 @@ public interface PgClient {
    */
   @GenIgnore
   <R> PgClient preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
-
 }
