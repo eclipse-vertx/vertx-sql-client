@@ -1,6 +1,9 @@
-package io.reactiverse.pgclient;
+package io.reactiverse.pgclient.data;
 
-import io.reactiverse.pgclient.data.Numeric;
+import io.reactiverse.pgclient.PgClient;
+import io.reactiverse.pgclient.PgConnectOptions;
+import io.reactiverse.pgclient.PgConnection;
+import io.reactiverse.pgclient.Tuple;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
