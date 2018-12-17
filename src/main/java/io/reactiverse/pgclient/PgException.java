@@ -39,7 +39,10 @@ public class PgException extends RuntimeException {
     return error.getCode();
   }
 
-  public ErrorResponse getError() {
-    return error;
+  /**
+   * @return the detail error message
+   */
+  public String getDetail() {
+    return error.getDetail();
   }
 }
