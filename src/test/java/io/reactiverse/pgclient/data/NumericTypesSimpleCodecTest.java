@@ -36,6 +36,78 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
   }
 
   @Test
+  public void testSerial2(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT \"SmallSerial\" FROM \"NumericDataType\" WHERE \"id\" = 1", ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.size());
+          ctx.assertEquals(1, result.rowCount());
+          Row row = result.iterator().next();
+          ColumnChecker.checkColumn(0, "SmallSerial")
+            .returns(Tuple::getValue, Row::getValue, (short) 1)
+            .returns(Tuple::getShort, Row::getShort, (short) 1)
+            .returns(Tuple::getInteger, Row::getInteger, 1)
+            .returns(Tuple::getLong, Row::getLong, 1L)
+            .returns(Tuple::getFloat, Row::getFloat, 1f)
+            .returns(Tuple::getDouble, Row::getDouble, 1d)
+            .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(1))
+            .returns(Tuple::getNumeric, Row::getNumeric, Numeric.create(1))
+            .forRow(row);
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testSerial4(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT \"Serial\" FROM \"NumericDataType\" WHERE \"id\" = 1", ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.size());
+          ctx.assertEquals(1, result.rowCount());
+          Row row = result.iterator().next();
+          ColumnChecker.checkColumn(0, "Serial")
+            .returns(Tuple::getValue, Row::getValue, 1)
+            .returns(Tuple::getShort, Row::getShort, (short) 1)
+            .returns(Tuple::getInteger, Row::getInteger, 1)
+            .returns(Tuple::getLong, Row::getLong, 1L)
+            .returns(Tuple::getFloat, Row::getFloat, 1f)
+            .returns(Tuple::getDouble, Row::getDouble, 1d)
+            .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(1))
+            .returns(Tuple::getNumeric, Row::getNumeric, Numeric.create(1))
+            .forRow(row);
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testSerial8(TestContext ctx) {
+    Async async = ctx.async();
+    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT \"BigSerial\" FROM \"NumericDataType\" WHERE \"id\" = 1", ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.size());
+          ctx.assertEquals(1, result.rowCount());
+          Row row = result.iterator().next();
+          ColumnChecker.checkColumn(0, "BigSerial")
+            .returns(Tuple::getValue, Row::getValue, 1L)
+            .returns(Tuple::getShort, Row::getShort, (short) 1)
+            .returns(Tuple::getInteger, Row::getInteger, 1)
+            .returns(Tuple::getLong, Row::getLong, 1L)
+            .returns(Tuple::getFloat, Row::getFloat, 1f)
+            .returns(Tuple::getDouble, Row::getDouble, 1d)
+            .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(1))
+            .returns(Tuple::getNumeric, Row::getNumeric, Numeric.create(1))
+            .forRow(row);
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
   public void testNumeric(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {

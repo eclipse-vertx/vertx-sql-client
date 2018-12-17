@@ -48,7 +48,20 @@ CREATE TABLE Test (
 );
 
 DROP TABLE IF EXISTS "NumericDataType";
-CREATE TABLE "NumericDataType" ("id" INTEGER NOT NULL PRIMARY KEY, "Short" INT2, "Integer" INT4, "Long" INT8, "Float" FLOAT4, "Double" FLOAT8, "BigDecimal" NUMERIC, "Boolean" BOOLEAN);
+CREATE TABLE "NumericDataType" (
+  "id" INTEGER NOT NULL PRIMARY KEY,
+  "Short" INT2,
+  "Integer" INT4,
+  "Long" INT8,
+  "Float" FLOAT4,
+  "Double" FLOAT8,
+  "BigDecimal" NUMERIC,
+  "Boolean" BOOLEAN,
+  "SmallSerial" SERIAL2,
+  "Serial" SERIAL4,
+  "BigSerial" SERIAL8
+);
+
 INSERT INTO "NumericDataType" ("id", "Short", "Integer", "Long", "Float", "Double", "BigDecimal", "Boolean")
 VALUES (1, 32767, 2147483647, 9223372036854775807, 3.4028235E38, 1.7976931348623157E308, '9.99999999999999999999999999999999999', true);
 INSERT INTO "NumericDataType" ("id", "Short", "Integer", "Long", "Float", "Double", "BigDecimal", "Boolean")
