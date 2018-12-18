@@ -29,6 +29,7 @@ import static org.junit.Assume.assumeTrue;
 @RunWith(VertxUnitRunner.class)
 public class UnixDomainSocketTest {
   private static final String unixSocketDirectory = System.getProperty("unix.socket.directory");
+  private static final String unixSocketPort = System.getProperty("unix.socket.port");
 
   private static PgConnectOptions options;
   private PgPool client;
@@ -41,6 +42,9 @@ public class UnixDomainSocketTest {
     options = PgTestBase.startPg(nativeTransportEnabled, false);
     if (unixSocketDirectory != null && !unixSocketDirectory.isEmpty()) {
       options.setHost(unixSocketDirectory);
+    }
+    if (unixSocketPort != null && !unixSocketPort.isEmpty()) {
+      options.setPort(Integer.parseInt(unixSocketPort));
     }
   }
 
