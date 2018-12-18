@@ -44,14 +44,15 @@ import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
  */
 
 public abstract class PgTestBase {
-
   private static final String connectionUri = System.getProperty("connection.uri");
+  private static final String tlsConnectionUri = System.getProperty("tls.connection.uri");
+
   private static EmbeddedPostgres postgres;
   static PgConnectOptions options;
 
   @BeforeClass
   public static void before() throws Exception {
-    options = startPg(false, false);
+    options = startPg();
   }
 
   @AfterClass
@@ -60,10 +61,18 @@ public abstract class PgTestBase {
   }
 
   public synchronized static PgConnectOptions startPg() throws Exception {
-    return startPg(false, true);
+    return startPg(false, false);
   }
 
   public synchronized static PgConnectOptions startPg(boolean domainSockets, boolean ssl) throws Exception {
+    if (domainSockets && ssl) {
+      throw new IllegalArgumentException("ssl should be disabled when testing with Unix domain socket");
+    }
+    if (ssl) {
+      if (tlsConnectionUri != null && !tlsConnectionUri.isEmpty()) {
+        return PgConnectOptions.fromUri(tlsConnectionUri);
+      }
+    }
     if (connectionUri != null && !connectionUri.isEmpty()) {
       return PgConnectOptions.fromUri(connectionUri);
     }
