@@ -86,6 +86,7 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -> {
 == Integration / Usages
 
 * https://github.com/jklingsporn/vertx-jooq[vertx-jooq]: writing type safe queries and let them run at high speed using jOOQ, vertx and the reactive-pg-client.
+* https://docs.micronaut.io/latest/guide/index.html#postgresSupport[Micronaut]: supports reactive and non-blocking client to connect to Postgres using reactive-pg-client, allowing to handle many database connections with a single thread.
 
 == Documentations
 
