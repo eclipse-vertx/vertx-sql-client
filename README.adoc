@@ -322,13 +322,15 @@ You can run tests with an external database:
 - the script `docker/postgres/resources/create-postgres.sql` creates the test data
 - the `TLSTest` expects the database to be configured with SSL with `docker/postgres/resources/server.key` / `docker/postgres/resources/server.cert``
 
-You need to override the default connection uri for testing:
+You need to add some properties for testing:
 
 ```
-> mvn test -Dconnection.uri=postgres://$username:$password@$host:$port/$database
+> mvn test -Dconnection.uri=postgres://$username:$password@$host:$port/$database -Dunix.socket.directory=$path
 ```
 
-NOTE: unix domain sockets are not testable (yet).
+- connection.uri(mandatory): configure the client to connect the specified database
+- unix.socket.directory(optional): the single unix socket directory(multiple socket directories are not supported) to test Unix domain socket with a specified database, domain socket tests will be skipped if this property is not specified
+(Note: Make sure you can access the unix domain socket with this directory under your host machine)
 
 === Testing with Docker
 
@@ -336,16 +338,14 @@ Create and run the following docker image:
 
 ```
 > docker build -t test/postgres docker/postgres
-> docker run --rm --name test-postgres -p 5432:5432 test/postgres
+> docker run --rm --name test-postgres -v /var/run/postgresql:/var/run/postgresql -p 5432:5432 test/postgres
 ```
 
 Run tests:
 
 ```
-> mvn test -Dconnection.uri=postgres://postgres:postgres@localhost/postgres
+> mvn test -Dconnection.uri=postgres://postgres:postgres@localhost/postgres -Dunix.socket.directory=$path
 ```
-
-NOTE: unix domain sockets are not testable (yet).
 
 === Documentation
 
