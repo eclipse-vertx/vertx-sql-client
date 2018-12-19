@@ -59,7 +59,7 @@
   </developers>
 
   <properties>
-    <stack.version>3.6.0</stack.version>
+    <stack.version>3.6.2</stack.version>
     <jmh.version>1.19</jmh.version>
     <docs.dir>${project.basedir}/src/main/docs</docs.dir>
     <generated.dir>${project.basedir}/src/main/generated</generated.dir>
@@ -113,7 +113,19 @@
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
+      <artifactId>vertx-rx-java-gen</artifactId>
+      <version>${stack.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
       <artifactId>vertx-rx-java2</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-rx-java2-gen</artifactId>
+      <version>${stack.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
