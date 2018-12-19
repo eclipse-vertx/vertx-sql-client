@@ -66,12 +66,11 @@ public class InitiateSslHandler extends ChannelInboundHandlerAdapter {
         break;
       }
       case MessageType.SSL_NO: {
-        // This case is not tested as our test db is configured for SSL
-        ctx.fireExceptionCaught(new Exception("Postgres does not handle SSL"));
+        upgradeFuture.fail(new Exception("Postgres Server does not handle SSL connection"));
         break;
       }
       default:
-        ctx.fireExceptionCaught(new Exception("Invalid connection data"));
+        upgradeFuture.fail(new Exception("Invalid SSL connection message"));
         break;
     }
   }
@@ -89,6 +88,8 @@ public class InitiateSslHandler extends ChannelInboundHandlerAdapter {
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     super.channelInactive(ctx);
     // Work around for https://github.com/eclipse-vertx/vert.x/issues/2748
-    upgradeFuture.fail(new VertxException("SSL handshake failed", true));
+    if (!upgradeFuture.isComplete()) {
+      upgradeFuture.fail(new VertxException("SSL handshake failed", true));
+    }
   }
 }

@@ -23,16 +23,23 @@ import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
-import javax.net.ssl.SSLHandshakeException;
 
 @RunWith(VertxUnitRunner.class)
-public class TLSTest extends PgTestBase {
+public class TLSTest {
+  private static PgConnectOptions options;
+  private Vertx vertx;
 
-  Vertx vertx;
+  @BeforeClass
+  public static void beforeClass() throws Exception {
+    options = PgTestBase.startPg(false, true);
+  }
+
+  @AfterClass
+  public static void afterClass() throws Exception {
+    PgTestBase.stopPg();
+  }
 
   @Before
   public void setup() {
@@ -47,7 +54,7 @@ public class TLSTest extends PgTestBase {
   @Test
   public void testTLS(TestContext ctx) {
     Async async = ctx.async();
-    PgConnectOptions options = new PgConnectOptions(PgTestBase.options)
+    PgConnectOptions options = new PgConnectOptions(TLSTest.options)
       .setSsl(true)
       .setPemTrustOptions(new PemTrustOptions().addCertPath("tls/server.crt"));
     PgClient.connect(vertx, new PgConnectOptions(options).setSsl(true).setTrustAll(true), ctx.asyncAssertSuccess(conn -> {

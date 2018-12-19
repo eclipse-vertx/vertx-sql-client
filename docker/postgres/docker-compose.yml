@@ -1,0 +1,27 @@
+version: "3"
+
+services:
+  test-postgres:
+    image: healthcheck/postgres:alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - /var/run/postgresql:/var/run/postgresql
+      - ./resources/create-postgres.sql:/docker-entrypoint-initdb.d/create-postgres.sql
+  tls-test-postgres:
+    image: healthcheck/postgres:alpine
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - ./resources/create-postgres.sql:/docker-entrypoint-initdb.d/create-postgres.sql
+      - ./resources/server.crt:/server.crt
+      - ./resources/server.key:/server.key
+      - ./ssl.sh:/docker-entrypoint-initdb.d/ssl.sh

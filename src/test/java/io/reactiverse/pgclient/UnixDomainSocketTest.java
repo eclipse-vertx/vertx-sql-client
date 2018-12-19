@@ -24,12 +24,12 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.*;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeNotNull;
 import static org.junit.Assume.assumeTrue;
 
 @RunWith(VertxUnitRunner.class)
 public class UnixDomainSocketTest {
+  private static final String unixSocketDirectory = System.getProperty("unix.socket.directory");
+  private static final String unixSocketPort = System.getProperty("unix.socket.port");
 
   private static PgConnectOptions options;
   private PgPool client;
@@ -39,7 +39,13 @@ public class UnixDomainSocketTest {
     Vertx vertx = Vertx.vertx(new VertxOptions().setPreferNativeTransport(true));
     boolean nativeTransportEnabled = vertx.isNativeTransportEnabled();
     vertx.close();
-    options = PgTestBase.startPg(nativeTransportEnabled);
+    options = PgTestBase.startPg(nativeTransportEnabled, false);
+    if (unixSocketDirectory != null && !unixSocketDirectory.isEmpty()) {
+      options.setHost(unixSocketDirectory);
+    }
+    if (unixSocketPort != null && !unixSocketPort.isEmpty()) {
+      options.setPort(Integer.parseInt(unixSocketPort));
+    }
   }
 
   @AfterClass
