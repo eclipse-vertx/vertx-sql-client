@@ -8,6 +8,7 @@ import io.vertx.core.net.PemKeyCertOptions
 import io.vertx.core.net.PemTrustOptions
 import io.vertx.core.net.PfxOptions
 import io.vertx.core.net.ProxyOptions
+import java.util.concurrent.TimeUnit
 
 /**
  * A function providing a DSL for building [io.reactiverse.pgclient.PgPoolOptions] objects.
@@ -24,6 +25,7 @@ import io.vertx.core.net.ProxyOptions
  * @param host 
  * @param hostnameVerificationAlgorithm 
  * @param idleTimeout 
+ * @param idleTimeoutUnit 
  * @param jdkSslEngineOptions 
  * @param keyStoreOptions 
  * @param localAddress 
@@ -74,6 +76,7 @@ fun PgPoolOptions(
   host: String? = null,
   hostnameVerificationAlgorithm: String? = null,
   idleTimeout: Int? = null,
+  idleTimeoutUnit: TimeUnit? = null,
   jdkSslEngineOptions: io.vertx.core.net.JdkSSLEngineOptions? = null,
   keyStoreOptions: io.vertx.core.net.JksOptions? = null,
   localAddress: String? = null,
@@ -145,6 +148,9 @@ fun PgPoolOptions(
   }
   if (idleTimeout != null) {
     this.setIdleTimeout(idleTimeout)
+  }
+  if (idleTimeoutUnit != null) {
+    this.setIdleTimeoutUnit(idleTimeoutUnit)
   }
   if (jdkSslEngineOptions != null) {
     this.setJdkSslEngineOptions(jdkSslEngineOptions)

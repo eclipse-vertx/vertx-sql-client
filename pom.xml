@@ -148,6 +148,17 @@
       <artifactId>vertx-lang-kotlin</artifactId>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-lang-kotlin-coroutines</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-lang-kotlin-gen</artifactId>
+      <version>${stack.version}</version>
+      <scope>provided</scope>
+    </dependency>
     <!--
     <dependency>
       <groupId>ch.qos.logback</groupId>
