@@ -109,55 +109,55 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-rx-java</artifactId>
-      <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-rx-java-gen</artifactId>
       <version>${stack.version}</version>
-      <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-rx-java2</artifactId>
-      <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-rx-java2-gen</artifactId>
       <version>${stack.version}</version>
-      <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-lang-js</artifactId>
-      <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-lang-ruby</artifactId>
-      <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-lang-groovy</artifactId>
-      <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-lang-kotlin</artifactId>
-      <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-lang-kotlin-coroutines</artifactId>
-      <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-lang-kotlin-gen</artifactId>
       <version>${stack.version}</version>
-      <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
     <!--
     <dependency>
