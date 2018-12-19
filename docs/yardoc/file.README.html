@@ -139,7 +139,7 @@
 <h2 id="_usage">Usage</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Latest release is <a href="https://github.com/reactiverse/reactive-pg-client/blob/master/RELEASES.adoc">0.10.8</a>.</p>
+<p>Latest release is <a href="https://github.com/reactiverse/reactive-pg-client/blob/master/RELEASES.adoc">0.11.0</a>.</p>
 </div>
 <div class="paragraph">
 <p>To use the client, add the following dependency to the <em>dependencies</em> section of your build descriptor:</p>
@@ -147,7 +147,7 @@
 <div class="ulist">
 <ul>
 <li>
-<p>Maven (in your <code>pom.xml</code>):</p>
+<p>Maven (in your <code>pom.xml</code>) for Vert.x 3.6.x:</p>
 </li>
 </ul>
 </div>
@@ -156,23 +156,26 @@
 <pre class="highlight"><code class="language-xml" data-lang="xml">&lt;dependency&gt;
   &lt;groupId&gt;io.reactiverse&lt;/groupId&gt;
   &lt;artifactId&gt;reactive-pg-client&lt;/artifactId&gt;
-  &lt;version&gt;0.10.8&lt;/version&gt;
+  &lt;version&gt;0.11.0&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
 </div>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>Gradle (in your <code>build.gradle</code> file):</p>
+<p>Gradle (in your <code>build.gradle</code> file)  for Vert.x 3.6.x:</p>
 </li>
 </ul>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code class="language-groovy" data-lang="groovy">dependencies {
-  compile 'io.reactiverse:reactive-pg-client:0.10.8'
+  compile 'io.reactiverse:reactive-pg-client:0.11.0'
 }</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>If you are using Vertx 3.5.x you should use instead <code>0.10.9</code></p>
 </div>
 <div class="paragraph">
 <p>Then the code is quite straightforward:</p>
@@ -214,6 +217,9 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -&gt; {
 <ul>
 <li>
 <p><a href="https://github.com/jklingsporn/vertx-jooq">vertx-jooq</a>: writing type safe queries and let them run at high speed using jOOQ, vertx and the reactive-pg-client.</p>
+</li>
+<li>
+<p><a href="https://docs.micronaut.io/latest/guide/index.html#postgresSupport">Micronaut</a>: supports reactive and non-blocking client to connect to Postgres using reactive-pg-client, allowing to handle many database connections with a single thread.</p>
 </li>
 </ul>
 </div>
@@ -362,6 +368,27 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -&gt; {
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>SERIAL2</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Short</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>invalid type</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10005;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>SERIAL4</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Integer</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>invalid type</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10005;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>SERIAL8</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Long</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>invalid type</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10005;</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>NUMERIC</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Numeric</code></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
@@ -500,7 +527,7 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -&gt; {
 <p>The following types</p>
 </div>
 <div class="paragraph">
-<p><em>SERIAL2</em>, <em>SERIAL4</em>, <em>SERIAL8</em>, <em>MONEY</em>, <em>BIT</em>, <em>VARBIT</em>, <em>MACADDR</em>, <em>INET</em>, <em>CIDR</em>, <em>MACADDR8</em>,
+<p><em>MONEY</em>, <em>BIT</em>, <em>VARBIT</em>, <em>MACADDR</em>, <em>INET</em>, <em>CIDR</em>, <em>MACADDR8</em>,
 <em>XML</em>, <em>HSTORE</em>, <em>OID</em>,
 <em>VOID</em>, <em>TSQUERY</em>, <em>TSVECTOR</em></p>
 </div>
@@ -550,35 +577,42 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -&gt; {
 </ul>
 </div>
 <div class="paragraph">
-<p>You need to override the default connection uri for testing:</p>
+<p>You need to add some properties for testing:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>&gt; mvn test -Dconnection.uri=postgres://$username:$password@$host:$port/$database</code></pre>
+<pre class="highlight"><code>&gt; mvn test -Dconnection.uri=postgres://$username:$password@$host:$port/$database -Dtls.connection.uri=postgres://$username:$password@$host:$port/$database -Dunix.socket.directory=$path</code></pre>
 </div>
 </div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Note</div>
-</td>
-<td class="content">
-unix domain sockets are not testable (yet).
-</td>
-</tr>
-</table>
+<div class="ulist">
+<ul>
+<li>
+<p>connection.uri(mandatory): configure the client to connect the specified database</p>
+</li>
+<li>
+<p>tls.connection.uri(mandatory): configure the client to run <code>TLSTest</code> with the specified Postgres with SSL enabled</p>
+</li>
+<li>
+<p>unix.socket.directory(optional): the single unix socket directory(multiple socket directories are not supported) to test Unix domain socket with a specified database, domain socket tests will be skipped if this property is not specified
+(Note: Make sure you can access the unix domain socket with this directory under your host machine)</p>
+</li>
+<li>
+<p>unix.socket.port(optional): unix socket file is named <code>.s.PGSQL.nnnn</code> and <code>nnnn</code> is the server&#8217;s port number,
+this property is mostly used when you test with Docker, when you publish your Postgres container port other than 5432 in your host but Postgres may actually listen on a different port in the container,
+you will then need this property to help you connect the Postgres with Unix domain socket</p>
+</li>
+</ul>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_testing_with_docker">Testing with Docker</h3>
 <div class="paragraph">
-<p>Create and run the following docker image:</p>
+<p>Run the Postgres containers with <code>docker-compose</code>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>&gt; docker build -t test/postgres docker/postgres
-&gt; docker run --rm --name test-postgres -p 5432:5432 test/postgres</code></pre>
+<pre class="highlight"><code>&gt; cd docker/postgres
+&gt; docker-compose up --build -V</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -586,20 +620,8 @@ unix domain sockets are not testable (yet).
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>&gt; mvn test -Dconnection.uri=postgres://postgres:postgres@localhost/postgres</code></pre>
+<pre class="highlight"><code>&gt; mvn test -Dconnection.uri=postgres://$username:$password@$host:$port/$database -Dtls.connection.uri=postgres://$username:$password@$host:$port/$database -Dunix.socket.directory=$path -Dunix.socket.port=$port</code></pre>
 </div>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Note</div>
-</td>
-<td class="content">
-unix domain sockets are not testable (yet).
-</td>
-</tr>
-</table>
 </div>
 </div>
 <div class="sect2">
@@ -652,7 +674,7 @@ source generates the <code>jekyll/guide/java/index.md</code>.</p>
 </div></div></div>
 
     <div id="footer">
-  Generated on Mon Dec  3 12:31:45 2018 by
+  Generated on Wed Dec 19 16:28:56 2018 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.8.7.6 (ruby-2.3.3).
 </div>

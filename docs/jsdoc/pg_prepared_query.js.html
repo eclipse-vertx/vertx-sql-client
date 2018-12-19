@@ -64,6 +64,14 @@ var PgPreparedQuery = function(j_val) {
   var j_pgPreparedQuery = j_val;
   var that = this;
 
+  var __super_execute = this.execute;
+  var __super_execute = this.execute;
+  var __super_cursor = this.cursor;
+  var __super_cursor = this.cursor;
+  var __super_createStream = this.createStream;
+  var __super_batch = this.batch;
+  var __super_close = this.close;
+  var __super_close = this.close;
   /**
    Create a cursor with the provided &lt;code>arguments&lt;/code>.
 
@@ -72,27 +80,30 @@ var PgPreparedQuery = function(j_val) {
    @param handler {function} 
    @return {PgPreparedQuery} the query
    */
-  this.execute = function() {
+  this.execute =  function() {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] === 'function') {
       j_pgPreparedQuery["execute(io.vertx.core.Handler)"](function(ar) {
-      if (ar.succeeded()) {
-        __args[0](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
-      } else {
-        __args[0](null, ar.cause());
-      }
-    });
+        if (ar.succeeded()) {
+          __args[0](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
+        } else {
+          __args[0](null, ar.cause());
+        }
+      }) ;
       return that;
-    }  else if (__args.length === 2 &amp;&amp; typeof __args[0] === 'object' &amp;&amp; __args[0]._jdel &amp;&amp; typeof __args[1] === 'function') {
+    } else if (__args.length === 2 &amp;&amp; typeof __args[0] === 'object' &amp;&amp; __args[0]._jdel &amp;&amp; typeof __args[1] === 'function') {
       j_pgPreparedQuery["execute(io.reactiverse.pgclient.Tuple,io.vertx.core.Handler)"](__args[0]._jdel, function(ar) {
-      if (ar.succeeded()) {
-        __args[1](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
-      } else {
-        __args[1](null, ar.cause());
-      }
-    });
+        if (ar.succeeded()) {
+          __args[1](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
+        } else {
+          __args[1](null, ar.cause());
+        }
+      }) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_execute != 'undefined') {
+      return __super_execute.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -102,13 +113,16 @@ var PgPreparedQuery = function(j_val) {
    @param args {Tuple} the list of arguments 
    @return {PgCursor} the query
    */
-  this.cursor = function() {
+  this.cursor =  function() {
     var __args = arguments;
     if (__args.length === 0) {
-      return utils.convReturnVertxGen(PgCursor, j_pgPreparedQuery["cursor()"]());
-    }  else if (__args.length === 1 &amp;&amp; typeof __args[0] === 'object' &amp;&amp; __args[0]._jdel) {
-      return utils.convReturnVertxGen(PgCursor, j_pgPreparedQuery["cursor(io.reactiverse.pgclient.Tuple)"](__args[0]._jdel));
-    } else throw new TypeError('function invoked with invalid arguments');
+      return utils.convReturnVertxGen(PgCursor, j_pgPreparedQuery["cursor()"]()) ;
+    } else if (__args.length === 1 &amp;&amp; typeof __args[0] === 'object' &amp;&amp; __args[0]._jdel) {
+      return utils.convReturnVertxGen(PgCursor, j_pgPreparedQuery["cursor(io.reactiverse.pgclient.Tuple)"](__args[0]._jdel)) ;
+    } else if (typeof __super_cursor != 'undefined') {
+      return __super_cursor.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -122,11 +136,14 @@ var PgPreparedQuery = function(j_val) {
    @param args {Tuple} the prepared query arguments 
    @return {PgStream} the createStream
    */
-  this.createStream = function(fetch, args) {
+  this.createStream =  function(fetch, args) {
     var __args = arguments;
     if (__args.length === 2 &amp;&amp; typeof __args[0] ==='number' &amp;&amp; typeof __args[1] === 'object' &amp;&amp; __args[1]._jdel) {
-      return utils.convReturnVertxGen(PgStream, j_pgPreparedQuery["createStream(int,io.reactiverse.pgclient.Tuple)"](fetch, args._jdel), Row._jtype);
-    } else throw new TypeError('function invoked with invalid arguments');
+      return utils.convReturnVertxGen(PgStream, j_pgPreparedQuery["createStream(int,io.reactiverse.pgclient.Tuple)"](__args[0], __args[1]._jdel), Row._jtype) ;
+    } else if (typeof __super_createStream != 'undefined') {
+      return __super_createStream.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -137,18 +154,21 @@ var PgPreparedQuery = function(j_val) {
    @param handler {function} 
    @return {PgPreparedQuery} the createBatch
    */
-  this.batch = function(argsList, handler) {
+  this.batch =  function(argsList, handler) {
     var __args = arguments;
     if (__args.length === 2 &amp;&amp; typeof __args[0] === 'object' &amp;&amp; __args[0] instanceof Array &amp;&amp; typeof __args[1] === 'function') {
-      j_pgPreparedQuery["batch(java.util.List,io.vertx.core.Handler)"](utils.convParamListVertxGen(argsList), function(ar) {
-      if (ar.succeeded()) {
-        handler(utils.convReturnVertxGen(PgRowSet, ar.result()), null);
-      } else {
-        handler(null, ar.cause());
-      }
-    });
+      j_pgPreparedQuery["batch(java.util.List,io.vertx.core.Handler)"](utils.convParamListVertxGen(__args[0]), function(ar) {
+        if (ar.succeeded()) {
+          __args[1](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
+        } else {
+          __args[1](null, ar.cause());
+        }
+      }) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_batch != 'undefined') {
+      return __super_batch.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -157,19 +177,22 @@ var PgPreparedQuery = function(j_val) {
    @public
    @param completionHandler {function} 
    */
-  this.close = function() {
+  this.close =  function() {
     var __args = arguments;
     if (__args.length === 0) {
       j_pgPreparedQuery["close()"]();
-    }  else if (__args.length === 1 &amp;&amp; typeof __args[0] === 'function') {
+    } else if (__args.length === 1 &amp;&amp; typeof __args[0] === 'function') {
       j_pgPreparedQuery["close(io.vertx.core.Handler)"](function(ar) {
-      if (ar.succeeded()) {
-        __args[0](null, null);
-      } else {
-        __args[0](null, ar.cause());
-      }
-    });
-    } else throw new TypeError('function invoked with invalid arguments');
+        if (ar.succeeded()) {
+          __args[0](null, null);
+        } else {
+          __args[0](null, ar.cause());
+        }
+      });
+    } else if (typeof __super_close != 'undefined') {
+      return __super_close.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   // A reference to the underlying Java delegate
@@ -179,11 +202,9 @@ var PgPreparedQuery = function(j_val) {
 };
 
 PgPreparedQuery._jclass = utils.getJavaClass("io.reactiverse.pgclient.PgPreparedQuery");
-PgPreparedQuery._jtype = {
-  accept: function(obj) {
+PgPreparedQuery._jtype = {accept: function(obj) {
     return PgPreparedQuery._jclass.isInstance(obj._jdel);
-  },
-  wrap: function(jdel) {
+  },wrap: function(jdel) {
     var obj = Object.create(PgPreparedQuery.prototype, {});
     PgPreparedQuery.apply(obj, arguments);
     return obj;
@@ -192,8 +213,7 @@ PgPreparedQuery._jtype = {
     return obj._jdel;
   }
 };
-PgPreparedQuery._create = function(jdel) {
-  var obj = Object.create(PgPreparedQuery.prototype, {});
+PgPreparedQuery._create = function(jdel) {var obj = Object.create(PgPreparedQuery.prototype, {});
   PgPreparedQuery.apply(obj, arguments);
   return obj;
 }
@@ -213,7 +233,7 @@ module.exports = PgPreparedQuery;</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Mon Dec 03 2018 12:31:52 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Wed Dec 19 2018 16:29:04 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

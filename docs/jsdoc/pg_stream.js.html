@@ -59,23 +59,31 @@ var PgStream = function(j_val, j_arg_0) {
 
   var j_pgStream = j_val;
   var that = this;
-  var j_T = typeof j_arg_0 !== 'undefined' ? j_arg_0 : utils.unknown_jtype;
-  ReadStream.call(this, j_val);
+  var j_T = typeof j_arg_0 !== 'undefined' ? j_arg_0 : utils.unknown_jtype;ReadStream.call(this, j_val);
 
+  var __super_fetch = this.fetch;
+  var __super_exceptionHandler = this.exceptionHandler;
+  var __super_handler = this.handler;
+  var __super_pause = this.pause;
+  var __super_resume = this.resume;
+  var __super_endHandler = this.endHandler;
+  var __super_close = this.close;
+  var __super_close = this.close;
   /**
 
    @public
-   @param handler {function} 
-   @return {PgStream}
+   @param arg0 {number} 
+   @return {ReadStream}
    */
-  this.exceptionHandler = function(handler) {
+  this.fetch =  function(arg0) {
     var __args = arguments;
-    if (__args.length === 1 &amp;&amp; (typeof __args[0] === 'function' || __args[0] == null)) {
-      j_pgStream["exceptionHandler(io.vertx.core.Handler)"](handler == null ? null : function(jVal) {
-      handler(utils.convReturnThrowable(jVal));
-    });
+    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
+      j_pgStream["fetch(long)"](__args[0]) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_fetch != 'undefined') {
+      return __super_fetch.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -84,14 +92,36 @@ var PgStream = function(j_val, j_arg_0) {
    @param handler {function} 
    @return {PgStream}
    */
-  this.handler = function(handler) {
+  this.exceptionHandler =  function(handler) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; (typeof __args[0] === 'function' || __args[0] == null)) {
-      j_pgStream["handler(io.vertx.core.Handler)"](handler == null ? null : function(jVal) {
-      handler(j_T.wrap(jVal));
-    });
+      j_pgStream["exceptionHandler(io.vertx.core.Handler)"](__args[0] == null ? null : function(jVal) {
+        __args[0](utils.convReturnThrowable(jVal));
+      }) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_exceptionHandler != 'undefined') {
+      return __super_exceptionHandler.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+
+   @public
+   @param handler {function} 
+   @return {PgStream}
+   */
+  this.handler =  function(handler) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; (typeof __args[0] === 'function' || __args[0] == null)) {
+      j_pgStream["handler(io.vertx.core.Handler)"](__args[0] == null ? null : function(jVal) {
+        __args[0](j_T.wrap(jVal));
+      }) ;
+      return that;
+    } else if (typeof __super_handler != 'undefined') {
+      return __super_handler.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -100,12 +130,15 @@ var PgStream = function(j_val, j_arg_0) {
 
    @return {PgStream}
    */
-  this.pause = function() {
+  this.pause =  function() {
     var __args = arguments;
     if (__args.length === 0) {
-      j_pgStream["pause()"]();
+      j_pgStream["pause()"]() ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_pause != 'undefined') {
+      return __super_pause.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -114,12 +147,15 @@ var PgStream = function(j_val, j_arg_0) {
 
    @return {PgStream}
    */
-  this.resume = function() {
+  this.resume =  function() {
     var __args = arguments;
     if (__args.length === 0) {
-      j_pgStream["resume()"]();
+      j_pgStream["resume()"]() ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_resume != 'undefined') {
+      return __super_resume.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -128,12 +164,15 @@ var PgStream = function(j_val, j_arg_0) {
    @param endHandler {function} 
    @return {PgStream}
    */
-  this.endHandler = function(endHandler) {
+  this.endHandler =  function(endHandler) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; (typeof __args[0] === 'function' || __args[0] == null)) {
-      j_pgStream["endHandler(io.vertx.core.Handler)"](endHandler);
+      j_pgStream["endHandler(io.vertx.core.Handler)"](__args[0]) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_endHandler != 'undefined') {
+      return __super_endHandler.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -142,19 +181,22 @@ var PgStream = function(j_val, j_arg_0) {
    @public
    @param completionHandler {function} the completion handler for this operation 
    */
-  this.close = function() {
+  this.close =  function() {
     var __args = arguments;
     if (__args.length === 0) {
       j_pgStream["close()"]();
-    }  else if (__args.length === 1 &amp;&amp; typeof __args[0] === 'function') {
+    } else if (__args.length === 1 &amp;&amp; typeof __args[0] === 'function') {
       j_pgStream["close(io.vertx.core.Handler)"](function(ar) {
-      if (ar.succeeded()) {
-        __args[0](null, null);
-      } else {
-        __args[0](null, ar.cause());
-      }
-    });
-    } else throw new TypeError('function invoked with invalid arguments');
+        if (ar.succeeded()) {
+          __args[0](null, null);
+        } else {
+          __args[0](null, ar.cause());
+        }
+      });
+    } else if (typeof __super_close != 'undefined') {
+      return __super_close.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   // A reference to the underlying Java delegate
@@ -164,11 +206,9 @@ var PgStream = function(j_val, j_arg_0) {
 };
 
 PgStream._jclass = utils.getJavaClass("io.reactiverse.pgclient.PgStream");
-PgStream._jtype = {
-  accept: function(obj) {
+PgStream._jtype = {accept: function(obj) {
     return PgStream._jclass.isInstance(obj._jdel);
-  },
-  wrap: function(jdel) {
+  },wrap: function(jdel) {
     var obj = Object.create(PgStream.prototype, {});
     PgStream.apply(obj, arguments);
     return obj;
@@ -177,8 +217,7 @@ PgStream._jtype = {
     return obj._jdel;
   }
 };
-PgStream._create = function(jdel) {
-  var obj = Object.create(PgStream.prototype, {});
+PgStream._create = function(jdel) {var obj = Object.create(PgStream.prototype, {});
   PgStream.apply(obj, arguments);
   return obj;
 }
@@ -198,7 +237,7 @@ module.exports = PgStream;</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Mon Dec 03 2018 12:31:52 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Wed Dec 19 2018 16:29:04 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

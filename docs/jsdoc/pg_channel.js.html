@@ -60,6 +60,30 @@ var PgChannel = function(j_val) {
   var that = this;
   ReadStream.call(this, j_val);
 
+  var __super_fetch = this.fetch;
+  var __super_subscribeHandler = this.subscribeHandler;
+  var __super_handler = this.handler;
+  var __super_pause = this.pause;
+  var __super_resume = this.resume;
+  var __super_endHandler = this.endHandler;
+  var __super_exceptionHandler = this.exceptionHandler;
+  /**
+
+   @public
+   @param arg0 {number} 
+   @return {ReadStream}
+   */
+  this.fetch =  function(arg0) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
+      j_pgChannel["fetch(long)"](__args[0]) ;
+      return that;
+    } else if (typeof __super_fetch != 'undefined') {
+      return __super_fetch.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
   /**
    Set an handler called when the the channel get subscribed.
 
@@ -67,12 +91,15 @@ var PgChannel = function(j_val) {
    @param handler {function} the handler 
    @return {PgChannel} a reference to this, so the API can be used fluently
    */
-  this.subscribeHandler = function(handler) {
+  this.subscribeHandler =  function(handler) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] === 'function') {
-      j_pgChannel["subscribeHandler(io.vertx.core.Handler)"](handler);
+      j_pgChannel["subscribeHandler(io.vertx.core.Handler)"](__args[0]) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_subscribeHandler != 'undefined') {
+      return __super_subscribeHandler.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -87,14 +114,17 @@ var PgChannel = function(j_val) {
    @param handler {function} the handler 
    @return {PgChannel} a reference to this, so the API can be used fluently
    */
-  this.handler = function(handler) {
+  this.handler =  function(handler) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; (typeof __args[0] === 'function' || __args[0] == null)) {
-      j_pgChannel["handler(io.vertx.core.Handler)"](handler == null ? null : function(jVal) {
-      handler(jVal);
-    });
+      j_pgChannel["handler(io.vertx.core.Handler)"](__args[0] == null ? null : function(jVal) {
+        __args[0](jVal);
+      }) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_handler != 'undefined') {
+      return __super_handler.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -104,12 +134,15 @@ var PgChannel = function(j_val) {
 
    @return {PgChannel} a reference to this, so the API can be used fluently
    */
-  this.pause = function() {
+  this.pause =  function() {
     var __args = arguments;
     if (__args.length === 0) {
-      j_pgChannel["pause()"]();
+      j_pgChannel["pause()"]() ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_pause != 'undefined') {
+      return __super_pause.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -119,12 +152,15 @@ var PgChannel = function(j_val) {
 
    @return {PgChannel} a reference to this, so the API can be used fluently
    */
-  this.resume = function() {
+  this.resume =  function() {
     var __args = arguments;
     if (__args.length === 0) {
-      j_pgChannel["resume()"]();
+      j_pgChannel["resume()"]() ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_resume != 'undefined') {
+      return __super_resume.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -134,12 +170,15 @@ var PgChannel = function(j_val) {
    @param endHandler {function} the handler 
    @return {PgChannel} a reference to this, so the API can be used fluently
    */
-  this.endHandler = function(endHandler) {
+  this.endHandler =  function(endHandler) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; (typeof __args[0] === 'function' || __args[0] == null)) {
-      j_pgChannel["endHandler(io.vertx.core.Handler)"](endHandler);
+      j_pgChannel["endHandler(io.vertx.core.Handler)"](__args[0]) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_endHandler != 'undefined') {
+      return __super_endHandler.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -148,14 +187,17 @@ var PgChannel = function(j_val) {
    @param handler {function} 
    @return {PgChannel}
    */
-  this.exceptionHandler = function(handler) {
+  this.exceptionHandler =  function(handler) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; (typeof __args[0] === 'function' || __args[0] == null)) {
-      j_pgChannel["exceptionHandler(io.vertx.core.Handler)"](handler == null ? null : function(jVal) {
-      handler(utils.convReturnThrowable(jVal));
-    });
+      j_pgChannel["exceptionHandler(io.vertx.core.Handler)"](__args[0] == null ? null : function(jVal) {
+        __args[0](utils.convReturnThrowable(jVal));
+      }) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_exceptionHandler != 'undefined') {
+      return __super_exceptionHandler.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   // A reference to the underlying Java delegate
@@ -165,11 +207,9 @@ var PgChannel = function(j_val) {
 };
 
 PgChannel._jclass = utils.getJavaClass("io.reactiverse.pgclient.pubsub.PgChannel");
-PgChannel._jtype = {
-  accept: function(obj) {
+PgChannel._jtype = {accept: function(obj) {
     return PgChannel._jclass.isInstance(obj._jdel);
-  },
-  wrap: function(jdel) {
+  },wrap: function(jdel) {
     var obj = Object.create(PgChannel.prototype, {});
     PgChannel.apply(obj, arguments);
     return obj;
@@ -178,8 +218,7 @@ PgChannel._jtype = {
     return obj._jdel;
   }
 };
-PgChannel._create = function(jdel) {
-  var obj = Object.create(PgChannel.prototype, {});
+PgChannel._create = function(jdel) {var obj = Object.create(PgChannel.prototype, {});
   PgChannel.apply(obj, arguments);
   return obj;
 }
@@ -199,7 +238,7 @@ module.exports = PgChannel;</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Mon Dec 03 2018 12:31:52 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Wed Dec 19 2018 16:29:04 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

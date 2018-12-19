@@ -66,6 +66,17 @@ var PgConnection = function(j_val) {
   var that = this;
   PgClient.call(this, j_val);
 
+  var __super_prepare = this.prepare;
+  var __super_exceptionHandler = this.exceptionHandler;
+  var __super_closeHandler = this.closeHandler;
+  var __super_begin = this.begin;
+  var __super_notificationHandler = this.notificationHandler;
+  var __super_isSSL = this.isSSL;
+  var __super_close = this.close;
+  var __super_preparedQuery = this.preparedQuery;
+  var __super_query = this.query;
+  var __super_preparedQuery = this.preparedQuery;
+  var __super_preparedBatch = this.preparedBatch;
   /**
    Create a prepared query.
 
@@ -74,18 +85,21 @@ var PgConnection = function(j_val) {
    @param handler {function} the handler notified with the prepared query asynchronously 
    @return {PgConnection}
    */
-  this.prepare = function(sql, handler) {
+  this.prepare =  function(sql, handler) {
     var __args = arguments;
     if (__args.length === 2 &amp;&amp; typeof __args[0] === 'string' &amp;&amp; typeof __args[1] === 'function') {
-      j_pgConnection["prepare(java.lang.String,io.vertx.core.Handler)"](sql, function(ar) {
-      if (ar.succeeded()) {
-        handler(utils.convReturnVertxGen(PgPreparedQuery, ar.result()), null);
-      } else {
-        handler(null, ar.cause());
-      }
-    });
+      j_pgConnection["prepare(java.lang.String,io.vertx.core.Handler)"](__args[0], function(ar) {
+        if (ar.succeeded()) {
+          __args[1](utils.convReturnVertxGen(PgPreparedQuery, ar.result()), null);
+        } else {
+          __args[1](null, ar.cause());
+        }
+      }) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_prepare != 'undefined') {
+      return __super_prepare.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -95,14 +109,17 @@ var PgConnection = function(j_val) {
    @param handler {function} the handler 
    @return {PgConnection} a reference to this, so the API can be used fluently
    */
-  this.exceptionHandler = function(handler) {
+  this.exceptionHandler =  function(handler) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] === 'function') {
       j_pgConnection["exceptionHandler(io.vertx.core.Handler)"](function(jVal) {
-      handler(utils.convReturnThrowable(jVal));
-    });
+        __args[0](utils.convReturnThrowable(jVal));
+      }) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_exceptionHandler != 'undefined') {
+      return __super_exceptionHandler.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -112,12 +129,15 @@ var PgConnection = function(j_val) {
    @param handler {function} the handler 
    @return {PgConnection} a reference to this, so the API can be used fluently
    */
-  this.closeHandler = function(handler) {
+  this.closeHandler =  function(handler) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] === 'function') {
-      j_pgConnection["closeHandler(io.vertx.core.Handler)"](handler);
+      j_pgConnection["closeHandler(io.vertx.core.Handler)"](__args[0]) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_closeHandler != 'undefined') {
+      return __super_closeHandler.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -130,11 +150,14 @@ var PgConnection = function(j_val) {
 
    @return {PgTransaction} the transaction instance
    */
-  this.begin = function() {
+  this.begin =  function() {
     var __args = arguments;
     if (__args.length === 0) {
-      return utils.convReturnVertxGen(PgTransaction, j_pgConnection["begin()"]());
-    } else throw new TypeError('function invoked with invalid arguments');
+      return utils.convReturnVertxGen(PgTransaction, j_pgConnection["begin()"]()) ;
+    } else if (typeof __super_begin != 'undefined') {
+      return __super_begin.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -147,14 +170,17 @@ var PgConnection = function(j_val) {
    @param handler {function} the handler 
    @return {PgConnection} the transaction instance
    */
-  this.notificationHandler = function(handler) {
+  this.notificationHandler =  function(handler) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] === 'function') {
       j_pgConnection["notificationHandler(io.vertx.core.Handler)"](function(jVal) {
-      handler(utils.convReturnDataObject(jVal));
-    });
+        __args[0](utils.convReturnDataObject(jVal));
+      }) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_notificationHandler != 'undefined') {
+      return __super_notificationHandler.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -163,11 +189,14 @@ var PgConnection = function(j_val) {
 
    @return {boolean} whether the connection uses SSL
    */
-  this.isSSL = function() {
+  this.isSSL =  function() {
     var __args = arguments;
     if (__args.length === 0) {
-      return j_pgConnection["isSSL()"]();
-    } else throw new TypeError('function invoked with invalid arguments');
+      return j_pgConnection["isSSL()"]() ;
+    } else if (typeof __super_isSSL != 'undefined') {
+      return __super_isSSL.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -176,11 +205,14 @@ var PgConnection = function(j_val) {
    @public
 
    */
-  this.close = function() {
+  this.close =  function() {
     var __args = arguments;
     if (__args.length === 0) {
       j_pgConnection["close()"]();
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_close != 'undefined') {
+      return __super_close.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -191,27 +223,30 @@ var PgConnection = function(j_val) {
    @param handler {function} 
    @return {PgConnection}
    */
-  this.preparedQuery = function() {
+  this.preparedQuery =  function() {
     var __args = arguments;
     if (__args.length === 2 &amp;&amp; typeof __args[0] === 'string' &amp;&amp; typeof __args[1] === 'function') {
       j_pgConnection["preparedQuery(java.lang.String,io.vertx.core.Handler)"](__args[0], function(ar) {
-      if (ar.succeeded()) {
-        __args[1](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
-      } else {
-        __args[1](null, ar.cause());
-      }
-    });
+        if (ar.succeeded()) {
+          __args[1](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
+        } else {
+          __args[1](null, ar.cause());
+        }
+      }) ;
       return that;
-    }  else if (__args.length === 3 &amp;&amp; typeof __args[0] === 'string' &amp;&amp; typeof __args[1] === 'object' &amp;&amp; __args[1]._jdel &amp;&amp; typeof __args[2] === 'function') {
+    } else if (__args.length === 3 &amp;&amp; typeof __args[0] === 'string' &amp;&amp; typeof __args[1] === 'object' &amp;&amp; __args[1]._jdel &amp;&amp; typeof __args[2] === 'function') {
       j_pgConnection["preparedQuery(java.lang.String,io.reactiverse.pgclient.Tuple,io.vertx.core.Handler)"](__args[0], __args[1]._jdel, function(ar) {
-      if (ar.succeeded()) {
-        __args[2](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
-      } else {
-        __args[2](null, ar.cause());
-      }
-    });
+        if (ar.succeeded()) {
+          __args[2](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
+        } else {
+          __args[2](null, ar.cause());
+        }
+      }) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_preparedQuery != 'undefined') {
+      return __super_preparedQuery.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -221,18 +256,21 @@ var PgConnection = function(j_val) {
    @param handler {function} 
    @return {PgConnection}
    */
-  this.query = function(sql, handler) {
+  this.query =  function(sql, handler) {
     var __args = arguments;
     if (__args.length === 2 &amp;&amp; typeof __args[0] === 'string' &amp;&amp; typeof __args[1] === 'function') {
-      j_pgConnection["query(java.lang.String,io.vertx.core.Handler)"](sql, function(ar) {
-      if (ar.succeeded()) {
-        handler(utils.convReturnVertxGen(PgRowSet, ar.result()), null);
-      } else {
-        handler(null, ar.cause());
-      }
-    });
+      j_pgConnection["query(java.lang.String,io.vertx.core.Handler)"](__args[0], function(ar) {
+        if (ar.succeeded()) {
+          __args[1](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
+        } else {
+          __args[1](null, ar.cause());
+        }
+      }) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_query != 'undefined') {
+      return __super_query.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -243,18 +281,21 @@ var PgConnection = function(j_val) {
    @param handler {function} 
    @return {PgConnection}
    */
-  this.preparedBatch = function(sql, batch, handler) {
+  this.preparedBatch =  function(sql, batch, handler) {
     var __args = arguments;
     if (__args.length === 3 &amp;&amp; typeof __args[0] === 'string' &amp;&amp; typeof __args[1] === 'object' &amp;&amp; __args[1] instanceof Array &amp;&amp; typeof __args[2] === 'function') {
-      j_pgConnection["preparedBatch(java.lang.String,java.util.List,io.vertx.core.Handler)"](sql, utils.convParamListVertxGen(batch), function(ar) {
-      if (ar.succeeded()) {
-        handler(utils.convReturnVertxGen(PgRowSet, ar.result()), null);
-      } else {
-        handler(null, ar.cause());
-      }
-    });
+      j_pgConnection["preparedBatch(java.lang.String,java.util.List,io.vertx.core.Handler)"](__args[0], utils.convParamListVertxGen(__args[1]), function(ar) {
+        if (ar.succeeded()) {
+          __args[2](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
+        } else {
+          __args[2](null, ar.cause());
+        }
+      }) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_preparedBatch != 'undefined') {
+      return __super_preparedBatch.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   // A reference to the underlying Java delegate
@@ -264,11 +305,9 @@ var PgConnection = function(j_val) {
 };
 
 PgConnection._jclass = utils.getJavaClass("io.reactiverse.pgclient.PgConnection");
-PgConnection._jtype = {
-  accept: function(obj) {
+PgConnection._jtype = {accept: function(obj) {
     return PgConnection._jclass.isInstance(obj._jdel);
-  },
-  wrap: function(jdel) {
+  },wrap: function(jdel) {
     var obj = Object.create(PgConnection.prototype, {});
     PgConnection.apply(obj, arguments);
     return obj;
@@ -277,8 +316,7 @@ PgConnection._jtype = {
     return obj._jdel;
   }
 };
-PgConnection._create = function(jdel) {
-  var obj = Object.create(PgConnection.prototype, {});
+PgConnection._create = function(jdel) {var obj = Object.create(PgConnection.prototype, {});
   PgConnection.apply(obj, arguments);
   return obj;
 }
@@ -298,7 +336,7 @@ module.exports = PgConnection;</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Mon Dec 03 2018 12:31:52 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Wed Dec 19 2018 16:29:04 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

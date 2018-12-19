@@ -62,6 +62,14 @@ var PgSubscriber = function(j_val) {
   var j_pgSubscriber = j_val;
   var that = this;
 
+  var __super_subscriber = this.subscriber;
+  var __super_channel = this.channel;
+  var __super_connect = this.connect;
+  var __super_reconnectPolicy = this.reconnectPolicy;
+  var __super_closeHandler = this.closeHandler;
+  var __super_actualConnection = this.actualConnection;
+  var __super_closed = this.closed;
+  var __super_close = this.close;
   /**
    Return a channel for the given &lt;code>name&lt;/code>.
 
@@ -69,11 +77,14 @@ var PgSubscriber = function(j_val) {
    @param name {string} the channel name &lt;p/> This will be the name of the channel exactly as held by Postgres for sending notifications. Internally this name will be truncated to the Postgres identifier maxiumum length of &lt;code>(NAMEDATALEN = 64) - 1 == 63&lt;/code> characters, and prepared as a quoted identifier without unicode escape sequence support for use in &lt;code>LISTEN/UNLISTEN&lt;/code> commands. Examples of channel names and corresponding &lt;code>NOTIFY&lt;/code> commands: &lt;ul> &lt;li>when &lt;code>name == "the_channel"&lt;/code>: &lt;code>NOTIFY the_channel, 'msg'&lt;/code>, &lt;code>NOTIFY The_Channel, 'msg'&lt;/code>, or &lt;code>NOTIFY "the_channel", 'msg'&lt;/code> succeed in delivering a message to the created channel &lt;/li> &lt;li>when &lt;code>name == "The_Channel"&lt;/code>: &lt;code>NOTIFY "The_Channel", 'msg'&lt;/code>, succeeds in delivering a message to the created channel &lt;/li> &lt;li>&lt;/li> &lt;/ul> 
    @return {PgChannel} the channel
    */
-  this.channel = function(name) {
+  this.channel =  function(name) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
-      return utils.convReturnVertxGen(PgChannel, j_pgSubscriber["channel(java.lang.String)"](name));
-    } else throw new TypeError('function invoked with invalid arguments');
+      return utils.convReturnVertxGen(PgChannel, j_pgSubscriber["channel(java.lang.String)"](__args[0])) ;
+    } else if (typeof __super_channel != 'undefined') {
+      return __super_channel.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -83,18 +94,21 @@ var PgSubscriber = function(j_val) {
    @param handler {function} the handler notified of the connection success or failure 
    @return {PgSubscriber} a reference to this, so the API can be used fluently
    */
-  this.connect = function(handler) {
+  this.connect =  function(handler) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] === 'function') {
       j_pgSubscriber["connect(io.vertx.core.Handler)"](function(ar) {
-      if (ar.succeeded()) {
-        handler(null, null);
-      } else {
-        handler(null, ar.cause());
-      }
-    });
+        if (ar.succeeded()) {
+          __args[0](null, null);
+        } else {
+          __args[0](null, ar.cause());
+        }
+      }) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_connect != 'undefined') {
+      return __super_connect.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -111,18 +125,21 @@ var PgSubscriber = function(j_val) {
    The default policy does not perform any retries.
 
    @public
-   @param policy {todo} the policy to set 
+   @param policy {function} the policy to set 
    @return {PgSubscriber} a reference to this, so the API can be used fluently
    */
-  this.reconnectPolicy = function(policy) {
+  this.reconnectPolicy =  function(policy) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] === 'function') {
       j_pgSubscriber["reconnectPolicy(java.util.function.Function)"](function(jVal) {
-      var jRet = policy(jVal);
-      return utils.convParamLong(jRet);
-    });
+        var jRet = __args[0](jVal);
+        return utils.convParamLong(jRet);
+      }) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_reconnectPolicy != 'undefined') {
+      return __super_reconnectPolicy.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -132,12 +149,15 @@ var PgSubscriber = function(j_val) {
    @param handler {function} the handler 
    @return {PgSubscriber} a reference to this, so the API can be used fluently
    */
-  this.closeHandler = function(handler) {
+  this.closeHandler =  function(handler) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] === 'function') {
-      j_pgSubscriber["closeHandler(io.vertx.core.Handler)"](handler);
+      j_pgSubscriber["closeHandler(io.vertx.core.Handler)"](__args[0]) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_closeHandler != 'undefined') {
+      return __super_closeHandler.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -146,11 +166,14 @@ var PgSubscriber = function(j_val) {
 
    @return {PgConnection} the actual connection to Postgres, it might be &lt;code>null&lt;/code>
    */
-  this.actualConnection = function() {
+  this.actualConnection =  function() {
     var __args = arguments;
     if (__args.length === 0) {
-      return utils.convReturnVertxGen(PgConnection, j_pgSubscriber["actualConnection()"]());
-    } else throw new TypeError('function invoked with invalid arguments');
+      return utils.convReturnVertxGen(PgConnection, j_pgSubscriber["actualConnection()"]()) ;
+    } else if (typeof __super_actualConnection != 'undefined') {
+      return __super_actualConnection.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -159,11 +182,14 @@ var PgSubscriber = function(j_val) {
 
    @return {boolean} whether the subscriber is closed
    */
-  this.closed = function() {
+  this.closed =  function() {
     var __args = arguments;
     if (__args.length === 0) {
-      return j_pgSubscriber["closed()"]();
-    } else throw new TypeError('function invoked with invalid arguments');
+      return j_pgSubscriber["closed()"]() ;
+    } else if (typeof __super_closed != 'undefined') {
+      return __super_closed.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -172,11 +198,14 @@ var PgSubscriber = function(j_val) {
    @public
 
    */
-  this.close = function() {
+  this.close =  function() {
     var __args = arguments;
     if (__args.length === 0) {
       j_pgSubscriber["close()"]();
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_close != 'undefined') {
+      return __super_close.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   // A reference to the underlying Java delegate
@@ -186,11 +215,9 @@ var PgSubscriber = function(j_val) {
 };
 
 PgSubscriber._jclass = utils.getJavaClass("io.reactiverse.pgclient.pubsub.PgSubscriber");
-PgSubscriber._jtype = {
-  accept: function(obj) {
+PgSubscriber._jtype = {accept: function(obj) {
     return PgSubscriber._jclass.isInstance(obj._jdel);
-  },
-  wrap: function(jdel) {
+  },wrap: function(jdel) {
     var obj = Object.create(PgSubscriber.prototype, {});
     PgSubscriber.apply(obj, arguments);
     return obj;
@@ -199,8 +226,7 @@ PgSubscriber._jtype = {
     return obj._jdel;
   }
 };
-PgSubscriber._create = function(jdel) {
-  var obj = Object.create(PgSubscriber.prototype, {});
+PgSubscriber._create = function(jdel) {var obj = Object.create(PgSubscriber.prototype, {});
   PgSubscriber.apply(obj, arguments);
   return obj;
 }
@@ -212,11 +238,11 @@ PgSubscriber._create = function(jdel) {
  @param options {Object} the connect options 
  @return {PgSubscriber} the subscriber
  */
-PgSubscriber.subscriber = function(vertx, options) {
+PgSubscriber.subscriber =  function(vertx, options) {
   var __args = arguments;
   if (__args.length === 2 &amp;&amp; typeof __args[0] === 'object' &amp;&amp; __args[0]._jdel &amp;&amp; (typeof __args[1] === 'object' &amp;&amp; __args[1] != null)) {
-    return utils.convReturnVertxGen(PgSubscriber, JPgSubscriber["subscriber(io.vertx.core.Vertx,io.reactiverse.pgclient.PgConnectOptions)"](vertx._jdel, options != null ? new PgConnectOptions(new JsonObject(Java.asJSONCompatible(options))) : null));
-  } else throw new TypeError('function invoked with invalid arguments');
+    return utils.convReturnVertxGen(PgSubscriber, JPgSubscriber["subscriber(io.vertx.core.Vertx,io.reactiverse.pgclient.PgConnectOptions)"](__args[0]._jdel, __args[1]  != null ? new PgConnectOptions(new JsonObject(Java.asJSONCompatible(__args[1]))) : null)) ;
+  }else throw new TypeError('function invoked with invalid arguments');
 };
 
 module.exports = PgSubscriber;</code></pre>
@@ -235,7 +261,7 @@ module.exports = PgSubscriber;</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Mon Dec 03 2018 12:31:52 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Wed Dec 19 2018 16:29:04 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

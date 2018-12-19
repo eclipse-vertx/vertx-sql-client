@@ -65,6 +65,13 @@ var PgPool = function(j_val) {
   var that = this;
   PgClient.call(this, j_val);
 
+  var __super_preparedQuery = this.preparedQuery;
+  var __super_query = this.query;
+  var __super_preparedQuery = this.preparedQuery;
+  var __super_preparedBatch = this.preparedBatch;
+  var __super_getConnection = this.getConnection;
+  var __super_begin = this.begin;
+  var __super_close = this.close;
   /**
 
    @public
@@ -73,27 +80,30 @@ var PgPool = function(j_val) {
    @param handler {function} 
    @return {PgPool}
    */
-  this.preparedQuery = function() {
+  this.preparedQuery =  function() {
     var __args = arguments;
     if (__args.length === 2 &amp;&amp; typeof __args[0] === 'string' &amp;&amp; typeof __args[1] === 'function') {
       j_pgPool["preparedQuery(java.lang.String,io.vertx.core.Handler)"](__args[0], function(ar) {
-      if (ar.succeeded()) {
-        __args[1](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
-      } else {
-        __args[1](null, ar.cause());
-      }
-    });
+        if (ar.succeeded()) {
+          __args[1](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
+        } else {
+          __args[1](null, ar.cause());
+        }
+      }) ;
       return that;
-    }  else if (__args.length === 3 &amp;&amp; typeof __args[0] === 'string' &amp;&amp; typeof __args[1] === 'object' &amp;&amp; __args[1]._jdel &amp;&amp; typeof __args[2] === 'function') {
+    } else if (__args.length === 3 &amp;&amp; typeof __args[0] === 'string' &amp;&amp; typeof __args[1] === 'object' &amp;&amp; __args[1]._jdel &amp;&amp; typeof __args[2] === 'function') {
       j_pgPool["preparedQuery(java.lang.String,io.reactiverse.pgclient.Tuple,io.vertx.core.Handler)"](__args[0], __args[1]._jdel, function(ar) {
-      if (ar.succeeded()) {
-        __args[2](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
-      } else {
-        __args[2](null, ar.cause());
-      }
-    });
+        if (ar.succeeded()) {
+          __args[2](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
+        } else {
+          __args[2](null, ar.cause());
+        }
+      }) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_preparedQuery != 'undefined') {
+      return __super_preparedQuery.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -103,18 +113,21 @@ var PgPool = function(j_val) {
    @param handler {function} 
    @return {PgPool}
    */
-  this.query = function(sql, handler) {
+  this.query =  function(sql, handler) {
     var __args = arguments;
     if (__args.length === 2 &amp;&amp; typeof __args[0] === 'string' &amp;&amp; typeof __args[1] === 'function') {
-      j_pgPool["query(java.lang.String,io.vertx.core.Handler)"](sql, function(ar) {
-      if (ar.succeeded()) {
-        handler(utils.convReturnVertxGen(PgRowSet, ar.result()), null);
-      } else {
-        handler(null, ar.cause());
-      }
-    });
+      j_pgPool["query(java.lang.String,io.vertx.core.Handler)"](__args[0], function(ar) {
+        if (ar.succeeded()) {
+          __args[1](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
+        } else {
+          __args[1](null, ar.cause());
+        }
+      }) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_query != 'undefined') {
+      return __super_query.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -125,18 +138,21 @@ var PgPool = function(j_val) {
    @param handler {function} 
    @return {PgPool}
    */
-  this.preparedBatch = function(sql, batch, handler) {
+  this.preparedBatch =  function(sql, batch, handler) {
     var __args = arguments;
     if (__args.length === 3 &amp;&amp; typeof __args[0] === 'string' &amp;&amp; typeof __args[1] === 'object' &amp;&amp; __args[1] instanceof Array &amp;&amp; typeof __args[2] === 'function') {
-      j_pgPool["preparedBatch(java.lang.String,java.util.List,io.vertx.core.Handler)"](sql, utils.convParamListVertxGen(batch), function(ar) {
-      if (ar.succeeded()) {
-        handler(utils.convReturnVertxGen(PgRowSet, ar.result()), null);
-      } else {
-        handler(null, ar.cause());
-      }
-    });
+      j_pgPool["preparedBatch(java.lang.String,java.util.List,io.vertx.core.Handler)"](__args[0], utils.convParamListVertxGen(__args[1]), function(ar) {
+        if (ar.succeeded()) {
+          __args[2](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
+        } else {
+          __args[2](null, ar.cause());
+        }
+      }) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_preparedBatch != 'undefined') {
+      return __super_preparedBatch.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -145,17 +161,20 @@ var PgPool = function(j_val) {
    @public
    @param handler {function} the handler that will get the connection result 
    */
-  this.getConnection = function(handler) {
+  this.getConnection =  function(handler) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] === 'function') {
       j_pgPool["getConnection(io.vertx.core.Handler)"](function(ar) {
-      if (ar.succeeded()) {
-        handler(utils.convReturnVertxGen(PgConnection, ar.result()), null);
-      } else {
-        handler(null, ar.cause());
-      }
-    });
-    } else throw new TypeError('function invoked with invalid arguments');
+        if (ar.succeeded()) {
+          __args[0](utils.convReturnVertxGen(PgConnection, ar.result()), null);
+        } else {
+          __args[0](null, ar.cause());
+        }
+      });
+    } else if (typeof __super_getConnection != 'undefined') {
+      return __super_getConnection.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -165,17 +184,20 @@ var PgPool = function(j_val) {
    @public
    @param handler {function} 
    */
-  this.begin = function(handler) {
+  this.begin =  function(handler) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] === 'function') {
       j_pgPool["begin(io.vertx.core.Handler)"](function(ar) {
-      if (ar.succeeded()) {
-        handler(utils.convReturnVertxGen(PgTransaction, ar.result()), null);
-      } else {
-        handler(null, ar.cause());
-      }
-    });
-    } else throw new TypeError('function invoked with invalid arguments');
+        if (ar.succeeded()) {
+          __args[0](utils.convReturnVertxGen(PgTransaction, ar.result()), null);
+        } else {
+          __args[0](null, ar.cause());
+        }
+      });
+    } else if (typeof __super_begin != 'undefined') {
+      return __super_begin.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -184,11 +206,14 @@ var PgPool = function(j_val) {
    @public
 
    */
-  this.close = function() {
+  this.close =  function() {
     var __args = arguments;
     if (__args.length === 0) {
       j_pgPool["close()"]();
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_close != 'undefined') {
+      return __super_close.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   // A reference to the underlying Java delegate
@@ -198,11 +223,9 @@ var PgPool = function(j_val) {
 };
 
 PgPool._jclass = utils.getJavaClass("io.reactiverse.pgclient.PgPool");
-PgPool._jtype = {
-  accept: function(obj) {
+PgPool._jtype = {accept: function(obj) {
     return PgPool._jclass.isInstance(obj._jdel);
-  },
-  wrap: function(jdel) {
+  },wrap: function(jdel) {
     var obj = Object.create(PgPool.prototype, {});
     PgPool.apply(obj, arguments);
     return obj;
@@ -211,8 +234,7 @@ PgPool._jtype = {
     return obj._jdel;
   }
 };
-PgPool._create = function(jdel) {
-  var obj = Object.create(PgPool.prototype, {});
+PgPool._create = function(jdel) {var obj = Object.create(PgPool.prototype, {});
   PgPool.apply(obj, arguments);
   return obj;
 }
@@ -232,7 +254,7 @@ module.exports = PgPool;</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Mon Dec 03 2018 12:31:52 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Wed Dec 19 2018 16:29:04 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -31,7 +31,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 <dependency>
  <groupId>io.reactiverse</groupId>
  <artifactId>reactive-pg-client</artifactId>
- <version>0.10.9</version>
+ <version>0.11.1</version>
 </dependency>
 ```
 
@@ -39,7 +39,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 
 ```groovy
 dependencies {
- compile 'io.reactiverse:reactive-pg-client:0.10.9'
+ compile 'io.reactiverse:reactive-pg-client:0.11.1'
 }
 ```
 
@@ -623,6 +623,9 @@ Currently the client supports the following Postgres types
 * TEXT (`java.lang.String`)
 * ENUM (`java.lang.String`)
 * NAME (`java.lang.String`)
+* SERIAL2 (`java.lang.Short`)
+* SERIAL4 (`java.lang.Integer`)
+* SERIAL8 (`java.lang.Long`)
 * NUMERIC (`io.reactiverse.pgclient.data.Numeric`)
 * UUID (`java.util.UUID`)
 * DATE (`java.time.LocalDate`)

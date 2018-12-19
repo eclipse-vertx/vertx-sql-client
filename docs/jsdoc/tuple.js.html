@@ -61,6 +61,35 @@ var Tuple = function(j_val) {
   var j_tuple = j_val;
   var that = this;
 
+  var __super_tuple = this.tuple;
+  var __super_of = this.of;
+  var __super_of = this.of;
+  var __super_of = this.of;
+  var __super_of = this.of;
+  var __super_of = this.of;
+  var __super_of = this.of;
+  var __super_getBoolean = this.getBoolean;
+  var __super_getValue = this.getValue;
+  var __super_getShort = this.getShort;
+  var __super_getInteger = this.getInteger;
+  var __super_getLong = this.getLong;
+  var __super_getFloat = this.getFloat;
+  var __super_getDouble = this.getDouble;
+  var __super_getString = this.getString;
+  var __super_getJson = this.getJson;
+  var __super_getBuffer = this.getBuffer;
+  var __super_addBoolean = this.addBoolean;
+  var __super_addValue = this.addValue;
+  var __super_addShort = this.addShort;
+  var __super_addInteger = this.addInteger;
+  var __super_addLong = this.addLong;
+  var __super_addFloat = this.addFloat;
+  var __super_addDouble = this.addDouble;
+  var __super_addString = this.addString;
+  var __super_addJson = this.addJson;
+  var __super_addBuffer = this.addBuffer;
+  var __super_size = this.size;
+  var __super_clear = this.clear;
   /**
    Get a boolean value at &lt;code>pos&lt;/code>.
 
@@ -68,11 +97,14 @@ var Tuple = function(j_val) {
    @param pos {number} the position 
    @return {boolean} the value or &lt;code>null&lt;/code>
    */
-  this.getBoolean = function(pos) {
+  this.getBoolean =  function(pos) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      return j_tuple["getBoolean(int)"](pos);
-    } else throw new TypeError('function invoked with invalid arguments');
+      return j_tuple["getBoolean(int)"](__args[0]) ;
+    } else if (typeof __super_getBoolean != 'undefined') {
+      return __super_getBoolean.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -82,11 +114,14 @@ var Tuple = function(j_val) {
    @param pos {number} the position 
    @return {Object} the value or &lt;code>null&lt;/code>
    */
-  this.getValue = function(pos) {
+  this.getValue =  function(pos) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      return utils.convReturnTypeUnknown(j_tuple["getValue(int)"](pos));
-    } else throw new TypeError('function invoked with invalid arguments');
+      return utils.convReturnTypeUnknown(j_tuple["getValue(int)"](__args[0])) ;
+    } else if (typeof __super_getValue != 'undefined') {
+      return __super_getValue.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -96,11 +131,14 @@ var Tuple = function(j_val) {
    @param pos {number} the position 
    @return {number} the value or &lt;code>null&lt;/code>
    */
-  this.getShort = function(pos) {
+  this.getShort =  function(pos) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      return j_tuple["getShort(int)"](pos);
-    } else throw new TypeError('function invoked with invalid arguments');
+      return j_tuple["getShort(int)"](__args[0]) ;
+    } else if (typeof __super_getShort != 'undefined') {
+      return __super_getShort.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -110,11 +148,14 @@ var Tuple = function(j_val) {
    @param pos {number} the position 
    @return {number} the value or &lt;code>null&lt;/code>
    */
-  this.getInteger = function(pos) {
+  this.getInteger =  function(pos) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      return j_tuple["getInteger(int)"](pos);
-    } else throw new TypeError('function invoked with invalid arguments');
+      return j_tuple["getInteger(int)"](__args[0]) ;
+    } else if (typeof __super_getInteger != 'undefined') {
+      return __super_getInteger.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -124,11 +165,14 @@ var Tuple = function(j_val) {
    @param pos {number} the position 
    @return {number} the value or &lt;code>null&lt;/code>
    */
-  this.getLong = function(pos) {
+  this.getLong =  function(pos) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      return utils.convReturnLong(j_tuple["getLong(int)"](pos));
-    } else throw new TypeError('function invoked with invalid arguments');
+      return utils.convReturnLong(j_tuple["getLong(int)"](__args[0])) ;
+    } else if (typeof __super_getLong != 'undefined') {
+      return __super_getLong.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -138,11 +182,14 @@ var Tuple = function(j_val) {
    @param pos {number} the position 
    @return {number} the value or &lt;code>null&lt;/code>
    */
-  this.getFloat = function(pos) {
+  this.getFloat =  function(pos) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      return j_tuple["getFloat(int)"](pos);
-    } else throw new TypeError('function invoked with invalid arguments');
+      return j_tuple["getFloat(int)"](__args[0]) ;
+    } else if (typeof __super_getFloat != 'undefined') {
+      return __super_getFloat.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -152,11 +199,14 @@ var Tuple = function(j_val) {
    @param pos {number} the position 
    @return {number} the value or &lt;code>null&lt;/code>
    */
-  this.getDouble = function(pos) {
+  this.getDouble =  function(pos) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      return j_tuple["getDouble(int)"](pos);
-    } else throw new TypeError('function invoked with invalid arguments');
+      return j_tuple["getDouble(int)"](__args[0]) ;
+    } else if (typeof __super_getDouble != 'undefined') {
+      return __super_getDouble.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -166,11 +216,14 @@ var Tuple = function(j_val) {
    @param pos {number} the position 
    @return {string} the value or &lt;code>null&lt;/code>
    */
-  this.getString = function(pos) {
+  this.getString =  function(pos) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      return j_tuple["getString(int)"](pos);
-    } else throw new TypeError('function invoked with invalid arguments');
+      return j_tuple["getString(int)"](__args[0]) ;
+    } else if (typeof __super_getString != 'undefined') {
+      return __super_getString.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -180,11 +233,14 @@ var Tuple = function(j_val) {
    @param pos {number} the position 
    @return {Json} the value or &lt;code>null&lt;/code>
    */
-  this.getJson = function(pos) {
+  this.getJson =  function(pos) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      return utils.convReturnVertxGen(Json, j_tuple["getJson(int)"](pos));
-    } else throw new TypeError('function invoked with invalid arguments');
+      return utils.convReturnVertxGen(Json, j_tuple["getJson(int)"](__args[0])) ;
+    } else if (typeof __super_getJson != 'undefined') {
+      return __super_getJson.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -194,11 +250,14 @@ var Tuple = function(j_val) {
    @param pos {number} the position 
    @return {Buffer} the value or &lt;code>null&lt;/code>
    */
-  this.getBuffer = function(pos) {
+  this.getBuffer =  function(pos) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      return utils.convReturnVertxGen(Buffer, j_tuple["getBuffer(int)"](pos));
-    } else throw new TypeError('function invoked with invalid arguments');
+      return utils.convReturnVertxGen(Buffer, j_tuple["getBuffer(int)"](__args[0])) ;
+    } else if (typeof __super_getBuffer != 'undefined') {
+      return __super_getBuffer.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -208,12 +267,15 @@ var Tuple = function(j_val) {
    @param value {boolean} the value 
    @return {Tuple} a reference to this, so the API can be used fluently
    */
-  this.addBoolean = function(value) {
+  this.addBoolean =  function(value) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] ==='boolean') {
-      j_tuple["addBoolean(java.lang.Boolean)"](value);
+      j_tuple["addBoolean(java.lang.Boolean)"](__args[0]) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_addBoolean != 'undefined') {
+      return __super_addBoolean.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -223,12 +285,15 @@ var Tuple = function(j_val) {
    @param value {Object} the value 
    @return {Tuple} a reference to this, so the API can be used fluently
    */
-  this.addValue = function(value) {
+  this.addValue =  function(value) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] !== 'function') {
-      j_tuple["addValue(java.lang.Object)"](utils.convParamTypeUnknown(value));
+      j_tuple["addValue(java.lang.Object)"](utils.convParamTypeUnknown(__args[0])) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_addValue != 'undefined') {
+      return __super_addValue.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -238,12 +303,15 @@ var Tuple = function(j_val) {
    @param value {number} the value 
    @return {Tuple} a reference to this, so the API can be used fluently
    */
-  this.addShort = function(value) {
+  this.addShort =  function(value) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      j_tuple["addShort(java.lang.Short)"](utils.convParamShort(value));
+      j_tuple["addShort(java.lang.Short)"](utils.convParamShort(__args[0])) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_addShort != 'undefined') {
+      return __super_addShort.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -253,12 +321,15 @@ var Tuple = function(j_val) {
    @param value {number} the value 
    @return {Tuple} a reference to this, so the API can be used fluently
    */
-  this.addInteger = function(value) {
+  this.addInteger =  function(value) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      j_tuple["addInteger(java.lang.Integer)"](utils.convParamInteger(value));
+      j_tuple["addInteger(java.lang.Integer)"](utils.convParamInteger(__args[0])) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_addInteger != 'undefined') {
+      return __super_addInteger.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -268,12 +339,15 @@ var Tuple = function(j_val) {
    @param value {number} the value 
    @return {Tuple} a reference to this, so the API can be used fluently
    */
-  this.addLong = function(value) {
+  this.addLong =  function(value) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      j_tuple["addLong(java.lang.Long)"](utils.convParamLong(value));
+      j_tuple["addLong(java.lang.Long)"](utils.convParamLong(__args[0])) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_addLong != 'undefined') {
+      return __super_addLong.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -283,12 +357,15 @@ var Tuple = function(j_val) {
    @param value {number} the value 
    @return {Tuple} a reference to this, so the API can be used fluently
    */
-  this.addFloat = function(value) {
+  this.addFloat =  function(value) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      j_tuple["addFloat(java.lang.Float)"](utils.convParamFloat(value));
+      j_tuple["addFloat(java.lang.Float)"](utils.convParamFloat(__args[0])) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_addFloat != 'undefined') {
+      return __super_addFloat.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -298,12 +375,15 @@ var Tuple = function(j_val) {
    @param value {number} the value 
    @return {Tuple} a reference to this, so the API can be used fluently
    */
-  this.addDouble = function(value) {
+  this.addDouble =  function(value) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      j_tuple["addDouble(java.lang.Double)"](utils.convParamDouble(value));
+      j_tuple["addDouble(java.lang.Double)"](utils.convParamDouble(__args[0])) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_addDouble != 'undefined') {
+      return __super_addDouble.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -313,12 +393,15 @@ var Tuple = function(j_val) {
    @param value {string} the value 
    @return {Tuple} a reference to this, so the API can be used fluently
    */
-  this.addString = function(value) {
+  this.addString =  function(value) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
-      j_tuple["addString(java.lang.String)"](value);
+      j_tuple["addString(java.lang.String)"](__args[0]) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_addString != 'undefined') {
+      return __super_addString.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -328,12 +411,15 @@ var Tuple = function(j_val) {
    @param value {Json} the value 
    @return {Tuple} a reference to this, so the API can be used fluently
    */
-  this.addJson = function(value) {
+  this.addJson =  function(value) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] === 'object' &amp;&amp; __args[0]._jdel) {
-      j_tuple["addJson(io.reactiverse.pgclient.data.Json)"](value._jdel);
+      j_tuple["addJson(io.reactiverse.pgclient.data.Json)"](__args[0]._jdel) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_addJson != 'undefined') {
+      return __super_addJson.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -343,12 +429,15 @@ var Tuple = function(j_val) {
    @param value {Buffer} the value 
    @return {Tuple} a reference to this, so the API can be used fluently
    */
-  this.addBuffer = function(value) {
+  this.addBuffer =  function(value) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] === 'object' &amp;&amp; __args[0]._jdel) {
-      j_tuple["addBuffer(io.vertx.core.buffer.Buffer)"](value._jdel);
+      j_tuple["addBuffer(io.vertx.core.buffer.Buffer)"](__args[0]._jdel) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_addBuffer != 'undefined') {
+      return __super_addBuffer.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -357,11 +446,14 @@ var Tuple = function(j_val) {
 
    @return {number} the tuple size
    */
-  this.size = function() {
+  this.size =  function() {
     var __args = arguments;
     if (__args.length === 0) {
-      return j_tuple["size()"]();
-    } else throw new TypeError('function invoked with invalid arguments');
+      return j_tuple["size()"]() ;
+    } else if (typeof __super_size != 'undefined') {
+      return __super_size.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -369,11 +461,14 @@ var Tuple = function(j_val) {
    @public
 
    */
-  this.clear = function() {
+  this.clear =  function() {
     var __args = arguments;
     if (__args.length === 0) {
       j_tuple["clear()"]();
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_clear != 'undefined') {
+      return __super_clear.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   // A reference to the underlying Java delegate
@@ -383,11 +478,9 @@ var Tuple = function(j_val) {
 };
 
 Tuple._jclass = utils.getJavaClass("io.reactiverse.pgclient.Tuple");
-Tuple._jtype = {
-  accept: function(obj) {
+Tuple._jtype = {accept: function(obj) {
     return Tuple._jclass.isInstance(obj._jdel);
-  },
-  wrap: function(jdel) {
+  },wrap: function(jdel) {
     var obj = Object.create(Tuple.prototype, {});
     Tuple.apply(obj, arguments);
     return obj;
@@ -396,8 +489,7 @@ Tuple._jtype = {
     return obj._jdel;
   }
 };
-Tuple._create = function(jdel) {
-  var obj = Object.create(Tuple.prototype, {});
+Tuple._create = function(jdel) {var obj = Object.create(Tuple.prototype, {});
   Tuple.apply(obj, arguments);
   return obj;
 }
@@ -407,11 +499,11 @@ Tuple._create = function(jdel) {
 
  @return {Tuple} a new empty tuple
  */
-Tuple.tuple = function() {
+Tuple.tuple =  function() {
   var __args = arguments;
   if (__args.length === 0) {
-    return utils.convReturnVertxGen(Tuple, JTuple["tuple()"]());
-  } else throw new TypeError('function invoked with invalid arguments');
+    return utils.convReturnVertxGen(Tuple, JTuple["tuple()"]()) ;
+  }else throw new TypeError('function invoked with invalid arguments');
 };
 
 /**
@@ -426,21 +518,21 @@ Tuple.tuple = function() {
  @param elt6 {Object} the sixth value 
  @return {Tuple} the tuple
  */
-Tuple.of = function() {
+Tuple.of =  function() {
   var __args = arguments;
   if (__args.length === 1 &amp;&amp; typeof __args[0] !== 'function') {
-    return utils.convReturnVertxGen(Tuple, JTuple["of(java.lang.Object)"](utils.convParamTypeUnknown(__args[0])));
-  }else if (__args.length === 2 &amp;&amp; typeof __args[0] !== 'function' &amp;&amp; typeof __args[1] !== 'function') {
-    return utils.convReturnVertxGen(Tuple, JTuple["of(java.lang.Object,java.lang.Object)"](utils.convParamTypeUnknown(__args[0]), utils.convParamTypeUnknown(__args[1])));
-  }else if (__args.length === 3 &amp;&amp; typeof __args[0] !== 'function' &amp;&amp; typeof __args[1] !== 'function' &amp;&amp; typeof __args[2] !== 'function') {
-    return utils.convReturnVertxGen(Tuple, JTuple["of(java.lang.Object,java.lang.Object,java.lang.Object)"](utils.convParamTypeUnknown(__args[0]), utils.convParamTypeUnknown(__args[1]), utils.convParamTypeUnknown(__args[2])));
-  }else if (__args.length === 4 &amp;&amp; typeof __args[0] !== 'function' &amp;&amp; typeof __args[1] !== 'function' &amp;&amp; typeof __args[2] !== 'function' &amp;&amp; typeof __args[3] !== 'function') {
-    return utils.convReturnVertxGen(Tuple, JTuple["of(java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object)"](utils.convParamTypeUnknown(__args[0]), utils.convParamTypeUnknown(__args[1]), utils.convParamTypeUnknown(__args[2]), utils.convParamTypeUnknown(__args[3])));
-  }else if (__args.length === 5 &amp;&amp; typeof __args[0] !== 'function' &amp;&amp; typeof __args[1] !== 'function' &amp;&amp; typeof __args[2] !== 'function' &amp;&amp; typeof __args[3] !== 'function' &amp;&amp; typeof __args[4] !== 'function') {
-    return utils.convReturnVertxGen(Tuple, JTuple["of(java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object)"](utils.convParamTypeUnknown(__args[0]), utils.convParamTypeUnknown(__args[1]), utils.convParamTypeUnknown(__args[2]), utils.convParamTypeUnknown(__args[3]), utils.convParamTypeUnknown(__args[4])));
-  }else if (__args.length === 6 &amp;&amp; typeof __args[0] !== 'function' &amp;&amp; typeof __args[1] !== 'function' &amp;&amp; typeof __args[2] !== 'function' &amp;&amp; typeof __args[3] !== 'function' &amp;&amp; typeof __args[4] !== 'function' &amp;&amp; typeof __args[5] !== 'function') {
-    return utils.convReturnVertxGen(Tuple, JTuple["of(java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object)"](utils.convParamTypeUnknown(__args[0]), utils.convParamTypeUnknown(__args[1]), utils.convParamTypeUnknown(__args[2]), utils.convParamTypeUnknown(__args[3]), utils.convParamTypeUnknown(__args[4]), utils.convParamTypeUnknown(__args[5])));
-  } else throw new TypeError('function invoked with invalid arguments');
+    return utils.convReturnVertxGen(Tuple, JTuple["of(java.lang.Object)"](utils.convParamTypeUnknown(__args[0]))) ;
+  } else if (__args.length === 2 &amp;&amp; typeof __args[0] !== 'function' &amp;&amp; typeof __args[1] !== 'function') {
+    return utils.convReturnVertxGen(Tuple, JTuple["of(java.lang.Object,java.lang.Object)"](utils.convParamTypeUnknown(__args[0]), utils.convParamTypeUnknown(__args[1]))) ;
+  } else if (__args.length === 3 &amp;&amp; typeof __args[0] !== 'function' &amp;&amp; typeof __args[1] !== 'function' &amp;&amp; typeof __args[2] !== 'function') {
+    return utils.convReturnVertxGen(Tuple, JTuple["of(java.lang.Object,java.lang.Object,java.lang.Object)"](utils.convParamTypeUnknown(__args[0]), utils.convParamTypeUnknown(__args[1]), utils.convParamTypeUnknown(__args[2]))) ;
+  } else if (__args.length === 4 &amp;&amp; typeof __args[0] !== 'function' &amp;&amp; typeof __args[1] !== 'function' &amp;&amp; typeof __args[2] !== 'function' &amp;&amp; typeof __args[3] !== 'function') {
+    return utils.convReturnVertxGen(Tuple, JTuple["of(java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object)"](utils.convParamTypeUnknown(__args[0]), utils.convParamTypeUnknown(__args[1]), utils.convParamTypeUnknown(__args[2]), utils.convParamTypeUnknown(__args[3]))) ;
+  } else if (__args.length === 5 &amp;&amp; typeof __args[0] !== 'function' &amp;&amp; typeof __args[1] !== 'function' &amp;&amp; typeof __args[2] !== 'function' &amp;&amp; typeof __args[3] !== 'function' &amp;&amp; typeof __args[4] !== 'function') {
+    return utils.convReturnVertxGen(Tuple, JTuple["of(java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object)"](utils.convParamTypeUnknown(__args[0]), utils.convParamTypeUnknown(__args[1]), utils.convParamTypeUnknown(__args[2]), utils.convParamTypeUnknown(__args[3]), utils.convParamTypeUnknown(__args[4]))) ;
+  } else if (__args.length === 6 &amp;&amp; typeof __args[0] !== 'function' &amp;&amp; typeof __args[1] !== 'function' &amp;&amp; typeof __args[2] !== 'function' &amp;&amp; typeof __args[3] !== 'function' &amp;&amp; typeof __args[4] !== 'function' &amp;&amp; typeof __args[5] !== 'function') {
+    return utils.convReturnVertxGen(Tuple, JTuple["of(java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object)"](utils.convParamTypeUnknown(__args[0]), utils.convParamTypeUnknown(__args[1]), utils.convParamTypeUnknown(__args[2]), utils.convParamTypeUnknown(__args[3]), utils.convParamTypeUnknown(__args[4]), utils.convParamTypeUnknown(__args[5]))) ;
+  }else throw new TypeError('function invoked with invalid arguments');
 };
 
 module.exports = Tuple;</code></pre>
@@ -459,7 +551,7 @@ module.exports = Tuple;</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Mon Dec 03 2018 12:31:52 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Wed Dec 19 2018 16:29:04 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

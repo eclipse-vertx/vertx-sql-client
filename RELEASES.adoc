@@ -1,8 +1,17 @@
+== 0.11.1
+
+Fixed issues: https://github.com/reactiverse/reactive-pg-client/issues?q=is%3Aclosed+milestone%3A0.11.1
+
+- Upgrade to Vert.x 3.6.2
+- Generate kotlin coroutine methods
+- Get details from PgException
+- SSL upgradefuture failure is not properly handled
+
 == 0.11.0
 
 Fixed issues: https://github.com/reactiverse/reactive-pg-client/issues?q=is%3Aclosed+milestone%3A0.11.0
 
-- Upgrade to Vert.x 3.6
+- Upgrade to Vert.x 3.6.0
 - Example for Kotlin throws compilation errors
 
 == 0.10.9

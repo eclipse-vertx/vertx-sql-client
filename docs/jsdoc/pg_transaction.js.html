@@ -64,6 +64,16 @@ var PgTransaction = function(j_val) {
   var that = this;
   PgClient.call(this, j_val);
 
+  var __super_prepare = this.prepare;
+  var __super_commit = this.commit;
+  var __super_commit = this.commit;
+  var __super_rollback = this.rollback;
+  var __super_rollback = this.rollback;
+  var __super_abortHandler = this.abortHandler;
+  var __super_query = this.query;
+  var __super_preparedQuery = this.preparedQuery;
+  var __super_preparedQuery = this.preparedQuery;
+  var __super_preparedBatch = this.preparedBatch;
   /**
    Create a prepared query.
 
@@ -72,18 +82,21 @@ var PgTransaction = function(j_val) {
    @param handler {function} the handler notified with the prepared query asynchronously 
    @return {PgTransaction}
    */
-  this.prepare = function(sql, handler) {
+  this.prepare =  function(sql, handler) {
     var __args = arguments;
     if (__args.length === 2 &amp;&amp; typeof __args[0] === 'string' &amp;&amp; typeof __args[1] === 'function') {
-      j_pgTransaction["prepare(java.lang.String,io.vertx.core.Handler)"](sql, function(ar) {
-      if (ar.succeeded()) {
-        handler(utils.convReturnVertxGen(PgPreparedQuery, ar.result()), null);
-      } else {
-        handler(null, ar.cause());
-      }
-    });
+      j_pgTransaction["prepare(java.lang.String,io.vertx.core.Handler)"](__args[0], function(ar) {
+        if (ar.succeeded()) {
+          __args[1](utils.convReturnVertxGen(PgPreparedQuery, ar.result()), null);
+        } else {
+          __args[1](null, ar.cause());
+        }
+      }) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_prepare != 'undefined') {
+      return __super_prepare.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -92,19 +105,22 @@ var PgTransaction = function(j_val) {
    @public
    @param handler {function} 
    */
-  this.commit = function() {
+  this.commit =  function() {
     var __args = arguments;
     if (__args.length === 0) {
       j_pgTransaction["commit()"]();
-    }  else if (__args.length === 1 &amp;&amp; typeof __args[0] === 'function') {
+    } else if (__args.length === 1 &amp;&amp; typeof __args[0] === 'function') {
       j_pgTransaction["commit(io.vertx.core.Handler)"](function(ar) {
-      if (ar.succeeded()) {
-        __args[0](null, null);
-      } else {
-        __args[0](null, ar.cause());
-      }
-    });
-    } else throw new TypeError('function invoked with invalid arguments');
+        if (ar.succeeded()) {
+          __args[0](null, null);
+        } else {
+          __args[0](null, ar.cause());
+        }
+      });
+    } else if (typeof __super_commit != 'undefined') {
+      return __super_commit.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -113,19 +129,22 @@ var PgTransaction = function(j_val) {
    @public
    @param handler {function} 
    */
-  this.rollback = function() {
+  this.rollback =  function() {
     var __args = arguments;
     if (__args.length === 0) {
       j_pgTransaction["rollback()"]();
-    }  else if (__args.length === 1 &amp;&amp; typeof __args[0] === 'function') {
+    } else if (__args.length === 1 &amp;&amp; typeof __args[0] === 'function') {
       j_pgTransaction["rollback(io.vertx.core.Handler)"](function(ar) {
-      if (ar.succeeded()) {
-        __args[0](null, null);
-      } else {
-        __args[0](null, ar.cause());
-      }
-    });
-    } else throw new TypeError('function invoked with invalid arguments');
+        if (ar.succeeded()) {
+          __args[0](null, null);
+        } else {
+          __args[0](null, ar.cause());
+        }
+      });
+    } else if (typeof __super_rollback != 'undefined') {
+      return __super_rollback.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -135,12 +154,15 @@ var PgTransaction = function(j_val) {
    @param handler {function} the handler 
    @return {PgTransaction}
    */
-  this.abortHandler = function(handler) {
+  this.abortHandler =  function(handler) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] === 'function') {
-      j_pgTransaction["abortHandler(io.vertx.core.Handler)"](handler);
+      j_pgTransaction["abortHandler(io.vertx.core.Handler)"](__args[0]) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_abortHandler != 'undefined') {
+      return __super_abortHandler.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -150,18 +172,21 @@ var PgTransaction = function(j_val) {
    @param handler {function} 
    @return {PgTransaction}
    */
-  this.query = function(sql, handler) {
+  this.query =  function(sql, handler) {
     var __args = arguments;
     if (__args.length === 2 &amp;&amp; typeof __args[0] === 'string' &amp;&amp; typeof __args[1] === 'function') {
-      j_pgTransaction["query(java.lang.String,io.vertx.core.Handler)"](sql, function(ar) {
-      if (ar.succeeded()) {
-        handler(utils.convReturnVertxGen(PgRowSet, ar.result()), null);
-      } else {
-        handler(null, ar.cause());
-      }
-    });
+      j_pgTransaction["query(java.lang.String,io.vertx.core.Handler)"](__args[0], function(ar) {
+        if (ar.succeeded()) {
+          __args[1](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
+        } else {
+          __args[1](null, ar.cause());
+        }
+      }) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_query != 'undefined') {
+      return __super_query.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -172,27 +197,30 @@ var PgTransaction = function(j_val) {
    @param handler {function} 
    @return {PgTransaction}
    */
-  this.preparedQuery = function() {
+  this.preparedQuery =  function() {
     var __args = arguments;
     if (__args.length === 2 &amp;&amp; typeof __args[0] === 'string' &amp;&amp; typeof __args[1] === 'function') {
       j_pgTransaction["preparedQuery(java.lang.String,io.vertx.core.Handler)"](__args[0], function(ar) {
-      if (ar.succeeded()) {
-        __args[1](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
-      } else {
-        __args[1](null, ar.cause());
-      }
-    });
+        if (ar.succeeded()) {
+          __args[1](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
+        } else {
+          __args[1](null, ar.cause());
+        }
+      }) ;
       return that;
-    }  else if (__args.length === 3 &amp;&amp; typeof __args[0] === 'string' &amp;&amp; typeof __args[1] === 'object' &amp;&amp; __args[1]._jdel &amp;&amp; typeof __args[2] === 'function') {
+    } else if (__args.length === 3 &amp;&amp; typeof __args[0] === 'string' &amp;&amp; typeof __args[1] === 'object' &amp;&amp; __args[1]._jdel &amp;&amp; typeof __args[2] === 'function') {
       j_pgTransaction["preparedQuery(java.lang.String,io.reactiverse.pgclient.Tuple,io.vertx.core.Handler)"](__args[0], __args[1]._jdel, function(ar) {
-      if (ar.succeeded()) {
-        __args[2](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
-      } else {
-        __args[2](null, ar.cause());
-      }
-    });
+        if (ar.succeeded()) {
+          __args[2](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
+        } else {
+          __args[2](null, ar.cause());
+        }
+      }) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_preparedQuery != 'undefined') {
+      return __super_preparedQuery.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -203,18 +231,21 @@ var PgTransaction = function(j_val) {
    @param handler {function} 
    @return {PgTransaction}
    */
-  this.preparedBatch = function(sql, batch, handler) {
+  this.preparedBatch =  function(sql, batch, handler) {
     var __args = arguments;
     if (__args.length === 3 &amp;&amp; typeof __args[0] === 'string' &amp;&amp; typeof __args[1] === 'object' &amp;&amp; __args[1] instanceof Array &amp;&amp; typeof __args[2] === 'function') {
-      j_pgTransaction["preparedBatch(java.lang.String,java.util.List,io.vertx.core.Handler)"](sql, utils.convParamListVertxGen(batch), function(ar) {
-      if (ar.succeeded()) {
-        handler(utils.convReturnVertxGen(PgRowSet, ar.result()), null);
-      } else {
-        handler(null, ar.cause());
-      }
-    });
+      j_pgTransaction["preparedBatch(java.lang.String,java.util.List,io.vertx.core.Handler)"](__args[0], utils.convParamListVertxGen(__args[1]), function(ar) {
+        if (ar.succeeded()) {
+          __args[2](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
+        } else {
+          __args[2](null, ar.cause());
+        }
+      }) ;
       return that;
-    } else throw new TypeError('function invoked with invalid arguments');
+    } else if (typeof __super_preparedBatch != 'undefined') {
+      return __super_preparedBatch.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   // A reference to the underlying Java delegate
@@ -224,11 +255,9 @@ var PgTransaction = function(j_val) {
 };
 
 PgTransaction._jclass = utils.getJavaClass("io.reactiverse.pgclient.PgTransaction");
-PgTransaction._jtype = {
-  accept: function(obj) {
+PgTransaction._jtype = {accept: function(obj) {
     return PgTransaction._jclass.isInstance(obj._jdel);
-  },
-  wrap: function(jdel) {
+  },wrap: function(jdel) {
     var obj = Object.create(PgTransaction.prototype, {});
     PgTransaction.apply(obj, arguments);
     return obj;
@@ -237,8 +266,7 @@ PgTransaction._jtype = {
     return obj._jdel;
   }
 };
-PgTransaction._create = function(jdel) {
-  var obj = Object.create(PgTransaction.prototype, {});
+PgTransaction._create = function(jdel) {var obj = Object.create(PgTransaction.prototype, {});
   PgTransaction.apply(obj, arguments);
   return obj;
 }
@@ -258,7 +286,7 @@ module.exports = PgTransaction;</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Mon Dec 03 2018 12:31:52 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Wed Dec 19 2018 16:29:04 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

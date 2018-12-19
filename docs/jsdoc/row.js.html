@@ -61,6 +61,34 @@ var Row = function(j_val) {
   var that = this;
   Tuple.call(this, j_val);
 
+  var __super_getColumnName = this.getColumnName;
+  var __super_getBoolean = this.getBoolean;
+  var __super_getValue = this.getValue;
+  var __super_getShort = this.getShort;
+  var __super_getInteger = this.getInteger;
+  var __super_getLong = this.getLong;
+  var __super_getFloat = this.getFloat;
+  var __super_getDouble = this.getDouble;
+  var __super_getString = this.getString;
+  var __super_getJson = this.getJson;
+  var __super_getBuffer = this.getBuffer;
+  /**
+   Get a column name at &lt;code>pos&lt;/code>.
+
+   @public
+   @param pos {number} the position 
+   @return {string} the column name or &lt;code>null&lt;/code>
+   */
+  this.getColumnName =  function(pos) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
+      return j_row["getColumnName(int)"](__args[0]) ;
+    } else if (typeof __super_getColumnName != 'undefined') {
+      return __super_getColumnName.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
   /**
    Get a boolean value at &lt;code>pos&lt;/code>.
 
@@ -68,13 +96,14 @@ var Row = function(j_val) {
    @param name {string} the column 
    @return {boolean} the value or &lt;code>null&lt;/code>
    */
-  this.getBoolean = function() {
+  this.getBoolean =  function(name) {
     var __args = arguments;
-    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      return j_row["getBoolean(int)"](__args[0]);
-    }  else if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
-      return j_row["getBoolean(java.lang.String)"](__args[0]);
-    } else throw new TypeError('function invoked with invalid arguments');
+    if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
+      return j_row["getBoolean(java.lang.String)"](__args[0]) ;
+    } else if (typeof __super_getBoolean != 'undefined') {
+      return __super_getBoolean.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -84,13 +113,14 @@ var Row = function(j_val) {
    @param name {string} the column 
    @return {Object} the value or &lt;code>null&lt;/code>
    */
-  this.getValue = function() {
+  this.getValue =  function(name) {
     var __args = arguments;
-    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      return utils.convReturnTypeUnknown(j_row["getValue(int)"](__args[0]));
-    }  else if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
-      return utils.convReturnTypeUnknown(j_row["getValue(java.lang.String)"](__args[0]));
-    } else throw new TypeError('function invoked with invalid arguments');
+    if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
+      return utils.convReturnTypeUnknown(j_row["getValue(java.lang.String)"](__args[0])) ;
+    } else if (typeof __super_getValue != 'undefined') {
+      return __super_getValue.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -100,13 +130,14 @@ var Row = function(j_val) {
    @param name {string} the column 
    @return {number} the value or &lt;code>null&lt;/code>
    */
-  this.getShort = function() {
+  this.getShort =  function(name) {
     var __args = arguments;
-    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      return j_row["getShort(int)"](__args[0]);
-    }  else if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
-      return j_row["getShort(java.lang.String)"](__args[0]);
-    } else throw new TypeError('function invoked with invalid arguments');
+    if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
+      return j_row["getShort(java.lang.String)"](__args[0]) ;
+    } else if (typeof __super_getShort != 'undefined') {
+      return __super_getShort.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -116,13 +147,14 @@ var Row = function(j_val) {
    @param name {string} the column 
    @return {number} the value or &lt;code>null&lt;/code>
    */
-  this.getInteger = function() {
+  this.getInteger =  function(name) {
     var __args = arguments;
-    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      return j_row["getInteger(int)"](__args[0]);
-    }  else if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
-      return j_row["getInteger(java.lang.String)"](__args[0]);
-    } else throw new TypeError('function invoked with invalid arguments');
+    if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
+      return j_row["getInteger(java.lang.String)"](__args[0]) ;
+    } else if (typeof __super_getInteger != 'undefined') {
+      return __super_getInteger.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -132,13 +164,14 @@ var Row = function(j_val) {
    @param name {string} the column 
    @return {number} the value or &lt;code>null&lt;/code>
    */
-  this.getLong = function() {
+  this.getLong =  function(name) {
     var __args = arguments;
-    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      return utils.convReturnLong(j_row["getLong(int)"](__args[0]));
-    }  else if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
-      return utils.convReturnLong(j_row["getLong(java.lang.String)"](__args[0]));
-    } else throw new TypeError('function invoked with invalid arguments');
+    if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
+      return utils.convReturnLong(j_row["getLong(java.lang.String)"](__args[0])) ;
+    } else if (typeof __super_getLong != 'undefined') {
+      return __super_getLong.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -148,13 +181,14 @@ var Row = function(j_val) {
    @param name {string} the column 
    @return {number} the value or &lt;code>null&lt;/code>
    */
-  this.getFloat = function() {
+  this.getFloat =  function(name) {
     var __args = arguments;
-    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      return j_row["getFloat(int)"](__args[0]);
-    }  else if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
-      return j_row["getFloat(java.lang.String)"](__args[0]);
-    } else throw new TypeError('function invoked with invalid arguments');
+    if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
+      return j_row["getFloat(java.lang.String)"](__args[0]) ;
+    } else if (typeof __super_getFloat != 'undefined') {
+      return __super_getFloat.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -164,13 +198,14 @@ var Row = function(j_val) {
    @param name {string} the column 
    @return {number} the value or &lt;code>null&lt;/code>
    */
-  this.getDouble = function() {
+  this.getDouble =  function(name) {
     var __args = arguments;
-    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      return j_row["getDouble(int)"](__args[0]);
-    }  else if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
-      return j_row["getDouble(java.lang.String)"](__args[0]);
-    } else throw new TypeError('function invoked with invalid arguments');
+    if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
+      return j_row["getDouble(java.lang.String)"](__args[0]) ;
+    } else if (typeof __super_getDouble != 'undefined') {
+      return __super_getDouble.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -180,13 +215,14 @@ var Row = function(j_val) {
    @param name {string} the column 
    @return {string} the value or &lt;code>null&lt;/code>
    */
-  this.getString = function() {
+  this.getString =  function(name) {
     var __args = arguments;
-    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      return j_row["getString(int)"](__args[0]);
-    }  else if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
-      return j_row["getString(java.lang.String)"](__args[0]);
-    } else throw new TypeError('function invoked with invalid arguments');
+    if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
+      return j_row["getString(java.lang.String)"](__args[0]) ;
+    } else if (typeof __super_getString != 'undefined') {
+      return __super_getString.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -196,13 +232,14 @@ var Row = function(j_val) {
    @param name {string} the column 
    @return {Json} the value or &lt;code>null&lt;/code>
    */
-  this.getJson = function() {
+  this.getJson =  function(name) {
     var __args = arguments;
-    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      return utils.convReturnVertxGen(Json, j_row["getJson(int)"](__args[0]));
-    }  else if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
-      return utils.convReturnVertxGen(Json, j_row["getJson(java.lang.String)"](__args[0]));
-    } else throw new TypeError('function invoked with invalid arguments');
+    if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
+      return utils.convReturnVertxGen(Json, j_row["getJson(java.lang.String)"](__args[0])) ;
+    } else if (typeof __super_getJson != 'undefined') {
+      return __super_getJson.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   /**
@@ -212,202 +249,14 @@ var Row = function(j_val) {
    @param name {string} the column 
    @return {Buffer} the value or &lt;code>null&lt;/code>
    */
-  this.getBuffer = function() {
-    var __args = arguments;
-    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      return utils.convReturnVertxGen(Buffer, j_row["getBuffer(int)"](__args[0]));
-    }  else if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
-      return utils.convReturnVertxGen(Buffer, j_row["getBuffer(java.lang.String)"](__args[0]));
-    } else throw new TypeError('function invoked with invalid arguments');
-  };
-
-  /**
-   Add a boolean value at the end of the tuple.
-
-   @public
-   @param value {boolean} the value 
-   @return {Tuple} a reference to this, so the API can be used fluently
-   */
-  this.addBoolean = function(value) {
-    var __args = arguments;
-    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='boolean') {
-      j_row["addBoolean(java.lang.Boolean)"](value);
-      return that;
-    } else throw new TypeError('function invoked with invalid arguments');
-  };
-
-  /**
-   Add an object value at the end of the tuple.
-
-   @public
-   @param value {Object} the value 
-   @return {Tuple} a reference to this, so the API can be used fluently
-   */
-  this.addValue = function(value) {
-    var __args = arguments;
-    if (__args.length === 1 &amp;&amp; typeof __args[0] !== 'function') {
-      j_row["addValue(java.lang.Object)"](utils.convParamTypeUnknown(value));
-      return that;
-    } else throw new TypeError('function invoked with invalid arguments');
-  };
-
-  /**
-   Add a short value at the end of the tuple.
-
-   @public
-   @param value {number} the value 
-   @return {Tuple} a reference to this, so the API can be used fluently
-   */
-  this.addShort = function(value) {
-    var __args = arguments;
-    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      j_row["addShort(java.lang.Short)"](utils.convParamShort(value));
-      return that;
-    } else throw new TypeError('function invoked with invalid arguments');
-  };
-
-  /**
-   Add an integer value at the end of the tuple.
-
-   @public
-   @param value {number} the value 
-   @return {Tuple} a reference to this, so the API can be used fluently
-   */
-  this.addInteger = function(value) {
-    var __args = arguments;
-    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      j_row["addInteger(java.lang.Integer)"](utils.convParamInteger(value));
-      return that;
-    } else throw new TypeError('function invoked with invalid arguments');
-  };
-
-  /**
-   Add a long value at the end of the tuple.
-
-   @public
-   @param value {number} the value 
-   @return {Tuple} a reference to this, so the API can be used fluently
-   */
-  this.addLong = function(value) {
-    var __args = arguments;
-    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      j_row["addLong(java.lang.Long)"](utils.convParamLong(value));
-      return that;
-    } else throw new TypeError('function invoked with invalid arguments');
-  };
-
-  /**
-   Add a float value at the end of the tuple.
-
-   @public
-   @param value {number} the value 
-   @return {Tuple} a reference to this, so the API can be used fluently
-   */
-  this.addFloat = function(value) {
-    var __args = arguments;
-    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      j_row["addFloat(java.lang.Float)"](utils.convParamFloat(value));
-      return that;
-    } else throw new TypeError('function invoked with invalid arguments');
-  };
-
-  /**
-   Add a double value at the end of the tuple.
-
-   @public
-   @param value {number} the value 
-   @return {Tuple} a reference to this, so the API can be used fluently
-   */
-  this.addDouble = function(value) {
-    var __args = arguments;
-    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      j_row["addDouble(java.lang.Double)"](utils.convParamDouble(value));
-      return that;
-    } else throw new TypeError('function invoked with invalid arguments');
-  };
-
-  /**
-   Add a string value at the end of the tuple.
-
-   @public
-   @param value {string} the value 
-   @return {Tuple} a reference to this, so the API can be used fluently
-   */
-  this.addString = function(value) {
+  this.getBuffer =  function(name) {
     var __args = arguments;
     if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
-      j_row["addString(java.lang.String)"](value);
-      return that;
-    } else throw new TypeError('function invoked with invalid arguments');
-  };
-
-  /**
-   Add a json value at the end of the tuple.
-
-   @public
-   @param value {Json} the value 
-   @return {Tuple} a reference to this, so the API can be used fluently
-   */
-  this.addJson = function(value) {
-    var __args = arguments;
-    if (__args.length === 1 &amp;&amp; typeof __args[0] === 'object' &amp;&amp; __args[0]._jdel) {
-      j_row["addJson(io.reactiverse.pgclient.data.Json)"](value._jdel);
-      return that;
-    } else throw new TypeError('function invoked with invalid arguments');
-  };
-
-  /**
-   Add a buffer value at the end of the tuple.
-
-   @public
-   @param value {Buffer} the value 
-   @return {Tuple} a reference to this, so the API can be used fluently
-   */
-  this.addBuffer = function(value) {
-    var __args = arguments;
-    if (__args.length === 1 &amp;&amp; typeof __args[0] === 'object' &amp;&amp; __args[0]._jdel) {
-      j_row["addBuffer(io.vertx.core.buffer.Buffer)"](value._jdel);
-      return that;
-    } else throw new TypeError('function invoked with invalid arguments');
-  };
-
-  /**
-
-   @public
-
-   @return {number} the tuple size
-   */
-  this.size = function() {
-    var __args = arguments;
-    if (__args.length === 0) {
-      return j_row["size()"]();
-    } else throw new TypeError('function invoked with invalid arguments');
-  };
-
-  /**
-
-   @public
-
-   */
-  this.clear = function() {
-    var __args = arguments;
-    if (__args.length === 0) {
-      j_row["clear()"]();
-    } else throw new TypeError('function invoked with invalid arguments');
-  };
-
-  /**
-   Get a column name at &lt;code>pos&lt;/code>.
-
-   @public
-   @param pos {number} the position 
-   @return {string} the column name or &lt;code>null&lt;/code>
-   */
-  this.getColumnName = function(pos) {
-    var __args = arguments;
-    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
-      return j_row["getColumnName(int)"](pos);
-    } else throw new TypeError('function invoked with invalid arguments');
+      return utils.convReturnVertxGen(Buffer, j_row["getBuffer(java.lang.String)"](__args[0])) ;
+    } else if (typeof __super_getBuffer != 'undefined') {
+      return __super_getBuffer.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
   };
 
   // A reference to the underlying Java delegate
@@ -417,11 +266,9 @@ var Row = function(j_val) {
 };
 
 Row._jclass = utils.getJavaClass("io.reactiverse.pgclient.Row");
-Row._jtype = {
-  accept: function(obj) {
+Row._jtype = {accept: function(obj) {
     return Row._jclass.isInstance(obj._jdel);
-  },
-  wrap: function(jdel) {
+  },wrap: function(jdel) {
     var obj = Object.create(Row.prototype, {});
     Row.apply(obj, arguments);
     return obj;
@@ -430,8 +277,7 @@ Row._jtype = {
     return obj._jdel;
   }
 };
-Row._create = function(jdel) {
-  var obj = Object.create(Row.prototype, {});
+Row._create = function(jdel) {var obj = Object.create(Row.prototype, {});
   Row.apply(obj, arguments);
   return obj;
 }
@@ -451,7 +297,7 @@ module.exports = Row;</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Mon Dec 03 2018 12:31:52 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Wed Dec 19 2018 16:29:04 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
