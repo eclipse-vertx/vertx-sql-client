@@ -31,7 +31,6 @@ import io.reactiverse.pgclient.PgTransaction;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
 import io.reactiverse.pgclient.codec.DataType;
-import io.reactiverse.pgclient.copy.CopyData;
 import io.reactiverse.pgclient.copy.CopyFromOptions;
 import io.reactiverse.pgclient.copy.CopyTuple;
 import io.reactiverse.pgclient.copy.CopyWriteStream;
@@ -420,10 +419,11 @@ public class Examples {
   }
 
   public CopyTuple createCopyTuple1() {
-   return CopyTuple.of(
-     CopyData.create(true, DataType.BOOL),
-     CopyData.create((short)100, DataType.INT2),
-     CopyData.create(Json.create("{\"a\": 100"), DataType.JSONB));
+    CopyTuple tuple = CopyTuple.tuple();
+    tuple.addBoolean(true);
+    tuple.addShort((short) 100);
+    tuple.addJsonb(Json.create("{\"a\": 100"));
+    return tuple;
   }
 
   public void transaction01(PgPool pool) {

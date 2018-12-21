@@ -1,7 +1,6 @@
 package io.reactiverse.pgclient;
 
 import io.reactiverse.pgclient.codec.DataType;
-import io.reactiverse.pgclient.copy.CopyData;
 import io.reactiverse.pgclient.copy.CopyFromOptions;
 import io.reactiverse.pgclient.copy.CopyTuple;
 import io.reactiverse.pgclient.data.Box;
@@ -128,36 +127,36 @@ public class CopyFromTest extends PgTestBase {
   public void testCopyFrom(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      CopyTuple tuple = CopyTuple.of(
-        CopyData.create(true),
-        CopyData.create((short) 1, DataType.INT2),
-        CopyData.create(32),
-        CopyData.create(300L),
-        CopyData.create(300.3f),
-        CopyData.create(10.50),
-        CopyData.create("a", DataType.CHAR),
-        CopyData.create("a", DataType.VARCHAR),
-        CopyData.create("b"),
-        CopyData.create(Mood.happy),
-        CopyData.create("c", DataType.NAME),
-        CopyData.create(UUID.randomUUID()),
-        CopyData.create(LocalDate.now()),
-        CopyData.create(LocalTime.now()),
-        CopyData.create(OffsetTime.now()),
-        CopyData.create(LocalDateTime.now()),
-        CopyData.create(OffsetDateTime.now()),
-        CopyData.create(new Interval()),
-        CopyData.create(Buffer.buffer("hello"), DataType.BYTEA),
-        CopyData.create(Json.create("{\"address\": {\"city\": \"AnyTown\"}}")),
-        CopyData.create(Json.create("{\"address\": {\"street\": \"Main St\"}}"), DataType.JSONB),
-        CopyData.create(new Point()),
-        CopyData.create(new Line(10, 20, 30)),
-        CopyData.create(new LineSegment()),
-        CopyData.create(new Box()),
-        CopyData.create(new Path(true, Collections.singletonList(new Point(1, 1)))),
-        CopyData.create(new Polygon(Collections.singletonList(new Point(1, 1)))),
-        CopyData.create(new Circle())
-        );
+      CopyTuple t = CopyTuple.tuple();
+      t.addBoolean(true);
+      t.addShort((short) 1);
+      t.addInteger(32);
+      t.addLong(300L);
+      t.addFloat(300.3f);
+      t.addDouble(10.50);
+      t.addValue("a", DataType.CHAR);
+      t.addVarChar("a");
+      t.addString("b");
+      t.addValue(Mood.happy);
+      t.addValue("c", DataType.NAME);
+      t.addUUID(UUID.randomUUID());
+      t.addLocalDate(LocalDate.now());
+      t.addLocalTime(LocalTime.now());
+      t.addOffsetTime(OffsetTime.now());
+      t.addLocalDateTime(LocalDateTime.now());
+      t.addOffsetDateTime(OffsetDateTime.now());
+      t.addInterval(new Interval());
+      t.addBuffer(Buffer.buffer("hello"));
+      t.addJson(Json.create("{\"address\": {\"city\": \"AnyTown\"}}"));
+      t.addJsonb(Json.create("{\"address\": {\"city\": \"AnyTown\"}}"));
+      t.addPoint(new Point());
+      t.addLine(new Line(10, 20, 30));
+      t.addLineSegment((new LineSegment()));
+      t.addBox(new Box());
+      t.addPath(new Path(true, Collections.singletonList(new Point(1, 1))));
+      t.addPolygon(new Polygon(Collections.singletonList(new Point(1, 1))));
+      t.addCircle(new Circle());
+        
       ArrayList<String> columns = new ArrayList<>(Arrays.asList(
         "boolean",
         "int2",
@@ -197,8 +196,8 @@ public class CopyFromTest extends PgTestBase {
           async.complete();
         });
         copyStream.exceptionHandler(ctx::fail);
-        copyStream.write(tuple);
-        copyStream.end(tuple);
+        copyStream.write(t);
+        copyStream.end(t);
       }));
     }));
   }
@@ -207,7 +206,8 @@ public class CopyFromTest extends PgTestBase {
   public void testCopyFromMissingTuples(TestContext ctx) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      CopyTuple tuple = CopyTuple.of(CopyData.create(true));
+      CopyTuple tuple = CopyTuple.tuple();
+      tuple.addBoolean(true);
 
       conn.copyFrom("AllDataTypes", ctx.asyncAssertSuccess(copyStream -> {
         copyStream.endHandler(count -> {

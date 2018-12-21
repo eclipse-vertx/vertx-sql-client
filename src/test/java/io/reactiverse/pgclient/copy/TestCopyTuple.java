@@ -2,6 +2,7 @@ package io.reactiverse.pgclient.copy;
 
 import io.reactiverse.pgclient.codec.DataType;
 import io.reactiverse.pgclient.data.Json;
+import io.reactiverse.pgclient.data.Line;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -51,8 +52,6 @@ public class TestCopyTuple {
     Assert.assertEquals(new Float((float)10.5), tuple.getFloat(3));
     Assert.assertEquals(DataType.INT8, tuple.getDataType(4));
     Assert.assertEquals(new Long(100), tuple.getLong(4));
-    Assert.assertEquals(DataType.NUMERIC, tuple.getDataType(5));
-    Assert.assertEquals(new BigDecimal(100), tuple.getBigDecimal(5));
   }
 
   @Test
@@ -102,5 +101,11 @@ public class TestCopyTuple {
     tuple.addBoolean(true);
     Assert.assertEquals(DataType.BOOL, tuple.getDataType(0));
     Assert.assertEquals(true, tuple.getBoolean(0));
+  }
+
+  @Test
+  public void testArrayTypes() {
+    tuple.addValue(new Line[] {null});
+    Assert.assertEquals(DataType.LINE_ARRAY, tuple.getDataType(0));
   }
 }
