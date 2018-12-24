@@ -246,16 +246,14 @@ public class PgConnectOptions extends NetClientOptions {
     return (PgConnectOptions)super.setIdleTimeout(idleTimeout);
   }
 
-  @Deprecated
   @Override
   public PgConnectOptions setSsl(boolean ssl) {
-    // keep consistence with Vert.x NetClient behavior to avoid breaking changes, try setSslMode() instead.
     if (ssl) {
       setSslMode(SslMode.REQUIRE);
     } else {
       setSslMode(SslMode.DISABLE);
     }
-    return (PgConnectOptions)super.setSsl(ssl);
+    return this;
   }
 
   @Override

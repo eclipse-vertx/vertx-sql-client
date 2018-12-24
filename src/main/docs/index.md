@@ -470,9 +470,8 @@ The default policy is to not reconnect.
 
 To configure the client to use SSL connection, you can configure the {@link io.reactiverse.pgclient.PgConnectOptions}
 like a Vert.x `NetClient`.
-All [SSL modes](https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-PROTECTION) are supported and you should always use 
-`setSslMode` instead of `setSsl` because `ssl` parameter is deprecated. `setSsl(true)` is equivalent to `setSslMode(REQUIRE)` and `setSsl(false)` is equivalent to `setSslMode(DISABLE)`.
-The client is in `DISABLE` SSL mode by default.
+All [SSL modes](https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-PROTECTION) are supported and you are able to configure `sslmode`. The client is in `DISABLE` SSL mode by default.
+`ssl` parameter is kept as a mere shortcut for setting `sslmode`. `setSsl(true)` is equivalent to `setSslMode(REQUIRE)` and `setSsl(false)` is equivalent to `setSslMode(DISABLE)`.
 
 ```$lang
 {@link examples.Examples#ex10}

@@ -205,7 +205,6 @@ public class PgPoolOptions extends PgConnectOptions {
     return (PgPoolOptions) super.setIdleTimeout(idleTimeout);
   }
 
-  @Deprecated
   @Override
   public PgPoolOptions setSsl(boolean ssl) {
     return (PgPoolOptions) super.setSsl(ssl);
