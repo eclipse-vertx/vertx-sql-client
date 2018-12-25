@@ -37,7 +37,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertTrue;
-import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
+import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V10;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -112,7 +112,7 @@ public abstract class PgTestBase {
       sock = null;
     }
 
-    postgres = new EmbeddedPostgres(V9_6);
+    postgres = new EmbeddedPostgres(V10);
     PgTestBase.postgres.start(config,
       "localhost",
       8081,
