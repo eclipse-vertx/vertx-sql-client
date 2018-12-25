@@ -64,6 +64,7 @@
     <docs.dir>${project.basedir}/src/main/docs</docs.dir>
     <generated.dir>${project.basedir}/src/main/generated</generated.dir>
     <!-- Set to a value for testing with a specific database -->
+    <embedded.postgres.version />
     <connection.uri />
     <tls.connection.uri />
     <unix.socket.directory />
@@ -266,6 +267,7 @@
             <argLine>-Xmx1024M</argLine>
             <systemPropertyVariables>
               <target.dir>${project.build.directory}</target.dir>
+              <embedded.postgres.version>${embedded.postgres.version}</embedded.postgres.version>
               <connection.uri>${connection.uri}</connection.uri>
               <tls.connection.uri>${tls.connection.uri}</tls.connection.uri>
               <unix.socket.directory>${unix.socket.directory}</unix.socket.directory>

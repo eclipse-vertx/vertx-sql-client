@@ -25,6 +25,7 @@ import io.vertx.ext.unit.TestContext;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
+import ru.yandex.qatools.embed.postgresql.distribution.Version;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,6 +39,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertTrue;
 import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V10;
+import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V11;
+import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -112,7 +115,7 @@ public abstract class PgTestBase {
       sock = null;
     }
 
-    postgres = new EmbeddedPostgres(V10);
+    postgres = new EmbeddedPostgres(getPostgresVersion());
     PgTestBase.postgres.start(config,
       "localhost",
       8081,
@@ -229,5 +232,26 @@ public abstract class PgTestBase {
     public boolean isDaemonProcess() {
       return config.isDaemonProcess();
     }
+  }
+
+  private static final Map<String, Version.Main> supportedPgVersions = new HashMap<>();
+
+  static {
+    supportedPgVersions.put("V9.6", V9_6);
+    supportedPgVersions.put("V10", V10);
+    supportedPgVersions.put("V11", V11);
+  }
+
+  private static Version.Main getPostgresVersion() {
+    String specifiedVersion = System.getProperty("embedded.postgres.version");
+    if (specifiedVersion == null || specifiedVersion.isEmpty()) {
+      // if version is not specified then V10 will be used by default
+      specifiedVersion = "V10";
+    }
+    Version.Main version = supportedPgVersions.get(specifiedVersion);
+    if (version == null) {
+      throw new IllegalArgumentException("embedded postgres only supports the following versions: " + supportedPgVersions.keySet().toString() + "instead of " + specifiedVersion);
+    }
+    return version;
   }
 }
