@@ -193,6 +193,12 @@ You can cache prepared queries:
 {@link examples.Examples#queries09(io.vertx.core.Vertx, PgPoolOptions)}
 ```
 
+You can fetch generated keys with a 'RETURNING' clause in your query:
+
+```$lang
+{@link examples.Examples#queries10(io.reactiverse.pgclient.PgClient)}
+```
+
 ## Using connections
 
 When you need to execute sequential queries (without a transaction), you can create a new connection
