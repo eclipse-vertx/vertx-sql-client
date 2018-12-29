@@ -6,9 +6,13 @@ branches:
 jobs:
   include:
     - stage: test
-      name: "OracleJDK 8"
+      name: "Postgres 9"
       jdk: oraclejdk8
-      script: mvn -q clean verify -B
+      script: mvn -q clean verify -B -Dembedded.postgres.version=9.6
+    - stage: test
+      name: "Postgres 10"
+      jdk: oraclejdk8
+      script: mvn -q clean verify -B -Dembedded.postgres.version=10.6
     - stage: deploy
       name: "Deploy to Sonatype's snapshots repository"
       if: type != pull_request AND env(SONATYPE_NEXUS_USERNAME) IS present

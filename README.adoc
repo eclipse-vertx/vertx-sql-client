@@ -337,14 +337,14 @@ Out of the box, the test suite runs an embedded Postgres by default.
 You can change the version of the embedded Postgres by passing a property `embedded.postgres.version` like this:
 
 ```
-> mvn test -Dembedded.postgres.version=V9.6
+> mvn test -Dembedded.postgres.version=9.6
 ```
 
 The following versions of embedded Postgres are supported:
 
-- V9.6
-- V10 (default)
-- V11 (not supported on Linux)
+- `9.6`
+- `10.6` (default)
+- `11.1` (not supported on Linux)
 
 === Testing with an external database
 
