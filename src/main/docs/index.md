@@ -26,8 +26,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 
 * Maven (in your `pom.xml`):
 
-[source,xml,subs#"+attributes"]
-```
+```xml
 <dependency>
   <groupId>${maven.groupId}</groupId>
   <artifactId>${maven.artifactId}</artifactId>
