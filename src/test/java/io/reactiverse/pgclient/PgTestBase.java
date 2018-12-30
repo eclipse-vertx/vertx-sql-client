@@ -237,7 +237,7 @@ public abstract class PgTestBase {
   private static final Map<String, Version> supportedPgVersions = new HashMap<>();
 
   static {
-    supportedPgVersions.put("9.6", V10_6);
+    supportedPgVersions.put("9.6", V9_6_11);
     supportedPgVersions.put("10.6", V10_6);
     supportedPgVersions.put("11.1", V11_1);
   }
