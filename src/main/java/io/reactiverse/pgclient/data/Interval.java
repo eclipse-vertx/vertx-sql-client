@@ -195,9 +195,26 @@ public class Interval {
   }
 
   @Override
+  public int hashCode() {
+    int result = years;
+    result = 31 * result + months;
+    result = 31 * result + days;
+    result = 31 * result + hours;
+    result = 31 * result + minutes;
+    result = 31 * result + seconds;
+    result = 31 * result + microseconds;
+    return result;
+  }
+
+  @Override
   public String toString() {
     return "Interval( " + years + " years " + months + " months " + days + " days " + hours + " hours " +
       minutes + " minutes " + seconds + (microseconds == 0 ? "" : "." + Math.abs(microseconds)) + " seconds )";
   }
 
+  public JsonObject toJson() {
+    JsonObject json = new JsonObject();
+    IntervalConverter.toJson(this, json);
+    return json;
+  }
 }

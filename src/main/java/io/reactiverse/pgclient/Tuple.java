@@ -248,7 +248,7 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Temporal getTemporal(int pos);
 
   /**
@@ -257,7 +257,7 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   LocalDate getLocalDate(int pos);
 
   /**
@@ -266,7 +266,7 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   LocalTime getLocalTime(int pos);
 
   /**
@@ -275,7 +275,7 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   LocalDateTime getLocalDateTime(int pos);
 
   /**
@@ -284,7 +284,7 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   OffsetTime getOffsetTime(int pos);
 
   /**
@@ -293,7 +293,7 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   OffsetDateTime getOffsetDateTime(int pos);
 
   /**
@@ -302,7 +302,7 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   UUID getUUID(int pos);
 
   /**
@@ -311,7 +311,7 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   BigDecimal getBigDecimal(int pos);
 
   /**
@@ -320,7 +320,7 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Integer[] getIntegerArray(int pos);
 
   /**
@@ -329,7 +329,7 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Boolean[] getBooleanArray(int pos);
 
   /**
@@ -338,7 +338,7 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Short[] getShortArray(int pos);
 
   /**
@@ -347,7 +347,7 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Long[] getLongArray(int pos);
 
   /**
@@ -356,7 +356,7 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Float[] getFloatArray(int pos);
 
   /**
@@ -365,7 +365,7 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Double[] getDoubleArray(int pos);
 
   /**
@@ -374,7 +374,7 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   String[] getStringArray(int pos);
 
   /**
@@ -383,7 +383,7 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   LocalDate[] getLocalDateArray(int pos);
 
   /**
@@ -392,7 +392,7 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   LocalTime[] getLocalTimeArray(int pos);
 
   /**
@@ -401,7 +401,7 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   OffsetTime[] getOffsetTimeArray(int pos);
 
   /**
@@ -410,7 +410,7 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   LocalDateTime[] getLocalDateTimeArray(int pos);
 
   /**
@@ -419,7 +419,7 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   OffsetDateTime[] getOffsetDateTimeArray(int pos);
 
   /**
@@ -437,7 +437,7 @@ public interface Tuple {
    * @param pos the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   UUID[] getUUIDArray(int pos);
 
   /**
@@ -455,7 +455,7 @@ public interface Tuple {
    * @param pos the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Numeric[] getNumericArray(int pos);
 
   /**
@@ -464,7 +464,7 @@ public interface Tuple {
    * @param pos the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Point[] getPointArray(int pos);
 
   /**
@@ -473,7 +473,7 @@ public interface Tuple {
    * @param pos the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Line[] getLineArray(int pos);
 
   /**
@@ -482,7 +482,7 @@ public interface Tuple {
    * @param pos the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   LineSegment[] getLineSegmentArray(int pos);
 
   /**
@@ -491,7 +491,7 @@ public interface Tuple {
    * @param pos the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Box[] getBoxArray(int pos);
 
   /**
@@ -500,7 +500,7 @@ public interface Tuple {
    * @param pos the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Path[] getPathArray(int pos);
 
   /**
@@ -509,7 +509,7 @@ public interface Tuple {
    * @param pos the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Polygon[] getPolygonArray(int pos);
 
   /**
@@ -518,7 +518,7 @@ public interface Tuple {
    * @param pos the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Circle[] getCircleArray(int pos);
 
   /**
@@ -527,7 +527,7 @@ public interface Tuple {
    * @param pos the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Interval[] getIntervalArray(int pos);
 
   /**
@@ -536,7 +536,7 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Numeric getNumeric(int pos);
 
   /**
@@ -545,7 +545,6 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
   Point getPoint(int pos);
 
   /**
@@ -554,7 +553,6 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
   Line getLine(int pos);
 
   /**
@@ -563,7 +561,6 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
   LineSegment getLineSegment(int pos);
 
   /**
@@ -572,7 +569,6 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
   Box getBox(int pos);
 
   /**
@@ -581,7 +577,6 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
   Path getPath(int pos);
 
   /**
@@ -590,7 +585,6 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
   Polygon getPolygon(int pos);
 
   /**
@@ -599,7 +593,6 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
   Circle getCircle(int pos);
 
   /**
@@ -608,7 +601,6 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  @GenIgnore
   Interval getInterval(int pos);
 
   /**
@@ -715,7 +707,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addTemporal(Temporal value);
 
   /**
@@ -724,7 +716,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addLocalDate(LocalDate value);
 
   /**
@@ -733,7 +725,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addLocalTime(LocalTime value);
 
   /**
@@ -742,7 +734,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addLocalDateTime(LocalDateTime value);
 
   /**
@@ -751,7 +743,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addOffsetTime(OffsetTime value);
 
   /**
@@ -760,7 +752,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addOffsetDateTime(OffsetDateTime value);
 
   /**
@@ -769,7 +761,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addUUID(UUID value);
 
   /**
@@ -778,7 +770,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addNumeric(Numeric value);
 
   /**
@@ -787,7 +779,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addBigDecimal(BigDecimal value);
 
   /**
@@ -796,7 +788,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @Fluent
   Tuple addPoint(Point value);
 
   /**
@@ -805,7 +797,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @Fluent
   Tuple addLine(Line value);
 
   /**
@@ -814,7 +806,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @Fluent
   Tuple addLineSegment(LineSegment value);
 
   /**
@@ -823,7 +815,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @Fluent
   Tuple addBox(Box value);
 
   /**
@@ -832,7 +824,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @Fluent
   Tuple addPath(Path value);
 
   /**
@@ -841,7 +833,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @Fluent
   Tuple addPolygon(Polygon value);
 
   /**
@@ -850,7 +842,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @Fluent
   Tuple addCircle(Circle value);
 
   /**
@@ -859,7 +851,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @Fluent
   Tuple addInterval(Interval value);
 
   /**
@@ -868,7 +860,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addIntegerArray(Integer[] value);
 
   /**
@@ -877,7 +869,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addBooleanArray(Boolean[] value);
 
   /**
@@ -886,7 +878,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addShortArray(Short[] value);
 
   /**
@@ -895,7 +887,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addLongArray(Long[] value);
 
   /**
@@ -904,7 +896,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addFloatArray(Float[] value);
 
   /**
@@ -913,7 +905,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addDoubleArray(Double[] value);
 
   /**
@@ -922,7 +914,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addStringArray(String[] value);
 
   /**
@@ -931,7 +923,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addLocalDateArray(LocalDate[] value);
 
   /**
@@ -940,7 +932,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addLocalTimeArray(LocalTime[] value);
 
   /**
@@ -949,7 +941,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addOffsetTimeArray(OffsetTime[] value);
 
   /**
@@ -958,7 +950,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addLocalDateTimeArray(LocalDateTime[] value);
 
   /**
@@ -967,7 +959,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addOffsetDateTimeArray(OffsetDateTime[] value);
 
   /**
@@ -985,7 +977,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addUUIDArray(UUID[] value);
 
   /**
@@ -1003,7 +995,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addNumericArray(Numeric[] value);
 
   /**
@@ -1012,7 +1004,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addPointArray(Point[] value);
 
   /**
@@ -1021,7 +1013,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addLineArray(Line[] value);
 
   /**
@@ -1030,7 +1022,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addLineSegmentArray(LineSegment[] value);
 
   /**
@@ -1039,7 +1031,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addBoxArray(Box[] value);
 
   /**
@@ -1048,7 +1040,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addPathArray(Path[] value);
 
   /**
@@ -1057,7 +1049,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addPolygonArray(Polygon[] value);
 
   /**
@@ -1066,7 +1058,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addCircleArray(Circle[] value);
 
   /**
@@ -1075,7 +1067,7 @@ public interface Tuple {
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addIntervalArray(Interval[] value);
 
   /**

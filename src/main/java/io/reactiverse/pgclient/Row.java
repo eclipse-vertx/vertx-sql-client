@@ -131,7 +131,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Temporal getTemporal(String name);
 
   /**
@@ -140,7 +140,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   LocalDate getLocalDate(String name);
 
   /**
@@ -149,7 +149,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   LocalTime getLocalTime(String name);
 
   /**
@@ -158,7 +158,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   LocalDateTime getLocalDateTime(String name);
 
   /**
@@ -167,7 +167,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   OffsetTime getOffsetTime(String name);
 
   /**
@@ -176,7 +176,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   OffsetDateTime getOffsetDateTime(String name);
 
   /**
@@ -185,7 +185,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   UUID getUUID(String name);
 
   /**
@@ -194,7 +194,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   BigDecimal getBigDecimal(String name);
 
   /**
@@ -203,7 +203,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Numeric getNumeric(String name);
 
   /**
@@ -212,7 +212,6 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
   Point getPoint(String name);
 
   /**
@@ -221,7 +220,6 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
   Line getLine(String name);
 
   /**
@@ -230,7 +228,6 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
   LineSegment getLineSegment(String name);
 
   /**
@@ -239,7 +236,6 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
   Box getBox(String name);
 
   /**
@@ -248,7 +244,6 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
   Path getPath(String name);
 
   /**
@@ -257,7 +252,6 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
   Polygon getPolygon(String name);
 
   /**
@@ -266,7 +260,6 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
   Circle getCircle(String name);
 
   /**
@@ -275,7 +268,6 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
   Interval getInterval(String name);
 
   /**
@@ -284,7 +276,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Integer[] getIntegerArray(String name);
 
   /**
@@ -293,7 +285,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Boolean[] getBooleanArray(String name);
 
   /**
@@ -302,7 +294,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Short[] getShortArray(String name);
 
   /**
@@ -311,7 +303,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Long[] getLongArray(String name);
 
   /**
@@ -320,7 +312,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Float[] getFloatArray(String name);
 
   /**
@@ -329,7 +321,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Double[] getDoubleArray(String name);
 
   /**
@@ -338,7 +330,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   String[] getStringArray(String name);
 
   /**
@@ -347,7 +339,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   LocalDate[] getLocalDateArray(String name);
 
   /**
@@ -356,7 +348,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   LocalTime[] getLocalTimeArray(String name);
 
   /**
@@ -365,7 +357,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   OffsetTime[] getOffsetTimeArray(String name);
 
   /**
@@ -374,7 +366,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   LocalDateTime[] getLocalDateTimeArray(String name);
 
   /**
@@ -383,7 +375,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   OffsetDateTime[] getOffsetDateTimeArray(String name);
 
   /**
@@ -401,7 +393,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   UUID[] getUUIDArray(String name);
 
   /**
@@ -419,7 +411,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Numeric[] getNumericArray(String name);
 
   /**
@@ -428,7 +420,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Point[] getPointArray(String name);
 
   /**
@@ -437,7 +429,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Line[] getLineArray(String name);
 
   /**
@@ -446,7 +438,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   LineSegment[] getLineSegmentArray(String name);
 
   /**
@@ -455,7 +447,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Box[] getBoxArray(String name);
 
   /**
@@ -464,7 +456,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Path[] getPathArray(String name);
 
   /**
@@ -473,7 +465,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Polygon[] getPolygonArray(String name);
 
   /**
@@ -482,7 +474,7 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Circle[] getCircleArray(String name);
 
   /**
@@ -491,6 +483,6 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Interval[] getIntervalArray(String name);
 }
