@@ -79,17 +79,13 @@ public class InitiateSslHandler extends ChannelInboundHandlerAdapter {
       DecoderException err = (DecoderException) cause;
       cause = err.getCause();
     }
-    if (!upgradeFuture.isComplete()) {
-      upgradeFuture.fail(cause);
-    }
+    upgradeFuture.tryFail(cause);
   }
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     super.channelInactive(ctx);
     // Work around for https://github.com/eclipse-vertx/vert.x/issues/2748
-    if (!upgradeFuture.isComplete()) {
-      upgradeFuture.fail(new VertxException("SSL handshake failed", true));
-    }
+    upgradeFuture.tryFail(new VertxException("SSL handshake failed", true));
   }
 }
