@@ -73,10 +73,21 @@ public class SocketConnection implements Connection {
     return context;
   }
 
-  void upgradeToSSLConnection(Handler<AsyncResult<Void>> sslUpgradeHandler) {
+  void upgradeToSSLConnection(Handler<AsyncResult<Void>> completionHandler) {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     Future<Void> upgradeFuture = Future.future();
-    upgradeFuture.setHandler(sslUpgradeHandler);
+    upgradeFuture.setHandler(ar->{
+      if (ar.succeeded()) {
+        completionHandler.handle(Future.succeededFuture());
+      } else {
+        Throwable cause = ar.cause();
+        if (cause instanceof DecoderException) {
+          DecoderException err = (DecoderException) cause;
+          cause = err.getCause();
+        }
+        completionHandler.handle(Future.failedFuture(cause));
+      }
+    });
     pipeline.addBefore("handler", "initiate-ssl-handler", new InitiateSslHandler(this, upgradeFuture));
   }
 

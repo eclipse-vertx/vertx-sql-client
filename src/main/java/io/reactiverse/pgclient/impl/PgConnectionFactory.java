@@ -17,7 +17,6 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.netty.handler.codec.DecoderException;
 import io.reactiverse.pgclient.PgConnectOptions;
 import io.reactiverse.pgclient.SslMode;
 import io.vertx.core.*;
@@ -105,23 +104,23 @@ public class PgConnectionFactory {
   public void connect(Handler<AsyncResult<SocketConnection>> handler) {
     switch (sslMode) {
       case DISABLE:
-        initiateConnection(false, handler);
+        doConnect(false, handler);
         break;
       case ALLOW:
-        initiateConnection(false, ar -> {
+        doConnect(false, ar -> {
           if (ar.succeeded()) {
             handler.handle(Future.succeededFuture(ar.result()));
           } else {
-            initiateConnection(true, handler);
+            doConnect(true, handler);
           }
         });
         break;
       case PREFER:
-        initiateConnection(true, ar -> {
+        doConnect(true, ar -> {
           if (ar.succeeded()) {
             handler.handle(Future.succeededFuture(ar.result()));
           } else {
-            initiateConnection(false, handler);
+            doConnect(false, handler);
           }
         });
         break;
@@ -136,42 +135,14 @@ public class PgConnectionFactory {
           return;
         }
       case REQUIRE:
-        initiateConnection(true, handler);
+        doConnect(true, handler);
         break;
       default:
         throw new IllegalArgumentException("Unsupported SSL mode");
     }
   }
 
-  private void initiateConnection(boolean ssl, Handler<AsyncResult<SocketConnection>> handler) {
-    doConnect(ar -> {
-      if (ar.succeeded()) {
-        SocketConnection conn = ar.result();
-
-        if (ssl && !isUsingDomainSocket) {
-          // upgrade connection to SSL if needed
-          conn.upgradeToSSLConnection(ar2 -> {
-            if (ar2.succeeded()) {
-              handler.handle(Future.succeededFuture(conn));
-            } else {
-              Throwable cause = ar2.cause();
-              if (cause instanceof DecoderException) {
-                DecoderException err = (DecoderException) cause;
-                cause = err.getCause();
-              }
-              handler.handle(Future.failedFuture(cause));
-            }
-          });
-        } else {
-          handler.handle(Future.succeededFuture(conn));
-        }
-      } else {
-        handler.handle(Future.failedFuture(ar.cause()));
-      }
-    });
-  }
-
-  private void doConnect(Handler<AsyncResult<SocketConnection>> handler) {
+  private void doConnect(boolean ssl, Handler<AsyncResult<SocketConnection>> handler) {
     if (Vertx.currentContext() != ctx) {
       throw new IllegalStateException();
     }
@@ -186,7 +157,19 @@ public class PgConnectionFactory {
       if (ar.succeeded()) {
         NetSocketInternal socket = (NetSocketInternal) ar.result();
         SocketConnection conn = newSocketConnection(socket);
-        handler.handle(Future.succeededFuture(conn));
+
+        if (ssl && !isUsingDomainSocket) {
+          // upgrade connection to SSL if needed
+          conn.upgradeToSSLConnection(ar2 -> {
+            if (ar2.succeeded()) {
+              handler.handle(Future.succeededFuture(conn));
+            } else {
+              handler.handle(Future.failedFuture(ar2.cause()));
+            }
+          });
+        } else {
+          handler.handle(Future.succeededFuture(conn));
+        }
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
       }
