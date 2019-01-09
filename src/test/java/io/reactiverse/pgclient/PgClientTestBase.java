@@ -101,7 +101,7 @@ public abstract class PgClientTestBase<C extends PgClient> extends PgTestBase {
   @Test
   public void testConnectNonSSLServer(TestContext ctx) {
     Async async = ctx.async();
-    options.setSsl(true).setTrustAll(true);
+    options.setSslMode(SslMode.REQUIRE).setTrustAll(true);
     connector.accept(ctx.asyncAssertFailure(err -> {
       ctx.assertEquals("Postgres Server does not handle SSL connection", err.getMessage());
       async.complete();

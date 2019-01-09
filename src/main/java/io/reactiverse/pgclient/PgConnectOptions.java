@@ -258,7 +258,7 @@ public class PgConnectOptions extends NetClientOptions {
   @Override
   public PgConnectOptions setSsl(boolean ssl) {
     if (ssl) {
-      setSslMode(SslMode.REQUIRE);
+      setSslMode(SslMode.VERIFY_CA);
     } else {
       setSslMode(SslMode.DISABLE);
     }
