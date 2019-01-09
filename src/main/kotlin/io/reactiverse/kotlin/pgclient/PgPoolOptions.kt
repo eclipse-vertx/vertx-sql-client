@@ -51,7 +51,7 @@ import java.util.concurrent.TimeUnit
  * @param sendBufferSize 
  * @param soLinger 
  * @param ssl 
- * @param sslMode 
+ * @param sslMode  Set [io.reactiverse.pgclient.SslMode] for the client, this option can be used to provide different levels of secure protection.
  * @param tcpCork 
  * @param tcpFastOpen 
  * @param tcpKeepAlive 

@@ -192,10 +192,19 @@ public class PgConnectOptions extends NetClientOptions {
     return this;
   }
 
+  /**
+   * @return the value of current sslmode
+   */
   public SslMode getSslMode() {
     return sslMode;
   }
 
+  /**
+   * Set {@link SslMode} for the client, this option can be used to provide different levels of secure protection.
+   *
+   * @param sslmode the value of sslmode
+   * @return a reference to this, so the API can be used fluently
+   */
   public PgConnectOptions setSslMode(SslMode sslmode) {
     this.sslMode = sslmode;
     return this;
