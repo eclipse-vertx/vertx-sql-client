@@ -137,6 +137,19 @@ public class PgConnectOptionsProviderTest {
     assertEquals(expectedConfiguration, actualConfiguration);
   }
 
+  @Test
+  public void testValidUri10() {
+    connectionUri = "postgresql://user@myhost?sslmode=require";
+    actualConfiguration = PgConnectOptions.fromUri(connectionUri);
+
+    expectedConfiguration = new PgConnectOptions()
+      .setHost("myhost")
+      .setUser("user")
+      .setSslMode(SslMode.REQUIRE);
+
+    assertEquals(expectedConfiguration, actualConfiguration);
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void testInvalidUri1() {
     connectionUri = "postgrsql://username";

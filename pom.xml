@@ -331,6 +331,7 @@
                 <PGPORT>1234</PGPORT>
                 <PGUSER>test_user</PGUSER>
                 <PGPASSWORD>test_password</PGPASSWORD>
+                <PGSSLMODE>require</PGSSLMODE>
               </environmentVariables>
             </configuration>
           </execution>

@@ -20,8 +20,6 @@ package io.reactiverse.pgclient.impl;
 import io.reactiverse.pgclient.*;
 import io.vertx.core.*;
 
-import java.util.function.BiConsumer;
-
 /**
  * Todo :
  *
@@ -48,7 +46,7 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
     }
     this.context = vertx.getOrCreateContext();
     this.factory = new PgConnectionFactory(context, Vertx.currentContext() != null, options);
-    this.pool = new ConnectionPool(factory::connect, maxSize, options.getMaxWaitQueueSize());
+    this.pool = new ConnectionPool(factory::create, maxSize, options.getMaxWaitQueueSize());
     this.closeVertx = closeVertx;
   }
 

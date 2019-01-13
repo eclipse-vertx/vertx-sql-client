@@ -149,6 +149,9 @@
 |[[sendBufferSize]]`@sendBufferSize`|`Number (int)`|-
 |[[soLinger]]`@soLinger`|`Number (int)`|-
 |[[ssl]]`@ssl`|`Boolean`|-
+|[[sslMode]]`@sslMode`|`link:enums.html#SslMode[SslMode]`|+++
+Set link for the client, this option can be used to provide different levels of secure protection.
++++
 |[[tcpCork]]`@tcpCork`|`Boolean`|-
 |[[tcpFastOpen]]`@tcpFastOpen`|`Boolean`|-
 |[[tcpKeepAlive]]`@tcpKeepAlive`|`Boolean`|-
@@ -238,6 +241,9 @@ Set the maximum connection request allowed in the wait queue, any requests beyon
 |[[sendBufferSize]]`@sendBufferSize`|`Number (int)`|-
 |[[soLinger]]`@soLinger`|`Number (int)`|-
 |[[ssl]]`@ssl`|`Boolean`|-
+|[[sslMode]]`@sslMode`|`link:enums.html#SslMode[SslMode]`|+++
+Set link for the client, this option can be used to provide different levels of secure protection.
++++
 |[[tcpCork]]`@tcpCork`|`Boolean`|-
 |[[tcpFastOpen]]`@tcpFastOpen`|`Boolean`|-
 |[[tcpKeepAlive]]`@tcpKeepAlive`|`Boolean`|-

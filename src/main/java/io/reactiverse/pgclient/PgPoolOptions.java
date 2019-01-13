@@ -156,6 +156,11 @@ public class PgPoolOptions extends PgConnectOptions {
   }
 
   @Override
+  public PgPoolOptions setSslMode(SslMode sslmode) {
+    return (PgPoolOptions) super.setSslMode(sslmode);
+  }
+
+  @Override
   public PgPoolOptions setSendBufferSize(int sendBufferSize) {
     return (PgPoolOptions) super.setSendBufferSize(sendBufferSize);
   }

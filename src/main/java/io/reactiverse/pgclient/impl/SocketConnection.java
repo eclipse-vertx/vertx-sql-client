@@ -17,19 +17,21 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.impl.codec.decoder.MessageDecoder;
-import io.reactiverse.pgclient.impl.codec.decoder.InitiateSslHandler;
-import io.reactiverse.pgclient.impl.codec.decoder.NoticeResponse;
-import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
-import io.reactiverse.pgclient.impl.codec.decoder.NotificationResponse;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
+import io.reactiverse.pgclient.impl.codec.decoder.InitiateSslHandler;
+import io.reactiverse.pgclient.impl.codec.decoder.MessageDecoder;
+import io.reactiverse.pgclient.impl.codec.decoder.NoticeResponse;
+import io.reactiverse.pgclient.impl.codec.decoder.NotificationResponse;
+import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
 import io.vertx.core.*;
 import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -48,7 +50,6 @@ public class SocketConnection implements Connection {
   private final NetSocketInternal socket;
   private final ArrayDeque<CommandBase<?>> inflight = new ArrayDeque<>();
   private final ArrayDeque<CommandBase<?>> pending = new ArrayDeque<>();
-  private final boolean ssl;
   private final Context context;
   private Status status = Status.CONNECTED;
   private Holder holder;
@@ -61,10 +62,8 @@ public class SocketConnection implements Connection {
   public SocketConnection(NetSocketInternal socket,
                           boolean cachePreparedStatements,
                           int pipeliningLimit,
-                          boolean ssl,
                           Context context) {
     this.socket = socket;
-    this.ssl = ssl;
     this.context = context;
     this.psCache = cachePreparedStatements ? new ConcurrentHashMap<>() : null;
     this.pipeliningLimit = pipeliningLimit;
@@ -74,29 +73,25 @@ public class SocketConnection implements Connection {
     return context;
   }
 
-  void initiateProtocolOrSsl(String username, String password, String database, Handler<? super CommandResponse<Connection>> completionHandler) {
+  void upgradeToSSLConnection(Handler<AsyncResult<Void>> completionHandler) {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
-    if (ssl) {
-      Future<Void> upgradeFuture = Future.future();
-      upgradeFuture.setHandler(ar -> {
-        if (ar.succeeded()) {
-          initiateProtocol(username, password, database, completionHandler);
-        } else {
-          Throwable cause = ar.cause();
-          if (cause instanceof DecoderException) {
-            DecoderException err = (DecoderException) cause;
-            cause = err.getCause();
-          }
-          completionHandler.handle(CommandResponse.failure(cause));
+    Future<Void> upgradeFuture = Future.future();
+    upgradeFuture.setHandler(ar->{
+      if (ar.succeeded()) {
+        completionHandler.handle(Future.succeededFuture());
+      } else {
+        Throwable cause = ar.cause();
+        if (cause instanceof DecoderException) {
+          DecoderException err = (DecoderException) cause;
+          cause = err.getCause();
         }
-      });
-      pipeline.addBefore("handler", "initiate-ssl-handler", new InitiateSslHandler(this, upgradeFuture));
-    } else {
-      initiateProtocol(username, password, database, completionHandler);
-    }
+        completionHandler.handle(Future.failedFuture(cause));
+      }
+    });
+    pipeline.addBefore("handler", "initiate-ssl-handler", new InitiateSslHandler(this, upgradeFuture));
   }
 
-  private void initiateProtocol(String username, String password, String database, Handler<? super CommandResponse<Connection>> completionHandler) {
+  void initializeCodec() {
     decoder = new MessageDecoder(inflight, socket.channelHandlerContext().alloc());
     encoder = new MessageEncoder(socket.channelHandlerContext());
 
@@ -112,6 +107,9 @@ public class SocketConnection implements Connection {
         handleException(e);
       }
     });
+  }
+
+  void sendStartupMessage(String username, String password, String database, Handler<? super CommandResponse<Connection>> completionHandler) {
     InitCommand cmd = new InitCommand(this, username, password, database);
     cmd.handler = completionHandler;
     schedule(cmd);
@@ -140,14 +138,12 @@ public class SocketConnection implements Connection {
     }
   }
 
-  public boolean isSsl() {
-    return socket.isSsl();
+  public NetSocketInternal socket() {
+    return socket;
   }
 
-  public void upgradeToSSL(Handler<Void> handler) {
-    socket.upgradeToSsl(v -> {
-      handler.handle(null);
-    });
+  public boolean isSsl() {
+    return socket.isSsl();
   }
 
   @Override

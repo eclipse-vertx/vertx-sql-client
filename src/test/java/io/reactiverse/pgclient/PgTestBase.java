@@ -171,6 +171,7 @@ public abstract class PgTestBase {
     }
   }
 
+  // ssl=on just enables the possibility of using SSL which does not force clients to use SSL
   private static IRuntimeConfig useSSLRuntimeConfig(IRuntimeConfig config) throws Exception {
     File sslKey = getTestResource("server.key");
     Files.setPosixFilePermissions(sslKey.toPath(), Collections.singleton(PosixFilePermission.OWNER_READ));

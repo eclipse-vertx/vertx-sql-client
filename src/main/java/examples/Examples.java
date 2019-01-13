@@ -683,7 +683,7 @@ public class Examples {
       .setDatabase("the-db")
       .setUser("user")
       .setPassword("secret")
-      .setSsl(true)
+      .setSslMode(SslMode.VERIFY_CA)
       .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/cert.pem"));
 
     PgClient.connect(vertx, options, res -> {

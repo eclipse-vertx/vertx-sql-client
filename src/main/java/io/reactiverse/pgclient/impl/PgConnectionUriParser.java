@@ -16,6 +16,7 @@
  */
 package io.reactiverse.pgclient.impl;
 
+import io.reactiverse.pgclient.SslMode;
 import io.vertx.core.json.JsonObject;
 
 import java.io.UnsupportedEncodingException;
@@ -161,6 +162,9 @@ public class PgConnectionUriParser {
             break;
           case "dbname":
             configuration.put("database", value);
+            break;
+          case "sslmode":
+            configuration.put("sslMode", SslMode.of(value));
             break;
           default:
             configuration.put(key, value);

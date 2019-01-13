@@ -27,8 +27,6 @@ import io.reactiverse.pgclient.impl.codec.decoder.type.MessageType;
 import io.vertx.core.Future;
 import io.vertx.core.VertxException;
 
-import java.nio.channels.ClosedChannelException;
-
 public class InitiateSslHandler extends ChannelInboundHandlerAdapter {
 
   private static final int code = 80877103;
@@ -59,7 +57,7 @@ public class InitiateSslHandler extends ChannelInboundHandlerAdapter {
     byteBuf.release();
     switch (b) {
       case MessageType.SSL_YES: {
-        conn.upgradeToSSL(v -> {
+        conn.socket().upgradeToSsl(v -> {
           ctx.pipeline().remove(this);
           upgradeFuture.complete();
         });
@@ -81,15 +79,13 @@ public class InitiateSslHandler extends ChannelInboundHandlerAdapter {
       DecoderException err = (DecoderException) cause;
       cause = err.getCause();
     }
-    upgradeFuture.fail(cause);
+    upgradeFuture.tryFail(cause);
   }
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     super.channelInactive(ctx);
     // Work around for https://github.com/eclipse-vertx/vert.x/issues/2748
-    if (!upgradeFuture.isComplete()) {
-      upgradeFuture.fail(new VertxException("SSL handshake failed", true));
-    }
+    upgradeFuture.tryFail(new VertxException("SSL handshake failed", true));
   }
 }
