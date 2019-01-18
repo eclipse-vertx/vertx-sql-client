@@ -814,9 +814,7 @@ public class Examples {
         System.out.println("Failed to query due to " + ar.cause().getMessage());
       }
     });
-    int pid = connection.getProcessId();
-    int secretKey = connection.getSecretKey();
-    connection.cancelRequest(pid, secretKey, ar -> {
+    connection.cancelRequest(ar -> {
       if (ar.succeeded()) {
         System.out.println("Cancelling request has been sent");
       } else {

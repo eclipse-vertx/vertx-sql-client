@@ -148,29 +148,29 @@ public class PgConnectionImpl extends PgConnectionBase<PgConnectionImpl> impleme
   }
 
   @Override
-  public int getProcessId() {
+  public int processId() {
     return conn.getProcessId();
   }
 
   @Override
-  public int getSecretKey() {
+  public int secretKey() {
     return conn.getSecretKey();
   }
 
   @Override
-  public PgConnection cancelRequest(int processId, int secretKey, Handler<AsyncResult<Void>> handler) {
+  public PgConnection cancelRequest(Handler<AsyncResult<Void>> handler) {
     Context current = Vertx.currentContext();
     if (current == context) {
       factory.connect(ar -> {
         if (ar.succeeded()) {
           SocketConnection conn = ar.result();
-          conn.sendCancelRequestMessage(processId, secretKey, handler);
-        }else {
+          conn.sendCancelRequestMessage(this.processId(), this.secretKey(), handler);
+        } else {
           handler.handle(Future.failedFuture(ar.cause()));
         }
       });
     } else {
-      context.runOnContext(v -> cancelRequest(processId, secretKey, handler));
+      context.runOnContext(v -> cancelRequest(handler));
     }
     return this;
   }
