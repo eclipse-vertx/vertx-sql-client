@@ -51,6 +51,14 @@ var Tuple = require('reactive-pg-client-js/tuple');
 var io = Packages.io;
 var JsonObject = io.vertx.core.json.JsonObject;
 var JRow = Java.type('io.reactiverse.pgclient.Row');
+var Point = Java.type('io.reactiverse.pgclient.data.Point');
+var Path = Java.type('io.reactiverse.pgclient.data.Path');
+var Box = Java.type('io.reactiverse.pgclient.data.Box');
+var Circle = Java.type('io.reactiverse.pgclient.data.Circle');
+var Polygon = Java.type('io.reactiverse.pgclient.data.Polygon');
+var Interval = Java.type('io.reactiverse.pgclient.data.Interval');
+var LineSegment = Java.type('io.reactiverse.pgclient.data.LineSegment');
+var Line = Java.type('io.reactiverse.pgclient.data.Line');
 
 /**
  @class
@@ -72,6 +80,14 @@ var Row = function(j_val) {
   var __super_getString = this.getString;
   var __super_getJson = this.getJson;
   var __super_getBuffer = this.getBuffer;
+  var __super_getPoint = this.getPoint;
+  var __super_getLine = this.getLine;
+  var __super_getLineSegment = this.getLineSegment;
+  var __super_getBox = this.getBox;
+  var __super_getPath = this.getPath;
+  var __super_getPolygon = this.getPolygon;
+  var __super_getCircle = this.getCircle;
+  var __super_getInterval = this.getInterval;
   /**
    Get a column name at &lt;code>pos&lt;/code>.
 
@@ -259,6 +275,142 @@ var Row = function(j_val) {
     else throw new TypeError('function invoked with invalid arguments');
   };
 
+  /**
+   Get  value at &lt;code>pos&lt;/code>.
+
+   @public
+   @param name {string} the column 
+   @return {Object} the value or &lt;code>null&lt;/code>
+   */
+  this.getPoint =  function(name) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
+      return utils.convReturnDataObject(j_row["getPoint(java.lang.String)"](__args[0])) ;
+    } else if (typeof __super_getPoint != 'undefined') {
+      return __super_getPoint.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Get  value at &lt;code>pos&lt;/code>.
+
+   @public
+   @param name {string} the column 
+   @return {Object} the value or &lt;code>null&lt;/code>
+   */
+  this.getLine =  function(name) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
+      return utils.convReturnDataObject(j_row["getLine(java.lang.String)"](__args[0])) ;
+    } else if (typeof __super_getLine != 'undefined') {
+      return __super_getLine.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Get  value at &lt;code>pos&lt;/code>.
+
+   @public
+   @param name {string} the column 
+   @return {Object} the value or &lt;code>null&lt;/code>
+   */
+  this.getLineSegment =  function(name) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
+      return utils.convReturnDataObject(j_row["getLineSegment(java.lang.String)"](__args[0])) ;
+    } else if (typeof __super_getLineSegment != 'undefined') {
+      return __super_getLineSegment.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Get  value at &lt;code>pos&lt;/code>.
+
+   @public
+   @param name {string} the column 
+   @return {Object} the value or &lt;code>null&lt;/code>
+   */
+  this.getBox =  function(name) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
+      return utils.convReturnDataObject(j_row["getBox(java.lang.String)"](__args[0])) ;
+    } else if (typeof __super_getBox != 'undefined') {
+      return __super_getBox.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Get  value at &lt;code>pos&lt;/code>.
+
+   @public
+   @param name {string} the column 
+   @return {Object} the value or &lt;code>null&lt;/code>
+   */
+  this.getPath =  function(name) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
+      return utils.convReturnDataObject(j_row["getPath(java.lang.String)"](__args[0])) ;
+    } else if (typeof __super_getPath != 'undefined') {
+      return __super_getPath.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Get  value at &lt;code>pos&lt;/code>.
+
+   @public
+   @param name {string} the column 
+   @return {Object} the value or &lt;code>null&lt;/code>
+   */
+  this.getPolygon =  function(name) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
+      return utils.convReturnDataObject(j_row["getPolygon(java.lang.String)"](__args[0])) ;
+    } else if (typeof __super_getPolygon != 'undefined') {
+      return __super_getPolygon.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Get  value at &lt;code>pos&lt;/code>.
+
+   @public
+   @param name {string} the column 
+   @return {Object} the value or &lt;code>null&lt;/code>
+   */
+  this.getCircle =  function(name) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
+      return utils.convReturnDataObject(j_row["getCircle(java.lang.String)"](__args[0])) ;
+    } else if (typeof __super_getCircle != 'undefined') {
+      return __super_getCircle.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Get  value at &lt;code>pos&lt;/code>.
+
+   @public
+   @param name {string} the column 
+   @return {Object} the value or &lt;code>null&lt;/code>
+   */
+  this.getInterval =  function(name) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; typeof __args[0] === 'string') {
+      return utils.convReturnDataObject(j_row["getInterval(java.lang.String)"](__args[0])) ;
+    } else if (typeof __super_getInterval != 'undefined') {
+      return __super_getInterval.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
   // A reference to the underlying Java delegate
   // NOTE! This is an internal API and must not be used in user code.
   // If you rely on this property your code is likely to break if we change it / remove it without warning.
@@ -297,7 +449,7 @@ module.exports = Row;</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Wed Dec 19 2018 16:29:04 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Fri Jan 25 2019 16:08:18 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

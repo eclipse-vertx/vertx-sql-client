@@ -30,7 +30,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 <dependency>
  <groupId>io.reactiverse</groupId>
  <artifactId>reactive-pg-client</artifactId>
- <version>0.11.1</version>
+ <version>0.11.2</version>
 </dependency>
 ```
 
@@ -38,7 +38,7 @@ To use the Reactive Postgres Client add the following dependency to the _depende
 
 ```groovy
 dependencies {
- compile 'io.reactiverse:reactive-pg-client:0.11.1'
+ compile 'io.reactiverse:reactive-pg-client:0.11.2'
 }
 ```
 
@@ -232,6 +232,7 @@ for more details. The following parameters are supported:
 * `PGDATABASE`
 * `PGUSER`
 * `PGPASSWORD`
+* `PGSSLMODE`
 
 If you don't specify a data object or a connection URI string to connect, environment variables will take precedence over them.
 
@@ -240,7 +241,8 @@ $ PGUSER=user \
  PGHOST=the-host \
  PGPASSWORD=secret \
  PGDATABASE=the-db \
- PGPORT=5432
+ PGPORT=5432 \
+ PGSSLMODE=DISABLE
 ```
 
 ```kotlin
@@ -377,6 +379,23 @@ You can cache prepared queries:
 options.cachePreparedStatements = true
 
 var client = PgClient.pool(vertx, options)
+
+```
+
+You can fetch generated keys with a 'RETURNING' clause in your query:
+
+```kotlin
+client.preparedQuery("INSERT INTO color (color_name) VALUES (\$$1), (\$$2), (\$$3) RETURNING color_id", Tuple.of("white", "red", "blue"), { ar ->
+  if (ar.succeeded()) {
+    var rows = ar.result()
+    println(rows.rowCount())
+    for (row in rows) {
+      println("generated key: ${row.getInteger("color_id")}")
+    }
+  } else {
+    println("Failure: ${ar.cause().getMessage()}")
+  }
+})
 
 ```
 
@@ -915,10 +934,40 @@ subscriber.reconnectPolicy({ retries ->
 
 The default policy is to not reconnect.
 
+## Cancelling Request
+
+Postgres supports cancellation of requests in progress. You can cancel inflight requests using [`cancelRequest`](../../apidocs/io/reactiverse/pgclient/PgConnection.html#cancelRequest-io.vertx.core.Handler-). Cancelling a request opens a new connection to the server and cancels the request and then close the connection.
+
+```kotlin
+connection.query("SELECT pg_sleep(20)", { ar ->
+  if (ar.succeeded()) {
+    // imagine this is a long query and is still running
+    println("Query success")
+  } else {
+    // the server will abort the current query after cancelling request
+    println("Failed to query due to ${ar.cause().getMessage()}")
+  }
+})
+connection.cancelRequest({ ar ->
+  if (ar.succeeded()) {
+    println("Cancelling request has been sent")
+  } else {
+    println("Failed to send cancelling request")
+  }
+})
+
+```
+
+> The cancellation signal might or might not have any effect — for example, if it arrives after the backend has finished processing the query, then it will have no effect. If the cancellation is effective, it results in the current command being terminated early with an error message.
+
+More information can be found in the [official documentation](https://www.postgresql.org/docs/11/protocol-flow.html#id-1.10.5.7.9).
+
 ## Using SSL/TLS
 
 To configure the client to use SSL connection, you can configure the [`PgConnectOptions`](../../apidocs/io/reactiverse/pgclient/PgConnectOptions.html)
 like a Vert.x `NetClient`.
+All [SSL modes](https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-PROTECTION) are supported and you are able to configure `sslmode`. The client is in `DISABLE` SSL mode by default.
+`ssl` parameter is kept as a mere shortcut for setting `sslmode`. `setSsl(true)` is equivalent to `setSslMode(VERIFY_CA)` and `setSsl(false)` is equivalent to `setSslMode(DISABLE)`.
 
 ```kotlin
 
@@ -928,7 +977,7 @@ var options = PgConnectOptions(
   database = "the-db",
   user = "user",
   password = "secret",
-  ssl = true,
+  sslMode = SslMode.VERIFY_CA,
   pemTrustOptions = PemTrustOptions(
     certPaths = listOf("/path/to/cert.pem")))
 

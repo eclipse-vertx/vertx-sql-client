@@ -50,6 +50,14 @@ var Buffer = require('vertx-js/buffer');
 var io = Packages.io;
 var JsonObject = io.vertx.core.json.JsonObject;
 var JTuple = Java.type('io.reactiverse.pgclient.Tuple');
+var Point = Java.type('io.reactiverse.pgclient.data.Point');
+var Path = Java.type('io.reactiverse.pgclient.data.Path');
+var Box = Java.type('io.reactiverse.pgclient.data.Box');
+var Circle = Java.type('io.reactiverse.pgclient.data.Circle');
+var Polygon = Java.type('io.reactiverse.pgclient.data.Polygon');
+var Interval = Java.type('io.reactiverse.pgclient.data.Interval');
+var LineSegment = Java.type('io.reactiverse.pgclient.data.LineSegment');
+var Line = Java.type('io.reactiverse.pgclient.data.Line');
 
 /**
  A general purpose tuple.
@@ -77,6 +85,14 @@ var Tuple = function(j_val) {
   var __super_getDouble = this.getDouble;
   var __super_getString = this.getString;
   var __super_getJson = this.getJson;
+  var __super_getPoint = this.getPoint;
+  var __super_getLine = this.getLine;
+  var __super_getLineSegment = this.getLineSegment;
+  var __super_getBox = this.getBox;
+  var __super_getPath = this.getPath;
+  var __super_getPolygon = this.getPolygon;
+  var __super_getCircle = this.getCircle;
+  var __super_getInterval = this.getInterval;
   var __super_getBuffer = this.getBuffer;
   var __super_addBoolean = this.addBoolean;
   var __super_addValue = this.addValue;
@@ -88,6 +104,14 @@ var Tuple = function(j_val) {
   var __super_addString = this.addString;
   var __super_addJson = this.addJson;
   var __super_addBuffer = this.addBuffer;
+  var __super_addPoint = this.addPoint;
+  var __super_addLine = this.addLine;
+  var __super_addLineSegment = this.addLineSegment;
+  var __super_addBox = this.addBox;
+  var __super_addPath = this.addPath;
+  var __super_addPolygon = this.addPolygon;
+  var __super_addCircle = this.addCircle;
+  var __super_addInterval = this.addInterval;
   var __super_size = this.size;
   var __super_clear = this.clear;
   /**
@@ -239,6 +263,142 @@ var Tuple = function(j_val) {
       return utils.convReturnVertxGen(Json, j_tuple["getJson(int)"](__args[0])) ;
     } else if (typeof __super_getJson != 'undefined') {
       return __super_getJson.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Get  value at &lt;code>pos&lt;/code>.
+
+   @public
+   @param pos {number} the position 
+   @return {Object} the value or &lt;code>null&lt;/code>
+   */
+  this.getPoint =  function(pos) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
+      return utils.convReturnDataObject(j_tuple["getPoint(int)"](__args[0])) ;
+    } else if (typeof __super_getPoint != 'undefined') {
+      return __super_getPoint.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Get  value at &lt;code>pos&lt;/code>.
+
+   @public
+   @param pos {number} the position 
+   @return {Object} the value or &lt;code>null&lt;/code>
+   */
+  this.getLine =  function(pos) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
+      return utils.convReturnDataObject(j_tuple["getLine(int)"](__args[0])) ;
+    } else if (typeof __super_getLine != 'undefined') {
+      return __super_getLine.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Get  value at &lt;code>pos&lt;/code>.
+
+   @public
+   @param pos {number} the position 
+   @return {Object} the value or &lt;code>null&lt;/code>
+   */
+  this.getLineSegment =  function(pos) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
+      return utils.convReturnDataObject(j_tuple["getLineSegment(int)"](__args[0])) ;
+    } else if (typeof __super_getLineSegment != 'undefined') {
+      return __super_getLineSegment.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Get  value at &lt;code>pos&lt;/code>.
+
+   @public
+   @param pos {number} the position 
+   @return {Object} the value or &lt;code>null&lt;/code>
+   */
+  this.getBox =  function(pos) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
+      return utils.convReturnDataObject(j_tuple["getBox(int)"](__args[0])) ;
+    } else if (typeof __super_getBox != 'undefined') {
+      return __super_getBox.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Get  value at &lt;code>pos&lt;/code>.
+
+   @public
+   @param pos {number} the position 
+   @return {Object} the value or &lt;code>null&lt;/code>
+   */
+  this.getPath =  function(pos) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
+      return utils.convReturnDataObject(j_tuple["getPath(int)"](__args[0])) ;
+    } else if (typeof __super_getPath != 'undefined') {
+      return __super_getPath.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Get  value at &lt;code>pos&lt;/code>.
+
+   @public
+   @param pos {number} the position 
+   @return {Object} the value or &lt;code>null&lt;/code>
+   */
+  this.getPolygon =  function(pos) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
+      return utils.convReturnDataObject(j_tuple["getPolygon(int)"](__args[0])) ;
+    } else if (typeof __super_getPolygon != 'undefined') {
+      return __super_getPolygon.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Get  value at &lt;code>pos&lt;/code>.
+
+   @public
+   @param pos {number} the position 
+   @return {Object} the value or &lt;code>null&lt;/code>
+   */
+  this.getCircle =  function(pos) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
+      return utils.convReturnDataObject(j_tuple["getCircle(int)"](__args[0])) ;
+    } else if (typeof __super_getCircle != 'undefined') {
+      return __super_getCircle.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Get  value at &lt;code>pos&lt;/code>.
+
+   @public
+   @param pos {number} the position 
+   @return {Object} the value or &lt;code>null&lt;/code>
+   */
+  this.getInterval =  function(pos) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; typeof __args[0] ==='number') {
+      return utils.convReturnDataObject(j_tuple["getInterval(int)"](__args[0])) ;
+    } else if (typeof __super_getInterval != 'undefined') {
+      return __super_getInterval.apply(this, __args);
     }
     else throw new TypeError('function invoked with invalid arguments');
   };
@@ -441,6 +601,150 @@ var Tuple = function(j_val) {
   };
 
   /**
+   Add a  value at the end of the tuple.
+
+   @public
+   @param value {Object} the value 
+   @return {Tuple} a reference to this, so the API can be used fluently
+   */
+  this.addPoint =  function(value) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; (typeof __args[0] === 'object' &amp;&amp; __args[0] != null)) {
+      j_tuple["addPoint(io.reactiverse.pgclient.data.Point)"](__args[0]  != null ? new Point(new JsonObject(Java.asJSONCompatible(__args[0]))) : null) ;
+      return that;
+    } else if (typeof __super_addPoint != 'undefined') {
+      return __super_addPoint.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Add a  value at the end of the tuple.
+
+   @public
+   @param value {Object} the value 
+   @return {Tuple} a reference to this, so the API can be used fluently
+   */
+  this.addLine =  function(value) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; (typeof __args[0] === 'object' &amp;&amp; __args[0] != null)) {
+      j_tuple["addLine(io.reactiverse.pgclient.data.Line)"](__args[0]  != null ? new Line(new JsonObject(Java.asJSONCompatible(__args[0]))) : null) ;
+      return that;
+    } else if (typeof __super_addLine != 'undefined') {
+      return __super_addLine.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Add a  value at the end of the tuple.
+
+   @public
+   @param value {Object} the value 
+   @return {Tuple} a reference to this, so the API can be used fluently
+   */
+  this.addLineSegment =  function(value) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; (typeof __args[0] === 'object' &amp;&amp; __args[0] != null)) {
+      j_tuple["addLineSegment(io.reactiverse.pgclient.data.LineSegment)"](__args[0]  != null ? new LineSegment(new JsonObject(Java.asJSONCompatible(__args[0]))) : null) ;
+      return that;
+    } else if (typeof __super_addLineSegment != 'undefined') {
+      return __super_addLineSegment.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Add a  value at the end of the tuple.
+
+   @public
+   @param value {Object} the value 
+   @return {Tuple} a reference to this, so the API can be used fluently
+   */
+  this.addBox =  function(value) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; (typeof __args[0] === 'object' &amp;&amp; __args[0] != null)) {
+      j_tuple["addBox(io.reactiverse.pgclient.data.Box)"](__args[0]  != null ? new Box(new JsonObject(Java.asJSONCompatible(__args[0]))) : null) ;
+      return that;
+    } else if (typeof __super_addBox != 'undefined') {
+      return __super_addBox.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Add a  value at the end of the tuple.
+
+   @public
+   @param value {Object} the value 
+   @return {Tuple} a reference to this, so the API can be used fluently
+   */
+  this.addPath =  function(value) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; (typeof __args[0] === 'object' &amp;&amp; __args[0] != null)) {
+      j_tuple["addPath(io.reactiverse.pgclient.data.Path)"](__args[0]  != null ? new Path(new JsonObject(Java.asJSONCompatible(__args[0]))) : null) ;
+      return that;
+    } else if (typeof __super_addPath != 'undefined') {
+      return __super_addPath.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Add a  value at the end of the tuple.
+
+   @public
+   @param value {Object} the value 
+   @return {Tuple} a reference to this, so the API can be used fluently
+   */
+  this.addPolygon =  function(value) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; (typeof __args[0] === 'object' &amp;&amp; __args[0] != null)) {
+      j_tuple["addPolygon(io.reactiverse.pgclient.data.Polygon)"](__args[0]  != null ? new Polygon(new JsonObject(Java.asJSONCompatible(__args[0]))) : null) ;
+      return that;
+    } else if (typeof __super_addPolygon != 'undefined') {
+      return __super_addPolygon.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Add a  value at the end of the tuple.
+
+   @public
+   @param value {Object} the value 
+   @return {Tuple} a reference to this, so the API can be used fluently
+   */
+  this.addCircle =  function(value) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; (typeof __args[0] === 'object' &amp;&amp; __args[0] != null)) {
+      j_tuple["addCircle(io.reactiverse.pgclient.data.Circle)"](__args[0]  != null ? new Circle(new JsonObject(Java.asJSONCompatible(__args[0]))) : null) ;
+      return that;
+    } else if (typeof __super_addCircle != 'undefined') {
+      return __super_addCircle.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Add a  value at the end of the tuple.
+
+   @public
+   @param value {Object} the value 
+   @return {Tuple} a reference to this, so the API can be used fluently
+   */
+  this.addInterval =  function(value) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; (typeof __args[0] === 'object' &amp;&amp; __args[0] != null)) {
+      j_tuple["addInterval(io.reactiverse.pgclient.data.Interval)"](__args[0]  != null ? new Interval(new JsonObject(Java.asJSONCompatible(__args[0]))) : null) ;
+      return that;
+    } else if (typeof __super_addInterval != 'undefined') {
+      return __super_addInterval.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
 
    @public
 
@@ -551,7 +855,7 @@ module.exports = Tuple;</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Wed Dec 19 2018 16:29:04 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Fri Jan 25 2019 16:08:18 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

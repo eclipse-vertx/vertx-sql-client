@@ -131,6 +131,9 @@
 <li>
 <p>HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy</p>
 </li>
+<li>
+<p>Request cancellation</p>
+</li>
 </ul>
 </div>
 </div>
@@ -139,7 +142,7 @@
 <h2 id="_usage">Usage</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Latest release is <a href="https://github.com/reactiverse/reactive-pg-client/blob/master/RELEASES.adoc">0.11.0</a>.</p>
+<p>Latest release is <a href="https://github.com/reactiverse/reactive-pg-client/blob/master/RELEASES.adoc">0.11.1</a>.</p>
 </div>
 <div class="paragraph">
 <p>To use the client, add the following dependency to the <em>dependencies</em> section of your build descriptor:</p>
@@ -156,7 +159,7 @@
 <pre class="highlight"><code class="language-xml" data-lang="xml">&lt;dependency&gt;
   &lt;groupId&gt;io.reactiverse&lt;/groupId&gt;
   &lt;artifactId&gt;reactive-pg-client&lt;/artifactId&gt;
-  &lt;version&gt;0.11.0&lt;/version&gt;
+  &lt;version&gt;0.11.1&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
 </div>
 </div>
@@ -170,7 +173,7 @@
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code class="language-groovy" data-lang="groovy">dependencies {
-  compile 'io.reactiverse:reactive-pg-client:0.11.0'
+  compile 'io.reactiverse:reactive-pg-client:0.11.1'
 }</code></pre>
 </div>
 </div>
@@ -560,6 +563,30 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -&gt; {
 <div class="paragraph">
 <p>Out of the box, the test suite runs an embedded Postgres by default.</p>
 </div>
+<div class="paragraph">
+<p>You can change the version of the embedded Postgres by passing a property <code>embedded.postgres.version</code> like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>&gt; mvn test -Dembedded.postgres.version=9.6</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The following versions of embedded Postgres are supported:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>9.6</code></p>
+</li>
+<li>
+<p><code>10.6</code> (default)</p>
+</li>
+<li>
+<p><code>11.1</code> (not supported on Linux)</p>
+</li>
+</ul>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_testing_with_an_external_database">Testing with an external database</h3>
@@ -674,7 +701,7 @@ source generates the <code>jekyll/guide/java/index.md</code>.</p>
 </div></div></div>
 
     <div id="footer">
-  Generated on Wed Dec 19 16:28:56 2018 by
+  Generated on Fri Jan 25 16:08:10 2019 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.8.7.6 (ruby-2.3.3).
 </div>

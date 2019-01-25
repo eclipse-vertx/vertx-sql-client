@@ -1,3 +1,12 @@
+== 0.11.2
+
+Fixed issues: https://github.com/reactiverse/reactive-pg-client/issues?q=is%3Aclosed+milestone%3A0.11.2
+
+- Request cancellation support
+- Remove @GenIgnore or use permitted-type in Tuple/Row methods
+- Add documentation and an example for fetching generated keys
+- Add support for sslmode
+
 == 0.11.1
 
 Fixed issues: https://github.com/reactiverse/reactive-pg-client/issues?q=is%3Aclosed+milestone%3A0.11.1
