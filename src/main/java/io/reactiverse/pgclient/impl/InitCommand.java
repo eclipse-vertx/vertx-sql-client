@@ -86,6 +86,8 @@ public class InitCommand extends CommandBase<Connection> {
 
   @Override
   public void handleBackendKeyData(int processId, int secretKey) {
+    conn.processId = processId;
+    conn.secretKey = secretKey;
   }
 
   @Override

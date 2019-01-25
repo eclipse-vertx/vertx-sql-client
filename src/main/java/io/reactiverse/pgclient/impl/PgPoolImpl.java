@@ -158,7 +158,7 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
     public void handle(AsyncResult<Connection> ar) {
       if (ar.succeeded()) {
         Connection conn = ar.result();
-        PgConnectionImpl holder = new PgConnectionImpl(context, conn);
+        PgConnectionImpl holder = new PgConnectionImpl(factory, context, conn);
         conn.init(holder);
         handler.handle(Future.succeededFuture(holder));
       } else {

@@ -167,4 +167,18 @@ public abstract class PgPoolTestBase extends PgTestBase {
       }));
     }));
   }
+
+  @Test
+  public void testCancelRequest(TestContext ctx) {
+    Async async = ctx.async();
+    PgPool pool = createPool(options, 4);
+    pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT pg_sleep(10)", ctx.asyncAssertFailure(error -> {
+        ctx.assertEquals("canceling statement due to user request", error.getMessage());
+        conn.close();
+        async.complete();
+      }));
+      conn.cancelRequest(ctx.asyncAssertSuccess());
+    }));
+  }
 }

@@ -24,6 +24,7 @@ image:https://travis-ci.org/reactiverse/reactive-pg-client.svg?branch=master["Bu
 - SSL/TLS
 - Unix domain socket
 - HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy
+- Request cancellation
 
 == Usage
 

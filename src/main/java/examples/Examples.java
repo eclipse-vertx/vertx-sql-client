@@ -803,4 +803,23 @@ public class Examples {
         }
       });
   }
+
+  public void cancelRequest(PgConnection connection) {
+    connection.query("SELECT pg_sleep(20)", ar -> {
+      if (ar.succeeded()) {
+        // imagine this is a long query and is still running
+        System.out.println("Query success");
+      } else {
+        // the server will abort the current query after cancelling request
+        System.out.println("Failed to query due to " + ar.cause().getMessage());
+      }
+    });
+    connection.cancelRequest(ar -> {
+      if (ar.succeeded()) {
+        System.out.println("Cancelling request has been sent");
+      } else {
+        System.out.println("Failed to send cancelling request");
+      }
+    });
+  }
 }

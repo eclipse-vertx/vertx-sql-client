@@ -25,13 +25,15 @@ import io.vertx.core.*;
  */
 public class PgConnectionImpl extends PgConnectionBase<PgConnectionImpl> implements PgConnection, Connection.Holder {
 
+  private final PgConnectionFactory factory;
   private volatile Handler<Throwable> exceptionHandler;
   private volatile Handler<Void> closeHandler;
   private Transaction tx;
   private volatile Handler<PgNotification> notificationHandler;
 
-  public PgConnectionImpl(Context context, Connection conn) {
+  public PgConnectionImpl(PgConnectionFactory factory, Context context, Connection conn) {
     super(context, conn);
+    this.factory = factory;
   }
 
   @Override
@@ -143,5 +145,33 @@ public class PgConnectionImpl extends PgConnectionBase<PgConnectionImpl> impleme
     } else {
       context.runOnContext(v -> close());
     }
+  }
+
+  @Override
+  public int processId() {
+    return conn.getProcessId();
+  }
+
+  @Override
+  public int secretKey() {
+    return conn.getSecretKey();
+  }
+
+  @Override
+  public PgConnection cancelRequest(Handler<AsyncResult<Void>> handler) {
+    Context current = Vertx.currentContext();
+    if (current == context) {
+      factory.connect(ar -> {
+        if (ar.succeeded()) {
+          SocketConnection conn = ar.result();
+          conn.sendCancelRequestMessage(this.processId(), this.secretKey(), handler);
+        } else {
+          handler.handle(Future.failedFuture(ar.cause()));
+        }
+      });
+    } else {
+      context.runOnContext(v -> cancelRequest(handler));
+    }
+    return this;
   }
 }
