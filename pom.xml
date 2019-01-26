@@ -197,6 +197,12 @@
       <version>2.10</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.wix</groupId>
+      <artifactId>wix-embedded-mysql</artifactId>
+      <version>4.2.0</version>
+      <scope>test</scope>
+    </dependency>
 
     <dependency>
       <groupId>org.postgresql</groupId>
