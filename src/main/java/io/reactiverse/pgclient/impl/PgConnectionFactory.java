@@ -92,7 +92,7 @@ public class PgConnectionFactory {
   public void create(Handler<? super CommandResponse<Connection>> completionHandler) {
     connect(ar -> {
       if (ar.succeeded()) {
-        SocketConnection conn = ar.result();
+        PgSocketConnection conn = ar.result();
         conn.initializeCodec();
         conn.sendStartupMessage(username, password, database, completionHandler);
       } else {
@@ -101,7 +101,7 @@ public class PgConnectionFactory {
     });
   }
 
-  public void connect(Handler<AsyncResult<SocketConnection>> handler) {
+  public void connect(Handler<AsyncResult<PgSocketConnection>> handler) {
     switch (sslMode) {
       case DISABLE:
         doConnect(false, handler);
@@ -142,7 +142,7 @@ public class PgConnectionFactory {
     }
   }
 
-  private void doConnect(boolean ssl, Handler<AsyncResult<SocketConnection>> handler) {
+  private void doConnect(boolean ssl, Handler<AsyncResult<PgSocketConnection>> handler) {
     if (Vertx.currentContext() != ctx) {
       throw new IllegalStateException();
     }
@@ -156,7 +156,7 @@ public class PgConnectionFactory {
     Future<NetSocket> future = Future.<NetSocket>future().setHandler(ar -> {
       if (ar.succeeded()) {
         NetSocketInternal socket = (NetSocketInternal) ar.result();
-        SocketConnection conn = newSocketConnection(socket);
+        PgSocketConnection conn = newSocketConnection(socket);
 
         if (ssl && !isUsingDomainSocket) {
           // upgrade connection to SSL if needed
@@ -183,7 +183,7 @@ public class PgConnectionFactory {
     }
   }
 
-  private SocketConnection newSocketConnection(NetSocketInternal socket) {
-    return new SocketConnection(socket, cachePreparedStatements, pipeliningLimit, ctx);
+  private PgSocketConnection newSocketConnection(NetSocketInternal socket) {
+    return new PgSocketConnection(socket, cachePreparedStatements, pipeliningLimit, ctx);
   }
 }

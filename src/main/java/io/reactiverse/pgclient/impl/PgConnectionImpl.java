@@ -163,7 +163,7 @@ public class PgConnectionImpl extends PgConnectionBase<PgConnectionImpl> impleme
     if (current == context) {
       factory.connect(ar -> {
         if (ar.succeeded()) {
-          SocketConnection conn = ar.result();
+          PgSocketConnection conn = ar.result();
           conn.sendCancelRequestMessage(this.processId(), this.secretKey(), handler);
         } else {
           handler.handle(Future.failedFuture(ar.cause()));

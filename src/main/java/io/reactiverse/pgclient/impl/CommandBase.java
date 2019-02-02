@@ -37,7 +37,7 @@ public abstract class CommandBase<R> {
 
   public Handler<? super CommandResponse<R>> completionHandler;
   public Handler<NoticeResponse> noticeHandler;
-  Handler<? super CommandResponse<R>> handler;
+  public Handler<? super CommandResponse<R>> handler;
   Throwable failure;
   R result;
 
@@ -126,7 +126,7 @@ public abstract class CommandBase<R> {
     completionHandler.handle(resp);
   }
 
-  abstract void exec(MessageEncoder out);
+  protected abstract void exec(MessageEncoder out);
 
   final void fail(Throwable err) {
     handler.handle(CommandResponse.failure(err));

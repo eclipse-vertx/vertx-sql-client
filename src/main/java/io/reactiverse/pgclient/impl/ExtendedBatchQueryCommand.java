@@ -50,7 +50,7 @@ public class ExtendedBatchQueryCommand<T> extends ExtendedQueryCommandBase<T> {
   }
 
   @Override
-  void exec(MessageEncoder out) {
+  protected void exec(MessageEncoder out) {
     if (suspended) {
       out.writeExecute(portal, fetch);
       out.writeSync();

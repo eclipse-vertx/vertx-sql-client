@@ -23,7 +23,6 @@ import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
 import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
 import io.reactiverse.pgclient.impl.codec.encoder.PasswordMessage;
 import io.reactiverse.pgclient.impl.codec.encoder.StartupMessage;
-import io.vertx.core.Handler;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -35,7 +34,7 @@ import java.nio.charset.StandardCharsets;
  */
 public class InitCommand extends CommandBase<Connection> {
 
-  private final SocketConnection conn;
+  private final PgSocketConnection conn;
   private final String username;
   private final String password;
   private final String database;
@@ -43,7 +42,7 @@ public class InitCommand extends CommandBase<Connection> {
   private MessageEncoder out;
 
   InitCommand(
-    SocketConnection conn,
+    PgSocketConnection conn,
     String username,
     String password,
     String database) {
@@ -54,7 +53,7 @@ public class InitCommand extends CommandBase<Connection> {
   }
 
   @Override
-  void exec(MessageEncoder out) {
+  protected void exec(MessageEncoder out) {
     this.out = out;
     out.writeStartupMessage(new StartupMessage(username, database));
   }

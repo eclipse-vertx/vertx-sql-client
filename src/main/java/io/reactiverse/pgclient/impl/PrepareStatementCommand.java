@@ -25,13 +25,12 @@ import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
 import io.reactiverse.pgclient.impl.codec.encoder.Describe;
 import io.reactiverse.pgclient.impl.codec.encoder.Parse;
-import io.vertx.core.Handler;
 
 public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
 
   final String sql;
   long statement; // 0 means unamed statement otherwise CString
-  SocketConnection.CachedPreparedStatement cached;
+  PgSocketConnection.CachedPreparedStatement cached;
   private ParameterDescription parameterDesc;
   private RowDescription rowDesc;
 
@@ -40,7 +39,7 @@ public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
   }
 
   @Override
-  void exec(MessageEncoder out) {
+  protected void exec(MessageEncoder out) {
     out.writeParse(new Parse(sql, statement));
     out.writeDescribe(new Describe(statement, null));
     out.writeSync();

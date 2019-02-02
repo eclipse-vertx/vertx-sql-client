@@ -18,7 +18,6 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
-import io.vertx.core.Handler;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -32,7 +31,7 @@ class ClosePortalCommand extends CommandBase<Void> {
   }
 
   @Override
-  void exec(MessageEncoder out) {
+  protected void exec(MessageEncoder out) {
     out.writeClosePortal(portal);
     out.writeSync();
   }

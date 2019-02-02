@@ -6,19 +6,19 @@ import io.vertx.core.impl.NoStackTraceThrowable;
 
 public abstract class CommandResponse<R> implements AsyncResult<R> {
 
-  static <R> CommandResponse<R> failure(String msg) {
+  public static <R> CommandResponse<R> failure(String msg) {
     return failure(new NoStackTraceThrowable(msg), null);
   }
 
-  static <R> CommandResponse<R> failure(String msg, TxStatus txStatus) {
+  public static <R> CommandResponse<R> failure(String msg, TxStatus txStatus) {
     return failure(new NoStackTraceThrowable(msg), txStatus);
   }
 
-  static <R> CommandResponse<R> failure(Throwable cause) {
+  public static <R> CommandResponse<R> failure(Throwable cause) {
     return failure(cause, null);
   }
 
-  static <R> CommandResponse<R> failure(Throwable cause, TxStatus txStatus) {
+  public static <R> CommandResponse<R> failure(Throwable cause, TxStatus txStatus) {
     return new CommandResponse<R>(txStatus) {
       @Override
       public R result() {
@@ -39,11 +39,11 @@ public abstract class CommandResponse<R> implements AsyncResult<R> {
     };
   }
 
-  static <R> CommandResponse<R> success(R result) {
+  public static <R> CommandResponse<R> success(R result) {
     return success(result, null);
   }
 
-  static <R> CommandResponse<R> success(R result, TxStatus txStatus) {
+  public static <R> CommandResponse<R> success(R result, TxStatus txStatus) {
     return new CommandResponse<R>(txStatus) {
       @Override
       public R result() {

@@ -28,7 +28,7 @@ class CloseConnectionCommand extends CommandBase<Void> {
   }
 
   @Override
-  void exec(MessageEncoder out) {
+  protected void exec(MessageEncoder out) {
     out.writeTerminate();
   }
 }

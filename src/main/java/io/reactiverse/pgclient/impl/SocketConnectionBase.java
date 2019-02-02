@@ -24,23 +24,25 @@ import io.reactiverse.pgclient.impl.codec.decoder.MessageDecoder;
 import io.reactiverse.pgclient.impl.codec.decoder.NoticeResponse;
 import io.reactiverse.pgclient.impl.codec.decoder.NotificationResponse;
 import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
-import io.vertx.core.*;
-import io.vertx.core.buffer.Buffer;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.VertxException;
 import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class SocketConnection implements Connection {
+public abstract class SocketConnectionBase implements Connection {
 
-  private static final Logger logger = LoggerFactory.getLogger(SocketConnection.class);
+  private static final Logger logger = LoggerFactory.getLogger(SocketConnectionBase.class);
 
   enum Status {
 
@@ -48,28 +50,22 @@ public class SocketConnection implements Connection {
 
   }
 
-  private final NetSocketInternal socket;
   private final ArrayDeque<CommandBase<?>> inflight = new ArrayDeque<>();
   private final ArrayDeque<CommandBase<?>> pending = new ArrayDeque<>();
   private final Context context;
-  private Status status = Status.CONNECTED;
   private Holder holder;
-  private final Map<String, CachedPreparedStatement> psCache;
-  private final StringLongSequence psSeq = new StringLongSequence();
   private final int pipeliningLimit;
   private MessageDecoder decoder;
   private MessageEncoder encoder;
 
-  int processId;
-  int secretKey;
+  protected final NetSocketInternal socket;
+  protected Status status = Status.CONNECTED;
 
-  public SocketConnection(NetSocketInternal socket,
-                          boolean cachePreparedStatements,
-                          int pipeliningLimit,
-                          Context context) {
+  public SocketConnectionBase(NetSocketInternal socket,
+                              int pipeliningLimit,
+                              Context context) {
     this.socket = socket;
     this.context = context;
-    this.psCache = cachePreparedStatements ? new ConcurrentHashMap<>() : null;
     this.pipeliningLimit = pipeliningLimit;
   }
 
@@ -113,57 +109,6 @@ public class SocketConnection implements Connection {
     });
   }
 
-  void sendStartupMessage(String username, String password, String database, Handler<? super CommandResponse<Connection>> completionHandler) {
-    InitCommand cmd = new InitCommand(this, username, password, database);
-    cmd.handler = completionHandler;
-    schedule(cmd);
-  }
-
-  void sendCancelRequestMessage(int processId, int secretKey, Handler<AsyncResult<Void>> handler) {
-    Buffer buffer = Buffer.buffer(16);
-    buffer.appendInt(16);
-    // cancel request code
-    buffer.appendInt(80877102);
-    buffer.appendInt(processId);
-    buffer.appendInt(secretKey);
-
-    socket.write(buffer, ar -> {
-      if (ar.succeeded()) {
-        // directly close this connection
-        if (status == Status.CONNECTED) {
-          status = Status.CLOSING;
-          socket.close();
-        }
-        handler.handle(Future.succeededFuture());
-      } else {
-        handler.handle(Future.failedFuture(ar.cause()));
-      }
-    });
-  }
-
-  static class CachedPreparedStatement implements Handler<CommandResponse<PreparedStatement>> {
-
-    private CommandResponse<PreparedStatement> resp;
-    private final ArrayDeque<Handler<? super CommandResponse<PreparedStatement>>> waiters = new ArrayDeque<>();
-
-    void get(Handler<? super CommandResponse<PreparedStatement>> handler) {
-      if (resp != null) {
-        handler.handle(resp);
-      } else {
-        waiters.add(handler);
-      }
-    }
-
-    @Override
-    public void handle(CommandResponse<PreparedStatement> event) {
-      resp = event;
-      Handler<? super CommandResponse<PreparedStatement>> waiter;
-      while ((waiter = waiters.poll()) != null) {
-        waiter.handle(resp);
-      }
-    }
-  }
-
   public NetSocketInternal socket() {
     return socket;
   }
@@ -200,27 +145,6 @@ public class SocketConnection implements Connection {
       throw new IllegalStateException();
     }
 
-    // Special handling for cache
-    if (cmd instanceof PrepareStatementCommand) {
-      PrepareStatementCommand psCmd = (PrepareStatementCommand) cmd;
-      Map<String, SocketConnection.CachedPreparedStatement> psCache = this.psCache;
-      if (psCache != null) {
-        SocketConnection.CachedPreparedStatement cached = psCache.get(psCmd.sql);
-        if (cached != null) {
-          Handler<? super CommandResponse<PreparedStatement>> handler = psCmd.handler;
-          cached.get(handler);
-          return;
-        } else {
-          psCmd.statement = psSeq.next();
-          psCmd.cached = cached = new SocketConnection.CachedPreparedStatement();
-          psCache.put(psCmd.sql, cached);
-          Handler<? super CommandResponse<PreparedStatement>> a = psCmd.handler;
-          psCmd.cached.get(a);
-          psCmd.handler = psCmd.cached;
-        }
-      }
-    }
-
     //
     if (status == Status.CONNECTED) {
       pending.add(cmd);
@@ -228,16 +152,6 @@ public class SocketConnection implements Connection {
     } else {
       cmd.fail(new VertxException("Connection not open " + status));
     }
-  }
-
-  @Override
-  public int getProcessId() {
-    return processId;
-  }
-
-  @Override
-  public int getSecretKey() {
-    return secretKey;
   }
 
   private void checkPending() {

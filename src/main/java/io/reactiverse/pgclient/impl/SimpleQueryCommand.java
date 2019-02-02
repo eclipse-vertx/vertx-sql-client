@@ -21,8 +21,6 @@ import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
 import io.reactiverse.pgclient.impl.codec.encoder.Query;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 
 import java.util.stream.Collector;
 
@@ -50,7 +48,7 @@ class SimpleQueryCommand<T> extends QueryCommandBase<T> {
   }
 
   @Override
-  void exec(MessageEncoder out) {
+  protected void exec(MessageEncoder out) {
     out.writeQuery(new Query(sql));
   }
 

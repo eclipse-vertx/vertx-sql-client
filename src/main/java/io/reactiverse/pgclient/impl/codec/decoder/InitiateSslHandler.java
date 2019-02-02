@@ -17,12 +17,13 @@
 
 package io.reactiverse.pgclient.impl.codec.decoder;
 
-import io.reactiverse.pgclient.impl.SocketConnection;
+import io.reactiverse.pgclient.impl.PgSocketConnection;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.DecoderException;
+import io.reactiverse.pgclient.impl.SocketConnectionBase;
 import io.reactiverse.pgclient.impl.codec.decoder.type.MessageType;
 import io.vertx.core.Future;
 import io.vertx.core.VertxException;
@@ -30,10 +31,10 @@ import io.vertx.core.VertxException;
 public class InitiateSslHandler extends ChannelInboundHandlerAdapter {
 
   private static final int code = 80877103;
-  private final SocketConnection conn;
+  private final SocketConnectionBase conn;
   private final Future<Void> upgradeFuture;
 
-  public InitiateSslHandler(SocketConnection conn, Future<Void> upgradeFuture) {
+  public InitiateSslHandler(SocketConnectionBase conn, Future<Void> upgradeFuture) {
     this.conn = conn;
     this.upgradeFuture = upgradeFuture;
   }

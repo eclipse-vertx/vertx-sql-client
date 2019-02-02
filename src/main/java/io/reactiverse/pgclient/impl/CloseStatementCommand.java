@@ -25,7 +25,7 @@ import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
 class CloseStatementCommand extends CommandBase<Void> {
 
   @Override
-  void exec(MessageEncoder out) {
+  protected void exec(MessageEncoder out) {
     /*
     if (conn.psCache == null) {
       conn.writeMessage(new Close().setStatement(statement));
