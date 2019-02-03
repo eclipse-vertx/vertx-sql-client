@@ -48,7 +48,6 @@ public abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
     this.portal = portal;
     this.suspended = suspended;
     this.singleton = singleton;
-    this.decoder = new RowResultDecoder<>(collector, singleton, ps.rowDesc());
   }
 
   public PreparedStatement preparedStatement() {

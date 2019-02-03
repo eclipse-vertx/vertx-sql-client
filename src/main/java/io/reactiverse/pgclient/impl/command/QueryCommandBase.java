@@ -19,7 +19,6 @@ package io.reactiverse.pgclient.impl.command;
 
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.impl.QueryResultHandler;
-import io.reactiverse.pgclient.impl.RowResultDecoder;
 
 import java.util.stream.Collector;
 
@@ -29,9 +28,8 @@ import java.util.stream.Collector;
 
 public abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
 
-  public RowResultDecoder<?, T> decoder;
-  final QueryResultHandler<T> resultHandler;
-  final Collector<Row, ?, T> collector;
+  private final QueryResultHandler<T> resultHandler;
+  private final Collector<Row, ?, T> collector;
 
   QueryCommandBase(Collector<Row, ?, T> collector, QueryResultHandler<T> resultHandler) {
     this.resultHandler = resultHandler;

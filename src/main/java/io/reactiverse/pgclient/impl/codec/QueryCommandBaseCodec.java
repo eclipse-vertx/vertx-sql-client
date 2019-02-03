@@ -18,11 +18,14 @@ package io.reactiverse.pgclient.impl.codec;
 
 import io.reactiverse.pgclient.PgException;
 import io.reactiverse.pgclient.Row;
+import io.reactiverse.pgclient.impl.RowResultDecoder;
 import io.reactiverse.pgclient.impl.command.QueryCommandBase;
 
 import java.util.stream.Collector;
 
 abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends PgCommandCodec<Boolean, C> {
+
+  RowResultDecoder<?, T> decoder;
 
   QueryCommandBaseCodec(C cmd) {
     super(cmd);
@@ -34,11 +37,11 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends P
     T result;
     int size;
     RowDescription desc;
-    if (cmd.decoder != null) {
-      result = cmd.decoder.complete();
-      desc = cmd.decoder.description();
-      size = cmd.decoder.size();
-      cmd.decoder.reset();
+    if (decoder != null) {
+      result = decoder.complete();
+      desc = decoder.description();
+      size = decoder.size();
+      decoder.reset();
     } else {
       result = emptyResult(cmd.collector());
       size = 0;

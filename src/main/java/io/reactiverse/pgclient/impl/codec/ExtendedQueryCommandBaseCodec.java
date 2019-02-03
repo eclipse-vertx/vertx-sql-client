@@ -23,11 +23,12 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
 
   ExtendedQueryCommandBaseCodec(C cmd) {
     super(cmd);
+    decoder = new RowResultDecoder<>(cmd.collector(), cmd.isSingleton(), cmd.preparedStatement().rowDesc());
   }
 
   @Override
   void handleRowDescription(RowDescription rowDescription) {
-    cmd.decoder = new RowResultDecoder<>(cmd.collector(), cmd.isSingleton(), rowDescription);
+    decoder = new RowResultDecoder<>(cmd.collector(), cmd.isSingleton(), rowDescription);
   }
 
   @Override
@@ -37,10 +38,10 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
 
   @Override
   void handlePortalSuspended() {
-    R result = cmd.decoder.complete();
-    RowDescription desc = cmd.decoder.description();
-    int size = cmd.decoder.size();
-    cmd.decoder.reset();
+    R result = decoder.complete();
+    RowDescription desc = decoder.description();
+    int size = decoder.size();
+    decoder.reset();
     this.result = true;
     cmd.resultHandler().handleResult(0, size, desc, result);
   }
