@@ -1031,8 +1031,14 @@ class DataTypeCodec {
   }
 
   private static Buffer textDecodeBYTEA(int index, int len, ByteBuf buff) {
-    // Shift 2 bytes: skip \x prolog
-    return Buffer.buffer(decodeHexStringToBytes(index + 2, len - 2, buff));
+    if (isHexFormat(index, len, buff)) {
+      // hex format
+      // Shift 2 bytes: skip \x prolog
+      return Buffer.buffer(decodeHexStringToBytes(index + 2, len - 2, buff));
+    } else {
+      // escape format
+      return decodeEscapeByteaStringToBuffer(index, len, buff);
+    }
   }
 
   private static void binaryEncodeBYTEA(Buffer value, ByteBuf buff) {
@@ -1308,6 +1314,48 @@ class DataTypeCodec {
 
   private static byte decodeHexChar(byte ch) {
     return (byte)(((ch & 0x1F) + ((ch >> 6) * 0x19) - 0x10) & 0x0F);
+  }
+
+  private static boolean isHexFormat(int index, int len, ByteBuf buff) {
+    return len >= 2 && buff.getByte(index) == '\\' && buff.getByte(index + 1) == 'x';
+  }
+
+  private static Buffer decodeEscapeByteaStringToBuffer(int index, int len, ByteBuf buff) {
+    Buffer buffer = Buffer.buffer();
+
+    int pos = 0;
+    while (pos < len) {
+      byte current = buff.getByte(pos + index);
+
+      if (current == '\\') {
+        if (pos + 2 <= len && buff.getByte(pos + index + 1) == '\\') {
+          // check double backslashes
+          buffer.appendByte((byte) '\\');
+          pos += 2;
+          continue;
+        }
+
+        if (pos + 4 <= len) {
+          // a preceded backslash with three-digit octal value
+          int high = Character.digit(buff.getByte(pos + index + 1), 8) << 6;
+          int medium = Character.digit(buff.getByte(pos + index + 2), 8) << 3;
+          int low = Character.digit(buff.getByte(pos + index + 3), 8);
+          int escapedValue = high + medium + low;
+
+          buffer.appendByte((byte) escapedValue);
+          pos += 4;
+          continue;
+        }
+
+        throw new DecoderException("Decoding unexpected BYTEA escape format");
+      } else {
+        // printable octets
+        buffer.appendByte(current);
+        pos++;
+      }
+    }
+
+    return buffer;
   }
 
   private static <T> T[] binaryDecodeArray(IntFunction<T[]> supplier, DataType type, int index, int len, ByteBuf buff) {
