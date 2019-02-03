@@ -14,6 +14,8 @@ import io.reactiverse.pgclient.data.Path;
 import io.reactiverse.pgclient.data.Point;
 import io.reactiverse.pgclient.data.Polygon;
 import io.reactiverse.pgclient.impl.ArrayTuple;
+import io.reactiverse.pgclient.impl.RowImpl;
+import io.reactiverse.pgclient.impl.RowInternal;
 import io.vertx.core.buffer.Buffer;
 
 import java.math.BigDecimal;
@@ -28,7 +30,8 @@ import java.util.UUID;
 // TODO how we design Row API ? Some data types in Postgres may not be compatible with some MySQL data types. need to check this
 
 @ImplReusable
-public class MySQLRowImpl extends ArrayTuple implements Row {
+public class MySQLRowImpl extends ArrayTuple implements RowInternal {
+
   private final ColumnMetadata columnMetadata;
   MySQLRowImpl next;
 
@@ -304,5 +307,15 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
   @Override
   public Interval[] getIntervalArray(String name) {
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void setNext(RowInternal next) {
+    this.next = (MySQLRowImpl) next;
+  }
+
+  @Override
+  public RowInternal getNext() {
+    return next;
   }
 }

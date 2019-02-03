@@ -30,10 +30,10 @@ class PgRowSetImpl extends PgResultBase<PgRowSet, PgRowSetImpl> implements PgRow
     PgRowSetImpl::new,
     (set, row) -> {
       if (set.head == null) {
-        set.head = set.tail = (RowImpl) row;
+        set.head = set.tail = (RowInternal) row;
       } else {
-        set.tail.next = (RowImpl) row;
-        set.tail = set.tail.next;
+        set.tail.setNext((RowInternal) row);;
+        set.tail = set.tail.getNext();
       }
     },
     (set1, set2) -> null, // Shall not be invoked as this is sequential
@@ -42,8 +42,8 @@ class PgRowSetImpl extends PgResultBase<PgRowSet, PgRowSetImpl> implements PgRow
 
   static Function<PgRowSet, PgRowSetImpl> FACTORY = rs -> (PgRowSetImpl) rs;
 
-  private RowImpl head;
-  private RowImpl tail;
+  private RowInternal head;
+  private RowInternal tail;
 
   @Override
   public PgRowSet value() {
@@ -53,7 +53,7 @@ class PgRowSetImpl extends PgResultBase<PgRowSet, PgRowSetImpl> implements PgRow
   @Override
   public PgIterator iterator() {
     return new PgIterator() {
-      RowImpl current = head;
+      RowInternal current = head;
       @Override
       public boolean hasNext() {
         return current != null;
@@ -63,8 +63,8 @@ class PgRowSetImpl extends PgResultBase<PgRowSet, PgRowSetImpl> implements PgRow
         if (current == null) {
           throw new NoSuchElementException();
         }
-        RowImpl r = current;
-        current = current.next;
+        RowInternal r = current;
+        current = current.getNext();
         return r;
       }
     };

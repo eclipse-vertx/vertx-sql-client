@@ -32,8 +32,8 @@ public class InitCommand extends CommandBase<Connection> {
   private final String password;
   private final String database;
 
-  InitCommand(
-    PgSocketConnection conn,
+  public InitCommand(
+    SocketConnectionBase conn,
     String username,
     String password,
     String database) {

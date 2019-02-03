@@ -23,7 +23,6 @@ import io.reactiverse.pgclient.data.Json;
 import io.reactiverse.pgclient.data.Line;
 import io.reactiverse.pgclient.data.LineSegment;
 import io.reactiverse.pgclient.data.Numeric;
-import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.data.Path;
 import io.reactiverse.pgclient.data.Polygon;
 import io.reactiverse.pgclient.impl.codec.ColumnDesc;
@@ -37,10 +36,10 @@ import java.time.*;
 import java.time.temporal.Temporal;
 import java.util.UUID;
 
-public class RowImpl extends ArrayTuple implements Row {
+public class RowImpl extends ArrayTuple implements RowInternal {
 
   // Linked list
-  RowImpl next;
+  private RowInternal next;
   private final RowDescription desc;
 
   public RowImpl(RowDescription desc) {
@@ -363,5 +362,15 @@ public class RowImpl extends ArrayTuple implements Row {
   public Interval[] getIntervalArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getIntervalArray(pos);
+  }
+
+  @Override
+  public void setNext(RowInternal next) {
+    this.next = next;
+  }
+
+  @Override
+  public RowInternal getNext() {
+    return next;
   }
 }
