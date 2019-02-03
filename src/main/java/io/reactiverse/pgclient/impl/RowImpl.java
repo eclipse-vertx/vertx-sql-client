@@ -28,7 +28,7 @@ import io.reactiverse.pgclient.data.Path;
 import io.reactiverse.pgclient.data.Polygon;
 import io.reactiverse.pgclient.impl.codec.ColumnDesc;
 import io.reactiverse.pgclient.data.Interval;
-import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
+import io.reactiverse.pgclient.impl.codec.RowDescription;
 import io.reactiverse.pgclient.data.Point;
 import io.vertx.core.buffer.Buffer;
 

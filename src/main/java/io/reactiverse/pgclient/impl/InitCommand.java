@@ -19,10 +19,10 @@ package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.PgException;
 import io.reactiverse.pgclient.impl.codec.TxStatus;
-import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
-import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
-import io.reactiverse.pgclient.impl.codec.encoder.PasswordMessage;
-import io.reactiverse.pgclient.impl.codec.encoder.StartupMessage;
+import io.reactiverse.pgclient.impl.codec.ErrorResponse;
+import io.reactiverse.pgclient.impl.codec.PgEncoder;
+import io.reactiverse.pgclient.impl.codec.PasswordMessage;
+import io.reactiverse.pgclient.impl.codec.StartupMessage;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -32,14 +32,14 @@ import java.nio.charset.StandardCharsets;
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class InitCommand extends CommandBase<Connection> {
+public class InitCommand extends PgCommandBase<Connection> {
 
   private final PgSocketConnection conn;
   private final String username;
   private final String password;
   private final String database;
   private String encoding;
-  private MessageEncoder out;
+  private PgEncoder out;
 
   InitCommand(
     PgSocketConnection conn,
@@ -53,7 +53,7 @@ public class InitCommand extends CommandBase<Connection> {
   }
 
   @Override
-  protected void exec(MessageEncoder out) {
+  public void exec(PgEncoder out) {
     this.out = out;
     out.writeStartupMessage(new StartupMessage(username, database));
   }

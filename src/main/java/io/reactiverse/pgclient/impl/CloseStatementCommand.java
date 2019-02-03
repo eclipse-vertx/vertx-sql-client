@@ -17,15 +17,15 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
+import io.reactiverse.pgclient.impl.codec.PgEncoder;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class CloseStatementCommand extends CommandBase<Void> {
+class CloseStatementCommand extends PgCommandBase<Void> {
 
   @Override
-  protected void exec(MessageEncoder out) {
+  public void exec(PgEncoder out) {
     /*
     if (conn.psCache == null) {
       conn.writeMessage(new Close().setStatement(statement));

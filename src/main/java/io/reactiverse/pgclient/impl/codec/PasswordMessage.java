@@ -15,23 +15,18 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec.encoder;
+package io.reactiverse.pgclient.impl.codec;
+
+import io.reactiverse.pgclient.impl.codec.util.MD5Authentication;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public final class Parse {
+public class PasswordMessage {
 
-  public final String query;
-  public final long statement;
+  public final String hash;
 
-  public Parse(String query, long statement) {
-    this.query = query;
-    this.statement = statement;
-  }
-
-  public Parse(String query) {
-    this.query = query;
-    this.statement = 0;
+  public PasswordMessage(String username, String password, byte[] salt) {
+    this.hash = salt != null ? MD5Authentication.encode(username, password, salt) : password;
   }
 }

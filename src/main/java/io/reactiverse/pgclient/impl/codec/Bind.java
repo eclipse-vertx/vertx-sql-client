@@ -15,7 +15,7 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec.encoder;
+package io.reactiverse.pgclient.impl.codec;
 
 import io.reactiverse.pgclient.impl.codec.ColumnDesc;
 import io.reactiverse.pgclient.impl.codec.DataType;

@@ -18,9 +18,9 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
-import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
-import io.reactiverse.pgclient.impl.codec.encoder.Query;
+import io.reactiverse.pgclient.impl.codec.RowDescription;
+import io.reactiverse.pgclient.impl.codec.PgEncoder;
+import io.reactiverse.pgclient.impl.codec.Query;
 
 import java.util.stream.Collector;
 
@@ -48,7 +48,7 @@ class SimpleQueryCommand<T> extends QueryCommandBase<T> {
   }
 
   @Override
-  protected void exec(MessageEncoder out) {
+  public void exec(PgEncoder out) {
     out.writeQuery(new Query(sql));
   }
 

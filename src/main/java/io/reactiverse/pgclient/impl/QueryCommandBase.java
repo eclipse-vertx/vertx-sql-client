@@ -19,8 +19,8 @@ package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.PgException;
 import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
-import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
+import io.reactiverse.pgclient.impl.codec.ErrorResponse;
+import io.reactiverse.pgclient.impl.codec.RowDescription;
 
 import java.util.stream.Collector;
 
@@ -28,7 +28,7 @@ import java.util.stream.Collector;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
-public abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
+public abstract class QueryCommandBase<T> extends PgCommandBase<Boolean> {
 
   public RowResultDecoder<?, T> decoder;
   final QueryResultHandler<T> resultHandler;

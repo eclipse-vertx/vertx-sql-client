@@ -21,6 +21,6 @@ import io.vertx.core.Handler;
 @FunctionalInterface
 interface CommandScheduler {
 
-  <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler);
+  <R> void schedule(PgCommandBase<R> cmd, Handler<? super CommandResponse<R>> handler);
 
 }

@@ -15,9 +15,7 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec.decoder;
-
-import io.reactiverse.pgclient.impl.codec.ColumnDesc;
+package io.reactiverse.pgclient.impl.codec;
 
 import java.util.Arrays;
 import java.util.Collections;

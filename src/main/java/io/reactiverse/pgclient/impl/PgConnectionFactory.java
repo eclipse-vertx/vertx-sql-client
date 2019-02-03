@@ -93,7 +93,7 @@ public class PgConnectionFactory {
     connect(ar -> {
       if (ar.succeeded()) {
         PgSocketConnection conn = ar.result();
-        conn.initializeCodec();
+        conn.init();
         conn.sendStartupMessage(username, password, database, completionHandler);
       } else {
         completionHandler.handle(CommandResponse.failure(ar.cause()));

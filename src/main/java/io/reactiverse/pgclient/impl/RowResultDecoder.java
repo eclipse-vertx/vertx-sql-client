@@ -21,8 +21,8 @@ import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.impl.codec.ColumnDesc;
 import io.reactiverse.pgclient.impl.codec.DataFormat;
 import io.reactiverse.pgclient.impl.codec.DataTypeCodec;
-import io.reactiverse.pgclient.impl.codec.decoder.RowDecoder;
-import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
+import io.reactiverse.pgclient.impl.codec.RowDecoder;
+import io.reactiverse.pgclient.impl.codec.RowDescription;
 import io.netty.buffer.ByteBuf;
 
 import java.util.function.BiConsumer;

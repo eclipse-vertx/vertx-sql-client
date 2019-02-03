@@ -17,13 +17,12 @@
 
 package io.reactiverse.pgclient.impl;
 
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
-import io.reactiverse.pgclient.impl.codec.decoder.InitiateSslHandler;
-import io.reactiverse.pgclient.impl.codec.decoder.MessageDecoder;
-import io.reactiverse.pgclient.impl.codec.decoder.NoticeResponse;
-import io.reactiverse.pgclient.impl.codec.decoder.NotificationResponse;
-import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
+import io.reactiverse.pgclient.impl.codec.InitiateSslHandler;
+import io.reactiverse.pgclient.impl.codec.NoticeResponse;
+import io.reactiverse.pgclient.impl.codec.NotificationResponse;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -35,7 +34,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import java.util.ArrayDeque;
-import java.util.Arrays;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -50,13 +48,11 @@ public abstract class SocketConnectionBase implements Connection {
 
   }
 
-  private final ArrayDeque<CommandBase<?>> inflight = new ArrayDeque<>();
-  private final ArrayDeque<CommandBase<?>> pending = new ArrayDeque<>();
+  private final ArrayDeque<PgCommandBase<?>> pending = new ArrayDeque<>();
   private final Context context;
+  private int inflight;
   private Holder holder;
   private final int pipeliningLimit;
-  private MessageDecoder decoder;
-  private MessageEncoder encoder;
 
   protected final NetSocketInternal socket;
   protected Status status = Status.CONNECTED;
@@ -91,13 +87,7 @@ public abstract class SocketConnectionBase implements Connection {
     pipeline.addBefore("handler", "initiate-ssl-handler", new InitiateSslHandler(this, upgradeFuture));
   }
 
-  void initializeCodec() {
-    decoder = new MessageDecoder(inflight, socket.channelHandlerContext().alloc());
-    encoder = new MessageEncoder(socket.channelHandlerContext());
-
-    ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
-    pipeline.addBefore("handler", "decoder", decoder);
-
+  public void init() {
     socket.closeHandler(this::handleClosed);
     socket.exceptionHandler(this::handleException);
     socket.messageHandler(msg -> {
@@ -137,10 +127,7 @@ public abstract class SocketConnectionBase implements Connection {
     }
   }
 
-  public void schedule(CommandBase<?> cmd) {
-    if (cmd.handler == null) {
-      throw new IllegalArgumentException();
-    }
+  public void schedule(PgCommandBase<?> cmd) {
     if (Vertx.currentContext() != context) {
       throw new IllegalStateException();
     }
@@ -155,22 +142,23 @@ public abstract class SocketConnectionBase implements Connection {
   }
 
   private void checkPending() {
-    if (inflight.size() < pipeliningLimit) {
-      CommandBase<?> cmd;
-      while (inflight.size() < pipeliningLimit && (cmd = pending.poll()) != null) {
-        inflight.add(cmd);
-        decoder.run(cmd);
-        cmd.exec(encoder);
+    ChannelHandlerContext ctx = socket.channelHandlerContext();
+    if (inflight < pipeliningLimit) {
+      PgCommandBase<?> cmd;
+      while (inflight < pipeliningLimit && (cmd = pending.poll()) != null) {
+        inflight++;
+        ctx.write(cmd);
       }
-      encoder.flush();
+      ctx.flush();
     }
   }
 
   private void handleMessage(Object msg) {
     if (msg instanceof CommandResponse) {
-      CommandBase cmd = inflight.poll();
+      inflight--;
       checkPending();
-      cmd.handler.handle(msg);
+      CommandResponse resp =(CommandResponse) msg;
+      resp.cmd.handler.handle(msg);
     } else if (msg instanceof NotificationResponse) {
       handleNotification((NotificationResponse) msg);
     } else if (msg instanceof NoticeResponse) {
@@ -228,12 +216,10 @@ public abstract class SocketConnectionBase implements Connection {
         }
       }
       Throwable cause = t == null ? new VertxException("closed") : t;
-      for (ArrayDeque<CommandBase<?>> q : Arrays.asList(inflight, pending)) {
-        CommandBase<?> cmd;
-        while ((cmd = q.poll()) != null) {
-          CommandBase<?> c = cmd;
-          context.runOnContext(v -> c.fail(cause));
-        }
+      PgCommandBase<?> cmd;
+      while ((cmd = pending.poll()) != null) {
+        PgCommandBase<?> c = cmd;
+        context.runOnContext(v -> c.fail(cause));
       }
       if (holder != null) {
         holder.handleClosed();

@@ -15,28 +15,19 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec.decoder;
+package io.reactiverse.pgclient.impl.codec;
 
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.reactiverse.pgclient.impl.CommandBase;
-import io.reactiverse.pgclient.impl.CommandResponse;
+import io.reactiverse.pgclient.impl.PgCommandBase;
 import io.reactiverse.pgclient.impl.QueryCommandBase;
-import io.reactiverse.pgclient.impl.codec.ColumnDesc;
-import io.reactiverse.pgclient.impl.codec.DataFormat;
-import io.reactiverse.pgclient.impl.codec.DataType;
-import io.reactiverse.pgclient.impl.codec.TxStatus;
 import io.reactiverse.pgclient.impl.codec.util.Util;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.ByteProcessor;
-import io.reactiverse.pgclient.impl.codec.decoder.type.AuthenticationType;
-import io.reactiverse.pgclient.impl.codec.decoder.type.ErrorOrNoticeType;
-import io.reactiverse.pgclient.impl.codec.decoder.type.MessageType;
-import io.vertx.core.Handler;
 
-import java.util.Deque;
+import java.util.ArrayDeque;
 
 /**
  *
@@ -45,29 +36,19 @@ import java.util.Deque;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class MessageDecoder extends ChannelInboundHandlerAdapter {
+public class PgDecoder extends ChannelInboundHandlerAdapter {
 
-  private final Deque<CommandBase<?>> inflight;
-  private final ByteBufAllocator alloc;
-  private Handler<? super CommandResponse<?>> commandResponseHandler;
-  private Handler<NoticeResponse> noticeHandler;
-
+  private final ArrayDeque<PgCommandBase<?>> inflight;
+  private ByteBufAllocator alloc;
   private ByteBuf in;
 
-  public MessageDecoder(Deque<CommandBase<?>> inflight, ByteBufAllocator alloc) {
+  PgDecoder(ArrayDeque<PgCommandBase<?>> inflight) {
     this.inflight = inflight;
-    this.alloc = alloc;
-  }
-
-  public void run(CommandBase<?> cmd) {
-    cmd.completionHandler = commandResponseHandler;
-    cmd.noticeHandler = noticeHandler;
   }
 
   @Override
   public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-    commandResponseHandler = ctx::fireChannelRead;
-    noticeHandler = ctx::fireChannelRead;
+    alloc = ctx.alloc();
   }
 
   @Override
@@ -102,19 +83,19 @@ public class MessageDecoder extends ChannelInboundHandlerAdapter {
       try {
         in.setIndex(beginIdx + 5, endIdx);
         switch (id) {
-          case MessageType.READY_FOR_QUERY: {
+          case PgProtocolConstants.MESSAGE_TYPE_READY_FOR_QUERY: {
             decodeReadyForQuery(in);
             break;
           }
-          case MessageType.DATA_ROW: {
+          case PgProtocolConstants.MESSAGE_TYPE_DATA_ROW: {
             decodeDataRow(in);
             break;
           }
-          case MessageType.COMMAND_COMPLETE: {
+          case PgProtocolConstants.MESSAGE_TYPE_COMMAND_COMPLETE: {
             decodeCommandComplete(in);
             break;
           }
-          case MessageType.BIND_COMPLETE: {
+          case PgProtocolConstants.MESSAGE_TYPE_BIND_COMPLETE: {
             decodeBindComplete();
             break;
           }
@@ -134,55 +115,55 @@ public class MessageDecoder extends ChannelInboundHandlerAdapter {
 
   private void decodeMessage(ChannelHandlerContext ctx, byte id, ByteBuf in) {
     switch (id) {
-      case MessageType.ROW_DESCRIPTION: {
+      case PgProtocolConstants.MESSAGE_TYPE_ROW_DESCRIPTION: {
         decodeRowDescription(in);
         break;
       }
-      case MessageType.ERROR_RESPONSE: {
+      case PgProtocolConstants.MESSAGE_TYPE_ERROR_RESPONSE: {
         decodeError(in);
         break;
       }
-      case MessageType.NOTICE_RESPONSE: {
+      case PgProtocolConstants.MESSAGE_TYPE_NOTICE_RESPONSE: {
         decodeNotice(in);
         break;
       }
-      case MessageType.AUTHENTICATION: {
+      case PgProtocolConstants.MESSAGE_TYPE_AUTHENTICATION: {
         decodeAuthentication(in);
         break;
       }
-      case MessageType.EMPTY_QUERY_RESPONSE: {
+      case PgProtocolConstants.MESSAGE_TYPE_EMPTY_QUERY_RESPONSE: {
         decodeEmptyQueryResponse();
         break;
       }
-      case MessageType.PARSE_COMPLETE: {
+      case PgProtocolConstants.MESSAGE_TYPE_PARSE_COMPLETE: {
         decodeParseComplete();
         break;
       }
-      case MessageType.CLOSE_COMPLETE: {
+      case PgProtocolConstants.MESSAGE_TYPE_CLOSE_COMPLETE: {
         decodeCloseComplete();
         break;
       }
-      case MessageType.NO_DATA: {
+      case PgProtocolConstants.MESSAGE_TYPE_NO_DATA: {
         decodeNoData();
         break;
       }
-      case MessageType.PORTAL_SUSPENDED: {
+      case PgProtocolConstants.MESSAGE_TYPE_PORTAL_SUSPENDED: {
         decodePortalSuspended();
         break;
       }
-      case MessageType.PARAMETER_DESCRIPTION: {
+      case PgProtocolConstants.MESSAGE_TYPE_PARAMETER_DESCRIPTION: {
         decodeParameterDescription(in);
         break;
       }
-      case MessageType.PARAMETER_STATUS: {
+      case PgProtocolConstants.MESSAGE_TYPE_PARAMETER_STATUS: {
         decodeParameterStatus(in);
         break;
       }
-      case MessageType.BACKEND_KEY_DATA: {
+      case PgProtocolConstants.MESSAGE_TYPE_BACKEND_KEY_DATA: {
         decodeBackendKeyData(in);
         break;
       }
-      case MessageType.NOTIFICATION_RESPONSE: {
+      case PgProtocolConstants.MESSAGE_TYPE_NOTIFICATION_RESPONSE: {
         decodeNotificationResponse(ctx, in);
         break;
       }
@@ -267,71 +248,71 @@ public class MessageDecoder extends ChannelInboundHandlerAdapter {
 
       switch (type) {
 
-        case ErrorOrNoticeType.SEVERITY:
+        case PgProtocolConstants.ERROR_OR_NOTICE_SEVERITY:
           response.setSeverity(Util.readCStringUTF8(in));
           break;
 
-        case ErrorOrNoticeType.CODE:
+        case PgProtocolConstants.ERROR_OR_NOTICE_CODE:
           response.setCode(Util.readCStringUTF8(in));
           break;
 
-        case ErrorOrNoticeType.MESSAGE:
+        case PgProtocolConstants.ERROR_OR_NOTICE_MESSAGE:
           response.setMessage(Util.readCStringUTF8(in));
           break;
 
-        case ErrorOrNoticeType.DETAIL:
+        case PgProtocolConstants.ERROR_OR_NOTICE_DETAIL:
           response.setDetail(Util.readCStringUTF8(in));
           break;
 
-        case ErrorOrNoticeType.HINT:
+        case PgProtocolConstants.ERROR_OR_NOTICE_HINT:
           response.setHint(Util.readCStringUTF8(in));
           break;
 
-        case ErrorOrNoticeType.INTERNAL_POSITION:
+        case PgProtocolConstants.ERROR_OR_NOTICE_INTERNAL_POSITION:
           response.setInternalPosition(Util.readCStringUTF8(in));
           break;
 
-        case ErrorOrNoticeType.INTERNAL_QUERY:
+        case PgProtocolConstants.ERROR_OR_NOTICE_INTERNAL_QUERY:
           response.setInternalQuery(Util.readCStringUTF8(in));
           break;
 
-        case ErrorOrNoticeType.POSITION:
+        case PgProtocolConstants.ERROR_OR_NOTICE_POSITION:
           response.setPosition(Util.readCStringUTF8(in));
           break;
 
-        case ErrorOrNoticeType.WHERE:
+        case PgProtocolConstants.ERROR_OR_NOTICE_WHERE:
           response.setWhere(Util.readCStringUTF8(in));
           break;
 
-        case ErrorOrNoticeType.FILE:
+        case PgProtocolConstants.ERROR_OR_NOTICE_FILE:
           response.setFile(Util.readCStringUTF8(in));
           break;
 
-        case ErrorOrNoticeType.LINE:
+        case PgProtocolConstants.ERROR_OR_NOTICE_LINE:
           response.setLine(Util.readCStringUTF8(in));
           break;
 
-        case ErrorOrNoticeType.ROUTINE:
+        case PgProtocolConstants.ERROR_OR_NOTICE_ROUTINE:
           response.setRoutine(Util.readCStringUTF8(in));
           break;
 
-        case ErrorOrNoticeType.SCHEMA:
+        case PgProtocolConstants.ERROR_OR_NOTICE_SCHEMA:
           response.setSchema(Util.readCStringUTF8(in));
           break;
 
-        case ErrorOrNoticeType.TABLE:
+        case PgProtocolConstants.ERROR_OR_NOTICE_TABLE:
           response.setTable(Util.readCStringUTF8(in));
           break;
 
-        case ErrorOrNoticeType.COLUMN:
+        case PgProtocolConstants.ERROR_OR_NOTICE_COLUMN:
           response.setColumn(Util.readCStringUTF8(in));
           break;
 
-        case ErrorOrNoticeType.DATA_TYPE:
+        case PgProtocolConstants.ERROR_OR_NOTICE_DATA_TYPE:
           response.setDataType(Util.readCStringUTF8(in));
           break;
 
-        case ErrorOrNoticeType.CONSTRAINT:
+        case PgProtocolConstants.ERROR_OR_NOTICE_CONSTRAINT:
           response.setConstraint(Util.readCStringUTF8(in));
           break;
 
@@ -346,25 +327,25 @@ public class MessageDecoder extends ChannelInboundHandlerAdapter {
 
     int type = in.readInt();
     switch (type) {
-      case AuthenticationType.OK: {
+      case PgProtocolConstants.AUTHENTICATION_TYPE_OK: {
         inflight.peek().handleAuthenticationOk();
       }
       break;
-      case AuthenticationType.MD5_PASSWORD: {
+      case PgProtocolConstants.AUTHENTICATION_TYPE_MD5_PASSWORD: {
         byte[] salt = new byte[4];
         in.readBytes(salt);
         inflight.peek().handleAuthenticationMD5Password(salt);
       }
       break;
-      case AuthenticationType.CLEARTEXT_PASSWORD: {
+      case PgProtocolConstants.AUTHENTICATION_TYPE_CLEARTEXT_PASSWORD: {
         inflight.peek().handleAuthenticationClearTextPassword();
       }
       break;
-      case AuthenticationType.KERBEROS_V5:
-      case AuthenticationType.SCM_CREDENTIAL:
-      case AuthenticationType.GSS:
-      case AuthenticationType.GSS_CONTINUE:
-      case AuthenticationType.SSPI:
+      case PgProtocolConstants.AUTHENTICATION_TYPE_KERBEROS_V5:
+      case PgProtocolConstants.AUTHENTICATION_TYPE_SCM_CREDENTIAL:
+      case PgProtocolConstants.AUTHENTICATION_TYPE_GSS:
+      case PgProtocolConstants.AUTHENTICATION_TYPE_GSS_CONTINUE:
+      case PgProtocolConstants.AUTHENTICATION_TYPE_SSPI:
       default:
         throw new UnsupportedOperationException("Authentication type " + type + " is not supported in the client");
     }

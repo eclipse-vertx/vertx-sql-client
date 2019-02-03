@@ -17,6 +17,8 @@
 
 package io.reactiverse.pgclient.impl;
 
+import io.netty.channel.ChannelPipeline;
+import io.reactiverse.pgclient.impl.codec.PgCodec;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.NetSocketInternal;
@@ -33,6 +35,7 @@ public class PgSocketConnection extends SocketConnectionBase {
   private final Map<String, CachedPreparedStatement> psCache;
   private final StringLongSequence psSeq = new StringLongSequence();
 
+  private PgCodec codec;
   int processId;
   int secretKey;
 
@@ -42,6 +45,14 @@ public class PgSocketConnection extends SocketConnectionBase {
                             Context context) {
     super(socket, pipeliningLimit, context);
     this.psCache = cachePreparedStatements ? new ConcurrentHashMap<>() : null;
+  }
+
+  @Override
+  public void init() {
+    codec = new PgCodec();
+    ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
+    pipeline.addBefore("handler", "codec", codec);
+    super.init();
   }
 
   void sendStartupMessage(String username, String password, String database, Handler<? super CommandResponse<Connection>> completionHandler) {
@@ -103,7 +114,10 @@ public class PgSocketConnection extends SocketConnectionBase {
     return socket.isSsl();
   }
 
-  public void schedule(CommandBase<?> cmd) {
+  public void schedule(PgCommandBase<?> cmd) {
+    if (cmd.handler == null) {
+      throw new IllegalArgumentException();
+    }
     // Special handling for cache
     if (cmd instanceof PrepareStatementCommand) {
       PrepareStatementCommand psCmd = (PrepareStatementCommand) cmd;

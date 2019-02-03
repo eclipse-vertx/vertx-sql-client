@@ -66,6 +66,7 @@ public abstract class CommandResponse<R> implements AsyncResult<R> {
 
   // The connection that executed the command
   CommandScheduler scheduler;
+  public PgCommandBase<R> cmd;
   private final TxStatus txStatus;
 
   public CommandResponse(TxStatus txStatus) {

@@ -15,18 +15,12 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec.encoder;
+package io.reactiverse.pgclient.impl.codec;
 
-import io.reactiverse.pgclient.impl.codec.util.MD5Authentication;
+import io.netty.buffer.ByteBuf;
 
-/**
- * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
- */
-public class PasswordMessage {
+public interface RowDecoder {
 
-  public final String hash;
+  void decodeRow(int len, ByteBuf in);
 
-  public PasswordMessage(String username, String password, byte[] salt) {
-    this.hash = salt != null ? MD5Authentication.encode(username, password, salt) : password;
-  }
 }

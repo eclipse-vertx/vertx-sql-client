@@ -50,7 +50,7 @@ public class PgConnectionImpl extends PgConnectionBase<PgConnectionImpl> impleme
   }
 
   @Override
-  public <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
+  public <R> void schedule(PgCommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
     cmd.handler = cr -> {
       // Tx might be gone ???
       cr.scheduler = this;
@@ -59,7 +59,7 @@ public class PgConnectionImpl extends PgConnectionBase<PgConnectionImpl> impleme
     schedule(cmd);
   }
 
-  protected void schedule(CommandBase<?> cmd) {
+  protected void schedule(PgCommandBase<?> cmd) {
     if (context == Vertx.currentContext()) {
       if (tx != null) {
         tx.schedule(cmd);

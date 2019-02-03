@@ -15,7 +15,7 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec.decoder;
+package io.reactiverse.pgclient.impl.codec;
 
 
 import java.util.Objects;

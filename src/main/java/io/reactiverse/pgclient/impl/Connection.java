@@ -23,7 +23,7 @@ public interface Connection {
 
   boolean isSsl();
 
-  void schedule(CommandBase<?> cmd);
+  void schedule(PgCommandBase<?> cmd);
 
   void close(Holder holder);
 

@@ -14,21 +14,17 @@
  * limitations under the License.
  *
  */
-package io.reactiverse.pgclient.impl.codec.encoder;
+package io.reactiverse.pgclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.reactiverse.pgclient.impl.codec.ColumnDesc;
-import io.reactiverse.pgclient.impl.codec.DataType;
-import io.reactiverse.pgclient.impl.codec.DataTypeCodec;
-import io.reactiverse.pgclient.impl.codec.TxStatus;
-import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
-import io.reactiverse.pgclient.impl.codec.decoder.NoticeResponse;
-import io.reactiverse.pgclient.impl.codec.decoder.ParameterDescription;
-import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
+import io.netty.channel.ChannelOutboundHandlerAdapter;
+import io.netty.channel.ChannelPromise;
+import io.reactiverse.pgclient.impl.PgCommandBase;
 import io.reactiverse.pgclient.impl.codec.util.Util;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayDeque;
 import java.util.List;
 
 import static io.reactiverse.pgclient.impl.codec.util.Util.writeCString;
@@ -37,7 +33,7 @@ import static io.reactiverse.pgclient.impl.codec.util.Util.writeCString;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public final class MessageEncoder {
+public final class PgEncoder extends ChannelOutboundHandlerAdapter {
 
   // Frontend message types for {@link io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder}
 
@@ -51,11 +47,44 @@ public final class MessageEncoder {
   private static final byte CLOSE = 'C';
   private static final byte SYNC = 'S';
 
-  private final ChannelHandlerContext ctx;
+  private final ArrayDeque<PgCommandBase<?>> inflight;
+  private ChannelHandlerContext ctx;
   private ByteBuf out;
+  private PgDecoder dec;
 
-  public MessageEncoder(ChannelHandlerContext ctx) {
+  PgEncoder(PgDecoder dec, ArrayDeque<PgCommandBase<?>> inflight) {
+    this.inflight = inflight;
+    this.dec = dec;
+  }
+
+  public void write(PgCommandBase<?> cmd) {
+    inflight.add(cmd);
+    cmd.completionHandler = resp -> {
+      resp.cmd = (PgCommandBase) inflight.poll();
+      ctx.fireChannelRead(resp);
+    };
+    cmd.noticeHandler = ctx::fireChannelRead;
+    cmd.exec(this);
+  }
+
+  @Override
+  public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
     this.ctx = ctx;
+  }
+
+  @Override
+  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+    if (msg instanceof PgCommandBase<?>) {
+      PgCommandBase<?> cmd = (PgCommandBase<?>) msg;
+      write(cmd);
+    } else {
+      super.write(ctx, msg, promise);
+    }
+  }
+
+  @Override
+  public void flush(ChannelHandlerContext ctx) throws Exception {
+    flush();
   }
 
   public void flush() {
@@ -63,6 +92,8 @@ public final class MessageEncoder {
       ByteBuf buff = out;
       out = null;
       ctx.writeAndFlush(buff);
+    } else {
+      ctx.flush();
     }
   }
 

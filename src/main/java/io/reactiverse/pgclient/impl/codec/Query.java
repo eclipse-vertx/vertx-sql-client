@@ -15,12 +15,17 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec.decoder;
+package io.reactiverse.pgclient.impl.codec;
 
 /**
- * An interface that should be implemented for decoding and encoding messages
- *
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
+public class Query {
 
-public interface InboundMessage {}
+  public final String sql;
+
+  public Query(String sql) {
+    this.sql = sql;
+  }
+
+}

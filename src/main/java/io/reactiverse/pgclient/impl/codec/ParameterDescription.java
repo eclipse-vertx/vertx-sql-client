@@ -15,10 +15,8 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec.decoder;
+package io.reactiverse.pgclient.impl.codec;
 
-import io.reactiverse.pgclient.impl.codec.DataTypeCodec;
-import io.reactiverse.pgclient.impl.codec.DataType;
 import io.reactiverse.pgclient.impl.codec.util.Util;
 
 import java.util.Arrays;

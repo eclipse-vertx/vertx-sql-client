@@ -18,11 +18,11 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.impl.codec.TxStatus;
-import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
-import io.reactiverse.pgclient.impl.codec.decoder.NoticeResponse;
-import io.reactiverse.pgclient.impl.codec.decoder.ParameterDescription;
-import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
-import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
+import io.reactiverse.pgclient.impl.codec.ErrorResponse;
+import io.reactiverse.pgclient.impl.codec.NoticeResponse;
+import io.reactiverse.pgclient.impl.codec.ParameterDescription;
+import io.reactiverse.pgclient.impl.codec.RowDescription;
+import io.reactiverse.pgclient.impl.codec.PgEncoder;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -31,9 +31,9 @@ import io.vertx.core.logging.LoggerFactory;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
-public abstract class CommandBase<R> {
+public abstract class PgCommandBase<R> {
 
-  private static final Logger logger = LoggerFactory.getLogger(CommandBase.class);
+  private static final Logger logger = LoggerFactory.getLogger(PgCommandBase.class);
 
   public Handler<? super CommandResponse<R>> completionHandler;
   public Handler<NoticeResponse> noticeHandler;
@@ -126,9 +126,9 @@ public abstract class CommandBase<R> {
     completionHandler.handle(resp);
   }
 
-  protected abstract void exec(MessageEncoder out);
+  public abstract void exec(PgEncoder out);
 
-  final void fail(Throwable err) {
+  public final void fail(Throwable err) {
     handler.handle(CommandResponse.failure(err));
   }
 }

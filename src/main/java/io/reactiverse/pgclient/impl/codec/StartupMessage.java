@@ -15,7 +15,7 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec.encoder;
+package io.reactiverse.pgclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;

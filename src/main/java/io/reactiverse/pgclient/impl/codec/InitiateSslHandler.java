@@ -15,16 +15,14 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec.decoder;
+package io.reactiverse.pgclient.impl.codec;
 
-import io.reactiverse.pgclient.impl.PgSocketConnection;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.DecoderException;
 import io.reactiverse.pgclient.impl.SocketConnectionBase;
-import io.reactiverse.pgclient.impl.codec.decoder.type.MessageType;
 import io.vertx.core.Future;
 import io.vertx.core.VertxException;
 
@@ -57,14 +55,14 @@ public class InitiateSslHandler extends ChannelInboundHandlerAdapter {
     byte b = byteBuf.getByte(0);
     byteBuf.release();
     switch (b) {
-      case MessageType.SSL_YES: {
+      case PgProtocolConstants.MESSAGE_TYPE_SSL_YES: {
         conn.socket().upgradeToSsl(v -> {
           ctx.pipeline().remove(this);
           upgradeFuture.complete();
         });
         break;
       }
-      case MessageType.SSL_NO: {
+      case PgProtocolConstants.MESSAGE_TYPE_SSL_NO: {
         upgradeFuture.fail(new Exception("Postgres Server does not handle SSL connection"));
         break;
       }

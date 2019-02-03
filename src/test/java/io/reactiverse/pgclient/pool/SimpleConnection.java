@@ -17,7 +17,7 @@
 
 package io.reactiverse.pgclient.pool;
 
-import io.reactiverse.pgclient.impl.CommandBase;
+import io.reactiverse.pgclient.impl.PgCommandBase;
 import io.reactiverse.pgclient.impl.Connection;
 
 class SimpleConnection implements Connection {
@@ -45,7 +45,7 @@ class SimpleConnection implements Connection {
   }
 
   @Override
-  public void schedule(CommandBase<?> cmd) {
+  public void schedule(PgCommandBase<?> cmd) {
     throw new UnsupportedOperationException();
   }
 

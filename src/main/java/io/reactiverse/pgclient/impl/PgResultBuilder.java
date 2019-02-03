@@ -18,7 +18,7 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.PgResult;
-import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
+import io.reactiverse.pgclient.impl.codec.RowDescription;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 

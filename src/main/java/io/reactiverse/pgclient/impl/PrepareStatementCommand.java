@@ -19,14 +19,14 @@ package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.PgException;
 import io.reactiverse.pgclient.impl.codec.TxStatus;
-import io.reactiverse.pgclient.impl.codec.decoder.ErrorResponse;
-import io.reactiverse.pgclient.impl.codec.decoder.ParameterDescription;
-import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
-import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
-import io.reactiverse.pgclient.impl.codec.encoder.Describe;
-import io.reactiverse.pgclient.impl.codec.encoder.Parse;
+import io.reactiverse.pgclient.impl.codec.ErrorResponse;
+import io.reactiverse.pgclient.impl.codec.ParameterDescription;
+import io.reactiverse.pgclient.impl.codec.RowDescription;
+import io.reactiverse.pgclient.impl.codec.PgEncoder;
+import io.reactiverse.pgclient.impl.codec.Describe;
+import io.reactiverse.pgclient.impl.codec.Parse;
 
-public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
+public class PrepareStatementCommand extends PgCommandBase<PreparedStatement> {
 
   final String sql;
   long statement; // 0 means unamed statement otherwise CString
@@ -39,7 +39,7 @@ public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
   }
 
   @Override
-  protected void exec(MessageEncoder out) {
+  public void exec(PgEncoder out) {
     out.writeParse(new Parse(sql, statement));
     out.writeDescribe(new Describe(statement, null));
     out.writeSync();

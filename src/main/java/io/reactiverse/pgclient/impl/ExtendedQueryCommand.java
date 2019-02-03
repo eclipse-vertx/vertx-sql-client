@@ -19,8 +19,8 @@ package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
-import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
-import io.reactiverse.pgclient.impl.codec.encoder.Parse;
+import io.reactiverse.pgclient.impl.codec.PgEncoder;
+import io.reactiverse.pgclient.impl.codec.Parse;
 
 import java.util.List;
 import java.util.stream.Collector;
@@ -50,7 +50,7 @@ public class ExtendedQueryCommand<T> extends ExtendedQueryCommandBase<T> {
   }
 
   @Override
-  protected void exec(MessageEncoder out) {
+  public void exec(PgEncoder out) {
     if (suspended) {
       out.writeExecute(portal, fetch);
       out.writeSync();

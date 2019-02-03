@@ -15,12 +15,23 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec.decoder;
+package io.reactiverse.pgclient.impl.codec;
 
-import io.netty.buffer.ByteBuf;
+/**
+ * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
+ */
+public final class Parse {
 
-public interface RowDecoder {
+  public final String query;
+  public final long statement;
 
-  void decodeRow(int len, ByteBuf in);
+  public Parse(String query, long statement) {
+    this.query = query;
+    this.statement = statement;
+  }
 
+  public Parse(String query) {
+    this.query = query;
+    this.statement = 0;
+  }
 }
