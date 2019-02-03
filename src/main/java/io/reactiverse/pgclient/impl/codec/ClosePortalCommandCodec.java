@@ -16,7 +16,7 @@
  */
 package io.reactiverse.pgclient.impl.codec;
 
-import io.reactiverse.pgclient.impl.ClosePortalCommand;
+import io.reactiverse.pgclient.impl.command.ClosePortalCommand;
 
 class ClosePortalCommandCodec extends PgCommandCodec<Void, ClosePortalCommand> {
 

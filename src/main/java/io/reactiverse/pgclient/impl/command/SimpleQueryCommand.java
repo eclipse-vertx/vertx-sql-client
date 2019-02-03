@@ -15,9 +15,10 @@
  *
  */
 
-package io.reactiverse.pgclient.impl;
+package io.reactiverse.pgclient.impl.command;
 
 import io.reactiverse.pgclient.Row;
+import io.reactiverse.pgclient.impl.QueryResultHandler;
 
 import java.util.stream.Collector;
 
@@ -25,25 +26,27 @@ import java.util.stream.Collector;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
-public abstract class QueryCommandBase<T> extends PgCommandBase<Boolean> {
+public class SimpleQueryCommand<T> extends QueryCommandBase<T> {
 
-  public RowResultDecoder<?, T> decoder;
-  final QueryResultHandler<T> resultHandler;
-  final Collector<Row, ?, T> collector;
+  private final String sql;
+  private final boolean singleton;
 
-  QueryCommandBase(Collector<Row, ?, T> collector, QueryResultHandler<T> resultHandler) {
-    this.resultHandler = resultHandler;
-    this.collector = collector;
+  public SimpleQueryCommand(String sql,
+                     boolean singleton,
+                     Collector<Row, ?, T> collector,
+                     QueryResultHandler<T> resultHandler) {
+    super(collector, resultHandler);
+    this.sql = sql;
+    this.singleton = singleton;
   }
 
-  public QueryResultHandler<T> resultHandler() {
-    return resultHandler;
+  public boolean isSingleton() {
+    return singleton;
   }
 
-  public Collector<Row, ?, T> collector() {
-    return collector;
+  @Override
+  public String sql() {
+    return sql;
   }
-
-  public abstract String sql();
 
 }

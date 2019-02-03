@@ -18,7 +18,7 @@ package io.reactiverse.pgclient.impl.codec;
 
 import io.reactiverse.pgclient.PgException;
 import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.impl.QueryCommandBase;
+import io.reactiverse.pgclient.impl.command.QueryCommandBase;
 
 import java.util.stream.Collector;
 

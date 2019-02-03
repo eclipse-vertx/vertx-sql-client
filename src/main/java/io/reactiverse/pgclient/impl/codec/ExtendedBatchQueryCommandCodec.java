@@ -17,8 +17,7 @@
 package io.reactiverse.pgclient.impl.codec;
 
 import io.reactiverse.pgclient.Tuple;
-import io.reactiverse.pgclient.impl.ExtendedBatchQueryCommand;
-import io.reactiverse.pgclient.impl.ExtendedQueryCommand;
+import io.reactiverse.pgclient.impl.command.ExtendedBatchQueryCommand;
 import io.reactiverse.pgclient.impl.PreparedStatement;
 
 import java.util.List;

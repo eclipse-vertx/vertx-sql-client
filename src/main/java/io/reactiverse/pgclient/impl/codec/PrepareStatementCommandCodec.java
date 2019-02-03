@@ -17,7 +17,7 @@
 package io.reactiverse.pgclient.impl.codec;
 
 import io.reactiverse.pgclient.PgException;
-import io.reactiverse.pgclient.impl.PrepareStatementCommand;
+import io.reactiverse.pgclient.impl.command.PrepareStatementCommand;
 import io.reactiverse.pgclient.impl.PreparedStatement;
 
 public class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, PrepareStatementCommand> {

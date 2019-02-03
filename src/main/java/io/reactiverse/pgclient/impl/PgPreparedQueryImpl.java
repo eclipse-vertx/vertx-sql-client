@@ -18,6 +18,10 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.*;
+import io.reactiverse.pgclient.impl.command.ClosePortalCommand;
+import io.reactiverse.pgclient.impl.command.CloseStatementCommand;
+import io.reactiverse.pgclient.impl.command.ExtendedBatchQueryCommand;
+import io.reactiverse.pgclient.impl.command.ExtendedQueryCommand;
 import io.vertx.core.*;
 
 import java.util.List;

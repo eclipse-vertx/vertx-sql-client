@@ -14,13 +14,20 @@
  * limitations under the License.
  *
  */
-package io.reactiverse.pgclient.impl;
+
+package io.reactiverse.pgclient.impl.command;
 
 import io.vertx.core.Handler;
 
-@FunctionalInterface
-interface CommandScheduler {
+/**
+ * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
+ */
 
-  <R> void schedule(PgCommandBase<R> cmd, Handler<? super CommandResponse<R>> handler);
+public abstract class CommandBase<R> {
 
+  public Handler<? super CommandResponse<R>> handler;
+
+  public final void fail(Throwable err) {
+    handler.handle(CommandResponse.failure(err));
+  }
 }

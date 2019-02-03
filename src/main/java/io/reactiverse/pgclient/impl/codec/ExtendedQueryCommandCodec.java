@@ -16,10 +16,8 @@
  */
 package io.reactiverse.pgclient.impl.codec;
 
-import io.reactiverse.pgclient.impl.ExtendedQueryCommand;
-import io.reactiverse.pgclient.impl.ExtendedQueryCommandBase;
+import io.reactiverse.pgclient.impl.command.ExtendedQueryCommand;
 import io.reactiverse.pgclient.impl.PreparedStatement;
-import io.reactiverse.pgclient.impl.RowResultDecoder;
 
 import java.util.List;
 

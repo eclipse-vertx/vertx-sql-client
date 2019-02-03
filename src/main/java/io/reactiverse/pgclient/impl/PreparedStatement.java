@@ -33,7 +33,7 @@ public class PreparedStatement {
   final String sql;
   final Bind bind;
   private final ParameterDescription paramDesc;
-  final RowDescription rowDesc;
+  private final RowDescription rowDesc;
 
   public PreparedStatement(String sql, long statement, ParameterDescription paramDesc, RowDescription rowDesc) {
 
@@ -55,6 +55,10 @@ public class PreparedStatement {
     this.rowDesc = rowDesc;
     this.sql = sql;
     this.bind = new Bind(statement, paramDesc != null ? paramDesc.getParamDataTypes() : null, rowDesc != null ? rowDesc.columns() : EMPTY_COLUMNS);
+  }
+
+  public RowDescription rowDesc() {
+    return rowDesc;
   }
 
   public String sql() {

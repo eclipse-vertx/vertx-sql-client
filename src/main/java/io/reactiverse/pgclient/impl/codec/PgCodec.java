@@ -18,8 +18,8 @@ package io.reactiverse.pgclient.impl.codec;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CombinedChannelDuplexHandler;
-import io.reactiverse.pgclient.impl.PgCommandBase;
-import io.reactiverse.pgclient.impl.CommandResponse;
+import io.reactiverse.pgclient.impl.command.CommandBase;
+import io.reactiverse.pgclient.impl.command.CommandResponse;
 import io.vertx.core.VertxException;
 
 import java.util.ArrayDeque;
@@ -46,7 +46,7 @@ public class PgCodec extends CombinedChannelDuplexHandler<PgDecoder, PgEncoder> 
       PgCommandCodec<?, ?> codec = it.next();
       it.remove();
       CommandResponse<Object> failure = CommandResponse.failure(cause);
-      failure.cmd = (PgCommandBase) codec.cmd;
+      failure.cmd = (CommandBase) codec.cmd;
       ctx.fireChannelRead(failure);
     }
   }

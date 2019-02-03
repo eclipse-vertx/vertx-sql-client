@@ -17,9 +17,9 @@
 package io.reactiverse.pgclient.impl.codec;
 
 import io.reactiverse.pgclient.PgException;
-import io.reactiverse.pgclient.impl.CommandResponse;
+import io.reactiverse.pgclient.impl.command.CommandResponse;
 import io.reactiverse.pgclient.impl.Connection;
-import io.reactiverse.pgclient.impl.InitCommand;
+import io.reactiverse.pgclient.impl.command.InitCommand;
 import io.reactiverse.pgclient.impl.PgSocketConnection;
 
 import java.nio.charset.Charset;

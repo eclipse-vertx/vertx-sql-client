@@ -15,11 +15,11 @@
  *
  */
 
-package io.reactiverse.pgclient.impl;
+package io.reactiverse.pgclient.impl.command;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class CloseStatementCommand extends PgCommandBase<Void> {
+public class CloseStatementCommand extends CommandBase<Void> {
 
 }

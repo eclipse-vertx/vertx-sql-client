@@ -15,10 +15,12 @@
  *
  */
 
-package io.reactiverse.pgclient.impl;
+package io.reactiverse.pgclient.impl.command;
 
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
+import io.reactiverse.pgclient.impl.PreparedStatement;
+import io.reactiverse.pgclient.impl.QueryResultHandler;
 
 import java.util.List;
 import java.util.stream.Collector;
@@ -27,7 +29,7 @@ public class ExtendedBatchQueryCommand<T> extends ExtendedQueryCommandBase<T> {
 
   private final List<Tuple> params;
 
-  ExtendedBatchQueryCommand(PreparedStatement ps,
+  public ExtendedBatchQueryCommand(PreparedStatement ps,
                             List<Tuple> params,
                             boolean singleton,
                             Collector<Row, ?, T> collector,

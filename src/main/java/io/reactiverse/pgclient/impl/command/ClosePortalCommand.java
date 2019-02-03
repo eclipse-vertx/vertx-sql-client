@@ -15,19 +15,21 @@
  *
  */
 
-package io.reactiverse.pgclient.impl;
-
-import io.vertx.core.Handler;
+package io.reactiverse.pgclient.impl.command;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
+public class ClosePortalCommand extends CommandBase<Void> {
 
-public abstract class PgCommandBase<R> {
+  private final String portal;
 
-  public Handler<? super CommandResponse<R>> handler;
-
-  public final void fail(Throwable err) {
-    handler.handle(CommandResponse.failure(err));
+  public ClosePortalCommand(String portal) {
+    this.portal = portal;
   }
+
+  public String portal() {
+    return portal;
+  }
+
 }

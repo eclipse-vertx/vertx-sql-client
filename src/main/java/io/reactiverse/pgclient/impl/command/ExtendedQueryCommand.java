@@ -15,21 +15,20 @@
  *
  */
 
-package io.reactiverse.pgclient.impl;
+package io.reactiverse.pgclient.impl.command;
 
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
-import io.reactiverse.pgclient.impl.codec.PgEncoder;
-import io.reactiverse.pgclient.impl.codec.Parse;
+import io.reactiverse.pgclient.impl.PreparedStatement;
+import io.reactiverse.pgclient.impl.QueryResultHandler;
 
-import java.util.List;
 import java.util.stream.Collector;
 
 public class ExtendedQueryCommand<T> extends ExtendedQueryCommandBase<T> {
 
   private final Tuple params;
 
-  ExtendedQueryCommand(PreparedStatement ps,
+  public ExtendedQueryCommand(PreparedStatement ps,
                        Tuple params,
                        boolean singleton,
                        Collector<Row, ?, T> collector,
@@ -37,7 +36,7 @@ public class ExtendedQueryCommand<T> extends ExtendedQueryCommandBase<T> {
     this(ps, params, 0, null, false, singleton, collector, resultHandler);
   }
 
-  ExtendedQueryCommand(PreparedStatement ps,
+  public ExtendedQueryCommand(PreparedStatement ps,
                        Tuple params,
                        int fetch,
                        String portal,

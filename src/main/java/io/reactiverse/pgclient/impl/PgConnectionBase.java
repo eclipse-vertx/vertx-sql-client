@@ -18,6 +18,7 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.PgPreparedQuery;
+import io.reactiverse.pgclient.impl.command.PrepareStatementCommand;
 import io.vertx.core.*;
 
 /**

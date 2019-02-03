@@ -17,13 +17,15 @@
 
 package io.reactiverse.pgclient.impl;
 
+import io.reactiverse.pgclient.impl.command.CommandBase;
+
 public interface Connection {
 
   void init(Holder holder);
 
   boolean isSsl();
 
-  void schedule(PgCommandBase<?> cmd);
+  void schedule(CommandBase<?> cmd);
 
   void close(Holder holder);
 

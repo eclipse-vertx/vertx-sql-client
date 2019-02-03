@@ -18,6 +18,7 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.PgPoolOptions;
+import io.reactiverse.pgclient.impl.command.CommandBase;
 import io.vertx.core.*;
 import io.vertx.core.impl.NoStackTraceThrowable;
 
@@ -109,7 +110,7 @@ public class ConnectionPool {
     }
 
     @Override
-    public void schedule(PgCommandBase<?> cmd) {
+    public void schedule(CommandBase<?> cmd) {
       conn.schedule(cmd);
     }
 

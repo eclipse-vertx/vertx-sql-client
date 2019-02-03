@@ -17,7 +17,7 @@
 package io.reactiverse.pgclient.impl.codec;
 
 import io.reactiverse.pgclient.impl.RowResultDecoder;
-import io.reactiverse.pgclient.impl.SimpleQueryCommand;
+import io.reactiverse.pgclient.impl.command.SimpleQueryCommand;
 
 class SimpleQueryCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>> {
 

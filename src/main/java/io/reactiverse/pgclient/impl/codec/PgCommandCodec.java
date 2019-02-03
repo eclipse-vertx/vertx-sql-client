@@ -16,13 +16,13 @@
  */
 package io.reactiverse.pgclient.impl.codec;
 
-import io.reactiverse.pgclient.impl.CommandResponse;
-import io.reactiverse.pgclient.impl.PgCommandBase;
+import io.reactiverse.pgclient.impl.command.CommandResponse;
+import io.reactiverse.pgclient.impl.command.CommandBase;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-abstract class PgCommandCodec<R, C extends PgCommandBase<R>> {
+abstract class PgCommandCodec<R, C extends CommandBase<R>> {
 
   private static final Logger logger = LoggerFactory.getLogger(PgCommandCodec.class);
 

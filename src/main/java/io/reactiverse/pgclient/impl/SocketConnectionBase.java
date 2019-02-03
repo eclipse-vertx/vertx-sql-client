@@ -23,6 +23,9 @@ import io.netty.handler.codec.DecoderException;
 import io.reactiverse.pgclient.impl.codec.InitiateSslHandler;
 import io.reactiverse.pgclient.impl.codec.NoticeResponse;
 import io.reactiverse.pgclient.impl.codec.NotificationResponse;
+import io.reactiverse.pgclient.impl.command.CloseConnectionCommand;
+import io.reactiverse.pgclient.impl.command.CommandResponse;
+import io.reactiverse.pgclient.impl.command.CommandBase;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -48,7 +51,7 @@ public abstract class SocketConnectionBase implements Connection {
 
   }
 
-  private final ArrayDeque<PgCommandBase<?>> pending = new ArrayDeque<>();
+  private final ArrayDeque<CommandBase<?>> pending = new ArrayDeque<>();
   private final Context context;
   private int inflight;
   private Holder holder;
@@ -127,7 +130,7 @@ public abstract class SocketConnectionBase implements Connection {
     }
   }
 
-  public void schedule(PgCommandBase<?> cmd) {
+  public void schedule(CommandBase<?> cmd) {
     if (Vertx.currentContext() != context) {
       throw new IllegalStateException();
     }
@@ -144,7 +147,7 @@ public abstract class SocketConnectionBase implements Connection {
   private void checkPending() {
     ChannelHandlerContext ctx = socket.channelHandlerContext();
     if (inflight < pipeliningLimit) {
-      PgCommandBase<?> cmd;
+      CommandBase<?> cmd;
       while (inflight < pipeliningLimit && (cmd = pending.poll()) != null) {
         inflight++;
         ctx.write(cmd);
@@ -216,9 +219,9 @@ public abstract class SocketConnectionBase implements Connection {
         }
       }
       Throwable cause = t == null ? new VertxException("closed") : t;
-      PgCommandBase<?> cmd;
+      CommandBase<?> cmd;
       while ((cmd = pending.poll()) != null) {
-        PgCommandBase<?> c = cmd;
+        CommandBase<?> c = cmd;
         context.runOnContext(v -> c.fail(cause));
       }
       if (holder != null) {

@@ -18,6 +18,9 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.*;
+import io.reactiverse.pgclient.impl.command.CommandResponse;
+import io.reactiverse.pgclient.impl.command.CommandScheduler;
+import io.reactiverse.pgclient.impl.command.CommandBase;
 import io.vertx.core.*;
 
 /**
@@ -74,7 +77,7 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
   }
 
   @Override
-  public <R> void schedule(PgCommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
+  public <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
     Context current = Vertx.currentContext();
     if (current == context) {
       pool.acquire(new CommandWaiter() { // SHOULD BE IT !!!!!
@@ -83,7 +86,7 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
           cmd.handler = ar -> {
             ar.scheduler = new CommandScheduler() {
               @Override
-              public <R> void schedule(PgCommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
+              public <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
                 cmd.handler = cr -> {
                   cr.scheduler = this;
                   handler.handle(cr);

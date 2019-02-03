@@ -15,21 +15,14 @@
  *
  */
 
-package io.reactiverse.pgclient.impl;
+package io.reactiverse.pgclient.impl.command;
 
-/**
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
- */
-public class ClosePortalCommand extends PgCommandBase<Void> {
+public class CloseConnectionCommand extends CommandBase<Void> {
 
-  private final String portal;
+  public static final CloseConnectionCommand INSTANCE = new CloseConnectionCommand();
 
-  ClosePortalCommand(String portal) {
-    this.portal = portal;
-  }
-
-  public String portal() {
-    return portal;
+  private CloseConnectionCommand() {
+    handler = ar -> {};
   }
 
 }

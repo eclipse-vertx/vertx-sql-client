@@ -18,6 +18,11 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.*;
+import io.reactiverse.pgclient.impl.command.CommandScheduler;
+import io.reactiverse.pgclient.impl.command.ExtendedBatchQueryCommand;
+import io.reactiverse.pgclient.impl.command.ExtendedQueryCommand;
+import io.reactiverse.pgclient.impl.command.PrepareStatementCommand;
+import io.reactiverse.pgclient.impl.command.SimpleQueryCommand;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;

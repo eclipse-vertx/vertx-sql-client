@@ -20,15 +20,15 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
-import io.reactiverse.pgclient.impl.CloseConnectionCommand;
-import io.reactiverse.pgclient.impl.ClosePortalCommand;
-import io.reactiverse.pgclient.impl.CloseStatementCommand;
-import io.reactiverse.pgclient.impl.ExtendedBatchQueryCommand;
-import io.reactiverse.pgclient.impl.ExtendedQueryCommand;
-import io.reactiverse.pgclient.impl.InitCommand;
-import io.reactiverse.pgclient.impl.PgCommandBase;
-import io.reactiverse.pgclient.impl.PrepareStatementCommand;
-import io.reactiverse.pgclient.impl.SimpleQueryCommand;
+import io.reactiverse.pgclient.impl.command.CloseConnectionCommand;
+import io.reactiverse.pgclient.impl.command.ClosePortalCommand;
+import io.reactiverse.pgclient.impl.command.CloseStatementCommand;
+import io.reactiverse.pgclient.impl.command.ExtendedBatchQueryCommand;
+import io.reactiverse.pgclient.impl.command.ExtendedQueryCommand;
+import io.reactiverse.pgclient.impl.command.InitCommand;
+import io.reactiverse.pgclient.impl.command.CommandBase;
+import io.reactiverse.pgclient.impl.command.PrepareStatementCommand;
+import io.reactiverse.pgclient.impl.command.SimpleQueryCommand;
 import io.reactiverse.pgclient.impl.codec.util.Util;
 
 import java.nio.charset.StandardCharsets;
@@ -65,11 +65,11 @@ public final class PgEncoder extends ChannelOutboundHandlerAdapter {
     this.dec = dec;
   }
 
-  public void write(PgCommandBase<?> cmd) {
+  public void write(CommandBase<?> cmd) {
     PgCommandCodec<?, ?> codec = wrap(cmd);
     codec.completionHandler = resp -> {
       PgCommandCodec<?, ?> c = inflight.poll();
-      resp.cmd = (PgCommandBase) c.cmd;
+      resp.cmd = (CommandBase) c.cmd;
       ctx.fireChannelRead(resp);
     };
     codec.noticeHandler = ctx::fireChannelRead;
@@ -77,7 +77,7 @@ public final class PgEncoder extends ChannelOutboundHandlerAdapter {
     codec.encode(this);
   }
 
-  private PgCommandCodec<?, ?> wrap(PgCommandBase<?> cmd) {
+  private PgCommandCodec<?, ?> wrap(CommandBase<?> cmd) {
     if (cmd instanceof InitCommand) {
       return new InitCommandCodec((InitCommand) cmd);
     } else if (cmd instanceof SimpleQueryCommand<?>) {
@@ -105,8 +105,8 @@ public final class PgEncoder extends ChannelOutboundHandlerAdapter {
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-    if (msg instanceof PgCommandBase<?>) {
-      PgCommandBase<?> cmd = (PgCommandBase<?>) msg;
+    if (msg instanceof CommandBase<?>) {
+      CommandBase<?> cmd = (CommandBase<?>) msg;
       write(cmd);
     } else {
       super.write(ctx, msg, promise);

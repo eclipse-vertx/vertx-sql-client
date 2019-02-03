@@ -19,6 +19,7 @@ package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.PgConnectOptions;
 import io.reactiverse.pgclient.SslMode;
+import io.reactiverse.pgclient.impl.command.CommandResponse;
 import io.vertx.core.*;
 import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.core.net.*;

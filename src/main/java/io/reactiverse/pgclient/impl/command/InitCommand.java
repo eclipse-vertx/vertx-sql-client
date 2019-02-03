@@ -15,14 +15,17 @@
  *
  */
 
-package io.reactiverse.pgclient.impl;
+package io.reactiverse.pgclient.impl.command;
+
+import io.reactiverse.pgclient.impl.Connection;
+import io.reactiverse.pgclient.impl.SocketConnectionBase;
 
 /**
  * Initialize the connection so it can be used to interact with the database.
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class InitCommand extends PgCommandBase<Connection> {
+public class InitCommand extends CommandBase<Connection> {
 
   private final SocketConnectionBase conn;
   private final String username;

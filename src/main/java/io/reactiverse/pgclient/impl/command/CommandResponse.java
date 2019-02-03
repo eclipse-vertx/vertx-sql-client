@@ -1,4 +1,4 @@
-package io.reactiverse.pgclient.impl;
+package io.reactiverse.pgclient.impl.command;
 
 import io.reactiverse.pgclient.impl.codec.TxStatus;
 import io.vertx.core.AsyncResult;
@@ -65,15 +65,15 @@ public abstract class CommandResponse<R> implements AsyncResult<R> {
   }
 
   // The connection that executed the command
-  CommandScheduler scheduler;
-  public PgCommandBase<R> cmd;
+  public CommandScheduler scheduler;
+  public CommandBase<R> cmd;
   private final TxStatus txStatus;
 
   public CommandResponse(TxStatus txStatus) {
     this.txStatus = txStatus;
   }
 
-  TxStatus txStatus() {
+  public TxStatus txStatus() {
     return txStatus;
   }
 

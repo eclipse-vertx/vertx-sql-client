@@ -19,6 +19,10 @@ package io.reactiverse.pgclient.impl;
 
 import io.netty.channel.ChannelPipeline;
 import io.reactiverse.pgclient.impl.codec.PgCodec;
+import io.reactiverse.pgclient.impl.command.CommandResponse;
+import io.reactiverse.pgclient.impl.command.InitCommand;
+import io.reactiverse.pgclient.impl.command.CommandBase;
+import io.reactiverse.pgclient.impl.command.PrepareStatementCommand;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.NetSocketInternal;
@@ -83,7 +87,7 @@ public class PgSocketConnection extends SocketConnectionBase {
     });
   }
 
-  static class CachedPreparedStatement implements Handler<CommandResponse<PreparedStatement>> {
+  public static class CachedPreparedStatement implements Handler<CommandResponse<PreparedStatement>> {
 
     private CommandResponse<PreparedStatement> resp;
     private final ArrayDeque<Handler<? super CommandResponse<PreparedStatement>>> waiters = new ArrayDeque<>();
@@ -114,7 +118,7 @@ public class PgSocketConnection extends SocketConnectionBase {
     return socket.isSsl();
   }
 
-  public void schedule(PgCommandBase<?> cmd) {
+  public void schedule(CommandBase<?> cmd) {
     if (cmd.handler == null) {
       throw new IllegalArgumentException();
     }
@@ -123,7 +127,7 @@ public class PgSocketConnection extends SocketConnectionBase {
       PrepareStatementCommand psCmd = (PrepareStatementCommand) cmd;
       Map<String, PgSocketConnection.CachedPreparedStatement> psCache = this.psCache;
       if (psCache != null) {
-        PgSocketConnection.CachedPreparedStatement cached = psCache.get(psCmd.sql);
+        PgSocketConnection.CachedPreparedStatement cached = psCache.get(psCmd.sql());
         if (cached != null) {
           Handler<? super CommandResponse<PreparedStatement>> handler = psCmd.handler;
           cached.get(handler);
@@ -131,7 +135,7 @@ public class PgSocketConnection extends SocketConnectionBase {
         } else {
           psCmd.statement = psSeq.next();
           psCmd.cached = cached = new PgSocketConnection.CachedPreparedStatement();
-          psCache.put(psCmd.sql, cached);
+          psCache.put(psCmd.sql(), cached);
           Handler<? super CommandResponse<PreparedStatement>> a = psCmd.handler;
           psCmd.cached.get(a);
           psCmd.handler = psCmd.cached;

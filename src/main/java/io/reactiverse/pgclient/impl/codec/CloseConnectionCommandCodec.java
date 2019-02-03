@@ -16,7 +16,7 @@
  */
 package io.reactiverse.pgclient.impl.codec;
 
-import io.reactiverse.pgclient.impl.CloseConnectionCommand;
+import io.reactiverse.pgclient.impl.command.CloseConnectionCommand;
 
 class CloseConnectionCommandCodec extends PgCommandCodec<Void, CloseConnectionCommand> {
 

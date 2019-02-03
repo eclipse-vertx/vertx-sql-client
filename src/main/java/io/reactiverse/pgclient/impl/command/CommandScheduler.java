@@ -14,25 +14,13 @@
  * limitations under the License.
  *
  */
+package io.reactiverse.pgclient.impl.command;
 
-package io.reactiverse.pgclient.impl;
+import io.vertx.core.Handler;
 
-public class PrepareStatementCommand extends PgCommandBase<PreparedStatement> {
+@FunctionalInterface
+public interface CommandScheduler {
 
-  final String sql;
-  long statement; // 0 means unamed statement otherwise CString
-  PgSocketConnection.CachedPreparedStatement cached;
-
-  PrepareStatementCommand(String sql) {
-    this.sql = sql;
-  }
-
-  public String sql() {
-    return sql;
-  }
-
-  public long statement() {
-    return statement;
-  }
+  <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler);
 
 }

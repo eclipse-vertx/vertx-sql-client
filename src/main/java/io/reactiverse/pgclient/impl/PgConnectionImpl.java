@@ -18,6 +18,8 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.*;
+import io.reactiverse.pgclient.impl.command.CommandResponse;
+import io.reactiverse.pgclient.impl.command.CommandBase;
 import io.vertx.core.*;
 
 /**
@@ -50,7 +52,7 @@ public class PgConnectionImpl extends PgConnectionBase<PgConnectionImpl> impleme
   }
 
   @Override
-  public <R> void schedule(PgCommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
+  public <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
     cmd.handler = cr -> {
       // Tx might be gone ???
       cr.scheduler = this;
@@ -59,7 +61,7 @@ public class PgConnectionImpl extends PgConnectionBase<PgConnectionImpl> impleme
     schedule(cmd);
   }
 
-  protected void schedule(PgCommandBase<?> cmd) {
+  protected void schedule(CommandBase<?> cmd) {
     if (context == Vertx.currentContext()) {
       if (tx != null) {
         tx.schedule(cmd);

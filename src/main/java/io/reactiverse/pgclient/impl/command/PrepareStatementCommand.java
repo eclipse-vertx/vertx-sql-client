@@ -15,14 +15,27 @@
  *
  */
 
-package io.reactiverse.pgclient.impl;
+package io.reactiverse.pgclient.impl.command;
 
-public class CloseConnectionCommand extends PgCommandBase<Void> {
+import io.reactiverse.pgclient.impl.PgSocketConnection;
+import io.reactiverse.pgclient.impl.PreparedStatement;
 
-  public static final CloseConnectionCommand INSTANCE = new CloseConnectionCommand();
+public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
 
-  private CloseConnectionCommand() {
-    handler = ar -> {};
+  private final String sql;
+  public long statement; // 0 means unamed statement otherwise CString
+  public PgSocketConnection.CachedPreparedStatement cached;
+
+  public PrepareStatementCommand(String sql) {
+    this.sql = sql;
+  }
+
+  public String sql() {
+    return sql;
+  }
+
+  public long statement() {
+    return statement;
   }
 
 }

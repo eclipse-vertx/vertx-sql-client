@@ -15,10 +15,12 @@
  *
  */
 
-package io.reactiverse.pgclient.impl;
+package io.reactiverse.pgclient.impl.command;
 
 import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.impl.codec.RowDescription;
+import io.reactiverse.pgclient.impl.PreparedStatement;
+import io.reactiverse.pgclient.impl.QueryResultHandler;
+import io.reactiverse.pgclient.impl.RowResultDecoder;
 
 import java.util.stream.Collector;
 
@@ -46,7 +48,7 @@ public abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
     this.portal = portal;
     this.suspended = suspended;
     this.singleton = singleton;
-    this.decoder = new RowResultDecoder<>(collector, singleton, ps.rowDesc);
+    this.decoder = new RowResultDecoder<>(collector, singleton, ps.rowDesc());
   }
 
   public PreparedStatement preparedStatement() {
@@ -71,7 +73,7 @@ public abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
 
   @Override
   public String sql() {
-    return ps.sql;
+    return ps.sql();
   }
 
 }

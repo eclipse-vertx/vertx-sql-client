@@ -18,6 +18,10 @@ package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.*;
 import io.reactiverse.pgclient.impl.codec.TxStatus;
+import io.reactiverse.pgclient.impl.command.CommandResponse;
+import io.reactiverse.pgclient.impl.command.CommandBase;
+import io.reactiverse.pgclient.impl.command.QueryCommandBase;
+import io.reactiverse.pgclient.impl.command.SimpleQueryCommand;
 import io.vertx.core.*;
 
 import java.util.ArrayDeque;
@@ -31,7 +35,7 @@ class Transaction extends PgConnectionBase<Transaction> implements PgTransaction
   private static final int ST_COMPLETED = 3;
 
   private final Handler<Void> disposeHandler;
-  private Deque<PgCommandBase<?>> pending = new ArrayDeque<>();
+  private Deque<CommandBase<?>> pending = new ArrayDeque<>();
   private Handler<Void> failedHandler;
   private int status = ST_BEGIN;
 
@@ -41,7 +45,7 @@ class Transaction extends PgConnectionBase<Transaction> implements PgTransaction
     doSchedule(doQuery("BEGIN", this::afterBegin));
   }
 
-  private void doSchedule(PgCommandBase<?> cmd) {
+  private void doSchedule(CommandBase<?> cmd) {
     if (context == Vertx.currentContext()) {
       conn.schedule(cmd);
     } else {
@@ -58,7 +62,7 @@ class Transaction extends PgConnectionBase<Transaction> implements PgTransaction
     checkPending();
   }
 
-  private boolean isComplete(PgCommandBase<?> cmd) {
+  private boolean isComplete(CommandBase<?> cmd) {
     if (cmd instanceof QueryCommandBase<?>) {
       String sql = ((QueryCommandBase) cmd).sql().trim();
       return sql.equalsIgnoreCase("COMMIT") || sql.equalsIgnoreCase("ROLLBACK");
@@ -71,7 +75,7 @@ class Transaction extends PgConnectionBase<Transaction> implements PgTransaction
       case ST_BEGIN:
         break;
       case ST_PENDING: {
-        PgCommandBase<?> cmd = pending.poll();
+        CommandBase<?> cmd = pending.poll();
         if (cmd != null) {
           if (isComplete(cmd)) {
             status = ST_COMPLETED;
@@ -88,7 +92,7 @@ class Transaction extends PgConnectionBase<Transaction> implements PgTransaction
       case ST_COMPLETED: {
         if (pending.size() > 0) {
           VertxException err = new VertxException("Transaction already completed");
-          PgCommandBase<?> cmd;
+          CommandBase<?> cmd;
           while ((cmd = pending.poll()) != null) {
             cmd.fail(err);
           }
@@ -99,7 +103,7 @@ class Transaction extends PgConnectionBase<Transaction> implements PgTransaction
   }
 
   @Override
-  public <R> void schedule(PgCommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
+  public <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
     cmd.handler = cr -> {
       cr.scheduler = this;
       handler.handle(cr);
@@ -107,21 +111,21 @@ class Transaction extends PgConnectionBase<Transaction> implements PgTransaction
     schedule(cmd);
   }
 
-  public void schedule(PgCommandBase<?> cmd) {
+  public void schedule(CommandBase<?> cmd) {
     synchronized (this) {
       pending.add(cmd);
     }
     checkPending();
   }
 
-  private <T> void wrap(PgCommandBase<T> cmd) {
+  private <T> void wrap(CommandBase<T> cmd) {
     Handler<? super CommandResponse<T>> handler = cmd.handler;
     cmd.handler = ar -> {
       synchronized (Transaction.this) {
         status = ST_PENDING;
         if (ar.txStatus() == TxStatus.FAILED) {
           // We won't recover from this so rollback
-          PgCommandBase<?> c;
+          CommandBase<?> c;
           while ((c = pending.poll()) != null) {
             c.fail(new RuntimeException("rollback exception"));
           }
@@ -190,7 +194,7 @@ class Transaction extends PgConnectionBase<Transaction> implements PgTransaction
     return this;
   }
 
-  private PgCommandBase doQuery(String sql, Handler<AsyncResult<PgRowSet>> handler) {
+  private CommandBase doQuery(String sql, Handler<AsyncResult<PgRowSet>> handler) {
     PgResultBuilder<PgRowSet, PgRowSetImpl, PgRowSet> b = new PgResultBuilder<>(PgRowSetImpl.FACTORY, handler);
     SimpleQueryCommand<PgRowSet> cmd = new SimpleQueryCommand<>(sql, false, PgRowSetImpl.COLLECTOR, b);
     cmd.handler = b;
