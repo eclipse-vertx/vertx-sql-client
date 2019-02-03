@@ -17,15 +17,7 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.impl.codec.TxStatus;
-import io.reactiverse.pgclient.impl.codec.ErrorResponse;
-import io.reactiverse.pgclient.impl.codec.NoticeResponse;
-import io.reactiverse.pgclient.impl.codec.ParameterDescription;
-import io.reactiverse.pgclient.impl.codec.RowDescription;
-import io.reactiverse.pgclient.impl.codec.PgEncoder;
 import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -33,100 +25,7 @@ import io.vertx.core.logging.LoggerFactory;
 
 public abstract class PgCommandBase<R> {
 
-  private static final Logger logger = LoggerFactory.getLogger(PgCommandBase.class);
-
-  public Handler<? super CommandResponse<R>> completionHandler;
-  public Handler<NoticeResponse> noticeHandler;
   public Handler<? super CommandResponse<R>> handler;
-  Throwable failure;
-  R result;
-
-  public void handleBackendKeyData(int processId, int secretKey) {
-    logger.warn(getClass().getSimpleName() + " should handle message BackendKeyData");
-  }
-
-  public void handleEmptyQueryResponse() {
-    logger.warn(getClass().getSimpleName() + " should handle message EmptyQueryResponse");
-  }
-
-  public void handleParameterDescription(ParameterDescription parameterDesc) {
-    logger.warn(getClass().getSimpleName() + " should handle message " + parameterDesc);
-  }
-
-  public void handleParseComplete() {
-    logger.warn(getClass().getSimpleName() + " should handle message ParseComplete");
-  }
-
-  public void handleCloseComplete() {
-    logger.warn(getClass().getSimpleName() + " should handle message CloseComplete");
-  }
-
-  public void handleRowDescription(RowDescription rowDescription) {
-    logger.warn(getClass().getSimpleName() + " should handle message " + rowDescription);
-  }
-
-  public void handleNoData() {
-    logger.warn(getClass().getSimpleName() + " should handle message NoData");
-  }
-
-  public void handleNoticeResponse(NoticeResponse noticeResponse) {
-    noticeHandler.handle(noticeResponse);
-  }
-
-  public void handleErrorResponse(ErrorResponse errorResponse) {
-    logger.warn(getClass().getSimpleName() + " should handle message " + errorResponse);
-  }
-
-  public void handlePortalSuspended() {
-    logger.warn(getClass().getSimpleName() + " should handle message PortalSuspended");
-  }
-
-  public void handleBindComplete() {
-    logger.warn(getClass().getSimpleName() + " should handle message BindComplete");
-  }
-
-  public void handleCommandComplete(int updated) {
-    logger.warn(getClass().getSimpleName() + " should handle message CommandComplete");
-  }
-
-  public void handleAuthenticationMD5Password(byte[] salt) {
-    logger.warn(getClass().getSimpleName() + " should handle message AuthenticationMD5Password");
-  }
-
-  public void handleAuthenticationClearTextPassword() {
-    logger.warn(getClass().getSimpleName() + " should handle message AuthenticationClearTextPassword");
-  }
-
-  public void handleAuthenticationOk() {
-    logger.warn(getClass().getSimpleName() + " should handle message AuthenticationOk");
-  }
-
-  public void handleParameterStatus(String key, String value) {
-    logger.warn(getClass().getSimpleName() + " should handle message ParameterStatus");
-  }
-
-  /**
-   * <p>
-   * The frontend can issue commands. Every message returned from the backend has transaction status
-   * that would be one of the following
-   * <p>
-   * IDLE : Not in a transaction block
-   * <p>
-   * ACTIVE : In transaction block
-   * <p>
-   * FAILED : Failed transaction block (queries will be rejected until block is ended)
-   */
-  public void handleReadyForQuery(TxStatus txStatus) {
-    CommandResponse<R> resp;
-    if (failure != null) {
-      resp = CommandResponse.failure(this.failure, txStatus);
-    } else {
-      resp = CommandResponse.success(result, txStatus);
-    }
-    completionHandler.handle(resp);
-  }
-
-  public abstract void exec(PgEncoder out);
 
   public final void fail(Throwable err) {
     handler.handle(CommandResponse.failure(err));

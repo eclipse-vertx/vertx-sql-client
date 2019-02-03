@@ -38,11 +38,11 @@ import java.util.ArrayDeque;
 
 public class PgDecoder extends ChannelInboundHandlerAdapter {
 
-  private final ArrayDeque<PgCommandBase<?>> inflight;
+  private final ArrayDeque<PgCommandCodec<?, ?>> inflight;
   private ByteBufAllocator alloc;
   private ByteBuf in;
 
-  PgDecoder(ArrayDeque<PgCommandBase<?>> inflight) {
+  PgDecoder(ArrayDeque<PgCommandCodec<?, ?>> inflight) {
     this.inflight = inflight;
   }
 
@@ -183,7 +183,8 @@ public class PgDecoder extends ChannelInboundHandlerAdapter {
   }
 
   private void decodeDataRow(ByteBuf in) {
-    QueryCommandBase<?> cmd = (QueryCommandBase<?>) inflight.peek();
+    PgCommandCodec<?, ?> codec = inflight.peek();
+    QueryCommandBase<?> cmd = (QueryCommandBase<?>) codec.cmd;
     int len = in.readUnsignedShort();
     cmd.decoder.decodeRow(len, in);
   }

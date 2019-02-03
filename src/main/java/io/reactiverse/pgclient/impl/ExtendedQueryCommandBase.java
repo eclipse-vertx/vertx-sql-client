@@ -25,12 +25,13 @@ import java.util.stream.Collector;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
+public abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
 
   protected final PreparedStatement ps;
   protected final int fetch;
   protected final String portal;
   protected final boolean suspended;
+  private final boolean singleton;
 
   ExtendedQueryCommandBase(PreparedStatement ps,
                            int fetch,
@@ -44,31 +45,33 @@ abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
     this.fetch = fetch;
     this.portal = portal;
     this.suspended = suspended;
+    this.singleton = singleton;
     this.decoder = new RowResultDecoder<>(collector, singleton, ps.rowDesc);
   }
 
+  public PreparedStatement preparedStatement() {
+    return ps;
+  }
+
+  public int fetch() {
+    return fetch;
+  }
+
+  public String portal() {
+    return portal;
+  }
+
+  public boolean isSuspended() {
+    return suspended;
+  }
+
+  public boolean isSingleton() {
+    return singleton;
+  }
+
   @Override
-  String sql() {
+  public String sql() {
     return ps.sql;
   }
 
-  @Override
-  public void handleParseComplete() {
-    // Response to Parse
-  }
-
-  @Override
-  public void handlePortalSuspended() {
-    R result = decoder.complete();
-    RowDescription desc = decoder.description();
-    int size = decoder.size();
-    decoder.reset();
-    this.result = true;
-    resultHandler.handleResult(0, size, desc, result);
-  }
-
-  @Override
-  public void handleBindComplete() {
-    // Response to Bind
-  }
 }

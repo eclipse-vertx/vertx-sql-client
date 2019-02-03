@@ -18,9 +18,6 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.impl.codec.RowDescription;
-import io.reactiverse.pgclient.impl.codec.PgEncoder;
-import io.reactiverse.pgclient.impl.codec.Query;
 
 import java.util.stream.Collector;
 
@@ -28,7 +25,7 @@ import java.util.stream.Collector;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
-class SimpleQueryCommand<T> extends QueryCommandBase<T> {
+public class SimpleQueryCommand<T> extends QueryCommandBase<T> {
 
   private final String sql;
   private final boolean singleton;
@@ -42,22 +39,13 @@ class SimpleQueryCommand<T> extends QueryCommandBase<T> {
     this.singleton = singleton;
   }
 
+  public boolean isSingleton() {
+    return singleton;
+  }
+
   @Override
-  String sql() {
+  public String sql() {
     return sql;
   }
 
-  @Override
-  public void exec(PgEncoder out) {
-    out.writeQuery(new Query(sql));
-  }
-
-  @Override
-  public void handleRowDescription(RowDescription rowDescription) {
-    decoder = new RowResultDecoder<>(collector, singleton, rowDescription);
-  }
-
-  public String getSql() {
-    return sql;
-  }
 }

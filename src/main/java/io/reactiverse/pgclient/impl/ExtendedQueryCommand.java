@@ -49,18 +49,8 @@ public class ExtendedQueryCommand<T> extends ExtendedQueryCommandBase<T> {
     this.params = params;
   }
 
-  @Override
-  public void exec(PgEncoder out) {
-    if (suspended) {
-      out.writeExecute(portal, fetch);
-      out.writeSync();
-    } else {
-      if (ps.bind.statement == 0) {
-        out.writeParse(new Parse(ps.sql));
-      }
-      out.writeBind(ps.bind, portal, (List<Object>) params);
-      out.writeExecute(portal, fetch);
-      out.writeSync();
-    }
+  public Tuple params() {
+    return params;
   }
+
 }

@@ -36,8 +36,8 @@ public class PgSocketConnection extends SocketConnectionBase {
   private final StringLongSequence psSeq = new StringLongSequence();
 
   private PgCodec codec;
-  int processId;
-  int secretKey;
+  public int processId;
+  public int secretKey;
 
   public PgSocketConnection(NetSocketInternal socket,
                             boolean cachePreparedStatements,

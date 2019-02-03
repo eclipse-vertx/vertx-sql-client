@@ -17,23 +17,9 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.impl.codec.PgEncoder;
-
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class CloseStatementCommand extends PgCommandBase<Void> {
+public class CloseStatementCommand extends PgCommandBase<Void> {
 
-  @Override
-  public void exec(PgEncoder out) {
-    /*
-    if (conn.psCache == null) {
-      conn.writeMessage(new Close().setStatement(statement));
-      conn.writeMessage(Sync.INSTANCE);
-    } else {
-    }
-    */
-    CommandResponse<Void> resp = CommandResponse.success(null);
-    completionHandler.handle(resp);
-  }
 }

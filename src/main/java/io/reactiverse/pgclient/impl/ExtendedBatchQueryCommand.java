@@ -19,8 +19,6 @@ package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
-import io.reactiverse.pgclient.impl.codec.PgEncoder;
-import io.reactiverse.pgclient.impl.codec.Parse;
 
 import java.util.List;
 import java.util.stream.Collector;
@@ -49,25 +47,8 @@ public class ExtendedBatchQueryCommand<T> extends ExtendedQueryCommandBase<T> {
     this.params = params;
   }
 
-  @Override
-  public void exec(PgEncoder out) {
-    if (suspended) {
-      out.writeExecute(portal, fetch);
-      out.writeSync();
-    } else {
-      if (ps.bind.statement == 0) {
-        out.writeParse(new Parse(ps.sql));
-      }
-      if (params.isEmpty()) {
-        // We set suspended to false as we won't get a command complete command back from Postgres
-        result = false;
-      } else {
-        for (Tuple  param : params) {
-          out.writeBind(ps.bind, portal, (List<Object>) param);
-          out.writeExecute(portal, fetch);
-        }
-      }
-      out.writeSync();
-    }
+  public List<Tuple> params() {
+    return params;
   }
+
 }

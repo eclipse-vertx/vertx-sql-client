@@ -20,7 +20,15 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
+import io.reactiverse.pgclient.impl.CloseConnectionCommand;
+import io.reactiverse.pgclient.impl.ClosePortalCommand;
+import io.reactiverse.pgclient.impl.CloseStatementCommand;
+import io.reactiverse.pgclient.impl.ExtendedBatchQueryCommand;
+import io.reactiverse.pgclient.impl.ExtendedQueryCommand;
+import io.reactiverse.pgclient.impl.InitCommand;
 import io.reactiverse.pgclient.impl.PgCommandBase;
+import io.reactiverse.pgclient.impl.PrepareStatementCommand;
+import io.reactiverse.pgclient.impl.SimpleQueryCommand;
 import io.reactiverse.pgclient.impl.codec.util.Util;
 
 import java.nio.charset.StandardCharsets;
@@ -47,24 +55,47 @@ public final class PgEncoder extends ChannelOutboundHandlerAdapter {
   private static final byte CLOSE = 'C';
   private static final byte SYNC = 'S';
 
-  private final ArrayDeque<PgCommandBase<?>> inflight;
+  private final ArrayDeque<PgCommandCodec<?, ?>> inflight;
   private ChannelHandlerContext ctx;
   private ByteBuf out;
   private PgDecoder dec;
 
-  PgEncoder(PgDecoder dec, ArrayDeque<PgCommandBase<?>> inflight) {
+  PgEncoder(PgDecoder dec, ArrayDeque<PgCommandCodec<?, ?>> inflight) {
     this.inflight = inflight;
     this.dec = dec;
   }
 
   public void write(PgCommandBase<?> cmd) {
-    inflight.add(cmd);
-    cmd.completionHandler = resp -> {
-      resp.cmd = (PgCommandBase) inflight.poll();
+    PgCommandCodec<?, ?> codec = wrap(cmd);
+    codec.completionHandler = resp -> {
+      PgCommandCodec<?, ?> c = inflight.poll();
+      resp.cmd = (PgCommandBase) c.cmd;
       ctx.fireChannelRead(resp);
     };
-    cmd.noticeHandler = ctx::fireChannelRead;
-    cmd.exec(this);
+    codec.noticeHandler = ctx::fireChannelRead;
+    inflight.add(codec);
+    codec.encode(this);
+  }
+
+  private PgCommandCodec<?, ?> wrap(PgCommandBase<?> cmd) {
+    if (cmd instanceof InitCommand) {
+      return new InitCommandCodec((InitCommand) cmd);
+    } else if (cmd instanceof SimpleQueryCommand<?>) {
+      return new SimpleQueryCodec<>((SimpleQueryCommand<?>) cmd);
+    } else if (cmd instanceof ExtendedQueryCommand<?>) {
+      return new ExtendedQueryCommandCodec<>((ExtendedQueryCommand<?>) cmd);
+    } else if (cmd instanceof ExtendedBatchQueryCommand<?>) {
+      return new ExtendedBatchQueryCommandCodec<>((ExtendedBatchQueryCommand<?>) cmd);
+    } else if (cmd instanceof PrepareStatementCommand) {
+      return new PrepareStatementCommandCodec((PrepareStatementCommand) cmd);
+    } else if (cmd instanceof CloseConnectionCommand) {
+      return CloseConnectionCommandCodec.INSTANCE;
+    } else if (cmd instanceof ClosePortalCommand) {
+      return new ClosePortalCommandCodec((ClosePortalCommand) cmd);
+    } else if (cmd instanceof CloseStatementCommand) {
+      return new CloseStatementCommandCodec((CloseStatementCommand) cmd);
+    }
+    throw new AssertionError();
   }
 
   @Override

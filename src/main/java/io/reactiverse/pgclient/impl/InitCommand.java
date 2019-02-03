@@ -17,16 +17,6 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.PgException;
-import io.reactiverse.pgclient.impl.codec.TxStatus;
-import io.reactiverse.pgclient.impl.codec.ErrorResponse;
-import io.reactiverse.pgclient.impl.codec.PgEncoder;
-import io.reactiverse.pgclient.impl.codec.PasswordMessage;
-import io.reactiverse.pgclient.impl.codec.StartupMessage;
-
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-
 /**
  * Initialize the connection so it can be used to interact with the database.
  *
@@ -34,12 +24,10 @@ import java.nio.charset.StandardCharsets;
  */
 public class InitCommand extends PgCommandBase<Connection> {
 
-  private final PgSocketConnection conn;
+  private final SocketConnectionBase conn;
   private final String username;
   private final String password;
   private final String database;
-  private String encoding;
-  private PgEncoder out;
 
   InitCommand(
     PgSocketConnection conn,
@@ -52,65 +40,20 @@ public class InitCommand extends PgCommandBase<Connection> {
     this.database = database;
   }
 
-  @Override
-  public void exec(PgEncoder out) {
-    this.out = out;
-    out.writeStartupMessage(new StartupMessage(username, database));
+  public SocketConnectionBase connection() {
+    return conn;
   }
 
-  @Override
-  public void handleAuthenticationMD5Password(byte[] salt) {
-    out.writePasswordMessage(new PasswordMessage(username, password, salt));
-    out.flush();
+  public String username() {
+    return username;
   }
 
-  @Override
-  public void handleAuthenticationClearTextPassword() {
-    out.writePasswordMessage(new PasswordMessage(username, password, null));
-    out.flush();
+  public String password() {
+    return password;
   }
 
-  @Override
-  public void handleAuthenticationOk() {
-//      handler.handle(Future.succeededFuture(conn));
-//      handler = null;
+  public String database() {
+    return database;
   }
 
-  @Override
-  public void handleParameterStatus(String key, String value) {
-    if(key.equals("client_encoding")) {
-      encoding = value;
-    }
-  }
-
-  @Override
-  public void handleBackendKeyData(int processId, int secretKey) {
-    conn.processId = processId;
-    conn.secretKey = secretKey;
-  }
-
-  @Override
-  public void handleErrorResponse(ErrorResponse errorResponse) {
-    CommandResponse<Connection> resp = CommandResponse.failure(new PgException(errorResponse));
-    completionHandler.handle(resp);
-  }
-
-  @Override
-  public void handleReadyForQuery(TxStatus txStatus) {
-    // The final phase before returning the connection
-    // We should make sure we are supporting only UTF8
-    // https://www.postgresql.org/docs/9.5/static/multibyte.html#MULTIBYTE-CHARSET-SUPPORTED
-    Charset cs = null;
-    try {
-      cs = Charset.forName(encoding);
-    } catch (Exception ignore) {
-    }
-    CommandResponse<Connection> fut;
-    if(cs == null || !cs.equals(StandardCharsets.UTF_8)) {
-      fut = CommandResponse.failure(encoding + " is not supported in the client only UTF8");
-    } else {
-      fut = CommandResponse.success(conn);
-    }
-    completionHandler.handle(fut);
-  }
 }

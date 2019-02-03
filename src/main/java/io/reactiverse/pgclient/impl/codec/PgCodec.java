@@ -27,7 +27,7 @@ import java.util.Iterator;
 
 public class PgCodec extends CombinedChannelDuplexHandler<PgDecoder, PgEncoder> {
 
-  private final ArrayDeque<PgCommandBase<?>> inflight = new ArrayDeque<>();
+  private final ArrayDeque<PgCommandCodec<?, ?>> inflight = new ArrayDeque<>();
 
   public PgCodec() {
     PgDecoder decoder = new PgDecoder(inflight);
@@ -42,11 +42,11 @@ public class PgCodec extends CombinedChannelDuplexHandler<PgDecoder, PgEncoder> 
   }
 
   private void fail(ChannelHandlerContext ctx, Throwable cause) {
-    for  (Iterator<PgCommandBase<?>> it = inflight.iterator(); it.hasNext();) {
-      PgCommandBase<?> cmd = it.next();
+    for  (Iterator<PgCommandCodec<?, ?>> it = inflight.iterator(); it.hasNext();) {
+      PgCommandCodec<?, ?> codec = it.next();
       it.remove();
       CommandResponse<Object> failure = CommandResponse.failure(cause);
-      failure.cmd = (PgCommandBase) cmd;
+      failure.cmd = (PgCommandBase) codec.cmd;
       ctx.fireChannelRead(failure);
     }
   }

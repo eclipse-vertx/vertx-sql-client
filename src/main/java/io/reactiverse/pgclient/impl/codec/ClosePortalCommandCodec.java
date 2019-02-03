@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Julien Viet
+ * Copyright (C) 2018 Julien Viet
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,24 @@
  * limitations under the License.
  *
  */
+package io.reactiverse.pgclient.impl.codec;
 
-package io.reactiverse.pgclient.impl;
+import io.reactiverse.pgclient.impl.ClosePortalCommand;
 
-public class CloseConnectionCommand extends PgCommandBase<Void> {
+class ClosePortalCommandCodec extends PgCommandCodec<Void, ClosePortalCommand> {
 
-  public static final CloseConnectionCommand INSTANCE = new CloseConnectionCommand();
-
-  private CloseConnectionCommand() {
-    handler = ar -> {};
+  ClosePortalCommandCodec(ClosePortalCommand cmd) {
+    super(cmd);
   }
 
+  @Override
+  public void encode(PgEncoder out) {
+    out.writeClosePortal(cmd.portal());
+    out.writeSync();
+  }
+
+  @Override
+  public void handleCloseComplete() {
+    // Expected
+  }
 }

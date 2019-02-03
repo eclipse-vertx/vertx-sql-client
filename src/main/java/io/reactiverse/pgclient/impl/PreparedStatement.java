@@ -26,7 +26,7 @@ import io.reactiverse.pgclient.impl.codec.Bind;
 import java.util.Arrays;
 import java.util.List;
 
-class PreparedStatement {
+public class PreparedStatement {
 
   private static final ColumnDesc[] EMPTY_COLUMNS = new ColumnDesc[0];
 
@@ -35,7 +35,7 @@ class PreparedStatement {
   private final ParameterDescription paramDesc;
   final RowDescription rowDesc;
 
-  PreparedStatement(String sql, long statement, ParameterDescription paramDesc, RowDescription rowDesc) {
+  public PreparedStatement(String sql, long statement, ParameterDescription paramDesc, RowDescription rowDesc) {
 
     // Fix to use binary when possible
     if (rowDesc != null) {
@@ -55,6 +55,14 @@ class PreparedStatement {
     this.rowDesc = rowDesc;
     this.sql = sql;
     this.bind = new Bind(statement, paramDesc != null ? paramDesc.getParamDataTypes() : null, rowDesc != null ? rowDesc.columns() : EMPTY_COLUMNS);
+  }
+
+  public String sql() {
+    return sql;
+  }
+
+  public Bind bind() {
+    return bind;
   }
 
   String prepare(List<Object> values) {

@@ -39,7 +39,7 @@ public class RowResultDecoder<C, R> implements RowDecoder {
   private C container;
   private Row row;
 
-  RowResultDecoder(Collector<Row, C, R> collector, boolean singleton, RowDescription desc) {
+  public RowResultDecoder(Collector<Row, C, R> collector, boolean singleton, RowDescription desc) {
     this.collector = collector;
     this.singleton = singleton;
     this.accumulator = collector.accumulator();
@@ -87,14 +87,14 @@ public class RowResultDecoder<C, R> implements RowDecoder {
     size++;
   }
 
-  R complete() {
+  public R complete() {
     if (container == null) {
       container = collector.supplier().get();
     }
     return collector.finisher().apply(container);
   }
 
-  void reset() {
+  public void reset() {
     container = null;
     size = 0;
   }

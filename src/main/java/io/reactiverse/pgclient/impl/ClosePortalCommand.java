@@ -17,12 +17,10 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.impl.codec.PgEncoder;
-
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class ClosePortalCommand extends PgCommandBase<Void> {
+public class ClosePortalCommand extends PgCommandBase<Void> {
 
   private final String portal;
 
@@ -30,14 +28,8 @@ class ClosePortalCommand extends PgCommandBase<Void> {
     this.portal = portal;
   }
 
-  @Override
-  public void exec(PgEncoder out) {
-    out.writeClosePortal(portal);
-    out.writeSync();
+  public String portal() {
+    return portal;
   }
 
-  @Override
-  public void handleCloseComplete() {
-    // Expected
-  }
 }

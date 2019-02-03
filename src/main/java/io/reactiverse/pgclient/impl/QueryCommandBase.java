@@ -17,10 +17,7 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.PgException;
 import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.impl.codec.ErrorResponse;
-import io.reactiverse.pgclient.impl.codec.RowDescription;
 
 import java.util.stream.Collector;
 
@@ -39,33 +36,14 @@ public abstract class QueryCommandBase<T> extends PgCommandBase<Boolean> {
     this.collector = collector;
   }
 
-  abstract String sql();
-
-  @Override
-  public void handleCommandComplete(int updated) {
-    this.result = false;
-    T result;
-    int size;
-    RowDescription desc;
-    if (decoder != null) {
-      result = decoder.complete();
-      desc = decoder.description();
-      size = decoder.size();
-      decoder.reset();
-    } else {
-      result = emptyResult(collector);
-      size = 0;
-      desc = null;
-    }
-    resultHandler.handleResult(updated, size, desc, result);
+  public QueryResultHandler<T> resultHandler() {
+    return resultHandler;
   }
 
-  @Override
-  public void handleErrorResponse(ErrorResponse errorResponse) {
-    failure = new PgException(errorResponse);
+  public Collector<Row, ?, T> collector() {
+    return collector;
   }
 
-  private static <A, T> T emptyResult(Collector<Row, A, T> collector) {
-    return collector.finisher().apply(collector.supplier().get());
-  }
+  public abstract String sql();
+
 }
