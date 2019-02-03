@@ -1008,8 +1008,14 @@ public class DataTypeCodec {
   }
 
   private static Buffer textDecodeBYTEA(int index, int len, ByteBuf buff) {
-    // Shift 2 bytes: skip \x prolog
-    return Buffer.buffer(decodeHexStringToBytes(index + 2, len - 2, buff));
+    if (isRegardedAsHex(index, len, buff)) {
+      // hex format
+      // Shift 2 bytes: skip \x prolog
+      return Buffer.buffer(decodeHexStringToBytes(index + 2, len - 2, buff));
+    }else {
+      // escape format
+      return decodeEscapeByteaStringToBuffer(index, len, buff);
+    }
   }
 
   private static void binaryEncodeBYTEA(Buffer value, ByteBuf buff) {
@@ -1285,6 +1291,45 @@ public class DataTypeCodec {
 
   private static byte decodeHexChar(byte ch) {
     return (byte)(((ch & 0x1F) + ((ch >> 6) * 0x19) - 0x10) & 0x0F);
+  }
+
+  private static boolean isRegardedAsHex(int index, int len, ByteBuf buff) {
+    return len >= 2 && buff.getByte(index) == '\\' && buff.getByte(index + 1) == 'x';
+  }
+
+  private static Buffer decodeEscapeByteaStringToBuffer(int index, int len, ByteBuf buff) {
+    Buffer buffer = Buffer.buffer();
+
+    int pos = 0;
+    while (pos < len) {
+      byte current = buff.getByte(pos + index);
+
+      if (current == '\\') {
+        if (pos + 4 <= len) {
+          // check escaped value
+          int high = buff.getByte(pos + index + 1) << 6;
+          int medium = buff.getByte(pos + index + 2) << 3;
+          int low = buff.getByte(pos + index + 3);
+          int escapedValue = high + medium + low;
+          if (escapedValue >= 32 && escapedValue <= 126) {
+            //printable escaped value
+            buffer.appendByte((byte) escapedValue);
+            pos += 4;
+            continue;
+          }
+        }
+
+        // backslash
+        buffer.appendByte(current);
+        pos++;
+      } else {
+        // non-printable octets digit or unescaped printable byte
+        buffer.appendByte(current);
+        pos++;
+      }
+    }
+
+    return buffer;
   }
 
   private static <T> T[] binaryDecodeArray(IntFunction<T[]> supplier, DataType type, int index, int len, ByteBuf buff) {
