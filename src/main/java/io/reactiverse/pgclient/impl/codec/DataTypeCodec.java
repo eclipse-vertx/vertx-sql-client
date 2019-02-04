@@ -1008,11 +1008,11 @@ public class DataTypeCodec {
   }
 
   private static Buffer textDecodeBYTEA(int index, int len, ByteBuf buff) {
-    if (isRegardedAsHex(index, len, buff)) {
+    if (isHexFormat(index, len, buff)) {
       // hex format
       // Shift 2 bytes: skip \x prolog
       return Buffer.buffer(decodeHexStringToBytes(index + 2, len - 2, buff));
-    }else {
+    } else {
       // escape format
       return decodeEscapeByteaStringToBuffer(index, len, buff);
     }
@@ -1293,7 +1293,7 @@ public class DataTypeCodec {
     return (byte)(((ch & 0x1F) + ((ch >> 6) * 0x19) - 0x10) & 0x0F);
   }
 
-  private static boolean isRegardedAsHex(int index, int len, ByteBuf buff) {
+  private static boolean isHexFormat(int index, int len, ByteBuf buff) {
     return len >= 2 && buff.getByte(index) == '\\' && buff.getByte(index + 1) == 'x';
   }
 
