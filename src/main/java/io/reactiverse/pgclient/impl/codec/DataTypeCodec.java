@@ -1305,25 +1305,28 @@ public class DataTypeCodec {
       byte current = buff.getByte(pos + index);
 
       if (current == '\\') {
-        if (pos + 4 <= len) {
-          // check escaped value
-          int high = buff.getByte(pos + index + 1) << 6;
-          int medium = buff.getByte(pos + index + 2) << 3;
-          int low = buff.getByte(pos + index + 3);
-          int escapedValue = high + medium + low;
-          if (escapedValue >= 32 && escapedValue <= 126) {
-            //printable escaped value
-            buffer.appendByte((byte) escapedValue);
-            pos += 4;
-            continue;
-          }
+        if (pos + 2 <= len && buff.getByte(pos + index + 1) == '\\') {
+          // check double backslashes
+          buffer.appendByte((byte) '\\');
+          pos += 2;
+          continue;
         }
 
-        // backslash
-        buffer.appendByte(current);
-        pos++;
+        if (pos + 4 <= len) {
+          // a preceded backslash with three-digit octal value
+          int high = Character.digit(buff.getByte(pos + index + 1), 8) << 6;
+          int medium = Character.digit(buff.getByte(pos + index + 2), 8) << 3;
+          int low = Character.digit(buff.getByte(pos + index + 3), 8);
+          int escapedValue = high + medium + low;
+
+          buffer.appendByte((byte) escapedValue);
+          pos += 4;
+          continue;
+        }
+
+        throw new DecoderException("Decoding unexpected BYTEA escape format");
       } else {
-        // non-printable octets digit or unescaped printable byte
+        // printable octets
         buffer.appendByte(current);
         pos++;
       }

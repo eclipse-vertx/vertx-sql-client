@@ -23,18 +23,33 @@ public class BinaryDataTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTest
   }
 
   @Test
-  public void testByteaEscapeFormat1(TestContext ctx) {
-    testBytea(ctx, escapeFormat, "\\\\001\\\\007", "Buffer3", Buffer.buffer(new byte[]{'\\', '\\', '0', '0', '1', '\\', '\\', '0', '0', '7'}));
+  public void testByteaEscapeBackslash(TestContext ctx) {
+    testBytea(ctx, escapeFormat, "\\\\\\134", "Buffer3", Buffer.buffer(new byte[]{0x5C, 0x5C}));
   }
 
   @Test
-  public void testByteaEscapeFormat2(TestContext ctx) {
-    testBytea(ctx, escapeFormat, "\\001\\007", "Buffer4", Buffer.buffer(new byte[]{'\\', '0', '0', '1', '\\', '0', '0', '7'}));
+  public void testByteaEscapeNonPrintableOctets(TestContext ctx) {
+    testBytea(ctx, escapeFormat, "\\001\\007", "Buffer4", Buffer.buffer(new byte[]{0x01, 0x07}));
   }
 
   @Test
-  public void testByteaEscapeFormat3(TestContext ctx) {
-    testBytea(ctx, escapeFormat, "abc \\153\\154\\155 \\052\\251\\124", "Buffer5", Buffer.buffer(new byte[]{'a', 'b', 'c', ' ', 'k', 'l', 'm', ' ', '*', '\\', '2', '5', '1', 'T'}));
+  public void testByteaEscapePrintableOctets(TestContext ctx) {
+    testBytea(ctx, escapeFormat, "123abc", "Buffer5", Buffer.buffer(new byte[]{'1', '2', '3', 'a', 'b', 'c'}));
+  }
+
+  @Test
+  public void testByteaEscapeSingleQuote(TestContext ctx) {
+    testBytea(ctx, escapeFormat, "\'\'", "Buffer6", Buffer.buffer(new byte[]{0x27}));
+  }
+
+  @Test
+  public void testByteaEscapeZeroOctet(TestContext ctx) {
+    testBytea(ctx, escapeFormat, "\\000", "Buffer7", Buffer.buffer(new byte[]{0x00}));
+  }
+
+  @Test
+  public void testByteaEscapeFormat(TestContext ctx) {
+    testBytea(ctx, escapeFormat, "abc \\153\\154\\155 \\052\\251\\124", "Buffer8", Buffer.buffer(new byte[]{'a', 'b', 'c', ' ', 'k', 'l', 'm', ' ', '*', (byte) 0xA9, 'T'}));
   }
 
   private void testBytea(TestContext ctx, String byteaFormat, String binaryStr, String columnName, Buffer expected) {
@@ -61,7 +76,7 @@ public class BinaryDataTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTest
 
   @Test
   public void testDecodeEscapeByteaArray(TestContext ctx) {
-    testByteaArray(ctx, escapeFormat, "abc \\153\\154\\155 \\052\\251\\124", "BufferArray2", new Buffer[]{Buffer.buffer(new byte[]{'a', 'b', 'c', ' ', 'k', 'l', 'm', ' ', '*', '\\', '2', '5', '1', 'T'})});
+    testByteaArray(ctx, escapeFormat, "abc \\153\\154\\155 \\052\\251\\124", "BufferArray2", new Buffer[]{Buffer.buffer(new byte[]{'a', 'b', 'c', ' ', 'k', 'l', 'm', ' ', '*', (byte) 0xA9, 'T'})});
   }
 
   private void testByteaArray(TestContext ctx, String byteaFormat, String binaryStr, String columnName, Buffer[] expected) {
