@@ -52,6 +52,11 @@ public class BinaryDataTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTest
     testBytea(ctx, escapeFormat, "abc \\153\\154\\155 \\052\\251\\124", "Buffer8", Buffer.buffer(new byte[]{'a', 'b', 'c', ' ', 'k', 'l', 'm', ' ', '*', (byte) 0xA9, 'T'}));
   }
 
+  @Test
+  public void testByteaEmptyString(TestContext ctx) {
+    testDecodeGeneric(ctx, "", "BYTEA", "Buffer9", Tuple::getBuffer, Row::getBuffer, Buffer.buffer(""));
+  }
+
   private void testBytea(TestContext ctx, String byteaFormat, String binaryStr, String columnName, Buffer expected) {
     Async async = ctx.async();
     PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
