@@ -101,6 +101,23 @@ client.query("SELECT * FROM users WHERE id='julien'", ar -> {
 
 * https://reactiverse.io/reactive-pg-client/apidocs/index.html[Javadoc]
 
+== Pipelining
+
+This client supports pipelining requests to the database which can give a significant performance
+improvement depending on the latency to the database and the type of queries your
+application is doing.
+
+.100µs latency
+image::100µs-latency.png[width=480]
+
+.1ms latency
+image::1ms-latency.png[width=480]
+
+Such results have been produced using this https://github.com/vietj/pg-client-concurrency-benchmark[benchmark].
+
+WARNING: The two results are not normalized, the 100µs latency executes the 5000 queries
+in about 300ms, the 1ms latency executes the 5000 queries in about 13 seconds.
+
 == Supported Data Types
 
 The *Reactive Postgres Client* currently supports the following data types
