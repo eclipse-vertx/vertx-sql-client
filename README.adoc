@@ -108,10 +108,10 @@ improvement depending on the latency to the database and the type of queries you
 application is doing.
 
 .100µs latency
-image::100µs-latency.png
+image::100µs-latency.png[]
 
 .1ms latency
-image::1ms-latency.png
+image::1ms-latency.png[]
 
 Such results have been produced using this https://github.com/vietj/pg-client-concurrency-benchmark[benchmark].
 
