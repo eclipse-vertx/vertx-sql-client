@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.reactiverse.mysqlclient.impl.ColumnMetadata;
 import io.reactiverse.mysqlclient.impl.MySQLExceptionFactory;
+import io.reactiverse.mysqlclient.impl.MySQLPreparedStatement;
 import io.reactiverse.mysqlclient.impl.MySQLSocketConnection;
 import io.reactiverse.mysqlclient.impl.codec.GenericPacketPayloadDecoder;
 import io.reactiverse.mysqlclient.impl.codec.MySQLCommandBase;
@@ -11,6 +12,7 @@ import io.reactiverse.mysqlclient.impl.codec.MySQLCommandResponse;
 import io.reactiverse.mysqlclient.impl.codec.MySQLPacketDecoder;
 import io.reactiverse.mysqlclient.impl.codec.datatype.DataFormat;
 import io.reactiverse.mysqlclient.impl.codec.datatype.DataType;
+import io.reactiverse.mysqlclient.impl.codec.encoder.PreparedStatementPrepareCommand;
 import io.reactiverse.mysqlclient.impl.codec.encoder.QueryCommand;
 import io.reactiverse.mysqlclient.impl.protocol.CommandType;
 import io.reactiverse.mysqlclient.impl.protocol.backend.ColumnDefinition;
@@ -28,8 +30,13 @@ public class MySQLCommandHandler extends MySQLPacketDecoder {
 
   // Resultset intermediary result
   private int columnCount;
-  private int processingColumnIndex;
+  private int processingIndex;
   private ColumnDefinition[] columnDefinitions;
+
+  // prepare intermediary result
+  private int paramCount;
+//  private int processingParamIndex;
+  private MySQLPreparedStatement preparedStatement;
 
   public MySQLCommandHandler(Charset charset, MySQLSocketConnection socketConnection) {
     super(charset, socketConnection);
@@ -70,7 +77,7 @@ public class MySQLCommandHandler extends MySQLPacketDecoder {
             break;
           case HANDLING_COLUMN_DEFINITION:
             decodeColumnDefinitionPacketPayload(payload);
-            if (processingColumnIndex == columnCount) {
+            if (processingIndex == columnCount) {
               // all column definitions have been handled, switch to row data handling
               commandHandlerState = CommandHandlerState.HANDLING_ROW_DATA_OR_END_PACKET;
               cmd.handleColumnMetadata(new ColumnMetadata(columnDefinitions, DataFormat.TEXT));
@@ -100,6 +107,52 @@ public class MySQLCommandHandler extends MySQLPacketDecoder {
             }
             break;
         }
+        break;
+      case CommandType.COM_STMT_PREPARE:
+        PreparedStatementPrepareCommand preparedStatementPrepareCommand = (PreparedStatementPrepareCommand) executingCmd;
+        switch (commandHandlerState) {
+          case INIT:
+            int firstByte = payload.getUnsignedByte(payload.readerIndex());
+            if (firstByte == ERROR_PACKET_HEADER) {
+              handleErrorPacketPayload(ctx, payload);
+            } else {
+              // handle COM_STMT_PREPARE response
+              payload.readUnsignedByte(); // 0x00: OK
+              long statementId = payload.readUnsignedIntLE();
+              int numberOfColumns = payload.readUnsignedShortLE();
+              int numberOfParameters = payload.readUnsignedShortLE();
+              payload.readByte(); // [00] filler
+              int numberOfWarnings = payload.readShortLE();
+
+              // handle metadata here
+              this.columnCount = numberOfColumns;
+              this.paramCount = numberOfParameters;
+              preparedStatement = new MySQLPreparedStatement();
+              preparedStatement.statementId = statementId;
+
+              this.columnDefinitions = new ColumnDefinition[paramCount];
+              this.commandHandlerState = CommandHandlerState.HANDLING_PARAM_COLUMN_DEFINITION;
+            }
+            break;
+          case HANDLING_PARAM_COLUMN_DEFINITION:
+            decodeColumnDefinitionPacketPayload(payload);
+            if (processingIndex == paramCount) {
+              preparedStatement.paramsColumnDefinitions = this.columnDefinitions;
+              this.processingIndex = 0;
+              this.columnDefinitions = new ColumnDefinition[columnCount];
+              this.commandHandlerState = CommandHandlerState.HANDLING_COLUMN_COLUMN_DEFINITION;
+            }
+            break;
+          case HANDLING_COLUMN_COLUMN_DEFINITION:
+            decodeColumnDefinitionPacketPayload(payload);
+            if (processingIndex == columnCount) {
+              preparedStatement.columnMetadata = new ColumnMetadata(columnDefinitions, DataFormat.BINARY);
+              ctx.fireChannelRead(MySQLCommandResponse.success(preparedStatement));
+              resetIntermediaryResult();
+            }
+            break;
+        }
+        break;
     }
   }
 
@@ -136,8 +189,8 @@ public class MySQLCommandHandler extends MySQLPacketDecoder {
     byte decimals = payload.readByte();
 
     ColumnDefinition columnDefinition = new ColumnDefinition(catalog, schema, table, orgTable, name, orgName, characterSet, columnLength, type, flags, decimals);
-    columnDefinitions[processingColumnIndex] = columnDefinition;
-    processingColumnIndex++;
+    columnDefinitions[processingIndex] = columnDefinition;
+    processingIndex++;
   }
 
   private void handleResultsetDecodingCompleted(ChannelHandlerContext ctx, QueryCommand cmd) {
@@ -153,12 +206,15 @@ public class MySQLCommandHandler extends MySQLPacketDecoder {
   private void resetIntermediaryResult() {
     this.commandHandlerState = CommandHandlerState.INIT;
     this.columnCount = 0;
-    this.processingColumnIndex = 0;
+    this.processingIndex = 0;
     this.columnDefinitions = null;
+    this.paramCount = 0;
+    this.preparedStatement = null;
   }
 
   private enum CommandHandlerState {
     INIT,
-    HANDLING_COLUMN_DEFINITION, HANDLING_ROW_DATA_OR_END_PACKET // for COM_QUERY
+    HANDLING_COLUMN_DEFINITION, HANDLING_ROW_DATA_OR_END_PACKET, // for COM_QUERY
+    HANDLING_PARAM_COLUMN_DEFINITION,HANDLING_COLUMN_COLUMN_DEFINITION // for COM_PREPARE
   }
 }

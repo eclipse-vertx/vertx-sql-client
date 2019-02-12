@@ -117,4 +117,13 @@ public class MySQLPacketEncoder {
 
     writePacketAndFlush(payload);
   }
+
+  public void writePrepareMessage(String sql) {
+    ByteBuf payload = ctx.alloc().ioBuffer();
+
+    payload.writeByte(CommandType.COM_STMT_PREPARE);
+    payload.writeCharSequence(sql, charset);
+
+    writePacketAndFlush(payload);
+  }
 }
