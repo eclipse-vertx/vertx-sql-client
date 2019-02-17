@@ -153,6 +153,10 @@ public class MySQLCommandHandler extends MySQLPacketDecoder {
             break;
         }
         break;
+      case CommandType.COM_STMT_EXECUTE:
+        //FIXME prepared-statement executing handling
+        ctx.fireChannelRead(MySQLCommandResponse.success(null));
+        break;
     }
   }
 

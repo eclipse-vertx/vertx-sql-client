@@ -4,10 +4,13 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.reactiverse.mysqlclient.impl.CharacterSetMapping;
+import io.reactiverse.mysqlclient.impl.codec.datatype.DataTypeCodec;
 import io.reactiverse.mysqlclient.impl.protocol.CommandType;
+import io.reactiverse.mysqlclient.impl.protocol.backend.ColumnDefinition;
 import io.reactiverse.mysqlclient.impl.protocol.frontend.HandshakeResponse;
 import io.reactiverse.mysqlclient.impl.util.BufferUtils;
 import io.reactiverse.mysqlclient.impl.util.Native41Authenticator;
+import io.reactiverse.pgclient.Tuple;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -123,6 +126,57 @@ public class MySQLPacketEncoder {
 
     payload.writeByte(CommandType.COM_STMT_PREPARE);
     payload.writeCharSequence(sql, charset);
+
+    writePacketAndFlush(payload);
+  }
+
+  public void writeExecuteMessage(long statementId, ColumnDefinition[] paramsColumnDefinitions, byte sendType, Tuple params) {
+    ByteBuf payload = ctx.alloc().ioBuffer();
+
+    payload.writeByte(CommandType.COM_STMT_EXECUTE);
+    payload.writeIntLE((int) statementId);
+    // CURSOR_TYPE_NO_CURSOR
+    payload.writeByte(0x00);
+    // iteration count, always 1
+    payload.writeIntLE(1);
+
+    int numOfParams = paramsColumnDefinitions.length;
+    int bitmapLength = (numOfParams + 7) / 8;
+    byte[] nullBitmap = new byte[bitmapLength];
+
+    int pos = payload.writerIndex();
+
+    if (numOfParams > 0) {
+      // write a dummy bitmap first
+      payload.writeBytes(nullBitmap);
+      payload.writeByte(sendType);
+      if (sendType == 1) {
+        for (int i = 0; i < numOfParams; i++) {
+          Object value = params.getValue(i);
+          if (value != null) {
+            payload.writeByte(paramsColumnDefinitions[i].getType().id);
+          } else {
+            payload.writeByte(ColumnDefinition.ColumnType.MYSQL_TYPE_NULL);
+          }
+          // TODO handle parameter flag (unsigned or signed)
+          payload.writeByte(0);
+        }
+
+        for (int i = 0; i < numOfParams; i++) {
+          Object value = params.getValue(i);
+          //FIXME make sure we have correctly handled null value here
+          if (value != null) {
+            DataTypeCodec.encodeBinary(paramsColumnDefinitions[i].getType(), value, payload);
+          } else {
+            nullBitmap[i / 8] |= (1 << (i & 7));
+          }
+        }
+
+      }
+
+      // padding null-bitmap content
+      payload.setBytes(pos, nullBitmap);
+    }
 
     writePacketAndFlush(payload);
   }

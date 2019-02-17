@@ -22,14 +22,18 @@ public class MySQLConnectionImpl extends MySQLClientBase<MySQLConnectionImpl> im
 
   @Override
   public <R> void schedule(MySQLCommandBase<R> cmd, Handler<? super MySQLCommandResponse<R>> handler) {
-    cmd.setHandler(handler);
+    cmd.setHandler(cr -> {
+      cr.scheduler = this;
+      handler.handle(cr);
+    });
+
     connection.schedule(cmd);
   }
 
   public MySQLConnection prepare(String sql, Handler<AsyncResult<MySQLPreparedQuery>> handler) {
     schedule(new PreparedStatementPrepareCommand(sql), cr -> {
       if (cr.succeeded()) {
-        handler.handle(Future.succeededFuture(new MySQLPreparedQueryImpl(cr.result())));
+        handler.handle(Future.succeededFuture(new MySQLPreparedQueryImpl(connection, context, cr.result())));
       } else {
         handler.handle(Future.failedFuture(cr.cause()));
       }

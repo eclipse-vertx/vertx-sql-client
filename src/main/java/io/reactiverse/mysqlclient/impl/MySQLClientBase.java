@@ -2,6 +2,8 @@ package io.reactiverse.mysqlclient.impl;
 
 import io.reactiverse.mysqlclient.ImplReusable;
 import io.reactiverse.mysqlclient.MySQLClient;
+import io.reactiverse.mysqlclient.impl.codec.encoder.PreparedStatementExecuteCommand;
+import io.reactiverse.mysqlclient.impl.codec.encoder.PreparedStatementPrepareCommand;
 import io.reactiverse.mysqlclient.impl.codec.encoder.QueryCommand;
 import io.reactiverse.pgclient.PgResult;
 import io.reactiverse.pgclient.PgRowSet;
@@ -9,8 +11,10 @@ import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
 import io.reactiverse.pgclient.impl.ArrayTuple;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
@@ -55,7 +59,21 @@ public abstract class MySQLClientBase<C extends MySQLClient> implements MySQLCli
     Function<R1, R2> factory,
     Collector<Row, ?, R1> collector,
     Handler<AsyncResult<R3>> handler) {
-    throw new UnsupportedOperationException();
+    schedule(new PreparedStatementPrepareCommand(sql), cr -> {
+      if (cr.succeeded()) {
+        MySQLPreparedStatement ps = cr.result();
+        String msg = ps.prepare((List<Object>) arguments);
+        if (msg != null) {
+          handler.handle(Future.failedFuture(msg));
+        } else {
+          MySQLResultBuilder<R1, R2, R3> b = new MySQLResultBuilder<>(factory, handler);
+          cr.scheduler.schedule(new PreparedStatementExecuteCommand<>(ps, arguments, singleton, collector, b), b);
+        }
+      } else {
+        handler.handle(Future.failedFuture(cr.cause()));
+      }
+    });
+    return (C) this;
   }
 
   @Override

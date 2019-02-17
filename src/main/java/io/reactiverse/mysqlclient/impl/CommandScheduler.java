@@ -7,7 +7,7 @@ import io.vertx.core.Handler;
 
 @ImplReusable
 @FunctionalInterface
-interface CommandScheduler {
+public interface CommandScheduler {
 
   <R> void schedule(MySQLCommandBase<R> cmd, Handler<? super MySQLCommandResponse<R>> handler);
 

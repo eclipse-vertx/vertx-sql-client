@@ -1,6 +1,8 @@
 package io.reactiverse.mysqlclient.impl.codec;
 
 import io.reactiverse.mysqlclient.ImplReusable;
+
+import io.reactiverse.mysqlclient.impl.CommandScheduler;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.impl.NoStackTraceThrowable;
 
@@ -60,4 +62,8 @@ public abstract class MySQLCommandResponse<R> implements AsyncResult<R> {
       }
     };
   }
+
+  // The connection that executed the command
+  public CommandScheduler scheduler;
+  public MySQLCommandBase<R> cmd;
 }
