@@ -55,22 +55,47 @@ public class RowResultDecoder<C, R> implements RowDecoder {
       row = new MySQLRowImpl(columnMetadata);
     }
     Row row = new MySQLRowImpl(columnMetadata);
-    for (int c = 0; c < len; c++) {
-      Object decoded = null;
-      if (in.getUnsignedByte(in.readerIndex()) == NULL) {
-        in.skipBytes(1);
-      } else {
-        DataType dataType = columnMetadata.getColumnDefinitions()[c].getType();
-        int length = (int) BufferUtils.readLengthEncodedInteger(in);
-        ByteBuf data = in.slice(in.readerIndex(), length);
-        in.skipBytes(length);
-        if (columnMetadata.getDataFormat() == DataFormat.BINARY) {
-          decoded = DataTypeCodec.decodeBinary(dataType, data);
+    if (columnMetadata.getDataFormat() == DataFormat.BINARY) {
+      // BINARY row decoding
+      // 0x00 packet header
+      in.readByte();
+      // null_bitmap
+      int nullBitmapLength = (len + 7 + 2) / 8;
+      byte[] nullBitmap = new byte[nullBitmapLength];
+      in.readBytes(nullBitmap);
+
+      // values
+      final int offset = 2;
+      for (int c = 0; c < len; c++) {
+        Object decoded = null;
+
+        int bytePos = (c + offset) / 8;
+        int bitPos = (c + offset) % 8;
+        byte nullByte = nullBitmap[bytePos];
+        nullByte &= (1 << (7 - bitPos));
+
+        if (nullByte == 0) {
+          // non-null
+          DataType dataType = columnMetadata.getColumnDefinitions()[c].getType();
+          decoded = DataTypeCodec.decodeBinary(dataType, in);
+        }
+        row.addValue(decoded);
+      }
+    } else {
+      // TEXT row decoding
+      for (int c = 0; c < len; c++) {
+        Object decoded = null;
+        if (in.getUnsignedByte(in.readerIndex()) == NULL) {
+          in.skipBytes(1);
         } else {
+          DataType dataType = columnMetadata.getColumnDefinitions()[c].getType();
+          int length = (int) BufferUtils.readLengthEncodedInteger(in);
+          ByteBuf data = in.slice(in.readerIndex(), length);
+          in.skipBytes(length);
           decoded = DataTypeCodec.decodeText(dataType, data);
         }
+        row.addValue(decoded);
       }
-      row.addValue(decoded);
     }
     accumulator.accept(container, row);
     size++;

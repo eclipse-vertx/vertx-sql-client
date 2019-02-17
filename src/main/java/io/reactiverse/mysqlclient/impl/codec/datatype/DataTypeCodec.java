@@ -61,7 +61,24 @@ public class DataTypeCodec {
   }
 
   public static Object decodeBinary(DataType dataType, ByteBuf buffer) {
-    throw new UnsupportedOperationException();
+    switch (dataType) {
+      case INT2:
+        return binaryDecodeInt2(buffer);
+      case INT3:
+        return binaryDecodeInt3(buffer);
+      case INT4:
+        return binaryDecodeInt4(buffer);
+      case INT8:
+        return binaryDecodeInt8(buffer);
+      case FLOAT:
+        return binaryDecodeFloat(buffer);
+      case DOUBLE:
+        return binaryDecodeDouble(buffer);
+      case VARCHAR:
+        return binaryDecodeVarChar(buffer);
+      default:
+        return binaryDecodeVarChar(buffer);
+    }
   }
 
   private static void binaryEncodeInt2(Number value, ByteBuf buffer) {
@@ -92,6 +109,34 @@ public class DataTypeCodec {
 
   private static void binaryEncodeVarChar(String value, ByteBuf buffer) {
     BufferUtils.writeLengthEncodedString(buffer, value, StandardCharsets.UTF_8);
+  }
+
+  private static Short binaryDecodeInt2(ByteBuf buffer) {
+    return buffer.readShortLE();
+  }
+
+  private static Integer binaryDecodeInt3(ByteBuf buffer) {
+    return buffer.readIntLE();
+  }
+
+  private static Integer binaryDecodeInt4(ByteBuf buffer) {
+    return buffer.readIntLE();
+  }
+
+  private static Long binaryDecodeInt8(ByteBuf buffer) {
+    return buffer.readLongLE();
+  }
+
+  private static Float binaryDecodeFloat(ByteBuf buffer) {
+    return buffer.readFloatLE();
+  }
+
+  private static Double binaryDecodeDouble(ByteBuf buffer) {
+    return buffer.readDoubleLE();
+  }
+
+  private static String binaryDecodeVarChar(ByteBuf buffer) {
+    return BufferUtils.readLengthEncodedString(buffer, StandardCharsets.UTF_8);
   }
 
   private static Short textDecodeInt2(ByteBuf buffer) {

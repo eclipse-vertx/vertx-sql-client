@@ -12,6 +12,7 @@ import io.reactiverse.pgclient.Row;
 import java.util.stream.Collector;
 
 public class QueryCommand<T> extends MySQLCommandBase<Boolean> {
+  //FIXME QueryCommandBase
   final QueryResultHandler<T> resultHandler;
   final Collector<Row, ?, T> collector;
   private final String sql;
