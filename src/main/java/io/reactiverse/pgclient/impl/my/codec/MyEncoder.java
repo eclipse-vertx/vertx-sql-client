@@ -8,8 +8,10 @@ import io.reactiverse.mysqlclient.impl.protocol.frontend.HandshakeResponse;
 import io.reactiverse.mysqlclient.impl.util.BufferUtils;
 import io.reactiverse.mysqlclient.impl.util.Native41Authenticator;
 import io.reactiverse.pgclient.impl.command.CloseConnectionCommand;
+import io.reactiverse.pgclient.impl.command.ExtendedQueryCommand;
 import io.reactiverse.pgclient.impl.command.InitCommand;
 import io.reactiverse.pgclient.impl.command.CommandBase;
+import io.reactiverse.pgclient.impl.command.PrepareStatementCommand;
 import io.reactiverse.pgclient.impl.command.SimpleQueryCommand;
 
 import java.nio.charset.StandardCharsets;
@@ -37,7 +39,6 @@ public class MyEncoder extends MessageToByteEncoder<CommandBase<?>> {
 
   @Override
   protected void encode(ChannelHandlerContext chctx, CommandBase<?> msg, ByteBuf out) {
-    System.out.println("ENCODE " + msg);
     CommandCodec<?, ?> ctx = wrap(msg);
     ctx.completionHandler = resp -> {
       CommandCodec c = inflight.poll();
@@ -53,8 +54,12 @@ public class MyEncoder extends MessageToByteEncoder<CommandBase<?>> {
       return new InitCommandCodec((InitCommand) cmd);
     } else if (cmd instanceof SimpleQueryCommand) {
       return new SimpleQueryCommandCodec((SimpleQueryCommand) cmd);
+    } else if (cmd instanceof ExtendedQueryCommand) {
+      return new ExtendedQueryCommandCodec((ExtendedQueryCommand) cmd);
     } else if (cmd instanceof CloseConnectionCommand) {
       return new CloseConnectionCommandCodec((CloseConnectionCommand) cmd);
+    } else if (cmd instanceof PrepareStatementCommand) {
+      return new PrepareStatementCodec((PrepareStatementCommand) cmd);
     } else {
       System.out.println("Unsupported command " + cmd);
       throw new UnsupportedOperationException("Todo");
@@ -115,7 +120,6 @@ public class MyEncoder extends MessageToByteEncoder<CommandBase<?>> {
     ByteBuf header = chctx.alloc().ioBuffer();
 
     //TODO fragment the packet to avoid 16MB+ packet here ?
-    System.out.println();
 
     // payload length
     header.writeMediumLE(payload.readableBytes());
