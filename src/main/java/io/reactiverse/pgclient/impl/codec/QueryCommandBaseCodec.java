@@ -18,7 +18,7 @@ package io.reactiverse.pgclient.impl.codec;
 
 import io.reactiverse.pgclient.PgException;
 import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.impl.RowResultDecoder;
+import io.reactiverse.pgclient.impl.RowDesc;
 import io.reactiverse.pgclient.impl.command.QueryCommandBase;
 
 import java.util.stream.Collector;
@@ -36,10 +36,10 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends P
     this.result = false;
     T result;
     int size;
-    RowDescription desc;
+    RowDesc desc;
     if (decoder != null) {
       result = decoder.complete();
-      desc = decoder.description();
+      desc = decoder.desc;
       size = decoder.size();
       decoder.reset();
     } else {
@@ -52,7 +52,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends P
 
   @Override
   public void handleErrorResponse(ErrorResponse errorResponse) {
-    failure = new PgException(errorResponse);
+    failure = errorResponse.toException();
   }
 
   private static <A, T> T emptyResult(Collector<Row, A, T> collector) {

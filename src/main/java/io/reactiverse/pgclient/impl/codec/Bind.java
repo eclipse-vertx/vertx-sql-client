@@ -17,26 +17,18 @@
 
 package io.reactiverse.pgclient.impl.codec;
 
-import io.reactiverse.pgclient.impl.codec.ColumnDesc;
-import io.reactiverse.pgclient.impl.codec.DataType;
-
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public class Bind {
+final class Bind {
 
-  public final long statement;
-  public final DataType[] paramTypes;
-  public final ColumnDesc[] resultColumns;
+  final long statement;
+  final DataType[] paramTypes;
+  final PgColumnDesc[] resultColumns;
 
-  public Bind(long statement, DataType[] paramTypes, ColumnDesc[] resultColumns) {
+  Bind(long statement, DataType[] paramTypes, PgColumnDesc[] resultColumns) {
     this.statement = statement;
     this.paramTypes = paramTypes;
     this.resultColumns = resultColumns;
   }
-
-  public long getStatement() {
-    return statement;
-  }
-
 }

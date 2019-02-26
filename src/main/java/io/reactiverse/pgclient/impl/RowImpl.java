@@ -25,25 +25,24 @@ import io.reactiverse.pgclient.data.LineSegment;
 import io.reactiverse.pgclient.data.Numeric;
 import io.reactiverse.pgclient.data.Path;
 import io.reactiverse.pgclient.data.Polygon;
-import io.reactiverse.pgclient.impl.codec.ColumnDesc;
 import io.reactiverse.pgclient.data.Interval;
-import io.reactiverse.pgclient.impl.codec.RowDescription;
 import io.reactiverse.pgclient.data.Point;
 import io.vertx.core.buffer.Buffer;
 
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.temporal.Temporal;
+import java.util.List;
 import java.util.UUID;
 
 public class RowImpl extends ArrayTuple implements RowInternal {
 
   // Linked list
   private RowInternal next;
-  private final RowDescription desc;
+  private final RowDesc desc;
 
-  public RowImpl(RowDescription desc) {
-    super(desc.columns().length);
+  public RowImpl(RowDesc desc) {
+    super(desc.columnNames().size());
     this.desc = desc;
   }
 
@@ -54,8 +53,8 @@ public class RowImpl extends ArrayTuple implements RowInternal {
 
   @Override
   public String getColumnName(int pos) {
-    final ColumnDesc[] columnDescs = desc.columns();
-    return pos < 0 || columnDescs.length - 1 < pos ? null : columnDescs[pos].getName();
+    List<String> columnNames = desc.columnNames();
+    return pos < 0 || columnNames.size() - 1 < pos ? null : columnNames.get(pos);
   }
 
   @Override

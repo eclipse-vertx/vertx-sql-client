@@ -17,11 +17,14 @@
 
 package io.reactiverse.pgclient.impl;
 
+import java.util.List;
+
 /**
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
+ * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public interface QueryResultHandler<T> {
 
-  void handleResult(int updatedCount, int size, RowDesc desc, T result);
-
+public class ParamDesc {
+  public String prepare(List<Object> values) {
+    return null;
+  }
 }

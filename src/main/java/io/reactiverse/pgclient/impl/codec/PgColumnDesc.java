@@ -17,16 +17,27 @@
 
 package io.reactiverse.pgclient.impl.codec;
 
-import io.reactiverse.pgclient.impl.codec.util.MD5Authentication;
-
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-class PasswordMessage {
 
-  final String hash;
+class PgColumnDesc {
 
-  PasswordMessage(String username, String password, byte[] salt) {
-    this.hash = salt != null ? MD5Authentication.encode(username, password, salt) : password;
+  final String name;
+  final int relationId;
+  final DataType dataType;
+  final DataFormat dataFormat; // are we sure that ????
+  final short relationAttributeNo;
+  final short length;
+  final int typeModifier;
+
+  PgColumnDesc(String name, int relationId, short relationAttributeNo, DataType dataType, short length, int typeModifier, DataFormat dataFormat) {
+    this.name = name;
+    this.dataType = dataType;
+    this.dataFormat = dataFormat;
+    this.length = length;
+    this.relationId = relationId;
+    this.relationAttributeNo = relationAttributeNo;
+    this.typeModifier = typeModifier;
   }
 }

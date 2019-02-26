@@ -20,18 +20,13 @@ package io.reactiverse.pgclient.impl.codec;
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public class Describe {
+class Describe {
 
-  public final long statement;
-  public final String portal;
+  final long statement;
+  final String portal;
 
-  public Describe(long statement, String portal) {
+  Describe(long statement, String portal) {
     this.statement = statement;
     this.portal = portal;
-  }
-
-  public Describe(long statement) {
-    this.statement = statement;
-    this.portal = null;
   }
 }

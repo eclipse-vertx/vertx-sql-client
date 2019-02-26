@@ -19,7 +19,7 @@ package io.reactiverse.pgclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 
-public interface RowDecoder {
+interface RowDecoder {
 
   void decodeRow(int len, ByteBuf in);
 

@@ -14,18 +14,22 @@
  * limitations under the License.
  *
  */
-
 package io.reactiverse.pgclient.impl.codec;
 
-/**
- *
- * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
- *
- */
-public enum TxStatus {
+import io.reactiverse.pgclient.impl.RowDesc;
 
-  IDLE,
-  ACTIVE,
-  FAILED;
+import java.util.Collections;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+class PgRowDesc extends RowDesc {
+
+  final PgColumnDesc[] columns;
+
+  PgRowDesc(PgColumnDesc[] columns) {
+    super(Collections.unmodifiableList(Stream.of(columns)
+      .map(d -> d.name)
+      .collect(Collectors.toList())));
+    this.columns = columns;
+  }
 }

@@ -17,59 +17,13 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.impl.codec.ColumnDesc;
-import io.reactiverse.pgclient.impl.codec.DataFormat;
-import io.reactiverse.pgclient.impl.codec.ParameterDescription;
-import io.reactiverse.pgclient.impl.codec.RowDescription;
-import io.reactiverse.pgclient.impl.codec.Bind;
-
-import java.util.Arrays;
 import java.util.List;
 
-public class PreparedStatement {
+public interface PreparedStatement {
 
-  private static final ColumnDesc[] EMPTY_COLUMNS = new ColumnDesc[0];
+  RowDesc rowDesc();
 
-  final String sql;
-  final Bind bind;
-  private final ParameterDescription paramDesc;
-  private final RowDescription rowDesc;
+  String sql();
 
-  public PreparedStatement(String sql, long statement, ParameterDescription paramDesc, RowDescription rowDesc) {
-
-    // Fix to use binary when possible
-    if (rowDesc != null) {
-      rowDesc = new RowDescription(Arrays.stream(rowDesc.columns())
-        .map(c -> new ColumnDesc(
-          c.getName(),
-          c.getRelationId(),
-          c.getRelationAttributeNo(),
-          c.getDataType(),
-          c.getLength(),
-          c.getTypeModifier(),
-          c.getDataType().supportsBinary ? DataFormat.BINARY : DataFormat.TEXT))
-        .toArray(ColumnDesc[]::new));
-    }
-
-    this.paramDesc = paramDesc;
-    this.rowDesc = rowDesc;
-    this.sql = sql;
-    this.bind = new Bind(statement, paramDesc != null ? paramDesc.getParamDataTypes() : null, rowDesc != null ? rowDesc.columns() : EMPTY_COLUMNS);
-  }
-
-  public RowDescription rowDesc() {
-    return rowDesc;
-  }
-
-  public String sql() {
-    return sql;
-  }
-
-  public Bind bind() {
-    return bind;
-  }
-
-  String prepare(List<Object> values) {
-    return paramDesc.prepare(values);
-  }
+  String prepare(List<Object> values);
 }

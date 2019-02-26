@@ -16,7 +16,6 @@
  */
 package io.reactiverse.pgclient.impl.codec;
 
-import io.reactiverse.pgclient.impl.RowResultDecoder;
 import io.reactiverse.pgclient.impl.command.SimpleQueryCommand;
 
 class SimpleQueryCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>> {
@@ -31,7 +30,7 @@ class SimpleQueryCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>
   }
 
   @Override
-  void handleRowDescription(RowDescription rowDescription) {
+  void handleRowDescription(PgRowDesc rowDescription) {
     decoder = new RowResultDecoder<>(cmd.collector(), cmd.isSingleton(), rowDescription);
   }
 }

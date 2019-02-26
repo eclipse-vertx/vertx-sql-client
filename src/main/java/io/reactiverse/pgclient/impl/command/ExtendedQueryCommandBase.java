@@ -20,7 +20,6 @@ package io.reactiverse.pgclient.impl.command;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.impl.PreparedStatement;
 import io.reactiverse.pgclient.impl.QueryResultHandler;
-import io.reactiverse.pgclient.impl.RowResultDecoder;
 
 import java.util.stream.Collector;
 

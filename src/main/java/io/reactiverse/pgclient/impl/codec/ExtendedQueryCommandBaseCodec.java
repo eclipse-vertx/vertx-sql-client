@@ -16,18 +16,18 @@
  */
 package io.reactiverse.pgclient.impl.codec;
 
+import io.reactiverse.pgclient.impl.RowDesc;
 import io.reactiverse.pgclient.impl.command.ExtendedQueryCommandBase;
-import io.reactiverse.pgclient.impl.RowResultDecoder;
 
 abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBase<R>> extends QueryCommandBaseCodec<R, C> {
 
   ExtendedQueryCommandBaseCodec(C cmd) {
     super(cmd);
-    decoder = new RowResultDecoder<>(cmd.collector(), cmd.isSingleton(), cmd.preparedStatement().rowDesc());
+    decoder = new RowResultDecoder<>(cmd.collector(), cmd.isSingleton(), ((PgPreparedStatement)cmd.preparedStatement()).rowDesc());
   }
 
   @Override
-  void handleRowDescription(RowDescription rowDescription) {
+  void handleRowDescription(PgRowDesc rowDescription) {
     decoder = new RowResultDecoder<>(cmd.collector(), cmd.isSingleton(), rowDescription);
   }
 
@@ -39,7 +39,7 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
   @Override
   void handlePortalSuspended() {
     R result = decoder.complete();
-    RowDescription desc = decoder.description();
+    RowDesc desc = decoder.desc;
     int size = decoder.size();
     decoder.reset();
     this.result = true;

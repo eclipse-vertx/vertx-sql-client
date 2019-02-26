@@ -18,10 +18,14 @@
 package io.reactiverse.pgclient.impl;
 
 /**
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
+ *
+ * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
+ *
  */
-public interface QueryResultHandler<T> {
+public enum TxStatus {
 
-  void handleResult(int updatedCount, int size, RowDesc desc, T result);
+  IDLE,
+  ACTIVE,
+  FAILED;
 
 }

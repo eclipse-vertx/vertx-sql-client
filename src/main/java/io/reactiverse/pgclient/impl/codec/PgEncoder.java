@@ -20,6 +20,9 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
+import io.reactiverse.pgclient.impl.ParamDesc;
+import io.reactiverse.pgclient.impl.RowDesc;
+import io.reactiverse.pgclient.impl.TxStatus;
 import io.reactiverse.pgclient.impl.command.CloseConnectionCommand;
 import io.reactiverse.pgclient.impl.command.ClosePortalCommand;
 import io.reactiverse.pgclient.impl.command.CloseStatementCommand;
@@ -41,7 +44,7 @@ import static io.reactiverse.pgclient.impl.codec.util.Util.writeCString;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public final class PgEncoder extends ChannelOutboundHandlerAdapter {
+final class PgEncoder extends ChannelOutboundHandlerAdapter {
 
   // Frontend message types for {@link io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder}
 
@@ -65,7 +68,7 @@ public final class PgEncoder extends ChannelOutboundHandlerAdapter {
     this.dec = dec;
   }
 
-  public void write(CommandBase<?> cmd) {
+  void write(CommandBase<?> cmd) {
     PgCommandCodec<?, ?> codec = wrap(cmd);
     codec.completionHandler = resp -> {
       PgCommandCodec<?, ?> c = inflight.poll();
@@ -118,7 +121,7 @@ public final class PgEncoder extends ChannelOutboundHandlerAdapter {
     flush();
   }
 
-  public void flush() {
+  void flush() {
     if (out != null) {
       ByteBuf buff = out;
       out = null;
@@ -132,7 +135,7 @@ public final class PgEncoder extends ChannelOutboundHandlerAdapter {
    * This message immediately closes the connection. On receipt of this message,
    * the backend closes the connection and terminates.
    */
-  public void writeTerminate() {
+  void writeTerminate() {
     ensureBuffer();
     out.writeByte(TERMINATE);
     out.writeInt(4);
@@ -151,7 +154,7 @@ public final class PgEncoder extends ChannelOutboundHandlerAdapter {
    * Note this message does not cause a transaction block opened with BEGIN to be closed. It is possible to detect this
    * situation in {@link ReadyForQuery#txStatus()} that includes {@link TxStatus} information.
    */
-  public void writeSync() {
+  void writeSync() {
     ensureBuffer();
     out.writeByte(SYNC);
     out.writeInt(4);
@@ -166,7 +169,7 @@ public final class PgEncoder extends ChannelOutboundHandlerAdapter {
    *
    * @param portal
    */
-  public void writeClosePortal(String portal) {
+  void writeClosePortal(String portal) {
     ensureBuffer();
     int pos = out.writerIndex();
     out.writeByte(CLOSE);
@@ -176,7 +179,7 @@ public final class PgEncoder extends ChannelOutboundHandlerAdapter {
     out.setInt(pos + 1, out.writerIndex() - pos - 1);
   }
 
-  public void writeStartupMessage(StartupMessage msg) {
+  void writeStartupMessage(StartupMessage msg) {
     ensureBuffer();
 
     int pos = out.writerIndex();
@@ -205,7 +208,7 @@ public final class PgEncoder extends ChannelOutboundHandlerAdapter {
     out.setInt(pos, out.writerIndex() - pos);
   }
 
-  public void writePasswordMessage(PasswordMessage msg) {
+  void writePasswordMessage(PasswordMessage msg) {
     ensureBuffer();
     int pos = out.writerIndex();
     out.writeByte(PASSWORD_MESSAGE);
@@ -219,10 +222,10 @@ public final class PgEncoder extends ChannelOutboundHandlerAdapter {
    * This message includes an SQL command (or commands) expressed as a text string.
    * <p>
    * The possible response messages from the backend are
-   * {@link CommandComplete}, {@link RowDescription}, {@link DataRow}, {@link EmptyQueryResponse}, {@link ErrorResponse},
+   * {@link CommandComplete}, {@link RowDesc}, {@link DataRow}, {@link EmptyQueryResponse}, {@link ErrorResponse},
    * {@link ReadyForQuery} and {@link NoticeResponse}
    */
-  public void writeQuery(Query query) {
+  void writeQuery(Query query) {
     ensureBuffer();
     int pos = out.writerIndex();
     out.writeByte(QUERY);
@@ -235,21 +238,21 @@ public final class PgEncoder extends ChannelOutboundHandlerAdapter {
    * <p>
    * The message that using "statement" variant specifies the name of an existing prepared statement.
    * <p>
-   * The response is a {@link ParameterDescription} message describing the parameters needed by the statement,
-   * followed by a {@link RowDescription} message describing the rows that will be returned when the statement is eventually
+   * The response is a {@link ParamDesc} message describing the parameters needed by the statement,
+   * followed by a {@link RowDesc} message describing the rows that will be returned when the statement is eventually
    * executed or a {@link NoData} message if the statement will not return rows.
    * {@link ErrorResponse} is issued if there is no such prepared statement.
    * <p>
    * Note that since {@link Bind} has not yet been issued, the formats to be used for returned columns are not yet known to
-   * the backend; the format code fields in the {@link RowDescription} message will be zeroes in this case.
+   * the backend; the format code fields in the {@link RowDesc} message will be zeroes in this case.
    * <p>
    * The message that using "portal" variant specifies the name of an existing portal.
    * <p>
-   * The response is a {@link RowDescription} message describing the rows that will be returned by executing the portal;
+   * The response is a {@link RowDesc} message describing the rows that will be returned by executing the portal;
    * or a {@link NoData} message if the portal does not contain a query that will return rows; or {@link ErrorResponse}
    * if there is no such portal.
    */
-  public void writeDescribe(Describe describe) {
+  void writeDescribe(Describe describe) {
     ensureBuffer();
     int pos = out.writerIndex();
     out.writeByte(DESCRIBE);
@@ -273,7 +276,7 @@ public final class PgEncoder extends ChannelOutboundHandlerAdapter {
    * <p>
    * The response is either {@link ParseComplete} or {@link ErrorResponse}
    */
-  public void writeParse(Parse parse) {
+  void writeParse(Parse parse) {
     ensureBuffer();
     int pos = out.writerIndex();
     out.writeByte(PARSE);
@@ -304,7 +307,7 @@ public final class PgEncoder extends ChannelOutboundHandlerAdapter {
    * in other cases the command is always executed to completion, and the row count of the result is ignored.
    * <p>
    * The possible responses to this message are the same as {@link Query} message, except that
-   * it doesn't cause {@link ReadyForQuery} or {@link RowDescription} to be issued.
+   * it doesn't cause {@link ReadyForQuery} or {@link RowDesc} to be issued.
    * <p>
    * If Execute terminates before completing the execution of a portal, it will send a {@link PortalSuspended} message;
    * the appearance of this message tells the frontend that another Execute should be issued against the same portal to
@@ -315,7 +318,7 @@ public final class PgEncoder extends ChannelOutboundHandlerAdapter {
    *
    * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
    */
-  public void writeExecute(String portal, int rowCount) {
+  void writeExecute(String portal, int rowCount) {
     ensureBuffer();
     int pos = out.writerIndex();
     out.writeByte(EXECUTE);
@@ -336,7 +339,7 @@ public final class PgEncoder extends ChannelOutboundHandlerAdapter {
    * <p>
    * The response is either {@link BindComplete} or {@link ErrorResponse}.
    */
-  public void writeBind(Bind bind, String portal, List<Object> paramValues) {
+  void writeBind(Bind bind, String portal, List<Object> paramValues) {
     ensureBuffer();
     int pos = out.writerIndex();
     out.writeByte(BIND);
@@ -381,8 +384,8 @@ public final class PgEncoder extends ChannelOutboundHandlerAdapter {
     // Result columns are all in Binary format
     if (bind.resultColumns.length > 0) {
       out.writeShort(bind.resultColumns.length);
-      for (ColumnDesc resultColumn : bind.resultColumns) {
-        out.writeShort(resultColumn.getDataType().supportsBinary ? 1 : 0);
+      for (PgColumnDesc resultColumn : bind.resultColumns) {
+        out.writeShort(resultColumn.dataType.supportsBinary ? 1 : 0);
       }
     } else {
       out.writeShort(1);

@@ -20,17 +20,17 @@ package io.reactiverse.pgclient.impl.codec;
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public final class Parse {
+final class Parse {
 
-  public final String query;
-  public final long statement;
+  final String query;
+  final long statement;
 
-  public Parse(String query, long statement) {
+  Parse(String query, long statement) {
     this.query = query;
     this.statement = statement;
   }
 
-  public Parse(String query) {
+  Parse(String query) {
     this.query = query;
     this.statement = 0;
   }

@@ -17,32 +17,34 @@
 
 package io.reactiverse.pgclient;
 
-import io.reactiverse.pgclient.impl.codec.ErrorResponse;
-
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 public class PgException extends RuntimeException {
 
-  private final ErrorResponse error;
+  private final String severity;
+  private final String code;
+  private final String detail;
 
-  public PgException(ErrorResponse error) {
-    super(error.getMessage());
-    this.error = error;
+  public PgException(String message, String severity, String code, String detail) {
+    super(message);
+    this.severity = severity;
+    this.code = code;
+    this.detail = detail;
   }
 
   public String getSeverity() {
-    return error.getSeverity();
+    return severity;
   }
 
   public String getCode() {
-    return error.getCode();
+    return code;
   }
 
   /**
    * @return the detail error message
    */
   public String getDetail() {
-    return error.getDetail();
+    return detail;
   }
 }

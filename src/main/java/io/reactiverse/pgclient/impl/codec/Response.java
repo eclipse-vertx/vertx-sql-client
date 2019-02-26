@@ -17,9 +17,6 @@
 
 package io.reactiverse.pgclient.impl.codec;
 
-
-import java.util.Objects;
-
 /**
  *
  * <p>
@@ -29,7 +26,7 @@ import java.util.Objects;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public abstract class Response {
+abstract class Response {
 
   private String severity;
   private String code;
@@ -49,172 +46,141 @@ public abstract class Response {
   private String dataType;
   private String constraint;
 
-  public String getSeverity() {
+  String getSeverity() {
     return severity;
   }
 
-  public void setSeverity(String severity) {
+  void setSeverity(String severity) {
     this.severity = severity;
   }
 
-  public String getCode() {
+  String getCode() {
     return code;
   }
 
-  public void setCode(String code) {
+  void setCode(String code) {
     this.code = code;
   }
 
-  public String getMessage() {
+  String getMessage() {
     return message;
   }
 
-  public void setMessage(String message) {
+  void setMessage(String message) {
     this.message = message;
   }
 
-  public String getDetail() {
+  String getDetail() {
     return detail;
   }
 
-  public void setDetail(String detail) {
+  void setDetail(String detail) {
     this.detail = detail;
   }
 
-  public String getHint() {
+  String getHint() {
     return hint;
   }
 
-  public void setHint(String hint) {
+  void setHint(String hint) {
     this.hint = hint;
   }
 
-  public String getPosition() {
+  String getPosition() {
     return position;
   }
 
-  public void setPosition(String position) {
+  void setPosition(String position) {
     this.position = position;
   }
 
-  public String getWhere() {
+  String getWhere() {
     return where;
   }
 
-  public void setWhere(String where) {
+  void setWhere(String where) {
     this.where = where;
   }
 
-  public String getFile() {
+  String getFile() {
     return file;
   }
 
-  public void setFile(String file) {
+  void setFile(String file) {
     this.file = file;
   }
 
-  public String getLine() {
+  String getLine() {
     return line;
   }
 
-  public void setLine(String line) {
+  void setLine(String line) {
     this.line = line;
   }
 
-  public String getRoutine() {
+  String getRoutine() {
     return routine;
   }
 
-  public void setRoutine(String routine) {
+  void setRoutine(String routine) {
     this.routine = routine;
   }
 
-  public String getSchema() {
+  String getSchema() {
     return schema;
   }
 
-  public void setSchema(String schema) {
+  void setSchema(String schema) {
     this.schema = schema;
   }
 
-  public String getTable() {
+  String getTable() {
     return table;
   }
 
-  public void setTable(String table) {
+  void setTable(String table) {
     this.table = table;
   }
 
-  public String getColumn() {
+  String getColumn() {
     return column;
   }
 
-  public void setColumn(String column) {
+  void setColumn(String column) {
     this.column = column;
   }
 
-  public String getDataType() {
+  String getDataType() {
     return dataType;
   }
 
-  public void setDataType(String dataType) {
+  void setDataType(String dataType) {
     this.dataType = dataType;
   }
 
-  public String getConstraint() {
+  String getConstraint() {
     return constraint;
   }
 
-  public void setConstraint(String constraint) {
+  void setConstraint(String constraint) {
     this.constraint = constraint;
   }
 
 
-  public String getInternalPosition() {
+  String getInternalPosition() {
     return internalPosition;
   }
 
-  public void setInternalPosition(String internalPosition) {
+  void setInternalPosition(String internalPosition) {
     this.internalPosition = internalPosition;
   }
 
-  public String getInternalQuery() {
+  String getInternalQuery() {
     return internalQuery;
   }
 
-  public void setInternalQuery(String internalQuery) {
+  void setInternalQuery(String internalQuery) {
     this.internalQuery = internalQuery;
-  }
-
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    Response that = (Response) o;
-    return Objects.equals(severity, that.severity) &&
-      Objects.equals(code, that.code) &&
-      Objects.equals(message, that.message) &&
-      Objects.equals(detail, that.detail) &&
-      Objects.equals(hint, that.hint) &&
-      Objects.equals(position, that.position) &&
-      Objects.equals(internalPosition, that.internalPosition) &&
-      Objects.equals(internalQuery, that.internalQuery) &&
-      Objects.equals(where, that.where) &&
-      Objects.equals(file, that.file) &&
-      Objects.equals(line, that.line) &&
-      Objects.equals(routine, that.routine) &&
-      Objects.equals(schema, that.schema) &&
-      Objects.equals(table, that.table) &&
-      Objects.equals(column, that.column) &&
-      Objects.equals(dataType, that.dataType) &&
-      Objects.equals(constraint, that.constraint);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(severity, code, message, detail, hint, position, internalPosition, internalQuery, where, file,
-      line, routine, schema, table, column, dataType, constraint);
   }
 
 

@@ -17,11 +17,36 @@
 
 package io.reactiverse.pgclient.impl.codec;
 
+import io.reactiverse.pgclient.impl.Notice;
+import io.vertx.core.logging.Logger;
+
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class NoticeResponse extends Response {
+class NoticeResponse extends Response implements Notice {
+
+  @Override
+  public void log(Logger logger) {
+    logger.warn("Backend notice: " +
+      "severity='" + getSeverity() + "'" +
+      ", code='" + getCode() + "'" +
+      ", message='" + getMessage() + "'" +
+      ", detail='" + getDetail() + "'" +
+      ", hint='" + getHint() + "'" +
+      ", position='" + getPosition() + "'" +
+      ", internalPosition='" + getInternalPosition() + "'" +
+      ", internalQuery='" + getInternalQuery() + "'" +
+      ", where='" + getWhere() + "'" +
+      ", file='" + getFile() + "'" +
+      ", line='" + getLine() + "'" +
+      ", routine='" + getRoutine() + "'" +
+      ", schema='" + getSchema() + "'" +
+      ", table='" + getTable() + "'" +
+      ", column='" + getColumn() + "'" +
+      ", dataType='" + getDataType() + "'" +
+      ", constraint='" + getConstraint() + "'");
+  }
 
   @Override
   public String toString() {

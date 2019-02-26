@@ -15,21 +15,20 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec;
+package io.reactiverse.pgclient.impl;
 
 import java.util.Objects;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-
-public class NotificationResponse {
+public class Notification {
 
   private final int processId;
   private final String channel;
   private final String payload;
 
-  public NotificationResponse(int processId, String channel, String payload) {
+  public Notification(int processId, String channel, String payload) {
     this.processId = processId;
     this.channel = channel;
     this.payload = payload;
@@ -51,7 +50,7 @@ public class NotificationResponse {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    NotificationResponse that = (NotificationResponse) o;
+    Notification that = (Notification) o;
     return processId == that.processId &&
       Objects.equals(channel, that.channel) &&
       Objects.equals(payload, that.payload);

@@ -17,6 +17,7 @@
 package io.reactiverse.pgclient.impl.codec;
 
 import io.reactiverse.pgclient.PgException;
+import io.reactiverse.pgclient.impl.TxStatus;
 import io.reactiverse.pgclient.impl.command.CommandResponse;
 import io.reactiverse.pgclient.impl.Connection;
 import io.reactiverse.pgclient.impl.command.InitCommand;
@@ -25,7 +26,7 @@ import io.reactiverse.pgclient.impl.PgSocketConnection;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-public class InitCommandCodec extends PgCommandCodec<Connection, InitCommand> {
+class InitCommandCodec extends PgCommandCodec<Connection, InitCommand> {
 
   private PgEncoder encoder;
   private String encoding;
@@ -73,7 +74,7 @@ public class InitCommandCodec extends PgCommandCodec<Connection, InitCommand> {
 
   @Override
   public void handleErrorResponse(ErrorResponse errorResponse) {
-    CommandResponse<Connection> resp = CommandResponse.failure(new PgException(errorResponse));
+    CommandResponse<Connection> resp = CommandResponse.failure(errorResponse.toException());
     completionHandler.handle(resp);
   }
 

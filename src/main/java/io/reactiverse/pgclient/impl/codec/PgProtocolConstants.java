@@ -19,7 +19,7 @@ package io.reactiverse.pgclient.impl.codec;
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public class PgProtocolConstants {
+class PgProtocolConstants {
 
   public static final int AUTHENTICATION_TYPE_OK = 0;
   public static final int AUTHENTICATION_TYPE_KERBEROS_V5 = 2;

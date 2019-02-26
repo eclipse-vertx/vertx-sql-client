@@ -21,7 +21,8 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.reactiverse.pgclient.impl.command.QueryCommandBase;
+import io.reactiverse.pgclient.impl.Notification;
+import io.reactiverse.pgclient.impl.TxStatus;
 import io.reactiverse.pgclient.impl.codec.util.Util;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.ByteProcessor;
@@ -35,7 +36,7 @@ import java.util.ArrayDeque;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class PgDecoder extends ChannelInboundHandlerAdapter {
+class PgDecoder extends ChannelInboundHandlerAdapter {
 
   private final ArrayDeque<PgCommandCodec<?, ?>> inflight;
   private ByteBufAllocator alloc;
@@ -189,7 +190,7 @@ public class PgDecoder extends ChannelInboundHandlerAdapter {
   }
 
   private void  decodeRowDescription(ByteBuf in) {
-    ColumnDesc[] columns = new ColumnDesc[in.readUnsignedShort()];
+    PgColumnDesc[] columns = new PgColumnDesc[in.readUnsignedShort()];
     for (int c = 0; c < columns.length; ++c) {
       String fieldName = Util.readCStringUTF8(in);
       int tableOID = in.readInt();
@@ -198,7 +199,7 @@ public class PgDecoder extends ChannelInboundHandlerAdapter {
       short typeSize = in.readShort();
       int typeModifier = in.readInt();
       int textOrBinary = in.readUnsignedShort(); // Useless for now
-      ColumnDesc column = new ColumnDesc(
+      PgColumnDesc column = new PgColumnDesc(
         fieldName,
         tableOID,
         columnAttributeNumber,
@@ -209,7 +210,7 @@ public class PgDecoder extends ChannelInboundHandlerAdapter {
       );
       columns[c] = column;
     }
-    RowDescription rowDesc = new RowDescription(columns);
+    PgRowDesc rowDesc = new PgRowDesc(columns);
     inflight.peek().handleRowDescription(rowDesc);
   }
 
@@ -400,7 +401,7 @@ public class PgDecoder extends ChannelInboundHandlerAdapter {
     for (int c = 0; c < paramDataTypes.length; ++c) {
       paramDataTypes[c] = DataType.valueOf(in.readInt());
     }
-    inflight.peek().handleParameterDescription(new ParameterDescription(paramDataTypes));
+    inflight.peek().handleParameterDescription(new PgParamDesc(paramDataTypes));
   }
 
   private void decodeParameterStatus(ByteBuf in) {
@@ -420,6 +421,6 @@ public class PgDecoder extends ChannelInboundHandlerAdapter {
   }
 
   private void decodeNotificationResponse(ChannelHandlerContext ctx, ByteBuf in) {
-    ctx.fireChannelRead(new NotificationResponse(in.readInt(), Util.readCStringUTF8(in), Util.readCStringUTF8(in)));
+    ctx.fireChannelRead(new Notification(in.readInt(), Util.readCStringUTF8(in), Util.readCStringUTF8(in)));
   }
 }

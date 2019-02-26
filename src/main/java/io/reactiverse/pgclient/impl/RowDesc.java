@@ -15,28 +15,20 @@
  *
  */
 
-package io.reactiverse.pgclient.impl.codec;
+package io.reactiverse.pgclient.impl;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class RowDescription {
+public class RowDesc {
 
-  private final ColumnDesc[] columns;
   private final List<String> columnNames;
 
-  public RowDescription(ColumnDesc[] columns) {
-    this.columns = columns;
-    this.columnNames = Collections.unmodifiableList(Stream.of(columns)
-      .map(ColumnDesc::getName)
-      .collect(Collectors.toList()));
+  public RowDesc(List<String> columnNames) {
+    this.columnNames = columnNames;
   }
 
   public int columnIndex(String columnName) {
@@ -46,32 +38,14 @@ public class RowDescription {
     return columnNames.indexOf(columnName);
   }
 
-  public ColumnDesc[] columns() {
-    return columns;
-  }
-
   public List<String> columnNames() {
     return columnNames;
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    RowDescription that = (RowDescription) o;
-    return Arrays.equals(columns, that.columns);
-  }
-
-  @Override
-  public int hashCode() {
-    return Arrays.hashCode(columns);
-  }
-
-
-  @Override
   public String toString() {
-    return "RowDescription{" +
-      "columns=" + Arrays.toString(columns) +
+    return "RowDesc{" +
+      "columns=" + columnNames +
       '}';
   }
 }

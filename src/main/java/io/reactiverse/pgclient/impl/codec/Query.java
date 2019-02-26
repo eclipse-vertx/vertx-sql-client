@@ -20,11 +20,11 @@ package io.reactiverse.pgclient.impl.codec;
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public class Query {
+class Query {
 
-  public final String sql;
+  final String sql;
 
-  public Query(String sql) {
+  Query(String sql) {
     this.sql = sql;
   }
 

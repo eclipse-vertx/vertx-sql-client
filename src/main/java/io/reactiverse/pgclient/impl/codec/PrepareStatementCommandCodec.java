@@ -17,15 +17,16 @@
 package io.reactiverse.pgclient.impl.codec;
 
 import io.reactiverse.pgclient.PgException;
+import io.reactiverse.pgclient.impl.TxStatus;
 import io.reactiverse.pgclient.impl.command.PrepareStatementCommand;
 import io.reactiverse.pgclient.impl.PreparedStatement;
 
-public class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, PrepareStatementCommand> {
+class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, PrepareStatementCommand> {
 
-  private ParameterDescription parameterDesc;
-  private RowDescription rowDesc;
+  private PgParamDesc parameterDesc;
+  private PgRowDesc rowDesc;
 
-  public PrepareStatementCommandCodec(PrepareStatementCommand cmd) {
+  PrepareStatementCommandCodec(PrepareStatementCommand cmd) {
     super(cmd);
   }
 
@@ -42,13 +43,13 @@ public class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStateme
   }
 
   @Override
-  public void handleParameterDescription(ParameterDescription parameterDesc) {
+  public void handleParameterDescription(PgParamDesc paramDesc) {
     // Response to Describe
-    this.parameterDesc = parameterDesc;
+    this.parameterDesc = paramDesc;
   }
 
   @Override
-  public void handleRowDescription(RowDescription rowDesc) {
+  public void handleRowDescription(PgRowDesc rowDesc) {
     // Response to Describe
     this.rowDesc = rowDesc;
   }
@@ -60,12 +61,12 @@ public class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStateme
 
   @Override
   public void handleErrorResponse(ErrorResponse errorResponse) {
-    failure = new PgException(errorResponse);
+    failure = errorResponse.toException();
   }
 
   @Override
   public void handleReadyForQuery(TxStatus txStatus) {
-    result = new PreparedStatement(cmd.sql(), cmd.statement(), this.parameterDesc, this.rowDesc);
+    result = new PgPreparedStatement(cmd.sql(), cmd.statement(), this.parameterDesc, this.rowDesc);
     super.handleReadyForQuery(txStatus);
   }
 }

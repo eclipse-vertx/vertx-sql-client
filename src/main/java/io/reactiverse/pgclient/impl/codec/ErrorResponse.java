@@ -17,11 +17,17 @@
 
 package io.reactiverse.pgclient.impl.codec;
 
+import io.reactiverse.pgclient.PgException;
+
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class ErrorResponse extends Response {
+class ErrorResponse extends Response {
+
+  PgException toException() {
+    return new PgException(getMessage(), getSeverity(), getCode(), getDetail());
+  }
 
   @Override
   public String toString() {

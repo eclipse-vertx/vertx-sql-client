@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  */
-
 package io.reactiverse.pgclient.impl.codec;
 
+import io.reactiverse.pgclient.impl.ParamDesc;
 import io.reactiverse.pgclient.impl.codec.util.Util;
 
 import java.util.Arrays;
@@ -26,17 +26,16 @@ import java.util.stream.Stream;
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-
-public class ParameterDescription {
+class PgParamDesc extends ParamDesc {
 
   // OIDs
   private final DataType[] paramDataTypes;
 
-  public ParameterDescription(DataType[] paramDataTypes) {
+  PgParamDesc(DataType[] paramDataTypes) {
     this.paramDataTypes = paramDataTypes;
   }
 
-  public DataType[] getParamDataTypes() {
+  DataType[] paramDataTypes() {
     return paramDataTypes;
   }
 
@@ -64,22 +63,8 @@ public class ParameterDescription {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    ParameterDescription that = (ParameterDescription) o;
-    return Arrays.equals(paramDataTypes, that.paramDataTypes);
-  }
-
-  @Override
-  public int hashCode() {
-    return Arrays.hashCode(paramDataTypes);
-  }
-
-
-  @Override
   public String toString() {
-    return "ParameterDescription{" +
+    return "PgParamDesc{" +
       "paramDataTypes=" + Arrays.toString(paramDataTypes) +
       '}';
   }

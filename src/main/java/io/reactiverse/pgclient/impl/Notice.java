@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Julien Viet
+ * Copyright (C) 2018 Julien Viet
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,12 @@
  * limitations under the License.
  *
  */
-
 package io.reactiverse.pgclient.impl;
 
-/**
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
- */
-public interface QueryResultHandler<T> {
+import io.vertx.core.logging.Logger;
 
-  void handleResult(int updatedCount, int size, RowDesc desc, T result);
+public interface Notice {
+
+  void log(Logger logger);
 
 }

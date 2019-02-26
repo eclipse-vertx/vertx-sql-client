@@ -15,39 +15,32 @@
  *
  */
 
-package io.reactiverse.pgclient.impl;
+package io.reactiverse.pgclient.impl.codec;
 
 import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.impl.codec.ColumnDesc;
-import io.reactiverse.pgclient.impl.codec.DataFormat;
-import io.reactiverse.pgclient.impl.codec.DataTypeCodec;
-import io.reactiverse.pgclient.impl.codec.RowDecoder;
-import io.reactiverse.pgclient.impl.codec.RowDescription;
+import io.reactiverse.pgclient.impl.RowDesc;
+import io.reactiverse.pgclient.impl.RowImpl;
 import io.netty.buffer.ByteBuf;
 
 import java.util.function.BiConsumer;
 import java.util.stream.Collector;
 
-public class RowResultDecoder<C, R> implements RowDecoder {
+class RowResultDecoder<C, R> implements RowDecoder {
 
-  private final Collector<Row, C, R> collector;
-  private final boolean singleton;
-  private final BiConsumer<C, Row> accumulator;
+  final Collector<Row, C, R> collector;
+  final boolean singleton;
+  final BiConsumer<C, Row> accumulator;
+  final PgRowDesc desc;
 
-  private RowDescription desc;
   private int size;
   private C container;
   private Row row;
 
-  public RowResultDecoder(Collector<Row, C, R> collector, boolean singleton, RowDescription desc) {
+  RowResultDecoder(Collector<Row, C, R> collector, boolean singleton, PgRowDesc desc) {
     this.collector = collector;
     this.singleton = singleton;
     this.accumulator = collector.accumulator();
     this.desc = desc;
-  }
-
-  public RowDescription description() {
-    return desc;
   }
 
   public int size() {
@@ -73,11 +66,11 @@ public class RowResultDecoder<C, R> implements RowDecoder {
       int length = in.readInt();
       Object decoded = null;
       if (length != -1) {
-        ColumnDesc columnDesc = desc.columns()[c];
-        if (columnDesc.getDataFormat() == DataFormat.BINARY) {
-          decoded = DataTypeCodec.decodeBinary(columnDesc.getDataType(), in.readerIndex(), length, in);
+        PgColumnDesc columnDesc = desc.columns[c];
+        if (columnDesc.dataFormat == DataFormat.BINARY) {
+          decoded = DataTypeCodec.decodeBinary(columnDesc.dataType, in.readerIndex(), length, in);
         } else {
-          decoded = DataTypeCodec.decodeText(columnDesc.getDataType(), in.readerIndex(), length, in);
+          decoded = DataTypeCodec.decodeText(columnDesc.dataType, in.readerIndex(), length, in);
         }
         in.skipBytes(length);
       }
@@ -87,14 +80,14 @@ public class RowResultDecoder<C, R> implements RowDecoder {
     size++;
   }
 
-  public R complete() {
+  R complete() {
     if (container == null) {
       container = collector.supplier().get();
     }
     return collector.finisher().apply(container);
   }
 
-  public void reset() {
+  void reset() {
     container = null;
     size = 0;
   }

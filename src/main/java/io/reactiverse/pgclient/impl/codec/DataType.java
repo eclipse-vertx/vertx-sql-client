@@ -41,7 +41,7 @@ import java.util.UUID;
  *
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public enum DataType {
+enum DataType {
 
   BOOL(16, true, Boolean.class),
   BOOL_ARRAY(1000, true, Boolean[].class),
@@ -121,10 +121,10 @@ public enum DataType {
 
   private static final Logger logger = LoggerFactory.getLogger(DataType.class);
 
-  public final int id;
-  public final boolean supportsBinary;
-  public final Class<?> encodingType; // Not really used for now
-  public final Class<?> decodingType;
+  final int id;
+  final boolean supportsBinary;
+  final Class<?> encodingType; // Not really used for now
+  final Class<?> decodingType;
 
   DataType(int id, boolean supportsBinary, Class<?> type) {
     this.id = id;
@@ -140,7 +140,7 @@ public enum DataType {
     this.decodingType = decodingType;
   }
 
-  public static DataType valueOf(int oid) {
+  static DataType valueOf(int oid) {
     DataType value = oidToDataType.get(oid);
     if (value == null) {
       logger.warn("Postgres type OID=" + oid + " not handled - using unknown type instead");

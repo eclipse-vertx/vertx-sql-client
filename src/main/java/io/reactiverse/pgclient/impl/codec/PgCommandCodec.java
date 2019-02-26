@@ -16,6 +16,7 @@
  */
 package io.reactiverse.pgclient.impl.codec;
 
+import io.reactiverse.pgclient.impl.TxStatus;
 import io.reactiverse.pgclient.impl.command.CommandResponse;
 import io.reactiverse.pgclient.impl.command.CommandBase;
 import io.vertx.core.Handler;
@@ -46,8 +47,8 @@ abstract class PgCommandCodec<R, C extends CommandBase<R>> {
     logger.warn(getClass().getSimpleName() + " should handle message EmptyQueryResponse");
   }
 
-  void handleParameterDescription(ParameterDescription parameterDesc) {
-    logger.warn(getClass().getSimpleName() + " should handle message " + parameterDesc);
+  void handleParameterDescription(PgParamDesc paramDesc) {
+    logger.warn(getClass().getSimpleName() + " should handle message ParameterDescription");
   }
 
   void handleParseComplete() {
@@ -58,7 +59,7 @@ abstract class PgCommandCodec<R, C extends CommandBase<R>> {
     logger.warn(getClass().getSimpleName() + " should handle message CloseComplete");
   }
 
-  void handleRowDescription(RowDescription rowDescription) {
+  void handleRowDescription(PgRowDesc rowDescription) {
     logger.warn(getClass().getSimpleName() + " should handle message " + rowDescription);
   }
 

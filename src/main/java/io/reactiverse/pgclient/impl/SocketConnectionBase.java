@@ -21,8 +21,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
 import io.reactiverse.pgclient.impl.codec.InitiateSslHandler;
-import io.reactiverse.pgclient.impl.codec.NoticeResponse;
-import io.reactiverse.pgclient.impl.codec.NotificationResponse;
 import io.reactiverse.pgclient.impl.command.CloseConnectionCommand;
 import io.reactiverse.pgclient.impl.command.CommandResponse;
 import io.reactiverse.pgclient.impl.command.CommandBase;
@@ -162,38 +160,21 @@ public abstract class SocketConnectionBase implements Connection {
       checkPending();
       CommandResponse resp =(CommandResponse) msg;
       resp.cmd.handler.handle(msg);
-    } else if (msg instanceof NotificationResponse) {
-      handleNotification((NotificationResponse) msg);
-    } else if (msg instanceof NoticeResponse) {
-      handleNotice((NoticeResponse) msg);
+    } else if (msg instanceof Notification) {
+      handleNotification((Notification) msg);
+    } else if (msg instanceof Notice) {
+      handleNotice((Notice) msg);
     }
   }
 
-  private void handleNotification(NotificationResponse response) {
+  private void handleNotification(Notification response) {
     if (holder != null) {
       holder.handleNotification(response.getProcessId(), response.getChannel(), response.getPayload());
     }
   }
 
-  private void handleNotice(NoticeResponse notice) {
-    logger.warn("Backend notice: " +
-      "severity='" + notice.getSeverity() + "'" +
-      ", code='" + notice.getCode() + "'" +
-      ", message='" + notice.getMessage() + "'" +
-      ", detail='" + notice.getDetail() + "'" +
-      ", hint='" + notice.getHint() + "'" +
-      ", position='" + notice.getPosition() + "'" +
-      ", internalPosition='" + notice.getInternalPosition() + "'" +
-      ", internalQuery='" + notice.getInternalQuery() + "'" +
-      ", where='" + notice.getWhere() + "'" +
-      ", file='" + notice.getFile() + "'" +
-      ", line='" + notice.getLine() + "'" +
-      ", routine='" + notice.getRoutine() + "'" +
-      ", schema='" + notice.getSchema() + "'" +
-      ", table='" + notice.getTable() + "'" +
-      ", column='" + notice.getColumn() + "'" +
-      ", dataType='" + notice.getDataType() + "'" +
-      ", constraint='" + notice.getConstraint() + "'");
+  private void handleNotice(Notice notice) {
+    notice.log(logger);
   }
 
   private void handleClosed(Void v) {

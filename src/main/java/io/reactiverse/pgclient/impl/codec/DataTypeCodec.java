@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.*;
 
-public class DataTypeCodec {
+class DataTypeCodec {
 
   private static final Logger logger = LoggerFactory.getLogger(DataTypeCodec.class);
 
@@ -107,7 +107,7 @@ public class DataTypeCodec {
   private static final IntFunction<Circle[]> CIRCLE_ARRAY_FACTORY = size -> size == 0 ? empty_circle_array : new Circle[size];
   private static final IntFunction<Interval[]> INTERVAL_ARRAY_FACTORY = size -> size == 0 ? empty_interval_array : new Interval[size];
 
-  public static void encodeText(DataType id, Object value, ByteBuf buff) {
+  static void encodeText(DataType id, Object value, ByteBuf buff) {
     int index = buff.writerIndex();
     buff.writeInt(0);
     textEncode(id, value, buff);

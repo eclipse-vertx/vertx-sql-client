@@ -33,11 +33,11 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
       encoder.writeExecute(cmd.portal(), cmd.fetch());
       encoder.writeSync();
     } else {
-      PreparedStatement ps = cmd.preparedStatement();
-      if (ps.bind().statement == 0) {
+      PgPreparedStatement ps = (PgPreparedStatement) cmd.preparedStatement();
+      if (ps.bind.statement == 0) {
         encoder.writeParse(new Parse(ps.sql()));
       }
-      encoder.writeBind(ps.bind(), cmd.portal(), (List<Object>) cmd.params());
+      encoder.writeBind(ps.bind, cmd.portal(), (List<Object>) cmd.params());
       encoder.writeExecute(cmd.portal(), cmd.fetch());
       encoder.writeSync();
     }

@@ -34,8 +34,8 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
       encoder.writeExecute(cmd.portal(), cmd.fetch());
       encoder.writeSync();
     } else {
-      PreparedStatement ps = cmd.preparedStatement();
-      if (ps.bind().statement == 0) {
+      PgPreparedStatement ps = (PgPreparedStatement) cmd.preparedStatement();
+      if (ps.bind.statement == 0) {
         encoder.writeParse(new Parse(ps.sql()));
       }
       if (cmd.params().isEmpty()) {
@@ -43,7 +43,7 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
         this.result = false;
       } else {
         for (Tuple param : cmd.params()) {
-          encoder.writeBind(ps.bind(), cmd.portal(), (List<Object>) param);
+          encoder.writeBind(ps.bind, cmd.portal(), (List<Object>) param);
           encoder.writeExecute(cmd.portal(), cmd.fetch());
         }
       }

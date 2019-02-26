@@ -1,6 +1,6 @@
 package io.reactiverse.pgclient.impl.command;
 
-import io.reactiverse.pgclient.impl.codec.TxStatus;
+import io.reactiverse.pgclient.impl.TxStatus;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.impl.NoStackTraceThrowable;
 

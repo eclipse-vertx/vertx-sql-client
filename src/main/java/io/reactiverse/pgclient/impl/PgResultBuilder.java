@@ -18,7 +18,6 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.PgResult;
-import io.reactiverse.pgclient.impl.codec.RowDescription;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
@@ -40,7 +39,7 @@ public class PgResultBuilder<T, R extends PgResultBase<T, R>, L extends PgResult
   }
 
   @Override
-  public void handleResult(int updatedCount, int size, RowDescription desc, T result) {
+  public void handleResult(int updatedCount, int size, RowDesc desc, T result) {
     R r = factory.apply(result);
     r.updated = updatedCount;
     r.size = size;
