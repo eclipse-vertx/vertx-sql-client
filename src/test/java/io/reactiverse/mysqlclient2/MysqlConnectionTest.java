@@ -42,4 +42,16 @@ public class MysqlConnectionTest extends MysqlTestBase {
     });
     async.await();
   }
+
+  @Test
+  public void testClose(TestContext ctx) {
+    Async async = ctx.async();
+    MyClient.connect(vertx, options, ctx.asyncAssertSuccess(pgConnection -> {
+      pgConnection.closeHandler(v -> {
+        async.complete();
+      });
+      pgConnection.close();
+    }));
+    async.await();
+  }
 }

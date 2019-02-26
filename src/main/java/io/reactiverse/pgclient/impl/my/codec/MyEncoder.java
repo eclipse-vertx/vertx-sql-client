@@ -7,6 +7,7 @@ import io.reactiverse.mysqlclient.impl.CharacterSetMapping;
 import io.reactiverse.mysqlclient.impl.protocol.frontend.HandshakeResponse;
 import io.reactiverse.mysqlclient.impl.util.BufferUtils;
 import io.reactiverse.mysqlclient.impl.util.Native41Authenticator;
+import io.reactiverse.pgclient.impl.command.CloseConnectionCommand;
 import io.reactiverse.pgclient.impl.command.InitCommand;
 import io.reactiverse.pgclient.impl.command.CommandBase;
 import io.reactiverse.pgclient.impl.command.SimpleQueryCommand;
@@ -52,6 +53,8 @@ public class MyEncoder extends MessageToByteEncoder<CommandBase<?>> {
       return new InitCommandCodec((InitCommand) cmd);
     } else if (cmd instanceof SimpleQueryCommand) {
       return new SimpleQueryCommandCodec((SimpleQueryCommand) cmd);
+    } else if (cmd instanceof CloseConnectionCommand) {
+      return new CloseConnectionCommandCodec((CloseConnectionCommand) cmd);
     } else {
       System.out.println("Unsupported command " + cmd);
       throw new UnsupportedOperationException("Todo");

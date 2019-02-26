@@ -4,6 +4,7 @@ import io.netty.channel.ChannelPipeline;
 import io.reactiverse.mysqlclient.impl.CharacterSetMapping;
 import io.reactiverse.pgclient.PgConnectOptions;
 import io.reactiverse.pgclient.PgConnection;
+import io.reactiverse.pgclient.impl.Connection;
 import io.reactiverse.pgclient.impl.PgConnectionImpl;
 import io.reactiverse.pgclient.impl.PgSocketConnection;
 import io.vertx.core.AsyncResult;
@@ -52,7 +53,10 @@ public class MyConnectionFactory {
         conn.init();
         conn.sendStartupMessage(username, password, database, ar2 -> {
           if (ar2.succeeded()) {
-            handler.handle(Future.succeededFuture(new PgConnectionImpl(null, context, ar2.result())));
+            Connection connection = ar2.result();
+            PgConnectionImpl holder = new PgConnectionImpl(null, context, ar2.result());
+            connection.init(holder);
+            handler.handle(Future.succeededFuture(holder));
           } else {
             handler.handle(Future.failedFuture(ar2.cause()));
           }
