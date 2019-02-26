@@ -44,7 +44,7 @@ public class MysqlPreparedStatementTest extends MysqlTestBase {
             MySQLPreparedQuery mySQLPreparedQuery = ar2.result();
             System.out.println("prepare success");
           } else {
-            System.out.println("Query fail");
+            System.out.println("Statement Prepare fail");
             ar2.cause().printStackTrace();
           }
           async.complete();
@@ -88,7 +88,7 @@ public class MysqlPreparedStatementTest extends MysqlTestBase {
               async.complete();
             });
           } else {
-            System.out.println("Query fail");
+            System.out.println("Statement Prepare fail");
             ar2.cause().printStackTrace();
           }
         });

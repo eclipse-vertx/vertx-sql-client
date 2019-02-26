@@ -1,6 +1,7 @@
 package io.reactiverse.mysqlclient.impl;
 
 import io.reactiverse.mysqlclient.MySQLPreparedQuery;
+import io.reactiverse.mysqlclient.impl.codec.encoder.PreparedStatementCloseCommand;
 import io.reactiverse.mysqlclient.impl.codec.encoder.PreparedStatementExecuteCommand;
 import io.reactiverse.pgclient.PgResult;
 import io.reactiverse.pgclient.PgRowSet;
@@ -74,7 +75,7 @@ public class MySQLPreparedQueryImpl implements MySQLPreparedQuery {
 
   @Override
   public void close() {
-    throw new UnsupportedOperationException();
+    conn.schedule(new PreparedStatementCloseCommand(mySQLPreparedStatement.statementId));
   }
 
   @Override

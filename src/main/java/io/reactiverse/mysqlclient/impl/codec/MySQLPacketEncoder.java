@@ -180,4 +180,13 @@ public class MySQLPacketEncoder {
 
     writePacketAndFlush(payload);
   }
+
+  public void writeStatementCloseMessage(long statementId) {
+    ByteBuf payload = ctx.alloc().ioBuffer();
+
+    payload.writeByte(CommandType.COM_STMT_CLOSE);
+    payload.writeIntLE((int) statementId);
+
+    writePacketAndFlush(payload);
+  }
 }
