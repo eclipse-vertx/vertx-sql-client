@@ -104,26 +104,6 @@ public abstract class PgClientTestBase<C extends PgClient> extends PgTestBase {
   }
 
   @Test
-  public void testQuery(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(10000, result.size());
-        Iterator<Row> it = result.iterator();
-        for (int i = 0; i < 10000; i++) {
-          Row row = it.next();
-          ctx.assertEquals(2, row.size());
-          ctx.assertTrue(row.getValue(0) instanceof Integer);
-          ctx.assertEquals(row.getValue("id"), row.getValue(0));
-          ctx.assertTrue(row.getValue(1) instanceof Integer);
-          ctx.assertEquals(row.getValue("randomnumber"), row.getValue(1));
-        }
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
   public void testMultipleQuery(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
@@ -141,16 +121,6 @@ public abstract class PgClientTestBase<C extends PgClient> extends PgTestBase {
         ctx.assertTrue(row2.getValue(0) instanceof String);
         ctx.assertTrue(row2.getValue(1) instanceof Integer);
         ctx.assertNull(result2.next());
-        async.complete();
-      }));
-    }));
-  }
-
-  @Test
-  public void testQueryError(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(err -> {
         async.complete();
       }));
     }));
