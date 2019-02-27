@@ -20,9 +20,9 @@ import io.reactiverse.pgclient.PgClient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
-public interface Connector {
+public interface Connector<C extends PgClient> {
 
-  void connect(Handler<AsyncResult<PgClient>> handler);
+  void connect(Handler<AsyncResult<C>> handler);
 
   void close();
 

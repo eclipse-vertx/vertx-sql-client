@@ -111,13 +111,6 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
 
   }
 
-  private void handleErrorPacketPayload(ByteBuf payload) {
-    // header should be ERROR_PACKET_HEADER
-    payload.readUnsignedByte();
-    ErrPacket packet = GenericPacketPayloadDecoder.decodeErrPacketBody(payload, StandardCharsets.UTF_8);
-    completionHandler.handle(CommandResponse.failure(packet.toException()));
-  }
-
   private void handleEndPacket(OkPacket okPacket) {
     this.result = false;
     T result;

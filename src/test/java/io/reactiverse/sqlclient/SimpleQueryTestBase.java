@@ -21,7 +21,6 @@ import io.reactiverse.pgclient.Row;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.After;
 import org.junit.Before;
@@ -32,7 +31,7 @@ import java.util.Iterator;
 public abstract class SimpleQueryTestBase {
 
   protected Vertx vertx;
-  protected Connector connector;
+  protected Connector<PgClient> connector;
 
   protected void connect(Handler<AsyncResult<PgClient>> handler) {
     connector.connect(handler);
@@ -50,7 +49,6 @@ public abstract class SimpleQueryTestBase {
 
   @Test
   public void testQuery(TestContext ctx) {
-    Async async = ctx.async();
     connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT id, randomnumber from world", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(10000, result.size());
@@ -63,17 +61,14 @@ public abstract class SimpleQueryTestBase {
           ctx.assertTrue(row.getValue(1) instanceof Integer);
           ctx.assertEquals(row.getValue("randomnumber"), row.getValue(1));
         }
-        async.complete();
       }));
     }));
   }
 
   @Test
   public void testQueryError(TestContext ctx) {
-    Async async = ctx.async();
     connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(err -> {
-        async.complete();
       }));
     }));
   }

@@ -61,8 +61,7 @@ public class PrepareStatementCodec extends CommandCodec<PreparedStatement, Prepa
       case INIT:
         int firstByte = payload.getUnsignedByte(payload.readerIndex());
         if (firstByte == ERROR_PACKET_HEADER) {
-          // handleErrorPacketPayload(ctx, payload);
-          throw new UnsupportedOperationException();
+          handleErrorPacketPayload(payload);
         } else {
           // handle COM_STMT_PREPARE response
           payload.readUnsignedByte(); // 0x00: OK

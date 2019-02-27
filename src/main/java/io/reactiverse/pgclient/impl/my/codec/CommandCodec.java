@@ -62,4 +62,11 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     byte decimals = payload.readByte();
     return new ColumnDefinition(catalog, schema, table, orgTable, name, orgName, characterSet, columnLength, type, flags, decimals);
   }
+
+  protected void handleErrorPacketPayload(ByteBuf payload) {
+    // header should be ERROR_PACKET_HEADER
+    payload.readUnsignedByte();
+    ErrPacket packet = GenericPacketPayloadDecoder.decodeErrPacketBody(payload, StandardCharsets.UTF_8);
+    completionHandler.handle(CommandResponse.failure(packet.toException()));
+  }
 }
