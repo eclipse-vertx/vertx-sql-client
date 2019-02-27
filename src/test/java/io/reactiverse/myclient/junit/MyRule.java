@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package io.reactiverse.myclient.support;
+package io.reactiverse.myclient.junit;
 
 import com.wix.mysql.EmbeddedMysql;
 import com.wix.mysql.ScriptResolver;

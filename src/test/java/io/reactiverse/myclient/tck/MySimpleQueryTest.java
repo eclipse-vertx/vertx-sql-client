@@ -16,7 +16,7 @@
  */
 package io.reactiverse.myclient.tck;
 
-import io.reactiverse.myclient.support.MyRule;
+import io.reactiverse.myclient.junit.MyRule;
 import io.reactiverse.sqlclient.SimpleQueryTestBase;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;

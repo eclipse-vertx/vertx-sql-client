@@ -16,7 +16,7 @@
  */
 package io.reactiverse.pgclient.tck;
 
-import io.reactiverse.pgclient.support.PgRule;
+import io.reactiverse.pgclient.junit.PgRule;
 import io.reactiverse.sqlclient.SimpleQueryTestBase;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;

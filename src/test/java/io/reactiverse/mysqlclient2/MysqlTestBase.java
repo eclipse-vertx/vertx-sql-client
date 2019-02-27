@@ -1,6 +1,6 @@
 package io.reactiverse.mysqlclient2;
 
-import io.reactiverse.myclient.support.MyRule;
+import io.reactiverse.myclient.junit.MyRule;
 import io.reactiverse.pgclient.PgConnectOptions;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;

@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package io.reactiverse.pgclient.support;
+package io.reactiverse.pgclient.junit;
 
 import de.flapdoodle.embed.process.config.IRuntimeConfig;
 import de.flapdoodle.embed.process.config.io.ProcessOutput;

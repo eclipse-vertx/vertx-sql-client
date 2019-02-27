@@ -17,7 +17,7 @@
 
 package io.reactiverse.pgclient;
 
-import io.reactiverse.pgclient.support.PgRule;
+import io.reactiverse.pgclient.junit.PgRule;
 import org.openjdk.jmh.runner.*;
 import org.openjdk.jmh.runner.options.*;
 

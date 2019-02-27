@@ -16,7 +16,7 @@
  */
 package io.reactiverse.pgclient;
 
-import io.reactiverse.pgclient.support.PgRule;
+import io.reactiverse.pgclient.junit.PgRule;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.ext.unit.Async;
