@@ -150,6 +150,31 @@ public class PgConnectOptionsProviderTest {
     assertEquals(expectedConfiguration, actualConfiguration);
   }
 
+  @Test
+  public void testValidUri11() {
+    connectionUri = "postgresql://user@myhost?application_name=myapp";
+    actualConfiguration = PgConnectOptions.fromUri(connectionUri);
+
+    expectedConfiguration = new PgConnectOptions()
+      .setHost("myhost")
+      .setUser("user")
+      .addProperty("application_name", "myapp");
+
+    assertEquals(expectedConfiguration, actualConfiguration);
+  }
+
+  @Test
+  public void testValidUri12() {
+    connectionUri = "postgresql://?fallback_application_name=myapp&search_path=myschema";
+    actualConfiguration = PgConnectOptions.fromUri(connectionUri);
+
+    expectedConfiguration = new PgConnectOptions()
+      .addProperty("fallback_application_name", "myapp")
+      .addProperty("search_path", "myschema");
+
+    assertEquals(expectedConfiguration, actualConfiguration);
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void testInvalidUri1() {
     connectionUri = "postgrsql://username";

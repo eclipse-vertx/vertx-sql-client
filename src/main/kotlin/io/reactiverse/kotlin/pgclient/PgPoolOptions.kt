@@ -42,6 +42,8 @@ import java.util.concurrent.TimeUnit
  * @param pfxTrustOptions 
  * @param pipeliningLimit 
  * @param port 
+ * @param properties  Set properties for this client, which will be sent to server at the connection start.
+ * @param propertys  Add a property for this client, which will be sent to server at the connection start.
  * @param proxyOptions 
  * @param receiveBufferSize 
  * @param reconnectAttempts 
@@ -94,6 +96,8 @@ fun PgPoolOptions(
   pfxTrustOptions: io.vertx.core.net.PfxOptions? = null,
   pipeliningLimit: Int? = null,
   port: Int? = null,
+  properties: io.vertx.core.json.JsonObject? = null,
+  propertys: Map<String, String>? = null,
   proxyOptions: io.vertx.core.net.ProxyOptions? = null,
   receiveBufferSize: Int? = null,
   reconnectAttempts: Int? = null,
@@ -199,6 +203,14 @@ fun PgPoolOptions(
   }
   if (port != null) {
     this.setPort(port)
+  }
+  if (properties != null) {
+    this.setProperties(properties)
+  }
+  if (propertys != null) {
+    for (item in propertys) {
+      this.addProperty(item.key, item.value)
+    }
   }
   if (proxyOptions != null) {
     this.setProxyOptions(proxyOptions)

@@ -81,7 +81,7 @@ public class Examples {
   public void configureFromUri(Vertx vertx) {
 
     // Connection URI
-    String connectionUri = "postgresql://dbuser:secretpassword@database.server.com:3211/mydb";
+    String connectionUri = "postgresql://dbuser:secretpassword@database.server.com:3211/mydb?application_name=myapp&search_path=myschema";
 
     // Create the pool from the connection URI
     PgPool pool = PgClient.pool(connectionUri);

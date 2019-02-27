@@ -134,6 +134,7 @@ public class PgConnectionUriParser {
     if (parametersInfo == null || parametersInfo.isEmpty()) {
       return;
     }
+    JsonObject properties = new JsonObject();
     for (String parameterPair : parametersInfo.split("&")) {
       if (parameterPair.isEmpty()) {
         continue;
@@ -166,11 +167,23 @@ public class PgConnectionUriParser {
           case "sslmode":
             configuration.put("sslMode", SslMode.of(value));
             break;
+          case "application_name":
+            properties.put("application_name", value);
+            break;
+          case "fallback_application_name":
+            properties.put("fallback_application_name", value);
+            break;
+          case "search_path":
+            properties.put("search_path", value);
+            break;
           default:
             configuration.put(key, value);
             break;
         }
       }
+    }
+    if (!properties.isEmpty()) {
+      configuration.put("properties", properties);
     }
   }
 

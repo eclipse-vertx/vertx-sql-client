@@ -27,6 +27,7 @@ import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.NetSocketInternal;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -113,8 +114,8 @@ public class SocketConnection implements Connection {
     });
   }
 
-  void sendStartupMessage(String username, String password, String database, Handler<? super CommandResponse<Connection>> completionHandler) {
-    InitCommand cmd = new InitCommand(this, username, password, database);
+  void sendStartupMessage(String username, String password, String database, JsonObject properties, Handler<? super CommandResponse<Connection>> completionHandler) {
+    InitCommand cmd = new InitCommand(this, username, password, database, properties);
     cmd.handler = completionHandler;
     schedule(cmd);
   }

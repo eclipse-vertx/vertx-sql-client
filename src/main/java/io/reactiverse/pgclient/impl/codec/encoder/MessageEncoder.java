@@ -17,6 +17,7 @@
 package io.reactiverse.pgclient.impl.codec.encoder;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.reactiverse.pgclient.impl.codec.ColumnDesc;
 import io.reactiverse.pgclient.impl.codec.DataType;
@@ -28,10 +29,10 @@ import io.reactiverse.pgclient.impl.codec.decoder.ParameterDescription;
 import io.reactiverse.pgclient.impl.codec.decoder.RowDescription;
 import io.reactiverse.pgclient.impl.codec.util.Util;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static io.reactiverse.pgclient.impl.codec.util.Util.writeCString;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
@@ -128,16 +129,10 @@ public final class MessageEncoder {
     Util.writeCStringUTF8(out, msg.username);
     writeCString(out, StartupMessage.BUFF_DATABASE);
     Util.writeCStringUTF8(out, msg.database);
-    writeCString(out, StartupMessage.BUFF_APPLICATION_NAME);
-    writeCString(out, StartupMessage.BUFF_VERTX_PG_CLIENT);
-    writeCString(out, StartupMessage.BUFF_CLIENT_ENCODING);
-    writeCString(out, StartupMessage.BUFF_UTF8);
-    writeCString(out, StartupMessage.BUFF_DATE_STYLE);
-    writeCString(out, StartupMessage.BUFF_ISO);
-    writeCString(out, StartupMessage.BUFF_INTERVAL_STYLE);
-    writeCString(out, StartupMessage.BUFF_INTERVAL_STYLE_TYPE);
-    writeCString(out, StartupMessage.BUFF_EXTRA_FLOAT_DIGITS);
-    writeCString(out, StartupMessage.BUFF_2);
+    msg.properties.forEach(property -> {
+      writeCString(out, Unpooled.copiedBuffer(property.getKey(), UTF_8).asReadOnly());
+      writeCString(out, Unpooled.copiedBuffer(property.getValue().toString(), UTF_8).asReadOnly());
+    });
 
     out.writeByte(0);
     out.setInt(pos, out.writerIndex() - pos);
@@ -259,7 +254,7 @@ public final class MessageEncoder {
     out.writeByte(EXECUTE);
     out.writeInt(0);
     if (portal != null) {
-      out.writeCharSequence(portal, StandardCharsets.UTF_8);
+      out.writeCharSequence(portal, UTF_8);
     }
     out.writeByte(0);
     out.writeInt(rowCount); // Zero denotes "no limit" maybe for ReadStream<Row>
@@ -280,7 +275,7 @@ public final class MessageEncoder {
     out.writeByte(BIND);
     out.writeInt(0);
     if (portal != null) {
-      out.writeCharSequence(portal, StandardCharsets.UTF_8);
+      out.writeCharSequence(portal, UTF_8);
     }
     out.writeByte(0);
     if (bind.statement == 0) {

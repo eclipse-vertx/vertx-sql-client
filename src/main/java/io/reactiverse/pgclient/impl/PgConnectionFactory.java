@@ -21,6 +21,7 @@ import io.reactiverse.pgclient.PgConnectOptions;
 import io.reactiverse.pgclient.SslMode;
 import io.vertx.core.*;
 import io.vertx.core.impl.NetSocketInternal;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.*;
 
 /**
@@ -42,6 +43,7 @@ public class PgConnectionFactory {
   private final boolean cachePreparedStatements;
   private final int pipeliningLimit;
   private final boolean isUsingDomainSocket;
+  private final JsonObject properties;
   private final Closeable hook;
 
   public PgConnectionFactory(Context context,
@@ -72,6 +74,7 @@ public class PgConnectionFactory {
     this.cachePreparedStatements = options.getCachePreparedStatements();
     this.pipeliningLimit = options.getPipeliningLimit();
     this.isUsingDomainSocket = options.isUsingDomainSocket();
+    this.properties = options.getProperties();
 
     this.client = context.owner().createNetClient(netClientOptions);
   }
@@ -94,7 +97,7 @@ public class PgConnectionFactory {
       if (ar.succeeded()) {
         SocketConnection conn = ar.result();
         conn.initializeCodec();
-        conn.sendStartupMessage(username, password, database, completionHandler);
+        conn.sendStartupMessage(username, password, database, properties, completionHandler);
       } else {
         completionHandler.handle(CommandResponse.failure(ar.cause()));
       }

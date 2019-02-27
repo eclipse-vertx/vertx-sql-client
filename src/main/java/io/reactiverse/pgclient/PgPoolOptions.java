@@ -166,6 +166,16 @@ public class PgPoolOptions extends PgConnectOptions {
   }
 
   @Override
+  public PgPoolOptions setProperties(JsonObject properties) {
+    return (PgPoolOptions) super.setProperties(properties);
+  }
+
+  @Override
+  public PgPoolOptions addProperty(String key, String value) {
+    return (PgPoolOptions) super.addProperty(key, value);
+  }
+
+  @Override
   public PgPoolOptions setReceiveBufferSize(int receiveBufferSize) {
     return (PgPoolOptions) super.setReceiveBufferSize(receiveBufferSize);
   }

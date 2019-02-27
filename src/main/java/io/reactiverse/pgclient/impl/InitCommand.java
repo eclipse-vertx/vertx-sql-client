@@ -24,6 +24,7 @@ import io.reactiverse.pgclient.impl.codec.encoder.MessageEncoder;
 import io.reactiverse.pgclient.impl.codec.encoder.PasswordMessage;
 import io.reactiverse.pgclient.impl.codec.encoder.StartupMessage;
 import io.vertx.core.Handler;
+import io.vertx.core.json.JsonObject;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -39,6 +40,7 @@ public class InitCommand extends CommandBase<Connection> {
   private final String username;
   private final String password;
   private final String database;
+  private final JsonObject properties;
   private String encoding;
   private MessageEncoder out;
 
@@ -46,17 +48,19 @@ public class InitCommand extends CommandBase<Connection> {
     SocketConnection conn,
     String username,
     String password,
-    String database) {
+    String database,
+    JsonObject properties) {
     this.conn = conn;
     this.username = username;
     this.password = password;
     this.database = database;
+    this.properties = properties;
   }
 
   @Override
   void exec(MessageEncoder out) {
     this.out = out;
-    out.writeStartupMessage(new StartupMessage(username, database));
+    out.writeStartupMessage(new StartupMessage(username, database, properties));
   }
 
   @Override

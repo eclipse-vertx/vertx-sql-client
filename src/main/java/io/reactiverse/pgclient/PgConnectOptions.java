@@ -102,6 +102,7 @@ public class PgConnectOptions extends NetClientOptions {
   private boolean cachePreparedStatements;
   private int pipeliningLimit;
   private SslMode sslMode;
+  private JsonObject properties;
 
   public PgConnectOptions() {
     super();
@@ -124,6 +125,7 @@ public class PgConnectOptions extends NetClientOptions {
     pipeliningLimit = other.pipeliningLimit;
     cachePreparedStatements = other.cachePreparedStatements;
     sslMode = other.sslMode;
+    properties = other.properties;
   }
 
   public String getHost() {
@@ -207,6 +209,36 @@ public class PgConnectOptions extends NetClientOptions {
    */
   public PgConnectOptions setSslMode(SslMode sslmode) {
     this.sslMode = sslmode;
+    return this;
+  }
+
+  /**
+   * @return the value of current connection properties
+   */
+  public JsonObject getProperties() {
+    return properties;
+  }
+
+  /**
+   * Set properties for this client, which will be sent to server at the connection start.
+   *
+   * @param properties the value of properties to specify
+   * @return a reference to this, so the API can be used fluently
+   */
+  public PgConnectOptions setProperties(JsonObject properties) {
+    this.properties = properties.copy();
+    return this;
+  }
+
+  /**
+   * Add a property for this client, which will be sent to server at the connection start.
+   *
+   * @param key the value of property key
+   * @param value the value of property value
+   * @return a reference to this, so the API can be used fluently
+   */
+  public PgConnectOptions addProperty(String key, String value) {
+    this.properties.put(key, value);
     return this;
   }
 
@@ -427,6 +459,7 @@ public class PgConnectOptions extends NetClientOptions {
     cachePreparedStatements = DEFAULT_CACHE_PREPARED_STATEMENTS;
     pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
     sslMode = DEFAULT_SSLMODE;
+    properties = new JsonObject();
   }
 
   @Override
@@ -452,6 +485,7 @@ public class PgConnectOptions extends NetClientOptions {
     if (cachePreparedStatements != that.cachePreparedStatements) return false;
     if (pipeliningLimit != that.pipeliningLimit) return false;
     if (sslMode != that.sslMode) return false;
+    if (!properties.equals(that.properties)) return false;
 
     return true;
   }
@@ -467,6 +501,7 @@ public class PgConnectOptions extends NetClientOptions {
     result = 31 * result + (cachePreparedStatements ? 1 : 0);
     result = 31 * result + pipeliningLimit;
     result = 31 * result + sslMode.hashCode();
+    result = 31 * result + properties.hashCode();
     return result;
   }
 

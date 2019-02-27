@@ -108,6 +108,18 @@ public abstract class PgClientTestBase<C extends PgClient> extends PgTestBase {
     }));
   }
 
+//  @Test
+//  public void testSettingSchema(TestContext ctx) {
+//    Async async = ctx.async();
+//    options.addProperty("search_path", "myschema");
+//    connector.accept(ctx.asyncAssertSuccess(conn -> {
+//      conn.query("SHOW search_path;", ctx.asyncAssertSuccess(pgRowSet -> {
+//        ctx.assertEquals("myschema", pgRowSet.iterator().next().getString("search_path"));
+//        async.complete();
+//      }));
+//    }));
+//  }
+
   @Test
   public void testQuery(TestContext ctx) {
     Async async = ctx.async();

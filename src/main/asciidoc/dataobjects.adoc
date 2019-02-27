@@ -140,6 +140,12 @@
 |[[pfxTrustOptions]]`@pfxTrustOptions`|`link:dataobjects.html#PfxOptions[PfxOptions]`|-
 |[[pipeliningLimit]]`@pipeliningLimit`|`Number (int)`|-
 |[[port]]`@port`|`Number (int)`|-
+|[[properties]]`@properties`|`Json object`|+++
+Set properties for this client, which will be sent to server at the connection start.
++++
+|[[propertys]]`@propertys`|`String`|+++
+Add a property for this client, which will be sent to server at the connection start.
++++
 |[[proxyOptions]]`@proxyOptions`|`link:dataobjects.html#ProxyOptions[ProxyOptions]`|-
 |[[receiveBufferSize]]`@receiveBufferSize`|`Number (int)`|-
 |[[reconnectAttempts]]`@reconnectAttempts`|`Number (int)`|-
@@ -232,6 +238,12 @@ Set the maximum connection request allowed in the wait queue, any requests beyon
 |[[pfxTrustOptions]]`@pfxTrustOptions`|`link:dataobjects.html#PfxOptions[PfxOptions]`|-
 |[[pipeliningLimit]]`@pipeliningLimit`|`Number (int)`|-
 |[[port]]`@port`|`Number (int)`|-
+|[[properties]]`@properties`|`Json object`|+++
+Set properties for this client, which will be sent to server at the connection start.
++++
+|[[propertys]]`@propertys`|`String`|+++
+Add a property for this client, which will be sent to server at the connection start.
++++
 |[[proxyOptions]]`@proxyOptions`|`link:dataobjects.html#ProxyOptions[ProxyOptions]`|-
 |[[receiveBufferSize]]`@receiveBufferSize`|`Number (int)`|-
 |[[reconnectAttempts]]`@reconnectAttempts`|`Number (int)`|-
