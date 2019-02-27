@@ -17,10 +17,12 @@
 package io.reactiverse.pgclient.impl.my.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.reactiverse.pgclient.impl.Connection;
 import io.reactiverse.pgclient.impl.my.ColumnMetadata;
 import io.reactiverse.pgclient.impl.my.RowResultDecoder;
 import io.reactiverse.pgclient.impl.my.codec.datatype.DataFormat;
 import io.reactiverse.pgclient.impl.my.protocol.backend.ColumnDefinition;
+import io.reactiverse.pgclient.impl.my.protocol.backend.ErrPacket;
 import io.reactiverse.pgclient.impl.my.protocol.backend.OkPacket;
 import io.reactiverse.pgclient.impl.my.util.BufferUtils;
 import io.reactiverse.pgclient.impl.command.CommandResponse;
@@ -63,7 +65,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
 //          cmd.handleEndPacket(GenericPacketPayloadDecoder.decodeOkPacketBody(payload, charset));
 //          handleResultsetDecodingCompleted(ctx, cmd);
         } else if (firstByte == ERROR_PACKET_HEADER) {
-//          handleErrorPacketPayload(ctx, payload);
+          handleErrorPacketPayload(payload);
         } else if (firstByte == 0xFB) {
           //TODO LOCAL INFILE Request support
         } else {
@@ -90,7 +92,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
              */
         int first = payload.getUnsignedByte(payload.readerIndex());
         if (first == ERROR_PACKET_HEADER) {
-          // handleErrorPacketPayload(ctx, payload);
+          handleErrorPacketPayload(payload);
           // resetIntermediaryResult();
         }
         // enabling CLIENT_DEPRECATE_EOF capability will receive an OK_Packet with a EOF_Packet header here
@@ -107,6 +109,13 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
         break;
     }
 
+  }
+
+  private void handleErrorPacketPayload(ByteBuf payload) {
+    // header should be ERROR_PACKET_HEADER
+    payload.readUnsignedByte();
+    ErrPacket packet = GenericPacketPayloadDecoder.decodeErrPacketBody(payload, StandardCharsets.UTF_8);
+    completionHandler.handle(CommandResponse.failure(packet.toException()));
   }
 
   private void handleEndPacket(OkPacket okPacket) {

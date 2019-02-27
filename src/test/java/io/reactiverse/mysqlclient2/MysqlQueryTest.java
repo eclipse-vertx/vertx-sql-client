@@ -132,4 +132,14 @@ public class MysqlQueryTest extends MysqlTestBase {
       }));
     }));
   }
+
+  @Test
+  public void testQueryError(TestContext ctx) {
+    Async async = ctx.async();
+    MyClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(err -> {
+        async.complete();
+      }));
+    }));
+  }
 }

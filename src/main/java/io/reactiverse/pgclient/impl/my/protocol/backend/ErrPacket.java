@@ -1,5 +1,7 @@
 package io.reactiverse.pgclient.impl.my.protocol.backend;
 
+import io.reactiverse.pgclient.PgException;
+
 public final class ErrPacket {
   public static final int ERROR_PACKET_HEADER = 0xFF;
 
@@ -30,4 +32,9 @@ public final class ErrPacket {
   public String getErrorMessage() {
     return errorMessage;
   }
+
+  public PgException toException() {
+    return new PgException(errorMessage, null, "" + errorCode, null);
+  }
+
 }
