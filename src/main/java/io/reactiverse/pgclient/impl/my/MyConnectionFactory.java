@@ -1,12 +1,10 @@
 package io.reactiverse.pgclient.impl.my;
 
 import io.netty.channel.ChannelPipeline;
-import io.reactiverse.mysqlclient.impl.CharacterSetMapping;
 import io.reactiverse.pgclient.PgConnectOptions;
 import io.reactiverse.pgclient.PgConnection;
 import io.reactiverse.pgclient.impl.Connection;
 import io.reactiverse.pgclient.impl.PgConnectionImpl;
-import io.reactiverse.pgclient.impl.PgSocketConnection;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;

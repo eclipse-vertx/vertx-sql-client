@@ -16,7 +16,7 @@
  */
 package io.reactiverse.pgclient.impl.my.codec;
 
-import io.reactiverse.mysqlclient.impl.protocol.backend.ColumnDefinition;
+import io.reactiverse.pgclient.impl.my.protocol.backend.ColumnDefinition;
 
 public class MyColumnDesc {
 

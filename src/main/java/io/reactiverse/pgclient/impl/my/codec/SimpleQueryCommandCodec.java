@@ -17,23 +17,11 @@
 package io.reactiverse.pgclient.impl.my.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.reactiverse.mysqlclient.impl.ColumnMetadata;
-import io.reactiverse.mysqlclient.impl.RowResultDecoder;
-import io.reactiverse.mysqlclient.impl.codec.GenericPacketPayloadDecoder;
-import io.reactiverse.mysqlclient.impl.codec.datatype.DataFormat;
-import io.reactiverse.mysqlclient.impl.codec.datatype.DataType;
-import io.reactiverse.mysqlclient.impl.protocol.CommandType;
-import io.reactiverse.mysqlclient.impl.protocol.backend.ColumnDefinition;
-import io.reactiverse.mysqlclient.impl.protocol.backend.OkPacket;
-import io.reactiverse.mysqlclient.impl.util.BufferUtils;
-import io.reactiverse.pgclient.impl.command.CommandResponse;
+import io.reactiverse.pgclient.impl.my.codec.datatype.DataFormat;
+import io.reactiverse.pgclient.impl.my.protocol.CommandType;
 import io.reactiverse.pgclient.impl.command.SimpleQueryCommand;
 
 import java.nio.charset.StandardCharsets;
-
-import static io.reactiverse.mysqlclient.impl.protocol.backend.EofPacket.EOF_PACKET_HEADER;
-import static io.reactiverse.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
-import static io.reactiverse.mysqlclient.impl.protocol.backend.OkPacket.OK_PACKET_HEADER;
 
 class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>> {
 

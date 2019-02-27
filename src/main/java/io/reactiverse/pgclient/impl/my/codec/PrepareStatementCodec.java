@@ -17,8 +17,8 @@
 package io.reactiverse.pgclient.impl.my.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.reactiverse.mysqlclient.impl.protocol.CommandType;
-import io.reactiverse.mysqlclient.impl.protocol.backend.ColumnDefinition;
+import io.reactiverse.pgclient.impl.my.protocol.CommandType;
+import io.reactiverse.pgclient.impl.my.protocol.backend.ColumnDefinition;
 import io.reactiverse.pgclient.impl.PreparedStatement;
 import io.reactiverse.pgclient.impl.ParamDesc;
 import io.reactiverse.pgclient.impl.command.CommandResponse;
@@ -26,7 +26,7 @@ import io.reactiverse.pgclient.impl.command.PrepareStatementCommand;
 
 import java.nio.charset.StandardCharsets;
 
-import static io.reactiverse.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
+import static io.reactiverse.pgclient.impl.my.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
 
 public class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareStatementCommand> {
 

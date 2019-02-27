@@ -17,10 +17,10 @@
 package io.reactiverse.pgclient.impl.my.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.reactiverse.mysqlclient.impl.codec.datatype.DataFormat;
-import io.reactiverse.mysqlclient.impl.codec.datatype.DataTypeCodec;
-import io.reactiverse.mysqlclient.impl.protocol.CommandType;
-import io.reactiverse.mysqlclient.impl.protocol.backend.ColumnDefinition;
+import io.reactiverse.pgclient.impl.my.codec.datatype.DataFormat;
+import io.reactiverse.pgclient.impl.my.codec.datatype.DataTypeCodec;
+import io.reactiverse.pgclient.impl.my.protocol.CommandType;
+import io.reactiverse.pgclient.impl.my.protocol.backend.ColumnDefinition;
 import io.reactiverse.pgclient.Tuple;
 import io.reactiverse.pgclient.impl.command.ExtendedQueryCommand;
 

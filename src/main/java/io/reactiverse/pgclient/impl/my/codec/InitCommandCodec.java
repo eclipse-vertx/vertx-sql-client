@@ -17,21 +17,20 @@
 package io.reactiverse.pgclient.impl.my.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.reactiverse.mysqlclient.impl.CapabilitiesNegotiator;
-import io.reactiverse.mysqlclient.impl.codec.GenericPacketPayloadDecoder;
-import io.reactiverse.mysqlclient.impl.protocol.CapabilitiesFlag;
-import io.reactiverse.mysqlclient.impl.protocol.backend.ErrPacket;
-import io.reactiverse.mysqlclient.impl.protocol.backend.InitialHandshakePacket;
-import io.reactiverse.mysqlclient.impl.protocol.frontend.HandshakeResponse;
-import io.reactiverse.mysqlclient.impl.util.BufferUtils;
+import io.reactiverse.pgclient.impl.my.CapabilitiesNegotiator;
+import io.reactiverse.pgclient.impl.my.protocol.CapabilitiesFlag;
+import io.reactiverse.pgclient.impl.my.protocol.backend.ErrPacket;
+import io.reactiverse.pgclient.impl.my.protocol.backend.InitialHandshakePacket;
+import io.reactiverse.pgclient.impl.my.protocol.frontend.HandshakeResponse;
+import io.reactiverse.pgclient.impl.my.util.BufferUtils;
 import io.reactiverse.pgclient.impl.command.CommandResponse;
 import io.reactiverse.pgclient.impl.Connection;
 import io.reactiverse.pgclient.impl.command.InitCommand;
 
 import java.nio.charset.StandardCharsets;
 
-import static io.reactiverse.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
-import static io.reactiverse.mysqlclient.impl.protocol.backend.OkPacket.OK_PACKET_HEADER;
+import static io.reactiverse.pgclient.impl.my.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
+import static io.reactiverse.pgclient.impl.my.protocol.backend.OkPacket.OK_PACKET_HEADER;
 
 class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
 

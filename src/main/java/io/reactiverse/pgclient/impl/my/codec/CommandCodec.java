@@ -17,9 +17,9 @@
 package io.reactiverse.pgclient.impl.my.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.reactiverse.mysqlclient.impl.codec.datatype.DataType;
-import io.reactiverse.mysqlclient.impl.protocol.backend.ColumnDefinition;
-import io.reactiverse.mysqlclient.impl.util.BufferUtils;
+import io.reactiverse.pgclient.impl.my.codec.datatype.DataType;
+import io.reactiverse.pgclient.impl.my.protocol.backend.ColumnDefinition;
+import io.reactiverse.pgclient.impl.my.util.BufferUtils;
 import io.reactiverse.pgclient.impl.command.CommandResponse;
 import io.reactiverse.pgclient.impl.command.CommandBase;
 import io.vertx.core.Handler;

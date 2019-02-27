@@ -17,7 +17,7 @@
 
 package io.reactiverse.pgclient.impl.my.codec;
 
-import io.reactiverse.mysqlclient.impl.protocol.backend.ColumnDefinition;
+import io.reactiverse.pgclient.impl.my.protocol.backend.ColumnDefinition;
 import io.reactiverse.pgclient.impl.PreparedStatement;
 import io.reactiverse.pgclient.impl.ParamDesc;
 import io.reactiverse.pgclient.impl.RowDesc;

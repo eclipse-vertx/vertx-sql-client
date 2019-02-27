@@ -17,21 +17,20 @@
 package io.reactiverse.pgclient.impl.my.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.reactiverse.mysqlclient.impl.ColumnMetadata;
-import io.reactiverse.mysqlclient.impl.RowResultDecoder;
-import io.reactiverse.mysqlclient.impl.codec.GenericPacketPayloadDecoder;
-import io.reactiverse.mysqlclient.impl.codec.datatype.DataFormat;
-import io.reactiverse.mysqlclient.impl.protocol.backend.ColumnDefinition;
-import io.reactiverse.mysqlclient.impl.protocol.backend.OkPacket;
-import io.reactiverse.mysqlclient.impl.util.BufferUtils;
+import io.reactiverse.pgclient.impl.my.ColumnMetadata;
+import io.reactiverse.pgclient.impl.my.RowResultDecoder;
+import io.reactiverse.pgclient.impl.my.codec.datatype.DataFormat;
+import io.reactiverse.pgclient.impl.my.protocol.backend.ColumnDefinition;
+import io.reactiverse.pgclient.impl.my.protocol.backend.OkPacket;
+import io.reactiverse.pgclient.impl.my.util.BufferUtils;
 import io.reactiverse.pgclient.impl.command.CommandResponse;
 import io.reactiverse.pgclient.impl.command.QueryCommandBase;
 
 import java.nio.charset.StandardCharsets;
 
-import static io.reactiverse.mysqlclient.impl.protocol.backend.EofPacket.EOF_PACKET_HEADER;
-import static io.reactiverse.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
-import static io.reactiverse.mysqlclient.impl.protocol.backend.OkPacket.OK_PACKET_HEADER;
+import static io.reactiverse.pgclient.impl.my.protocol.backend.EofPacket.EOF_PACKET_HEADER;
+import static io.reactiverse.pgclient.impl.my.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
+import static io.reactiverse.pgclient.impl.my.protocol.backend.OkPacket.OK_PACKET_HEADER;
 
 abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends CommandCodec<Boolean, C> {
 

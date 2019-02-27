@@ -3,10 +3,10 @@ package io.reactiverse.pgclient.impl.my.codec;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
-import io.reactiverse.mysqlclient.impl.CharacterSetMapping;
-import io.reactiverse.mysqlclient.impl.protocol.frontend.HandshakeResponse;
-import io.reactiverse.mysqlclient.impl.util.BufferUtils;
-import io.reactiverse.mysqlclient.impl.util.Native41Authenticator;
+import io.reactiverse.pgclient.impl.my.CharacterSetMapping;
+import io.reactiverse.pgclient.impl.my.protocol.frontend.HandshakeResponse;
+import io.reactiverse.pgclient.impl.my.util.BufferUtils;
+import io.reactiverse.pgclient.impl.my.util.Native41Authenticator;
 import io.reactiverse.pgclient.impl.command.CloseConnectionCommand;
 import io.reactiverse.pgclient.impl.command.ExtendedQueryCommand;
 import io.reactiverse.pgclient.impl.command.InitCommand;
@@ -17,11 +17,11 @@ import io.reactiverse.pgclient.impl.command.SimpleQueryCommand;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 
-import static io.reactiverse.mysqlclient.impl.protocol.CapabilitiesFlag.CLIENT_CONNECT_ATTRS;
-import static io.reactiverse.mysqlclient.impl.protocol.CapabilitiesFlag.CLIENT_CONNECT_WITH_DB;
-import static io.reactiverse.mysqlclient.impl.protocol.CapabilitiesFlag.CLIENT_PLUGIN_AUTH;
-import static io.reactiverse.mysqlclient.impl.protocol.CapabilitiesFlag.CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA;
-import static io.reactiverse.mysqlclient.impl.protocol.CapabilitiesFlag.CLIENT_SECURE_CONNECTION;
+import static io.reactiverse.pgclient.impl.my.protocol.CapabilitiesFlag.CLIENT_CONNECT_ATTRS;
+import static io.reactiverse.pgclient.impl.my.protocol.CapabilitiesFlag.CLIENT_CONNECT_WITH_DB;
+import static io.reactiverse.pgclient.impl.my.protocol.CapabilitiesFlag.CLIENT_PLUGIN_AUTH;
+import static io.reactiverse.pgclient.impl.my.protocol.CapabilitiesFlag.CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA;
+import static io.reactiverse.pgclient.impl.my.protocol.CapabilitiesFlag.CLIENT_SECURE_CONNECTION;
 
 public class MyEncoder extends MessageToByteEncoder<CommandBase<?>> {
 
