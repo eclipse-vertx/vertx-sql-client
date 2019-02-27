@@ -82,14 +82,14 @@ public class PgTransactionTest extends PgClientTestBase<PgTransaction> {
   public void testCommitWithPreparedQuery(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("INSERT INTO Fortune (id, message) VALUES ($1, $2);", Tuple.of(13, "test message1"), ctx.asyncAssertSuccess(result -> {
+      conn.preparedQuery("INSERT INTO Test (id, val) VALUES ($1, $2);", Tuple.of(13, "test message1"), ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
         conn.commit(ctx.asyncAssertSuccess(v1 -> {
-          pool.query("SELECT id, message from Fortune where id = 13", ctx.asyncAssertSuccess(rowSet -> {
+          pool.query("SELECT id, val from Test where id = 13", ctx.asyncAssertSuccess(rowSet -> {
             ctx.assertEquals(1, rowSet.rowCount());
             Row row = rowSet.iterator().next();
             ctx.assertEquals(13, row.getInteger("id"));
-            ctx.assertEquals("test message1", row.getString("message"));
+            ctx.assertEquals("test message1", row.getString("val"));
             async.complete();
           }));
         }));
@@ -101,14 +101,14 @@ public class PgTransactionTest extends PgClientTestBase<PgTransaction> {
   public void testCommitWithQuery(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("INSERT INTO Fortune (id, message) VALUES (14, 'test message2');", ctx.asyncAssertSuccess(result -> {
+      conn.query("INSERT INTO Test (id, val) VALUES (14, 'test message2');", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
         conn.commit(ctx.asyncAssertSuccess(v1 -> {
-          pool.query("SELECT id, message from Fortune where id = 14", ctx.asyncAssertSuccess(rowSet -> {
+          pool.query("SELECT id, val from Test where id = 14", ctx.asyncAssertSuccess(rowSet -> {
             ctx.assertEquals(1, rowSet.rowCount());
             Row row = rowSet.iterator().next();
             ctx.assertEquals(14, row.getInteger("id"));
-            ctx.assertEquals("test message2", row.getString("message"));
+            ctx.assertEquals("test message2", row.getString("val"));
             async.complete();
           }));
         }));
