@@ -30,7 +30,6 @@ import static org.junit.Assert.assertEquals;
 
 public class JdbcTest extends JdbcTestBase {
 
-  @Ignore
   @Test
   public void testInsertBatch() throws SQLException {
 

@@ -17,6 +17,7 @@
 
 package io.reactiverse.pgclient;
 
+import io.reactiverse.pgclient.support.PgRule;
 import io.vertx.core.Vertx;
 import org.postgresql.PGProperty;
 
@@ -31,7 +32,7 @@ public class RawBenchmark {
   private static final Tuple args = Tuple.of(1);
 
   public static void main(String[] args) throws Exception {
-    PgConnectOptions options = PgTestBase.startPg();
+    PgConnectOptions options = PgRule.startPg();
     /*
     PgConnectOptions options = new PgConnectOptions()
       .setHost("localhost")

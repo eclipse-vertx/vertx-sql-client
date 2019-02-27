@@ -4,10 +4,8 @@ import io.reactiverse.pgclient.PgConnectOptions;
 import io.reactiverse.pgclient.PgTestBase;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.runner.RunWith;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -19,12 +17,9 @@ import java.util.UUID;
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-@RunWith(VertxUnitRunner.class)
 public abstract class DataTypeTestBase extends PgTestBase {
 
   protected Vertx vertx;
-
-  protected abstract PgConnectOptions options();
 
   protected static final UUID uuid = UUID.fromString("6f790482-b5bd-438b-a8b7-4a0bed747011");
   protected static final LocalDateTime ldt = LocalDateTime.parse("2017-05-14T19:35:58.237666");
@@ -39,7 +34,8 @@ public abstract class DataTypeTestBase extends PgTestBase {
   };
 
   @Before
-  public void setup() {
+  public void setup() throws Exception {
+    super.setup();
     vertx = Vertx.vertx();
   }
 

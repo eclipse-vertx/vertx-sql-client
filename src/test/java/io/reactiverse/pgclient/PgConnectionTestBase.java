@@ -21,9 +21,7 @@ import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +34,6 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
-@RunWith(VertxUnitRunner.class)
 public abstract class PgConnectionTestBase extends PgClientTestBase<PgConnection> {
 
   @Test

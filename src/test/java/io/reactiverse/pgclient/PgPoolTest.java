@@ -135,7 +135,7 @@ public class PgPoolTest extends PgPoolTestBase {
   // will actually use the same connection for the prepare and the query commands
   @Test
   public void testConcurrentMultipleConnection(TestContext ctx) {
-    PgPoolOptions options = new PgPoolOptions(new PgConnectOptions(PgTestBase.options).setCachePreparedStatements(true)).setMaxSize(2);
+    PgPoolOptions options = new PgPoolOptions(new PgConnectOptions(this.options).setCachePreparedStatements(true)).setMaxSize(2);
     PgPool pool = PgClient.pool(vertx, options);
     int numRequests = 2;
     Async async = ctx.async(numRequests);

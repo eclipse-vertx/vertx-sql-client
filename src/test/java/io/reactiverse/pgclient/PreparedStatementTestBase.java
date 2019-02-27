@@ -22,11 +22,9 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,7 +38,6 @@ import java.util.stream.Stream;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-@RunWith(VertxUnitRunner.class)
 public abstract class PreparedStatementTestBase extends PgTestBase {
 
   Vertx vertx;
@@ -48,7 +45,8 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
   protected abstract PgConnectOptions options();
 
   @Before
-  public void setup() {
+  public void setup() throws Exception {
+    super.setup();
     vertx = Vertx.vertx();
   }
 

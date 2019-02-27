@@ -22,24 +22,22 @@ import io.reactiverse.pgclient.pubsub.PgChannel;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-@RunWith(VertxUnitRunner.class)
 public class PubSubTest extends PgTestBase {
 
   Vertx vertx;
   PgSubscriber subscriber;
 
   @Before
-  public void setup() {
+  public void setup() throws Exception {
+    super.setup();
     vertx = Vertx.vertx();
   }
 
@@ -222,7 +220,6 @@ public class PubSubTest extends PgTestBase {
   }
 
   public void testReconnect(TestContext ctx, long delay, String channelName) {
-    PgConnectOptions options = new PgConnectOptions(PgTestBase.options);
     ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
     AtomicReference<ProxyServer.Connection> connRef = new AtomicReference<>();
     proxy.proxyHandler(conn -> {

@@ -13,11 +13,6 @@ import java.math.BigInteger;
 
 public class PreparedStatementParamCoercionTest extends DataTypeTestBase {
 
-  @Override
-  protected PgConnectOptions options() {
-    return options;
-  }
-
   private static final Object[] VALUES_TO_COERCE = {
     (byte)5, (short)5, 5, 5L, 5f, 5d, BigInteger.valueOf(5), Numeric.create(5)
   };

@@ -20,11 +20,9 @@ package io.reactiverse.pgclient;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,13 +30,13 @@ import java.util.List;
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-@RunWith(VertxUnitRunner.class)
 public class PreparedBatchTest extends PgTestBase {
 
   Vertx vertx;
 
   @Before
-  public void setup() {
+  public void setup() throws Exception {
+    super.setup();
     vertx = Vertx.vertx();
   }
 

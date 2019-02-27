@@ -22,15 +22,12 @@ import io.vertx.core.*;
 import io.vertx.core.net.NetSocket;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -39,17 +36,15 @@ import java.util.stream.IntStream;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
-@RunWith(VertxUnitRunner.class)
 public abstract class PgClientTestBase<C extends PgClient> extends PgTestBase {
 
   Vertx vertx;
   Consumer<Handler<AsyncResult<C>>> connector;
-  PgConnectOptions options;
 
   @Before
-  public void setup() {
+  public void setup() throws Exception {
+    super.setup();
     vertx = Vertx.vertx();
-    options = new PgConnectOptions(PgTestBase.options);
   }
 
   @After

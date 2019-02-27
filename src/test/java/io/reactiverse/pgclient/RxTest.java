@@ -24,12 +24,10 @@ import io.reactiverse.reactivex.pgclient.PgClient;
 import io.reactivex.Flowable;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.reactivex.core.Vertx;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
@@ -37,17 +35,15 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-@RunWith(VertxUnitRunner.class)
 public class RxTest extends PgTestBase {
 
   Vertx vertx;
-  PgConnectOptions options;
   PgPool pool;
 
   @Before
-  public void setup() {
+  public void setup() throws Exception {
+    super.setup();
     vertx = Vertx.vertx();
-    options = new PgConnectOptions(PgTestBase.options);
     pool = PgClient.pool(vertx, new PgPoolOptions(options).setMaxSize(1));
   }
 

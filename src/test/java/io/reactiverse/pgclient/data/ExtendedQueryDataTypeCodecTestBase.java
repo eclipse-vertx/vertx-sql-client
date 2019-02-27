@@ -31,8 +31,9 @@ public abstract class ExtendedQueryDataTypeCodecTestBase extends DataTypeTestBas
   }
 
   @Override
-  protected PgConnectOptions options() {
-    return new PgConnectOptions(options).setCachePreparedStatements(false);
+  public void setup() throws Exception {
+    super.setup();
+    options.setCachePreparedStatements(false);
   }
 
   protected <T> void testGeneric(TestContext ctx, String sql, T[] expected, BiFunction<Row, Integer, T> getter) {

@@ -27,12 +27,13 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
-public class JdbcTestBase extends PgTestBase {
+public abstract class JdbcTestBase extends PgTestBase {
 
   Connection con;
 
   @Before
-  public void setUp() throws Exception {
+  public void setup() throws Exception {
+    super.setup();
     Properties props = new Properties();
     PGProperty.PREPARE_THRESHOLD.set(props, -1);
     PGProperty.BINARY_TRANSFER.set(props, "true");

@@ -17,6 +17,7 @@
 
 package io.reactiverse.pgclient;
 
+import io.reactiverse.pgclient.support.PgRule;
 import org.openjdk.jmh.runner.*;
 import org.openjdk.jmh.runner.options.*;
 
@@ -25,7 +26,7 @@ import java.util.Arrays;
 public class Main {
 
   public static void main(String[] argv) throws Exception {
-    PgConnectOptions options = PgTestBase.startPg();
+    PgConnectOptions options = PgRule.startPg();
     int len = argv.length;
     argv = Arrays.copyOf(argv, len + 10);
     argv[len] = "-p";
@@ -105,7 +106,7 @@ public class Main {
       System.err.println(" " + e.getMessage());
       // System.exit(1);
     } finally {
-      PgTestBase.stopPg();
+      PgRule.stopPg();
     }
   }
 }

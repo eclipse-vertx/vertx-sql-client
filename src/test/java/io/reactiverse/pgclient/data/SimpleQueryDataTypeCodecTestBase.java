@@ -13,8 +13,9 @@ import io.vertx.ext.unit.TestContext;
 public abstract class SimpleQueryDataTypeCodecTestBase extends DataTypeTestBase {
 
   @Override
-  protected PgConnectOptions options() {
-    return new PgConnectOptions(options).setCachePreparedStatements(false);
+  public void setup() throws Exception {
+    super.setup();
+    options.setCachePreparedStatements(false);
   }
 
   protected <T> void testDecodeGeneric(TestContext ctx,
