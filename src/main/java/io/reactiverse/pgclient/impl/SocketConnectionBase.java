@@ -20,7 +20,7 @@ package io.reactiverse.pgclient.impl;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
-import io.reactiverse.pgclient.impl.codec.InitiateSslHandler;
+import io.reactiverse.pgclient.impl.pg.InitiateSslHandler;
 import io.reactiverse.pgclient.impl.command.CloseConnectionCommand;
 import io.reactiverse.pgclient.impl.command.CommandResponse;
 import io.reactiverse.pgclient.impl.command.CommandBase;

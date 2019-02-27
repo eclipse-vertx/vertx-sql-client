@@ -18,7 +18,7 @@
 package io.reactiverse.pgclient.impl;
 
 import io.netty.channel.ChannelPipeline;
-import io.reactiverse.pgclient.impl.codec.PgCodec;
+import io.reactiverse.pgclient.impl.pg.PgCodec;
 import io.reactiverse.pgclient.impl.command.CommandResponse;
 import io.reactiverse.pgclient.impl.command.InitCommand;
 import io.reactiverse.pgclient.impl.command.CommandBase;

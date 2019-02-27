@@ -17,10 +17,9 @@
 
 package io.reactiverse.pgclient;
 
-import io.reactiverse.pgclient.impl.codec.util.Util;
+import io.reactiverse.pgclient.impl.pg.util.Util;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.streams.ReadStream;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -35,7 +34,6 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
