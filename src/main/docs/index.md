@@ -98,13 +98,38 @@ More information can be found in the [Vert.x documentation](https://vertx.io/doc
 
 There are several options for you to configure the client.
 
+### data object
+
+A simple way to configure the pool is to specify a `PgPoolOptions` data object.
+
+```$lang
+{@link examples.Examples#configureFromDataObject(io.vertx.core.Vertx)}
+```
+
+### connection uri
+
 Apart from configuring with a `PgPoolOptions` data object, We also provide you an alternative way to connect when you want to configure with a connection URI:
 
 ```$lang
 {@link examples.Examples#configureFromUri(io.vertx.core.Vertx)}
 ```
 
+Currently the client supports the following parameter key words in connection uri
+
+* host
+* hostaddr
+* port
+* user
+* password
+* dbname
+* sslmode
+* application_name
+* fallback_application_name
+* search_path
+
 More information about connection string formats can be found in the [PostgreSQL Manuals](https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING).
+
+### environment variables
 
 You can also use environment variables to set default connection setting values, this is useful
 when you want to avoid hard-coding database connection information. You can refer to the [official documentation](https://www.postgresql.org/docs/9.6/static/libpq-envars.html)
