@@ -2,8 +2,6 @@ package io.reactiverse.mysqlclient2;
 
 import io.reactiverse.pgclient.MyClient;
 import io.reactiverse.pgclient.PgConnectOptions;
-import io.reactiverse.pgclient.PgConnection;
-import io.reactiverse.pgclient.PgRowSet;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
 import io.vertx.core.Vertx;
@@ -14,6 +12,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 @RunWith(VertxUnitRunner.class)
 public class MysqlQueryTest extends MysqlTestBase {
@@ -33,7 +35,7 @@ public class MysqlQueryTest extends MysqlTestBase {
   }
 
   @Test
-  public void test1(TestContext ctx) {
+  public void testSimpleQuery(TestContext ctx) {
     MyClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT * FROM BasicDataType", ctx.asyncAssertSuccess(rowSet -> {
         //TODO It seems PgRowSet#rowCount() can not be built from MySQL OK_Packet response(semantics collision)?
@@ -48,6 +50,32 @@ public class MysqlQueryTest extends MysqlTestBase {
         ctx.assertEquals(123.456f, row.getFloat(5));
         ctx.assertEquals(1.234567d, row.getDouble(6));
         ctx.assertEquals("HELLO,WORLD", row.getString(7));
+      }));
+    }));
+  }
+
+  @Test
+  public void testSimpleQueryCollector(TestContext ctx) {
+    Collector<Row, ?, Map<Integer, DummyObject>> collector = Collectors.toMap(
+      row -> row.getInteger("id"),
+      row -> new DummyObject(row.getInteger("id"),
+        row.getShort("Int2"),
+        row.getInteger("Int3"),
+        row.getInteger("Int4"),
+        row.getLong("Int8"),
+        row.getFloat("Float"),
+        row.getDouble("Double"),
+        row.getString("Varchar"))
+    );
+
+    DummyObject expected = new DummyObject(1, (short) 32767, 8388607, 2147483647, 9223372036854775807L,
+      123.456f, 1.234567d, "HELLO,WORLD");
+
+    MyClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT * FROM BasicDataType WHERE id = 1", collector, ctx.asyncAssertSuccess(result -> {
+        Map<Integer, DummyObject> map = result.value();
+        DummyObject actual = map.get(1);
+        ctx.assertEquals(expected, actual);
       }));
     }));
   }
@@ -75,6 +103,32 @@ public class MysqlQueryTest extends MysqlTestBase {
         ctx.assertEquals(123.456f, row.getFloat(5));
         ctx.assertEquals(1.234567d, row.getDouble(6));
         ctx.assertEquals("HELLO,WORLD", row.getString(7));
+      }));
+    }));
+  }
+
+  @Test
+  public void testPreparedCollector(TestContext ctx) {
+    Collector<Row, ?, Map<Integer, DummyObject>> collector = Collectors.toMap(
+      row -> row.getInteger("id"),
+      row -> new DummyObject(row.getInteger("id"),
+        row.getShort("Int2"),
+        row.getInteger("Int3"),
+        row.getInteger("Int4"),
+        row.getLong("Int8"),
+        row.getFloat("Float"),
+        row.getDouble("Double"),
+        row.getString("Varchar"))
+    );
+
+    DummyObject expected = new DummyObject(1, (short) 32767, 8388607, 2147483647, 9223372036854775807L,
+      123.456f, 1.234567d, "HELLO,WORLD");
+
+    MyClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("SELECT * FROM BasicDataType WHERE id = ?", Tuple.of(1), collector, ctx.asyncAssertSuccess(result -> {
+        Map<Integer, DummyObject> map = result.value();
+        DummyObject actual = map.get(1);
+        ctx.assertEquals(expected, actual);
       }));
     }));
   }
