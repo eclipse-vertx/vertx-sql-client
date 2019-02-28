@@ -24,9 +24,11 @@ SET GLOBAL time_zone = '+00:00';
 
 # modified from SO answer http://stackoverflow.com/questions/5125096/for-loop-in-mysql
 CREATE DATABASE hello_world;
-USE test-schema;
+USE testschema;
 
-CREATE TABLE  world (
+-- world table
+DROP TABLE IF EXISTS world;
+CREATE TABLE world (
   id int(10) unsigned NOT NULL auto_increment,
   randomNumber int NOT NULL default 0,
   PRIMARY KEY  (id)
@@ -55,24 +57,26 @@ DELIMITER ;
 
 CALL load_data();
 
-CREATE TABLE  fortune (
+-- Fortune table
+DROP TABLE IF EXISTS Fortune;
+CREATE TABLE Fortune (
   id int(10) unsigned NOT NULL auto_increment,
   message varchar(2048) CHARACTER SET 'utf8' NOT NULL,
   PRIMARY KEY  (id)
 )
 ENGINE=INNODB;
-GRANT SELECT ON fortune TO 'mysql'@'%' IDENTIFIED BY 'password';
-GRANT SELECT ON fortune TO 'mysql'@'localhost' IDENTIFIED BY 'password';
+GRANT SELECT ON Fortune TO 'mysql'@'%' IDENTIFIED BY 'password';
+GRANT SELECT ON Fortune TO 'mysql'@'localhost' IDENTIFIED BY 'password';
 
-INSERT INTO fortune (message) VALUES ('fortune: No such file or directory');
-INSERT INTO fortune (message) VALUES ('A computer scientist is someone who fixes things that aren''t broken.');
-INSERT INTO fortune (message) VALUES ('After enough decimal places, nobody gives a damn.');
-INSERT INTO fortune (message) VALUES ('A bad random number generator: 1, 1, 1, 1, 1, 4.33e+67, 1, 1, 1');
-INSERT INTO fortune (message) VALUES ('A computer program does what you tell it to do, not what you want it to do.');
-INSERT INTO fortune (message) VALUES ('Emacs is a nice operating system, but I prefer UNIX. — Tom Christaensen');
-INSERT INTO fortune (message) VALUES ('Any program that runs right is obsolete.');
-INSERT INTO fortune (message) VALUES ('A list is only as strong as its weakest link. — Donald Knuth');
-INSERT INTO fortune (message) VALUES ('Feature: A bug with seniority.');
-INSERT INTO fortune (message) VALUES ('Computers make very fast, very accurate mistakes.');
-INSERT INTO fortune (message) VALUES ('<script>alert("This should not be displayed in a browser alert box.");</script>');
-INSERT INTO fortune (message) VALUES ('フレームワークのベンチマーク');
+INSERT INTO Fortune (message) VALUES ('fortune: No such file or directory');
+INSERT INTO Fortune (message) VALUES ('A computer scientist is someone who fixes things that aren''t broken.');
+INSERT INTO Fortune (message) VALUES ('After enough decimal places, nobody gives a damn.');
+INSERT INTO Fortune (message) VALUES ('A bad random number generator: 1, 1, 1, 1, 1, 4.33e+67, 1, 1, 1');
+INSERT INTO Fortune (message) VALUES ('A computer program does what you tell it to do, not what you want it to do.');
+INSERT INTO Fortune (message) VALUES ('Emacs is a nice operating system, but I prefer UNIX. — Tom Christaensen');
+INSERT INTO Fortune (message) VALUES ('Any program that runs right is obsolete.');
+INSERT INTO Fortune (message) VALUES ('A list is only as strong as its weakest link. — Donald Knuth');
+INSERT INTO Fortune (message) VALUES ('Feature: A bug with seniority.');
+INSERT INTO Fortune (message) VALUES ('Computers make very fast, very accurate mistakes.');
+INSERT INTO Fortune (message) VALUES ('<script>alert("This should not be displayed in a browser alert box.");</script>');
+INSERT INTO Fortune (message) VALUES ('フレームワークのベンチマーク');

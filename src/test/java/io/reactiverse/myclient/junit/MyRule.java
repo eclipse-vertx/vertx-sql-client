@@ -28,14 +28,14 @@ public class MyRule extends ExternalResource {
 
   private static EmbeddedMysql mysql;
 
-  public synchronized static PgConnectOptions startPg() throws Exception {
+  public synchronized static PgConnectOptions startMysql() throws Exception {
     MysqldConfig mysqldConfig = MysqldConfig.aMysqldConfig(com.wix.mysql.distribution.Version.v5_7_latest)
       .withCharset(Charset.UTF8)
       .withUser("mysql", "password")
       .withPort(3306)
       .build();
 
-    SchemaConfig schemaConfig = SchemaConfig.aSchemaConfig("test-schema")
+    SchemaConfig schemaConfig = SchemaConfig.aSchemaConfig("testschema")
       .withCharset(Charset.UTF8)
       .withScripts(ScriptResolver.classPathScripts("init.sql"))
       .build();
@@ -53,7 +53,7 @@ public class MyRule extends ExternalResource {
 
   }
 
-  public synchronized static void stopPg() throws Exception {
+  public synchronized static void stopMysql() throws Exception {
     if (mysql != null) {
       try {
         mysql.stop();
@@ -71,14 +71,14 @@ public class MyRule extends ExternalResource {
 
   @Override
   protected void before() throws Throwable {
-    options = startPg();
+    options = startMysql();
   }
 
   @Override
   protected void after() {
     if (options != null) {
       try {
-        stopPg();
+        stopMysql();
       } catch (Exception e) {
         e.printStackTrace();
       }
