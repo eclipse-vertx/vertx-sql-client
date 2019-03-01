@@ -8,6 +8,9 @@ import java.nio.charset.StandardCharsets;
 
 //TODO charset injection
 public class DataTypeCodec {
+  // Sentinel used when an object is refused by the data type
+  public static final Object REFUSED_SENTINEL = new Object();
+
   public static Object decodeText(DataType dataType, ByteBuf buffer) {
     switch (dataType) {
       //TODO just a basic implementation, can be optimised here
@@ -82,15 +85,22 @@ public class DataTypeCodec {
     }
   }
 
+  public static Object prepare(DataType type, Object value) {
+    switch (type) {
+      //TODO handle json + unknown?
+      default:
+        Class<?> javaType = type.decodingType;
+        return value == null || javaType.isInstance(value) ? value : REFUSED_SENTINEL;
+    }
+  }
+
   private static void binaryEncodeInt2(Number value, ByteBuf buffer) {
     buffer.writeShortLE(value.intValue());
   }
 
-
   private static void binaryEncodeInt3(Number value, ByteBuf buffer) {
     buffer.writeMediumLE(value.intValue());
   }
-
 
   private static void binaryEncodeInt4(Number value, ByteBuf buffer) {
     buffer.writeIntLE(value.intValue());

@@ -39,6 +39,7 @@ class PgParamDesc extends ParamDesc {
     return paramDataTypes;
   }
 
+  @Override
   public String prepare(List<Object> values) {
     if (values.size() != paramDataTypes.length) {
       return buildReport(values);

@@ -17,9 +17,8 @@
 
 package io.reactiverse.pgclient.impl.my.codec;
 
-import io.reactiverse.pgclient.impl.my.protocol.backend.ColumnDefinition;
-import io.reactiverse.pgclient.impl.PreparedStatement;
 import io.reactiverse.pgclient.impl.ParamDesc;
+import io.reactiverse.pgclient.impl.PreparedStatement;
 import io.reactiverse.pgclient.impl.RowDesc;
 
 import java.util.List;
@@ -28,16 +27,18 @@ public class MyPreparedStatement implements PreparedStatement {
 
   final long statementId;
   final String sql;
-  final ParamDesc paramDesc;
-  final ColumnDefinition[] paramDescs;
+  final MyParamDesc paramDesc;
   final MyRowDesc rowDesc;
 
-  public MyPreparedStatement(String sql, long statementId, ColumnDefinition[] paramDescs, ParamDesc paramDesc, MyRowDesc rowDesc) {
+  public MyPreparedStatement(String sql, long statementId, MyParamDesc paramDesc, MyRowDesc rowDesc) {
     this.statementId = statementId;
-    this.paramDescs = paramDescs;
     this.paramDesc = paramDesc;
     this.rowDesc = rowDesc;
     this.sql = sql;
+  }
+
+  public ParamDesc paramDesc() {
+    return paramDesc;
   }
 
   public RowDesc rowDesc() {

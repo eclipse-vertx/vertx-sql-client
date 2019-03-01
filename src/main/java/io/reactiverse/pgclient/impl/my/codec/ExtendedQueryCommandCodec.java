@@ -38,7 +38,7 @@ public class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, Exten
   void encodePayload(MyEncoder encoder) {
     super.encodePayload(encoder);
     MyPreparedStatement ps = (MyPreparedStatement) cmd.preparedStatement();
-    writeExecuteMessage(encoder, ps.statementId, ps.paramDescs, sendType, cmd.params());
+    writeExecuteMessage(encoder, ps.statementId, ps.paramDesc.paramDefinitions(), sendType, cmd.params());
   }
 
   private void writeExecuteMessage(MyEncoder encoder, long statementId, ColumnDefinition[] paramsColumnDefinitions, byte sendType, Tuple params) {

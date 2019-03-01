@@ -23,8 +23,6 @@ import java.util.List;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class ParamDesc {
-  public String prepare(List<Object> values) {
-    return null;
-  }
+public abstract class ParamDesc {
+  public abstract String prepare(List<Object> values);
 }

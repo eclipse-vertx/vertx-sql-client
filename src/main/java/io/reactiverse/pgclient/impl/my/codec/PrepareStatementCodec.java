@@ -20,7 +20,6 @@ import io.netty.buffer.ByteBuf;
 import io.reactiverse.pgclient.impl.my.protocol.CommandType;
 import io.reactiverse.pgclient.impl.my.protocol.backend.ColumnDefinition;
 import io.reactiverse.pgclient.impl.PreparedStatement;
-import io.reactiverse.pgclient.impl.ParamDesc;
 import io.reactiverse.pgclient.impl.command.CommandResponse;
 import io.reactiverse.pgclient.impl.command.PrepareStatementCommand;
 
@@ -95,8 +94,7 @@ public class PrepareStatementCodec extends CommandCodec<PreparedStatement, Prepa
           completionHandler.handle(CommandResponse.success(new MyPreparedStatement(
             cmd.sql(),
             statementId,
-            paramDescs,
-            new ParamDesc(),
+            new MyParamDesc(paramDescs),
             new MyRowDesc(columnDescs))));
         }
         break;
