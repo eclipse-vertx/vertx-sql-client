@@ -48,7 +48,7 @@ public abstract class PreparedQueryTestBase {
   @Test
   public void testPrepare(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare(statement("SELECT id, randomnumber from world where id=", ""), ctx.asyncAssertSuccess(result -> {
+      conn.prepare(statement("SELECT id, message from immutable where id=", ""), ctx.asyncAssertSuccess(result -> {
       }));
     }));
   }
@@ -64,7 +64,7 @@ public abstract class PreparedQueryTestBase {
   @Test
   public void testPreparedQuery(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery(statement("SELECT * FROM Fortune WHERE id=", ""), Tuple.of(1), ctx.asyncAssertSuccess(rowSet -> {
+      conn.preparedQuery(statement("SELECT * FROM immutable WHERE id=", ""), Tuple.of(1), ctx.asyncAssertSuccess(rowSet -> {
         ctx.assertEquals(1, rowSet.size());
         Tuple row = rowSet.iterator().next();
         ctx.assertEquals(1, row.getInteger(0));
@@ -76,7 +76,7 @@ public abstract class PreparedQueryTestBase {
   @Test
   public void testPreparedQueryParamCoercionTypeError(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare(statement("SELECT * FROM Fortune WHERE id=", ""), ctx.asyncAssertSuccess(ps -> {
+      conn.prepare(statement("SELECT * FROM immutable WHERE id=", ""), ctx.asyncAssertSuccess(ps -> {
         ps.execute(Tuple.of("1"), ctx.asyncAssertFailure(rowSet -> {
         }));
       }));
@@ -86,7 +86,7 @@ public abstract class PreparedQueryTestBase {
   @Test
   public void testPreparedQueryParamCoercionQuantityError(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare(statement("SELECT * FROM Fortune WHERE id=", ""), ctx.asyncAssertSuccess(ps -> {
+      conn.prepare(statement("SELECT * FROM immutable WHERE id=", ""), ctx.asyncAssertSuccess(ps -> {
         ps.execute(Tuple.of(1, 2), ctx.asyncAssertFailure(rowSet -> {
         }));
       }));

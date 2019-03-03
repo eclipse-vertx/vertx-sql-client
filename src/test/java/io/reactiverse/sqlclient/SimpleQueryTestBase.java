@@ -24,8 +24,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Iterator;
-
 public abstract class SimpleQueryTestBase {
 
   protected Vertx vertx;
@@ -48,17 +46,11 @@ public abstract class SimpleQueryTestBase {
   @Test
   public void testQuery(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT id, randomnumber from world", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(10000, result.size());
-        Iterator<Row> it = result.iterator();
-        for (int i = 0; i < 10000; i++) {
-          Row row = it.next();
-          ctx.assertEquals(2, row.size());
-          ctx.assertTrue(row.getValue(0) instanceof Integer);
-          ctx.assertEquals(row.getValue("id"), row.getValue(0));
-          ctx.assertTrue(row.getValue(1) instanceof Integer);
-          ctx.assertEquals(row.getValue("randomnumber"), row.getValue(1));
-        }
+      conn.query("SELECT id, message from immutable", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(12, result.size());
+        Tuple row = result.iterator().next();
+        ctx.assertEquals(1, row.getInteger(0));
+        ctx.assertEquals("fortune: No such file or directory", row.getString(1));
       }));
     }));
   }

@@ -92,9 +92,9 @@ public abstract class ConnectionTestBase {
   public void testCloseWithQueryInProgress(TestContext ctx) {
     Async async = ctx.async(2);
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT id, randomnumber from world", ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT id, message from immutable", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(2, async.count());
-        ctx.assertEquals(10000, result.size());
+        ctx.assertEquals(12, result.size());
         async.countDown();
       }));
       conn.closeHandler(v -> {
