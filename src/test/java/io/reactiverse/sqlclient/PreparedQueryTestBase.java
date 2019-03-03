@@ -76,10 +76,20 @@ public abstract class PreparedQueryTestBase {
   }
 
   @Test
-  public void testPreparedQueryParamCoercionError(TestContext ctx) {
+  public void testPreparedQueryParamCoercionTypeError(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare(statement("SELECT * FROM Fortune WHERE id=", ""), ctx.asyncAssertSuccess(ps -> {
         ps.execute(Tuple.of("1"), ctx.asyncAssertFailure(rowSet -> {
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testPreparedQueryParamCoercionQuantityError(TestContext ctx) {
+    connect(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare(statement("SELECT * FROM Fortune WHERE id=", ""), ctx.asyncAssertSuccess(ps -> {
+        ps.execute(Tuple.of(1, 2), ctx.asyncAssertFailure(rowSet -> {
         }));
       }));
     }));

@@ -51,8 +51,8 @@ public class MyPreparedQueryTest extends PreparedQueryTestBase {
   @Test
   @Ignore
   @Override
-  public void testPreparedQueryParamCoercionError(TestContext ctx) {
+  public void testPreparedQueryParamCoercionTypeError(TestContext ctx) {
     // Does not pass, we can't achieve this feature on MySQL for now, see io.reactiverse.pgclient.impl.my.codec.MyParamDesc#prepare for reasons.
-    super.testPreparedQueryParamCoercionError(ctx);
+    super.testPreparedQueryParamCoercionTypeError(ctx);
   }
 }
