@@ -1,4 +1,4 @@
-package io.reactiverse.mysqlclient2;
+package io.reactiverse.myclient;
 
 import io.reactiverse.pgclient.impl.my.util.Native41Authenticator;
 import io.reactiverse.pgclient.impl.my.util.Utils;

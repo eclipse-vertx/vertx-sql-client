@@ -1,3 +1,4 @@
+# @Deprecated--- This part is only for mysql tests and should be moved out of TCK tests ---
 DROP TABLE IF EXISTS BasicDataType;
 CREATE TABLE BasicDataType
 (
@@ -11,10 +12,12 @@ CREATE TABLE BasicDataType
   `Varchar` VARCHAR(20)
 );
 
+
 INSERT INTO BasicDataType
 VALUES (1, 32767, 8388607, 2147483647, 9223372036854775807, 123.456, 1.234567, 'HELLO,WORLD');
 INSERT INTO BasicDataType
 VALUES (2, 32767, 8388607, 2147483647, 9223372036854775807, 123.456, 1.234567, 'hello,world');
+# @Deprecated--- This part is only for mysql tests and should be moved out of TCK tests ---
 
 # TFB tables
 
