@@ -17,34 +17,21 @@
 package io.reactiverse.pgclient.tck;
 
 import io.reactiverse.pgclient.junit.PgRule;
-import io.reactiverse.sqlclient.PreparedQueryTestBase;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
-public class PgPreparedQueryTest extends PreparedQueryTestBase {
+public class PgPreparedQueryTest extends PgPreparedQueryTestBase {
 
   @ClassRule
   public static PgRule rule = new PgRule();
 
   @Override
-  protected String statement(String... parts) {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0;i < parts.length;i++) {
-      if (i > 0) {
-        sb.append("$").append((i));
-      }
-      sb.append(parts[i]);
-    }
-    return sb.toString();
-  }
-
-  @Override
   public void setUp() throws Exception {
     super.setUp();
-    connector = ClientConfig.POOLED.connect(vertx, rule.options());
+    connector = ClientConfig.CONNECT.connect(vertx, rule.options());
   }
 
   @Override
