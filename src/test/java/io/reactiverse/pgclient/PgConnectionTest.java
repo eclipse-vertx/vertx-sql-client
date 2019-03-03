@@ -60,50 +60,6 @@ public class PgConnectionTest extends PgConnectionTestBase {
   }
 
   @Test
-  public void testClose(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.closeHandler(v -> {
-        async.complete();
-      });
-      conn.close();
-    }));
-  }
-
-  @Test
-  public void testCloseWithErrorInProgress(TestContext ctx) {
-    Async async = ctx.async(2);
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(err -> {
-        ctx.assertEquals(2, async.count());
-        async.countDown();
-      }));
-      conn.closeHandler(v -> {
-        ctx.assertEquals(1, async.count());
-        async.countDown();
-      });
-      conn.close();
-    }));
-  }
-
-  @Test
-  public void testCloseWithQueryInProgress(TestContext ctx) {
-    Async async = ctx.async(2);
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(2, async.count());
-        ctx.assertEquals(10000, result.size());
-        async.countDown();
-      }));
-      conn.closeHandler(v -> {
-        ctx.assertEquals(1, async.count());
-        async.countDown();
-      });
-      conn.close();
-    }));
-  }
-
-  @Test
   public void testQueueQueries(TestContext ctx) {
     int num = 1000;
     Async async = ctx.async(num + 1);

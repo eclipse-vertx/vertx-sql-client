@@ -53,47 +53,6 @@ public abstract class PgClientTestBase<C extends PgClient> extends PgTestBase {
   }
 
   @Test
-  public void testConnect(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      async.complete();
-    }));
-  }
-
-  @Test
-  public void testConnectInvalidDatabase(TestContext ctx) {
-    Async async = ctx.async();
-    options.setDatabase("blah_db");
-    connector.accept(ctx.asyncAssertFailure(conn -> {
-      ctx.assertEquals("database \"blah_db\" does not exist", conn.getMessage());
-      async.complete();
-    }));
-  }
-
-  @Test
-  public void testConnectInvalidPassword(TestContext ctx) {
-    Async async = ctx.async();
-    options.setPassword("incorrect");
-    connector.accept(ctx.asyncAssertFailure(conn -> {
-      ctx.assertEquals("password authentication failed for user \"postgres\"", conn.getMessage());
-      async.complete();
-    }));
-  }
-
-  @Test
-  public void testConnectInvalidUsername(TestContext ctx) {
-    Async async = ctx.async();
-    options.setUser("vertx");
-    connector.accept(ctx.asyncAssertFailure(err -> {
-      PgException ex = (PgException) err;
-      // Class 28 — Invalid Authorization Specification
-      ctx.assertEquals(ex.getCode().substring(0, 2), "28");
-      ctx.assertEquals(ex.getSeverity(), "FATAL");
-      async.complete();
-    }));
-  }
-
-  @Test
   public void testConnectNonSSLServer(TestContext ctx) {
     Async async = ctx.async();
     options.setSslMode(SslMode.REQUIRE).setTrustAll(true);
