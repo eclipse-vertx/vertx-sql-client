@@ -38,26 +38,6 @@ public class MysqlQueryTest extends MysqlTestBase {
   }
 
   @Test
-  public void testSimpleQuery(TestContext ctx) {
-    MyClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT * FROM BasicDataType", ctx.asyncAssertSuccess(rowSet -> {
-        //TODO It seems PgRowSet#rowCount() can not be built from MySQL OK_Packet response(semantics collision)?
-//            ctx.assertEquals(2, rowSet.rowCount());
-        ctx.assertEquals(2, rowSet.size());
-        Row row = rowSet.iterator().next();
-        ctx.assertEquals(1, row.getInteger(0));
-        ctx.assertEquals((short) 32767, row.getShort(1));
-        ctx.assertEquals(8388607, row.getInteger(2));
-        ctx.assertEquals(2147483647, row.getInteger(3));
-        ctx.assertEquals(9223372036854775807L, row.getLong(4));
-        ctx.assertEquals(123.456f, row.getFloat(5));
-        ctx.assertEquals(1.234567d, row.getDouble(6));
-        ctx.assertEquals("HELLO,WORLD", row.getString(7));
-      }));
-    }));
-  }
-
-  @Test
   public void testSimpleQueryCollector(TestContext ctx) {
     Collector<Row, ?, Map<Integer, DummyObject>> collector = Collectors.toMap(
       row -> row.getInteger("id"),

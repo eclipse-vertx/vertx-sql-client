@@ -23,10 +23,11 @@ import io.reactiverse.myclient.impl.codec.datatype.DataFormat;
 import io.reactiverse.myclient.impl.protocol.backend.ColumnDefinition;
 import io.reactiverse.myclient.impl.protocol.backend.OkPacket;
 import io.reactiverse.myclient.impl.util.BufferUtils;
+import io.reactiverse.sqlclient.Row;
 import io.reactiverse.sqlclient.impl.command.CommandResponse;
 import io.reactiverse.sqlclient.impl.command.QueryCommandBase;
-
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Collector;
 
 import static io.reactiverse.myclient.impl.protocol.backend.EofPacket.EOF_PACKET_HEADER;
 import static io.reactiverse.myclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
@@ -59,9 +60,9 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
         // may receive ERR_Packet, OK_Packet, LOCAL INFILE Request, Text Resultset
         int firstByte = payload.getUnsignedByte(payload.readerIndex());
         if (firstByte == OK_PACKET_HEADER) {
-//          payload.readByte();
-//          cmd.handleEndPacket(GenericPacketPayloadDecoder.decodeOkPacketBody(payload, charset));
-//          handleResultsetDecodingCompleted(ctx, cmd);
+          payload.readByte();
+          handleEndPacket(GenericPacketPayloadDecoder.decodeOkPacketBody(payload, StandardCharsets.UTF_8));
+          handleResultsetDecodingCompleted(cmd);
         } else if (firstByte == ERROR_PACKET_HEADER) {
           handleErrorPacketPayload(payload);
         } else if (firstByte == 0xFB) {
@@ -120,7 +121,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
       size = decoder.size();
       decoder.reset();
     } else {
-      result = null;
+      result = emptyResult(cmd.collector());
       size = 0;
       columnMetadata = null;
     }
@@ -146,6 +147,10 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     commandHandlerState = CommandHandlerState.INIT;
     columnDefinitions = null;
     currentColumn = 0;
+  }
+
+  private static <A, T> T emptyResult(Collector<Row, A, T> collector) {
+    return collector.finisher().apply(collector.supplier().get());
   }
 
 }

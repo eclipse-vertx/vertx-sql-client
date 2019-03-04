@@ -89,35 +89,6 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
   }
 
   @Test
-  public void testUpdate(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(client -> {
-      deleteFromTestTable(ctx, client, () -> {
-        client.query("INSERT INTO Test (id, val) VALUES (1, 'Whatever')", ctx.asyncAssertSuccess(r1 -> {
-          ctx.assertEquals(1, r1.rowCount());
-          client.query("UPDATE Test SET val = 'Whatever' WHERE id = 1", ctx.asyncAssertSuccess(r2 -> {
-            ctx.assertEquals(1, r2.rowCount());
-            async.complete();
-          }));
-        }));
-      });
-    }));
-  }
-
-  @Test
-  public void testInsert(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(client -> {
-      deleteFromTestTable(ctx, client, () -> {
-        client.query("INSERT INTO Test (id, val) VALUES (1, 'Whatever')", ctx.asyncAssertSuccess(r1 -> {
-          ctx.assertEquals(1, r1.rowCount());
-          async.complete();
-        }));
-      });
-    }));
-  }
-
-  @Test
   public void testInsertReturning(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(client -> {
@@ -142,21 +113,6 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
             async.complete();
           }));
         }));
-      });
-    }));
-  }
-
-  @Test
-  public void testDelete(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(client -> {
-      deleteFromTestTable(ctx, client, () -> {
-        insertIntoTestTable(ctx, client, 10, () -> {
-          client.query("DELETE FROM Test where id = 6", ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.rowCount());
-            async.complete();
-          }));
-        });
       });
     }));
   }
