@@ -17,7 +17,6 @@
 
 package io.reactiverse.pgclient;
 
-import io.reactiverse.sqlclient.impl.ArrayTuple;
 import io.reactiverse.sqlclient.RowSet;
 import io.reactiverse.sqlclient.SqlClient;
 import io.reactiverse.sqlclient.Tuple;
@@ -32,8 +31,6 @@ import org.junit.Test;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -165,57 +162,5 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
         }));
       }));
     }));
-  }
-
-  @Test
-  public void testPreparedUpdate(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(client -> {
-      deleteFromTestTable(ctx, client, () -> {
-        client.query("INSERT INTO Test (id, val) VALUES (2, 'Whatever')", ctx.asyncAssertSuccess(r1 -> {
-          ctx.assertEquals(1, r1.rowCount());
-          client.preparedQuery("UPDATE Test SET val = 'PgClient Rocks!' WHERE id = 2", ctx.asyncAssertSuccess(res1 -> {
-            ctx.assertEquals(1, res1.rowCount());
-            client.preparedQuery("SELECT val FROM Test WHERE id = 2", ctx.asyncAssertSuccess(res2 -> {
-              ctx.assertEquals("PgClient Rocks!", res2.iterator().next().getValue(0));
-              async.complete();
-            }));
-          }));
-        }));
-      });
-    }));
-  }
-
-  @Test
-  public void testPreparedUpdateWithParams(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(client -> {
-      client.query("INSERT INTO Test (id, val) VALUES (2, 'Whatever')", ctx.asyncAssertSuccess(r1 -> {
-        ctx.assertEquals(1, r1.rowCount());
-        client.preparedQuery("UPDATE Test SET val = $1 WHERE id = $2", Tuple.of("PgClient Rocks Again!!", 2), ctx.asyncAssertSuccess(res1 -> {
-          ctx.assertEquals(1, res1.rowCount());
-          client.preparedQuery("SELECT val FROM Test WHERE id = $1", Tuple.of(2), ctx.asyncAssertSuccess(res2 -> {
-            ctx.assertEquals("PgClient Rocks Again!!", res2.iterator().next().getValue(0));
-            async.complete();
-          }));
-        }));
-      }));
-    }));
-  }
-
-  @Test
-  public void testPreparedUpdateWithNullParams(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(client ->
-      client.preparedQuery(
-        "INSERT INTO \"AllDataTypes\" (boolean, int2, int4, int8, float4, float8, char, varchar, text, enum, name, numeric, uuid, date, time, timetz, timestamp, timestamptz, interval, bytea, json, jsonb, point, line, lseg, box, path, polygon, circle) " +
-          "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29)",
-        new ArrayTuple(IntStream.range(1, 30).mapToObj(index -> null).collect(Collectors.toList())),
-        ctx.asyncAssertSuccess(insertResult -> {
-          ctx.assertEquals(1, insertResult.rowCount());
-          async.complete();
-        })
-      )
-    ));
   }
 }

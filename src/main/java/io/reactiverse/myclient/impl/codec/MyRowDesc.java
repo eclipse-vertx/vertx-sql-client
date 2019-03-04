@@ -16,6 +16,7 @@
  */
 package io.reactiverse.myclient.impl.codec;
 
+import io.reactiverse.myclient.impl.protocol.backend.ColumnDefinition;
 import io.reactiverse.sqlclient.impl.RowDesc;
 
 import java.util.Collections;
@@ -24,12 +25,12 @@ import java.util.stream.Stream;
 
 class MyRowDesc extends RowDesc {
 
-  final MyColumnDesc[] columnDescs;
+  final ColumnDefinition[] columnDefinitions;
 
-  MyRowDesc(MyColumnDesc[] columnDescs) {
-    super(Collections.unmodifiableList(Stream.of(columnDescs)
-      .map(MyColumnDesc::name)
+  MyRowDesc(ColumnDefinition[] columnDefinitions) {
+    super(Collections.unmodifiableList(Stream.of(columnDefinitions)
+      .map(ColumnDefinition::getName)
       .collect(Collectors.toList())));
-    this.columnDescs = columnDescs;
+    this.columnDefinitions = columnDefinitions;
   }
 }

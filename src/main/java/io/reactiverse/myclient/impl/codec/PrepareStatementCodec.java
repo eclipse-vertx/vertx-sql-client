@@ -29,18 +29,11 @@ import static io.reactiverse.myclient.impl.protocol.backend.ErrPacket.ERROR_PACK
 
 public class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareStatementCommand> {
 
-  private enum CommandHandlerState {
-    INIT,
-    HANDLING_PARAM_COLUMN_DEFINITION,
-    HANDLING_COLUMN_COLUMN_DEFINITION
-  }
-
   private CommandHandlerState commandHandlerState = CommandHandlerState.INIT;
   private long statementId;
   private int processingIndex;
   private ColumnDefinition[] paramDescs;
-  private MyColumnDesc[] columnDescs;
-
+  private ColumnDefinition[] columnDescs;
   PrepareStatementCodec(PrepareStatementCommand cmd) {
     super(cmd);
   }
@@ -72,32 +65,62 @@ public class PrepareStatementCodec extends CommandCodec<PreparedStatement, Prepa
 
           // handle metadata here
           this.statementId = statementId;
-          this.columnDescs = new MyColumnDesc[numberOfColumns];
           this.paramDescs = new ColumnDefinition[numberOfParameters];
-          this.commandHandlerState = CommandHandlerState.HANDLING_PARAM_COLUMN_DEFINITION;
+          this.columnDescs = new ColumnDefinition[numberOfColumns];
+
+          if (numberOfParameters != 0) {
+            processingIndex = 0;
+            this.commandHandlerState = CommandHandlerState.HANDLING_PARAM_COLUMN_DEFINITION;
+          } else if (numberOfColumns != 0) {
+            processingIndex = 0;
+            this.commandHandlerState = CommandHandlerState.HANDLING_COLUMN_COLUMN_DEFINITION;
+          } else {
+            handleReadyForQuery();
+            resetIntermediaryResult();
+          }
         }
         break;
       case HANDLING_PARAM_COLUMN_DEFINITION:
         paramDescs[processingIndex++] = decodeColumnDefinitionPacketPayload(payload);
         if (processingIndex == paramDescs.length) {
-          this.processingIndex = 0;
-          this.commandHandlerState = CommandHandlerState.HANDLING_COLUMN_COLUMN_DEFINITION;
+          if (columnDescs.length == 0) {
+            handleReadyForQuery();
+            resetIntermediaryResult();
+          } else {
+            processingIndex = 0;
+            this.commandHandlerState = CommandHandlerState.HANDLING_COLUMN_COLUMN_DEFINITION;
+          }
         }
         break;
       case HANDLING_COLUMN_COLUMN_DEFINITION:
-        columnDescs[processingIndex++] = new MyColumnDesc(decodeColumnDefinitionPacketPayload(payload));
+        columnDescs[processingIndex++] = decodeColumnDefinitionPacketPayload(payload);
         if (processingIndex == columnDescs.length) {
-//          preparedStatement.columnMetadata = new ColumnMetadata(columnDefinitions, DataFormat.BINARY);
-//          ctx.fireChannelRead(MySQLCommandResponse.success(preparedStatement));
-//          resetIntermediaryResult();
-          // NOT THE RIGHT TYPE
-          completionHandler.handle(CommandResponse.success(new MyPreparedStatement(
-            cmd.sql(),
-            statementId,
-            new MyParamDesc(paramDescs),
-            new MyRowDesc(columnDescs))));
+          handleReadyForQuery();
+          resetIntermediaryResult();
         }
         break;
     }
+  }
+
+  private void handleReadyForQuery() {
+    completionHandler.handle(CommandResponse.success(new MyPreparedStatement(
+      cmd.sql(),
+      this.statementId,
+      new MyParamDesc(paramDescs),
+      new MyRowDesc(columnDescs))));
+  }
+
+  private void resetIntermediaryResult() {
+    commandHandlerState = CommandHandlerState.INIT;
+    statementId = 0;
+    processingIndex = 0;
+    paramDescs = null;
+    columnDescs = null;
+  }
+
+  private enum CommandHandlerState {
+    INIT,
+    HANDLING_PARAM_COLUMN_DEFINITION,
+    HANDLING_COLUMN_COLUMN_DEFINITION
   }
 }

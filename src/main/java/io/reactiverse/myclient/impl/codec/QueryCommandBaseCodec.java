@@ -54,7 +54,6 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
 
   @Override
   void decodePayload(ByteBuf payload, MyEncoder encoder, int payloadLength, int sequenceId) {
-
     switch (commandHandlerState) {
       case INIT:
         // may receive ERR_Packet, OK_Packet, LOCAL INFILE Request, Text Resultset
@@ -78,7 +77,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
         ColumnDefinition def = decodeColumnDefinitionPacketPayload(payload);
         columnDefinitions[currentColumn++] = def;
         if (currentColumn == columnDefinitions.length) {
-//          // all column definitions have been handled, switch to row data handling
+          // all column definitions have been handled, switch to row data handling
           commandHandlerState = CommandHandlerState.HANDLING_ROW_DATA_OR_END_PACKET;
           decoder = new RowResultDecoder<>(cmd.collector(), false/*cmd.isSingleton()*/, new ColumnMetadata(columnDefinitions, format));
         }
@@ -92,11 +91,11 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
         int first = payload.getUnsignedByte(payload.readerIndex());
         if (first == ERROR_PACKET_HEADER) {
           handleErrorPacketPayload(payload);
-          // resetIntermediaryResult();
+           resetIntermediaryResult();
         }
         // enabling CLIENT_DEPRECATE_EOF capability will receive an OK_Packet with a EOF_Packet header here
         // we need check this is not a row data by checking packet length < 0xFFFFFF
-        else if (first == EOF_PACKET_HEADER && payloadLength + 4 < 0xFFFFFF) {
+        else if (first == EOF_PACKET_HEADER && payloadLength < 0xFFFFFF) {
           payload.readByte();
           handleEndPacket(GenericPacketPayloadDecoder.decodeOkPacketBody(payload, StandardCharsets.UTF_8));
           handleResultsetDecodingCompleted(cmd);
@@ -107,7 +106,6 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
         }
         break;
     }
-
   }
 
   private void handleEndPacket(OkPacket okPacket) {

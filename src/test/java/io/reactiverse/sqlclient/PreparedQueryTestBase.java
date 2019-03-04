@@ -19,15 +19,38 @@ package io.reactiverse.sqlclient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public abstract class PreparedQueryTestBase {
 
   protected Vertx vertx;
   protected Connector<SqlConnection> connector;
+
+  private static void clearMutableTableData(TestContext ctx, SqlClient client, Runnable completionHandler) {
+    client.query(
+      "TRUNCATE TABLE mutable;",
+      ctx.asyncAssertSuccess(result -> {
+        completionHandler.run();
+      }));
+  }
+
+  private static void insertIntoMutableTable(TestContext ctx, SqlClient client, int amount, Runnable completionHandler) {
+    AtomicInteger count = new AtomicInteger();
+    for (int i = 0; i < 10; i++) {
+      client.query("INSERT INTO mutable (id, val) VALUES (" + i + ", 'Whatever-" + i + "')", ctx.asyncAssertSuccess(r1 -> {
+        ctx.assertEquals(1, r1.rowCount());
+        if (count.incrementAndGet() == amount) {
+          completionHandler.run();
+        }
+      }));
+    }
+  }
 
   protected void connect(Handler<AsyncResult<SqlConnection>> handler) {
     connector.connect(handler);
@@ -90,6 +113,59 @@ public abstract class PreparedQueryTestBase {
         ps.execute(Tuple.of(1, 2), ctx.asyncAssertFailure(rowSet -> {
         }));
       }));
+    }));
+  }
+
+  @Test
+  public void testPreparedUpdate(TestContext ctx) {
+    Async async = ctx.async();
+    connector.connect(ctx.asyncAssertSuccess(client -> {
+      clearMutableTableData(ctx, client, () -> {
+        client.query("INSERT INTO mutable (id, val) VALUES (2, 'Whatever')", ctx.asyncAssertSuccess(r1 -> {
+          ctx.assertEquals(1, r1.rowCount());
+          client.preparedQuery("UPDATE mutable SET val = 'Rocks!' WHERE id = 2", ctx.asyncAssertSuccess(res1 -> {
+            ctx.assertEquals(1, res1.rowCount());
+            client.preparedQuery("SELECT val FROM mutable WHERE id = 2", ctx.asyncAssertSuccess(res2 -> {
+              ctx.assertEquals("Rocks!", res2.iterator().next().getValue(0));
+              async.complete();
+            }));
+          }));
+        }));
+      });
+    }));
+  }
+
+  @Test
+  public void testPreparedUpdateWithParams(TestContext ctx) {
+    Async async = ctx.async();
+    connector.connect(ctx.asyncAssertSuccess(client -> {
+      clearMutableTableData(ctx, client, () -> {
+        client.query("INSERT INTO mutable (id, val) VALUES (2, 'Whatever')", ctx.asyncAssertSuccess(r1 -> {
+          ctx.assertEquals(1, r1.rowCount());
+          client.preparedQuery(statement("UPDATE mutable SET val = ", " WHERE id = ", ""), Tuple.of("Rocks Again!!", 2), ctx.asyncAssertSuccess(res1 -> {
+            ctx.assertEquals(1, res1.rowCount());
+            client.preparedQuery(statement("SELECT val FROM mutable WHERE id = ", ""), Tuple.of(2), ctx.asyncAssertSuccess(res2 -> {
+              ctx.assertEquals("Rocks Again!!", res2.iterator().next().getValue(0));
+              async.complete();
+            }));
+          }));
+        }));
+      });
+    }));
+  }
+
+  @Test
+  public void testPreparedUpdateWithNullParams(TestContext ctx) {
+    Async async = ctx.async();
+    connector.connect(ctx.asyncAssertSuccess(client -> {
+      clearMutableTableData(ctx, client, () -> {
+        client.preparedQuery(
+          statement("INSERT INTO mutable (val, id) VALUES (", ",", ")"), Tuple.of(null, 1),
+          ctx.asyncAssertFailure(err -> {
+            async.complete();
+          })
+        );
+      });
     }));
   }
 }
