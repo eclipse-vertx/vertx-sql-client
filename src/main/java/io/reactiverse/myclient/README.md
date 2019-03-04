@@ -11,7 +11,7 @@ Supports:
 * plain handshake
 * MySQL Native41 authentication
 * TEXT Protocol(QUERY)
-* PING COMMAND
+* PING COMMAND(dropped temporarily for PG API)
 * INT2,INT3,INT4,INT8,FLOAT,DOUBLE,VARCHAR Data type
 * Collector API (Reuse from postgres client implementation)
 
@@ -21,8 +21,9 @@ TODO:
 - [ ] SSL handshake
 - [ ] Authentication(caching_sha2_password, auth switch, etc...)
 - [ ] Text Protocol(Local INFILE Request)
-- [ ] All Utility Commands
-- [ ] Binary protocol (Prepared Statement)
+- [ ] Text Protocol(All Utility Commands)
+- [x] Binary protocol (Prepared Statement part)
+- [ ] Cursor support
 - [ ] Full Datatype codec support
 - [ ] Compression
 - [ ] Stored Procedures
