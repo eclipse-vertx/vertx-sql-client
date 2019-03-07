@@ -1,7 +1,6 @@
 package io.reactiverse.sqlclient;
 
 import io.reactiverse.pgclient.PgConnectOptions;
-import io.reactiverse.pgclient.PgConnection;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -13,11 +12,11 @@ import org.junit.Test;
 
 public abstract class ConnectionTestBase {
   protected Vertx vertx;
-  protected Connector<PgConnection> connector;
+  protected Connector<SqlConnection> connector;
 
   protected PgConnectOptions options;
 
-  protected void connect(Handler<AsyncResult<PgConnection>> handler) {
+  protected void connect(Handler<AsyncResult<SqlConnection>> handler) {
     connector.connect(handler);
   }
 

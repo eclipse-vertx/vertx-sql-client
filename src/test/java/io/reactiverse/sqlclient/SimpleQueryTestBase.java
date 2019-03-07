@@ -30,17 +30,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class SimpleQueryTestBase {
 
   protected Vertx vertx;
-  protected Connector<SqlClient> connector;
+  protected Connector<SqlConnection> connector;
 
-  private static void clearMutableTableData(TestContext ctx, SqlClient client, Runnable completionHandler) {
-    client.query(
-      "TRUNCATE TABLE mutable;",
-      ctx.asyncAssertSuccess(result -> {
-        completionHandler.run();
-      }));
-  }
-
-  private static void insertIntoMutableTable(TestContext ctx, SqlClient client, int amount, Runnable completionHandler) {
+  private static void insertIntoTestTable(TestContext ctx, SqlClient client, int amount, Runnable completionHandler) {
     AtomicInteger count = new AtomicInteger();
     for (int i = 0; i < 10; i++) {
       client.query("INSERT INTO mutable (id, val) VALUES (" + i + ", 'Whatever-" + i + "')", ctx.asyncAssertSuccess(r1 -> {
@@ -52,17 +44,22 @@ public abstract class SimpleQueryTestBase {
     }
   }
 
-  protected void connect(Handler<AsyncResult<SqlClient>> handler) {
+  protected abstract void initConnector();
+
+  protected void connect(Handler<AsyncResult<SqlConnection>> handler) {
     connector.connect(handler);
   }
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp(TestContext ctx) throws Exception {
     vertx = Vertx.vertx();
+    initConnector();
+    cleanTestTable(ctx);
   }
 
   @After
   public void tearDown(TestContext ctx) {
+    connector.close();
     vertx.close(ctx.asyncAssertSuccess());
   }
 
@@ -92,29 +89,25 @@ public abstract class SimpleQueryTestBase {
   @Test
   public void testUpdate(TestContext ctx) {
     Async async = ctx.async();
-    connector.connect(ctx.asyncAssertSuccess(client -> {
-      clearMutableTableData(ctx, client, () -> {
-        client.query("INSERT INTO mutable (id, val) VALUES (1, 'Whatever')", ctx.asyncAssertSuccess(r1 -> {
-          ctx.assertEquals(1, r1.rowCount());
-          client.query("UPDATE mutable SET val = 'newValue' WHERE id = 1", ctx.asyncAssertSuccess(r2 -> {
-            ctx.assertEquals(1, r2.rowCount());
-            async.complete();
-          }));
+    connector.connect(ctx.asyncAssertSuccess(conn -> {
+      conn.query("INSERT INTO mutable (id, val) VALUES (1, 'Whatever')", ctx.asyncAssertSuccess(r1 -> {
+        ctx.assertEquals(1, r1.rowCount());
+        conn.query("UPDATE mutable SET val = 'newValue' WHERE id = 1", ctx.asyncAssertSuccess(r2 -> {
+          ctx.assertEquals(1, r2.rowCount());
+          async.complete();
         }));
-      });
+      }));
     }));
   }
 
   @Test
   public void testInsert(TestContext ctx) {
     Async async = ctx.async();
-    connector.connect(ctx.asyncAssertSuccess(client -> {
-      clearMutableTableData(ctx, client, () -> {
-        client.query("INSERT INTO mutable (id, val) VALUES (1, 'Whatever');", ctx.asyncAssertSuccess(r1 -> {
-          ctx.assertEquals(1, r1.rowCount());
-          async.complete();
-        }));
-      });
+    connector.connect(ctx.asyncAssertSuccess(conn -> {
+      conn.query("INSERT INTO mutable (id, val) VALUES (1, 'Whatever');", ctx.asyncAssertSuccess(r1 -> {
+        ctx.assertEquals(1, r1.rowCount());
+        async.complete();
+      }));
     }));
     async.await();
   }
@@ -122,15 +115,21 @@ public abstract class SimpleQueryTestBase {
   @Test
   public void testDelete(TestContext ctx) {
     Async async = ctx.async();
-    connector.connect(ctx.asyncAssertSuccess(client -> {
-      clearMutableTableData(ctx, client, () -> {
-        insertIntoMutableTable(ctx, client, 10, () -> {
-          client.query("DELETE FROM mutable where id = 6", ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.rowCount());
-            async.complete();
-          }));
-        });
+    connector.connect(ctx.asyncAssertSuccess(conn -> {
+      insertIntoTestTable(ctx, conn, 10, () -> {
+        conn.query("DELETE FROM mutable where id = 6", ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.rowCount());
+          async.complete();
+        }));
       });
+    }));
+  }
+
+  private void cleanTestTable(TestContext ctx) {
+    connect(ctx.asyncAssertSuccess(conn -> {
+      conn.query("TRUNCATE TABLE mutable;", ctx.asyncAssertSuccess(result -> {
+        conn.close();
+      }));
     }));
   }
 }

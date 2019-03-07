@@ -37,15 +37,8 @@ public class MyPreparedQueryTest extends PreparedQueryTestBase {
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  protected void initConnector() {
     connector = ClientConfig.CONNECT.connect(vertx, rule.options());
-  }
-
-  @Override
-  public void tearDown(TestContext ctx) {
-    connector.close();
-    super.tearDown(ctx);
   }
 
   @Test

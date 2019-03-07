@@ -18,7 +18,6 @@ package io.reactiverse.myclient.tck;
 
 import io.reactiverse.myclient.junit.MyRule;
 import io.reactiverse.sqlclient.SimpleQueryTestBase;
-import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
@@ -30,14 +29,7 @@ public class MySimpleQueryTest extends SimpleQueryTestBase {
   public static MyRule rule = new MyRule();
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  protected void initConnector() {
     connector = ClientConfig.CONNECT.connect(vertx, rule.options());
-  }
-
-  @Override
-  public void tearDown(TestContext ctx) {
-    connector.close();
-    super.tearDown(ctx);
   }
 }
