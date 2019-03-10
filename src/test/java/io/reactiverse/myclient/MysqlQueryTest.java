@@ -1,6 +1,5 @@
 package io.reactiverse.myclient;
 
-import io.reactiverse.pgclient.MyClient;
 import io.reactiverse.pgclient.PgConnectOptions;
 import io.reactiverse.sqlclient.Row;
 import io.reactiverse.sqlclient.Tuple;

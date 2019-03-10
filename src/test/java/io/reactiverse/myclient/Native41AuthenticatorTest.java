@@ -1,7 +1,7 @@
 package io.reactiverse.myclient;
 
-import io.reactiverse.pgclient.impl.my.util.Native41Authenticator;
-import io.reactiverse.pgclient.impl.my.util.Utils;
+import io.reactiverse.myclient.impl.util.Native41Authenticator;
+import io.reactiverse.myclient.impl.util.Utils;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
