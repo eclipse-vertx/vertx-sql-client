@@ -17,9 +17,9 @@
 
 package io.reactiverse.myclient.impl.codec;
 
-import io.reactiverse.pgclient.impl.ParamDesc;
-import io.reactiverse.pgclient.impl.PreparedStatement;
-import io.reactiverse.pgclient.impl.RowDesc;
+import io.reactiverse.sqlclient.impl.ParamDesc;
+import io.reactiverse.sqlclient.impl.PreparedStatement;
+import io.reactiverse.sqlclient.impl.RowDesc;
 
 import java.util.List;
 

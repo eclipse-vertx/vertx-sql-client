@@ -17,8 +17,8 @@
 
 package io.reactiverse.pgclient.pool;
 
-import io.reactiverse.pgclient.impl.command.CommandBase;
-import io.reactiverse.pgclient.impl.Connection;
+import io.reactiverse.sqlclient.impl.command.CommandBase;
+import io.reactiverse.sqlclient.impl.Connection;
 
 class SimpleConnection implements Connection {
 

@@ -18,10 +18,10 @@
 package io.reactiverse.myclient.impl;
 
 import io.netty.channel.ChannelPipeline;
-import io.reactiverse.pgclient.impl.command.CommandResponse;
-import io.reactiverse.pgclient.impl.Connection;
-import io.reactiverse.pgclient.impl.command.InitCommand;
-import io.reactiverse.pgclient.impl.SocketConnectionBase;
+import io.reactiverse.sqlclient.impl.command.CommandResponse;
+import io.reactiverse.sqlclient.impl.Connection;
+import io.reactiverse.sqlclient.impl.command.InitCommand;
+import io.reactiverse.sqlclient.impl.SocketConnectionBase;
 import io.reactiverse.myclient.impl.codec.MyCodec;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;

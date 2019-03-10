@@ -17,7 +17,7 @@
 
 package io.reactiverse.pgclient;
 
-import io.reactiverse.pgclient.impl.StringLongSequence;
+import io.reactiverse.sqlclient.impl.StringLongSequence;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.junit.Assert;

@@ -18,11 +18,16 @@
 package io.reactiverse.pgclient.impl;
 
 import io.netty.channel.ChannelPipeline;
-import io.reactiverse.pgclient.impl.pg.PgCodec;
-import io.reactiverse.pgclient.impl.command.CommandResponse;
-import io.reactiverse.pgclient.impl.command.InitCommand;
-import io.reactiverse.pgclient.impl.command.CommandBase;
-import io.reactiverse.pgclient.impl.command.PrepareStatementCommand;
+import io.netty.handler.codec.DecoderException;
+import io.reactiverse.pgclient.impl.codec.PgCodec;
+import io.reactiverse.sqlclient.impl.Connection;
+import io.reactiverse.sqlclient.impl.PreparedStatement;
+import io.reactiverse.sqlclient.impl.SocketConnectionBase;
+import io.reactiverse.sqlclient.impl.StringLongSequence;
+import io.reactiverse.sqlclient.impl.command.CommandResponse;
+import io.reactiverse.sqlclient.impl.command.InitCommand;
+import io.reactiverse.sqlclient.impl.command.CommandBase;
+import io.reactiverse.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.NetSocketInternal;
@@ -59,7 +64,7 @@ public class PgSocketConnection extends SocketConnectionBase {
     super.init();
   }
 
-  void sendStartupMessage(String username, String password, String database, Handler<? super CommandResponse<Connection>> completionHandler) {
+  public void sendStartupMessage(String username, String password, String database, Handler<? super CommandResponse<Connection>> completionHandler) {
     InitCommand cmd = new InitCommand(this, username, password, database);
     cmd.handler = completionHandler;
     schedule(cmd);
@@ -153,6 +158,24 @@ public class PgSocketConnection extends SocketConnectionBase {
   @Override
   public int getSecretKey() {
     return secretKey;
+  }
+
+  void upgradeToSSLConnection(Handler<AsyncResult<Void>> completionHandler) {
+    ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
+    Future<Void> upgradeFuture = Future.future();
+    upgradeFuture.setHandler(ar->{
+      if (ar.succeeded()) {
+        completionHandler.handle(Future.succeededFuture());
+      } else {
+        Throwable cause = ar.cause();
+        if (cause instanceof DecoderException) {
+          DecoderException err = (DecoderException) cause;
+          cause = err.getCause();
+        }
+        completionHandler.handle(Future.failedFuture(cause));
+      }
+    });
+    pipeline.addBefore("handler", "initiate-ssl-handler", new InitiateSslHandler(this, upgradeFuture));
   }
 
 }

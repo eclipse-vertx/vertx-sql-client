@@ -2,7 +2,6 @@ package io.reactiverse.myclient.impl.codec.datatype;
 
 import io.netty.buffer.ByteBuf;
 import io.reactiverse.myclient.impl.util.BufferUtils;
-import io.reactiverse.myclient.impl.codec.datatype.DataType;
 
 import java.nio.charset.StandardCharsets;
 

@@ -19,9 +19,9 @@ package io.reactiverse.myclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.reactiverse.myclient.impl.protocol.CommandType;
 import io.reactiverse.myclient.impl.protocol.backend.ColumnDefinition;
-import io.reactiverse.pgclient.impl.PreparedStatement;
-import io.reactiverse.pgclient.impl.command.CommandResponse;
-import io.reactiverse.pgclient.impl.command.PrepareStatementCommand;
+import io.reactiverse.sqlclient.impl.PreparedStatement;
+import io.reactiverse.sqlclient.impl.command.CommandResponse;
+import io.reactiverse.sqlclient.impl.command.PrepareStatementCommand;
 
 import java.nio.charset.StandardCharsets;
 

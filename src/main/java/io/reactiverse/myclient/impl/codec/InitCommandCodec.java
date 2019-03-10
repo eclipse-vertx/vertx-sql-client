@@ -23,9 +23,9 @@ import io.reactiverse.myclient.impl.protocol.backend.ErrPacket;
 import io.reactiverse.myclient.impl.protocol.backend.InitialHandshakePacket;
 import io.reactiverse.myclient.impl.protocol.frontend.HandshakeResponse;
 import io.reactiverse.myclient.impl.util.BufferUtils;
-import io.reactiverse.pgclient.impl.command.CommandResponse;
-import io.reactiverse.pgclient.impl.Connection;
-import io.reactiverse.pgclient.impl.command.InitCommand;
+import io.reactiverse.sqlclient.impl.command.CommandResponse;
+import io.reactiverse.sqlclient.impl.Connection;
+import io.reactiverse.sqlclient.impl.command.InitCommand;
 
 import java.nio.charset.StandardCharsets;
 

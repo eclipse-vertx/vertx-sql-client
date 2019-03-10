@@ -17,16 +17,14 @@
 package io.reactiverse.myclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.reactiverse.pgclient.impl.Connection;
 import io.reactiverse.myclient.impl.ColumnMetadata;
 import io.reactiverse.myclient.impl.RowResultDecoder;
 import io.reactiverse.myclient.impl.codec.datatype.DataFormat;
 import io.reactiverse.myclient.impl.protocol.backend.ColumnDefinition;
-import io.reactiverse.myclient.impl.protocol.backend.ErrPacket;
 import io.reactiverse.myclient.impl.protocol.backend.OkPacket;
 import io.reactiverse.myclient.impl.util.BufferUtils;
-import io.reactiverse.pgclient.impl.command.CommandResponse;
-import io.reactiverse.pgclient.impl.command.QueryCommandBase;
+import io.reactiverse.sqlclient.impl.command.CommandResponse;
+import io.reactiverse.sqlclient.impl.command.QueryCommandBase;
 
 import java.nio.charset.StandardCharsets;
 

@@ -18,45 +18,11 @@
 package io.reactiverse.pgclient;
 
 import io.reactiverse.sqlclient.Tuple;
-import org.junit.Assert;
 import org.junit.Test;
-
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.Calendar;
-import java.util.Date;
 
 import static org.junit.Assert.*;
 
 public class TupleTest {
-
-  @Test
-  public void testOf() {
-    Tuple tuple = Tuple.of(
-      ZonedDateTime.now(),
-      Instant.now(),
-      ZoneId.of("UTC"),
-      new Date(),
-      Calendar.getInstance(),
-      ZoneOffset.UTC,
-      Time.valueOf(LocalTime.MAX),
-      Timestamp.from(Instant.EPOCH)
-    );
-    assertEquals(8, tuple.size());
-    Assert.assertNull(tuple.getValue(0));
-    Assert.assertNull(tuple.getValue(1));
-    Assert.assertNull(tuple.getValue(2));
-    Assert.assertNull(tuple.getValue(3));
-    Assert.assertNull(tuple.getValue(4));
-    Assert.assertNull(tuple.getValue(5));
-    Assert.assertNull(tuple.getValue(6));
-    Assert.assertNull(tuple.getValue(7));
-  }
 
   @Test
   public void testNumbers() {

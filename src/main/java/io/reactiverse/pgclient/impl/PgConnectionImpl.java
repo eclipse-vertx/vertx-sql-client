@@ -18,20 +18,23 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.*;
-import io.reactiverse.pgclient.impl.command.CommandResponse;
-import io.reactiverse.pgclient.impl.command.CommandBase;
+import io.reactiverse.sqlclient.impl.Connection;
+import io.reactiverse.sqlclient.impl.SqlConnectionBase;
+import io.reactiverse.sqlclient.impl.TransactionImpl;
+import io.reactiverse.sqlclient.impl.command.CommandResponse;
+import io.reactiverse.sqlclient.impl.command.CommandBase;
 import io.reactiverse.sqlclient.Transaction;
 import io.vertx.core.*;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class PgConnectionImpl extends PgConnectionBase<PgConnectionImpl> implements PgConnection, Connection.Holder {
+public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implements PgConnection, Connection.Holder {
 
   private final PgConnectionFactory factory;
   private volatile Handler<Throwable> exceptionHandler;
   private volatile Handler<Void> closeHandler;
-  private io.reactiverse.pgclient.impl.Transaction tx;
+  private TransactionImpl tx;
   private volatile Handler<PgNotification> notificationHandler;
 
   public PgConnectionImpl(PgConnectionFactory factory, Context context, Connection conn) {
@@ -120,7 +123,7 @@ public class PgConnectionImpl extends PgConnectionBase<PgConnectionImpl> impleme
     if (tx != null) {
       throw new IllegalStateException();
     }
-    tx = new io.reactiverse.pgclient.impl.Transaction(context, conn, v -> {
+    tx = new TransactionImpl(context, conn, v -> {
       tx = null;
       if (closeOnEnd) {
         close();

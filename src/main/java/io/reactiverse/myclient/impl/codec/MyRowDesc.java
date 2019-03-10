@@ -16,7 +16,7 @@
  */
 package io.reactiverse.myclient.impl.codec;
 
-import io.reactiverse.pgclient.impl.RowDesc;
+import io.reactiverse.sqlclient.impl.RowDesc;
 
 import java.util.Collections;
 import java.util.stream.Collectors;

@@ -17,7 +17,7 @@
 
 package io.reactiverse.pgclient.pool;
 
-import io.reactiverse.pgclient.impl.ConnectionPool;
+import io.reactiverse.sqlclient.impl.ConnectionPool;
 import io.vertx.core.Future;
 import org.junit.Test;
 

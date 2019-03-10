@@ -27,6 +27,9 @@ import io.reactiverse.pgclient.data.Path;
 import io.reactiverse.pgclient.data.Polygon;
 import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.data.Point;
+import io.reactiverse.sqlclient.impl.ArrayTuple;
+import io.reactiverse.sqlclient.impl.RowDesc;
+import io.reactiverse.sqlclient.impl.RowInternal;
 import io.vertx.core.buffer.Buffer;
 
 import java.math.BigDecimal;
@@ -401,6 +404,186 @@ public class RowImpl extends ArrayTuple implements RowInternal {
   public Interval[] getIntervalArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getIntervalArray(pos);
+  }
+
+  public Numeric getNumeric(int pos) {
+    Object val = get(pos);
+    if (val instanceof Numeric) {
+      return (Numeric) val;
+    } else if (val instanceof Number) {
+      return Numeric.parse(val.toString());
+    }
+    return null;
+  }
+
+  public Point getPoint(int pos) {
+    Object val = get(pos);
+    if (val instanceof Point) {
+      return (Point) val;
+    } else {
+      return null;
+    }
+  }
+
+  public Line getLine(int pos) {
+    Object val = get(pos);
+    if (val instanceof Line) {
+      return (Line) val;
+    } else {
+      return null;
+    }
+  }
+
+  public LineSegment getLineSegment(int pos) {
+    Object val = get(pos);
+    if (val instanceof LineSegment) {
+      return (LineSegment) val;
+    } else {
+      return null;
+    }
+  }
+
+  public Box getBox(int pos) {
+    Object val = get(pos);
+    if (val instanceof Box) {
+      return (Box) val;
+    } else {
+      return null;
+    }
+  }
+
+  public Path getPath(int pos) {
+    Object val = get(pos);
+    if (val instanceof Path) {
+      return (Path) val;
+    } else {
+      return null;
+    }
+  }
+
+  public Polygon getPolygon(int pos) {
+    Object val = get(pos);
+    if (val instanceof Polygon) {
+      return (Polygon) val;
+    } else {
+      return null;
+    }
+  }
+
+  public Circle getCircle(int pos) {
+    Object val = get(pos);
+    if (val instanceof Circle) {
+      return (Circle) val;
+    } else {
+      return null;
+    }
+  }
+
+  public Interval getInterval(int pos) {
+    Object val = get(pos);
+    if (val instanceof Interval) {
+      return (Interval) val;
+    } else {
+      return null;
+    }
+  }
+
+  public Json[] getJsonArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Json[]) {
+      return (Json[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  public Numeric[] getNumericArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Numeric[]) {
+      return (Numeric[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  public Point[] getPointArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Point[]) {
+      return (Point[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  public Line[] getLineArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Line[]) {
+      return (Line[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  public LineSegment[] getLineSegmentArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof LineSegment[]) {
+      return (LineSegment[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  public Box[] getBoxArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Box[]) {
+      return (Box[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  public Path[] getPathArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Path[]) {
+      return (Path[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  public Polygon[] getPolygonArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Polygon[]) {
+      return (Polygon[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  public Circle[] getCircleArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Circle[]) {
+      return (Circle[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  public Interval[] getIntervalArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Interval[]) {
+      return (Interval[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  public Json getJson(int pos) {
+    Object val = get(pos);
+    if (val instanceof Json) {
+      return (Json) val;
+    }
+    return null;
   }
 
   @Override

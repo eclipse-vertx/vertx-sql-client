@@ -2,7 +2,7 @@ package io.reactiverse.myclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.reactiverse.myclient.impl.protocol.CommandType;
-import io.reactiverse.pgclient.impl.command.CloseConnectionCommand;
+import io.reactiverse.sqlclient.impl.command.CloseConnectionCommand;
 
 public class CloseConnectionCommandCodec extends CommandCodec<Void, CloseConnectionCommand> {
   public CloseConnectionCommandCodec(CloseConnectionCommand cmd) {

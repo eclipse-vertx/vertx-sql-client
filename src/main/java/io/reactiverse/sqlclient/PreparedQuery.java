@@ -17,7 +17,7 @@
 
 package io.reactiverse.sqlclient;
 
-import io.reactiverse.pgclient.impl.ArrayTuple;
+import io.reactiverse.sqlclient.impl.ArrayTuple;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;

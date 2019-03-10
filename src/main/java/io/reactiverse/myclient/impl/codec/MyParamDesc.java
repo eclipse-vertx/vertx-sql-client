@@ -1,10 +1,8 @@
 package io.reactiverse.myclient.impl.codec;
 
-import io.reactiverse.pgclient.impl.ParamDesc;
-import io.reactiverse.myclient.impl.codec.datatype.DataType;
-import io.reactiverse.myclient.impl.codec.datatype.DataTypeCodec;
+import io.reactiverse.sqlclient.impl.ParamDesc;
 import io.reactiverse.myclient.impl.protocol.backend.ColumnDefinition;
-import io.reactiverse.pgclient.impl.pg.util.Util;
+import io.reactiverse.pgclient.impl.util.Util;
 
 import java.util.List;
 import java.util.stream.Stream;

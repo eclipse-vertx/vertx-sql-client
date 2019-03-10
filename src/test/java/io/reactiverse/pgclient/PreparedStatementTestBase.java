@@ -17,7 +17,7 @@
 
 package io.reactiverse.pgclient;
 
-import io.reactiverse.pgclient.impl.pg.util.Util;
+import io.reactiverse.pgclient.impl.util.Util;
 import io.reactiverse.sqlclient.Cursor;
 import io.reactiverse.sqlclient.RowStream;
 import io.reactiverse.sqlclient.Row;

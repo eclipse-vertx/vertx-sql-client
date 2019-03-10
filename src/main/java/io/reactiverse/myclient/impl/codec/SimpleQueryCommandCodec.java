@@ -19,7 +19,7 @@ package io.reactiverse.myclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.reactiverse.myclient.impl.codec.datatype.DataFormat;
 import io.reactiverse.myclient.impl.protocol.CommandType;
-import io.reactiverse.pgclient.impl.command.SimpleQueryCommand;
+import io.reactiverse.sqlclient.impl.command.SimpleQueryCommand;
 
 import java.nio.charset.StandardCharsets;
 

@@ -1,18 +1,8 @@
 package io.reactiverse.myclient.impl;
 
 import io.reactiverse.myclient.impl.protocol.backend.ColumnDefinition;
-import io.reactiverse.pgclient.data.Box;
-import io.reactiverse.pgclient.data.Circle;
-import io.reactiverse.pgclient.data.Interval;
-import io.reactiverse.pgclient.data.Json;
-import io.reactiverse.pgclient.data.Line;
-import io.reactiverse.pgclient.data.LineSegment;
-import io.reactiverse.pgclient.data.Numeric;
-import io.reactiverse.pgclient.data.Path;
-import io.reactiverse.pgclient.data.Point;
-import io.reactiverse.pgclient.data.Polygon;
-import io.reactiverse.pgclient.impl.ArrayTuple;
-import io.reactiverse.pgclient.impl.RowInternal;
+import io.reactiverse.sqlclient.impl.ArrayTuple;
+import io.reactiverse.sqlclient.impl.RowInternal;
 import io.vertx.core.buffer.Buffer;
 
 import java.math.BigDecimal;

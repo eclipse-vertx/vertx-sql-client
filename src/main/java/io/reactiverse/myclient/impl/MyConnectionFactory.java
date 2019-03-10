@@ -3,7 +3,7 @@ package io.reactiverse.myclient.impl;
 import io.netty.channel.ChannelPipeline;
 import io.reactiverse.pgclient.PgConnectOptions;
 import io.reactiverse.pgclient.PgConnection;
-import io.reactiverse.pgclient.impl.Connection;
+import io.reactiverse.sqlclient.impl.Connection;
 import io.reactiverse.pgclient.impl.PgConnectionImpl;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;

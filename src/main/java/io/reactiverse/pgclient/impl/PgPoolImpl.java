@@ -18,9 +18,13 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.*;
-import io.reactiverse.pgclient.impl.command.CommandResponse;
-import io.reactiverse.pgclient.impl.command.CommandScheduler;
-import io.reactiverse.pgclient.impl.command.CommandBase;
+import io.reactiverse.sqlclient.Pool;
+import io.reactiverse.sqlclient.impl.Connection;
+import io.reactiverse.sqlclient.impl.ConnectionPool;
+import io.reactiverse.sqlclient.impl.SqlClientBase;
+import io.reactiverse.sqlclient.impl.command.CommandResponse;
+import io.reactiverse.sqlclient.impl.command.CommandScheduler;
+import io.reactiverse.sqlclient.impl.command.CommandBase;
 import io.reactiverse.sqlclient.SqlConnection;
 import io.reactiverse.sqlclient.Transaction;
 import io.vertx.core.*;
@@ -34,7 +38,7 @@ import io.vertx.core.*;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
+public class PgPoolImpl extends SqlClientBase<PgPoolImpl> implements PgPool {
 
   private final Context context;
   private final PgConnectionFactory factory;

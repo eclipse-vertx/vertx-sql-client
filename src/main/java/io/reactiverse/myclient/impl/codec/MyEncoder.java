@@ -7,12 +7,12 @@ import io.reactiverse.myclient.impl.CharacterSetMapping;
 import io.reactiverse.myclient.impl.protocol.frontend.HandshakeResponse;
 import io.reactiverse.myclient.impl.util.BufferUtils;
 import io.reactiverse.myclient.impl.util.Native41Authenticator;
-import io.reactiverse.pgclient.impl.command.CloseConnectionCommand;
-import io.reactiverse.pgclient.impl.command.ExtendedQueryCommand;
-import io.reactiverse.pgclient.impl.command.InitCommand;
-import io.reactiverse.pgclient.impl.command.CommandBase;
-import io.reactiverse.pgclient.impl.command.PrepareStatementCommand;
-import io.reactiverse.pgclient.impl.command.SimpleQueryCommand;
+import io.reactiverse.sqlclient.impl.command.CloseConnectionCommand;
+import io.reactiverse.sqlclient.impl.command.ExtendedQueryCommand;
+import io.reactiverse.sqlclient.impl.command.InitCommand;
+import io.reactiverse.sqlclient.impl.command.CommandBase;
+import io.reactiverse.sqlclient.impl.command.PrepareStatementCommand;
+import io.reactiverse.sqlclient.impl.command.SimpleQueryCommand;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;

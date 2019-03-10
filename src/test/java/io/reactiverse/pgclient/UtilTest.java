@@ -18,8 +18,8 @@ package io.reactiverse.pgclient;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.reactiverse.pgclient.impl.pg.util.UTF8StringEndDetector;
-import io.reactiverse.pgclient.impl.pg.util.Util;
+import io.reactiverse.pgclient.impl.util.UTF8StringEndDetector;
+import io.reactiverse.pgclient.impl.util.Util;
 import io.vertx.core.buffer.Buffer;
 import org.junit.Test;
 

@@ -17,7 +17,7 @@
 
 package io.reactiverse.pgclient;
 
-import io.reactiverse.pgclient.impl.Connection;
+import io.reactiverse.sqlclient.impl.Connection;
 import io.reactiverse.pgclient.impl.PgConnectionFactory;
 import io.reactiverse.pgclient.impl.PgConnectionImpl;
 import io.reactiverse.sqlclient.PreparedQuery;

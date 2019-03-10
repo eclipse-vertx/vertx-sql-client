@@ -17,7 +17,7 @@
 
 package io.reactiverse.pgclient;
 
-import io.reactiverse.pgclient.impl.ArrayTuple;
+import io.reactiverse.sqlclient.impl.ArrayTuple;
 import io.reactiverse.sqlclient.RowSet;
 import io.reactiverse.sqlclient.SqlClient;
 import io.reactiverse.sqlclient.Tuple;

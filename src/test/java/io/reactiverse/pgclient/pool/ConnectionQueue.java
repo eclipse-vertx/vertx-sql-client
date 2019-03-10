@@ -17,7 +17,7 @@
 
 package io.reactiverse.pgclient.pool;
 
-import io.reactiverse.pgclient.impl.Connection;
+import io.reactiverse.sqlclient.impl.Connection;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;

@@ -17,13 +17,12 @@
 package io.reactiverse.myclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.reactiverse.pgclient.PgException;
 import io.reactiverse.myclient.impl.codec.datatype.DataType;
 import io.reactiverse.myclient.impl.protocol.backend.ColumnDefinition;
 import io.reactiverse.myclient.impl.protocol.backend.ErrPacket;
 import io.reactiverse.myclient.impl.util.BufferUtils;
-import io.reactiverse.pgclient.impl.command.CommandResponse;
-import io.reactiverse.pgclient.impl.command.CommandBase;
+import io.reactiverse.sqlclient.impl.command.CommandResponse;
+import io.reactiverse.sqlclient.impl.command.CommandBase;
 import io.vertx.core.Handler;
 
 import java.nio.charset.StandardCharsets;
