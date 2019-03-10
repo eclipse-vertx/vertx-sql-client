@@ -271,13 +271,13 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT $1 :: INTERVAL \"Interval\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addInterval(interval), ctx.asyncAssertSuccess(result -> {
+          p.execute(Tuple.tuple().addValue(interval), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Interval")
               .returns(Tuple::getValue, Row::getValue, interval)
-              .returns(Tuple::getInterval, Row::getInterval, interval)
+              .returns(Interval.class, interval)
               .forRow(row);
             async.complete();
           }));
@@ -301,14 +301,14 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
             .seconds(13)
             .microseconds(999998);
           p.execute(Tuple.tuple()
-            .addInterval(expected)
+            .addValue(expected)
             .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Interval")
               .returns(Tuple::getValue, Row::getValue, expected)
-              .returns(Tuple::getInterval, Row::getInterval, expected)
+              .returns(Interval.class, expected)
               .forRow(row);
             async.complete();
           }));
@@ -449,7 +449,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
 
   @Test
   public void testDecodeIntervalArray(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1 :: INTERVAL [] \"Interval\"", new Interval[][]{intervals}, Row::getIntervalArray);
+    testGenericArray(ctx, "SELECT $1 :: INTERVAL [] \"Interval\"", new Interval[][]{intervals}, Interval.class);
   }
 
   @Test
@@ -465,12 +465,12 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
             Interval.of()
           };
           p.execute(Tuple.tuple()
-              .addIntervalArray(intervals)
+              .addValues(intervals)
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Interval")
-                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(intervals))
-                .returns(Tuple::getIntervalArray, Row::getIntervalArray, ColumnChecker.toObjectArray(intervals))
+                .returns(Tuple::getValue, Row::getValue, intervals)
+                .returns(Interval.class, intervals)
                 .forRow(result.iterator().next());
               async.complete();
             }));

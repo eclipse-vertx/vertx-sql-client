@@ -52,7 +52,7 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
             .returns(Tuple::getFloat, Row::getFloat, 1f)
             .returns(Tuple::getDouble, Row::getDouble, 1d)
             .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(1))
-            .returns(Tuple::getNumeric, Row::getNumeric, Numeric.create(1))
+            .returns(Numeric.class, Numeric.create(1))
             .forRow(row);
           async.complete();
         }));
@@ -76,7 +76,7 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
             .returns(Tuple::getFloat, Row::getFloat, 1f)
             .returns(Tuple::getDouble, Row::getDouble, 1d)
             .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(1))
-            .returns(Tuple::getNumeric, Row::getNumeric, Numeric.create(1))
+            .returns(Numeric.class, Numeric.create(1))
             .forRow(row);
           async.complete();
         }));
@@ -100,7 +100,7 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
             .returns(Tuple::getFloat, Row::getFloat, 1f)
             .returns(Tuple::getDouble, Row::getDouble, 1d)
             .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(1))
-            .returns(Tuple::getNumeric, Row::getNumeric, Numeric.create(1))
+            .returns(Numeric.class, Numeric.create(1))
             .forRow(row);
           async.complete();
         }));
@@ -125,7 +125,7 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
             .returns(Tuple::getFloat, Row::getFloat, 920f)
             .returns(Tuple::getDouble, Row::getDouble, 920.0)
             .returns(Tuple::getBigDecimal, Row::getBigDecimal, numeric.bigDecimalValue())
-            .returns(Tuple::getNumeric, Row::getNumeric, numeric)
+            .returns(Numeric.class, numeric)
             .forRow(row);
           ColumnChecker.checkColumn(1, "NaN")
             .returns(Tuple::getValue, Row::getValue, nan)
@@ -135,7 +135,7 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
             .returns(Tuple::getFloat, Row::getFloat, Float.NaN)
             .returns(Tuple::getDouble, Row::getDouble, Double.NaN)
             .fails(Tuple::getBigDecimal, Row::getBigDecimal)
-            .returns(Tuple::getNumeric, Row::getNumeric, nan)
+            .returns(Numeric.class, nan)
             .forRow(row);
           async.complete();
         }));
@@ -158,7 +158,7 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
               .returns(Tuple::getFloat, Row::getFloat, value.floatValue())
               .returns(Tuple::getDouble, Row::getDouble, value.doubleValue())
               .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("" + value))
-              .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("" + value))
+              .returns(Numeric.class, Numeric.parse("" + value))
               .forRow(row);
             async.countDown();
           }));

@@ -17,17 +17,7 @@
 
 package io.reactiverse.sqlclient;
 
-import io.reactiverse.pgclient.data.Box;
-import io.reactiverse.pgclient.data.Circle;
-import io.reactiverse.pgclient.data.Interval;
-import io.reactiverse.pgclient.data.Json;
-import io.reactiverse.pgclient.data.Line;
-import io.reactiverse.pgclient.data.LineSegment;
-import io.reactiverse.pgclient.data.Numeric;
-import io.reactiverse.pgclient.data.Path;
-import io.reactiverse.pgclient.data.Polygon;
 import io.reactiverse.pgclient.impl.ArrayTuple;
-import io.reactiverse.pgclient.data.Point;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
@@ -235,14 +225,6 @@ public interface Tuple {
   String getString(int pos);
 
   /**
-   * Get a json value at {@code pos}.
-   *
-   * @param pos the position
-   * @return the value or {@code null}
-   */
-  Json getJson(int pos);
-
-  /**
    * Get a {@link java.time.temporal.Temporal} value at {@code pos}.
    *
    * @param pos the position
@@ -441,169 +423,6 @@ public interface Tuple {
   UUID[] getUUIDArray(int pos);
 
   /**
-   * Get an array of {@link Json} value at {@code pos}.
-   *
-   * @param pos the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore
-  Json[] getJsonArray(int pos);
-
-  /**
-   * Get an array of {@link Numeric} value at {@code pos}.
-   *
-   * @param pos the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Numeric[] getNumericArray(int pos);
-
-  /**
-   * Get an array of {@link Point} value at {@code pos}.
-   *
-   * @param pos the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Point[] getPointArray(int pos);
-
-  /**
-   * Get an array of {@link Line} value at {@code pos}.
-   *
-   * @param pos the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Line[] getLineArray(int pos);
-
-  /**
-   * Get an array of {@link LineSegment} value at {@code pos}.
-   *
-   * @param pos the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  LineSegment[] getLineSegmentArray(int pos);
-
-  /**
-   * Get an array of {@link Box} value at {@code pos}.
-   *
-   * @param pos the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Box[] getBoxArray(int pos);
-
-  /**
-   * Get an array of {@link Path} value at {@code pos}.
-   *
-   * @param pos the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Path[] getPathArray(int pos);
-
-  /**
-   * Get an array of {@link Polygon} value at {@code pos}.
-   *
-   * @param pos the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Polygon[] getPolygonArray(int pos);
-
-  /**
-   * Get an array of {@link Circle} value at {@code pos}.
-   *
-   * @param pos the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Circle[] getCircleArray(int pos);
-
-  /**
-   * Get an array of {@link Interval} value at {@code pos}.
-   *
-   * @param pos the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Interval[] getIntervalArray(int pos);
-
-  /**
-   * Get {@link Numeric} value at {@code pos}.
-   *
-   * @param pos the position
-   * @return the value or {@code null}
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Numeric getNumeric(int pos);
-
-  /**
-   * Get {@link Point} value at {@code pos}.
-   *
-   * @param pos the position
-   * @return the value or {@code null}
-   */
-  Point getPoint(int pos);
-
-  /**
-   * Get {@link Line} value at {@code pos}.
-   *
-   * @param pos the position
-   * @return the value or {@code null}
-   */
-  Line getLine(int pos);
-
-  /**
-   * Get {@link LineSegment} value at {@code pos}.
-   *
-   * @param pos the position
-   * @return the value or {@code null}
-   */
-  LineSegment getLineSegment(int pos);
-
-  /**
-   * Get {@link Box} value at {@code pos}.
-   *
-   * @param pos the position
-   * @return the value or {@code null}
-   */
-  Box getBox(int pos);
-
-  /**
-   * Get {@link Path} value at {@code pos}.
-   *
-   * @param pos the position
-   * @return the value or {@code null}
-   */
-  Path getPath(int pos);
-
-  /**
-   * Get {@link Polygon} value at {@code pos}.
-   *
-   * @param pos the position
-   * @return the value or {@code null}
-   */
-  Polygon getPolygon(int pos);
-
-  /**
-   * Get {@link Circle} value at {@code pos}.
-   *
-   * @param pos the position
-   * @return the value or {@code null}
-   */
-  Circle getCircle(int pos);
-
-  /**
-   * Get {@link Interval} value at {@code pos}.
-   *
-   * @param pos the position
-   * @return the value or {@code null}
-   */
-  Interval getInterval(int pos);
-
-  /**
    * Get a buffer value at {@code pos}.
    *
    * @param pos the position
@@ -684,15 +503,6 @@ public interface Tuple {
   Tuple addString(String value);
 
   /**
-   * Add a json value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  Tuple addJson(Json value);
-
-  /**
    * Add a buffer value at the end of the tuple.
    *
    * @param value the value
@@ -765,15 +575,6 @@ public interface Tuple {
   Tuple addUUID(UUID value);
 
   /**
-   * Add a {@link Numeric} value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addNumeric(Numeric value);
-
-  /**
    * Add a {@link BigDecimal} value at the end of the tuple.
    *
    * @param value the value
@@ -781,78 +582,6 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addBigDecimal(BigDecimal value);
-
-  /**
-   * Add a {@link Point} value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  Tuple addPoint(Point value);
-
-  /**
-   * Add a {@link Line} value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  Tuple addLine(Line value);
-
-  /**
-   * Add a {@link LineSegment} value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  Tuple addLineSegment(LineSegment value);
-
-  /**
-   * Add a {@link Box} value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  Tuple addBox(Box value);
-
-  /**
-   * Add a {@link Path} value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  Tuple addPath(Path value);
-
-  /**
-   * Add a {@link Polygon} value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  Tuple addPolygon(Polygon value);
-
-  /**
-   * Add a {@link Circle} value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  Tuple addCircle(Circle value);
-
-  /**
-   * Add a {@link Point} value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  Tuple addInterval(Interval value);
 
   /**
    * Add an array of {@code Integer} value at the end of the tuple.
@@ -980,95 +709,13 @@ public interface Tuple {
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Tuple addUUIDArray(UUID[] value);
 
-  /**
-   * Add an array of {@link Json} value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
+  <T> T get(Class<T> type, int pos);
+
   @GenIgnore
-  Tuple addJsonArray(Json[] value);
+  <T> T[] getValues(Class<T> type, int pos);
 
-  /**
-   * Add an array of {@link Numeric} value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addNumericArray(Numeric[] value);
-
-  /**
-   * Add an array of {@link Point} value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addPointArray(Point[] value);
-
-  /**
-   * Add an array of {@link io.reactiverse.pgclient.data.Line} value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addLineArray(Line[] value);
-
-  /**
-   * Add an array of {@link LineSegment} value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addLineSegmentArray(LineSegment[] value);
-
-  /**
-   * Add an array of {@link Box} value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addBoxArray(Box[] value);
-
-  /**
-   * Add an array of {@link Path} value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addPathArray(Path[] value);
-
-  /**
-   * Add an array of {@link Polygon} value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addPolygonArray(Polygon[] value);
-
-  /**
-   * Add an array of {@link Circle} value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addCircleArray(Circle[] value);
-
-  /**
-   * Add an array of {@link Interval} value at the end of the tuple.
-   *
-   * @param value the value
-   * @return a reference to this, so the API can be used fluently
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addIntervalArray(Interval[] value);
+  @GenIgnore
+  <T> Tuple addValues(T[] value);
 
   /**
    * @return the tuple size

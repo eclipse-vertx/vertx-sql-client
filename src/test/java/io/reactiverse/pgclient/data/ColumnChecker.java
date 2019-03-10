@@ -21,9 +21,32 @@ public class ColumnChecker {
   private static List<SerializableBiFunction<Tuple, Integer, ?>> tupleMethods = new ArrayList<>();
   private static List<SerializableBiFunction<Row, String, ?>> rowMethods = new ArrayList<>();
 
+  static SerializableBiFunction<Tuple, Integer, Object> getByIndex(Class<?> type) {
+    return (tuple, index) -> tuple.get(type, index);
+  }
+
+  static SerializableBiFunction<Row, String, Object> getByName(Class<?> type) {
+    return (row, index) -> {
+      int idx = row.getColumnIndex(index);
+      return idx == -1 ? null : row.get(type, idx);
+    };
+  }
+
+  static SerializableBiFunction<Tuple, Integer, Object> getValuesByIndex(Class<?> type) {
+    return (tuple, index) -> tuple.getValues(type, index);
+  }
+
+  static SerializableBiFunction<Row, String, Object> getValuesByName(Class<?> type) {
+    return (row, index) -> {
+      int idx = row.getColumnIndex(index);
+      return idx == -1 ? null : row.getValues(type, idx);
+    };
+  }
+
   static {
     tupleMethods.add(Tuple::getValue);
     rowMethods.add(Row::getValue);
+
     tupleMethods.add(Tuple::getShort);
     rowMethods.add(Row::getShort);
     tupleMethods.add(Tuple::getInteger);
@@ -36,10 +59,6 @@ public class ColumnChecker {
     rowMethods.add(Row::getDouble);
     tupleMethods.add(Tuple::getBigDecimal);
     rowMethods.add(Row::getBigDecimal);
-    tupleMethods.add(Tuple::getNumeric);
-    rowMethods.add(Row::getNumeric);
-    tupleMethods.add(Tuple::getPoint);
-    rowMethods.add(Row::getPoint);
     tupleMethods.add(Tuple::getString);
     rowMethods.add(Row::getString);
     tupleMethods.add(Tuple::getBoolean);
@@ -86,32 +105,38 @@ public class ColumnChecker {
     rowMethods.add(Row::getBufferArray);
     tupleMethods.add(Tuple::getUUIDArray);
     rowMethods.add(Row::getUUIDArray);
-    tupleMethods.add(Tuple::getPointArray);
-    rowMethods.add(Row::getPointArray);
-    tupleMethods.add(Tuple::getLine);
-    rowMethods.add(Row::getLine);
-    tupleMethods.add(Tuple::getLineArray);
-    rowMethods.add(Row::getLineArray);
-    tupleMethods.add(Tuple::getLineSegment);
-    rowMethods.add(Row::getLineSegment);
-    tupleMethods.add(Tuple::getLineSegmentArray);
-    rowMethods.add(Row::getLineSegmentArray);
-    tupleMethods.add(Tuple::getBox);
-    rowMethods.add(Row::getBox);
-    tupleMethods.add(Tuple::getBoxArray);
-    rowMethods.add(Row::getBoxArray);
-    tupleMethods.add(Tuple::getPath);
-    rowMethods.add(Row::getPath);
-    tupleMethods.add(Tuple::getPathArray);
-    rowMethods.add(Row::getPathArray);
-    tupleMethods.add(Tuple::getPolygon);
-    rowMethods.add(Row::getPolygon);
-    tupleMethods.add(Tuple::getPolygonArray);
-    rowMethods.add(Row::getPolygonArray);
-    tupleMethods.add(Tuple::getCircle);
-    rowMethods.add(Row::getCircle);
-    tupleMethods.add(Tuple::getCircleArray);
-    rowMethods.add(Row::getCircleArray);
+    tupleMethods.add(getByIndex(Numeric.class));
+    rowMethods.add(getByName(Numeric.class));
+    tupleMethods.add(getValuesByIndex(Numeric.class));
+    rowMethods.add(getValuesByName(Numeric.class));
+    tupleMethods.add(getByIndex(Point.class));
+    rowMethods.add(getByName(Point.class));
+    tupleMethods.add(getValuesByIndex(Point.class));
+    rowMethods.add(getValuesByName(Point.class));
+    tupleMethods.add(getValuesByIndex(Line.class));
+    rowMethods.add(getValuesByName(Line.class));
+    tupleMethods.add(getByIndex(Line.class));
+    rowMethods.add(getByName(Line.class));
+    tupleMethods.add(getByIndex(LineSegment.class));
+    rowMethods.add(getByName(LineSegment.class));
+    tupleMethods.add(getValuesByIndex(LineSegment.class));
+    rowMethods.add(getValuesByName(LineSegment.class));
+    tupleMethods.add(getByIndex(LineSegment.class));
+    rowMethods.add(getByName(LineSegment.class));
+    tupleMethods.add(getValuesByIndex(LineSegment.class));
+    rowMethods.add(getValuesByName(LineSegment.class));
+    tupleMethods.add(getByIndex(Path.class));
+    rowMethods.add(getByName(Path.class));
+    tupleMethods.add(getValuesByIndex(Path.class));
+    rowMethods.add(getValuesByName(Path.class));
+    tupleMethods.add(getByIndex(Polygon.class));
+    rowMethods.add(getByName(Polygon.class));
+    tupleMethods.add(getValuesByIndex(Polygon.class));
+    rowMethods.add(getValuesByName(Polygon.class));
+    tupleMethods.add(getByIndex(Circle.class));
+    rowMethods.add(getByName(Circle.class));
+    tupleMethods.add(getValuesByIndex(Circle.class));
+    rowMethods.add(getValuesByName(Circle.class));
   }
 
   public static ColumnChecker checkColumn(int index, String name) {
@@ -126,6 +151,14 @@ public class ColumnChecker {
   private ColumnChecker(int index, String name) {
     this.index = index;
     this.name = name;
+  }
+
+  public <R> ColumnChecker returns(Class<R> type, R expected) {
+    return returns(getByIndex(type), getByName(type), expected);
+  }
+
+  public <R> ColumnChecker returns(Class<R> type, R[] expected) {
+    return returns(getValuesByIndex(type), getValuesByName(type), expected);
   }
 
   public <R> ColumnChecker returns(SerializableBiFunction<Tuple, Integer, R> byIndexGetter,

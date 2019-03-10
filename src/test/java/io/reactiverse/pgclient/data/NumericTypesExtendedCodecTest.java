@@ -28,7 +28,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
               .returns(Tuple::getFloat, Row::getFloat, 32767f)
               .returns(Tuple::getDouble, Row::getDouble, 32767d)
               .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(32767))
-              .returns(Tuple::getNumeric, Row::getNumeric, Numeric.create(32767))
+              .returns(Numeric.class, Numeric.create(32767))
               .forRow(row);
             async.complete();
           }));
@@ -54,7 +54,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
               .returns(Tuple::getFloat, Row::getFloat, -32768f)
               .returns(Tuple::getDouble, Row::getDouble, -32768d)
               .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(-32768))
-              .returns(Tuple::getNumeric, Row::getNumeric, Numeric.create(-32768))
+              .returns(Numeric.class, Numeric.create(-32768))
               .forRow(row);
             async.complete();
           }));
@@ -80,7 +80,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
               .returns(Tuple::getFloat, Row::getFloat, 2147483647f)
               .returns(Tuple::getDouble, Row::getDouble, 2147483647d)
               .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(2147483647))
-              .returns(Tuple::getNumeric, Row::getNumeric, Numeric.create(2147483647))
+              .returns(Numeric.class, Numeric.create(2147483647))
               .forRow(row);
             async.complete();
           }));
@@ -109,7 +109,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
                 .returns(Tuple::getFloat, Row::getFloat, -2147483648f)
                 .returns(Tuple::getDouble, Row::getDouble, -2147483648d)
                 .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(-2147483648))
-                .returns(Tuple::getNumeric, Row::getNumeric, Numeric.create(-2147483648))
+                .returns(Numeric.class, Numeric.create(-2147483648))
                 .forRow(row);
               async.complete();
             }));
@@ -135,7 +135,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
               .returns(Tuple::getFloat, Row::getFloat, 9.223372E18f)
               .returns(Tuple::getDouble, Row::getDouble, 9.223372036854776E18d)
               .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(Long.MAX_VALUE))
-              .returns(Tuple::getNumeric, Row::getNumeric, Numeric.create(Long.MAX_VALUE))
+              .returns(Numeric.class, Numeric.create(Long.MAX_VALUE))
               .forRow(row);
             async.complete();
           }));
@@ -164,7 +164,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
                 .returns(Tuple::getFloat, Row::getFloat, -9.223372E18f)
                 .returns(Tuple::getDouble, Row::getDouble, -9.223372036854776E18d)
                 .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(Long.MIN_VALUE))
-                .returns(Tuple::getNumeric, Row::getNumeric, Numeric.create(Long.MIN_VALUE))
+                .returns(Numeric.class, Numeric.create(Long.MIN_VALUE))
                 .forRow(row);
               async.complete();
             }));
@@ -190,7 +190,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
               .returns(Tuple::getFloat, Row::getFloat, Float.MAX_VALUE)
               .returns(Tuple::getDouble, Row::getDouble, 3.4028234663852886E38d)
               .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("" + Float.MAX_VALUE))
-              .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("" + Float.MAX_VALUE))
+              .returns(Numeric.class, Numeric.parse("" + Float.MAX_VALUE))
               .forRow(row);
             async.complete();
           }));
@@ -219,7 +219,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
                 .returns(Tuple::getFloat, Row::getFloat, Float.MIN_VALUE)
                 .returns(Tuple::getDouble, Row::getDouble, 1.401298464324817E-45d)
                 .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("" + Float.MIN_VALUE))
-                .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("" + Float.MIN_VALUE))
+                .returns(Numeric.class, Numeric.parse("" + Float.MIN_VALUE))
                 .forRow(row);
               async.complete();
             }));
@@ -245,7 +245,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
               .returns(Tuple::getFloat, Row::getFloat, Float.POSITIVE_INFINITY)
               .returns(Tuple::getDouble, Row::getDouble, Double.MAX_VALUE)
               .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("" + Double.MAX_VALUE))
-              .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("" + Double.MAX_VALUE))
+              .returns(Numeric.class, Numeric.parse("" + Double.MAX_VALUE))
               .forRow(row);
             async.complete();
           }));
@@ -274,7 +274,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
                 .returns(Tuple::getFloat, Row::getFloat, 0f)
                 .returns(Tuple::getDouble, Row::getDouble, Double.MIN_VALUE)
                 .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal("" + Double.MIN_VALUE))
-                .returns(Tuple::getNumeric, Row::getNumeric, Numeric.parse("" + Double.MIN_VALUE))
+                .returns(Numeric.class, Numeric.parse("" + Double.MIN_VALUE))
                 .forRow(row);
               async.complete();
             }));
@@ -300,7 +300,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
               .returns(Tuple::getFloat, Row::getFloat, 1f)
               .returns(Tuple::getDouble, Row::getDouble, 1d)
               .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(1))
-              .returns(Tuple::getNumeric, Row::getNumeric, Numeric.create(1))
+              .returns(Numeric.class, Numeric.create(1))
               .forRow(row);
             async.complete();
           }));
@@ -326,7 +326,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
               .returns(Tuple::getFloat, Row::getFloat, -32768f)
               .returns(Tuple::getDouble, Row::getDouble, -32768d)
               .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(-32768))
-              .returns(Tuple::getNumeric, Row::getNumeric, Numeric.create(-32768))
+              .returns(Numeric.class, Numeric.create(-32768))
               .forRow(row);
             async.complete();
           }));
@@ -352,7 +352,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
               .returns(Tuple::getFloat, Row::getFloat, 1f)
               .returns(Tuple::getDouble, Row::getDouble, 1d)
               .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(1))
-              .returns(Tuple::getNumeric, Row::getNumeric, Numeric.create(1))
+              .returns(Numeric.class, Numeric.create(1))
               .forRow(row);
             async.complete();
           }));
@@ -381,7 +381,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
                 .returns(Tuple::getFloat, Row::getFloat, -2147483648f)
                 .returns(Tuple::getDouble, Row::getDouble, -2147483648d)
                 .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(-2147483648))
-                .returns(Tuple::getNumeric, Row::getNumeric, Numeric.create(-2147483648))
+                .returns(Numeric.class, Numeric.create(-2147483648))
                 .forRow(row);
               async.complete();
             }));
@@ -407,7 +407,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
               .returns(Tuple::getFloat, Row::getFloat, 1f)
               .returns(Tuple::getDouble, Row::getDouble, 1d)
               .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(1))
-              .returns(Tuple::getNumeric, Row::getNumeric, Numeric.create(1))
+              .returns(Numeric.class, Numeric.create(1))
               .forRow(row);
             async.complete();
           }));
@@ -436,7 +436,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
                 .returns(Tuple::getFloat, Row::getFloat, -9.223372E18f)
                 .returns(Tuple::getDouble, Row::getDouble, -9.223372036854776E18d)
                 .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(Long.MIN_VALUE))
-                .returns(Tuple::getNumeric, Row::getNumeric, Numeric.create(Long.MIN_VALUE))
+                .returns(Numeric.class, Numeric.create(Long.MIN_VALUE))
                 .forRow(row);
               async.complete();
             }));
@@ -444,6 +444,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     }));
   }
 
+/*
   @Test
   public void testNumeric(TestContext ctx) {
     testGeneric(ctx,
@@ -455,7 +456,9 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
         Numeric.NaN
       }, Tuple::getNumeric);
   }
+*/
 
+/*
   @Test
   public void testNumericArray(TestContext ctx) {
     testGeneric(ctx,
@@ -463,6 +466,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
       new Numeric[][]{new Numeric[]{Numeric.create(10), Numeric.create(200030004), null, Numeric.create(-500), Numeric.NaN, null}},
       Tuple::getNumericArray);
   }
+*/
 
   @Test
   public void testShortArray(TestContext ctx) {
@@ -718,7 +722,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
             };
             ColumnChecker.checkColumn(0, "Numeric")
               .returns(Tuple::getValue, Row::getValue, expected)
-              .returns(Tuple::getNumericArray, Row::getNumericArray, expected)
+              .returns(Numeric.class, expected)
               .forRow(result.iterator().next());
             async.complete();
           }));
@@ -737,12 +741,12 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
             Numeric.create(10000),
           };
           p.execute(Tuple.tuple()
-              .addNumericArray(expected)
+              .addValues(expected)
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Numeric")
                 .returns(Tuple::getValue, Row::getValue, expected)
-                .returns(Tuple::getNumericArray, Row::getNumericArray, expected)
+                .returns(Numeric.class, expected)
                 .forRow(result.iterator().next());
               async.complete();
             }));

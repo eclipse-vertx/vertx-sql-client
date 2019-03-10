@@ -16,6 +16,15 @@
  */
 package io.reactiverse.pgclient;
 
+import io.reactiverse.pgclient.data.Box;
+import io.reactiverse.pgclient.data.Circle;
+import io.reactiverse.pgclient.data.Interval;
+import io.reactiverse.pgclient.data.Line;
+import io.reactiverse.pgclient.data.LineSegment;
+import io.reactiverse.pgclient.data.Numeric;
+import io.reactiverse.pgclient.data.Path;
+import io.reactiverse.pgclient.data.Point;
+import io.reactiverse.pgclient.data.Polygon;
 import io.reactiverse.sqlclient.Row;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
@@ -43,6 +52,20 @@ public class RowTest extends PgTestBase {
     vertx.close(ctx.asyncAssertSuccess());
   }
 
+  private static <T> Function<String, T> accessor(Row row, Class<T> type) {
+    return name -> {
+      int idx = row.getColumnIndex(name);
+      return idx == -1 ? null : row.get(type, idx);
+    };
+  }
+
+  private static <T> Function<String, T[]> arrayAccessor(Row row, Class<T> type) {
+    return name -> {
+      int idx = row.getColumnIndex(name);
+      return idx == -1 ? null : row.getValues(type, idx);
+    };
+  }
+
   @Test
   public void testGetNonExistingRows(TestContext ctx) {
     Async async = ctx.async();
@@ -59,7 +82,7 @@ public class RowTest extends PgTestBase {
             row::getInteger,
             row::getLong,
             row::getBigDecimal,
-            row::getNumeric,
+            accessor(row, Numeric.class),
             row::getFloat,
             row::getLocalDate,
             row::getLocalTime,
@@ -68,14 +91,14 @@ public class RowTest extends PgTestBase {
             row::getOffsetTime,
             row::getTemporal,
             row::getUUID,
-            row::getPoint,
-            row::getLine,
-            row::getLineSegment,
-            row::getBox,
-            row::getPath,
-            row::getPolygon,
-            row::getCircle,
-            row::getInterval,
+            accessor(row, Point.class),
+            accessor(row, Line.class),
+            accessor(row, LineSegment.class),
+            accessor(row, Box.class),
+            accessor(row, Path.class),
+            accessor(row, Polygon.class),
+            accessor(row, Circle.class),
+            accessor(row, Interval.class),
             row::getBooleanArray,
             row::getShortArray,
             row::getIntegerArray,
@@ -90,14 +113,14 @@ public class RowTest extends PgTestBase {
             row::getOffsetDateTimeArray,
             row::getBufferArray,
             row::getUUIDArray,
-            row::getPointArray,
-            row::getLineArray,
-            row::getLineSegmentArray,
-            row::getBoxArray,
-            row::getPathArray,
-            row::getPolygonArray,
-            row::getCircleArray,
-            row::getIntervalArray
+            arrayAccessor(row, Point.class),
+            arrayAccessor(row, Line.class),
+            arrayAccessor(row, LineSegment.class),
+            arrayAccessor(row, Box.class),
+            arrayAccessor(row, Path.class),
+            arrayAccessor(row, Polygon.class),
+            arrayAccessor(row, Circle.class),
+            arrayAccessor(row, Interval.class)
           );
           functions.forEach(f -> {
             ctx.assertEquals(null, f.apply("bar"));

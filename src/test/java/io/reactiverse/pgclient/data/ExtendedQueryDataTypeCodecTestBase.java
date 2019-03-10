@@ -35,6 +35,14 @@ public abstract class ExtendedQueryDataTypeCodecTestBase extends DataTypeTestBas
     options.setCachePreparedStatements(false);
   }
 
+  protected <T> void testGeneric(TestContext ctx, String sql, T[] expected, Class<T> type) {
+    testGeneric(ctx, sql, expected, (row, idx) -> row.get(type, idx));
+  }
+
+  protected <T> void testGenericArray(TestContext ctx, String sql, T[][] expected, Class<T> type) {
+    testGeneric(ctx, sql, expected, (row, idx) -> row.getValues(type, idx));
+  }
+
   protected <T> void testGeneric(TestContext ctx, String sql, T[] expected, BiFunction<Row, Integer, T> getter) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {

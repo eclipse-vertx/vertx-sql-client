@@ -21,6 +21,15 @@ public abstract class SimpleQueryDataTypeCodecTestBase extends DataTypeTestBase 
                                        String data,
                                        String dataType,
                                        String columnName,
+                                       Class<T> type,
+                                       T expected) {
+    testDecodeGeneric(ctx, data, dataType, columnName, ColumnChecker.getByIndex(type), ColumnChecker.getByName(type), expected);
+  }
+
+  protected <T> void testDecodeGeneric(TestContext ctx,
+                                       String data,
+                                       String dataType,
+                                       String columnName,
                                        ColumnChecker.SerializableBiFunction<Tuple, Integer, T> byIndexGetter,
                                        ColumnChecker.SerializableBiFunction<Row, String, T> byNameGetter,
                                        T expected) {
@@ -36,6 +45,17 @@ public abstract class SimpleQueryDataTypeCodecTestBase extends DataTypeTestBase 
         async.complete();
       }));
     }));
+  }
+
+  protected void testDecodeGenericArray(TestContext ctx,
+                                        String arrayData,
+                                        String columnName,
+                                        Class<?> type,
+                                        Object[] expected) {
+    Class<Object> clazz = (Class<Object>) type;
+    ColumnChecker.SerializableBiFunction<Tuple, Integer, Object> byIndex = ColumnChecker.getValuesByIndex(clazz);
+    ColumnChecker.SerializableBiFunction<Row, String, Object> byName = ColumnChecker.getValuesByName(clazz);
+    testDecodeGenericArray(ctx, arrayData, columnName, byIndex, byName, expected);
   }
 
   protected void testDecodeGenericArray(TestContext ctx,

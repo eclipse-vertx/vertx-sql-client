@@ -128,7 +128,7 @@ public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBa
             .microseconds(999991);
           ColumnChecker.checkColumn(0, "Interval")
             .returns(Tuple::getValue, Row::getValue, interval)
-            .returns(Tuple::getInterval, Row::getInterval, interval)
+            .returns(Interval.class, interval)
             .forRow(row);
           async.complete();
         }));
@@ -163,6 +163,6 @@ public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBa
 
   @Test
   public void testDecodeINTERVALArray(TestContext ctx) {
-    testDecodeGenericArray(ctx, "ARRAY ['10 years 3 months 332 days 20 hours 20 minutes 20.999991 seconds'::INTERVAL, '20 minutes 20.123456 seconds'::INTERVAL, '30 months ago'::INTERVAL]", "Interval", Tuple::getIntervalArray, Row::getIntervalArray, intervals);
+    testDecodeGenericArray(ctx, "ARRAY ['10 years 3 months 332 days 20 hours 20 minutes 20.999991 seconds'::INTERVAL, '20 minutes 20.123456 seconds'::INTERVAL, '30 months ago'::INTERVAL]", "Interval", Interval.class, intervals);
   }
 }

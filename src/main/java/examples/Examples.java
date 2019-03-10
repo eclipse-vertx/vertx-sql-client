@@ -714,17 +714,17 @@ public class Examples {
       Json.create(Json.create(null)));
 
     // Retrieving json
-    Object value = tuple.getJson(0).value(); // Expect null
+    Object value = tuple.get(Json.class, 0).value(); // Expect null
 
     //
-    value = tuple.getJson(1).value(); // Expect JSON object
+    value = tuple.get(Json.class, 1).value(); // Expect JSON object
 
     //
-    value = tuple.getJson(3).value(); // Expect 3
+    value = tuple.get(Json.class, 3).value(); // Expect 3
   }
 
   public void numericExample(Row row) {
-    Numeric numeric = row.getNumeric("value");
+    Numeric numeric = row.get(Numeric.class, 0);
     if (numeric.isNaN()) {
       // Handle NaN
     } else {

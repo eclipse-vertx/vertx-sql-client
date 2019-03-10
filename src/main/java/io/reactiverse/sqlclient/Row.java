@@ -16,17 +16,6 @@
  */
 package io.reactiverse.sqlclient;
 
-import io.reactiverse.pgclient.data.Box;
-import io.reactiverse.pgclient.data.Circle;
-import io.reactiverse.pgclient.data.Interval;
-import io.reactiverse.pgclient.data.Json;
-import io.reactiverse.pgclient.data.Line;
-import io.reactiverse.pgclient.data.LineSegment;
-import io.reactiverse.pgclient.data.Numeric;
-import io.reactiverse.pgclient.data.Path;
-import io.reactiverse.pgclient.data.Point;
-import io.reactiverse.pgclient.data.Polygon;
-import io.reactiverse.sqlclient.Tuple;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.buffer.Buffer;
@@ -38,13 +27,22 @@ import java.util.UUID;
 
 @VertxGen
 public interface Row extends Tuple {
+
   /**
    * Get a column name at {@code pos}.
    *
-   * @param pos the position
+   * @param pos the column position
    * @return the column name or {@code null}
    */
   String getColumnName(int pos);
+
+  /**
+   * Get a column position for the given column {@code name}.
+   *
+   * @param name the column name
+   * @return the column name or {@code -1} if not found
+   */
+  int getColumnIndex(String name);
 
   /**
    * Get a boolean value at {@code pos}.
@@ -109,14 +107,6 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   String getString(String name);
-
-  /**
-   * Get a json value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  Json getJson(String name);
 
   /**
    * Get a buffer value at {@code pos}.
@@ -197,79 +187,6 @@ public interface Row extends Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   BigDecimal getBigDecimal(String name);
-
-  /**
-   * Get {@link Numeric} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Numeric getNumeric(String name);
-
-  /**
-   * Get {@link Point} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  Point getPoint(String name);
-
-  /**
-   * Get {@link Line} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  Line getLine(String name);
-
-  /**
-   * Get {@link LineSegment} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  LineSegment getLineSegment(String name);
-
-  /**
-   * Get {@link Box} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  Box getBox(String name);
-
-  /**
-   * Get {@link Path} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  Path getPath(String name);
-
-  /**
-   * Get {@link Polygon} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  Polygon getPolygon(String name);
-
-  /**
-   * Get {@link Circle} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  Circle getCircle(String name);
-
-  /**
-   * Get {@link Interval} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  Interval getInterval(String name);
 
   /**
    * Get an array of {@link Integer} value at {@code pos}.
@@ -397,93 +314,7 @@ public interface Row extends Tuple {
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   UUID[] getUUIDArray(String name);
 
-  /**
-   * Get an array of {@link Json} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
   @GenIgnore
-  Json[] getJsonArray(String name);
+  <T> T[] getValues(Class<T> type, int idx);
 
-  /**
-   * Get an array of {@link Numeric} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Numeric[] getNumericArray(String name);
-
-  /**
-   * Get an array of {@link Point} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Point[] getPointArray(String name);
-
-  /**
-   * Get an array of {@link Line} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Line[] getLineArray(String name);
-
-  /**
-   * Get an array of {@link LineSegment} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  LineSegment[] getLineSegmentArray(String name);
-
-  /**
-   * Get an array of {@link Box} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Box[] getBoxArray(String name);
-
-  /**
-   * Get an array of {@link Path} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Path[] getPathArray(String name);
-
-  /**
-   * Get an array of {@link Polygon} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Polygon[] getPolygonArray(String name);
-
-  /**
-   * Get an array of {@link Circle} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Circle[] getCircleArray(String name);
-
-  /**
-   * Get an array of {@link Interval} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Interval[] getIntervalArray(String name);
 }

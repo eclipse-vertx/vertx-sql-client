@@ -58,6 +58,66 @@ public class RowImpl extends ArrayTuple implements RowInternal {
   }
 
   @Override
+  public int getColumnIndex(String name) {
+    if (name == null) {
+      throw new NullPointerException();
+    }
+    return desc.columnNames().indexOf(name);
+  }
+
+  @Override
+  public <T> T get(Class<T> type, int pos) {
+    if (type == Json.class) {
+      return type.cast(getJson(pos));
+    } else if (type == Numeric.class) {
+      return type.cast(getNumeric(pos));
+    } else if (type == Point.class) {
+      return type.cast(getPoint(pos));
+    } else if (type == Line.class) {
+      return type.cast(getLine(pos));
+    } else if (type == LineSegment.class) {
+      return type.cast(getLineSegment(pos));
+    } else if (type == Path.class) {
+      return type.cast(getPath(pos));
+    } else if (type == Polygon.class) {
+      return type.cast(getPolygon(pos));
+    } else if (type == Circle.class) {
+      return type.cast(getCircle(pos));
+    } else if (type == Interval.class) {
+      return type.cast(getInterval(pos));
+    } else if (type == Box.class) {
+      return type.cast(getBox(pos));
+    }
+    throw new UnsupportedOperationException("Unsupported type " + type.getName());
+  }
+
+  @Override
+  public <T> T[] getValues(Class<T> type, int pos) {
+    if (type == Json.class) {
+      return (T[]) getJsonArray(pos);
+    } else if (type == Numeric.class) {
+      return (T[]) getNumericArray(pos);
+    } else if (type == Point.class) {
+      return (T[]) getPointArray(pos);
+    } else if (type == Line.class) {
+      return (T[]) getLineArray(pos);
+    } else if (type == LineSegment.class) {
+      return (T[]) getLineSegmentArray(pos);
+    } else if (type == Path.class) {
+      return (T[]) getPathArray(pos);
+    } else if (type == Polygon.class) {
+      return (T[]) getPolygonArray(pos);
+    } else if (type == Circle.class) {
+      return (T[]) getCircleArray(pos);
+    } else if (type == Interval.class) {
+      return (T[]) getIntervalArray(pos);
+    } else if (type == Box.class) {
+      return (T[]) getBoxArray(pos);
+    }
+    throw new UnsupportedOperationException("Unsupported type " + type.getName());
+  }
+
+  @Override
   public Boolean getBoolean(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getBoolean(pos);
@@ -105,7 +165,6 @@ public class RowImpl extends ArrayTuple implements RowInternal {
     return pos == -1 ? null : getString(pos);
   }
 
-  @Override
   public Json getJson(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getJson(pos);
@@ -165,55 +224,46 @@ public class RowImpl extends ArrayTuple implements RowInternal {
     return pos == -1 ? null : getBigDecimal(pos);
   }
 
-  @Override
   public Numeric getNumeric(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getNumeric(pos);
   }
 
-  @Override
   public Point getPoint(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getPoint(pos);
   }
 
-  @Override
   public Line getLine(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getLine(pos);
   }
 
-  @Override
   public LineSegment getLineSegment(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getLineSegment(pos);
   }
 
-  @Override
   public Box getBox(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getBox(pos);
   }
 
-  @Override
   public Path getPath(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getPath(pos);
   }
 
-  @Override
   public Polygon getPolygon(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getPolygon(pos);
   }
 
-  @Override
   public Circle getCircle(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getCircle(pos);
   }
 
-  @Override
   public Interval getInterval(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getInterval(pos);
@@ -303,61 +353,51 @@ public class RowImpl extends ArrayTuple implements RowInternal {
     return pos == -1 ? null : getUUIDArray(pos);
   }
 
-  @Override
   public Json[] getJsonArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getJsonArray(pos);
   }
 
-  @Override
   public Numeric[] getNumericArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getNumericArray(pos);
   }
 
-  @Override
   public Point[] getPointArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getPointArray(pos);
   }
 
-  @Override
   public Line[] getLineArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getLineArray(pos);
   }
 
-  @Override
   public LineSegment[] getLineSegmentArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getLineSegmentArray(pos);
   }
 
-  @Override
   public Box[] getBoxArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getBoxArray(pos);
   }
 
-  @Override
   public Path[] getPathArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getPathArray(pos);
   }
 
-  @Override
   public Polygon[] getPolygonArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getPolygonArray(pos);
   }
 
-  @Override
   public Circle[] getCircleArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getCircleArray(pos);
   }
 
-  @Override
   public Interval[] getIntervalArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getIntervalArray(pos);
