@@ -68,14 +68,14 @@ public class UnixDomainSocketTest {
   public void uriTest(TestContext context) {
     assumeTrue(options.isUsingDomainSocket());
     String uri = "postgresql://postgres:postgres@/postgres?host=" + options.getHost() + "&port=" + options.getPort();
-    client = PgClient.pool(uri);
+    client = PgPool.pool(uri);
     client.getConnection(context.asyncAssertSuccess(pgConnection -> pgConnection.close()));
   }
 
   @Test
   public void simpleConnect(TestContext context) {
     assumeTrue(options.isUsingDomainSocket());
-    client = PgClient.pool(new PgPoolOptions(options));
+    client = PgPool.pool(new PgPoolOptions(options));
     client.getConnection(context.asyncAssertSuccess(pgConnection -> pgConnection.close()));
   }
 
@@ -84,7 +84,7 @@ public class UnixDomainSocketTest {
     assumeTrue(options.isUsingDomainSocket());
     Vertx vertx = Vertx.vertx(new VertxOptions().setPreferNativeTransport(true));
     try {
-      client = PgClient.pool(vertx, new PgPoolOptions(options));
+      client = PgPool.pool(vertx, new PgPoolOptions(options));
       Async async = context.async();
       client.getConnection(context.asyncAssertSuccess(pgConnection -> {
         async.complete();
@@ -99,7 +99,7 @@ public class UnixDomainSocketTest {
   @Test
   public void testIgnoreSslMode(TestContext context) {
     assumeTrue(options.isUsingDomainSocket());
-    client = PgClient.pool(new PgPoolOptions(options).setSslMode(SslMode.REQUIRE));
+    client = PgPool.pool(new PgPoolOptions(options).setSslMode(SslMode.REQUIRE));
     client.getConnection(context.asyncAssertSuccess(pgConnection -> {
       assertFalse(pgConnection.isSSL());
       pgConnection.close();

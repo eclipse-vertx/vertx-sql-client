@@ -16,6 +16,8 @@
  */
 package io.reactiverse.pgclient;
 
+import io.reactiverse.sqlclient.SqlResult;
+import io.reactiverse.sqlclient.Tuple;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.infra.Blackhole;
 
@@ -36,7 +38,7 @@ public class PipelineBenchmark extends PgBenchmarkBase {
 
   @Benchmark
   public void test1(Blackhole blackhole) throws Exception {
-    CompletableFuture<PgResult> latch = new CompletableFuture<>();
+    CompletableFuture<SqlResult> latch = new CompletableFuture<>();
     AtomicInteger count = new AtomicInteger();
     for (int i = 0;i < ITER;i++) {
       pool.query("SELECT id, randomnumber from WORLD where id=1", ar -> {
@@ -54,12 +56,12 @@ public class PipelineBenchmark extends PgBenchmarkBase {
 
   @Benchmark
   public void test2(Blackhole blackhole) throws Exception {
-    CompletableFuture<PgResult> latch = new CompletableFuture<>();
+    CompletableFuture<SqlResult> latch = new CompletableFuture<>();
     doSingle(0, latch);
     blackhole.consume(latch.get());
   }
 
-  private void doSingle(int count, CompletableFuture<PgResult> latch) {
+  private void doSingle(int count, CompletableFuture<SqlResult> latch) {
     pool.query("SELECT id, randomnumber from WORLD where id=1", ar -> {
       if (ar.succeeded()) {
         if (count + 1 == ITER) {

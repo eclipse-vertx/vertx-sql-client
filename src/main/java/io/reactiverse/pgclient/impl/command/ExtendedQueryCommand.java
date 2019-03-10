@@ -17,8 +17,8 @@
 
 package io.reactiverse.pgclient.impl.command;
 
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
+import io.reactiverse.sqlclient.Row;
+import io.reactiverse.sqlclient.Tuple;
 import io.reactiverse.pgclient.impl.PreparedStatement;
 import io.reactiverse.pgclient.impl.QueryResultHandler;
 

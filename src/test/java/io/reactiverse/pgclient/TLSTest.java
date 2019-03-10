@@ -18,6 +18,7 @@
 package io.reactiverse.pgclient;
 
 import io.reactiverse.pgclient.junit.PgRule;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxException;
 import io.vertx.core.net.PemTrustOptions;
@@ -52,7 +53,7 @@ public class TLSTest {
     PgConnectOptions options = new PgConnectOptions(rule.options())
       .setSslMode(SslMode.REQUIRE)
       .setPemTrustOptions(new PemTrustOptions().addCertPath("tls/server.crt"));
-    PgClient.connect(vertx, options.setSslMode(SslMode.REQUIRE).setTrustAll(true), ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options.setSslMode(SslMode.REQUIRE).setTrustAll(true), ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
       conn.query("SELECT * FROM Fortune WHERE id=1", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
@@ -67,7 +68,7 @@ public class TLSTest {
   @Test
   public void testTLSTrustAll(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, rule.options().setSslMode(SslMode.REQUIRE).setTrustAll(true), ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, rule.options().setSslMode(SslMode.REQUIRE).setTrustAll(true), ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
       async.complete();
     }));
@@ -76,7 +77,7 @@ public class TLSTest {
   @Test
   public void testTLSInvalidCertificate(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, rule.options().setSslMode(SslMode.REQUIRE), ctx.asyncAssertFailure(err -> {
+    PgConnection.connect(vertx, rule.options().setSslMode(SslMode.REQUIRE), ctx.asyncAssertFailure(err -> {
       ctx.assertEquals(err.getClass(), VertxException.class);
       ctx.assertEquals(err.getMessage(), "SSL handshake failed");
       async.complete();
@@ -88,7 +89,7 @@ public class TLSTest {
     Async async = ctx.async();
     PgConnectOptions options = rule.options()
       .setSslMode(SslMode.DISABLE);
-    PgClient.connect(vertx, new PgConnectOptions(options), ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, new PgConnectOptions(options), ctx.asyncAssertSuccess(conn -> {
       ctx.assertFalse(conn.isSSL());
       async.complete();
     }));
@@ -99,7 +100,7 @@ public class TLSTest {
     Async async = ctx.async();
     PgConnectOptions options = rule.options()
       .setSslMode(SslMode.ALLOW);
-    PgClient.connect(vertx, new PgConnectOptions(options), ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, new PgConnectOptions(options), ctx.asyncAssertSuccess(conn -> {
       ctx.assertFalse(conn.isSSL());
       async.complete();
     }));
@@ -111,7 +112,7 @@ public class TLSTest {
     PgConnectOptions options = rule.options()
       .setSslMode(SslMode.PREFER)
       .setTrustAll(true);
-    PgClient.connect(vertx, new PgConnectOptions(options), ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, new PgConnectOptions(options), ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
       async.complete();
     }));
@@ -122,7 +123,7 @@ public class TLSTest {
     PgConnectOptions options = rule.options()
       .setSslMode(SslMode.VERIFY_CA)
       .setTrustAll(true);
-    PgClient.connect(vertx, new PgConnectOptions(options), ctx.asyncAssertFailure(error -> {
+    PgConnection.connect(vertx, new PgConnectOptions(options), ctx.asyncAssertFailure(error -> {
       ctx.assertEquals("Trust options must be specified under verify-full or verify-ca sslmode", error.getMessage());
     }));
   }
@@ -131,7 +132,7 @@ public class TLSTest {
   public void testSslModeVerifyFullConf(TestContext ctx) {
     PgConnectOptions options = rule.options()
       .setSslMode(SslMode.VERIFY_FULL);
-    PgClient.connect(vertx, new PgConnectOptions(options), ctx.asyncAssertFailure(error -> {
+    PgConnection.connect(vertx, new PgConnectOptions(options), ctx.asyncAssertFailure(error -> {
       ctx.assertEquals("Host verification algorithm must be specified under verify-full sslmode", error.getMessage());
     }));
   }

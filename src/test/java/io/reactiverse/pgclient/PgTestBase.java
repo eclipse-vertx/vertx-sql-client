@@ -18,6 +18,7 @@
 package io.reactiverse.pgclient;
 
 import io.reactiverse.pgclient.junit.PgRule;
+import io.reactiverse.sqlclient.SqlClient;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.ClassRule;
@@ -41,13 +42,13 @@ public abstract class PgTestBase {
     options = rule.options();
   }
 
-  static void deleteFromTestTable(TestContext ctx, PgClient client, Runnable completionHandler) {
+  static void deleteFromTestTable(TestContext ctx, SqlClient client, Runnable completionHandler) {
     client.query(
       "DELETE FROM Test",
       ctx.asyncAssertSuccess(result -> completionHandler.run()));
   }
 
-  static void insertIntoTestTable(TestContext ctx, PgClient client, int amount, Runnable completionHandler) {
+  static void insertIntoTestTable(TestContext ctx, SqlClient client, int amount, Runnable completionHandler) {
     AtomicInteger count = new AtomicInteger();
     for (int i = 0;i < 10;i++) {
       client.query("INSERT INTO Test (id, val) VALUES (" + i + ", 'Whatever-" + i + "')", ctx.asyncAssertSuccess(r1 -> {

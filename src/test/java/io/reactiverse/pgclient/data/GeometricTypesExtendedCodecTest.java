@@ -1,8 +1,8 @@
 package io.reactiverse.pgclient.data;
 
-import io.reactiverse.pgclient.PgClient;
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
+import io.reactiverse.pgclient.PgConnection;
+import io.reactiverse.sqlclient.Row;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
@@ -12,99 +12,99 @@ import java.util.Arrays;
 public class GeometricTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase {
   @Test
   public void testDecodePoint(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1 :: POINT \"Point\"", new Point[]{new Point(1.0, 2.0)}, Row::getPoint);
+    testGeneric(ctx, "SELECT $1 :: POINT \"Point\"", new Point[]{new Point(1.0, 2.0)}, Point.class);
   }
 
   @Test
   public void testDecodeLine(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1 :: LINE \"Line\"", new Line[]{new Line(1.0, 2.0, 3.0)}, Row::getLine);
+    testGeneric(ctx, "SELECT $1 :: LINE \"Line\"", new Line[]{new Line(1.0, 2.0, 3.0)}, Line.class);
   }
 
   @Test
   public void testDecodeLineSegment(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1 :: LSEG \"Lseg\"", new LineSegment[]{new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0))}, Row::getLineSegment);
+    testGeneric(ctx, "SELECT $1 :: LSEG \"Lseg\"", new LineSegment[]{new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0))}, LineSegment.class);
   }
 
   @Test
   public void testDecodeBox(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1 :: BOX \"Box\"", new Box[]{new Box(new Point(2.0, 2.0), new Point(1.0, 1.0))}, Row::getBox);
+    testGeneric(ctx, "SELECT $1 :: BOX \"Box\"", new Box[]{new Box(new Point(2.0, 2.0), new Point(1.0, 1.0))}, Box.class);
   }
 
   @Test
   public void testDecodeClosedPath(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1 :: PATH \"ClosedPath\"", new Path[]{new Path(false, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0)))}, Row::getPath);
+    testGeneric(ctx, "SELECT $1 :: PATH \"ClosedPath\"", new Path[]{new Path(false, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0)))}, Path.class);
   }
 
   @Test
   public void testDecodeOpenPath(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1 :: PATH \"OpenPath\"", new Path[]{new Path(true, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0)))}, Row::getPath);
+    testGeneric(ctx, "SELECT $1 :: PATH \"OpenPath\"", new Path[]{new Path(true, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0)))}, Path.class);
   }
 
   @Test
   public void testDecodePolygon(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1 :: POLYGON \"Polygon\"", new Polygon[]{new Polygon(Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 2.0), new Point(3.0, 1.0)))}, Row::getPolygon);
+    testGeneric(ctx, "SELECT $1 :: POLYGON \"Polygon\"", new Polygon[]{new Polygon(Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 2.0), new Point(3.0, 1.0)))}, Polygon.class);
   }
 
   @Test
   public void testDecodeCircle(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1 :: CIRCLE \"Circle\"", new Circle[]{new Circle(new Point(1.0, 1.0), 1.0)}, Row::getCircle);
+    testGeneric(ctx, "SELECT $1 :: CIRCLE \"Circle\"", new Circle[]{new Circle(new Point(1.0, 1.0), 1.0)}, Circle.class);
   }
 
   @Test
   public void testDecodePointArray(TestContext ctx) {
     Point[] points = {new Point(1.0, 1.0), new Point(2.0, 2.0)};
-    testGeneric(ctx, "SELECT $1 :: POINT[] \"PointArray\"", new Point[][]{points}, Row::getPointArray);
+    testGenericArray(ctx, "SELECT $1 :: POINT[] \"PointArray\"", new Point[][]{points}, Point.class);
   }
 
   @Test
   public void testDecodeLineArray(TestContext ctx) {
     Line[] lines = {new Line(1.0, 2.0, 3.0), new Line(2.0, 3.0, 4.0)};
-    testGeneric(ctx, "SELECT $1 :: LINE[] \"LineArray\"", new Line[][]{lines}, Row::getLineArray);
+    testGenericArray(ctx, "SELECT $1 :: LINE[] \"LineArray\"", new Line[][]{lines}, Line.class);
   }
 
   @Test
   public void testDecodeLineSegmentArray(TestContext ctx) {
     LineSegment[] lineSegments = {new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0)), new LineSegment(new Point(2.0, 2.0), new Point(3.0, 3.0))};
-    testGeneric(ctx, "SELECT $1 :: LSEG[] \"LsegArray\"", new LineSegment[][]{lineSegments}, Row::getLineSegmentArray);
+    testGenericArray(ctx, "SELECT $1 :: LSEG[] \"LsegArray\"", new LineSegment[][]{lineSegments}, LineSegment.class);
   }
 
   @Test
   public void testDecodeBoxArray(TestContext ctx) {
     Box[] boxes = {new Box(new Point(2.0, 2.0), new Point(1.0, 1.0)), new Box(new Point(3.0, 3.0), new Point(2.0, 2.0))};
-    testGeneric(ctx, "SELECT $1 :: BOX[] \"BoxArray\"", new Box[][]{boxes}, Row::getBoxArray);
+    testGenericArray(ctx, "SELECT $1 :: BOX[] \"BoxArray\"", new Box[][]{boxes}, Box.class);
   }
 
   @Test
   public void testDecodeClosedPathArray(TestContext ctx) {
     Path[] closedPaths = {new Path(false, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0))),
       new Path(false, Arrays.asList(new Point(2.0, 2.0), new Point(3.0, 2.0), new Point(3.0, 3.0), new Point(3.0, 2.0)))};
-    testGeneric(ctx, "SELECT $1 :: PATH[] \"ClosedPathArray\"", new Path[][]{closedPaths}, Row::getPathArray);
+    testGenericArray(ctx, "SELECT $1 :: PATH[] \"ClosedPathArray\"", new Path[][]{closedPaths}, Path.class);
   }
 
   @Test
   public void testDecodeOpenPathArray(TestContext ctx) {
     Path[] openPaths = {new Path(true, Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 1.0), new Point(2.0, 2.0), new Point(2.0, 1.0))),
       new Path(true, Arrays.asList(new Point(2.0, 2.0), new Point(3.0, 2.0), new Point(3.0, 3.0), new Point(3.0, 2.0)))};
-    testGeneric(ctx, "SELECT $1 :: PATH[] \"OpenPathArray\"", new Path[][]{openPaths}, Row::getPathArray);
+    testGenericArray(ctx, "SELECT $1 :: PATH[] \"OpenPathArray\"", new Path[][]{openPaths}, Path.class);
   }
 
   @Test
   public void testDecodePolygonArray(TestContext ctx) {
     Polygon[] polygons = {new Polygon(Arrays.asList(new Point(1.0, 1.0), new Point(2.0, 2.0), new Point(3.0, 1.0))),
       new Polygon(Arrays.asList(new Point(0.0, 0.0), new Point(0.0, 1.0), new Point(1.0, 2.0), new Point(2.0, 1.0), new Point(2.0, 0.0)))};
-    testGeneric(ctx, "SELECT $1 :: POLYGON[] \"PolygonArray\"", new Polygon[][]{polygons}, Row::getPolygonArray);
+    testGenericArray(ctx, "SELECT $1 :: POLYGON[] \"PolygonArray\"", new Polygon[][]{polygons}, Polygon.class);
   }
 
   @Test
   public void testDecodeCircleArray(TestContext ctx) {
     Circle[] circles = {new Circle(new Point(1.0, 1.0), 1.0), new Circle(new Point(0.0, 0.0), 2.0)};
-    testGeneric(ctx, "SELECT $1 :: CIRCLE[] \"CircleArray\"", new Circle[][]{circles}, Row::getCircleArray);
+    testGenericArray(ctx, "SELECT $1 :: CIRCLE[] \"CircleArray\"", new Circle[][]{circles}, Circle.class);
   }
 
   @Test
   public void testEncodeGeometric(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"" + "GeometricDataType" + "\" SET " +
           "\"Point\" = $1, " +
           "\"Line\" = $2, " +
@@ -126,49 +126,49 @@ public class GeometricTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
           Circle circle = new Circle(new Point(1.0, 1.0), 3.0);
           int id = 2;
           p.execute(Tuple.tuple()
-            .addPoint(point)
-            .addLine(line)
-            .addLineSegment(lineSegment)
-            .addBox(box)
-            .addPath(OpenPath)
-            .addPath(closedPath)
-            .addPolygon(polygon)
-            .addCircle(circle)
+            .addValue(point)
+            .addValue(line)
+            .addValue(lineSegment)
+            .addValue(box)
+            .addValue(OpenPath)
+            .addValue(closedPath)
+            .addValue(polygon)
+            .addValue(circle)
             .addInteger(id), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Point")
               .returns(Tuple::getValue, Row::getValue, point)
-              .returns(Tuple::getPoint, Row::getPoint, point)
+              .returns(Point.class, point)
               .forRow(row);
             ColumnChecker.checkColumn(1, "Line")
               .returns(Tuple::getValue, Row::getValue, line)
-              .returns(Tuple::getLine, Row::getLine, line)
+              .returns(Line.class, line)
               .forRow(row);
             ColumnChecker.checkColumn(2, "Lseg")
               .returns(Tuple::getValue, Row::getValue, lineSegment)
-              .returns(Tuple::getLineSegment, Row::getLineSegment, lineSegment)
+              .returns(LineSegment.class, lineSegment)
               .forRow(row);
             ColumnChecker.checkColumn(3, "Box")
               .returns(Tuple::getValue, Row::getValue, box)
-              .returns(Tuple::getBox, Row::getBox, box)
+              .returns(Box.class, box)
               .forRow(row);
             ColumnChecker.checkColumn(4, "ClosedPath")
               .returns(Tuple::getValue, Row::getValue, OpenPath)
-              .returns(Tuple::getPath, Row::getPath, OpenPath)
+              .returns(Path.class, OpenPath)
               .forRow(row);
             ColumnChecker.checkColumn(5, "OpenPath")
               .returns(Tuple::getValue, Row::getValue, closedPath)
-              .returns(Tuple::getPath, Row::getPath, closedPath)
+              .returns(Path.class, closedPath)
               .forRow(row);
             ColumnChecker.checkColumn(6, "Polygon")
               .returns(Tuple::getValue, Row::getValue, polygon)
-              .returns(Tuple::getPolygon, Row::getPolygon, polygon)
+              .returns(Polygon.class, polygon)
               .forRow(row);
             ColumnChecker.checkColumn(7, "Circle")
               .returns(Tuple::getValue, Row::getValue, circle)
-              .returns(Tuple::getCircle, Row::getCircle, circle)
+              .returns(Circle.class, circle)
               .forRow(row);
             async.complete();
           }));
@@ -179,7 +179,7 @@ public class GeometricTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
   @Test
   public void testEncodeGeometricArray(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"" + "ArrayDataType" + "\" SET " +
           "\"Point\" = $1, " +
           "\"Line\" = $2, " +
@@ -204,49 +204,49 @@ public class GeometricTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
           Circle[] circles = {new Circle(new Point(1.0, 1.0), 3.0), new Circle(new Point(2.0, 2.0), 2.0)};
           int id = 2;
           p.execute(Tuple.tuple()
-            .addPointArray(points)
-            .addLineArray(lines)
-            .addLineSegmentArray(lineSegments)
-            .addBoxArray(boxes)
-            .addPathArray(openPaths)
-            .addPathArray(closedPaths)
-            .addPolygonArray(polygons)
-            .addCircleArray(circles)
+            .addValues(points)
+            .addValues(lines)
+            .addValues(lineSegments)
+            .addValues(boxes)
+            .addValues(openPaths)
+            .addValues(closedPaths)
+            .addValues(polygons)
+            .addValues(circles)
             .addInteger(id), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Point")
               .returns(Tuple::getValue, Row::getValue, points)
-              .returns(Tuple::getPointArray, Row::getPointArray, points)
+              .returns(Point.class, points)
               .forRow(row);
             ColumnChecker.checkColumn(1, "Line")
               .returns(Tuple::getValue, Row::getValue, lines)
-              .returns(Tuple::getLineArray, Row::getLineArray, lines)
+              .returns(Line.class, lines)
               .forRow(row);
             ColumnChecker.checkColumn(2, "Lseg")
               .returns(Tuple::getValue, Row::getValue, lineSegments)
-              .returns(Tuple::getLineSegmentArray, Row::getLineSegmentArray, lineSegments)
+              .returns(LineSegment.class, lineSegments)
               .forRow(row);
             ColumnChecker.checkColumn(3, "Box")
               .returns(Tuple::getValue, Row::getValue, boxes)
-              .returns(Tuple::getBoxArray, Row::getBoxArray, boxes)
+              .returns(Box.class, boxes)
               .forRow(row);
             ColumnChecker.checkColumn(4, "ClosedPath")
               .returns(Tuple::getValue, Row::getValue, openPaths)
-              .returns(Tuple::getPathArray, Row::getPathArray, openPaths)
+              .returns(Path.class, openPaths)
               .forRow(row);
             ColumnChecker.checkColumn(5, "OpenPath")
               .returns(Tuple::getValue, Row::getValue, closedPaths)
-              .returns(Tuple::getPathArray, Row::getPathArray, closedPaths)
+              .returns(Path.class, closedPaths)
               .forRow(row);
             ColumnChecker.checkColumn(6, "Polygon")
               .returns(Tuple::getValue, Row::getValue, polygons)
-              .returns(Tuple::getPolygonArray, Row::getPolygonArray, polygons)
+              .returns(Polygon.class, polygons)
               .forRow(row);
             ColumnChecker.checkColumn(7, "Circle")
               .returns(Tuple::getValue, Row::getValue, circles)
-              .returns(Tuple::getCircleArray, Row::getCircleArray, circles)
+              .returns(Circle.class, circles)
               .forRow(row);
             async.complete();
           }));

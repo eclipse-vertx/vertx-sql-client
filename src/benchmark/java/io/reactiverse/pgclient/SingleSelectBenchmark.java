@@ -17,6 +17,10 @@
 
 package io.reactiverse.pgclient;
 
+import io.reactiverse.sqlclient.PreparedQuery;
+import io.reactiverse.sqlclient.SqlResult;
+import io.reactiverse.sqlclient.SqlConnection;
+import io.reactiverse.sqlclient.Tuple;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.infra.Blackhole;
@@ -36,7 +40,7 @@ public class SingleSelectBenchmark extends PgBenchmarkBase {
 
   @Benchmark
   public void poolPreparedQuery(Blackhole blackhole) throws Exception {
-    CompletableFuture<PgResult> latch = new CompletableFuture<>();
+    CompletableFuture<SqlResult> latch = new CompletableFuture<>();
     pool.preparedQuery("SELECT id, randomnumber from WORLD where id=$1", args, ar -> {
       if (ar.succeeded()) {
         latch.complete(ar.result());
@@ -49,10 +53,10 @@ public class SingleSelectBenchmark extends PgBenchmarkBase {
 
   @Benchmark
   public void pooledConnectionPreparedQuery(Blackhole blackhole) throws Exception {
-    CompletableFuture<PgResult> latch = new CompletableFuture<>();
+    CompletableFuture<SqlResult> latch = new CompletableFuture<>();
     pool.getConnection(ar1 -> {
       if (ar1.succeeded()) {
-        PgConnection conn = ar1.result();
+        SqlConnection conn = ar1.result();
         conn.preparedQuery("SELECT id, randomnumber from WORLD where id=$1", args, ar2 -> {
           conn.close();
           if (ar2.succeeded()) {
@@ -70,13 +74,13 @@ public class SingleSelectBenchmark extends PgBenchmarkBase {
 
   @Benchmark
   public void pooledConnectionPreparedStatementQuery(Blackhole blackhole) throws Exception {
-    CompletableFuture<PgResult> latch = new CompletableFuture<>();
+    CompletableFuture<SqlResult> latch = new CompletableFuture<>();
     pool.getConnection(ar1 -> {
       if (ar1.succeeded()) {
-        PgConnection conn = ar1.result();
+        SqlConnection conn = ar1.result();
         conn.prepare("SELECT id, randomnumber from WORLD where id=$1", ar2 -> {
           if (ar2.succeeded()) {
-            PgPreparedQuery ps = ar2.result();
+            PreparedQuery ps = ar2.result();
             ps.execute(args, ar3 -> {
               conn.close();
               if (ar3.succeeded()) {

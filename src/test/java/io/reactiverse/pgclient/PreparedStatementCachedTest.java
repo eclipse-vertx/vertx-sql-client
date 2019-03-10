@@ -17,6 +17,7 @@
 
 package io.reactiverse.pgclient;
 
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
@@ -30,7 +31,7 @@ public class PreparedStatementCachedTest extends PreparedStatementTestBase {
 
   @Test
   public void testConcurrent(TestContext ctx) {
-    PgClient.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
       Async[] asyncs = new Async[10];
       for (int i = 0;i < 10;i++) {
         asyncs[i] = ctx.async();

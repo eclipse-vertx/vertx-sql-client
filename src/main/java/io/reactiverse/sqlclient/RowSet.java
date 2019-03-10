@@ -14,22 +14,21 @@
  * limitations under the License.
  *
  */
-package io.reactiverse.pgclient;
+
+package io.reactiverse.sqlclient;
 
 import io.vertx.codegen.annotations.VertxGen;
 
-import java.util.Iterator;
-
 /**
- * An iterator for processing postgres items synchronously.
+ * A set of rows.
  */
 @VertxGen
-public interface PgIterator extends Iterator<Row> {
+public interface RowSet extends Iterable<Row>, SqlResult<RowSet> {
 
   @Override
-  boolean hasNext();
+  RowIterator iterator();
 
   @Override
-  Row next();
+  RowSet next();
 
 }

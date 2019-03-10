@@ -17,6 +17,8 @@
 
 package io.reactiverse.pgclient;
 
+import io.reactiverse.sqlclient.SqlResult;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -55,7 +57,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
       pool.getConnection(ctx.asyncAssertSuccess(conn -> {
         conn.query("SELECT id, randomnumber from WORLD", ar -> {
           if (ar.succeeded()) {
-            PgResult result = ar.result();
+            SqlResult result = ar.result();
             ctx.assertEquals(10000, result.size());
           } else {
             ctx.assertEquals("closed", ar.cause().getMessage());
@@ -75,7 +77,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     for (int i = 0;i < num;i++) {
       pool.query("SELECT id, randomnumber from WORLD", ar -> {
         if (ar.succeeded()) {
-          PgResult result = ar.result();
+          SqlResult result = ar.result();
           ctx.assertEquals(10000, result.size());
         } else {
           ctx.assertEquals("closed", ar.cause().getMessage());
@@ -93,7 +95,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     for (int i = 0;i < num;i++) {
       pool.preparedQuery("SELECT id, randomnumber from WORLD where id=$1", Tuple.of(i + 1), ar -> {
         if (ar.succeeded()) {
-          PgResult result = ar.result();
+          SqlResult result = ar.result();
           ctx.assertEquals(1, result.size());
         } else {
           ar.cause().printStackTrace();
@@ -112,7 +114,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     for (int i = 0;i < num;i++) {
       pool.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9", ar -> {
         if (ar.succeeded()) {
-          PgResult result = ar.result();
+          SqlResult result = ar.result();
           ctx.assertEquals(1, result.rowCount());
         } else {
           ctx.assertEquals("closed", ar.cause().getMessage());
@@ -130,7 +132,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     for (int i = 0;i < num;i++) {
       pool.preparedQuery("UPDATE Fortune SET message = 'Whatever' WHERE id = $1", Tuple.of(9), ar -> {
         if (ar.succeeded()) {
-          PgResult result = ar.result();
+          SqlResult result = ar.result();
           ctx.assertEquals(1, result.rowCount());
         } else {
           ctx.assertEquals("closed", ar.cause().getMessage());
@@ -176,7 +178,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
         conn.close();
         async.complete();
       }));
-      conn.cancelRequest(ctx.asyncAssertSuccess());
+      ((PgConnection)conn).cancelRequest(ctx.asyncAssertSuccess());
     }));
   }
 }

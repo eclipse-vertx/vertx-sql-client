@@ -16,11 +16,10 @@
  */
 package io.reactiverse.sqlclient;
 
-import io.reactiverse.pgclient.PgClient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
-public interface Connector<C extends PgClient> {
+public interface Connector<C extends SqlClient> {
 
   void connect(Handler<AsyncResult<C>> handler);
 

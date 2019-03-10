@@ -62,7 +62,7 @@ public class PubSubTest extends PgTestBase {
   public void testNotify(TestContext ctx, String channelName) {
     String quotedChannelName = "\"" + channelName.replace("\"", "\"\"") + "\"";
     Async async = ctx.async(2);
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("LISTEN " + quotedChannelName, ctx.asyncAssertSuccess(result1 -> {
         conn.notificationHandler(notification -> {
           ctx.assertEquals(channelName, notification.getChannel());

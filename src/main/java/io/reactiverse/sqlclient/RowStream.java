@@ -15,7 +15,7 @@
  *
  */
 
-package io.reactiverse.pgclient;
+package io.reactiverse.sqlclient;
 
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
@@ -26,22 +26,22 @@ import io.vertx.core.streams.ReadStream;
  * A row oriented stream.
  */
 @VertxGen
-public interface PgStream<T> extends ReadStream<T> {
+public interface RowStream<T> extends ReadStream<T> {
 
   @Override
-  PgStream<T> exceptionHandler(Handler<Throwable> handler);
+  RowStream<T> exceptionHandler(Handler<Throwable> handler);
 
   @Override
-  PgStream<T> handler(Handler<T> handler);
+  RowStream<T> handler(Handler<T> handler);
 
   @Override
-  PgStream<T> pause();
+  RowStream<T> pause();
 
   @Override
-  PgStream<T> resume();
+  RowStream<T> resume();
 
   @Override
-  PgStream<T> endHandler(Handler<Void> endHandler);
+  RowStream<T> endHandler(Handler<Void> endHandler);
 
   /**
    * Close the stream and release the resources.

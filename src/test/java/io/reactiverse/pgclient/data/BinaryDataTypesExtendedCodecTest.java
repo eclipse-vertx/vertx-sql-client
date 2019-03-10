@@ -1,8 +1,8 @@
 package io.reactiverse.pgclient.data;
 
-import io.reactiverse.pgclient.PgClient;
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
+import io.reactiverse.pgclient.PgConnection;
+import io.reactiverse.sqlclient.Row;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -18,7 +18,7 @@ public class BinaryDataTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
     byte[] bytes = new byte[len];
     r.nextBytes(bytes);
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT $1::BYTEA \"Bytea\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.of(Buffer.buffer(bytes)), ctx.asyncAssertSuccess(result -> {
@@ -39,7 +39,7 @@ public class BinaryDataTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
     byte[] bytes = new byte[len];
     r.nextBytes(bytes);
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT ARRAY[$1::BYTEA] \"Bytea\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.of(Buffer.buffer(bytes)), ctx.asyncAssertSuccess(result -> {

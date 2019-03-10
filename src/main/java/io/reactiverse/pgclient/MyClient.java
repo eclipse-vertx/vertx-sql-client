@@ -1,6 +1,9 @@
 package io.reactiverse.pgclient;
 
 import io.reactiverse.pgclient.impl.my.MyConnectionFactory;
+import io.reactiverse.sqlclient.SqlResult;
+import io.reactiverse.sqlclient.RowSet;
+import io.reactiverse.sqlclient.Row;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
@@ -21,9 +24,9 @@ public interface MyClient {
     }
   }
 
-  MyClient query(String sql, Handler<AsyncResult<PgRowSet>> handler);
+  MyClient query(String sql, Handler<AsyncResult<RowSet>> handler);
 
-  <R> MyClient query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+  <R> MyClient query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   MyClient ping(Handler<AsyncResult<Void>> handler);
 }

@@ -17,6 +17,8 @@
 
 package io.reactiverse.pgclient;
 
+import io.reactiverse.sqlclient.SqlResult;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
@@ -30,7 +32,9 @@ import java.util.List;
 public class PgConnectionTest extends PgConnectionTestBase {
 
   public PgConnectionTest() {
-    connector = (handler) -> PgClient.connect(vertx, options, handler);
+    connector = (handler) -> PgConnection.connect(vertx, options, ar -> {
+      handler.handle(ar.map(p -> p));
+    });
   }
 
   @Test
@@ -67,7 +71,7 @@ public class PgConnectionTest extends PgConnectionTestBase {
       for (int i = 0;i < num;i++) {
         conn.query("SELECT id, randomnumber from WORLD", ar -> {
           if (ar.succeeded()) {
-            PgResult result = ar.result();
+            SqlResult result = ar.result();
             ctx.assertEquals(10000, result.size());
           } else {
             ctx.assertEquals("closed", ar.cause().getMessage());
@@ -91,7 +95,7 @@ public class PgConnectionTest extends PgConnectionTestBase {
         ctx.assertEquals("canceling statement due to user request", error.getMessage());
         async.countDown();
       }));
-      conn.cancelRequest(ctx.asyncAssertSuccess());
+      ((PgConnection)conn).cancelRequest(ctx.asyncAssertSuccess());
 
       conn.closeHandler(v -> {
         ctx.assertEquals(1, async.count());

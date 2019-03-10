@@ -21,6 +21,8 @@ import io.reactiverse.pgclient.*;
 import io.reactiverse.pgclient.impl.command.CommandResponse;
 import io.reactiverse.pgclient.impl.command.CommandScheduler;
 import io.reactiverse.pgclient.impl.command.CommandBase;
+import io.reactiverse.sqlclient.SqlConnection;
+import io.reactiverse.sqlclient.Transaction;
 import io.vertx.core.*;
 
 /**
@@ -54,7 +56,7 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
   }
 
   @Override
-  public void getConnection(Handler<AsyncResult<PgConnection>> handler) {
+  public void getConnection(Handler<AsyncResult<SqlConnection>> handler) {
     Context current = Vertx.currentContext();
     if (current == context) {
       pool.acquire(new ConnectionWaiter(handler));
@@ -64,11 +66,11 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
   }
 
   @Override
-  public void begin(Handler<AsyncResult<PgTransaction>> handler) {
+  public void begin(Handler<AsyncResult<Transaction>> handler) {
     getConnection(ar -> {
       if (ar.succeeded()) {
         PgConnectionImpl conn = (PgConnectionImpl) ar.result();
-        PgTransaction tx = conn.begin(true);
+        Transaction tx = conn.begin(true);
         handler.handle(Future.succeededFuture(tx));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
@@ -151,9 +153,9 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
 
   private class ConnectionWaiter implements Handler<AsyncResult<Connection>> {
 
-    private final Handler<AsyncResult<PgConnection>> handler;
+    private final Handler<AsyncResult<SqlConnection>> handler;
 
-    private ConnectionWaiter(Handler<AsyncResult<PgConnection>> handler) {
+    private ConnectionWaiter(Handler<AsyncResult<SqlConnection>> handler) {
       this.handler = handler;
     }
 

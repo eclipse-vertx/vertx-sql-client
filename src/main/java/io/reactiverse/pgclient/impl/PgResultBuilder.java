@@ -17,16 +17,16 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.PgResult;
+import io.reactiverse.sqlclient.SqlResult;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
 import java.util.function.Function;
 
 /**
- * A query result handler for building a {@link PgResult}.
+ * A query result handler for building a {@link SqlResult}.
  */
-public class PgResultBuilder<T, R extends PgResultBase<T, R>, L extends PgResult<T>> implements QueryResultHandler<T>, Handler<AsyncResult<Boolean>> {
+public class PgResultBuilder<T, R extends PgResultBase<T, R>, L extends SqlResult<T>> implements QueryResultHandler<T>, Handler<AsyncResult<Boolean>> {
 
   private final Handler<AsyncResult<L>> handler;
   private final Function<T, R> factory;

@@ -17,10 +17,10 @@
 package io.reactiverse.myclient.tck;
 
 import io.reactiverse.pgclient.MyClient;
-import io.reactiverse.pgclient.PgClient;
 import io.reactiverse.pgclient.PgConnectOptions;
-import io.reactiverse.pgclient.PgConnection;
 import io.reactiverse.sqlclient.Connector;
+import io.reactiverse.sqlclient.SqlClient;
+import io.reactiverse.sqlclient.SqlConnection;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -30,10 +30,10 @@ public enum ClientConfig {
 
   CONNECT() {
     @Override
-    Connector<PgConnection> connect(Vertx vertx, PgConnectOptions options) {
-      return new Connector<PgConnection>() {
+    Connector<SqlConnection> connect(Vertx vertx, PgConnectOptions options) {
+      return new Connector<SqlConnection>() {
         @Override
-        public void connect(Handler<AsyncResult<PgConnection>> handler) {
+        public void connect(Handler<AsyncResult<SqlConnection>> handler) {
           MyClient.connect(vertx, options, ar -> {
             if (ar.succeeded()) {
               handler.handle(Future.succeededFuture(ar.result()));
@@ -51,6 +51,6 @@ public enum ClientConfig {
 
   ;
 
-  abstract <C extends PgClient> Connector<C> connect(Vertx vertx, PgConnectOptions options);
+  abstract <C extends SqlClient> Connector<C> connect(Vertx vertx, PgConnectOptions options);
 
 }

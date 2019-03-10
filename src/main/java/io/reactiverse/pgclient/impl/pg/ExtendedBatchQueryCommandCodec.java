@@ -16,7 +16,7 @@
  */
 package io.reactiverse.pgclient.impl.pg;
 
-import io.reactiverse.pgclient.Tuple;
+import io.reactiverse.sqlclient.Tuple;
 import io.reactiverse.pgclient.impl.command.ExtendedBatchQueryCommand;
 
 import java.util.List;

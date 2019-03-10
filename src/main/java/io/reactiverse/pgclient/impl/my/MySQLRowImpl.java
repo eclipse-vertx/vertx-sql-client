@@ -37,9 +37,28 @@ public class MySQLRowImpl extends ArrayTuple implements RowInternal {
   }
 
   @Override
+  public <T> T[] getValues(Class<T> type, int idx) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public String getColumnName(int pos) {
     final ColumnDefinition[] columnDefinitions = columnMetadata.getColumnDefinitions();
     return pos < 0 || columnDefinitions.length - 1 < pos ? null : columnDefinitions[pos].getName();
+  }
+
+  @Override
+  public int getColumnIndex(String name) {
+    if (name == null) {
+      throw new NullPointerException();
+    }
+    final ColumnDefinition[] columnDefinitions = columnMetadata.getColumnDefinitions();
+    for (int idx = 0;idx < columnDefinitions.length;idx++) {
+      if (columnDefinitions[idx].getName().equals(name)) {
+        return idx;
+      }
+    }
+    return -1;
   }
 
   @Override
@@ -91,7 +110,7 @@ public class MySQLRowImpl extends ArrayTuple implements RowInternal {
   }
 
   @Override
-  public Json getJson(String name) {
+  public <T> T get(Class<T> type, int pos) {
     throw new UnsupportedOperationException();
   }
 
@@ -137,51 +156,6 @@ public class MySQLRowImpl extends ArrayTuple implements RowInternal {
 
   @Override
   public BigDecimal getBigDecimal(String name) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Numeric getNumeric(String name) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Point getPoint(String name) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Line getLine(String name) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public LineSegment getLineSegment(String name) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Box getBox(String name) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Path getPath(String name) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Polygon getPolygon(String name) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Circle getCircle(String name) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Interval getInterval(String name) {
     throw new UnsupportedOperationException();
   }
 
@@ -252,56 +226,6 @@ public class MySQLRowImpl extends ArrayTuple implements RowInternal {
 
   @Override
   public UUID[] getUUIDArray(String name) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Json[] getJsonArray(String name) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Numeric[] getNumericArray(String name) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Point[] getPointArray(String name) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Line[] getLineArray(String name) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public LineSegment[] getLineSegmentArray(String name) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Box[] getBoxArray(String name) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Path[] getPathArray(String name) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Polygon[] getPolygonArray(String name) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Circle[] getCircleArray(String name) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Interval[] getIntervalArray(String name) {
     throw new UnsupportedOperationException();
   }
 

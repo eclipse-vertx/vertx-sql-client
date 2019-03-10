@@ -15,7 +15,7 @@
  *
  */
 
-package io.reactiverse.pgclient;
+package io.reactiverse.sqlclient;
 
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
@@ -25,7 +25,7 @@ import io.vertx.core.Handler;
  * A cursor that reads progressively the rows from Postgres, it is usefull for reading very large result.
  */
 @VertxGen
-public interface PgCursor {
+public interface Cursor {
 
   /**
    * Read rows from the cursor, the result is provided asynchronously to the {@code handler}.
@@ -33,7 +33,7 @@ public interface PgCursor {
    * @param count the amount of rows to read
    * @param handler the handler for the result
    */
-  void read(int count, Handler<AsyncResult<PgRowSet>> handler);
+  void read(int count, Handler<AsyncResult<RowSet>> handler);
 
   /**
    * Returns {@code true} when the cursor has results in progress and the {@link #execute} should be called to retrieve

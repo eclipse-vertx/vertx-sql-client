@@ -17,7 +17,7 @@
 
 package io.reactiverse.pgclient.impl.pg;
 
-import io.reactiverse.pgclient.Row;
+import io.reactiverse.sqlclient.Row;
 import io.reactiverse.pgclient.impl.RowImpl;
 import io.netty.buffer.ByteBuf;
 

@@ -15,7 +15,7 @@
  *
  */
 
-package io.reactiverse.pgclient;
+package io.reactiverse.sqlclient;
 
 import io.reactiverse.pgclient.impl.ArrayTuple;
 import io.vertx.codegen.annotations.Fluent;
@@ -33,13 +33,13 @@ import java.util.stream.Collector;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 @VertxGen
-public interface PgPreparedQuery {
+public interface PreparedQuery {
 
   /**
    * Calls {@link #execute(Tuple, Handler)} with an empty tuple argument.
    */
   @Fluent
-  default PgPreparedQuery execute(Handler<AsyncResult<PgRowSet>> handler) {
+  default PreparedQuery execute(Handler<AsyncResult<RowSet>> handler) {
     return execute(ArrayTuple.EMPTY, handler);
   }
 
@@ -47,7 +47,7 @@ public interface PgPreparedQuery {
    * Calls {@link #execute(Tuple, Collector, Handler)} with an empty tuple argument.
    */
   @GenIgnore
-  default <R> PgPreparedQuery execute(Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler) {
+  default <R> PreparedQuery execute(Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
     return execute(ArrayTuple.EMPTY, collector, handler);
   }
 
@@ -58,7 +58,7 @@ public interface PgPreparedQuery {
    * @return the query
    */
   @Fluent
-  PgPreparedQuery execute(Tuple args, Handler<AsyncResult<PgRowSet>> handler);
+  PreparedQuery execute(Tuple args, Handler<AsyncResult<RowSet>> handler);
 
   /**
    * Create a cursor with the provided {@code arguments}.
@@ -68,12 +68,12 @@ public interface PgPreparedQuery {
    * @return the query
    */
   @GenIgnore
-  <R> PgPreparedQuery execute(Tuple args, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+  <R> PreparedQuery execute(Tuple args, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   /**
    * @return create a query cursor with a {@code fetch} size and empty arguments
    */
-  default PgCursor cursor() {
+  default Cursor cursor() {
     return cursor(ArrayTuple.EMPTY);
   }
 
@@ -83,7 +83,7 @@ public interface PgPreparedQuery {
    * @param args the list of arguments
    * @return the query
    */
-  PgCursor cursor(Tuple args);
+  Cursor cursor(Tuple args);
 
   /**
    * Execute the prepared query with a cursor and createStream the result. The createStream opens a cursor
@@ -95,7 +95,7 @@ public interface PgPreparedQuery {
    * @param args the prepared query arguments
    * @return the createStream
    */
-  PgStream<Row> createStream(int fetch, Tuple args);
+  RowStream<Row> createStream(int fetch, Tuple args);
 
   /**
    * Execute a batch.
@@ -104,7 +104,7 @@ public interface PgPreparedQuery {
    * @return the createBatch
    */
   @Fluent
-  PgPreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<PgRowSet>> handler);
+  PreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<RowSet>> handler);
 
   /**
    * Execute a batch.
@@ -114,7 +114,7 @@ public interface PgPreparedQuery {
    * @return the createBatch
    */
   @GenIgnore
-  <R> PgPreparedQuery batch(List<Tuple> argsList, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+  <R> PreparedQuery batch(List<Tuple> argsList, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   /**
    * Close the prepared query and release its resources.

@@ -17,11 +17,11 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.PgResult;
+import io.reactiverse.sqlclient.SqlResult;
 
 import java.util.List;
 
-public abstract class PgResultBase<T, R extends PgResultBase<T, R>> implements PgResult<T> {
+public abstract class PgResultBase<T, R extends PgResultBase<T, R>> implements SqlResult<T> {
 
   int updated;
   List<String> columnNames;

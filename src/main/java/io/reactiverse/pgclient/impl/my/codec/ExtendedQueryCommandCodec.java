@@ -21,7 +21,7 @@ import io.reactiverse.pgclient.impl.my.codec.datatype.DataFormat;
 import io.reactiverse.pgclient.impl.my.codec.datatype.DataTypeCodec;
 import io.reactiverse.pgclient.impl.my.protocol.CommandType;
 import io.reactiverse.pgclient.impl.my.protocol.backend.ColumnDefinition;
-import io.reactiverse.pgclient.Tuple;
+import io.reactiverse.sqlclient.Tuple;
 import io.reactiverse.pgclient.impl.command.ExtendedQueryCommand;
 
 public class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {

@@ -1,8 +1,8 @@
 package io.reactiverse.pgclient.data;
 
-import io.reactiverse.pgclient.PgClient;
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
+import io.reactiverse.pgclient.PgConnection;
+import io.reactiverse.sqlclient.Row;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
@@ -23,7 +23,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
   @Test
   public void testEncodeDateBeforePgEpoch(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"TemporalDataType\" SET \"Date\" = $1 WHERE \"id\" = $2 RETURNING \"Date\"",
         ctx.asyncAssertSuccess(p -> {
           LocalDate ld = LocalDate.parse("1981-06-30");
@@ -52,7 +52,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
   @Test
   public void testEncodeDateAfterPgEpoch(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"TemporalDataType\" SET \"Date\" = $1 WHERE \"id\" = $2 RETURNING \"Date\"",
         ctx.asyncAssertSuccess(p -> {
           LocalDate ld = LocalDate.parse("2018-05-30");
@@ -82,7 +82,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
   @Test
   public void testEncodeTime(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE  \"TemporalDataType\" SET \"Time\" = $1 WHERE \"id\" = $2 RETURNING \"Time\"",
         ctx.asyncAssertSuccess(p -> {
           LocalTime lt = LocalTime.parse("22:55:04.905120");
@@ -112,7 +112,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
   @Test
   public void testEncodeTimeTz(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"TemporalDataType\" SET \"TimeTz\" = $1 WHERE \"id\" = $2 RETURNING \"TimeTz\"",
         ctx.asyncAssertSuccess(p -> {
           OffsetTime ot = OffsetTime.parse("20:55:04.905120+03:07");
@@ -141,7 +141,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
   @Test
   public void testEncodeTimestampBeforePgEpoch(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"TemporalDataType\" SET \"Timestamp\" = $1 WHERE \"id\" = $2 RETURNING \"Timestamp\"",
         ctx.asyncAssertSuccess(p -> {
           LocalDateTime ldt = LocalDateTime.parse("1900-02-01T23:57:53.237666");
@@ -171,7 +171,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
   @Test
   public void testEncodeTimestampAfterPgEpoch(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"TemporalDataType\" SET \"Timestamp\" =$1 WHERE \"id\" = $2 RETURNING \"Timestamp\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
@@ -200,7 +200,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
   @Test
   public void testEncodeTimestampTzBeforePgEpoch(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SET TIME ZONE 'UTC'", ctx.asyncAssertSuccess(v -> {
         conn.prepare("UPDATE \"TemporalDataType\" SET \"TimestampTz\" =$1 WHERE \"id\" = $2 RETURNING \"TimestampTz\"",
           ctx.asyncAssertSuccess(p -> {
@@ -232,7 +232,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
   @Test
   public void testEncodeTimestampTzAfterPgEpoch(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SET TIME ZONE 'UTC'", ctx.asyncAssertSuccess(v -> {
         conn.prepare("UPDATE \"TemporalDataType\" SET \"TimestampTz\" = $1 WHERE \"id\" = $2 RETURNING \"TimestampTz\"",
           ctx.asyncAssertSuccess(p -> {
@@ -268,16 +268,16 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
       .microseconds(999999);
 
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT $1 :: INTERVAL \"Interval\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addInterval(interval), ctx.asyncAssertSuccess(result -> {
+          p.execute(Tuple.tuple().addValue(interval), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Interval")
               .returns(Tuple::getValue, Row::getValue, interval)
-              .returns(Tuple::getInterval, Row::getInterval, interval)
+              .returns(Interval.class, interval)
               .forRow(row);
             async.complete();
           }));
@@ -288,7 +288,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
   @Test
   public void testEncodeInterval(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"TemporalDataType\" SET \"Interval\" = $1 WHERE \"id\" = $2 RETURNING \"Interval\"",
         ctx.asyncAssertSuccess(p -> {
           // 2000 years 1 months 403 days 59 hours 35 minutes 13.999998 seconds
@@ -301,14 +301,14 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
             .seconds(13)
             .microseconds(999998);
           p.execute(Tuple.tuple()
-            .addInterval(expected)
+            .addValue(expected)
             .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Interval")
               .returns(Tuple::getValue, Row::getValue, expected)
-              .returns(Tuple::getInterval, Row::getInterval, expected)
+              .returns(Interval.class, expected)
               .forRow(row);
             async.complete();
           }));
@@ -324,7 +324,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
   @Test
   public void testEncodeLocalDateArray(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"LocalDate\" = $1  WHERE \"id\" = $2 RETURNING \"LocalDate\"",
         ctx.asyncAssertSuccess(p -> {
           final LocalDate dt = LocalDate.parse("1998-05-12");
@@ -350,7 +350,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
   @Test
   public void testEncodeLocalTimeArray(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"LocalTime\" = $1  WHERE \"id\" = $2 RETURNING \"LocalTime\"",
         ctx.asyncAssertSuccess(p -> {
           final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSS");
@@ -377,7 +377,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
   @Test
   public void testEncodeOffsetTimeArray(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"OffsetTime\" = $1  WHERE \"id\" = $2 RETURNING \"OffsetTime\"",
         ctx.asyncAssertSuccess(p -> {
           final OffsetTime dt = OffsetTime.parse("17:56:04.90512+03:07");
@@ -403,7 +403,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
   @Test
   public void testEncodeLocalDateTimeArray(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"LocalDateTime\" = $1  WHERE \"id\" = $2 RETURNING \"LocalDateTime\"",
         ctx.asyncAssertSuccess(p -> {
           final LocalDateTime dt = LocalDateTime.parse("2017-05-14T19:35:58.237666");
@@ -429,7 +429,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
   @Test
   public void testEncodeOffsetDateTimeArray(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"OffsetDateTime\" = $1  WHERE \"id\" = $2 RETURNING \"OffsetDateTime\"",
         ctx.asyncAssertSuccess(p -> {
           final OffsetDateTime dt = OffsetDateTime.parse("2017-05-14T19:35:58.237666Z");
@@ -449,13 +449,13 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
 
   @Test
   public void testDecodeIntervalArray(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1 :: INTERVAL [] \"Interval\"", new Interval[][]{intervals}, Row::getIntervalArray);
+    testGenericArray(ctx, "SELECT $1 :: INTERVAL [] \"Interval\"", new Interval[][]{intervals}, Interval.class);
   }
 
   @Test
   public void testEncodeIntervalArray(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Interval\" = $1  WHERE \"id\" = $2 RETURNING \"Interval\"",
         ctx.asyncAssertSuccess(p -> {
           Interval[] intervals = new Interval[]{
@@ -465,12 +465,12 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
             Interval.of()
           };
           p.execute(Tuple.tuple()
-              .addIntervalArray(intervals)
+              .addValues(intervals)
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Interval")
-                .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(intervals))
-                .returns(Tuple::getIntervalArray, Row::getIntervalArray, ColumnChecker.toObjectArray(intervals))
+                .returns(Tuple::getValue, Row::getValue, intervals)
+                .returns(Interval.class, intervals)
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -485,7 +485,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
                                              ColumnChecker.SerializableBiFunction<Row, String, T> byNameGetter,
                                              T expected) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT $1 :: " + dataType + " \"" + columnName + "\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple().addValue(expected), ctx.asyncAssertSuccess(result -> {

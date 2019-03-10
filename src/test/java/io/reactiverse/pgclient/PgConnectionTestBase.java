@@ -17,6 +17,10 @@
 
 package io.reactiverse.pgclient;
 
+import io.reactiverse.sqlclient.RowSet;
+import io.reactiverse.sqlclient.SqlConnection;
+import io.reactiverse.sqlclient.Transaction;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.Async;
@@ -34,7 +38,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
-public abstract class PgConnectionTestBase extends PgClientTestBase<PgConnection> {
+public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnection> {
 
   @Test
   public void testDisconnectAbruptly(TestContext ctx) {
@@ -326,7 +330,7 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<PgConnection
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       deleteFromTestTable(ctx, conn, () -> {
         exec.execute(() -> {
-          PgTransaction tx = conn.begin();
+          Transaction tx = conn.begin();
           AtomicInteger u1 = new AtomicInteger();
           AtomicInteger u2 = new AtomicInteger();
           conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-1')", ctx.asyncAssertSuccess(res1 -> {
@@ -367,7 +371,7 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<PgConnection
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       deleteFromTestTable(ctx, conn, () -> {
         exec.execute(() -> {
-          PgTransaction tx = conn.begin();
+          Transaction tx = conn.begin();
           AtomicInteger u1 = new AtomicInteger();
           AtomicInteger u2 = new AtomicInteger();
           conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-1')", ctx.asyncAssertSuccess(res1 -> {
@@ -399,10 +403,10 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<PgConnection
     Async done = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       deleteFromTestTable(ctx, conn, () -> {
-        PgTransaction tx = conn.begin();
+        Transaction tx = conn.begin();
         AtomicInteger failures = new AtomicInteger();
         tx.abortHandler(v -> ctx.assertEquals(0, failures.getAndIncrement()));
-        AtomicReference<AsyncResult<PgRowSet>> queryAfterFailed = new AtomicReference<>();
+        AtomicReference<AsyncResult<RowSet>> queryAfterFailed = new AtomicReference<>();
         AtomicReference<AsyncResult<Void>> commit = new AtomicReference<>();
         conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-1')", ar1 -> { });
         conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-2')", ar2 -> {
