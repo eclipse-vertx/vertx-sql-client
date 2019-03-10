@@ -22,6 +22,7 @@ import io.reactiverse.pgclient.PgConnection;
 import io.reactiverse.pgclient.PgPool;
 import io.reactiverse.pgclient.PgPoolOptions;
 import io.reactiverse.sqlclient.Connector;
+import io.reactiverse.sqlclient.SqlClient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -52,11 +53,11 @@ public enum ClientConfig {
 
   POOLED() {
     @Override
-    Connector<PgClient> connect(Vertx vertx, PgConnectOptions options) {
+    Connector<SqlClient> connect(Vertx vertx, PgConnectOptions options) {
       PgPool pool = PgClient.pool(vertx, new PgPoolOptions(options).setMaxSize(1));
-      return new Connector<PgClient>() {
+      return new Connector<SqlClient>() {
         @Override
-        public void connect(Handler<AsyncResult<PgClient>> handler) {
+        public void connect(Handler<AsyncResult<SqlClient>> handler) {
           pool.getConnection(ar -> {
             if (ar.succeeded()) {
               handler.handle(Future.succeededFuture(ar.result()));
@@ -73,6 +74,6 @@ public enum ClientConfig {
     }
   };
 
-  abstract <C extends PgClient> Connector<C> connect(Vertx vertx, PgConnectOptions options);
+  abstract <C extends SqlClient> Connector<C> connect(Vertx vertx, PgConnectOptions options);
 
 }

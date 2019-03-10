@@ -239,7 +239,7 @@ Or you can use the transaction API of {@link io.reactiverse.pgclient.PgConnectio
 ```
 
 When Postgres reports the current transaction is failed (e.g the infamous _current transaction is aborted, commands ignored until
-end of transaction block_), the transaction is rollbacked and the {@link io.reactiverse.pgclient.PgTransaction#abortHandler(io.vertx.core.Handler)}
+end of transaction block_), the transaction is rollbacked and the {@link io.reactiverse.sqlclient.SqlTransaction#abortHandler(io.vertx.core.Handler)}
 is called:
 
 ```$lang

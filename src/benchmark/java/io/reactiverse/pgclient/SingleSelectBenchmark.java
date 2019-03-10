@@ -17,6 +17,7 @@
 
 package io.reactiverse.pgclient;
 
+import io.reactiverse.sqlclient.SqlConnection;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.infra.Blackhole;
@@ -52,7 +53,7 @@ public class SingleSelectBenchmark extends PgBenchmarkBase {
     CompletableFuture<PgResult> latch = new CompletableFuture<>();
     pool.getConnection(ar1 -> {
       if (ar1.succeeded()) {
-        PgConnection conn = ar1.result();
+        SqlConnection conn = ar1.result();
         conn.preparedQuery("SELECT id, randomnumber from WORLD where id=$1", args, ar2 -> {
           conn.close();
           if (ar2.succeeded()) {
@@ -73,7 +74,7 @@ public class SingleSelectBenchmark extends PgBenchmarkBase {
     CompletableFuture<PgResult> latch = new CompletableFuture<>();
     pool.getConnection(ar1 -> {
       if (ar1.succeeded()) {
-        PgConnection conn = ar1.result();
+        SqlConnection conn = ar1.result();
         conn.prepare("SELECT id, randomnumber from WORLD where id=$1", ar2 -> {
           if (ar2.succeeded()) {
             PgPreparedQuery ps = ar2.result();

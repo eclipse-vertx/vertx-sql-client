@@ -21,7 +21,7 @@ import io.reactiverse.pgclient.impl.Connection;
 import io.reactiverse.pgclient.impl.PgConnectionFactory;
 import io.reactiverse.pgclient.impl.PgConnectionImpl;
 import io.reactiverse.pgclient.impl.PgPoolImpl;
-import io.vertx.codegen.annotations.Fluent;
+import io.reactiverse.sqlclient.SqlClient;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.*;
@@ -35,7 +35,7 @@ import java.util.stream.Collector;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 @VertxGen
-public interface PgClient {
+public interface PgClient extends SqlClient {
 
   /**
    * Like {@link #pool(PgPoolOptions)} with options build from the environment variables.
@@ -139,91 +139,23 @@ public interface PgClient {
     connect(vertx, PgConnectOptions.fromUri(connectionUri), handler);
   }
 
-  /**
-   * Execute a simple query.
-   *
-   * @param sql the query SQL
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
   PgClient query(String sql, Handler<AsyncResult<PgRowSet>> handler);
 
-  /**
-   * Execute a simple query.
-   *
-   * @param sql the query SQL
-   * @param collector the collector
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
-   */
   @GenIgnore
   <R> PgClient query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
 
-  /**
-   * Prepare and execute a query.
-   *
-   * @param sql the prepared query SQL
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
   PgClient preparedQuery(String sql, Handler<AsyncResult<PgRowSet>> handler);
 
-  /**
-   * Prepare and execute a query.
-   *
-   * @param sql the prepared query SQL
-   * @param collector the collector
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
-   */
   @GenIgnore
   <R> PgClient preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
 
-  /**
-   * Prepare and execute a query.
-   *
-   * @param sql the prepared query SQL
-   * @param arguments the list of arguments
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
   PgClient preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgRowSet>> handler);
 
-  /**
-   * Prepare and execute a query.
-   *
-   * @param sql the prepared query SQL
-   * @param arguments the list of arguments
-   * @param collector the collector
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
-   */
   @GenIgnore
   <R> PgClient preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
 
-  /**
-   * Prepare and execute a createBatch.
-   *
-   * @param sql the prepared query SQL
-   * @param batch the batch of tuples
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
   PgClient preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgRowSet>> handler);
 
-  /**
-   * Prepare and execute a createBatch.
-   *
-   * @param sql the prepared query SQL
-   * @param batch the batch of tuples
-   * @param collector the collector
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
-   */
   @GenIgnore
   <R> PgClient preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
 }

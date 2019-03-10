@@ -17,6 +17,7 @@
 
 package io.reactiverse.pgclient;
 
+import io.reactiverse.sqlclient.SqlPool;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
@@ -31,54 +32,23 @@ import java.util.stream.Collector;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 @VertxGen
-public interface PgPool extends PgClient {
+public interface PgPool extends SqlPool {
 
-  @Override
   PgPool preparedQuery(String sql, Handler<AsyncResult<PgRowSet>> handler);
 
-  @Override
   @GenIgnore
   <R> PgPool preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
-
-  @Override
   PgPool query(String sql, Handler<AsyncResult<PgRowSet>> handler);
 
-  @Override
   @GenIgnore
   <R> PgPool query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
-
-  @Override
   PgPool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgRowSet>> handler);
 
-  @Override
   @GenIgnore
   <R> PgPool preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
-
-  @Override
   PgPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgRowSet>> handler);
 
-  @Override
   @GenIgnore
   <R> PgPool preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
-
-  /**
-   * Get a connection from the pool.
-   *
-   * @param handler the handler that will get the connection result
-   */
-  void getConnection(Handler<AsyncResult<PgConnection>> handler);
-
-  /**
-   * Borrow a connection from the pool and begin a transaction, the underlying connection will be returned
-   * to the pool when the transaction ends.
-   *
-   * @return the transaction
-   */
-  void begin(Handler<AsyncResult<PgTransaction>> handler);
-
-  /**
-   * Close the pool and release the associated resources.
-   */
-  void close();
 
 }

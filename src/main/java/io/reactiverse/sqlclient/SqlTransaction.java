@@ -14,8 +14,14 @@
  * limitations under the License.
  *
  */
-package io.reactiverse.pgclient;
+package io.reactiverse.sqlclient;
 
+import io.reactiverse.pgclient.PgClient;
+import io.reactiverse.pgclient.PgPreparedQuery;
+import io.reactiverse.pgclient.PgResult;
+import io.reactiverse.pgclient.PgRowSet;
+import io.reactiverse.pgclient.Row;
+import io.reactiverse.pgclient.Tuple;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
@@ -29,7 +35,7 @@ import java.util.stream.Collector;
  * A transaction that allows to control the transaction and receive events.
  */
 @VertxGen
-public interface PgTransaction extends PgClient {
+public interface SqlTransaction extends SqlClient {
 
   /**
    * Create a prepared query.
@@ -38,7 +44,7 @@ public interface PgTransaction extends PgClient {
    * @param handler the handler notified with the prepared query asynchronously
    */
   @Fluent
-  PgTransaction prepare(String sql, Handler<AsyncResult<PgPreparedQuery>> handler);
+  SqlTransaction prepare(String sql, Handler<AsyncResult<PgPreparedQuery>> handler);
 
   /**
    * Commit the current transaction.
@@ -66,33 +72,33 @@ public interface PgTransaction extends PgClient {
    * @param handler the handler
    */
   @Fluent
-  PgTransaction abortHandler(Handler<Void> handler);
+  SqlTransaction abortHandler(Handler<Void> handler);
 
   @Override
-  PgTransaction query(String sql, Handler<AsyncResult<PgRowSet>> handler);
-
-  @Override
-  @GenIgnore
-  <R> PgTransaction query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
-
-  @Override
-  PgTransaction preparedQuery(String sql, Handler<AsyncResult<PgRowSet>> handler);
+  SqlTransaction query(String sql, Handler<AsyncResult<PgRowSet>> handler);
 
   @Override
   @GenIgnore
-  <R> PgTransaction preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+  <R> SqlTransaction query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
 
   @Override
-  PgTransaction preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgRowSet>> handler);
-
-  @Override
-  @GenIgnore
-  <R> PgTransaction preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
-
-  @Override
-  PgTransaction preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgRowSet>> handler);
+  SqlTransaction preparedQuery(String sql, Handler<AsyncResult<PgRowSet>> handler);
 
   @Override
   @GenIgnore
-  <R> PgTransaction preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+  <R> SqlTransaction preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+
+  @Override
+  SqlTransaction preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgRowSet>> handler);
+
+  @Override
+  @GenIgnore
+  <R> SqlTransaction preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+
+  @Override
+  SqlTransaction preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgRowSet>> handler);
+
+  @Override
+  @GenIgnore
+  <R> SqlTransaction preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
 }

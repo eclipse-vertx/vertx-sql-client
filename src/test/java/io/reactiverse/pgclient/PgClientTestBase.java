@@ -18,6 +18,7 @@
 package io.reactiverse.pgclient;
 
 import io.reactiverse.pgclient.impl.ArrayTuple;
+import io.reactiverse.sqlclient.SqlClient;
 import io.vertx.core.*;
 import io.vertx.core.net.NetSocket;
 import io.vertx.ext.unit.Async;
@@ -36,7 +37,7 @@ import java.util.stream.IntStream;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
-public abstract class PgClientTestBase<C extends PgClient> extends PgTestBase {
+public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
 
   Vertx vertx;
   Consumer<Handler<AsyncResult<C>>> connector;

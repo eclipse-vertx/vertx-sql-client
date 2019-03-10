@@ -14,15 +14,8 @@
  * limitations under the License.
  *
  */
+
+@ModuleGen(name = "reactive-sql-client", groupPackage = "io.reactiverse")
 package io.reactiverse.sqlclient;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-
-public interface Connector<C extends SqlClient> {
-
-  void connect(Handler<AsyncResult<C>> handler);
-
-  void close();
-
-}
+import io.vertx.codegen.annotations.ModuleGen;

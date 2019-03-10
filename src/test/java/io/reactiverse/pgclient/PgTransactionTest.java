@@ -16,11 +16,12 @@
  */
 package io.reactiverse.pgclient;
 
+import io.reactiverse.sqlclient.SqlTransaction;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
-public class PgTransactionTest extends PgClientTestBase<PgTransaction> {
+public class PgTransactionTest extends PgClientTestBase<SqlTransaction> {
 
   private PgPool pool;
 

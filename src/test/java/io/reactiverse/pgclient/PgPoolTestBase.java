@@ -176,7 +176,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
         conn.close();
         async.complete();
       }));
-      conn.cancelRequest(ctx.asyncAssertSuccess());
+      ((PgConnection)conn).cancelRequest(ctx.asyncAssertSuccess());
     }));
   }
 }

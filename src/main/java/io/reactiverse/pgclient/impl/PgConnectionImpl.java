@@ -20,6 +20,7 @@ package io.reactiverse.pgclient.impl;
 import io.reactiverse.pgclient.*;
 import io.reactiverse.pgclient.impl.command.CommandResponse;
 import io.reactiverse.pgclient.impl.command.CommandBase;
+import io.reactiverse.sqlclient.SqlTransaction;
 import io.vertx.core.*;
 
 /**
@@ -111,11 +112,11 @@ public class PgConnectionImpl extends PgConnectionBase<PgConnectionImpl> impleme
   }
 
   @Override
-  public PgTransaction begin() {
+  public SqlTransaction begin() {
     return begin(false);
   }
 
-  PgTransaction begin(boolean closeOnEnd) {
+  SqlTransaction begin(boolean closeOnEnd) {
     if (tx != null) {
       throw new IllegalStateException();
     }

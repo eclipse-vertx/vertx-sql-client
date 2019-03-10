@@ -17,6 +17,7 @@
 
 package io.reactiverse.pgclient;
 
+import io.reactiverse.sqlclient.SqlConnection;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
@@ -44,7 +45,7 @@ public class LargeSelectBenchmark extends PgBenchmarkBase {
     CompletableFuture<PgResult> latch = new CompletableFuture<>();
     pool.getConnection(ar1 -> {
       if (ar1.succeeded()) {
-        PgConnection conn = ar1.result();
+        SqlConnection conn = ar1.result();
         conn.preparedQuery("SELECT id, randomnumber from WORLD", ar2 -> {
           conn.close();
           if (ar2.succeeded()) {
@@ -65,7 +66,7 @@ public class LargeSelectBenchmark extends PgBenchmarkBase {
     CompletableFuture<PgResult> latch = new CompletableFuture<>();
     pool.getConnection(ar1 -> {
       if (ar1.succeeded()) {
-        PgConnection conn = ar1.result();
+        SqlConnection conn = ar1.result();
         conn.prepare("SELECT id, randomnumber from WORLD", ar2 -> {
           if (ar2.succeeded()) {
             PgPreparedQuery ps = ar2.result();

@@ -21,12 +21,13 @@ import io.reactiverse.pgclient.impl.command.CommandResponse;
 import io.reactiverse.pgclient.impl.command.CommandBase;
 import io.reactiverse.pgclient.impl.command.QueryCommandBase;
 import io.reactiverse.pgclient.impl.command.SimpleQueryCommand;
+import io.reactiverse.sqlclient.SqlTransaction;
 import io.vertx.core.*;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-class Transaction extends PgConnectionBase<Transaction> implements PgTransaction {
+class Transaction extends PgConnectionBase<Transaction> implements SqlTransaction {
 
   private static final int ST_BEGIN = 0;
   private static final int ST_PENDING = 1;
@@ -188,7 +189,7 @@ class Transaction extends PgConnectionBase<Transaction> implements PgTransaction
   }
 
   @Override
-  public PgTransaction abortHandler(Handler<Void> handler) {
+  public SqlTransaction abortHandler(Handler<Void> handler) {
     failedHandler = handler;
     return this;
   }

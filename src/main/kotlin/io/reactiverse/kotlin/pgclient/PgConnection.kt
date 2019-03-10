@@ -6,15 +6,6 @@ import io.reactiverse.pgclient.PgRowSet
 import io.reactiverse.pgclient.Tuple
 import io.vertx.kotlin.coroutines.awaitResult
 
-/**
- * Create a prepared query.
- *
- * @param sql the sql
- * @param handler the handler notified with the prepared query asynchronously
- * @return *
- * <p/>
- * NOTE: This function has been automatically generated from the [io.reactiverse.pgclient.PgConnection original] using Vert.x codegen.
- */
 suspend fun PgConnection.prepareAwait(sql : String) : PgPreparedQuery {
   return awaitResult{
     this.prepare(sql, it)

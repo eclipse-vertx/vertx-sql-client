@@ -21,6 +21,8 @@ import io.reactiverse.pgclient.*;
 import io.reactiverse.pgclient.data.Json;
 import io.reactiverse.pgclient.data.Numeric;
 import io.reactiverse.pgclient.pubsub.PgSubscriber;
+import io.reactiverse.sqlclient.SqlConnection;
+import io.reactiverse.sqlclient.SqlTransaction;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.PemTrustOptions;
@@ -150,7 +152,7 @@ public class Examples {
         System.out.println("Connected");
 
         // Obtain our connection
-        PgConnection conn = ar1.result();
+        SqlConnection conn = ar1.result();
 
         // All operations execute on the same connection
         conn.query("SELECT * FROM users WHERE id='julien'", ar2 -> {
@@ -333,7 +335,7 @@ public class Examples {
 
     pool.getConnection(ar1 -> {
       if (ar1.succeeded()) {
-        PgConnection connection = ar1.result();
+        SqlConnection connection = ar1.result();
 
         connection.query("SELECT * FROM users WHERE id='julien'", ar2 -> {
           if (ar1.succeeded()) {
@@ -394,10 +396,10 @@ public class Examples {
       if (res.succeeded()) {
 
         // Transaction must use a connection
-        PgConnection conn = res.result();
+        SqlConnection conn = res.result();
 
         // Begin the transaction
-        PgTransaction tx = conn.begin();
+        SqlTransaction tx = conn.begin();
 
         // Various statements
         conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
@@ -423,10 +425,10 @@ public class Examples {
       if (res.succeeded()) {
 
         // Transaction must use a connection
-        PgConnection conn = res.result();
+        SqlConnection conn = res.result();
 
         // Begin the transaction
-        PgTransaction tx = conn
+        SqlTransaction tx = conn
           .begin()
           .abortHandler(v -> {
           System.out.println("Transaction failed => rollbacked");
@@ -463,7 +465,7 @@ public class Examples {
       if (res.succeeded()) {
 
         // Get the transaction
-        PgTransaction tx = res.result();
+        SqlTransaction tx = res.result();
 
         // Various statements
         tx.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
@@ -487,7 +489,7 @@ public class Examples {
         PgPreparedQuery pq = ar1.result();
 
         // Cursors require to run within a transaction
-        PgTransaction tx = connection.begin();
+        SqlTransaction tx = connection.begin();
 
         // Create a cursor
         PgCursor cursor = pq.cursor(Tuple.of("julien"));
@@ -525,7 +527,7 @@ public class Examples {
         PgPreparedQuery pq = ar1.result();
 
         // Streams require to run within a transaction
-        PgTransaction tx = connection.begin();
+        SqlTransaction tx = connection.begin();
 
         // Fetch 50 rows at a time
         PgStream<Row> stream = pq.createStream(50, Tuple.of("julien"));
