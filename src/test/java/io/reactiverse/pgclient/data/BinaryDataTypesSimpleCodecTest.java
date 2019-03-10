@@ -1,7 +1,7 @@
 package io.reactiverse.pgclient.data;
 
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
+import io.reactiverse.sqlclient.Row;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;

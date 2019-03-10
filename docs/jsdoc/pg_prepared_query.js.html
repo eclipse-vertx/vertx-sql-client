@@ -92,7 +92,7 @@ var PgPreparedQuery = function(j_val) {
       }) ;
       return that;
     } else if (__args.length === 2 &amp;&amp; typeof __args[0] === 'object' &amp;&amp; __args[0]._jdel &amp;&amp; typeof __args[1] === 'function') {
-      j_pgPreparedQuery["execute(io.reactiverse.pgclient.Tuple,io.vertx.core.Handler)"](__args[0]._jdel, function(ar) {
+      j_pgPreparedQuery["execute(io.reactiverse.sqlclient.Tuple,io.vertx.core.Handler)"](__args[0]._jdel, function(ar) {
         if (ar.succeeded()) {
           __args[1](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
         } else {

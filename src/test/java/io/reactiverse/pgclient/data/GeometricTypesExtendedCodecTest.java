@@ -1,8 +1,8 @@
 package io.reactiverse.pgclient.data;
 
-import io.reactiverse.pgclient.PgClient;
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
+import io.reactiverse.pgclient.PgConnection;
+import io.reactiverse.sqlclient.Row;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
@@ -104,7 +104,7 @@ public class GeometricTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
   @Test
   public void testEncodeGeometric(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"" + "GeometricDataType" + "\" SET " +
           "\"Point\" = $1, " +
           "\"Line\" = $2, " +
@@ -179,7 +179,7 @@ public class GeometricTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
   @Test
   public void testEncodeGeometricArray(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"" + "ArrayDataType" + "\" SET " +
           "\"Point\" = $1, " +
           "\"Line\" = $2, " +

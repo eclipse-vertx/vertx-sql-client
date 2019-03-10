@@ -31,7 +31,7 @@ public class PgPooledConnectionTest extends PgConnectionTestBase {
   public PgPooledConnectionTest() {
     connector = handler -> {
       if (pool == null) {
-        pool = PgClient.pool(vertx, new PgPoolOptions(options).setMaxSize(1));
+        pool = PgPool.pool(vertx, new PgPoolOptions(options).setMaxSize(1));
       }
       pool.getConnection(handler);
     };

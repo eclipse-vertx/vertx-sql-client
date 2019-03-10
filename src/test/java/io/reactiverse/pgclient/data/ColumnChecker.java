@@ -1,7 +1,7 @@
 package io.reactiverse.pgclient.data;
 
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
+import io.reactiverse.sqlclient.Row;
+import io.reactiverse.sqlclient.Tuple;
 
 import java.io.Serializable;
 import java.lang.invoke.SerializedLambda;

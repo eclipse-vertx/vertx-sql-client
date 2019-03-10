@@ -17,6 +17,7 @@
 package examples;
 
 import io.reactiverse.reactivex.pgclient.*;
+import io.reactiverse.reactivex.sqlclient.*;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
@@ -31,7 +32,7 @@ public class RxExamples {
   public void simpleQuery01Example(PgPool pool) {
 
     // A simple query
-    Single<PgRowSet> single = pool.rxQuery("SELECT * FROM users WHERE id='julien'");
+    Single<RowSet> single = pool.rxQuery("SELECT * FROM users WHERE id='julien'");
 
     // Execute the query
     single.subscribe(result -> {
@@ -49,7 +50,7 @@ public class RxExamples {
         .rxPrepare("SELECT * FROM users WHERE first_name LIKE $1")
         .flatMapObservable(preparedQuery -> {
           // Fetch 50 rows at a time
-          PgStream<Row> stream = preparedQuery.createStream(50, Tuple.of("julien"));
+          RowStream<Row> stream = preparedQuery.createStream(50, Tuple.of("julien"));
           return stream.toObservable();
         })
         // Commit the transaction after usage
@@ -72,7 +73,7 @@ public class RxExamples {
       .flatMapPublisher(tx -> tx.rxPrepare("SELECT * FROM users WHERE first_name LIKE $1")
         .flatMapPublisher(preparedQuery -> {
           // Fetch 50 rows at a time
-          PgStream<Row> stream = preparedQuery.createStream(50, Tuple.of("julien"));
+          RowStream<Row> stream = preparedQuery.createStream(50, Tuple.of("julien"));
           return stream.toFlowable();
         })
         // Commit the transaction after usage

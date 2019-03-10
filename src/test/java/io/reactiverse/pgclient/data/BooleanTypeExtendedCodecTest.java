@@ -1,8 +1,8 @@
 package io.reactiverse.pgclient.data;
 
-import io.reactiverse.pgclient.PgClient;
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
+import io.reactiverse.pgclient.PgConnection;
+import io.reactiverse.sqlclient.Row;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
@@ -16,7 +16,7 @@ public class BooleanTypeExtendedCodecTest extends ExtendedQueryDataTypeCodecTest
   @Test
   public void testEncodeBoolean(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"NumericDataType\" SET \"Boolean\" = $1  WHERE \"id\" = $2 RETURNING \"Boolean\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
@@ -46,7 +46,7 @@ public class BooleanTypeExtendedCodecTest extends ExtendedQueryDataTypeCodecTest
   @Test
   public void testDecodeBooleanArray(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Boolean\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
@@ -64,7 +64,7 @@ public class BooleanTypeExtendedCodecTest extends ExtendedQueryDataTypeCodecTest
   @Test
   public void testEncodeBooleanArray(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Boolean\" = $1  WHERE \"id\" = $2 RETURNING \"Boolean\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()

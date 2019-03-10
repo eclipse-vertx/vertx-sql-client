@@ -16,19 +16,21 @@
  */
 package io.reactiverse.pgclient;
 
-import io.reactiverse.sqlclient.SqlTransaction;
+import io.reactiverse.sqlclient.Row;
+import io.reactiverse.sqlclient.Transaction;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
-public class PgTransactionTest extends PgClientTestBase<SqlTransaction> {
+public class PgTransactionTest extends PgClientTestBase<Transaction> {
 
   private PgPool pool;
 
   public PgTransactionTest() {
     connector = handler -> {
       if (pool == null) {
-        pool = PgClient.pool(vertx, new PgPoolOptions(options).setMaxSize(1));
+        pool = PgPool.pool(vertx, new PgPoolOptions(options).setMaxSize(1));
       }
       pool.begin(handler);
     };

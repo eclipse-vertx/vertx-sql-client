@@ -16,7 +16,6 @@
  */
 package io.reactiverse.pgclient.tck;
 
-import io.reactiverse.pgclient.PgClient;
 import io.reactiverse.pgclient.PgConnectOptions;
 import io.reactiverse.pgclient.PgConnection;
 import io.reactiverse.pgclient.PgPool;
@@ -36,7 +35,7 @@ public enum ClientConfig {
       return new Connector<PgConnection>() {
         @Override
         public void connect(Handler<AsyncResult<PgConnection>> handler) {
-          PgClient.connect(vertx, options, ar -> {
+          PgConnection.connect(vertx, options, ar -> {
             if (ar.succeeded()) {
               handler.handle(Future.succeededFuture(ar.result()));
             } else {
@@ -54,7 +53,7 @@ public enum ClientConfig {
   POOLED() {
     @Override
     Connector<SqlClient> connect(Vertx vertx, PgConnectOptions options) {
-      PgPool pool = PgClient.pool(vertx, new PgPoolOptions(options).setMaxSize(1));
+      PgPool pool = PgPool.pool(vertx, new PgPoolOptions(options).setMaxSize(1));
       return new Connector<SqlClient>() {
         @Override
         public void connect(Handler<AsyncResult<SqlClient>> handler) {

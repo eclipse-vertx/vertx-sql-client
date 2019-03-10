@@ -17,10 +17,6 @@
 
 package io.reactiverse.sqlclient;
 
-import io.reactiverse.pgclient.PgResult;
-import io.reactiverse.pgclient.PgRowSet;
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
@@ -46,7 +42,7 @@ public interface SqlClient {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  SqlClient query(String sql, Handler<AsyncResult<PgRowSet>> handler);
+  SqlClient query(String sql, Handler<AsyncResult<RowSet>> handler);
 
   /**
    * Execute a simple query.
@@ -57,7 +53,7 @@ public interface SqlClient {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore
-  <R> SqlClient query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+  <R> SqlClient query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   /**
    * Prepare and execute a query.
@@ -67,7 +63,7 @@ public interface SqlClient {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  SqlClient preparedQuery(String sql, Handler<AsyncResult<PgRowSet>> handler);
+  SqlClient preparedQuery(String sql, Handler<AsyncResult<RowSet>> handler);
 
   /**
    * Prepare and execute a query.
@@ -78,7 +74,7 @@ public interface SqlClient {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore
-  <R> SqlClient preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+  <R> SqlClient preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   /**
    * Prepare and execute a query.
@@ -89,7 +85,7 @@ public interface SqlClient {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  SqlClient preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgRowSet>> handler);
+  SqlClient preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet>> handler);
 
   /**
    * Prepare and execute a query.
@@ -101,7 +97,7 @@ public interface SqlClient {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore
-  <R> SqlClient preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+  <R> SqlClient preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   /**
    * Prepare and execute a createBatch.
@@ -112,7 +108,7 @@ public interface SqlClient {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  SqlClient preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgRowSet>> handler);
+  SqlClient preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet>> handler);
 
   /**
    * Prepare and execute a createBatch.
@@ -124,5 +120,5 @@ public interface SqlClient {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore
-  <R> SqlClient preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+  <R> SqlClient preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 }

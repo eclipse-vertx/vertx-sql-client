@@ -20,7 +20,7 @@ package io.reactiverse.pgclient.impl;
 import io.reactiverse.pgclient.*;
 import io.reactiverse.pgclient.impl.command.CommandResponse;
 import io.reactiverse.pgclient.impl.command.CommandBase;
-import io.reactiverse.sqlclient.SqlTransaction;
+import io.reactiverse.sqlclient.Transaction;
 import io.vertx.core.*;
 
 /**
@@ -31,7 +31,7 @@ public class PgConnectionImpl extends PgConnectionBase<PgConnectionImpl> impleme
   private final PgConnectionFactory factory;
   private volatile Handler<Throwable> exceptionHandler;
   private volatile Handler<Void> closeHandler;
-  private Transaction tx;
+  private io.reactiverse.pgclient.impl.Transaction tx;
   private volatile Handler<PgNotification> notificationHandler;
 
   public PgConnectionImpl(PgConnectionFactory factory, Context context, Connection conn) {
@@ -112,15 +112,15 @@ public class PgConnectionImpl extends PgConnectionBase<PgConnectionImpl> impleme
   }
 
   @Override
-  public SqlTransaction begin() {
+  public Transaction begin() {
     return begin(false);
   }
 
-  SqlTransaction begin(boolean closeOnEnd) {
+  Transaction begin(boolean closeOnEnd) {
     if (tx != null) {
       throw new IllegalStateException();
     }
-    tx = new Transaction(context, conn, v -> {
+    tx = new io.reactiverse.pgclient.impl.Transaction(context, conn, v -> {
       tx = null;
       if (closeOnEnd) {
         close();

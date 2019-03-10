@@ -17,7 +17,6 @@
 package io.reactiverse.myclient.tck;
 
 import io.reactiverse.pgclient.MyClient;
-import io.reactiverse.pgclient.PgClient;
 import io.reactiverse.pgclient.PgConnectOptions;
 import io.reactiverse.sqlclient.Connector;
 import io.reactiverse.sqlclient.SqlClient;

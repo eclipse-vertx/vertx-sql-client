@@ -1,9 +1,7 @@
 package io.reactiverse.pgclient.data;
 
-import io.reactiverse.pgclient.PgClient;
-import io.reactiverse.pgclient.PgConnectOptions;
 import io.reactiverse.pgclient.PgConnection;
-import io.reactiverse.pgclient.Tuple;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
@@ -23,7 +21,7 @@ public class PreparedStatementParamCoercionTest extends DataTypeTestBase {
   @Test
   public void testCoerceSingleParam(TestContext ctx) {
     Async async = ctx.async(VALUES_TO_COERCE.length * SQL_TYPES_TO_COERCE_TO.length);
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       for (String sqlType : SQL_TYPES_TO_COERCE_TO) {
         for (Object value: VALUES_TO_COERCE) {
           assertCoerceParam(conn, ctx, "SELECT 1 \"result\" WHERE $1::" + sqlType + "=5", value, async::countDown);
@@ -35,7 +33,7 @@ public class PreparedStatementParamCoercionTest extends DataTypeTestBase {
   @Test
   public void testCoerceArrayParam(TestContext ctx) {
     Async async = ctx.async(VALUES_TO_COERCE.length * SQL_TYPES_TO_COERCE_TO.length);
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       for (String sqlType : SQL_TYPES_TO_COERCE_TO) {
         for (Object value: VALUES_TO_COERCE) {
           Object array = Array.newInstance(value.getClass(), 1);

@@ -18,7 +18,9 @@
 package io.reactiverse.pgclient;
 
 import io.reactiverse.pgclient.junit.PgRule;
+import io.reactiverse.sqlclient.RowSet;
 import io.reactiverse.sqlclient.SqlConnection;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.core.Vertx;
 import org.postgresql.PGProperty;
 
@@ -123,7 +125,7 @@ public class RawBenchmark {
       conn.preparedQuery("SELECT id, randomnumber from WORLD", ar -> {
         if (ar.succeeded()) {
           doLargeQuery(conn, remaining -1, latch);
-          PgRowSet result = ar.result();
+          RowSet result = ar.result();
           for (Tuple tuple : result) {
             int val = tuple.getInteger(0);
           }
@@ -138,7 +140,7 @@ public class RawBenchmark {
 
   private static void benchmark(String name, PgConnectOptions options, BiConsumer<SqlConnection, CompletableFuture<Void>> benchmark) throws Exception {
     Vertx vertx = Vertx.vertx();
-    PgPool client = PgClient.pool(vertx, new PgPoolOptions()
+    PgPool client = PgPool.pool(vertx, new PgPoolOptions()
       .setHost(options.getHost())
       .setPort(options.getPort())
       .setDatabase(options.getDatabase())

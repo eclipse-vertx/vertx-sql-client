@@ -17,12 +17,16 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.*;
 import io.reactiverse.pgclient.impl.command.CommandScheduler;
 import io.reactiverse.pgclient.impl.command.ExtendedBatchQueryCommand;
 import io.reactiverse.pgclient.impl.command.ExtendedQueryCommand;
 import io.reactiverse.pgclient.impl.command.PrepareStatementCommand;
 import io.reactiverse.pgclient.impl.command.SimpleQueryCommand;
+import io.reactiverse.sqlclient.SqlResult;
+import io.reactiverse.sqlclient.RowSet;
+import io.reactiverse.sqlclient.Row;
+import io.reactiverse.sqlclient.SqlClient;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -31,19 +35,19 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
-public abstract class PgClientBase<C extends PgClient> implements PgClient, CommandScheduler {
+public abstract class PgClientBase<C extends SqlClient> implements SqlClient, CommandScheduler {
 
   @Override
-  public C query(String sql, Handler<AsyncResult<PgRowSet>> handler) {
+  public C query(String sql, Handler<AsyncResult<RowSet>> handler) {
     return query(sql, false,PgRowSetImpl.FACTORY, PgRowSetImpl.COLLECTOR, handler);
   }
 
   @Override
-  public <R> C query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler) {
+  public <R> C query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
     return query(sql, true, PgResultImpl::new, collector, handler);
   }
 
-  private <R1, R2 extends PgResultBase<R1, R2>, R3 extends PgResult<R1>> C query(
+  private <R1, R2 extends PgResultBase<R1, R2>, R3 extends SqlResult<R1>> C query(
     String sql,
     boolean singleton,
     Function<R1, R2> factory,
@@ -55,16 +59,16 @@ public abstract class PgClientBase<C extends PgClient> implements PgClient, Comm
   }
 
   @Override
-  public C preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgRowSet>> handler) {
+  public C preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet>> handler) {
     return preparedQuery(sql, arguments, false, PgRowSetImpl.FACTORY, PgRowSetImpl.COLLECTOR, handler);
   }
 
   @Override
-  public <R> C preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler) {
+  public <R> C preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
     return preparedQuery(sql, arguments, true, PgResultImpl::new, collector, handler);
   }
 
-  private <R1, R2 extends PgResultBase<R1, R2>, R3 extends PgResult<R1>> C preparedQuery(
+  private <R1, R2 extends PgResultBase<R1, R2>, R3 extends SqlResult<R1>> C preparedQuery(
     String sql,
     Tuple arguments,
     boolean singleton,
@@ -89,26 +93,26 @@ public abstract class PgClientBase<C extends PgClient> implements PgClient, Comm
   }
 
   @Override
-  public C preparedQuery(String sql, Handler<AsyncResult<PgRowSet>> handler) {
+  public C preparedQuery(String sql, Handler<AsyncResult<RowSet>> handler) {
     return preparedQuery(sql, ArrayTuple.EMPTY, handler);
   }
 
   @Override
-  public <R> C preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler) {
+  public <R> C preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
     return preparedQuery(sql, ArrayTuple.EMPTY, collector, handler);
   }
 
   @Override
-  public C preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgRowSet>> handler) {
+  public C preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet>> handler) {
     return preparedBatch(sql, batch, false, PgRowSetImpl.FACTORY, PgRowSetImpl.COLLECTOR, handler);
   }
 
   @Override
-  public <R> C preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler) {
+  public <R> C preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
     return preparedBatch(sql, batch, true, PgResultImpl::new, collector, handler);
   }
 
-  private <R1, R2 extends PgResultBase<R1, R2>, R3 extends PgResult<R1>> C preparedBatch(
+  private <R1, R2 extends PgResultBase<R1, R2>, R3 extends SqlResult<R1>> C preparedBatch(
     String sql,
     List<Tuple> batch,
     boolean singleton,

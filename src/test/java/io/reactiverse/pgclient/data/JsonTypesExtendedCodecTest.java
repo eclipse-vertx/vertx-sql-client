@@ -1,8 +1,8 @@
 package io.reactiverse.pgclient.data;
 
-import io.reactiverse.pgclient.PgClient;
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
+import io.reactiverse.pgclient.PgConnection;
+import io.reactiverse.sqlclient.Row;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
@@ -66,7 +66,7 @@ public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBa
 
   private void testDecodeJson(TestContext ctx, String tableName) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"JsonObject\", \"JsonArray\", \"Number\", \"String\", \"BooleanTrue\", \"BooleanFalse\", \"Null\" FROM \"" + tableName + "\" WHERE \"id\" = $1",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
@@ -121,7 +121,7 @@ public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBa
 
   private void testEncodeJson(TestContext ctx, String tableName) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"" + tableName + "\" SET " +
           "\"JsonObject\" = $1, " +
           "\"JsonArray\" = $2, " +

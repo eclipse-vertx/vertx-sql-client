@@ -22,7 +22,7 @@ import io.reactiverse.pgclient.impl.command.CommandResponse;
 import io.reactiverse.pgclient.impl.command.CommandScheduler;
 import io.reactiverse.pgclient.impl.command.CommandBase;
 import io.reactiverse.sqlclient.SqlConnection;
-import io.reactiverse.sqlclient.SqlTransaction;
+import io.reactiverse.sqlclient.Transaction;
 import io.vertx.core.*;
 
 /**
@@ -66,11 +66,11 @@ public class PgPoolImpl extends PgClientBase<PgPoolImpl> implements PgPool {
   }
 
   @Override
-  public void begin(Handler<AsyncResult<SqlTransaction>> handler) {
+  public void begin(Handler<AsyncResult<Transaction>> handler) {
     getConnection(ar -> {
       if (ar.succeeded()) {
         PgConnectionImpl conn = (PgConnectionImpl) ar.result();
-        SqlTransaction tx = conn.begin(true);
+        Transaction tx = conn.begin(true);
         handler.handle(Future.succeededFuture(tx));
       } else {
         handler.handle(Future.failedFuture(ar.cause()));

@@ -15,7 +15,7 @@
  *
  */
 
-package io.reactiverse.pgclient;
+package io.reactiverse.sqlclient;
 
 import io.reactiverse.pgclient.data.Box;
 import io.reactiverse.pgclient.data.Circle;

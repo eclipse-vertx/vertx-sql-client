@@ -16,11 +16,10 @@
  */
 package io.reactiverse.pgclient;
 
-import io.reactiverse.reactivex.pgclient.PgStream;
-import io.reactiverse.reactivex.pgclient.Row;
-import io.reactiverse.reactivex.pgclient.Tuple;
+import io.reactiverse.reactivex.sqlclient.Row;
+import io.reactiverse.reactivex.sqlclient.RowStream;
+import io.reactiverse.reactivex.sqlclient.Tuple;
 import io.reactiverse.reactivex.pgclient.PgPool;
-import io.reactiverse.reactivex.pgclient.PgClient;
 import io.reactivex.Flowable;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -44,7 +43,7 @@ public class RxTest extends PgTestBase {
   public void setup() throws Exception {
     super.setup();
     vertx = Vertx.vertx();
-    pool = PgClient.pool(vertx, new PgPoolOptions(options).setMaxSize(1));
+    pool = PgPool.pool(vertx, new PgPoolOptions(options).setMaxSize(1));
   }
 
   @After
@@ -57,7 +56,7 @@ public class RxTest extends PgTestBase {
       .flatMapPublisher(tx -> tx.rxPrepare(sql)
         .flatMapPublisher(preparedQuery -> {
           // Fetch 50 rows at a time
-          PgStream<io.reactiverse.reactivex.pgclient.Row> stream = preparedQuery.createStream(50, Tuple.tuple());
+          RowStream<Row> stream = preparedQuery.createStream(50, Tuple.tuple());
           return stream.toFlowable();
         })
         .doAfterTerminate(tx::commit));
@@ -67,7 +66,7 @@ public class RxTest extends PgTestBase {
   public void testFlowableCommit(TestContext ctx) {
     Async async = ctx.async();
     Flowable<Row> flowable = createFlowable("SELECT id, randomnumber from WORLD");
-    flowable.subscribe(new Subscriber<io.reactiverse.reactivex.pgclient.Row>() {
+    flowable.subscribe(new Subscriber<io.reactiverse.reactivex.sqlclient.Row>() {
 
       private Subscription sub;
       private Set<Integer> ids = new HashSet<>();

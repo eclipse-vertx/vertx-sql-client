@@ -16,6 +16,7 @@
  */
 package io.reactiverse.pgclient;
 
+import io.reactiverse.sqlclient.Row;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -45,7 +46,7 @@ public class RowTest extends PgTestBase {
   @Test
   public void testGetNonExistingRows(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT 1 \"foo\"",
         ctx.asyncAssertSuccess(result -> {
           Row row = result.iterator().next();
@@ -114,7 +115,7 @@ public class RowTest extends PgTestBase {
   @Test
   public void testGetColumnNameRows(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT 2 \"foo\"",
         ctx.asyncAssertSuccess(result -> {
           Row row = result.iterator().next();
@@ -127,7 +128,7 @@ public class RowTest extends PgTestBase {
   @Test
   public void testNotEqualGetColumnNameRows(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT 2 \"foo\"",
         ctx.asyncAssertSuccess(result -> {
           Row row = result.iterator().next();
@@ -140,7 +141,7 @@ public class RowTest extends PgTestBase {
   @Test
   public void testNegativeGetColumnNameRows(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT 2 \"foo\"",
         ctx.asyncAssertSuccess(result -> {
           Row row = result.iterator().next();
@@ -153,7 +154,7 @@ public class RowTest extends PgTestBase {
   @Test
   public void testPreventLengthMaxIndexOutOfBoundGetColumnNameRows(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT 2 \"foo\"",
         ctx.asyncAssertSuccess(result -> {
           Row row = result.iterator().next();

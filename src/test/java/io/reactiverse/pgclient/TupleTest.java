@@ -17,6 +17,7 @@
 
 package io.reactiverse.pgclient;
 
+import io.reactiverse.sqlclient.Tuple;
 import org.junit.Assert;
 import org.junit.Test;
 

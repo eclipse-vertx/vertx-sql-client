@@ -1,9 +1,8 @@
 package io.reactiverse.pgclient.data;
 
-import io.reactiverse.pgclient.PgClient;
-import io.reactiverse.pgclient.PgConnectOptions;
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
+import io.reactiverse.pgclient.PgConnection;
+import io.reactiverse.sqlclient.Row;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 
@@ -38,7 +37,7 @@ public abstract class ExtendedQueryDataTypeCodecTestBase extends DataTypeTestBas
 
   protected <T> void testGeneric(TestContext ctx, String sql, T[] expected, BiFunction<Row, Integer, T> getter) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       List<Tuple> batch = Stream.of(expected).map(Tuple::of).collect(Collectors.toList());
       conn.preparedBatch(sql, batch,
         ctx.asyncAssertSuccess(result -> {

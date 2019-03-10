@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package io.reactiverse.pgclient;
+package io.reactiverse.sqlclient;
 
 import io.reactiverse.pgclient.data.Box;
 import io.reactiverse.pgclient.data.Circle;
@@ -26,6 +26,7 @@ import io.reactiverse.pgclient.data.Numeric;
 import io.reactiverse.pgclient.data.Path;
 import io.reactiverse.pgclient.data.Point;
 import io.reactiverse.pgclient.data.Polygon;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.buffer.Buffer;

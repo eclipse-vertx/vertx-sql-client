@@ -17,7 +17,15 @@
 
 package io.reactiverse.pgclient;
 
+import io.reactiverse.pgclient.impl.Connection;
+import io.reactiverse.pgclient.impl.PgConnectionFactory;
+import io.reactiverse.pgclient.impl.PgConnectionImpl;
+import io.reactiverse.sqlclient.PreparedQuery;
+import io.reactiverse.sqlclient.SqlResult;
+import io.reactiverse.sqlclient.RowSet;
+import io.reactiverse.sqlclient.Row;
 import io.reactiverse.sqlclient.SqlConnection;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
@@ -34,6 +42,55 @@ import java.util.stream.Collector;
  */
 @VertxGen
 public interface PgConnection extends SqlConnection {
+
+  /**
+   * Connects to the database and returns the connection if that succeeds.
+   * <p/>
+   * The connection interracts directly with the database is not a proxy, so closing the
+   * connection will close the underlying connection to the database.
+   *
+   * @param vertx the vertx instance
+   * @param options the connect options
+   * @param handler the handler called with the connection or the failure
+   */
+  static void connect(Vertx vertx, PgConnectOptions options, Handler<AsyncResult<PgConnection>> handler) {
+    Context ctx = Vertx.currentContext();
+    if (ctx != null) {
+      PgConnectionFactory client = new PgConnectionFactory(ctx, false, options);
+      client.create(ar -> {
+        if (ar.succeeded()) {
+          Connection conn = ar.result();
+          PgConnectionImpl p = new PgConnectionImpl(client, ctx, conn);
+          conn.init(p);
+          handler.handle(Future.succeededFuture(p));
+        } else {
+          handler.handle(Future.failedFuture(ar.cause()));
+        }
+      });
+    } else {
+      vertx.runOnContext(v -> {
+        if (options.isUsingDomainSocket() && !vertx.isNativeTransportEnabled()) {
+          handler.handle(Future.failedFuture("Native transport is not available"));
+        } else {
+          connect(vertx, options, handler);
+        }
+      });
+    }
+  }
+
+  /**
+   * Like {@link #connect(Vertx, PgConnectOptions, Handler)} with options build from the environment variables.
+   */
+  static void connect(Vertx vertx, Handler<AsyncResult<PgConnection>> handler) {
+    connect(vertx, PgConnectOptions.fromEnv(), handler);
+  }
+
+  /**
+   * Like {@link #connect(Vertx, PgConnectOptions, Handler)} with options build from {@code connectionUri}.
+   */
+  static void connect(Vertx vertx, String connectionUri, Handler<AsyncResult<PgConnection>> handler) {
+    connect(vertx, PgConnectOptions.fromUri(connectionUri), handler);
+  }
 
   /**
    * Set an handler called when the connection receives notification on a channel.
@@ -66,23 +123,23 @@ public interface PgConnection extends SqlConnection {
    */
   int secretKey();
 
-  PgConnection prepare(String sql, Handler<AsyncResult<PgPreparedQuery>> handler);
+  PgConnection prepare(String sql, Handler<AsyncResult<PreparedQuery>> handler);
   PgConnection exceptionHandler(Handler<Throwable> handler);
   PgConnection closeHandler(Handler<Void> handler);
-  PgConnection preparedQuery(String sql, Handler<AsyncResult<PgRowSet>> handler);
+  PgConnection preparedQuery(String sql, Handler<AsyncResult<RowSet>> handler);
 
   @GenIgnore
-  <R> PgConnection preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
-  PgConnection query(String sql, Handler<AsyncResult<PgRowSet>> handler);
+  <R> PgConnection preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+  PgConnection query(String sql, Handler<AsyncResult<RowSet>> handler);
 
   @GenIgnore
-  <R> PgConnection query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
-  PgConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgRowSet>> handler);
+  <R> PgConnection query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+  PgConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet>> handler);
 
   @GenIgnore
-  <R> PgConnection preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
-  PgConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgRowSet>> handler);
+  <R> PgConnection preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+  PgConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet>> handler);
 
   @GenIgnore
-  <R> PgConnection preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+  <R> PgConnection preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 }

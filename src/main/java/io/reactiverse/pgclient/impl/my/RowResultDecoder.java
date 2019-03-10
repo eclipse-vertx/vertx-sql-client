@@ -6,7 +6,7 @@ import io.reactiverse.pgclient.impl.my.codec.datatype.DataType;
 import io.reactiverse.pgclient.impl.my.codec.datatype.DataTypeCodec;
 import io.reactiverse.pgclient.impl.my.codec.decoder.RowDecoder;
 import io.reactiverse.pgclient.impl.my.util.BufferUtils;
-import io.reactiverse.pgclient.Row;
+import io.reactiverse.sqlclient.Row;
 
 import java.util.function.BiConsumer;
 import java.util.stream.Collector;

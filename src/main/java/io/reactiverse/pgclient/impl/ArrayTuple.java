@@ -23,7 +23,7 @@ import io.reactiverse.pgclient.data.Json;
 import io.reactiverse.pgclient.data.Line;
 import io.reactiverse.pgclient.data.LineSegment;
 import io.reactiverse.pgclient.data.Numeric;
-import io.reactiverse.pgclient.Tuple;
+import io.reactiverse.sqlclient.Tuple;
 import io.reactiverse.pgclient.data.Interval;
 import io.reactiverse.pgclient.data.Path;
 import io.reactiverse.pgclient.data.Point;

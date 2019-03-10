@@ -141,7 +141,7 @@ will use one of its connection to run the query and return the result to you.
 Here is how to run simple queries:
 
 ```$lang
-{@link examples.Examples#queries01(io.reactiverse.pgclient.PgClient)}
+{@link examples.Examples#queries01(io.reactiverse.sqlclient.SqlClient)}
 ```
 
 You can do the same with prepared queries.
@@ -149,22 +149,22 @@ You can do the same with prepared queries.
 The SQL string can refer to parameters by position, using `$1`, `$2`, etc…​
 
 ```$lang
-{@link examples.Examples#queries02(io.reactiverse.pgclient.PgClient)}
+{@link examples.Examples#queries02(io.reactiverse.sqlclient.SqlClient)}
 ```
 
-Query methods provides an asynchronous {@link io.reactiverse.pgclient.PgRowSet} instance that works for _SELECT_ queries
+Query methods provides an asynchronous {@link io.reactiverse.sqlclient.RowSet} instance that works for _SELECT_ queries
 
 ```$lang
-{@link examples.Examples#queries03(io.reactiverse.pgclient.PgClient)}
+{@link examples.Examples#queries03(io.reactiverse.sqlclient.SqlClient)}
 ```
 
 or _UPDATE_/_INSERT_ queries:
 
 ```$lang
-{@link examples.Examples#queries04(io.reactiverse.pgclient.PgClient)}
+{@link examples.Examples#queries04(io.reactiverse.sqlclient.SqlClient)}
 ```
 
-The {@link io.reactiverse.pgclient.Row} gives you access to your data by index
+The {@link io.reactiverse.sqlclient.Row} gives you access to your data by index
 
 ```$lang
 {@link examples.Examples#queries05(Row)}
@@ -185,7 +185,7 @@ You can access a wide variety of of types
 You can execute prepared batch
 
 ```$lang
-{@link examples.Examples#queries08(io.reactiverse.pgclient.PgClient)}
+{@link examples.Examples#queries08(io.reactiverse.sqlclient.SqlClient)}
 ```
 
 You can cache prepared queries:
@@ -197,7 +197,7 @@ You can cache prepared queries:
 You can fetch generated keys with a 'RETURNING' clause in your query:
 
 ```$lang
-{@link examples.Examples#queries10(io.reactiverse.pgclient.PgClient)}
+{@link examples.Examples#queries10(io.reactiverse.sqlclient.SqlClient)}
 ```
 
 ## Using connections
@@ -216,9 +216,9 @@ Prepared queries can be created:
 ```
 
 NOTE: prepared query caching depends on the {@link io.reactiverse.pgclient.PgConnectOptions#setCachePreparedStatements(boolean)} and
-does not depend on whether you are creating prepared queries or use {@link io.reactiverse.pgclient.PgClient#preparedQuery(java.lang.String, io.vertx.core.Handler) direct prepared queries}
+does not depend on whether you are creating prepared queries or use {@link io.reactiverse.sqlclient.SqlClient#preparedQuery(java.lang.String, io.vertx.core.Handler) direct prepared queries}
 
-{@link io.reactiverse.pgclient.PgPreparedQuery} can perform efficient batching:
+{@link io.reactiverse.sqlclient.PreparedQuery} can perform efficient batching:
 
 ```$lang
 {@link examples.Examples#usingConnections03(io.reactiverse.pgclient.PgConnection)}
@@ -239,7 +239,7 @@ Or you can use the transaction API of {@link io.reactiverse.pgclient.PgConnectio
 ```
 
 When Postgres reports the current transaction is failed (e.g the infamous _current transaction is aborted, commands ignored until
-end of transaction block_), the transaction is rollbacked and the {@link io.reactiverse.sqlclient.SqlTransaction#abortHandler(io.vertx.core.Handler)}
+end of transaction block_), the transaction is rollbacked and the {@link io.reactiverse.sqlclient.Transaction#abortHandler(io.vertx.core.Handler)}
 is called:
 
 ```$lang
@@ -259,7 +259,7 @@ It borrows a connection from the pool, begins the transaction and releases the c
 ## Cursors and streaming
 
 By default prepared query execution fetches all rows, you can use a
-{@link io.reactiverse.pgclient.PgCursor} to control the amount of rows you want to read:
+{@link io.reactiverse.sqlclient.Cursor} to control the amount of rows you want to read:
 
 ```$lang
 {@link examples.Examples#usingCursors01(io.reactiverse.pgclient.PgConnection)}
@@ -271,7 +271,7 @@ within a transaction, otherwise you will likely get the `34000` PostgreSQL error
 Cursors shall be closed when they are released prematurely:
 
 ```$lang
-{@link examples.Examples#usingCursors02(io.reactiverse.pgclient.PgCursor)}
+{@link examples.Examples#usingCursors02(io.reactiverse.sqlclient.Cursor)}
 ```
 
 A stream API is also available for cursors, which can be more convenient, specially with the Rxified version.
@@ -357,7 +357,7 @@ The {@link io.reactiverse.pgclient.data.Numeric} Java type is used to represent 
 
 ## Handling arrays
 
-Arrays are available on {@link io.reactiverse.pgclient.Tuple} and {@link io.reactiverse.pgclient.Row}:
+Arrays are available on {@link io.reactiverse.sqlclient.Tuple} and {@link io.reactiverse.sqlclient.Row}:
 
 ```$lang
 {@link examples.Examples#arrayExample}
@@ -387,7 +387,7 @@ You can use Java collectors with the query API:
 {@link examples.Examples#collector01Example}
 ```
 
-The collector processing must not keep a reference on the {@link io.reactiverse.pgclient.Row} as
+The collector processing must not keep a reference on the {@link io.reactiverse.sqlclient.Row} as
 there is a single row used for processing the entire set.
 
 The Java `Collectors` provides many interesting predefined collectors, for example you can
@@ -411,8 +411,8 @@ Most asynchronous constructs are available as methods prefixed by `rx`:
 ### Streaming
 
 RxJava 2 supports `Observable` and `Flowable` types, these are exposed using
-the {@link io.reactiverse.reactivex.pgclient.PgStream} that you can get
-from a {@link io.reactiverse.reactivex.pgclient.PgPreparedQuery}:
+the {@link io.reactiverse.reactivex.sqlclient.RowStream} that you can get
+from a {@link io.reactiverse.reactivex.sqlclient.PreparedQuery}:
 
 ```$lang
 {@link examples.RxExamples#streamingQuery01Example}

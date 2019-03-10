@@ -1,8 +1,8 @@
 package io.reactiverse.kotlin.sqlclient
 
-import io.reactiverse.pgclient.PgRowSet
-import io.reactiverse.pgclient.Tuple
+import io.reactiverse.sqlclient.RowSet
 import io.reactiverse.sqlclient.SqlClient
+import io.reactiverse.sqlclient.Tuple
 import io.vertx.kotlin.coroutines.awaitResult
 
 /**
@@ -14,7 +14,7 @@ import io.vertx.kotlin.coroutines.awaitResult
  * <p/>
  * NOTE: This function has been automatically generated from the [io.reactiverse.sqlclient.SqlClient original] using Vert.x codegen.
  */
-suspend fun SqlClient.queryAwait(sql : String) : PgRowSet {
+suspend fun SqlClient.queryAwait(sql : String) : RowSet {
   return awaitResult{
     this.query(sql, it)
   }
@@ -29,7 +29,7 @@ suspend fun SqlClient.queryAwait(sql : String) : PgRowSet {
  * <p/>
  * NOTE: This function has been automatically generated from the [io.reactiverse.sqlclient.SqlClient original] using Vert.x codegen.
  */
-suspend fun SqlClient.preparedQueryAwait(sql : String) : PgRowSet {
+suspend fun SqlClient.preparedQueryAwait(sql : String) : RowSet {
   return awaitResult{
     this.preparedQuery(sql, it)
   }
@@ -45,7 +45,7 @@ suspend fun SqlClient.preparedQueryAwait(sql : String) : PgRowSet {
  * <p/>
  * NOTE: This function has been automatically generated from the [io.reactiverse.sqlclient.SqlClient original] using Vert.x codegen.
  */
-suspend fun SqlClient.preparedQueryAwait(sql : String, arguments : Tuple) : PgRowSet {
+suspend fun SqlClient.preparedQueryAwait(sql : String, arguments : Tuple) : RowSet {
   return awaitResult{
     this.preparedQuery(sql, arguments, it)
   }
@@ -61,7 +61,7 @@ suspend fun SqlClient.preparedQueryAwait(sql : String, arguments : Tuple) : PgRo
  * <p/>
  * NOTE: This function has been automatically generated from the [io.reactiverse.sqlclient.SqlClient original] using Vert.x codegen.
  */
-suspend fun SqlClient.preparedBatchAwait(sql : String, batch : List<Tuple>) : PgRowSet {
+suspend fun SqlClient.preparedBatchAwait(sql : String, batch : List<Tuple>) : RowSet {
   return awaitResult{
     this.preparedBatch(sql, batch, it)
   }

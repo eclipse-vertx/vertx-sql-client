@@ -17,11 +17,18 @@
 
 package io.reactiverse.pgclient;
 
-import io.reactiverse.sqlclient.SqlPool;
+import io.reactiverse.pgclient.impl.PgPoolImpl;
+import io.reactiverse.sqlclient.SqlResult;
+import io.reactiverse.sqlclient.RowSet;
+import io.reactiverse.sqlclient.Row;
+import io.reactiverse.sqlclient.Pool;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
 
 import java.util.List;
 import java.util.stream.Collector;
@@ -32,23 +39,76 @@ import java.util.stream.Collector;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 @VertxGen
-public interface PgPool extends SqlPool {
+public interface PgPool extends Pool {
 
-  PgPool preparedQuery(String sql, Handler<AsyncResult<PgRowSet>> handler);
+  /**
+   * Like {@link #pool(PgPoolOptions)} with options build from the environment variables.
+   */
+  static PgPool pool() {
+    return pool(PgPoolOptions.fromEnv());
+  }
+
+  /**
+   * Like {@link #pool(PgPoolOptions)} with options build from {@code connectionUri}.
+   */
+  static PgPool pool(String connectionUri) {
+    return pool(PgPoolOptions.fromUri(connectionUri));
+  }
+
+  /**
+   * Like {@link #pool(Vertx, PgPoolOptions)} with options build from the environment variables.
+   */
+  static PgPool pool(Vertx vertx) {
+    return pool(vertx, PgPoolOptions.fromEnv());
+  }
+
+  /**
+   * Like {@link #pool(Vertx, PgPoolOptions)} with options build from {@code connectionUri}.
+   */
+  static PgPool pool(Vertx vertx, String connectionUri) {
+    return pool(vertx, PgPoolOptions.fromUri(connectionUri));
+  }
+
+  /**
+   * Create a connection pool to the database configured with the given {@code options}.
+   *
+   * @param options the options for creating the pool
+   * @return the connection pool
+   */
+  static PgPool pool(PgPoolOptions options) {
+    if (Vertx.currentContext() != null) {
+      throw new IllegalStateException("Running in a Vertx context => use PgPool#pool(Vertx, PgPoolOptions) instead");
+    }
+    VertxOptions vertxOptions = new VertxOptions();
+    if (options.isUsingDomainSocket()) {
+      vertxOptions.setPreferNativeTransport(true);
+    }
+    Vertx vertx = Vertx.vertx(vertxOptions);
+    return new PgPoolImpl(vertx, true, options);
+  }
+
+  /**
+   * Like {@link #pool(PgPoolOptions)} with a specific {@link Vertx} instance.
+   */
+  static PgPool pool(Vertx vertx, PgPoolOptions options) {
+    return new PgPoolImpl(vertx, false, options);
+  }
+
+  PgPool preparedQuery(String sql, Handler<AsyncResult<RowSet>> handler);
 
   @GenIgnore
-  <R> PgPool preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
-  PgPool query(String sql, Handler<AsyncResult<PgRowSet>> handler);
+  <R> PgPool preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+  PgPool query(String sql, Handler<AsyncResult<RowSet>> handler);
 
   @GenIgnore
-  <R> PgPool query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
-  PgPool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgRowSet>> handler);
+  <R> PgPool query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+  PgPool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet>> handler);
 
   @GenIgnore
-  <R> PgPool preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
-  PgPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgRowSet>> handler);
+  <R> PgPool preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+  PgPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet>> handler);
 
   @GenIgnore
-  <R> PgPool preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+  <R> PgPool preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
 }

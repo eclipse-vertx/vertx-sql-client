@@ -1,8 +1,8 @@
 package io.reactiverse.pgclient.data;
 
-import io.reactiverse.pgclient.PgClient;
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
+import io.reactiverse.pgclient.PgConnection;
+import io.reactiverse.sqlclient.Row;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
@@ -16,7 +16,7 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
   @Test
   public void testEncodeName(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"CharacterDataType\" SET \"Name\" = upper($1) WHERE \"id\" = $2 RETURNING \"Name\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
@@ -45,7 +45,7 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
   @Test
   public void testEncodeChar(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"CharacterDataType\" SET \"SingleChar\" = upper($1) WHERE \"id\" = $2 RETURNING \"SingleChar\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
@@ -73,7 +73,7 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
   @Test
   public void testEncodeFixedChar(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"CharacterDataType\" SET \"FixedChar\" = upper($1) WHERE \"id\" = $2 RETURNING \"FixedChar\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
@@ -101,7 +101,7 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
   @Test
   public void testEncodeText(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"CharacterDataType\" SET \"Text\" = upper($1) WHERE \"id\" = $2 RETURNING \"Text\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
@@ -129,7 +129,7 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
   @Test
   public void testEncodeVarCharacter(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"CharacterDataType\" SET \"VarCharacter\" = upper($1) WHERE \"id\" = $2 RETURNING \"VarCharacter\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
@@ -158,7 +158,7 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
     }
     String value = builder.toString();
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT $1::VARCHAR(" + len + ")",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.of(value), ctx.asyncAssertSuccess(result -> {
@@ -177,7 +177,7 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
   @Test
   public void testEncodeStringArray(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Text\" = $1  WHERE \"id\" = $2 RETURNING \"Text\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()

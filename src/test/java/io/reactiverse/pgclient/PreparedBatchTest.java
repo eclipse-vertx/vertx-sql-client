@@ -17,6 +17,8 @@
 
 package io.reactiverse.pgclient;
 
+import io.reactiverse.sqlclient.Row;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -48,7 +50,7 @@ public class PreparedBatchTest extends PgTestBase {
   @Test
   public void testEmptyBatch(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       List<Tuple> batch = new ArrayList<>();
       conn.preparedBatch("INSERT INTO Test (id, val) VALUES ($1, $2)", batch, ctx.asyncAssertSuccess(result -> {
         async.complete();
@@ -59,7 +61,7 @@ public class PreparedBatchTest extends PgTestBase {
   @Test
   public void testInsert(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       deleteFromTestTable(ctx, conn, () -> {
         List<Tuple> batch = new ArrayList<>();
         batch.add(Tuple.of(79991, "batch one"));
@@ -101,7 +103,7 @@ public class PreparedBatchTest extends PgTestBase {
   @Test
   public void testInsertWithFunction(TestContext ctx) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       deleteFromTestTable(ctx, conn, () -> {
         List<Tuple> batch = new ArrayList<>();
         batch.add(Tuple.of(78881, "batch one"));

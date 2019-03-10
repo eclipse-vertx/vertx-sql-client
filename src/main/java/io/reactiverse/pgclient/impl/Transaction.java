@@ -16,18 +16,17 @@
  */
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.*;
 import io.reactiverse.pgclient.impl.command.CommandResponse;
 import io.reactiverse.pgclient.impl.command.CommandBase;
 import io.reactiverse.pgclient.impl.command.QueryCommandBase;
 import io.reactiverse.pgclient.impl.command.SimpleQueryCommand;
-import io.reactiverse.sqlclient.SqlTransaction;
+import io.reactiverse.sqlclient.RowSet;
 import io.vertx.core.*;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-class Transaction extends PgConnectionBase<Transaction> implements SqlTransaction {
+class Transaction extends PgConnectionBase<Transaction> implements io.reactiverse.sqlclient.Transaction {
 
   private static final int ST_BEGIN = 0;
   private static final int ST_PENDING = 1;
@@ -189,14 +188,14 @@ class Transaction extends PgConnectionBase<Transaction> implements SqlTransactio
   }
 
   @Override
-  public SqlTransaction abortHandler(Handler<Void> handler) {
+  public io.reactiverse.sqlclient.Transaction abortHandler(Handler<Void> handler) {
     failedHandler = handler;
     return this;
   }
 
-  private CommandBase doQuery(String sql, Handler<AsyncResult<PgRowSet>> handler) {
-    PgResultBuilder<PgRowSet, PgRowSetImpl, PgRowSet> b = new PgResultBuilder<>(PgRowSetImpl.FACTORY, handler);
-    SimpleQueryCommand<PgRowSet> cmd = new SimpleQueryCommand<>(sql, false, PgRowSetImpl.COLLECTOR, b);
+  private CommandBase doQuery(String sql, Handler<AsyncResult<RowSet>> handler) {
+    PgResultBuilder<RowSet, PgRowSetImpl, RowSet> b = new PgResultBuilder<>(PgRowSetImpl.FACTORY, handler);
+    SimpleQueryCommand<RowSet> cmd = new SimpleQueryCommand<>(sql, false, PgRowSetImpl.COLLECTOR, b);
     cmd.handler = b;
     return cmd;
   }

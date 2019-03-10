@@ -16,7 +16,6 @@
  */
 package io.reactiverse.sqlclient;
 
-import io.reactiverse.pgclient.Tuple;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;

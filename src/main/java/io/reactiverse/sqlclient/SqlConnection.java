@@ -17,11 +17,6 @@
 
 package io.reactiverse.sqlclient;
 
-import io.reactiverse.pgclient.PgPreparedQuery;
-import io.reactiverse.pgclient.PgResult;
-import io.reactiverse.pgclient.PgRowSet;
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
@@ -47,7 +42,7 @@ public interface SqlConnection extends SqlClient {
    * @param handler the handler notified with the prepared query asynchronously
    */
   @Fluent
-  SqlConnection prepare(String sql, Handler<AsyncResult<PgPreparedQuery>> handler);
+  SqlConnection prepare(String sql, Handler<AsyncResult<PreparedQuery>> handler);
 
   /**
    * Set an handler called with connection errors.
@@ -68,14 +63,14 @@ public interface SqlConnection extends SqlClient {
   SqlConnection closeHandler(Handler<Void> handler);
 
   /**
-   * Begin a transaction and returns a {@link SqlTransaction} for controlling and tracking
+   * Begin a transaction and returns a {@link Transaction} for controlling and tracking
    * this transaction.
    * <p/>
    * When the connection is explicitely closed, any inflight transaction is rollbacked.
    *
    * @return the transaction instance
    */
-  SqlTransaction begin();
+  Transaction begin();
 
   /**
    * @return whether the connection uses SSL
@@ -88,30 +83,30 @@ public interface SqlConnection extends SqlClient {
   void close();
 
   @Override
-  SqlConnection preparedQuery(String sql, Handler<AsyncResult<PgRowSet>> handler);
+  SqlConnection preparedQuery(String sql, Handler<AsyncResult<RowSet>> handler);
 
   @Override
   @GenIgnore
-  <R> SqlConnection preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+  <R> SqlConnection preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   @Override
-  SqlConnection query(String sql, Handler<AsyncResult<PgRowSet>> handler);
-
-  @Override
-  @GenIgnore
-  <R> SqlConnection query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
-
-  @Override
-  SqlConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgRowSet>> handler);
+  SqlConnection query(String sql, Handler<AsyncResult<RowSet>> handler);
 
   @Override
   @GenIgnore
-  <R> SqlConnection preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+  <R> SqlConnection query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   @Override
-  SqlConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgRowSet>> handler);
+  SqlConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet>> handler);
 
   @Override
   @GenIgnore
-  <R> SqlConnection preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+  <R> SqlConnection preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+
+  @Override
+  SqlConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet>> handler);
+
+  @Override
+  @GenIgnore
+  <R> SqlConnection preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 }

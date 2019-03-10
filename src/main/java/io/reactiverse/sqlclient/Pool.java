@@ -17,10 +17,6 @@
 
 package io.reactiverse.sqlclient;
 
-import io.reactiverse.pgclient.PgResult;
-import io.reactiverse.pgclient.PgRowSet;
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
@@ -35,35 +31,35 @@ import java.util.stream.Collector;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 @VertxGen
-public interface SqlPool extends SqlClient {
+public interface Pool extends SqlClient {
 
   @Override
-  SqlPool preparedQuery(String sql, Handler<AsyncResult<PgRowSet>> handler);
-
-  @Override
-  @GenIgnore
-  <R> SqlPool preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
-
-  @Override
-  SqlPool query(String sql, Handler<AsyncResult<PgRowSet>> handler);
+  Pool preparedQuery(String sql, Handler<AsyncResult<RowSet>> handler);
 
   @Override
   @GenIgnore
-  <R> SqlPool query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+  <R> Pool preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   @Override
-  SqlPool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<PgRowSet>> handler);
-
-  @Override
-  @GenIgnore
-  <R> SqlPool preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
-
-  @Override
-  SqlPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<PgRowSet>> handler);
+  Pool query(String sql, Handler<AsyncResult<RowSet>> handler);
 
   @Override
   @GenIgnore
-  <R> SqlPool preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<PgResult<R>>> handler);
+  <R> Pool query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+
+  @Override
+  Pool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet>> handler);
+
+  @Override
+  @GenIgnore
+  <R> Pool preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+
+  @Override
+  Pool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet>> handler);
+
+  @Override
+  @GenIgnore
+  <R> Pool preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   /**
    * Get a connection from the pool.
@@ -78,7 +74,7 @@ public interface SqlPool extends SqlClient {
    *
    * @return the transaction
    */
-  void begin(Handler<AsyncResult<SqlTransaction>> handler);
+  void begin(Handler<AsyncResult<Transaction>> handler);
 
   /**
    * Close the pool and release the associated resources.

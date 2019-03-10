@@ -49,7 +49,7 @@ public abstract class PgBenchmarkBase extends BenchmarkBase {
   @Setup
   public void setup() throws Exception {
     vertx = Vertx.vertx();
-    pool = PgClient.pool(vertx, new PgPoolOptions()
+    pool = PgPool.pool(vertx, new PgPoolOptions()
       .setHost(host)
       .setPort(port)
       .setDatabase(database)

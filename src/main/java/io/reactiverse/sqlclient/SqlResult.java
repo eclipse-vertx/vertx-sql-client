@@ -15,7 +15,7 @@
  *
  */
 
-package io.reactiverse.pgclient;
+package io.reactiverse.sqlclient;
 
 import io.vertx.codegen.annotations.VertxGen;
 
@@ -26,7 +26,7 @@ import java.util.List;
  * @param <T>
  */
 @VertxGen
-public interface PgResult<T> {
+public interface SqlResult<T> {
 
   /**
    * Get the number of the affected rows in the operation to this PgResult.
@@ -70,6 +70,6 @@ public interface PgResult<T> {
    *
    * @return the next available result or {@code null} if none is available
    */
-  PgResult<T> next();
+  SqlResult<T> next();
 
 }

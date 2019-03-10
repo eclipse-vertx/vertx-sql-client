@@ -16,7 +16,7 @@
  */
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.Row;
+import io.reactiverse.sqlclient.Row;
 
 public interface RowInternal extends Row {
 

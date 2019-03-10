@@ -16,17 +16,17 @@
  */
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.PgIterator;
-import io.reactiverse.pgclient.PgRowSet;
-import io.reactiverse.pgclient.Row;
+import io.reactiverse.sqlclient.RowIterator;
+import io.reactiverse.sqlclient.RowSet;
+import io.reactiverse.sqlclient.Row;
 
 import java.util.NoSuchElementException;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
-class PgRowSetImpl extends PgResultBase<PgRowSet, PgRowSetImpl> implements PgRowSet {
+class PgRowSetImpl extends PgResultBase<RowSet, PgRowSetImpl> implements RowSet {
 
-  static Collector<Row, PgRowSetImpl, PgRowSet> COLLECTOR = Collector.of(
+  static Collector<Row, PgRowSetImpl, RowSet> COLLECTOR = Collector.of(
     PgRowSetImpl::new,
     (set, row) -> {
       if (set.head == null) {
@@ -40,19 +40,19 @@ class PgRowSetImpl extends PgResultBase<PgRowSet, PgRowSetImpl> implements PgRow
     (set) -> set
   );
 
-  static Function<PgRowSet, PgRowSetImpl> FACTORY = rs -> (PgRowSetImpl) rs;
+  static Function<RowSet, PgRowSetImpl> FACTORY = rs -> (PgRowSetImpl) rs;
 
   private RowInternal head;
   private RowInternal tail;
 
   @Override
-  public PgRowSet value() {
+  public RowSet value() {
     return this;
   }
 
   @Override
-  public PgIterator iterator() {
-    return new PgIterator() {
+  public RowIterator iterator() {
+    return new RowIterator() {
       RowInternal current = head;
       @Override
       public boolean hasNext() {

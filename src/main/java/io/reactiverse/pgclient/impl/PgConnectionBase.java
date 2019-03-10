@@ -17,7 +17,7 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.PgPreparedQuery;
+import io.reactiverse.sqlclient.PreparedQuery;
 import io.reactiverse.pgclient.impl.command.PrepareStatementCommand;
 import io.vertx.core.*;
 
@@ -34,7 +34,7 @@ public abstract class PgConnectionBase<C extends PgConnectionBase> extends PgCli
     this.conn = conn;
   }
 
-  public C prepare(String sql, Handler<AsyncResult<PgPreparedQuery>> handler) {
+  public C prepare(String sql, Handler<AsyncResult<PreparedQuery>> handler) {
     schedule(new PrepareStatementCommand(sql), cr -> {
       if (cr.succeeded()) {
         handler.handle(Future.succeededFuture(new PgPreparedQueryImpl(conn, context, cr.result())));

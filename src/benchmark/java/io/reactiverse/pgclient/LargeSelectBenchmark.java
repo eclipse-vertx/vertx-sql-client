@@ -17,6 +17,8 @@
 
 package io.reactiverse.pgclient;
 
+import io.reactiverse.sqlclient.PreparedQuery;
+import io.reactiverse.sqlclient.SqlResult;
 import io.reactiverse.sqlclient.SqlConnection;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
@@ -29,7 +31,7 @@ public class LargeSelectBenchmark extends PgBenchmarkBase {
 
   @Benchmark
   public void poolPreparedQuery(Blackhole blackhole) throws Exception {
-    CompletableFuture<PgResult> latch = new CompletableFuture<>();
+    CompletableFuture<SqlResult> latch = new CompletableFuture<>();
     pool.preparedQuery("SELECT id, randomnumber from WORLD", ar -> {
       if (ar.succeeded()) {
         latch.complete(ar.result());
@@ -42,7 +44,7 @@ public class LargeSelectBenchmark extends PgBenchmarkBase {
 
   @Benchmark
   public void pooledConnectionPreparedQuery(Blackhole blackhole) throws Exception {
-    CompletableFuture<PgResult> latch = new CompletableFuture<>();
+    CompletableFuture<SqlResult> latch = new CompletableFuture<>();
     pool.getConnection(ar1 -> {
       if (ar1.succeeded()) {
         SqlConnection conn = ar1.result();
@@ -63,13 +65,13 @@ public class LargeSelectBenchmark extends PgBenchmarkBase {
 
   @Benchmark
   public void pooledConnectionPreparedStatementQuery(Blackhole blackhole) throws Exception {
-    CompletableFuture<PgResult> latch = new CompletableFuture<>();
+    CompletableFuture<SqlResult> latch = new CompletableFuture<>();
     pool.getConnection(ar1 -> {
       if (ar1.succeeded()) {
         SqlConnection conn = ar1.result();
         conn.prepare("SELECT id, randomnumber from WORLD", ar2 -> {
           if (ar2.succeeded()) {
-            PgPreparedQuery ps = ar2.result();
+            PreparedQuery ps = ar2.result();
             ps.execute(ar3 -> {
               conn.close();
               if (ar3.succeeded()) {

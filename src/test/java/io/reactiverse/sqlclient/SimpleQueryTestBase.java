@@ -16,8 +16,6 @@
  */
 package io.reactiverse.sqlclient;
 
-import io.reactiverse.pgclient.PgClient;
-import io.reactiverse.pgclient.Row;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -31,9 +29,9 @@ import java.util.Iterator;
 public abstract class SimpleQueryTestBase {
 
   protected Vertx vertx;
-  protected Connector<PgClient> connector;
+  protected Connector<SqlClient> connector;
 
-  protected void connect(Handler<AsyncResult<PgClient>> handler) {
+  protected void connect(Handler<AsyncResult<SqlClient>> handler) {
     connector.connect(handler);
   }
 

@@ -18,7 +18,9 @@
 package io.reactiverse.pgclient;
 
 import io.reactiverse.pgclient.impl.ArrayTuple;
+import io.reactiverse.sqlclient.RowSet;
 import io.reactiverse.sqlclient.SqlClient;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.core.*;
 import io.vertx.core.net.NetSocket;
 import io.vertx.ext.unit.Async;
@@ -73,7 +75,7 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
         Tuple row1 = result1.iterator().next();
         ctx.assertTrue(row1.getValue(0) instanceof Integer);
         ctx.assertTrue(row1.getValue(1) instanceof String);
-        PgRowSet result2 = result1.next();
+        RowSet result2 = result1.next();
         ctx.assertNotNull(result2);
         ctx.assertEquals(1, result2.size());
         ctx.assertEquals(Arrays.asList("message", "id"), result2.columnsNames());

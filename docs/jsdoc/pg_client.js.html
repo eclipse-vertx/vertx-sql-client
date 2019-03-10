@@ -125,7 +125,7 @@ var PgClient = function(j_val) {
       }) ;
       return that;
     } else if (__args.length === 3 &amp;&amp; typeof __args[0] === 'string' &amp;&amp; typeof __args[1] === 'object' &amp;&amp; __args[1]._jdel &amp;&amp; typeof __args[2] === 'function') {
-      j_pgClient["preparedQuery(java.lang.String,io.reactiverse.pgclient.Tuple,io.vertx.core.Handler)"](__args[0], __args[1]._jdel, function(ar) {
+      j_pgClient["preparedQuery(java.lang.String,io.reactiverse.sqlclient.Tuple,io.vertx.core.Handler)"](__args[0], __args[1]._jdel, function(ar) {
         if (ar.succeeded()) {
           __args[2](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
         } else {

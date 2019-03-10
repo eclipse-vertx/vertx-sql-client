@@ -17,6 +17,7 @@
 
 package io.reactiverse.pgclient;
 
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
@@ -30,7 +31,7 @@ public class PgPoolTest extends PgPoolTestBase {
 
   @Override
   protected PgPool createPool(PgConnectOptions options, int size) {
-    return PgClient.pool(vertx, new PgPoolOptions(options).setMaxSize(size));
+    return PgPool.pool(vertx, new PgPoolOptions(options).setMaxSize(size));
   }
 
   @Test
@@ -73,7 +74,7 @@ public class PgPoolTest extends PgPoolTestBase {
       proxyConn.set(conn);
       conn.connect();
     });
-    PgPool pool = PgClient.pool(vertx, new PgPoolOptions(options)
+    PgPool pool = PgPool.pool(vertx, new PgPoolOptions(options)
       .setPort(8080)
       .setHost("localhost")
       .setMaxSize(1)
@@ -93,7 +94,7 @@ public class PgPoolTest extends PgPoolTestBase {
     Async async = ctx.async();
     vertx.runOnContext(v -> {
       try {
-        PgClient.pool(new PgPoolOptions());
+        PgPool.pool(new PgPoolOptions());
         ctx.fail();
       } catch (IllegalStateException ignore) {
         async.complete();
@@ -104,7 +105,7 @@ public class PgPoolTest extends PgPoolTestBase {
   @Test
   public void testRunStandalone(TestContext ctx) {
     Async async = ctx.async();
-    PgPool pool = PgClient.pool(new PgPoolOptions(options));
+    PgPool pool = PgPool.pool(new PgPoolOptions(options));
     try {
       pool.query("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(v -> {
         async.complete();
@@ -118,7 +119,7 @@ public class PgPoolTest extends PgPoolTestBase {
   @Test
   public void testMaxWaitQueueSize(TestContext ctx) {
     Async async = ctx.async();
-    PgPool pool = PgClient.pool(new PgPoolOptions(options).setMaxSize(1).setMaxWaitQueueSize(0));
+    PgPool pool = PgPool.pool(new PgPoolOptions(options).setMaxSize(1).setMaxWaitQueueSize(0));
     try {
       pool.getConnection(ctx.asyncAssertSuccess(v -> {
         pool.getConnection(ctx.asyncAssertFailure(err -> {
@@ -136,7 +137,7 @@ public class PgPoolTest extends PgPoolTestBase {
   @Test
   public void testConcurrentMultipleConnection(TestContext ctx) {
     PgPoolOptions options = new PgPoolOptions(new PgConnectOptions(this.options).setCachePreparedStatements(true)).setMaxSize(2);
-    PgPool pool = PgClient.pool(vertx, options);
+    PgPool pool = PgPool.pool(vertx, options);
     int numRequests = 2;
     Async async = ctx.async(numRequests);
     for (int i = 0;i < numRequests;i++) {

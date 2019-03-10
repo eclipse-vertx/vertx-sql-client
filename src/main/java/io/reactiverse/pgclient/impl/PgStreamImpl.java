@@ -17,13 +17,17 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.*;
+import io.reactiverse.sqlclient.Cursor;
+import io.reactiverse.sqlclient.RowSet;
+import io.reactiverse.sqlclient.RowStream;
+import io.reactiverse.sqlclient.Row;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
 import java.util.Iterator;
 
-public class PgStreamImpl implements PgStream<Row>, Handler<AsyncResult<PgRowSet>> {
+public class PgStreamImpl implements RowStream<Row>, Handler<AsyncResult<RowSet>> {
 
   private final PgPreparedQueryImpl ps;
   private final int fetch;
@@ -34,7 +38,7 @@ public class PgStreamImpl implements PgStream<Row>, Handler<AsyncResult<PgRowSet
   private Handler<Throwable> exceptionHandler;
   private long demand;
   private boolean emitting;
-  private PgCursor cursor;
+  private Cursor cursor;
 
   private Iterator<Row> result;
 
@@ -46,14 +50,14 @@ public class PgStreamImpl implements PgStream<Row>, Handler<AsyncResult<PgRowSet
   }
 
   @Override
-  public synchronized PgStream<Row> exceptionHandler(Handler<Throwable> handler) {
+  public synchronized RowStream<Row> exceptionHandler(Handler<Throwable> handler) {
     exceptionHandler = handler;
     return this;
   }
 
   @Override
-  public PgStream<Row> handler(Handler<Row> handler) {
-    PgCursor c;
+  public RowStream<Row> handler(Handler<Row> handler) {
+    Cursor c;
     synchronized (this) {
       if (handler != null) {
         if (cursor == null) {
@@ -76,12 +80,12 @@ public class PgStreamImpl implements PgStream<Row>, Handler<AsyncResult<PgRowSet
   }
 
   @Override
-  public synchronized PgStream<Row> pause() {
+  public synchronized RowStream<Row> pause() {
     demand = 0L;
     return this;
   }
 
-  public PgStream<Row> fetch(long amount) {
+  public RowStream<Row> fetch(long amount) {
     if (amount < 0L) {
       throw new IllegalArgumentException("Invalid fetch amount " + amount);
     }
@@ -99,18 +103,18 @@ public class PgStreamImpl implements PgStream<Row>, Handler<AsyncResult<PgRowSet
   }
 
   @Override
-  public PgStream<Row> resume() {
+  public RowStream<Row> resume() {
     return fetch(Long.MAX_VALUE);
   }
 
   @Override
-  public synchronized PgStream<Row> endHandler(Handler<Void> handler) {
+  public synchronized RowStream<Row> endHandler(Handler<Void> handler) {
     endHandler = handler;
     return this;
   }
 
   @Override
-  public void handle(AsyncResult<PgRowSet> ar) {
+  public void handle(AsyncResult<RowSet> ar) {
     if (ar.failed()) {
       Handler<Throwable> handler;
       synchronized (PgStreamImpl.this) {
@@ -133,7 +137,7 @@ public class PgStreamImpl implements PgStream<Row>, Handler<AsyncResult<PgRowSet
 
   @Override
   public void close(Handler<AsyncResult<Void>> completionHandler) {
-    PgCursor c;
+    Cursor c;
     synchronized (this) {
       if ((c = cursor) == null) {
         return;

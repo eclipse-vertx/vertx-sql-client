@@ -1,9 +1,8 @@
 package io.reactiverse.pgclient.data;
 
-import io.reactiverse.pgclient.PgClient;
-import io.reactiverse.pgclient.PgConnectOptions;
-import io.reactiverse.pgclient.Row;
-import io.reactiverse.pgclient.Tuple;
+import io.reactiverse.pgclient.PgConnection;
+import io.reactiverse.sqlclient.Row;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 
@@ -26,7 +25,7 @@ public abstract class SimpleQueryDataTypeCodecTestBase extends DataTypeTestBase 
                                        ColumnChecker.SerializableBiFunction<Row, String, T> byNameGetter,
                                        T expected) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT '" + data + "' :: " + dataType + " \"" + columnName + "\"", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
@@ -46,7 +45,7 @@ public abstract class SimpleQueryDataTypeCodecTestBase extends DataTypeTestBase 
                                         ColumnChecker.SerializableBiFunction<Row, String, Object> byNameGetter,
                                         Object... expected) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SET TIME ZONE 'UTC'",
         ctx.asyncAssertSuccess(res -> {
           conn.query("SELECT " + arrayData + " \"" + columnName + "\"", ctx.asyncAssertSuccess(result -> {
@@ -69,7 +68,7 @@ public abstract class SimpleQueryDataTypeCodecTestBase extends DataTypeTestBase 
                                         ColumnChecker.SerializableBiFunction<Row, String, Object> byNameGetter,
                                         Object... expected) {
     Async async = ctx.async();
-    PgClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SET TIME ZONE 'UTC'",
         ctx.asyncAssertSuccess(res -> {
           conn.query("SELECT \"" + columnName + "\" FROM \"" + tableName + "\" WHERE \"id\" = 1",

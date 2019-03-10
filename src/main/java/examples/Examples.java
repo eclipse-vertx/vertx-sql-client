@@ -21,8 +21,16 @@ import io.reactiverse.pgclient.*;
 import io.reactiverse.pgclient.data.Json;
 import io.reactiverse.pgclient.data.Numeric;
 import io.reactiverse.pgclient.pubsub.PgSubscriber;
+import io.reactiverse.sqlclient.Cursor;
+import io.reactiverse.sqlclient.PreparedQuery;
+import io.reactiverse.sqlclient.SqlResult;
+import io.reactiverse.sqlclient.RowSet;
+import io.reactiverse.sqlclient.RowStream;
+import io.reactiverse.sqlclient.Row;
+import io.reactiverse.sqlclient.SqlClient;
 import io.reactiverse.sqlclient.SqlConnection;
-import io.reactiverse.sqlclient.SqlTransaction;
+import io.reactiverse.sqlclient.Transaction;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.PemTrustOptions;
@@ -53,12 +61,12 @@ public class Examples {
       .setMaxSize(5);
 
     // Create the client pool
-    PgPool client = PgClient.pool(options);
+    PgPool client = PgPool.pool(options);
 
     // A simple query
     client.query("SELECT * FROM users WHERE id='julien'", ar -> {
       if (ar.succeeded()) {
-        PgRowSet result = ar.result();
+        RowSet result = ar.result();
         System.out.println("Got " + result.size() + " rows ");
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
@@ -72,10 +80,10 @@ public class Examples {
   public void configureFromEnv(Vertx vertx) {
 
     // Create the pool from the environment variables
-    PgPool pool = PgClient.pool();
+    PgPool pool = PgPool.pool();
 
     // Create the connection from the environment variables
-    PgClient.connect(vertx, res -> {
+    PgConnection.connect(vertx, res -> {
       // Handling your connection
     });
   }
@@ -86,10 +94,10 @@ public class Examples {
     String connectionUri = "postgresql://dbuser:secretpassword@database.server.com:3211/mydb";
 
     // Create the pool from the connection URI
-    PgPool pool = PgClient.pool(connectionUri);
+    PgPool pool = PgPool.pool(connectionUri);
 
     // Create the connection from the connection URI
-    PgClient.connect(vertx, connectionUri, res -> {
+    PgConnection.connect(vertx, connectionUri, res -> {
       // Handling your connection
     });
   }
@@ -106,7 +114,7 @@ public class Examples {
       .setMaxSize(5);
 
     // Create the pooled client
-    PgPool client = PgClient.pool(options);
+    PgPool client = PgPool.pool(options);
   }
 
   public void connecting02(Vertx vertx) {
@@ -121,7 +129,7 @@ public class Examples {
       .setMaxSize(5);
 
     // Create the pooled client
-    PgPool client = PgClient.pool(vertx, options);
+    PgPool client = PgPool.pool(vertx, options);
   }
 
   public void connecting03(PgPool pool) {
@@ -142,7 +150,7 @@ public class Examples {
       .setMaxSize(5);
 
     // Create the pooled client
-    PgPool client = PgClient.pool(vertx, options);
+    PgPool client = PgPool.pool(vertx, options);
 
     // Get a connection from the pool
     client.getConnection(ar1 -> {
@@ -183,7 +191,7 @@ public class Examples {
       .setPassword("secret");
 
     // Connect to Postgres
-    PgClient.connect(vertx, options, res -> {
+    PgConnection.connect(vertx, options, res -> {
       if (res.succeeded()) {
 
         System.out.println("Connected");
@@ -219,17 +227,17 @@ public class Examples {
       .setDatabase("the-db");
 
     // Create the pooled client
-    PgPool client = PgClient.pool(options);
+    PgPool client = PgPool.pool(options);
 
     // Create the pooled client with a vertx instance
     // Make sure the vertx instance has enabled native transports
-    PgPool client2 = PgClient.pool(vertx, options);
+    PgPool client2 = PgPool.pool(vertx, options);
   }
 
-  public void queries01(PgClient client) {
+  public void queries01(SqlClient client) {
     client.query("SELECT * FROM users WHERE id='julien'", ar -> {
       if (ar.succeeded()) {
-        PgRowSet result = ar.result();
+        RowSet result = ar.result();
         System.out.println("Got " + result.size() + " rows ");
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
@@ -237,10 +245,10 @@ public class Examples {
     });
   }
 
-  public void queries02(PgClient client) {
-    client.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"),  ar -> {
+  public void queries02(SqlClient client) {
+    client.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"), ar -> {
       if (ar.succeeded()) {
-        PgRowSet rows = ar.result();
+        RowSet rows = ar.result();
         System.out.println("Got " + rows.size() + " rows ");
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
@@ -248,10 +256,10 @@ public class Examples {
     });
   }
 
-  public void queries03(PgClient client) {
+  public void queries03(SqlClient client) {
     client.preparedQuery("SELECT first_name, last_name FROM users", ar -> {
       if (ar.succeeded()) {
-        PgRowSet rows = ar.result();
+        RowSet rows = ar.result();
         for (Row row : rows) {
           System.out.println("User " + row.getString(0) + " " + row.getString(1));
         }
@@ -261,10 +269,10 @@ public class Examples {
     });
   }
 
-  public void queries04(PgClient client) {
+  public void queries04(SqlClient client) {
     client.preparedQuery("INSERT INTO users (first_name, last_name) VALUES ($1, $2)", Tuple.of("Julien", "Viet"),  ar -> {
       if (ar.succeeded()) {
-        PgRowSet rows = ar.result();
+        RowSet rows = ar.result();
         System.out.println(rows.rowCount());
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
@@ -290,7 +298,7 @@ public class Examples {
 
   }
 
-  public void queries08(PgClient client) {
+  public void queries08(SqlClient client) {
 
     // Add commands to the batch
     List<Tuple> batch = new ArrayList<>();
@@ -302,7 +310,7 @@ public class Examples {
       if (res.succeeded()) {
 
         // Process rows
-        PgRowSet rows = res.result();
+        RowSet rows = res.result();
       } else {
         System.out.println("Batch failed " + res.cause());
       }
@@ -314,13 +322,13 @@ public class Examples {
     // Enable prepare statements
     options.setCachePreparedStatements(true);
 
-    PgPool client = PgClient.pool(vertx, options);
+    PgPool client = PgPool.pool(vertx, options);
   }
 
-  public void queries10(PgClient client) {
+  public void queries10(SqlClient client) {
     client.preparedQuery("INSERT INTO color (color_name) VALUES ($1), ($2), ($3) RETURNING color_id", Tuple.of("white", "red", "blue"), ar -> {
       if (ar.succeeded()) {
-        PgRowSet rows = ar.result();
+        RowSet rows = ar.result();
         System.out.println(rows.rowCount());
         for (Row row : rows) {
           System.out.println("generated key: " + row.getInteger("color_id"));
@@ -355,11 +363,11 @@ public class Examples {
   public void usingConnections02(PgConnection connection) {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
       if (ar1.succeeded()) {
-        PgPreparedQuery pq = ar1.result();
+        PreparedQuery pq = ar1.result();
         pq.execute(Tuple.of("julien"), ar2 -> {
           if (ar2.succeeded()) {
             // All rows
-            PgRowSet rows = ar2.result();
+            RowSet rows = ar2.result();
           }
         });
       }
@@ -369,7 +377,7 @@ public class Examples {
   public void usingConnections03(PgConnection connection) {
     connection.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", ar1 -> {
       if (ar1.succeeded()) {
-        PgPreparedQuery prepared = ar1.result();
+        PreparedQuery prepared = ar1.result();
 
         // Create a query : bind parameters
         List<Tuple> batch = new ArrayList();
@@ -382,7 +390,7 @@ public class Examples {
           if (res.succeeded()) {
 
             // Process rows
-            PgRowSet rows = res.result();
+            RowSet rows = res.result();
           } else {
             System.out.println("Batch failed " + res.cause());
           }
@@ -399,7 +407,7 @@ public class Examples {
         SqlConnection conn = res.result();
 
         // Begin the transaction
-        SqlTransaction tx = conn.begin();
+        Transaction tx = conn.begin();
 
         // Various statements
         conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
@@ -428,7 +436,7 @@ public class Examples {
         SqlConnection conn = res.result();
 
         // Begin the transaction
-        SqlTransaction tx = conn
+        Transaction tx = conn
           .begin()
           .abortHandler(v -> {
           System.out.println("Transaction failed => rollbacked");
@@ -465,7 +473,7 @@ public class Examples {
       if (res.succeeded()) {
 
         // Get the transaction
-        SqlTransaction tx = res.result();
+        Transaction tx = res.result();
 
         // Various statements
         tx.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
@@ -486,18 +494,18 @@ public class Examples {
   public void usingCursors01(PgConnection connection) {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
       if (ar1.succeeded()) {
-        PgPreparedQuery pq = ar1.result();
+        PreparedQuery pq = ar1.result();
 
         // Cursors require to run within a transaction
-        SqlTransaction tx = connection.begin();
+        Transaction tx = connection.begin();
 
         // Create a cursor
-        PgCursor cursor = pq.cursor(Tuple.of("julien"));
+        Cursor cursor = pq.cursor(Tuple.of("julien"));
 
         // Read 50 rows
         cursor.read(50, ar2 -> {
           if (ar2.succeeded()) {
-            PgRowSet rows = ar2.result();
+            RowSet rows = ar2.result();
 
             // Check for more ?
             if (cursor.hasMore()) {
@@ -512,7 +520,7 @@ public class Examples {
     });
   }
 
-  public void usingCursors02(PgCursor cursor) {
+  public void usingCursors02(Cursor cursor) {
     cursor.read(50, ar2 -> {
       if (ar2.succeeded()) {
         // Close the cursor
@@ -524,13 +532,13 @@ public class Examples {
   public void usingCursors03(PgConnection connection) {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
       if (ar1.succeeded()) {
-        PgPreparedQuery pq = ar1.result();
+        PreparedQuery pq = ar1.result();
 
         // Streams require to run within a transaction
-        SqlTransaction tx = connection.begin();
+        Transaction tx = connection.begin();
 
         // Fetch 50 rows at a time
-        PgStream<Row> stream = pq.createStream(50, Tuple.of("julien"));
+        RowStream<Row> stream = pq.createStream(50, Tuple.of("julien"));
 
         // Use the stream
         stream.exceptionHandler(err -> {
@@ -549,7 +557,7 @@ public class Examples {
 
   public void typeMapping01(PgPool pool) {
     pool.query("SELECT 1::BIGINT \"VAL\"", ar -> {
-      PgRowSet rowSet = ar.result();
+      RowSet rowSet = ar.result();
       Row row = rowSet.iterator().next();
 
       // Stored as java.lang.Long
@@ -562,7 +570,7 @@ public class Examples {
 
   public void typeMapping02(PgPool pool) {
     pool.query("SELECT 1::BIGINT \"VAL\"", ar -> {
-      PgRowSet rowSet = ar.result();
+      RowSet rowSet = ar.result();
       Row row = rowSet.iterator().next();
 
       // Stored as java.lang.Long
@@ -688,7 +696,7 @@ public class Examples {
       .setSslMode(SslMode.VERIFY_CA)
       .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/cert.pem"));
 
-    PgClient.connect(vertx, options, res -> {
+    PgConnection.connect(vertx, options, res -> {
       if (res.succeeded()) {
         // Connected with SSL
       } else {
@@ -735,10 +743,10 @@ public class Examples {
     String[] array = tuple.getStringArray(0);
   }
 
-  public void customType01Example(PgClient client) {
+  public void customType01Example(SqlClient client) {
     client.preparedQuery("SELECT address, (address).city FROM address_book WHERE id=$1", Tuple.of(3),  ar -> {
       if (ar.succeeded()) {
-        PgRowSet rows = ar.result();
+        RowSet rows = ar.result();
         for (Row row : rows) {
           System.out.println("Full Address " + row.getString(0) + ", City " + row.getString(1));
         }
@@ -748,10 +756,10 @@ public class Examples {
     });
   }
 
-  public void customType02Example(PgClient client) {
+  public void customType02Example(SqlClient client) {
     client.preparedQuery("INSERT INTO address_book (id, address) VALUES ($1, $2)", Tuple.of(3, "('Anytown', 'Second Ave', false)"),  ar -> {
       if (ar.succeeded()) {
-        PgRowSet rows = ar.result();
+        RowSet rows = ar.result();
         System.out.println(rows.rowCount());
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
@@ -759,7 +767,7 @@ public class Examples {
     });
   }
 
-  public void collector01Example(PgClient client) {
+  public void collector01Example(SqlClient client) {
 
     // Create a collector projecting a row set to a map
     Collector<Row, ?, Map<Long, String>> collector = Collectors.toMap(
@@ -771,7 +779,7 @@ public class Examples {
       collector,
       ar -> {
       if (ar.succeeded()) {
-        PgResult<Map<Long, String>> result = ar.result();
+        SqlResult<Map<Long, String>> result = ar.result();
 
         // Get the map created by the collector
         Map<Long, String> map = result.value();
@@ -782,7 +790,7 @@ public class Examples {
     });
   }
 
-  public void collector02Example(PgClient client) {
+  public void collector02Example(SqlClient client) {
 
     // Create a collector projecting a row set to a (last_name_1,last_name_2,...)
     Collector<Row, ?, String> collector = Collectors.mapping(
@@ -795,7 +803,7 @@ public class Examples {
       collector,
       ar -> {
         if (ar.succeeded()) {
-          PgResult<String> result = ar.result();
+          SqlResult<String> result = ar.result();
 
           // Get the string created by the collector
           String list = result.value();

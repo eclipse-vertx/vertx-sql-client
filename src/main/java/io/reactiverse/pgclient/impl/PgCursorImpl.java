@@ -17,7 +17,9 @@
 
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.*;
+import io.reactiverse.sqlclient.Cursor;
+import io.reactiverse.sqlclient.RowSet;
+import io.reactiverse.sqlclient.Tuple;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -27,14 +29,14 @@ import java.util.*;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class PgCursorImpl implements PgCursor {
+public class PgCursorImpl implements Cursor {
 
   private final PgPreparedQueryImpl ps;
   private final Tuple params;
 
   private String portal;
   private boolean closed;
-  private PgResultBuilder<PgRowSet, PgRowSetImpl, PgRowSet> result;
+  private PgResultBuilder<RowSet, PgRowSetImpl, RowSet> result;
 
   PgCursorImpl(PgPreparedQueryImpl ps, Tuple params) {
     this.ps = ps;
@@ -50,7 +52,7 @@ public class PgCursorImpl implements PgCursor {
   }
 
   @Override
-  public synchronized void read(int count, Handler<AsyncResult<PgRowSet>> handler) {
+  public synchronized void read(int count, Handler<AsyncResult<RowSet>> handler) {
     if (portal == null) {
       portal = UUID.randomUUID().toString();
       result = new PgResultBuilder<>(PgRowSetImpl.FACTORY, handler);
