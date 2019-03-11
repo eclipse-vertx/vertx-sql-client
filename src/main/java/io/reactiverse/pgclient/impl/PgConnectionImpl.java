@@ -14,92 +14,53 @@
  * limitations under the License.
  *
  */
-
 package io.reactiverse.pgclient.impl;
 
-import io.reactiverse.pgclient.*;
+import io.reactiverse.pgclient.PgConnectOptions;
+import io.reactiverse.pgclient.PgConnection;
+import io.reactiverse.pgclient.PgNotification;
 import io.reactiverse.sqlclient.impl.Connection;
-import io.reactiverse.sqlclient.impl.SqlConnectionBase;
-import io.reactiverse.sqlclient.impl.TransactionImpl;
-import io.reactiverse.sqlclient.impl.command.CommandResponse;
-import io.reactiverse.sqlclient.impl.command.CommandBase;
-import io.reactiverse.sqlclient.Transaction;
-import io.vertx.core.*;
+import io.reactiverse.sqlclient.impl.SqlConnectionImpl;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 
-/**
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
- */
-public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implements PgConnection, Connection.Holder {
+public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implements PgConnection  {
+
+  public static void connect(Vertx vertx, PgConnectOptions options, Handler<AsyncResult<PgConnection>> handler) {
+    Context ctx = Vertx.currentContext();
+    if (ctx != null) {
+      PgConnectionFactory client = new PgConnectionFactory(ctx, false, options);
+      client.connectAndInit(ar -> {
+        if (ar.succeeded()) {
+          Connection conn = ar.result();
+          PgConnectionImpl p = new PgConnectionImpl(client, ctx, conn);
+          conn.init(p);
+          handler.handle(Future.succeededFuture(p));
+        } else {
+          handler.handle(Future.failedFuture(ar.cause()));
+        }
+      });
+    } else {
+      vertx.runOnContext(v -> {
+        if (options.isUsingDomainSocket() && !vertx.isNativeTransportEnabled()) {
+          handler.handle(Future.failedFuture("Native transport is not available"));
+        } else {
+          connect(vertx, options, handler);
+        }
+      });
+    }
+  }
 
   private final PgConnectionFactory factory;
-  private volatile Handler<Throwable> exceptionHandler;
-  private volatile Handler<Void> closeHandler;
-  private TransactionImpl tx;
   private volatile Handler<PgNotification> notificationHandler;
 
   public PgConnectionImpl(PgConnectionFactory factory, Context context, Connection conn) {
     super(context, conn);
+
     this.factory = factory;
-  }
-
-  @Override
-  public Connection connection() {
-    return conn;
-  }
-
-  @Override
-  public void handleClosed() {
-    Handler<Void> handler = closeHandler;
-    if (handler != null) {
-      context.runOnContext(handler);
-    }
-  }
-
-  @Override
-  public <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
-    cmd.handler = cr -> {
-      // Tx might be gone ???
-      cr.scheduler = this;
-      handler.handle(cr);
-    };
-    schedule(cmd);
-  }
-
-  protected void schedule(CommandBase<?> cmd) {
-    if (context == Vertx.currentContext()) {
-      if (tx != null) {
-        tx.schedule(cmd);
-      } else {
-        conn.schedule(cmd);
-      }
-    } else {
-      context.runOnContext(v -> {
-        schedule(cmd);
-      });
-    }
-  }
-
-  @Override
-  public void handleException(Throwable err) {
-    Handler<Throwable> handler = exceptionHandler;
-    if (handler != null) {
-      context.runOnContext(v -> {
-        handler.handle(err);
-      });
-    } else {
-      err.printStackTrace();
-    }
-  }
-
-  @Override
-  public boolean isSSL() {
-    return conn.isSsl();
-  }
-
-  @Override
-  public PgConnection closeHandler(Handler<Void> handler) {
-    closeHandler = handler;
-    return this;
   }
 
   @Override
@@ -108,48 +69,11 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
     return this;
   }
 
-  @Override
-  public PgConnection exceptionHandler(Handler<Throwable> handler) {
-    exceptionHandler = handler;
-    return this;
-  }
-
-  @Override
-  public Transaction begin() {
-    return begin(false);
-  }
-
-  Transaction begin(boolean closeOnEnd) {
-    if (tx != null) {
-      throw new IllegalStateException();
-    }
-    tx = new TransactionImpl(context, conn, v -> {
-      tx = null;
-      if (closeOnEnd) {
-        close();
-      }
-    });
-    return tx;
-  }
 
   public void handleNotification(int processId, String channel, String payload) {
     Handler<PgNotification> handler = notificationHandler;
     if (handler != null) {
       handler.handle(new PgNotification().setProcessId(processId).setChannel(channel).setPayload(payload));
-    }
-  }
-
-  @Override
-  public void close() {
-    if (context == Vertx.currentContext()) {
-      if (tx != null) {
-        tx.rollback(ar -> conn.close(this));
-        tx = null;
-      } else {
-        conn.close(this);
-      }
-    } else {
-      context.runOnContext(v -> close());
     }
   }
 

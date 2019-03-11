@@ -100,11 +100,6 @@ public class ConnectionPool {
     }
 
     @Override
-    public Connection connection() {
-      return this;
-    }
-
-    @Override
     public boolean isSsl() {
       return conn.isSsl();
     }

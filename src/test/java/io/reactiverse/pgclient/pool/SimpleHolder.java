@@ -63,7 +63,6 @@ class SimpleHolder implements Connection.Holder, Handler<AsyncResult<Connection>
     }
   }
 
-  @Override
   public Connection connection() {
     return conn;
   }

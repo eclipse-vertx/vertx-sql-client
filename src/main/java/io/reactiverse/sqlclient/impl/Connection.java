@@ -35,8 +35,6 @@ public interface Connection {
 
   interface Holder {
 
-    Connection connection();
-
     void handleNotification(int processId, String channel, String payload);
 
     void handleClosed();

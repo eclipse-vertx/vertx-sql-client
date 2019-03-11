@@ -18,15 +18,9 @@
 package io.reactiverse.pgclient.impl;
 
 import io.reactiverse.pgclient.*;
-import io.reactiverse.sqlclient.Pool;
 import io.reactiverse.sqlclient.impl.Connection;
-import io.reactiverse.sqlclient.impl.ConnectionPool;
-import io.reactiverse.sqlclient.impl.SqlClientBase;
-import io.reactiverse.sqlclient.impl.command.CommandResponse;
-import io.reactiverse.sqlclient.impl.command.CommandScheduler;
-import io.reactiverse.sqlclient.impl.command.CommandBase;
-import io.reactiverse.sqlclient.SqlConnection;
-import io.reactiverse.sqlclient.Transaction;
+import io.reactiverse.sqlclient.impl.PoolBase;
+import io.reactiverse.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.core.*;
 
 /**
@@ -38,155 +32,28 @@ import io.vertx.core.*;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public class PgPoolImpl extends SqlClientBase<PgPoolImpl> implements PgPool {
+public class PgPoolImpl extends PoolBase<PgPoolImpl> {
 
-  private final Context context;
   private final PgConnectionFactory factory;
-  private final ConnectionPool pool;
-  private final boolean closeVertx;
 
-  public PgPoolImpl(Vertx vertx, boolean closeVertx, PgPoolOptions options) {
-    int maxSize = options.getMaxSize();
-    if (maxSize < 1) {
-      throw new IllegalArgumentException("Pool max size must be > 0");
-    }
-    if (options.isUsingDomainSocket() && !vertx.isNativeTransportEnabled()) {
-      throw new VertxException("Native transport is not available");
-    }
-    this.context = vertx.getOrCreateContext();
+  public PgPoolImpl(Context context, boolean closeVertx, PgPoolOptions options) {
+    super(context, closeVertx, options);
     this.factory = new PgConnectionFactory(context, Vertx.currentContext() != null, options);
-    this.pool = new ConnectionPool(factory::create, maxSize, options.getMaxWaitQueueSize());
-    this.closeVertx = closeVertx;
   }
 
   @Override
-  public void getConnection(Handler<AsyncResult<SqlConnection>> handler) {
-    Context current = Vertx.currentContext();
-    if (current == context) {
-      pool.acquire(new ConnectionWaiter(handler));
-    } else {
-      context.runOnContext(v -> getConnection(handler));
-    }
+  public void connect(Handler<AsyncResult<Connection>> completionHandler) {
+    factory.connectAndInit(completionHandler);
   }
 
   @Override
-  public void begin(Handler<AsyncResult<Transaction>> handler) {
-    getConnection(ar -> {
-      if (ar.succeeded()) {
-        PgConnectionImpl conn = (PgConnectionImpl) ar.result();
-        Transaction tx = conn.begin(true);
-        handler.handle(Future.succeededFuture(tx));
-      } else {
-        handler.handle(Future.failedFuture(ar.cause()));
-      }
-    });
+  protected SqlConnectionImpl wrap(Context context, Connection conn) {
+    return new PgConnectionImpl(factory, context, conn);
   }
 
   @Override
-  public <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
-    Context current = Vertx.currentContext();
-    if (current == context) {
-      pool.acquire(new CommandWaiter() { // SHOULD BE IT !!!!!
-        @Override
-        protected void onSuccess(Connection conn) {
-          cmd.handler = ar -> {
-            ar.scheduler = new CommandScheduler() {
-              @Override
-              public <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
-                cmd.handler = cr -> {
-                  cr.scheduler = this;
-                  handler.handle(cr);
-                };
-                conn.schedule(cmd);
-              }
-            };
-            handler.handle(ar);
-          };
-          conn.schedule(cmd);
-          conn.close(this);
-        }
-        @Override
-        protected void onFailure(Throwable cause) {
-          cmd.handler = handler;
-          cmd.fail(cause);
-        }
-      });
-    } else {
-      context.runOnContext(v -> schedule(cmd, handler));
-    }
-  }
-
-  private abstract class CommandWaiter implements Connection.Holder, Handler<AsyncResult<Connection>> {
-
-    private Connection conn;
-
-    protected abstract void onSuccess(Connection conn);
-
-    protected abstract void onFailure(Throwable cause);
-
-    @Override
-    public void handleNotification(int processId, String channel, String payload) {
-      // What should we do ?
-    }
-
-    @Override
-    public void handle(AsyncResult<Connection> ar) {
-      if (ar.succeeded()) {
-        Connection conn = ar.result();
-        this.conn = conn;
-        conn.init(this);
-        onSuccess(conn);
-      } else {
-        onFailure(ar.cause());
-      }
-    }
-
-    @Override
-    public void handleClosed() {
-    }
-
-    @Override
-    public void handleException(Throwable err) {
-    }
-
-    @Override
-    public Connection connection() {
-      return conn;
-    }
-  }
-
-  private class ConnectionWaiter implements Handler<AsyncResult<Connection>> {
-
-    private final Handler<AsyncResult<SqlConnection>> handler;
-
-    private ConnectionWaiter(Handler<AsyncResult<SqlConnection>> handler) {
-      this.handler = handler;
-    }
-
-    @Override
-    public void handle(AsyncResult<Connection> ar) {
-      if (ar.succeeded()) {
-        Connection conn = ar.result();
-        PgConnectionImpl holder = new PgConnectionImpl(factory, context, conn);
-        conn.init(holder);
-        handler.handle(Future.succeededFuture(holder));
-      } else {
-        handler.handle(Future.failedFuture(ar.cause()));
-      }
-    }
-  }
-
-  @Override
-  public void close() {
-    Context current = Vertx.currentContext();
-    if (current == context) {
-      pool.close();
-      factory.close();
-      if (closeVertx) {
-        context.owner().close();
-      }
-    } else {
-      context.runOnContext(v -> close());
-    }
+  protected void doClose() {
+    factory.close();
+    super.doClose();
   }
 }

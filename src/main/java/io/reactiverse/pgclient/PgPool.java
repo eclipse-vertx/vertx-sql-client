@@ -84,14 +84,14 @@ public interface PgPool extends Pool {
       vertxOptions.setPreferNativeTransport(true);
     }
     Vertx vertx = Vertx.vertx(vertxOptions);
-    return new PgPoolImpl(vertx, true, options);
+    return new PgPoolImpl(vertx.getOrCreateContext(), true, options);
   }
 
   /**
    * Like {@link #pool(PgPoolOptions)} with a specific {@link Vertx} instance.
    */
   static PgPool pool(Vertx vertx, PgPoolOptions options) {
-    return new PgPoolImpl(vertx, false, options);
+    return new PgPoolImpl(vertx.getOrCreateContext(), false, options);
   }
 
   PgPool preparedQuery(String sql, Handler<AsyncResult<RowSet>> handler);

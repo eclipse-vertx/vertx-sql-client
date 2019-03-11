@@ -28,7 +28,7 @@ import io.vertx.core.net.*;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class PgConnectionFactory {
+class PgConnectionFactory {
 
   private final NetClient client;
   private final Context ctx;
@@ -46,7 +46,7 @@ public class PgConnectionFactory {
   private final boolean isUsingDomainSocket;
   private final Closeable hook;
 
-  public PgConnectionFactory(Context context,
+  PgConnectionFactory(Context context,
                              boolean registerCloseHook,
                              PgConnectOptions options) {
 
@@ -84,14 +84,14 @@ public class PgConnectionFactory {
     completionHandler.handle(Future.succeededFuture());
   }
 
-  public void close() {
+  void close() {
     if (registerCloseHook) {
       ctx.removeCloseHook(hook);
     }
     client.close();
   }
 
-  public void create(Handler<? super CommandResponse<Connection>> completionHandler) {
+  void connectAndInit(Handler<AsyncResult<Connection>> completionHandler) {
     connect(ar -> {
       if (ar.succeeded()) {
         PgSocketConnection conn = ar.result();
@@ -103,7 +103,7 @@ public class PgConnectionFactory {
     });
   }
 
-  public void connect(Handler<AsyncResult<PgSocketConnection>> handler) {
+  void connect(Handler<AsyncResult<PgSocketConnection>> handler) {
     switch (sslMode) {
       case DISABLE:
         doConnect(false, handler);

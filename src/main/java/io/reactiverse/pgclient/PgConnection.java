@@ -17,8 +17,6 @@
 
 package io.reactiverse.pgclient;
 
-import io.reactiverse.sqlclient.impl.Connection;
-import io.reactiverse.pgclient.impl.PgConnectionFactory;
 import io.reactiverse.pgclient.impl.PgConnectionImpl;
 import io.reactiverse.sqlclient.PreparedQuery;
 import io.reactiverse.sqlclient.SqlResult;
@@ -54,28 +52,7 @@ public interface PgConnection extends SqlConnection {
    * @param handler the handler called with the connection or the failure
    */
   static void connect(Vertx vertx, PgConnectOptions options, Handler<AsyncResult<PgConnection>> handler) {
-    Context ctx = Vertx.currentContext();
-    if (ctx != null) {
-      PgConnectionFactory client = new PgConnectionFactory(ctx, false, options);
-      client.create(ar -> {
-        if (ar.succeeded()) {
-          Connection conn = ar.result();
-          PgConnectionImpl p = new PgConnectionImpl(client, ctx, conn);
-          conn.init(p);
-          handler.handle(Future.succeededFuture(p));
-        } else {
-          handler.handle(Future.failedFuture(ar.cause()));
-        }
-      });
-    } else {
-      vertx.runOnContext(v -> {
-        if (options.isUsingDomainSocket() && !vertx.isNativeTransportEnabled()) {
-          handler.handle(Future.failedFuture("Native transport is not available"));
-        } else {
-          connect(vertx, options, handler);
-        }
-      });
-    }
+    PgConnectionImpl.connect(vertx, options, handler);
   }
 
   /**
