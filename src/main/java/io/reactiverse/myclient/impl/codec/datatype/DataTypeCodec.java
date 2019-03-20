@@ -28,6 +28,8 @@ public class DataTypeCodec {
         return textDecodeDouble(buffer);
       case NUMERIC:
         return textDecodeNUMERIC(buffer);
+      case CHAR:
+        return textDecodeChar(buffer);
       case VARCHAR:
         return textDecodeVarChar(buffer);
       default:
@@ -60,6 +62,8 @@ public class DataTypeCodec {
       case NUMERIC:
         binaryEncodeNumeric((Numeric) value, buffer);
         break;
+      case CHAR:
+        binaryEncodeChar(String.valueOf(value), buffer);
       case VARCHAR:
         binaryEncodeVarChar(String.valueOf(value), buffer);
         break;
@@ -85,6 +89,8 @@ public class DataTypeCodec {
         return binaryDecodeDouble(buffer);
       case NUMERIC:
         return binaryDecodeNumeric(buffer);
+      case CHAR:
+        return binaryDecodeChar(buffer);
       case VARCHAR:
         return binaryDecodeVarChar(buffer);
       default:
@@ -129,6 +135,10 @@ public class DataTypeCodec {
     BufferUtils.writeLengthEncodedString(buffer, value.toString(), StandardCharsets.UTF_8);
   }
 
+  private static void binaryEncodeChar(String value, ByteBuf buffer) {
+    BufferUtils.writeLengthEncodedString(buffer, value, StandardCharsets.UTF_8);
+  }
+
   private static void binaryEncodeVarChar(String value, ByteBuf buffer) {
     BufferUtils.writeLengthEncodedString(buffer, value, StandardCharsets.UTF_8);
   }
@@ -161,6 +171,10 @@ public class DataTypeCodec {
     return Numeric.parse(BufferUtils.readLengthEncodedString(buffer, StandardCharsets.UTF_8));
   }
 
+  private static String binaryDecodeChar(ByteBuf buffer) {
+    return BufferUtils.readLengthEncodedString(buffer, StandardCharsets.UTF_8);
+  }
+
   private static String binaryDecodeVarChar(ByteBuf buffer) {
     return BufferUtils.readLengthEncodedString(buffer, StandardCharsets.UTF_8);
   }
@@ -191,6 +205,10 @@ public class DataTypeCodec {
 
   private static Number textDecodeNUMERIC(ByteBuf buff) {
     return Numeric.parse(buff.toString(StandardCharsets.UTF_8));
+  }
+
+  private static String textDecodeChar(ByteBuf buffer) {
+    return buffer.toString(StandardCharsets.UTF_8);
   }
 
   private static String textDecodeVarChar(ByteBuf buffer) {

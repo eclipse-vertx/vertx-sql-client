@@ -42,8 +42,13 @@ public abstract class TextDataTypeDecodeTestBase extends DataTypeTestBase {
   }
 
   @Test
+  public void testChar(TestContext ctx) {
+    testDecodeGeneric(ctx, "test_char", String.class, "testchar");
+  }
+
+  @Test
   public void testVarchar(TestContext ctx) {
-//    testDecodeGeneric(ctx, "varchar", "VARCHAR(20)", "varchar", Tuple::getString, Row::getString, "varchar");
+    testDecodeGeneric(ctx, "test_varchar", String.class, "testvarchar");
   }
 
   protected <T> void testDecodeGeneric(TestContext ctx,

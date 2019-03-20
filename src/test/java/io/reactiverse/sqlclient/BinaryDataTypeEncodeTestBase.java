@@ -44,8 +44,13 @@ public abstract class BinaryDataTypeEncodeTestBase extends DataTypeTestBase {
   }
 
   @Test
+  public void testChar(TestContext ctx) {
+    testEncodeGeneric(ctx, "test_char", String.class, "newchar0");
+  }
+
+  @Test
   public void testVarchar(TestContext ctx) {
-//    testEncodeGeneric(ctx, "varchar", "VARCHAR(20)", "varchar", Tuple::getString, Row::getString, "varchar");
+    testEncodeGeneric(ctx, "test_varchar", String.class, "newvarchar");
   }
 
   protected <T> void testEncodeGeneric(TestContext ctx,

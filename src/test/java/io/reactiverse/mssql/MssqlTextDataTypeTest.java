@@ -58,10 +58,14 @@ public class MssqlTextDataTypeTest {
     testDecodeGeneric("12345", "DECIMAL", "test_decimal", BigDecimal.valueOf(12345));
   }
 
-  @Ignore
+  @Test
+  public void testChar() {
+    testDecodeGeneric("testchar", "CHAR(8)", "test_char", "testchar");
+  }
+
   @Test
   public void testVarchar() {
-    testDecodeGeneric("varchar", "VARCHAR(20)", "varchar", "varchar");
+    testDecodeGeneric("testvarchar", "VARCHAR(20)", "test_varchar", "testvarchar");
   }
 
   protected <T> void testDecodeGeneric(String data,

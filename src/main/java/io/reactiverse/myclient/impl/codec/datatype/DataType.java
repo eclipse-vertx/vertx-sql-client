@@ -14,7 +14,7 @@ public enum DataType {
   FLOAT(ColumnDefinition.ColumnType.MYSQL_TYPE_FLOAT, true, Float.class),
   NUMERIC(ColumnDefinition.ColumnType.MYSQL_TYPE_NEWDECIMAL, true, Numeric.class),
 //  DECIMAL(ColumnDefinition.ColumnType.MYSQL_TYPE_NEWDECIMAL, true, Numeric.class), DECIMAL is a synonym for NUMERIC
-  //TODO confirm VARCHAR data type map to 'MYSQL_TYPE_VAR_STRING'?
+  CHAR(ColumnDefinition.ColumnType.MYSQL_TYPE_STRING, true, String.class),
   VARCHAR(ColumnDefinition.ColumnType.MYSQL_TYPE_VAR_STRING, true, String.class);
 
   private static IntObjectMap<DataType> idToDataType = new IntObjectHashMap<>();

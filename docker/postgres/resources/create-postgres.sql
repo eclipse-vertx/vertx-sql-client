@@ -342,16 +342,18 @@ CREATE TABLE basicdatatype
   test_float_4 REAL             NOT NULL,
   test_float_8 DOUBLE PRECISION NOT NULL,
   test_numeric NUMERIC(5, 2)    NOT NULL,
-  test_decimal DECIMAL          NOT NULL
+  test_decimal DECIMAL          NOT NULL,
+  test_char    CHAR(8)          NOT NULL,
+  test_varchar VARCHAR(20)      NOT NULL
 );
 INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_float_8, test_numeric,
-                          test_decimal)
+                          test_decimal, test_char, test_varchar)
 VALUES ('1', '32767', '2147483647', '9223372036854775807', '3.40282E38', '1.7976931348623157E308', '999.99',
-        '12345');
+        '12345', 'testchar', 'testvarchar');
 INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_float_8, test_numeric,
-                          test_decimal)
+                          test_decimal, test_char, test_varchar)
 VALUES ('2', '32767', '2147483647', '9223372036854775807', '3.40282E38', '1.7976931348623157E308', '999.99',
-        '12345');
+        '12345', 'testchar', 'testvarchar');
 -- table for test ANSI SQL data type codecs
 
 -- TCK usage --
