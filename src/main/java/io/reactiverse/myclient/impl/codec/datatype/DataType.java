@@ -3,6 +3,7 @@ package io.reactiverse.myclient.impl.codec.datatype;
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
 import io.reactiverse.myclient.impl.protocol.backend.ColumnDefinition;
+import io.reactiverse.pgclient.data.Numeric;
 
 public enum DataType {
   INT2(ColumnDefinition.ColumnType.MYSQL_TYPE_SHORT, true, Short.class),
@@ -11,6 +12,8 @@ public enum DataType {
   INT8(ColumnDefinition.ColumnType.MYSQL_TYPE_LONGLONG, true, Long.class),
   DOUBLE(ColumnDefinition.ColumnType.MYSQL_TYPE_DOUBLE, true, Double.class),
   FLOAT(ColumnDefinition.ColumnType.MYSQL_TYPE_FLOAT, true, Float.class),
+  NUMERIC(ColumnDefinition.ColumnType.MYSQL_TYPE_NEWDECIMAL, true, Numeric.class),
+//  DECIMAL(ColumnDefinition.ColumnType.MYSQL_TYPE_NEWDECIMAL, true, Numeric.class), DECIMAL is a synonym for NUMERIC
   //TODO confirm VARCHAR data type map to 'MYSQL_TYPE_VAR_STRING'?
   VARCHAR(ColumnDefinition.ColumnType.MYSQL_TYPE_VAR_STRING, true, String.class);
 

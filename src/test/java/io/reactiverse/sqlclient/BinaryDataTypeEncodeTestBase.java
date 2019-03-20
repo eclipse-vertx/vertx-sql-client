@@ -1,5 +1,6 @@
 package io.reactiverse.sqlclient;
 
+import io.reactiverse.pgclient.data.Numeric;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
@@ -30,6 +31,16 @@ public abstract class BinaryDataTypeEncodeTestBase extends DataTypeTestBase {
   @Test
   public void testDouble(TestContext ctx) {
     testEncodeGeneric(ctx, "test_float_8", Double.class, (double) Double.MIN_VALUE);
+  }
+
+  @Test
+  public void testNumeric(TestContext ctx) {
+    testEncodeGeneric(ctx, "test_numeric", Numeric.class, Numeric.parse("-999.99"));
+  }
+
+  @Test
+  public void testDecimal(TestContext ctx) {
+    testEncodeGeneric(ctx, "test_decimal", Numeric.class, Numeric.parse("-12345"));
   }
 
   @Test

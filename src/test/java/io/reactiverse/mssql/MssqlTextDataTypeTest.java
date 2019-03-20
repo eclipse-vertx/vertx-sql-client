@@ -2,6 +2,7 @@ package io.reactiverse.mssql;
 
 import org.junit.*;
 
+import java.math.BigDecimal;
 import java.sql.*;
 
 // More information in https://support.office.com/en-ie/article/equivalent-ansi-sql-data-types-7a0a6bef-ef25-45f9-8a9a-3c5f21b5c65d
@@ -45,6 +46,16 @@ public class MssqlTextDataTypeTest {
   @Test
   public void testDouble() {
     testDecodeGeneric("1.7976931348623157E308", "FLOAT8", "test_float_8", 1.7976931348623157E308D);
+  }
+
+  @Test
+  public void testNumeric() {
+    testDecodeGeneric("999.99", "NUMERIC", "test_numeric", BigDecimal.valueOf(999.99));
+  }
+
+  @Test
+  public void testDecimal() {
+    testDecodeGeneric("12345", "DECIMAL", "test_decimal", BigDecimal.valueOf(12345));
   }
 
   @Ignore

@@ -2,6 +2,7 @@ package io.reactiverse.myclient.impl.codec.datatype;
 
 import io.netty.buffer.ByteBuf;
 import io.reactiverse.myclient.impl.util.BufferUtils;
+import io.reactiverse.pgclient.data.Numeric;
 
 import java.nio.charset.StandardCharsets;
 
@@ -25,6 +26,8 @@ public class DataTypeCodec {
         return textDecodeFloat(buffer);
       case DOUBLE:
         return textDecodeDouble(buffer);
+      case NUMERIC:
+        return textDecodeNUMERIC(buffer);
       case VARCHAR:
         return textDecodeVarChar(buffer);
       default:
@@ -54,6 +57,9 @@ public class DataTypeCodec {
       case DOUBLE:
         binaryEncodeDouble((Number) value, buffer);
         break;
+      case NUMERIC:
+        binaryEncodeNumeric((Numeric) value, buffer);
+        break;
       case VARCHAR:
         binaryEncodeVarChar(String.valueOf(value), buffer);
         break;
@@ -77,6 +83,8 @@ public class DataTypeCodec {
         return binaryDecodeFloat(buffer);
       case DOUBLE:
         return binaryDecodeDouble(buffer);
+      case NUMERIC:
+        return binaryDecodeNumeric(buffer);
       case VARCHAR:
         return binaryDecodeVarChar(buffer);
       default:
@@ -117,6 +125,10 @@ public class DataTypeCodec {
     buffer.writeDoubleLE(value.doubleValue());
   }
 
+  private static void binaryEncodeNumeric(Numeric value, ByteBuf buffer) {
+    BufferUtils.writeLengthEncodedString(buffer, value.toString(), StandardCharsets.UTF_8);
+  }
+
   private static void binaryEncodeVarChar(String value, ByteBuf buffer) {
     BufferUtils.writeLengthEncodedString(buffer, value, StandardCharsets.UTF_8);
   }
@@ -145,6 +157,10 @@ public class DataTypeCodec {
     return buffer.readDoubleLE();
   }
 
+  private static Numeric binaryDecodeNumeric(ByteBuf buffer) {
+    return Numeric.parse(BufferUtils.readLengthEncodedString(buffer, StandardCharsets.UTF_8));
+  }
+
   private static String binaryDecodeVarChar(ByteBuf buffer) {
     return BufferUtils.readLengthEncodedString(buffer, StandardCharsets.UTF_8);
   }
@@ -171,6 +187,10 @@ public class DataTypeCodec {
 
   private static Double textDecodeDouble(ByteBuf buffer) {
     return Double.parseDouble(buffer.toString(StandardCharsets.UTF_8));
+  }
+
+  private static Number textDecodeNUMERIC(ByteBuf buff) {
+    return Numeric.parse(buff.toString(StandardCharsets.UTF_8));
   }
 
   private static String textDecodeVarChar(ByteBuf buffer) {

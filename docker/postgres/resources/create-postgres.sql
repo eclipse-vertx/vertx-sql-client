@@ -340,12 +340,18 @@ CREATE TABLE basicdatatype
   test_int_4   INTEGER          NOT NULL,
   test_int_8   BIGINT           NOT NULL,
   test_float_4 REAL             NOT NULL,
-  test_float_8 DOUBLE PRECISION NOT NULL
+  test_float_8 DOUBLE PRECISION NOT NULL,
+  test_numeric NUMERIC(5, 2)    NOT NULL,
+  test_decimal DECIMAL          NOT NULL
 );
-INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_float_8)
-VALUES ('1', '32767', '2147483647', '9223372036854775807', '3.40282E38', '1.7976931348623157E308');
-INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_float_8)
-VALUES ('2', '32767', '2147483647', '9223372036854775807', '3.40282E38', '1.7976931348623157E308');
+INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_float_8, test_numeric,
+                          test_decimal)
+VALUES ('1', '32767', '2147483647', '9223372036854775807', '3.40282E38', '1.7976931348623157E308', '999.99',
+        '12345');
+INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_float_8, test_numeric,
+                          test_decimal)
+VALUES ('2', '32767', '2147483647', '9223372036854775807', '3.40282E38', '1.7976931348623157E308', '999.99',
+        '12345');
 -- table for test ANSI SQL data type codecs
 
 -- TCK usage --
