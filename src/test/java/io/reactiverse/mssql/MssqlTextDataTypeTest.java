@@ -39,7 +39,7 @@ public class MssqlTextDataTypeTest {
 
   @Test
   public void testFloat() {
-    testDecodeGeneric("3.4028235E38", "REAL", "test_float_4", (float) 3.4028235E38);
+    testDecodeGeneric("3.40282E38", "REAL", "test_float_4", (float) 3.40282e38F);
   }
 
   @Test

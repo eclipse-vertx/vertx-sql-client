@@ -22,7 +22,7 @@ public abstract class TextDataTypeDecodeTestBase extends DataTypeTestBase {
 
   @Test
   public void testFloat4(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_float_4", Float.class, (float) 3.4028235E38);
+    testDecodeGeneric(ctx, "test_float_4", Float.class, (float) 3.40282e38F);
   }
 
   @Test

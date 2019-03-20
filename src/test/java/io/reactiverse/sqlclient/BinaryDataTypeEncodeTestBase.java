@@ -24,7 +24,7 @@ public abstract class BinaryDataTypeEncodeTestBase extends DataTypeTestBase {
 
   @Test
   public void testFloat4(TestContext ctx) {
-    testEncodeGeneric(ctx, "test_float_4", Float.class, (float) Float.MIN_VALUE);
+    testEncodeGeneric(ctx, "test_float_4", Float.class, (float) -3.402823e38F);
   }
 
   @Test

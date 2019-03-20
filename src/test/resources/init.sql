@@ -131,6 +131,8 @@ CREATE TABLE mutable
 -- mutable for insert,update,delete query testing
 
 -- table for test ANSI SQL data type codecs
+-- treat REAL as a synonym for FLOAT instead of DOUBLE so that it works well with ANSI SQL standard, see https://dev.mysql.com/doc/refman/8.0/en/sql-mode.html#sqlmode_real_as_float
+SET sql_mode = 'REAL_AS_FLOAT';
 DROP TABLE IF EXISTS basicdatatype;
 CREATE TABLE basicdatatype
 (
@@ -142,9 +144,9 @@ CREATE TABLE basicdatatype
   test_float_8 DOUBLE PRECISION NOT NULL
 );
 INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_float_8)
-VALUES ('1', '32767', '2147483647', '9223372036854775807', '3.4028235E38', '1.7976931348623157E308');
+VALUES ('1', '32767', '2147483647', '9223372036854775807', '3.40282E38', '1.7976931348623157E308');
 INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_float_8)
-VALUES ('2', '32767', '2147483647', '9223372036854775807', '3.4028235E38', '1.7976931348623157E308');
+VALUES ('2', '32767', '2147483647', '9223372036854775807', '3.40282E38', '1.7976931348623157E308');
 -- table for test ANSI SQL data type codecs
 
 -- TCK usage --
