@@ -5,6 +5,10 @@ import io.netty.util.collection.IntObjectMap;
 import io.reactiverse.myclient.impl.protocol.backend.ColumnDefinition;
 import io.reactiverse.pgclient.data.Numeric;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
 public enum DataType {
   INT2(ColumnDefinition.ColumnType.MYSQL_TYPE_SHORT, true, Short.class),
   INT3(ColumnDefinition.ColumnType.MYSQL_TYPE_INT24, true, Integer.class),
@@ -15,7 +19,10 @@ public enum DataType {
   NUMERIC(ColumnDefinition.ColumnType.MYSQL_TYPE_NEWDECIMAL, true, Numeric.class),
 //  DECIMAL(ColumnDefinition.ColumnType.MYSQL_TYPE_NEWDECIMAL, true, Numeric.class), DECIMAL is a synonym for NUMERIC
   CHAR(ColumnDefinition.ColumnType.MYSQL_TYPE_STRING, true, String.class),
-  VARCHAR(ColumnDefinition.ColumnType.MYSQL_TYPE_VAR_STRING, true, String.class);
+  VARCHAR(ColumnDefinition.ColumnType.MYSQL_TYPE_VAR_STRING, true, String.class),
+  DATE(ColumnDefinition.ColumnType.MYSQL_TYPE_DATE, true, LocalDate.class),
+  TIME(ColumnDefinition.ColumnType.MYSQL_TYPE_TIME, true, LocalTime.class),
+  DATETIME(ColumnDefinition.ColumnType.MYSQL_TYPE_DATETIME, true, LocalDateTime.class);
 
   private static IntObjectMap<DataType> idToDataType = new IntObjectHashMap<>();
 

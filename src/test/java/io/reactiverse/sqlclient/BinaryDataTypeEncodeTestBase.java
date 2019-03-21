@@ -5,6 +5,9 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 public abstract class BinaryDataTypeEncodeTestBase extends DataTypeTestBase {
   protected abstract String statement(String... parts);
 
@@ -51,6 +54,16 @@ public abstract class BinaryDataTypeEncodeTestBase extends DataTypeTestBase {
   @Test
   public void testVarchar(TestContext ctx) {
     testEncodeGeneric(ctx, "test_varchar", String.class, "newvarchar");
+  }
+
+  @Test
+  public void testDate(TestContext ctx) {
+    testEncodeGeneric(ctx, "test_date", LocalDate.class, LocalDate.parse("1999-12-31"));
+  }
+
+  @Test
+  public void testTime(TestContext ctx) {
+    testEncodeGeneric(ctx, "test_time", LocalTime.class, LocalTime.of(12,1,30));
   }
 
   protected <T> void testEncodeGeneric(TestContext ctx,

@@ -1,15 +1,32 @@
 package io.reactiverse.myclient.impl.codec.datatype;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.handler.codec.DecoderException;
 import io.reactiverse.myclient.impl.util.BufferUtils;
 import io.reactiverse.pgclient.data.Numeric;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatterBuilder;
+
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
 //TODO charset injection
 public class DataTypeCodec {
+  // binary codec protocol: https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_binary_resultset.html#sect_protocol_binary_resultset_row_value
+
   // Sentinel used when an object is refused by the data type
   public static final Object REFUSED_SENTINEL = new Object();
+
+  private static final java.time.format.DateTimeFormatter TIMESTAMP_FORMAT = new DateTimeFormatterBuilder()
+    .parseCaseInsensitive()
+    .append(ISO_LOCAL_DATE)
+    .appendLiteral(' ')
+    .append(ISO_LOCAL_TIME)
+    .toFormatter();
 
   public static Object decodeText(DataType dataType, ByteBuf buffer) {
     switch (dataType) {
@@ -32,6 +49,12 @@ public class DataTypeCodec {
         return textDecodeChar(buffer);
       case VARCHAR:
         return textDecodeVarChar(buffer);
+      case DATE:
+        return textDecodeDate(buffer);
+      case TIME:
+        return textDecodeTime(buffer);
+      case DATETIME:
+        return textDecodeDateTime(buffer);
       default:
         return textDecodeVarChar(buffer);
     }
@@ -39,7 +62,6 @@ public class DataTypeCodec {
 
   //TODO take care of unsigned numeric values here?
   public static void encodeBinary(DataType dataType, Object value, ByteBuf buffer) {
-    // https://dev.mysql.com/doc/internals/en/binary-protocol-value.html
     switch (dataType) {
       case INT2:
         binaryEncodeInt2((Number) value, buffer);
@@ -67,6 +89,16 @@ public class DataTypeCodec {
       case VARCHAR:
         binaryEncodeVarChar(String.valueOf(value), buffer);
         break;
+      case DATE:
+        // TODO confirm DATE,TIM encoded into VAR_STRING form?
+        binaryEncodeDate((LocalDate) value, buffer);
+        break;
+      case TIME:
+        binaryEncodeTime((LocalTime) value, buffer);
+        break;
+      case DATETIME:
+        binaryEncodeDatetime((LocalDateTime) value, buffer);
+        break;
       default:
         binaryEncodeVarChar(String.valueOf(value), buffer);
         break;
@@ -93,6 +125,12 @@ public class DataTypeCodec {
         return binaryDecodeChar(buffer);
       case VARCHAR:
         return binaryDecodeVarChar(buffer);
+      case DATE:
+        return binaryDecodeDate(buffer);
+      case TIME:
+        return binaryDecodeTime(buffer);
+      case DATETIME:
+        return binaryDecodeDatetime(buffer);
       default:
         return binaryDecodeVarChar(buffer);
     }
@@ -143,6 +181,54 @@ public class DataTypeCodec {
     BufferUtils.writeLengthEncodedString(buffer, value, StandardCharsets.UTF_8);
   }
 
+  private static void binaryEncodeDate(LocalDate value, ByteBuf buffer) {
+    buffer.writeByte(4);
+    buffer.writeShortLE(value.getYear());
+    buffer.writeByte(value.getMonthValue());
+    buffer.writeByte(value.getDayOfMonth());
+  }
+
+  private static void binaryEncodeTime(LocalTime value, ByteBuf buffer) {
+    // FIXME time?
+    throw new UnsupportedOperationException();
+  }
+
+  private static void binaryEncodeDatetime(LocalDateTime value, ByteBuf buffer) {
+    int year = value.getYear();
+    int month = value.getMonthValue();
+    int day = value.getDayOfMonth();
+    int hour = value.getHour();
+    int minute = value.getMinute();
+    int second = value.getSecond();
+    int microsecond = value.getNano() / 1000;
+
+    if (microsecond == 0) {
+      if (hour == 0 && minute == 0) {
+        buffer.writeByte(4);
+        buffer.writeShortLE(year);
+        buffer.writeByte(month);
+        buffer.writeByte(day);
+      } else {
+        buffer.writeByte(7);
+        buffer.writeShortLE(year);
+        buffer.writeByte(month);
+        buffer.writeByte(day);
+        buffer.writeByte(hour);
+        buffer.writeByte(minute);
+        buffer.writeByte(second);
+      }
+    } else {
+      buffer.writeByte(11);
+      buffer.writeShortLE(year);
+      buffer.writeByte(month);
+      buffer.writeByte(day);
+      buffer.writeByte(hour);
+      buffer.writeByte(minute);
+      buffer.writeByte(second);
+      buffer.writeByte(microsecond);
+    }
+  }
+
   private static Short binaryDecodeInt2(ByteBuf buffer) {
     return buffer.readShortLE();
   }
@@ -179,6 +265,56 @@ public class DataTypeCodec {
     return BufferUtils.readLengthEncodedString(buffer, StandardCharsets.UTF_8);
   }
 
+  private static LocalDateTime binaryDecodeDatetime(ByteBuf buffer) {
+    int length = buffer.readByte();
+    if (length == 0) {
+      // invalid value '0000-00-00' or '0000-00-00 00:00:00'
+      return null;
+    } else {
+      int year = buffer.readShortLE();
+      byte month = buffer.readByte();
+      byte day = buffer.readByte();
+      if (length == 4) {
+        return LocalDateTime.of(year, month, day, 0, 0, 0);
+      }
+      byte hour = buffer.readByte();
+      byte minute = buffer.readByte();
+      byte second = buffer.readByte();
+      if (length == 11) {
+        int microsecond = buffer.readIntLE();
+        return LocalDateTime.of(year, month, day, hour, minute, second, microsecond * 1000);
+      } else if (length == 7) {
+        return LocalDateTime.of(year, month, day, hour, minute, second, 0);
+      }
+      throw new DecoderException("Invalid Datetime");
+    }
+  }
+
+  private static LocalDate binaryDecodeDate(ByteBuf buffer) {
+    return binaryDecodeDatetime(buffer).toLocalDate();
+  }
+
+  private static LocalTime binaryDecodeTime(ByteBuf buffer) {
+    byte length = buffer.readByte();
+    if (length == 0) {
+      return LocalTime.of(0, 0, 0, 0);
+    } else {
+      // TODO not the same as TIME data type in other databases.
+      boolean isNegative = buffer.readByte() == 1;
+      int days = buffer.readIntLE();
+      byte hour = buffer.readByte();
+      byte minute = buffer.readByte();
+      byte second = buffer.readByte();
+      if (length == 12) {
+        int microsecond = buffer.readInt();
+        return LocalTime.of(days * 24 + hour, minute, second, microsecond * 1000);
+      } else if (length == 8) {
+        return LocalTime.of(days * 24 + hour, minute, second);
+      }
+      throw new DecoderException("Invalid time");
+    }
+  }
+
   private static Short textDecodeInt2(ByteBuf buffer) {
     return Short.parseShort(buffer.toString(StandardCharsets.UTF_8));
   }
@@ -213,5 +349,20 @@ public class DataTypeCodec {
 
   private static String textDecodeVarChar(ByteBuf buffer) {
     return buffer.toString(StandardCharsets.UTF_8);
+  }
+
+  private static LocalDate textDecodeDate(ByteBuf buffer) {
+    CharSequence cs = buffer.toString(StandardCharsets.UTF_8);
+    return LocalDate.parse(cs);
+  }
+
+  private static LocalTime textDecodeTime(ByteBuf buffer) {
+    CharSequence cs = buffer.toString(StandardCharsets.UTF_8);
+    return LocalTime.parse(cs);
+  }
+
+  private static LocalDateTime textDecodeDateTime(ByteBuf buffer) {
+    CharSequence cs = buffer.toString(StandardCharsets.UTF_8);
+    return LocalDateTime.parse(cs, TIMESTAMP_FORMAT);
   }
 }

@@ -5,6 +5,9 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 public abstract class TextDataTypeDecodeTestBase extends DataTypeTestBase {
   @Test
   public void testSmallInt(TestContext ctx) {
@@ -49,6 +52,16 @@ public abstract class TextDataTypeDecodeTestBase extends DataTypeTestBase {
   @Test
   public void testVarchar(TestContext ctx) {
     testDecodeGeneric(ctx, "test_varchar", String.class, "testvarchar");
+  }
+
+  @Test
+  public void testDate(TestContext ctx) {
+    testDecodeGeneric(ctx, "test_date", LocalDate.class, LocalDate.of(2019, 1, 1));
+  }
+
+  @Test
+  public void testTime(TestContext ctx) {
+    testDecodeGeneric(ctx, "test_time", LocalTime.class, LocalTime.of(18, 45, 2));
   }
 
   protected <T> void testDecodeGeneric(TestContext ctx,

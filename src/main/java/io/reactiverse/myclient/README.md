@@ -48,11 +48,14 @@ https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-charsets.html
 * NUMERIC,DECIMAL(i.r.p.data.Numeric)
 * CHAR(j.l.String)
 * VARCHAR(j.l.String)
+* DATE(j.t.LocalDate)
+* TIME(j.t.LocalTime)
+* DATETIME(j.t.LocalDateTime)
 
 TODO:
 - [ ] Numeric: TINYINT, BOOLEAN(BOOL), BIT
 - [ ] String: BINARY, VARBINARY, TINYBLOB, TINYTEXT, BLOB, TEXT, MEDIUMBLOB, MEDIUMTEXT, LONGBLOB, LONGTEXT, ENUM, SET
-- [ ] Data and Time: DATE, DATETIME, TIMESTAMP, TIME, YEAR
+- [ ] Data and Time: TIMESTAMP, YEAR
 - [ ] JSON
 - [ ] Spatial data types
 
