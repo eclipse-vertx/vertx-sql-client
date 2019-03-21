@@ -37,6 +37,25 @@ Need check:
 - [ ] do we only support UTF-8 charset? (utf8mb4 utf8mb3)
 https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-charsets.html
 
+## Supported Data Type
+
+* INT2(j.l.Short)
+* INT3(j.l.Integer)
+* INT4(j.l.Integer)
+* INT8(j.l.Long)
+* FLOAT(j.l.Float)
+* DOUBLE(j.l.Double)
+* NUMERIC,DECIMAL(i.r.p.data.Numeric)
+* CHAR(j.l.String)
+* VARCHAR(j.l.String)
+
+TODO:
+- [ ] Numeric: TINYINT, BOOLEAN(BOOL), BIT
+- [ ] String: BINARY, VARBINARY, TINYBLOB, TINYTEXT, BLOB, TEXT, MEDIUMBLOB, MEDIUMTEXT, LONGBLOB, LONGTEXT, ENUM, SET
+- [ ] Data and Time: DATE, DATETIME, TIMESTAMP, TIME, YEAR
+- [ ] JSON
+- [ ] Spatial data types
+
 ## Development
 
 Implementation in is package `io.reactiverse.mysqlclient` of `src/main/java`.
