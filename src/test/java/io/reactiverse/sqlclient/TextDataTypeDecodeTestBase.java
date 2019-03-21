@@ -45,6 +45,11 @@ public abstract class TextDataTypeDecodeTestBase extends DataTypeTestBase {
   }
 
   @Test
+  public void testBoolean(TestContext ctx) {
+    testDecodeGeneric(ctx, "test_boolean", Boolean.class, true);
+  }
+
+  @Test
   public void testChar(TestContext ctx) {
     testDecodeGeneric(ctx, "test_char", String.class, "testchar");
   }

@@ -39,6 +39,7 @@ https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-charsets.html
 
 ## Supported Data Type
 
+* INT1(j.l.Byte)
 * INT2(j.l.Short)
 * INT3(j.l.Integer)
 * INT4(j.l.Integer)
@@ -46,6 +47,7 @@ https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-charsets.html
 * FLOAT(j.l.Float)
 * DOUBLE(j.l.Double)
 * NUMERIC,DECIMAL(i.r.p.data.Numeric)
+* BOOLEAN(j.l.Byte) TODO? should be j.l.Boolean here
 * CHAR(j.l.String)
 * VARCHAR(j.l.String)
 * DATE(j.t.LocalDate)
@@ -53,7 +55,7 @@ https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-charsets.html
 * DATETIME(j.t.LocalDateTime)
 
 TODO:
-- [ ] Numeric: TINYINT, BOOLEAN(BOOL), BIT
+- [ ] Numeric: BIT
 - [ ] String: BINARY, VARBINARY, TINYBLOB, TINYTEXT, BLOB, TEXT, MEDIUMBLOB, MEDIUMTEXT, LONGBLOB, LONGTEXT, ENUM, SET
 - [ ] Data and Time: TIMESTAMP, YEAR
 - [ ] JSON

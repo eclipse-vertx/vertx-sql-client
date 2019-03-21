@@ -31,6 +31,8 @@ public class DataTypeCodec {
   public static Object decodeText(DataType dataType, ByteBuf buffer) {
     switch (dataType) {
       //TODO just a basic implementation, can be optimised here
+      case INT1:
+        return textDecodeInt1(buffer);
       case INT2:
         return textDecodeInt2(buffer);
       case INT3:
@@ -63,6 +65,9 @@ public class DataTypeCodec {
   //TODO take care of unsigned numeric values here?
   public static void encodeBinary(DataType dataType, Object value, ByteBuf buffer) {
     switch (dataType) {
+      case INT1:
+        binaryEncodeInt1((Number) value, buffer);
+        break;
       case INT2:
         binaryEncodeInt2((Number) value, buffer);
         break;
@@ -107,6 +112,8 @@ public class DataTypeCodec {
 
   public static Object decodeBinary(DataType dataType, ByteBuf buffer) {
     switch (dataType) {
+      case INT1:
+        return binaryDecodeInt1(buffer);
       case INT2:
         return binaryDecodeInt2(buffer);
       case INT3:
@@ -143,6 +150,10 @@ public class DataTypeCodec {
         Class<?> javaType = type.decodingType;
         return value == null || javaType.isInstance(value) ? value : REFUSED_SENTINEL;
     }
+  }
+
+  private static void binaryEncodeInt1(Number value, ByteBuf buffer) {
+    buffer.writeByte(value.byteValue());
   }
 
   private static void binaryEncodeInt2(Number value, ByteBuf buffer) {
@@ -229,6 +240,10 @@ public class DataTypeCodec {
     }
   }
 
+  private static Byte binaryDecodeInt1(ByteBuf buffer) {
+    return buffer.readByte();
+  }
+
   private static Short binaryDecodeInt2(ByteBuf buffer) {
     return buffer.readShortLE();
   }
@@ -313,6 +328,10 @@ public class DataTypeCodec {
       }
       throw new DecoderException("Invalid time");
     }
+  }
+
+  private static Byte textDecodeInt1(ByteBuf buffer) {
+    return Byte.parseByte(buffer.toString(StandardCharsets.UTF_8));
   }
 
   private static Short textDecodeInt2(ByteBuf buffer) {

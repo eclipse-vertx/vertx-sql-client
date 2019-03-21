@@ -57,6 +57,11 @@ public abstract class BinaryDataTypeEncodeTestBase extends DataTypeTestBase {
   }
 
   @Test
+  public void testBoolean(TestContext ctx) {
+    testEncodeGeneric(ctx, "test_boolean", Boolean.class, false);
+  }
+
+  @Test
   public void testDate(TestContext ctx) {
     testEncodeGeneric(ctx, "test_date", LocalDate.class, LocalDate.parse("1999-12-31"));
   }

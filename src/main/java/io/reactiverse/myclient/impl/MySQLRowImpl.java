@@ -54,7 +54,8 @@ public class MySQLRowImpl extends ArrayTuple implements RowInternal {
   @Override
   public Boolean getBoolean(String name) {
     int pos = columnMetadata.columnIndex(name);
-    return pos == -1 ? null : getBoolean(pos);
+    // in MySQL BOOLEAN type is mapped to TINYINT
+    return pos == -1 ? null :( (byte) getValue(pos) == 1);
   }
 
   @Override

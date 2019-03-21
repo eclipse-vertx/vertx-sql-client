@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 public enum DataType {
+  INT1(ColumnDefinition.ColumnType.MYSQL_TYPE_TINY, true, Byte.class),
   INT2(ColumnDefinition.ColumnType.MYSQL_TYPE_SHORT, true, Short.class),
   INT3(ColumnDefinition.ColumnType.MYSQL_TYPE_INT24, true, Integer.class),
   INT4(ColumnDefinition.ColumnType.MYSQL_TYPE_LONG, true, Integer.class),
