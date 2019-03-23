@@ -18,19 +18,30 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
 import io.vertx.sqlclient.impl.RowDesc;
+import io.vertx.mysqlclient.impl.codec.datatype.DataFormat;
 
 import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-class MySQLRowDesc extends RowDesc {
+public class MySQLRowDesc extends RowDesc {
 
-  final ColumnDefinition[] columnDefinitions;
+  private final ColumnDefinition[] columnDefinitions;
+  private final DataFormat dataFormat;
 
-  MySQLRowDesc(ColumnDefinition[] columnDefinitions) {
+  MySQLRowDesc(ColumnDefinition[] columnDefinitions, DataFormat dataFormat) {
     super(Collections.unmodifiableList(Stream.of(columnDefinitions)
       .map(ColumnDefinition::getName)
       .collect(Collectors.toList())));
     this.columnDefinitions = columnDefinitions;
+    this.dataFormat = dataFormat;
+  }
+
+  public ColumnDefinition[] columnDefinitions() {
+    return columnDefinitions;
+  }
+
+  public DataFormat dataFormat() {
+    return dataFormat;
   }
 }

@@ -15,11 +15,11 @@
  *
  */
 
-package io.vertx.pgclient.impl.codec;
+package io.vertx.sqlclient.impl;
 
 import io.netty.buffer.ByteBuf;
 
-interface RowDecoder {
+public interface RowDecoder {
 
   void decodeRow(int len, ByteBuf in);
 
