@@ -33,7 +33,9 @@ public class CapabilitiesNegotiator {
       | CLIENT_SECURE_CONNECTION
       | CLIENT_PROTOCOL_41
       | CLIENT_DEPRECATE_EOF
-      | CLIENT_TRANSACTIONS;
+      | CLIENT_TRANSACTIONS
+      | CLIENT_MULTI_STATEMENTS
+      | CLIENT_MULTI_RESULTS;
 
     return capabilities;
   }
