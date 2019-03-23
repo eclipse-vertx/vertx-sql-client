@@ -1,6 +1,6 @@
 # @Deprecated--- This part is only for mysql tests and should be moved out of TCK tests ---
-DROP TABLE IF EXISTS BasicDataType;
-CREATE TABLE BasicDataType
+DROP TABLE IF EXISTS collectorTest;
+CREATE TABLE collectorTest
 (
   id        INT NOT NULL PRIMARY KEY,
   `Int2`    SMALLINT,
@@ -13,9 +13,9 @@ CREATE TABLE BasicDataType
 );
 
 
-INSERT INTO BasicDataType
+INSERT INTO collectorTest
 VALUES (1, 32767, 8388607, 2147483647, 9223372036854775807, 123.456, 1.234567, 'HELLO,WORLD');
-INSERT INTO BasicDataType
+INSERT INTO collectorTest
 VALUES (2, 32767, 8388607, 2147483647, 9223372036854775807, 123.456, 1.234567, 'hello,world');
 # @Deprecated--- This part is only for mysql tests and should be moved out of TCK tests ---
 

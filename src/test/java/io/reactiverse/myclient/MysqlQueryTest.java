@@ -8,6 +8,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -55,7 +56,7 @@ public class MysqlQueryTest extends MysqlTestBase {
       123.456f, 1.234567d, "HELLO,WORLD");
 
     MyClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT * FROM BasicDataType WHERE id = 1", collector, ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT * FROM collectorTest WHERE id = 1", collector, ctx.asyncAssertSuccess(result -> {
         Map<Integer, DummyObject> map = result.value();
         DummyObject actual = map.get(1);
         ctx.assertEquals(expected, actual);
@@ -81,7 +82,7 @@ public class MysqlQueryTest extends MysqlTestBase {
       123.456f, 1.234567d, "HELLO,WORLD");
 
     MyClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("SELECT * FROM BasicDataType WHERE id = ?", Tuple.of(1), collector, ctx.asyncAssertSuccess(result -> {
+      conn.preparedQuery("SELECT * FROM collectorTest WHERE id = ?", Tuple.of(1), collector, ctx.asyncAssertSuccess(result -> {
         Map<Integer, DummyObject> map = result.value();
         DummyObject actual = map.get(1);
         ctx.assertEquals(expected, actual);
