@@ -29,6 +29,7 @@ import io.vertx.sqlclient.impl.command.QueryCommandBase;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collector;
 
+import static io.reactiverse.myclient.impl.protocol.backend.ServerStatusFlags.*;
 import static io.vertx.mysqlclient.impl.protocol.backend.EofPacket.EOF_PACKET_HEADER;
 import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
 import static io.vertx.mysqlclient.impl.protocol.backend.OkPacket.OK_PACKET_HEADER;
@@ -59,9 +60,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
         // may receive ERR_Packet, OK_Packet, LOCAL INFILE Request, Text Resultset
         int firstByte = payload.getUnsignedByte(payload.readerIndex());
         if (firstByte == OK_PACKET_HEADER) {
-          payload.readByte();
-          handleEndPacket(GenericPacketPayloadDecoder.decodeOkPacketBody(payload, StandardCharsets.UTF_8));
-          handleResultsetDecodingCompleted(cmd);
+          handleSingleResultsetDecodingCompleted(payload);
         } else if (firstByte == ERROR_PACKET_HEADER) {
           handleErrorPacketPayload(payload);
         } else if (firstByte == 0xFB) {
@@ -96,9 +95,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
         // enabling CLIENT_DEPRECATE_EOF capability will receive an OK_Packet with a EOF_Packet header here
         // we need check this is not a row data by checking packet length < 0xFFFFFF
         else if (first == EOF_PACKET_HEADER && payloadLength < 0xFFFFFF) {
-          payload.readByte();
-          handleEndPacket(GenericPacketPayloadDecoder.decodeOkPacketBody(payload, StandardCharsets.UTF_8));
-          handleResultsetDecodingCompleted(cmd);
+          handleSingleResultsetDecodingCompleted(payload);
           resetIntermediaryResult();
         } else {
           // accept a row data
@@ -108,7 +105,18 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     }
   }
 
-  private void handleEndPacket(OkPacket okPacket) {
+  private void handleSingleResultsetDecodingCompleted(ByteBuf payload) {
+    // we have checked the header should be ERROR_PACKET_HEADER
+    payload.readByte(); // skip header
+    OkPacket okPacket = GenericPacketPayloadDecoder.decodeOkPacketBody(payload, StandardCharsets.UTF_8);
+    handleResultsetEndPacket(okPacket);
+    if ((okPacket.getServerStatusFlags() & SERVER_MORE_RESULTS_EXISTS) == 0) {
+      // no more sql result
+      handleAllResultsetDecodingCompleted(cmd);
+    }
+  }
+
+  private void handleResultsetEndPacket(OkPacket okPacket) {
     this.result = false;
     T result;
     int size;
@@ -126,7 +134,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     cmd.resultHandler().handleResult((int) okPacket.getAffectedRows(), size, null, result);
   }
 
-  private void handleResultsetDecodingCompleted(QueryCommandBase<?> cmd) {
+  private void handleAllResultsetDecodingCompleted(QueryCommandBase<?> cmd) {
     CommandResponse<Boolean> response;
     if (this.failure != null) {
       response = CommandResponse.failure(this.failure);
