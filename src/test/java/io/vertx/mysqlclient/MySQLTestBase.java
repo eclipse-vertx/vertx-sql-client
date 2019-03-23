@@ -5,7 +5,6 @@ import io.vertx.pgclient.PgConnectOptions;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 
-@Deprecated
 public abstract class MySQLTestBase {
 
   @ClassRule

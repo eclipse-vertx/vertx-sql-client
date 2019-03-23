@@ -16,11 +16,10 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
- * @deprecated Migrate all these tests into TCK
+ * We need to decide which part of these test to be migrated into TCK.
  * TODO shall we have collector tests in TCK? collector is more a feature for upper application rather than driver SPI feature
  */
 @RunWith(VertxUnitRunner.class)
-@Deprecated
 public class MySQLQueryTest extends MySQLTestBase {
 
   Vertx vertx;
@@ -35,6 +34,19 @@ public class MySQLQueryTest extends MySQLTestBase {
   @After
   public void teardown(TestContext ctx) {
     vertx.close(ctx.asyncAssertSuccess());
+  }
+
+  @Test
+  public void testMultiResult(TestContext ctx) {
+    MySQLClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT 1; SELECT \'test\';", ctx.asyncAssertSuccess(result -> {
+        Row row1 = result.iterator().next();
+        ctx.assertEquals(1, row1.getInteger(0));
+        Row row2 = result.next().iterator().next();
+        ctx.assertEquals("test", row2.getValue(0));
+        ctx.assertEquals("test", row2.getString(0));
+      }));
+    }));
   }
 
   @Test
