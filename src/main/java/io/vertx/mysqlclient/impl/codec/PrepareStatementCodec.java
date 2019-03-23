@@ -22,6 +22,7 @@ import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
 import io.vertx.sqlclient.impl.PreparedStatement;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
+import io.vertx.mysqlclient.impl.codec.datatype.DataFormat;
 
 import java.nio.charset.StandardCharsets;
 
@@ -107,7 +108,7 @@ public class PrepareStatementCodec extends CommandCodec<PreparedStatement, Prepa
       cmd.sql(),
       this.statementId,
       new MySQLParamDesc(paramDescs),
-      new MySQLRowDesc(columnDescs))));
+      new MySQLRowDesc(columnDescs, DataFormat.BINARY))));
   }
 
   private void resetIntermediaryResult() {
