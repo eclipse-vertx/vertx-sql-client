@@ -7,6 +7,7 @@ import java.sql.*;
 
 // More information in https://support.office.com/en-ie/article/equivalent-ansi-sql-data-types-7a0a6bef-ef25-45f9-8a9a-3c5f21b5c65d
 // just for checking ansi sql data type in MSSQL currently
+@Ignore("enable this test only in need")
 public class MssqlTextDataTypeTest {
   Connection conn;
 
