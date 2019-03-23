@@ -20,6 +20,7 @@ package io.vertx.pgclient.impl.codec;
 import io.vertx.sqlclient.Row;
 import io.vertx.pgclient.impl.RowImpl;
 import io.netty.buffer.ByteBuf;
+import io.vertx.sqlclient.impl.RowDecoder;
 
 import java.util.function.BiConsumer;
 import java.util.stream.Collector;

@@ -1,37 +1,34 @@
-package io.vertx.mysqlclient.impl;
+package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.mysqlclient.impl.MySQLRowImpl;
 import io.vertx.mysqlclient.impl.codec.datatype.DataFormat;
 import io.vertx.mysqlclient.impl.codec.datatype.DataType;
 import io.vertx.mysqlclient.impl.codec.datatype.DataTypeCodec;
-import io.vertx.mysqlclient.impl.codec.decoder.RowDecoder;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.impl.RowDecoder;
 
 import java.util.function.BiConsumer;
 import java.util.stream.Collector;
 
-public class RowResultDecoder<C, R> implements RowDecoder {
+class RowResultDecoder<C, R> implements RowDecoder {
   private static final int NULL = 0xFB;
 
   private final Collector<Row, C, R> collector;
   private final boolean singleton;
   private final BiConsumer<C, Row> accumulator;
+  MySQLRowDesc rowDesc;
 
-  private ColumnMetadata columnMetadata;
   private int size;
   private C container;
   private Row row;
 
-  public RowResultDecoder(Collector<Row, C, R> collector, boolean singleton, ColumnMetadata columnMetadata) {
+  RowResultDecoder(Collector<Row, C, R> collector, boolean singleton, MySQLRowDesc rowDesc) {
     this.collector = collector;
     this.singleton = singleton;
     this.accumulator = collector.accumulator();
-    this.columnMetadata = columnMetadata;
-  }
-
-  public ColumnMetadata columnMetadata() {
-    return columnMetadata;
+    this.rowDesc = rowDesc;
   }
 
   public int size() {
@@ -45,15 +42,15 @@ public class RowResultDecoder<C, R> implements RowDecoder {
     }
     if (singleton) {
       if (row == null) {
-        row = new MySQLRowImpl(columnMetadata);
+        row = new MySQLRowImpl(rowDesc);
       } else {
         row.clear();
       }
     } else {
-      row = new MySQLRowImpl(columnMetadata);
+      row = new MySQLRowImpl(rowDesc);
     }
-    Row row = new MySQLRowImpl(columnMetadata);
-    if (columnMetadata.getDataFormat() == DataFormat.BINARY) {
+    Row row = new MySQLRowImpl(rowDesc);
+    if (rowDesc.dataFormat() == DataFormat.BINARY) {
       // BINARY row decoding
       // 0x00 packet header
       in.readByte();
@@ -74,7 +71,7 @@ public class RowResultDecoder<C, R> implements RowDecoder {
 
         if (nullByte == 0) {
           // non-null
-          DataType dataType = columnMetadata.getColumnDefinitions()[c].getType();
+          DataType dataType = rowDesc.columnDefinitions()[c].getType();
           decoded = DataTypeCodec.decodeBinary(dataType, in);
         }
         row.addValue(decoded);
@@ -86,7 +83,7 @@ public class RowResultDecoder<C, R> implements RowDecoder {
         if (in.getUnsignedByte(in.readerIndex()) == NULL) {
           in.skipBytes(1);
         } else {
-          DataType dataType = columnMetadata.getColumnDefinitions()[c].getType();
+          DataType dataType = rowDesc.columnDefinitions()[c].getType();
           int length = (int) BufferUtils.readLengthEncodedInteger(in);
           ByteBuf data = in.slice(in.readerIndex(), length);
           in.skipBytes(length);

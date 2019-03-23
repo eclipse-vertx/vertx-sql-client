@@ -17,13 +17,12 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.mysqlclient.impl.ColumnMetadata;
-import io.vertx.mysqlclient.impl.RowResultDecoder;
 import io.vertx.mysqlclient.impl.codec.datatype.DataFormat;
 import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
 import io.vertx.mysqlclient.impl.protocol.backend.OkPacket;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.QueryCommandBase;
 import java.nio.charset.StandardCharsets;
@@ -78,7 +77,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
         if (currentColumn == columnDefinitions.length) {
           // all column definitions have been handled, switch to row data handling
           commandHandlerState = CommandHandlerState.HANDLING_ROW_DATA_OR_END_PACKET;
-          decoder = new RowResultDecoder<>(cmd.collector(), false/*cmd.isSingleton()*/, new ColumnMetadata(columnDefinitions, format));
+          decoder = new RowResultDecoder<>(cmd.collector(), false/*cmd.isSingleton()*/, new MySQLRowDesc(columnDefinitions, format));
         }
         break;
       case HANDLING_ROW_DATA_OR_END_PACKET:
@@ -120,18 +119,18 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     this.result = false;
     T result;
     int size;
-    ColumnMetadata columnMetadata;
+    RowDesc rowDesc;
     if (decoder != null) {
       result = decoder.complete();
-      columnMetadata = decoder.columnMetadata();
+      rowDesc = decoder.rowDesc;
       size = decoder.size();
       decoder.reset();
     } else {
       result = emptyResult(cmd.collector());
       size = 0;
-      columnMetadata = null;
+      rowDesc = null;
     }
-    cmd.resultHandler().handleResult((int) okPacket.getAffectedRows(), size, null, result);
+    cmd.resultHandler().handleResult((int) okPacket.getAffectedRows(), size, rowDesc, result);
   }
 
   private void handleAllResultsetDecodingCompleted(QueryCommandBase<?> cmd) {

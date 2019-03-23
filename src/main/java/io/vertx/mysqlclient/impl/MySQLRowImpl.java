@@ -1,8 +1,8 @@
 package io.vertx.mysqlclient.impl;
 
-import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
 import io.vertx.sqlclient.impl.ArrayTuple;
 import io.vertx.sqlclient.impl.RowInternal;
+import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.core.buffer.Buffer;
 
 import java.math.BigDecimal;
@@ -12,18 +12,19 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.temporal.Temporal;
+import java.util.List;
 import java.util.UUID;
 
 // TODO how we design Row API ? Some data types in Postgres may not be compatible with some MySQL data types. need to check this
 
 public class MySQLRowImpl extends ArrayTuple implements RowInternal {
 
-  private final ColumnMetadata columnMetadata;
+  private final RowDesc rowDesc;
   MySQLRowImpl next;
 
-  public MySQLRowImpl(ColumnMetadata columnMetadata) {
-    super(columnMetadata.getColumnDefinitions().length);
-    this.columnMetadata = columnMetadata;
+  public MySQLRowImpl(RowDesc rowDesc) {
+    super(rowDesc.columnNames().size());
+    this.rowDesc = rowDesc;
   }
 
   @Override
@@ -33,8 +34,8 @@ public class MySQLRowImpl extends ArrayTuple implements RowInternal {
 
   @Override
   public String getColumnName(int pos) {
-    final ColumnDefinition[] columnDefinitions = columnMetadata.getColumnDefinitions();
-    return pos < 0 || columnDefinitions.length - 1 < pos ? null : columnDefinitions[pos].getName();
+    List<String> columnNames = rowDesc.columnNames();
+    return pos < 0 || columnNames.size() - 1 < pos ? null : columnNames.get(pos);
   }
 
   @Override
@@ -42,61 +43,55 @@ public class MySQLRowImpl extends ArrayTuple implements RowInternal {
     if (name == null) {
       throw new NullPointerException();
     }
-    final ColumnDefinition[] columnDefinitions = columnMetadata.getColumnDefinitions();
-    for (int idx = 0;idx < columnDefinitions.length;idx++) {
-      if (columnDefinitions[idx].getName().equals(name)) {
-        return idx;
-      }
-    }
-    return -1;
+    return rowDesc.columnNames().indexOf(name);
   }
 
   @Override
   public Boolean getBoolean(String name) {
-    int pos = columnMetadata.columnIndex(name);
+    int pos = rowDesc.columnIndex(name);
     // in MySQL BOOLEAN type is mapped to TINYINT
     return pos == -1 ? null :( (byte) getValue(pos) == 1);
   }
 
   @Override
   public Object getValue(String name) {
-    int pos = columnMetadata.columnIndex(name);
+    int pos = rowDesc.columnIndex(name);
     return pos == -1 ? null : getValue(pos);
   }
 
   @Override
   public Short getShort(String name) {
-    int pos = columnMetadata.columnIndex(name);
+    int pos = rowDesc.columnIndex(name);
     return pos == -1 ? null : getShort(pos);
   }
 
   @Override
   public Integer getInteger(String name) {
-    int pos = columnMetadata.columnIndex(name);
+    int pos = rowDesc.columnIndex(name);
     return pos == -1 ? null : getInteger(pos);
   }
 
   @Override
   public Long getLong(String name) {
-    int pos = columnMetadata.columnIndex(name);
+    int pos = rowDesc.columnIndex(name);
     return pos == -1 ? null : getLong(pos);
   }
 
   @Override
   public Float getFloat(String name) {
-    int pos = columnMetadata.columnIndex(name);
+    int pos = rowDesc.columnIndex(name);
     return pos == -1 ? null : getFloat(pos);
   }
 
   @Override
   public Double getDouble(String name) {
-    int pos = columnMetadata.columnIndex(name);
+    int pos = rowDesc.columnIndex(name);
     return pos == -1 ? null : getDouble(pos);
   }
 
   @Override
   public String getString(String name) {
-    int pos = columnMetadata.columnIndex(name);
+    int pos = rowDesc.columnIndex(name);
     return pos == -1 ? null : getString(pos);
   }
 
