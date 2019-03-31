@@ -23,6 +23,8 @@ import io.reactiverse.pgclient.data.Numeric;
 import io.reactiverse.pgclient.pubsub.PgSubscriber;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
 
@@ -38,6 +40,8 @@ import java.util.stream.Collectors;
  */
 @Source
 public class Examples {
+
+  private static Logger log = LoggerFactory.getLogger(Examples.class);
 
   public void gettingStarted() {
 
@@ -57,9 +61,9 @@ public class Examples {
     client.query("SELECT * FROM users WHERE id='julien'", ar -> {
       if (ar.succeeded()) {
         PgRowSet result = ar.result();
-        System.out.println("Got " + result.size() + " rows ");
+        log.warn("Got " + result.size() + " rows ");
       } else {
-        System.out.println("Failure: " + ar.cause().getMessage());
+        log.warn("Failure: " + ar.cause().getMessage());
       }
 
       // Now close the pool
@@ -147,7 +151,7 @@ public class Examples {
 
       if (ar1.succeeded()) {
 
-        System.out.println("Connected");
+        log.warn("Connected");
 
         // Obtain our connection
         PgConnection conn = ar1.result();
@@ -165,7 +169,7 @@ public class Examples {
           }
         });
       } else {
-        System.out.println("Could not connect: " + ar1.cause().getMessage());
+        log.warn("Could not connect: " + ar1.cause().getMessage());
       }
     });
   }
@@ -184,7 +188,7 @@ public class Examples {
     PgClient.connect(vertx, options, res -> {
       if (res.succeeded()) {
 
-        System.out.println("Connected");
+        log.warn("Connected");
 
         // Obtain our connection
         PgConnection conn = res.result();
@@ -202,7 +206,7 @@ public class Examples {
           }
         });
       } else {
-        System.out.println("Could not connect: " + res.cause().getMessage());
+        log.warn("Could not connect: " + res.cause().getMessage());
       }
     });
   }
@@ -228,9 +232,9 @@ public class Examples {
     client.query("SELECT * FROM users WHERE id='julien'", ar -> {
       if (ar.succeeded()) {
         PgRowSet result = ar.result();
-        System.out.println("Got " + result.size() + " rows ");
+        log.warn("Got " + result.size() + " rows ");
       } else {
-        System.out.println("Failure: " + ar.cause().getMessage());
+        log.warn("Failure: " + ar.cause().getMessage());
       }
     });
   }
@@ -239,9 +243,9 @@ public class Examples {
     client.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"),  ar -> {
       if (ar.succeeded()) {
         PgRowSet rows = ar.result();
-        System.out.println("Got " + rows.size() + " rows ");
+        log.warn("Got " + rows.size() + " rows ");
       } else {
-        System.out.println("Failure: " + ar.cause().getMessage());
+        log.warn("Failure: " + ar.cause().getMessage());
       }
     });
   }
@@ -251,10 +255,10 @@ public class Examples {
       if (ar.succeeded()) {
         PgRowSet rows = ar.result();
         for (Row row : rows) {
-          System.out.println("User " + row.getString(0) + " " + row.getString(1));
+          log.warn("User " + row.getString(0) + " " + row.getString(1));
         }
       } else {
-        System.out.println("Failure: " + ar.cause().getMessage());
+        log.warn("Failure: " + ar.cause().getMessage());
       }
     });
   }
@@ -263,19 +267,19 @@ public class Examples {
     client.preparedQuery("INSERT INTO users (first_name, last_name) VALUES ($1, $2)", Tuple.of("Julien", "Viet"),  ar -> {
       if (ar.succeeded()) {
         PgRowSet rows = ar.result();
-        System.out.println(rows.rowCount());
+        log.warn(rows.rowCount());
       } else {
-        System.out.println("Failure: " + ar.cause().getMessage());
+        log.warn("Failure: " + ar.cause().getMessage());
       }
     });
   }
 
   public void queries05(Row row) {
-    System.out.println("User " + row.getString(0) + " " + row.getString(1));
+    log.warn("User " + row.getString(0) + " " + row.getString(1));
   }
 
   public void queries06(Row row) {
-    System.out.println("User " + row.getString("first_name") + " " + row.getString("last_name"));
+    log.warn("User " + row.getString("first_name") + " " + row.getString("last_name"));
   }
 
   public void queries07(Row row) {
@@ -302,7 +306,7 @@ public class Examples {
         // Process rows
         PgRowSet rows = res.result();
       } else {
-        System.out.println("Batch failed " + res.cause());
+        log.warn("Batch failed " + res.cause());
       }
     });
   }
@@ -319,12 +323,12 @@ public class Examples {
     client.preparedQuery("INSERT INTO color (color_name) VALUES ($1), ($2), ($3) RETURNING color_id", Tuple.of("white", "red", "blue"), ar -> {
       if (ar.succeeded()) {
         PgRowSet rows = ar.result();
-        System.out.println(rows.rowCount());
+        log.warn(rows.rowCount());
         for (Row row : rows) {
-          System.out.println("generated key: " + row.getInteger("color_id"));
+          log.warn("generated key: " + row.getInteger("color_id"));
         }
       } else {
-        System.out.println("Failure: " + ar.cause().getMessage());
+        log.warn("Failure: " + ar.cause().getMessage());
       }
     });
   }
@@ -382,7 +386,7 @@ public class Examples {
             // Process rows
             PgRowSet rows = res.result();
           } else {
-            System.out.println("Batch failed " + res.cause());
+            log.warn("Batch failed " + res.cause());
           }
         });
       }
@@ -406,9 +410,9 @@ public class Examples {
         // Commit the transaction
         tx.commit(ar -> {
           if (ar.succeeded()) {
-            System.out.println("Transaction succeeded");
+            log.warn("Transaction succeeded");
           } else {
-            System.out.println("Transaction failed " + ar.cause().getMessage());
+            log.warn("Transaction failed " + ar.cause().getMessage());
           }
 
           // Return the connection to the pool
@@ -429,7 +433,7 @@ public class Examples {
         PgTransaction tx = conn
           .begin()
           .abortHandler(v -> {
-          System.out.println("Transaction failed => rollbacked");
+          log.warn("Transaction failed => rollbacked");
         });
 
         conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {
@@ -472,9 +476,9 @@ public class Examples {
         // Commit the transaction and return the connection to the pool
         tx.commit(ar -> {
           if (ar.succeeded()) {
-            System.out.println("Transaction succeeded");
+            log.warn("Transaction succeeded");
           } else {
-            System.out.println("Transaction failed " + ar.cause().getMessage());
+            log.warn("Transaction failed " + ar.cause().getMessage());
           }
         });
       }
@@ -532,14 +536,14 @@ public class Examples {
 
         // Use the stream
         stream.exceptionHandler(err -> {
-          System.out.println("Error: " + err.getMessage());
+          log.warn("Error: " + err.getMessage());
         });
         stream.endHandler(v -> {
           tx.commit();
-          System.out.println("End of stream");
+          log.warn("End of stream");
         });
         stream.handler(row -> {
-          System.out.println("User: " + row.getString("last_name"));
+          log.warn("User: " + row.getString("last_name"));
         });
       }
     });
@@ -575,11 +579,11 @@ public class Examples {
   public void pubsub01(PgConnection connection) {
 
     connection.notificationHandler(notification -> {
-      System.out.println("Received " + notification.getPayload() + " on channel " + notification.getChannel());
+      log.warn("Received " + notification.getPayload() + " on channel " + notification.getChannel());
     });
 
     connection.query("LISTEN some-channel", ar -> {
-      System.out.println("Subscribed to channel");
+      log.warn("Subscribed to channel");
     });
   }
 
@@ -595,7 +599,7 @@ public class Examples {
 
     // You can set the channel before connect
     subscriber.channel("channel1").handler(payload -> {
-      System.out.println("Received " + payload);
+      log.warn("Received " + payload);
     });
 
     subscriber.connect(ar -> {
@@ -603,7 +607,7 @@ public class Examples {
 
         // Or you can set the channel after connect
         subscriber.channel("channel2").handler(payload -> {
-          System.out.println("Received " + payload);
+          log.warn("Received " + payload);
         });
       }
     });
@@ -623,24 +627,24 @@ public class Examples {
         if (ar.succeeded()) {
           // Complex channel name - name in PostgreSQL requires a quoted ID
           subscriber.channel("Complex.Channel.Name").handler(payload -> {
-            System.out.println("Received " + payload);
+            log.warn("Received " + payload);
           });
           subscriber.channel("Complex.Channel.Name").subscribeHandler(subscribed -> {
         	  subscriber.actualConnection().query(
         			  "NOTIFY \"Complex.Channel.Name\", 'msg'", notified -> {
-        		  System.out.println("Notified \"Complex.Channel.Name\"");
+        		  log.warn("Notified \"Complex.Channel.Name\"");
         	  });
           });
 
           // PostgreSQL simple ID's are forced lower-case
           subscriber.channel("simple_channel").handler(payload -> {
-              System.out.println("Received " + payload);
+              log.warn("Received " + payload);
           });
           subscriber.channel("simple_channel").subscribeHandler(subscribed -> {
         	  // The following simple channel identifier is forced to lower case
               subscriber.actualConnection().query(
             		"NOTIFY Simple_CHANNEL, 'msg'", notified -> {
-          		  System.out.println("Notified simple_channel");
+          		  log.warn("Notified simple_channel");
           	  });
           });
 
@@ -649,7 +653,7 @@ public class Examples {
           subscriber.channel(
         		  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbb"
         		  ).handler(payload -> {
-              System.out.println("Received " + payload);
+              log.warn("Received " + payload);
           });
         }
       });
@@ -690,7 +694,7 @@ public class Examples {
       if (res.succeeded()) {
         // Connected with SSL
       } else {
-        System.out.println("Could not connect " + res.cause());
+        log.warn("Could not connect " + res.cause());
       }
     });
   }
@@ -738,10 +742,10 @@ public class Examples {
       if (ar.succeeded()) {
         PgRowSet rows = ar.result();
         for (Row row : rows) {
-          System.out.println("Full Address " + row.getString(0) + ", City " + row.getString(1));
+          log.warn("Full Address " + row.getString(0) + ", City " + row.getString(1));
         }
       } else {
-        System.out.println("Failure: " + ar.cause().getMessage());
+        log.warn("Failure: " + ar.cause().getMessage());
       }
     });
   }
@@ -750,9 +754,9 @@ public class Examples {
     client.preparedQuery("INSERT INTO address_book (id, address) VALUES ($1, $2)", Tuple.of(3, "('Anytown', 'Second Ave', false)"),  ar -> {
       if (ar.succeeded()) {
         PgRowSet rows = ar.result();
-        System.out.println(rows.rowCount());
+        log.warn(rows.rowCount());
       } else {
-        System.out.println("Failure: " + ar.cause().getMessage());
+        log.warn("Failure: " + ar.cause().getMessage());
       }
     });
   }
@@ -773,9 +777,9 @@ public class Examples {
 
         // Get the map created by the collector
         Map<Long, String> map = result.value();
-        System.out.println("Got " + map);
+        log.warn("Got " + map);
       } else {
-        System.out.println("Failure: " + ar.cause().getMessage());
+        log.warn("Failure: " + ar.cause().getMessage());
       }
     });
   }
@@ -797,9 +801,9 @@ public class Examples {
 
           // Get the string created by the collector
           String list = result.value();
-          System.out.println("Got " + list);
+          log.warn("Got " + list);
         } else {
-          System.out.println("Failure: " + ar.cause().getMessage());
+          log.warn("Failure: " + ar.cause().getMessage());
         }
       });
   }
@@ -808,17 +812,17 @@ public class Examples {
     connection.query("SELECT pg_sleep(20)", ar -> {
       if (ar.succeeded()) {
         // imagine this is a long query and is still running
-        System.out.println("Query success");
+        log.warn("Query success");
       } else {
         // the server will abort the current query after cancelling request
-        System.out.println("Failed to query due to " + ar.cause().getMessage());
+        log.warn("Failed to query due to " + ar.cause().getMessage());
       }
     });
     connection.cancelRequest(ar -> {
       if (ar.succeeded()) {
-        System.out.println("Cancelling request has been sent");
+        log.warn("Cancelling request has been sent");
       } else {
-        System.out.println("Failed to send cancelling request");
+        log.warn("Failed to send cancelling request");
       }
     });
   }
