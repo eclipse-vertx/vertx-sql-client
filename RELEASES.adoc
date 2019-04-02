@@ -1,3 +1,9 @@
+== 0.11.3
+
+Fixed issues: https://github.com/reactiverse/reactive-pg-client/issues?q=is%3Aclosed+milestone%3A0.11.3
+
+- Vert.x 3.7.0 upgrade
+
 == 0.11.2
 
 Fixed issues: https://github.com/reactiverse/reactive-pg-client/issues?q=is%3Aclosed+milestone%3A0.11.2

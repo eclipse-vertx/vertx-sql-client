@@ -28,27 +28,27 @@ image:https://travis-ci.org/reactiverse/reactive-pg-client.svg?branch=master["Bu
 
 == Usage
 
-Latest release is https://github.com/reactiverse/reactive-pg-client/blob/master/RELEASES.adoc[0.11.2].
+Latest release is https://github.com/reactiverse/reactive-pg-client/blob/master/RELEASES.adoc[0.11.3].
 
 To use the client, add the following dependency to the _dependencies_ section of your build descriptor:
 
-* Maven (in your `pom.xml`) for Vert.x 3.6.x:
+* Maven (in your `pom.xml`) for Vert.x 3.7.x:
 
 [source,xml]
 ----
 <dependency>
   <groupId>io.reactiverse</groupId>
   <artifactId>reactive-pg-client</artifactId>
-  <version>0.11.2</version>
+  <version>0.11.3</version>
 </dependency>
 ----
 
-* Gradle (in your `build.gradle` file)  for Vert.x 3.6.x:
+* Gradle (in your `build.gradle` file)  for Vert.x 3.7.x:
 
 [source,groovy]
 ----
 dependencies {
-  compile 'io.reactiverse:reactive-pg-client:0.11.2'
+  compile 'io.reactiverse:reactive-pg-client:0.11.3'
 }
 ----
 
