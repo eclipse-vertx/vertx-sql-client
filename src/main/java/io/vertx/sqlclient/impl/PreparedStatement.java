@@ -21,6 +21,8 @@ import java.util.List;
 
 public interface PreparedStatement {
 
+  ParamDesc paramDesc();
+
   RowDesc rowDesc();
 
   String sql();

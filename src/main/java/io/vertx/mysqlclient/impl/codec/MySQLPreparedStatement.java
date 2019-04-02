@@ -37,18 +37,22 @@ public class MySQLPreparedStatement implements PreparedStatement {
     this.sql = sql;
   }
 
+  @Override
   public ParamDesc paramDesc() {
     return paramDesc;
   }
 
+  @Override
   public RowDesc rowDesc() {
     return rowDesc;
   }
 
+  @Override
   public String sql() {
     return sql;
   }
 
+  @Override
   public String prepare(List<Object> values) {
     return paramDesc.prepare(values);
   }
