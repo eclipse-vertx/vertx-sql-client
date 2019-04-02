@@ -1,3 +1,18 @@
+/*
+ * Copyright 2019 Red Hat, Inc.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Apache License v2.0 which accompanies this distribution.
+ *
+ * The Eclipse Public License is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * The Apache License v2.0 is available at
+ * http://www.opensource.org/licenses/apache2.0.php
+ *
+ * You may elect to redistribute this code under either of these licenses.
+ */
 package io.reactiverse.kotlin.pgclient
 
 import io.reactiverse.pgclient.PgCursor
@@ -5,30 +20,28 @@ import io.reactiverse.pgclient.PgRowSet
 import io.vertx.kotlin.coroutines.awaitResult
 
 /**
- * Read rows from the cursor, the result is provided asynchronously to the <code>handler</code>.
+ * Suspending version of method [io.reactiverse.pgclient.PgCursor.read]
  *
  * @param count the amount of rows to read
- * @param handler the handler for the result
+ * @return [PgRowSet]
  *
- * <p/>
- * NOTE: This function has been automatically generated from the [io.reactiverse.pgclient.PgCursor original] using Vert.x codegen.
+ * NOTE: This function has been automatically generated from [io.reactiverse.pgclient.PgCursor] using Vert.x codegen.
  */
-suspend fun PgCursor.readAwait(count : Int) : PgRowSet {
-  return awaitResult{
+suspend fun PgCursor.readAwait(count: Int): PgRowSet {
+  return awaitResult {
     this.read(count, it)
   }
 }
 
 /**
- * Like [io.reactiverse.pgclient.PgCursor] but with a <code>completionHandler</code> called when the cursor has been released.
+ * Suspending version of method [io.reactiverse.pgclient.PgCursor.close]
  *
- * @param completionHandler 
  *
- * <p/>
- * NOTE: This function has been automatically generated from the [io.reactiverse.pgclient.PgCursor original] using Vert.x codegen.
+ * NOTE: This function has been automatically generated from [io.reactiverse.pgclient.PgCursor] using Vert.x codegen.
  */
-suspend fun PgCursor.closeAwait() : Unit {
-  return awaitResult{
-    this.close({ ar -> it.handle(ar.mapEmpty()) })}
+suspend fun PgCursor.closeAwait(): Unit {
+  return awaitResult {
+    this.close { ar -> it.handle(ar.mapEmpty()) }
+  }
 }
 

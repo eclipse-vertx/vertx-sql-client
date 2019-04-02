@@ -15,18 +15,13 @@
  */
 package io.reactiverse.kotlin.pgclient.pubsub
 
-import io.reactiverse.pgclient.pubsub.PgSubscriber
+import io.reactiverse.pgclient.pubsub.PgChannel
+import io.vertx.core.streams.WriteStream
 import io.vertx.kotlin.coroutines.awaitResult
 
-/**
- * Suspending version of method [io.reactiverse.pgclient.pubsub.PgSubscriber.connect]
- *
- *
- * NOTE: This function has been automatically generated from [io.reactiverse.pgclient.pubsub.PgSubscriber] using Vert.x codegen.
- */
-suspend fun PgSubscriber.connectAwait(): Unit {
+suspend fun PgChannel.pipeToAwait(dst: WriteStream<String>): Unit {
   return awaitResult {
-    this.connect { ar -> it.handle(ar.mapEmpty()) }
+    this.pipeTo(dst) { ar -> it.handle(ar.mapEmpty()) }
   }
 }
 

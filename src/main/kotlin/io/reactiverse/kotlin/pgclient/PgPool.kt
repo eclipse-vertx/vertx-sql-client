@@ -1,3 +1,18 @@
+/*
+ * Copyright 2019 Red Hat, Inc.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Apache License v2.0 which accompanies this distribution.
+ *
+ * The Eclipse Public License is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * The Apache License v2.0 is available at
+ * http://www.opensource.org/licenses/apache2.0.php
+ *
+ * You may elect to redistribute this code under either of these licenses.
+ */
 package io.reactiverse.kotlin.pgclient
 
 import io.reactiverse.pgclient.PgConnection
@@ -7,55 +22,52 @@ import io.reactiverse.pgclient.PgTransaction
 import io.reactiverse.pgclient.Tuple
 import io.vertx.kotlin.coroutines.awaitResult
 
-suspend fun PgPool.preparedQueryAwait(sql : String) : PgRowSet {
-  return awaitResult{
+suspend fun PgPool.preparedQueryAwait(sql: String): PgRowSet {
+  return awaitResult {
     this.preparedQuery(sql, it)
   }
 }
 
-suspend fun PgPool.queryAwait(sql : String) : PgRowSet {
-  return awaitResult{
+suspend fun PgPool.queryAwait(sql: String): PgRowSet {
+  return awaitResult {
     this.query(sql, it)
   }
 }
 
-suspend fun PgPool.preparedQueryAwait(sql : String, arguments : Tuple) : PgRowSet {
-  return awaitResult{
+suspend fun PgPool.preparedQueryAwait(sql: String, arguments: Tuple): PgRowSet {
+  return awaitResult {
     this.preparedQuery(sql, arguments, it)
   }
 }
 
-suspend fun PgPool.preparedBatchAwait(sql : String, batch : List<Tuple>) : PgRowSet {
-  return awaitResult{
+suspend fun PgPool.preparedBatchAwait(sql: String, batch: List<Tuple>): PgRowSet {
+  return awaitResult {
     this.preparedBatch(sql, batch, it)
   }
 }
 
 /**
- * Get a connection from the pool.
+ * Suspending version of method [io.reactiverse.pgclient.PgPool.getConnection]
  *
- * @param handler the handler that will get the connection result
+ * @return [PgConnection]
  *
- * <p/>
- * NOTE: This function has been automatically generated from the [io.reactiverse.pgclient.PgPool original] using Vert.x codegen.
+ * NOTE: This function has been automatically generated from [io.reactiverse.pgclient.PgPool] using Vert.x codegen.
  */
-suspend fun PgPool.getConnectionAwait() : PgConnection {
-  return awaitResult{
+suspend fun PgPool.getConnectionAwait(): PgConnection {
+  return awaitResult {
     this.getConnection(it)
   }
 }
 
 /**
- * Borrow a connection from the pool and begin a transaction, the underlying connection will be returned
- * to the pool when the transaction ends.
+ * Suspending version of method [io.reactiverse.pgclient.PgPool.begin]
  *
- * @param handler 
+ * @return [PgTransaction]
  *
- * <p/>
- * NOTE: This function has been automatically generated from the [io.reactiverse.pgclient.PgPool original] using Vert.x codegen.
+ * NOTE: This function has been automatically generated from [io.reactiverse.pgclient.PgPool] using Vert.x codegen.
  */
-suspend fun PgPool.beginAwait() : PgTransaction {
-  return awaitResult{
+suspend fun PgPool.beginAwait(): PgTransaction {
+  return awaitResult {
     this.begin(it)
   }
 }

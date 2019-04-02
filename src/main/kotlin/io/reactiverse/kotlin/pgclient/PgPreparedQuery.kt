@@ -1,3 +1,18 @@
+/*
+ * Copyright 2019 Red Hat, Inc.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Apache License v2.0 which accompanies this distribution.
+ *
+ * The Eclipse Public License is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * The Apache License v2.0 is available at
+ * http://www.opensource.org/licenses/apache2.0.php
+ *
+ * You may elect to redistribute this code under either of these licenses.
+ */
 package io.reactiverse.kotlin.pgclient
 
 import io.reactiverse.pgclient.PgPreparedQuery
@@ -6,59 +21,55 @@ import io.reactiverse.pgclient.Tuple
 import io.vertx.kotlin.coroutines.awaitResult
 
 /**
- * Calls [io.reactiverse.pgclient.PgPreparedQuery] with an empty tuple argument.
+ * Suspending version of method [io.reactiverse.pgclient.PgPreparedQuery.execute]
  *
- * @param handler 
- * @return *
- * <p/>
- * NOTE: This function has been automatically generated from the [io.reactiverse.pgclient.PgPreparedQuery original] using Vert.x codegen.
+ * @return [PgRowSet]
+ *
+ * NOTE: This function has been automatically generated from [io.reactiverse.pgclient.PgPreparedQuery] using Vert.x codegen.
  */
-suspend fun PgPreparedQuery.executeAwait() : PgRowSet {
-  return awaitResult{
+suspend fun PgPreparedQuery.executeAwait(): PgRowSet {
+  return awaitResult {
     this.execute(it)
   }
 }
 
 /**
- * Create a cursor with the provided <code>arguments</code>.
+ * Suspending version of method [io.reactiverse.pgclient.PgPreparedQuery.execute]
  *
  * @param args the list of arguments
- * @param handler 
- * @returnthe query *
- * <p/>
- * NOTE: This function has been automatically generated from the [io.reactiverse.pgclient.PgPreparedQuery original] using Vert.x codegen.
+ * @return [PgRowSet]
+ *
+ * NOTE: This function has been automatically generated from [io.reactiverse.pgclient.PgPreparedQuery] using Vert.x codegen.
  */
-suspend fun PgPreparedQuery.executeAwait(args : Tuple) : PgRowSet {
-  return awaitResult{
+suspend fun PgPreparedQuery.executeAwait(args: Tuple): PgRowSet {
+  return awaitResult {
     this.execute(args, it)
   }
 }
 
 /**
- * Execute a batch.
+ * Suspending version of method [io.reactiverse.pgclient.PgPreparedQuery.batch]
  *
  * @param argsList the list of tuple for the batch
- * @param handler 
- * @returnthe createBatch *
- * <p/>
- * NOTE: This function has been automatically generated from the [io.reactiverse.pgclient.PgPreparedQuery original] using Vert.x codegen.
+ * @return [PgRowSet]
+ *
+ * NOTE: This function has been automatically generated from [io.reactiverse.pgclient.PgPreparedQuery] using Vert.x codegen.
  */
-suspend fun PgPreparedQuery.batchAwait(argsList : List<Tuple>) : PgRowSet {
-  return awaitResult{
+suspend fun PgPreparedQuery.batchAwait(argsList: List<Tuple>): PgRowSet {
+  return awaitResult {
     this.batch(argsList, it)
   }
 }
 
 /**
- * Like [io.reactiverse.pgclient.PgPreparedQuery] but notifies the <code>completionHandler</code> when it's closed.
+ * Suspending version of method [io.reactiverse.pgclient.PgPreparedQuery.close]
  *
- * @param completionHandler 
  *
- * <p/>
- * NOTE: This function has been automatically generated from the [io.reactiverse.pgclient.PgPreparedQuery original] using Vert.x codegen.
+ * NOTE: This function has been automatically generated from [io.reactiverse.pgclient.PgPreparedQuery] using Vert.x codegen.
  */
-suspend fun PgPreparedQuery.closeAwait() : Unit {
-  return awaitResult{
-    this.close({ ar -> it.handle(ar.mapEmpty()) })}
+suspend fun PgPreparedQuery.closeAwait(): Unit {
+  return awaitResult {
+    this.close { ar -> it.handle(ar.mapEmpty()) }
+  }
 }
 
