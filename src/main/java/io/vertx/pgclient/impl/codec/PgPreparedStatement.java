@@ -18,6 +18,7 @@
 package io.vertx.pgclient.impl.codec;
 
 import io.vertx.sqlclient.impl.PreparedStatement;
+import io.vertx.sqlclient.impl.ParamDesc;
 
 import java.util.Arrays;
 import java.util.List;
@@ -53,14 +54,22 @@ class PgPreparedStatement implements PreparedStatement {
     this.bind = new Bind(statement, paramDesc != null ? paramDesc.paramDataTypes() : null, rowDesc != null ? rowDesc.columns : EMPTY_COLUMNS);
   }
 
+  @Override
+  public ParamDesc paramDesc() {
+    return paramDesc;
+  }
+
+  @Override
   public PgRowDesc rowDesc() {
     return rowDesc;
   }
 
+  @Override
   public String sql() {
     return sql;
   }
 
+  @Override
   public String prepare(List<Object> values) {
     return paramDesc.prepare(values);
   }
