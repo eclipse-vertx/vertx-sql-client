@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Class: PgSubscriber</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Class: PgSubscriber</h1>
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+            <span class="ancestors"><a href="module-reactive-pg-client-js_pg_subscriber.html">reactive-pg-client-js/pg_subscriber</a>~</span>
+        
+        PgSubscriber
+        </h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+    
+
+    <h4 class="name" id="PgSubscriber"><span class="type-signature"></span>new PgSubscriber<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="pg_subscriber.js.html">pg_subscriber.js</a>, <a href="pg_subscriber.js.html#line32">line 32</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="actualConnection"><span class="type-signature"></span>actualConnection<span class="signature">()</span><span class="type-signature"> &rarr; {PgConnection}</span></h4>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="pg_subscriber.js.html">pg_subscriber.js</a>, <a href="pg_subscriber.js.html#line141">line 141</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    the actual connection to Postgres, it might be <code>null</code>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">PgConnection</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="channel"><span class="type-signature"></span>channel<span class="signature">(name)</span><span class="type-signature"> &rarr; {PgChannel}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Return a channel for the given <code>name</code>.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the channel name <p/> This will be the name of the channel exactly as held by Postgres for sending notifications. Internally this name will be truncated to the Postgres identifier maxiumum length of <code>(NAMEDATALEN = 64) - 1 == 63</code> characters, and prepared as a quoted identifier without unicode escape sequence support for use in <code>LISTEN/UNLISTEN</code> commands. Examples of channel names and corresponding <code>NOTIFY</code> commands: <ul> <li>when <code>name == "the_channel"</code>: <code>NOTIFY the_channel, 'msg'</code>, <code>NOTIFY The_Channel, 'msg'</code>, or <code>NOTIFY "the_channel", 'msg'</code> succeed in delivering a message to the created channel </li> <li>when <code>name == "The_Channel"</code>: <code>NOTIFY "The_Channel", 'msg'</code>, succeeds in delivering a message to the created channel </li> <li></li> </ul></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="pg_subscriber.js.html">pg_subscriber.js</a>, <a href="pg_subscriber.js.html#line52">line 52</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    the channel
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">PgChannel</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="close"><span class="type-signature"></span>close<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Close the subscriber, the retry policy will not be invoked.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="pg_subscriber.js.html">pg_subscriber.js</a>, <a href="pg_subscriber.js.html#line173">line 173</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="closed"><span class="type-signature"></span>closed<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="pg_subscriber.js.html">pg_subscriber.js</a>, <a href="pg_subscriber.js.html#line157">line 157</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    whether the subscriber is closed
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="closeHandler"><span class="type-signature"></span>closeHandler<span class="signature">(handler)</span><span class="type-signature"> &rarr; {PgSubscriber}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Set an handler called when the subscriber is closed.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>handler</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the handler</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="pg_subscriber.js.html">pg_subscriber.js</a>, <a href="pg_subscriber.js.html#line124">line 124</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    a reference to this, so the API can be used fluently
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">PgSubscriber</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="connect"><span class="type-signature"></span>connect<span class="signature">(handler)</span><span class="type-signature"> &rarr; {PgSubscriber}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Connect the subscriber to Postgres.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>handler</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the handler notified of the connection success or failure</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="pg_subscriber.js.html">pg_subscriber.js</a>, <a href="pg_subscriber.js.html#line69">line 69</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    a reference to this, so the API can be used fluently
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">PgSubscriber</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="reconnectPolicy"><span class="type-signature"></span>reconnectPolicy<span class="signature">(policy)</span><span class="type-signature"> &rarr; {PgSubscriber}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Set the reconnect policy that is executed when the subscriber is disconnected.
+   <p/>
+   When the subscriber is disconnected, the <code>policy</code> function is called with the actual
+   number of retries and returns an <code>amountOfTime</code> value:
+   <ul>
+     <li>when <code>amountOfTime < 0</code>: the subscriber is closed and there is no retry</li>
+     <li>when <code>amountOfTime == 0</code>: the subscriber retries to connect immediately</li>
+     <li>when <code>amountOfTime > 0</code>: the subscriber retries after <code>amountOfTime</code> milliseconds</li>
+   </ul>
+   <p/>
+   The default policy does not perform any retries.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>policy</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the policy to set</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="pg_subscriber.js.html">pg_subscriber.js</a>, <a href="pg_subscriber.js.html#line103">line 103</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    a reference to this, so the API can be used fluently
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">PgSubscriber</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-reactive-pg-client-js_json.html">reactive-pg-client-js/json</a></li><li><a href="module-reactive-pg-client-js_pg_channel.html">reactive-pg-client-js/pg_channel</a></li><li><a href="module-reactive-pg-client-js_pg_client.html">reactive-pg-client-js/pg_client</a></li><li><a href="module-reactive-pg-client-js_pg_connection.html">reactive-pg-client-js/pg_connection</a></li><li><a href="module-reactive-pg-client-js_pg_cursor.html">reactive-pg-client-js/pg_cursor</a></li><li><a href="module-reactive-pg-client-js_pg_iterator.html">reactive-pg-client-js/pg_iterator</a></li><li><a href="module-reactive-pg-client-js_pg_pool.html">reactive-pg-client-js/pg_pool</a></li><li><a href="module-reactive-pg-client-js_pg_prepared_query.html">reactive-pg-client-js/pg_prepared_query</a></li><li><a href="module-reactive-pg-client-js_pg_result.html">reactive-pg-client-js/pg_result</a></li><li><a href="module-reactive-pg-client-js_pg_row_set.html">reactive-pg-client-js/pg_row_set</a></li><li><a href="module-reactive-pg-client-js_pg_stream.html">reactive-pg-client-js/pg_stream</a></li><li><a href="module-reactive-pg-client-js_pg_subscriber.html">reactive-pg-client-js/pg_subscriber</a></li><li><a href="module-reactive-pg-client-js_pg_transaction.html">reactive-pg-client-js/pg_transaction</a></li><li><a href="module-reactive-pg-client-js_row.html">reactive-pg-client-js/row</a></li><li><a href="module-reactive-pg-client-js_tuple.html">reactive-pg-client-js/tuple</a></li></ul><h3>Classes</h3><ul><li><a href="module-reactive-pg-client-js_json-Json.html">Json</a></li><li><a href="module-reactive-pg-client-js_pg_channel-PgChannel.html">PgChannel</a></li><li><a href="module-reactive-pg-client-js_pg_client-PgClient.html">PgClient</a></li><li><a href="module-reactive-pg-client-js_pg_connection-PgConnection.html">PgConnection</a></li><li><a href="module-reactive-pg-client-js_pg_cursor-PgCursor.html">PgCursor</a></li><li><a href="module-reactive-pg-client-js_pg_iterator-PgIterator.html">PgIterator</a></li><li><a href="module-reactive-pg-client-js_pg_pool-PgPool.html">PgPool</a></li><li><a href="module-reactive-pg-client-js_pg_prepared_query-PgPreparedQuery.html">PgPreparedQuery</a></li><li><a href="module-reactive-pg-client-js_pg_result-PgResult.html">PgResult</a></li><li><a href="module-reactive-pg-client-js_pg_row_set-PgRowSet.html">PgRowSet</a></li><li><a href="module-reactive-pg-client-js_pg_stream-PgStream.html">PgStream</a></li><li><a href="module-reactive-pg-client-js_pg_subscriber-PgSubscriber.html">PgSubscriber</a></li><li><a href="module-reactive-pg-client-js_pg_transaction-PgTransaction.html">PgTransaction</a></li><li><a href="module-reactive-pg-client-js_row-Row.html">Row</a></li><li><a href="module-reactive-pg-client-js_tuple-Tuple.html">Tuple</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Fri Jan 25 2019 16:08:19 GMT+0100 (CET)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

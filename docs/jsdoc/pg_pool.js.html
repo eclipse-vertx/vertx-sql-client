@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: pg_pool.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: pg_pool.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*
+ * Copyright 2014 Red Hat, Inc.
+ *
+ * Red Hat licenses this file to you under the Apache License, version 2.0
+ * (the "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
+/** @module reactive-pg-client-js/pg_pool */
+var utils = require('vertx-js/util/utils');
+var PgClient = require('reactive-pg-client-js/pg_client');
+var PgTransaction = require('reactive-pg-client-js/pg_transaction');
+var Tuple = require('reactive-pg-client-js/tuple');
+var PgConnection = require('reactive-pg-client-js/pg_connection');
+var PgRowSet = require('reactive-pg-client-js/pg_row_set');
+
+var io = Packages.io;
+var JsonObject = io.vertx.core.json.JsonObject;
+var JPgPool = Java.type('io.reactiverse.pgclient.PgPool');
+
+/**
+ A pool of connection.
+
+ @class
+*/
+var PgPool = function(j_val) {
+
+  var j_pgPool = j_val;
+  var that = this;
+  PgClient.call(this, j_val);
+
+  var __super_preparedQuery = this.preparedQuery;
+  var __super_query = this.query;
+  var __super_preparedQuery = this.preparedQuery;
+  var __super_preparedBatch = this.preparedBatch;
+  var __super_getConnection = this.getConnection;
+  var __super_begin = this.begin;
+  var __super_close = this.close;
+  /**
+
+   @public
+   @param sql {string} 
+   @param arguments {Tuple} 
+   @param handler {function} 
+   @return {PgPool}
+   */
+  this.preparedQuery =  function() {
+    var __args = arguments;
+    if (__args.length === 2 &amp;&amp; typeof __args[0] === 'string' &amp;&amp; typeof __args[1] === 'function') {
+      j_pgPool["preparedQuery(java.lang.String,io.vertx.core.Handler)"](__args[0], function(ar) {
+        if (ar.succeeded()) {
+          __args[1](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
+        } else {
+          __args[1](null, ar.cause());
+        }
+      }) ;
+      return that;
+    } else if (__args.length === 3 &amp;&amp; typeof __args[0] === 'string' &amp;&amp; typeof __args[1] === 'object' &amp;&amp; __args[1]._jdel &amp;&amp; typeof __args[2] === 'function') {
+      j_pgPool["preparedQuery(java.lang.String,io.reactiverse.sqlclient.Tuple,io.vertx.core.Handler)"](__args[0], __args[1]._jdel, function(ar) {
+        if (ar.succeeded()) {
+          __args[2](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
+        } else {
+          __args[2](null, ar.cause());
+        }
+      }) ;
+      return that;
+    } else if (typeof __super_preparedQuery != 'undefined') {
+      return __super_preparedQuery.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+
+   @public
+   @param sql {string} 
+   @param handler {function} 
+   @return {PgPool}
+   */
+  this.query =  function(sql, handler) {
+    var __args = arguments;
+    if (__args.length === 2 &amp;&amp; typeof __args[0] === 'string' &amp;&amp; typeof __args[1] === 'function') {
+      j_pgPool["query(java.lang.String,io.vertx.core.Handler)"](__args[0], function(ar) {
+        if (ar.succeeded()) {
+          __args[1](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
+        } else {
+          __args[1](null, ar.cause());
+        }
+      }) ;
+      return that;
+    } else if (typeof __super_query != 'undefined') {
+      return __super_query.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+
+   @public
+   @param sql {string} 
+   @param batch {Array.&lt;Tuple>} 
+   @param handler {function} 
+   @return {PgPool}
+   */
+  this.preparedBatch =  function(sql, batch, handler) {
+    var __args = arguments;
+    if (__args.length === 3 &amp;&amp; typeof __args[0] === 'string' &amp;&amp; typeof __args[1] === 'object' &amp;&amp; __args[1] instanceof Array &amp;&amp; typeof __args[2] === 'function') {
+      j_pgPool["preparedBatch(java.lang.String,java.util.List,io.vertx.core.Handler)"](__args[0], utils.convParamListVertxGen(__args[1]), function(ar) {
+        if (ar.succeeded()) {
+          __args[2](utils.convReturnVertxGen(PgRowSet, ar.result()), null);
+        } else {
+          __args[2](null, ar.cause());
+        }
+      }) ;
+      return that;
+    } else if (typeof __super_preparedBatch != 'undefined') {
+      return __super_preparedBatch.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Get a connection from the pool.
+
+   @public
+   @param handler {function} the handler that will get the connection result 
+   */
+  this.getConnection =  function(handler) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; typeof __args[0] === 'function') {
+      j_pgPool["getConnection(io.vertx.core.Handler)"](function(ar) {
+        if (ar.succeeded()) {
+          __args[0](utils.convReturnVertxGen(PgConnection, ar.result()), null);
+        } else {
+          __args[0](null, ar.cause());
+        }
+      });
+    } else if (typeof __super_getConnection != 'undefined') {
+      return __super_getConnection.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Borrow a connection from the pool and begin a transaction, the underlying connection will be returned
+   to the pool when the transaction ends.
+
+   @public
+   @param handler {function} 
+   */
+  this.begin =  function(handler) {
+    var __args = arguments;
+    if (__args.length === 1 &amp;&amp; typeof __args[0] === 'function') {
+      j_pgPool["begin(io.vertx.core.Handler)"](function(ar) {
+        if (ar.succeeded()) {
+          __args[0](utils.convReturnVertxGen(PgTransaction, ar.result()), null);
+        } else {
+          __args[0](null, ar.cause());
+        }
+      });
+    } else if (typeof __super_begin != 'undefined') {
+      return __super_begin.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Close the pool and release the associated resources.
+
+   @public
+
+   */
+  this.close =  function() {
+    var __args = arguments;
+    if (__args.length === 0) {
+      j_pgPool["close()"]();
+    } else if (typeof __super_close != 'undefined') {
+      return __super_close.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  // A reference to the underlying Java delegate
+  // NOTE! This is an internal API and must not be used in user code.
+  // If you rely on this property your code is likely to break if we change it / remove it without warning.
+  this._jdel = j_pgPool;
+};
+
+PgPool._jclass = utils.getJavaClass("io.reactiverse.pgclient.PgPool");
+PgPool._jtype = {accept: function(obj) {
+    return PgPool._jclass.isInstance(obj._jdel);
+  },wrap: function(jdel) {
+    var obj = Object.create(PgPool.prototype, {});
+    PgPool.apply(obj, arguments);
+    return obj;
+  },
+  unwrap: function(obj) {
+    return obj._jdel;
+  }
+};
+PgPool._create = function(jdel) {var obj = Object.create(PgPool.prototype, {});
+  PgPool.apply(obj, arguments);
+  return obj;
+}
+module.exports = PgPool;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-reactive-pg-client-js_json.html">reactive-pg-client-js/json</a></li><li><a href="module-reactive-pg-client-js_pg_channel.html">reactive-pg-client-js/pg_channel</a></li><li><a href="module-reactive-pg-client-js_pg_client.html">reactive-pg-client-js/pg_client</a></li><li><a href="module-reactive-pg-client-js_pg_connection.html">reactive-pg-client-js/pg_connection</a></li><li><a href="module-reactive-pg-client-js_pg_cursor.html">reactive-pg-client-js/pg_cursor</a></li><li><a href="module-reactive-pg-client-js_pg_iterator.html">reactive-pg-client-js/pg_iterator</a></li><li><a href="module-reactive-pg-client-js_pg_pool.html">reactive-pg-client-js/pg_pool</a></li><li><a href="module-reactive-pg-client-js_pg_prepared_query.html">reactive-pg-client-js/pg_prepared_query</a></li><li><a href="module-reactive-pg-client-js_pg_result.html">reactive-pg-client-js/pg_result</a></li><li><a href="module-reactive-pg-client-js_pg_row_set.html">reactive-pg-client-js/pg_row_set</a></li><li><a href="module-reactive-pg-client-js_pg_stream.html">reactive-pg-client-js/pg_stream</a></li><li><a href="module-reactive-pg-client-js_pg_subscriber.html">reactive-pg-client-js/pg_subscriber</a></li><li><a href="module-reactive-pg-client-js_pg_transaction.html">reactive-pg-client-js/pg_transaction</a></li><li><a href="module-reactive-pg-client-js_row.html">reactive-pg-client-js/row</a></li><li><a href="module-reactive-pg-client-js_tuple.html">reactive-pg-client-js/tuple</a></li></ul><h3>Classes</h3><ul><li><a href="module-reactive-pg-client-js_json-Json.html">Json</a></li><li><a href="module-reactive-pg-client-js_pg_channel-PgChannel.html">PgChannel</a></li><li><a href="module-reactive-pg-client-js_pg_client-PgClient.html">PgClient</a></li><li><a href="module-reactive-pg-client-js_pg_connection-PgConnection.html">PgConnection</a></li><li><a href="module-reactive-pg-client-js_pg_cursor-PgCursor.html">PgCursor</a></li><li><a href="module-reactive-pg-client-js_pg_iterator-PgIterator.html">PgIterator</a></li><li><a href="module-reactive-pg-client-js_pg_pool-PgPool.html">PgPool</a></li><li><a href="module-reactive-pg-client-js_pg_prepared_query-PgPreparedQuery.html">PgPreparedQuery</a></li><li><a href="module-reactive-pg-client-js_pg_result-PgResult.html">PgResult</a></li><li><a href="module-reactive-pg-client-js_pg_row_set-PgRowSet.html">PgRowSet</a></li><li><a href="module-reactive-pg-client-js_pg_stream-PgStream.html">PgStream</a></li><li><a href="module-reactive-pg-client-js_pg_subscriber-PgSubscriber.html">PgSubscriber</a></li><li><a href="module-reactive-pg-client-js_pg_transaction-PgTransaction.html">PgTransaction</a></li><li><a href="module-reactive-pg-client-js_row-Row.html">Row</a></li><li><a href="module-reactive-pg-client-js_tuple-Tuple.html">Tuple</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Fri Jan 25 2019 16:08:18 GMT+0100 (CET)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
