@@ -33,12 +33,14 @@ public abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
   protected final String portal;
   protected final boolean suspended;
   private final boolean singleton;
+  private final ExecutionMode mode;
 
   ExtendedQueryCommandBase(PreparedStatement ps,
                            int fetch,
                            String portal,
                            boolean suspended,
                            boolean singleton,
+                           ExecutionMode mode,
                            Collector<Row, ?, R> collector,
                            QueryResultHandler<R> resultHandler) {
     super(collector, resultHandler);
@@ -47,6 +49,7 @@ public abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
     this.portal = portal;
     this.suspended = suspended;
     this.singleton = singleton;
+    this.mode = mode;
   }
 
   public PreparedStatement preparedStatement() {
@@ -69,9 +72,16 @@ public abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
     return singleton;
   }
 
+  public ExecutionMode mode() {
+    return mode;
+  }
+
   @Override
   public String sql() {
     return ps.sql();
   }
 
+  public enum ExecutionMode{
+    EXECUTE, OPEN_CURSOR, FETCH
+  }
 }
