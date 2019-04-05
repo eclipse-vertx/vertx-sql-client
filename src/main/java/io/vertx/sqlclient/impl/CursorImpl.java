@@ -17,14 +17,15 @@
 
 package io.vertx.sqlclient.impl;
 
-import io.vertx.sqlclient.Cursor;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.Tuple;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.sqlclient.Cursor;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.impl.command.ExtendedQueryCommandBase;
 
-import java.util.*;
+import java.util.UUID;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -35,7 +36,7 @@ public class CursorImpl implements Cursor {
   private final Tuple params;
 
   private String portal;
-  private boolean closed;
+  private boolean closed = true;
   private SqlResultBuilder<RowSet, RowSetImpl, RowSet> result;
 
   CursorImpl(PreparedQueryImpl ps, Tuple params) {
@@ -53,13 +54,20 @@ public class CursorImpl implements Cursor {
 
   @Override
   public synchronized void read(int count, Handler<AsyncResult<RowSet>> handler) {
+    ExtendedQueryCommandBase.ExecutionMode executionMode;
+    if (closed) {
+      executionMode = ExtendedQueryCommandBase.ExecutionMode.OPEN_CURSOR;
+    } else {
+      executionMode = ExtendedQueryCommandBase.ExecutionMode.FETCH;
+    }
+    closed = false;
     if (portal == null) {
       portal = UUID.randomUUID().toString();
       result = new SqlResultBuilder<>(RowSetImpl.FACTORY, handler);
-      ps.execute(params, count, portal, false, false, RowSetImpl.COLLECTOR, result, result);
+      ps.execute(params, count, portal, false, false, executionMode, RowSetImpl.COLLECTOR, result, result);
     } else if (result.isSuspended()) {
       result = new SqlResultBuilder<>(RowSetImpl.FACTORY, handler);
-      ps.execute(params, count, portal, true, false, RowSetImpl.COLLECTOR, result, result);
+      ps.execute(params, count, portal, true, false, executionMode, RowSetImpl.COLLECTOR, result, result);
     } else {
       throw new IllegalStateException();
     }

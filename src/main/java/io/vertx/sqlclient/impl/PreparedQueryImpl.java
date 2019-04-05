@@ -29,6 +29,7 @@ import io.vertx.sqlclient.RowStream;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.core.*;
+import io.vertx.sqlclient.impl.command.ExtendedQueryCommandBase;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -68,7 +69,7 @@ class PreparedQueryImpl implements PreparedQuery {
     Collector<Row, ?, R1> collector,
     Handler<AsyncResult<R3>> handler) {
     SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, handler);
-    return execute(args, 0, null, false, singleton, collector, b, b);
+    return execute(args, 0, null, false, singleton, ExtendedQueryCommandBase.ExecutionMode.EXECUTE, collector, b, b);
   }
 
   <A, R> PreparedQuery execute(Tuple args,
@@ -76,6 +77,7 @@ class PreparedQueryImpl implements PreparedQuery {
                                String portal,
                                boolean suspended,
                                boolean singleton,
+                               ExtendedQueryCommandBase.ExecutionMode mode,
                                Collector<Row, A, R> collector,
                                QueryResultHandler<R> resultHandler,
                                Handler<AsyncResult<Boolean>> handler) {
@@ -91,13 +93,14 @@ class PreparedQueryImpl implements PreparedQuery {
           portal,
           suspended,
           singleton,
+          mode,
           collector,
           resultHandler);
         cmd.handler = handler;
         conn.schedule(cmd);
       }
     } else {
-      context.runOnContext(v -> execute(args, fetch, portal, suspended, singleton, collector, resultHandler, handler));
+      context.runOnContext(v -> execute(args, fetch, portal, suspended, singleton, mode, collector, resultHandler, handler));
     }
     return this;
   }
