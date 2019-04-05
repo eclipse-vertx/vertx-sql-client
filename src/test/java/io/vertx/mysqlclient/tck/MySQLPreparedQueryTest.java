@@ -16,26 +16,15 @@
  */
 package io.vertx.mysqlclient.tck;
 
-import io.vertx.mysqlclient.junit.MySQLRule;
-import io.vertx.sqlclient.PreparedQueryTestBase;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
-public class MySQLPreparedQueryTest extends PreparedQueryTestBase {
 
-  @ClassRule
-  public static MySQLRule rule = new MySQLRule();
-
-  @Override
-  protected String statement(String... parts) {
-    return String.join("?", parts);
-  }
-
+public class MySQLPreparedQueryTest extends MySQLPreparedQueryTestBase {
   @Override
   protected void initConnector() {
     connector = ClientConfig.CONNECT.connect(vertx, rule.options());
@@ -45,7 +34,7 @@ public class MySQLPreparedQueryTest extends PreparedQueryTestBase {
   @Ignore
   @Override
   public void testPreparedQueryParamCoercionTypeError(TestContext ctx) {
-    // Does not pass, we can't achieve this feature on MySQL for now, see io.reactiverse.pgclient.impl.my.codec.MySQLParamDesc#prepare for reasons.
+    // Does not pass, we can't achieve this feature on MySQL for now, see MySQLParamDesc#prepare for reasons.
     super.testPreparedQueryParamCoercionTypeError(ctx);
   }
 }

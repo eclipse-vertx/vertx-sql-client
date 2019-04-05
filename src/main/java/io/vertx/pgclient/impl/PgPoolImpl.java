@@ -32,7 +32,7 @@ import io.vertx.core.*;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public class PgPoolImpl extends PoolBase<PgPoolImpl> {
+public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
 
   private final PgConnectionFactory factory;
 
