@@ -16,7 +16,7 @@
  */
 package io.vertx.mysqlclient.tck;
 
-import io.vertx.mysqlclient.MySQLClient;
+import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.sqlclient.Connector;
 import io.vertx.sqlclient.SqlClient;
@@ -34,7 +34,7 @@ public enum ClientConfig {
       return new Connector<SqlConnection>() {
         @Override
         public void connect(Handler<AsyncResult<SqlConnection>> handler) {
-          MySQLClient.connect(vertx, options, ar -> {
+          MySQLConnection.connect(vertx, options, ar -> {
             if (ar.succeeded()) {
               handler.handle(Future.succeededFuture(ar.result()));
             } else {

@@ -1,10 +1,5 @@
 package io.vertx.mysqlclient.impl;
 
-import io.netty.channel.ChannelPipeline;
-import io.vertx.pgclient.PgConnectOptions;
-import io.vertx.pgclient.PgConnection;
-import io.vertx.pgclient.impl.PgConnectionImpl;
-import io.vertx.sqlclient.impl.Connection;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -13,6 +8,8 @@ import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
+import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.sqlclient.impl.Connection;
 
 import java.nio.charset.Charset;
 
@@ -42,47 +39,18 @@ public class MySQLConnectionFactory {
     this.netClient = context.owner().createNetClient(netClientOptions);
   }
 
-  public void connect(Handler<AsyncResult<PgConnection>> handler) {
+  public void connect(Handler<AsyncResult<Connection>> handler) {
     Future<NetSocket> future = Future.future();
     future.setHandler(ar1 -> {
       if (ar1.succeeded()) {
         NetSocketInternal socket = (NetSocketInternal) ar1.result();
         MySQLSocketConnection conn = new MySQLSocketConnection(socket, 1, context);
         conn.init();
-        conn.sendStartupMessage(username, password, database, ar2 -> {
-          if (ar2.succeeded()) {
-            Connection connection = ar2.result();
-            PgConnectionImpl holder = new PgConnectionImpl(null, context, ar2.result());
-            connection.init(holder);
-            handler.handle(Future.succeededFuture(holder));
-          } else {
-            handler.handle(Future.failedFuture(ar2.cause()));
-          }
-        });
+        conn.sendStartupMessage(username, password, database, handler);
       } else {
         handler.handle(Future.failedFuture(ar1.cause()));
       }
     });
     netClient.connect(port, host, future);
-  }
-
-  public void initProtocol(NetSocketInternal socket, String username, String password, String database, boolean ssl, Handler<AsyncResult<PgConnection>> handler) {
-    ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
-    Future<Void> future = Future.future();
-    future.setHandler(ar -> {
-      if (ar.succeeded()) {
-        /*
-        handler.handle(Future.succeededFuture(this));
-        switchToState(MySQLSocketConnection.State.COMMANDING);
-        pipeline.remove("authenticationHandler");
-        pipeline.addBefore("handler", "commandHandler", commandHandler);
-        */
-      } else {
-        handler.handle(Future.failedFuture(ar.cause()));
-      }
-    });
-    // InitialHandshakeHandler initialHandshakeHandler = new InitialHandshakeHandler(charset, this, username, password, database, ssl, future);
-    // pipeline.addBefore("handler", "handshakeHandler", initialHandshakeHandler);
-    // switchToState(MySQLSocketConnection.State.CONNECTING);
   }
 }
