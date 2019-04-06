@@ -20,32 +20,33 @@ import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.codec.datatype.DataFormat;
 import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
 import io.vertx.mysqlclient.impl.protocol.backend.OkPacket;
+import io.vertx.mysqlclient.impl.protocol.backend.ServerStatusFlags;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.QueryCommandBase;
+
 import java.nio.charset.StandardCharsets;
+import java.util.function.Consumer;
 import java.util.stream.Collector;
 
-import static io.reactiverse.myclient.impl.protocol.backend.ServerStatusFlags.*;
-import static io.vertx.mysqlclient.impl.protocol.backend.EofPacket.EOF_PACKET_HEADER;
-import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
-import static io.vertx.mysqlclient.impl.protocol.backend.OkPacket.OK_PACKET_HEADER;
+import static io.vertx.mysqlclient.impl.protocol.backend.EofPacket.*;
+import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.*;
 
 abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends CommandCodec<Boolean, C> {
 
-  private enum CommandHandlerState {
+  protected enum CommandHandlerState {
     INIT,
     HANDLING_COLUMN_DEFINITION,
-    HANDLING_ROW_DATA_OR_END_PACKET // for COM_QUERY
+    HANDLING_ROW_DATA_OR_END_PACKET
   }
 
   private final DataFormat format;
-  private CommandHandlerState commandHandlerState = CommandHandlerState.INIT;
-  private ColumnDefinition[] columnDefinitions;
+  protected CommandHandlerState commandHandlerState = CommandHandlerState.INIT;
+  protected ColumnDefinition[] columnDefinitions;
   private int currentColumn;
-  private RowResultDecoder<?, T> decoder;
+  protected RowResultDecoder<?, T> decoder;
 
   public QueryCommandBaseCodec(C cmd, DataFormat format) {
     super(cmd);
@@ -56,67 +57,73 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
   void decodePayload(ByteBuf payload, MySQLEncoder encoder, int payloadLength, int sequenceId) {
     switch (commandHandlerState) {
       case INIT:
-        // may receive ERR_Packet, OK_Packet, LOCAL INFILE Request, Text Resultset
-        int firstByte = payload.getUnsignedByte(payload.readerIndex());
-        if (firstByte == OK_PACKET_HEADER) {
-          handleSingleResultsetDecodingCompleted(payload);
-        } else if (firstByte == ERROR_PACKET_HEADER) {
-          handleErrorPacketPayload(payload);
-        } else if (firstByte == 0xFB) {
-          //TODO LOCAL INFILE Request support
-        } else {
-          //regarded as Resultset handling
-          int columnCount = decodeColumnCountPacketPayload(payload);
-          commandHandlerState = CommandHandlerState.HANDLING_COLUMN_DEFINITION;
-          columnDefinitions = new ColumnDefinition[columnCount];
-        }
+        handleInitPacket(payload);
         break;
       case HANDLING_COLUMN_DEFINITION:
-        ColumnDefinition def = decodeColumnDefinitionPacketPayload(payload);
-        columnDefinitions[currentColumn++] = def;
-        if (currentColumn == columnDefinitions.length) {
-          // all column definitions have been handled, switch to row data handling
-          commandHandlerState = CommandHandlerState.HANDLING_ROW_DATA_OR_END_PACKET;
-          decoder = new RowResultDecoder<>(cmd.collector(), false/*cmd.isSingleton()*/, new MySQLRowDesc(columnDefinitions, format));
-        }
+        handleResultsetColumnDefinitions(payload);
         break;
       case HANDLING_ROW_DATA_OR_END_PACKET:
-            /*
-              Resultset row can begin with 0xfe byte (when using text protocol with a field length > 0xffffff)
-              To ensure that packets beginning with 0xfe correspond to the ending packet (EOF_Packet or OK_Packet with a 0xFE header),
-              the packet length must be checked and must be less than 0xffffff in length.
-             */
-        int first = payload.getUnsignedByte(payload.readerIndex());
-        if (first == ERROR_PACKET_HEADER) {
-          handleErrorPacketPayload(payload);
-           resetIntermediaryResult();
-        }
-        // enabling CLIENT_DEPRECATE_EOF capability will receive an OK_Packet with a EOF_Packet header here
-        // we need check this is not a row data by checking packet length < 0xFFFFFF
-        else if (first == EOF_PACKET_HEADER && payloadLength < 0xFFFFFF) {
-          handleSingleResultsetDecodingCompleted(payload);
-          resetIntermediaryResult();
-        } else {
-          // accept a row data
-          decoder.decodeRow(columnDefinitions.length, payload);
-        }
+        handleRows(payload, payloadLength, this::handleSingleRow);
         break;
     }
   }
 
-  private void handleSingleResultsetDecodingCompleted(ByteBuf payload) {
-    // we have checked the header should be ERROR_PACKET_HEADER
+  protected abstract void handleInitPacket(ByteBuf payload);
+
+  protected void handleResultsetColumnCountPacketBody(ByteBuf payload) {
+    int columnCount = decodeColumnCountPacketPayload(payload);
+    commandHandlerState = CommandHandlerState.HANDLING_COLUMN_DEFINITION;
+    columnDefinitions = new ColumnDefinition[columnCount];
+  }
+
+  protected void handleResultsetColumnDefinitions(ByteBuf payload) {
+    ColumnDefinition def = decodeColumnDefinitionPacketPayload(payload);
+    columnDefinitions[currentColumn++] = def;
+    if (currentColumn == columnDefinitions.length) {
+      // all column definitions have been handled, switch to row data handling
+      commandHandlerState = CommandHandlerState.HANDLING_ROW_DATA_OR_END_PACKET;
+      decoder = new RowResultDecoder<>(cmd.collector(), false/*cmd.isSingleton()*/, new MySQLRowDesc(columnDefinitions, format));
+    }
+  }
+
+  protected void handleRows(ByteBuf payload, int payloadLength, Consumer<ByteBuf> singleRowHandler) {
+  /*
+    Resultset row can begin with 0xfe byte (when using text protocol with a field length > 0xffffff)
+    To ensure that packets beginning with 0xfe correspond to the ending packet (EOF_Packet or OK_Packet with a 0xFE header),
+    the packet length must be checked and must be less than 0xffffff in length.
+   */
+    int first = payload.getUnsignedByte(payload.readerIndex());
+    if (first == ERROR_PACKET_HEADER) {
+      handleErrorPacketPayload(payload);
+    }
+    // enabling CLIENT_DEPRECATE_EOF capability will receive an OK_Packet with a EOF_Packet header here
+    // we need check this is not a row data by checking packet length < 0xFFFFFF
+    else if (first == EOF_PACKET_HEADER && payloadLength < 0xFFFFFF) {
+      handleSingleResultsetDecodingCompleted(payload);
+    } else {
+      singleRowHandler.accept(payload);
+    }
+  }
+
+  protected void handleSingleRow(ByteBuf payload) {
+    // accept a row data
+    decoder.decodeRow(columnDefinitions.length, payload);
+  }
+
+  protected void handleSingleResultsetDecodingCompleted(ByteBuf payload) {
+    // we have checked the header should be OK_PACKET_HEADER
     payload.readByte(); // skip header
     OkPacket okPacket = GenericPacketPayloadDecoder.decodeOkPacketBody(payload, StandardCharsets.UTF_8);
-    handleResultsetEndPacket(okPacket);
-    if ((okPacket.getServerStatusFlags() & SERVER_MORE_RESULTS_EXISTS) == 0) {
+    handleSingleResultsetEndPacket(okPacket);
+    resetIntermediaryResult();
+    if ((okPacket.getServerStatusFlags() & ServerStatusFlags.SERVER_MORE_RESULTS_EXISTS) == 0) {
       // no more sql result
       handleAllResultsetDecodingCompleted(cmd);
     }
   }
 
-  private void handleResultsetEndPacket(OkPacket okPacket) {
-    this.result = false;
+  private void handleSingleResultsetEndPacket(OkPacket okPacket) {
+    this.result = (okPacket.getServerStatusFlags() & ServerStatusFlags.SERVER_STATUS_LAST_ROW_SENT) == 0;
     T result;
     int size;
     RowDesc rowDesc;
