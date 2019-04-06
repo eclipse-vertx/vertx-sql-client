@@ -81,7 +81,7 @@ public abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
     return ps.sql();
   }
 
-  public enum ExecutionMode{
-    EXECUTE, OPEN_CURSOR, FETCH
+  public enum ExecutionMode {
+    STATEMENT_EXECUTE, FETCH_WITH_OPEN_CURSOR, FETCH
   }
 }

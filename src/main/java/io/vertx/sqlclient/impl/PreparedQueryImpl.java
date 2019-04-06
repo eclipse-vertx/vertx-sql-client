@@ -69,7 +69,7 @@ class PreparedQueryImpl implements PreparedQuery {
     Collector<Row, ?, R1> collector,
     Handler<AsyncResult<R3>> handler) {
     SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, handler);
-    return execute(args, 0, null, false, singleton, ExtendedQueryCommandBase.ExecutionMode.EXECUTE, collector, b, b);
+    return execute(args, 0, null, false, singleton, ExtendedQueryCommandBase.ExecutionMode.STATEMENT_EXECUTE, collector, b, b);
   }
 
   <A, R> PreparedQuery execute(Tuple args,

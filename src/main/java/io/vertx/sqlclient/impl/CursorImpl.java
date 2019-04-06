@@ -56,7 +56,7 @@ public class CursorImpl implements Cursor {
   public synchronized void read(int count, Handler<AsyncResult<RowSet>> handler) {
     ExtendedQueryCommandBase.ExecutionMode executionMode;
     if (closed) {
-      executionMode = ExtendedQueryCommandBase.ExecutionMode.OPEN_CURSOR;
+      executionMode = ExtendedQueryCommandBase.ExecutionMode.FETCH_WITH_OPEN_CURSOR;
     } else {
       executionMode = ExtendedQueryCommandBase.ExecutionMode.FETCH;
     }
