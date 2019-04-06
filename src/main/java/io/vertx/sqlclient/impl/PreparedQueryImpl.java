@@ -157,7 +157,7 @@ class PreparedQueryImpl implements PreparedQuery {
   @Override
   public void close(Handler<AsyncResult<Void>> completionHandler) {
     if (closed.compareAndSet(false, true)) {
-      CloseStatementCommand cmd = new CloseStatementCommand();
+      CloseStatementCommand cmd = new CloseStatementCommand(ps);
       cmd.handler = completionHandler;
       conn.schedule(cmd);
     } else {
@@ -166,7 +166,7 @@ class PreparedQueryImpl implements PreparedQuery {
   }
 
   void closePortal(String portal, Handler<AsyncResult<Void>> handler) {
-    ClosePortalCommand cmd = new ClosePortalCommand(portal);
+    ClosePortalCommand cmd = new ClosePortalCommand(portal, ps);
     cmd.handler = handler;
     conn.schedule(cmd);
   }

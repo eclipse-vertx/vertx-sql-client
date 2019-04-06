@@ -17,19 +17,26 @@
 
 package io.vertx.sqlclient.impl.command;
 
+import io.vertx.sqlclient.impl.PreparedStatement;
+
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 public class ClosePortalCommand extends CommandBase<Void> {
 
   private final String portal;
+  private final PreparedStatement ps;
 
-  public ClosePortalCommand(String portal) {
+  public ClosePortalCommand(String portal, PreparedStatement ps) {
     this.portal = portal;
+    this.ps = ps;
   }
 
   public String portal() {
     return portal;
   }
 
+  public PreparedStatement ps() {
+    return ps;
+  }
 }

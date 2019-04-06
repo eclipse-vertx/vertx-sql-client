@@ -8,6 +8,8 @@ import io.vertx.mysqlclient.impl.protocol.frontend.HandshakeResponse;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.mysqlclient.impl.util.Native41Authenticator;
 import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
+import io.vertx.sqlclient.impl.command.ClosePortalCommand;
+import io.vertx.sqlclient.impl.command.CloseStatementCommand;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 import io.vertx.sqlclient.impl.command.InitCommand;
 import io.vertx.sqlclient.impl.command.CommandBase;
@@ -60,6 +62,10 @@ public class MySQLEncoder extends MessageToByteEncoder<CommandBase<?>> {
       return new CloseConnectionCommandCodec((CloseConnectionCommand) cmd);
     } else if (cmd instanceof PrepareStatementCommand) {
       return new PrepareStatementCodec((PrepareStatementCommand) cmd);
+    } else if (cmd instanceof CloseStatementCommand) {
+      return new CloseStatementCommandCodec((CloseStatementCommand) cmd);
+    } else if (cmd instanceof ClosePortalCommand) {
+      return new ResetStatementCommandCodec((ClosePortalCommand) cmd);
     } else {
       System.out.println("Unsupported command " + cmd);
       throw new UnsupportedOperationException("Todo");
