@@ -17,9 +17,19 @@
 
 package io.vertx.sqlclient.impl.command;
 
+import io.vertx.sqlclient.impl.PreparedStatement;
+
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 public class CloseStatementCommand extends CommandBase<Void> {
+  private final PreparedStatement ps;
 
+  public CloseStatementCommand(PreparedStatement ps) {
+    this.ps = ps;
+  }
+
+  public PreparedStatement ps() {
+    return ps;
+  }
 }
