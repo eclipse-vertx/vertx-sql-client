@@ -1,4 +1,4 @@
-package io.reactiverse.myclient.impl.protocol.backend;
+package io.vertx.mysqlclient.impl.protocol.backend;
 
 public final class ServerStatusFlags {
   /*

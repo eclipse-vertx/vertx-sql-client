@@ -23,6 +23,9 @@ import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
 import java.nio.charset.StandardCharsets;
 
+import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.*;
+import static io.vertx.mysqlclient.impl.protocol.backend.OkPacket.*;
+
 class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>> {
 
   SimpleQueryCommandCodec(SimpleQueryCommand<T> cmd) {
@@ -36,5 +39,20 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
     payload.writeByte(CommandType.COM_QUERY);
     payload.writeCharSequence(cmd.sql(), StandardCharsets.UTF_8);
     encoder.writePacketAndFlush(sequenceId++, payload);
+  }
+
+  @Override
+  protected void handleInitPacket(ByteBuf payload) {
+    // may receive ERR_Packet, OK_Packet, LOCAL INFILE Request, Text Resultset
+    int firstByte = payload.getUnsignedByte(payload.readerIndex());
+    if (firstByte == OK_PACKET_HEADER) {
+      handleSingleResultsetDecodingCompleted(payload);
+    } else if (firstByte == ERROR_PACKET_HEADER) {
+      handleErrorPacketPayload(payload);
+    } else if (firstByte == 0xFB) {
+      //TODO LOCAL INFILE Request support
+    } else {
+      handleResultsetColumnCountPacketBody(payload);
+    }
   }
 }
