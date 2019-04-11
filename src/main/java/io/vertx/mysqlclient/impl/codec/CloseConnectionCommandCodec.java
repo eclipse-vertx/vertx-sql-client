@@ -4,7 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
 
-public class CloseConnectionCommandCodec extends CommandCodec<Void, CloseConnectionCommand> {
+class CloseConnectionCommandCodec extends CommandCodec<Void, CloseConnectionCommand> {
   CloseConnectionCommandCodec(CloseConnectionCommand cmd) {
     super(cmd);
   }

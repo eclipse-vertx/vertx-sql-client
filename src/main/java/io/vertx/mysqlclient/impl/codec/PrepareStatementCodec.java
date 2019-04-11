@@ -26,9 +26,10 @@ import io.vertx.mysqlclient.impl.codec.datatype.DataFormat;
 
 import java.nio.charset.StandardCharsets;
 
+import static io.vertx.mysqlclient.impl.codec.GenericPacketPayloadDecoder.decodeColumnDefinitionPacketPayload;
 import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
 
-public class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareStatementCommand> {
+class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareStatementCommand> {
 
   private CommandHandlerState commandHandlerState = CommandHandlerState.INIT;
   private long statementId;

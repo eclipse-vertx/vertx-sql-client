@@ -33,7 +33,7 @@ import static io.vertx.mysqlclient.impl.protocol.backend.EofPacket.EOF_PACKET_HE
 import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
 import static io.vertx.mysqlclient.impl.protocol.backend.OkPacket.OK_PACKET_HEADER;
 
-public class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
+class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
 
   // TODO handle re-bound situations?
   // Flag if parameters must be re-bound

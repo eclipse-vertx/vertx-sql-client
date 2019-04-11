@@ -18,10 +18,7 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.vertx.mysqlclient.impl.codec.datatype.DataType;
-import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
 import io.vertx.mysqlclient.impl.protocol.backend.ErrPacket;
-import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.core.Handler;
@@ -62,23 +59,7 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     return encoder.chctx.alloc().ioBuffer();
   }
 
-  protected ColumnDefinition decodeColumnDefinitionPacketPayload(ByteBuf payload) {
-    String catalog = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
-    String schema = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
-    String table = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
-    String orgTable = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
-    String name = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
-    String orgName = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
-    long lengthOfFixedLengthFields = BufferUtils.readLengthEncodedInteger(payload);
-    int characterSet = payload.readUnsignedShortLE();
-    long columnLength = payload.readUnsignedIntLE();
-    DataType type = DataType.valueOf(payload.readUnsignedByte());
-    int flags = payload.readUnsignedShortLE();
-    byte decimals = payload.readByte();
-    return new ColumnDefinition(catalog, schema, table, orgTable, name, orgName, characterSet, columnLength, type, flags, decimals);
-  }
-
-  protected void handleErrorPacketPayload(ByteBuf payload) {
+  void handleErrorPacketPayload(ByteBuf payload) {
     // we have checked the header should be ERROR_PACKET_HEADER
     payload.readUnsignedByte(); // skip header
     ErrPacket packet = GenericPacketPayloadDecoder.decodeErrPacketBody(payload, StandardCharsets.UTF_8);

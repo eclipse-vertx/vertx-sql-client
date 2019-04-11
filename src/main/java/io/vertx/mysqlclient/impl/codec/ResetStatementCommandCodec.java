@@ -10,8 +10,8 @@ import java.nio.charset.StandardCharsets;
 
 import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.*;
 
-public class ResetStatementCommandCodec extends CommandCodec<Void, CloseCursorCommand> {
-  public ResetStatementCommandCodec(CloseCursorCommand cmd) {
+class ResetStatementCommandCodec extends CommandCodec<Void, CloseCursorCommand> {
+  ResetStatementCommandCodec(CloseCursorCommand cmd) {
     super(cmd);
   }
 

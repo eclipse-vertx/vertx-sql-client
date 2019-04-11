@@ -7,7 +7,7 @@ import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
 
-public class MySQLEncoder extends ChannelOutboundHandlerAdapter {
+class MySQLEncoder extends ChannelOutboundHandlerAdapter {
 
   private final ArrayDeque<CommandCodec<?, ?>> inflight;
   ChannelHandlerContext chctx;

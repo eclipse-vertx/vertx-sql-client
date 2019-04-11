@@ -5,8 +5,7 @@ import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
-public class CloseStatementCommandCodec extends CommandCodec<Void, CloseStatementCommand> {
-
+class CloseStatementCommandCodec extends CommandCodec<Void, CloseStatementCommand> {
   CloseStatementCommandCodec(CloseStatementCommand cmd) {
     super(cmd);
   }

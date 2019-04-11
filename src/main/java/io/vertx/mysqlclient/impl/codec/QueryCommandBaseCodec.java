@@ -31,26 +31,26 @@ import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 import java.util.stream.Collector;
 
+import static io.vertx.mysqlclient.impl.codec.GenericPacketPayloadDecoder.decodeColumnDefinitionPacketPayload;
 import static io.vertx.mysqlclient.impl.protocol.backend.EofPacket.*;
 import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.*;
 
 abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends CommandCodec<Boolean, C> {
 
-  protected enum CommandHandlerState {
-    INIT,
-    HANDLING_COLUMN_DEFINITION,
-    HANDLING_ROW_DATA_OR_END_PACKET
-  }
-
   private final DataFormat format;
+
   protected CommandHandlerState commandHandlerState = CommandHandlerState.INIT;
   protected ColumnDefinition[] columnDefinitions;
-  private int currentColumn;
   protected RowResultDecoder<?, T> decoder;
+  private int currentColumn;
 
   QueryCommandBaseCodec(C cmd, DataFormat format) {
     super(cmd);
     this.format = format;
+  }
+
+  private static <A, T> T emptyResult(Collector<Row, A, T> collector) {
+    return collector.finisher().apply(collector.supplier().get());
   }
 
   @Override
@@ -161,8 +161,9 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     currentColumn = 0;
   }
 
-  private static <A, T> T emptyResult(Collector<Row, A, T> collector) {
-    return collector.finisher().apply(collector.supplier().get());
+  protected enum CommandHandlerState {
+    INIT,
+    HANDLING_COLUMN_DEFINITION,
+    HANDLING_ROW_DATA_OR_END_PACKET
   }
-
 }
