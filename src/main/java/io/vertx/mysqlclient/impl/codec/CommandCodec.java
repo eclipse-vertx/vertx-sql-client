@@ -17,6 +17,7 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
 import io.vertx.mysqlclient.impl.codec.datatype.DataType;
 import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
 import io.vertx.mysqlclient.impl.protocol.backend.ErrPacket;
@@ -45,6 +46,21 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
   }
 
   abstract void decodePayload(ByteBuf payload, MySQLEncoder encoder, int payloadLength, int sequenceId);
+
+  void sendPacketWithBody(ByteBuf packetBody) {
+    ChannelHandlerContext ctx = encoder.chctx;
+
+    ByteBuf packetHeader = allocateBuffer();
+    packetHeader.writeMediumLE(packetBody.readableBytes());
+    packetHeader.writeByte(sequenceId++);
+
+    ctx.write(packetHeader);
+    ctx.writeAndFlush(packetBody);
+  }
+
+  ByteBuf allocateBuffer() {
+    return encoder.chctx.alloc().ioBuffer();
+  }
 
   protected ColumnDefinition decodeColumnDefinitionPacketPayload(ByteBuf payload) {
     String catalog = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);

@@ -5,16 +5,16 @@ import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
 
 public class CloseConnectionCommandCodec extends CommandCodec<Void, CloseConnectionCommand> {
-  public CloseConnectionCommandCodec(CloseConnectionCommand cmd) {
+  CloseConnectionCommandCodec(CloseConnectionCommand cmd) {
     super(cmd);
   }
 
   @Override
   void encodePayload(MySQLEncoder encoder) {
     super.encodePayload(encoder);
-    ByteBuf payload = encoder.chctx.alloc().ioBuffer();
-    payload.writeByte(CommandType.COM_QUIT);
-    encoder.writePacketAndFlush(sequenceId++, payload);
+    ByteBuf packetBody = allocateBuffer();
+    packetBody.writeByte(CommandType.COM_QUIT);
+    sendPacketWithBody(packetBody);
   }
 
   @Override

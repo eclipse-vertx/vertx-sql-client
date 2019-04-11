@@ -48,7 +48,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
   private int currentColumn;
   protected RowResultDecoder<?, T> decoder;
 
-  public QueryCommandBaseCodec(C cmd, DataFormat format) {
+  QueryCommandBaseCodec(C cmd, DataFormat format) {
     super(cmd);
     this.format = format;
   }

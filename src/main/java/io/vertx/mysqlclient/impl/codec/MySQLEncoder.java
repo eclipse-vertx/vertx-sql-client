@@ -1,13 +1,13 @@
 package io.vertx.mysqlclient.impl.codec;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.MessageToByteEncoder;
+import io.netty.channel.ChannelOutboundHandlerAdapter;
+import io.netty.channel.ChannelPromise;
 import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
 
-public class MySQLEncoder extends MessageToByteEncoder<CommandBase<?>> {
+public class MySQLEncoder extends ChannelOutboundHandlerAdapter {
 
   private final ArrayDeque<CommandCodec<?, ?>> inflight;
   ChannelHandlerContext chctx;
@@ -22,15 +22,24 @@ public class MySQLEncoder extends MessageToByteEncoder<CommandBase<?>> {
   }
 
   @Override
-  protected void encode(ChannelHandlerContext chctx, CommandBase<?> msg, ByteBuf out) {
-    CommandCodec<?, ?> ctx = wrap(msg);
-    ctx.completionHandler = resp -> {
+  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+    if (msg instanceof CommandBase<?>) {
+      CommandBase<?> cmd = (CommandBase<?>) msg;
+      write(cmd);
+    } else {
+      super.write(ctx, msg, promise);
+    }
+  }
+
+  void write(CommandBase<?> cmd) {
+    CommandCodec<?, ?> codec = wrap(cmd);
+    codec.completionHandler = resp -> {
       CommandCodec c = inflight.poll();
       resp.cmd = (CommandBase) c.cmd;
       chctx.fireChannelRead(resp);
     };
-    inflight.add(ctx);
-    ctx.encodePayload(this);
+    inflight.add(codec);
+    codec.encodePayload(this);
   }
 
   private CommandCodec<?, ?> wrap(CommandBase<?> cmd) {
@@ -52,19 +61,5 @@ public class MySQLEncoder extends MessageToByteEncoder<CommandBase<?>> {
       System.out.println("Unsupported command " + cmd);
       throw new UnsupportedOperationException("Todo");
     }
-  }
-
-  void writePacketAndFlush(int sequenceId, ByteBuf payload) {
-    ByteBuf header = chctx.alloc().ioBuffer();
-
-    //TODO fragment the packet to avoid 16MB+ packet here ?
-
-    // payload length
-    header.writeMediumLE(payload.readableBytes());
-    // sequence ID
-    header.writeByte(sequenceId);
-
-    chctx.write(header);
-    chctx.writeAndFlush(payload);
   }
 }

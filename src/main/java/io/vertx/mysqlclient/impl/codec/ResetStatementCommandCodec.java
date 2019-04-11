@@ -22,12 +22,12 @@ public class ResetStatementCommandCodec extends CommandCodec<Void, CloseCursorCo
 
     ps.isCursorOpen = false;
 
-    ByteBuf payload = encoder.chctx.alloc().ioBuffer();
+    ByteBuf packetBody = allocateBuffer();
 
-    payload.writeByte(CommandType.COM_STMT_RESET);
-    payload.writeIntLE((int) ps.statementId);
+    packetBody.writeByte(CommandType.COM_STMT_RESET);
+    packetBody.writeIntLE((int) ps.statementId);
 
-    encoder.writePacketAndFlush(sequenceId++, payload);
+    sendPacketWithBody(packetBody);
   }
 
   @Override

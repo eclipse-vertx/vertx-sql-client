@@ -42,10 +42,10 @@ public class PrepareStatementCodec extends CommandCodec<PreparedStatement, Prepa
   @Override
   void encodePayload(MySQLEncoder encoder) {
     super.encodePayload(encoder);
-    ByteBuf payload = encoder.chctx.alloc().ioBuffer();
-    payload.writeByte(CommandType.COM_STMT_PREPARE);
-    payload.writeCharSequence(cmd.sql(), StandardCharsets.UTF_8);
-    encoder.writePacketAndFlush(sequenceId++, payload);
+    ByteBuf packetBody = allocateBuffer();
+    packetBody.writeByte(CommandType.COM_STMT_PREPARE);
+    packetBody.writeCharSequence(cmd.sql(), StandardCharsets.UTF_8);
+    sendPacketWithBody(packetBody);
   }
 
   @Override

@@ -35,10 +35,10 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
   @Override
   void encodePayload(MySQLEncoder encoder) {
     super.encodePayload(encoder);
-    ByteBuf payload = encoder.chctx.alloc().ioBuffer();
-    payload.writeByte(CommandType.COM_QUERY);
-    payload.writeCharSequence(cmd.sql(), StandardCharsets.UTF_8);
-    encoder.writePacketAndFlush(sequenceId++, payload);
+    ByteBuf packetBody = allocateBuffer();
+    packetBody.writeByte(CommandType.COM_QUERY);
+    packetBody.writeCharSequence(cmd.sql(), StandardCharsets.UTF_8);
+    sendPacketWithBody(packetBody);
   }
 
   @Override

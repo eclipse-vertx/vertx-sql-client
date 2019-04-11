@@ -7,21 +7,18 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 
 public class CloseStatementCommandCodec extends CommandCodec<Void, CloseStatementCommand> {
 
-  public CloseStatementCommandCodec(CloseStatementCommand cmd) {
+  CloseStatementCommandCodec(CloseStatementCommand cmd) {
     super(cmd);
   }
 
   @Override
   void encodePayload(MySQLEncoder encoder) {
     super.encodePayload(encoder);
-    MySQLPreparedStatement ps = (MySQLPreparedStatement) cmd.statement();
-
-    ByteBuf payload = encoder.chctx.alloc().ioBuffer();
-
+    MySQLPreparedStatement statement = (MySQLPreparedStatement) cmd.statement();
+    ByteBuf payload = allocateBuffer();
     payload.writeByte(CommandType.COM_STMT_CLOSE);
-    payload.writeIntLE((int) ps.statementId);
-
-    encoder.writePacketAndFlush(sequenceId++, payload);
+    payload.writeIntLE((int) statement.statementId);
+    sendPacketWithBody(payload);
 
     completionHandler.handle(CommandResponse.success(null));
   }
