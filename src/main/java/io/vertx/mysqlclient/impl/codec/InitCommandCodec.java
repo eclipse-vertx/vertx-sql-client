@@ -141,7 +141,7 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
         completionHandler.handle(CommandResponse.success(cmd.connection()));
         break;
       case ERROR_PACKET_HEADER:
-        ErrPacket packet = GenericPacketPayloadDecoder.decodeErrPacketBody(payload, StandardCharsets.UTF_8);
+        ErrPacket packet = GenericPacketPayloadDecoder.decodeErrPacketPayload(payload, StandardCharsets.UTF_8);
         completionHandler.handle(CommandResponse.failure(packet.getErrorMessage()));
         break;
       default:

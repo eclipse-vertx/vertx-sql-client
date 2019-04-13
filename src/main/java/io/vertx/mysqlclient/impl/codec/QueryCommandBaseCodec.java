@@ -113,7 +113,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
   protected void handleSingleResultsetDecodingCompleted(ByteBuf payload) {
     // we have checked the header should be OK_PACKET_HEADER
     payload.readByte(); // skip header
-    OkPacket okPacket = GenericPacketPayloadDecoder.decodeOkPacketBody(payload, StandardCharsets.UTF_8);
+    OkPacket okPacket = GenericPacketPayloadDecoder.decodeOkPacketPayload(payload, StandardCharsets.UTF_8);
     handleSingleResultsetEndPacket(okPacket);
     resetIntermediaryResult();
     if ((okPacket.getServerStatusFlags() & ServerStatusFlags.SERVER_MORE_RESULTS_EXISTS) == 0) {

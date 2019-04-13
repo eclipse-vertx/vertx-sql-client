@@ -35,7 +35,7 @@ class ResetStatementCommandCodec extends CommandCodec<Void, CloseCursorCommand> 
       handleErrorPacketPayload(payload);
     } else if (first == OkPacket.OK_PACKET_HEADER) {
       payload.readByte(); // skip header
-      OkPacket okPacket = GenericPacketPayloadDecoder.decodeOkPacketBody(payload, StandardCharsets.UTF_8);
+      OkPacket okPacket = GenericPacketPayloadDecoder.decodeOkPacketPayload(payload, StandardCharsets.UTF_8);
       completionHandler.handle(CommandResponse.success(null));
     }
   }

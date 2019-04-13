@@ -69,7 +69,7 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
   void handleErrorPacketPayload(ByteBuf payload) {
     // we have checked the header should be ERROR_PACKET_HEADER
     payload.readUnsignedByte(); // skip header
-    ErrPacket packet = GenericPacketPayloadDecoder.decodeErrPacketBody(payload, StandardCharsets.UTF_8);
+    ErrPacket packet = GenericPacketPayloadDecoder.decodeErrPacketPayload(payload, StandardCharsets.UTF_8);
     completionHandler.handle(CommandResponse.failure(packet.toException()));
   }
 }

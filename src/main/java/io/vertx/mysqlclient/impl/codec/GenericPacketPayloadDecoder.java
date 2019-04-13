@@ -14,7 +14,7 @@ final class GenericPacketPayloadDecoder {
   private static final int SQL_STATE_MARKER_LENGTH = 1;
   private static final int SQL_STATE_LENGTH = 5;
 
-  static OkPacket decodeOkPacketBody(ByteBuf payloadBody, Charset charset) {
+  static OkPacket decodeOkPacketPayload(ByteBuf payloadBody, Charset charset) {
     long affectedRows = BufferUtils.readLengthEncodedInteger(payloadBody);
     long lastInsertId = BufferUtils.readLengthEncodedInteger(payloadBody);
     int serverStatusFlags = payloadBody.readUnsignedShortLE();
@@ -23,7 +23,7 @@ final class GenericPacketPayloadDecoder {
     return new OkPacket(affectedRows, lastInsertId, serverStatusFlags, numberOfWarnings, info);
   }
 
-  static ErrPacket decodeErrPacketBody(ByteBuf payload, Charset charset) {
+  static ErrPacket decodeErrPacketPayload(ByteBuf payload, Charset charset) {
     int errorCode = payload.readUnsignedShortLE();
     String sqlStateMarker = BufferUtils.readFixedLengthString(payload, SQL_STATE_MARKER_LENGTH, charset);
     String sqlState = BufferUtils.readFixedLengthString(payload, SQL_STATE_LENGTH, charset);
