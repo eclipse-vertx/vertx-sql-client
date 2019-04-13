@@ -39,7 +39,7 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
       chctx.fireChannelRead(resp);
     };
     inflight.add(codec);
-    codec.encodePayload(this);
+    codec.encode(this);
   }
 
   private CommandCodec<?, ?> wrap(CommandBase<?> cmd) {

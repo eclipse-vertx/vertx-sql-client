@@ -24,6 +24,7 @@ import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.core.Handler;
 
 import java.nio.charset.StandardCharsets;
+import java.util.function.Consumer;
 
 abstract class CommandCodec<R, C extends CommandBase<R>> {
 
@@ -38,21 +39,27 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     this.cmd = cmd;
   }
 
-  void encodePayload(MySQLEncoder encoder) {
+  abstract void decodePayload(ByteBuf payload, MySQLEncoder encoder, int payloadLength, int sequenceId);
+
+  void encode(MySQLEncoder encoder) {
     this.encoder = encoder;
   }
 
-  abstract void decodePayload(ByteBuf payload, MySQLEncoder encoder, int payloadLength, int sequenceId);
+  void encodePacket(Consumer<ByteBuf> payloadEncoder) {
+    ByteBuf packetPayload = allocateBuffer();
+    payloadEncoder.accept(packetPayload);
+    encodePacketWithPayload(packetPayload);
+  }
 
-  void sendPacketWithBody(ByteBuf packetBody) {
+  private void encodePacketWithPayload(ByteBuf packetPayload) {
     ChannelHandlerContext ctx = encoder.chctx;
 
     ByteBuf packetHeader = allocateBuffer();
-    packetHeader.writeMediumLE(packetBody.readableBytes());
+    packetHeader.writeMediumLE(packetPayload.readableBytes());
     packetHeader.writeByte(sequenceId++);
 
     ctx.write(packetHeader);
-    ctx.writeAndFlush(packetBody);
+    ctx.writeAndFlush(packetPayload);
   }
 
   ByteBuf allocateBuffer() {

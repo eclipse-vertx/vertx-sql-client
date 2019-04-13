@@ -10,11 +10,9 @@ class CloseConnectionCommandCodec extends CommandCodec<Void, CloseConnectionComm
   }
 
   @Override
-  void encodePayload(MySQLEncoder encoder) {
-    super.encodePayload(encoder);
-    ByteBuf packetBody = allocateBuffer();
-    packetBody.writeByte(CommandType.COM_QUIT);
-    sendPacketWithBody(packetBody);
+  void encode(MySQLEncoder encoder) {
+    super.encode(encoder);
+    encodePacket(payload -> payload.writeByte(CommandType.COM_QUIT));
   }
 
   @Override

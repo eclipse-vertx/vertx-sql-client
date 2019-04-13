@@ -11,13 +11,13 @@ class CloseStatementCommandCodec extends CommandCodec<Void, CloseStatementComman
   }
 
   @Override
-  void encodePayload(MySQLEncoder encoder) {
-    super.encodePayload(encoder);
+  void encode(MySQLEncoder encoder) {
+    super.encode(encoder);
     MySQLPreparedStatement statement = (MySQLPreparedStatement) cmd.statement();
-    ByteBuf payload = allocateBuffer();
-    payload.writeByte(CommandType.COM_STMT_CLOSE);
-    payload.writeIntLE((int) statement.statementId);
-    sendPacketWithBody(payload);
+    encodePacket(payload -> {
+      payload.writeByte(CommandType.COM_STMT_CLOSE);
+      payload.writeIntLE((int) statement.statementId);
+    });
 
     completionHandler.handle(CommandResponse.success(null));
   }

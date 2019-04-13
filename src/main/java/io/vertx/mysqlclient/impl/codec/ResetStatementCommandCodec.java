@@ -16,18 +16,16 @@ class ResetStatementCommandCodec extends CommandCodec<Void, CloseCursorCommand> 
   }
 
   @Override
-  void encodePayload(MySQLEncoder encoder) {
-    super.encodePayload(encoder);
+  void encode(MySQLEncoder encoder) {
+    super.encode(encoder);
     MySQLPreparedStatement ps = (MySQLPreparedStatement) cmd.statement();
 
     ps.isCursorOpen = false;
 
-    ByteBuf packetBody = allocateBuffer();
-
-    packetBody.writeByte(CommandType.COM_STMT_RESET);
-    packetBody.writeIntLE((int) ps.statementId);
-
-    sendPacketWithBody(packetBody);
+    encodePacket(payload -> {
+      payload.writeByte(CommandType.COM_STMT_RESET);
+      payload.writeIntLE((int) ps.statementId);
+    });
   }
 
   @Override

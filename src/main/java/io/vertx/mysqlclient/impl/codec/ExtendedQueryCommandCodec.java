@@ -51,8 +51,8 @@ class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, ExtendedQuer
   }
 
   @Override
-  void encodePayload(MySQLEncoder encoder) {
-    super.encodePayload(encoder);
+  void encode(MySQLEncoder encoder) {
+    super.encode(encoder);
 
     if (ps.isCursorOpen) {
       writeFetchMessage(ps.statementId, cmd.fetch());
@@ -114,55 +114,52 @@ class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, ExtendedQuer
   }
 
   private void writeExecuteMessage(long statementId, ColumnDefinition[] paramsColumnDefinitions, byte sendType, Tuple params, byte cursorType) {
-    ByteBuf packetBody = allocateBuffer();
+    encodePacket(payload -> {
+      payload.writeByte(CommandType.COM_STMT_EXECUTE);
+      payload.writeIntLE((int) statementId);
+      payload.writeByte(cursorType);
+      // iteration count, always 1
+      payload.writeIntLE(1);
 
-    packetBody.writeByte(CommandType.COM_STMT_EXECUTE);
-    packetBody.writeIntLE((int) statementId);
-    packetBody.writeByte(cursorType);
-    // iteration count, always 1
-    packetBody.writeIntLE(1);
+      int numOfParams = paramsColumnDefinitions.length;
+      int bitmapLength = (numOfParams + 7) / 8;
+      byte[] nullBitmap = new byte[bitmapLength];
 
-    int numOfParams = paramsColumnDefinitions.length;
-    int bitmapLength = (numOfParams + 7) / 8;
-    byte[] nullBitmap = new byte[bitmapLength];
+      int pos = payload.writerIndex();
 
-    int pos = packetBody.writerIndex();
+      if (numOfParams > 0) {
+        // write a dummy bitmap first
+        payload.writeBytes(nullBitmap);
+        payload.writeByte(sendType);
+        if (sendType == 1) {
+          for (int i = 0; i < numOfParams; i++) {
+            Object value = params.getValue(i);
+            payload.writeByte(parseDataTypeByEncodingValue(value).id);
+            payload.writeByte(0); // parameter flag: signed
+          }
+        }
 
-    if (numOfParams > 0) {
-      // write a dummy bitmap first
-      packetBody.writeBytes(nullBitmap);
-      packetBody.writeByte(sendType);
-      if (sendType == 1) {
         for (int i = 0; i < numOfParams; i++) {
           Object value = params.getValue(i);
-          packetBody.writeByte(parseDataTypeByEncodingValue(value).id);
-          packetBody.writeByte(0); // parameter flag: signed
+          if (value != null) {
+            DataTypeCodec.encodeBinary(parseDataTypeByEncodingValue(value), value, payload);
+          } else {
+            nullBitmap[i / 8] |= (1 << (i & 7));
+          }
         }
-      }
 
-      for (int i = 0; i < numOfParams; i++) {
-        Object value = params.getValue(i);
-        if (value != null) {
-          DataTypeCodec.encodeBinary(parseDataTypeByEncodingValue(value), value, packetBody);
-        } else {
-          nullBitmap[i / 8] |= (1 << (i & 7));
-        }
+        // padding null-bitmap content
+        payload.setBytes(pos, nullBitmap);
       }
-
-      // padding null-bitmap content
-      packetBody.setBytes(pos, nullBitmap);
-    }
-    sendPacketWithBody(packetBody);
+    });
   }
 
   private void writeFetchMessage(long statementId, int count) {
-    ByteBuf packetBody = allocateBuffer();
-
-    packetBody.writeByte(CommandType.COM_STMT_FETCH);
-    packetBody.writeIntLE((int) statementId);
-    packetBody.writeIntLE(count);
-
-    sendPacketWithBody(packetBody);
+    encodePacket(payload -> {
+      payload.writeByte(CommandType.COM_STMT_FETCH);
+      payload.writeIntLE((int) statementId);
+      payload.writeIntLE(count);
+    });
   }
 
   @Override
