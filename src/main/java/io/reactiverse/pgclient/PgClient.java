@@ -17,10 +17,7 @@
 
 package io.reactiverse.pgclient;
 
-import io.reactiverse.pgclient.impl.Connection;
-import io.reactiverse.pgclient.impl.PgConnectionFactory;
-import io.reactiverse.pgclient.impl.PgConnectionImpl;
-import io.reactiverse.pgclient.impl.PgPoolImpl;
+import io.reactiverse.pgclient.impl.*;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
@@ -36,6 +33,11 @@ import java.util.stream.Collector;
  */
 @VertxGen
 public interface PgClient {
+
+  /**
+   * The default name used for the MySQL pool.
+   */
+  String DEFAULT_POOL_NAME = "DEFAULT_PG_POOL";
 
   /**
    * Like {@link #pool(PgPoolOptions)} with options build from the environment variables.
@@ -88,6 +90,29 @@ public interface PgClient {
    */
   static PgPool pool(Vertx vertx, PgPoolOptions options) {
     return new PgPoolImpl(vertx, false, options);
+  }
+
+  /**
+   * Create a pool client it shares connections pool with any other clients created with the same pool name
+   *
+   * @param vertx    the Vert.x instance
+   * @param options  the configuration
+   * @param poolName the pool name
+   * @return the pool client
+   */
+  static PgPool sharedPool(Vertx vertx, PgPoolOptions options, String poolName) {
+    return PgPoolHelper.getOrCreate(vertx, options, poolName);
+  }
+
+  /**
+   * Like {@link #sharedPool(io.vertx.core.Vertx, PgPoolOptions, String)} but with the default pool name
+   *
+   * @param vertx    the Vert.x instance
+   * @param options  the configuration
+   * @return the pool client
+   */
+  static PgPool sharedPool(Vertx vertx, PgPoolOptions options) {
+    return PgPoolHelper.getOrCreate(vertx, options, DEFAULT_POOL_NAME);
   }
 
   /**
