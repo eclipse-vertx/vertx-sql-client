@@ -31,9 +31,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 import java.util.stream.Collector;
 
-import static io.vertx.mysqlclient.impl.codec.GenericPacketPayloadDecoder.decodeColumnDefinitionPacketPayload;
-import static io.vertx.mysqlclient.impl.protocol.backend.EofPacket.*;
-import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.*;
+import static io.vertx.mysqlclient.impl.protocol.backend.EofPacket.EOF_PACKET_HEADER;
+import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
 
 abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends CommandCodec<Boolean, C> {
 
@@ -111,19 +110,17 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
   }
 
   protected void handleSingleResultsetDecodingCompleted(ByteBuf payload) {
-    // we have checked the header should be OK_PACKET_HEADER
-    payload.readByte(); // skip header
-    OkPacket okPacket = GenericPacketPayloadDecoder.decodeOkPacketPayload(payload, StandardCharsets.UTF_8);
+    OkPacket okPacket = decodeOkPacketPayload(payload, StandardCharsets.UTF_8);
     handleSingleResultsetEndPacket(okPacket);
     resetIntermediaryResult();
-    if ((okPacket.getServerStatusFlags() & ServerStatusFlags.SERVER_MORE_RESULTS_EXISTS) == 0) {
+    if ((okPacket.serverStatusFlags() & ServerStatusFlags.SERVER_MORE_RESULTS_EXISTS) == 0) {
       // no more sql result
       handleAllResultsetDecodingCompleted(cmd);
     }
   }
 
   private void handleSingleResultsetEndPacket(OkPacket okPacket) {
-    this.result = (okPacket.getServerStatusFlags() & ServerStatusFlags.SERVER_STATUS_LAST_ROW_SENT) == 0;
+    this.result = (okPacket.serverStatusFlags() & ServerStatusFlags.SERVER_STATUS_LAST_ROW_SENT) == 0;
     T result;
     int size;
     RowDesc rowDesc;
@@ -137,7 +134,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
       size = 0;
       rowDesc = null;
     }
-    cmd.resultHandler().handleResult((int) okPacket.getAffectedRows(), size, rowDesc, result);
+    cmd.resultHandler().handleResult((int) okPacket.affectedRows(), size, rowDesc, result);
   }
 
   private void handleAllResultsetDecodingCompleted(QueryCommandBase<?> cmd) {

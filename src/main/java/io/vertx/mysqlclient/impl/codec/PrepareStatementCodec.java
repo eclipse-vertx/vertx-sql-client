@@ -17,16 +17,15 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.mysqlclient.impl.codec.datatype.DataFormat;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
 import io.vertx.sqlclient.impl.PreparedStatement;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
-import io.vertx.mysqlclient.impl.codec.datatype.DataFormat;
 
 import java.nio.charset.StandardCharsets;
 
-import static io.vertx.mysqlclient.impl.codec.GenericPacketPayloadDecoder.decodeColumnDefinitionPacketPayload;
 import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
 
 class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareStatementCommand> {

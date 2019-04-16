@@ -6,9 +6,7 @@ import io.vertx.mysqlclient.impl.protocol.backend.OkPacket;
 import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
-import java.nio.charset.StandardCharsets;
-
-import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.*;
+import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
 
 class ResetStatementCommandCodec extends CommandCodec<Void, CloseCursorCommand> {
   ResetStatementCommandCodec(CloseCursorCommand cmd) {
@@ -34,8 +32,6 @@ class ResetStatementCommandCodec extends CommandCodec<Void, CloseCursorCommand> 
     if (first == ERROR_PACKET_HEADER) {
       handleErrorPacketPayload(payload);
     } else if (first == OkPacket.OK_PACKET_HEADER) {
-      payload.readByte(); // skip header
-      OkPacket okPacket = GenericPacketPayloadDecoder.decodeOkPacketPayload(payload, StandardCharsets.UTF_8);
       completionHandler.handle(CommandResponse.success(null));
     }
   }
