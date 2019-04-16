@@ -7,13 +7,18 @@ import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
 
+import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.*;
+
 class MySQLEncoder extends ChannelOutboundHandlerAdapter {
 
   private final ArrayDeque<CommandCodec<?, ?>> inflight;
   ChannelHandlerContext chctx;
 
+  int clientCapabilitiesFlag = 0x00000000;
+
   MySQLEncoder(ArrayDeque<CommandCodec<?, ?>> inflight) {
     this.inflight = inflight;
+    initSupportedCapabilitiesFlags();
   }
 
   @Override
@@ -61,5 +66,16 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
       System.out.println("Unsupported command " + cmd);
       throw new UnsupportedOperationException("Todo");
     }
+  }
+
+  private void initSupportedCapabilitiesFlags() {
+    clientCapabilitiesFlag |= CLIENT_PLUGIN_AUTH;
+    clientCapabilitiesFlag |= CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA;
+    clientCapabilitiesFlag |= CLIENT_SECURE_CONNECTION;
+    clientCapabilitiesFlag |= CLIENT_PROTOCOL_41;
+    clientCapabilitiesFlag |= CLIENT_DEPRECATE_EOF;
+    clientCapabilitiesFlag |= CLIENT_TRANSACTIONS;
+    clientCapabilitiesFlag |= CLIENT_MULTI_STATEMENTS;
+    clientCapabilitiesFlag |= CLIENT_MULTI_RESULTS;
   }
 }

@@ -17,7 +17,6 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.mysqlclient.impl.CapabilitiesNegotiator;
 import io.vertx.mysqlclient.impl.CharacterSetMapping;
 import io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag;
 import io.vertx.mysqlclient.impl.protocol.backend.ErrPacket;
@@ -124,10 +123,13 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     if (ssl) {
       //TODO ssl
     } else {
-      int negotiatedCapabilities = CapabilitiesNegotiator.negotiate(initialHandshakePacket.getServerCapabilitiesFlags(), cmd.database());
+      if (cmd.database() != null && !cmd.database().isEmpty()) {
+        encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_WITH_DB;
+      }
+      encoder.clientCapabilitiesFlag &= initialHandshakePacket.getServerCapabilitiesFlags();
       String authMethodName = initialHandshakePacket.getAuthMethodName();
       byte[] serverScramble = initialHandshakePacket.getScramble();
-      HandshakeResponse handshakeResponse = new HandshakeResponse(cmd.username(), StandardCharsets.UTF_8, cmd.password(), cmd.database(), serverScramble, negotiatedCapabilities, authMethodName, null);
+      HandshakeResponse handshakeResponse = new HandshakeResponse(cmd.username(), StandardCharsets.UTF_8, cmd.password(), cmd.database(), serverScramble, encoder.clientCapabilitiesFlag, authMethodName, null);
       writeHandshakeResponseMessage(handshakeResponse);
     }
   }
