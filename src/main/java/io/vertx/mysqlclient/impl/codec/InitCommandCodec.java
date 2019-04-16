@@ -100,13 +100,12 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     payload.readerIndex(payload.readerIndex() + 10);
 
     // Rest of the plugin provided data
-    payload.readBytes(scramble, AUTH_PLUGIN_DATA_PART1_LENGTH, SCRAMBLE_LENGTH - AUTH_PLUGIN_DATA_PART1_LENGTH);
-    // 20 byte long scramble end with a '/0' character
-    payload.readByte();
+    payload.readBytes(scramble, AUTH_PLUGIN_DATA_PART1_LENGTH, Math.max(SCRAMBLE_LENGTH - AUTH_PLUGIN_DATA_PART1_LENGTH, lenOfAuthPluginData - 9));
+    payload.readByte(); // reserved byte
 
     String authPluginName = null;
     if (isClientPluginAuthSupported) {
-      authPluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.US_ASCII);
+      authPluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.UTF_8);
     }
 
     //TODO we may not need an extra object here?(inline)
