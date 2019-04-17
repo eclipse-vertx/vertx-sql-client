@@ -17,6 +17,21 @@ INSERT INTO collectorTest
 VALUES (1, 32767, 8388607, 2147483647, 9223372036854775807, 123.456, 1.234567, 'HELLO,WORLD');
 INSERT INTO collectorTest
 VALUES (2, 32767, 8388607, 2147483647, 9223372036854775807, 123.456, 1.234567, 'hello,world');
+
+# datatype testing table
+DROP TABLE IF EXISTS datatype;
+CREATE TABLE datatype
+(
+  id          INT NOT NULL PRIMARY KEY,
+  `Binary`    BINARY(5),
+  `VarBinary` VARBINARY(20)
+);
+
+INSERT INTO datatype
+VALUES (1, 'HELLO', 'HELLO, WORLD');
+INSERT INTO datatype
+VALUES (2, 'hello', 'hello, world');
+
 # @Deprecated--- This part is only for mysql tests and should be moved out of TCK tests ---
 
 # TFB tables

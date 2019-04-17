@@ -15,6 +15,8 @@ import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
 //TODO charset injection
+//TODO 2: In MySQL, there is no way to tell a Result is a BOOLEAN type or a INT1 type, same situation for CHAR/BINARY and VARCHAR/VARBINARY,
+// so we need to take a look at the type mapping later(current repetitive implementation could be pruned later)
 public class DataTypeCodec {
   // binary codec protocol: https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_binary_resultset.html#sect_protocol_binary_resultset_row_value
 
@@ -51,6 +53,10 @@ public class DataTypeCodec {
         return textDecodeChar(buffer);
       case VARCHAR:
         return textDecodeVarChar(buffer);
+      case BINARY:
+        return textDecodeBinary(buffer);
+      case VARBINARY:
+        return textDecodeBinary(buffer);
       case DATE:
         return textDecodeDate(buffer);
       case TIME:
@@ -94,6 +100,9 @@ public class DataTypeCodec {
       case VARCHAR:
         binaryEncodeVarChar(String.valueOf(value), buffer);
         break;
+      case BINARY:
+        binaryEncodeBinary(String.valueOf(value), buffer);
+        break;
       case DATE:
         // TODO confirm DATE,TIM encoded into VAR_STRING form?
         binaryEncodeDate((LocalDate) value, buffer);
@@ -132,6 +141,10 @@ public class DataTypeCodec {
         return binaryDecodeChar(buffer);
       case VARCHAR:
         return binaryDecodeVarChar(buffer);
+      case BINARY:
+        return binaryDecodeBinary(buffer);
+      case VARBINARY:
+        return binaryDecodeBinary(buffer);
       case DATE:
         return binaryDecodeDate(buffer);
       case TIME:
@@ -189,6 +202,10 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeVarChar(String value, ByteBuf buffer) {
+    BufferUtils.writeLengthEncodedString(buffer, value, StandardCharsets.UTF_8);
+  }
+
+  private static void binaryEncodeBinary(String value, ByteBuf buffer) {
     BufferUtils.writeLengthEncodedString(buffer, value, StandardCharsets.UTF_8);
   }
 
@@ -280,6 +297,10 @@ public class DataTypeCodec {
     return BufferUtils.readLengthEncodedString(buffer, StandardCharsets.UTF_8);
   }
 
+  private static String binaryDecodeBinary(ByteBuf buffer) {
+    return BufferUtils.readLengthEncodedString(buffer, StandardCharsets.UTF_8);
+  }
+
   private static LocalDateTime binaryDecodeDatetime(ByteBuf buffer) {
     int length = buffer.readByte();
     if (length == 0) {
@@ -367,6 +388,10 @@ public class DataTypeCodec {
   }
 
   private static String textDecodeVarChar(ByteBuf buffer) {
+    return buffer.toString(StandardCharsets.UTF_8);
+  }
+
+  private static String textDecodeBinary(ByteBuf buffer) {
     return buffer.toString(StandardCharsets.UTF_8);
   }
 

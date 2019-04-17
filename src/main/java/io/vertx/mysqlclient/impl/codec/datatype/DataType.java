@@ -21,6 +21,8 @@ public enum DataType {
 //  DECIMAL(ColumnDefinition.ColumnType.MYSQL_TYPE_NEWDECIMAL, true, Numeric.class), DECIMAL is a synonym for NUMERIC
   CHAR(ColumnDefinition.ColumnType.MYSQL_TYPE_STRING, true, String.class),
   VARCHAR(ColumnDefinition.ColumnType.MYSQL_TYPE_VAR_STRING, true, String.class),
+  BINARY(ColumnDefinition.ColumnType.MYSQL_TYPE_STRING, true, String.class),
+  VARBINARY(ColumnDefinition.ColumnType.MYSQL_TYPE_VAR_STRING, true, String.class),
   DATE(ColumnDefinition.ColumnType.MYSQL_TYPE_DATE, true, LocalDate.class),
   TIME(ColumnDefinition.ColumnType.MYSQL_TYPE_TIME, true, LocalTime.class),
   DATETIME(ColumnDefinition.ColumnType.MYSQL_TYPE_DATETIME, true, LocalDateTime.class);
