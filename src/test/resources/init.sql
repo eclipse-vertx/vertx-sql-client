@@ -28,13 +28,19 @@ CREATE TABLE datatype
   `TinyBlob`   TINYBLOB,
   `Blob`       BLOB,
   `MediumBlob` MEDIUMBLOB,
-  `LongBlob`   LONGBLOB
+  `LongBlob`   LONGBLOB,
+  `TinyText`   TINYTEXT,
+  `Text`       TEXT,
+  `MediumText` MEDIUMTEXT,
+  `LongText`   LONGTEXT
 );
 
 INSERT INTO datatype
-VALUES (1, 'HELLO', 'HELLO, WORLD', 'TINYBLOB', 'BLOB', 'MEDIUMBLOB', 'LONGBLOB');
+VALUES (1, 'HELLO', 'HELLO, WORLD', 'TINYBLOB', 'BLOB', 'MEDIUMBLOB', 'LONGBLOB', 'TINYTEXT', 'TEXT', 'MEDIUMTEXT',
+        'LONGTEXT');
 INSERT INTO datatype
-VALUES (2, 'hello', 'hello, world', 'tinyblob', 'blob', 'mediumblob', 'longblob');
+VALUES (2, 'hello', 'hello, world', 'tinyblob', 'blob', 'mediumblob', 'longblob', 'tinytext', 'text', 'mediumtext',
+        'longtext');
 
 # @Deprecated--- This part is only for mysql tests and should be moved out of TCK tests ---
 

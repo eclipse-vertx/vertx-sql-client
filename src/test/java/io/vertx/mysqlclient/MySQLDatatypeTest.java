@@ -119,6 +119,66 @@ public class MySQLDatatypeTest extends MySQLTestBase {
     testBinaryDecodeGeneric(ctx, "LongBlob", Buffer.buffer("LONGBLOB"));
   }
 
+  @Test
+  public void testBinaryEncodeTinyText(TestContext ctx) {
+    testBinaryEncodeGeneric(ctx, "TinyText", Buffer.buffer("TINYTEXT"));
+  }
+
+  @Test
+  public void testTextDecodeTinyText(TestContext ctx) {
+    testTextDecodeGeneric(ctx, "TinyText", Buffer.buffer("TINYTEXT"));
+  }
+
+  @Test
+  public void testBinaryDecodeTinyText(TestContext ctx) {
+    testBinaryDecodeGeneric(ctx, "TinyText", Buffer.buffer("TINYTEXT"));
+  }
+
+  @Test
+  public void testBinaryEncodeText(TestContext ctx) {
+    testBinaryEncodeGeneric(ctx, "Text", Buffer.buffer("TEXT"));
+  }
+
+  @Test
+  public void testTextDecodeText(TestContext ctx) {
+    testTextDecodeGeneric(ctx, "Text", Buffer.buffer("TEXT"));
+  }
+
+  @Test
+  public void testBinaryDecodeText(TestContext ctx) {
+    testBinaryDecodeGeneric(ctx, "Text", Buffer.buffer("TEXT"));
+  }
+
+  @Test
+  public void testBinaryEncodeMediumText(TestContext ctx) {
+    testBinaryEncodeGeneric(ctx, "MediumText", Buffer.buffer("MEDIUMTEXT"));
+  }
+
+  @Test
+  public void testTextDecodeMediumText(TestContext ctx) {
+    testTextDecodeGeneric(ctx, "MediumText", Buffer.buffer("MEDIUMTEXT"));
+  }
+
+  @Test
+  public void testBinaryDecodeMediumText(TestContext ctx) {
+    testBinaryDecodeGeneric(ctx, "MediumText", Buffer.buffer("MEDIUMTEXT"));
+  }
+
+  @Test
+  public void testBinaryEncodeLongText(TestContext ctx) {
+    testBinaryEncodeGeneric(ctx, "LongText", Buffer.buffer("LONGTEXT"));
+  }
+
+  @Test
+  public void testTextDecodeLongText(TestContext ctx) {
+    testTextDecodeGeneric(ctx, "LongText", Buffer.buffer("LONGTEXT"));
+  }
+
+  @Test
+  public void testBinaryDecodeLongText(TestContext ctx) {
+    testBinaryDecodeGeneric(ctx, "LongText", Buffer.buffer("LONGTEXT"));
+  }
+
   private <T> void testTextDecodeGeneric(TestContext ctx,
                                          String columnName,
                                          T expected) {

@@ -16,7 +16,7 @@ import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
 //TODO charset injection
-//TODO 2: In MySQL, there is no way to tell a Result is a BOOLEAN type or a INT1 type, same situation for CHAR/BINARY and VARCHAR/VARBINARY,
+//TODO 2: In MySQL, there is no way to tell a Result is a BOOLEAN type or a INT1 type, same situation for CHAR/BINARY,VARCHAR/VARBINARY and BLOB/TEXT,
 // so we need to take a look at the type mapping later(current repetitive implementation could be pruned later)
 public class DataTypeCodec {
   // binary codec protocol: https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_binary_resultset.html#sect_protocol_binary_resultset_row_value
