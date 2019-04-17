@@ -22,15 +22,19 @@ VALUES (2, 32767, 8388607, 2147483647, 9223372036854775807, 123.456, 1.234567, '
 DROP TABLE IF EXISTS datatype;
 CREATE TABLE datatype
 (
-  id          INT NOT NULL PRIMARY KEY,
-  `Binary`    BINARY(5),
-  `VarBinary` VARBINARY(20)
+  id           INT NOT NULL PRIMARY KEY,
+  `Binary`     BINARY(5),
+  `VarBinary`  VARBINARY(20),
+  `TinyBlob`   TINYBLOB,
+  `Blob`       BLOB,
+  `MediumBlob` MEDIUMBLOB,
+  `LongBlob`   LONGBLOB
 );
 
 INSERT INTO datatype
-VALUES (1, 'HELLO', 'HELLO, WORLD');
+VALUES (1, 'HELLO', 'HELLO, WORLD', 'TINYBLOB', 'BLOB', 'MEDIUMBLOB', 'LONGBLOB');
 INSERT INTO datatype
-VALUES (2, 'hello', 'hello, world');
+VALUES (2, 'hello', 'hello, world', 'tinyblob', 'blob', 'mediumblob', 'longblob');
 
 # @Deprecated--- This part is only for mysql tests and should be moved out of TCK tests ---
 

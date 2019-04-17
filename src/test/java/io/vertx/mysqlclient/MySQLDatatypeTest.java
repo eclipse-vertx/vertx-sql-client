@@ -4,6 +4,7 @@ import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -56,6 +57,66 @@ public class MySQLDatatypeTest extends MySQLTestBase {
   @Test
   public void testBinaryDecodeVarBinary(TestContext ctx) {
     testBinaryDecodeGeneric(ctx, "VarBinary", "HELLO, WORLD");
+  }
+
+  @Test
+  public void testBinaryEncodeTinyBlob(TestContext ctx) {
+    testBinaryEncodeGeneric(ctx, "TinyBlob", Buffer.buffer("TINYBLOB"));
+  }
+
+  @Test
+  public void testTextDecodeTinyBlob(TestContext ctx) {
+    testTextDecodeGeneric(ctx, "TinyBlob", Buffer.buffer("TINYBLOB"));
+  }
+
+  @Test
+  public void testBinaryDecodeTinyBlob(TestContext ctx) {
+    testBinaryDecodeGeneric(ctx, "TinyBlob", Buffer.buffer("TINYBLOB"));
+  }
+
+  @Test
+  public void testBinaryEncodeBlob(TestContext ctx) {
+    testBinaryEncodeGeneric(ctx, "Blob", Buffer.buffer("BLOB"));
+  }
+
+  @Test
+  public void testTextDecodeBlob(TestContext ctx) {
+    testTextDecodeGeneric(ctx, "Blob", Buffer.buffer("BLOB"));
+  }
+
+  @Test
+  public void testBinaryDecodeBlob(TestContext ctx) {
+    testBinaryDecodeGeneric(ctx, "Blob", Buffer.buffer("BLOB"));
+  }
+
+  @Test
+  public void testBinaryEncodeMediumBlob(TestContext ctx) {
+    testBinaryEncodeGeneric(ctx, "MediumBlob", Buffer.buffer("MEDIUMBLOB"));
+  }
+
+  @Test
+  public void testTextDecodeMediumBlob(TestContext ctx) {
+    testTextDecodeGeneric(ctx, "MediumBlob", Buffer.buffer("MEDIUMBLOB"));
+  }
+
+  @Test
+  public void testBinaryDecodeMediumBlob(TestContext ctx) {
+    testBinaryDecodeGeneric(ctx, "MediumBlob", Buffer.buffer("MEDIUMBLOB"));
+  }
+
+  @Test
+  public void testBinaryEncodeLongBlob(TestContext ctx) {
+    testBinaryEncodeGeneric(ctx, "LongBlob", Buffer.buffer("LONGBLOB"));
+  }
+
+  @Test
+  public void testTextDecodeLongBlob(TestContext ctx) {
+    testTextDecodeGeneric(ctx, "LongBlob", Buffer.buffer("LONGBLOB"));
+  }
+
+  @Test
+  public void testBinaryDecodeLongBlob(TestContext ctx) {
+    testBinaryDecodeGeneric(ctx, "LongBlob", Buffer.buffer("LONGBLOB"));
   }
 
   private <T> void testTextDecodeGeneric(TestContext ctx,

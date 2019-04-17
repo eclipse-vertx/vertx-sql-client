@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.pgclient.data.Numeric;
+import io.vertx.core.buffer.Buffer;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -57,6 +58,8 @@ public class DataTypeCodec {
         return textDecodeBinary(buffer);
       case VARBINARY:
         return textDecodeBinary(buffer);
+      case BLOB:
+        return textDecodeBlob(buffer);
       case DATE:
         return textDecodeDate(buffer);
       case TIME:
@@ -103,6 +106,9 @@ public class DataTypeCodec {
       case BINARY:
         binaryEncodeBinary(String.valueOf(value), buffer);
         break;
+      case BLOB:
+        binaryEncodeBlob((Buffer) value, buffer);
+        break;
       case DATE:
         // TODO confirm DATE,TIM encoded into VAR_STRING form?
         binaryEncodeDate((LocalDate) value, buffer);
@@ -145,6 +151,8 @@ public class DataTypeCodec {
         return binaryDecodeBinary(buffer);
       case VARBINARY:
         return binaryDecodeBinary(buffer);
+      case BLOB:
+        return binaryDecodeBlob(buffer);
       case DATE:
         return binaryDecodeDate(buffer);
       case TIME:
@@ -207,6 +215,11 @@ public class DataTypeCodec {
 
   private static void binaryEncodeBinary(String value, ByteBuf buffer) {
     BufferUtils.writeLengthEncodedString(buffer, value, StandardCharsets.UTF_8);
+  }
+
+  private static void binaryEncodeBlob(Buffer value, ByteBuf buffer) {
+    BufferUtils.writeLengthEncodedInteger(buffer, value.length());
+    buffer.writeBytes(value.getByteBuf());
   }
 
   private static void binaryEncodeDate(LocalDate value, ByteBuf buffer) {
@@ -301,6 +314,12 @@ public class DataTypeCodec {
     return BufferUtils.readLengthEncodedString(buffer, StandardCharsets.UTF_8);
   }
 
+  private static Buffer binaryDecodeBlob(ByteBuf buffer) {
+    long len = BufferUtils.readLengthEncodedInteger(buffer);
+    ByteBuf value = buffer.slice(buffer.readerIndex(), (int) len);
+    return Buffer.buffer(value);
+  }
+
   private static LocalDateTime binaryDecodeDatetime(ByteBuf buffer) {
     int length = buffer.readByte();
     if (length == 0) {
@@ -393,6 +412,10 @@ public class DataTypeCodec {
 
   private static String textDecodeBinary(ByteBuf buffer) {
     return buffer.toString(StandardCharsets.UTF_8);
+  }
+
+  private static Buffer textDecodeBlob(ByteBuf buffer) {
+    return Buffer.buffer(buffer);
   }
 
   private static LocalDate textDecodeDate(ByteBuf buffer) {

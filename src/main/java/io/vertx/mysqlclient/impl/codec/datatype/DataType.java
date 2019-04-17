@@ -4,6 +4,7 @@ import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
 import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
 import io.vertx.pgclient.data.Numeric;
+import io.vertx.core.buffer.Buffer;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -23,6 +24,7 @@ public enum DataType {
   VARCHAR(ColumnDefinition.ColumnType.MYSQL_TYPE_VAR_STRING, true, String.class),
   BINARY(ColumnDefinition.ColumnType.MYSQL_TYPE_STRING, true, String.class),
   VARBINARY(ColumnDefinition.ColumnType.MYSQL_TYPE_VAR_STRING, true, String.class),
+  BLOB(ColumnDefinition.ColumnType.MYSQL_TYPE_BLOB, true, Buffer.class),
   DATE(ColumnDefinition.ColumnType.MYSQL_TYPE_DATE, true, LocalDate.class),
   TIME(ColumnDefinition.ColumnType.MYSQL_TYPE_TIME, true, LocalTime.class),
   DATETIME(ColumnDefinition.ColumnType.MYSQL_TYPE_DATETIME, true, LocalDateTime.class);
