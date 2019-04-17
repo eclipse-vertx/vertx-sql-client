@@ -12,7 +12,7 @@ Supports:
 * MySQL Native41 authentication
 * TEXT Protocol(QUERY)
 * PING COMMAND(dropped temporarily for PG API)
-* INT2,INT3,INT4,INT8,FLOAT,DOUBLE,VARCHAR Data type
+* Rich data type support
 * Collector API (Reuse from postgres client implementation)
 
 TODO:
@@ -47,9 +47,10 @@ https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-charsets.html
 * FLOAT(j.l.Float)
 * DOUBLE(j.l.Double)
 * NUMERIC,DECIMAL(i.r.p.data.Numeric)
-* BOOLEAN(j.l.Byte) TODO? should be j.l.Boolean here
-* CHAR(j.l.String)
-* VARCHAR(j.l.String)
+* BOOLEAN(j.l.Byte)=INT1(j.l.Byte) TODO what java type should be mapped?
+* CHAR(j.l.String)=BINARY(j.l.String) TODO what java type should be mapped?
+* VARCHAR(j.l.String)=VARBINARY(j.l.String) TODO what java type should be mapped? 
+* TINYBLOB,BLOB,MEDIUMBLOB,LONGBLOB(i.v.c.b.Buffer)=TINYTEXT,TEXT,MEDIUMTEXT,LONGTEXT(i.v.c.b.Buffer) TODO what java type should be mapped? 
 * DATE(j.t.LocalDate)
 * TIME(j.t.LocalTime)
 * DATETIME(j.t.LocalDateTime)
