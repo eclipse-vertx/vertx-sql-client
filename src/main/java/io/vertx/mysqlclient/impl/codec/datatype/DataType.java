@@ -18,12 +18,9 @@ public enum DataType {
   INT8(ColumnDefinition.ColumnType.MYSQL_TYPE_LONGLONG, true, Long.class),
   DOUBLE(ColumnDefinition.ColumnType.MYSQL_TYPE_DOUBLE, true, Double.class),
   FLOAT(ColumnDefinition.ColumnType.MYSQL_TYPE_FLOAT, true, Float.class),
-  NUMERIC(ColumnDefinition.ColumnType.MYSQL_TYPE_NEWDECIMAL, true, Numeric.class),
-//  DECIMAL(ColumnDefinition.ColumnType.MYSQL_TYPE_NEWDECIMAL, true, Numeric.class), DECIMAL is a synonym for NUMERIC
-  CHAR(ColumnDefinition.ColumnType.MYSQL_TYPE_STRING, true, String.class),
-  VARCHAR(ColumnDefinition.ColumnType.MYSQL_TYPE_VAR_STRING, true, String.class),
-  BINARY(ColumnDefinition.ColumnType.MYSQL_TYPE_STRING, true, String.class),
-  VARBINARY(ColumnDefinition.ColumnType.MYSQL_TYPE_VAR_STRING, true, String.class),
+  NUMERIC(ColumnDefinition.ColumnType.MYSQL_TYPE_NEWDECIMAL, true, Numeric.class), // DECIMAL
+  STRING(ColumnDefinition.ColumnType.MYSQL_TYPE_STRING, true, String.class), // CHAR, BINARY
+  VARSTRING(ColumnDefinition.ColumnType.MYSQL_TYPE_VAR_STRING, true, String.class), //VARCHAR, VARBINARY
   BLOB(ColumnDefinition.ColumnType.MYSQL_TYPE_BLOB, true, Buffer.class),
   DATE(ColumnDefinition.ColumnType.MYSQL_TYPE_DATE, true, LocalDate.class),
   TIME(ColumnDefinition.ColumnType.MYSQL_TYPE_TIME, true, LocalTime.class),
@@ -38,20 +35,17 @@ public enum DataType {
   }
 
   public final int id;
-  public final boolean supportsBinary; // TODO do we need this for MySQL?
   public final Class<?> encodingType; // Not really used for now
   public final Class<?> decodingType;
 
   DataType(int id, boolean supportsBinary, Class<?> type) {
     this.id = id;
-    this.supportsBinary = supportsBinary;
     this.decodingType = type;
     this.encodingType = type;
   }
 
   DataType(int id, boolean supportsBinary, Class<?> encodingType, Class<?> decodingType) {
     this.id = id;
-    this.supportsBinary = supportsBinary;
     this.encodingType = encodingType;
     this.decodingType = decodingType;
   }
