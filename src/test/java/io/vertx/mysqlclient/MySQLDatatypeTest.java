@@ -31,32 +31,32 @@ public class MySQLDatatypeTest extends MySQLTestBase {
 
   @Test
   public void testTextDecodeBinary(TestContext ctx) {
-    testTextDecodeGeneric(ctx, "Binary", "HELLO");
+    testTextDecodeGeneric(ctx, "Binary", Buffer.buffer("HELLO"));
   }
 
   @Test
   public void testBinaryDecodeBinary(TestContext ctx) {
-    testBinaryDecodeGeneric(ctx, "Binary", "HELLO");
+    testBinaryDecodeGeneric(ctx, "Binary", Buffer.buffer("HELLO"));
   }
 
   @Test
   public void testBinaryEncodeBinary(TestContext ctx) {
-    testBinaryEncodeGeneric(ctx, "Binary", "HELLO");
+    testBinaryEncodeGeneric(ctx, "Binary", Buffer.buffer("HELLO"));
   }
 
   @Test
   public void testBinaryEncodeVarBinary(TestContext ctx) {
-    testBinaryEncodeGeneric(ctx, "VarBinary", "HELLO, WORLD");
+    testBinaryEncodeGeneric(ctx, "VarBinary", Buffer.buffer("HELLO, WORLD"));
   }
 
   @Test
   public void testTextDecodeVarBinary(TestContext ctx) {
-    testTextDecodeGeneric(ctx, "VarBinary", "HELLO, WORLD");
+    testTextDecodeGeneric(ctx, "VarBinary", Buffer.buffer("HELLO, WORLD"));
   }
 
   @Test
   public void testBinaryDecodeVarBinary(TestContext ctx) {
-    testBinaryDecodeGeneric(ctx, "VarBinary", "HELLO, WORLD");
+    testBinaryDecodeGeneric(ctx, "VarBinary", Buffer.buffer("HELLO, WORLD"));
   }
 
   @Test
@@ -121,62 +121,62 @@ public class MySQLDatatypeTest extends MySQLTestBase {
 
   @Test
   public void testBinaryEncodeTinyText(TestContext ctx) {
-    testBinaryEncodeGeneric(ctx, "TinyText", Buffer.buffer("TINYTEXT"));
+    testBinaryEncodeGeneric(ctx, "TinyText", "TINYTEXT");
   }
 
   @Test
   public void testTextDecodeTinyText(TestContext ctx) {
-    testTextDecodeGeneric(ctx, "TinyText", Buffer.buffer("TINYTEXT"));
+    testTextDecodeGeneric(ctx, "TinyText", "TINYTEXT");
   }
 
   @Test
   public void testBinaryDecodeTinyText(TestContext ctx) {
-    testBinaryDecodeGeneric(ctx, "TinyText", Buffer.buffer("TINYTEXT"));
+    testBinaryDecodeGeneric(ctx, "TinyText", "TINYTEXT");
   }
 
   @Test
   public void testBinaryEncodeText(TestContext ctx) {
-    testBinaryEncodeGeneric(ctx, "Text", Buffer.buffer("TEXT"));
+    testBinaryEncodeGeneric(ctx, "Text", "TEXT");
   }
 
   @Test
   public void testTextDecodeText(TestContext ctx) {
-    testTextDecodeGeneric(ctx, "Text", Buffer.buffer("TEXT"));
+    testTextDecodeGeneric(ctx, "Text", "TEXT");
   }
 
   @Test
   public void testBinaryDecodeText(TestContext ctx) {
-    testBinaryDecodeGeneric(ctx, "Text", Buffer.buffer("TEXT"));
+    testBinaryDecodeGeneric(ctx, "Text", "TEXT");
   }
 
   @Test
   public void testBinaryEncodeMediumText(TestContext ctx) {
-    testBinaryEncodeGeneric(ctx, "MediumText", Buffer.buffer("MEDIUMTEXT"));
+    testBinaryEncodeGeneric(ctx, "MediumText", "MEDIUMTEXT");
   }
 
   @Test
   public void testTextDecodeMediumText(TestContext ctx) {
-    testTextDecodeGeneric(ctx, "MediumText", Buffer.buffer("MEDIUMTEXT"));
+    testTextDecodeGeneric(ctx, "MediumText", "MEDIUMTEXT");
   }
 
   @Test
   public void testBinaryDecodeMediumText(TestContext ctx) {
-    testBinaryDecodeGeneric(ctx, "MediumText", Buffer.buffer("MEDIUMTEXT"));
+    testBinaryDecodeGeneric(ctx, "MediumText", "MEDIUMTEXT");
   }
 
   @Test
   public void testBinaryEncodeLongText(TestContext ctx) {
-    testBinaryEncodeGeneric(ctx, "LongText", Buffer.buffer("LONGTEXT"));
+    testBinaryEncodeGeneric(ctx, "LongText", "LONGTEXT");
   }
 
   @Test
   public void testTextDecodeLongText(TestContext ctx) {
-    testTextDecodeGeneric(ctx, "LongText", Buffer.buffer("LONGTEXT"));
+    testTextDecodeGeneric(ctx, "LongText", "LONGTEXT");
   }
 
   @Test
   public void testBinaryDecodeLongText(TestContext ctx) {
-    testBinaryDecodeGeneric(ctx, "LongText", Buffer.buffer("LONGTEXT"));
+    testBinaryDecodeGeneric(ctx, "LongText", "LONGTEXT");
   }
 
   private <T> void testTextDecodeGeneric(TestContext ctx,

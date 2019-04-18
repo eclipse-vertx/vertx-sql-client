@@ -72,7 +72,8 @@ class RowResultDecoder<C, R> implements RowDecoder {
         if (nullByte == 0) {
           // non-null
           DataType dataType = rowDesc.columnDefinitions()[c].getType();
-          decoded = DataTypeCodec.decodeBinary(dataType, in);
+          int columnDefinitionFlags = rowDesc.columnDefinitions()[c].getFlags();
+          decoded = DataTypeCodec.decodeBinary(dataType,columnDefinitionFlags, in);
         }
         row.addValue(decoded);
       }
@@ -84,10 +85,11 @@ class RowResultDecoder<C, R> implements RowDecoder {
           in.skipBytes(1);
         } else {
           DataType dataType = rowDesc.columnDefinitions()[c].getType();
+          int columnDefinitionFlags = rowDesc.columnDefinitions()[c].getFlags();
           int length = (int) BufferUtils.readLengthEncodedInteger(in);
           ByteBuf data = in.slice(in.readerIndex(), length);
           in.skipBytes(length);
-          decoded = DataTypeCodec.decodeText(dataType, data);
+          decoded = DataTypeCodec.decodeText(dataType, columnDefinitionFlags, data);
         }
         row.addValue(decoded);
       }

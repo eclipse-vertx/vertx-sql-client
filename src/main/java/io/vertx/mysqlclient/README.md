@@ -48,16 +48,19 @@ https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-charsets.html
 * DOUBLE(j.l.Double)
 * NUMERIC,DECIMAL(i.r.p.data.Numeric)
 * BOOLEAN(j.l.Byte)=INT1(j.l.Byte) TODO what java type should be mapped?
-* CHAR(j.l.String)=BINARY(j.l.String) TODO what java type should be mapped?
-* VARCHAR(j.l.String)=VARBINARY(j.l.String) TODO what java type should be mapped? 
-* TINYBLOB,BLOB,MEDIUMBLOB,LONGBLOB(i.v.c.b.Buffer)=TINYTEXT,TEXT,MEDIUMTEXT,LONGTEXT(i.v.c.b.Buffer) TODO what java type should be mapped? 
+* CHAR(j.l.String)
+* BINARY(i.v.c.b.Buffer)
+* VARCHAR(j.l.String)
+* VARBINARY(i.v.c.b.Buffer)
+* TINYBLOB/BLOB/MEDIUMBLOB/LONGBLOB(i.v.c.b.Buffer)
+* TINYTEXT/TEXT/MEDIUMTEXT/LONGTEXT(j.l.String)
 * DATE(j.t.LocalDate)
 * TIME(j.t.LocalTime)
 * DATETIME(j.t.LocalDateTime)
 
 TODO:
 - [ ] Numeric: BIT
-- [ ] String: BINARY, VARBINARY, TINYBLOB, TINYTEXT, BLOB, TEXT, MEDIUMBLOB, MEDIUMTEXT, LONGBLOB, LONGTEXT, ENUM, SET
+- [ ] String: ENUM, SET
 - [ ] Data and Time: TIMESTAMP, YEAR
 - [ ] JSON
 - [ ] Spatial data types

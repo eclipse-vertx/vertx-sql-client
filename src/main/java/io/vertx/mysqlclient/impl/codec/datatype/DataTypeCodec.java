@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.pgclient.data.Numeric;
+import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
 import io.vertx.core.buffer.Buffer;
 
 import java.nio.charset.StandardCharsets;
@@ -16,8 +17,7 @@ import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
 //TODO charset injection
-//TODO 2: In MySQL, there is no way to tell a Result is a BOOLEAN type or a INT1 type, same situation for CHAR/BINARY,VARCHAR/VARBINARY and BLOB/TEXT,
-// so we need to take a look at the type mapping later(current repetitive implementation could be pruned later)
+//TODO 2: In MySQL, there is no way to tell a Result is a BOOLEAN type or a INT1 type so we need to take a look at the type mapping later
 public class DataTypeCodec {
   // binary codec protocol: https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_binary_resultset.html#sect_protocol_binary_resultset_row_value
 
@@ -31,7 +31,7 @@ public class DataTypeCodec {
     .append(ISO_LOCAL_TIME)
     .toFormatter();
 
-  public static Object decodeText(DataType dataType, ByteBuf buffer) {
+  public static Object decodeText(DataType dataType, int columnDefinitionFlags, ByteBuf buffer) {
     switch (dataType) {
       //TODO just a basic implementation, can be optimised here
       case INT1:
@@ -50,20 +50,17 @@ public class DataTypeCodec {
         return textDecodeDouble(buffer);
       case NUMERIC:
         return textDecodeNUMERIC(buffer);
-      case STRING:
-        return textDecodeString(buffer);
-      case VARSTRING:
-        return textDecodeVarString(buffer);
-      case BLOB:
-        return textDecodeBlob(buffer);
       case DATE:
         return textDecodeDate(buffer);
       case TIME:
         return textDecodeTime(buffer);
       case DATETIME:
         return textDecodeDateTime(buffer);
+      case STRING:
+      case VARSTRING:
+      case BLOB:
       default:
-        return textDecodeVarString(buffer);
+        return textDecodeBlobOrText(columnDefinitionFlags, buffer);
     }
   }
 
@@ -95,9 +92,8 @@ public class DataTypeCodec {
         binaryEncodeNumeric((Numeric) value, buffer);
         break;
       case STRING:
-        binaryEncodeString(String.valueOf(value), buffer);
       case VARSTRING:
-        binaryEncodeVarString(String.valueOf(value), buffer);
+        binaryEncodeText(String.valueOf(value), buffer);
         break;
       case BLOB:
         binaryEncodeBlob((Buffer) value, buffer);
@@ -113,12 +109,12 @@ public class DataTypeCodec {
         binaryEncodeDatetime((LocalDateTime) value, buffer);
         break;
       default:
-        binaryEncodeVarString(String.valueOf(value), buffer);
+        binaryEncodeText(String.valueOf(value), buffer);
         break;
     }
   }
 
-  public static Object decodeBinary(DataType dataType, ByteBuf buffer) {
+  public static Object decodeBinary(DataType dataType, int columnDefinitionFlags, ByteBuf buffer) {
     switch (dataType) {
       case INT1:
         return binaryDecodeInt1(buffer);
@@ -136,20 +132,17 @@ public class DataTypeCodec {
         return binaryDecodeDouble(buffer);
       case NUMERIC:
         return binaryDecodeNumeric(buffer);
-      case STRING:
-        return binaryDecodeString(buffer);
-      case VARSTRING:
-        return binaryDecodeVarString(buffer);
-      case BLOB:
-        return binaryDecodeBlob(buffer);
       case DATE:
         return binaryDecodeDate(buffer);
       case TIME:
         return binaryDecodeTime(buffer);
       case DATETIME:
         return binaryDecodeDatetime(buffer);
+      case STRING:
+      case VARSTRING:
+      case BLOB:
       default:
-        return binaryDecodeVarString(buffer);
+        return binaryDecodeBlobOrText(columnDefinitionFlags, buffer);
     }
   }
 
@@ -194,15 +187,7 @@ public class DataTypeCodec {
     BufferUtils.writeLengthEncodedString(buffer, value.toString(), StandardCharsets.UTF_8);
   }
 
-  private static void binaryEncodeString(String value, ByteBuf buffer) {
-    BufferUtils.writeLengthEncodedString(buffer, value, StandardCharsets.UTF_8);
-  }
-
-  private static void binaryEncodeVarString(String value, ByteBuf buffer) {
-    BufferUtils.writeLengthEncodedString(buffer, value, StandardCharsets.UTF_8);
-  }
-
-  private static void binaryEncodeBinary(String value, ByteBuf buffer) {
+  private static void binaryEncodeText(String value, ByteBuf buffer) {
     BufferUtils.writeLengthEncodedString(buffer, value, StandardCharsets.UTF_8);
   }
 
@@ -291,22 +276,21 @@ public class DataTypeCodec {
     return Numeric.parse(BufferUtils.readLengthEncodedString(buffer, StandardCharsets.UTF_8));
   }
 
-  private static String binaryDecodeString(ByteBuf buffer) {
-    return BufferUtils.readLengthEncodedString(buffer, StandardCharsets.UTF_8);
-  }
-
-  private static String binaryDecodeVarString(ByteBuf buffer) {
-    return BufferUtils.readLengthEncodedString(buffer, StandardCharsets.UTF_8);
-  }
-
-  private static String binaryDecodeBinary(ByteBuf buffer) {
-    return BufferUtils.readLengthEncodedString(buffer, StandardCharsets.UTF_8);
+  private static Object binaryDecodeBlobOrText(int columnDefinitionFlags, ByteBuf buffer) {
+    if (isBinaryField(columnDefinitionFlags)) {
+      return binaryDecodeBlob(buffer);
+    } else {
+      return binaryDecodeText(buffer);
+    }
   }
 
   private static Buffer binaryDecodeBlob(ByteBuf buffer) {
     long len = BufferUtils.readLengthEncodedInteger(buffer);
-    ByteBuf value = buffer.slice(buffer.readerIndex(), (int) len);
-    return Buffer.buffer(value);
+    return Buffer.buffer(buffer.copy(buffer.readerIndex(), (int) len));
+  }
+
+  private static String binaryDecodeText(ByteBuf buffer) {
+    return BufferUtils.readLengthEncodedString(buffer, StandardCharsets.UTF_8);
   }
 
   private static LocalDateTime binaryDecodeDatetime(ByteBuf buffer) {
@@ -391,20 +375,20 @@ public class DataTypeCodec {
     return Numeric.parse(buff.toString(StandardCharsets.UTF_8));
   }
 
-  private static String textDecodeString(ByteBuf buffer) {
-    return buffer.toString(StandardCharsets.UTF_8);
-  }
-
-  private static String textDecodeVarString(ByteBuf buffer) {
-    return buffer.toString(StandardCharsets.UTF_8);
-  }
-
-  private static String textDecodeBinary(ByteBuf buffer) {
-    return buffer.toString(StandardCharsets.UTF_8);
+  private static Object textDecodeBlobOrText(int columnDefinitionFlags, ByteBuf buffer) {
+    if (isBinaryField(columnDefinitionFlags)) {
+      return textDecodeBlob(buffer);
+    } else {
+      return textDecodeText(buffer);
+    }
   }
 
   private static Buffer textDecodeBlob(ByteBuf buffer) {
-    return Buffer.buffer(buffer);
+    return Buffer.buffer(buffer.copy());
+  }
+
+  private static String textDecodeText(ByteBuf buffer) {
+    return buffer.toString(StandardCharsets.UTF_8);
   }
 
   private static LocalDate textDecodeDate(ByteBuf buffer) {
@@ -420,5 +404,9 @@ public class DataTypeCodec {
   private static LocalDateTime textDecodeDateTime(ByteBuf buffer) {
     CharSequence cs = buffer.toString(StandardCharsets.UTF_8);
     return LocalDateTime.parse(cs, TIMESTAMP_FORMAT);
+  }
+
+  private static boolean isBinaryField(int columnDefinitionFlags) {
+    return (columnDefinitionFlags & ColumnDefinition.ColumnDefinitionFlags.BINARY_FLAG) != 0;
   }
 }
