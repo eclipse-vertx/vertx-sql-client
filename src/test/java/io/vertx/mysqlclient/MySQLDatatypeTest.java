@@ -30,6 +30,29 @@ public class MySQLDatatypeTest extends MySQLTestBase {
   }
 
   @Test
+  public void testBinaryDecodeAll(TestContext ctx) {
+    Async async = ctx.async();
+    MySQLClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("SELECT * FROM datatype WHERE id = 1", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.size());
+        Row row = result.iterator().next();
+        ctx.assertEquals(1, row.getValue(0));
+        ctx.assertEquals(Buffer.buffer("HELLO"), row.getValue(1));
+        ctx.assertEquals(Buffer.buffer("HELLO, WORLD"), row.getValue(2));
+        ctx.assertEquals(Buffer.buffer("TINYBLOB"), row.getValue(3));
+        ctx.assertEquals(Buffer.buffer("BLOB"), row.getValue(4));
+        ctx.assertEquals(Buffer.buffer("MEDIUMBLOB"), row.getValue(5));
+        ctx.assertEquals(Buffer.buffer("LONGBLOB"), row.getValue(6));
+        ctx.assertEquals("TINYTEXT", row.getValue(7));
+        ctx.assertEquals("TEXT", row.getValue(8));
+        ctx.assertEquals("MEDIUMTEXT", row.getValue(9));
+        ctx.assertEquals("LONGTEXT", row.getValue(10));
+        async.complete();
+      }));
+    }));
+  }
+
+  @Test
   public void testTextDecodeBinary(TestContext ctx) {
     testTextDecodeGeneric(ctx, "Binary", Buffer.buffer("HELLO"));
   }

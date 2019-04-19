@@ -32,35 +32,37 @@ public class DataTypeCodec {
     .toFormatter();
 
   public static Object decodeText(DataType dataType, int columnDefinitionFlags, ByteBuf buffer) {
+    int length = (int) BufferUtils.readLengthEncodedInteger(buffer);
+    ByteBuf data = buffer.slice(buffer.readerIndex(), length);
+    buffer.skipBytes(length);
     switch (dataType) {
-      //TODO just a basic implementation, can be optimised here
       case INT1:
-        return textDecodeInt1(buffer);
+        return textDecodeInt1(data);
       case INT2:
-        return textDecodeInt2(buffer);
+        return textDecodeInt2(data);
       case INT3:
-        return textDecodeInt3(buffer);
+        return textDecodeInt3(data);
       case INT4:
-        return textDecodeInt4(buffer);
+        return textDecodeInt4(data);
       case INT8:
-        return textDecodeInt8(buffer);
+        return textDecodeInt8(data);
       case FLOAT:
-        return textDecodeFloat(buffer);
+        return textDecodeFloat(data);
       case DOUBLE:
-        return textDecodeDouble(buffer);
+        return textDecodeDouble(data);
       case NUMERIC:
-        return textDecodeNUMERIC(buffer);
+        return textDecodeNUMERIC(data);
       case DATE:
-        return textDecodeDate(buffer);
+        return textDecodeDate(data);
       case TIME:
-        return textDecodeTime(buffer);
+        return textDecodeTime(data);
       case DATETIME:
-        return textDecodeDateTime(buffer);
+        return textDecodeDateTime(data);
       case STRING:
       case VARSTRING:
       case BLOB:
       default:
-        return textDecodeBlobOrText(columnDefinitionFlags, buffer);
+        return textDecodeBlobOrText(columnDefinitionFlags, data);
     }
   }
 
@@ -285,8 +287,10 @@ public class DataTypeCodec {
   }
 
   private static Buffer binaryDecodeBlob(ByteBuf buffer) {
-    long len = BufferUtils.readLengthEncodedInteger(buffer);
-    return Buffer.buffer(buffer.copy(buffer.readerIndex(), (int) len));
+    int len = (int) BufferUtils.readLengthEncodedInteger(buffer);
+    ByteBuf copy = buffer.copy(buffer.readerIndex(), len);
+    buffer.skipBytes(len);
+    return Buffer.buffer(copy);
   }
 
   private static String binaryDecodeText(ByteBuf buffer) {

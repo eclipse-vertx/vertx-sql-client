@@ -86,10 +86,7 @@ class RowResultDecoder<C, R> implements RowDecoder {
         } else {
           DataType dataType = rowDesc.columnDefinitions()[c].getType();
           int columnDefinitionFlags = rowDesc.columnDefinitions()[c].getFlags();
-          int length = (int) BufferUtils.readLengthEncodedInteger(in);
-          ByteBuf data = in.slice(in.readerIndex(), length);
-          in.skipBytes(length);
-          decoded = DataTypeCodec.decodeText(dataType, columnDefinitionFlags, data);
+          decoded = DataTypeCodec.decodeText(dataType, columnDefinitionFlags, in);
         }
         row.addValue(decoded);
       }
