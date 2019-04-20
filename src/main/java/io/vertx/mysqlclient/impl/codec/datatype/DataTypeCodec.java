@@ -70,6 +70,13 @@ public class DataTypeCodec {
   public static void encodeBinary(DataType dataType, Object value, ByteBuf buffer) {
     switch (dataType) {
       case INT1:
+        if (value instanceof Boolean) {
+          if ((Boolean) value) {
+            value = 1;
+          } else {
+            value = 0;
+          }
+        }
         binaryEncodeInt1((Number) value, buffer);
         break;
       case INT2:
@@ -93,10 +100,6 @@ public class DataTypeCodec {
       case NUMERIC:
         binaryEncodeNumeric((Numeric) value, buffer);
         break;
-      case STRING:
-      case VARSTRING:
-        binaryEncodeText(String.valueOf(value), buffer);
-        break;
       case BLOB:
         binaryEncodeBlob((Buffer) value, buffer);
         break;
@@ -110,6 +113,8 @@ public class DataTypeCodec {
       case DATETIME:
         binaryEncodeDatetime((LocalDateTime) value, buffer);
         break;
+      case STRING:
+      case VARSTRING:
       default:
         binaryEncodeText(String.valueOf(value), buffer);
         break;
@@ -152,7 +157,7 @@ public class DataTypeCodec {
     switch (type) {
       //TODO handle json + unknown?
       default:
-        Class<?> javaType = type.decodingType;
+        Class<?> javaType = type.binaryType;
         return value == null || javaType.isInstance(value) ? value : REFUSED_SENTINEL;
     }
   }

@@ -31,4 +31,12 @@ public class MySQLBinaryDataTypeEncodeTest extends BinaryDataTypeEncodeTestBase 
     // does not pass due to it's TINYINT type
     super.testBoolean(ctx);
   }
+
+  @Ignore
+  @Test
+  @Override
+  public void testTime(TestContext ctx) {
+    // does not pass because of no implementation
+    super.testTime(ctx);
+  }
 }

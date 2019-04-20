@@ -17,12 +17,19 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.mysqlclient.impl.codec.datatype.DataFormat;
+import io.vertx.mysqlclient.impl.codec.datatype.DataType;
 import io.vertx.mysqlclient.impl.codec.datatype.DataTypeCodec;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
+import io.vertx.pgclient.data.Numeric;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import static io.vertx.mysqlclient.impl.protocol.backend.EofPacket.EOF_PACKET_HEADER;
 import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
@@ -130,25 +137,18 @@ public class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, Exten
       if (sendType == 1) {
         for (int i = 0; i < numOfParams; i++) {
           Object value = params.getValue(i);
-          if (value != null) {
-            payload.writeByte(paramsColumnDefinitions[i].getType().id);
-          } else {
-            payload.writeByte(ColumnDefinition.ColumnType.MYSQL_TYPE_NULL);
-          }
-          // TODO handle parameter flag (unsigned or signed)
-          payload.writeByte(0);
+          payload.writeByte(parseDataTypeByEncodingValue(value).id);
+          payload.writeByte(0); // parameter flag: signed
         }
+      }
 
-        for (int i = 0; i < numOfParams; i++) {
-          Object value = params.getValue(i);
-          //FIXME make sure we have correctly handled null value here
-          if (value != null) {
-            DataTypeCodec.encodeBinary(paramsColumnDefinitions[i].getType(), value, payload);
-          } else {
-            nullBitmap[i / 8] |= (1 << (i & 7));
-          }
+      for (int i = 0; i < numOfParams; i++) {
+        Object value = params.getValue(i);
+        if (value != null) {
+          DataTypeCodec.encodeBinary(parseDataTypeByEncodingValue(value), value, payload);
+        } else {
+          nullBitmap[i / 8] |= (1 << (i & 7));
         }
-
       }
 
       // padding null-bitmap content
@@ -178,6 +178,40 @@ public class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, Exten
       handleErrorPacketPayload(payload);
     } else {
       handleResultsetColumnCountPacketBody(payload);
+    }
+  }
+
+  private DataType parseDataTypeByEncodingValue(Object value) {
+    if (value == null) {
+      return DataType.NULL;
+    } else if (value instanceof Byte) {
+      return DataType.INT1;
+    } else if (value instanceof Boolean) {
+      return DataType.INT1;
+    } else if (value instanceof Short) {
+      return DataType.INT2;
+    } else if (value instanceof Integer) {
+      return DataType.INT4;
+    } else if (value instanceof Long) {
+      return DataType.INT8;
+    } else if (value instanceof Double) {
+      return DataType.DOUBLE;
+    } else if (value instanceof Float) {
+      return DataType.FLOAT;
+    } else if (value instanceof Numeric) {
+      return DataType.NUMERIC;
+    } else if (value instanceof String) {
+      return DataType.VARSTRING;
+    } else if (value instanceof Buffer) {
+      return DataType.BLOB;
+    } else if (value instanceof LocalDate) {
+      return DataType.DATE;
+    } else if (value instanceof LocalTime) {
+      return DataType.TIME;
+    } else if (value instanceof LocalDateTime) {
+      return DataType.DATETIME;
+    } else {
+      return DataType.VARSTRING;
     }
   }
 }

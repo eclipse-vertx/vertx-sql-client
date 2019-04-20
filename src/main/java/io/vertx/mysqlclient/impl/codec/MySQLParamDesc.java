@@ -41,6 +41,6 @@ public class MySQLParamDesc extends ParamDesc {
 
   // reuse from pg
   private String buildReport(List<Object> values) {
-    return Util.buildInvalidArgsError(values.stream(), Stream.of(paramDefinitions).map(paramDefinition -> paramDefinition.getType()).map(dataType -> dataType.decodingType));
+    return Util.buildInvalidArgsError(values.stream(), Stream.of(paramDefinitions).map(paramDefinition -> paramDefinition.getType()).map(dataType -> dataType.binaryType));
   }
 }

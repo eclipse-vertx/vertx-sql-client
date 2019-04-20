@@ -11,20 +11,21 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 public enum DataType {
-  INT1(ColumnDefinition.ColumnType.MYSQL_TYPE_TINY, true, Byte.class),
-  INT2(ColumnDefinition.ColumnType.MYSQL_TYPE_SHORT, true, Short.class),
-  INT3(ColumnDefinition.ColumnType.MYSQL_TYPE_INT24, true, Integer.class),
-  INT4(ColumnDefinition.ColumnType.MYSQL_TYPE_LONG, true, Integer.class),
-  INT8(ColumnDefinition.ColumnType.MYSQL_TYPE_LONGLONG, true, Long.class),
-  DOUBLE(ColumnDefinition.ColumnType.MYSQL_TYPE_DOUBLE, true, Double.class),
-  FLOAT(ColumnDefinition.ColumnType.MYSQL_TYPE_FLOAT, true, Float.class),
-  NUMERIC(ColumnDefinition.ColumnType.MYSQL_TYPE_NEWDECIMAL, true, Numeric.class), // DECIMAL
-  STRING(ColumnDefinition.ColumnType.MYSQL_TYPE_STRING, true, String.class), // CHAR, BINARY
-  VARSTRING(ColumnDefinition.ColumnType.MYSQL_TYPE_VAR_STRING, true, String.class), //VARCHAR, VARBINARY
-  BLOB(ColumnDefinition.ColumnType.MYSQL_TYPE_BLOB, true, Buffer.class),
-  DATE(ColumnDefinition.ColumnType.MYSQL_TYPE_DATE, true, LocalDate.class),
-  TIME(ColumnDefinition.ColumnType.MYSQL_TYPE_TIME, true, LocalTime.class),
-  DATETIME(ColumnDefinition.ColumnType.MYSQL_TYPE_DATETIME, true, LocalDateTime.class);
+  INT1(ColumnDefinition.ColumnType.MYSQL_TYPE_TINY, Byte.class, Byte.class),
+  INT2(ColumnDefinition.ColumnType.MYSQL_TYPE_SHORT, Short.class, Short.class),
+  INT3(ColumnDefinition.ColumnType.MYSQL_TYPE_INT24, Integer.class, Integer.class),
+  INT4(ColumnDefinition.ColumnType.MYSQL_TYPE_LONG, Integer.class, Integer.class),
+  INT8(ColumnDefinition.ColumnType.MYSQL_TYPE_LONGLONG, Long.class, Long.class),
+  DOUBLE(ColumnDefinition.ColumnType.MYSQL_TYPE_DOUBLE, Double.class, Double.class),
+  FLOAT(ColumnDefinition.ColumnType.MYSQL_TYPE_FLOAT, Float.class, Float.class),
+  NUMERIC(ColumnDefinition.ColumnType.MYSQL_TYPE_NEWDECIMAL, Numeric.class, Numeric.class), // DECIMAL
+  STRING(ColumnDefinition.ColumnType.MYSQL_TYPE_STRING, Buffer.class, String.class), // CHAR, BINARY
+  VARSTRING(ColumnDefinition.ColumnType.MYSQL_TYPE_VAR_STRING, Buffer.class, String.class), //VARCHAR, VARBINARY
+  BLOB(ColumnDefinition.ColumnType.MYSQL_TYPE_BLOB, Buffer.class, String.class),
+  DATE(ColumnDefinition.ColumnType.MYSQL_TYPE_DATE, LocalDate.class, LocalDate.class),
+  TIME(ColumnDefinition.ColumnType.MYSQL_TYPE_TIME, LocalTime.class, LocalTime.class),
+  DATETIME(ColumnDefinition.ColumnType.MYSQL_TYPE_DATETIME, LocalDateTime.class, LocalDateTime.class),
+  NULL(ColumnDefinition.ColumnType.MYSQL_TYPE_NULL, null, null);
 
   private static IntObjectMap<DataType> idToDataType = new IntObjectHashMap<>();
 
@@ -35,19 +36,13 @@ public enum DataType {
   }
 
   public final int id;
-  public final Class<?> encodingType; // Not really used for now
-  public final Class<?> decodingType;
+  public final Class<?> binaryType;
+  public final Class<?> textType;
 
-  DataType(int id, boolean supportsBinary, Class<?> type) {
+  DataType(int id, Class<?> binaryType, Class<?> textType) {
     this.id = id;
-    this.decodingType = type;
-    this.encodingType = type;
-  }
-
-  DataType(int id, boolean supportsBinary, Class<?> encodingType, Class<?> decodingType) {
-    this.id = id;
-    this.encodingType = encodingType;
-    this.decodingType = decodingType;
+    this.binaryType = binaryType;
+    this.textType = textType;
   }
 
   public static DataType valueOf(int value) {
