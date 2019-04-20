@@ -23,7 +23,7 @@ TODO:
 - [ ] Text Protocol(Local INFILE Request)
 - [ ] Text Protocol(All Utility Commands)
 - [x] Binary protocol (Prepared Statement part)
-- [ ] Cursor support
+- [x] Cursor support
 - [ ] Full Datatype codec support
 - [ ] Compression
 - [ ] Stored Procedures
@@ -47,18 +47,23 @@ https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-charsets.html
 * FLOAT(j.l.Float)
 * DOUBLE(j.l.Double)
 * NUMERIC,DECIMAL(i.r.p.data.Numeric)
-* BOOLEAN(j.l.Byte)=INT1(j.l.Byte) TODO what java type should be mapped?
 * CHAR(j.l.String)
 * BINARY(i.v.c.b.Buffer)
 * VARCHAR(j.l.String)
 * VARBINARY(i.v.c.b.Buffer)
 * TINYBLOB/BLOB/MEDIUMBLOB/LONGBLOB(i.v.c.b.Buffer)
 * TINYTEXT/TEXT/MEDIUMTEXT/LONGTEXT(j.l.String)
-* DATE(j.t.LocalDate)
-* TIME(j.t.LocalTime)
-* DATETIME(j.t.LocalDateTime)
 
 TODO:
+need better handling:
+
+- [ ] BOOLEAN(j.l.Byte)=INT1(j.l.Byte) TODO what java type should be mapped?
+- [ ] DATE(j.t.LocalDate)
+- [ ] TIME(j.t.LocalTime)
+- [ ] DATETIME(j.t.LocalDateTime)
+
+No implementation:
+
 - [ ] Numeric: BIT
 - [ ] String: ENUM, SET
 - [ ] Data and Time: TIMESTAMP, YEAR
