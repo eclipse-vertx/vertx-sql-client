@@ -44,19 +44,17 @@ public class BufferUtils {
 
   public static long readLengthEncodedInteger(ByteBuf buffer) {
     short firstByte = buffer.readUnsignedByte();
-    if (firstByte < 0xFB) {
-      return firstByte;
-    } else if (firstByte == 0xFB) {
-      // how we handle null here?
-      return -1;
-    } else if (firstByte == 0xFC) {
-      return buffer.readUnsignedShortLE();
-    } else if (firstByte == 0xFD) {
-      return buffer.readUnsignedMediumLE();
-    } else if (firstByte == 0xFE) {
-      return buffer.readLongLE();
-    } else {
-      throw new UnsupportedOperationException("Invalid LengthEncodedInteger format");
+    switch (firstByte) {
+      case 0xFB:
+        return -1;
+      case 0xFC:
+        return buffer.readUnsignedShortLE();
+      case 0xFD:
+        return buffer.readUnsignedMediumLE();
+      case 0xFE:
+        return buffer.readLongLE();
+      default:
+        return firstByte;
     }
   }
 
