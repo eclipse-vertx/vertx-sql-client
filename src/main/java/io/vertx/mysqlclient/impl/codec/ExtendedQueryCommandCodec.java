@@ -183,27 +183,29 @@ public class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, Exten
 
   private DataType parseDataTypeByEncodingValue(Object value) {
     if (value == null) {
+      // ProtocolBinary::MYSQL_TYPE_NULL
       return DataType.NULL;
     } else if (value instanceof Byte) {
+      // ProtocolBinary::MYSQL_TYPE_TINY
       return DataType.INT1;
     } else if (value instanceof Boolean) {
+      // ProtocolBinary::MYSQL_TYPE_TINY
       return DataType.INT1;
     } else if (value instanceof Short) {
+      // ProtocolBinary::MYSQL_TYPE_SHORT, ProtocolBinary::MYSQL_TYPE_YEAR
       return DataType.INT2;
     } else if (value instanceof Integer) {
+      // ProtocolBinary::MYSQL_TYPE_LONG, ProtocolBinary::MYSQL_TYPE_INT24
       return DataType.INT4;
     } else if (value instanceof Long) {
+      // ProtocolBinary::MYSQL_TYPE_LONGLONG
       return DataType.INT8;
     } else if (value instanceof Double) {
+      // ProtocolBinary::MYSQL_TYPE_DOUBLE
       return DataType.DOUBLE;
     } else if (value instanceof Float) {
+      // ProtocolBinary::MYSQL_TYPE_FLOAT
       return DataType.FLOAT;
-    } else if (value instanceof Numeric) {
-      return DataType.NUMERIC;
-    } else if (value instanceof String) {
-      return DataType.VARSTRING;
-    } else if (value instanceof Buffer) {
-      return DataType.BLOB;
     } else if (value instanceof LocalDate) {
       return DataType.DATE;
     } else if (value instanceof LocalTime) {
@@ -211,7 +213,14 @@ public class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, Exten
     } else if (value instanceof LocalDateTime) {
       return DataType.DATETIME;
     } else {
-      return DataType.VARSTRING;
+      /*
+        ProtocolBinary::MYSQL_TYPE_STRING, ProtocolBinary::MYSQL_TYPE_VARCHAR, ProtocolBinary::MYSQL_TYPE_VAR_STRING,
+        ProtocolBinary::MYSQL_TYPE_ENUM, ProtocolBinary::MYSQL_TYPE_SET, ProtocolBinary::MYSQL_TYPE_LONG_BLOB,
+        ProtocolBinary::MYSQL_TYPE_MEDIUM_BLOB, ProtocolBinary::MYSQL_TYPE_BLOB, ProtocolBinary::MYSQL_TYPE_TINY_BLOB,
+        ProtocolBinary::MYSQL_TYPE_GEOMETRY, ProtocolBinary::MYSQL_TYPE_BIT, ProtocolBinary::MYSQL_TYPE_DECIMAL,
+        ProtocolBinary::MYSQL_TYPE_NEWDECIMAL
+       */
+      return DataType.STRING;
     }
   }
 }
