@@ -53,6 +53,7 @@ https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-charsets.html
 * VARBINARY(i.v.c.b.Buffer)
 * TINYBLOB/BLOB/MEDIUMBLOB/LONGBLOB(i.v.c.b.Buffer)
 * TINYTEXT/TEXT/MEDIUMTEXT/LONGTEXT(j.l.String)
+* DATETIME(j.t.LocalDateTime)
 * TIME(j.t.Duration)
 
 TODO:
@@ -60,7 +61,6 @@ need better handling:
 
 - [ ] BOOLEAN(j.l.Byte)=INT1(j.l.Byte) TODO what java type should be mapped?
 - [ ] DATE(j.t.LocalDate)
-- [ ] DATETIME(j.t.LocalDateTime)
 
 No implementation:
 

@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatterBuilder;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
+import static java.time.temporal.ChronoField.*;
 
 //TODO charset injection
 //TODO 2: In MySQL, there is no way to tell a Result is a BOOLEAN type or a INT1 type so we need to take a look at the type mapping later
@@ -24,11 +24,16 @@ public class DataTypeCodec {
   // Sentinel used when an object is refused by the data type
   public static final Object REFUSED_SENTINEL = new Object();
 
-  private static final java.time.format.DateTimeFormatter TIMESTAMP_FORMAT = new DateTimeFormatterBuilder()
+  private static final java.time.format.DateTimeFormatter DATETIME_FORMAT = new DateTimeFormatterBuilder()
     .parseCaseInsensitive()
     .append(ISO_LOCAL_DATE)
     .appendLiteral(' ')
-    .append(ISO_LOCAL_TIME)
+    .appendValue(HOUR_OF_DAY, 2)
+    .appendLiteral(':')
+    .appendValue(MINUTE_OF_HOUR, 2)
+    .appendLiteral(':')
+    .appendValue(SECOND_OF_MINUTE, 2)
+    .appendFraction(MICRO_OF_SECOND, 0, 6, true)
     .toFormatter();
 
   public static Object decodeText(DataType dataType, int columnDefinitionFlags, ByteBuf buffer) {
@@ -344,6 +349,9 @@ public class DataTypeCodec {
   }
 
   private static LocalDateTime binaryDecodeDatetime(ByteBuf buffer) {
+    if (buffer.readableBytes() == 0) {
+      return null;
+    }
     int length = buffer.readByte();
     if (length == 0) {
       // invalid value '0000-00-00' or '0000-00-00 00:00:00'
@@ -486,7 +494,11 @@ public class DataTypeCodec {
 
   private static LocalDateTime textDecodeDateTime(ByteBuf buffer) {
     CharSequence cs = buffer.toString(StandardCharsets.UTF_8);
-    return LocalDateTime.parse(cs, TIMESTAMP_FORMAT);
+    if (cs.equals("0000-00-00 00:00:00")) {
+      // Invalid datetime will be converted to zero
+      return null;
+    }
+    return LocalDateTime.parse(cs, DATETIME_FORMAT);
   }
 
   private static boolean isBinaryField(int columnDefinitionFlags) {
