@@ -5,10 +5,16 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mysqlclient.MySQLClient;
 import io.vertx.sqlclient.Row;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
 public class DateTimeTextCodecTest extends DateTimeCodecTest {
+  @Test
+  public void testDecodeYear(TestContext ctx) {
+    testTextDecodeGenericWithTable(ctx, "test_year", (short) 2019);
+  }
+
   @Override
   protected <T> void testDecodeGeneric(TestContext ctx, String data, String dataType, String columnName, T expected) {
     Async async = ctx.async();

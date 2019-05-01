@@ -43,6 +43,16 @@ public class DateTimeBinaryCodecTest extends DateTimeCodecTest {
     testEncodeTime(ctx, Duration.ofHours(11).plusMinutes(12).plusNanos(123456000), Duration.ofHours(11).plusMinutes(12).plusNanos(123456000));
   }
 
+  @Test
+  public void testDecodeYear(TestContext ctx) {
+    testBinaryDecodeGenericWithTable(ctx, "test_year", (short) 2019);
+  }
+
+  @Test
+  public void testEncodeYear(TestContext ctx) {
+    testBinaryEncodeGeneric(ctx, "test_year", (short) 2008);
+  }
+
   private void testEncodeTime(TestContext ctx, Duration param, Duration expected) {
     Async async = ctx.async();
     MySQLClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {

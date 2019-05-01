@@ -1,31 +1,12 @@
 package io.vertx.mysqlclient.data;
 
-import io.vertx.core.Vertx;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.mysqlclient.MySQLTestBase;
-import io.vertx.pgclient.PgConnectOptions;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-public abstract class DateTimeCodecTest extends MySQLTestBase {
-  Vertx vertx;
-  PgConnectOptions options;
-
-  @Before
-  public void setup() {
-    vertx = Vertx.vertx();
-    options = new PgConnectOptions(MySQLTestBase.options);
-  }
-
-  @After
-  public void teardown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
-  }
-
+public abstract class DateTimeCodecTest extends MySQLDataTypeTestBase {
   @Test
   public void testDecodeAbbreviatedValue(TestContext ctx) {
     testDecodeGeneric(ctx, "11:12", "TIME", "test_time", Duration.ofHours(11).plusMinutes(12));

@@ -44,6 +44,7 @@ public class DataTypeCodec {
       case INT1:
         return textDecodeInt1(data);
       case INT2:
+      case YEAR:
         return textDecodeInt2(data);
       case INT3:
         return textDecodeInt3(data);
@@ -130,6 +131,7 @@ public class DataTypeCodec {
     switch (dataType) {
       case INT1:
         return binaryDecodeInt1(buffer);
+      case YEAR:
       case INT2:
         return binaryDecodeInt2(buffer);
       case INT3:
