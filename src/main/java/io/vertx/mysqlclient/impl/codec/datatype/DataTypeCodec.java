@@ -8,9 +8,9 @@ import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
 import io.vertx.core.buffer.Buffer;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatterBuilder;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
@@ -108,7 +108,7 @@ public class DataTypeCodec {
         binaryEncodeDate((LocalDate) value, buffer);
         break;
       case TIME:
-        binaryEncodeTime((LocalTime) value, buffer);
+        binaryEncodeTime((Duration) value, buffer);
         break;
       case DATETIME:
         binaryEncodeDatetime((LocalDateTime) value, buffer);
@@ -210,9 +210,50 @@ public class DataTypeCodec {
     buffer.writeByte(value.getDayOfMonth());
   }
 
-  private static void binaryEncodeTime(LocalTime value, ByteBuf buffer) {
-    // FIXME time?
-    throw new UnsupportedOperationException();
+  private static void binaryEncodeTime(Duration value, ByteBuf buffer) {
+    long secondsOfDuration = value.getSeconds();
+    int nanosOfDuration = value.getNano();
+    if (secondsOfDuration == 0 && nanosOfDuration == 0) {
+      buffer.writeByte(0);
+      return;
+    }
+    byte isNegative = 0;
+    if (secondsOfDuration < 0) {
+      isNegative = 1;
+      secondsOfDuration = -secondsOfDuration;
+    }
+
+    int days = (int) (secondsOfDuration / 86400);
+    int secondsOfADay = (int) (secondsOfDuration % 86400);
+    int hour = secondsOfADay / 3600;
+    int minute = ((secondsOfADay % 3600) / 60);
+    int second = secondsOfADay % 60;
+
+    if (nanosOfDuration == 0) {
+      buffer.writeByte(8);
+      buffer.writeByte(isNegative);
+      buffer.writeIntLE(days);
+      buffer.writeByte(hour);
+      buffer.writeByte(minute);
+      buffer.writeByte(second);
+      return;
+    }
+
+    int microSecond;
+    if (isNegative == 1 && nanosOfDuration > 0) {
+      second = second - 1;
+      microSecond = (1000_000_000 - nanosOfDuration) / 1000;
+    } else {
+      microSecond = nanosOfDuration / 1000;
+    }
+
+    buffer.writeByte(12);
+    buffer.writeByte(isNegative);
+    buffer.writeIntLE(days);
+    buffer.writeByte(hour);
+    buffer.writeByte(minute);
+    buffer.writeByte(second);
+    buffer.writeIntLE(microSecond);
   }
 
   private static void binaryEncodeDatetime(LocalDateTime value, ByteBuf buffer) {
@@ -331,24 +372,34 @@ public class DataTypeCodec {
     return binaryDecodeDatetime(buffer).toLocalDate();
   }
 
-  private static LocalTime binaryDecodeTime(ByteBuf buffer) {
+  private static Duration binaryDecodeTime(ByteBuf buffer) {
     byte length = buffer.readByte();
     if (length == 0) {
-      return LocalTime.of(0, 0, 0, 0);
+      return Duration.ZERO;
     } else {
-      // TODO not the same as TIME data type in other databases.
-      boolean isNegative = buffer.readByte() == 1;
+      boolean isNegative = (buffer.readByte() == 1);
       int days = buffer.readIntLE();
-      byte hour = buffer.readByte();
-      byte minute = buffer.readByte();
-      byte second = buffer.readByte();
-      if (length == 12) {
-        int microsecond = buffer.readInt();
-        return LocalTime.of(days * 24 + hour, minute, second, microsecond * 1000);
-      } else if (length == 8) {
-        return LocalTime.of(days * 24 + hour, minute, second);
+      int hour = buffer.readByte();
+      int minute = buffer.readByte();
+      int second = buffer.readByte();
+      if (isNegative) {
+        days = -days;
+        hour = -hour;
+        minute = -minute;
+        second = -second;
       }
-      throw new DecoderException("Invalid time");
+
+      if (length == 8) {
+        return Duration.ofDays(days).plusHours(hour).plusMinutes(minute).plusSeconds(second);
+      }
+      if (length == 12) {
+        long microsecond = buffer.readUnsignedIntLE();
+        if (isNegative) {
+          microsecond = -microsecond;
+        }
+        return Duration.ofDays(days).plusHours(hour).plusMinutes(minute).plusSeconds(second).plusNanos(microsecond * 1000);
+      }
+      throw new DecoderException("Invalid time format");
     }
   }
 
@@ -405,9 +456,32 @@ public class DataTypeCodec {
     return LocalDate.parse(cs);
   }
 
-  private static LocalTime textDecodeTime(ByteBuf buffer) {
-    CharSequence cs = buffer.toString(StandardCharsets.UTF_8);
-    return LocalTime.parse(cs);
+  private static Duration textDecodeTime(ByteBuf buffer) {
+    // HH:mm:ss or HHH:mm:ss
+    String timeString = buffer.toString(StandardCharsets.UTF_8);
+    boolean isNegative = timeString.charAt(0) == '-';
+    if (isNegative) {
+      timeString = timeString.substring(1);
+    }
+
+    String[] timeElements = timeString.split(":");
+    if (timeElements.length != 3) {
+      throw new DecoderException("Invalid time format");
+    }
+
+    int hour = Integer.parseInt(timeElements[0]);
+    int minute = Integer.parseInt(timeElements[1]);
+    int second = Integer.parseInt(timeElements[2].substring(0, 2));
+    long nanos = 0;
+    if (timeElements[2].length() > 2) {
+      double fractionalSecondsPart = Double.parseDouble("0." + timeElements[2].substring(3));
+      nanos = (long) (1000000000 * fractionalSecondsPart);
+    }
+    if (isNegative) {
+      return Duration.ofHours(-hour).minusMinutes(minute).minusSeconds(second).minusNanos(nanos);
+    } else {
+      return Duration.ofHours(hour).plusMinutes(minute).plusSeconds(second).plusNanos(nanos);
+    }
   }
 
   private static LocalDateTime textDecodeDateTime(ByteBuf buffer) {

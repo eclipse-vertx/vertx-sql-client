@@ -6,9 +6,9 @@ import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
 import io.vertx.pgclient.data.Numeric;
 import io.vertx.core.buffer.Buffer;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 public enum DataType {
   INT1(ColumnDefinition.ColumnType.MYSQL_TYPE_TINY, Byte.class, Byte.class),
@@ -23,7 +23,7 @@ public enum DataType {
   VARSTRING(ColumnDefinition.ColumnType.MYSQL_TYPE_VAR_STRING, Buffer.class, String.class), //VARCHAR, VARBINARY
   BLOB(ColumnDefinition.ColumnType.MYSQL_TYPE_BLOB, Buffer.class, String.class),
   DATE(ColumnDefinition.ColumnType.MYSQL_TYPE_DATE, LocalDate.class, LocalDate.class),
-  TIME(ColumnDefinition.ColumnType.MYSQL_TYPE_TIME, LocalTime.class, LocalTime.class),
+  TIME(ColumnDefinition.ColumnType.MYSQL_TYPE_TIME, Duration.class, Duration.class),
   DATETIME(ColumnDefinition.ColumnType.MYSQL_TYPE_DATETIME, LocalDateTime.class, LocalDateTime.class),
   NULL(ColumnDefinition.ColumnType.MYSQL_TYPE_NULL, null, null);
 

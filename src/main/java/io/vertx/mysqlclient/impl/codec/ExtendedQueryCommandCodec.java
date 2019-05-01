@@ -17,19 +17,17 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.mysqlclient.impl.codec.datatype.DataFormat;
 import io.vertx.mysqlclient.impl.codec.datatype.DataType;
 import io.vertx.mysqlclient.impl.codec.datatype.DataTypeCodec;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
-import io.vertx.pgclient.data.Numeric;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 import static io.vertx.mysqlclient.impl.protocol.backend.EofPacket.EOF_PACKET_HEADER;
 import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
@@ -208,7 +206,8 @@ public class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, Exten
       return DataType.FLOAT;
     } else if (value instanceof LocalDate) {
       return DataType.DATE;
-    } else if (value instanceof LocalTime) {
+    } else if (value instanceof Duration) {
+      // ProtocolBinary::MYSQL_TYPE_TIME
       return DataType.TIME;
     } else if (value instanceof LocalDateTime) {
       return DataType.DATETIME;
