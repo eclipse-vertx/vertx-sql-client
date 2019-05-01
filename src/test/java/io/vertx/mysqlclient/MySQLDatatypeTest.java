@@ -8,27 +8,11 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
-public class MySQLDatatypeTest extends MySQLTestBase {
-  Vertx vertx;
-  PgConnectOptions options;
-
-  @Before
-  public void setup() {
-    vertx = Vertx.vertx();
-    options = new PgConnectOptions(MySQLTestBase.options);
-  }
-
-  @After
-  public void teardown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
-  }
-
+public class MySQLDatatypeTest extends MySQLDataTypeTestBase {
   @Test
   public void testBinaryDecodeAll(TestContext ctx) {
     Async async = ctx.async();
@@ -54,12 +38,12 @@ public class MySQLDatatypeTest extends MySQLTestBase {
 
   @Test
   public void testTextDecodeBinary(TestContext ctx) {
-    testTextDecodeGeneric(ctx, "Binary", Buffer.buffer("HELLO"));
+    testTextDecodeGenericWithTable(ctx, "Binary", Buffer.buffer("HELLO"));
   }
 
   @Test
   public void testBinaryDecodeBinary(TestContext ctx) {
-    testBinaryDecodeGeneric(ctx, "Binary", Buffer.buffer("HELLO"));
+    testBinaryDecodeGenericWithTable(ctx, "Binary", Buffer.buffer("HELLO"));
   }
 
   @Test
@@ -74,12 +58,12 @@ public class MySQLDatatypeTest extends MySQLTestBase {
 
   @Test
   public void testTextDecodeVarBinary(TestContext ctx) {
-    testTextDecodeGeneric(ctx, "VarBinary", Buffer.buffer("HELLO, WORLD"));
+    testTextDecodeGenericWithTable(ctx, "VarBinary", Buffer.buffer("HELLO, WORLD"));
   }
 
   @Test
   public void testBinaryDecodeVarBinary(TestContext ctx) {
-    testBinaryDecodeGeneric(ctx, "VarBinary", Buffer.buffer("HELLO, WORLD"));
+    testBinaryDecodeGenericWithTable(ctx, "VarBinary", Buffer.buffer("HELLO, WORLD"));
   }
 
   @Test
@@ -89,12 +73,12 @@ public class MySQLDatatypeTest extends MySQLTestBase {
 
   @Test
   public void testTextDecodeTinyBlob(TestContext ctx) {
-    testTextDecodeGeneric(ctx, "TinyBlob", Buffer.buffer("TINYBLOB"));
+    testTextDecodeGenericWithTable(ctx, "TinyBlob", Buffer.buffer("TINYBLOB"));
   }
 
   @Test
   public void testBinaryDecodeTinyBlob(TestContext ctx) {
-    testBinaryDecodeGeneric(ctx, "TinyBlob", Buffer.buffer("TINYBLOB"));
+    testBinaryDecodeGenericWithTable(ctx, "TinyBlob", Buffer.buffer("TINYBLOB"));
   }
 
   @Test
@@ -104,12 +88,12 @@ public class MySQLDatatypeTest extends MySQLTestBase {
 
   @Test
   public void testTextDecodeBlob(TestContext ctx) {
-    testTextDecodeGeneric(ctx, "Blob", Buffer.buffer("BLOB"));
+    testTextDecodeGenericWithTable(ctx, "Blob", Buffer.buffer("BLOB"));
   }
 
   @Test
   public void testBinaryDecodeBlob(TestContext ctx) {
-    testBinaryDecodeGeneric(ctx, "Blob", Buffer.buffer("BLOB"));
+    testBinaryDecodeGenericWithTable(ctx, "Blob", Buffer.buffer("BLOB"));
   }
 
   @Test
@@ -119,12 +103,12 @@ public class MySQLDatatypeTest extends MySQLTestBase {
 
   @Test
   public void testTextDecodeMediumBlob(TestContext ctx) {
-    testTextDecodeGeneric(ctx, "MediumBlob", Buffer.buffer("MEDIUMBLOB"));
+    testTextDecodeGenericWithTable(ctx, "MediumBlob", Buffer.buffer("MEDIUMBLOB"));
   }
 
   @Test
   public void testBinaryDecodeMediumBlob(TestContext ctx) {
-    testBinaryDecodeGeneric(ctx, "MediumBlob", Buffer.buffer("MEDIUMBLOB"));
+    testBinaryDecodeGenericWithTable(ctx, "MediumBlob", Buffer.buffer("MEDIUMBLOB"));
   }
 
   @Test
@@ -134,12 +118,12 @@ public class MySQLDatatypeTest extends MySQLTestBase {
 
   @Test
   public void testTextDecodeLongBlob(TestContext ctx) {
-    testTextDecodeGeneric(ctx, "LongBlob", Buffer.buffer("LONGBLOB"));
+    testTextDecodeGenericWithTable(ctx, "LongBlob", Buffer.buffer("LONGBLOB"));
   }
 
   @Test
   public void testBinaryDecodeLongBlob(TestContext ctx) {
-    testBinaryDecodeGeneric(ctx, "LongBlob", Buffer.buffer("LONGBLOB"));
+    testBinaryDecodeGenericWithTable(ctx, "LongBlob", Buffer.buffer("LONGBLOB"));
   }
 
   @Test
@@ -149,12 +133,12 @@ public class MySQLDatatypeTest extends MySQLTestBase {
 
   @Test
   public void testTextDecodeTinyText(TestContext ctx) {
-    testTextDecodeGeneric(ctx, "TinyText", "TINYTEXT");
+    testTextDecodeGenericWithTable(ctx, "TinyText", "TINYTEXT");
   }
 
   @Test
   public void testBinaryDecodeTinyText(TestContext ctx) {
-    testBinaryDecodeGeneric(ctx, "TinyText", "TINYTEXT");
+    testBinaryDecodeGenericWithTable(ctx, "TinyText", "TINYTEXT");
   }
 
   @Test
@@ -164,12 +148,12 @@ public class MySQLDatatypeTest extends MySQLTestBase {
 
   @Test
   public void testTextDecodeText(TestContext ctx) {
-    testTextDecodeGeneric(ctx, "Text", "TEXT");
+    testTextDecodeGenericWithTable(ctx, "Text", "TEXT");
   }
 
   @Test
   public void testBinaryDecodeText(TestContext ctx) {
-    testBinaryDecodeGeneric(ctx, "Text", "TEXT");
+    testBinaryDecodeGenericWithTable(ctx, "Text", "TEXT");
   }
 
   @Test
@@ -179,12 +163,12 @@ public class MySQLDatatypeTest extends MySQLTestBase {
 
   @Test
   public void testTextDecodeMediumText(TestContext ctx) {
-    testTextDecodeGeneric(ctx, "MediumText", "MEDIUMTEXT");
+    testTextDecodeGenericWithTable(ctx, "MediumText", "MEDIUMTEXT");
   }
 
   @Test
   public void testBinaryDecodeMediumText(TestContext ctx) {
-    testBinaryDecodeGeneric(ctx, "MediumText", "MEDIUMTEXT");
+    testBinaryDecodeGenericWithTable(ctx, "MediumText", "MEDIUMTEXT");
   }
 
   @Test
@@ -194,58 +178,11 @@ public class MySQLDatatypeTest extends MySQLTestBase {
 
   @Test
   public void testTextDecodeLongText(TestContext ctx) {
-    testTextDecodeGeneric(ctx, "LongText", "LONGTEXT");
+    testTextDecodeGenericWithTable(ctx, "LongText", "LONGTEXT");
   }
 
   @Test
   public void testBinaryDecodeLongText(TestContext ctx) {
-    testBinaryDecodeGeneric(ctx, "LongText", "LONGTEXT");
-  }
-
-  private <T> void testTextDecodeGeneric(TestContext ctx,
-                                         String columnName,
-                                         T expected) {
-    Async async = ctx.async();
-    MySQLClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT `" + columnName + "` FROM datatype WHERE id = 1", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.size());
-        Row row = result.iterator().next();
-        ctx.assertEquals(expected, row.getValue(0));
-        ctx.assertEquals(expected, row.getValue(columnName));
-        async.complete();
-      }));
-    }));
-  }
-
-  private <T> void testBinaryDecodeGeneric(TestContext ctx,
-                                           String columnName,
-                                           T expected) {
-    Async async = ctx.async();
-    MySQLClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("SELECT `" + columnName + "` FROM datatype WHERE id = 1", ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.size());
-        Row row = result.iterator().next();
-        ctx.assertEquals(expected, row.getValue(0));
-        ctx.assertEquals(expected, row.getValue(columnName));
-        async.complete();
-      }));
-    }));
-  }
-
-  private <T> void testBinaryEncodeGeneric(TestContext ctx,
-                                           String columnName,
-                                           T expected) {
-    Async async = ctx.async();
-    MySQLClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("UPDATE datatype SET `" + columnName + "` = ?" + " WHERE id = 2", Tuple.tuple().addValue(expected), ctx.asyncAssertSuccess(updateResult -> {
-        conn.preparedQuery("SELECT `" + columnName + "` FROM datatype WHERE id = 2", ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.size());
-          Row row = result.iterator().next();
-          ctx.assertEquals(expected, row.getValue(0));
-          ctx.assertEquals(expected, row.getValue(columnName));
-          async.complete();
-        }));
-      }));
-    }));
+    testBinaryDecodeGenericWithTable(ctx, "LongText", "LONGTEXT");
   }
 }
