@@ -1,5 +1,7 @@
-package io.vertx.mysqlclient;
+package io.vertx.mysqlclient.data;
 
+import io.vertx.mysqlclient.MySQLClient;
+import io.vertx.mysqlclient.MySQLTestBase;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;

@@ -1,9 +1,7 @@
-package io.vertx.mysqlclient;
+package io.vertx.mysqlclient.data;
 
-import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.mysqlclient.MySQLClient;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.Tuple;
-import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
