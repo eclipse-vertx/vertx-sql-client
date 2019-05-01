@@ -39,10 +39,63 @@ public class PgException extends RuntimeException {
     return error.getCode();
   }
 
-  /**
-   * @return the detail error message
-   */
+  public String getMessage() {
+    return error.getMessage();
+  }
+
   public String getDetail() {
     return error.getDetail();
+  }
+
+  public String getHint() {
+    return error.getHint();
+  }
+
+  public String getPosition() {
+    return error.getPosition();
+  }
+
+  public String getInternalPosition() {
+    return error.getInternalPosition();
+  }
+
+  public String getInternalQuery() {
+    return error.getInternalQuery();
+  }
+
+  public String getWhere() {
+    return error.getWhere();
+  }
+
+  public String getFile() {
+    return error.getFile();
+  }
+
+  public String getLine() {
+    return error.getLine();
+  }
+
+  public String getRoutine() {
+    return error.getRoutine();
+  }
+
+  public String getSchema() {
+    return error.getSchema();
+  }
+
+  public String getTable() {
+    return error.getTable();
+  }
+
+  public String getColumn() {
+    return error.getColumn();
+  }
+
+  public String getDataType() {
+    return error.getDataType();
+  }
+
+  public String getConstraint() {
+    return error.getConstraint();
   }
 }
