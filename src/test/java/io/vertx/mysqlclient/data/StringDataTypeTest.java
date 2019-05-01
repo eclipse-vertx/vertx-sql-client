@@ -10,7 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
-public class MySQLDatatypeTest extends MySQLDataTypeTestBase {
+public class StringDataTypeTest extends MySQLDataTypeTestBase {
   @Test
   public void testBinaryDecodeAll(TestContext ctx) {
     Async async = ctx.async();
