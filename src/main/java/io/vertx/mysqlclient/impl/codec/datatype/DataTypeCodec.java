@@ -63,6 +63,7 @@ public class DataTypeCodec {
       case TIME:
         return textDecodeTime(data);
       case DATETIME:
+      case TIMESTAMP:
         return textDecodeDateTime(data);
       case STRING:
       case VARSTRING:
@@ -110,7 +111,6 @@ public class DataTypeCodec {
         binaryEncodeBlob((Buffer) value, buffer);
         break;
       case DATE:
-        // TODO confirm DATE,TIM encoded into VAR_STRING form?
         binaryEncodeDate((LocalDate) value, buffer);
         break;
       case TIME:
@@ -151,6 +151,7 @@ public class DataTypeCodec {
       case TIME:
         return binaryDecodeTime(buffer);
       case DATETIME:
+      case TIMESTAMP:
         return binaryDecodeDatetime(buffer);
       case STRING:
       case VARSTRING:

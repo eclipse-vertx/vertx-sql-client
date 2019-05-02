@@ -26,6 +26,7 @@ public enum DataType {
   TIME(ColumnDefinition.ColumnType.MYSQL_TYPE_TIME, Duration.class, Duration.class),
   DATETIME(ColumnDefinition.ColumnType.MYSQL_TYPE_DATETIME, LocalDateTime.class, LocalDateTime.class),
   YEAR(ColumnDefinition.ColumnType.MYSQL_TYPE_YEAR, Short.class, Short.class),
+  TIMESTAMP(ColumnDefinition.ColumnType.MYSQL_TYPE_TIMESTAMP, LocalDateTime.class, LocalDateTime.class),
   NULL(ColumnDefinition.ColumnType.MYSQL_TYPE_NULL, null, null);
 
   private static IntObjectMap<DataType> idToDataType = new IntObjectHashMap<>();

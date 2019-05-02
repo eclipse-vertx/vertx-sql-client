@@ -8,11 +8,18 @@ import io.vertx.sqlclient.Row;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.time.LocalDateTime;
+
 @RunWith(VertxUnitRunner.class)
 public class DateTimeTextCodecTest extends DateTimeCodecTest {
   @Test
   public void testDecodeYear(TestContext ctx) {
     testTextDecodeGenericWithTable(ctx, "test_year", (short) 2019);
+  }
+
+  @Test
+  public void testDecodeTimestamp(TestContext ctx) {
+    testTextDecodeGenericWithTable(ctx, "test_timestamp", LocalDateTime.of(2000, 1, 1, 10, 20, 30));
   }
 
   @Override

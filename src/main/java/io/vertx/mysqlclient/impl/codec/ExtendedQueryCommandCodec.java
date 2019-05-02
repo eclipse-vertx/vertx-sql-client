@@ -205,11 +205,13 @@ public class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, Exten
       // ProtocolBinary::MYSQL_TYPE_FLOAT
       return DataType.FLOAT;
     } else if (value instanceof LocalDate) {
+      // ProtocolBinary::MYSQL_TYPE_DATE
       return DataType.DATE;
     } else if (value instanceof Duration) {
       // ProtocolBinary::MYSQL_TYPE_TIME
       return DataType.TIME;
     } else if (value instanceof LocalDateTime) {
+      // ProtocolBinary::MYSQL_TYPE_DATETIME, ProtocolBinary::MYSQL_TYPE_TIMESTAMP
       return DataType.DATETIME;
     } else {
       /*

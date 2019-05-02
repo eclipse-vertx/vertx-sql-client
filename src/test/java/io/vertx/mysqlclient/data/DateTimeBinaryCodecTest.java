@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 
 @RunWith(VertxUnitRunner.class)
 public class DateTimeBinaryCodecTest extends DateTimeCodecTest {
@@ -51,6 +52,16 @@ public class DateTimeBinaryCodecTest extends DateTimeCodecTest {
   @Test
   public void testEncodeYear(TestContext ctx) {
     testBinaryEncodeGeneric(ctx, "test_year", (short) 2008);
+  }
+
+  @Test
+  public void testDecodeTimestamp(TestContext ctx) {
+    testBinaryDecodeGenericWithTable(ctx, "test_timestamp", LocalDateTime.of(2000, 1, 1, 10, 20, 30));
+  }
+
+  @Test
+  public void testEncodeTimestamp(TestContext ctx) {
+    testBinaryEncodeGeneric(ctx, "test_timestamp", LocalDateTime.of(2001, 6, 20, 19, 40, 0));
   }
 
   private void testEncodeTime(TestContext ctx, Duration param, Duration expected) {

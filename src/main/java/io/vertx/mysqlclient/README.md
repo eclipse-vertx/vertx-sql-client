@@ -56,6 +56,7 @@ https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-charsets.html
 * DATE(j.t.LocalDate)
 * DATETIME(j.t.LocalDateTime)
 * TIME(j.t.Duration)
+* TIMESTAMP(j.t.LocalDateTime)
 * YEAR(j.l.Short)
 
 TODO:
@@ -67,7 +68,6 @@ No implementation:
 
 - [ ] Numeric: BIT
 - [ ] String: ENUM, SET
-- [ ] Data and Time: TIMESTAMP
 - [ ] JSON
 - [ ] Spatial data types
 
