@@ -1,0 +1,710 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>
+  File: README
+  
+    &mdash; Documentation by YARD 0.8.7.6
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  hasFrames = window.top.frames.main ? true : false;
+  relpath = '';
+  framesUrl = "frames.html#!file.README.html";
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="header">
+      <div id="menu">
+  
+    <a href="_index.html">Index</a> &raquo; 
+    <span class="title">File: README</span>
+  
+
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+      Class List
+    </a>
+  
+    <a class="full_list_link" id="method_list_link"
+        href="method_list.html">
+      Method List
+    </a>
+  
+    <a class="full_list_link" id="file_list_link"
+        href="file_list.html">
+      File List
+    </a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+
+    <iframe id="search_frame"></iframe>
+
+    <div id="content"><div id='filecontents'><div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><span class="image"><a class="image" href="https://travis-ci.org/reactiverse/reactive-pg-client"><img src="https://travis-ci.org/reactiverse/reactive-pg-client.svg?branch=master" alt="Build Status"></a></span></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Simple API focusing on scalability and low overhead.</p>
+</li>
+<li>
+<p>Reactive and non blocking which able to handle many database connections with a single thread.</p>
+</li>
+<li>
+<p>Ranked <strong>#1</strong> in the <a href="https://www.techempower.com/benchmarks/#section=data-r15&amp;hw=ph&amp;test=db">TechEmpower Benchmark Round 15</a> <em>Single query</em> benchmark.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_features">Features</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>Event driven</p>
+</li>
+<li>
+<p>Lightweight</p>
+</li>
+<li>
+<p>Built-in connection pooling</p>
+</li>
+<li>
+<p>Prepared queries caching</p>
+</li>
+<li>
+<p>Publish / subscribe using Postgres <code>LISTEN/NOTIFY</code></p>
+</li>
+<li>
+<p>Batch and cursor support</p>
+</li>
+<li>
+<p>Row streaming</p>
+</li>
+<li>
+<p><code>java.util.stream.Collector</code> row set transformation</p>
+</li>
+<li>
+<p>Command pipeling</p>
+</li>
+<li>
+<p>RxJava 1 and RxJava 2</p>
+</li>
+<li>
+<p>Direct memory to object without unnecessary copies</p>
+</li>
+<li>
+<p>Java 8 Date and Time</p>
+</li>
+<li>
+<p>SSL/TLS</p>
+</li>
+<li>
+<p>Unix domain socket</p>
+</li>
+<li>
+<p>HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy</p>
+</li>
+<li>
+<p>Request cancellation</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_usage">Usage</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Latest release is <a href="https://github.com/reactiverse/reactive-pg-client/blob/master/RELEASES.adoc">0.11.1</a>.</p>
+</div>
+<div class="paragraph">
+<p>To use the client, add the following dependency to the <em>dependencies</em> section of your build descriptor:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Maven (in your <code>pom.xml</code>) for Vert.x 3.6.x:</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-xml" data-lang="xml">&lt;dependency&gt;
+  &lt;groupId&gt;io.reactiverse&lt;/groupId&gt;
+  &lt;artifactId&gt;reactive-pg-client&lt;/artifactId&gt;
+  &lt;version&gt;0.11.1&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Gradle (in your <code>build.gradle</code> file)  for Vert.x 3.6.x:</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-groovy" data-lang="groovy">dependencies {
+  compile 'io.reactiverse:reactive-pg-client:0.11.1'
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you are using Vertx 3.5.x you should use instead <code>0.10.9</code></p>
+</div>
+<div class="paragraph">
+<p>Then the code is quite straightforward:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">// Pool options
+PgPoolOptions options = new PgPoolOptions()
+  .setPort(5432)
+  .setHost("the-host")
+  .setDatabase("the-db")
+  .setUser("user")
+  .setPassword("secret")
+  .setMaxSize(5);
+
+// Create the client pool
+PgPool client = PgClient.pool(options);
+
+// A simple query
+client.query("SELECT * FROM users WHERE id='julien'", ar -&gt; {
+  if (ar.succeeded()) {
+    PgResult&lt;Row&gt; result = ar.result();
+    System.out.println("Got " + result.size() + " results ");
+  } else {
+    System.out.println("Failure: " + ar.cause().getMessage());
+  }
+
+  // Now close the pool
+  client.close();
+});</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_integration_usages">Integration / Usages</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://github.com/jklingsporn/vertx-jooq">vertx-jooq</a>: writing type safe queries and let them run at high speed using jOOQ, vertx and the reactive-pg-client.</p>
+</li>
+<li>
+<p><a href="https://docs.micronaut.io/latest/guide/index.html#postgresSupport">Micronaut</a>: supports reactive and non-blocking client to connect to Postgres using reactive-pg-client, allowing to handle many database connections with a single thread.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_documentations">Documentations</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://reactiverse.io/reactive-pg-client/guide/java/index.html">Java docs</a></p>
+</li>
+<li>
+<p><a href="https://reactiverse.io/reactive-pg-client/guide/kotlin/">Kotlin docs</a></p>
+</li>
+<li>
+<p><a href="https://reactiverse.io/reactive-pg-client/guide/groovy/index.html">Groovy docs</a></p>
+</li>
+<li>
+<p><a href="https://reactiverse.io/reactive-pg-client/guide/ruby/index.html">Ruby docs</a></p>
+</li>
+<li>
+<p><a href="https://reactiverse.io/reactive-pg-client/guide/js/index.html">JavaScript docs</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_javadoc">Javadoc</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://reactiverse.io/reactive-pg-client/apidocs/index.html">Javadoc</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_supported_data_types">Supported Data Types</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <strong>Reactive Postgres Client</strong> currently supports the following data types</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-center valign-top">_</th>
+<th class="tableblock halign-center valign-top" colspan="2">Value</th>
+<th class="tableblock halign-center valign-top" colspan="2">Array</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Postgres</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Java</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Supported</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">JAVA</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Supported</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>BOOLEAN</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Boolean</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Boolean[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>INT2</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Short</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Short[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>INT4</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Integer</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Integer[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>INT8</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Long</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Long[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>FLOAT4</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Float</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Float[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>FLOAT8</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Double</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Double[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>CHAR</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Character</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Character[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>VARCHAR</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.String</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.String[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>TEXT</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.String</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.String[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>ENUM</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.String</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.String[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>NAME</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.String</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.String[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>SERIAL2</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Short</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>invalid type</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10005;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>SERIAL4</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Integer</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>invalid type</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10005;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>SERIAL8</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.Long</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>invalid type</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10005;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>NUMERIC</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Numeric</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Numeric[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>UUID</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.u.UUID</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.u.UUID[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>DATE</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.LocalDate</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.LocalDate[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>TIME</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.LocalTime</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.LocalTime[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>TIMETZ</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.OffsetTime</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.OffsetTime[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>TIMESTAMP</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.LocalDateTime</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.LocalDateTime[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>TIMESTAMPTZ</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.OffsetDateTime</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.t.OffsetDateTime[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>INTERVAL</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Interval</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Interval[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>BYTEA</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.v.c.b.Buffer</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.v.c.b.Buffer[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>JSON</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Json</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Json[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>JSONB</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Json</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Json[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>POINT</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Point</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Point[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>LINE</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Line</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Line[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>LSEG</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.LineSegment</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.LineSegment[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>BOX</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Box</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Box[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>PATH</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Path</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Path[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>POLYGON</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Polygon</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Polygon[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>CIRCLE</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Circle</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>i.r.p.data.Circle[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>UNKNOWN</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.String</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><code>j.l.String[]</code></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">&#10004;</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>The following types</p>
+</div>
+<div class="paragraph">
+<p><em>MONEY</em>, <em>BIT</em>, <em>VARBIT</em>, <em>MACADDR</em>, <em>INET</em>, <em>CIDR</em>, <em>MACADDR8</em>,
+<em>XML</em>, <em>HSTORE</em>, <em>OID</em>,
+<em>VOID</em>, <em>TSQUERY</em>, <em>TSVECTOR</em></p>
+</div>
+<div class="paragraph">
+<p>are not implemented yet (PR are welcome).</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_snapshots">Snapshots</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Snapshots are deploy in Sonatype OSS repository: <a href="https://oss.sonatype.org/content/repositories/snapshots/io/reactiverse/reactive-pg-client/" class="bare">https://oss.sonatype.org/content/repositories/snapshots/io/reactiverse/reactive-pg-client/</a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_license">License</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Apache License - Version 2.0</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_developers">Developers</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_testing">Testing</h3>
+<div class="paragraph">
+<p>Out of the box, the test suite runs an embedded Postgres by default.</p>
+</div>
+<div class="paragraph">
+<p>You can change the version of the embedded Postgres by passing a property <code>embedded.postgres.version</code> like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>&gt; mvn test -Dembedded.postgres.version=9.6</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The following versions of embedded Postgres are supported:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>9.6</code></p>
+</li>
+<li>
+<p><code>10.6</code> (default)</p>
+</li>
+<li>
+<p><code>11.1</code> (not supported on Linux)</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_testing_with_an_external_database">Testing with an external database</h3>
+<div class="paragraph">
+<p>You can run tests with an external database:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>the script <code>docker/postgres/resources/create-postgres.sql</code> creates the test data</p>
+</li>
+<li>
+<p>the <code>TLSTest</code> expects the database to be configured with SSL with <code>docker/postgres/resources/server.key</code> / <code>docker/postgres/resources/server.cert`</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>You need to add some properties for testing:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>&gt; mvn test -Dconnection.uri=postgres://$username:$password@$host:$port/$database -Dtls.connection.uri=postgres://$username:$password@$host:$port/$database -Dunix.socket.directory=$path</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>connection.uri(mandatory): configure the client to connect the specified database</p>
+</li>
+<li>
+<p>tls.connection.uri(mandatory): configure the client to run <code>TLSTest</code> with the specified Postgres with SSL enabled</p>
+</li>
+<li>
+<p>unix.socket.directory(optional): the single unix socket directory(multiple socket directories are not supported) to test Unix domain socket with a specified database, domain socket tests will be skipped if this property is not specified
+(Note: Make sure you can access the unix domain socket with this directory under your host machine)</p>
+</li>
+<li>
+<p>unix.socket.port(optional): unix socket file is named <code>.s.PGSQL.nnnn</code> and <code>nnnn</code> is the server&#8217;s port number,
+this property is mostly used when you test with Docker, when you publish your Postgres container port other than 5432 in your host but Postgres may actually listen on a different port in the container,
+you will then need this property to help you connect the Postgres with Unix domain socket</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_testing_with_docker">Testing with Docker</h3>
+<div class="paragraph">
+<p>Run the Postgres containers with <code>docker-compose</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>&gt; cd docker/postgres
+&gt; docker-compose up --build -V</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Run tests:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>&gt; mvn test -Dconnection.uri=postgres://$username:$password@$host:$port/$database -Dtls.connection.uri=postgres://$username:$password@$host:$port/$database -Dunix.socket.directory=$path -Dunix.socket.port=$port</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_documentation">Documentation</h3>
+<div class="paragraph">
+<p>The online and published documentation is in <code>/docs</code> and is served by GitHub pages with Jekyll.</p>
+</div>
+<div class="paragraph">
+<p>You can find the actual guide source in [src/main/docs/index.md](src/main/docs/index.md). At compilation time, this
+source generates the <code>jekyll/guide/java/index.md</code>.</p>
+</div>
+<div class="paragraph">
+<p>The current documentation is in <code>/jekyll</code> and can be preview using Docker and your browser</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>generate the documentation</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>mvn compile</code> to generate <code>jekyll/guide/java/index.md</code></p>
+</li>
+<li>
+<p><code>mvn site</code> to generate the javadoc in <code>jekyll/apidocs</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>run Jekyll</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>cd jekyll</code></p>
+</li>
+<li>
+<p><code>docker-compose up</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>open your browser at <a href="http://localhost:4000" class="bare">http://localhost:4000</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div></div></div>
+
+    <div id="footer">
+  Generated on Fri Jan 25 16:08:10 2019 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.8.7.6 (ruby-2.3.3).
+</div>
+
+  </body>
+</html>

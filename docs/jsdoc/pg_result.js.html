@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: pg_result.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: pg_result.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*
+ * Copyright 2014 Red Hat, Inc.
+ *
+ * Red Hat licenses this file to you under the Apache License, version 2.0
+ * (the "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
+/** @module reactive-pg-client-js/pg_result */
+var utils = require('vertx-js/util/utils');
+
+var io = Packages.io;
+var JsonObject = io.vertx.core.json.JsonObject;
+var JPgResult = Java.type('io.reactiverse.pgclient.PgResult');
+
+/**
+ Represents the result of an operation on database.
+ @class
+*/
+var PgResult = function(j_val, j_arg_0) {
+
+  var j_pgResult = j_val;
+  var that = this;
+  var j_T = typeof j_arg_0 !== 'undefined' ? j_arg_0 : utils.unknown_jtype;
+  var __super_rowCount = this.rowCount;
+  var __super_columnsNames = this.columnsNames;
+  var __super_size = this.size;
+  var __super_value = this.value;
+  var __super_next = this.next;
+  /**
+   Get the number of the affected rows in the operation to this PgResult.
+   &lt;p/>
+   The meaning depends on the executed statement:
+   &lt;ul>
+     &lt;li>INSERT: the number of rows inserted&lt;/li>
+     &lt;li>DELETE: the number of rows deleted&lt;/li>
+     &lt;li>UPDATE: the number of rows updated&lt;/li>
+     &lt;li>SELECT: the number of rows retrieved&lt;/li>
+   &lt;/ul>
+
+   @public
+
+   @return {number} the count of affected rows.
+   */
+  this.rowCount =  function() {
+    var __args = arguments;
+    if (__args.length === 0) {
+      return j_pgResult["rowCount()"]() ;
+    } else if (typeof __super_rowCount != 'undefined') {
+      return __super_rowCount.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Get the names of columns in the PgResult.
+
+   @public
+
+   @return {Array.&lt;string>} the list of names of columns.
+   */
+  this.columnsNames =  function() {
+    var __args = arguments;
+    if (__args.length === 0) {
+      return j_pgResult["columnsNames()"]() ;
+    } else if (typeof __super_columnsNames != 'undefined') {
+      return __super_columnsNames.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Get the number of rows in the PgResult.
+
+   @public
+
+   @return {number} the count of rows.
+   */
+  this.size =  function() {
+    var __args = arguments;
+    if (__args.length === 0) {
+      return j_pgResult["size()"]() ;
+    } else if (typeof __super_size != 'undefined') {
+      return __super_size.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Get the result value.
+
+   @public
+
+   @return {Object} the result
+   */
+  this.value =  function() {
+    var __args = arguments;
+    if (__args.length === 0) {
+      return j_T.wrap(j_pgResult["value()"]()) ;
+    } else if (typeof __super_value != 'undefined') {
+      return __super_value.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Return the next available result or &lt;code>null&lt;/code>, e.g for a simple query that executed multiple queries or for
+   a batch result.
+
+   @public
+
+   @return {PgResult} the next available result or &lt;code>null&lt;/code> if none is available
+   */
+  this.next =  function() {
+    var __args = arguments;
+    if (__args.length === 0) {
+      return utils.convReturnVertxGen(PgResult, j_pgResult["next()"](), undefined) ;
+    } else if (typeof __super_next != 'undefined') {
+      return __super_next.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  // A reference to the underlying Java delegate
+  // NOTE! This is an internal API and must not be used in user code.
+  // If you rely on this property your code is likely to break if we change it / remove it without warning.
+  this._jdel = j_pgResult;
+};
+
+PgResult._jclass = utils.getJavaClass("io.reactiverse.pgclient.PgResult");
+PgResult._jtype = {accept: function(obj) {
+    return PgResult._jclass.isInstance(obj._jdel);
+  },wrap: function(jdel) {
+    var obj = Object.create(PgResult.prototype, {});
+    PgResult.apply(obj, arguments);
+    return obj;
+  },
+  unwrap: function(obj) {
+    return obj._jdel;
+  }
+};
+PgResult._create = function(jdel) {var obj = Object.create(PgResult.prototype, {});
+  PgResult.apply(obj, arguments);
+  return obj;
+}
+module.exports = PgResult;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-reactive-pg-client-js_json.html">reactive-pg-client-js/json</a></li><li><a href="module-reactive-pg-client-js_pg_channel.html">reactive-pg-client-js/pg_channel</a></li><li><a href="module-reactive-pg-client-js_pg_client.html">reactive-pg-client-js/pg_client</a></li><li><a href="module-reactive-pg-client-js_pg_connection.html">reactive-pg-client-js/pg_connection</a></li><li><a href="module-reactive-pg-client-js_pg_cursor.html">reactive-pg-client-js/pg_cursor</a></li><li><a href="module-reactive-pg-client-js_pg_iterator.html">reactive-pg-client-js/pg_iterator</a></li><li><a href="module-reactive-pg-client-js_pg_pool.html">reactive-pg-client-js/pg_pool</a></li><li><a href="module-reactive-pg-client-js_pg_prepared_query.html">reactive-pg-client-js/pg_prepared_query</a></li><li><a href="module-reactive-pg-client-js_pg_result.html">reactive-pg-client-js/pg_result</a></li><li><a href="module-reactive-pg-client-js_pg_row_set.html">reactive-pg-client-js/pg_row_set</a></li><li><a href="module-reactive-pg-client-js_pg_stream.html">reactive-pg-client-js/pg_stream</a></li><li><a href="module-reactive-pg-client-js_pg_subscriber.html">reactive-pg-client-js/pg_subscriber</a></li><li><a href="module-reactive-pg-client-js_pg_transaction.html">reactive-pg-client-js/pg_transaction</a></li><li><a href="module-reactive-pg-client-js_row.html">reactive-pg-client-js/row</a></li><li><a href="module-reactive-pg-client-js_tuple.html">reactive-pg-client-js/tuple</a></li></ul><h3>Classes</h3><ul><li><a href="module-reactive-pg-client-js_json-Json.html">Json</a></li><li><a href="module-reactive-pg-client-js_pg_channel-PgChannel.html">PgChannel</a></li><li><a href="module-reactive-pg-client-js_pg_client-PgClient.html">PgClient</a></li><li><a href="module-reactive-pg-client-js_pg_connection-PgConnection.html">PgConnection</a></li><li><a href="module-reactive-pg-client-js_pg_cursor-PgCursor.html">PgCursor</a></li><li><a href="module-reactive-pg-client-js_pg_iterator-PgIterator.html">PgIterator</a></li><li><a href="module-reactive-pg-client-js_pg_pool-PgPool.html">PgPool</a></li><li><a href="module-reactive-pg-client-js_pg_prepared_query-PgPreparedQuery.html">PgPreparedQuery</a></li><li><a href="module-reactive-pg-client-js_pg_result-PgResult.html">PgResult</a></li><li><a href="module-reactive-pg-client-js_pg_row_set-PgRowSet.html">PgRowSet</a></li><li><a href="module-reactive-pg-client-js_pg_stream-PgStream.html">PgStream</a></li><li><a href="module-reactive-pg-client-js_pg_subscriber-PgSubscriber.html">PgSubscriber</a></li><li><a href="module-reactive-pg-client-js_pg_transaction-PgTransaction.html">PgTransaction</a></li><li><a href="module-reactive-pg-client-js_row-Row.html">Row</a></li><li><a href="module-reactive-pg-client-js_tuple-Tuple.html">Tuple</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Fri Jan 25 2019 16:08:18 GMT+0100 (CET)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

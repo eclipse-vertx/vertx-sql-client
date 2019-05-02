@@ -1,0 +1,26 @@
+language: java
+branches:
+  only:
+  - master
+  - /^\d+\.\d+$/
+jobs:
+  include:
+    - stage: test
+      name: "Postgres 9"
+      jdk: oraclejdk8
+      script: mvn -q clean verify -B -Dembedded.postgres.version=9.6
+    - stage: test
+      name: "Postgres 10"
+      jdk: oraclejdk8
+      script: mvn -q clean verify -B -Dembedded.postgres.version=10.6
+    - stage: deploy
+      name: "Deploy to Sonatype's snapshots repository"
+      if: type != pull_request AND env(SONATYPE_NEXUS_USERNAME) IS present
+      script: bash .travis.deploy.artifacts.sh
+notifications:
+  email:
+    recipients:
+      - secure: "Auz9no9ZKVvY7rtA+CI6fNxXoTHR8xQZRWPWkx3GgBTFOiPlt6NWVmdUnGVdYaBQAV8M5kQ8ldv6Zo1gKWBRIZ9mdrElHPaImP15RqlUhqGdu6EByAHUCx0An3qla2Chsrs9QQAARQHjheWv6mRmRQFeNWVU/X0qSciiK0r40EzRAKuY3zwuNiNIDza12QrCrlQnGvdBf6qnfNrV03Rkxk+AzZHeNP0vjGB57zQCwClZQNIDWwyCdHJDHiMwKC16qQxRJ09RY4EJi0qDTzTFgQ3tL28G7zR8M563ELTVU7ojrAq8AvlZcpiLivjP/RR99owyzm+r9ZHMiPHqJ3cbbisBqtRQSWP8yCKJ9h2GKGlzX9JDZJ+/3smvoPLgUg7yiwjDeX+yFDFL7F5pfzHh0DXxRqRCAGPs4dOho023C6kqiWk94SzzUX8FCKuIm+N5Y9M2KAWvA0s6/KtpIhdi+rpdIImaDwf7LoAFzwvaZnFMS5wB6/wVz/AEiSKOiu05uzaDymRWnupugN6XZd4KY95vB9JCvaLOmjJHvSF8fFGqMVSLopU2ZAZTjWSceOn4/lU/qDThnTuhY9qHCqEcbYWSJ1Jl6cD5ddX++qk+lmhTbvcbIAZ8L+ZKxvanfFl5TtTdYc9vpOFrfMTeOWBo9Oq5/TgZTeDaXCSH1gaM4sQ="
+      - secure: "KdmtQ62Cge7jmyj40XVJ/rW6sXuWdwtHIMsaGEg4pc17tMIl2bGI/pnpVt5UVbjq7xYHFwA9DaIh5oyq9hizdDEAx46pGmuDIsATn9TTaWJK35dht6Ri/So2B2mAhDJrz3s7HDFb4IYI72Cgp2ukw/q6R6pHDt/xHyT4h+/YmTzXPUhyrduO0nQHvTCyUqUsyOTL4uC/HyBnAID9UtCgEJBCWAnATQc3sMRw9VqgQmLQeEPmIaor9UNxrS4sNpnHCPrsjNfGN4sSfAbRcNENsh7iyM6b+aPKm6hh/KPlYQ59FHqXXAxeYrdXAoObN8heg5TFH6v20g3n2mLeVvJFgCF8Dq6dJCPAqgMsENcB2OdunRop1bUEzLRQicKscZ7vd+9FOXX8cYP7zKLiEWJs/bU1sTQ3vbHqtReC8yWlQTKYeNMlw9cFJvSZLZ+GqetNgcoH4DiCrOiDpqWCgHGZ+98E1U5CEwpBcqRo9hfwtS8vSQjy08t/LvEIZqGTuD+nmsgN7tPhh9qrfLGk76pzF4QzYVManXd1WDIInWuOKbDjUdRuGHDc1TSwqBVjGoe9w0VI25fT1H/osTWgXon/I/vSTnFrJOYmZvthL+OUR3ptuYXUcGZQZtiVSQs71dAoTChBlf9dNJhLqLk7VK304XQL7peYn4PuofEYW+SFAB8="
+    on_success: always
+    on_failure: always

@@ -1,0 +1,1455 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Class: ReactivePgClient::PgClient
+  
+    &mdash; Documentation by YARD 0.8.7.6
+  
+</title>
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  hasFrames = window.top.frames.main ? true : false;
+  relpath = '../';
+  framesUrl = "../frames.html#!ReactivePgClient/PgClient.html";
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../_index.html">Index (P)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../ReactivePgClient.html" title="ReactivePgClient (module)">ReactivePgClient</a></span></span>
+     &raquo; 
+    <span class="title">PgClient</span>
+  
+
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../class_list.html">
+      Class List
+    </a>
+  
+    <a class="full_list_link" id="method_list_link"
+        href="../method_list.html">
+      Method List
+    </a>
+  
+    <a class="full_list_link" id="file_list_link"
+        href="../file_list.html">
+      File List
+    </a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+
+    <iframe id="search_frame"></iframe>
+
+    <div id="content"><h1>Class: ReactivePgClient::PgClient
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+    <dt class="r1">Inherits:</dt>
+    <dd class="r1">
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">ReactivePgClient::PgClient</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+      </dd>
+    
+  
+  
+    
+  
+    
+  
+  
+  
+    <dt class="r2 last">Defined in:</dt>
+    <dd class="r2 last">/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/pg_client.rb</dd>
+  
+</dl>
+<div class="clear"></div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    Defines the client operations with a Postgres Database.
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><div id="subclasses">
+  <h2>Direct Known Subclasses</h2>
+  <p class="children"><span class='object_link'><a href="PgConnection.html" title="ReactivePgClient::PgConnection (class)">PgConnection</a></span>, <span class='object_link'><a href="PgPool.html" title="ReactivePgClient::PgPool (class)">PgPool</a></span>, <span class='object_link'><a href="PgTransaction.html" title="ReactivePgClient::PgTransaction (class)">PgTransaction</a></span></p>
+</div>
+
+  <h2>Constant Summary</h2>
+  
+    <dl class="constants">
+      
+        <dt id="j_api_type-classvariable" class="">@@j_api_type =
+          
+        </dt>
+        <dd><pre class="code"><span class='const'>Object</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span></pre></dd>
+      
+    </dl>
+  
+
+
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#accept%3F-class_method" title="accept? (class method)">+ (Boolean) <strong>accept?</strong>(obj) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#connect-class_method" title="connect (class method)">+ (void) <strong>connect</strong>(param_1 = nil, param_2 = nil) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>Like #connect with options build from connectionUri.</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#j_api_type-class_method" title="j_api_type (class method)">+ (Object) <strong>j_api_type</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#j_class-class_method" title="j_class (class method)">+ (Object) <strong>j_class</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#pool-class_method" title="pool (class method)">+ (::ReactivePgClient::PgPool) <strong>pool</strong>(param_1 = nil, param_2 = nil) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>Like #pool with a specific  instance.</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#unwrap-class_method" title="unwrap (class method)">+ (Object) <strong>unwrap</strong>(obj) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#wrap-class_method" title="wrap (class method)">+ (Object) <strong>wrap</strong>(obj) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+    </ul>
+  
+    <h2>
+      Instance Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#prepared_batch-instance_method" title="#prepared_batch (instance method)">- (self) <strong>prepared_batch</strong>(sql = nil, batch = nil) { ... }</a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>Prepare and execute a createBatch.</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#prepared_query-instance_method" title="#prepared_query (instance method)">- (self) <strong>prepared_query</strong>(sql = nil, arguments = nil) { ... }</a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>Prepare and execute a query.</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#query-instance_method" title="#query (instance method)">- (self) <strong>query</strong>(sql = nil) { ... }</a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>Execute a simple query.</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="accept?-class_method">
+  
+    + (<tt>Boolean</tt>) <strong>accept?</strong>(obj) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+22
+23
+24</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/pg_client.rb', line 22</span>
+
+<span class='kw'>def</span> <span class='cvar'>@@j_api_type</span><span class='period'>.</span><span class='id identifier rubyid_accept?'>accept?</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>PgClient</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="connect-class_method">
+  
+    
+      <span class="overload">+ (<tt>void</tt>) <strong>connect</strong>(vertx, handler) { ... }</span>
+    
+      <span class="overload">+ (<tt>void</tt>) <strong>connect</strong>(vertx, options, handler) { ... }</span>
+    
+      <span class="overload">+ (<tt>void</tt>) <strong>connect</strong>(vertx, connectionUri, handler) { ... }</span>
+    
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p>Like #connect with options build from <code>connectionUri</code>.
+
+  </div>
+</div>
+<div class="tags">
+  
+  <p class="tag_title">Overloads:</p>
+  <ul class="overload">
+    
+      
+      <li class="overload_item">
+        <span class="signature">+ (<tt>void</tt>) <strong>connect</strong>(vertx, handler) { ... }</span>
+        <div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>vertx</span>
+      
+      
+        <span class='type'>(<tt>::Vertx::Vertx</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+      </li>
+    
+      
+      <li class="overload_item">
+        <span class="signature">+ (<tt>void</tt>) <strong>connect</strong>(vertx, options, handler) { ... }</span>
+        <div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>vertx</span>
+      
+      
+        <span class='type'>(<tt>::Vertx::Vertx</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>the vertx instance</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>options</span>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>the connect options</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        
+        <div class='inline'>the handler called with the connection or the failure</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+      </li>
+    
+      
+      <li class="overload_item">
+        <span class="signature">+ (<tt>void</tt>) <strong>connect</strong>(vertx, connectionUri, handler) { ... }</span>
+        <div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>vertx</span>
+      
+      
+        <span class='type'>(<tt>::Vertx::Vertx</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>connectionUri</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+      </li>
+    
+  </ul>
+
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>ArgumentError</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/pg_client.rb', line 81</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_connect'>connect</span><span class='lparen'>(</span><span class='id identifier rubyid_param_1'>param_1</span><span class='op'>=</span><span class='kw'>nil</span><span class='comma'>,</span><span class='id identifier rubyid_param_2'>param_2</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_param_1'>param_1</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_method_defined?'>method_defined?</span><span class='lparen'>(</span><span class='symbol'>:j_del</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_block_given?'>block_given?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_param_2'>param_2</span> <span class='op'>==</span> <span class='kw'>nil</span>
+    <span class='kw'>return</span> <span class='const'>Java</span><span class='op'>::</span><span class='const'>IoReactiversePgclient</span><span class='op'>::</span><span class='const'>PgClient</span><span class='period'>.</span><span class='id identifier rubyid_java_method'>java_method</span><span class='lparen'>(</span><span class='symbol'>:connect</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoVertxCore</span><span class='op'>::</span><span class='const'>Vertx</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='comma'>,</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoVertxCore</span><span class='op'>::</span><span class='const'>Handler</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_param_1'>param_1</span><span class='period'>.</span><span class='id identifier rubyid_j_del'>j_del</span><span class='comma'>,</span><span class='lparen'>(</span><span class='const'>Proc</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_ar'>ar</span><span class='op'>|</span> <span class='kw'>yield</span><span class='lparen'>(</span><span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_failed'>failed</span> <span class='op'>?</span> <span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_cause'>cause</span> <span class='op'>:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_succeeded'>succeeded</span> <span class='op'>?</span> <span class='op'>::</span><span class='const'>Vertx</span><span class='op'>::</span><span class='const'>Util</span><span class='op'>::</span><span class='const'>Utils</span><span class='period'>.</span><span class='id identifier rubyid_safe_create'>safe_create</span><span class='lparen'>(</span><span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_result'>result</span><span class='comma'>,</span><span class='op'>::</span><span class='const'>ReactivePgClient</span><span class='op'>::</span><span class='const'>PgConnection</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='kw'>nil</span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_param_1'>param_1</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_method_defined?'>method_defined?</span><span class='lparen'>(</span><span class='symbol'>:j_del</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_param_2'>param_2</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>Hash</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
+    <span class='kw'>return</span> <span class='const'>Java</span><span class='op'>::</span><span class='const'>IoReactiversePgclient</span><span class='op'>::</span><span class='const'>PgClient</span><span class='period'>.</span><span class='id identifier rubyid_java_method'>java_method</span><span class='lparen'>(</span><span class='symbol'>:connect</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoVertxCore</span><span class='op'>::</span><span class='const'>Vertx</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='comma'>,</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoReactiversePgclient</span><span class='op'>::</span><span class='const'>PgConnectOptions</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='comma'>,</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoVertxCore</span><span class='op'>::</span><span class='const'>Handler</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_param_1'>param_1</span><span class='period'>.</span><span class='id identifier rubyid_j_del'>j_del</span><span class='comma'>,</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoReactiversePgclient</span><span class='op'>::</span><span class='const'>PgConnectOptions</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='op'>::</span><span class='const'>Vertx</span><span class='op'>::</span><span class='const'>Util</span><span class='op'>::</span><span class='const'>Utils</span><span class='period'>.</span><span class='id identifier rubyid_to_json_object'>to_json_object</span><span class='lparen'>(</span><span class='id identifier rubyid_param_2'>param_2</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='comma'>,</span><span class='lparen'>(</span><span class='const'>Proc</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_ar'>ar</span><span class='op'>|</span> <span class='kw'>yield</span><span class='lparen'>(</span><span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_failed'>failed</span> <span class='op'>?</span> <span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_cause'>cause</span> <span class='op'>:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_succeeded'>succeeded</span> <span class='op'>?</span> <span class='op'>::</span><span class='const'>Vertx</span><span class='op'>::</span><span class='const'>Util</span><span class='op'>::</span><span class='const'>Utils</span><span class='period'>.</span><span class='id identifier rubyid_safe_create'>safe_create</span><span class='lparen'>(</span><span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_result'>result</span><span class='comma'>,</span><span class='op'>::</span><span class='const'>ReactivePgClient</span><span class='op'>::</span><span class='const'>PgConnection</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='kw'>nil</span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_param_1'>param_1</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_method_defined?'>method_defined?</span><span class='lparen'>(</span><span class='symbol'>:j_del</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_param_2'>param_2</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>String</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
+    <span class='kw'>return</span> <span class='const'>Java</span><span class='op'>::</span><span class='const'>IoReactiversePgclient</span><span class='op'>::</span><span class='const'>PgClient</span><span class='period'>.</span><span class='id identifier rubyid_java_method'>java_method</span><span class='lparen'>(</span><span class='symbol'>:connect</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoVertxCore</span><span class='op'>::</span><span class='const'>Vertx</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='comma'>,</span><span class='const'>Java</span><span class='op'>::</span><span class='id identifier rubyid_java'>java</span><span class='period'>.</span><span class='id identifier rubyid_lang'>lang</span><span class='period'>.</span><span class='const'>String</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='comma'>,</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoVertxCore</span><span class='op'>::</span><span class='const'>Handler</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_param_1'>param_1</span><span class='period'>.</span><span class='id identifier rubyid_j_del'>j_del</span><span class='comma'>,</span><span class='id identifier rubyid_param_2'>param_2</span><span class='comma'>,</span><span class='lparen'>(</span><span class='const'>Proc</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_ar'>ar</span><span class='op'>|</span> <span class='kw'>yield</span><span class='lparen'>(</span><span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_failed'>failed</span> <span class='op'>?</span> <span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_cause'>cause</span> <span class='op'>:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_succeeded'>succeeded</span> <span class='op'>?</span> <span class='op'>::</span><span class='const'>Vertx</span><span class='op'>::</span><span class='const'>Util</span><span class='op'>::</span><span class='const'>Utils</span><span class='period'>.</span><span class='id identifier rubyid_safe_create'>safe_create</span><span class='lparen'>(</span><span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_result'>result</span><span class='comma'>,</span><span class='op'>::</span><span class='const'>ReactivePgClient</span><span class='op'>::</span><span class='const'>PgConnection</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='kw'>nil</span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid arguments when calling connect(</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_param_1'>param_1</span><span class='embexpr_end'>}</span><span class='tstring_content'>,</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_param_2'>param_2</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="j_api_type-class_method">
+  
+    + (<tt>Object</tt>) <strong>j_api_type</strong> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+31
+32
+33</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/pg_client.rb', line 31</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_j_api_type'>j_api_type</span>
+  <span class='cvar'>@@j_api_type</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="j_class-class_method">
+  
+    + (<tt>Object</tt>) <strong>j_class</strong> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+34
+35
+36</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/pg_client.rb', line 34</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_j_class'>j_class</span>
+  <span class='const'>Java</span><span class='op'>::</span><span class='const'>IoReactiversePgclient</span><span class='op'>::</span><span class='const'>PgClient</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="pool-class_method">
+  
+    
+      <span class="overload">+ (<tt><span class='object_link'><a href="PgPool.html" title="ReactivePgClient::PgPool (class)">::ReactivePgClient::PgPool</a></span></tt>) <strong>pool</strong> </span>
+    
+      <span class="overload">+ (<tt><span class='object_link'><a href="PgPool.html" title="ReactivePgClient::PgPool (class)">::ReactivePgClient::PgPool</a></span></tt>) <strong>pool</strong>(connectionUri) </span>
+    
+      <span class="overload">+ (<tt><span class='object_link'><a href="PgPool.html" title="ReactivePgClient::PgPool (class)">::ReactivePgClient::PgPool</a></span></tt>) <strong>pool</strong>(vertx) </span>
+    
+      <span class="overload">+ (<tt><span class='object_link'><a href="PgPool.html" title="ReactivePgClient::PgPool (class)">::ReactivePgClient::PgPool</a></span></tt>) <strong>pool</strong>(options) </span>
+    
+      <span class="overload">+ (<tt><span class='object_link'><a href="PgPool.html" title="ReactivePgClient::PgPool (class)">::ReactivePgClient::PgPool</a></span></tt>) <strong>pool</strong>(vertx, connectionUri) </span>
+    
+      <span class="overload">+ (<tt><span class='object_link'><a href="PgPool.html" title="ReactivePgClient::PgPool (class)">::ReactivePgClient::PgPool</a></span></tt>) <strong>pool</strong>(vertx, options) </span>
+    
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    Like #pool with a specific  instance.
+
+  </div>
+</div>
+<div class="tags">
+  
+  <p class="tag_title">Overloads:</p>
+  <ul class="overload">
+    
+      
+      
+      <li class="overload_item">
+        <span class="signature">+ (<tt><span class='object_link'><a href="PgPool.html" title="ReactivePgClient::PgPool (class)">::ReactivePgClient::PgPool</a></span></tt>) <strong>pool</strong>(connectionUri) </span>
+        <div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>connectionUri</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div>
+      </li>
+    
+      
+      <li class="overload_item">
+        <span class="signature">+ (<tt><span class='object_link'><a href="PgPool.html" title="ReactivePgClient::PgPool (class)">::ReactivePgClient::PgPool</a></span></tt>) <strong>pool</strong>(vertx) </span>
+        <div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>vertx</span>
+      
+      
+        <span class='type'>(<tt>::Vertx::Vertx</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div>
+      </li>
+    
+      
+      <li class="overload_item">
+        <span class="signature">+ (<tt><span class='object_link'><a href="PgPool.html" title="ReactivePgClient::PgPool (class)">::ReactivePgClient::PgPool</a></span></tt>) <strong>pool</strong>(options) </span>
+        <div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>options</span>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>the options for creating the pool</div>
+      
+    </li>
+  
+</ul>
+
+
+</div>
+      </li>
+    
+      
+      <li class="overload_item">
+        <span class="signature">+ (<tt><span class='object_link'><a href="PgPool.html" title="ReactivePgClient::PgPool (class)">::ReactivePgClient::PgPool</a></span></tt>) <strong>pool</strong>(vertx, connectionUri) </span>
+        <div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>vertx</span>
+      
+      
+        <span class='type'>(<tt>::Vertx::Vertx</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>connectionUri</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div>
+      </li>
+    
+      
+      <li class="overload_item">
+        <span class="signature">+ (<tt><span class='object_link'><a href="PgPool.html" title="ReactivePgClient::PgPool (class)">::ReactivePgClient::PgPool</a></span></tt>) <strong>pool</strong>(vertx, options) </span>
+        <div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>vertx</span>
+      
+      
+        <span class='type'>(<tt>::Vertx::Vertx</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>options</span>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div>
+      </li>
+    
+  </ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="PgPool.html" title="ReactivePgClient::PgPool (class)">::ReactivePgClient::PgPool</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>ArgumentError</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/pg_client.rb', line 52</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_pool'>pool</span><span class='lparen'>(</span><span class='id identifier rubyid_param_1'>param_1</span><span class='op'>=</span><span class='kw'>nil</span><span class='comma'>,</span><span class='id identifier rubyid_param_2'>param_2</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_param_1'>param_1</span> <span class='op'>==</span> <span class='kw'>nil</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_param_2'>param_2</span> <span class='op'>==</span> <span class='kw'>nil</span>
+    <span class='kw'>return</span> <span class='op'>::</span><span class='const'>Vertx</span><span class='op'>::</span><span class='const'>Util</span><span class='op'>::</span><span class='const'>Utils</span><span class='period'>.</span><span class='id identifier rubyid_safe_create'>safe_create</span><span class='lparen'>(</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoReactiversePgclient</span><span class='op'>::</span><span class='const'>PgClient</span><span class='period'>.</span><span class='id identifier rubyid_java_method'>java_method</span><span class='lparen'>(</span><span class='symbol'>:pool</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='rparen'>)</span><span class='comma'>,</span><span class='op'>::</span><span class='const'>ReactivePgClient</span><span class='op'>::</span><span class='const'>PgPool</span><span class='rparen'>)</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_param_1'>param_1</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>String</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_param_2'>param_2</span> <span class='op'>==</span> <span class='kw'>nil</span>
+    <span class='kw'>return</span> <span class='op'>::</span><span class='const'>Vertx</span><span class='op'>::</span><span class='const'>Util</span><span class='op'>::</span><span class='const'>Utils</span><span class='period'>.</span><span class='id identifier rubyid_safe_create'>safe_create</span><span class='lparen'>(</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoReactiversePgclient</span><span class='op'>::</span><span class='const'>PgClient</span><span class='period'>.</span><span class='id identifier rubyid_java_method'>java_method</span><span class='lparen'>(</span><span class='symbol'>:pool</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>Java</span><span class='op'>::</span><span class='id identifier rubyid_java'>java</span><span class='period'>.</span><span class='id identifier rubyid_lang'>lang</span><span class='period'>.</span><span class='const'>String</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_param_1'>param_1</span><span class='rparen'>)</span><span class='comma'>,</span><span class='op'>::</span><span class='const'>ReactivePgClient</span><span class='op'>::</span><span class='const'>PgPool</span><span class='rparen'>)</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_param_1'>param_1</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_method_defined?'>method_defined?</span><span class='lparen'>(</span><span class='symbol'>:j_del</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_param_2'>param_2</span> <span class='op'>==</span> <span class='kw'>nil</span>
+    <span class='kw'>return</span> <span class='op'>::</span><span class='const'>Vertx</span><span class='op'>::</span><span class='const'>Util</span><span class='op'>::</span><span class='const'>Utils</span><span class='period'>.</span><span class='id identifier rubyid_safe_create'>safe_create</span><span class='lparen'>(</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoReactiversePgclient</span><span class='op'>::</span><span class='const'>PgClient</span><span class='period'>.</span><span class='id identifier rubyid_java_method'>java_method</span><span class='lparen'>(</span><span class='symbol'>:pool</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoVertxCore</span><span class='op'>::</span><span class='const'>Vertx</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_param_1'>param_1</span><span class='period'>.</span><span class='id identifier rubyid_j_del'>j_del</span><span class='rparen'>)</span><span class='comma'>,</span><span class='op'>::</span><span class='const'>ReactivePgClient</span><span class='op'>::</span><span class='const'>PgPool</span><span class='rparen'>)</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_param_1'>param_1</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>Hash</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_param_2'>param_2</span> <span class='op'>==</span> <span class='kw'>nil</span>
+    <span class='kw'>return</span> <span class='op'>::</span><span class='const'>Vertx</span><span class='op'>::</span><span class='const'>Util</span><span class='op'>::</span><span class='const'>Utils</span><span class='period'>.</span><span class='id identifier rubyid_safe_create'>safe_create</span><span class='lparen'>(</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoReactiversePgclient</span><span class='op'>::</span><span class='const'>PgClient</span><span class='period'>.</span><span class='id identifier rubyid_java_method'>java_method</span><span class='lparen'>(</span><span class='symbol'>:pool</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoReactiversePgclient</span><span class='op'>::</span><span class='const'>PgPoolOptions</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoReactiversePgclient</span><span class='op'>::</span><span class='const'>PgPoolOptions</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='op'>::</span><span class='const'>Vertx</span><span class='op'>::</span><span class='const'>Util</span><span class='op'>::</span><span class='const'>Utils</span><span class='period'>.</span><span class='id identifier rubyid_to_json_object'>to_json_object</span><span class='lparen'>(</span><span class='id identifier rubyid_param_1'>param_1</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='comma'>,</span><span class='op'>::</span><span class='const'>ReactivePgClient</span><span class='op'>::</span><span class='const'>PgPool</span><span class='rparen'>)</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_param_1'>param_1</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_method_defined?'>method_defined?</span><span class='lparen'>(</span><span class='symbol'>:j_del</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_param_2'>param_2</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>String</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span>
+    <span class='kw'>return</span> <span class='op'>::</span><span class='const'>Vertx</span><span class='op'>::</span><span class='const'>Util</span><span class='op'>::</span><span class='const'>Utils</span><span class='period'>.</span><span class='id identifier rubyid_safe_create'>safe_create</span><span class='lparen'>(</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoReactiversePgclient</span><span class='op'>::</span><span class='const'>PgClient</span><span class='period'>.</span><span class='id identifier rubyid_java_method'>java_method</span><span class='lparen'>(</span><span class='symbol'>:pool</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoVertxCore</span><span class='op'>::</span><span class='const'>Vertx</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='comma'>,</span><span class='const'>Java</span><span class='op'>::</span><span class='id identifier rubyid_java'>java</span><span class='period'>.</span><span class='id identifier rubyid_lang'>lang</span><span class='period'>.</span><span class='const'>String</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_param_1'>param_1</span><span class='period'>.</span><span class='id identifier rubyid_j_del'>j_del</span><span class='comma'>,</span><span class='id identifier rubyid_param_2'>param_2</span><span class='rparen'>)</span><span class='comma'>,</span><span class='op'>::</span><span class='const'>ReactivePgClient</span><span class='op'>::</span><span class='const'>PgPool</span><span class='rparen'>)</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_param_1'>param_1</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_method_defined?'>method_defined?</span><span class='lparen'>(</span><span class='symbol'>:j_del</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_param_2'>param_2</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>Hash</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_block_given?'>block_given?</span>
+    <span class='kw'>return</span> <span class='op'>::</span><span class='const'>Vertx</span><span class='op'>::</span><span class='const'>Util</span><span class='op'>::</span><span class='const'>Utils</span><span class='period'>.</span><span class='id identifier rubyid_safe_create'>safe_create</span><span class='lparen'>(</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoReactiversePgclient</span><span class='op'>::</span><span class='const'>PgClient</span><span class='period'>.</span><span class='id identifier rubyid_java_method'>java_method</span><span class='lparen'>(</span><span class='symbol'>:pool</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoVertxCore</span><span class='op'>::</span><span class='const'>Vertx</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='comma'>,</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoReactiversePgclient</span><span class='op'>::</span><span class='const'>PgPoolOptions</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_param_1'>param_1</span><span class='period'>.</span><span class='id identifier rubyid_j_del'>j_del</span><span class='comma'>,</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoReactiversePgclient</span><span class='op'>::</span><span class='const'>PgPoolOptions</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='op'>::</span><span class='const'>Vertx</span><span class='op'>::</span><span class='const'>Util</span><span class='op'>::</span><span class='const'>Utils</span><span class='period'>.</span><span class='id identifier rubyid_to_json_object'>to_json_object</span><span class='lparen'>(</span><span class='id identifier rubyid_param_2'>param_2</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='comma'>,</span><span class='op'>::</span><span class='const'>ReactivePgClient</span><span class='op'>::</span><span class='const'>PgPool</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid arguments when calling pool(</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_param_1'>param_1</span><span class='embexpr_end'>}</span><span class='tstring_content'>,</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_param_2'>param_2</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="unwrap-class_method">
+  
+    + (<tt>Object</tt>) <strong>unwrap</strong>(obj) 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+28
+29
+30</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/pg_client.rb', line 28</span>
+
+<span class='kw'>def</span> <span class='cvar'>@@j_api_type</span><span class='period'>.</span><span class='id identifier rubyid_unwrap'>unwrap</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_obj'>obj</span><span class='period'>.</span><span class='id identifier rubyid_j_del'>j_del</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="wrap-class_method">
+  
+    + (<tt>Object</tt>) <strong>wrap</strong>(obj) 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+25
+26
+27</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/pg_client.rb', line 25</span>
+
+<span class='kw'>def</span> <span class='cvar'>@@j_api_type</span><span class='period'>.</span><span class='id identifier rubyid_wrap'>wrap</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span><span class='rparen'>)</span>
+  <span class='const'>PgClient</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_obj'>obj</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="prepared_batch-instance_method">
+  
+    - (<tt>self</tt>) <strong>prepared_batch</strong>(sql = nil, batch = nil) { ... }
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    Prepare and execute a createBatch.
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>sql</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>the prepared query SQL</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>batch</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="Tuple.html" title="ReactivePgClient::Tuple (class)">::ReactivePgClient::Tuple</a></span>&gt;</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>the batch of tuples</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        
+        <div class='inline'>the handler notified with the execution result</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>self</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>ArgumentError</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+122
+123
+124
+125
+126
+127
+128</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/pg_client.rb', line 122</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_prepared_batch'>prepared_batch</span><span class='lparen'>(</span><span class='id identifier rubyid_sql'>sql</span><span class='op'>=</span><span class='kw'>nil</span><span class='comma'>,</span><span class='id identifier rubyid_batch'>batch</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_sql'>sql</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>String</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_batch'>batch</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>Array</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
+    <span class='ivar'>@j_del</span><span class='period'>.</span><span class='id identifier rubyid_java_method'>java_method</span><span class='lparen'>(</span><span class='symbol'>:preparedBatch</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>Java</span><span class='op'>::</span><span class='id identifier rubyid_java'>java</span><span class='period'>.</span><span class='id identifier rubyid_lang'>lang</span><span class='period'>.</span><span class='const'>String</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='comma'>,</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>JavaUtil</span><span class='op'>::</span><span class='const'>List</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='comma'>,</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoVertxCore</span><span class='op'>::</span><span class='const'>Handler</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_sql'>sql</span><span class='comma'>,</span><span class='id identifier rubyid_batch'>batch</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_element'>element</span><span class='op'>|</span> <span class='id identifier rubyid_element'>element</span><span class='period'>.</span><span class='id identifier rubyid_j_del'>j_del</span> <span class='rbrace'>}</span><span class='comma'>,</span><span class='lparen'>(</span><span class='const'>Proc</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_ar'>ar</span><span class='op'>|</span> <span class='kw'>yield</span><span class='lparen'>(</span><span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_failed'>failed</span> <span class='op'>?</span> <span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_cause'>cause</span> <span class='op'>:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_succeeded'>succeeded</span> <span class='op'>?</span> <span class='op'>::</span><span class='const'>Vertx</span><span class='op'>::</span><span class='const'>Util</span><span class='op'>::</span><span class='const'>Utils</span><span class='period'>.</span><span class='id identifier rubyid_safe_create'>safe_create</span><span class='lparen'>(</span><span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_result'>result</span><span class='comma'>,</span><span class='op'>::</span><span class='const'>ReactivePgClient</span><span class='op'>::</span><span class='const'>PgRowSet</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='kw'>nil</span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='rparen'>)</span><span class='rparen'>)</span>
+    <span class='kw'>return</span> <span class='kw'>self</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid arguments when calling prepared_batch(</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_sql'>sql</span><span class='embexpr_end'>}</span><span class='tstring_content'>,</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_batch'>batch</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="prepared_query-instance_method">
+  
+    - (<tt>self</tt>) <strong>prepared_query</strong>(sql = nil, arguments = nil) { ... }
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    Prepare and execute a query.
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>sql</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>the prepared query SQL</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>arguments</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Tuple.html" title="ReactivePgClient::Tuple (class)">::ReactivePgClient::Tuple</a></span></tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>the list of arguments</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        
+        <div class='inline'>the handler notified with the execution result</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>self</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>ArgumentError</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/pg_client.rb', line 107</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_prepared_query'>prepared_query</span><span class='lparen'>(</span><span class='id identifier rubyid_sql'>sql</span><span class='op'>=</span><span class='kw'>nil</span><span class='comma'>,</span><span class='id identifier rubyid_arguments'>arguments</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_sql'>sql</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>String</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_block_given?'>block_given?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_arguments'>arguments</span> <span class='op'>==</span> <span class='kw'>nil</span>
+    <span class='ivar'>@j_del</span><span class='period'>.</span><span class='id identifier rubyid_java_method'>java_method</span><span class='lparen'>(</span><span class='symbol'>:preparedQuery</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>Java</span><span class='op'>::</span><span class='id identifier rubyid_java'>java</span><span class='period'>.</span><span class='id identifier rubyid_lang'>lang</span><span class='period'>.</span><span class='const'>String</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='comma'>,</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoVertxCore</span><span class='op'>::</span><span class='const'>Handler</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_sql'>sql</span><span class='comma'>,</span><span class='lparen'>(</span><span class='const'>Proc</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_ar'>ar</span><span class='op'>|</span> <span class='kw'>yield</span><span class='lparen'>(</span><span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_failed'>failed</span> <span class='op'>?</span> <span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_cause'>cause</span> <span class='op'>:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_succeeded'>succeeded</span> <span class='op'>?</span> <span class='op'>::</span><span class='const'>Vertx</span><span class='op'>::</span><span class='const'>Util</span><span class='op'>::</span><span class='const'>Utils</span><span class='period'>.</span><span class='id identifier rubyid_safe_create'>safe_create</span><span class='lparen'>(</span><span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_result'>result</span><span class='comma'>,</span><span class='op'>::</span><span class='const'>ReactivePgClient</span><span class='op'>::</span><span class='const'>PgRowSet</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='kw'>nil</span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='rparen'>)</span><span class='rparen'>)</span>
+    <span class='kw'>return</span> <span class='kw'>self</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_sql'>sql</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>String</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_arguments'>arguments</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_method_defined?'>method_defined?</span><span class='lparen'>(</span><span class='symbol'>:j_del</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
+    <span class='ivar'>@j_del</span><span class='period'>.</span><span class='id identifier rubyid_java_method'>java_method</span><span class='lparen'>(</span><span class='symbol'>:preparedQuery</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>Java</span><span class='op'>::</span><span class='id identifier rubyid_java'>java</span><span class='period'>.</span><span class='id identifier rubyid_lang'>lang</span><span class='period'>.</span><span class='const'>String</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='comma'>,</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoReactiversePgclient</span><span class='op'>::</span><span class='const'>Tuple</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='comma'>,</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoVertxCore</span><span class='op'>::</span><span class='const'>Handler</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_sql'>sql</span><span class='comma'>,</span><span class='id identifier rubyid_arguments'>arguments</span><span class='period'>.</span><span class='id identifier rubyid_j_del'>j_del</span><span class='comma'>,</span><span class='lparen'>(</span><span class='const'>Proc</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_ar'>ar</span><span class='op'>|</span> <span class='kw'>yield</span><span class='lparen'>(</span><span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_failed'>failed</span> <span class='op'>?</span> <span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_cause'>cause</span> <span class='op'>:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_succeeded'>succeeded</span> <span class='op'>?</span> <span class='op'>::</span><span class='const'>Vertx</span><span class='op'>::</span><span class='const'>Util</span><span class='op'>::</span><span class='const'>Utils</span><span class='period'>.</span><span class='id identifier rubyid_safe_create'>safe_create</span><span class='lparen'>(</span><span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_result'>result</span><span class='comma'>,</span><span class='op'>::</span><span class='const'>ReactivePgClient</span><span class='op'>::</span><span class='const'>PgRowSet</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='kw'>nil</span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='rparen'>)</span><span class='rparen'>)</span>
+    <span class='kw'>return</span> <span class='kw'>self</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid arguments when calling prepared_query(</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_sql'>sql</span><span class='embexpr_end'>}</span><span class='tstring_content'>,</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_arguments'>arguments</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="query-instance_method">
+  
+    - (<tt>self</tt>) <strong>query</strong>(sql = nil) { ... }
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    Execute a simple query.
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>sql</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>the query SQL</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        
+        <div class='inline'>the handler notified with the execution result</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>self</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>ArgumentError</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+95
+96
+97
+98
+99
+100
+101</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File '/Users/julien/java/reactive-pg-client/target/classes/reactive-pg-client/pg_client.rb', line 95</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_query'>query</span><span class='lparen'>(</span><span class='id identifier rubyid_sql'>sql</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_sql'>sql</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='const'>String</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
+    <span class='ivar'>@j_del</span><span class='period'>.</span><span class='id identifier rubyid_java_method'>java_method</span><span class='lparen'>(</span><span class='symbol'>:query</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>Java</span><span class='op'>::</span><span class='id identifier rubyid_java'>java</span><span class='period'>.</span><span class='id identifier rubyid_lang'>lang</span><span class='period'>.</span><span class='const'>String</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='comma'>,</span><span class='const'>Java</span><span class='op'>::</span><span class='const'>IoVertxCore</span><span class='op'>::</span><span class='const'>Handler</span><span class='period'>.</span><span class='id identifier rubyid_java_class'>java_class</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_sql'>sql</span><span class='comma'>,</span><span class='lparen'>(</span><span class='const'>Proc</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_ar'>ar</span><span class='op'>|</span> <span class='kw'>yield</span><span class='lparen'>(</span><span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_failed'>failed</span> <span class='op'>?</span> <span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_cause'>cause</span> <span class='op'>:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_succeeded'>succeeded</span> <span class='op'>?</span> <span class='op'>::</span><span class='const'>Vertx</span><span class='op'>::</span><span class='const'>Util</span><span class='op'>::</span><span class='const'>Utils</span><span class='period'>.</span><span class='id identifier rubyid_safe_create'>safe_create</span><span class='lparen'>(</span><span class='id identifier rubyid_ar'>ar</span><span class='period'>.</span><span class='id identifier rubyid_result'>result</span><span class='comma'>,</span><span class='op'>::</span><span class='const'>ReactivePgClient</span><span class='op'>::</span><span class='const'>PgRowSet</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='kw'>nil</span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='rparen'>)</span><span class='rparen'>)</span>
+    <span class='kw'>return</span> <span class='kw'>self</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid arguments when calling query(</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_sql'>sql</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+    <div id="footer">
+  Generated on Fri Jan 25 16:08:13 2019 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.8.7.6 (ruby-2.3.3).
+</div>
+
+  </body>
+</html>

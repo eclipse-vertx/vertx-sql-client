@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: pg_iterator.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: pg_iterator.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*
+ * Copyright 2014 Red Hat, Inc.
+ *
+ * Red Hat licenses this file to you under the Apache License, version 2.0
+ * (the "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
+/** @module reactive-pg-client-js/pg_iterator */
+var utils = require('vertx-js/util/utils');
+var Row = require('reactive-pg-client-js/row');
+
+var io = Packages.io;
+var JsonObject = io.vertx.core.json.JsonObject;
+var JPgIterator = Java.type('io.reactiverse.pgclient.PgIterator');
+
+/**
+ An iterator for processing postgres items synchronously.
+
+ @class
+*/
+var PgIterator = function(j_val) {
+
+  var j_pgIterator = j_val;
+  var that = this;
+
+  var __super_hasNext = this.hasNext;
+  var __super_next = this.next;
+  /**
+
+   @public
+
+   @return {boolean}
+   */
+  this.hasNext =  function() {
+    var __args = arguments;
+    if (__args.length === 0) {
+      return j_pgIterator["hasNext()"]() ;
+    } else if (typeof __super_hasNext != 'undefined') {
+      return __super_hasNext.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+
+   @public
+
+   @return {Row}
+   */
+  this.next =  function() {
+    var __args = arguments;
+    if (__args.length === 0) {
+      return utils.convReturnVertxGen(Row, j_pgIterator["next()"]()) ;
+    } else if (typeof __super_next != 'undefined') {
+      return __super_next.apply(this, __args);
+    }
+    else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  // A reference to the underlying Java delegate
+  // NOTE! This is an internal API and must not be used in user code.
+  // If you rely on this property your code is likely to break if we change it / remove it without warning.
+  this._jdel = j_pgIterator;
+};
+
+PgIterator._jclass = utils.getJavaClass("io.reactiverse.pgclient.PgIterator");
+PgIterator._jtype = {accept: function(obj) {
+    return PgIterator._jclass.isInstance(obj._jdel);
+  },wrap: function(jdel) {
+    var obj = Object.create(PgIterator.prototype, {});
+    PgIterator.apply(obj, arguments);
+    return obj;
+  },
+  unwrap: function(obj) {
+    return obj._jdel;
+  }
+};
+PgIterator._create = function(jdel) {var obj = Object.create(PgIterator.prototype, {});
+  PgIterator.apply(obj, arguments);
+  return obj;
+}
+module.exports = PgIterator;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-reactive-pg-client-js_json.html">reactive-pg-client-js/json</a></li><li><a href="module-reactive-pg-client-js_pg_channel.html">reactive-pg-client-js/pg_channel</a></li><li><a href="module-reactive-pg-client-js_pg_client.html">reactive-pg-client-js/pg_client</a></li><li><a href="module-reactive-pg-client-js_pg_connection.html">reactive-pg-client-js/pg_connection</a></li><li><a href="module-reactive-pg-client-js_pg_cursor.html">reactive-pg-client-js/pg_cursor</a></li><li><a href="module-reactive-pg-client-js_pg_iterator.html">reactive-pg-client-js/pg_iterator</a></li><li><a href="module-reactive-pg-client-js_pg_pool.html">reactive-pg-client-js/pg_pool</a></li><li><a href="module-reactive-pg-client-js_pg_prepared_query.html">reactive-pg-client-js/pg_prepared_query</a></li><li><a href="module-reactive-pg-client-js_pg_result.html">reactive-pg-client-js/pg_result</a></li><li><a href="module-reactive-pg-client-js_pg_row_set.html">reactive-pg-client-js/pg_row_set</a></li><li><a href="module-reactive-pg-client-js_pg_stream.html">reactive-pg-client-js/pg_stream</a></li><li><a href="module-reactive-pg-client-js_pg_subscriber.html">reactive-pg-client-js/pg_subscriber</a></li><li><a href="module-reactive-pg-client-js_pg_transaction.html">reactive-pg-client-js/pg_transaction</a></li><li><a href="module-reactive-pg-client-js_row.html">reactive-pg-client-js/row</a></li><li><a href="module-reactive-pg-client-js_tuple.html">reactive-pg-client-js/tuple</a></li></ul><h3>Classes</h3><ul><li><a href="module-reactive-pg-client-js_json-Json.html">Json</a></li><li><a href="module-reactive-pg-client-js_pg_channel-PgChannel.html">PgChannel</a></li><li><a href="module-reactive-pg-client-js_pg_client-PgClient.html">PgClient</a></li><li><a href="module-reactive-pg-client-js_pg_connection-PgConnection.html">PgConnection</a></li><li><a href="module-reactive-pg-client-js_pg_cursor-PgCursor.html">PgCursor</a></li><li><a href="module-reactive-pg-client-js_pg_iterator-PgIterator.html">PgIterator</a></li><li><a href="module-reactive-pg-client-js_pg_pool-PgPool.html">PgPool</a></li><li><a href="module-reactive-pg-client-js_pg_prepared_query-PgPreparedQuery.html">PgPreparedQuery</a></li><li><a href="module-reactive-pg-client-js_pg_result-PgResult.html">PgResult</a></li><li><a href="module-reactive-pg-client-js_pg_row_set-PgRowSet.html">PgRowSet</a></li><li><a href="module-reactive-pg-client-js_pg_stream-PgStream.html">PgStream</a></li><li><a href="module-reactive-pg-client-js_pg_subscriber-PgSubscriber.html">PgSubscriber</a></li><li><a href="module-reactive-pg-client-js_pg_transaction-PgTransaction.html">PgTransaction</a></li><li><a href="module-reactive-pg-client-js_row-Row.html">Row</a></li><li><a href="module-reactive-pg-client-js_tuple-Tuple.html">Tuple</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Fri Jan 25 2019 16:08:18 GMT+0100 (CET)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
