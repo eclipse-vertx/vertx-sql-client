@@ -16,8 +16,8 @@
  */
 package examples;
 
-import io.reactiverse.reactivex.pgclient.*;
-import io.reactiverse.reactivex.sqlclient.*;
+import io.vertx.reactivex.pgclient.*;
+import io.vertx.reactivex.sqlclient.*;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;

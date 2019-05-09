@@ -17,20 +17,20 @@
 
 package examples;
 
-import io.reactiverse.pgclient.*;
-import io.reactiverse.pgclient.data.Json;
-import io.reactiverse.pgclient.data.Numeric;
-import io.reactiverse.pgclient.pubsub.PgSubscriber;
-import io.reactiverse.sqlclient.Cursor;
-import io.reactiverse.sqlclient.PreparedQuery;
-import io.reactiverse.sqlclient.SqlResult;
-import io.reactiverse.sqlclient.RowSet;
-import io.reactiverse.sqlclient.RowStream;
-import io.reactiverse.sqlclient.Row;
-import io.reactiverse.sqlclient.SqlClient;
-import io.reactiverse.sqlclient.SqlConnection;
-import io.reactiverse.sqlclient.Transaction;
-import io.reactiverse.sqlclient.Tuple;
+import io.vertx.pgclient.*;
+import io.vertx.pgclient.data.Json;
+import io.vertx.pgclient.data.Numeric;
+import io.vertx.pgclient.pubsub.PgSubscriber;
+import io.vertx.sqlclient.Cursor;
+import io.vertx.sqlclient.PreparedQuery;
+import io.vertx.sqlclient.SqlResult;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.RowStream;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.SqlClient;
+import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.Transaction;
+import io.vertx.sqlclient.Tuple;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.PemTrustOptions;
