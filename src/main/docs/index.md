@@ -74,7 +74,7 @@ You need to release the pool when you don't need it anymore:
 ```
 
 When you need to execute several operations on the same connection, you need to use a client
-{@link io.reactiverse.pgclient.PgConnection connection}.
+{@link io.vertx.pgclient.PgConnection connection}.
 
 You can easily get one from the pool:
 
@@ -141,7 +141,7 @@ will use one of its connection to run the query and return the result to you.
 Here is how to run simple queries:
 
 ```$lang
-{@link examples.Examples#queries01(io.reactiverse.sqlclient.SqlClient)}
+{@link examples.Examples#queries01(io.vertx.sqlclient.SqlClient)}
 ```
 
 You can do the same with prepared queries.
@@ -149,22 +149,22 @@ You can do the same with prepared queries.
 The SQL string can refer to parameters by position, using `$1`, `$2`, etc…​
 
 ```$lang
-{@link examples.Examples#queries02(io.reactiverse.sqlclient.SqlClient)}
+{@link examples.Examples#queries02(io.vertx.sqlclient.SqlClient)}
 ```
 
-Query methods provides an asynchronous {@link io.reactiverse.sqlclient.RowSet} instance that works for _SELECT_ queries
+Query methods provides an asynchronous {@link io.vertx.sqlclient.RowSet} instance that works for _SELECT_ queries
 
 ```$lang
-{@link examples.Examples#queries03(io.reactiverse.sqlclient.SqlClient)}
+{@link examples.Examples#queries03(io.vertx.sqlclient.SqlClient)}
 ```
 
 or _UPDATE_/_INSERT_ queries:
 
 ```$lang
-{@link examples.Examples#queries04(io.reactiverse.sqlclient.SqlClient)}
+{@link examples.Examples#queries04(io.vertx.sqlclient.SqlClient)}
 ```
 
-The {@link io.reactiverse.sqlclient.Row} gives you access to your data by index
+The {@link io.vertx.sqlclient.Row} gives you access to your data by index
 
 ```$lang
 {@link examples.Examples#queries05(Row)}
@@ -185,7 +185,7 @@ You can access a wide variety of of types
 You can execute prepared batch
 
 ```$lang
-{@link examples.Examples#queries08(io.reactiverse.sqlclient.SqlClient)}
+{@link examples.Examples#queries08(io.vertx.sqlclient.SqlClient)}
 ```
 
 You can cache prepared queries:
@@ -197,7 +197,7 @@ You can cache prepared queries:
 You can fetch generated keys with a 'RETURNING' clause in your query:
 
 ```$lang
-{@link examples.Examples#queries10(io.reactiverse.sqlclient.SqlClient)}
+{@link examples.Examples#queries10(io.vertx.sqlclient.SqlClient)}
 ```
 
 ## Using connections
@@ -206,22 +206,22 @@ When you need to execute sequential queries (without a transaction), you can cre
 or borrow one from the pool:
 
 ```$lang
-{@link examples.Examples#usingConnections01(io.vertx.core.Vertx, io.reactiverse.pgclient.PgPool)}
+{@link examples.Examples#usingConnections01(io.vertx.core.Vertx, io.vertx.pgclient.PgPool)}
 ```
 
 Prepared queries can be created:
 
 ```$lang
-{@link examples.Examples#usingConnections02(io.reactiverse.pgclient.PgConnection)}
+{@link examples.Examples#usingConnections02(io.vertx.pgclient.PgConnection)}
 ```
 
-NOTE: prepared query caching depends on the {@link io.reactiverse.pgclient.PgConnectOptions#setCachePreparedStatements(boolean)} and
-does not depend on whether you are creating prepared queries or use {@link io.reactiverse.sqlclient.SqlClient#preparedQuery(java.lang.String, io.vertx.core.Handler) direct prepared queries}
+NOTE: prepared query caching depends on the {@link io.vertx.pgclient.PgConnectOptions#setCachePreparedStatements(boolean)} and
+does not depend on whether you are creating prepared queries or use {@link io.vertx.sqlclient.SqlClient#preparedQuery(java.lang.String, io.vertx.core.Handler) direct prepared queries}
 
-{@link io.reactiverse.sqlclient.PreparedQuery} can perform efficient batching:
+{@link io.vertx.sqlclient.PreparedQuery} can perform efficient batching:
 
 ```$lang
-{@link examples.Examples#usingConnections03(io.reactiverse.pgclient.PgConnection)}
+{@link examples.Examples#usingConnections03(io.vertx.pgclient.PgConnection)}
 ```
 
 
@@ -230,20 +230,20 @@ does not depend on whether you are creating prepared queries or use {@link io.re
 ### Transactions with connections
 
 You can execute transaction using SQL `BEGIN`/`COMMIT`/`ROLLBACK`, if you do so you must use
-a {@link io.reactiverse.pgclient.PgConnection} and manage it yourself.
+a {@link io.vertx.pgclient.PgConnection} and manage it yourself.
 
-Or you can use the transaction API of {@link io.reactiverse.pgclient.PgConnection}:
+Or you can use the transaction API of {@link io.vertx.pgclient.PgConnection}:
 
 ```$lang
-{@link examples.Examples#transaction01(io.reactiverse.pgclient.PgPool)}
+{@link examples.Examples#transaction01(io.vertx.pgclient.PgPool)}
 ```
 
 When Postgres reports the current transaction is failed (e.g the infamous _current transaction is aborted, commands ignored until
-end of transaction block_), the transaction is rollbacked and the {@link io.reactiverse.sqlclient.Transaction#abortHandler(io.vertx.core.Handler)}
+end of transaction block_), the transaction is rollbacked and the {@link io.vertx.sqlclient.Transaction#abortHandler(io.vertx.core.Handler)}
 is called:
 
 ```$lang
-{@link examples.Examples#transaction02(io.reactiverse.pgclient.PgPool)}
+{@link examples.Examples#transaction02(io.vertx.pgclient.PgPool)}
 ```
 
 ### Simplified transaction API
@@ -253,16 +253,16 @@ When you use a pool, you can start a transaction directly on the pool.
 It borrows a connection from the pool, begins the transaction and releases the connection to the pool when the transaction ends.
 
 ```$lang
-{@link examples.Examples#transaction03(io.reactiverse.pgclient.PgPool)}
+{@link examples.Examples#transaction03(io.vertx.pgclient.PgPool)}
 ```
 
 ## Cursors and streaming
 
 By default prepared query execution fetches all rows, you can use a
-{@link io.reactiverse.sqlclient.Cursor} to control the amount of rows you want to read:
+{@link io.vertx.sqlclient.Cursor} to control the amount of rows you want to read:
 
 ```$lang
-{@link examples.Examples#usingCursors01(io.reactiverse.pgclient.PgConnection)}
+{@link examples.Examples#usingCursors01(io.vertx.pgclient.PgConnection)}
 ```
 
 PostreSQL destroys cursors at the end of a transaction, so the cursor API shall be used
@@ -271,13 +271,13 @@ within a transaction, otherwise you will likely get the `34000` PostgreSQL error
 Cursors shall be closed when they are released prematurely:
 
 ```$lang
-{@link examples.Examples#usingCursors02(io.reactiverse.sqlclient.Cursor)}
+{@link examples.Examples#usingCursors02(io.vertx.sqlclient.Cursor)}
 ```
 
 A stream API is also available for cursors, which can be more convenient, specially with the Rxified version.
 
 ```$lang
-{@link examples.Examples#usingCursors03(io.reactiverse.pgclient.PgConnection)}
+{@link examples.Examples#usingCursors03(io.vertx.pgclient.PgConnection)}
 ```
 
 The stream read the rows by batch of `50` and stream them, when the rows have been passed to the handler,
@@ -304,24 +304,24 @@ Currently the client supports the following Postgres types
 * SERIAL2 (`java.lang.Short`)
 * SERIAL4 (`java.lang.Integer`)
 * SERIAL8 (`java.lang.Long`)
-* NUMERIC (`io.reactiverse.pgclient.data.Numeric`)
+* NUMERIC (`io.vertx.pgclient.data.Numeric`)
 * UUID (`java.util.UUID`)
 * DATE (`java.time.LocalDate`)
 * TIME (`java.time.LocalTime`)
 * TIMETZ (`java.time.OffsetTime`)
 * TIMESTAMP (`java.time.LocalDateTime`)
 * TIMESTAMPTZ (`java.time.OffsetDateTime`)
-* INTERVAL (`io.reactiverse.pgclient.data.Interval`)
+* INTERVAL (`io.vertx.pgclient.data.Interval`)
 * BYTEA (`io.vertx.core.buffer.Buffer`)
-* JSON (`io.reactiverse.pgclient.data.Json`)
-* JSONB (`io.reactiverse.pgclient.data.Json`)
-* POINT (`io.reactiverse.pgclient.data.Point`)
-* LINE (`io.reactiverse.pgclient.data.Line`)
-* LSEG (`io.reactiverse.pgclient.data.LineSegment`)
-* BOX (`io.reactiverse.pgclient.data.Box`)
-* PATH (`io.reactiverse.pgclient.data.Path`)
-* POLYGON (`io.reactiverse.pgclient.data.Polygon`)
-* CIRCLE (`io.reactiverse.pgclient.data.Circle`)
+* JSON (`io.vertx.pgclient.data.Json`)
+* JSONB (`io.vertx.pgclient.data.Json`)
+* POINT (`io.vertx.pgclient.data.Point`)
+* LINE (`io.vertx.pgclient.data.Line`)
+* LSEG (`io.vertx.pgclient.data.LineSegment`)
+* BOX (`io.vertx.pgclient.data.Box`)
+* PATH (`io.vertx.pgclient.data.Path`)
+* POLYGON (`io.vertx.pgclient.data.Polygon`)
+* CIRCLE (`io.vertx.pgclient.data.Circle`)
 
 Tuple decoding uses the above types when storing values, it also performs on the flu conversion the actual value when possible:
 
@@ -339,7 +339,7 @@ Arrays of these types are supported.
 
 ### Handling JSON
 
-The {@link io.reactiverse.pgclient.data.Json} Java type is used to represent the Postgres `JSON` and `JSONB` type.
+The {@link io.vertx.pgclient.data.Json} Java type is used to represent the Postgres `JSON` and `JSONB` type.
 
 The main reason of this type is handling `null` JSON values.
 
@@ -349,7 +349,7 @@ The main reason of this type is handling `null` JSON values.
 
 ### Handling NUMERIC
 
-The {@link io.reactiverse.pgclient.data.Numeric} Java type is used to represent the Postgres `NUMERIC` type.
+The {@link io.vertx.pgclient.data.Numeric} Java type is used to represent the Postgres `NUMERIC` type.
 
 ```$lang
 {@link examples.Examples#numericExample}
@@ -357,7 +357,7 @@ The {@link io.reactiverse.pgclient.data.Numeric} Java type is used to represent 
 
 ## Handling arrays
 
-Arrays are available on {@link io.reactiverse.sqlclient.Tuple} and {@link io.reactiverse.sqlclient.Row}:
+Arrays are available on {@link io.vertx.sqlclient.Tuple} and {@link io.vertx.sqlclient.Row}:
 
 ```$lang
 {@link examples.Examples#arrayExample}
@@ -387,7 +387,7 @@ You can use Java collectors with the query API:
 {@link examples.Examples#collector01Example}
 ```
 
-The collector processing must not keep a reference on the {@link io.reactiverse.sqlclient.Row} as
+The collector processing must not keep a reference on the {@link io.vertx.sqlclient.Row} as
 there is a single row used for processing the entire set.
 
 The Java `Collectors` provides many interesting predefined collectors, for example you can
@@ -411,8 +411,8 @@ Most asynchronous constructs are available as methods prefixed by `rx`:
 ### Streaming
 
 RxJava 2 supports `Observable` and `Flowable` types, these are exposed using
-the {@link io.reactiverse.reactivex.sqlclient.RowStream} that you can get
-from a {@link io.reactiverse.reactivex.sqlclient.PreparedQuery}:
+the {@link io.vertx.reactivex.sqlclient.RowStream} that you can get
+from a {@link io.vertx.reactivex.sqlclient.PreparedQuery}:
 
 ```$lang
 {@link examples.RxExamples#streamingQuery01Example}
@@ -437,14 +437,14 @@ asynchronous flows:
 
 Postgres supports pub/sub communication channels.
 
-You can set a {@link io.reactiverse.pgclient.PgConnection#notificationHandler(io.vertx.core.Handler)} to receive
+You can set a {@link io.vertx.pgclient.PgConnection#notificationHandler(io.vertx.core.Handler)} to receive
 Postgres notifications:
 
 ```$lang
-{@link examples.Examples#pubsub01(io.reactiverse.pgclient.PgConnection)}
+{@link examples.Examples#pubsub01(io.vertx.pgclient.PgConnection)}
 ```
 
-The {@link io.reactiverse.pgclient.pubsub.PgSubscriber} is a channel manager managing a single connection that
+The {@link io.vertx.pgclient.pubsub.PgSubscriber} is a channel manager managing a single connection that
 provides per channel subscription:
 
 ```$lang
@@ -453,7 +453,7 @@ provides per channel subscription:
 
 The channel name that is given to the channel method will be the exact name of the channel as held by Postgres for sending
 notifications.  Note this is different than the representation of the channel name in SQL, and
-internally {@link io.reactiverse.pgclient.pubsub.PgSubscriber} will prepare the submitted channel name as a quoted identifier:
+internally {@link io.vertx.pgclient.pubsub.PgSubscriber} will prepare the submitted channel name as a quoted identifier:
 
 ```$lang
 {@link examples.Examples#pubsub03(io.vertx.core.Vertx)}
@@ -473,10 +473,10 @@ The default policy is to not reconnect.
 
 ## Cancelling Request
 
-Postgres supports cancellation of requests in progress. You can cancel inflight requests using {@link io.reactiverse.pgclient.PgConnection#cancelRequest}. Cancelling a request opens a new connection to the server and cancels the request and then close the connection.
+Postgres supports cancellation of requests in progress. You can cancel inflight requests using {@link io.vertx.pgclient.PgConnection#cancelRequest}. Cancelling a request opens a new connection to the server and cancels the request and then close the connection.
 
 ```$lang
-{@link examples.Examples#cancelRequest(io.reactiverse.pgclient.PgConnection)}
+{@link examples.Examples#cancelRequest(io.vertx.pgclient.PgConnection)}
 ```
 
 > The cancellation signal might or might not have any effect — for example, if it arrives after the backend has finished processing the query, then it will have no effect. If the cancellation is effective, it results in the current command being terminated early with an error message.
@@ -485,7 +485,7 @@ More information can be found in the [official documentation](https://www.postgr
 
 ## Using SSL/TLS
 
-To configure the client to use SSL connection, you can configure the {@link io.reactiverse.pgclient.PgConnectOptions}
+To configure the client to use SSL connection, you can configure the {@link io.vertx.pgclient.PgConnectOptions}
 like a Vert.x `NetClient`.
 All [SSL modes](https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-PROTECTION) are supported and you are able to configure `sslmode`. The client is in `DISABLE` SSL mode by default.
 `ssl` parameter is kept as a mere shortcut for setting `sslmode`. `setSsl(true)` is equivalent to `setSslMode(VERIFY_CA)` and `setSsl(false)` is equivalent to `setSslMode(DISABLE)`.

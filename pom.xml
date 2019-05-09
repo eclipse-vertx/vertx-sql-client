@@ -275,7 +275,7 @@
               <unix.socket.port>${unix.socket.port}</unix.socket.port>
             </systemPropertyVariables>
             <excludes>
-              <exclude>io/reactiverse/pgclient/it/**</exclude>
+              <exclude>io/vertx/pgclient/it/**</exclude>
             </excludes>
           </configuration>
         </plugin>
@@ -324,7 +324,7 @@
             <phase>integration-test</phase>
             <configuration>
               <includes>
-                <include>io/reactiverse/pgclient/it/EnvTest.java</include>
+                <include>io/vertx/pgclient/it/EnvTest.java</include>
               </includes>
               <environmentVariables>
                 <PGHOSTADDR>test_host</PGHOSTADDR>
@@ -343,10 +343,10 @@
         <configuration>
           <sourcepath>${project.build.sourceDirectory};${project.build.directory}/generated-sources/annotations</sourcepath>
           <sourceFileIncludes>
-            <sourceFileInclude>io/reactiverse/**/*.java</sourceFileInclude>
+            <sourceFileInclude>io/vertx/**/*.java</sourceFileInclude>
           </sourceFileIncludes>
           <sourceFileExcludes>
-            <sourceFileExclude>io/reactiverse/groovy/**/*.java</sourceFileExclude>
+            <sourceFileExclude>io/vertx/groovy/**/*.java</sourceFileExclude>
             <sourceFileExclude>**/package-info.java</sourceFileExclude>
             <sourceFileExclude>**/impl/**</sourceFileExclude>
           </sourceFileExcludes>
@@ -425,7 +425,7 @@
                 <configuration>
                   <archive>
                     <manifest>
-                      <mainClass>io.reactiverse.pgclient.RawBenchmark</mainClass>
+                      <mainClass>io.vertx.pgclient.RawBenchmark</mainClass>
                     </manifest>
                   </archive>
                   <descriptors>
