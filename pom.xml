@@ -148,14 +148,7 @@
       <version>${stack.version}</version>
       <optional>true</optional>
     </dependency>
-    <!--
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>1.2.3</version>
-      <scope>test</scope>
-    </dependency>
-    -->
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -189,13 +182,6 @@
       <groupId>com.wix</groupId>
       <artifactId>wix-embedded-mysql</artifactId>
       <version>4.2.0</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.microsoft.sqlserver</groupId>
-      <artifactId>mssql-jdbc</artifactId>
-      <version>7.2.1.jre8</version>
       <scope>test</scope>
     </dependency>
 
