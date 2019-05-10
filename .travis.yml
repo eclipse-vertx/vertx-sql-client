@@ -3,6 +3,8 @@ branches:
   only:
   - master
   - /^\d+\.\d+$/
+before_script:
+  - sudo /etc/init.d/mysql stop
 jobs:
   include:
     - stage: test
