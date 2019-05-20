@@ -21,7 +21,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import java.util.Iterator;
 
 /**
- * An iterator for processing postgres items synchronously.
+ * An iterator for processing rows.
  */
 @VertxGen
 public interface RowIterator extends Iterator<Row> {
