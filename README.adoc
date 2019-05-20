@@ -1,11 +1,17 @@
-= Reactive Postgres Client
-
+= The Reactive SQL Client
 
 image:https://travis-ci.org/eclipse-vertx/vertx-sql-client.svg?branch=master["Build Status",link="https://travis-ci.org/eclipse-vertx/vertx-sql-client"]
 
 * Simple API focusing on scalability and low overhead.
 * Reactive and non blocking which able to handle many database connections with a single thread.
 * Ranked *#1* in the https://www.techempower.com/benchmarks/#section=data-r15&hw=ph&test=db[TechEmpower Benchmark Round 15] _Single query_ benchmark.
+* Database supported
+** PostgreSQL
+** MySQL
+
+This project is the natural evolution of the Reactive PostgreSQL Client and will be part of Vert.x 3.8 stack release.
+
+The Reactive PostgreSQL Client project is located https://github.com/vietj/reactive-pg-client/[here] for Vert.x 3.x
 
 == Features
 
@@ -25,81 +31,6 @@ image:https://travis-ci.org/eclipse-vertx/vertx-sql-client.svg?branch=master["Bu
 - Unix domain socket
 - HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy
 - Request cancellation
-
-== Usage
-
-Latest release is https://github.com/reactiverse/reactive-pg-client/blob/master/RELEASES.adoc[0.11.2].
-
-To use the client, add the following dependency to the _dependencies_ section of your build descriptor:
-
-* Maven (in your `pom.xml`) for Vert.x 3.6.x:
-
-[source,xml]
-----
-<dependency>
-  <groupId>io.reactiverse</groupId>
-  <artifactId>reactive-pg-client</artifactId>
-  <version>0.11.2</version>
-</dependency>
-----
-
-* Gradle (in your `build.gradle` file)  for Vert.x 3.6.x:
-
-[source,groovy]
-----
-dependencies {
-  compile 'io.reactiverse:reactive-pg-client:0.11.2'
-}
-----
-
-If you are using Vertx 3.5.x you should use instead `0.10.9`
-
-Then the code is quite straightforward:
-
-[source,java]
-----
-// Pool options
-PgPoolOptions options = new PgPoolOptions()
-  .setPort(5432)
-  .setHost("the-host")
-  .setDatabase("the-db")
-  .setUser("user")
-  .setPassword("secret")
-  .setMaxSize(5);
-
-// Create the client pool
-PgPool client = PgClient.pool(options);
-
-// A simple query
-client.query("SELECT * FROM users WHERE id='julien'", ar -> {
-  if (ar.succeeded()) {
-    PgResult<Row> result = ar.result();
-    System.out.println("Got " + result.size() + " results ");
-  } else {
-    System.out.println("Failure: " + ar.cause().getMessage());
-  }
-
-  // Now close the pool
-  client.close();
-});
-----
-
-== Integration / Usages
-
-* https://github.com/jklingsporn/vertx-jooq[vertx-jooq]: writing type safe queries and let them run at high speed using jOOQ, vertx and the reactive-pg-client.
-* https://docs.micronaut.io/latest/guide/index.html#postgresSupport[Micronaut]: supports reactive and non-blocking client to connect to Postgres using reactive-pg-client, allowing to handle many database connections with a single thread.
-
-== Documentations
-
-* https://reactiverse.io/reactive-pg-client/guide/java/index.html[Java docs]
-* https://reactiverse.io/reactive-pg-client/guide/kotlin/[Kotlin docs]
-* https://reactiverse.io/reactive-pg-client/guide/groovy/index.html[Groovy docs]
-* https://reactiverse.io/reactive-pg-client/guide/ruby/index.html[Ruby docs]
-* https://reactiverse.io/reactive-pg-client/guide/js/index.html[JavaScript docs]
-
-== Javadoc
-
-* https://reactiverse.io/reactive-pg-client/apidocs/index.html[Javadoc]
 
 == Supported Data Types
 
@@ -323,7 +254,7 @@ are not implemented yet (PR are welcome).
 
 == Snapshots
 
-Snapshots are deploy in Sonatype OSS repository: https://oss.sonatype.org/content/repositories/snapshots/io/reactiverse/reactive-pg-client/
+Snapshots are deploy in Sonatype OSS repository: https://oss.sonatype.org/content/repositories/snapshots/io/vertx/vertx-sql-client/
 
 == License
 
@@ -382,20 +313,3 @@ Run tests:
 ```
 > mvn test -Dconnection.uri=postgres://$username:$password@$host:$port/$database -Dtls.connection.uri=postgres://$username:$password@$host:$port/$database -Dunix.socket.directory=$path -Dunix.socket.port=$port
 ```
-
-=== Documentation
-
-The online and published documentation is in `/docs` and is served by GitHub pages with Jekyll.
-
-You can find the actual guide source in [src/main/docs/index.md](src/main/docs/index.md). At compilation time, this
-source generates the `jekyll/guide/java/index.md`.
-
-The current documentation is in `/jekyll` and can be preview using Docker and your browser
-
-* generate the documentation
-** `mvn compile` to generate `jekyll/guide/java/index.md`
-** `mvn site` to generate the javadoc in `jekyll/apidocs`
-* run Jekyll
-** `cd jekyll`
-** `docker-compose up`
-* open your browser at http://localhost:4000
