@@ -22,7 +22,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
 /**
- * A cursor that reads progressively the rows from Postgres, it is usefull for reading very large result.
+ * A cursor that reads progressively rows from the database, it is useful for reading very large result sets.
  */
 @VertxGen
 public interface Cursor {
@@ -36,7 +36,7 @@ public interface Cursor {
   void read(int count, Handler<AsyncResult<RowSet>> handler);
 
   /**
-   * Returns {@code true} when the cursor has results in progress and the {@link #execute} should be called to retrieve
+   * Returns {@code true} when the cursor has results in progress and the {@link #read} should be called to retrieve
    * them.
    *
    * @return whether the cursor has more results,
