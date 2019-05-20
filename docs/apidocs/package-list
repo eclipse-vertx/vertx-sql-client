@@ -1,9 +1,0 @@
-io.reactiverse.pgclient
-io.reactiverse.pgclient.data
-io.reactiverse.pgclient.pubsub
-io.reactiverse.reactivex.pgclient
-io.reactiverse.reactivex.pgclient.data
-io.reactiverse.reactivex.pgclient.pubsub
-io.reactiverse.rxjava.pgclient
-io.reactiverse.rxjava.pgclient.data
-io.reactiverse.rxjava.pgclient.pubsub
