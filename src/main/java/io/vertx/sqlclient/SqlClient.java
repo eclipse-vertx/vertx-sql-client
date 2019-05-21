@@ -121,4 +121,10 @@ public interface SqlClient {
    */
   @GenIgnore
   <R> SqlClient preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+
+  /**
+   * Close the client and release the associated resources.
+   */
+  void close();
+
 }
