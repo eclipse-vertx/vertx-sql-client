@@ -189,6 +189,11 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   }
 
   @Override
+  public void close() {
+    rollback();
+  }
+
+  @Override
   public io.vertx.sqlclient.Transaction abortHandler(Handler<Void> handler) {
     failedHandler = handler;
     return this;

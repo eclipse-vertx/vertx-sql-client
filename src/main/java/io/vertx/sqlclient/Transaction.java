@@ -95,4 +95,9 @@ public interface Transaction extends SqlClient {
   @Override
   @GenIgnore
   <R> Transaction preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+
+  /**
+   * Rollback the transaction and release the associated resources.
+   */
+  void close();
 }
