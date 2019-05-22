@@ -1332,10 +1332,7 @@ class DataTypeCodec {
           // check double backslashes
           buffer.appendByte((byte) '\\');
           pos += 2;
-          continue;
-        }
-
-        if (pos + 4 <= len) {
+        } else if (pos + 4 <= len) {
           // a preceded backslash with three-digit octal value
           int high = Character.digit(buff.getByte(pos + index + 1), 8) << 6;
           int medium = Character.digit(buff.getByte(pos + index + 2), 8) << 3;
@@ -1344,10 +1341,9 @@ class DataTypeCodec {
 
           buffer.appendByte((byte) escapedValue);
           pos += 4;
-          continue;
+        } else {
+          throw new DecoderException("Decoding unexpected BYTEA escape format");
         }
-
-        throw new DecoderException("Decoding unexpected BYTEA escape format");
       } else {
         // printable octets
         buffer.appendByte(current);
