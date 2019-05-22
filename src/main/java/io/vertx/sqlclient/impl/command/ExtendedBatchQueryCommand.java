@@ -45,7 +45,7 @@ public class ExtendedBatchQueryCommand<T> extends ExtendedQueryCommandBase<T> {
                             boolean singleton,
                             Collector<Row, ?, T> collector,
                             QueryResultHandler<T> resultHandler) {
-    super(ps, fetch, portal, suspended, singleton, ExecutionMode.STATEMENT_EXECUTE, collector, resultHandler);
+    super(ps, fetch, portal, suspended, singleton, collector, resultHandler);
     this.params = params;
   }
 
