@@ -20,6 +20,8 @@ public class ResetStatementCommandCodec extends CommandCodec<Void, ClosePortalCo
     super.encodePayload(encoder);
     MySQLPreparedStatement ps = (MySQLPreparedStatement) cmd.ps();
 
+    ps.isCursorOpen = false;
+
     ByteBuf payload = encoder.chctx.alloc().ioBuffer();
 
     payload.writeByte(CommandType.COM_STMT_RESET);

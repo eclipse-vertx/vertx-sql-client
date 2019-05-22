@@ -33,7 +33,7 @@ public class ExtendedQueryCommand<T> extends ExtendedQueryCommandBase<T> {
                        boolean singleton,
                        Collector<Row, ?, T> collector,
                        QueryResultHandler<T> resultHandler) {
-    this(ps, params, 0, null, false, singleton, ExecutionMode.STATEMENT_EXECUTE, collector, resultHandler);
+    this(ps, params, 0, null, false, singleton, collector, resultHandler);
   }
 
   public ExtendedQueryCommand(PreparedStatement ps,
@@ -42,10 +42,9 @@ public class ExtendedQueryCommand<T> extends ExtendedQueryCommandBase<T> {
                        String portal,
                        boolean suspended,
                        boolean singleton,
-                       ExecutionMode mode,
                        Collector<Row, ?, T> collector,
                        QueryResultHandler<T> resultHandler) {
-    super(ps, fetch, portal, suspended, singleton, mode, collector, resultHandler);
+    super(ps, fetch, portal, suspended, singleton, collector, resultHandler);
     this.params = params;
   }
 
