@@ -30,6 +30,8 @@ public class MySQLPreparedStatement implements PreparedStatement {
   final MySQLParamDesc paramDesc;
   final MySQLRowDesc rowDesc;
 
+  boolean isCursorOpen;
+
   public MySQLPreparedStatement(String sql, long statementId, MySQLParamDesc paramDesc, MySQLRowDesc rowDesc) {
     this.statementId = statementId;
     this.paramDesc = paramDesc;

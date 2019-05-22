@@ -23,11 +23,10 @@ import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
-import io.vertx.sqlclient.impl.command.ExtendedQueryCommandBase;
 
-import static io.vertx.mysqlclient.impl.protocol.backend.EofPacket.*;
-import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.*;
-import static io.vertx.mysqlclient.impl.protocol.backend.OkPacket.*;
+import static io.vertx.mysqlclient.impl.protocol.backend.EofPacket.EOF_PACKET_HEADER;
+import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
+import static io.vertx.mysqlclient.impl.protocol.backend.OkPacket.OK_PACKET_HEADER;
 
 public class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
 
@@ -35,17 +34,12 @@ public class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, Exten
   // Flag if parameters must be re-bound
   private final byte sendType = 1;
 
-  private enum CodecState {
-    WAITING_FOR_EXECUTE_RESPONSE_WITH_NO_CURSOR, WAITING_FOR_EXECUTE_RESPONSE_WITH_CURSOR, WAITING_FOR_FETCH_RESPONSE
-  }
-
-  private CodecState codecState;
   private final MySQLPreparedStatement ps;
 
   public ExtendedQueryCommandCodec(ExtendedQueryCommand<R> cmd) {
     super(cmd, DataFormat.BINARY);
     ps = (MySQLPreparedStatement) cmd.preparedStatement();
-    if (cmd.mode() == ExtendedQueryCommandBase.ExecutionMode.FETCH) {
+    if (cmd.fetch() > 0 && ps.isCursorOpen) {
       // restore the state we need for decoding fetch response
       columnDefinitions = ps.rowDesc.columnDefinitions();
     }
@@ -55,33 +49,28 @@ public class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, Exten
   void encodePayload(MySQLEncoder encoder) {
     super.encodePayload(encoder);
 
-    switch (cmd.mode()) {
-      case STATEMENT_EXECUTE:
-        // CURSOR_TYPE_NO_CURSOR
-        writeExecuteMessage(encoder, ps.statementId, ps.paramDesc.paramDefinitions(), sendType, cmd.params(), (byte) 0x00);
-        codecState = CodecState.WAITING_FOR_EXECUTE_RESPONSE_WITH_NO_CURSOR;
-        break;
-      case FETCH_WITH_OPEN_CURSOR:
+    if (ps.isCursorOpen) {
+      writeFetchMessage(encoder, ps.statementId, cmd.fetch());
+      decoder = new RowResultDecoder<>(cmd.collector(), false, ps.rowDesc);
+    } else {
+      if (cmd.fetch() > 0) {
         //TODO Cursor_type is READ_ONLY?
         writeExecuteMessage(encoder, ps.statementId, ps.paramDesc.paramDefinitions(), sendType, cmd.params(), (byte) 0x01);
-        codecState = CodecState.WAITING_FOR_EXECUTE_RESPONSE_WITH_CURSOR;
-        break;
-      case FETCH:
-        writeFetchMessage(encoder, ps.statementId, cmd.fetch());
-        codecState = CodecState.WAITING_FOR_FETCH_RESPONSE;
-        decoder = new RowResultDecoder<>(cmd.collector(), false, ps.rowDesc);
-        break;
+      } else {
+        // CURSOR_TYPE_NO_CURSOR
+        writeExecuteMessage(encoder, ps.statementId, ps.paramDesc.paramDefinitions(), sendType, cmd.params(), (byte) 0x00);
+      }
     }
-
   }
 
   @Override
   void decodePayload(ByteBuf payload, MySQLEncoder encoder, int payloadLength, int sequenceId) {
-    switch (codecState) {
-      case WAITING_FOR_EXECUTE_RESPONSE_WITH_NO_CURSOR:
-        super.decodePayload(payload,encoder, payloadLength, sequenceId);
-        break;
-      case WAITING_FOR_EXECUTE_RESPONSE_WITH_CURSOR:
+    if (ps.isCursorOpen) {
+      // decoding COM_STMT_FETCH response
+      handleRows(payload, payloadLength, super::handleSingleRow);
+    } else {
+      // decoding COM_STMT_EXECUTE response
+      if (cmd.fetch() > 0) {
         switch (commandHandlerState) {
           case INIT:
             handleResultsetColumnCountPacketBody(payload);
@@ -105,16 +94,17 @@ public class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, Exten
               // need to reset packet number so that we can send a fetch request
               this.sequenceId = 0;
               // send fetch after cursor opened
-              writeFetchMessage(encoder, ps.statementId, cmd.fetch());
-              codecState = CodecState.WAITING_FOR_FETCH_RESPONSE;
               decoder = new RowResultDecoder<>(cmd.collector(), false, ps.rowDesc);
+
+              ps.isCursorOpen = true;
+
+              writeFetchMessage(encoder, ps.statementId, cmd.fetch());
             }
             break;
         }
-        break;
-      case WAITING_FOR_FETCH_RESPONSE:
-        handleRows(payload, payloadLength, super::handleSingleRow);
-        break;
+      } else {
+        super.decodePayload(payload, encoder, payloadLength, sequenceId);
+      }
     }
   }
 
