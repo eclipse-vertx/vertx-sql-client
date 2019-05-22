@@ -1034,7 +1034,7 @@ class DataTypeCodec {
     if (isHexFormat(index, len, buff)) {
       // hex format
       // Shift 2 bytes: skip \x prolog
-      return Buffer.buffer(decodeHexStringToBytes(index + 2, len - 2, buff));
+      return decodeHexStringToBytes(index + 2, len - 2, buff);
     } else {
       // escape format
       return decodeEscapeByteaStringToBuffer(index, len, buff);
@@ -1295,21 +1295,21 @@ class DataTypeCodec {
 
   /**
    * Decode the specified {@code buff} formatted as an hex string starting at the buffer readable index
-   * with the specified {@code length} to a byte array.
+   * with the specified {@code length} to a {@link Buffer}.
    *
    * @param len the hex string length
    * @param buff the byte buff to read from
-   * @return the decoded value as a byte array
+   * @return the decoded value as a Buffer
    */
-  private static byte[] decodeHexStringToBytes(int index, int len, ByteBuf buff) {
+  private static Buffer decodeHexStringToBytes(int index, int len, ByteBuf buff) {
     len = len >> 1;
-    byte[] bytes = new byte[len];
-    for (int i = 0;i < len;i++) {
+    Buffer buffer = Buffer.buffer(len);
+    for (int i = 0; i < len; i++) {
       byte b0 = decodeHexChar(buff.getByte(index++));
       byte b1 = decodeHexChar(buff.getByte(index++));
-      bytes[i] = (byte)(b0 * 16 + b1);
+      buffer.appendByte((byte) (b0 * 16 + b1));
     }
-    return bytes;
+    return buffer;
   }
 
   private static byte decodeHexChar(byte ch) {
