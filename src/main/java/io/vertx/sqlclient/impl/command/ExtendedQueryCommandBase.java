@@ -30,13 +30,13 @@ public abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
 
   protected final PreparedStatement ps;
   protected final int fetch;
-  protected final String portal;
+  protected final String cursorId;
   protected final boolean suspended;
   private final boolean singleton;
 
   ExtendedQueryCommandBase(PreparedStatement ps,
                            int fetch,
-                           String portal,
+                           String cursorId,
                            boolean suspended,
                            boolean singleton,
                            Collector<Row, ?, R> collector,
@@ -44,7 +44,7 @@ public abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
     super(collector, resultHandler);
     this.ps = ps;
     this.fetch = fetch;
-    this.portal = portal;
+    this.cursorId = cursorId;
     this.suspended = suspended;
     this.singleton = singleton;
   }
@@ -57,8 +57,8 @@ public abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
     return fetch;
   }
 
-  public String portal() {
-    return portal;
+  public String cursorId() {
+    return cursorId;
   }
 
   public boolean isSuspended() {

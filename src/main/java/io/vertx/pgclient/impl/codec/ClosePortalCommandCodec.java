@@ -16,17 +16,17 @@
  */
 package io.vertx.pgclient.impl.codec;
 
-import io.vertx.sqlclient.impl.command.ClosePortalCommand;
+import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 
-class ClosePortalCommandCodec extends PgCommandCodec<Void, ClosePortalCommand> {
+class ClosePortalCommandCodec extends PgCommandCodec<Void, CloseCursorCommand> {
 
-  ClosePortalCommandCodec(ClosePortalCommand cmd) {
+  ClosePortalCommandCodec(CloseCursorCommand cmd) {
     super(cmd);
   }
 
   @Override
   public void encode(PgEncoder out) {
-    out.writeClosePortal(cmd.portal());
+    out.writeClosePortal(cmd.id());
     out.writeSync();
   }
 

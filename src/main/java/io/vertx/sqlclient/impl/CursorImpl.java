@@ -23,7 +23,6 @@ import io.vertx.core.Handler;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.impl.command.ExtendedQueryCommandBase;
 
 import java.util.UUID;
 
@@ -35,7 +34,7 @@ public class CursorImpl implements Cursor {
   private final PreparedQueryImpl ps;
   private final Tuple params;
 
-  private String portal;
+  private String id;
   private boolean closed;
   private SqlResultBuilder<RowSet, RowSetImpl, RowSet> result;
 
@@ -54,13 +53,13 @@ public class CursorImpl implements Cursor {
 
   @Override
   public synchronized void read(int count, Handler<AsyncResult<RowSet>> handler) {
-    if (portal == null) {
-      portal = UUID.randomUUID().toString();
+    if (id == null) {
+      id = UUID.randomUUID().toString();
       result = new SqlResultBuilder<>(RowSetImpl.FACTORY, handler);
-      ps.execute(params, count, portal, false, false, RowSetImpl.COLLECTOR, result, result);
+      ps.execute(params, count, id, false, false, RowSetImpl.COLLECTOR, result, result);
     } else if (result.isSuspended()) {
       result = new SqlResultBuilder<>(RowSetImpl.FACTORY, handler);
-      ps.execute(params, count, portal, true, false, RowSetImpl.COLLECTOR, result, result);
+      ps.execute(params, count, id, true, false, RowSetImpl.COLLECTOR, result, result);
     } else {
       throw new IllegalStateException();
     }
@@ -70,13 +69,13 @@ public class CursorImpl implements Cursor {
   public synchronized void close(Handler<AsyncResult<Void>> completionHandler) {
     if (!closed) {
       closed = true;
-      if (portal == null) {
+      if (id == null) {
         completionHandler.handle(Future.succeededFuture());
       } else {
-        String p = portal;
-        portal = null;
+        String id = this.id;
+        this.id = null;
         result = null;
-        ps.closePortal(p, completionHandler);
+        ps.closeCursor(id, completionHandler);
       }
     }
   }

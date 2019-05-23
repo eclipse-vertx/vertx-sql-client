@@ -3,15 +3,15 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.mysqlclient.impl.protocol.backend.OkPacket;
-import io.vertx.sqlclient.impl.command.ClosePortalCommand;
+import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
 import java.nio.charset.StandardCharsets;
 
 import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.*;
 
-public class ResetStatementCommandCodec extends CommandCodec<Void, ClosePortalCommand> {
-  public ResetStatementCommandCodec(ClosePortalCommand cmd) {
+public class ResetStatementCommandCodec extends CommandCodec<Void, CloseCursorCommand> {
+  public ResetStatementCommandCodec(CloseCursorCommand cmd) {
     super(cmd);
   }
 

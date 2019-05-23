@@ -17,7 +17,7 @@
 
 package io.vertx.sqlclient.impl;
 
-import io.vertx.sqlclient.impl.command.ClosePortalCommand;
+import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
 import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
@@ -73,7 +73,7 @@ class PreparedQueryImpl implements PreparedQuery {
 
   <A, R> PreparedQuery execute(Tuple args,
                                int fetch,
-                               String portal,
+                               String cursorId,
                                boolean suspended,
                                boolean singleton,
                                Collector<Row, A, R> collector,
@@ -88,7 +88,7 @@ class PreparedQueryImpl implements PreparedQuery {
           ps,
           args,
           fetch,
-          portal,
+          cursorId,
           suspended,
           singleton,
           collector,
@@ -97,7 +97,7 @@ class PreparedQueryImpl implements PreparedQuery {
         conn.schedule(cmd);
       }
     } else {
-      context.runOnContext(v -> execute(args, fetch, portal, suspended, singleton, collector, resultHandler, handler));
+      context.runOnContext(v -> execute(args, fetch, cursorId, suspended, singleton, collector, resultHandler, handler));
     }
     return this;
   }
@@ -162,10 +162,9 @@ class PreparedQueryImpl implements PreparedQuery {
     }
   }
 
-  void closePortal(String portal, Handler<AsyncResult<Void>> handler) {
-    ClosePortalCommand cmd = new ClosePortalCommand(portal, ps);
+  void closeCursor(String cursorId, Handler<AsyncResult<Void>> handler) {
+    CloseCursorCommand cmd = new CloseCursorCommand(cursorId, ps);
     cmd.handler = handler;
     conn.schedule(cmd);
   }
-
 }
