@@ -15,7 +15,7 @@
  *
  */
 
-@ModuleGen(name = "vertx-my-client", groupPackage = "io.vertx")
+@ModuleGen(name = "vertx-mysql-client", groupPackage = "io.vertx")
 package io.vertx.mysqlclient;
 
 import io.vertx.codegen.annotations.ModuleGen;
