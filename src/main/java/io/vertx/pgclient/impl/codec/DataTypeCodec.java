@@ -1031,8 +1031,14 @@ class DataTypeCodec {
   }
 
   private static Buffer textDecodeBYTEA(int index, int len, ByteBuf buff) {
-    // Shift 2 bytes: skip \x prolog
-    return Buffer.buffer(decodeHexStringToBytes(index + 2, len - 2, buff));
+    if (isHexFormat(index, len, buff)) {
+      // hex format
+      // Shift 2 bytes: skip \x prolog
+      return decodeHexStringToBytes(index + 2, len - 2, buff);
+    } else {
+      // escape format
+      return decodeEscapeByteaStringToBuffer(index, len, buff);
+    }
   }
 
   private static void binaryEncodeBYTEA(Buffer value, ByteBuf buff) {
@@ -1289,25 +1295,63 @@ class DataTypeCodec {
 
   /**
    * Decode the specified {@code buff} formatted as an hex string starting at the buffer readable index
-   * with the specified {@code length} to a byte array.
+   * with the specified {@code length} to a {@link Buffer}.
    *
    * @param len the hex string length
    * @param buff the byte buff to read from
-   * @return the decoded value as a byte array
+   * @return the decoded value as a Buffer
    */
-  private static byte[] decodeHexStringToBytes(int index, int len, ByteBuf buff) {
+  private static Buffer decodeHexStringToBytes(int index, int len, ByteBuf buff) {
     len = len >> 1;
-    byte[] bytes = new byte[len];
-    for (int i = 0;i < len;i++) {
+    Buffer buffer = Buffer.buffer(len);
+    for (int i = 0; i < len; i++) {
       byte b0 = decodeHexChar(buff.getByte(index++));
       byte b1 = decodeHexChar(buff.getByte(index++));
-      bytes[i] = (byte)(b0 * 16 + b1);
+      buffer.appendByte((byte) (b0 * 16 + b1));
     }
-    return bytes;
+    return buffer;
   }
 
   private static byte decodeHexChar(byte ch) {
     return (byte)(((ch & 0x1F) + ((ch >> 6) * 0x19) - 0x10) & 0x0F);
+  }
+
+  private static boolean isHexFormat(int index, int len, ByteBuf buff) {
+    return len >= 2 && buff.getByte(index) == '\\' && buff.getByte(index + 1) == 'x';
+  }
+
+  private static Buffer decodeEscapeByteaStringToBuffer(int index, int len, ByteBuf buff) {
+    Buffer buffer = Buffer.buffer();
+
+    int pos = 0;
+    while (pos < len) {
+      byte current = buff.getByte(pos + index);
+
+      if (current == '\\') {
+        if (pos + 2 <= len && buff.getByte(pos + index + 1) == '\\') {
+          // check double backslashes
+          buffer.appendByte((byte) '\\');
+          pos += 2;
+        } else if (pos + 4 <= len) {
+          // a preceded backslash with three-digit octal value
+          int high = Character.digit(buff.getByte(pos + index + 1), 8) << 6;
+          int medium = Character.digit(buff.getByte(pos + index + 2), 8) << 3;
+          int low = Character.digit(buff.getByte(pos + index + 3), 8);
+          int escapedValue = high + medium + low;
+
+          buffer.appendByte((byte) escapedValue);
+          pos += 4;
+        } else {
+          throw new DecoderException("Decoding unexpected BYTEA escape format");
+        }
+      } else {
+        // printable octets
+        buffer.appendByte(current);
+        pos++;
+      }
+    }
+
+    return buffer;
   }
 
   private static <T> T[] binaryDecodeArray(IntFunction<T[]> supplier, DataType type, int index, int len, ByteBuf buff) {
