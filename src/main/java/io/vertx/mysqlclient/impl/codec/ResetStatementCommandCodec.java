@@ -18,7 +18,7 @@ public class ResetStatementCommandCodec extends CommandCodec<Void, ClosePortalCo
   @Override
   void encodePayload(MySQLEncoder encoder) {
     super.encodePayload(encoder);
-    MySQLPreparedStatement ps = (MySQLPreparedStatement) cmd.ps();
+    MySQLPreparedStatement ps = (MySQLPreparedStatement) cmd.statement();
 
     ps.isCursorOpen = false;
 
