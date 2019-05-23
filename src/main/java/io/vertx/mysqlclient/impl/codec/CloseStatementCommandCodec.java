@@ -14,7 +14,7 @@ public class CloseStatementCommandCodec extends CommandCodec<Void, CloseStatemen
   @Override
   void encodePayload(MySQLEncoder encoder) {
     super.encodePayload(encoder);
-    MySQLPreparedStatement ps = (MySQLPreparedStatement) cmd.ps();
+    MySQLPreparedStatement ps = (MySQLPreparedStatement) cmd.statement();
 
     ByteBuf payload = encoder.chctx.alloc().ioBuffer();
 
