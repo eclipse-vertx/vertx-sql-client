@@ -30,7 +30,7 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
   @Override
   void encode(PgEncoder encoder) {
     if (cmd.isSuspended()) {
-      encoder.writeExecute(cmd.portal(), cmd.fetch());
+      encoder.writeExecute(cmd.cursorId(), cmd.fetch());
       encoder.writeSync();
     } else {
       PgPreparedStatement ps = (PgPreparedStatement) cmd.preparedStatement();
@@ -42,8 +42,8 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
         this.result = false;
       } else {
         for (Tuple param : cmd.params()) {
-          encoder.writeBind(ps.bind, cmd.portal(), (List<Object>) param);
-          encoder.writeExecute(cmd.portal(), cmd.fetch());
+          encoder.writeBind(ps.bind, cmd.cursorId(), (List<Object>) param);
+          encoder.writeExecute(cmd.cursorId(), cmd.fetch());
         }
       }
       encoder.writeSync();

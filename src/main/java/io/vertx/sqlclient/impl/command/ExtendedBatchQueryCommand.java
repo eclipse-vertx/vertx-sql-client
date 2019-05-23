@@ -40,12 +40,12 @@ public class ExtendedBatchQueryCommand<T> extends ExtendedQueryCommandBase<T> {
   private ExtendedBatchQueryCommand(PreparedStatement ps,
                             List<Tuple> params,
                             int fetch,
-                            String portal,
+                            String cursorId,
                             boolean suspended,
                             boolean singleton,
                             Collector<Row, ?, T> collector,
                             QueryResultHandler<T> resultHandler) {
-    super(ps, fetch, portal, suspended, singleton, collector, resultHandler);
+    super(ps, fetch, cursorId, suspended, singleton, collector, resultHandler);
     this.params = params;
   }
 
