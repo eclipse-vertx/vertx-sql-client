@@ -53,6 +53,27 @@ public class MySQLQueryTest extends MySQLTestBase {
   }
 
   @Test
+  public void testDecodePacketSizeMoreThan16MB(TestContext ctx) {
+    int dataSize = 20 * 1024 * 1024; // 20MB payload
+    byte[] data = new byte[dataSize];
+    Buffer buffer = Buffer.buffer(data);
+
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("INSERT INTO datatype(id, `LongBlob`) VALUES(4, ?);", ctx.asyncAssertSuccess(preparedQuery -> {
+        preparedQuery.execute(Tuple.of(buffer), ctx.asyncAssertSuccess(res -> {
+          conn.preparedQuery("SELECT id, `LongBlob` FROM datatype WHERE id = 4", ctx.asyncAssertSuccess(rowSet -> {
+            Row row = rowSet.iterator().next();
+            ctx.assertEquals(4, row.getInteger(0));
+            ctx.assertEquals(4, row.getInteger("id"));
+            ctx.assertEquals(buffer, row.getBuffer(1));
+            ctx.assertEquals(buffer, row.getBuffer("LongBlob"));
+          }));
+        }));
+      }));
+    }));
+  }
+
+  @Test
   public void testMultiResult(TestContext ctx) {
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT 1; SELECT \'test\';", ctx.asyncAssertSuccess(result -> {

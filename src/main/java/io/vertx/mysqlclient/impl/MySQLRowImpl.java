@@ -100,7 +100,8 @@ public class MySQLRowImpl extends ArrayTuple implements RowInternal {
 
   @Override
   public Buffer getBuffer(String name) {
-    throw new UnsupportedOperationException();
+    int pos = rowDesc.columnIndex(name);
+    return pos == -1 ? null : getBuffer(pos);
   }
 
   @Override
