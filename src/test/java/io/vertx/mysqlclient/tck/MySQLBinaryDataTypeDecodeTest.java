@@ -9,6 +9,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.time.Duration;
+
 @RunWith(VertxUnitRunner.class)
 public class MySQLBinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase {
   @ClassRule
@@ -25,5 +27,12 @@ public class MySQLBinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase 
   public void testBoolean(TestContext ctx) {
     // does not pass due to it's TINYINT type
     super.testBoolean(ctx);
+  }
+
+  @Test
+  @Override
+  public void testTime(TestContext ctx) {
+    // MySQL TIME type is mapped to java.time.Duration so we need to override here
+    testDecodeGeneric(ctx, "test_time", Duration.class, Duration.ofHours(18).plusMinutes(45).plusSeconds(2));
   }
 }
