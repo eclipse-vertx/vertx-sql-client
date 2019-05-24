@@ -51,23 +51,6 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     this.encoder = encoder;
   }
 
-  void encodePacket(Consumer<ByteBuf> payloadEncoder) {
-    ByteBuf packet = allocateBuffer();
-    // encode packet header
-    int packetStartIdx = packet.writerIndex();
-    packet.writeMediumLE(0); // will set payload length later by calculation
-    packet.writeByte(sequenceId++);
-
-    // encode packet payload
-    payloadEncoder.accept(packet);
-
-    // set payload length
-    int lenOfPayload = packet.writerIndex() - packetStartIdx - 4;
-    packet.setMediumLE(packetStartIdx, lenOfPayload);
-
-    encoder.chctx.writeAndFlush(packet);
-  }
-
   ByteBuf allocateBuffer() {
     return encoder.chctx.alloc().ioBuffer();
   }

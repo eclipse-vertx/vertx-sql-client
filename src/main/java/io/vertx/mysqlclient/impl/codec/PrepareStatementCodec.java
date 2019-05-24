@@ -42,10 +42,7 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
   @Override
   void encode(MySQLEncoder encoder) {
     super.encode(encoder);
-    encodePacket(payload -> {
-      payload.writeByte(CommandType.COM_STMT_PREPARE);
-      payload.writeCharSequence(cmd.sql(), StandardCharsets.UTF_8);
-    });
+    sendStatementPrepareCommand();
   }
 
   @Override
@@ -101,6 +98,24 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
         }
         break;
     }
+  }
+
+  private void sendStatementPrepareCommand() {
+    ByteBuf packet = allocateBuffer();
+    // encode packet header
+    int packetStartIdx = packet.writerIndex();
+    packet.writeMediumLE(0); // will set payload length later by calculation
+    packet.writeByte(sequenceId++);
+
+    // encode packet payload
+    packet.writeByte(CommandType.COM_STMT_PREPARE);
+    packet.writeCharSequence(cmd.sql(), StandardCharsets.UTF_8);
+
+    // set payload length
+    int lenOfPayload = packet.writerIndex() - packetStartIdx - 4;
+    packet.setMediumLE(packetStartIdx, lenOfPayload);
+
+    encoder.chctx.writeAndFlush(packet);
   }
 
   private void handleReadyForQuery() {

@@ -55,15 +55,15 @@ class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, ExtendedQuer
     super.encode(encoder);
 
     if (statement.isCursorOpen) {
-      writeFetchMessage(statement.statementId, cmd.fetch());
+      sendStatementFetchCommand(statement.statementId, cmd.fetch());
       decoder = new RowResultDecoder<>(cmd.collector(), false, statement.rowDesc);
     } else {
       if (cmd.fetch() > 0) {
         //TODO Cursor_type is READ_ONLY?
-        writeExecuteMessage(statement.statementId, statement.paramDesc.paramDefinitions(), sendType, cmd.params(), (byte) 0x01);
+        sendStatementExecuteCommand(statement.statementId, statement.paramDesc.paramDefinitions(), sendType, cmd.params(), (byte) 0x01);
       } else {
         // CURSOR_TYPE_NO_CURSOR
-        writeExecuteMessage(statement.statementId, statement.paramDesc.paramDefinitions(), sendType, cmd.params(), (byte) 0x00);
+        sendStatementExecuteCommand(statement.statementId, statement.paramDesc.paramDefinitions(), sendType, cmd.params(), (byte) 0x00);
       }
     }
   }
@@ -103,7 +103,7 @@ class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, ExtendedQuer
 
               statement.isCursorOpen = true;
 
-              writeFetchMessage(statement.statementId, cmd.fetch());
+              sendStatementFetchCommand(statement.statementId, cmd.fetch());
             }
             break;
         }
@@ -113,53 +113,75 @@ class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, ExtendedQuer
     }
   }
 
-  private void writeExecuteMessage(long statementId, ColumnDefinition[] paramsColumnDefinitions, byte sendType, Tuple params, byte cursorType) {
-    encodePacket(payload -> {
-      payload.writeByte(CommandType.COM_STMT_EXECUTE);
-      payload.writeIntLE((int) statementId);
-      payload.writeByte(cursorType);
-      // iteration count, always 1
-      payload.writeIntLE(1);
+  private void sendStatementExecuteCommand(long statementId, ColumnDefinition[] paramsColumnDefinitions, byte sendType, Tuple params, byte cursorType) {
+    ByteBuf packet = allocateBuffer();
+    // encode packet header
+    int packetStartIdx = packet.writerIndex();
+    packet.writeMediumLE(0); // will set payload length later by calculation
+    packet.writeByte(sequenceId++);
 
-      int numOfParams = paramsColumnDefinitions.length;
-      int bitmapLength = (numOfParams + 7) / 8;
-      byte[] nullBitmap = new byte[bitmapLength];
+    // encode packet payload
+    packet.writeByte(CommandType.COM_STMT_EXECUTE);
+    packet.writeIntLE((int) statementId);
+    packet.writeByte(cursorType);
+    // iteration count, always 1
+    packet.writeIntLE(1);
 
-      int pos = payload.writerIndex();
+    int numOfParams = paramsColumnDefinitions.length;
+    int bitmapLength = (numOfParams + 7) / 8;
+    byte[] nullBitmap = new byte[bitmapLength];
 
-      if (numOfParams > 0) {
-        // write a dummy bitmap first
-        payload.writeBytes(nullBitmap);
-        payload.writeByte(sendType);
-        if (sendType == 1) {
-          for (int i = 0; i < numOfParams; i++) {
-            Object value = params.getValue(i);
-            payload.writeByte(parseDataTypeByEncodingValue(value).id);
-            payload.writeByte(0); // parameter flag: signed
-          }
-        }
+    int pos = packet.writerIndex();
 
+    if (numOfParams > 0) {
+      // write a dummy bitmap first
+      packet.writeBytes(nullBitmap);
+      packet.writeByte(sendType);
+      if (sendType == 1) {
         for (int i = 0; i < numOfParams; i++) {
           Object value = params.getValue(i);
-          if (value != null) {
-            DataTypeCodec.encodeBinary(parseDataTypeByEncodingValue(value), value, payload);
-          } else {
-            nullBitmap[i / 8] |= (1 << (i & 7));
-          }
+          packet.writeByte(parseDataTypeByEncodingValue(value).id);
+          packet.writeByte(0); // parameter flag: signed
         }
-
-        // padding null-bitmap content
-        payload.setBytes(pos, nullBitmap);
       }
-    });
+
+      for (int i = 0; i < numOfParams; i++) {
+        Object value = params.getValue(i);
+        if (value != null) {
+          DataTypeCodec.encodeBinary(parseDataTypeByEncodingValue(value), value, packet);
+        } else {
+          nullBitmap[i / 8] |= (1 << (i & 7));
+        }
+      }
+
+      // padding null-bitmap content
+      packet.setBytes(pos, nullBitmap);
+    }
+
+    // set payload length
+    int lenOfPayload = packet.writerIndex() - packetStartIdx - 4;
+    packet.setMediumLE(packetStartIdx, lenOfPayload);
+
+    encoder.chctx.writeAndFlush(packet);
   }
 
-  private void writeFetchMessage(long statementId, int count) {
-    encodePacket(payload -> {
-      payload.writeByte(CommandType.COM_STMT_FETCH);
-      payload.writeIntLE((int) statementId);
-      payload.writeIntLE(count);
-    });
+  private void sendStatementFetchCommand(long statementId, int count) {
+    ByteBuf packet = allocateBuffer();
+    // encode packet header
+    int packetStartIdx = packet.writerIndex();
+    packet.writeMediumLE(0); // will set payload length later by calculation
+    packet.writeByte(sequenceId++);
+
+    // encode packet payload
+    packet.writeByte(CommandType.COM_STMT_FETCH);
+    packet.writeIntLE((int) statementId);
+    packet.writeIntLE(count);
+
+    // set payload length
+    int lenOfPayload = packet.writerIndex() - packetStartIdx - 4;
+    packet.setMediumLE(packetStartIdx, lenOfPayload);
+
+    encoder.chctx.writeAndFlush(packet);
   }
 
   @Override

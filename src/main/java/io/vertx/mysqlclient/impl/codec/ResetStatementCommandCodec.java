@@ -20,10 +20,7 @@ class ResetStatementCommandCodec extends CommandCodec<Void, CloseCursorCommand> 
 
     statement.isCursorOpen = false;
 
-    encodePacket(payload -> {
-      payload.writeByte(CommandType.COM_STMT_RESET);
-      payload.writeIntLE((int) statement.statementId);
-    });
+    sendStatementResetCommand(statement);
   }
 
   @Override
@@ -34,5 +31,23 @@ class ResetStatementCommandCodec extends CommandCodec<Void, CloseCursorCommand> 
     } else if (first == OkPacket.OK_PACKET_HEADER) {
       completionHandler.handle(CommandResponse.success(null));
     }
+  }
+
+  private void sendStatementResetCommand(MySQLPreparedStatement statement) {
+    ByteBuf packet = allocateBuffer();
+    // encode packet header
+    int packetStartIdx = packet.writerIndex();
+    packet.writeMediumLE(0); // will set payload length later by calculation
+    packet.writeByte(sequenceId++);
+
+    // encode packet payload
+    packet.writeByte(CommandType.COM_STMT_RESET);
+    packet.writeIntLE((int) statement.statementId);
+
+    // set payload length
+    int lenOfPayload = packet.writerIndex() - packetStartIdx - 4;
+    packet.setMediumLE(packetStartIdx, lenOfPayload);
+
+    encoder.chctx.writeAndFlush(packet);
   }
 }

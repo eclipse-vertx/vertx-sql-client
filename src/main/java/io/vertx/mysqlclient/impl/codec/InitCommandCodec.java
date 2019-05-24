@@ -128,7 +128,7 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
       String authMethodName = initialHandshakePacket.getAuthMethodName();
       byte[] serverScramble = initialHandshakePacket.getScramble();
       HandshakeResponse handshakeResponse = new HandshakeResponse(cmd.username(), StandardCharsets.UTF_8, cmd.password(), cmd.database(), serverScramble, encoder.clientCapabilitiesFlag, authMethodName, null);
-      writeHandshakeResponseMessage(handshakeResponse);
+      sendHandshakeResponseMessage(handshakeResponse);
     }
   }
 
@@ -148,51 +148,62 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     }
   }
 
-  void writeHandshakeResponseMessage(HandshakeResponse message) {
-    encodePacket(payload -> {
-      int clientCapabilitiesFlags = message.getClientCapabilitiesFlags();
-      payload.writeIntLE(message.getClientCapabilitiesFlags());
-      payload.writeIntLE(message.getMaxPacketSize());
-      payload.writeByte(CharacterSetMapping.getCharsetByteValue(message.getCharset().name()));
-      byte[] filler = new byte[23];
-      payload.writeBytes(filler);
-      BufferUtils.writeNullTerminatedString(payload, message.getUsername(), StandardCharsets.UTF_8);
-      String password = message.getPassword();
-      if (password == null || password.isEmpty()) {
-        payload.writeByte(0);
-      } else {
-        //TODO support different auth methods here
+  private void sendHandshakeResponseMessage(HandshakeResponse message) {
+    ByteBuf packet = allocateBuffer();
+    // encode packet header
+    int packetStartIdx = packet.writerIndex();
+    packet.writeMediumLE(0); // will set payload length later by calculation
+    packet.writeByte(sequenceId++);
 
-        byte[] scrambledPassword = Native41Authenticator.encode(message.getPassword(), StandardCharsets.UTF_8, message.getScramble());
-        if ((clientCapabilitiesFlags & CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA) != 0) {
-          BufferUtils.writeLengthEncodedInteger(payload, scrambledPassword.length);
-          payload.writeBytes(scrambledPassword);
-        } else if ((clientCapabilitiesFlags & CLIENT_SECURE_CONNECTION) != 0) {
-          payload.writeByte(scrambledPassword.length);
-          payload.writeBytes(scrambledPassword);
-        } else {
-          payload.writeByte(0);
-        }
+    // encode packet payload
+    int clientCapabilitiesFlags = message.getClientCapabilitiesFlags();
+    packet.writeIntLE(message.getClientCapabilitiesFlags());
+    packet.writeIntLE(message.getMaxPacketSize());
+    packet.writeByte(CharacterSetMapping.getCharsetByteValue(message.getCharset().name()));
+    byte[] filler = new byte[23];
+    packet.writeBytes(filler);
+    BufferUtils.writeNullTerminatedString(packet, message.getUsername(), StandardCharsets.UTF_8);
+    String password = message.getPassword();
+    if (password == null || password.isEmpty()) {
+      packet.writeByte(0);
+    } else {
+      //TODO support different auth methods here
+
+      byte[] scrambledPassword = Native41Authenticator.encode(message.getPassword(), StandardCharsets.UTF_8, message.getScramble());
+      if ((clientCapabilitiesFlags & CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA) != 0) {
+        BufferUtils.writeLengthEncodedInteger(packet, scrambledPassword.length);
+        packet.writeBytes(scrambledPassword);
+      } else if ((clientCapabilitiesFlags & CLIENT_SECURE_CONNECTION) != 0) {
+        packet.writeByte(scrambledPassword.length);
+        packet.writeBytes(scrambledPassword);
+      } else {
+        packet.writeByte(0);
       }
-      if ((clientCapabilitiesFlags & CLIENT_CONNECT_WITH_DB) != 0) {
-        BufferUtils.writeNullTerminatedString(payload, message.getDatabase(), StandardCharsets.UTF_8);
+    }
+    if ((clientCapabilitiesFlags & CLIENT_CONNECT_WITH_DB) != 0) {
+      BufferUtils.writeNullTerminatedString(packet, message.getDatabase(), StandardCharsets.UTF_8);
+    }
+    if ((clientCapabilitiesFlags & CLIENT_PLUGIN_AUTH) != 0) {
+      BufferUtils.writeNullTerminatedString(packet, message.getAuthMethodName(), StandardCharsets.UTF_8);
+    }
+    if ((clientCapabilitiesFlags & CLIENT_CONNECT_ATTRS) != 0) {
+      ByteBuf kv = encoder.chctx.alloc().ioBuffer();
+      try {
+        message.getClientConnectAttrs().forEach((key, value) -> {
+          BufferUtils.writeLengthEncodedString(kv, key, StandardCharsets.UTF_8);
+          BufferUtils.writeLengthEncodedString(kv, value, StandardCharsets.UTF_8);
+        });
+        BufferUtils.writeLengthEncodedInteger(packet, kv.readableBytes());
+        packet.writeBytes(kv);
+      } finally {
+        kv.release();
       }
-      if ((clientCapabilitiesFlags & CLIENT_PLUGIN_AUTH) != 0) {
-        BufferUtils.writeNullTerminatedString(payload, message.getAuthMethodName(), StandardCharsets.UTF_8);
-      }
-      if ((clientCapabilitiesFlags & CLIENT_CONNECT_ATTRS) != 0) {
-        ByteBuf kv = encoder.chctx.alloc().ioBuffer();
-        try {
-          message.getClientConnectAttrs().forEach((key, value) -> {
-            BufferUtils.writeLengthEncodedString(kv, key, StandardCharsets.UTF_8);
-            BufferUtils.writeLengthEncodedString(kv, value, StandardCharsets.UTF_8);
-          });
-          BufferUtils.writeLengthEncodedInteger(payload, kv.readableBytes());
-          payload.writeBytes(kv);
-        } finally {
-          kv.release();
-        }
-      }
-    });
+    }
+
+    // set payload length
+    int lenOfPayload = packet.writerIndex() - packetStartIdx - 4;
+    packet.setMediumLE(packetStartIdx, lenOfPayload);
+
+    encoder.chctx.writeAndFlush(packet);
   }
 }

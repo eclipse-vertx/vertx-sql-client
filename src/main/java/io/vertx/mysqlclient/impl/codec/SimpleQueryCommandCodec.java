@@ -35,10 +35,7 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
   @Override
   void encode(MySQLEncoder encoder) {
     super.encode(encoder);
-    encodePacket(payload -> {
-      payload.writeByte(CommandType.COM_QUERY);
-      payload.writeCharSequence(cmd.sql(), StandardCharsets.UTF_8);
-    });
+    sendQueryCommand();
   }
 
   @Override
@@ -54,5 +51,23 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
     } else {
       handleResultsetColumnCountPacketBody(payload);
     }
+  }
+
+  private void sendQueryCommand() {
+    ByteBuf packet = allocateBuffer();
+    // encode packet header
+    int packetStartIdx = packet.writerIndex();
+    packet.writeMediumLE(0); // will set payload length later by calculation
+    packet.writeByte(sequenceId++);
+
+    // encode packet payload
+    packet.writeByte(CommandType.COM_QUERY);
+    packet.writeCharSequence(cmd.sql(), StandardCharsets.UTF_8);
+
+    // set payload length
+    int lenOfPayload = packet.writerIndex() - packetStartIdx - 4;
+    packet.setMediumLE(packetStartIdx, lenOfPayload);
+
+    encoder.chctx.writeAndFlush(packet);
   }
 }
