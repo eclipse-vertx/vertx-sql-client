@@ -1,5 +1,6 @@
 package io.vertx.mysqlclient;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
@@ -34,6 +35,21 @@ public class MySQLQueryTest extends MySQLTestBase {
   @After
   public void teardown(TestContext ctx) {
     vertx.close(ctx.asyncAssertSuccess());
+  }
+
+  @Test
+  public void testEncodePacketSizeMoreThan16MB(TestContext ctx) {
+    int dataSize = 20 * 1024 * 1024; // 20MB payload
+    byte[] data = new byte[dataSize];
+    Buffer buffer = Buffer.buffer(data);
+
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("INSERT INTO datatype(id, `LongBlob`) VALUES(3, ?);", ctx.asyncAssertSuccess(preparedQuery -> {
+        preparedQuery.execute(Tuple.of(buffer), ctx.asyncAssertSuccess(res -> {
+          conn.close();
+        }));
+      }));
+    }));
   }
 
   @Test

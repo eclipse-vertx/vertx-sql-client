@@ -38,16 +38,16 @@ class ResetStatementCommandCodec extends CommandCodec<Void, CloseCursorCommand> 
     // encode packet header
     int packetStartIdx = packet.writerIndex();
     packet.writeMediumLE(0); // will set payload length later by calculation
-    packet.writeByte(sequenceId++);
+    packet.writeByte(sequenceId);
 
     // encode packet payload
     packet.writeByte(CommandType.COM_STMT_RESET);
     packet.writeIntLE((int) statement.statementId);
 
     // set payload length
-    int lenOfPayload = packet.writerIndex() - packetStartIdx - 4;
-    packet.setMediumLE(packetStartIdx, lenOfPayload);
+    int payloadLength = packet.writerIndex() - packetStartIdx - 4;
+    packet.setMediumLE(packetStartIdx, payloadLength);
 
-    encoder.chctx.writeAndFlush(packet);
+    sendPacket(packet, payloadLength);
   }
 }

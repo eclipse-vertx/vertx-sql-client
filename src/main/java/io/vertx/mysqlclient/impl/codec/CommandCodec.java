@@ -30,9 +30,9 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.function.Consumer;
 
 abstract class CommandCodec<R, C extends CommandBase<R>> {
+  private static final int PACKET_PAYLOAD_LENGTH_LIMIT = 0xFFFFFF;
 
   Handler<? super CommandResponse<R>> completionHandler;
   public Throwable failure;
@@ -53,6 +53,34 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
 
   ByteBuf allocateBuffer() {
     return encoder.chctx.alloc().ioBuffer();
+  }
+
+  void sendPacket(ByteBuf packet, int payloadLength) {
+    if (payloadLength >= PACKET_PAYLOAD_LENGTH_LIMIT) {
+      // the original packet exceeds the limit of packet length, split the packet here
+      // if payload length is exactly 16MBytes-1byte(0xFFFFFF), an empty packet needs to be indicate the termination
+      ByteBuf payload = packet.skipBytes(4);
+
+      while (payload.readableBytes() >= PACKET_PAYLOAD_LENGTH_LIMIT) {
+        // send a split packet with 0xFFFFFF MBytes payload
+        ByteBuf splitPacketHeader = encoder.chctx.alloc().ioBuffer(4);
+        splitPacketHeader.writeMediumLE(PACKET_PAYLOAD_LENGTH_LIMIT);
+        splitPacketHeader.writeByte(sequenceId++);
+        encoder.chctx.write(splitPacketHeader);
+        encoder.chctx.write(payload.readRetainedSlice(PACKET_PAYLOAD_LENGTH_LIMIT));
+      }
+
+      // last part of the packet
+      int lastPartLength = payload.readableBytes();
+      ByteBuf lastPacketHeader = encoder.chctx.alloc().ioBuffer(4);
+      lastPacketHeader.writeMediumLE(lastPartLength);
+      lastPacketHeader.writeByte(sequenceId++);
+      encoder.chctx.write(lastPacketHeader);
+      encoder.chctx.writeAndFlush(payload);
+    } else {
+      sequenceId++;
+      encoder.chctx.writeAndFlush(packet);
+    }
   }
 
   void handleErrorPacketPayload(ByteBuf payload) {
