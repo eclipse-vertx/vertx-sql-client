@@ -1,6 +1,6 @@
 package io.vertx.mysqlclient.data;
 
-import io.vertx.mysqlclient.MySQLClient;
+import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.mysqlclient.MySQLTestBase;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.sqlclient.Row;
@@ -30,7 +30,7 @@ public abstract class MySQLDataTypeTestBase extends MySQLTestBase {
                                                     String columnName,
                                                     T expected) {
     Async async = ctx.async();
-    MySQLClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT `" + columnName + "` FROM datatype WHERE id = 1", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
@@ -45,7 +45,7 @@ public abstract class MySQLDataTypeTestBase extends MySQLTestBase {
                                                       String columnName,
                                                       T expected) {
     Async async = ctx.async();
-    MySQLClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("SELECT `" + columnName + "` FROM datatype WHERE id = 1", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
@@ -60,7 +60,7 @@ public abstract class MySQLDataTypeTestBase extends MySQLTestBase {
                                              String columnName,
                                              T expected) {
     Async async = ctx.async();
-    MySQLClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("UPDATE datatype SET `" + columnName + "` = ?" + " WHERE id = 2", Tuple.tuple().addValue(expected), ctx.asyncAssertSuccess(updateResult -> {
         conn.preparedQuery("SELECT `" + columnName + "` FROM datatype WHERE id = 2", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());

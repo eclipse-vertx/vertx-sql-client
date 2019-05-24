@@ -17,8 +17,8 @@
 
 package io.vertx.sqlclient.impl;
 
-import io.vertx.pgclient.PgPool;
 import io.vertx.pgclient.PgPoolOptions;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.impl.command.CommandBase;
@@ -40,7 +40,7 @@ import io.vertx.core.VertxException;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> implements PgPool {
+public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> implements Pool {
 
   private final Context context;
   private final ConnectionPool pool;
