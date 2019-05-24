@@ -10,11 +10,11 @@ import java.util.stream.Stream;
 class MySQLParamDesc extends ParamDesc {
   private final ColumnDefinition[] paramDefinitions;
 
-  public MySQLParamDesc(ColumnDefinition[] paramDefinitions) {
+  MySQLParamDesc(ColumnDefinition[] paramDefinitions) {
     this.paramDefinitions = paramDefinitions;
   }
 
-  public ColumnDefinition[] paramDefinitions() {
+  ColumnDefinition[] paramDefinitions() {
     return paramDefinitions;
   }
 

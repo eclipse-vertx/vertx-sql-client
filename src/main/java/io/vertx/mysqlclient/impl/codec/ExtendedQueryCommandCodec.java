@@ -39,14 +39,14 @@ class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, ExtendedQuer
   // Flag if parameters must be re-bound
   private final byte sendType = 1;
 
-  private final MySQLPreparedStatement ps;
+  private final MySQLPreparedStatement statement;
 
   ExtendedQueryCommandCodec(ExtendedQueryCommand<R> cmd) {
     super(cmd, DataFormat.BINARY);
-    ps = (MySQLPreparedStatement) cmd.preparedStatement();
-    if (cmd.fetch() > 0 && ps.isCursorOpen) {
+    statement = (MySQLPreparedStatement) cmd.preparedStatement();
+    if (cmd.fetch() > 0 && statement.isCursorOpen) {
       // restore the state we need for decoding fetch response
-      columnDefinitions = ps.rowDesc.columnDefinitions();
+      columnDefinitions = statement.rowDesc.columnDefinitions();
     }
   }
 
@@ -54,23 +54,23 @@ class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, ExtendedQuer
   void encode(MySQLEncoder encoder) {
     super.encode(encoder);
 
-    if (ps.isCursorOpen) {
-      writeFetchMessage(ps.statementId, cmd.fetch());
-      decoder = new RowResultDecoder<>(cmd.collector(), false, ps.rowDesc);
+    if (statement.isCursorOpen) {
+      writeFetchMessage(statement.statementId, cmd.fetch());
+      decoder = new RowResultDecoder<>(cmd.collector(), false, statement.rowDesc);
     } else {
       if (cmd.fetch() > 0) {
         //TODO Cursor_type is READ_ONLY?
-        writeExecuteMessage(ps.statementId, ps.paramDesc.paramDefinitions(), sendType, cmd.params(), (byte) 0x01);
+        writeExecuteMessage(statement.statementId, statement.paramDesc.paramDefinitions(), sendType, cmd.params(), (byte) 0x01);
       } else {
         // CURSOR_TYPE_NO_CURSOR
-        writeExecuteMessage(ps.statementId, ps.paramDesc.paramDefinitions(), sendType, cmd.params(), (byte) 0x00);
+        writeExecuteMessage(statement.statementId, statement.paramDesc.paramDefinitions(), sendType, cmd.params(), (byte) 0x00);
       }
     }
   }
 
   @Override
   void decodePayload(ByteBuf payload, MySQLEncoder encoder, int payloadLength, int sequenceId) {
-    if (ps.isCursorOpen) {
+    if (statement.isCursorOpen) {
       // decoding COM_STMT_FETCH response
       handleRows(payload, payloadLength, super::handleSingleRow);
     } else {
@@ -99,11 +99,11 @@ class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, ExtendedQuer
               // need to reset packet number so that we can send a fetch request
               this.sequenceId = 0;
               // send fetch after cursor opened
-              decoder = new RowResultDecoder<>(cmd.collector(), false, ps.rowDesc);
+              decoder = new RowResultDecoder<>(cmd.collector(), false, statement.rowDesc);
 
-              ps.isCursorOpen = true;
+              statement.isCursorOpen = true;
 
-              writeFetchMessage(ps.statementId, cmd.fetch());
+              writeFetchMessage(statement.statementId, cmd.fetch());
             }
             break;
         }

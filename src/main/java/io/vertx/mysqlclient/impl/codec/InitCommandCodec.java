@@ -19,7 +19,6 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.CharacterSetMapping;
 import io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag;
-import io.vertx.mysqlclient.impl.protocol.backend.ErrPacket;
 import io.vertx.mysqlclient.impl.protocol.backend.InitialHandshakePacket;
 import io.vertx.mysqlclient.impl.protocol.frontend.HandshakeResponse;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
