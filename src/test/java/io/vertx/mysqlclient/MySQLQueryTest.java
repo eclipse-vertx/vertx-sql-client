@@ -38,7 +38,7 @@ public class MySQLQueryTest extends MySQLTestBase {
 
   @Test
   public void testMultiResult(TestContext ctx) {
-    MySQLClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT 1; SELECT \'test\';", ctx.asyncAssertSuccess(result -> {
         Row row1 = result.iterator().next();
         ctx.assertEquals(1, row1.getInteger(0));
@@ -66,7 +66,7 @@ public class MySQLQueryTest extends MySQLTestBase {
     DummyObject expected = new DummyObject(1, (short) 32767, 8388607, 2147483647, 9223372036854775807L,
       123.456f, 1.234567d, "HELLO,WORLD");
 
-    MySQLClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT * FROM collectorTest WHERE id = 1", collector, ctx.asyncAssertSuccess(result -> {
         Map<Integer, DummyObject> map = result.value();
         DummyObject actual = map.get(1);
@@ -92,7 +92,7 @@ public class MySQLQueryTest extends MySQLTestBase {
     DummyObject expected = new DummyObject(1, (short) 32767, 8388607, 2147483647, 9223372036854775807L,
       123.456f, 1.234567d, "HELLO,WORLD");
 
-    MySQLClient.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("SELECT * FROM collectorTest WHERE id = ?", Tuple.of(1), collector, ctx.asyncAssertSuccess(result -> {
         Map<Integer, DummyObject> map = result.value();
         DummyObject actual = map.get(1);

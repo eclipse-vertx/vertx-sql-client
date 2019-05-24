@@ -16,15 +16,17 @@
  */
 package io.vertx.mysqlclient.tck;
 
-import io.vertx.mysqlclient.MySQLClient;
-import io.vertx.pgclient.PgConnectOptions;
-import io.vertx.sqlclient.Connector;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.SqlConnection;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.mysqlclient.MySQLConnection;
+import io.vertx.mysqlclient.MySQLPool;
+import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.pgclient.PgPoolOptions;
+import io.vertx.sqlclient.Connector;
+import io.vertx.sqlclient.SqlClient;
+import io.vertx.sqlclient.SqlConnection;
 
 public enum ClientConfig {
 
@@ -34,7 +36,7 @@ public enum ClientConfig {
       return new Connector<SqlConnection>() {
         @Override
         public void connect(Handler<AsyncResult<SqlConnection>> handler) {
-          MySQLClient.connect(vertx, options, ar -> {
+          MySQLConnection.connect(vertx, options, ar -> {
             if (ar.succeeded()) {
               handler.handle(Future.succeededFuture(ar.result()));
             } else {
@@ -42,14 +44,37 @@ public enum ClientConfig {
             }
           });
         }
+
         @Override
         public void close() {
         }
       };
     }
-  }
+  },
 
-  ;
+  POOLED() {
+    @Override
+    Connector<SqlConnection> connect(Vertx vertx, PgConnectOptions options) {
+      MySQLPool pool = MySQLPool.pool(new PgPoolOptions(options).setMaxSize(1));
+      return new Connector<SqlConnection>() {
+        @Override
+        public void connect(Handler<AsyncResult<SqlConnection>> handler) {
+          pool.getConnection(ar -> {
+            if (ar.succeeded()) {
+              handler.handle(Future.succeededFuture(ar.result()));
+            } else {
+              handler.handle(Future.failedFuture(ar.cause()));
+            }
+          });
+        }
+
+        @Override
+        public void close() {
+          pool.close();
+        }
+      };
+    }
+  };
 
   abstract <C extends SqlClient> Connector<C> connect(Vertx vertx, PgConnectOptions options);
 
