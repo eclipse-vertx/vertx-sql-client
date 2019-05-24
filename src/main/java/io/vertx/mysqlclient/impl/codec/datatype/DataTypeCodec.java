@@ -4,61 +4,72 @@ import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.pgclient.data.Numeric;
+import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
+import io.vertx.core.buffer.Buffer;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatterBuilder;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
+import static java.time.temporal.ChronoField.*;
 
 //TODO charset injection
+//TODO 2: In MySQL, there is no way to tell a Result is a BOOLEAN type or a INT1 type so we need to take a look at the type mapping later
 public class DataTypeCodec {
   // binary codec protocol: https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_binary_resultset.html#sect_protocol_binary_resultset_row_value
 
   // Sentinel used when an object is refused by the data type
   public static final Object REFUSED_SENTINEL = new Object();
 
-  private static final java.time.format.DateTimeFormatter TIMESTAMP_FORMAT = new DateTimeFormatterBuilder()
+  private static final java.time.format.DateTimeFormatter DATETIME_FORMAT = new DateTimeFormatterBuilder()
     .parseCaseInsensitive()
     .append(ISO_LOCAL_DATE)
     .appendLiteral(' ')
-    .append(ISO_LOCAL_TIME)
+    .appendValue(HOUR_OF_DAY, 2)
+    .appendLiteral(':')
+    .appendValue(MINUTE_OF_HOUR, 2)
+    .appendLiteral(':')
+    .appendValue(SECOND_OF_MINUTE, 2)
+    .appendFraction(MICRO_OF_SECOND, 0, 6, true)
     .toFormatter();
 
-  public static Object decodeText(DataType dataType, ByteBuf buffer) {
+  public static Object decodeText(DataType dataType, int columnDefinitionFlags, ByteBuf buffer) {
+    int length = (int) BufferUtils.readLengthEncodedInteger(buffer);
+    ByteBuf data = buffer.slice(buffer.readerIndex(), length);
+    buffer.skipBytes(length);
     switch (dataType) {
-      //TODO just a basic implementation, can be optimised here
       case INT1:
-        return textDecodeInt1(buffer);
+        return textDecodeInt1(data);
       case INT2:
-        return textDecodeInt2(buffer);
+      case YEAR:
+        return textDecodeInt2(data);
       case INT3:
-        return textDecodeInt3(buffer);
+        return textDecodeInt3(data);
       case INT4:
-        return textDecodeInt4(buffer);
+        return textDecodeInt4(data);
       case INT8:
-        return textDecodeInt8(buffer);
+        return textDecodeInt8(data);
       case FLOAT:
-        return textDecodeFloat(buffer);
+        return textDecodeFloat(data);
       case DOUBLE:
-        return textDecodeDouble(buffer);
+        return textDecodeDouble(data);
       case NUMERIC:
-        return textDecodeNUMERIC(buffer);
-      case CHAR:
-        return textDecodeChar(buffer);
-      case VARCHAR:
-        return textDecodeVarChar(buffer);
+        return textDecodeNUMERIC(data);
       case DATE:
-        return textDecodeDate(buffer);
+        return textDecodeDate(data);
       case TIME:
-        return textDecodeTime(buffer);
+        return textDecodeTime(data);
       case DATETIME:
-        return textDecodeDateTime(buffer);
+      case TIMESTAMP:
+        return textDecodeDateTime(data);
+      case STRING:
+      case VARSTRING:
+      case BLOB:
       default:
-        return textDecodeVarChar(buffer);
+        return textDecodeBlobOrText(columnDefinitionFlags, data);
     }
   }
 
@@ -66,6 +77,13 @@ public class DataTypeCodec {
   public static void encodeBinary(DataType dataType, Object value, ByteBuf buffer) {
     switch (dataType) {
       case INT1:
+        if (value instanceof Boolean) {
+          if ((Boolean) value) {
+            value = 1;
+          } else {
+            value = 0;
+          }
+        }
         binaryEncodeInt1((Number) value, buffer);
         break;
       case INT2:
@@ -89,31 +107,31 @@ public class DataTypeCodec {
       case NUMERIC:
         binaryEncodeNumeric((Numeric) value, buffer);
         break;
-      case CHAR:
-        binaryEncodeChar(String.valueOf(value), buffer);
-      case VARCHAR:
-        binaryEncodeVarChar(String.valueOf(value), buffer);
+      case BLOB:
+        binaryEncodeBlob((Buffer) value, buffer);
         break;
       case DATE:
-        // TODO confirm DATE,TIM encoded into VAR_STRING form?
         binaryEncodeDate((LocalDate) value, buffer);
         break;
       case TIME:
-        binaryEncodeTime((LocalTime) value, buffer);
+        binaryEncodeTime((Duration) value, buffer);
         break;
       case DATETIME:
         binaryEncodeDatetime((LocalDateTime) value, buffer);
         break;
+      case STRING:
+      case VARSTRING:
       default:
-        binaryEncodeVarChar(String.valueOf(value), buffer);
+        binaryEncodeText(String.valueOf(value), buffer);
         break;
     }
   }
 
-  public static Object decodeBinary(DataType dataType, ByteBuf buffer) {
+  public static Object decodeBinary(DataType dataType, int columnDefinitionFlags, ByteBuf buffer) {
     switch (dataType) {
       case INT1:
         return binaryDecodeInt1(buffer);
+      case YEAR:
       case INT2:
         return binaryDecodeInt2(buffer);
       case INT3:
@@ -128,18 +146,18 @@ public class DataTypeCodec {
         return binaryDecodeDouble(buffer);
       case NUMERIC:
         return binaryDecodeNumeric(buffer);
-      case CHAR:
-        return binaryDecodeChar(buffer);
-      case VARCHAR:
-        return binaryDecodeVarChar(buffer);
       case DATE:
         return binaryDecodeDate(buffer);
       case TIME:
         return binaryDecodeTime(buffer);
       case DATETIME:
+      case TIMESTAMP:
         return binaryDecodeDatetime(buffer);
+      case STRING:
+      case VARSTRING:
+      case BLOB:
       default:
-        return binaryDecodeVarChar(buffer);
+        return binaryDecodeBlobOrText(columnDefinitionFlags, buffer);
     }
   }
 
@@ -147,7 +165,7 @@ public class DataTypeCodec {
     switch (type) {
       //TODO handle json + unknown?
       default:
-        Class<?> javaType = type.decodingType;
+        Class<?> javaType = type.binaryType;
         return value == null || javaType.isInstance(value) ? value : REFUSED_SENTINEL;
     }
   }
@@ -184,12 +202,13 @@ public class DataTypeCodec {
     BufferUtils.writeLengthEncodedString(buffer, value.toString(), StandardCharsets.UTF_8);
   }
 
-  private static void binaryEncodeChar(String value, ByteBuf buffer) {
+  private static void binaryEncodeText(String value, ByteBuf buffer) {
     BufferUtils.writeLengthEncodedString(buffer, value, StandardCharsets.UTF_8);
   }
 
-  private static void binaryEncodeVarChar(String value, ByteBuf buffer) {
-    BufferUtils.writeLengthEncodedString(buffer, value, StandardCharsets.UTF_8);
+  private static void binaryEncodeBlob(Buffer value, ByteBuf buffer) {
+    BufferUtils.writeLengthEncodedInteger(buffer, value.length());
+    buffer.writeBytes(value.getByteBuf());
   }
 
   private static void binaryEncodeDate(LocalDate value, ByteBuf buffer) {
@@ -199,9 +218,50 @@ public class DataTypeCodec {
     buffer.writeByte(value.getDayOfMonth());
   }
 
-  private static void binaryEncodeTime(LocalTime value, ByteBuf buffer) {
-    // FIXME time?
-    throw new UnsupportedOperationException();
+  private static void binaryEncodeTime(Duration value, ByteBuf buffer) {
+    long secondsOfDuration = value.getSeconds();
+    int nanosOfDuration = value.getNano();
+    if (secondsOfDuration == 0 && nanosOfDuration == 0) {
+      buffer.writeByte(0);
+      return;
+    }
+    byte isNegative = 0;
+    if (secondsOfDuration < 0) {
+      isNegative = 1;
+      secondsOfDuration = -secondsOfDuration;
+    }
+
+    int days = (int) (secondsOfDuration / 86400);
+    int secondsOfADay = (int) (secondsOfDuration % 86400);
+    int hour = secondsOfADay / 3600;
+    int minute = ((secondsOfADay % 3600) / 60);
+    int second = secondsOfADay % 60;
+
+    if (nanosOfDuration == 0) {
+      buffer.writeByte(8);
+      buffer.writeByte(isNegative);
+      buffer.writeIntLE(days);
+      buffer.writeByte(hour);
+      buffer.writeByte(minute);
+      buffer.writeByte(second);
+      return;
+    }
+
+    int microSecond;
+    if (isNegative == 1 && nanosOfDuration > 0) {
+      second = second - 1;
+      microSecond = (1000_000_000 - nanosOfDuration) / 1000;
+    } else {
+      microSecond = nanosOfDuration / 1000;
+    }
+
+    buffer.writeByte(12);
+    buffer.writeByte(isNegative);
+    buffer.writeIntLE(days);
+    buffer.writeByte(hour);
+    buffer.writeByte(minute);
+    buffer.writeByte(second);
+    buffer.writeIntLE(microSecond);
   }
 
   private static void binaryEncodeDatetime(LocalDateTime value, ByteBuf buffer) {
@@ -272,15 +332,29 @@ public class DataTypeCodec {
     return Numeric.parse(BufferUtils.readLengthEncodedString(buffer, StandardCharsets.UTF_8));
   }
 
-  private static String binaryDecodeChar(ByteBuf buffer) {
-    return BufferUtils.readLengthEncodedString(buffer, StandardCharsets.UTF_8);
+  private static Object binaryDecodeBlobOrText(int columnDefinitionFlags, ByteBuf buffer) {
+    if (isBinaryField(columnDefinitionFlags)) {
+      return binaryDecodeBlob(buffer);
+    } else {
+      return binaryDecodeText(buffer);
+    }
   }
 
-  private static String binaryDecodeVarChar(ByteBuf buffer) {
+  private static Buffer binaryDecodeBlob(ByteBuf buffer) {
+    int len = (int) BufferUtils.readLengthEncodedInteger(buffer);
+    ByteBuf copy = buffer.copy(buffer.readerIndex(), len);
+    buffer.skipBytes(len);
+    return Buffer.buffer(copy);
+  }
+
+  private static String binaryDecodeText(ByteBuf buffer) {
     return BufferUtils.readLengthEncodedString(buffer, StandardCharsets.UTF_8);
   }
 
   private static LocalDateTime binaryDecodeDatetime(ByteBuf buffer) {
+    if (buffer.readableBytes() == 0) {
+      return null;
+    }
     int length = buffer.readByte();
     if (length == 0) {
       // invalid value '0000-00-00' or '0000-00-00 00:00:00'
@@ -309,24 +383,34 @@ public class DataTypeCodec {
     return binaryDecodeDatetime(buffer).toLocalDate();
   }
 
-  private static LocalTime binaryDecodeTime(ByteBuf buffer) {
+  private static Duration binaryDecodeTime(ByteBuf buffer) {
     byte length = buffer.readByte();
     if (length == 0) {
-      return LocalTime.of(0, 0, 0, 0);
+      return Duration.ZERO;
     } else {
-      // TODO not the same as TIME data type in other databases.
-      boolean isNegative = buffer.readByte() == 1;
+      boolean isNegative = (buffer.readByte() == 1);
       int days = buffer.readIntLE();
-      byte hour = buffer.readByte();
-      byte minute = buffer.readByte();
-      byte second = buffer.readByte();
-      if (length == 12) {
-        int microsecond = buffer.readInt();
-        return LocalTime.of(days * 24 + hour, minute, second, microsecond * 1000);
-      } else if (length == 8) {
-        return LocalTime.of(days * 24 + hour, minute, second);
+      int hour = buffer.readByte();
+      int minute = buffer.readByte();
+      int second = buffer.readByte();
+      if (isNegative) {
+        days = -days;
+        hour = -hour;
+        minute = -minute;
+        second = -second;
       }
-      throw new DecoderException("Invalid time");
+
+      if (length == 8) {
+        return Duration.ofDays(days).plusHours(hour).plusMinutes(minute).plusSeconds(second);
+      }
+      if (length == 12) {
+        long microsecond = buffer.readUnsignedIntLE();
+        if (isNegative) {
+          microsecond = -microsecond;
+        }
+        return Duration.ofDays(days).plusHours(hour).plusMinutes(minute).plusSeconds(second).plusNanos(microsecond * 1000);
+      }
+      throw new DecoderException("Invalid time format");
     }
   }
 
@@ -362,11 +446,19 @@ public class DataTypeCodec {
     return Numeric.parse(buff.toString(StandardCharsets.UTF_8));
   }
 
-  private static String textDecodeChar(ByteBuf buffer) {
-    return buffer.toString(StandardCharsets.UTF_8);
+  private static Object textDecodeBlobOrText(int columnDefinitionFlags, ByteBuf buffer) {
+    if (isBinaryField(columnDefinitionFlags)) {
+      return textDecodeBlob(buffer);
+    } else {
+      return textDecodeText(buffer);
+    }
   }
 
-  private static String textDecodeVarChar(ByteBuf buffer) {
+  private static Buffer textDecodeBlob(ByteBuf buffer) {
+    return Buffer.buffer(buffer.copy());
+  }
+
+  private static String textDecodeText(ByteBuf buffer) {
     return buffer.toString(StandardCharsets.UTF_8);
   }
 
@@ -375,13 +467,44 @@ public class DataTypeCodec {
     return LocalDate.parse(cs);
   }
 
-  private static LocalTime textDecodeTime(ByteBuf buffer) {
-    CharSequence cs = buffer.toString(StandardCharsets.UTF_8);
-    return LocalTime.parse(cs);
+  private static Duration textDecodeTime(ByteBuf buffer) {
+    // HH:mm:ss or HHH:mm:ss
+    String timeString = buffer.toString(StandardCharsets.UTF_8);
+    boolean isNegative = timeString.charAt(0) == '-';
+    if (isNegative) {
+      timeString = timeString.substring(1);
+    }
+
+    String[] timeElements = timeString.split(":");
+    if (timeElements.length != 3) {
+      throw new DecoderException("Invalid time format");
+    }
+
+    int hour = Integer.parseInt(timeElements[0]);
+    int minute = Integer.parseInt(timeElements[1]);
+    int second = Integer.parseInt(timeElements[2].substring(0, 2));
+    long nanos = 0;
+    if (timeElements[2].length() > 2) {
+      double fractionalSecondsPart = Double.parseDouble("0." + timeElements[2].substring(3));
+      nanos = (long) (1000000000 * fractionalSecondsPart);
+    }
+    if (isNegative) {
+      return Duration.ofHours(-hour).minusMinutes(minute).minusSeconds(second).minusNanos(nanos);
+    } else {
+      return Duration.ofHours(hour).plusMinutes(minute).plusSeconds(second).plusNanos(nanos);
+    }
   }
 
   private static LocalDateTime textDecodeDateTime(ByteBuf buffer) {
     CharSequence cs = buffer.toString(StandardCharsets.UTF_8);
-    return LocalDateTime.parse(cs, TIMESTAMP_FORMAT);
+    if (cs.equals("0000-00-00 00:00:00")) {
+      // Invalid datetime will be converted to zero
+      return null;
+    }
+    return LocalDateTime.parse(cs, DATETIME_FORMAT);
+  }
+
+  private static boolean isBinaryField(int columnDefinitionFlags) {
+    return (columnDefinitionFlags & ColumnDefinition.ColumnDefinitionFlags.BINARY_FLAG) != 0;
   }
 }

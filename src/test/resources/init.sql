@@ -17,6 +17,33 @@ INSERT INTO collectorTest
 VALUES (1, 32767, 8388607, 2147483647, 9223372036854775807, 123.456, 1.234567, 'HELLO,WORLD');
 INSERT INTO collectorTest
 VALUES (2, 32767, 8388607, 2147483647, 9223372036854775807, 123.456, 1.234567, 'hello,world');
+
+# datatype testing table
+DROP TABLE IF EXISTS datatype;
+CREATE TABLE datatype
+(
+    id             INT NOT NULL PRIMARY KEY,
+    `Binary`       BINARY(5),
+    `VarBinary`    VARBINARY(20),
+    `TinyBlob`     TINYBLOB,
+    `Blob`         BLOB,
+    `MediumBlob`   MEDIUMBLOB,
+    `LongBlob`     LONGBLOB,
+    `TinyText`     TINYTEXT,
+    `Text`         TEXT,
+    `MediumText`   MEDIUMTEXT,
+    `LongText`     LONGTEXT,
+    test_year      YEAR,
+    test_timestamp TIMESTAMP
+);
+
+INSERT INTO datatype
+VALUES (1, 'HELLO', 'HELLO, WORLD', 'TINYBLOB', 'BLOB', 'MEDIUMBLOB', 'LONGBLOB', 'TINYTEXT', 'TEXT', 'MEDIUMTEXT',
+        'LONGTEXT', '2019', '2000-01-01 10:20:30');
+INSERT INTO datatype
+VALUES (2, 'hello', 'hello, world', 'tinyblob', 'blob', 'mediumblob', 'longblob', 'tinytext', 'text', 'mediumtext',
+        'longtext', '2019', '2000-01-01 10:20:30');
+
 # @Deprecated--- This part is only for mysql tests and should be moved out of TCK tests ---
 
 # TFB tables
@@ -149,7 +176,7 @@ CREATE TABLE basicdatatype
   test_char    CHAR(8)          NOT NULL,
   test_varchar VARCHAR(20)      NOT NULL,
   test_date    DATE             NOT NULL,
-  test_time    TIME             NOT NULL
+  test_time    TIME(6)          NOT NULL
 );
 INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_float_8, test_numeric,
                           test_decimal, test_boolean, test_char, test_varchar, test_date, test_time)

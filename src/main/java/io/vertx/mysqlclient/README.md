@@ -12,7 +12,7 @@ Supports:
 * MySQL Native41 authentication
 * TEXT Protocol(QUERY)
 * PING COMMAND(dropped temporarily for PG API)
-* INT2,INT3,INT4,INT8,FLOAT,DOUBLE,VARCHAR Data type
+* Rich data type support
 * Collector API (Reuse from postgres client implementation)
 
 TODO:
@@ -23,7 +23,7 @@ TODO:
 - [ ] Text Protocol(Local INFILE Request)
 - [ ] Text Protocol(All Utility Commands)
 - [x] Binary protocol (Prepared Statement part)
-- [ ] Cursor support
+- [x] Cursor support
 - [ ] Full Datatype codec support
 - [ ] Compression
 - [ ] Stored Procedures
@@ -47,17 +47,27 @@ https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-charsets.html
 * FLOAT(j.l.Float)
 * DOUBLE(j.l.Double)
 * NUMERIC,DECIMAL(i.r.p.data.Numeric)
-* BOOLEAN(j.l.Byte) TODO? should be j.l.Boolean here
 * CHAR(j.l.String)
+* BINARY(i.v.c.b.Buffer)
 * VARCHAR(j.l.String)
+* VARBINARY(i.v.c.b.Buffer)
+* TINYBLOB/BLOB/MEDIUMBLOB/LONGBLOB(i.v.c.b.Buffer)
+* TINYTEXT/TEXT/MEDIUMTEXT/LONGTEXT(j.l.String)
 * DATE(j.t.LocalDate)
-* TIME(j.t.LocalTime)
 * DATETIME(j.t.LocalDateTime)
+* TIME(j.t.Duration)
+* TIMESTAMP(j.t.LocalDateTime)
+* YEAR(j.l.Short)
 
 TODO:
+need better handling:
+
+- [ ] BOOLEAN(j.l.Byte)=INT1(j.l.Byte) TODO what java type should be mapped?
+
+No implementation:
+
 - [ ] Numeric: BIT
-- [ ] String: BINARY, VARBINARY, TINYBLOB, TINYTEXT, BLOB, TEXT, MEDIUMBLOB, MEDIUMTEXT, LONGBLOB, LONGTEXT, ENUM, SET
-- [ ] Data and Time: TIMESTAMP, YEAR
+- [ ] String: ENUM, SET
 - [ ] JSON
 - [ ] Spatial data types
 

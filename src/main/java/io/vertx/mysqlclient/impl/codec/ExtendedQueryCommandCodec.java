@@ -18,11 +18,16 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.codec.datatype.DataFormat;
+import io.vertx.mysqlclient.impl.codec.datatype.DataType;
 import io.vertx.mysqlclient.impl.codec.datatype.DataTypeCodec;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
+
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import static io.vertx.mysqlclient.impl.protocol.backend.EofPacket.EOF_PACKET_HEADER;
 import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
@@ -130,25 +135,18 @@ public class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, Exten
       if (sendType == 1) {
         for (int i = 0; i < numOfParams; i++) {
           Object value = params.getValue(i);
-          if (value != null) {
-            payload.writeByte(paramsColumnDefinitions[i].getType().id);
-          } else {
-            payload.writeByte(ColumnDefinition.ColumnType.MYSQL_TYPE_NULL);
-          }
-          // TODO handle parameter flag (unsigned or signed)
-          payload.writeByte(0);
+          payload.writeByte(parseDataTypeByEncodingValue(value).id);
+          payload.writeByte(0); // parameter flag: signed
         }
+      }
 
-        for (int i = 0; i < numOfParams; i++) {
-          Object value = params.getValue(i);
-          //FIXME make sure we have correctly handled null value here
-          if (value != null) {
-            DataTypeCodec.encodeBinary(paramsColumnDefinitions[i].getType(), value, payload);
-          } else {
-            nullBitmap[i / 8] |= (1 << (i & 7));
-          }
+      for (int i = 0; i < numOfParams; i++) {
+        Object value = params.getValue(i);
+        if (value != null) {
+          DataTypeCodec.encodeBinary(parseDataTypeByEncodingValue(value), value, payload);
+        } else {
+          nullBitmap[i / 8] |= (1 << (i & 7));
         }
-
       }
 
       // padding null-bitmap content
@@ -178,6 +176,52 @@ public class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, Exten
       handleErrorPacketPayload(payload);
     } else {
       handleResultsetColumnCountPacketBody(payload);
+    }
+  }
+
+  private DataType parseDataTypeByEncodingValue(Object value) {
+    if (value == null) {
+      // ProtocolBinary::MYSQL_TYPE_NULL
+      return DataType.NULL;
+    } else if (value instanceof Byte) {
+      // ProtocolBinary::MYSQL_TYPE_TINY
+      return DataType.INT1;
+    } else if (value instanceof Boolean) {
+      // ProtocolBinary::MYSQL_TYPE_TINY
+      return DataType.INT1;
+    } else if (value instanceof Short) {
+      // ProtocolBinary::MYSQL_TYPE_SHORT, ProtocolBinary::MYSQL_TYPE_YEAR
+      return DataType.INT2;
+    } else if (value instanceof Integer) {
+      // ProtocolBinary::MYSQL_TYPE_LONG, ProtocolBinary::MYSQL_TYPE_INT24
+      return DataType.INT4;
+    } else if (value instanceof Long) {
+      // ProtocolBinary::MYSQL_TYPE_LONGLONG
+      return DataType.INT8;
+    } else if (value instanceof Double) {
+      // ProtocolBinary::MYSQL_TYPE_DOUBLE
+      return DataType.DOUBLE;
+    } else if (value instanceof Float) {
+      // ProtocolBinary::MYSQL_TYPE_FLOAT
+      return DataType.FLOAT;
+    } else if (value instanceof LocalDate) {
+      // ProtocolBinary::MYSQL_TYPE_DATE
+      return DataType.DATE;
+    } else if (value instanceof Duration) {
+      // ProtocolBinary::MYSQL_TYPE_TIME
+      return DataType.TIME;
+    } else if (value instanceof LocalDateTime) {
+      // ProtocolBinary::MYSQL_TYPE_DATETIME, ProtocolBinary::MYSQL_TYPE_TIMESTAMP
+      return DataType.DATETIME;
+    } else {
+      /*
+        ProtocolBinary::MYSQL_TYPE_STRING, ProtocolBinary::MYSQL_TYPE_VARCHAR, ProtocolBinary::MYSQL_TYPE_VAR_STRING,
+        ProtocolBinary::MYSQL_TYPE_ENUM, ProtocolBinary::MYSQL_TYPE_SET, ProtocolBinary::MYSQL_TYPE_LONG_BLOB,
+        ProtocolBinary::MYSQL_TYPE_MEDIUM_BLOB, ProtocolBinary::MYSQL_TYPE_BLOB, ProtocolBinary::MYSQL_TYPE_TINY_BLOB,
+        ProtocolBinary::MYSQL_TYPE_GEOMETRY, ProtocolBinary::MYSQL_TYPE_BIT, ProtocolBinary::MYSQL_TYPE_DECIMAL,
+        ProtocolBinary::MYSQL_TYPE_NEWDECIMAL
+       */
+      return DataType.STRING;
     }
   }
 }
