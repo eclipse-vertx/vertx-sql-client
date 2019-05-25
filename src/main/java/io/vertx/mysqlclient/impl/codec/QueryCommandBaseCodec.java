@@ -31,26 +31,25 @@ import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 import java.util.stream.Collector;
 
-import static io.vertx.mysqlclient.impl.protocol.backend.EofPacket.*;
-import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.*;
+import static io.vertx.mysqlclient.impl.protocol.backend.EofPacket.EOF_PACKET_HEADER;
+import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
 
 abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends CommandCodec<Boolean, C> {
 
-  protected enum CommandHandlerState {
-    INIT,
-    HANDLING_COLUMN_DEFINITION,
-    HANDLING_ROW_DATA_OR_END_PACKET
-  }
-
   private final DataFormat format;
+
   protected CommandHandlerState commandHandlerState = CommandHandlerState.INIT;
   protected ColumnDefinition[] columnDefinitions;
-  private int currentColumn;
   protected RowResultDecoder<?, T> decoder;
+  private int currentColumn;
 
-  public QueryCommandBaseCodec(C cmd, DataFormat format) {
+  QueryCommandBaseCodec(C cmd, DataFormat format) {
     super(cmd);
     this.format = format;
+  }
+
+  private static <A, T> T emptyResult(Collector<Row, A, T> collector) {
+    return collector.finisher().apply(collector.supplier().get());
   }
 
   @Override
@@ -111,19 +110,17 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
   }
 
   protected void handleSingleResultsetDecodingCompleted(ByteBuf payload) {
-    // we have checked the header should be OK_PACKET_HEADER
-    payload.readByte(); // skip header
-    OkPacket okPacket = GenericPacketPayloadDecoder.decodeOkPacketBody(payload, StandardCharsets.UTF_8);
+    OkPacket okPacket = decodeOkPacketPayload(payload, StandardCharsets.UTF_8);
     handleSingleResultsetEndPacket(okPacket);
     resetIntermediaryResult();
-    if ((okPacket.getServerStatusFlags() & ServerStatusFlags.SERVER_MORE_RESULTS_EXISTS) == 0) {
+    if ((okPacket.serverStatusFlags() & ServerStatusFlags.SERVER_MORE_RESULTS_EXISTS) == 0) {
       // no more sql result
       handleAllResultsetDecodingCompleted(cmd);
     }
   }
 
   private void handleSingleResultsetEndPacket(OkPacket okPacket) {
-    this.result = (okPacket.getServerStatusFlags() & ServerStatusFlags.SERVER_STATUS_LAST_ROW_SENT) == 0;
+    this.result = (okPacket.serverStatusFlags() & ServerStatusFlags.SERVER_STATUS_LAST_ROW_SENT) == 0;
     T result;
     int size;
     RowDesc rowDesc;
@@ -137,7 +134,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
       size = 0;
       rowDesc = null;
     }
-    cmd.resultHandler().handleResult((int) okPacket.getAffectedRows(), size, rowDesc, result);
+    cmd.resultHandler().handleResult((int) okPacket.affectedRows(), size, rowDesc, result);
   }
 
   private void handleAllResultsetDecodingCompleted(QueryCommandBase<?> cmd) {
@@ -161,8 +158,9 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     currentColumn = 0;
   }
 
-  private static <A, T> T emptyResult(Collector<Row, A, T> collector) {
-    return collector.finisher().apply(collector.supplier().get());
+  protected enum CommandHandlerState {
+    INIT,
+    HANDLING_COLUMN_DEFINITION,
+    HANDLING_ROW_DATA_OR_END_PACKET
   }
-
 }

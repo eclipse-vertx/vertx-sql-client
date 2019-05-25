@@ -6,28 +6,21 @@ import io.vertx.mysqlclient.impl.protocol.backend.OkPacket;
 import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
-import java.nio.charset.StandardCharsets;
+import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
 
-import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.*;
-
-public class ResetStatementCommandCodec extends CommandCodec<Void, CloseCursorCommand> {
-  public ResetStatementCommandCodec(CloseCursorCommand cmd) {
+class ResetStatementCommandCodec extends CommandCodec<Void, CloseCursorCommand> {
+  ResetStatementCommandCodec(CloseCursorCommand cmd) {
     super(cmd);
   }
 
   @Override
-  void encodePayload(MySQLEncoder encoder) {
-    super.encodePayload(encoder);
-    MySQLPreparedStatement ps = (MySQLPreparedStatement) cmd.statement();
+  void encode(MySQLEncoder encoder) {
+    super.encode(encoder);
+    MySQLPreparedStatement statement = (MySQLPreparedStatement) cmd.statement();
 
-    ps.isCursorOpen = false;
+    statement.isCursorOpen = false;
 
-    ByteBuf payload = encoder.chctx.alloc().ioBuffer();
-
-    payload.writeByte(CommandType.COM_STMT_RESET);
-    payload.writeIntLE((int) ps.statementId);
-
-    encoder.writePacketAndFlush(sequenceId++, payload);
+    sendStatementResetCommand(statement);
   }
 
   @Override
@@ -36,9 +29,25 @@ public class ResetStatementCommandCodec extends CommandCodec<Void, CloseCursorCo
     if (first == ERROR_PACKET_HEADER) {
       handleErrorPacketPayload(payload);
     } else if (first == OkPacket.OK_PACKET_HEADER) {
-      payload.readByte(); // skip header
-      OkPacket okPacket = GenericPacketPayloadDecoder.decodeOkPacketBody(payload, StandardCharsets.UTF_8);
       completionHandler.handle(CommandResponse.success(null));
     }
+  }
+
+  private void sendStatementResetCommand(MySQLPreparedStatement statement) {
+    ByteBuf packet = allocateBuffer();
+    // encode packet header
+    int packetStartIdx = packet.writerIndex();
+    packet.writeMediumLE(0); // will set payload length later by calculation
+    packet.writeByte(sequenceId++);
+
+    // encode packet payload
+    packet.writeByte(CommandType.COM_STMT_RESET);
+    packet.writeIntLE((int) statement.statementId);
+
+    // set payload length
+    int lenOfPayload = packet.writerIndex() - packetStartIdx - 4;
+    packet.setMediumLE(packetStartIdx, lenOfPayload);
+
+    encoder.chctx.writeAndFlush(packet);
   }
 }

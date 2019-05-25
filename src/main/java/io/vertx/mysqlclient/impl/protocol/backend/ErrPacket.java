@@ -1,7 +1,5 @@
 package io.vertx.mysqlclient.impl.protocol.backend;
 
-import io.vertx.pgclient.PgException;
-
 public final class ErrPacket {
   public static final int ERROR_PACKET_HEADER = 0xFF;
 
@@ -17,24 +15,19 @@ public final class ErrPacket {
     this.errorMessage = errorMessage;
   }
 
-  public int getErrorCode() {
+  public int errorCode() {
     return errorCode;
   }
 
-  public String getSqlStateMarker() {
+  public String sqlStateMarker() {
     return sqlStateMarker;
   }
 
-  public String getSqlState() {
+  public String sqlState() {
     return sqlState;
   }
 
-  public String getErrorMessage() {
+  public String errorMessage() {
     return errorMessage;
   }
-
-  public PgException toException() {
-    return new PgException(errorMessage, null, "" + errorCode, null);
-  }
-
 }

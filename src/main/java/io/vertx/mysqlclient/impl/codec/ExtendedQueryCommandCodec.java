@@ -33,44 +33,44 @@ import static io.vertx.mysqlclient.impl.protocol.backend.EofPacket.EOF_PACKET_HE
 import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
 import static io.vertx.mysqlclient.impl.protocol.backend.OkPacket.OK_PACKET_HEADER;
 
-public class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
+class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
 
   // TODO handle re-bound situations?
   // Flag if parameters must be re-bound
   private final byte sendType = 1;
 
-  private final MySQLPreparedStatement ps;
+  private final MySQLPreparedStatement statement;
 
-  public ExtendedQueryCommandCodec(ExtendedQueryCommand<R> cmd) {
+  ExtendedQueryCommandCodec(ExtendedQueryCommand<R> cmd) {
     super(cmd, DataFormat.BINARY);
-    ps = (MySQLPreparedStatement) cmd.preparedStatement();
-    if (cmd.fetch() > 0 && ps.isCursorOpen) {
+    statement = (MySQLPreparedStatement) cmd.preparedStatement();
+    if (cmd.fetch() > 0 && statement.isCursorOpen) {
       // restore the state we need for decoding fetch response
-      columnDefinitions = ps.rowDesc.columnDefinitions();
+      columnDefinitions = statement.rowDesc.columnDefinitions();
     }
   }
 
   @Override
-  void encodePayload(MySQLEncoder encoder) {
-    super.encodePayload(encoder);
+  void encode(MySQLEncoder encoder) {
+    super.encode(encoder);
 
-    if (ps.isCursorOpen) {
-      writeFetchMessage(encoder, ps.statementId, cmd.fetch());
-      decoder = new RowResultDecoder<>(cmd.collector(), false, ps.rowDesc);
+    if (statement.isCursorOpen) {
+      sendStatementFetchCommand(statement.statementId, cmd.fetch());
+      decoder = new RowResultDecoder<>(cmd.collector(), false, statement.rowDesc);
     } else {
       if (cmd.fetch() > 0) {
         //TODO Cursor_type is READ_ONLY?
-        writeExecuteMessage(encoder, ps.statementId, ps.paramDesc.paramDefinitions(), sendType, cmd.params(), (byte) 0x01);
+        sendStatementExecuteCommand(statement.statementId, statement.paramDesc.paramDefinitions(), sendType, cmd.params(), (byte) 0x01);
       } else {
         // CURSOR_TYPE_NO_CURSOR
-        writeExecuteMessage(encoder, ps.statementId, ps.paramDesc.paramDefinitions(), sendType, cmd.params(), (byte) 0x00);
+        sendStatementExecuteCommand(statement.statementId, statement.paramDesc.paramDefinitions(), sendType, cmd.params(), (byte) 0x00);
       }
     }
   }
 
   @Override
   void decodePayload(ByteBuf payload, MySQLEncoder encoder, int payloadLength, int sequenceId) {
-    if (ps.isCursorOpen) {
+    if (statement.isCursorOpen) {
       // decoding COM_STMT_FETCH response
       handleRows(payload, payloadLength, super::handleSingleRow);
     } else {
@@ -99,11 +99,11 @@ public class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, Exten
               // need to reset packet number so that we can send a fetch request
               this.sequenceId = 0;
               // send fetch after cursor opened
-              decoder = new RowResultDecoder<>(cmd.collector(), false, ps.rowDesc);
+              decoder = new RowResultDecoder<>(cmd.collector(), false, statement.rowDesc);
 
-              ps.isCursorOpen = true;
+              statement.isCursorOpen = true;
 
-              writeFetchMessage(encoder, ps.statementId, cmd.fetch());
+              sendStatementFetchCommand(statement.statementId, cmd.fetch());
             }
             break;
         }
@@ -113,57 +113,75 @@ public class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, Exten
     }
   }
 
-  private void writeExecuteMessage(MySQLEncoder encoder, long statementId, ColumnDefinition[] paramsColumnDefinitions, byte sendType, Tuple params, byte cursorType) {
-    ByteBuf payload = encoder.chctx.alloc().ioBuffer();
+  private void sendStatementExecuteCommand(long statementId, ColumnDefinition[] paramsColumnDefinitions, byte sendType, Tuple params, byte cursorType) {
+    ByteBuf packet = allocateBuffer();
+    // encode packet header
+    int packetStartIdx = packet.writerIndex();
+    packet.writeMediumLE(0); // will set payload length later by calculation
+    packet.writeByte(sequenceId++);
 
-    payload.writeByte(CommandType.COM_STMT_EXECUTE);
-    payload.writeIntLE((int) statementId);
-    payload.writeByte(cursorType);
+    // encode packet payload
+    packet.writeByte(CommandType.COM_STMT_EXECUTE);
+    packet.writeIntLE((int) statementId);
+    packet.writeByte(cursorType);
     // iteration count, always 1
-    payload.writeIntLE(1);
+    packet.writeIntLE(1);
 
     int numOfParams = paramsColumnDefinitions.length;
     int bitmapLength = (numOfParams + 7) / 8;
     byte[] nullBitmap = new byte[bitmapLength];
 
-    int pos = payload.writerIndex();
+    int pos = packet.writerIndex();
 
     if (numOfParams > 0) {
       // write a dummy bitmap first
-      payload.writeBytes(nullBitmap);
-      payload.writeByte(sendType);
+      packet.writeBytes(nullBitmap);
+      packet.writeByte(sendType);
       if (sendType == 1) {
         for (int i = 0; i < numOfParams; i++) {
           Object value = params.getValue(i);
-          payload.writeByte(parseDataTypeByEncodingValue(value).id);
-          payload.writeByte(0); // parameter flag: signed
+          packet.writeByte(parseDataTypeByEncodingValue(value).id);
+          packet.writeByte(0); // parameter flag: signed
         }
       }
 
       for (int i = 0; i < numOfParams; i++) {
         Object value = params.getValue(i);
         if (value != null) {
-          DataTypeCodec.encodeBinary(parseDataTypeByEncodingValue(value), value, payload);
+          DataTypeCodec.encodeBinary(parseDataTypeByEncodingValue(value), value, packet);
         } else {
           nullBitmap[i / 8] |= (1 << (i & 7));
         }
       }
 
       // padding null-bitmap content
-      payload.setBytes(pos, nullBitmap);
+      packet.setBytes(pos, nullBitmap);
     }
 
-    encoder.writePacketAndFlush(sequenceId++, payload);
+    // set payload length
+    int lenOfPayload = packet.writerIndex() - packetStartIdx - 4;
+    packet.setMediumLE(packetStartIdx, lenOfPayload);
+
+    encoder.chctx.writeAndFlush(packet);
   }
 
-  private void writeFetchMessage(MySQLEncoder encoder, long statementId, int count) {
-    ByteBuf payload = encoder.chctx.alloc().ioBuffer();
+  private void sendStatementFetchCommand(long statementId, int count) {
+    ByteBuf packet = allocateBuffer();
+    // encode packet header
+    int packetStartIdx = packet.writerIndex();
+    packet.writeMediumLE(0); // will set payload length later by calculation
+    packet.writeByte(sequenceId++);
 
-    payload.writeByte(CommandType.COM_STMT_FETCH);
-    payload.writeIntLE((int) statementId);
-    payload.writeIntLE(count);
+    // encode packet payload
+    packet.writeByte(CommandType.COM_STMT_FETCH);
+    packet.writeIntLE((int) statementId);
+    packet.writeIntLE(count);
 
-    encoder.writePacketAndFlush(sequenceId++, payload);
+    // set payload length
+    int lenOfPayload = packet.writerIndex() - packetStartIdx - 4;
+    packet.setMediumLE(packetStartIdx, lenOfPayload);
+
+    encoder.chctx.writeAndFlush(packet);
   }
 
   @Override

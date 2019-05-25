@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class MySQLRowDesc extends RowDesc {
+class MySQLRowDesc extends RowDesc {
 
   private final ColumnDefinition[] columnDefinitions;
   private final DataFormat dataFormat;

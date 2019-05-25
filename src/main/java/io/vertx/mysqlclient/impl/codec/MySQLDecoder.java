@@ -7,7 +7,7 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 import java.util.ArrayDeque;
 import java.util.List;
 
-public class MySQLDecoder extends ByteToMessageDecoder {
+class MySQLDecoder extends ByteToMessageDecoder {
 
   private final ArrayDeque<CommandCodec<?, ?>> inflight;
   private final MySQLEncoder encoder;

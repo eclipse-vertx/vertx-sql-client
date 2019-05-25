@@ -23,7 +23,7 @@ import io.vertx.sqlclient.impl.RowDesc;
 
 import java.util.List;
 
-public class MySQLPreparedStatement implements PreparedStatement {
+class MySQLPreparedStatement implements PreparedStatement {
 
   final long statementId;
   final String sql;
@@ -32,7 +32,7 @@ public class MySQLPreparedStatement implements PreparedStatement {
 
   boolean isCursorOpen;
 
-  public MySQLPreparedStatement(String sql, long statementId, MySQLParamDesc paramDesc, MySQLRowDesc rowDesc) {
+  MySQLPreparedStatement(String sql, long statementId, MySQLParamDesc paramDesc, MySQLRowDesc rowDesc) {
     this.statementId = statementId;
     this.paramDesc = paramDesc;
     this.rowDesc = rowDesc;

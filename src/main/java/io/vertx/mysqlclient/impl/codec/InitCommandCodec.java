@@ -17,18 +17,19 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.mysqlclient.impl.CapabilitiesNegotiator;
+import io.vertx.mysqlclient.impl.CharacterSetMapping;
 import io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag;
-import io.vertx.mysqlclient.impl.protocol.backend.ErrPacket;
 import io.vertx.mysqlclient.impl.protocol.backend.InitialHandshakePacket;
 import io.vertx.mysqlclient.impl.protocol.frontend.HandshakeResponse;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
-import io.vertx.sqlclient.impl.command.CommandResponse;
+import io.vertx.mysqlclient.impl.util.Native41Authenticator;
 import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.InitCommand;
 
 import java.nio.charset.StandardCharsets;
 
+import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.*;
 import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
 import static io.vertx.mysqlclient.impl.protocol.backend.OkPacket.OK_PACKET_HEADER;
 
@@ -98,13 +99,12 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     payload.readerIndex(payload.readerIndex() + 10);
 
     // Rest of the plugin provided data
-    payload.readBytes(scramble, AUTH_PLUGIN_DATA_PART1_LENGTH, SCRAMBLE_LENGTH - AUTH_PLUGIN_DATA_PART1_LENGTH);
-    // 20 byte long scramble end with a '/0' character
-    payload.readByte();
+    payload.readBytes(scramble, AUTH_PLUGIN_DATA_PART1_LENGTH, Math.max(SCRAMBLE_LENGTH - AUTH_PLUGIN_DATA_PART1_LENGTH, lenOfAuthPluginData - 9));
+    payload.readByte(); // reserved byte
 
     String authPluginName = null;
     if (isClientPluginAuthSupported) {
-      authPluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.US_ASCII);
+      authPluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.UTF_8);
     }
 
     //TODO we may not need an extra object here?(inline)
@@ -121,11 +121,14 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     if (ssl) {
       //TODO ssl
     } else {
-      int negotiatedCapabilities = CapabilitiesNegotiator.negotiate(initialHandshakePacket.getServerCapabilitiesFlags(), cmd.database());
+      if (cmd.database() != null && !cmd.database().isEmpty()) {
+        encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_WITH_DB;
+      }
+      encoder.clientCapabilitiesFlag &= initialHandshakePacket.getServerCapabilitiesFlags();
       String authMethodName = initialHandshakePacket.getAuthMethodName();
       byte[] serverScramble = initialHandshakePacket.getScramble();
-      HandshakeResponse handshakeResponse = new HandshakeResponse(cmd.username(), StandardCharsets.UTF_8, cmd.password(), cmd.database(), serverScramble, negotiatedCapabilities, authMethodName, null);
-      encoder.writeHandshakeResponseMessage(sequenceId++, handshakeResponse);
+      HandshakeResponse handshakeResponse = new HandshakeResponse(cmd.username(), StandardCharsets.UTF_8, cmd.password(), cmd.database(), serverScramble, encoder.clientCapabilitiesFlag, authMethodName, null);
+      sendHandshakeResponseMessage(handshakeResponse);
     }
   }
 
@@ -138,11 +141,69 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
         completionHandler.handle(CommandResponse.success(cmd.connection()));
         break;
       case ERROR_PACKET_HEADER:
-        ErrPacket packet = GenericPacketPayloadDecoder.decodeErrPacketBody(payload, StandardCharsets.UTF_8);
-        completionHandler.handle(CommandResponse.failure(packet.getErrorMessage()));
+        handleErrorPacketPayload(payload);
         break;
       default:
         throw new UnsupportedOperationException();
     }
+  }
+
+  private void sendHandshakeResponseMessage(HandshakeResponse message) {
+    ByteBuf packet = allocateBuffer();
+    // encode packet header
+    int packetStartIdx = packet.writerIndex();
+    packet.writeMediumLE(0); // will set payload length later by calculation
+    packet.writeByte(sequenceId++);
+
+    // encode packet payload
+    int clientCapabilitiesFlags = message.getClientCapabilitiesFlags();
+    packet.writeIntLE(message.getClientCapabilitiesFlags());
+    packet.writeIntLE(message.getMaxPacketSize());
+    packet.writeByte(CharacterSetMapping.getCharsetByteValue(message.getCharset().name()));
+    byte[] filler = new byte[23];
+    packet.writeBytes(filler);
+    BufferUtils.writeNullTerminatedString(packet, message.getUsername(), StandardCharsets.UTF_8);
+    String password = message.getPassword();
+    if (password == null || password.isEmpty()) {
+      packet.writeByte(0);
+    } else {
+      //TODO support different auth methods here
+
+      byte[] scrambledPassword = Native41Authenticator.encode(message.getPassword(), StandardCharsets.UTF_8, message.getScramble());
+      if ((clientCapabilitiesFlags & CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA) != 0) {
+        BufferUtils.writeLengthEncodedInteger(packet, scrambledPassword.length);
+        packet.writeBytes(scrambledPassword);
+      } else if ((clientCapabilitiesFlags & CLIENT_SECURE_CONNECTION) != 0) {
+        packet.writeByte(scrambledPassword.length);
+        packet.writeBytes(scrambledPassword);
+      } else {
+        packet.writeByte(0);
+      }
+    }
+    if ((clientCapabilitiesFlags & CLIENT_CONNECT_WITH_DB) != 0) {
+      BufferUtils.writeNullTerminatedString(packet, message.getDatabase(), StandardCharsets.UTF_8);
+    }
+    if ((clientCapabilitiesFlags & CLIENT_PLUGIN_AUTH) != 0) {
+      BufferUtils.writeNullTerminatedString(packet, message.getAuthMethodName(), StandardCharsets.UTF_8);
+    }
+    if ((clientCapabilitiesFlags & CLIENT_CONNECT_ATTRS) != 0) {
+      ByteBuf kv = encoder.chctx.alloc().ioBuffer();
+      try {
+        message.getClientConnectAttrs().forEach((key, value) -> {
+          BufferUtils.writeLengthEncodedString(kv, key, StandardCharsets.UTF_8);
+          BufferUtils.writeLengthEncodedString(kv, value, StandardCharsets.UTF_8);
+        });
+        BufferUtils.writeLengthEncodedInteger(packet, kv.readableBytes());
+        packet.writeBytes(kv);
+      } finally {
+        kv.release();
+      }
+    }
+
+    // set payload length
+    int lenOfPayload = packet.writerIndex() - packetStartIdx - 4;
+    packet.setMediumLE(packetStartIdx, lenOfPayload);
+
+    encoder.chctx.writeAndFlush(packet);
   }
 }
