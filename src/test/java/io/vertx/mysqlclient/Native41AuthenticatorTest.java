@@ -1,7 +1,7 @@
 package io.vertx.mysqlclient;
 
+import io.netty.util.internal.StringUtil;
 import io.vertx.mysqlclient.impl.util.Native41Authenticator;
-import io.vertx.mysqlclient.impl.util.Utils;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -22,7 +22,7 @@ public class Native41AuthenticatorTest {
       // part2
       0x34, 0x1f, 0x44, 0x4a, 0x36, 0x60, 0x5d, 0x79, 0x5c, 0x09, 0x6c, 0x08};
 
-    assertEquals(scrambledPasswordHexStr, Utils.bytesToHexString(Native41Authenticator.encode("password", StandardCharsets.UTF_8, scramble)));
+    assertEquals(scrambledPasswordHexStr, StringUtil.toHexString(Native41Authenticator.encode("password", StandardCharsets.UTF_8, scramble)));
   }
 
   @Test
@@ -35,6 +35,6 @@ public class Native41AuthenticatorTest {
       // part2
       0x14, 0x57, 0x3d, 0x04, 0x39, 0x70, 0x1f, 0x46, 0x58, 0x51, 0x49, 0x31};
 
-    assertEquals(scrambledPasswordHexStr, Utils.bytesToHexString(Native41Authenticator.encode("password", StandardCharsets.UTF_8, scramble)));
+    assertEquals(scrambledPasswordHexStr, StringUtil.toHexString(Native41Authenticator.encode("password", StandardCharsets.UTF_8, scramble)));
   }
 }

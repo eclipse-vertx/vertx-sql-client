@@ -17,18 +17,18 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.mysqlclient.impl.codec.datatype.DataFormat;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
 import io.vertx.sqlclient.impl.PreparedStatement;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
-import io.vertx.mysqlclient.impl.codec.datatype.DataFormat;
 
 import java.nio.charset.StandardCharsets;
 
 import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
 
-public class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareStatementCommand> {
+class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareStatementCommand> {
 
   private CommandHandlerState commandHandlerState = CommandHandlerState.INIT;
   private long statementId;
@@ -40,12 +40,9 @@ public class PrepareStatementCodec extends CommandCodec<PreparedStatement, Prepa
   }
 
   @Override
-  void encodePayload(MySQLEncoder encoder) {
-    super.encodePayload(encoder);
-    ByteBuf payload = encoder.chctx.alloc().ioBuffer();
-    payload.writeByte(CommandType.COM_STMT_PREPARE);
-    payload.writeCharSequence(cmd.sql(), StandardCharsets.UTF_8);
-    encoder.writePacketAndFlush(sequenceId++, payload);
+  void encode(MySQLEncoder encoder) {
+    super.encode(encoder);
+    sendStatementPrepareCommand();
   }
 
   @Override
@@ -101,6 +98,24 @@ public class PrepareStatementCodec extends CommandCodec<PreparedStatement, Prepa
         }
         break;
     }
+  }
+
+  private void sendStatementPrepareCommand() {
+    ByteBuf packet = allocateBuffer();
+    // encode packet header
+    int packetStartIdx = packet.writerIndex();
+    packet.writeMediumLE(0); // will set payload length later by calculation
+    packet.writeByte(sequenceId++);
+
+    // encode packet payload
+    packet.writeByte(CommandType.COM_STMT_PREPARE);
+    packet.writeCharSequence(cmd.sql(), StandardCharsets.UTF_8);
+
+    // set payload length
+    int lenOfPayload = packet.writerIndex() - packetStartIdx - 4;
+    packet.setMediumLE(packetStartIdx, lenOfPayload);
+
+    encoder.chctx.writeAndFlush(packet);
   }
 
   private void handleReadyForQuery() {

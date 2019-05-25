@@ -7,14 +7,14 @@ import io.vertx.pgclient.impl.util.Util;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class MySQLParamDesc extends ParamDesc {
+class MySQLParamDesc extends ParamDesc {
   private final ColumnDefinition[] paramDefinitions;
 
-  public MySQLParamDesc(ColumnDefinition[] paramDefinitions) {
+  MySQLParamDesc(ColumnDefinition[] paramDefinitions) {
     this.paramDefinitions = paramDefinitions;
   }
 
-  public ColumnDefinition[] paramDefinitions() {
+  ColumnDefinition[] paramDefinitions() {
     return paramDefinitions;
   }
 

@@ -15,8 +15,6 @@ import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.UUID;
 
-// TODO how we design Row API ? Some data types in Postgres may not be compatible with some MySQL data types. need to check this
-
 public class MySQLRowImpl extends ArrayTuple implements RowInternal {
 
   private final RowDesc rowDesc;

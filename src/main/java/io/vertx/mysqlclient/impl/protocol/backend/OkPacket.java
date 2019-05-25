@@ -7,34 +7,39 @@ public final class OkPacket {
   private final long lastInsertId;
   private final int serverStatusFlags;
   private final int numberOfWarnings;
-  private final String info;
-  //TODO Session info track support?
+  private final String statusInfo;
+  private final String sessionStateInfo;
 
-  public OkPacket(long affectedRows, long lastInsertId, int serverStatusFlags, int numberOfWarnings, String info) {
+  public OkPacket(long affectedRows, long lastInsertId, int serverStatusFlags, int numberOfWarnings, String statusInfo, String sessionStateInfo) {
     this.affectedRows = affectedRows;
     this.lastInsertId = lastInsertId;
     this.serverStatusFlags = serverStatusFlags;
     this.numberOfWarnings = numberOfWarnings;
-    this.info = info;
+    this.statusInfo = statusInfo;
+    this.sessionStateInfo = sessionStateInfo;
   }
 
-  public long getAffectedRows() {
+  public long affectedRows() {
     return affectedRows;
   }
 
-  public long getLastInsertId() {
+  public long lastInsertId() {
     return lastInsertId;
   }
 
-  public int getServerStatusFlags() {
+  public int serverStatusFlags() {
     return serverStatusFlags;
   }
 
-  public int getNumberOfWarnings() {
+  public int numberOfWarnings() {
     return numberOfWarnings;
   }
 
-  public String getInfo() {
-    return info;
+  public String statusInfo() {
+    return statusInfo;
+  }
+
+  public String sessionStateInfo() {
+    return sessionStateInfo;
   }
 }
