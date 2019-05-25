@@ -149,6 +149,8 @@
 |[[sendBufferSize]]`@sendBufferSize`|`Number (int)`|-
 |[[soLinger]]`@soLinger`|`Number (int)`|-
 |[[ssl]]`@ssl`|`Boolean`|-
+|[[sslHandshakeTimeout]]`@sslHandshakeTimeout`|`Number (long)`|-
+|[[sslHandshakeTimeoutUnit]]`@sslHandshakeTimeoutUnit`|`link:enums.html#TimeUnit[TimeUnit]`|-
 |[[sslMode]]`@sslMode`|`link:enums.html#SslMode[SslMode]`|+++
 Set link for the client, this option can be used to provide different levels of secure protection.
 +++
@@ -241,6 +243,8 @@ Set the maximum connection request allowed in the wait queue, any requests beyon
 |[[sendBufferSize]]`@sendBufferSize`|`Number (int)`|-
 |[[soLinger]]`@soLinger`|`Number (int)`|-
 |[[ssl]]`@ssl`|`Boolean`|-
+|[[sslHandshakeTimeout]]`@sslHandshakeTimeout`|`Number (long)`|-
+|[[sslHandshakeTimeoutUnit]]`@sslHandshakeTimeoutUnit`|`link:enums.html#TimeUnit[TimeUnit]`|-
 |[[sslMode]]`@sslMode`|`link:enums.html#SslMode[SslMode]`|+++
 Set link for the client, this option can be used to provide different levels of secure protection.
 +++

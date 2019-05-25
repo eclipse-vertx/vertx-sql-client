@@ -13,27 +13,15 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.vertx.kotlin.sqlclient
+package io.vertx.kotlin.pgclient.pubsub
 
 import io.vertx.core.streams.WriteStream
 import io.vertx.kotlin.coroutines.awaitResult
-import io.vertx.sqlclient.RowStream
+import io.vertx.pgclient.pubsub.PgChannel
 
-suspend fun <T> RowStream<T>.pipeToAwait(dst: WriteStream<T>): Unit {
+suspend fun PgChannel.pipeToAwait(dst: WriteStream<String>): Unit {
   return awaitResult {
     this.pipeTo(dst) { ar -> it.handle(ar.mapEmpty()) }
-  }
-}
-
-/**
- * Suspending version of method [io.vertx.sqlclient.RowStream.close]
- *
- *
- * NOTE: This function has been automatically generated from [io.vertx.sqlclient.RowStream] using Vert.x codegen.
- */
-suspend fun <T> RowStream<T>.closeAwait(): Unit {
-  return awaitResult {
-    this.close { ar -> it.handle(ar.mapEmpty()) }
   }
 }
 

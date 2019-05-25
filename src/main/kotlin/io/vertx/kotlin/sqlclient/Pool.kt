@@ -1,3 +1,18 @@
+/*
+ * Copyright 2019 Red Hat, Inc.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Apache License v2.0 which accompanies this distribution.
+ *
+ * The Eclipse Public License is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * The Apache License v2.0 is available at
+ * http://www.opensource.org/licenses/apache2.0.php
+ *
+ * You may elect to redistribute this code under either of these licenses.
+ */
 package io.vertx.kotlin.sqlclient
 
 import io.vertx.kotlin.coroutines.awaitResult
@@ -7,55 +22,52 @@ import io.vertx.sqlclient.SqlConnection
 import io.vertx.sqlclient.Transaction
 import io.vertx.sqlclient.Tuple
 
-suspend fun Pool.preparedQueryAwait(sql : String) : RowSet {
-  return awaitResult{
+suspend fun Pool.preparedQueryAwait(sql: String): RowSet {
+  return awaitResult {
     this.preparedQuery(sql, it)
   }
 }
 
-suspend fun Pool.queryAwait(sql : String) : RowSet {
-  return awaitResult{
+suspend fun Pool.queryAwait(sql: String): RowSet {
+  return awaitResult {
     this.query(sql, it)
   }
 }
 
-suspend fun Pool.preparedQueryAwait(sql : String, arguments : Tuple) : RowSet {
-  return awaitResult{
+suspend fun Pool.preparedQueryAwait(sql: String, arguments: Tuple): RowSet {
+  return awaitResult {
     this.preparedQuery(sql, arguments, it)
   }
 }
 
-suspend fun Pool.preparedBatchAwait(sql : String, batch : List<Tuple>) : RowSet {
-  return awaitResult{
+suspend fun Pool.preparedBatchAwait(sql: String, batch: List<Tuple>): RowSet {
+  return awaitResult {
     this.preparedBatch(sql, batch, it)
   }
 }
 
 /**
- * Get a connection from the pool.
+ * Suspending version of method [io.vertx.sqlclient.Pool.getConnection]
  *
- * @param handler the handler that will get the connection result
+ * @return [SqlConnection]
  *
- * <p/>
- * NOTE: This function has been automatically generated from the [io.vertx.sqlclient.Pool original] using Vert.x codegen.
+ * NOTE: This function has been automatically generated from [io.vertx.sqlclient.Pool] using Vert.x codegen.
  */
-suspend fun Pool.getConnectionAwait() : SqlConnection {
-  return awaitResult{
+suspend fun Pool.getConnectionAwait(): SqlConnection {
+  return awaitResult {
     this.getConnection(it)
   }
 }
 
 /**
- * Borrow a connection from the pool and begin a transaction, the underlying connection will be returned
- * to the pool when the transaction ends.
+ * Suspending version of method [io.vertx.sqlclient.Pool.begin]
  *
- * @param handler 
+ * @return [Transaction]
  *
- * <p/>
- * NOTE: This function has been automatically generated from the [io.vertx.sqlclient.Pool original] using Vert.x codegen.
+ * NOTE: This function has been automatically generated from [io.vertx.sqlclient.Pool] using Vert.x codegen.
  */
-suspend fun Pool.beginAwait() : Transaction {
-  return awaitResult{
+suspend fun Pool.beginAwait(): Transaction {
+  return awaitResult {
     this.begin(it)
   }
 }

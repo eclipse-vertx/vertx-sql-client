@@ -1,3 +1,18 @@
+/*
+ * Copyright 2019 Red Hat, Inc.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Apache License v2.0 which accompanies this distribution.
+ *
+ * The Eclipse Public License is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * The Apache License v2.0 is available at
+ * http://www.opensource.org/licenses/apache2.0.php
+ *
+ * You may elect to redistribute this code under either of these licenses.
+ */
 package io.vertx.kotlin.sqlclient
 
 import io.vertx.kotlin.coroutines.awaitResult
@@ -6,59 +21,55 @@ import io.vertx.sqlclient.RowSet
 import io.vertx.sqlclient.Tuple
 
 /**
- * Calls [io.vertx.sqlclient.PreparedQuery] with an empty tuple argument.
+ * Suspending version of method [io.vertx.sqlclient.PreparedQuery.execute]
  *
- * @param handler 
- * @return *
- * <p/>
- * NOTE: This function has been automatically generated from the [io.vertx.sqlclient.PreparedQuery original] using Vert.x codegen.
+ * @return [RowSet]
+ *
+ * NOTE: This function has been automatically generated from [io.vertx.sqlclient.PreparedQuery] using Vert.x codegen.
  */
-suspend fun PreparedQuery.executeAwait() : RowSet {
-  return awaitResult{
+suspend fun PreparedQuery.executeAwait(): RowSet {
+  return awaitResult {
     this.execute(it)
   }
 }
 
 /**
- * Create a cursor with the provided <code>arguments</code>.
+ * Suspending version of method [io.vertx.sqlclient.PreparedQuery.execute]
  *
  * @param args the list of arguments
- * @param handler 
- * @returnthe query *
- * <p/>
- * NOTE: This function has been automatically generated from the [io.vertx.sqlclient.PreparedQuery original] using Vert.x codegen.
+ * @return [RowSet]
+ *
+ * NOTE: This function has been automatically generated from [io.vertx.sqlclient.PreparedQuery] using Vert.x codegen.
  */
-suspend fun PreparedQuery.executeAwait(args : Tuple) : RowSet {
-  return awaitResult{
+suspend fun PreparedQuery.executeAwait(args: Tuple): RowSet {
+  return awaitResult {
     this.execute(args, it)
   }
 }
 
 /**
- * Execute a batch.
+ * Suspending version of method [io.vertx.sqlclient.PreparedQuery.batch]
  *
  * @param argsList the list of tuple for the batch
- * @param handler 
- * @returnthe createBatch *
- * <p/>
- * NOTE: This function has been automatically generated from the [io.vertx.sqlclient.PreparedQuery original] using Vert.x codegen.
+ * @return [RowSet]
+ *
+ * NOTE: This function has been automatically generated from [io.vertx.sqlclient.PreparedQuery] using Vert.x codegen.
  */
-suspend fun PreparedQuery.batchAwait(argsList : List<Tuple>) : RowSet {
-  return awaitResult{
+suspend fun PreparedQuery.batchAwait(argsList: List<Tuple>): RowSet {
+  return awaitResult {
     this.batch(argsList, it)
   }
 }
 
 /**
- * Like [io.vertx.sqlclient.PreparedQuery] but notifies the <code>completionHandler</code> when it's closed.
+ * Suspending version of method [io.vertx.sqlclient.PreparedQuery.close]
  *
- * @param completionHandler 
  *
- * <p/>
- * NOTE: This function has been automatically generated from the [io.vertx.sqlclient.PreparedQuery original] using Vert.x codegen.
+ * NOTE: This function has been automatically generated from [io.vertx.sqlclient.PreparedQuery] using Vert.x codegen.
  */
-suspend fun PreparedQuery.closeAwait() : Unit {
-  return awaitResult{
-    this.close({ ar -> it.handle(ar.mapEmpty()) })}
+suspend fun PreparedQuery.closeAwait(): Unit {
+  return awaitResult {
+    this.close { ar -> it.handle(ar.mapEmpty()) }
+  }
 }
 
