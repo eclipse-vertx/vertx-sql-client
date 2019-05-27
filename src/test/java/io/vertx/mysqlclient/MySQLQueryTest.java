@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -41,6 +42,7 @@ public class MySQLQueryTest extends MySQLTestBase {
   public void testEncodePacketSizeMoreThan16MB(TestContext ctx) {
     int dataSize = 20 * 1024 * 1024; // 20MB payload
     byte[] data = new byte[dataSize];
+    ThreadLocalRandom.current().nextBytes(data);
     Buffer buffer = Buffer.buffer(data);
 
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
@@ -56,6 +58,7 @@ public class MySQLQueryTest extends MySQLTestBase {
   public void testDecodePacketSizeMoreThan16MB(TestContext ctx) {
     int dataSize = 20 * 1024 * 1024; // 20MB payload
     byte[] data = new byte[dataSize];
+    ThreadLocalRandom.current().nextBytes(data);
     Buffer buffer = Buffer.buffer(data);
 
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
