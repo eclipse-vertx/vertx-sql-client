@@ -57,29 +57,38 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
 
   void sendPacket(ByteBuf packet, int payloadLength) {
     if (payloadLength >= PACKET_PAYLOAD_LENGTH_LIMIT) {
-      // the original packet exceeds the limit of packet length, split the packet here
-      // if payload length is exactly 16MBytes-1byte(0xFFFFFF), an empty packet needs to be indicate the termination
+      /* The original packet exceeds the limit of packet length, split the packet here
+         if payload length is exactly 16MBytes-1byte(0xFFFFFF), an empty packet is needed to indicate the termination.
+       */
       ByteBuf payload = packet.skipBytes(4);
-
-      while (payload.readableBytes() >= PACKET_PAYLOAD_LENGTH_LIMIT) {
-        // send a split packet with 0xFFFFFF MBytes payload
-        ByteBuf splitPacketHeader = encoder.chctx.alloc().ioBuffer(4);
-        splitPacketHeader.writeMediumLE(PACKET_PAYLOAD_LENGTH_LIMIT);
-        splitPacketHeader.writeByte(sequenceId++);
-        encoder.chctx.write(splitPacketHeader);
-        encoder.chctx.write(payload.readRetainedSlice(PACKET_PAYLOAD_LENGTH_LIMIT));
-      }
-
-      // last part of the packet
-      int lastPartLength = payload.readableBytes();
-      ByteBuf lastPacketHeader = encoder.chctx.alloc().ioBuffer(4);
-      lastPacketHeader.writeMediumLE(lastPartLength);
-      lastPacketHeader.writeByte(sequenceId++);
-      encoder.chctx.write(lastPacketHeader);
-      encoder.chctx.writeAndFlush(payload);
+      sendSplitPacket(payload);
     } else {
       sequenceId++;
       encoder.chctx.writeAndFlush(packet);
+    }
+  }
+
+  private void sendSplitPacket(ByteBuf payload) {
+    int payloadLength = payload.readableBytes();
+    int packetLength;
+    if (payloadLength >= PACKET_PAYLOAD_LENGTH_LIMIT) {
+      packetLength = PACKET_PAYLOAD_LENGTH_LIMIT;
+    } else {
+      packetLength = payloadLength;
+    }
+
+    ByteBuf packetHeader = encoder.chctx.alloc().ioBuffer(4);
+    packetHeader.writeMediumLE(packetLength);
+    packetHeader.writeByte(sequenceId++);
+    encoder.chctx.write(packetHeader);
+
+    if (packetLength == PACKET_PAYLOAD_LENGTH_LIMIT) {
+      // send a packet with 0xFFFFFF length payload
+      encoder.chctx.write(payload.readRetainedSlice(PACKET_PAYLOAD_LENGTH_LIMIT));
+      sendSplitPacket(payload);
+    } else {
+      // send the last part of the packet
+      encoder.chctx.writeAndFlush(payload);
     }
   }
 
