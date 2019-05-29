@@ -57,7 +57,8 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
 
   void sendPacket(ByteBuf packet, int payloadLength) {
     if (payloadLength >= PACKET_PAYLOAD_LENGTH_LIMIT) {
-      /* The original packet exceeds the limit of packet length, split the packet here
+      /*
+         The original packet exceeds the limit of packet length, split the packet here.
          if payload length is exactly 16MBytes-1byte(0xFFFFFF), an empty packet is needed to indicate the termination.
        */
       ByteBuf payload = packet.skipBytes(4);
@@ -69,27 +70,21 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
   }
 
   private void sendSplitPacket(ByteBuf payload) {
-    int payloadLength = payload.readableBytes();
-    int packetLength;
-    if (payloadLength >= PACKET_PAYLOAD_LENGTH_LIMIT) {
-      packetLength = PACKET_PAYLOAD_LENGTH_LIMIT;
-    } else {
-      packetLength = payloadLength;
+    while (payload.readableBytes() >= PACKET_PAYLOAD_LENGTH_LIMIT) {
+      // send a packet with 0xFFFFFF length payload
+      ByteBuf packetHeader = encoder.chctx.alloc().ioBuffer(4);
+      packetHeader.writeMediumLE(PACKET_PAYLOAD_LENGTH_LIMIT);
+      packetHeader.writeByte(sequenceId++);
+      encoder.chctx.write(packetHeader);
+      encoder.chctx.write(payload.readRetainedSlice(PACKET_PAYLOAD_LENGTH_LIMIT));
     }
 
+    // send a packet with last part of the payload
     ByteBuf packetHeader = encoder.chctx.alloc().ioBuffer(4);
-    packetHeader.writeMediumLE(packetLength);
+    packetHeader.writeMediumLE(payload.readableBytes());
     packetHeader.writeByte(sequenceId++);
     encoder.chctx.write(packetHeader);
-
-    if (packetLength == PACKET_PAYLOAD_LENGTH_LIMIT) {
-      // send a packet with 0xFFFFFF length payload
-      encoder.chctx.write(payload.readRetainedSlice(PACKET_PAYLOAD_LENGTH_LIMIT));
-      sendSplitPacket(payload);
-    } else {
-      // send the last part of the packet
-      encoder.chctx.writeAndFlush(payload);
-    }
+    encoder.chctx.writeAndFlush(payload);
   }
 
   void handleErrorPacketPayload(ByteBuf payload) {
