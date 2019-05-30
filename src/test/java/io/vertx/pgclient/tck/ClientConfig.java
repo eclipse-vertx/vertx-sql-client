@@ -26,16 +26,17 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.sqlclient.SqlConnectOptions;
 
 public enum ClientConfig {
 
   CONNECT() {
     @Override
-    Connector<PgConnection> connect(Vertx vertx, PgConnectOptions options) {
+    Connector<PgConnection> connect(Vertx vertx, SqlConnectOptions options) {
       return new Connector<PgConnection>() {
         @Override
         public void connect(Handler<AsyncResult<PgConnection>> handler) {
-          PgConnection.connect(vertx, options, ar -> {
+          PgConnection.connect(vertx, new PgConnectOptions(options.toJson()), ar -> {
             if (ar.succeeded()) {
               handler.handle(Future.succeededFuture(ar.result()));
             } else {
@@ -52,8 +53,8 @@ public enum ClientConfig {
 
   POOLED() {
     @Override
-    Connector<SqlClient> connect(Vertx vertx, PgConnectOptions options) {
-      PgPool pool = PgPool.pool(vertx, new PgPoolOptions(options).setMaxSize(1));
+    Connector<SqlClient> connect(Vertx vertx, SqlConnectOptions options) {
+      PgPool pool = PgPool.pool(vertx, new PgPoolOptions(options.toJson()).setMaxSize(1));
       return new Connector<SqlClient>() {
         @Override
         public void connect(Handler<AsyncResult<SqlClient>> handler) {
@@ -73,6 +74,6 @@ public enum ClientConfig {
     }
   };
 
-  abstract <C extends SqlClient> Connector<C> connect(Vertx vertx, PgConnectOptions options);
+  abstract <C extends SqlClient> Connector<C> connect(Vertx vertx, SqlConnectOptions options);
 
 }
