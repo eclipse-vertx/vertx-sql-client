@@ -17,7 +17,7 @@
 
 package io.vertx.sqlclient.impl;
 
-import io.vertx.pgclient.PgPoolOptions;
+import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Transaction;
@@ -46,13 +46,10 @@ public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> i
   private final ConnectionPool pool;
   private final boolean closeVertx;
 
-  public PoolBase(Context context, boolean closeVertx, PgPoolOptions options) {
+  public PoolBase(Context context, boolean closeVertx, PoolOptions options) {
     int maxSize = options.getMaxSize();
     if (maxSize < 1) {
       throw new IllegalArgumentException("Pool max size must be > 0");
-    }
-    if (options.isUsingDomainSocket() && !context.owner().isNativeTransportEnabled()) {
-      throw new VertxException("Native transport is not available");
     }
     this.context = context;
     this.pool = new ConnectionPool(this::connect, maxSize, options.getMaxWaitQueueSize());

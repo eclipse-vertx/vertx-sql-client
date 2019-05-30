@@ -24,6 +24,7 @@ import io.reactivex.Flowable;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.reactivex.core.Vertx;
+import io.vertx.sqlclient.PoolOptions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,7 +44,7 @@ public class RxTest extends PgTestBase {
   public void setup() throws Exception {
     super.setup();
     vertx = Vertx.vertx();
-    pool = PgPool.pool(vertx, new PgPoolOptions(options).setMaxSize(1));
+    pool = PgPool.pool(vertx, new PgConnectOptions(options) ,new PoolOptions().setMaxSize(1));
   }
 
   @After

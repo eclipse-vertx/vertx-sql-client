@@ -16,6 +16,7 @@
  */
 package io.vertx.pgclient;
 
+import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.Tuple;
@@ -30,7 +31,7 @@ public class PgTransactionTest extends PgClientTestBase<Transaction> {
   public PgTransactionTest() {
     connector = handler -> {
       if (pool == null) {
-        pool = PgPool.pool(vertx, new PgPoolOptions(options).setMaxSize(1));
+        pool = PgPool.pool(vertx, new PgConnectOptions(options), new PoolOptions().setMaxSize(1));
       }
       pool.begin(handler);
     };

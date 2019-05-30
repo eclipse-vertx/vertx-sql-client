@@ -23,8 +23,7 @@ import io.vertx.core.Vertx;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.mysqlclient.MySQLPool;
-import io.vertx.pgclient.PgConnectOptions;
-import io.vertx.pgclient.PgPoolOptions;
+import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Connector;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.SqlConnectOptions;
@@ -57,14 +56,7 @@ public enum ClientConfig {
   POOLED() {
     @Override
     Connector<SqlConnection> connect(Vertx vertx, SqlConnectOptions options) {
-      // TODO separate poolOptions and connectOptions
-      PgPoolOptions poolOptions = new PgPoolOptions()
-        .setHost(options.getHost())
-        .setPort(options.getPort())
-        .setUser(options.getUser())
-        .setPassword(options.getPassword())
-        .setDatabase(options.getDatabase());
-      MySQLPool pool = MySQLPool.pool(poolOptions.setMaxSize(1));
+      MySQLPool pool = MySQLPool.pool(new MySQLConnectOptions(options.toJson()), new PoolOptions().setMaxSize(1));
       return new Connector<SqlConnection>() {
         @Override
         public void connect(Handler<AsyncResult<SqlConnection>> handler) {

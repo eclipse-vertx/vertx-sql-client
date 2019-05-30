@@ -18,6 +18,7 @@
 package io.vertx.pgclient;
 
 import io.vertx.pgclient.impl.PgPoolImpl;
+import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Row;
@@ -34,7 +35,7 @@ import java.util.List;
 import java.util.stream.Collector;
 
 /**
- * A pool of connection.
+ * A pool of PostgreSQL connections.
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
@@ -42,56 +43,70 @@ import java.util.stream.Collector;
 public interface PgPool extends Pool {
 
   /**
-   * Like {@link #pool(PgPoolOptions)} with options build from the environment variables.
+   * Like {@link #pool(PoolOptions)} with a default {@code poolOptions}.
    */
   static PgPool pool() {
-    return pool(PgPoolOptions.fromEnv());
+    return pool(PgConnectOptions.fromEnv(), new PoolOptions());
   }
 
   /**
-   * Like {@link #pool(PgPoolOptions)} with options build from {@code connectionUri}.
+   * Like {@link #pool(PgConnectOptions, PoolOptions)} with {@code connectOptions} build from the environment variables.
+   */
+  static PgPool pool(PoolOptions poolOptions) {
+    return pool(PgConnectOptions.fromEnv(), poolOptions);
+  }
+
+  /**
+   * Like {@link #pool(String, PoolOptions)} with a default {@code poolOptions}.
    */
   static PgPool pool(String connectionUri) {
-    return pool(PgPoolOptions.fromUri(connectionUri));
+    return pool(connectionUri, new PoolOptions());
   }
 
   /**
-   * Like {@link #pool(Vertx, PgPoolOptions)} with options build from the environment variables.
+   * Like {@link #pool(PgConnectOptions, PoolOptions)} with {@code connectOptions} build from {@code connectionUri}.
    */
-  static PgPool pool(Vertx vertx) {
-    return pool(vertx, PgPoolOptions.fromEnv());
+  static PgPool pool(String connectionUri, PoolOptions poolOptions) {
+    return pool(PgConnectOptions.fromUri(connectionUri), poolOptions);
   }
 
   /**
-   * Like {@link #pool(Vertx, PgPoolOptions)} with options build from {@code connectionUri}.
+   * Like {@link #pool(Vertx, PgConnectOptions, PoolOptions)} with {@code connectOptions} build from the environment variables.
    */
-  static PgPool pool(Vertx vertx, String connectionUri) {
-    return pool(vertx, PgPoolOptions.fromUri(connectionUri));
+  static PgPool pool(Vertx vertx, PoolOptions poolOptions) {
+    return pool(vertx, PgConnectOptions.fromEnv(), poolOptions);
   }
 
   /**
-   * Create a connection pool to the database configured with the given {@code options}.
+   * Like {@link #pool(Vertx, PgConnectOptions, PoolOptions)} with {@code connectOptions} build from {@code connectionUri}.
+   */
+  static PgPool pool(Vertx vertx, String connectionUri, PoolOptions poolOptions) {
+    return pool(vertx, PgConnectOptions.fromUri(connectionUri), poolOptions);
+  }
+
+  /**
+   * Create a connection pool to the database configured with the given {@code connectOptions} and {@code poolOptions}.
    *
-   * @param options the options for creating the pool
+   * @param poolOptions the options for creating the pool
    * @return the connection pool
    */
-  static PgPool pool(PgPoolOptions options) {
+  static PgPool pool(PgConnectOptions connectOptions, PoolOptions poolOptions) {
     if (Vertx.currentContext() != null) {
-      throw new IllegalStateException("Running in a Vertx context => use PgPool#pool(Vertx, PgPoolOptions) instead");
+      throw new IllegalStateException("Running in a Vertx context => use PgPool#pool(Vertx, PgConnectOptions, PoolOptions) instead");
     }
     VertxOptions vertxOptions = new VertxOptions();
-    if (options.isUsingDomainSocket()) {
+    if (connectOptions.isUsingDomainSocket()) {
       vertxOptions.setPreferNativeTransport(true);
     }
     Vertx vertx = Vertx.vertx(vertxOptions);
-    return new PgPoolImpl(vertx.getOrCreateContext(), true, options);
+    return new PgPoolImpl(vertx.getOrCreateContext(), true, connectOptions, poolOptions);
   }
 
   /**
-   * Like {@link #pool(PgPoolOptions)} with a specific {@link Vertx} instance.
+   * Like {@link #pool(PgConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
-  static PgPool pool(Vertx vertx, PgPoolOptions options) {
-    return new PgPoolImpl(vertx.getOrCreateContext(), false, options);
+  static PgPool pool(Vertx vertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
+    return new PgPoolImpl(vertx.getOrCreateContext(), false, connectOptions, poolOptions);
   }
 
   PgPool preparedQuery(String sql, Handler<AsyncResult<RowSet>> handler);

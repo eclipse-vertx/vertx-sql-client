@@ -17,7 +17,7 @@
 
 package io.vertx.sqlclient.impl;
 
-import io.vertx.pgclient.PgPoolOptions;
+import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.core.*;
 import io.vertx.core.impl.NoStackTraceThrowable;
@@ -44,11 +44,11 @@ public class ConnectionPool {
   private boolean closed;
 
   public ConnectionPool(Consumer<Handler<AsyncResult<Connection>>> connector) {
-    this(connector, PgPoolOptions.DEFAULT_MAX_SIZE, PgPoolOptions.DEFAULT_MAX_WAIT_QUEUE_SIZE);
+    this(connector, PoolOptions.DEFAULT_MAX_SIZE, PoolOptions.DEFAULT_MAX_WAIT_QUEUE_SIZE);
   }
 
   public ConnectionPool(Consumer<Handler<AsyncResult<Connection>>> connector, int maxSize) {
-    this(connector, maxSize, PgPoolOptions.DEFAULT_MAX_WAIT_QUEUE_SIZE);
+    this(connector, maxSize, PoolOptions.DEFAULT_MAX_WAIT_QUEUE_SIZE);
   }
 
   public ConnectionPool(Consumer<Handler<AsyncResult<Connection>>> connector, int maxSize, int maxWaitQueueSize) {

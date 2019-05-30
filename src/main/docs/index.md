@@ -191,7 +191,7 @@ You can execute prepared batch
 You can cache prepared queries:
 
 ```$lang
-{@link examples.Examples#queries09(io.vertx.core.Vertx, PgPoolOptions)}
+{@link examples.Examples#queries09(io.vertx.core.Vertx, PgConnectOptions, PoolOptions)}
 ```
 
 You can fetch generated keys with a 'RETURNING' clause in your query:
