@@ -33,6 +33,7 @@ public class MySQLRule extends ExternalResource {
       .withCharset(Charset.UTF8)
       .withUser("mysql", "password")
       .withPort(3306)
+      .withServerVariable("max_allowed_packet", 32 * 1024 * 1024)
       .build();
 
     SchemaConfig schemaConfig = SchemaConfig.aSchemaConfig("testschema")

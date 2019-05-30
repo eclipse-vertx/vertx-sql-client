@@ -1,17 +1,19 @@
 package io.vertx.mysqlclient;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.core.Vertx;
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -34,6 +36,48 @@ public class MySQLQueryTest extends MySQLTestBase {
   @After
   public void teardown(TestContext ctx) {
     vertx.close(ctx.asyncAssertSuccess());
+  }
+
+  @Test
+  public void testDecodePacketSizeMoreThan16MB(TestContext ctx) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < 4000000; i++) {
+      sb.append("abcde");
+    }
+    String expected = sb.toString();
+
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT REPEAT('abcde', 4000000)", ctx.asyncAssertSuccess(rowSet -> {
+        ctx.assertEquals(1, rowSet.size());
+        Row row = rowSet.iterator().next();
+        ctx.assertTrue(row.getString(0).getBytes().length > 0xFFFFFF);
+        ctx.assertEquals(expected, row.getValue(0));
+        ctx.assertEquals(expected, row.getString(0));
+        conn.close();
+      }));
+    }));
+  }
+
+  @Test
+  public void testEncodePacketSizeMoreThan16MB(TestContext ctx) {
+    int dataSize = 20 * 1024 * 1024; // 20MB payload
+    byte[] data = new byte[dataSize];
+    ThreadLocalRandom.current().nextBytes(data);
+    Buffer buffer = Buffer.buffer(data);
+    ctx.assertTrue(buffer.length() > 0xFFFFFF);
+
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("UPDATE datatype SET `LongBlob` = ? WHERE id = 2", Tuple.of(buffer), ctx.asyncAssertSuccess(v -> {
+        conn.preparedQuery("SELECT id, `LongBlob` FROM datatype WHERE id = 2", ctx.asyncAssertSuccess(rowSet -> {
+          Row row = rowSet.iterator().next();
+          ctx.assertEquals(2, row.getInteger(0));
+          ctx.assertEquals(2, row.getInteger("id"));
+          ctx.assertEquals(buffer, row.getBuffer(1));
+          ctx.assertEquals(buffer, row.getBuffer("LongBlob"));
+          conn.close();
+        }));
+      }));
+    }));
   }
 
   @Test
