@@ -21,8 +21,8 @@
 
   <parent>
     <groupId>io.vertx</groupId>
-    <artifactId>vertx-parent</artifactId>
-    <version>12</version>
+    <artifactId>vertx-ext-parent</artifactId>
+    <version>34</version>
   </parent>
 
   <artifactId>vertx-sql-client</artifactId>
@@ -75,6 +75,8 @@
   </dependencyManagement>
 
   <dependencies>
+
+    <!-- Vert.x dependencies -->
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-core</artifactId>
@@ -82,73 +84,15 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-codegen</artifactId>
-      <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-docgen</artifactId>
-      <version>0.9.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-codetrans</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-rx-java</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-rx-java-gen</artifactId>
-      <version>${stack.version}</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-rx-java2</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-rx-java2-gen</artifactId>
-      <version>${stack.version}</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-lang-js</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-lang-ruby</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-lang-groovy</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-lang-kotlin</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-lang-kotlin-coroutines</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-lang-kotlin-gen</artifactId>
-      <version>${stack.version}</version>
       <optional>true</optional>
     </dependency>
 
+    <!-- Testing purposes -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -210,45 +154,6 @@
     <pluginManagement>
       <plugins>
         <plugin>
-          <artifactId>maven-clean-plugin</artifactId>
-          <executions>
-            <execution>
-              <id>default-clean</id>
-              <configuration>
-                <filesets>
-                  <fileset>
-                    <directory>${generated.dir}</directory>
-                  </fileset>
-                </filesets>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <executions>
-            <execution>
-              <id>default-compile</id>
-              <configuration>
-                <annotationProcessors>
-                  <annotationProcessor>io.vertx.codegen.CodeGenProcessor</annotationProcessor>
-                  <annotationProcessor>io.vertx.docgen.JavaDocGenProcessor</annotationProcessor>
-                  <annotationProcessor>io.vertx.docgen.DocGenProcessor</annotationProcessor>
-                </annotationProcessors>
-                <compilerArgs>
-                  <arg>-Acodegen.output=${project.basedir}/src/main</arg>
-                  <arg>-Adocgen.source=${docs.dir}/*.md</arg>
-                  <arg>-Adocgen.output=${project.basedir}/jekyll/guide/$lang</arg>
-                  <arg>-Adocgen.syntax=markdown</arg>
-                  <arg>-Amaven.groupId=${project.groupId}</arg>
-                  <arg>-Amaven.artifactId=${project.artifactId}</arg>
-                  <arg>-Amaven.version=${project.version}</arg>
-                </compilerArgs>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
             <argLine>-Xmx1024M</argLine>
@@ -273,6 +178,7 @@
         <artifactId>build-helper-maven-plugin</artifactId>
         <version>3.0.0</version>
         <executions>
+<!--
           <execution>
             <id>add-source</id>
             <phase>generate-sources</phase>
@@ -285,6 +191,7 @@
               </sources>
             </configuration>
           </execution>
+-->
           <execution>
             <id>add-test-source</id>
             <goals>
@@ -320,72 +227,6 @@
                 <PGPASSWORD>test_password</PGPASSWORD>
                 <PGSSLMODE>require</PGSSLMODE>
               </environmentVariables>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <configuration>
-          <sourcepath>${project.build.sourceDirectory};${project.build.directory}/generated-sources/annotations</sourcepath>
-          <sourceFileIncludes>
-            <sourceFileInclude>io/vertx/**/*.java</sourceFileInclude>
-          </sourceFileIncludes>
-          <sourceFileExcludes>
-            <sourceFileExclude>io/vertx/groovy/**/*.java</sourceFileExclude>
-            <sourceFileExclude>**/package-info.java</sourceFileExclude>
-            <sourceFileExclude>**/impl/**</sourceFileExclude>
-          </sourceFileExcludes>
-          <detectLinks />
-          <detectJavaApiLink />
-          <links>
-            <link>http://vertx.io/docs/apidocs/</link>
-            <link>http://reactivex.io/RxJava/1.x/javadoc/</link>
-            <link>http://reactivex.io/RxJava/javadoc/</link>
-            <link>http://fasterxml.github.com/jackson-annotations/javadoc/2.9/</link>
-            <link>http://fasterxml.github.io/jackson-core/javadoc/2.9/</link>
-            <link>http://fasterxml.github.io/jackson-databind/javadoc/2.9/</link>
-          </links>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>kotlin-maven-plugin</artifactId>
-        <groupId>org.jetbrains.kotlin</groupId>
-        <version>${kotlin.version}</version>
-        <executions>
-          <execution>
-            <configuration>
-              <jvmTarget>1.8</jvmTarget>
-              <sourceDirs>
-                <sourceDir>${basedir}/src/main/kotlin</sourceDir>
-              </sourceDirs>
-            </configuration>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-            <phase>compile</phase>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>package-sources</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <attach>true</attach>
-              <archive>
-                <!-- Need a manifest to avoid empty archive -->
-                <manifest>
-                </manifest>
-              </archive>
-              <descriptors>
-                <descriptor>src/assembly/sources.xml</descriptor>
-              </descriptors>
             </configuration>
           </execution>
         </executions>
@@ -426,136 +267,6 @@
       </build>
     </profile>
 
-    <profile>
-      <id>jitwatch</id>
-      <dependencies>
-        <dependency>
-          <groupId>com.chrisnewland</groupId>
-          <artifactId>jitwatch</artifactId>
-          <version>1.0.0</version>
-        </dependency>
-      </dependencies>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>default-cli</id>
-                <goals>
-                  <goal>java</goal>
-                </goals>
-                <configuration>
-                  <mainClass>org.adoptopenjdk.jitwatch.launch.LaunchUI</mainClass>
-                  <cleanupDaemonThreads>false</cleanupDaemonThreads>
-                  <classpathScope>compile</classpathScope>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <!-- Site gen -->
-    <profile>
-      <id>site-gen</id>
-      <activation>
-        <property>
-          <name>!skipSite</name>
-        </property>
-      </activation>
-      <pluginRepositories>
-        <pluginRepository>
-          <id>rubygems-releases</id>
-          <url>http://rubygems-proxy.torquebox.org/releases</url>
-        </pluginRepository>
-      </pluginRepositories>
-      <repositories>
-        <repository>
-          <id>rubygems-releases</id>
-          <url>http://rubygems-proxy.torquebox.org/releases</url>
-        </repository>
-      </repositories>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-site-plugin</artifactId>
-            <version>3.4</version>
-            <configuration>
-              <skip>true</skip>
-              <skipDeploy>true</skipDeploy>
-            </configuration>
-          </plugin>
-          <plugin>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <executions>
-              <execution>
-                <phase>site</phase>
-                <configuration>
-                  <skip>false</skip>
-                  <reportOutputDirectory>${project.basedir}/jekyll</reportOutputDirectory>
-                </configuration>
-                <goals>
-                  <goal>javadoc</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>de.saumya.mojo</groupId>
-            <artifactId>gem-maven-plugin</artifactId>
-            <version>1.1.4</version>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>exec</goal>
-                </goals>
-                <phase>site</phase>
-                <configuration>
-                  <execArgs>${project.build.directory}/rubygems/bin/yardoc --no-private -m html -o ${project.basedir}/jekyll/yardoc ${project.build.outputDirectory}/**/*.rb</execArgs>
-                </configuration>
-              </execution>
-            </executions>
-            <dependencies>
-              <dependency>
-                <groupId>rubygems</groupId>
-                <artifactId>yard</artifactId>
-                <version>0.8.7.6</version>
-                <type>gem</type>
-              </dependency>
-              <dependency>
-                <groupId>rubygems</groupId>
-                <artifactId>asciidoctor</artifactId>
-                <version>1.5.6</version>
-                <type>gem</type>
-              </dependency>
-            </dependencies>
-          </plugin>
-          <plugin>
-            <groupId>com.phasebash.jsdoc</groupId>
-            <artifactId>jsdoc3-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <phase>site</phase>
-                <goals>
-                  <goal>jsdoc3</goal>
-                </goals>
-                <configuration>
-                  <recursive>true</recursive>
-                  <directoryRoots>
-                    <directoryRoot>${project.build.outputDirectory}</directoryRoot>
-                  </directoryRoots>
-                  <outputDirectory>${project.basedir}/jekyll/jsdoc</outputDirectory>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
   </profiles>
 
 </project>
