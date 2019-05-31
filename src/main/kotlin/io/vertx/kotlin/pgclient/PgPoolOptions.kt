@@ -35,10 +35,10 @@ import java.util.concurrent.TimeUnit
  * @param connectTimeout 
  * @param crlPaths 
  * @param crlValues 
- * @param database 
+ * @param database  Specify the default database for the connection.
  * @param enabledCipherSuites 
  * @param enabledSecureTransportProtocols 
- * @param host 
+ * @param host  Specify the host for connecting to the server.
  * @param hostnameVerificationAlgorithm 
  * @param idleTimeout 
  * @param idleTimeoutUnit 
@@ -50,13 +50,13 @@ import java.util.concurrent.TimeUnit
  * @param maxWaitQueueSize  Set the maximum connection request allowed in the wait queue, any requests beyond the max size will result in an failure.  If the value is set to a negative number then the queue will be unbounded.
  * @param metricsName 
  * @param openSslEngineOptions 
- * @param password 
+ * @param password  Specify the user password to be used for the authentication.
  * @param pemKeyCertOptions 
  * @param pemTrustOptions 
  * @param pfxKeyCertOptions 
  * @param pfxTrustOptions 
  * @param pipeliningLimit 
- * @param port 
+ * @param port  Specify the port for connecting to the server.
  * @param proxyOptions 
  * @param receiveBufferSize 
  * @param reconnectAttempts 
@@ -79,7 +79,7 @@ import java.util.concurrent.TimeUnit
  * @param trustStoreOptions 
  * @param useAlpn 
  * @param usePooledBuffers 
- * @param user 
+ * @param user  Specify the user account to be used for the authentication.
  *
  * <p/>
  * NOTE: This function has been automatically generated from the [io.vertx.pgclient.PgPoolOptions original] using Vert.x codegen.
@@ -299,10 +299,10 @@ fun pgPoolOptionsOf(
  * @param connectTimeout 
  * @param crlPaths 
  * @param crlValues 
- * @param database 
+ * @param database  Specify the default database for the connection.
  * @param enabledCipherSuites 
  * @param enabledSecureTransportProtocols 
- * @param host 
+ * @param host  Specify the host for connecting to the server.
  * @param hostnameVerificationAlgorithm 
  * @param idleTimeout 
  * @param idleTimeoutUnit 
@@ -314,13 +314,13 @@ fun pgPoolOptionsOf(
  * @param maxWaitQueueSize  Set the maximum connection request allowed in the wait queue, any requests beyond the max size will result in an failure.  If the value is set to a negative number then the queue will be unbounded.
  * @param metricsName 
  * @param openSslEngineOptions 
- * @param password 
+ * @param password  Specify the user password to be used for the authentication.
  * @param pemKeyCertOptions 
  * @param pemTrustOptions 
  * @param pfxKeyCertOptions 
  * @param pfxTrustOptions 
  * @param pipeliningLimit 
- * @param port 
+ * @param port  Specify the port for connecting to the server.
  * @param proxyOptions 
  * @param receiveBufferSize 
  * @param reconnectAttempts 
@@ -343,7 +343,7 @@ fun pgPoolOptionsOf(
  * @param trustStoreOptions 
  * @param useAlpn 
  * @param usePooledBuffers 
- * @param user 
+ * @param user  Specify the user account to be used for the authentication.
  *
  * <p/>
  * NOTE: This function has been automatically generated from the [io.vertx.pgclient.PgPoolOptions original] using Vert.x codegen.

@@ -1,6 +1,5 @@
 package io.vertx.sqlclient;
 
-import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -14,7 +13,7 @@ public abstract class ConnectionTestBase {
   protected Vertx vertx;
   protected Connector<SqlConnection> connector;
 
-  protected PgConnectOptions options;
+  protected SqlConnectOptions options;
 
   protected void connect(Handler<AsyncResult<SqlConnection>> handler) {
     connector.connect(handler);

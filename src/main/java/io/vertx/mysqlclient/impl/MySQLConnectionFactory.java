@@ -8,7 +8,7 @@ import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
-import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
 
 import java.nio.charset.Charset;
@@ -25,7 +25,7 @@ public class MySQLConnectionFactory {
   private final Charset charset;
   private final boolean ssl = false;
 
-  public MySQLConnectionFactory(Context context, PgConnectOptions options) {
+  public MySQLConnectionFactory(Context context, MySQLConnectOptions options) {
     NetClientOptions netClientOptions = new NetClientOptions(options);
 
     this.context = context;

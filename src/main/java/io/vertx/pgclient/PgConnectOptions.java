@@ -22,8 +22,10 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.*;
+import io.vertx.sqlclient.SqlConnectOptions;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.System.getenv;
@@ -33,7 +35,7 @@ import static java.lang.System.getenv;
  * @author Billy Yuan <billy112487983@gmail.com>
  */
 @DataObject(generateConverter = true)
-public class PgConnectOptions extends NetClientOptions {
+public class PgConnectOptions extends SqlConnectOptions {
 
   /**
    * Provide a {@link PgConnectOptions} configured from a connection URI.
@@ -94,81 +96,49 @@ public class PgConnectOptions extends NetClientOptions {
   public static final int DEFAULT_PIPELINING_LIMIT = 256;
   public static final SslMode DEFAULT_SSLMODE = SslMode.DISABLE;
 
-  private String host;
-  private int port;
-  private String database;
-  private String user;
-  private String password;
   private boolean cachePreparedStatements;
   private int pipeliningLimit;
   private SslMode sslMode;
 
   public PgConnectOptions() {
     super();
-    init();
   }
 
   public PgConnectOptions(JsonObject json) {
     super(json);
-    init();
     PgConnectOptionsConverter.fromJson(json, this);
   }
 
   public PgConnectOptions(PgConnectOptions other) {
     super(other);
-    host = other.host;
-    port = other.port;
-    database = other.database;
-    user = other.user;
-    password = other.password;
     pipeliningLimit = other.pipeliningLimit;
     cachePreparedStatements = other.cachePreparedStatements;
     sslMode = other.sslMode;
   }
 
-  public String getHost() {
-    return host;
-  }
-
+  @Override
   public PgConnectOptions setHost(String host) {
-    this.host = host;
-    return this;
+    return (PgConnectOptions) super.setHost(host);
   }
 
-  public int getPort() {
-    return port;
-  }
-
+  @Override
   public PgConnectOptions setPort(int port) {
-    this.port = port;
-    return this;
+    return (PgConnectOptions) super.setPort(port);
   }
 
-  public String getDatabase() {
-    return database;
-  }
-
-  public PgConnectOptions setDatabase(String database) {
-    this.database = database;
-    return this;
-  }
-
-  public String getUser() {
-    return user;
-  }
-
+  @Override
   public PgConnectOptions setUser(String user) {
-    this.user = user;
-    return this;
+    return (PgConnectOptions) super.setUser(user);
   }
 
-  public String getPassword() {
-    return password;
-  }
-
+  @Override
   public PgConnectOptions setPassword(String password) {
-    this.password = password;
-    return this;
+    return (PgConnectOptions) super.setPassword(password);
+  }
+
+  @Override
+  public PgConnectOptions setDatabase(String database) {
+    return (PgConnectOptions) super.setDatabase(database);
   }
 
   public int getPipeliningLimit() {
@@ -253,6 +223,11 @@ public class PgConnectOptions extends NetClientOptions {
   @Override
   public PgConnectOptions setIdleTimeout(int idleTimeout) {
     return (PgConnectOptions)super.setIdleTimeout(idleTimeout);
+  }
+
+  @Override
+  public PgConnectOptions setIdleTimeoutUnit(TimeUnit idleTimeoutUnit) {
+    return (PgConnectOptions) super.setIdleTimeoutUnit(idleTimeoutUnit);
   }
 
   @Override
@@ -415,15 +390,25 @@ public class PgConnectOptions extends NetClientOptions {
     return (PgConnectOptions) super.setEnabledSecureTransportProtocols(enabledSecureTransportProtocols);
   }
 
+  @Override
+  public PgConnectOptions setSslHandshakeTimeout(long sslHandshakeTimeout) {
+    return (PgConnectOptions) super.setSslHandshakeTimeout(sslHandshakeTimeout);
+  }
+
+  @Override
+  public PgConnectOptions setSslHandshakeTimeoutUnit(TimeUnit sslHandshakeTimeoutUnit) {
+    return (PgConnectOptions) super.setSslHandshakeTimeoutUnit(sslHandshakeTimeoutUnit);
+  }
+
   /**
    * Initialize with the default options.
    */
-  private void init() {
-    host = DEFAULT_HOST;
-    port = DEFAULT_PORT;
-    database = DEFAULT_DATABASE;
-    user = DEFAULT_USER;
-    password = DEFAULT_PASSWORD;
+  protected void init() {
+    this.setHost(DEFAULT_HOST);
+    this.setPort(DEFAULT_PORT);
+    this.setUser(DEFAULT_USER);
+    this.setPassword(DEFAULT_PASSWORD);
+    this.setDatabase(DEFAULT_DATABASE);
     cachePreparedStatements = DEFAULT_CACHE_PREPARED_STATEMENTS;
     pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
     sslMode = DEFAULT_SSLMODE;
@@ -444,11 +429,6 @@ public class PgConnectOptions extends NetClientOptions {
 
     PgConnectOptions that = (PgConnectOptions) o;
 
-    if (!host.equals(that.host)) return false;
-    if (port != that.port) return false;
-    if (!database.equals(that.database)) return false;
-    if (!user.equals(that.user)) return false;
-    if (!password.equals(that.password)) return false;
     if (cachePreparedStatements != that.cachePreparedStatements) return false;
     if (pipeliningLimit != that.pipeliningLimit) return false;
     if (sslMode != that.sslMode) return false;
@@ -459,11 +439,6 @@ public class PgConnectOptions extends NetClientOptions {
   @Override
   public int hashCode() {
     int result = super.hashCode();
-    result = 31 * result + host.hashCode();
-    result = 31 * result + port;
-    result = 31 * result + database.hashCode();
-    result = 31 * result + user.hashCode();
-    result = 31 * result + password.hashCode();
     result = 31 * result + (cachePreparedStatements ? 1 : 0);
     result = 31 * result + pipeliningLimit;
     result = 31 * result + sslMode.hashCode();

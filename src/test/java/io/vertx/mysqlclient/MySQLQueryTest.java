@@ -4,7 +4,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import org.junit.After;
@@ -25,12 +24,12 @@ import java.util.stream.Collectors;
 public class MySQLQueryTest extends MySQLTestBase {
 
   Vertx vertx;
-  PgConnectOptions options;
+  MySQLConnectOptions options;
 
   @Before
   public void setup() {
     vertx = Vertx.vertx();
-    options = new PgConnectOptions(MySQLTestBase.options);
+    options = new MySQLConnectOptions(MySQLTestBase.options);
   }
 
   @After
