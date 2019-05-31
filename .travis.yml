@@ -10,11 +10,11 @@ jobs:
     - stage: test
       name: "Postgres 9"
       jdk: oraclejdk8
-      script: mvn -q clean verify -B -Dembedded.postgres.version=9.6
+      script: mvn -q clean verify -B -Dembedded.postgres.version=9.6 -Dtest=UnixDomainSocketTest
     - stage: test
       name: "Postgres 10"
       jdk: oraclejdk8
-      script: mvn -q clean verify -B -Dembedded.postgres.version=10.6
+      script: mvn -q clean verify -B -Dembedded.postgres.version=10.6 -Dtest=UnixDomainSocketTest
     - stage: deploy
       name: "Deploy to Sonatype's snapshots repository"
       if: type != pull_request AND env(SONATYPE_NEXUS_USERNAME) IS present
