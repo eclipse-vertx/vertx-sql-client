@@ -3,6 +3,7 @@ package io.vertx.mysqlclient.impl;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
+import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.pgclient.PgPoolOptions;
 import io.vertx.sqlclient.impl.Connection;
@@ -14,7 +15,14 @@ public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool 
 
   public MySQLPoolImpl(Context context, boolean closeVertx, PgPoolOptions options) {
     super(context, closeVertx, options);
-    this.factory = new MySQLConnectionFactory(context, options);
+    //TODO separate pool options and connect options
+    MySQLConnectOptions connectOptions = new MySQLConnectOptions();
+    connectOptions.setUser(options.getUser())
+      .setPassword(options.getPassword())
+      .setHost(options.getHost())
+      .setPort(options.getPort())
+      .setDatabase(options.getDatabase());
+    this.factory = new MySQLConnectionFactory(context, connectOptions);
   }
 
   @Override

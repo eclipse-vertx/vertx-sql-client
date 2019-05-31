@@ -4,7 +4,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.mysqlclient.impl.MySQLConnectionImpl;
-import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
@@ -15,7 +14,7 @@ import io.vertx.sqlclient.Tuple;
 import java.util.stream.Collector;
 
 public interface MySQLConnection extends SqlConnection {
-  static void connect(Vertx vertx, PgConnectOptions options, Handler<AsyncResult<MySQLConnection>> handler) {
+  static void connect(Vertx vertx, MySQLConnectOptions options, Handler<AsyncResult<MySQLConnection>> handler) {
     MySQLConnectionImpl.connect(vertx, options, handler);
   }
 

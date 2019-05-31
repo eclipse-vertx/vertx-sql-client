@@ -13,9 +13,9 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.vertx.kotlin.pgclient
+package io.vertx.kotlin.mysqlclient
 
-import io.vertx.pgclient.PgConnectOptions
+import io.vertx.mysqlclient.MySQLConnectOptions
 import io.vertx.core.net.JdkSSLEngineOptions
 import io.vertx.core.net.JksOptions
 import io.vertx.core.net.OpenSSLEngineOptions
@@ -23,14 +23,13 @@ import io.vertx.core.net.PemKeyCertOptions
 import io.vertx.core.net.PemTrustOptions
 import io.vertx.core.net.PfxOptions
 import io.vertx.core.net.ProxyOptions
-import io.vertx.pgclient.SslMode
 import java.util.concurrent.TimeUnit
 
 /**
- * A function providing a DSL for building [io.vertx.pgclient.PgConnectOptions] objects.
+ * A function providing a DSL for building [io.vertx.mysqlclient.MySQLConnectOptions] objects.
  *
+ * Connect options for configuring [io.vertx.mysqlclient.MySQLConnection] or [io.vertx.mysqlclient.MySQLPool].
  *
- * @param cachePreparedStatements 
  * @param connectTimeout 
  * @param crlPaths 
  * @param crlValues 
@@ -52,7 +51,6 @@ import java.util.concurrent.TimeUnit
  * @param pemTrustOptions 
  * @param pfxKeyCertOptions 
  * @param pfxTrustOptions 
- * @param pipeliningLimit 
  * @param port  Specify the port for connecting to the server.
  * @param proxyOptions 
  * @param receiveBufferSize 
@@ -65,7 +63,6 @@ import java.util.concurrent.TimeUnit
  * @param ssl 
  * @param sslHandshakeTimeout 
  * @param sslHandshakeTimeoutUnit 
- * @param sslMode  Set [io.vertx.pgclient.SslMode] for the client, this option can be used to provide different levels of secure protection.
  * @param tcpCork 
  * @param tcpFastOpen 
  * @param tcpKeepAlive 
@@ -79,10 +76,9 @@ import java.util.concurrent.TimeUnit
  * @param user  Specify the user account to be used for the authentication.
  *
  * <p/>
- * NOTE: This function has been automatically generated from the [io.vertx.pgclient.PgConnectOptions original] using Vert.x codegen.
+ * NOTE: This function has been automatically generated from the [io.vertx.mysqlclient.MySQLConnectOptions original] using Vert.x codegen.
  */
-fun pgConnectOptionsOf(
-  cachePreparedStatements: Boolean? = null,
+fun mySQLConnectOptionsOf(
   connectTimeout: Int? = null,
   crlPaths: Iterable<String>? = null,
   crlValues: Iterable<io.vertx.core.buffer.Buffer>? = null,
@@ -104,7 +100,6 @@ fun pgConnectOptionsOf(
   pemTrustOptions: io.vertx.core.net.PemTrustOptions? = null,
   pfxKeyCertOptions: io.vertx.core.net.PfxOptions? = null,
   pfxTrustOptions: io.vertx.core.net.PfxOptions? = null,
-  pipeliningLimit: Int? = null,
   port: Int? = null,
   proxyOptions: io.vertx.core.net.ProxyOptions? = null,
   receiveBufferSize: Int? = null,
@@ -117,7 +112,6 @@ fun pgConnectOptionsOf(
   ssl: Boolean? = null,
   sslHandshakeTimeout: Long? = null,
   sslHandshakeTimeoutUnit: TimeUnit? = null,
-  sslMode: SslMode? = null,
   tcpCork: Boolean? = null,
   tcpFastOpen: Boolean? = null,
   tcpKeepAlive: Boolean? = null,
@@ -128,11 +122,8 @@ fun pgConnectOptionsOf(
   trustStoreOptions: io.vertx.core.net.JksOptions? = null,
   useAlpn: Boolean? = null,
   usePooledBuffers: Boolean? = null,
-  user: String? = null): PgConnectOptions = io.vertx.pgclient.PgConnectOptions().apply {
+  user: String? = null): MySQLConnectOptions = io.vertx.mysqlclient.MySQLConnectOptions().apply {
 
-  if (cachePreparedStatements != null) {
-    this.setCachePreparedStatements(cachePreparedStatements)
-  }
   if (connectTimeout != null) {
     this.setConnectTimeout(connectTimeout)
   }
@@ -202,9 +193,6 @@ fun pgConnectOptionsOf(
   if (pfxTrustOptions != null) {
     this.setPfxTrustOptions(pfxTrustOptions)
   }
-  if (pipeliningLimit != null) {
-    this.setPipeliningLimit(pipeliningLimit)
-  }
   if (port != null) {
     this.setPort(port)
   }
@@ -240,9 +228,6 @@ fun pgConnectOptionsOf(
   }
   if (sslHandshakeTimeoutUnit != null) {
     this.setSslHandshakeTimeoutUnit(sslHandshakeTimeoutUnit)
-  }
-  if (sslMode != null) {
-    this.setSslMode(sslMode)
   }
   if (tcpCork != null) {
     this.setTcpCork(tcpCork)
@@ -280,10 +265,10 @@ fun pgConnectOptionsOf(
 }
 
 /**
- * A function providing a DSL for building [io.vertx.pgclient.PgConnectOptions] objects.
+ * A function providing a DSL for building [io.vertx.mysqlclient.MySQLConnectOptions] objects.
  *
+ * Connect options for configuring [io.vertx.mysqlclient.MySQLConnection] or [io.vertx.mysqlclient.MySQLPool].
  *
- * @param cachePreparedStatements 
  * @param connectTimeout 
  * @param crlPaths 
  * @param crlValues 
@@ -305,7 +290,6 @@ fun pgConnectOptionsOf(
  * @param pemTrustOptions 
  * @param pfxKeyCertOptions 
  * @param pfxTrustOptions 
- * @param pipeliningLimit 
  * @param port  Specify the port for connecting to the server.
  * @param proxyOptions 
  * @param receiveBufferSize 
@@ -318,7 +302,6 @@ fun pgConnectOptionsOf(
  * @param ssl 
  * @param sslHandshakeTimeout 
  * @param sslHandshakeTimeoutUnit 
- * @param sslMode  Set [io.vertx.pgclient.SslMode] for the client, this option can be used to provide different levels of secure protection.
  * @param tcpCork 
  * @param tcpFastOpen 
  * @param tcpKeepAlive 
@@ -332,14 +315,13 @@ fun pgConnectOptionsOf(
  * @param user  Specify the user account to be used for the authentication.
  *
  * <p/>
- * NOTE: This function has been automatically generated from the [io.vertx.pgclient.PgConnectOptions original] using Vert.x codegen.
+ * NOTE: This function has been automatically generated from the [io.vertx.mysqlclient.MySQLConnectOptions original] using Vert.x codegen.
  */
 @Deprecated(
   message = "This function will be removed in a future version",
-  replaceWith = ReplaceWith("pgConnectOptionsOf(cachePreparedStatements, connectTimeout, crlPaths, crlValues, database, enabledCipherSuites, enabledSecureTransportProtocols, host, hostnameVerificationAlgorithm, idleTimeout, idleTimeoutUnit, jdkSslEngineOptions, keyStoreOptions, localAddress, logActivity, metricsName, openSslEngineOptions, password, pemKeyCertOptions, pemTrustOptions, pfxKeyCertOptions, pfxTrustOptions, pipeliningLimit, port, proxyOptions, receiveBufferSize, reconnectAttempts, reconnectInterval, reuseAddress, reusePort, sendBufferSize, soLinger, ssl, sslHandshakeTimeout, sslHandshakeTimeoutUnit, sslMode, tcpCork, tcpFastOpen, tcpKeepAlive, tcpNoDelay, tcpQuickAck, trafficClass, trustAll, trustStoreOptions, useAlpn, usePooledBuffers, user)")
+  replaceWith = ReplaceWith("mySQLConnectOptionsOf(connectTimeout, crlPaths, crlValues, database, enabledCipherSuites, enabledSecureTransportProtocols, host, hostnameVerificationAlgorithm, idleTimeout, idleTimeoutUnit, jdkSslEngineOptions, keyStoreOptions, localAddress, logActivity, metricsName, openSslEngineOptions, password, pemKeyCertOptions, pemTrustOptions, pfxKeyCertOptions, pfxTrustOptions, port, proxyOptions, receiveBufferSize, reconnectAttempts, reconnectInterval, reuseAddress, reusePort, sendBufferSize, soLinger, ssl, sslHandshakeTimeout, sslHandshakeTimeoutUnit, tcpCork, tcpFastOpen, tcpKeepAlive, tcpNoDelay, tcpQuickAck, trafficClass, trustAll, trustStoreOptions, useAlpn, usePooledBuffers, user)")
 )
-fun PgConnectOptions(
-  cachePreparedStatements: Boolean? = null,
+fun MySQLConnectOptions(
   connectTimeout: Int? = null,
   crlPaths: Iterable<String>? = null,
   crlValues: Iterable<io.vertx.core.buffer.Buffer>? = null,
@@ -361,7 +343,6 @@ fun PgConnectOptions(
   pemTrustOptions: io.vertx.core.net.PemTrustOptions? = null,
   pfxKeyCertOptions: io.vertx.core.net.PfxOptions? = null,
   pfxTrustOptions: io.vertx.core.net.PfxOptions? = null,
-  pipeliningLimit: Int? = null,
   port: Int? = null,
   proxyOptions: io.vertx.core.net.ProxyOptions? = null,
   receiveBufferSize: Int? = null,
@@ -374,7 +355,6 @@ fun PgConnectOptions(
   ssl: Boolean? = null,
   sslHandshakeTimeout: Long? = null,
   sslHandshakeTimeoutUnit: TimeUnit? = null,
-  sslMode: SslMode? = null,
   tcpCork: Boolean? = null,
   tcpFastOpen: Boolean? = null,
   tcpKeepAlive: Boolean? = null,
@@ -385,11 +365,8 @@ fun PgConnectOptions(
   trustStoreOptions: io.vertx.core.net.JksOptions? = null,
   useAlpn: Boolean? = null,
   usePooledBuffers: Boolean? = null,
-  user: String? = null): PgConnectOptions = io.vertx.pgclient.PgConnectOptions().apply {
+  user: String? = null): MySQLConnectOptions = io.vertx.mysqlclient.MySQLConnectOptions().apply {
 
-  if (cachePreparedStatements != null) {
-    this.setCachePreparedStatements(cachePreparedStatements)
-  }
   if (connectTimeout != null) {
     this.setConnectTimeout(connectTimeout)
   }
@@ -459,9 +436,6 @@ fun PgConnectOptions(
   if (pfxTrustOptions != null) {
     this.setPfxTrustOptions(pfxTrustOptions)
   }
-  if (pipeliningLimit != null) {
-    this.setPipeliningLimit(pipeliningLimit)
-  }
   if (port != null) {
     this.setPort(port)
   }
@@ -497,9 +471,6 @@ fun PgConnectOptions(
   }
   if (sslHandshakeTimeoutUnit != null) {
     this.setSslHandshakeTimeoutUnit(sslHandshakeTimeoutUnit)
-  }
-  if (sslMode != null) {
-    this.setSslMode(sslMode)
   }
   if (tcpCork != null) {
     this.setTcpCork(tcpCork)

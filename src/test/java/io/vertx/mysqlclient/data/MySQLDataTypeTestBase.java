@@ -1,8 +1,8 @@
 package io.vertx.mysqlclient.data;
 
+import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.mysqlclient.MySQLTestBase;
-import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.core.Vertx;
@@ -13,12 +13,12 @@ import org.junit.Before;
 
 public abstract class MySQLDataTypeTestBase extends MySQLTestBase {
   Vertx vertx;
-  PgConnectOptions options;
+  MySQLConnectOptions options;
 
   @Before
   public void setup() {
     vertx = Vertx.vertx();
-    options = new PgConnectOptions(MySQLTestBase.options);
+    options = new MySQLConnectOptions(MySQLTestBase.options);
   }
 
   @After

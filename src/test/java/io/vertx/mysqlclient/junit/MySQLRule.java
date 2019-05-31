@@ -21,14 +21,14 @@ import com.wix.mysql.ScriptResolver;
 import com.wix.mysql.config.Charset;
 import com.wix.mysql.config.MysqldConfig;
 import com.wix.mysql.config.SchemaConfig;
-import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.mysqlclient.MySQLConnectOptions;
 import org.junit.rules.ExternalResource;
 
 public class MySQLRule extends ExternalResource {
 
   private static EmbeddedMysql mysql;
 
-  public synchronized static PgConnectOptions startMysql() throws Exception {
+  public synchronized static MySQLConnectOptions startMysql() throws Exception {
     MysqldConfig mysqldConfig = MysqldConfig.aMysqldConfig(com.wix.mysql.distribution.Version.v5_7_latest)
       .withCharset(Charset.UTF8)
       .withUser("mysql", "password")
@@ -45,7 +45,7 @@ public class MySQLRule extends ExternalResource {
       .addSchema(schemaConfig)
       .start();
 
-    return new PgConnectOptions()
+    return new MySQLConnectOptions()
       .setHost("localhost")
       .setPort(mysqldConfig.getPort())
       .setUser(mysqldConfig.getUsername())
@@ -64,10 +64,10 @@ public class MySQLRule extends ExternalResource {
     }
   }
 
-  private PgConnectOptions options;
+  private MySQLConnectOptions options;
 
-  public PgConnectOptions options() {
-    return new PgConnectOptions(options);
+  public MySQLConnectOptions options() {
+    return new MySQLConnectOptions(options);
   }
 
   @Override

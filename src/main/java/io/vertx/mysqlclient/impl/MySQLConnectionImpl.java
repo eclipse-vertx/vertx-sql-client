@@ -5,14 +5,14 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLConnection;
-import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 
 public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> implements MySQLConnection {
 
-  public static void connect(Vertx vertx, PgConnectOptions options, Handler<AsyncResult<MySQLConnection>> handler) {
+  public static void connect(Vertx vertx, MySQLConnectOptions options, Handler<AsyncResult<MySQLConnection>> handler) {
     Context ctx = Vertx.currentContext();
     if (ctx != null) {
       //TODO close hook support
@@ -29,11 +29,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
       });
     } else {
       vertx.runOnContext(v -> {
-        if (options.isUsingDomainSocket() && !vertx.isNativeTransportEnabled()) {
-          handler.handle(Future.failedFuture("Native transport is not available"));
-        } else {
-          connect(vertx, options, handler);
-        }
+        connect(vertx, options, handler);
       });
     }
   }
