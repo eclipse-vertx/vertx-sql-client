@@ -22,6 +22,7 @@ import io.vertx.core.VertxOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.sqlclient.PoolOptions;
 import org.junit.*;
 import org.junit.runner.RunWith;
 
@@ -75,7 +76,7 @@ public class UnixDomainSocketTest {
   @Test
   public void simpleConnect(TestContext context) {
     assumeTrue(options.isUsingDomainSocket());
-    client = PgPool.pool(new PgPoolOptions(options));
+    client = PgPool.pool(new PgConnectOptions(options), new PoolOptions());
     client.getConnection(context.asyncAssertSuccess(pgConnection -> pgConnection.close()));
   }
 
@@ -84,7 +85,7 @@ public class UnixDomainSocketTest {
     assumeTrue(options.isUsingDomainSocket());
     Vertx vertx = Vertx.vertx(new VertxOptions().setPreferNativeTransport(true));
     try {
-      client = PgPool.pool(vertx, new PgPoolOptions(options));
+      client = PgPool.pool(vertx, new PgConnectOptions(options), new PoolOptions());
       Async async = context.async();
       client.getConnection(context.asyncAssertSuccess(pgConnection -> {
         async.complete();
@@ -99,7 +100,7 @@ public class UnixDomainSocketTest {
   @Test
   public void testIgnoreSslMode(TestContext context) {
     assumeTrue(options.isUsingDomainSocket());
-    client = PgPool.pool(new PgPoolOptions(options).setSslMode(SslMode.REQUIRE));
+    client = PgPool.pool(new PgConnectOptions(options).setSslMode(SslMode.REQUIRE), new PoolOptions());
     client.getConnection(context.asyncAssertSuccess(pgConnection -> {
       assertFalse(pgConnection.isSSL());
       pgConnection.close();

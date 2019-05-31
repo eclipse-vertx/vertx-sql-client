@@ -1,28 +1,61 @@
 package io.vertx.mysqlclient;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.mysqlclient.impl.MySQLPoolImpl;
-import io.vertx.pgclient.PgPoolOptions;
+import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.SqlResult;
+import io.vertx.sqlclient.Tuple;
 
+import java.util.List;
+import java.util.stream.Collector;
+
+/**
+ * A pool of MySQL connections.
+ */
 public interface MySQLPool extends Pool {
-  static MySQLPool pool(PgPoolOptions options) {
+  static MySQLPool pool(MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
     if (Vertx.currentContext() != null) {
-      throw new IllegalStateException("Running in a Vertx context => use MySQLPool#pool(Vertx, PgPoolOptions) instead");
+      throw new IllegalStateException("Running in a Vertx context => use MySQLPool#pool(Vertx, MySQLConnectOptions, PoolOptions) instead");
     }
     VertxOptions vertxOptions = new VertxOptions();
-    if (options.isUsingDomainSocket()) {
-      vertxOptions.setPreferNativeTransport(true);
-    }
     Vertx vertx = Vertx.vertx(vertxOptions);
-    return new MySQLPoolImpl(vertx.getOrCreateContext(), true, options);
+    return new MySQLPoolImpl(vertx.getOrCreateContext(), true, connectOptions, poolOptions);
   }
 
   /**
-   * Like {@link #pool(PgPoolOptions)} with a specific {@link Vertx} instance.
+   * Like {@link #pool(MySQLConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
-  static MySQLPool pool(Vertx vertx, PgPoolOptions options) {
-    return new MySQLPoolImpl(vertx.getOrCreateContext(), false, options);
+  static MySQLPool pool(Vertx vertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
+    return new MySQLPoolImpl(vertx.getOrCreateContext(), false, connectOptions, poolOptions);
   }
+
+  @Override
+  MySQLPool preparedQuery(String sql, Handler<AsyncResult<RowSet>> handler);
+
+  @Override
+  <R> MySQLPool preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+
+  @Override
+  MySQLPool query(String sql, Handler<AsyncResult<RowSet>> handler);
+
+  @Override
+  <R> MySQLPool query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+
+  @Override
+  MySQLPool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet>> handler);
+
+  @Override
+  <R> MySQLPool preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+
+  @Override
+  MySQLPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet>> handler);
+
+  @Override
+  <R> MySQLPool preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 }

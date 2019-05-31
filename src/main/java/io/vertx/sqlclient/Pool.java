@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.stream.Collector;
 
 /**
- * A pool of connection.
+ * A pool of SQL connections.
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
