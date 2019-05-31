@@ -18,6 +18,7 @@
 package io.vertx.pgclient;
 
 import io.vertx.core.Vertx;
+import io.vertx.sqlclient.PoolOptions;
 import org.openjdk.jmh.annotations.*;
 
 import java.util.concurrent.CountDownLatch;
@@ -49,14 +50,14 @@ public abstract class PgBenchmarkBase extends BenchmarkBase {
   @Setup
   public void setup() throws Exception {
     vertx = Vertx.vertx();
-    pool = PgPool.pool(vertx, new PgPoolOptions()
+    pool = PgPool.pool(vertx, new PgConnectOptions()
       .setHost(host)
       .setPort(port)
       .setDatabase(database)
       .setUser(username)
       .setPassword(password)
       .setCachePreparedStatements(true)
-      .setPipeliningLimit(pipeliningLimit)
+      .setPipeliningLimit(pipeliningLimit), new PoolOptions()
       .setMaxSize(1));
   }
 

@@ -22,6 +22,7 @@ import io.vertx.pgclient.data.Json;
 import io.vertx.pgclient.data.Numeric;
 import io.vertx.pgclient.pubsub.PgSubscriber;
 import io.vertx.sqlclient.Cursor;
+import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.RowSet;
@@ -51,17 +52,20 @@ public class Examples {
 
   public void gettingStarted() {
 
-    // Pool options
-    PgPoolOptions options = new PgPoolOptions()
+    // Connect options
+    PgConnectOptions connectOptions = new PgConnectOptions()
       .setPort(5432)
       .setHost("the-host")
       .setDatabase("the-db")
       .setUser("user")
-      .setPassword("secret")
+      .setPassword("secret");
+
+    // Pool options
+    PoolOptions poolOptions = new PoolOptions()
       .setMaxSize(5);
 
     // Create the client pool
-    PgPool client = PgPool.pool(options);
+    PgPool client = PgPool.pool(connectOptions, poolOptions);
 
     // A simple query
     client.query("SELECT * FROM users WHERE id='julien'", ar -> {
@@ -104,32 +108,37 @@ public class Examples {
 
   public void connecting01() {
 
-    // Pool options
-    PgPoolOptions options = new PgPoolOptions()
+    // Connect options
+    PgConnectOptions connectOptions = new PgConnectOptions()
       .setPort(5432)
       .setHost("the-host")
       .setDatabase("the-db")
       .setUser("user")
-      .setPassword("secret")
+      .setPassword("secret");
+
+    // Pool options
+    PoolOptions poolOptions = new PoolOptions()
       .setMaxSize(5);
 
     // Create the pooled client
-    PgPool client = PgPool.pool(options);
+    PgPool client = PgPool.pool(connectOptions, poolOptions);
   }
 
   public void connecting02(Vertx vertx) {
 
-    // Pool options
-    PgPoolOptions options = new PgPoolOptions()
+    // Connect options
+    PgConnectOptions connectOptions = new PgConnectOptions()
       .setPort(5432)
       .setHost("the-host")
       .setDatabase("the-db")
       .setUser("user")
-      .setPassword("secret")
-      .setMaxSize(5);
+      .setPassword("secret");
 
+    // Pool options
+    PoolOptions poolOptions = new PoolOptions()
+      .setMaxSize(5);
     // Create the pooled client
-    PgPool client = PgPool.pool(vertx, options);
+    PgPool client = PgPool.pool(vertx, connectOptions, poolOptions);
   }
 
   public void connecting03(PgPool pool) {
@@ -140,17 +149,20 @@ public class Examples {
 
   public void connecting04(Vertx vertx) {
 
-    // Pool options
-    PgPoolOptions options = new PgPoolOptions()
+    // Connect options
+    PgConnectOptions connectOptions = new PgConnectOptions()
       .setPort(5432)
       .setHost("the-host")
       .setDatabase("the-db")
       .setUser("user")
-      .setPassword("secret")
+      .setPassword("secret");
+
+    // Pool options
+    PoolOptions poolOptions = new PoolOptions()
       .setMaxSize(5);
 
     // Create the pooled client
-    PgPool client = PgPool.pool(vertx, options);
+    PgPool client = PgPool.pool(vertx, connectOptions, poolOptions);
 
     // Get a connection from the pool
     client.getConnection(ar1 -> {
@@ -219,19 +231,23 @@ public class Examples {
 
   public void connecting06(Vertx vertx) {
 
-    // Pool Options
+    // Connect Options
     // Socket file name will be /var/run/postgresql/.s.PGSQL.5432
-    PgPoolOptions options = new PgPoolOptions()
+    PgConnectOptions connectOptions = new PgConnectOptions()
       .setHost("/var/run/postgresql")
       .setPort(5432)
       .setDatabase("the-db");
 
+    // Pool options
+    PoolOptions poolOptions = new PoolOptions()
+      .setMaxSize(5);
+
     // Create the pooled client
-    PgPool client = PgPool.pool(options);
+    PgPool client = PgPool.pool(connectOptions, poolOptions);
 
     // Create the pooled client with a vertx instance
     // Make sure the vertx instance has enabled native transports
-    PgPool client2 = PgPool.pool(vertx, options);
+    PgPool client2 = PgPool.pool(vertx, connectOptions, poolOptions);
   }
 
   public void queries01(SqlClient client) {
@@ -317,12 +333,12 @@ public class Examples {
     });
   }
 
-  public void queries09(Vertx vertx, PgPoolOptions options) {
+  public void queries09(Vertx vertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
 
     // Enable prepare statements
-    options.setCachePreparedStatements(true);
+    connectOptions.setCachePreparedStatements(true);
 
-    PgPool client = PgPool.pool(vertx, options);
+    PgPool client = PgPool.pool(vertx, connectOptions, poolOptions);
   }
 
   public void queries10(SqlClient client) {

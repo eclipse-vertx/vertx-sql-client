@@ -18,6 +18,7 @@
 package io.vertx.pgclient;
 
 import io.vertx.pgclient.junit.PgRule;
+import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Tuple;
@@ -140,13 +141,13 @@ public class RawBenchmark {
 
   private static void benchmark(String name, PgConnectOptions options, BiConsumer<SqlConnection, CompletableFuture<Void>> benchmark) throws Exception {
     Vertx vertx = Vertx.vertx();
-    PgPool client = PgPool.pool(vertx, new PgPoolOptions()
+    PgPool client = PgPool.pool(vertx, new PgConnectOptions()
       .setHost(options.getHost())
       .setPort(options.getPort())
       .setDatabase(options.getDatabase())
       .setUser(options.getUser())
       .setPassword(options.getPassword())
-      .setCachePreparedStatements(true)
+      .setCachePreparedStatements(true), new PoolOptions()
     );
     CompletableFuture<Void> latch = new CompletableFuture<>();
     long now = System.currentTimeMillis();
