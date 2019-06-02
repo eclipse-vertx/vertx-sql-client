@@ -28,9 +28,9 @@
   <artifactId>vertx-pg-client</artifactId>
   <version>3.8.0-SNAPSHOT</version>
 
-  <name>Vertx PosgreSQL Client</name>
+  <name>Vertx PostgreSQL Client</name>
   <url>https://github.com/eclipse-vertx/vertx-sql-client</url>
-  <description>The Reactive SQL client</description>
+  <description>The Reactive PostgreSQL client</description>
 
   <licenses>
     <license>
