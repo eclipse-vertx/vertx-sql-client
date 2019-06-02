@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.stream.Collector;
 
 /**
- * Defines the client operations with a Postgres Database.
+ * Defines the client operations with a database server.
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */

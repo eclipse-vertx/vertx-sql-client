@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.stream.Collector;
 
 /**
- * A connection to Postgres.
+ * A connection to database server.
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
