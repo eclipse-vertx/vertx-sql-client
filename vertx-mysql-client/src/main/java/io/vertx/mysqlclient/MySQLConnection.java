@@ -13,7 +13,17 @@ import io.vertx.sqlclient.Tuple;
 
 import java.util.stream.Collector;
 
+/**
+ * A connection to MySQL server.
+ */
 public interface MySQLConnection extends SqlConnection {
+  /**
+   * Create a connection to MySQL server with the given {@code connectOptions}.
+   *
+   * @param vertx the vertx instance
+   * @param options the options for the connection
+   * @param handler the handler called with the connection or the failure
+   */
   static void connect(Vertx vertx, MySQLConnectOptions options, Handler<AsyncResult<MySQLConnection>> handler) {
     MySQLConnectionImpl.connect(vertx, options, handler);
   }

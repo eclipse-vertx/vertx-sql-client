@@ -19,6 +19,13 @@ import java.util.stream.Collector;
  * A pool of MySQL connections.
  */
 public interface MySQLPool extends Pool {
+  /**
+   * Create a connection pool to the MySQL server configured with the given {@code connectOptions} and {@code poolOptions}.
+   *
+   * @param connectOptions the options for the connection
+   * @param poolOptions the options for creating the pool
+   * @return the connection pool
+   */
   static MySQLPool pool(MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
     if (Vertx.currentContext() != null) {
       throw new IllegalStateException("Running in a Vertx context => use MySQLPool#pool(Vertx, MySQLConnectOptions, PoolOptions) instead");
