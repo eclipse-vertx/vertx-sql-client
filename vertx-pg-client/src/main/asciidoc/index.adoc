@@ -49,7 +49,7 @@ Here is the simplest way to connect, query and disconnect
 
 [source,$lang]
 ----
-{@link examples.Examples#gettingStarted()}
+{@link examples.PgClientExamples#gettingStarted()}
 ----
 
 == Connecting to PostgreSQL
@@ -58,7 +58,7 @@ Most of the time you will use a pool to connect to PostgreSQL:
 
 [source,$lang]
 ----
-{@link examples.Examples#connecting01}
+{@link examples.PgClientExamples#connecting01}
 ----
 
 The pooled client uses a connection pool and any operation will borrow a connection from the pool
@@ -68,14 +68,14 @@ If you are running with Vert.x you can pass it your Vertx instance:
 
 [source,$lang]
 ----
-{@link examples.Examples#connecting02}
+{@link examples.PgClientExamples#connecting02}
 ----
 
 You need to release the pool when you don't need it anymore:
 
 [source,$lang]
 ----
-{@link examples.Examples#connecting03}
+{@link examples.PgClientExamples#connecting03}
 ----
 
 When you need to execute several operations on the same connection, you need to use a client
@@ -85,7 +85,7 @@ You can easily get one from the pool:
 
 [source,$lang]
 ----
-{@link examples.Examples#connecting04}
+{@link examples.PgClientExamples#connecting04}
 ----
 
 Once you are done with the connection you must close it to release it to the pool, so it can be reused.
@@ -96,7 +96,7 @@ Make sure you have added the required `netty-transport-native` dependency in you
 
 [source,$lang]
 ----
-{@link examples.Examples#connecting06}
+{@link examples.PgClientExamples#connecting06}
 ----
 
 More information can be found in the [Vert.x documentation](https://vertx.io/docs/vertx-core/java/#_native_transports).
@@ -109,7 +109,7 @@ Apart from configuring with a `PgPoolOptions` data object, We also provide you a
 
 [source,$lang]
 ----
-{@link examples.Examples#configureFromUri(io.vertx.core.Vertx)}
+{@link examples.PgClientExamples#configureFromUri(io.vertx.core.Vertx)}
 ----
 
 More information about connection string formats can be found in the https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING[PostgreSQL Manuals].
@@ -140,7 +140,7 @@ $ PGUSER=user \
 
 [source,$lang]
 ----
-{@link examples.Examples#configureFromEnv(io.vertx.core.Vertx)}
+{@link examples.PgClientExamples#configureFromEnv(io.vertx.core.Vertx)}
 ----
 
 == Running queries
@@ -152,7 +152,7 @@ Here is how to run simple queries:
 
 [source,$lang]
 ----
-{@link examples.Examples#queries01(io.vertx.sqlclient.SqlClient)}
+{@link examples.PgClientExamples#queries01(io.vertx.sqlclient.SqlClient)}
 ----
 
 You can do the same with prepared queries.
@@ -161,63 +161,63 @@ The SQL string can refer to parameters by position, using `$1`, `$2`, etc…​
 
 [source,$lang]
 ----
-{@link examples.Examples#queries02(io.vertx.sqlclient.SqlClient)}
+{@link examples.PgClientExamples#queries02(io.vertx.sqlclient.SqlClient)}
 ----
 
 Query methods provides an asynchronous {@link io.vertx.sqlclient.RowSet} instance that works for _SELECT_ queries
 
 [source,$lang]
 ----
-{@link examples.Examples#queries03(io.vertx.sqlclient.SqlClient)}
+{@link examples.PgClientExamples#queries03(io.vertx.sqlclient.SqlClient)}
 ----
 
 or _UPDATE_/_INSERT_ queries:
 
 [source,$lang]
 ----
-{@link examples.Examples#queries04(io.vertx.sqlclient.SqlClient)}
+{@link examples.PgClientExamples#queries04(io.vertx.sqlclient.SqlClient)}
 ----
 
 The {@link io.vertx.sqlclient.Row} gives you access to your data by index
 
 [source,$lang]
 ----
-{@link examples.Examples#queries05(Row)}
+{@link examples.PgClientExamples#queries05(Row)}
 ----
 
 or by name
 
 [source,$lang]
 ----
-{@link examples.Examples#queries06(Row)}
+{@link examples.PgClientExamples#queries06(Row)}
 ----
 
 You can access a wide variety of of types
 
 [source,$lang]
 ----
-{@link examples.Examples#queries07(Row)}
+{@link examples.PgClientExamples#queries07(Row)}
 ----
 
 You can execute prepared batch
 
 [source,$lang]
 ----
-{@link examples.Examples#queries08(io.vertx.sqlclient.SqlClient)}
+{@link examples.PgClientExamples#queries08(io.vertx.sqlclient.SqlClient)}
 ----
 
 You can cache prepared queries:
 
 [source,$lang]
 ----
-{@link examples.Examples#queries09(io.vertx.core.Vertx, PgConnectOptions, PoolOptions)}
+{@link examples.PgClientExamples#queries09(io.vertx.core.Vertx, PgConnectOptions, PoolOptions)}
 ----
 
 You can fetch generated keys with a 'RETURNING' clause in your query:
 
 [source,$lang]
 ----
-{@link examples.Examples#queries10(io.vertx.sqlclient.SqlClient)}
+{@link examples.PgClientExamples#queries10(io.vertx.sqlclient.SqlClient)}
 ----
 
 == Using connections
@@ -227,14 +227,14 @@ or borrow one from the pool:
 
 [source,$lang]
 ----
-{@link examples.Examples#usingConnections01(io.vertx.core.Vertx, io.vertx.pgclient.PgPool)}
+{@link examples.PgClientExamples#usingConnections01(io.vertx.core.Vertx, io.vertx.pgclient.PgPool)}
 ----
 
 Prepared queries can be created:
 
 [source,$lang]
 ----
-{@link examples.Examples#usingConnections02(io.vertx.pgclient.PgConnection)}
+{@link examples.PgClientExamples#usingConnections02(io.vertx.pgclient.PgConnection)}
 ----
 
 NOTE: prepared query caching depends on the {@link io.vertx.pgclient.PgConnectOptions#setCachePreparedStatements(boolean)} and
@@ -244,7 +244,7 @@ does not depend on whether you are creating prepared queries or use {@link io.ve
 
 [source,$lang]
 ----
-{@link examples.Examples#usingConnections03(io.vertx.pgclient.PgConnection)}
+{@link examples.PgClientExamples#usingConnections03(io.vertx.pgclient.PgConnection)}
 ----
 
 
@@ -259,7 +259,7 @@ Or you can use the transaction API of {@link io.vertx.pgclient.PgConnection}:
 
 [source,$lang]
 ----
-{@link examples.Examples#transaction01(io.vertx.pgclient.PgPool)}
+{@link examples.PgClientExamples#transaction01(io.vertx.pgclient.PgPool)}
 ----
 
 When PostgreSQL reports the current transaction is failed (e.g the infamous _current transaction is aborted, commands ignored until
@@ -268,7 +268,7 @@ is called:
 
 [source,$lang]
 ----
-{@link examples.Examples#transaction02(io.vertx.pgclient.PgPool)}
+{@link examples.PgClientExamples#transaction02(io.vertx.pgclient.PgPool)}
 ----
 
 === Simplified transaction API
@@ -279,7 +279,7 @@ It borrows a connection from the pool, begins the transaction and releases the c
 
 [source,$lang]
 ----
-{@link examples.Examples#transaction03(io.vertx.pgclient.PgPool)}
+{@link examples.PgClientExamples#transaction03(io.vertx.pgclient.PgPool)}
 ----
 
 == Cursors and streaming
@@ -289,7 +289,7 @@ By default prepared query execution fetches all rows, you can use a
 
 [source,$lang]
 ----
-{@link examples.Examples#usingCursors01(io.vertx.pgclient.PgConnection)}
+{@link examples.PgClientExamples#usingCursors01(io.vertx.pgclient.PgConnection)}
 ----
 
 PostreSQL destroys cursors at the end of a transaction, so the cursor API shall be used
@@ -299,14 +299,14 @@ Cursors shall be closed when they are released prematurely:
 
 [source,$lang]
 ----
-{@link examples.Examples#usingCursors02(io.vertx.sqlclient.Cursor)}
+{@link examples.PgClientExamples#usingCursors02(io.vertx.sqlclient.Cursor)}
 ----
 
 A stream API is also available for cursors, which can be more convenient, specially with the Rxified version.
 
 [source,$lang]
 ----
-{@link examples.Examples#usingCursors03(io.vertx.pgclient.PgConnection)}
+{@link examples.PgClientExamples#usingCursors03(io.vertx.pgclient.PgConnection)}
 ----
 
 The stream read the rows by batch of `50` and stream them, when the rows have been passed to the handler,
@@ -356,14 +356,14 @@ Tuple decoding uses the above types when storing values, it also performs on the
 
 [source,$lang]
 ----
-{@link examples.Examples#typeMapping01}
+{@link examples.PgClientExamples#typeMapping01}
 ----
 
 Tuple encoding uses the above type mapping for encoding, unless the type is numeric in which case `java.lang.Number` is used instead:
 
 [source,$lang]
 ----
-{@link examples.Examples#typeMapping02}
+{@link examples.PgClientExamples#typeMapping02}
 ----
 
 Arrays of these types are supported.
@@ -376,7 +376,7 @@ The main reason of this type is handling `null` JSON values.
 
 [source,$lang]
 ----
-{@link examples.Examples#jsonExample()}
+{@link examples.PgClientExamples#jsonExample()}
 ----
 
 === Handling NUMERIC
@@ -385,7 +385,7 @@ The {@link io.vertx.sqlclient.data.Numeric} Java type is used to represent the P
 
 [source,$lang]
 ----
-{@link examples.Examples#numericExample}
+{@link examples.PgClientExamples#numericExample}
 ----
 
 == Handling arrays
@@ -394,7 +394,7 @@ Arrays are available on {@link io.vertx.sqlclient.Tuple} and {@link io.vertx.sql
 
 [source,$lang]
 ----
-{@link examples.Examples#arrayExample}
+{@link examples.PgClientExamples#arrayExample}
 ----
 
 == Handling custom types
@@ -405,14 +405,14 @@ You can read from PostgreSQL and get the custom type as a string
 
 [source,$lang]
 ----
-{@link examples.Examples#customType01Example}
+{@link examples.PgClientExamples#customType01Example}
 ----
 
 You can also write to PostgreSQL by providing a string
 
 [source,$lang]
 ----
-{@link examples.Examples#customType02Example}
+{@link examples.PgClientExamples#customType02Example}
 ----
 
 == Collector queries
@@ -421,7 +421,7 @@ You can use Java collectors with the query API:
 
 [source,$lang]
 ----
-{@link examples.Examples#collector01Example}
+{@link examples.PgClientExamples#collector01Example}
 ----
 
 The collector processing must not keep a reference on the {@link io.vertx.sqlclient.Row} as
@@ -432,7 +432,7 @@ create easily create a string directly from the row set:
 
 [source,$lang]
 ----
-{@link examples.Examples#collector02Example}
+{@link examples.PgClientExamples#collector02Example}
 ----
 
 == Pub/sub
@@ -444,7 +444,7 @@ PostgreSQL notifications:
 
 [source,$lang]
 ----
-{@link examples.Examples#pubsub01(io.vertx.pgclient.PgConnection)}
+{@link examples.PgClientExamples#pubsub01(io.vertx.pgclient.PgConnection)}
 ----
 
 The {@link io.vertx.pgclient.pubsub.PgSubscriber} is a channel manager managing a single connection that
@@ -452,7 +452,7 @@ provides per channel subscription:
 
 [source,$lang]
 ----
-{@link examples.Examples#pubsub02(io.vertx.core.Vertx)}
+{@link examples.PgClientExamples#pubsub02(io.vertx.core.Vertx)}
 ----
 
 The channel name that is given to the channel method will be the exact name of the channel as held by PostgreSQL for sending
@@ -461,7 +461,7 @@ internally {@link io.vertx.pgclient.pubsub.PgSubscriber} will prepare the submit
 
 [source,$lang]
 ----
-{@link examples.Examples#pubsub03(io.vertx.core.Vertx)}
+{@link examples.PgClientExamples#pubsub03(io.vertx.core.Vertx)}
 ----
 You can provide a reconnect policy as a function that takes the number of `retries` as argument and returns an `amountOfTime`
 value:
@@ -472,7 +472,7 @@ value:
 
 [source,$lang]
 ----
-{@link examples.Examples#pubsub04(io.vertx.core.Vertx)}
+{@link examples.PgClientExamples#pubsub04(io.vertx.core.Vertx)}
 ----
 
 The default policy is to not reconnect.
@@ -483,7 +483,7 @@ PostgreSQL supports cancellation of requests in progress. You can cancel infligh
 
 [source,$lang]
 ----
-{@link examples.Examples#cancelRequest(io.vertx.pgclient.PgConnection)}
+{@link examples.PgClientExamples#cancelRequest(io.vertx.pgclient.PgConnection)}
 ----
 
 > The cancellation signal might or might not have any effect — for example, if it arrives after the backend has finished processing the query, then it will have no effect. If the cancellation is effective, it results in the current command being terminated early with an error message.
@@ -499,7 +499,7 @@ All https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-PROTECTION[
 
 [source,$lang]
 ----
-{@link examples.Examples#ex10}
+{@link examples.PgClientExamples#ex10}
 ----
 
 More information can be found in the http://vertx.io/docs/vertx-core/java/#ssl[Vert.x documentation].
