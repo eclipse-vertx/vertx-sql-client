@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 @Source
-public class Examples {
+public class PgClientExamples {
 
   public void gettingStarted() {
 
