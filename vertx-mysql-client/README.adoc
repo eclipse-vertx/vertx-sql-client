@@ -1,0 +1,58 @@
+= The Reactive MySQL Client
+
+== Supports
+
+- Connection management
+- Connection pooling
+- MySQL Native41 authentication
+- Text protocol(Simple Query)
+- Data type mapping
+- Prepared statement
+- Cursor
+- Multi-statement
+- Multi-resultset
+
+== TODO
+
+* [ ] TLS support
+* [ ] Add support for more authentication methods(caching_sha2_password)
+* [ ] Authentication methods switch
+* [ ] Text Protocol(Local INFILE Request)
+* [ ] Text Protocol(All Utility Commands)
+* [ ] Full data type support
+* [ ] Compression
+* [ ] Stored Procedures(OUT parameters)
+* [ ] Replication Protocol(Binlog)
+* [ ] Charset options
+
+== Supported Data type
+
+MySQL data types are mapped as below.
+
+- INT1(j.l.Byte)
+- INT2(j.l.Short)
+- INT3(j.l.Integer)
+- INT4(j.l.Integer)
+- INT8(j.l.Long)
+- FLOAT(j.l.Float)
+- DOUBLE(j.l.Double)
+- NUMERIC,DECIMAL(i.r.p.data.Numeric)
+- CHAR(j.l.String)
+- BINARY(i.v.c.b.Buffer)
+- VARCHAR(j.l.String)
+- VARBINARY(i.v.c.b.Buffer)
+- TINYBLOB/BLOB/MEDIUMBLOB/LONGBLOB(i.v.c.b.Buffer)
+- TINYTEXT/TEXT/MEDIUMTEXT/LONGTEXT(j.l.String)
+- DATE(j.t.LocalDate)
+- DATETIME(j.t.LocalDateTime)
+- TIME(j.t.Duration)
+- TIMESTAMP(j.t.LocalDateTime)
+- YEAR(j.l.Short)
+
+these data types are not fully supported yet:
+
+* [ ] BOOLEAN(j.l.Byte)=INT1(j.l.Byte)
+* [ ] Numeric: BIT
+* [ ] String: ENUM, SET
+* [ ] JSON
+* [ ] Spatial data types
