@@ -509,3 +509,7 @@ More information can be found in the http://vertx.io/docs/vertx-core/java/#ssl[V
 You can also configure the client to use an HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy.
 
 More information can be found in the http://vertx.io/docs/vertx-core/java/#_using_a_proxy_for_client_connections[Vert.x documentation].
+
+ifeval::["$lang" == "java"]
+include::override/rxjava2.adoc[]
+endif::[]
