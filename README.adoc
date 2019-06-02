@@ -18,7 +18,7 @@ it will only handle bug fixes.
 
 == Snapshots
 
-Snapshots are deploy in Sonatype OSS repository: https://oss.sonatype.org/content/repositories/snapshots/io/vertx/vertx-sql-client/
+Snapshots are deployed in Sonatype OSS repository: https://oss.sonatype.org/content/repositories/snapshots/io/vertx/vertx-sql-client/
 
 == License
 
