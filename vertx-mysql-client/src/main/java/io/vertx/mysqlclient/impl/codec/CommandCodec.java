@@ -18,10 +18,10 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.core.Handler;
+import io.vertx.mysqlclient.MySQLException;
 import io.vertx.mysqlclient.impl.codec.datatype.DataType;
 import io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag;
 import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
-import io.vertx.mysqlclient.impl.protocol.backend.ErrPacket;
 import io.vertx.mysqlclient.impl.protocol.backend.OkPacket;
 import io.vertx.mysqlclient.impl.protocol.backend.ServerStatusFlags;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
@@ -88,8 +88,15 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
   }
 
   void handleErrorPacketPayload(ByteBuf payload) {
-    ErrPacket packet = decodeErrPacketPayload(payload, StandardCharsets.UTF_8);
-    completionHandler.handle(CommandResponse.failure(packet.errorMessage()));
+    payload.skipBytes(1); // skip ERR packet header
+    int errorCode = payload.readUnsignedShortLE();
+    String sqlState = null;
+    if ((encoder.clientCapabilitiesFlag & CapabilitiesFlag.CLIENT_PROTOCOL_41) != 0) {
+      payload.skipBytes(1); // SQL state marker will always be #
+      sqlState = BufferUtils.readFixedLengthString(payload, 5, StandardCharsets.UTF_8);
+    }
+    String errorMessage = readRestOfPacketString(payload, StandardCharsets.UTF_8);
+    completionHandler.handle(CommandResponse.failure(new MySQLException(errorMessage, errorCode, sqlState)));
   }
 
   OkPacket decodeOkPacketPayload(ByteBuf payload, Charset charset) {
@@ -118,19 +125,6 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
       statusInfo = readRestOfPacketString(payload, charset);
     }
     return new OkPacket(affectedRows, lastInsertId, serverStatusFlags, numberOfWarnings, statusInfo, sessionStateInfo);
-  }
-
-  ErrPacket decodeErrPacketPayload(ByteBuf payload, Charset charset) {
-    payload.skipBytes(1); // skip ERR packet header
-    int errorCode = payload.readUnsignedShortLE();
-    String sqlStateMarker = null;
-    String sqlState = null;
-    if ((encoder.clientCapabilitiesFlag & CapabilitiesFlag.CLIENT_PROTOCOL_41) != 0) {
-      sqlStateMarker = BufferUtils.readFixedLengthString(payload, 1, charset);
-      sqlState = BufferUtils.readFixedLengthString(payload, 5, charset);
-    }
-    String errorMessage = readRestOfPacketString(payload, charset);
-    return new ErrPacket(errorCode, sqlStateMarker, sqlState, errorMessage);
   }
 
   String readRestOfPacketString(ByteBuf payload, Charset charset) {

@@ -30,7 +30,7 @@ import io.vertx.sqlclient.impl.command.InitCommand;
 import java.nio.charset.StandardCharsets;
 
 import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.*;
-import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
+import static io.vertx.mysqlclient.impl.codec.Packets.ERROR_PACKET_HEADER;
 import static io.vertx.mysqlclient.impl.protocol.backend.OkPacket.OK_PACKET_HEADER;
 
 class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
@@ -134,7 +134,7 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
 
   private void decodeInit1(InitCommand cmd, ByteBuf payload) {
     //TODO auth switch support
-    int header = payload.readUnsignedByte();
+    int header = payload.getUnsignedByte(payload.readerIndex());
     switch (header) {
       case OK_PACKET_HEADER:
         status = ST_CONNECTED;

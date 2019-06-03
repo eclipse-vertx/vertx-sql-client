@@ -32,7 +32,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collector;
 
 import static io.vertx.mysqlclient.impl.protocol.backend.EofPacket.EOF_PACKET_HEADER;
-import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
+import static io.vertx.mysqlclient.impl.codec.Packets.ERROR_PACKET_HEADER;
 
 abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends CommandCodec<Boolean, C> {
 

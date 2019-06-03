@@ -26,7 +26,7 @@ import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 
 import java.nio.charset.StandardCharsets;
 
-import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
+import static io.vertx.mysqlclient.impl.codec.Packets.ERROR_PACKET_HEADER;
 
 class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareStatementCommand> {
 

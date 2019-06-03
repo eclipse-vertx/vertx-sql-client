@@ -23,7 +23,7 @@ import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
 import java.nio.charset.StandardCharsets;
 
-import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.*;
+import static io.vertx.mysqlclient.impl.codec.Packets.ERROR_PACKET_HEADER;
 import static io.vertx.mysqlclient.impl.protocol.backend.OkPacket.*;
 
 class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>> {
