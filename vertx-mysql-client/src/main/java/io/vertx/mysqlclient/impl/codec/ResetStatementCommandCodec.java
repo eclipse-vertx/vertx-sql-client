@@ -6,7 +6,7 @@ import io.vertx.mysqlclient.impl.protocol.backend.OkPacket;
 import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
-import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
+import static io.vertx.mysqlclient.impl.codec.Packets.ERROR_PACKET_HEADER;
 
 class ResetStatementCommandCodec extends CommandCodec<Void, CloseCursorCommand> {
   ResetStatementCommandCodec(CloseCursorCommand cmd) {

@@ -31,7 +31,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static io.vertx.mysqlclient.impl.protocol.backend.EofPacket.EOF_PACKET_HEADER;
-import static io.vertx.mysqlclient.impl.protocol.backend.ErrPacket.ERROR_PACKET_HEADER;
+import static io.vertx.mysqlclient.impl.codec.Packets.ERROR_PACKET_HEADER;
 import static io.vertx.mysqlclient.impl.protocol.backend.OkPacket.OK_PACKET_HEADER;
 
 class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
