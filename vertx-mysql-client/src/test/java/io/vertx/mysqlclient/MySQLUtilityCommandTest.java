@@ -60,4 +60,14 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
       }));
     }));
   }
+
+  @Test
+  public void testStatistics(TestContext ctx) {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.getInternalStatistics(ctx.asyncAssertSuccess(result -> {
+        ctx.assertTrue(!result.isEmpty());
+        conn.close();
+      }));
+    }));
+  }
 }

@@ -5,6 +5,7 @@ import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.vertx.mysqlclient.impl.command.InitDbCommand;
 import io.vertx.mysqlclient.impl.command.PingCommand;
+import io.vertx.mysqlclient.impl.command.StatisticsCommand;
 import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
@@ -68,6 +69,8 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
       return new PingCommandCodec((PingCommand) cmd);
     } else if (cmd instanceof InitDbCommand) {
       return new InitDbCommandCodec((InitDbCommand) cmd);
+    } else if (cmd instanceof StatisticsCommand) {
+      return new StatisticsCommandCodec((StatisticsCommand) cmd);
     } else {
       System.out.println("Unsupported command " + cmd);
       throw new UnsupportedOperationException("Todo");

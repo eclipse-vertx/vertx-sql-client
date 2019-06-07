@@ -81,4 +81,12 @@ public interface MySQLConnection extends SqlConnection {
   @Fluent
   MySQLConnection specifySchema(String schemaName, Handler<AsyncResult<Void>> handler);
 
+  /**
+   * Send a STATISTICS command to get a human readable string of the server internal status.
+   *
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  MySQLConnection getInternalStatistics(Handler<AsyncResult<String>> handler);
 }

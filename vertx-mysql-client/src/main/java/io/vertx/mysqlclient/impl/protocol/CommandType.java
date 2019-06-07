@@ -7,7 +7,7 @@ public final class CommandType {
   public static final byte COM_QUIT = 0x01;
   public static final byte COM_INIT_DB = 0x02;
   public static final byte COM_QUERY = 0x03;
-  public static final byte COM_STATISTICS = 0x08;
+  public static final byte COM_STATISTICS = 0x09;
   public static final byte COM_DEBUG = 0x0D;
   public static final byte COM_PING = 0x0E;
   public static final byte COM_CHANGE_USER = 0x11;
