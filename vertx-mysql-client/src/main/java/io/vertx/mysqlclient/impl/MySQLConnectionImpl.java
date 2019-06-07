@@ -7,6 +7,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLConnection;
+import io.vertx.mysqlclient.impl.command.PingCommand;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 
@@ -49,6 +50,9 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
 
   @Override
   public MySQLConnection ping(Handler<AsyncResult<Void>> handler) {
-    throw new UnsupportedOperationException();
+    PingCommand cmd = new PingCommand();
+    cmd.handler = handler;
+    schedule(cmd);
+    return this;
   }
 }

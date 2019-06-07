@@ -1,5 +1,6 @@
 package io.vertx.mysqlclient;
 
+import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
@@ -61,5 +62,12 @@ public interface MySQLConnection extends SqlConnection {
   @Override
   <R> MySQLConnection preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
+  /**
+   * Send a PING command to check if the server is alive.
+   *
+   * @param handler the handler notified when the server responses to client
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
   MySQLConnection ping(Handler<AsyncResult<Void>> handler);
 }

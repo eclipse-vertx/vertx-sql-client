@@ -3,6 +3,7 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
+import io.vertx.mysqlclient.impl.command.PingCommand;
 import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
@@ -62,6 +63,8 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
       return new CloseStatementCommandCodec((CloseStatementCommand) cmd);
     } else if (cmd instanceof CloseCursorCommand) {
       return new ResetStatementCommandCodec((CloseCursorCommand) cmd);
+    } else if (cmd instanceof PingCommand) {
+      return new PingCommandCodec((PingCommand) cmd);
     } else {
       System.out.println("Unsupported command " + cmd);
       throw new UnsupportedOperationException("Todo");
