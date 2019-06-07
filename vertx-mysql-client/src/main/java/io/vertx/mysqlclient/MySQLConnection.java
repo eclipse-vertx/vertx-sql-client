@@ -100,4 +100,13 @@ public interface MySQLConnection extends SqlConnection {
    */
   @Fluent
   MySQLConnection setOption(MySQLSetOption option, Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Send a RESET_CONNECTION command to reset the session state.
+   *
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  MySQLConnection resetConnection(Handler<AsyncResult<Void>> handler);
 }

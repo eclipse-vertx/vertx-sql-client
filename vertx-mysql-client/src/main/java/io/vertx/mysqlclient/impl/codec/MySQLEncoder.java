@@ -5,6 +5,7 @@ import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.vertx.mysqlclient.impl.command.InitDbCommand;
 import io.vertx.mysqlclient.impl.command.PingCommand;
+import io.vertx.mysqlclient.impl.command.ResetConnectionCommand;
 import io.vertx.mysqlclient.impl.command.SetOptionCommand;
 import io.vertx.mysqlclient.impl.command.StatisticsCommand;
 import io.vertx.sqlclient.impl.command.*;
@@ -74,6 +75,8 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
       return new StatisticsCommandCodec((StatisticsCommand) cmd);
     } else if (cmd instanceof SetOptionCommand) {
       return new SetOptionCommandCodec((SetOptionCommand) cmd);
+    } else if (cmd instanceof ResetConnectionCommand) {
+      return new ResetConnectionCommandCodec((ResetConnectionCommand) cmd);
     } else {
       System.out.println("Unsupported command " + cmd);
       throw new UnsupportedOperationException("Todo");

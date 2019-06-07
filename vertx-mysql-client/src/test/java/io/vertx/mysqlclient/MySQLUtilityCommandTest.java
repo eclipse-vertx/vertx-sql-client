@@ -95,4 +95,19 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
       }));
     }));
   }
+
+  @Test
+  public void testResetConnection(TestContext ctx) {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("CREATE TEMPORARY TABLE temp (temp INTEGER)", ctx.asyncAssertSuccess(res1 -> {
+        conn.query("SELECT * FROM temp", ctx.asyncAssertSuccess(res2 -> {
+          conn.resetConnection(ctx.asyncAssertSuccess(res3 -> {
+            conn.query("SELECT * FROM temp", ctx.asyncAssertFailure(error -> {
+              conn.close();
+            }));
+          }));
+        }));
+      }));
+    }));
+  }
 }

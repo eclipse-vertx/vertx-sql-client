@@ -10,6 +10,7 @@ import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.mysqlclient.MySQLSetOption;
 import io.vertx.mysqlclient.impl.command.InitDbCommand;
 import io.vertx.mysqlclient.impl.command.PingCommand;
+import io.vertx.mysqlclient.impl.command.ResetConnectionCommand;
 import io.vertx.mysqlclient.impl.command.SetOptionCommand;
 import io.vertx.mysqlclient.impl.command.StatisticsCommand;
 import io.vertx.sqlclient.impl.Connection;
@@ -79,6 +80,14 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
   @Override
   public MySQLConnection setOption(MySQLSetOption option, Handler<AsyncResult<Void>> handler) {
     SetOptionCommand cmd = new SetOptionCommand(option);
+    cmd.handler = handler;
+    schedule(cmd);
+    return this;
+  }
+
+  @Override
+  public MySQLConnection resetConnection(Handler<AsyncResult<Void>> handler) {
+    ResetConnectionCommand cmd = new ResetConnectionCommand();
     cmd.handler = handler;
     schedule(cmd);
     return this;
