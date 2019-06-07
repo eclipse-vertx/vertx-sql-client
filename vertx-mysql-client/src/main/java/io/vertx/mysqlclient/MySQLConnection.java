@@ -89,4 +89,15 @@ public interface MySQLConnection extends SqlConnection {
    */
   @Fluent
   MySQLConnection getInternalStatistics(Handler<AsyncResult<String>> handler);
+
+
+  /**
+   * Send a SET_OPTION command to set options for the current connection.
+   *
+   * @param option the options to set
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  MySQLConnection setOption(MySQLSetOption option, Handler<AsyncResult<Void>> handler);
 }

@@ -3,6 +3,8 @@ package io.vertx.mysqlclient;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,6 +69,29 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
       conn.getInternalStatistics(ctx.asyncAssertSuccess(result -> {
         ctx.assertTrue(!result.isEmpty());
         conn.close();
+      }));
+    }));
+  }
+
+  @Test
+  public void testSetOption(TestContext ctx) {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      // CLIENT_MULTI_STATEMENTS is on by default
+      conn.query("SELECT 1; SELECT 2;", ctx.asyncAssertSuccess(rowSet1 -> {
+        ctx.assertEquals(1, rowSet1.size());
+        Row row1 = rowSet1.iterator().next();
+        ctx.assertEquals(1, row1.getInteger(0));
+        RowSet rowSet2 = rowSet1.next();
+        ctx.assertEquals(1, rowSet2.size());
+        Row row2 = rowSet2.iterator().next();
+        ctx.assertEquals(2, row2.getInteger(0));
+
+        conn.setOption(MySQLSetOption.MYSQL_OPTION_MULTI_STATEMENTS_OFF, ctx.asyncAssertSuccess(v -> {
+          // CLIENT_MULTI_STATEMENTS is off now
+          conn.query("SELECT 1; SELECT 2;", ctx.asyncAssertFailure(error -> {
+            conn.close();
+          }));
+        }));
       }));
     }));
   }

@@ -7,8 +7,10 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLConnection;
+import io.vertx.mysqlclient.MySQLSetOption;
 import io.vertx.mysqlclient.impl.command.InitDbCommand;
 import io.vertx.mysqlclient.impl.command.PingCommand;
+import io.vertx.mysqlclient.impl.command.SetOptionCommand;
 import io.vertx.mysqlclient.impl.command.StatisticsCommand;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
@@ -66,10 +68,17 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
     return this;
   }
 
-
   @Override
   public MySQLConnection getInternalStatistics(Handler<AsyncResult<String>> handler) {
     StatisticsCommand cmd = new StatisticsCommand();
+    cmd.handler = handler;
+    schedule(cmd);
+    return this;
+  }
+
+  @Override
+  public MySQLConnection setOption(MySQLSetOption option, Handler<AsyncResult<Void>> handler) {
+    SetOptionCommand cmd = new SetOptionCommand(option);
     cmd.handler = handler;
     schedule(cmd);
     return this;

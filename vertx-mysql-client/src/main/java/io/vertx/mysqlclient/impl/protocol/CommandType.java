@@ -12,7 +12,7 @@ public final class CommandType {
   public static final byte COM_PING = 0x0E;
   public static final byte COM_CHANGE_USER = 0x11;
   public static final byte COM_RESET_CONNECTION = 0x1F;
-  public static final byte COM_SET_OPTION = 0x1A;
+  public static final byte COM_SET_OPTION = 0x1B;
 
   // Prepared Statements
   public static final byte COM_STMT_PREPARE = 0x16;
