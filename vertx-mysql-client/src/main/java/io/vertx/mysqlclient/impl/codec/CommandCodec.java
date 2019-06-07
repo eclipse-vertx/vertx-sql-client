@@ -31,6 +31,10 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
+import static io.vertx.mysqlclient.impl.codec.Packets.*;
+import static io.vertx.mysqlclient.impl.protocol.backend.EofPacket.*;
+import static io.vertx.mysqlclient.impl.protocol.backend.OkPacket.*;
+
 abstract class CommandCodec<R, C extends CommandBase<R>> {
   private static final int PACKET_PAYLOAD_LENGTH_LIMIT = 0xFFFFFF;
 
@@ -93,6 +97,19 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
   void sendNonSplitPacket(ByteBuf packet) {
     sequenceId++;
     encoder.chctx.writeAndFlush(packet);
+  }
+
+  void handleOkPacketOrErrorPacketPayload(ByteBuf payload) {
+    int header = payload.getUnsignedByte(payload.readerIndex());
+    switch (header) {
+      case EOF_PACKET_HEADER:
+      case OK_PACKET_HEADER:
+        completionHandler.handle(CommandResponse.success(null));
+        break;
+      case ERROR_PACKET_HEADER:
+        handleErrorPacketPayload(payload);
+        break;
+    }
   }
 
   void handleErrorPacketPayload(ByteBuf payload) {

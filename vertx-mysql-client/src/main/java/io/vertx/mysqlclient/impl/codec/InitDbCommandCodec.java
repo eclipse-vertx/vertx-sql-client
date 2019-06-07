@@ -23,15 +23,7 @@ class InitDbCommandCodec extends CommandCodec<Void, InitDbCommand> {
 
   @Override
   void decodePayload(ByteBuf payload, MySQLEncoder encoder, int payloadLength, int sequenceId) {
-    int header = payload.getUnsignedByte(payload.readerIndex());
-    switch (header) {
-      case OK_PACKET_HEADER:
-        completionHandler.handle(CommandResponse.success(null));
-        break;
-      case ERROR_PACKET_HEADER:
-        handleErrorPacketPayload(payload);
-        break;
-    }
+    handleOkPacketOrErrorPacketPayload(payload);
   }
 
   private void sendInitDbCommand() {

@@ -27,12 +27,7 @@ class ResetStatementCommandCodec extends CommandCodec<Void, CloseCursorCommand> 
 
   @Override
   void decodePayload(ByteBuf payload, MySQLEncoder encoder, int payloadLength, int sequenceId) {
-    int first = payload.getUnsignedByte(payload.readerIndex());
-    if (first == ERROR_PACKET_HEADER) {
-      handleErrorPacketPayload(payload);
-    } else if (first == OkPacket.OK_PACKET_HEADER) {
-      completionHandler.handle(CommandResponse.success(null));
-    }
+    handleOkPacketOrErrorPacketPayload(payload);
   }
 
   private void sendStatementResetCommand(MySQLPreparedStatement statement) {
