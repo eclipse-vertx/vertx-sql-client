@@ -9,6 +9,8 @@ import static io.vertx.mysqlclient.impl.codec.Packets.*;
 import static io.vertx.mysqlclient.impl.protocol.backend.EofPacket.*;
 
 class DebugCommandCodec extends CommandCodec<Void, DebugCommand> {
+  private static final int PAYLOAD_LENGTH = 1;
+
   DebugCommandCodec(DebugCommand cmd) {
     super(cmd);
   }
@@ -33,10 +35,10 @@ class DebugCommandCodec extends CommandCodec<Void, DebugCommand> {
   }
 
   private void sendDebugCommand() {
-    ByteBuf packet = allocateBuffer();
+    ByteBuf packet = allocateBuffer(PAYLOAD_LENGTH + 4);
     // encode packet header
-    packet.writeMediumLE(1);
-    packet.writeByte(sequenceId++);
+    packet.writeMediumLE(PAYLOAD_LENGTH);
+    packet.writeByte(sequenceId);
 
     // encode packet payload
     packet.writeByte(CommandType.COM_DEBUG);

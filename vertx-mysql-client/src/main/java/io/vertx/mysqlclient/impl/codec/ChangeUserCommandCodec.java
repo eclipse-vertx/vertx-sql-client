@@ -55,7 +55,7 @@ class ChangeUserCommandCodec extends CommandCodec<Void, ChangeUserCommand> {
     // encode packet header
     int packetStartIdx = packet.writerIndex();
     packet.writeMediumLE(0); // will set payload length later by calculation
-    packet.writeByte(sequenceId++);
+    packet.writeByte(sequenceId);
 
     // encode packet payload
     packet.writeByte(CommandType.COM_CHANGE_USER);
@@ -84,14 +84,15 @@ class ChangeUserCommandCodec extends CommandCodec<Void, ChangeUserCommand> {
   }
 
   private void sendAuthSwitchResponse(byte[] responseData) {
-    ByteBuf packet = allocateBuffer();
+    int payloadLength = responseData.length;
+    ByteBuf packet = allocateBuffer(payloadLength + 4);
     // encode packet header
-    packet.writeMediumLE(responseData.length);
-    packet.writeByte(sequenceId++);
+    packet.writeMediumLE(payloadLength);
+    packet.writeByte(sequenceId);
 
     // encode packet payload
     packet.writeBytes(responseData);
 
-    sendPacket(packet, responseData.length);
+    sendNonSplitPacket(packet);
   }
 }

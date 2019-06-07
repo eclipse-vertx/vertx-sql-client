@@ -55,24 +55,27 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     return encoder.chctx.alloc().ioBuffer();
   }
 
+  ByteBuf allocateBuffer(int capacity) {
+    return encoder.chctx.alloc().ioBuffer(capacity);
+  }
+
   void sendPacket(ByteBuf packet, int payloadLength) {
     if (payloadLength >= PACKET_PAYLOAD_LENGTH_LIMIT) {
       /*
          The original packet exceeds the limit of packet length, split the packet here.
          if payload length is exactly 16MBytes-1byte(0xFFFFFF), an empty packet is needed to indicate the termination.
        */
-      ByteBuf payload = packet.skipBytes(4);
-      sendSplitPacket(payload);
+      sendSplitPacket(packet);
     } else {
-      sequenceId++;
-      encoder.chctx.writeAndFlush(packet);
+      sendNonSplitPacket(packet);
     }
   }
 
-  private void sendSplitPacket(ByteBuf payload) {
+  private void sendSplitPacket(ByteBuf packet) {
+    ByteBuf payload = packet.skipBytes(4);
     while (payload.readableBytes() >= PACKET_PAYLOAD_LENGTH_LIMIT) {
       // send a packet with 0xFFFFFF length payload
-      ByteBuf packetHeader = encoder.chctx.alloc().ioBuffer(4);
+      ByteBuf packetHeader = allocateBuffer(4);
       packetHeader.writeMediumLE(PACKET_PAYLOAD_LENGTH_LIMIT);
       packetHeader.writeByte(sequenceId++);
       encoder.chctx.write(packetHeader);
@@ -80,11 +83,16 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     }
 
     // send a packet with last part of the payload
-    ByteBuf packetHeader = encoder.chctx.alloc().ioBuffer(4);
+    ByteBuf packetHeader = allocateBuffer(4);
     packetHeader.writeMediumLE(payload.readableBytes());
     packetHeader.writeByte(sequenceId++);
     encoder.chctx.write(packetHeader);
     encoder.chctx.writeAndFlush(payload);
+  }
+
+  void sendNonSplitPacket(ByteBuf packet) {
+    sequenceId++;
+    encoder.chctx.writeAndFlush(packet);
   }
 
   void handleErrorPacketPayload(ByteBuf payload) {

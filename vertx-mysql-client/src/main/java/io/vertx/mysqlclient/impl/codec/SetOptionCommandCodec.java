@@ -9,6 +9,8 @@ import static io.vertx.mysqlclient.impl.codec.Packets.*;
 import static io.vertx.mysqlclient.impl.protocol.backend.EofPacket.*;
 
 class SetOptionCommandCodec extends CommandCodec<Void, SetOptionCommand> {
+  private static final int PAYLOAD_LENGTH = 3;
+
   SetOptionCommandCodec(SetOptionCommand cmd) {
     super(cmd);
   }
@@ -33,15 +35,15 @@ class SetOptionCommandCodec extends CommandCodec<Void, SetOptionCommand> {
   }
 
   private void sendSetOptionCommand() {
-    ByteBuf packet = allocateBuffer();
+    ByteBuf packet = allocateBuffer(PAYLOAD_LENGTH + 4);
     // encode packet header
-    packet.writeMediumLE(3);
-    packet.writeByte(sequenceId++);
+    packet.writeMediumLE(PAYLOAD_LENGTH);
+    packet.writeByte(sequenceId);
 
     // encode packet payload
     packet.writeByte(CommandType.COM_SET_OPTION);
     packet.writeShortLE(cmd.option().ordinal());
 
-    sendPacket(packet, 3);
+    sendNonSplitPacket(packet);
   }
 }

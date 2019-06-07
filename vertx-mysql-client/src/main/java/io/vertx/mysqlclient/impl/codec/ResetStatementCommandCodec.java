@@ -9,6 +9,8 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 import static io.vertx.mysqlclient.impl.codec.Packets.ERROR_PACKET_HEADER;
 
 class ResetStatementCommandCodec extends CommandCodec<Void, CloseCursorCommand> {
+  private static final int PAYLOAD_LENGTH = 5;
+
   ResetStatementCommandCodec(CloseCursorCommand cmd) {
     super(cmd);
   }
@@ -34,20 +36,15 @@ class ResetStatementCommandCodec extends CommandCodec<Void, CloseCursorCommand> 
   }
 
   private void sendStatementResetCommand(MySQLPreparedStatement statement) {
-    ByteBuf packet = allocateBuffer();
+    ByteBuf packet = allocateBuffer(PAYLOAD_LENGTH + 4);
     // encode packet header
-    int packetStartIdx = packet.writerIndex();
-    packet.writeMediumLE(0); // will set payload length later by calculation
+    packet.writeMediumLE(PAYLOAD_LENGTH);
     packet.writeByte(sequenceId);
 
     // encode packet payload
     packet.writeByte(CommandType.COM_STMT_RESET);
     packet.writeIntLE((int) statement.statementId);
 
-    // set payload length
-    int payloadLength = packet.writerIndex() - packetStartIdx - 4;
-    packet.setMediumLE(packetStartIdx, payloadLength);
-
-    sendPacket(packet, payloadLength);
+    sendNonSplitPacket(packet);
   }
 }

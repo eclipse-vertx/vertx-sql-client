@@ -9,6 +9,8 @@ import static io.vertx.mysqlclient.impl.codec.Packets.*;
 import static io.vertx.mysqlclient.impl.protocol.backend.OkPacket.*;
 
 class ResetConnectionCommandCodec extends CommandCodec<Void, ResetConnectionCommand> {
+  private static final int PAYLOAD_LENGTH = 1;
+
   ResetConnectionCommandCodec(ResetConnectionCommand cmd) {
     super(cmd);
   }
@@ -33,14 +35,14 @@ class ResetConnectionCommandCodec extends CommandCodec<Void, ResetConnectionComm
   }
 
   private void sendResetConnectionCommand() {
-    ByteBuf packet = allocateBuffer();
+    ByteBuf packet = allocateBuffer(PAYLOAD_LENGTH + 4);
     // encode packet header
-    packet.writeMediumLE(1);
-    packet.writeByte(sequenceId++);
+    packet.writeMediumLE(PAYLOAD_LENGTH);
+    packet.writeByte(sequenceId);
 
     // encode packet payload
     packet.writeByte(CommandType.COM_RESET_CONNECTION);
 
-    sendPacket(packet, 1);
+    sendNonSplitPacket(packet);
   }
 }

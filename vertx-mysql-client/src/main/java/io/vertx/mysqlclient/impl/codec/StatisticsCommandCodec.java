@@ -8,6 +8,8 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 import java.nio.charset.StandardCharsets;
 
 class StatisticsCommandCodec extends CommandCodec<String, StatisticsCommand> {
+  private static final int PAYLOAD_LENGTH = 1;
+
   StatisticsCommandCodec(StatisticsCommand cmd) {
     super(cmd);
   }
@@ -24,14 +26,14 @@ class StatisticsCommandCodec extends CommandCodec<String, StatisticsCommand> {
   }
 
   private void sendStatisticsCommand() {
-    ByteBuf packet = allocateBuffer();
+    ByteBuf packet = allocateBuffer(PAYLOAD_LENGTH + 4);
     // encode packet header
-    packet.writeMediumLE(1);
-    packet.writeByte(sequenceId++);
+    packet.writeMediumLE(PAYLOAD_LENGTH);
+    packet.writeByte(sequenceId);
 
     // encode packet payload
     packet.writeByte(CommandType.COM_STATISTICS);
 
-    sendPacket(packet, 1);
+    sendNonSplitPacket(packet);
   }
 }

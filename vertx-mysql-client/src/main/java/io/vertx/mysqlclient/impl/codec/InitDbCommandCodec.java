@@ -39,7 +39,7 @@ class InitDbCommandCodec extends CommandCodec<Void, InitDbCommand> {
     // encode packet header
     int packetStartIdx = packet.writerIndex();
     packet.writeMediumLE(0); // will set payload length later by calculation
-    packet.writeByte(sequenceId++);
+    packet.writeByte(sequenceId);
 
     // encode packet payload
     packet.writeByte(CommandType.COM_INIT_DB);
