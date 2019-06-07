@@ -8,6 +8,7 @@ import io.vertx.core.Vertx;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.mysqlclient.MySQLSetOption;
+import io.vertx.mysqlclient.impl.command.ChangeUserCommand;
 import io.vertx.mysqlclient.impl.command.DebugCommand;
 import io.vertx.mysqlclient.impl.command.InitDbCommand;
 import io.vertx.mysqlclient.impl.command.PingCommand;
@@ -97,6 +98,14 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
   @Override
   public MySQLConnection debug(Handler<AsyncResult<Void>> handler) {
     DebugCommand cmd = new DebugCommand();
+    cmd.handler = handler;
+    schedule(cmd);
+    return this;
+  }
+
+  @Override
+  public MySQLConnection changeUser(MySQLConnectOptions options, Handler<AsyncResult<Void>> handler) {
+    ChangeUserCommand cmd = new ChangeUserCommand(options.getUser(), options.getPassword(), options.getDatabase());
     cmd.handler = handler;
     schedule(cmd);
     return this;

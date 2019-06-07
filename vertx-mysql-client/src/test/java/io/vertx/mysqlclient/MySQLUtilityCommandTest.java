@@ -110,4 +110,25 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
       }));
     }));
   }
+
+  @Test
+  public void testChangeUser(TestContext ctx) {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT current_user()", ctx.asyncAssertSuccess(res1 -> {
+        Row row1 = res1.iterator().next();
+        ctx.assertEquals("mysql@localhost", row1.getValue(0));
+        MySQLConnectOptions changeUserOptions = new MySQLConnectOptions()
+          .setUser("superuser")
+          .setPassword("password")
+          .setDatabase("emptyschema");
+        conn.changeUser(changeUserOptions, ctx.asyncAssertSuccess(v2 -> {
+          conn.query("SELECT current_user();SELECT database();", ctx.asyncAssertSuccess(res2 -> {
+            ctx.assertEquals("superuser@localhost", res2.iterator().next().getValue(0));
+            ctx.assertEquals("emptyschema", res2.next().iterator().next().getValue(0));
+            conn.close();
+          }));
+        }));
+      }));
+    }));
+  }
 }

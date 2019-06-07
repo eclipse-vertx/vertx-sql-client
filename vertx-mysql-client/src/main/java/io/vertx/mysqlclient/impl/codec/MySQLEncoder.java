@@ -3,6 +3,7 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
+import io.vertx.mysqlclient.impl.command.ChangeUserCommand;
 import io.vertx.mysqlclient.impl.command.DebugCommand;
 import io.vertx.mysqlclient.impl.command.InitDbCommand;
 import io.vertx.mysqlclient.impl.command.PingCommand;
@@ -80,6 +81,8 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
       return new ResetConnectionCommandCodec((ResetConnectionCommand) cmd);
     } else if (cmd instanceof DebugCommand) {
       return new DebugCommandCodec((DebugCommand) cmd);
+    } else if (cmd instanceof ChangeUserCommand) {
+      return new ChangeUserCommandCodec((ChangeUserCommand) cmd);
     } else {
       System.out.println("Unsupported command " + cmd);
       throw new UnsupportedOperationException("Todo");
