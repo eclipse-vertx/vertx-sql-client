@@ -1,5 +1,6 @@
 package io.vertx.mysqlclient;
 
+import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
@@ -61,5 +62,70 @@ public interface MySQLConnection extends SqlConnection {
   @Override
   <R> MySQLConnection preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
+  /**
+   * Send a PING command to check if the server is alive.
+   *
+   * @param handler the handler notified when the server responses to client
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
   MySQLConnection ping(Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Send a INIT_DB command to change the default schema of the connection.
+   *
+   * @param schemaName name of the schema to change to
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  MySQLConnection specifySchema(String schemaName, Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Send a STATISTICS command to get a human readable string of the server internal status.
+   *
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  MySQLConnection getInternalStatistics(Handler<AsyncResult<String>> handler);
+
+
+  /**
+   * Send a SET_OPTION command to set options for the current connection.
+   *
+   * @param option the options to set
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  MySQLConnection setOption(MySQLSetOption option, Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Send a RESET_CONNECTION command to reset the session state.
+   *
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  MySQLConnection resetConnection(Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Send a DEBUG command to dump debug information to the server's stdout.
+   *
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  MySQLConnection debug(Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Send a CHANGE_USER command to change the user of the current connection, this operation will also reset connection state.
+   *
+   * @param options authentication options, only username, password, database, charset and properties will be used.
+   * @param handler the handler
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  MySQLConnection changeUser(MySQLConnectOptions options, Handler<AsyncResult<Void>> handler);
 }
