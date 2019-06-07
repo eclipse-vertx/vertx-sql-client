@@ -8,6 +8,7 @@ import io.vertx.core.Vertx;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.mysqlclient.MySQLSetOption;
+import io.vertx.mysqlclient.impl.command.DebugCommand;
 import io.vertx.mysqlclient.impl.command.InitDbCommand;
 import io.vertx.mysqlclient.impl.command.PingCommand;
 import io.vertx.mysqlclient.impl.command.ResetConnectionCommand;
@@ -88,6 +89,14 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
   @Override
   public MySQLConnection resetConnection(Handler<AsyncResult<Void>> handler) {
     ResetConnectionCommand cmd = new ResetConnectionCommand();
+    cmd.handler = handler;
+    schedule(cmd);
+    return this;
+  }
+
+  @Override
+  public MySQLConnection debug(Handler<AsyncResult<Void>> handler) {
+    DebugCommand cmd = new DebugCommand();
     cmd.handler = handler;
     schedule(cmd);
     return this;

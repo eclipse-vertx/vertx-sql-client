@@ -109,4 +109,13 @@ public interface MySQLConnection extends SqlConnection {
    */
   @Fluent
   MySQLConnection resetConnection(Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Send a DEBUG command to dump debug information to the server's stdout.
+   *
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  MySQLConnection debug(Handler<AsyncResult<Void>> handler);
 }
