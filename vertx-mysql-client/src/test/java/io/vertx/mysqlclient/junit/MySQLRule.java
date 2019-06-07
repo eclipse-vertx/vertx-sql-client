@@ -43,6 +43,7 @@ public class MySQLRule extends ExternalResource {
 
     mysql = EmbeddedMysql.anEmbeddedMysql(mysqldConfig)
       .addSchema(schemaConfig)
+      .addSchema("emptyschema")
       .start();
 
     return new MySQLConnectOptions()

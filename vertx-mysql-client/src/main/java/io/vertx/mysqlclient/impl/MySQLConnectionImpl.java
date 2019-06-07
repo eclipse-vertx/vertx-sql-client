@@ -7,6 +7,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLConnection;
+import io.vertx.mysqlclient.impl.command.InitDbCommand;
 import io.vertx.mysqlclient.impl.command.PingCommand;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
@@ -51,6 +52,14 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
   @Override
   public MySQLConnection ping(Handler<AsyncResult<Void>> handler) {
     PingCommand cmd = new PingCommand();
+    cmd.handler = handler;
+    schedule(cmd);
+    return this;
+  }
+
+  @Override
+  public MySQLConnection specifySchema(String schemaName, Handler<AsyncResult<Void>> handler) {
+    InitDbCommand cmd = new InitDbCommand(schemaName);
     cmd.handler = handler;
     schedule(cmd);
     return this;

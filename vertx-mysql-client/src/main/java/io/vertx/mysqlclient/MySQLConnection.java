@@ -70,4 +70,15 @@ public interface MySQLConnection extends SqlConnection {
    */
   @Fluent
   MySQLConnection ping(Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Send a INIT_DB command to change the default schema of the connection.
+   *
+   * @param schemaName name of the schema to change to
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  MySQLConnection specifySchema(String schemaName, Handler<AsyncResult<Void>> handler);
+
 }

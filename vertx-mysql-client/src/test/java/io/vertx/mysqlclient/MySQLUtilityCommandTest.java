@@ -33,4 +33,31 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
       }));
     }));
   }
+
+  @Test
+  public void testChangeSchema(TestContext ctx) {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT DATABASE();", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals("testschema", result.iterator().next().getString(0));
+        conn.specifySchema("emptyschema", ctx.asyncAssertSuccess(v -> {
+          conn.query("SELECT DATABASE();", ctx.asyncAssertSuccess(result2 -> {
+            ctx.assertEquals("emptyschema", result2.iterator().next().getString(0));
+            conn.close();
+          }));
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testChangeToInvalidSchema(TestContext ctx) {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT DATABASE();", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals("testschema", result.iterator().next().getString(0));
+        conn.specifySchema("invalidschema", ctx.asyncAssertFailure(error -> {
+          conn.close();
+        }));
+      }));
+    }));
+  }
 }
