@@ -3,6 +3,13 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
+import io.vertx.mysqlclient.impl.command.ChangeUserCommand;
+import io.vertx.mysqlclient.impl.command.DebugCommand;
+import io.vertx.mysqlclient.impl.command.InitDbCommand;
+import io.vertx.mysqlclient.impl.command.PingCommand;
+import io.vertx.mysqlclient.impl.command.ResetConnectionCommand;
+import io.vertx.mysqlclient.impl.command.SetOptionCommand;
+import io.vertx.mysqlclient.impl.command.StatisticsCommand;
 import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
@@ -62,6 +69,20 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
       return new CloseStatementCommandCodec((CloseStatementCommand) cmd);
     } else if (cmd instanceof CloseCursorCommand) {
       return new ResetStatementCommandCodec((CloseCursorCommand) cmd);
+    } else if (cmd instanceof PingCommand) {
+      return new PingCommandCodec((PingCommand) cmd);
+    } else if (cmd instanceof InitDbCommand) {
+      return new InitDbCommandCodec((InitDbCommand) cmd);
+    } else if (cmd instanceof StatisticsCommand) {
+      return new StatisticsCommandCodec((StatisticsCommand) cmd);
+    } else if (cmd instanceof SetOptionCommand) {
+      return new SetOptionCommandCodec((SetOptionCommand) cmd);
+    } else if (cmd instanceof ResetConnectionCommand) {
+      return new ResetConnectionCommandCodec((ResetConnectionCommand) cmd);
+    } else if (cmd instanceof DebugCommand) {
+      return new DebugCommandCodec((DebugCommand) cmd);
+    } else if (cmd instanceof ChangeUserCommand) {
+      return new ChangeUserCommandCodec((ChangeUserCommand) cmd);
     } else {
       System.out.println("Unsupported command " + cmd);
       throw new UnsupportedOperationException("Todo");
