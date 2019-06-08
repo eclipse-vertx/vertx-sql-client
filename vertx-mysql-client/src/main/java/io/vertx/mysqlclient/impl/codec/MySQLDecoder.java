@@ -8,8 +8,9 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 import java.util.ArrayDeque;
 import java.util.List;
 
+import static io.vertx.mysqlclient.impl.codec.Packets.*;
+
 class MySQLDecoder extends ByteToMessageDecoder {
-  private static final int PACKET_PAYLOAD_LENGTH_LIMIT = 0xFFFFFF;
 
   private final ArrayDeque<CommandCodec<?, ?>> inflight;
   private final MySQLEncoder encoder;
@@ -59,5 +60,6 @@ class MySQLDecoder extends ByteToMessageDecoder {
     CommandCodec ctx = inflight.peek();
     ctx.sequenceId = sequenceId + 1;
     ctx.decodePayload(payload, encoder, payloadLength, sequenceId);
+    payload.clear();
   }
 }

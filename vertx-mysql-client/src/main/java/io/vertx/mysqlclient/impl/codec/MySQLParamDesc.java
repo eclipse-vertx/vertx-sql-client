@@ -2,7 +2,6 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.vertx.mysqlclient.impl.util.Util;
 import io.vertx.sqlclient.impl.ParamDesc;
-import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -24,7 +23,7 @@ class MySQLParamDesc extends ParamDesc {
       return buildReport(values);
     }
 //    for (int i = 0;i < paramDefinitions.length;i++) {
-//      DataType paramDataType = paramDefinitions[i].getType();
+//      DataType paramDataType = paramDefinitions[i].type();
 //      Object value = values.get(i);
 //      Object val = DataTypeCodec.prepare(paramDataType, value);
 //      if (val != value) {
@@ -41,6 +40,6 @@ class MySQLParamDesc extends ParamDesc {
 
   // reuse from pg
   private String buildReport(List<Object> values) {
-    return Util.buildInvalidArgsError(values.stream(), Stream.of(paramDefinitions).map(paramDefinition -> paramDefinition.getType()).map(dataType -> dataType.binaryType));
+    return Util.buildInvalidArgsError(values.stream(), Stream.of(paramDefinitions).map(paramDefinition -> paramDefinition.type()).map(dataType -> dataType.binaryType));
   }
 }

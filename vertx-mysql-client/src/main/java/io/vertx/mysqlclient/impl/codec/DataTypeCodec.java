@@ -1,9 +1,8 @@
-package io.vertx.mysqlclient.impl.codec.datatype;
+package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
-import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.sqlclient.data.Numeric;
 
@@ -18,7 +17,7 @@ import static java.time.temporal.ChronoField.*;
 
 //TODO charset injection
 //TODO 2: In MySQL, there is no way to tell a Result is a BOOLEAN type or a INT1 type so we need to take a look at the type mapping later
-public class DataTypeCodec {
+class DataTypeCodec {
   // binary codec protocol: https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_binary_resultset.html#sect_protocol_binary_resultset_row_value
 
   // Sentinel used when an object is refused by the data type
@@ -36,7 +35,7 @@ public class DataTypeCodec {
     .appendFraction(MICRO_OF_SECOND, 0, 6, true)
     .toFormatter();
 
-  public static Object decodeText(DataType dataType, int columnDefinitionFlags, ByteBuf buffer) {
+  static Object decodeText(DataType dataType, int columnDefinitionFlags, ByteBuf buffer) {
     int length = (int) BufferUtils.readLengthEncodedInteger(buffer);
     ByteBuf data = buffer.slice(buffer.readerIndex(), length);
     buffer.skipBytes(length);
@@ -74,7 +73,7 @@ public class DataTypeCodec {
   }
 
   //TODO take care of unsigned numeric values here?
-  public static void encodeBinary(DataType dataType, Object value, ByteBuf buffer) {
+  static void encodeBinary(DataType dataType, Object value, ByteBuf buffer) {
     switch (dataType) {
       case INT1:
         if (value instanceof Boolean) {
@@ -127,7 +126,7 @@ public class DataTypeCodec {
     }
   }
 
-  public static Object decodeBinary(DataType dataType, int columnDefinitionFlags, ByteBuf buffer) {
+  static Object decodeBinary(DataType dataType, int columnDefinitionFlags, ByteBuf buffer) {
     switch (dataType) {
       case INT1:
         return binaryDecodeInt1(buffer);

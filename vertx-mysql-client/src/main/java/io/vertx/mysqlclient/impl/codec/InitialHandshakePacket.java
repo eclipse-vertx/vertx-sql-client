@@ -1,7 +1,9 @@
-package io.vertx.mysqlclient.impl.protocol.backend;
+package io.vertx.mysqlclient.impl.codec;
 
 import java.util.Arrays;
 
+@Deprecated
+//TODO we may drop this class later
 public final class InitialHandshakePacket {
   /*
     https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_connection_phase_packets_protocol_handshake_v10.html

@@ -2,10 +2,6 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.MySQLRowImpl;
-import io.vertx.mysqlclient.impl.codec.datatype.DataFormat;
-import io.vertx.mysqlclient.impl.codec.datatype.DataType;
-import io.vertx.mysqlclient.impl.codec.datatype.DataTypeCodec;
-import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.RowDecoder;
 
@@ -71,8 +67,8 @@ class RowResultDecoder<C, R> implements RowDecoder {
 
         if (nullByte == 0) {
           // non-null
-          DataType dataType = rowDesc.columnDefinitions()[c].getType();
-          int columnDefinitionFlags = rowDesc.columnDefinitions()[c].getFlags();
+          DataType dataType = rowDesc.columnDefinitions()[c].type();
+          int columnDefinitionFlags = rowDesc.columnDefinitions()[c].flags();
           decoded = DataTypeCodec.decodeBinary(dataType,columnDefinitionFlags, in);
         }
         row.addValue(decoded);
@@ -84,8 +80,8 @@ class RowResultDecoder<C, R> implements RowDecoder {
         if (in.getUnsignedByte(in.readerIndex()) == NULL) {
           in.skipBytes(1);
         } else {
-          DataType dataType = rowDesc.columnDefinitions()[c].getType();
-          int columnDefinitionFlags = rowDesc.columnDefinitions()[c].getFlags();
+          DataType dataType = rowDesc.columnDefinitions()[c].type();
+          int columnDefinitionFlags = rowDesc.columnDefinitions()[c].flags();
           decoded = DataTypeCodec.decodeText(dataType, columnDefinitionFlags, in);
         }
         row.addValue(decoded);
