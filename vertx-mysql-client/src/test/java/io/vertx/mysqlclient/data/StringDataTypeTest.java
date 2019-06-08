@@ -3,7 +3,6 @@ package io.vertx.mysqlclient.data;
 import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.sqlclient.Row;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.Test;
@@ -13,7 +12,6 @@ import org.junit.runner.RunWith;
 public class StringDataTypeTest extends MySQLDataTypeTestBase {
   @Test
   public void testBinaryDecodeAll(TestContext ctx) {
-    Async async = ctx.async();
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("SELECT * FROM datatype WHERE id = 1", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
@@ -29,7 +27,7 @@ public class StringDataTypeTest extends MySQLDataTypeTestBase {
         ctx.assertEquals("TEXT", row.getValue(8));
         ctx.assertEquals("MEDIUMTEXT", row.getValue(9));
         ctx.assertEquals("LONGTEXT", row.getValue(10));
-        async.complete();
+        conn.close();
       }));
     }));
   }
