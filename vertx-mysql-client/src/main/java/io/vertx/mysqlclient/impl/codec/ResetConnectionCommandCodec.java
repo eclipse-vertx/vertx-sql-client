@@ -2,11 +2,6 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.command.ResetConnectionCommand;
-import io.vertx.mysqlclient.impl.protocol.CommandType;
-import io.vertx.sqlclient.impl.command.CommandResponse;
-
-import static io.vertx.mysqlclient.impl.codec.Packets.*;
-import static io.vertx.mysqlclient.impl.protocol.backend.OkPacket.*;
 
 class ResetConnectionCommandCodec extends CommandCodec<Void, ResetConnectionCommand> {
   private static final int PAYLOAD_LENGTH = 1;

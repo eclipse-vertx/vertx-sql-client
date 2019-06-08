@@ -3,7 +3,6 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.CharacterSetMapping;
 import io.vertx.mysqlclient.impl.command.ChangeUserCommand;
-import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.mysqlclient.impl.util.Native41Authenticator;
 import io.vertx.sqlclient.impl.command.CommandResponse;
@@ -11,8 +10,7 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 import java.nio.charset.StandardCharsets;
 
 import static io.vertx.mysqlclient.impl.codec.Packets.*;
-import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.CLIENT_PLUGIN_AUTH;
-import static io.vertx.mysqlclient.impl.protocol.backend.OkPacket.OK_PACKET_HEADER;
+import static io.vertx.mysqlclient.impl.codec.CapabilitiesFlag.CLIENT_PLUGIN_AUTH;
 
 class ChangeUserCommandCodec extends CommandCodec<Void, ChangeUserCommand> {
   ChangeUserCommandCodec(ChangeUserCommand cmd) {

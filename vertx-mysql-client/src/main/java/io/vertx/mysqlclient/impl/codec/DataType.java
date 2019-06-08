@@ -1,8 +1,7 @@
-package io.vertx.mysqlclient.impl.codec.datatype;
+package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
-import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.sqlclient.data.Numeric;
 

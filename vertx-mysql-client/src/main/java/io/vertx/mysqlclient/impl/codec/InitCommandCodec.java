@@ -18,9 +18,6 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.CharacterSetMapping;
-import io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag;
-import io.vertx.mysqlclient.impl.protocol.backend.InitialHandshakePacket;
-import io.vertx.mysqlclient.impl.protocol.frontend.HandshakeResponse;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.mysqlclient.impl.util.Native41Authenticator;
 import io.vertx.sqlclient.impl.Connection;
@@ -29,9 +26,8 @@ import io.vertx.sqlclient.impl.command.InitCommand;
 
 import java.nio.charset.StandardCharsets;
 
-import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.*;
-import static io.vertx.mysqlclient.impl.codec.Packets.ERROR_PACKET_HEADER;
-import static io.vertx.mysqlclient.impl.protocol.backend.OkPacket.OK_PACKET_HEADER;
+import static io.vertx.mysqlclient.impl.codec.CapabilitiesFlag.*;
+import static io.vertx.mysqlclient.impl.codec.Packets.*;
 
 class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
 
