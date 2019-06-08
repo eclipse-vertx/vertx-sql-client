@@ -19,11 +19,6 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.vertx.core.Handler;
 import io.vertx.mysqlclient.MySQLException;
-import io.vertx.mysqlclient.impl.codec.datatype.DataType;
-import io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag;
-import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
-import io.vertx.mysqlclient.impl.protocol.backend.OkPacket;
-import io.vertx.mysqlclient.impl.protocol.backend.ServerStatusFlags;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
@@ -32,11 +27,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 import static io.vertx.mysqlclient.impl.codec.Packets.*;
-import static io.vertx.mysqlclient.impl.protocol.backend.EofPacket.*;
-import static io.vertx.mysqlclient.impl.protocol.backend.OkPacket.*;
 
 abstract class CommandCodec<R, C extends CommandBase<R>> {
-  private static final int PACKET_PAYLOAD_LENGTH_LIMIT = 0xFFFFFF;
 
   Handler<? super CommandResponse<R>> completionHandler;
   public Throwable failure;

@@ -17,10 +17,6 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.mysqlclient.impl.codec.datatype.DataFormat;
-import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
-import io.vertx.mysqlclient.impl.protocol.backend.OkPacket;
-import io.vertx.mysqlclient.impl.protocol.backend.ServerStatusFlags;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.RowDesc;
@@ -31,8 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 import java.util.stream.Collector;
 
-import static io.vertx.mysqlclient.impl.protocol.backend.EofPacket.EOF_PACKET_HEADER;
-import static io.vertx.mysqlclient.impl.codec.Packets.ERROR_PACKET_HEADER;
+import static io.vertx.mysqlclient.impl.codec.Packets.*;
 
 abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends CommandCodec<Boolean, C> {
 

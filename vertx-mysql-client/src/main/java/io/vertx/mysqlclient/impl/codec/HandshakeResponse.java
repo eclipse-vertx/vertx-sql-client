@@ -1,10 +1,12 @@
-package io.vertx.mysqlclient.impl.protocol.frontend;
+package io.vertx.mysqlclient.impl.codec;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
+//TODO we may drop this class later
 public final class HandshakeResponse {
   // https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_connection_phase_packets_protocol_handshake_response.html
 

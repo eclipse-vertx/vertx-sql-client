@@ -17,9 +17,6 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.mysqlclient.impl.codec.datatype.DataFormat;
-import io.vertx.mysqlclient.impl.protocol.CommandType;
-import io.vertx.mysqlclient.impl.protocol.backend.ColumnDefinition;
 import io.vertx.sqlclient.impl.PreparedStatement;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;

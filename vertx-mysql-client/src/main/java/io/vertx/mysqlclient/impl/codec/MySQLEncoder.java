@@ -14,7 +14,7 @@ import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
 
-import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.*;
+import static io.vertx.mysqlclient.impl.codec.CapabilitiesFlag.*;
 
 class MySQLEncoder extends ChannelOutboundHandlerAdapter {
 
