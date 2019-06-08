@@ -73,6 +73,7 @@ public abstract class PreparedQueryTestBase {
   public void testPrepare(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare(statement("SELECT id, message from immutable where id=", ""), ctx.asyncAssertSuccess(result -> {
+        conn.close();
       }));
     }));
   }
@@ -80,7 +81,7 @@ public abstract class PreparedQueryTestBase {
   @Test
   public void testPrepareError(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(err -> {
+      conn.prepare("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(error -> {
       }));
     }));
   }
@@ -93,6 +94,7 @@ public abstract class PreparedQueryTestBase {
         Tuple row = rowSet.iterator().next();
         ctx.assertEquals(1, row.getInteger(0));
         ctx.assertEquals("fortune: No such file or directory", row.getString(1));
+        conn.close();
       }));
     }));
   }
@@ -101,7 +103,7 @@ public abstract class PreparedQueryTestBase {
   public void testPreparedQueryParamCoercionTypeError(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare(statement("SELECT * FROM immutable WHERE id=", ""), ctx.asyncAssertSuccess(ps -> {
-        ps.execute(Tuple.of("1"), ctx.asyncAssertFailure(rowSet -> {
+        ps.execute(Tuple.of("1"), ctx.asyncAssertFailure(error -> {
         }));
       }));
     }));
@@ -111,7 +113,7 @@ public abstract class PreparedQueryTestBase {
   public void testPreparedQueryParamCoercionQuantityError(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare(statement("SELECT * FROM immutable WHERE id=", ""), ctx.asyncAssertSuccess(ps -> {
-        ps.execute(Tuple.of(1, 2), ctx.asyncAssertFailure(rowSet -> {
+        ps.execute(Tuple.of(1, 2), ctx.asyncAssertFailure(error -> {
         }));
       }));
     }));
@@ -119,7 +121,6 @@ public abstract class PreparedQueryTestBase {
 
   @Test
   public void testPreparedUpdate(TestContext ctx) {
-    Async async = ctx.async();
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("INSERT INTO mutable (id, val) VALUES (2, 'Whatever')", ctx.asyncAssertSuccess(r1 -> {
         ctx.assertEquals(1, r1.rowCount());
@@ -127,7 +128,7 @@ public abstract class PreparedQueryTestBase {
           ctx.assertEquals(1, res1.rowCount());
           conn.preparedQuery("SELECT val FROM mutable WHERE id = 2", ctx.asyncAssertSuccess(res2 -> {
             ctx.assertEquals("Rocks!", res2.iterator().next().getValue(0));
-            async.complete();
+            conn.close();
           }));
         }));
       }));
@@ -136,7 +137,6 @@ public abstract class PreparedQueryTestBase {
 
   @Test
   public void testPreparedUpdateWithParams(TestContext ctx) {
-    Async async = ctx.async();
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("INSERT INTO mutable (id, val) VALUES (2, 'Whatever')", ctx.asyncAssertSuccess(r1 -> {
         ctx.assertEquals(1, r1.rowCount());
@@ -144,7 +144,7 @@ public abstract class PreparedQueryTestBase {
           ctx.assertEquals(1, res1.rowCount());
           conn.preparedQuery(statement("SELECT val FROM mutable WHERE id = ", ""), Tuple.of(2), ctx.asyncAssertSuccess(res2 -> {
             ctx.assertEquals("Rocks Again!!", res2.iterator().next().getValue(0));
-            async.complete();
+            conn.close();
           }));
         }));
       }));
@@ -153,12 +153,10 @@ public abstract class PreparedQueryTestBase {
 
   @Test
   public void testPreparedUpdateWithNullParams(TestContext ctx) {
-    Async async = ctx.async();
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery(
         statement("INSERT INTO mutable (val, id) VALUES (", ",", ")"), Tuple.of(null, 1),
-        ctx.asyncAssertFailure(err -> {
-          async.complete();
+        ctx.asyncAssertFailure(error -> {
         })
       );
     }));
