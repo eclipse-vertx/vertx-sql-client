@@ -36,7 +36,6 @@ import static io.vertx.mysqlclient.impl.protocol.backend.EofPacket.*;
 import static io.vertx.mysqlclient.impl.protocol.backend.OkPacket.*;
 
 abstract class CommandCodec<R, C extends CommandBase<R>> {
-  private static final int PACKET_PAYLOAD_LENGTH_LIMIT = 0xFFFFFF;
 
   Handler<? super CommandResponse<R>> completionHandler;
   public Throwable failure;
