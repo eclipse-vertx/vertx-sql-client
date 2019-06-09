@@ -7,6 +7,7 @@ import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.mysqlclient.MySQLSetOption;
 import io.vertx.sqlclient.Cursor;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Row;
@@ -95,7 +96,7 @@ public class MySQLClientExamples {
     MySQLPool client = MySQLPool.pool(vertx, connectOptions, poolOptions);
   }
 
-  public void connecting03(MySQLPool pool) {
+  public void connecting03(Pool pool) {
 
     // Close the pool and all the associated resources
     pool.close();
@@ -210,7 +211,7 @@ public class MySQLClientExamples {
 
   }
 
-  public void usingConnections01(Vertx vertx, MySQLPool pool) {
+  public void usingConnections01(Vertx vertx, Pool pool) {
 
     pool.getConnection(ar1 -> {
       if (ar1.succeeded()) {
@@ -231,7 +232,7 @@ public class MySQLClientExamples {
     });
   }
 
-  public void usingConnections02(MySQLConnection connection) {
+  public void usingConnections02(SqlConnection connection) {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE ?", ar1 -> {
       if (ar1.succeeded()) {
         PreparedQuery pq = ar1.result();
@@ -245,7 +246,7 @@ public class MySQLClientExamples {
     });
   }
 
-  public void usingCursors01(MySQLConnection connection) {
+  public void usingCursors01(SqlConnection connection) {
     connection.prepare("SELECT * FROM users WHERE age > ?", ar1 -> {
       if (ar1.succeeded()) {
         PreparedQuery pq = ar1.result();
@@ -280,7 +281,7 @@ public class MySQLClientExamples {
     });
   }
 
-  public void usingCursors03(MySQLConnection connection) {
+  public void usingCursors03(SqlConnection connection) {
     connection.prepare("SELECT * FROM users WHERE age > ?", ar1 -> {
       if (ar1.succeeded()) {
         PreparedQuery pq = ar1.result();

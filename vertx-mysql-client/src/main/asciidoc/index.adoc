@@ -147,14 +147,14 @@ or borrow one from the pool:
 
 [source,$lang]
 ----
-{@link examples.MySQLClientExamples#usingConnections01(io.vertx.core.Vertx, io.vertx.mysqlclient.MySQLPool)}
+{@link examples.MySQLClientExamples#usingConnections01(io.vertx.core.Vertx, io.vertx.sqlclient.Pool)}
 ----
 
 Prepared queries can be created:
 
 [source,$lang]
 ----
-{@link examples.MySQLClientExamples#usingConnections02(io.vertx.mysqlclient.MySQLConnection)}
+{@link examples.MySQLClientExamples#usingConnections02(io.vertx.sqlclient.SqlConnection)}
 ----
 
 == Cursors and streaming
@@ -164,7 +164,7 @@ By default prepared query execution fetches all rows, you can use a
 
 [source,$lang]
 ----
-{@link examples.MySQLClientExamples#usingCursors01(io.vertx.mysqlclient.MySQLConnection)}
+{@link examples.MySQLClientExamples#usingCursors01(io.vertx.sqlclient.SqlConnection)}
 ----
 
 Cursors shall be closed when they are released prematurely:
@@ -178,7 +178,7 @@ A stream API is also available for cursors, which can be more convenient, specia
 
 [source,$lang]
 ----
-{@link examples.MySQLClientExamples#usingCursors03(io.vertx.mysqlclient.MySQLConnection)}
+{@link examples.MySQLClientExamples#usingCursors03(io.vertx.sqlclient.SqlConnection)}
 ----
 
 The stream read the rows by batch of `50` and stream them, when the rows have been passed to the handler,
