@@ -267,12 +267,7 @@ public class MySQLRowImpl extends ArrayTuple implements RowInternal {
     if (val instanceof Boolean) {
       return (Boolean) val;
     } else if (val instanceof Byte) {
-      Byte b = (Byte) val;
-      if (b == 1) {
-        return true;
-      } else if (b == 0) {
-        return false;
-      }
+      return (Byte) val != 0;
     }
     return null;
   }
