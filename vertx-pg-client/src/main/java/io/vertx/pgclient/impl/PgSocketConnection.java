@@ -21,20 +21,12 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.pgclient.impl.codec.PgCodec;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.PreparedStatement;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.sqlclient.impl.StringLongSequence;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.InitCommand;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.NetSocketInternal;
-
-import java.util.ArrayDeque;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -86,14 +78,6 @@ public class PgSocketConnection extends SocketConnectionBase {
         handler.handle(Future.failedFuture(ar.cause()));
       }
     });
-  }
-
-  public NetSocketInternal socket() {
-    return socket;
-  }
-
-  public boolean isSsl() {
-    return socket.isSsl();
   }
 
   @Override

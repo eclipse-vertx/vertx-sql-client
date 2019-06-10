@@ -46,7 +46,7 @@ public class MySQLConnectionFactory {
     future.setHandler(ar1 -> {
       if (ar1.succeeded()) {
         NetSocketInternal socket = (NetSocketInternal) ar1.result();
-        MySQLSocketConnection conn = new MySQLSocketConnection(socket, cachePreparedStatements, 1, context);
+        MySQLSocketConnection conn = new MySQLSocketConnection(socket, cachePreparedStatements, context);
         conn.init();
         conn.sendStartupMessage(username, password, database, handler);
       } else {

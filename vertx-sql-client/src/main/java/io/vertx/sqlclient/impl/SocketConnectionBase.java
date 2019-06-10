@@ -99,6 +99,15 @@ public abstract class SocketConnectionBase implements Connection {
     this.holder = holder;
   }
 
+  @Override
+  public int getProcessId() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public int getSecretKey() {
+    throw new UnsupportedOperationException();
+  }
 
   @Override
   public void close(Holder holder) {

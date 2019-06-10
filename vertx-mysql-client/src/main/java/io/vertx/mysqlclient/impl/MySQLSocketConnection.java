@@ -34,8 +34,8 @@ public class MySQLSocketConnection extends SocketConnectionBase {
 
   private MySQLCodec codec;
 
-  public MySQLSocketConnection(NetSocketInternal socket, boolean cachePreparedStatements, int pipeliningLimit, Context context) {
-    super(socket, cachePreparedStatements, pipeliningLimit, context);
+  public MySQLSocketConnection(NetSocketInternal socket, boolean cachePreparedStatements, Context context) {
+    super(socket, cachePreparedStatements, 1, context);
   }
 
   void sendStartupMessage(String username, String password, String database, Handler<? super CommandResponse<Connection>> completionHandler) {
@@ -50,15 +50,5 @@ public class MySQLSocketConnection extends SocketConnectionBase {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     pipeline.addBefore("handler", "codec", codec);
     super.init();
-  }
-
-  @Override
-  public int getProcessId() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public int getSecretKey() {
-    throw new UnsupportedOperationException();
   }
 }
