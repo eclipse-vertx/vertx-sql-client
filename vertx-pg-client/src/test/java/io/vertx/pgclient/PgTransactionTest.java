@@ -73,12 +73,14 @@ public class PgTransactionTest extends PgClientTestBase<Transaction> {
   public void testReleaseConnectionOnSetRollback(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(result -> {
-        // Try acquire a connection
+      conn.abortHandler(v -> {
+        // Try acquire the same connection on rollback
         pool.getConnection(ctx.asyncAssertSuccess(v2 -> {
           async.complete();
         }));
-      }));
+      });
+      // Failure will abort
+      conn.query("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(result -> { }));
     }));
   }
 
