@@ -38,6 +38,24 @@ public class MySQLQueryTest extends MySQLTestBase {
   }
 
   @Test
+  public void testExceedMaxPreparedStatementCount(TestContext ctx) {
+    MySQLConnection.connect(vertx, options.setCachePreparedStatements(true), ctx.asyncAssertSuccess(conn -> {
+      conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'", ctx.asyncAssertSuccess(res1 -> {
+        Row row = res1.iterator().next();
+        int maxPreparedStatementCount = Integer.parseInt(row.getString(1));
+        ctx.assertEquals("max_prepared_stmt_count", row.getString(0));
+        ctx.assertEquals(16382, maxPreparedStatementCount);
+
+        for (int i = 0; i < 20000; i++) {
+          conn.preparedQuery("SELECT 'test'", ctx.asyncAssertSuccess(res2 -> {
+            ctx.assertEquals("test", res2.iterator().next().getString(0));
+          }));
+        }
+      }));
+    }));
+  }
+
+  @Test
   public void testDecodePacketSizeMoreThan16MB(TestContext ctx) {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < 4000000; i++) {
