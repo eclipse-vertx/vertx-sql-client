@@ -1,3 +1,342 @@
 = Reactive MySQL Client
 
-Todo.
+The Reactive MySQL Client is a client for MySQL with a straightforward API focusing on
+scalability and low overhead.
+
+*Features*
+
+* Event driven
+* Lightweight
+* Built-in connection pooling
+* Prepared queries caching
+* Cursor support
+* Row streaming
+* RxJava 1 and RxJava 2
+* Direct memory to object without unnecessary copies
+* Java 8 Date and Time
+* MySQL utilities commands support
+
+== Usage
+
+To use the Reactive MySQL Client add the following dependency to the _dependencies_ section of your build descriptor:
+
+* Maven (in your `pom.xml`):
+
+[source,xml]
+----
+<dependency>
+  <groupId>${maven.groupId}</groupId>
+  <artifactId>${maven.artifactId}</artifactId>
+  <version>${maven.version}</version>
+</dependency>
+----
+* Gradle (in your `build.gradle` file):
+
+[source,groovy]
+----
+dependencies {
+  compile '${maven.groupId}:${maven.artifactId}:${maven.version}'
+}
+----
+
+== Getting started
+
+Here is the simplest way to connect, query and disconnect
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#gettingStarted()}
+----
+
+== Connecting to MySQL
+
+Most of the time you will use a pool to connect to MySQL:
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#connecting01}
+----
+
+The pooled client uses a connection pool and any operation will borrow a connection from the pool
+to execute the operation and release it to the pool.
+
+If you are running with Vert.x you can pass it your Vertx instance:
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#connecting02}
+----
+
+You need to release the pool when you don't need it anymore:
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#connecting03}
+----
+
+When you need to execute several operations on the same connection, you need to use a client
+{@link io.vertx.mysqlclient.MySQLConnection connection}.
+
+You can easily get one from the pool:
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#connecting04}
+----
+
+Once you are done with the connection you must close it to release it to the pool, so it can be reused.
+
+== Running queries
+
+When you don't need a transaction or run single queries, you can run queries directly on the pool; the pool
+will use one of its connection to run the query and return the result to you.
+
+Here is how to run simple queries:
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#queries01(io.vertx.sqlclient.SqlClient)}
+----
+
+You can do the same with prepared queries.
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#queries02(io.vertx.sqlclient.SqlClient)}
+----
+
+Query methods provides an asynchronous {@link io.vertx.sqlclient.RowSet} instance that works for _SELECT_ queries
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#queries03(io.vertx.sqlclient.SqlClient)}
+----
+
+or _UPDATE_/_INSERT_ queries:
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#queries04(io.vertx.sqlclient.SqlClient)}
+----
+
+The {@link io.vertx.sqlclient.Row} gives you access to your data by index
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#queries05(io.vertx.sqlclient.Row)}
+----
+
+or by name
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#queries06(io.vertx.sqlclient.Row)}
+----
+
+You can access a wide variety of of types
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#queries07(io.vertx.sqlclient.Row)}
+----
+
+== Using connections
+
+When you need to execute sequential queries (without a transaction), you can create a new connection
+or borrow one from the pool:
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#usingConnections01(io.vertx.core.Vertx, io.vertx.sqlclient.Pool)}
+----
+
+Prepared queries can be created:
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#usingConnections02(io.vertx.sqlclient.SqlConnection)}
+----
+
+== Cursors and streaming
+
+By default prepared query execution fetches all rows, you can use a
+{@link io.vertx.sqlclient.Cursor} to control the amount of rows you want to read:
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#usingCursors01(io.vertx.sqlclient.SqlConnection)}
+----
+
+Cursors shall be closed when they are released prematurely:
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#usingCursors02(io.vertx.sqlclient.Cursor)}
+----
+
+A stream API is also available for cursors, which can be more convenient, specially with the Rxified version.
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#usingCursors03(io.vertx.sqlclient.SqlConnection)}
+----
+
+The stream read the rows by batch of `50` and stream them, when the rows have been passed to the handler,
+a new batch of `50` is read and so on.
+
+The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
+will stop iterating.
+
+== MySQL type mapping
+
+Currently the client supports the following MySQL types
+
+* BOOL,BOOLEAN (`java.lang.Byte`)
+* TINYINT (`java.lang.Byte`)
+* SMALLINT (`java.lang.Short`)
+* MEDIUMINT (`java.lang.Integer`)
+* INT,INTEGER (`java.lang.Integer`)
+* BIGINT (`java.lang.Long`)
+* FLOAT (`java.lang.Float`)
+* DOUBLE (`java.lang.Double`)
+* NUMERIC (`io.vertx.sqlclient.data.Numeric`)
+* DATE (`java.time.LocalDate`)
+* DATETIME (`java.time.LocalDateTime`)
+* TIME (`java.time.Duration`)
+* TIMESTAMP (`java.time.LocalDateTime`)
+* YEAR (`java.lang.Short`)
+* CHAR (`java.lang.String`)
+* VARCHAR (`java.lang.String`)
+* BINARY (`io.vertx.core.buffer.Buffer`)
+* VARBINARY (`io.vertx.core.buffer.Buffer`)
+* TINYBLOB (`io.vertx.core.buffer.Buffer`)
+* TINYTEXT (`java.lang.String`)
+* BLOB (`io.vertx.core.buffer.Buffer`)
+* TEXT (`java.lang.String`)
+* MEDIUMBLOB (`io.vertx.core.buffer.Buffer`)
+* MEDIUMTEXT (`java.lang.String`)
+* LONGBLOB (`io.vertx.core.buffer.Buffer`)
+* LONGTEXT (`java.lang.String`)
+
+Tuple decoding uses the above types when storing values
+
+=== Handling BOOLEAN
+
+In MySQL `BOOLEAN` and `BOOL` data types are synonyms for `TINYINT(1)`. A value of zero is considered false, non-zero values are considered true.
+A `BOOLEAN` data type value is stored in `Row` or `Tuple` as `java.lang.Byte` type, you can call `Row#getValue` to retrieve it as a `java.lang.Byte` value,
+or you can call `Row#getBoolean` to retrieve it as `java.lang.Boolean` value.
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#booleanExample01(io.vertx.sqlclient.SqlClient)}
+----
+
+When you want to execute a prepared statement with a param of a `BOOLEAN` value, you can simply add the `java.lang.Boolean` value to the params list.
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#booleanExample02(io.vertx.sqlclient.SqlClient)}
+----
+
+=== Handling NUMERIC
+
+The {@link io.vertx.sqlclient.data.Numeric} Java type is used to represent the MySQL `NUMERIC` type.
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#numericExample(io.vertx.sqlclient.Row)}
+----
+
+== Collector queries
+
+You can use Java collectors with the query API:
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#collector01Example(io.vertx.sqlclient.SqlClient)}
+----
+
+The collector processing must not keep a reference on the {@link io.vertx.sqlclient.Row} as
+there is a single row used for processing the entire set.
+
+The Java `Collectors` provides many interesting predefined collectors, for example you can
+create easily create a string directly from the row set:
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#collector02Example(io.vertx.sqlclient.SqlClient)}
+----
+
+== MySQL utility command
+
+Sometimes you want to use MySQL utility commands and we provide support for this.
+More information can be found in the https://dev.mysql.com/doc/dev/mysql-server/8.0.12/page_protocol_command_phase_utility.html[MySQL utility commands].
+
+=== COM_PING
+
+You can use `COM_PING` command to check if the server is alive. The handler will be notified if the server responds to the PING, otherwise the handler will never be called.
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#pingExample(io.vertx.mysqlclient.MySQLConnection)}
+----
+
+=== COM_RESET_CONNECTION
+
+You can reset the session state with `COM_RESET_CONNECTION` command, this will reset the connection state like:
+- user variables
+- temporary tables
+- prepared statements
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#resetConnectionExample(io.vertx.mysqlclient.MySQLConnection)}
+----
+
+=== COM_CHANGE_USER
+
+You can change the user of the current connection, this will perform a re-authentication and reset the connection state like `COM_RESET_CONNECTION`.
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#changeUserExample(io.vertx.mysqlclient.MySQLConnection)}
+----
+
+=== COM_INIT_DB
+
+You can use `COM_INIT_DB` command to change the default schema of the connection.
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#initDbExample(io.vertx.mysqlclient.MySQLConnection)}
+----
+
+=== COM_STATISTICS
+
+You can use `COM_STATISTICS` command to get a human readable string of some internal status variables in MySQL server.
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#statisticsExample(io.vertx.mysqlclient.MySQLConnection)}
+----
+
+=== COM_DEBUG
+
+You can use `COM_DEBUG` command to dump debug info to the MySQL server's STDOUT.
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#debugExample(io.vertx.mysqlclient.MySQLConnection)}
+----
+
+=== COM_SET_OPTION
+
+You can use `COM_SET_OPTION` command to set options for the current connection. Currently only `CLIENT_MULTI_STATEMENTS` can be set.
+
+For example, you can disable `CLIENT_MULTI_STATEMENTS` with this command.
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#setOptionExample01(io.vertx.mysqlclient.MySQLConnection)}
+----
+
