@@ -29,6 +29,7 @@
 
 MySQL data types are mapped as below.
 
+- BOOLEAN(j.l.Byte)
 - INT1(j.l.Byte)
 - INT2(j.l.Short)
 - INT3(j.l.Integer)
@@ -51,7 +52,6 @@ MySQL data types are mapped as below.
 
 these data types are not fully supported yet:
 
-* [ ] BOOLEAN(j.l.Byte)=INT1(j.l.Byte)
 * [ ] Numeric: BIT
 * [ ] String: ENUM, SET
 * [ ] JSON

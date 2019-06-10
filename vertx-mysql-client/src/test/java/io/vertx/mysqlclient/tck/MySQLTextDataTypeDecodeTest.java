@@ -1,11 +1,11 @@
 package io.vertx.mysqlclient.tck;
 
 import io.vertx.mysqlclient.junit.MySQLRule;
+import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.TextDataTypeDecodeTestBase;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -21,12 +21,19 @@ public class MySQLTextDataTypeDecodeTest extends TextDataTypeDecodeTestBase {
     connector = ClientConfig.CONNECT.connect(vertx, rule.options());
   }
 
-  @Ignore
   @Test
   @Override
   public void testBoolean(TestContext ctx) {
-    // does not pass due to it's TINYINT type
-    super.testBoolean(ctx);
+    connector.connect(ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT test_boolean FROM basicdatatype WHERE id = 1", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.size());
+        Row row = result.iterator().next();
+        ctx.assertEquals(true, row.getBoolean(0));
+        ctx.assertEquals(true, row.getBoolean("test_boolean"));
+        ctx.assertEquals((byte) 1, row.getValue(0));
+        ctx.assertEquals((byte) 1, row.getValue("test_boolean"));
+      }));
+    }));
   }
 
   @Test
