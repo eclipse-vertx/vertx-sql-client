@@ -1,11 +1,13 @@
 package io.vertx.mysqlclient.impl;
 
+import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.ArrayTuple;
 import io.vertx.sqlclient.impl.RowInternal;
 import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.core.buffer.Buffer;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -23,6 +25,39 @@ public class MySQLRowImpl extends ArrayTuple implements RowInternal {
   public MySQLRowImpl(RowDesc rowDesc) {
     super(rowDesc.columnNames().size());
     this.rowDesc = rowDesc;
+  }
+
+  @Override
+  public <T> T get(Class<T> type, int pos) {
+    if (type == Boolean.class) {
+      return type.cast(getBoolean(pos));
+    } else if (type == Byte.class) {
+      return type.cast(getByte(pos));
+    } else if (type == Short.class) {
+      return type.cast(getShort(pos));
+    } else if (type == Integer.class) {
+      return type.cast(getInteger(pos));
+    } else if (type == Long.class) {
+      return type.cast(getLong(pos));
+    } else if (type == Float.class) {
+      return type.cast(getFloat(pos));
+    } else if (type == Double.class) {
+      return type.cast(getDouble(pos));
+    } else if (type == Numeric.class) {
+      return type.cast(getNumeric(pos));
+    } else if (type == String.class) {
+      return type.cast(getString(pos));
+    } else if (type == Buffer.class) {
+      return type.cast(getBuffer(pos));
+    } else if (type == LocalDate.class) {
+      return type.cast(getLocalDate(pos));
+    } else if (type == LocalDateTime.class) {
+      return type.cast(getLocalDateTime(pos));
+    } else if (type == Duration.class) {
+      return type.cast(getDuration(pos));
+    } else {
+      throw new UnsupportedOperationException("Unsupported type " + type.getName());
+    }
   }
 
   @Override
@@ -45,16 +80,15 @@ public class MySQLRowImpl extends ArrayTuple implements RowInternal {
   }
 
   @Override
-  public Boolean getBoolean(String name) {
-    int pos = rowDesc.columnIndex(name);
-    // in MySQL BOOLEAN type is mapped to TINYINT
-    return pos == -1 ? null :( (byte) getValue(pos) == 1);
-  }
-
-  @Override
   public Object getValue(String name) {
     int pos = rowDesc.columnIndex(name);
     return pos == -1 ? null : getValue(pos);
+  }
+
+  @Override
+  public Boolean getBoolean(String name) {
+    int pos = rowDesc.columnIndex(name);
+    return pos == -1 ? null : getBoolean(pos);
   }
 
   @Override
@@ -87,15 +121,15 @@ public class MySQLRowImpl extends ArrayTuple implements RowInternal {
     return pos == -1 ? null : getDouble(pos);
   }
 
+  public Numeric getNumeric(String name) {
+    int pos = rowDesc.columnIndex(name);
+    return pos == -1 ? null : getNumeric(pos);
+  }
+
   @Override
   public String getString(String name) {
     int pos = rowDesc.columnIndex(name);
     return pos == -1 ? null : getString(pos);
-  }
-
-  @Override
-  public <T> T get(Class<T> type, int pos) {
-    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -111,7 +145,8 @@ public class MySQLRowImpl extends ArrayTuple implements RowInternal {
 
   @Override
   public LocalDate getLocalDate(String name) {
-    throw new UnsupportedOperationException();
+    int pos = rowDesc.columnIndex(name);
+    return pos == -1 ? null : getLocalDate(pos);
   }
 
   @Override
@@ -121,7 +156,8 @@ public class MySQLRowImpl extends ArrayTuple implements RowInternal {
 
   @Override
   public LocalDateTime getLocalDateTime(String name) {
-    throw new UnsupportedOperationException();
+    int pos = rowDesc.columnIndex(name);
+    return pos == -1 ? null : getLocalDateTime(pos);
   }
 
   @Override
@@ -215,12 +251,52 @@ public class MySQLRowImpl extends ArrayTuple implements RowInternal {
   }
 
   @Override
+  public RowInternal getNext() {
+    return next;
+  }
+
+  @Override
   public void setNext(RowInternal next) {
     this.next = (MySQLRowImpl) next;
   }
 
   @Override
-  public RowInternal getNext() {
-    return next;
+  public Boolean getBoolean(int pos) {
+    // in MySQL BOOLEAN type is mapped to TINYINT
+    Object val = get(pos);
+    if (val instanceof Boolean) {
+      return (Boolean) val;
+    } else if (val instanceof Byte) {
+      return (Byte) val != 0;
+    }
+    return null;
+  }
+
+  public Numeric getNumeric(int pos) {
+    Object val = get(pos);
+    if (val instanceof Numeric) {
+      return (Numeric) val;
+    } else if (val instanceof Number) {
+      return Numeric.parse(val.toString());
+    }
+    return null;
+  }
+
+  private Byte getByte(int pos) {
+    Object val = get(pos);
+    if (val instanceof Byte) {
+      return (Byte) val;
+    } else if (val instanceof Number) {
+      return ((Number) val).byteValue();
+    }
+    return null;
+  }
+
+  private Duration getDuration(int pos) {
+    Object val = get(pos);
+    if (val instanceof Duration) {
+      return (Duration) val;
+    }
+    return null;
   }
 }

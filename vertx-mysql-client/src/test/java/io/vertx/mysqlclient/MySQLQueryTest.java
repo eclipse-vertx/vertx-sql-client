@@ -88,6 +88,7 @@ public class MySQLQueryTest extends MySQLTestBase {
         Row row2 = result.next().iterator().next();
         ctx.assertEquals("test", row2.getValue(0));
         ctx.assertEquals("test", row2.getString(0));
+        conn.close();
       }));
     }));
   }
@@ -114,6 +115,7 @@ public class MySQLQueryTest extends MySQLTestBase {
         Map<Integer, DummyObject> map = result.value();
         DummyObject actual = map.get(1);
         ctx.assertEquals(expected, actual);
+        conn.close();
       }));
     }));
   }
@@ -140,6 +142,7 @@ public class MySQLQueryTest extends MySQLTestBase {
         Map<Integer, DummyObject> map = result.value();
         DummyObject actual = map.get(1);
         ctx.assertEquals(expected, actual);
+        conn.close();
       }));
     }));
   }

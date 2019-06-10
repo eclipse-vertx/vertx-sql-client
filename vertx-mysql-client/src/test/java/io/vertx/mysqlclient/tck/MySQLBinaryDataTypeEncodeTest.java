@@ -4,8 +4,9 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mysqlclient.junit.MySQLRule;
 import io.vertx.sqlclient.BinaryDataTypeEncodeTestBase;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.Tuple;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -26,12 +27,21 @@ public class MySQLBinaryDataTypeEncodeTest extends BinaryDataTypeEncodeTestBase 
     return String.join("?", parts);
   }
 
-  @Ignore
   @Test
   @Override
   public void testBoolean(TestContext ctx) {
-    // does not pass due to it's TINYINT type
-    super.testBoolean(ctx);
+    connector.connect(ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("UPDATE basicdatatype SET test_boolean = ? WHERE id = 2", Tuple.tuple().addValue(true), ctx.asyncAssertSuccess(updateResult -> {
+        conn.preparedQuery("SELECT test_boolean FROM basicdatatype WHERE id = 2", ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.size());
+          Row row = result.iterator().next();
+          ctx.assertEquals(true, row.getBoolean(0));
+          ctx.assertEquals(true, row.getBoolean("test_boolean"));
+          ctx.assertEquals((byte) 1, row.getValue(0));
+          ctx.assertEquals((byte) 1, row.getValue("test_boolean"));
+        }));
+      }));
+    }));
   }
 
   @Test

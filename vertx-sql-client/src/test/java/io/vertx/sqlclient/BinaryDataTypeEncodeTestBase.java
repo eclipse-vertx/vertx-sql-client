@@ -1,6 +1,5 @@
 package io.vertx.sqlclient;
 
-import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;
@@ -75,7 +74,6 @@ public abstract class BinaryDataTypeEncodeTestBase extends DataTypeTestBase {
                                        String columnName,
                                        Class<T> clazz,
                                        T expected) {
-    Async async = ctx.async();
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery(statement("UPDATE basicdatatype SET " + columnName + " = ", " WHERE id = 2"), Tuple.tuple().addValue(expected), ctx.asyncAssertSuccess(updateResult -> {
         conn.preparedQuery("SELECT " + columnName + " FROM basicdatatype WHERE id = 2", ctx.asyncAssertSuccess(result -> {
@@ -88,7 +86,7 @@ public abstract class BinaryDataTypeEncodeTestBase extends DataTypeTestBase {
 //          .returns(Tuple::getValue, Row::getValue, expected)
 //          .returns(byIndexGetter, byNameGetter, expected)
 //          .forRow(row);
-          async.complete();
+          conn.close();
         }));
       }));
     }));

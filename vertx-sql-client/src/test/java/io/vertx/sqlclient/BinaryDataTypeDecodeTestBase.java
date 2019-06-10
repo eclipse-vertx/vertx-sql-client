@@ -1,6 +1,5 @@
 package io.vertx.sqlclient;
 
-import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
@@ -74,7 +73,6 @@ public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
                                        String columnName,
                                        Class<T> clazz,
                                        T expected) {
-    Async async = ctx.async();
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("SELECT " + columnName + " FROM basicdatatype WHERE id = 1", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
@@ -86,7 +84,7 @@ public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
 //          .returns(Tuple::getValue, Row::getValue, expected)
 //          .returns(byIndexGetter, byNameGetter, expected)
 //          .forRow(row);
-        async.complete();
+        conn.close();
       }));
     }));
   }
