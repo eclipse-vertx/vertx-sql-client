@@ -426,59 +426,37 @@ public class PgClientExamples {
         Transaction tx = conn.begin();
 
         // Various statements
-        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
-        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')", ar -> {});
-
-        // Commit the transaction
-        tx.commit(ar -> {
-          if (ar.succeeded()) {
-            System.out.println("Transaction succeeded");
+        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar1 -> {
+          if (ar1.succeeded()) {
+            conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')", ar2 -> {
+              if (ar2.succeeded()) {
+                // Commit the transaction
+                tx.commit(ar3 -> {
+                  if (ar3.succeeded()) {
+                    System.out.println("Transaction succeeded");
+                  } else {
+                    System.out.println("Transaction failed " + ar3.cause().getMessage());
+                  }
+                  // Return the connection to the pool
+                  conn.close();
+                });
+              } else {
+                // Return the connection to the pool
+                conn.close();
+              }
+            });
           } else {
-            System.out.println("Transaction failed " + ar.cause().getMessage());
+            // Return the connection to the pool
+            conn.close();
           }
-
-          // Return the connection to the pool
-          conn.close();
         });
       }
     });
   }
 
-  public void transaction02(PgPool pool) {
-    pool.getConnection(res -> {
-      if (res.succeeded()) {
-
-        // Transaction must use a connection
-        SqlConnection conn = res.result();
-
-        // Begin the transaction
-        Transaction tx = conn
-          .begin()
-          .abortHandler(v -> {
-          System.out.println("Transaction failed => rollbacked");
-        });
-
-        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {
-          // Works fine of course
-          if (ar.succeeded()) {
-
-          } else {
-            tx.rollback();
-            conn.close();
-          }
-        });
-        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {
-          // Fails and triggers transaction aborts
-        });
-
-        // Attempt to commit the transaction
-        tx.commit(ar -> {
-          // But transaction abortion fails it
-
-          // Return the connection to the pool
-          conn.close();
-        });
-      }
+  public void transaction02(Transaction tx) {
+    tx.abortHandler(v -> {
+      System.out.println("Transaction failed => rollbacked");
     });
   }
 
@@ -492,15 +470,23 @@ public class PgClientExamples {
         Transaction tx = res.result();
 
         // Various statements
-        tx.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar -> {});
-        tx.query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')", ar -> {});
-
-        // Commit the transaction and return the connection to the pool
-        tx.commit(ar -> {
-          if (ar.succeeded()) {
-            System.out.println("Transaction succeeded");
+        tx.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar1 -> {
+          if (ar1.succeeded()) {
+            tx.query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')", ar2 -> {
+              if (ar2.succeeded()) {
+                // Commit the transaction
+                // the connection will automatically return to the pool
+                tx.commit(ar3 -> {
+                  if (ar3.succeeded()) {
+                    System.out.println("Transaction succeeded");
+                  } else {
+                    System.out.println("Transaction failed " + ar3.cause().getMessage());
+                  }
+                });
+              }
+            });
           } else {
-            System.out.println("Transaction failed " + ar.cause().getMessage());
+            // No need to close connection as transaction will abort and be returned to the pool
           }
         });
       }

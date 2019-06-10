@@ -268,7 +268,7 @@ is called:
 
 [source,$lang]
 ----
-{@link examples.PgClientExamples#transaction02(io.vertx.pgclient.PgPool)}
+{@link examples.PgClientExamples#transaction02(io.vertx.sqlclient.Transaction)}
 ----
 
 === Simplified transaction API
@@ -281,6 +281,8 @@ It borrows a connection from the pool, begins the transaction and releases the c
 ----
 {@link examples.PgClientExamples#transaction03(io.vertx.pgclient.PgPool)}
 ----
+
+NOTE: this code will not close the connection because it will always be released back to the pool when the transaction
 
 == Cursors and streaming
 
