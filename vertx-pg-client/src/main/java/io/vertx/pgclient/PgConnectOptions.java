@@ -96,7 +96,6 @@ public class PgConnectOptions extends SqlConnectOptions {
   public static final int DEFAULT_PIPELINING_LIMIT = 256;
   public static final SslMode DEFAULT_SSLMODE = SslMode.DISABLE;
 
-  private boolean cachePreparedStatements;
   private int pipeliningLimit;
   private SslMode sslMode;
 
@@ -112,7 +111,6 @@ public class PgConnectOptions extends SqlConnectOptions {
   public PgConnectOptions(PgConnectOptions other) {
     super(other);
     pipeliningLimit = other.pipeliningLimit;
-    cachePreparedStatements = other.cachePreparedStatements;
     sslMode = other.sslMode;
   }
 
@@ -153,13 +151,8 @@ public class PgConnectOptions extends SqlConnectOptions {
     return this;
   }
 
-  public boolean getCachePreparedStatements() {
-    return cachePreparedStatements;
-  }
-
   public PgConnectOptions setCachePreparedStatements(boolean cachePreparedStatements) {
-    this.cachePreparedStatements = cachePreparedStatements;
-    return this;
+    return (PgConnectOptions) super.setCachePreparedStatements(cachePreparedStatements);
   }
 
   /**
@@ -409,7 +402,7 @@ public class PgConnectOptions extends SqlConnectOptions {
     this.setUser(DEFAULT_USER);
     this.setPassword(DEFAULT_PASSWORD);
     this.setDatabase(DEFAULT_DATABASE);
-    cachePreparedStatements = DEFAULT_CACHE_PREPARED_STATEMENTS;
+    this.setCachePreparedStatements(DEFAULT_CACHE_PREPARED_STATEMENTS);
     pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
     sslMode = DEFAULT_SSLMODE;
   }
@@ -429,7 +422,6 @@ public class PgConnectOptions extends SqlConnectOptions {
 
     PgConnectOptions that = (PgConnectOptions) o;
 
-    if (cachePreparedStatements != that.cachePreparedStatements) return false;
     if (pipeliningLimit != that.pipeliningLimit) return false;
     if (sslMode != that.sslMode) return false;
 
@@ -439,7 +431,6 @@ public class PgConnectOptions extends SqlConnectOptions {
   @Override
   public int hashCode() {
     int result = super.hashCode();
-    result = 31 * result + (cachePreparedStatements ? 1 : 0);
     result = 31 * result + pipeliningLimit;
     result = 31 * result + sslMode.hashCode();
     return result;

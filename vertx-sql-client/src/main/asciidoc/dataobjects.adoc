@@ -33,6 +33,9 @@ Set the maximum connection request allowed in the wait queue, any requests beyon
 [frame="topbot"]
 |===
 ^|Name | Type ^| Description
+|[[cachePreparedStatements]]`@cachePreparedStatements`|`Boolean`|+++
+Set whether prepared statements cache should be enabled.
++++
 |[[connectTimeout]]`@connectTimeout`|`Number (int)`|-
 |[[crlPaths]]`@crlPaths`|`Array of String`|-
 |[[crlValues]]`@crlValues`|`Array of Buffer`|-

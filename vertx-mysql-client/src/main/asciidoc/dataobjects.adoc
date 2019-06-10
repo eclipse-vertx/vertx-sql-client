@@ -12,6 +12,7 @@
 [frame="topbot"]
 |===
 ^|Name | Type ^| Description
+|[[cachePreparedStatements]]`@cachePreparedStatements`|`Boolean`|-
 |[[connectTimeout]]`@connectTimeout`|`Number (int)`|-
 |[[crlPaths]]`@crlPaths`|`Array of String`|-
 |[[crlValues]]`@crlValues`|`Array of Buffer`|-

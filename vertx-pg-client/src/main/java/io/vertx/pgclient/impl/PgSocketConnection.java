@@ -41,9 +41,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class PgSocketConnection extends SocketConnectionBase {
 
-  private final Map<String, CachedPreparedStatement> psCache;
-  private final StringLongSequence psSeq = new StringLongSequence();
-
   private PgCodec codec;
   public int processId;
   public int secretKey;
@@ -52,8 +49,7 @@ public class PgSocketConnection extends SocketConnectionBase {
                             boolean cachePreparedStatements,
                             int pipeliningLimit,
                             Context context) {
-    super(socket, pipeliningLimit, context);
-    this.psCache = cachePreparedStatements ? new ConcurrentHashMap<>() : null;
+    super(socket, cachePreparedStatements, pipeliningLimit, context);
   }
 
   @Override
@@ -92,62 +88,12 @@ public class PgSocketConnection extends SocketConnectionBase {
     });
   }
 
-  public static class CachedPreparedStatement implements Handler<CommandResponse<PreparedStatement>> {
-
-    private CommandResponse<PreparedStatement> resp;
-    private final ArrayDeque<Handler<? super CommandResponse<PreparedStatement>>> waiters = new ArrayDeque<>();
-
-    void get(Handler<? super CommandResponse<PreparedStatement>> handler) {
-      if (resp != null) {
-        handler.handle(resp);
-      } else {
-        waiters.add(handler);
-      }
-    }
-
-    @Override
-    public void handle(CommandResponse<PreparedStatement> event) {
-      resp = event;
-      Handler<? super CommandResponse<PreparedStatement>> waiter;
-      while ((waiter = waiters.poll()) != null) {
-        waiter.handle(resp);
-      }
-    }
-  }
-
   public NetSocketInternal socket() {
     return socket;
   }
 
   public boolean isSsl() {
     return socket.isSsl();
-  }
-
-  public void schedule(CommandBase<?> cmd) {
-    if (cmd.handler == null) {
-      throw new IllegalArgumentException();
-    }
-    // Special handling for cache
-    if (cmd instanceof PrepareStatementCommand) {
-      PrepareStatementCommand psCmd = (PrepareStatementCommand) cmd;
-      Map<String, PgSocketConnection.CachedPreparedStatement> psCache = this.psCache;
-      if (psCache != null) {
-        PgSocketConnection.CachedPreparedStatement cached = psCache.get(psCmd.sql());
-        if (cached != null) {
-          Handler<? super CommandResponse<PreparedStatement>> handler = psCmd.handler;
-          cached.get(handler);
-          return;
-        } else {
-          psCmd.statement = psSeq.next();
-          psCmd.cached = cached = new PgSocketConnection.CachedPreparedStatement();
-          psCache.put(psCmd.sql(), cached);
-          Handler<? super CommandResponse<PreparedStatement>> a = psCmd.handler;
-          ((CachedPreparedStatement)psCmd.cached).get(a);
-          psCmd.handler = (Handler<? super CommandResponse<PreparedStatement>>) psCmd.cached;
-        }
-      }
-    }
-    super.schedule(cmd);
   }
 
   @Override

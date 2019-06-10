@@ -14,6 +14,7 @@ public abstract class SqlConnectOptions extends NetClientOptions {
   private String user;
   private String password;
   private String database;
+  private boolean cachePreparedStatements;
 
   public SqlConnectOptions() {
     super();
@@ -33,6 +34,7 @@ public abstract class SqlConnectOptions extends NetClientOptions {
     this.user = other.user;
     this.password = other.password;
     this.database = other.database;
+    this.cachePreparedStatements = other.cachePreparedStatements;
   }
 
   /**
@@ -139,6 +141,26 @@ public abstract class SqlConnectOptions extends NetClientOptions {
   public SqlConnectOptions setDatabase(String database) {
     checkParameterNonNull(host, "Database name can not be null");
     this.database = database;
+    return this;
+  }
+
+  /**
+   * Get whether prepared statements cache is enabled.
+   *
+   * @return the value
+   */
+  public boolean getCachePreparedStatements() {
+    return cachePreparedStatements;
+  }
+
+  /**
+   * Set whether prepared statements cache should be enabled.
+   *
+   * @param cachePreparedStatements true if cache should be enabled
+   * @return a reference to this, so the API can be used fluently
+   */
+  public SqlConnectOptions setCachePreparedStatements(boolean cachePreparedStatements) {
+    this.cachePreparedStatements = cachePreparedStatements;
     return this;
   }
 

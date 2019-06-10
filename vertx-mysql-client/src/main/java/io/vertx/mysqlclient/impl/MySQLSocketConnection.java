@@ -34,8 +34,8 @@ public class MySQLSocketConnection extends SocketConnectionBase {
 
   private MySQLCodec codec;
 
-  public MySQLSocketConnection(NetSocketInternal socket, int pipeliningLimit, Context context) {
-    super(socket, pipeliningLimit, context);
+  public MySQLSocketConnection(NetSocketInternal socket, boolean cachePreparedStatements, int pipeliningLimit, Context context) {
+    super(socket, cachePreparedStatements, pipeliningLimit, context);
   }
 
   void sendStartupMessage(String username, String password, String database, Handler<? super CommandResponse<Connection>> completionHandler) {

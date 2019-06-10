@@ -14,6 +14,11 @@ public class SqlConnectOptionsConverter {
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, SqlConnectOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
+        case "cachePreparedStatements":
+          if (member.getValue() instanceof Boolean) {
+            obj.setCachePreparedStatements((Boolean)member.getValue());
+          }
+          break;
         case "database":
           if (member.getValue() instanceof String) {
             obj.setDatabase((String)member.getValue());
@@ -48,6 +53,7 @@ public class SqlConnectOptionsConverter {
   }
 
   public static void toJson(SqlConnectOptions obj, java.util.Map<String, Object> json) {
+    json.put("cachePreparedStatements", obj.getCachePreparedStatements());
     if (obj.getDatabase() != null) {
       json.put("database", obj.getDatabase());
     }

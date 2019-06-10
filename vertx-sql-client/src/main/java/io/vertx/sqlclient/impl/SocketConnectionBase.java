@@ -19,6 +19,7 @@ package io.vertx.sqlclient.impl;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderException;
+import io.vertx.core.Handler;
 import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.CommandBase;
@@ -28,8 +29,11 @@ import io.vertx.core.VertxException;
 import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 
 import java.util.ArrayDeque;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -44,6 +48,8 @@ public abstract class SocketConnectionBase implements Connection {
 
   }
 
+  private final Map<String, CachedPreparedStatement> psCache;
+  private final StringLongSequence psSeq = new StringLongSequence();
   private final ArrayDeque<CommandBase<?>> pending = new ArrayDeque<>();
   private final Context context;
   private int inflight;
@@ -54,11 +60,14 @@ public abstract class SocketConnectionBase implements Connection {
   protected Status status = Status.CONNECTED;
 
   public SocketConnectionBase(NetSocketInternal socket,
+                              boolean cachePreparedStatements,
                               int pipeliningLimit,
                               Context context) {
     this.socket = socket;
     this.context = context;
     this.pipeliningLimit = pipeliningLimit;
+    this.psCache = cachePreparedStatements ? new ConcurrentHashMap<>() : null;
+
   }
 
   public Context context() {
@@ -106,8 +115,32 @@ public abstract class SocketConnectionBase implements Connection {
   }
 
   public void schedule(CommandBase<?> cmd) {
+    if (cmd.handler == null) {
+      throw new IllegalArgumentException();
+    }
     if (Vertx.currentContext() != context) {
       throw new IllegalStateException();
+    }
+
+    // Special handling for cache
+    if (cmd instanceof PrepareStatementCommand) {
+      PrepareStatementCommand psCmd = (PrepareStatementCommand) cmd;
+      Map<String, CachedPreparedStatement> psCache = this.psCache;
+      if (psCache != null) {
+        CachedPreparedStatement cached = psCache.get(psCmd.sql());
+        if (cached != null) {
+          Handler<? super CommandResponse<PreparedStatement>> handler = psCmd.handler;
+          cached.get(handler);
+          return;
+        } else {
+          psCmd.statement = psSeq.next();
+          psCmd.cached = cached = new CachedPreparedStatement();
+          psCache.put(psCmd.sql(), cached);
+          Handler<? super CommandResponse<PreparedStatement>> a = psCmd.handler;
+          ((CachedPreparedStatement)psCmd.cached).get(a);
+          psCmd.handler = (Handler<? super CommandResponse<PreparedStatement>>) psCmd.cached;
+        }
+      }
     }
 
     //
@@ -116,6 +149,29 @@ public abstract class SocketConnectionBase implements Connection {
       checkPending();
     } else {
       cmd.fail(new VertxException("Connection not open " + status));
+    }
+  }
+
+  public static class CachedPreparedStatement implements Handler<CommandResponse<PreparedStatement>> {
+
+    private CommandResponse<PreparedStatement> resp;
+    private final ArrayDeque<Handler<? super CommandResponse<PreparedStatement>>> waiters = new ArrayDeque<>();
+
+    void get(Handler<? super CommandResponse<PreparedStatement>> handler) {
+      if (resp != null) {
+        handler.handle(resp);
+      } else {
+        waiters.add(handler);
+      }
+    }
+
+    @Override
+    public void handle(CommandResponse<PreparedStatement> event) {
+      resp = event;
+      Handler<? super CommandResponse<PreparedStatement>> waiter;
+      while ((waiter = waiters.poll()) != null) {
+        waiter.handle(resp);
+      }
     }
   }
 

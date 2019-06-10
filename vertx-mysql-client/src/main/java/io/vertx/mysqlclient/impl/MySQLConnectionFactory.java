@@ -24,6 +24,7 @@ public class MySQLConnectionFactory {
   private final String database;
   private final Charset charset;
   private final boolean ssl = false;
+  private final boolean cachePreparedStatements;
 
   public MySQLConnectionFactory(Context context, MySQLConnectOptions options) {
     NetClientOptions netClientOptions = new NetClientOptions(options);
@@ -35,6 +36,7 @@ public class MySQLConnectionFactory {
     this.password = options.getPassword();
     this.database = options.getDatabase();
     this.charset = CharacterSetMapping.getCharset("UTF-8"); // Make it an option later
+    this.cachePreparedStatements = options.getCachePreparedStatements();
 
     this.netClient = context.owner().createNetClient(netClientOptions);
   }
@@ -44,7 +46,7 @@ public class MySQLConnectionFactory {
     future.setHandler(ar1 -> {
       if (ar1.succeeded()) {
         NetSocketInternal socket = (NetSocketInternal) ar1.result();
-        MySQLSocketConnection conn = new MySQLSocketConnection(socket, 1, context);
+        MySQLSocketConnection conn = new MySQLSocketConnection(socket, cachePreparedStatements, 1, context);
         conn.init();
         conn.sendStartupMessage(username, password, database, handler);
       } else {

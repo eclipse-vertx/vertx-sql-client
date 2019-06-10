@@ -30,6 +30,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_USER = "root";
   public static final String DEFAULT_PASSWORD = "";
   public static final String DEFAULT_SCHEMA = "";
+  public static final boolean DEFAULT_CACHE_PREPARED_STATEMENTS = false;
 
   public MySQLConnectOptions() {
     super();
@@ -67,6 +68,11 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   @Override
   public MySQLConnectOptions setDatabase(String database) {
     return (MySQLConnectOptions) super.setDatabase(database);
+  }
+
+  @Override
+  public MySQLConnectOptions setCachePreparedStatements(boolean cachePreparedStatements) {
+    return (MySQLConnectOptions) super.setCachePreparedStatements(cachePreparedStatements);
   }
 
   @Override
@@ -293,6 +299,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     this.setUser(DEFAULT_USER);
     this.setPassword(DEFAULT_PASSWORD);
     this.setDatabase(DEFAULT_SCHEMA);
+    this.setCachePreparedStatements(DEFAULT_CACHE_PREPARED_STATEMENTS);
   }
 
   @Override
