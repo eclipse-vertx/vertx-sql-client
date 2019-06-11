@@ -21,7 +21,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
-import io.vertx.pgclient.data.Json;
+import io.vertx.core.json.Json;
+import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.pgclient.data.*;
 import io.vertx.pgclient.impl.util.UTF8StringEndDetector;
@@ -64,7 +65,7 @@ class DataTypeCodec {
   private static final OffsetDateTime[] empty_offset_date_time_array = new OffsetDateTime[0];
   private static final Buffer[] empty_buffer_array = new Buffer[0];
   private static final UUID[] empty_uuid_array = new UUID[0];
-  private static final Json[] empty_json_array = new Json[0];
+  private static final Object[] empty_json_array = new Object[0];
   private static final Numeric[] empty_numeric_array = new Numeric[0];
   private static final Point[] empty_point_array = new Point[0];
   private static final Line[] empty_line_array = new Line[0];
@@ -101,7 +102,7 @@ class DataTypeCodec {
   private static final IntFunction<OffsetDateTime[]> OFFSETDATETIME_ARRAY_FACTORY = size -> size == 0 ? empty_offset_date_time_array : new OffsetDateTime[size];
   private static final IntFunction<Buffer[]> BUFFER_ARRAY_FACTORY =size -> size == 0 ? empty_buffer_array : new Buffer[size];
   private static final IntFunction<UUID[]> UUID_ARRAY_FACTORY = size -> size == 0 ? empty_uuid_array : new UUID[size];
-  private static final IntFunction<Json[]> JSON_ARRAY_FACTORY = size -> size == 0 ? empty_json_array : new Json[size];
+  private static final IntFunction<Object[]> JSON_ARRAY_FACTORY = size -> size == 0 ? empty_json_array : new Object[size];
   private static final IntFunction<Numeric[]> NUMERIC_ARRAY_FACTORY = size -> size == 0 ? empty_numeric_array : new Numeric[size];
   private static final IntFunction<Point[]> POINT_ARRAY_FACTORY = size -> size == 0 ? empty_point_array : new Point[size];
   private static final IntFunction<Line[]> LINE_ARRAY_FACTORY = size -> size == 0 ? empty_line_array : new Line[size];
@@ -267,16 +268,16 @@ class DataTypeCodec {
         binaryEncodeArray((UUID[]) value, DataType.UUID, buff);
         break;
       case JSON:
-        binaryEncodeJSON((Json) value, buff);
+        binaryEncodeJSON((Object) value, buff);
         break;
       case JSON_ARRAY:
-        binaryEncodeArray((Json[]) value, DataType.JSON, buff);
+        binaryEncodeArray((Object[]) value, DataType.JSON, buff);
         break;
       case JSONB:
-        binaryEncodeJSONB((Json) value, buff);
+        binaryEncodeJSONB((Object) value, buff);
         break;
       case JSONB_ARRAY:
-        binaryEncodeArray((Json[]) value, DataType.JSONB, buff);
+        binaryEncodeArray((Object[]) value, DataType.JSONB, buff);
         break;
       case POINT:
         binaryEncodePoint((Point) value, buff);
@@ -580,10 +581,14 @@ class DataTypeCodec {
     switch (type) {
       case JSON:
       case JSONB:
-        if (value == null || value instanceof Json) {
+        if (value == null ||
+            value == Tuple.JSON_NULL ||
+            value instanceof String ||
+            value instanceof Boolean ||
+            value instanceof Number ||
+            value instanceof JsonObject ||
+            value instanceof JsonArray) {
           return value;
-        } else if (value instanceof String || value instanceof Boolean || value instanceof Number) {
-          return Json.create(value);
         } else {
           return REFUSED_SENTINEL;
         }
@@ -1206,20 +1211,25 @@ class DataTypeCodec {
     return java.util.UUID.fromString(buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString());
   }
 
-  private static Json textDecodeJSON(int index, int len, ByteBuf buff) {
+  private static Object textDecodeJSON(int index, int len, ByteBuf buff) {
     return textDecodeJSONB(index, len, buff);
   }
 
-  private static Json binaryDecodeJSON(int index, int len, ByteBuf buff) {
+  private static Object binaryDecodeJSON(int index, int len, ByteBuf buff) {
     return textDecodeJSONB(index, len, buff);
   }
 
-  private static void binaryEncodeJSON(Json value, ByteBuf buff) {
-    String s = io.vertx.core.json.Json.encode(value.value());
+  private static void binaryEncodeJSON(Object value, ByteBuf buff) {
+    String s;
+    if (value == Tuple.JSON_NULL) {
+      s = "null";
+    } else {
+      s = io.vertx.core.json.Json.encode(value);
+    }
     buff.writeCharSequence(s, StandardCharsets.UTF_8);
   }
 
-  private static Json textDecodeJSONB(int index, int len, ByteBuf buff) {
+  private static Object textDecodeJSONB(int index, int len, ByteBuf buff) {
 
     // Try to do without the intermediary String (?)
     CharSequence cs = buff.getCharSequence(index, len, StandardCharsets.UTF_8);
@@ -1237,30 +1247,33 @@ class DataTypeCodec {
       value = new JsonArray(s);
     } else {
       try {
-        JsonNode jsonNode = io.vertx.core.json.Json.mapper.readTree(s);
-        if (jsonNode.isNumber()) {
-          value = jsonNode.numberValue();
-        } else if (jsonNode.isBoolean()) {
-          value = jsonNode.booleanValue();
-        } else if (jsonNode.isTextual()) {
-          value = jsonNode.textValue();
+        JsonNode json = Json.mapper.readTree(s);
+        if (json.isNumber()) {
+          return json.numberValue();
+        } else if (json.isBoolean()) {
+          return json.booleanValue();
+        } else if (json.isTextual()) {
+          return json.textValue();
+        } else if (json.isNull()) {
+          return Tuple.JSON_NULL;
+        } else {
+          return null;
         }
       } catch (IOException e) {
         // do nothing
       }
     }
-    return Json.create(value);
+    return value;
   }
 
-  private static Json binaryDecodeJSONB(int index, int len, ByteBuf buff) {
+  private static Object binaryDecodeJSONB(int index, int len, ByteBuf buff) {
     // Skip 1 byte for version (which is 1)
     return textDecodeJSONB(index + 1, len - 1, buff);
   }
 
-  private static void binaryEncodeJSONB(Json value, ByteBuf buff) {
-    String s = io.vertx.core.json.Json.encode(value.value());
+  private static void binaryEncodeJSONB(Object value, ByteBuf buff) {
     buff.writeByte(1); // version
-    buff.writeCharSequence(s, StandardCharsets.UTF_8);
+    binaryEncodeJSON(value, buff);
   }
 
   /**

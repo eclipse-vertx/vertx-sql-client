@@ -7,7 +7,10 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import org.junit.Assert;
 import org.junit.Test;
+
+import java.math.BigDecimal;
 
 public class JsonTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   @Test
@@ -24,70 +27,90 @@ public class JsonTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT " +
-        "'  {\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []   }'::" + type + " \"JsonObject\"," +
-        "'  [1,true,null,9.5,\"Hi\" ] '::" + type + " \"JsonArray\"," +
-        "' true '::" + type + " \"TrueValue\"," +
-        "' false '::" + type + " \"FalseValue\"," +
-        "' null '::" + type + " \"NullValue\"," +
-        "' 7.502 '::" + type + " \"Number1\"," +
-        "' 8 '::" + type + " \"Number2\"," +
-        "'\" Really Awesome! \"'::" + type + " \"Text\"", ctx.asyncAssertSuccess(result -> {
-        JsonObject object =  new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []}");
-        JsonArray array = new JsonArray("[1,true,null,9.5,\"Hi\"]");
-        ctx.assertEquals(1, result.size());
-        Row row = result.iterator().next();
-        ColumnChecker.checkColumn(0, "JsonObject")
-          .returns(Tuple::getValue, Row::getValue, Json.create(object))
-          .forRow(row);
-        ColumnChecker.checkColumn(1, "JsonArray")
-          .returns(Tuple::getValue, Row::getValue, Json.create(array))
-          .forRow(row);
-        ColumnChecker.checkColumn(2, "TrueValue")
-          .returns(Tuple::getValue, Row::getValue, Json.create(true))
-          .returns(Json.class, Json.create(true))
-          .forRow(row);
-        ColumnChecker.checkColumn(3, "FalseValue")
-          .returns(Tuple::getValue, Row::getValue, Json.create(false))
-          .returns(Json.class, Json.create(false))
-          .forRow(row);
-        ColumnChecker.checkColumn(4, "NullValue")
-          .returns(Tuple::getValue, Row::getValue, Json.create(null))
-          .forRow(row);
-        ColumnChecker.checkColumn(5, "Number1")
-          .returns(Tuple::getValue, Row::getValue, Json.create(7.502d))
-          .returns(Json.class, Json.create(7.502d))
-          .forRow(row);
-        ColumnChecker.checkColumn(6, "Number2")
-          .returns(Tuple::getValue, Row::getValue, Json.create(8))
-          .returns(Json.class, Json.create(8))
-          .forRow(row);
-        ColumnChecker.checkColumn(7, "Text")
-          .returns(Tuple::getValue, Row::getValue, Json.create(" Really Awesome! "))
-          .returns(Json.class, Json.create(" Really Awesome! "))
-          .forRow(row);
-        async.complete();
-      }));
+          "'  {\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []   }'::" + type + " \"JsonObject\"," +
+          "'  [1,true,null,9.5,\"Hi\" ] '::" + type + " \"JsonArray\"," +
+          "' true '::" + type + " \"TrueValue\"," +
+          "' false '::" + type + " \"FalseValue\"," +
+          "' null '::" + type + " \"NullValue\"," +
+          "' 7.502 '::" + type + " \"Number1\"," +
+          "' 8 '::" + type + " \"Number2\"," +
+          "'\" Really Awesome! \"'::" + type + " \"Text\"," +
+          "NULL::" + type + " \"Null\"",
+        ctx.asyncAssertSuccess(result -> {
+          JsonObject object = new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []}");
+          JsonArray array = new JsonArray("[1,true,null,9.5,\"Hi\"]");
+          ctx.assertEquals(1, result.size());
+          Row row = result.iterator().next();
+          ColumnChecker.checkColumn(0, "JsonObject")
+            .returns(Tuple::getValue, Row::getValue, object)
+            .forRow(row);
+          ColumnChecker.checkColumn(1, "JsonArray")
+            .returns(Tuple::getValue, Row::getValue, array)
+            .forRow(row);
+          ColumnChecker.checkColumn(2, "TrueValue")
+            .returns(Tuple::getValue, Row::getValue, true)
+            .returns(Tuple::getBoolean, Row::getBoolean, true)
+            .returns(Object.class, true)
+            .forRow(row);
+          ColumnChecker.checkColumn(3, "FalseValue")
+            .returns(Tuple::getValue, Row::getValue, false)
+            .returns(Tuple::getBoolean, Row::getBoolean, false)
+            .returns(Object.class, false)
+            .forRow(row);
+          ColumnChecker.checkColumn(4, "NullValue")
+            .returns(Tuple::getValue, Row::getValue, Tuple.JSON_NULL)
+            .forRow(row);
+          ColumnChecker.checkColumn(5, "Number1")
+            .returns(Tuple::getValue, Row::getValue, 7.502d)
+            .returns(Tuple::getShort, Row::getShort, (short) 7)
+            .returns(Tuple::getInteger, Row::getInteger, 7)
+            .returns(Tuple::getLong, Row::getLong, (long) 7)
+            .returns(Tuple::getFloat, Row::getFloat, 7.502f)
+            .returns(Tuple::getDouble, Row::getDouble, 7.502d)
+            .<BigDecimal>returns(Tuple::getBigDecimal, Row::getBigDecimal, val -> Assert.assertEquals(val.doubleValue(), 7.502d, 0.1))
+            .returns(Object.class, 7.502d)
+            .forRow(row);
+          ColumnChecker.checkColumn(6, "Number2")
+            .returns(Tuple::getValue, Row::getValue, 8)
+            .returns(Tuple::getShort, Row::getShort, (short) 8)
+            .returns(Tuple::getInteger, Row::getInteger, 8)
+            .returns(Tuple::getLong, Row::getLong, (long) 8)
+            .returns(Tuple::getFloat, Row::getFloat, (float) 8)
+            .returns(Tuple::getDouble, Row::getDouble, (double) 8)
+            .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(8))
+            .returns(Object.class, 8)
+            .forRow(row);
+          ColumnChecker.checkColumn(7, "Text")
+            .returns(Tuple::getValue, Row::getValue, " Really Awesome! ")
+            .returns(Tuple::getString, Row::getString, " Really Awesome! ")
+            .returns(Object.class, " Really Awesome! ")
+            .forRow(row);
+          ColumnChecker.checkColumn(8, "Null")
+            .returns(Tuple::getValue, Row::getValue, (Object) null)
+            .forRow(row);
+          async.complete();
+        }));
     }));
   }
 
   private Object[] expected = {
-    Json.create(new JsonObject("{\"str\":\"blah\",\"int\":1,\"float\":3.5,\"object\":{},\"array\":[]}")),
-    Json.create(new JsonArray("[1,true,null,9.5,\"Hi\"]")),
-    Json.create(4),
-    Json.create("Hello World"),
-    Json.create(true),
-    Json.create(false),
-    Json.create(null)};
+    new JsonObject("{\"str\":\"blah\",\"int\":1,\"float\":3.5,\"object\":{},\"array\":[]}"),
+    new JsonArray("[1,true,null,9.5,\"Hi\"]"),
+    4,
+    "Hello World",
+    true,
+    false,
+    Tuple.JSON_NULL};
 
   @Test
   public void testDecodeJSONArray(TestContext ctx) {
     testDecodeGenericArray(ctx, "ARRAY ['  {\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []   }' :: JSON, '[1,true,null,9.5,\"Hi\"]' :: JSON, '4' :: JSON, '\"Hello World\"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON]",
-      "JSON", Json.class, expected);
+      "JSON", Object.class, expected);
   }
 
   @Test
   public void testDecodeJSONBArray(TestContext ctx) {
     testDecodeGenericArray(ctx, "ARRAY ['  {\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []   }' :: JSON, '[1,true,null,9.5,\"Hi\"]' :: JSON, '4' :: JSON, '\"Hello World\"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON]",
-      "JSONB", Json.class, expected);
+      "JSONB", Object.class, expected);
   }
 }

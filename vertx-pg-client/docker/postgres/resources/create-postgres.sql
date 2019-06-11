@@ -96,10 +96,11 @@ CREATE TABLE "JsonDataType" (
   "String" JSON,
   "BooleanTrue" JSON,
   "BooleanFalse" JSON,
+  "NullValue" JSON,
   "Null" JSON
 );
-INSERT INTO "JsonDataType" ("id" ,"JsonObject", "JsonArray", "Number", "String", "BooleanTrue", "BooleanFalse", "Null") VALUES (1, '  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }', '[1,true,null,9.5,"Hi"]', '4', '"Hello World"', 'true', 'false', 'null');
-INSERT INTO "JsonDataType" ("id" ,"JsonObject", "JsonArray", "Number", "String", "BooleanTrue", "BooleanFalse", "Null") VALUES (2, '  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }', '[1,true,null,9.5,"Hi"]', '4', '"Hello World"', 'true', 'false', 'null');
+INSERT INTO "JsonDataType" ("id" ,"JsonObject", "JsonArray", "Number", "String", "BooleanTrue", "BooleanFalse", "NullValue", "Null") VALUES (1, '  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }', '[1,true,null,9.5,"Hi"]', '4', '"Hello World"', 'true', 'false', 'null', NULL);
+INSERT INTO "JsonDataType" ("id" ,"JsonObject", "JsonArray", "Number", "String", "BooleanTrue", "BooleanFalse", "NullValue", "Null") VALUES (2, '  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }', '[1,true,null,9.5,"Hi"]', '4', '"Hello World"', 'true', 'false', 'null', NULL);
 
 DROP TABLE IF EXISTS "JsonbDataType";
 CREATE TABLE "JsonbDataType" (
@@ -110,10 +111,11 @@ CREATE TABLE "JsonbDataType" (
   "String" JSONB,
   "BooleanTrue" JSONB,
   "BooleanFalse" JSONB,
+  "NullValue" JSONB,
   "Null" JSONB
 );
-INSERT INTO "JsonbDataType" ("id" ,"JsonObject", "JsonArray", "Number", "String", "BooleanTrue", "BooleanFalse", "Null") VALUES (1, '  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }', '[1,true,null,9.5,"Hi"]', '4', '"Hello World"', 'true', 'false', 'null');
-INSERT INTO "JsonbDataType" ("id" ,"JsonObject", "JsonArray", "Number", "String", "BooleanTrue", "BooleanFalse", "Null") VALUES (2, '  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }', '[1,true,null,9.5,"Hi"]', '4', '"Hello World"', 'true', 'false', 'null');
+INSERT INTO "JsonbDataType" ("id" ,"JsonObject", "JsonArray", "Number", "String", "BooleanTrue", "BooleanFalse", "NullValue", "Null") VALUES (1, '  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }', '[1,true,null,9.5,"Hi"]', '4', '"Hello World"', 'true', 'false', 'null', NULL);
+INSERT INTO "JsonbDataType" ("id" ,"JsonObject", "JsonArray", "Number", "String", "BooleanTrue", "BooleanFalse", "NullValue", "Null") VALUES (2, '  {"str":"blah", "int" : 1, "float" : 3.5, "object": {}, "array" : []   }', '[1,true,null,9.5,"Hi"]', '4', '"Hello World"', 'true', 'false', 'null', NULL);
 
 -- Geometric table
 DROP TABLE IF EXISTS "GeometricDataType";

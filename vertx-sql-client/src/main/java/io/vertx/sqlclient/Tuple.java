@@ -35,6 +35,14 @@ import java.util.UUID;
 public interface Tuple {
 
   /**
+   * The JSON null literal value.
+   * <br/>
+   * It is used to distinguish a JSON null literal value from the Java {@code null} value. This is only
+   * used when the database supports JSON types.
+   */
+  Object JSON_NULL = new Object();
+
+  /**
    * @return a new empty tuple
    */
   static Tuple tuple() {

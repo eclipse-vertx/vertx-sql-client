@@ -3,6 +3,7 @@ package io.vertx.pgclient.data;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
+import junit.framework.AssertionFailedError;
 
 import java.io.Serializable;
 import java.lang.invoke.SerializedLambda;
@@ -12,8 +13,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import static org.junit.Assert.*;
 
@@ -163,19 +166,37 @@ public class ColumnChecker {
   }
 
   public <R> ColumnChecker returns(SerializableBiFunction<Tuple, Integer, R> byIndexGetter,
-                            SerializableBiFunction<Row, String, R> byNameGetter,
-                            R expected) {
+                                   SerializableBiFunction<Row, String, R> byNameGetter,
+                                   Consumer<R> check) {
     Method byIndexMeth = byIndexGetter.method();
     blackList.add(byIndexMeth);
     Method byNameMeth = byNameGetter.method();
     blackList.add(byNameMeth);
     expects.add(row -> {
       Object actual = byIndexGetter.apply(row, index);
-      assertEquals("Expected that " + byIndexMeth + " returns " + expected + " instead of " + actual, expected, actual);
+      try {
+        check.accept((R) actual);
+      } catch (AssertionError cause) {
+        AssertionFailedError failure = new AssertionFailedError("Expected that " + byIndexMeth + " would not fail");
+        failure.initCause(cause);
+        throw failure;
+      }
       actual = byNameGetter.apply(row, name);
-      assertEquals("Expected that " + byNameMeth + " returns " + expected + " instead of " + actual, expected, actual);
+      try {
+        check.accept((R) actual);
+      } catch (AssertionError cause) {
+        AssertionFailedError failure = new AssertionFailedError("Expected that " + byNameMeth + " would not fail");
+        failure.initCause(cause);
+        throw failure;
+      }
     });
     return this;
+  }
+
+  public <R> ColumnChecker returns(SerializableBiFunction<Tuple, Integer, R> byIndexGetter,
+                            SerializableBiFunction<Row, String, R> byNameGetter,
+                            R expected) {
+    return this.<R>returns(byIndexGetter, byNameGetter, actual -> assertEquals(expected, actual));
   }
 
   public ColumnChecker returns(SerializableBiFunction<Tuple, Integer, Object> byIndexGetter,

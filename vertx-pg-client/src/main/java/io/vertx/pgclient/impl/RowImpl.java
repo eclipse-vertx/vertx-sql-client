@@ -17,11 +17,13 @@
 
 package io.vertx.pgclient.impl;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.data.Box;
 import io.vertx.pgclient.data.Circle;
-import io.vertx.pgclient.data.Json;
 import io.vertx.pgclient.data.Line;
 import io.vertx.pgclient.data.LineSegment;
+import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.pgclient.data.Path;
 import io.vertx.pgclient.data.Polygon;
@@ -70,9 +72,7 @@ public class RowImpl extends ArrayTuple implements RowInternal {
 
   @Override
   public <T> T get(Class<T> type, int pos) {
-    if (type == Json.class) {
-      return type.cast(getJson(pos));
-    } else if (type == Numeric.class) {
+    if (type == Numeric.class) {
       return type.cast(getNumeric(pos));
     } else if (type == Point.class) {
       return type.cast(getPoint(pos));
@@ -90,13 +90,15 @@ public class RowImpl extends ArrayTuple implements RowInternal {
       return type.cast(getInterval(pos));
     } else if (type == Box.class) {
       return type.cast(getBox(pos));
+    } else if (type == Object.class) {
+      return type.cast(type);
     }
     throw new UnsupportedOperationException("Unsupported type " + type.getName());
   }
 
   @Override
   public <T> T[] getValues(Class<T> type, int pos) {
-    if (type == Json.class) {
+    if (type == Object.class) {
       return (T[]) getJsonArray(pos);
     } else if (type == Numeric.class) {
       return (T[]) getNumericArray(pos);
@@ -166,11 +168,6 @@ public class RowImpl extends ArrayTuple implements RowInternal {
   public String getString(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getString(pos);
-  }
-
-  public Json getJson(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getJson(pos);
   }
 
   @Override
@@ -356,7 +353,7 @@ public class RowImpl extends ArrayTuple implements RowInternal {
     return pos == -1 ? null : getUUIDArray(pos);
   }
 
-  public Json[] getJsonArray(String name) {
+  public Object[] getJsonArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getJsonArray(pos);
   }
@@ -488,10 +485,11 @@ public class RowImpl extends ArrayTuple implements RowInternal {
     }
   }
 
-  public Json[] getJsonArray(int pos) {
+  public Object[] getJsonArray(int pos) {
     Object val = get(pos);
-    if (val instanceof Json[]) {
-      return (Json[]) val;
+    if (val instanceof Object[]) {
+      Object[] obj = (Object[]) val;
+      return (Object[]) val;
     } else {
       return null;
     }
@@ -576,14 +574,6 @@ public class RowImpl extends ArrayTuple implements RowInternal {
     } else {
       return null;
     }
-  }
-
-  public Json getJson(int pos) {
-    Object val = get(pos);
-    if (val instanceof Json) {
-      return (Json) val;
-    }
-    return null;
   }
 
   @Override
