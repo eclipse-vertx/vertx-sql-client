@@ -20,7 +20,6 @@ import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
 import io.vertx.pgclient.data.Box;
 import io.vertx.pgclient.data.Circle;
-import io.vertx.pgclient.data.Json;
 import io.vertx.pgclient.data.Line;
 import io.vertx.pgclient.data.LineSegment;
 import io.vertx.sqlclient.data.Numeric;
@@ -93,10 +92,10 @@ enum DataType {
   MACADDR8(774, true, Object[].class),
   UUID(2950, true, UUID.class),
   UUID_ARRAY(2951, true, UUID[].class),
-  JSON(114, true, Json.class),
-  JSON_ARRAY(199, true, Json[].class),
-  JSONB(3802, true, Json.class),
-  JSONB_ARRAY(3807, true, Json[].class),
+  JSON(114, true, Object.class),
+  JSON_ARRAY(199, true, Object[].class),
+  JSONB(3802, true, Object.class),
+  JSONB_ARRAY(3807, true, Object[].class),
   XML(142, true, Object.class),
   XML_ARRAY(143, true, Object[].class),
   POINT(600, true, Point.class),

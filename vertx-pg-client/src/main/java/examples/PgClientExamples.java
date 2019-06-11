@@ -18,7 +18,6 @@
 package examples;
 
 import io.vertx.pgclient.*;
-import io.vertx.pgclient.data.Json;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.pgclient.pubsub.PgSubscriber;
 import io.vertx.sqlclient.Cursor;
@@ -711,18 +710,19 @@ public class PgClientExamples {
 
     // Create a tuple
     Tuple tuple = Tuple.of(
-      Json.create(Json.create(null)),
-      Json.create(Json.create(new JsonObject().put("foo", "bar"))),
-      Json.create(Json.create(null)));
+      Tuple.JSON_NULL,
+      new JsonObject().put("foo", "bar"),
+      3);
 
     // Retrieving json
-    Object value = tuple.get(Json.class, 0).value(); // Expect null
+    Object value = tuple.get(Object.class, 0); // Expect JSON_NULL
 
     //
-    value = tuple.get(Json.class, 1).value(); // Expect JSON object
+    value = tuple.get(Object.class, 1); // Expect JSON object
 
     //
-    value = tuple.get(Json.class, 3).value(); // Expect 3
+    value = tuple.get(Object.class, 3); // Expect 3
+    value = tuple.getInteger(3); // Expect 3
   }
 
   public void numericExample(Row row) {

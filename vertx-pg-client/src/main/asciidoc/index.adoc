@@ -344,8 +344,8 @@ Currently the client supports the following PostgreSQL types
 * TIMESTAMPTZ (`java.time.OffsetDateTime`)
 * INTERVAL (`io.vertx.pgclient.data.Interval`)
 * BYTEA (`io.vertx.core.buffer.Buffer`)
-* JSON (`io.vertx.pgclient.data.Json`)
-* JSONB (`io.vertx.pgclient.data.Json`)
+* JSON (`io.vertx.core.json.JsonObject`, `io.vertx.core.json.JsonArray`, `Number`, `Boolean`, `String`, `io.vertx.sqlclient.Tuple#JSON_NULL`)
+* JSONB (`io.vertx.core.json.JsonObject`, `io.vertx.core.json.JsonArray`, `Number`, `Boolean`, `String`, `io.vertx.sqlclient.Tuple#JSON_NULL`)
 * POINT (`io.vertx.pgclient.data.Point`)
 * LINE (`io.vertx.pgclient.data.Line`)
 * LSEG (`io.vertx.pgclient.data.LineSegment`)
@@ -372,9 +372,14 @@ Arrays of these types are supported.
 
 === Handling JSON
 
-The {@link io.vertx.pgclient.data.Json} Java type is used to represent the PostgreSQL `JSON` and `JSONB` type.
+PostgreSQL `JSON` and `JSONB` types are represented by the following Java types:
 
-The main reason of this type is handling `null` JSON values.
+- `String`
+- `Number`
+- `Boolean`
+- `io.vertx.core.json.JsonObject`
+- `io.vertx.core.json.JsonArray`
+- `io.vertx.sqlclient.Tuple#JSON_NULL` for representing the JSON null literal
 
 [source,$lang]
 ----
