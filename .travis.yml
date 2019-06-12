@@ -3,17 +3,22 @@ branches:
   only:
   - master
   - /^\d+\.\d+$/
+cache:
+  directories:
+    - $HOME/.m2
+before_cache:
+  - rm -rf $HOME/.m2/repository/io/vertx/
 before_script:
   - sudo /etc/init.d/mysql stop
 jobs:
   include:
     - stage: test
       name: "Postgres 9"
-      jdk: oraclejdk8
+      jdk: openjdk8
       script: mvn -q clean verify -B -Dembedded.postgres.version=9.6
     - stage: test
       name: "Postgres 10"
-      jdk: oraclejdk8
+      jdk: openjdk8
       script: mvn -q clean verify -B -Dembedded.postgres.version=10.6
     - stage: deploy
       name: "Deploy to Sonatype's snapshots repository"
