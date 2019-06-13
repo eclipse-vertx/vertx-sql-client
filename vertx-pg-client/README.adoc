@@ -170,15 +170,15 @@ The *Reactive Postgres Client* currently supports the following data types
 |&#10004;
 
 |`JSON`
-|`Json`
+|`Object`
 |&#10004;
-|`Json[]`
+|`Object[]`
 |&#10004;
 
 |`JSONB`
-|`Json`
+|`Object`
 |&#10004;
-|`Json[]`
+|`Object[]`
 |&#10004;
 
 |`POINT`
