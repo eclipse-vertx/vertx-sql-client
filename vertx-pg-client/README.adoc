@@ -170,15 +170,15 @@ The *Reactive Postgres Client* currently supports the following data types
 |&#10004;
 
 |`JSON`
-|`i.r.p.data.Json`
+|`Object`
 |&#10004;
-|`i.r.p.data.Json[]`
+|`Object[]`
 |&#10004;
 
 |`JSONB`
-|`i.r.p.data.Json`
+|`Object`
 |&#10004;
-|`i.r.p.data.Json[]`
+|`Object[]`
 |&#10004;
 
 |`POINT`
@@ -230,6 +230,15 @@ The *Reactive Postgres Client* currently supports the following data types
 |&#10004;
 
 |====
+
+Note: PostgreSQL JSON and JSONB types are represented by the following Java types:
+
+- `java.lang.String`
+- `java.lang.Number`
+- `java.lang.Boolean`
+- `io.vertx.core.json.JsonObject`
+- `io.vertx.core.json.JsonArray`
+- `io.vertx.sqlclient.Tuple#JSON_NULL` for representing the JSON null literal
 
 The following types
 
