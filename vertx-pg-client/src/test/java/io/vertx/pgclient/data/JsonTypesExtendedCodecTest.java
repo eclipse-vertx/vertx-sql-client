@@ -79,11 +79,11 @@ public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBa
             JsonArray array = new JsonArray("[1,true,null,9.5,\"Hi\"]");
             ColumnChecker.checkColumn(0, "JsonObject")
               .returns(Tuple::getValue, Row::getValue, object)
-              .returns(Object.class, object)
+              .returns(JsonObject.class, object)
               .forRow(row);
             ColumnChecker.checkColumn(1, "JsonArray")
               .returns(Tuple::getValue, Row::getValue, array)
-              .returns(Object.class, array)
+              .returns(JsonArray.class, array)
               .forRow(row);
             ColumnChecker.checkColumn(2, "Number")
               .returns(Tuple::getValue, Row::getValue, 4)
@@ -98,17 +98,17 @@ public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBa
             ColumnChecker.checkColumn(3, "String")
               .returns(Tuple::getValue, Row::getValue, "Hello World")
               .returns(Tuple::getString, Row::getString, "Hello World")
-              .returns(Object.class, "Hello World")
+              .returns(String.class, "Hello World")
               .forRow(row);
             ColumnChecker.checkColumn(4, "BooleanTrue")
               .returns(Tuple::getValue, Row::getValue, true)
               .returns(Tuple::getBoolean, Row::getBoolean, true)
-              .returns(Object.class, true)
+              .returns(Boolean.class, true)
               .forRow(row);
             ColumnChecker.checkColumn(5, "BooleanFalse")
               .returns(Tuple::getValue, Row::getValue, false)
               .returns(Tuple::getBoolean, Row::getBoolean, false)
-              .returns(Object.class, false)
+              .returns(Boolean.class, false)
               .forRow(row);
             ColumnChecker.checkColumn(6, "NullValue")
               .returns(Tuple::getValue, Row::getValue, Tuple.JSON_NULL)
@@ -165,11 +165,11 @@ public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBa
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "JsonObject")
               .returns(Tuple::getValue, Row::getValue, object)
-              .returns(Object.class, object)
+              .returns(JsonObject.class, object)
               .forRow(row);
             ColumnChecker.checkColumn(1, "JsonArray")
               .returns(Tuple::getValue, Row::getValue, array)
-              .returns(Object.class, array)
+              .returns(JsonArray.class, array)
               .forRow(row);
             ColumnChecker.checkColumn(2, "Number")
               .returns(Tuple::getValue, Row::getValue, 4)
@@ -184,17 +184,17 @@ public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBa
             ColumnChecker.checkColumn(3, "String")
               .returns(Tuple::getValue, Row::getValue, "Hello World")
               .returns(Tuple::getString, Row::getString, "Hello World")
-              .returns(Object.class, "Hello World")
+              .returns(String.class, "Hello World")
               .forRow(row);
             ColumnChecker.checkColumn(4, "BooleanTrue")
               .returns(Tuple::getValue, Row::getValue, true)
               .returns(Tuple::getBoolean, Row::getBoolean, true)
-              .returns(Object.class, true)
+              .returns(Boolean.class, true)
               .forRow(row);
             ColumnChecker.checkColumn(5, "BooleanFalse")
               .returns(Tuple::getValue, Row::getValue, false)
               .returns(Tuple::getBoolean, Row::getBoolean, false)
-              .returns(Object.class, false)
+              .returns(Boolean.class, false)
               .forRow(row);
             ColumnChecker.checkColumn(6, "NullValue")
               .returns(Tuple::getValue, Row::getValue, Tuple.JSON_NULL)
