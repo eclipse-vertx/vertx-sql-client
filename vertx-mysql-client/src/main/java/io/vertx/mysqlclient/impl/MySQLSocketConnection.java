@@ -18,14 +18,14 @@
 package io.vertx.mysqlclient.impl;
 
 import io.netty.channel.ChannelPipeline;
-import io.vertx.sqlclient.impl.command.CommandResponse;
-import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.command.InitCommand;
-import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.mysqlclient.impl.codec.MySQLCodec;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.impl.NetSocketInternal;
+import io.vertx.mysqlclient.impl.codec.MySQLCodec;
+import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.SocketConnectionBase;
+import io.vertx.sqlclient.impl.command.CommandResponse;
+import io.vertx.sqlclient.impl.command.InitCommand;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -34,8 +34,12 @@ public class MySQLSocketConnection extends SocketConnectionBase {
 
   private MySQLCodec codec;
 
-  public MySQLSocketConnection(NetSocketInternal socket, boolean cachePreparedStatements, Context context) {
-    super(socket, cachePreparedStatements, 1, context);
+  public MySQLSocketConnection(NetSocketInternal socket,
+                               boolean cachePreparedStatements,
+                               int preparedStatementCacheSize,
+                               int preparedStatementCacheSqlLimit,
+                               Context context) {
+    super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, 1, context);
   }
 
   void sendStartupMessage(String username, String password, String database, Handler<? super CommandResponse<Connection>> completionHandler) {

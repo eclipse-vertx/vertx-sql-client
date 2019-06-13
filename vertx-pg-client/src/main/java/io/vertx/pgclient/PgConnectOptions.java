@@ -92,7 +92,6 @@ public class PgConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_DATABASE = "db";
   public static final String DEFAULT_USER = "user";
   public static final String DEFAULT_PASSWORD = "pass";
-  public static final boolean DEFAULT_CACHE_PREPARED_STATEMENTS = false;
   public static final int DEFAULT_PIPELINING_LIMIT = 256;
   public static final SslMode DEFAULT_SSLMODE = SslMode.DISABLE;
 
@@ -153,6 +152,16 @@ public class PgConnectOptions extends SqlConnectOptions {
 
   public PgConnectOptions setCachePreparedStatements(boolean cachePreparedStatements) {
     return (PgConnectOptions) super.setCachePreparedStatements(cachePreparedStatements);
+  }
+
+  @Override
+  public PgConnectOptions setPreparedStatementCacheSize(int preparedStatementCacheSize) {
+    return (PgConnectOptions) super.setPreparedStatementCacheSize(preparedStatementCacheSize);
+  }
+
+  @Override
+  public PgConnectOptions setPreparedStatementCacheSqlLimit(int preparedStatementCacheSqlLimit) {
+    return (PgConnectOptions) super.setPreparedStatementCacheSqlLimit(preparedStatementCacheSqlLimit);
   }
 
   /**
@@ -402,7 +411,6 @@ public class PgConnectOptions extends SqlConnectOptions {
     this.setUser(DEFAULT_USER);
     this.setPassword(DEFAULT_PASSWORD);
     this.setDatabase(DEFAULT_DATABASE);
-    this.setCachePreparedStatements(DEFAULT_CACHE_PREPARED_STATEMENTS);
     pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
     sslMode = DEFAULT_SSLMODE;
   }

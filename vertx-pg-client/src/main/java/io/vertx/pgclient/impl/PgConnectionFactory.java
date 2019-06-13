@@ -42,6 +42,8 @@ class PgConnectionFactory {
   private final String username;
   private final String password;
   private final boolean cachePreparedStatements;
+  private final int preparedStatementCacheSize;
+  private final int preparedStatementCacheSqlLimit;
   private final int pipeliningLimit;
   private final boolean isUsingDomainSocket;
   private final Closeable hook;
@@ -73,6 +75,8 @@ class PgConnectionFactory {
     this.password = options.getPassword();
     this.cachePreparedStatements = options.getCachePreparedStatements();
     this.pipeliningLimit = options.getPipeliningLimit();
+    this.preparedStatementCacheSize = options.getPreparedStatementCacheSize();
+    this.preparedStatementCacheSqlLimit = options.getPreparedStatementCacheSqlLimit();
     this.isUsingDomainSocket = options.isUsingDomainSocket();
 
     this.client = context.owner().createNetClient(netClientOptions);
@@ -186,6 +190,6 @@ class PgConnectionFactory {
   }
 
   private PgSocketConnection newSocketConnection(NetSocketInternal socket) {
-    return new PgSocketConnection(socket, cachePreparedStatements, pipeliningLimit, ctx);
+    return new PgSocketConnection(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, pipeliningLimit, ctx);
   }
 }

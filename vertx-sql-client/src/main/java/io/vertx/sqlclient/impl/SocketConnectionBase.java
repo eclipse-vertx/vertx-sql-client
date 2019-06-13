@@ -19,21 +19,17 @@ package io.vertx.sqlclient.impl;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderException;
-import io.vertx.core.Handler;
-import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
-import io.vertx.sqlclient.impl.command.CommandResponse;
-import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.core.Context;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxException;
 import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
+import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Deque;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -48,7 +44,8 @@ public abstract class SocketConnectionBase implements Connection {
 
   }
 
-  private final Map<String, CachedPreparedStatement> psCache;
+  protected final PreparedStatementCache psCache;
+  private final int preparedStatementCacheSqlLimit;
   private final StringLongSequence psSeq = new StringLongSequence();
   private final ArrayDeque<CommandBase<?>> pending = new ArrayDeque<>();
   private final Context context;
@@ -61,13 +58,15 @@ public abstract class SocketConnectionBase implements Connection {
 
   public SocketConnectionBase(NetSocketInternal socket,
                               boolean cachePreparedStatements,
+                              int preparedStatementCacheSize,
+                              int preparedStatementCacheSqlLimit,
                               int pipeliningLimit,
                               Context context) {
     this.socket = socket;
     this.context = context;
     this.pipeliningLimit = pipeliningLimit;
-    this.psCache = cachePreparedStatements ? new ConcurrentHashMap<>() : null;
-
+    this.psCache = cachePreparedStatements ? new PreparedStatementCache(preparedStatementCacheSize, this) : null;
+    this.preparedStatementCacheSqlLimit = preparedStatementCacheSqlLimit;
   }
 
   public Context context() {
@@ -132,21 +131,28 @@ public abstract class SocketConnectionBase implements Connection {
     }
 
     // Special handling for cache
-    if (cmd instanceof PrepareStatementCommand) {
+    PreparedStatementCache psCache = this.psCache;
+    if (psCache != null && cmd instanceof PrepareStatementCommand) {
       PrepareStatementCommand psCmd = (PrepareStatementCommand) cmd;
-      Map<String, CachedPreparedStatement> psCache = this.psCache;
-      if (psCache != null) {
-        CachedPreparedStatement cached = psCache.get(psCmd.sql());
-        if (cached != null) {
-          Handler<? super CommandResponse<PreparedStatement>> handler = psCmd.handler;
-          cached.get(handler);
-          return;
+      if (psCmd.sql().length() > preparedStatementCacheSqlLimit) {
+        // do not cache the statements
+        return;
+      }
+      CachedPreparedStatement cached = psCache.get(psCmd.sql());
+      if (cached != null) {
+        psCmd.cached = cached;
+        Handler<? super CommandResponse<PreparedStatement>> handler = psCmd.handler;
+        cached.get(handler);
+        return;
+      } else {
+        if (psCache.size() >= psCache.getCapacity() && !psCache.isReady()) {
+          // only if the prepared statement is ready then it can be evicted
         } else {
           psCmd.statement = psSeq.next();
           psCmd.cached = cached = new CachedPreparedStatement();
           psCache.put(psCmd.sql(), cached);
           Handler<? super CommandResponse<PreparedStatement>> a = psCmd.handler;
-          ((CachedPreparedStatement)psCmd.cached).get(a);
+          ((CachedPreparedStatement) psCmd.cached).get(a);
           psCmd.handler = (Handler<? super CommandResponse<PreparedStatement>>) psCmd.cached;
         }
       }
@@ -161,10 +167,10 @@ public abstract class SocketConnectionBase implements Connection {
     }
   }
 
-  public static class CachedPreparedStatement implements Handler<CommandResponse<PreparedStatement>> {
+  static class CachedPreparedStatement implements Handler<CommandResponse<PreparedStatement>> {
 
-    private CommandResponse<PreparedStatement> resp;
-    private final ArrayDeque<Handler<? super CommandResponse<PreparedStatement>>> waiters = new ArrayDeque<>();
+    private final Deque<Handler<? super CommandResponse<PreparedStatement>>> waiters = new ArrayDeque<>();
+    CommandResponse<PreparedStatement> resp;
 
     void get(Handler<? super CommandResponse<PreparedStatement>> handler) {
       if (resp != null) {

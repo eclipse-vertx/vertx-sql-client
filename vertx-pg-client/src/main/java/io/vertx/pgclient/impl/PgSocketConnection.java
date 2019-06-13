@@ -39,9 +39,11 @@ public class PgSocketConnection extends SocketConnectionBase {
 
   public PgSocketConnection(NetSocketInternal socket,
                             boolean cachePreparedStatements,
+                            int preparedStatementCacheSize,
+                            int preparedStatementCacheSqlLimit,
                             int pipeliningLimit,
                             Context context) {
-    super(socket, cachePreparedStatements, pipeliningLimit, context);
+    super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, pipeliningLimit, context);
   }
 
   @Override

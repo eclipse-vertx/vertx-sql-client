@@ -140,6 +140,8 @@
 |[[pfxTrustOptions]]`@pfxTrustOptions`|`link:dataobjects.html#PfxOptions[PfxOptions]`|-
 |[[pipeliningLimit]]`@pipeliningLimit`|`Number (int)`|-
 |[[port]]`@port`|`Number (int)`|-
+|[[preparedStatementCacheSize]]`@preparedStatementCacheSize`|`Number (int)`|-
+|[[preparedStatementCacheSqlLimit]]`@preparedStatementCacheSqlLimit`|`Number (int)`|-
 |[[proxyOptions]]`@proxyOptions`|`link:dataobjects.html#ProxyOptions[ProxyOptions]`|-
 |[[receiveBufferSize]]`@receiveBufferSize`|`Number (int)`|-
 |[[reconnectAttempts]]`@reconnectAttempts`|`Number (int)`|-

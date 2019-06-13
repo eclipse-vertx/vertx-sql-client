@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -38,7 +39,30 @@ public class MySQLQueryTest extends MySQLTestBase {
   }
 
   @Test
-  public void testExceedMaxPreparedStatementCount(TestContext ctx) {
+  public void testCachePreparedStatementWithDifferentSql(TestContext ctx) {
+    // we set the cache size to be the same with max_prepared_stmt_count
+    MySQLConnection.connect(vertx, options.setCachePreparedStatements(true)
+      .setPreparedStatementCacheSize(16382), ctx.asyncAssertSuccess(conn -> {
+      conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'", ctx.asyncAssertSuccess(res1 -> {
+        Row row = res1.iterator().next();
+        int maxPreparedStatementCount = Integer.parseInt(row.getString(1));
+        ctx.assertEquals("max_prepared_stmt_count", row.getString(0));
+        ctx.assertEquals(16382, maxPreparedStatementCount);
+
+        for (int i = 0; i < 10000; i++) {
+          String randomString = UUID.randomUUID().toString();
+          for (int j = 0; j < 2; j++) {
+            conn.preparedQuery("SELECT '" + randomString + "'", ctx.asyncAssertSuccess(res2 -> {
+              ctx.assertEquals(randomString, res2.iterator().next().getString(0));
+            }));
+          }
+        }
+      }));
+    }));
+  }
+
+  @Test
+  public void testCachePreparedStatementWithSameSql(TestContext ctx) {
     MySQLConnection.connect(vertx, options.setCachePreparedStatements(true), ctx.asyncAssertSuccess(conn -> {
       conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'", ctx.asyncAssertSuccess(res1 -> {
         Row row = res1.iterator().next();
