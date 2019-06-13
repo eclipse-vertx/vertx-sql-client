@@ -23,7 +23,6 @@ import io.vertx.pgclient.data.Box;
 import io.vertx.pgclient.data.Circle;
 import io.vertx.pgclient.data.Line;
 import io.vertx.pgclient.data.LineSegment;
-import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.pgclient.data.Path;
 import io.vertx.pgclient.data.Polygon;
@@ -72,8 +71,40 @@ public class RowImpl extends ArrayTuple implements RowInternal {
 
   @Override
   public <T> T get(Class<T> type, int pos) {
-    if (type == Numeric.class) {
+    if (type == Boolean.class) {
+      return type.cast(getBoolean(pos));
+    } else if (type == Short.class) {
+      return type.cast(getShort(pos));
+    } else if (type == Integer.class) {
+      return type.cast(getInteger(pos));
+    } else if (type == Long.class) {
+      return type.cast(getLong(pos));
+    } else if (type == Float.class) {
+      return type.cast(getFloat(pos));
+    } else if (type == Double.class) {
+      return type.cast(getDouble(pos));
+    } else if (type == Character.class) {
+      return type.cast(getChar(pos));
+    } else if (type == Numeric.class) {
       return type.cast(getNumeric(pos));
+    } else if (type == String.class) {
+      return type.cast(getString(pos));
+    } else if (type == Buffer.class) {
+      return type.cast(getBuffer(pos));
+    } else if (type == UUID.class) {
+      return type.cast(getUUID(pos));
+    } else if (type == LocalDate.class) {
+      return type.cast(getLocalDate(pos));
+    } else if (type == LocalTime.class) {
+      return type.cast(getLocalTime(pos));
+    } else if (type == OffsetTime.class) {
+      return type.cast(getOffsetTime(pos));
+    } else if (type == LocalDateTime.class) {
+      return type.cast(getLocalDateTime(pos));
+    } else if (type == OffsetDateTime.class) {
+      return type.cast(getOffsetDateTime(pos));
+    } else if (type == Interval.class) {
+      return type.cast(getInterval(pos));
     } else if (type == Point.class) {
       return type.cast(getPoint(pos));
     } else if (type == Line.class) {
@@ -86,20 +117,52 @@ public class RowImpl extends ArrayTuple implements RowInternal {
       return type.cast(getPolygon(pos));
     } else if (type == Circle.class) {
       return type.cast(getCircle(pos));
-    } else if (type == Interval.class) {
-      return type.cast(getInterval(pos));
     } else if (type == Box.class) {
       return type.cast(getBox(pos));
+    } else if (type == JsonObject.class) {
+      return type.cast(getJson(pos));
+    } else if (type == JsonArray.class) {
+      return type.cast(getJson(pos));
     } else if (type == Object.class) {
-      return type.cast(type);
+      return type.cast(get(pos));
     }
     throw new UnsupportedOperationException("Unsupported type " + type.getName());
   }
 
   @Override
   public <T> T[] getValues(Class<T> type, int pos) {
-    if (type == Object.class) {
-      return (T[]) getJsonArray(pos);
+    if (type == Boolean.class) {
+      return (T[]) getBooleanArray(pos);
+    } else if (type == Short.class) {
+      return (T[]) getShortArray(pos);
+    } else if (type == Integer.class) {
+      return (T[]) getIntegerArray(pos);
+    } else if (type == Long.class) {
+      return (T[]) getLongArray(pos);
+    } else if (type == Float.class) {
+      return (T[]) getFloatArray(pos);
+    } else if (type == Double.class) {
+      return (T[]) getDoubleArray(pos);
+    } else if (type == Character.class) {
+      return (T[]) getCharArray(pos);
+    } else if (type == String.class) {
+      return (T[]) getStringArray(pos);
+    } else if (type == Buffer.class) {
+      return (T[]) getBufferArray(pos);
+    } else if (type == UUID.class) {
+      return (T[]) getUUIDArray(pos);
+    } else if (type == LocalDate.class) {
+      return (T[]) getLocalDateArray(pos);
+    } else if (type == LocalTime.class) {
+      return (T[]) getLocalTimeArray(pos);
+    } else if (type == OffsetTime.class) {
+      return (T[]) getOffsetTimeArray(pos);
+    } else if (type == LocalDateTime.class) {
+      return (T[]) getLocalDateTimeArray(pos);
+    } else if (type == OffsetDateTime.class) {
+      return (T[]) getOffsetDateTimeArray(pos);
+    } else if (type == Interval.class) {
+      return (T[]) getIntervalArray(pos);
     } else if (type == Numeric.class) {
       return (T[]) getNumericArray(pos);
     } else if (type == Point.class) {
@@ -118,6 +181,8 @@ public class RowImpl extends ArrayTuple implements RowInternal {
       return (T[]) getIntervalArray(pos);
     } else if (type == Box.class) {
       return (T[]) getBoxArray(pos);
+    } else if (type == Object.class) {
+      return (T[]) getJsonArray(pos);
     }
     throw new UnsupportedOperationException("Unsupported type " + type.getName());
   }
@@ -403,6 +468,20 @@ public class RowImpl extends ArrayTuple implements RowInternal {
     return pos == -1 ? null : getIntervalArray(pos);
   }
 
+  public Character[] getCharArray(String name) {
+    int pos = desc.columnIndex(name);
+    return pos == -1 ? null : getCharArray(pos);
+  }
+
+  public Character getChar(int pos) {
+    Object val = get(pos);
+    if (val instanceof Character) {
+      return (Character) val;
+    } else {
+      return null;
+    }
+  }
+
   public Numeric getNumeric(int pos) {
     Object val = get(pos);
     if (val instanceof Numeric) {
@@ -411,6 +490,20 @@ public class RowImpl extends ArrayTuple implements RowInternal {
       return Numeric.parse(val.toString());
     }
     return null;
+  }
+
+  /**
+   * Get a {@link io.vertx.core.json.JsonObject} or {@link io.vertx.core.json.JsonArray} value.
+   */
+  public Object getJson(int pos) {
+    Object val = get(pos);
+    if (val instanceof JsonObject) {
+      return val;
+    } else if (val instanceof JsonArray) {
+      return val;
+    } else {
+      return null;
+    }
   }
 
   public Point getPoint(int pos) {
@@ -485,10 +578,21 @@ public class RowImpl extends ArrayTuple implements RowInternal {
     }
   }
 
+  public Character[] getCharArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof Character[]) {
+      return (Character[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * Get a {@code Json} array value, the {@code Json} value may be a string, number, JSON object, array, boolean or null.
+   */
   public Object[] getJsonArray(int pos) {
     Object val = get(pos);
     if (val instanceof Object[]) {
-      Object[] obj = (Object[]) val;
       return (Object[]) val;
     } else {
       return null;
