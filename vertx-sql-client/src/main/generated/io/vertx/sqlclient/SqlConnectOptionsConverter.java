@@ -39,9 +39,9 @@ public class SqlConnectOptionsConverter {
             obj.setPort(((Number)member.getValue()).intValue());
           }
           break;
-        case "preparedStatementCacheSize":
+        case "preparedStatementCacheMaxSize":
           if (member.getValue() instanceof Number) {
-            obj.setPreparedStatementCacheSize(((Number)member.getValue()).intValue());
+            obj.setPreparedStatementCacheMaxSize(((Number)member.getValue()).intValue());
           }
           break;
         case "preparedStatementCacheSqlLimit":
@@ -74,7 +74,7 @@ public class SqlConnectOptionsConverter {
       json.put("password", obj.getPassword());
     }
     json.put("port", obj.getPort());
-    json.put("preparedStatementCacheSize", obj.getPreparedStatementCacheSize());
+    json.put("preparedStatementCacheMaxSize", obj.getPreparedStatementCacheMaxSize());
     json.put("preparedStatementCacheSqlLimit", obj.getPreparedStatementCacheSqlLimit());
     if (obj.getUser() != null) {
       json.put("user", obj.getUser());

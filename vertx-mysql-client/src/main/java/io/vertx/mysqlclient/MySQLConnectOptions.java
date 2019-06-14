@@ -75,8 +75,8 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   }
 
   @Override
-  public MySQLConnectOptions setPreparedStatementCacheSize(int preparedStatementCacheSize) {
-    return (MySQLConnectOptions) super.setPreparedStatementCacheSize(preparedStatementCacheSize);
+  public MySQLConnectOptions setPreparedStatementCacheMaxSize(int preparedStatementCacheMaxSize) {
+    return (MySQLConnectOptions) super.setPreparedStatementCacheMaxSize(preparedStatementCacheMaxSize);
   }
 
   @Override

@@ -66,8 +66,8 @@ Specify the user password to be used for the authentication.
 |[[port]]`@port`|`Number (int)`|+++
 Specify the port for connecting to the server.
 +++
-|[[preparedStatementCacheSize]]`@preparedStatementCacheSize`|`Number (int)`|+++
-Set the number of prepared statements that the connection will cache.
+|[[preparedStatementCacheMaxSize]]`@preparedStatementCacheMaxSize`|`Number (int)`|+++
+Set the maximum number of prepared statements that the connection will cache.
 +++
 |[[preparedStatementCacheSqlLimit]]`@preparedStatementCacheSqlLimit`|`Number (int)`|+++
 Set the maximum length of prepared statement SQL string that the connection will cache.

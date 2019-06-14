@@ -155,8 +155,8 @@ public class PgConnectOptions extends SqlConnectOptions {
   }
 
   @Override
-  public PgConnectOptions setPreparedStatementCacheSize(int preparedStatementCacheSize) {
-    return (PgConnectOptions) super.setPreparedStatementCacheSize(preparedStatementCacheSize);
+  public PgConnectOptions setPreparedStatementCacheMaxSize(int preparedStatementCacheMaxSize) {
+    return (PgConnectOptions) super.setPreparedStatementCacheMaxSize(preparedStatementCacheMaxSize);
   }
 
   @Override

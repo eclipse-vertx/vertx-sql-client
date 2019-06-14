@@ -39,7 +39,7 @@ public class MySQLConnectionFactory {
     this.database = options.getDatabase();
     this.charset = CharacterSetMapping.getCharset("UTF-8"); // Make it an option later
     this.cachePreparedStatements = options.getCachePreparedStatements();
-    this.preparedStatementCacheSize = options.getPreparedStatementCacheSize();
+    this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
     this.preparedStatementCacheSqlLimit = options.getPreparedStatementCacheSqlLimit();
 
     this.netClient = context.owner().createNetClient(netClientOptions);

@@ -75,7 +75,7 @@ class PgConnectionFactory {
     this.password = options.getPassword();
     this.cachePreparedStatements = options.getCachePreparedStatements();
     this.pipeliningLimit = options.getPipeliningLimit();
-    this.preparedStatementCacheSize = options.getPreparedStatementCacheSize();
+    this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
     this.preparedStatementCacheSqlLimit = options.getPreparedStatementCacheSqlLimit();
     this.isUsingDomainSocket = options.isUsingDomainSocket();
 

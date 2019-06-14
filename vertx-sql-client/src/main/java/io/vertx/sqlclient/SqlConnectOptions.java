@@ -10,7 +10,7 @@ import io.vertx.core.net.NetClientOptions;
 @DataObject(generateConverter = true)
 public abstract class SqlConnectOptions extends NetClientOptions {
   public static final boolean DEFAULT_CACHE_PREPARED_STATEMENTS = false;
-  public static final int DEFAULT_PREPARED_STATEMENT_CACHE_SIZE = 256;
+  public static final int DEFAULT_PREPARED_STATEMENT_CACHE_MAX_SIZE = 256;
   public static final int DEFAULT_PREPARED_STATEMENT_CACHE_SQL_LIMIT = 2048;
 
   private String host;
@@ -19,7 +19,7 @@ public abstract class SqlConnectOptions extends NetClientOptions {
   private String password;
   private String database;
   private boolean cachePreparedStatements = DEFAULT_CACHE_PREPARED_STATEMENTS;
-  private int preparedStatementCacheSize = DEFAULT_PREPARED_STATEMENT_CACHE_SIZE;
+  private int preparedStatementCacheMaxSize = DEFAULT_PREPARED_STATEMENT_CACHE_MAX_SIZE;
   private int preparedStatementCacheSqlLimit = DEFAULT_PREPARED_STATEMENT_CACHE_SQL_LIMIT;
 
   public SqlConnectOptions() {
@@ -41,7 +41,7 @@ public abstract class SqlConnectOptions extends NetClientOptions {
     this.password = other.password;
     this.database = other.database;
     this.cachePreparedStatements = other.cachePreparedStatements;
-    this.preparedStatementCacheSize = other.preparedStatementCacheSize;
+    this.preparedStatementCacheMaxSize = other.preparedStatementCacheMaxSize;
     this.preparedStatementCacheSqlLimit = other.preparedStatementCacheSqlLimit;
   }
 
@@ -173,22 +173,22 @@ public abstract class SqlConnectOptions extends NetClientOptions {
   }
 
   /**
-   * Get the number of prepared statements that the connection will cache.
+   * Get the maximum number of prepared statements that the connection will cache.
    *
    * @return the size
    */
-  public int getPreparedStatementCacheSize() {
-    return preparedStatementCacheSize;
+  public int getPreparedStatementCacheMaxSize() {
+    return preparedStatementCacheMaxSize;
   }
 
   /**
-   * Set the number of prepared statements that the connection will cache.
+   * Set the maximum number of prepared statements that the connection will cache.
    *
-   * @param preparedStatementCacheSize the size to set
+   * @param preparedStatementCacheMaxSize the size to set
    * @return a reference to this, so the API can be used fluently
    */
-  public SqlConnectOptions setPreparedStatementCacheSize(int preparedStatementCacheSize) {
-    this.preparedStatementCacheSize = preparedStatementCacheSize;
+  public SqlConnectOptions setPreparedStatementCacheMaxSize(int preparedStatementCacheMaxSize) {
+    this.preparedStatementCacheMaxSize = preparedStatementCacheMaxSize;
     return this;
   }
 

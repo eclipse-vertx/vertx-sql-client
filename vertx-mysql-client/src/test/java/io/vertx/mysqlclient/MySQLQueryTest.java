@@ -42,7 +42,7 @@ public class MySQLQueryTest extends MySQLTestBase {
   public void testCachePreparedStatementWithDifferentSql(TestContext ctx) {
     // we set the cache size to be the same with max_prepared_stmt_count
     MySQLConnection.connect(vertx, options.setCachePreparedStatements(true)
-      .setPreparedStatementCacheSize(16382), ctx.asyncAssertSuccess(conn -> {
+      .setPreparedStatementCacheMaxSize(16382), ctx.asyncAssertSuccess(conn -> {
       conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'", ctx.asyncAssertSuccess(res1 -> {
         Row row = res1.iterator().next();
         int maxPreparedStatementCount = Integer.parseInt(row.getString(1));
