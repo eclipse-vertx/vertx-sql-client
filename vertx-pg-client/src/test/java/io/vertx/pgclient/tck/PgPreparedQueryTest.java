@@ -23,6 +23,7 @@ import org.junit.runner.RunWith;
 public class PgPreparedQueryTest extends PgPreparedQueryTestBase {
   @Override
   protected void initConnector() {
-    connector = ClientConfig.CONNECT.connect(vertx, rule.options());
+    options = rule.options();
+    connector = ClientConfig.CONNECT.connect(vertx, options);
   }
 }

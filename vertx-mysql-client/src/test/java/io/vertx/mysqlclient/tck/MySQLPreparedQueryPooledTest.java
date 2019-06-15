@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 public class MySQLPreparedQueryPooledTest extends MySQLPreparedQueryTestBase {
   @Override
   protected void initConnector() {
-    connector = ClientConfig.POOLED.connect(vertx, rule.options());
+    options = rule.options();
+    connector = ClientConfig.POOLED.connect(vertx, options);
   }
 }

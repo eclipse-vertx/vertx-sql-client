@@ -14,11 +14,6 @@ public class PgConnectOptionsConverter {
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, PgConnectOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
-        case "cachePreparedStatements":
-          if (member.getValue() instanceof Boolean) {
-            obj.setCachePreparedStatements((Boolean)member.getValue());
-          }
-          break;
         case "pipeliningLimit":
           if (member.getValue() instanceof Number) {
             obj.setPipeliningLimit(((Number)member.getValue()).intValue());
@@ -40,7 +35,6 @@ public class PgConnectOptionsConverter {
   }
 
   public static void toJson(PgConnectOptions obj, java.util.Map<String, Object> json) {
-    json.put("cachePreparedStatements", obj.getCachePreparedStatements());
     json.put("pipeliningLimit", obj.getPipeliningLimit());
     if (obj.getSslMode() != null) {
       json.put("sslMode", obj.getSslMode().name());

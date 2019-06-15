@@ -14,6 +14,11 @@ public class SqlConnectOptionsConverter {
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, SqlConnectOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
+        case "cachePreparedStatements":
+          if (member.getValue() instanceof Boolean) {
+            obj.setCachePreparedStatements((Boolean)member.getValue());
+          }
+          break;
         case "database":
           if (member.getValue() instanceof String) {
             obj.setDatabase((String)member.getValue());
@@ -34,6 +39,16 @@ public class SqlConnectOptionsConverter {
             obj.setPort(((Number)member.getValue()).intValue());
           }
           break;
+        case "preparedStatementCacheMaxSize":
+          if (member.getValue() instanceof Number) {
+            obj.setPreparedStatementCacheMaxSize(((Number)member.getValue()).intValue());
+          }
+          break;
+        case "preparedStatementCacheSqlLimit":
+          if (member.getValue() instanceof Number) {
+            obj.setPreparedStatementCacheSqlLimit(((Number)member.getValue()).intValue());
+          }
+          break;
         case "user":
           if (member.getValue() instanceof String) {
             obj.setUser((String)member.getValue());
@@ -48,6 +63,7 @@ public class SqlConnectOptionsConverter {
   }
 
   public static void toJson(SqlConnectOptions obj, java.util.Map<String, Object> json) {
+    json.put("cachePreparedStatements", obj.getCachePreparedStatements());
     if (obj.getDatabase() != null) {
       json.put("database", obj.getDatabase());
     }
@@ -58,6 +74,8 @@ public class SqlConnectOptionsConverter {
       json.put("password", obj.getPassword());
     }
     json.put("port", obj.getPort());
+    json.put("preparedStatementCacheMaxSize", obj.getPreparedStatementCacheMaxSize());
+    json.put("preparedStatementCacheSqlLimit", obj.getPreparedStatementCacheSqlLimit());
     if (obj.getUser() != null) {
       json.put("user", obj.getUser());
     }
