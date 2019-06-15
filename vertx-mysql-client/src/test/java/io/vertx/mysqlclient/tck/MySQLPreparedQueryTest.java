@@ -27,7 +27,8 @@ import org.junit.runner.RunWith;
 public class MySQLPreparedQueryTest extends MySQLPreparedQueryTestBase {
   @Override
   protected void initConnector() {
-    connector = ClientConfig.CONNECT.connect(vertx, rule.options());
+    options = rule.options();
+    connector = ClientConfig.CONNECT.connect(vertx, options);
   }
 
   @Test

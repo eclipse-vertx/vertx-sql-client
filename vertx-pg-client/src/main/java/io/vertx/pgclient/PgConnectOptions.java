@@ -92,11 +92,9 @@ public class PgConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_DATABASE = "db";
   public static final String DEFAULT_USER = "user";
   public static final String DEFAULT_PASSWORD = "pass";
-  public static final boolean DEFAULT_CACHE_PREPARED_STATEMENTS = false;
   public static final int DEFAULT_PIPELINING_LIMIT = 256;
   public static final SslMode DEFAULT_SSLMODE = SslMode.DISABLE;
 
-  private boolean cachePreparedStatements;
   private int pipeliningLimit;
   private SslMode sslMode;
 
@@ -112,7 +110,6 @@ public class PgConnectOptions extends SqlConnectOptions {
   public PgConnectOptions(PgConnectOptions other) {
     super(other);
     pipeliningLimit = other.pipeliningLimit;
-    cachePreparedStatements = other.cachePreparedStatements;
     sslMode = other.sslMode;
   }
 
@@ -153,13 +150,18 @@ public class PgConnectOptions extends SqlConnectOptions {
     return this;
   }
 
-  public boolean getCachePreparedStatements() {
-    return cachePreparedStatements;
+  public PgConnectOptions setCachePreparedStatements(boolean cachePreparedStatements) {
+    return (PgConnectOptions) super.setCachePreparedStatements(cachePreparedStatements);
   }
 
-  public PgConnectOptions setCachePreparedStatements(boolean cachePreparedStatements) {
-    this.cachePreparedStatements = cachePreparedStatements;
-    return this;
+  @Override
+  public PgConnectOptions setPreparedStatementCacheMaxSize(int preparedStatementCacheMaxSize) {
+    return (PgConnectOptions) super.setPreparedStatementCacheMaxSize(preparedStatementCacheMaxSize);
+  }
+
+  @Override
+  public PgConnectOptions setPreparedStatementCacheSqlLimit(int preparedStatementCacheSqlLimit) {
+    return (PgConnectOptions) super.setPreparedStatementCacheSqlLimit(preparedStatementCacheSqlLimit);
   }
 
   /**
@@ -409,7 +411,6 @@ public class PgConnectOptions extends SqlConnectOptions {
     this.setUser(DEFAULT_USER);
     this.setPassword(DEFAULT_PASSWORD);
     this.setDatabase(DEFAULT_DATABASE);
-    cachePreparedStatements = DEFAULT_CACHE_PREPARED_STATEMENTS;
     pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
     sslMode = DEFAULT_SSLMODE;
   }
@@ -429,7 +430,6 @@ public class PgConnectOptions extends SqlConnectOptions {
 
     PgConnectOptions that = (PgConnectOptions) o;
 
-    if (cachePreparedStatements != that.cachePreparedStatements) return false;
     if (pipeliningLimit != that.pipeliningLimit) return false;
     if (sslMode != that.sslMode) return false;
 
@@ -439,7 +439,6 @@ public class PgConnectOptions extends SqlConnectOptions {
   @Override
   public int hashCode() {
     int result = super.hashCode();
-    result = 31 * result + (cachePreparedStatements ? 1 : 0);
     result = 31 * result + pipeliningLimit;
     result = 31 * result + sslMode.hashCode();
     return result;

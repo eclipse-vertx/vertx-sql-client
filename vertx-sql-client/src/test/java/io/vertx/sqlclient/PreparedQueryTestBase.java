@@ -36,6 +36,8 @@ public abstract class PreparedQueryTestBase {
   protected Vertx vertx;
   protected Connector<SqlConnection> connector;
 
+  protected SqlConnectOptions options;
+
   private static void insertIntoTestTable(TestContext ctx, SqlClient client, int amount, Runnable completionHandler) {
     AtomicInteger count = new AtomicInteger();
     for (int i = 0; i < 10; i++) {

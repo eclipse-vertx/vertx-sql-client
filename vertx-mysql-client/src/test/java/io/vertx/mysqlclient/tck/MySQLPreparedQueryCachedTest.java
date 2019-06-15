@@ -1,15 +1,24 @@
 package io.vertx.mysqlclient.tck;
 
 import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mysqlclient.junit.MySQLRule;
-import io.vertx.sqlclient.PreparedQueryTestBase;
+import io.vertx.sqlclient.PreparedQueryCachedTestBase;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
-public abstract class MySQLPreparedQueryTestBase extends PreparedQueryTestBase {
+@RunWith(VertxUnitRunner.class)
+public class MySQLPreparedQueryCachedTest extends PreparedQueryCachedTestBase {
   @ClassRule
   public static MySQLRule rule = new MySQLRule();
+
+  @Override
+  protected void initConnector() {
+    options = rule.options();
+    connector = ClientConfig.CONNECT.connect(vertx, options);
+  }
 
   @Override
   protected String statement(String... parts) {

@@ -33,6 +33,9 @@ Set the maximum connection request allowed in the wait queue, any requests beyon
 [frame="topbot"]
 |===
 ^|Name | Type ^| Description
+|[[cachePreparedStatements]]`@cachePreparedStatements`|`Boolean`|+++
+Set whether prepared statements cache should be enabled.
++++
 |[[connectTimeout]]`@connectTimeout`|`Number (int)`|-
 |[[crlPaths]]`@crlPaths`|`Array of String`|-
 |[[crlValues]]`@crlValues`|`Array of Buffer`|-
@@ -62,6 +65,12 @@ Specify the user password to be used for the authentication.
 |[[pfxTrustOptions]]`@pfxTrustOptions`|`link:dataobjects.html#PfxOptions[PfxOptions]`|-
 |[[port]]`@port`|`Number (int)`|+++
 Specify the port for connecting to the server.
++++
+|[[preparedStatementCacheMaxSize]]`@preparedStatementCacheMaxSize`|`Number (int)`|+++
+Set the maximum number of prepared statements that the connection will cache.
++++
+|[[preparedStatementCacheSqlLimit]]`@preparedStatementCacheSqlLimit`|`Number (int)`|+++
+Set the maximum length of prepared statement SQL string that the connection will cache.
 +++
 |[[proxyOptions]]`@proxyOptions`|`link:dataobjects.html#ProxyOptions[ProxyOptions]`|-
 |[[receiveBufferSize]]`@receiveBufferSize`|`Number (int)`|-

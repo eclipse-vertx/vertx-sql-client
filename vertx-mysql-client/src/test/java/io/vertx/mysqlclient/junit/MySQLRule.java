@@ -35,6 +35,7 @@ public class MySQLRule extends ExternalResource {
       .withUser("mysql", "password")
       .withPort(3306)
       .withServerVariable("max_allowed_packet", 32 * 1024 * 1024)
+      .withServerVariable("max_prepared_stmt_count", 16382)
       .build();
 
     SchemaConfig schemaConfig = SchemaConfig.aSchemaConfig("testschema")
