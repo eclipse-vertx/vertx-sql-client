@@ -8,12 +8,12 @@ image:https://travis-ci.org/eclipse-vertx/vertx-sql-client.svg?branch=master["Bu
 
 Supported databases
 
-** link:vertx-pg-client/README.adoc[PostgreSQL]
-** link:vertx-mysql-client[MySQL]
+** link:vertx-pg-client/README.adoc[Reactive PostgreSQL Client]
+** link:vertx-mysql-client[Reactive MySQL Client]
 
-This project is the natural evolution of the Reactive PostgreSQL Client and will be part of Vert.x 3.8 stack release.
+This project is the natural evolution of the original Reactive PostgreSQL Client and will be part of Vert.x 3.8 stack release.
 
-The original Reactive PostgreSQL Client project is located https://github.com/vietj/reactive-pg-client/[here] for Vert.x 3.x
+The original project is located https://github.com/vietj/reactive-pg-client/[here] for Vert.x 3.x
 it will only handle bug fixes.
 
 == Snapshots
