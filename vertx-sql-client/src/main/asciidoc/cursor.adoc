@@ -1,0 +1,32 @@
+== Cursors and streaming
+
+By default prepared query execution fetches all rows, you can use a
+{@link io.vertx.sqlclient.Cursor} to control the amount of rows you want to read:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#usingCursors01(io.vertx.sqlclient.SqlConnection)}
+----
+
+PostreSQL destroys cursors at the end of a transaction, so the cursor API shall be used
+within a transaction, otherwise you will likely get the `34000` PostgreSQL error.
+
+Cursors shall be closed when they are released prematurely:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#usingCursors02(io.vertx.sqlclient.Cursor)}
+----
+
+A stream API is also available for cursors, which can be more convenient, specially with the Rxified version.
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#usingCursors03(io.vertx.sqlclient.SqlConnection)}
+----
+
+The stream read the rows by batch of `50` and stream them, when the rows have been passed to the handler,
+a new batch of `50` is read and so on.
+
+The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
+will stop iterating.

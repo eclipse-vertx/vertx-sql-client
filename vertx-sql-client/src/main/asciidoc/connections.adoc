@@ -1,0 +1,26 @@
+== Using connections
+
+When you need to execute sequential queries (without a transaction), you can create a new connection
+or borrow one from the pool:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#usingConnections01(io.vertx.core.Vertx, io.vertx.sqlclient.Pool)}
+----
+
+Prepared queries can be created:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#usingConnections02(io.vertx.sqlclient.SqlConnection)}
+----
+
+NOTE: prepared query caching depends on the {@link io.vertx.sqlclient.SqlConnectOptions#setCachePreparedStatements(boolean)} and
+does not depend on whether you are creating prepared queries or use {@link io.vertx.sqlclient.SqlClient#preparedQuery(java.lang.String, io.vertx.core.Handler) direct prepared queries}
+
+{@link io.vertx.sqlclient.PreparedQuery} can perform efficient batching:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#usingConnections03(io.vertx.sqlclient.SqlConnection)}
+----

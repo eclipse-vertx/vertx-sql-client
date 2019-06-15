@@ -164,6 +164,20 @@
     </pluginManagement>
     <plugins>
       <plugin>
+        <groupId>org.bsc.maven</groupId>
+        <artifactId>maven-processor-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-sources</id>
+            <configuration>
+              <optionMap>
+                <docgen.source>${project.basedir}/../vertx-sql-client/src/main/asciidoc/*.adoc,${asciidoc.dir}/*.adoc</docgen.source>
+              </optionMap>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
         <version>3.0.0</version>

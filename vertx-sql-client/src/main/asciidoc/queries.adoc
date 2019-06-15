@@ -1,0 +1,76 @@
+== Running queries
+
+When you don't need a transaction or run single queries, you can run queries directly on the pool; the pool
+will use one of its connection to run the query and return the result to you.
+
+Here is how to run simple queries:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#queries01(io.vertx.sqlclient.SqlClient)}
+----
+
+You can do the same with prepared queries.
+
+The SQL string can refer to parameters by position, using `$1`, `$2`, etc…​
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#queries02(io.vertx.sqlclient.SqlClient)}
+----
+
+Query methods provides an asynchronous {@link io.vertx.sqlclient.RowSet} instance that works for _SELECT_ queries
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#queries03(io.vertx.sqlclient.SqlClient)}
+----
+
+or _UPDATE_/_INSERT_ queries:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#queries04(io.vertx.sqlclient.SqlClient)}
+----
+
+The {@link io.vertx.sqlclient.Row} gives you access to your data by index
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#queries05(io.vertx.sqlclient.Row)}
+----
+
+or by name
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#queries06(io.vertx.sqlclient.Row)}
+----
+
+You can access a wide variety of of types
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#queries07(io.vertx.sqlclient.Row)}
+----
+
+You can execute prepared batch
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#queries08(io.vertx.sqlclient.SqlClient)}
+----
+
+You can cache prepared queries:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#queries09(io.vertx.core.Vertx, SqlConnectOptions, PoolOptions)}
+----
+
+You can fetch generated keys with a 'RETURNING' clause in your query:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#queries10(io.vertx.sqlclient.SqlClient)}
+----

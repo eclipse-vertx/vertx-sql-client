@@ -47,7 +47,6 @@
   </scm>
 
   <properties>
-    <doc.skip>false</doc.skip>
     <stack.version>3.8.0-SNAPSHOT</stack.version>
     <jmh.version>1.19</jmh.version>
     <docs.dir>${project.basedir}/src/main/docs</docs.dir>
