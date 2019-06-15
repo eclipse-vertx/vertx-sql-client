@@ -1,0 +1,35 @@
+== Using transactions
+
+=== Transactions with connections
+
+You can execute transaction using SQL `BEGIN`/`COMMIT`/`ROLLBACK`, if you do so you must use
+a {@link io.vertx.sqlclient.SqlConnection} and manage it yourself.
+
+Or you can use the transaction API of {@link io.vertx.sqlclient.SqlConnection}:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#transaction01(io.vertx.sqlclient.Pool)}
+----
+
+When PostgreSQL reports the current transaction is failed (e.g the infamous _current transaction is aborted, commands ignored until
+end of transaction block_), the transaction is rollbacked and the {@link io.vertx.sqlclient.Transaction#abortHandler(io.vertx.core.Handler)}
+is called:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#transaction02(io.vertx.sqlclient.Transaction)}
+----
+
+=== Simplified transaction API
+
+When you use a pool, you can start a transaction directly on the pool.
+
+It borrows a connection from the pool, begins the transaction and releases the connection to the pool when the transaction ends.
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#transaction03(io.vertx.sqlclient.Pool)}
+----
+
+NOTE: this code will not close the connection because it will always be released back to the pool when the transaction
