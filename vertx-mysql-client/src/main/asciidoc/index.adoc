@@ -86,106 +86,11 @@ You can easily get one from the pool:
 
 Once you are done with the connection you must close it to release it to the pool, so it can be reused.
 
-== Running queries
+include::queries.adoc[]
 
-When you don't need a transaction or run single queries, you can run queries directly on the pool; the pool
-will use one of its connection to run the query and return the result to you.
+include::connections.adoc[]
 
-Here is how to run simple queries:
-
-[source,$lang]
-----
-{@link examples.MySQLClientExamples#queries01(io.vertx.sqlclient.SqlClient)}
-----
-
-You can do the same with prepared queries.
-
-[source,$lang]
-----
-{@link examples.MySQLClientExamples#queries02(io.vertx.sqlclient.SqlClient)}
-----
-
-Query methods provides an asynchronous {@link io.vertx.sqlclient.RowSet} instance that works for _SELECT_ queries
-
-[source,$lang]
-----
-{@link examples.MySQLClientExamples#queries03(io.vertx.sqlclient.SqlClient)}
-----
-
-or _UPDATE_/_INSERT_ queries:
-
-[source,$lang]
-----
-{@link examples.MySQLClientExamples#queries04(io.vertx.sqlclient.SqlClient)}
-----
-
-The {@link io.vertx.sqlclient.Row} gives you access to your data by index
-
-[source,$lang]
-----
-{@link examples.MySQLClientExamples#queries05(io.vertx.sqlclient.Row)}
-----
-
-or by name
-
-[source,$lang]
-----
-{@link examples.MySQLClientExamples#queries06(io.vertx.sqlclient.Row)}
-----
-
-You can access a wide variety of of types
-
-[source,$lang]
-----
-{@link examples.MySQLClientExamples#queries07(io.vertx.sqlclient.Row)}
-----
-
-== Using connections
-
-When you need to execute sequential queries (without a transaction), you can create a new connection
-or borrow one from the pool:
-
-[source,$lang]
-----
-{@link examples.MySQLClientExamples#usingConnections01(io.vertx.core.Vertx, io.vertx.sqlclient.Pool)}
-----
-
-Prepared queries can be created:
-
-[source,$lang]
-----
-{@link examples.MySQLClientExamples#usingConnections02(io.vertx.sqlclient.SqlConnection)}
-----
-
-== Cursors and streaming
-
-By default prepared query execution fetches all rows, you can use a
-{@link io.vertx.sqlclient.Cursor} to control the amount of rows you want to read:
-
-[source,$lang]
-----
-{@link examples.MySQLClientExamples#usingCursors01(io.vertx.sqlclient.SqlConnection)}
-----
-
-Cursors shall be closed when they are released prematurely:
-
-[source,$lang]
-----
-{@link examples.MySQLClientExamples#usingCursors02(io.vertx.sqlclient.Cursor)}
-----
-
-A stream API is also available for cursors, which can be more convenient, specially with the Rxified version.
-
-[source,$lang]
-----
-{@link examples.MySQLClientExamples#usingCursors03(io.vertx.sqlclient.SqlConnection)}
-----
-
-The stream read the rows by batch of `50` and stream them, when the rows have been passed to the handler,
-a new batch of `50` is read and so on.
-
-The stream can be resumed or paused, the loaded rows will remain in memory until they are delivered and the cursor
-will stop iterating.
+include::cursor.adoc[]
 
 == MySQL type mapping
 
