@@ -15,8 +15,16 @@ import io.vertx.mysqlclient.impl.command.PingCommand;
 import io.vertx.mysqlclient.impl.command.ResetConnectionCommand;
 import io.vertx.mysqlclient.impl.command.SetOptionCommand;
 import io.vertx.mysqlclient.impl.command.StatisticsCommand;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.SqlResult;
+import io.vertx.sqlclient.Transaction;
+import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
+
+import java.util.List;
+import java.util.stream.Collector;
 
 public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> implements MySQLConnection {
 
@@ -53,6 +61,26 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
   @Override
   public void handleNotification(int processId, String channel, String payload) {
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Transaction begin() {
+    throw new UnsupportedOperationException("Transaction is not supported for now");
+  }
+
+  @Override
+  public Transaction begin(boolean closeOnEnd) {
+    throw new UnsupportedOperationException("Transaction is not supported for now");
+  }
+
+  @Override
+  public MySQLConnectionImpl preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet>> handler) {
+    throw new UnsupportedOperationException("PreparedBatch is not supported for now");
+  }
+
+  @Override
+  public <R> MySQLConnectionImpl preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
+    throw new UnsupportedOperationException("PreparedBatch is not supported for now");
   }
 
   @Override
