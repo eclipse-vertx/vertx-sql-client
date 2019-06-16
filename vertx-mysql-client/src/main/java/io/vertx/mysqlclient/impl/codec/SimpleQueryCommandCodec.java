@@ -17,6 +17,7 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
 import java.nio.charset.StandardCharsets;
@@ -45,6 +46,7 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
       handleErrorPacketPayload(payload);
     } else if (firstByte == 0xFB) {
       //TODO LOCAL INFILE Request support
+      completionHandler.handle(CommandResponse.failure(new UnsupportedOperationException("LOCAL INFILE is not supported for now")));
     } else {
       handleResultsetColumnCountPacketBody(payload);
     }
