@@ -15,7 +15,7 @@
  *
  */
 
-package io.vertx.pgclient;
+package io.vertx.sqlclient;
 
 import io.vertx.sqlclient.impl.StringLongSequence;
 import io.netty.buffer.ByteBuf;
