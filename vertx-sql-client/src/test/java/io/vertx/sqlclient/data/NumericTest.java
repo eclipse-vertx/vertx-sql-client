@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package io.vertx.sqlclient;
+package io.vertx.sqlclient.data;
 
 import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;

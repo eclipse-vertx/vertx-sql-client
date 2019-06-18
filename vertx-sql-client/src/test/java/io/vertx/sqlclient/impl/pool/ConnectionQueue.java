@@ -15,7 +15,7 @@
  *
  */
 
-package io.vertx.sqlclient.pool;
+package io.vertx.sqlclient.impl.pool;
 
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.core.AsyncResult;
