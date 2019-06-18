@@ -15,7 +15,7 @@
  *
  */
 
-package io.vertx.pgclient.pool;
+package io.vertx.sqlclient.impl.pool;
 
 import io.vertx.sqlclient.impl.ConnectionPool;
 import io.vertx.core.Future;
