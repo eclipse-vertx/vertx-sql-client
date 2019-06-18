@@ -14,10 +14,11 @@
  * limitations under the License.
  *
  */
-package io.vertx.sqlclient;
+package io.vertx.sqlclient.tck;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.sqlclient.SqlClient;
 
 public interface Connector<C extends SqlClient> {
 

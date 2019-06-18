@@ -14,13 +14,14 @@
  * limitations under the License.
  *
  */
-package io.vertx.sqlclient;
+package io.vertx.sqlclient.tck;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.sqlclient.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

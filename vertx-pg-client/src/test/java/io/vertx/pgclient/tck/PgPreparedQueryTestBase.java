@@ -1,7 +1,7 @@
 package io.vertx.pgclient.tck;
 
 import io.vertx.pgclient.junit.PgRule;
-import io.vertx.sqlclient.PreparedQueryTestBase;
+import io.vertx.sqlclient.tck.PreparedQueryTestBase;
 import org.junit.ClassRule;
 
 public abstract class PgPreparedQueryTestBase extends PreparedQueryTestBase {

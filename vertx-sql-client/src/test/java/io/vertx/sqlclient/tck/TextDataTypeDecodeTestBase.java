@@ -1,12 +1,15 @@
-package io.vertx.sqlclient;
+package io.vertx.sqlclient.tck;
 
+import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
+public abstract class TextDataTypeDecodeTestBase extends DataTypeTestBase {
   @Test
   public void testSmallInt(TestContext ctx) {
     testDecodeGeneric(ctx, "test_int_2", Short.class, (short) 32767);
@@ -32,7 +35,6 @@ public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
     testDecodeGeneric(ctx, "test_float_8", Double.class, (double) 1.7976931348623157E308);
   }
 
-/*
   @Test
   public void testNumeric(TestContext ctx) {
     testDecodeGeneric(ctx, "test_numeric", Numeric.class, Numeric.parse("999.99"));
@@ -42,7 +44,6 @@ public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
   public void testDecimal(TestContext ctx) {
     testDecodeGeneric(ctx, "test_decimal", Numeric.class, Numeric.parse("12345"));
   }
-*/
 
   @Test
   public void testBoolean(TestContext ctx) {
@@ -73,8 +74,9 @@ public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
                                        String columnName,
                                        Class<T> clazz,
                                        T expected) {
+    Async async = ctx.async();
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("SELECT " + columnName + " FROM basicdatatype WHERE id = 1", ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT " + columnName + " FROM basicdatatype WHERE id = 1", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         ctx.assertEquals(expected, row.getValue(0));
@@ -84,7 +86,7 @@ public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
 //          .returns(Tuple::getValue, Row::getValue, expected)
 //          .returns(byIndexGetter, byNameGetter, expected)
 //          .forRow(row);
-        conn.close();
+        async.complete();
       }));
     }));
   }

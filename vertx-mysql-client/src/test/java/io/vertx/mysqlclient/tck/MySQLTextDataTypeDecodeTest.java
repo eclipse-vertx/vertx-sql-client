@@ -2,7 +2,7 @@ package io.vertx.mysqlclient.tck;
 
 import io.vertx.mysqlclient.junit.MySQLRule;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.TextDataTypeDecodeTestBase;
+import io.vertx.sqlclient.tck.TextDataTypeDecodeTestBase;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.ClassRule;

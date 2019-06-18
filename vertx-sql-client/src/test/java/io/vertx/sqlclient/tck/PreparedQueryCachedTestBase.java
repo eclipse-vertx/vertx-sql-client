@@ -1,7 +1,8 @@
-package io.vertx.sqlclient;
+package io.vertx.sqlclient.tck;
 
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.sqlclient.Tuple;
 import org.junit.Test;
 
 public abstract class PreparedQueryCachedTestBase extends PreparedQueryTestBase {

@@ -20,7 +20,7 @@ import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.Connector;
+import io.vertx.sqlclient.tck.Connector;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;

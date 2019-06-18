@@ -1,6 +1,8 @@
-package io.vertx.sqlclient;
+package io.vertx.sqlclient.tck;
 
 import io.vertx.ext.unit.TestContext;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;
 
