@@ -1,7 +1,7 @@
 package io.vertx.pgclient.tck;
 
 import io.vertx.pgclient.junit.PgRule;
-import io.vertx.sqlclient.TextDataTypeDecodeTestBase;
+import io.vertx.sqlclient.tck.TextDataTypeDecodeTestBase;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;

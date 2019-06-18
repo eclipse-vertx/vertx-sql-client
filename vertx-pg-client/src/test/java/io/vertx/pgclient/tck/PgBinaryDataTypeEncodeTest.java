@@ -1,7 +1,7 @@
 package io.vertx.pgclient.tck;
 
 import io.vertx.pgclient.junit.PgRule;
-import io.vertx.sqlclient.BinaryDataTypeEncodeTestBase;
+import io.vertx.sqlclient.tck.BinaryDataTypeEncodeTestBase;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
