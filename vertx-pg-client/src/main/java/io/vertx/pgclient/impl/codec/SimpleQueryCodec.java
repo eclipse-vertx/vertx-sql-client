@@ -31,6 +31,6 @@ class SimpleQueryCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>
 
   @Override
   void handleRowDescription(PgRowDesc rowDescription) {
-    decoder = new RowResultDecoder<>(cmd.collector(), cmd.isSingleton(), rowDescription);
+    decoder = new PgRowResultDecoder<>(cmd.collector(), cmd.isSingleton(), rowDescription);
   }
 }

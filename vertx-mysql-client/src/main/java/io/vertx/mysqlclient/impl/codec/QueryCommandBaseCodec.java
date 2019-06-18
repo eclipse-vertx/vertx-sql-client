@@ -35,7 +35,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
 
   protected CommandHandlerState commandHandlerState = CommandHandlerState.INIT;
   protected ColumnDefinition[] columnDefinitions;
-  protected RowResultDecoder<?, T> decoder;
+  protected MySQLRowResultDecoder<?, T> decoder;
   private int currentColumn;
 
   QueryCommandBaseCodec(C cmd, DataFormat format) {
@@ -76,7 +76,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     if (currentColumn == columnDefinitions.length) {
       // all column definitions have been handled, switch to row data handling
       commandHandlerState = CommandHandlerState.HANDLING_ROW_DATA_OR_END_PACKET;
-      decoder = new RowResultDecoder<>(cmd.collector(), false/*cmd.isSingleton()*/, new MySQLRowDesc(columnDefinitions, format));
+      decoder = new MySQLRowResultDecoder<>(cmd.collector(), false/*cmd.isSingleton()*/, new MySQLRowDesc(columnDefinitions, format));
     }
   }
 

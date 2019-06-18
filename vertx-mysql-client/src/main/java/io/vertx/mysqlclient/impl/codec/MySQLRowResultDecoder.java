@@ -3,32 +3,18 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.MySQLRowImpl;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.impl.RowDecoder;
+import io.vertx.sqlclient.impl.RowResultDecoder;
 
-import java.util.function.BiConsumer;
 import java.util.stream.Collector;
 
-class RowResultDecoder<C, R> implements RowDecoder {
+class MySQLRowResultDecoder<C, R> extends RowResultDecoder<C, R> {
   private static final int NULL = 0xFB;
 
-  private final Collector<Row, C, R> collector;
-  private final boolean singleton;
-  private final BiConsumer<C, Row> accumulator;
   MySQLRowDesc rowDesc;
 
-  private int size;
-  private C container;
-  private Row row;
-
-  RowResultDecoder(Collector<Row, C, R> collector, boolean singleton, MySQLRowDesc rowDesc) {
-    this.collector = collector;
-    this.singleton = singleton;
-    this.accumulator = collector.accumulator();
+  MySQLRowResultDecoder(Collector<Row, C, R> collector, boolean singleton, MySQLRowDesc rowDesc) {
+    super(collector, singleton);
     this.rowDesc = rowDesc;
-  }
-
-  public int size() {
-    return size;
   }
 
   @Override
@@ -89,18 +75,6 @@ class RowResultDecoder<C, R> implements RowDecoder {
     }
     accumulator.accept(container, row);
     size++;
-  }
-
-  public R complete() {
-    if (container == null) {
-      container = collector.supplier().get();
-    }
-    return collector.finisher().apply(container);
-  }
-
-  public void reset() {
-    container = null;
-    size = 0;
   }
 }
 

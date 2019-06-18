@@ -24,7 +24,7 @@ import java.util.stream.Collector;
 
 abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends PgCommandCodec<Boolean, C> {
 
-  RowResultDecoder<?, T> decoder;
+  PgRowResultDecoder<?, T> decoder;
 
   QueryCommandBaseCodec(C cmd) {
     super(cmd);

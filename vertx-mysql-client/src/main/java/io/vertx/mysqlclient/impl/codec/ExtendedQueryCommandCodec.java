@@ -50,7 +50,7 @@ class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, ExtendedQuer
 
     if (statement.isCursorOpen) {
       sendStatementFetchCommand(statement.statementId, cmd.fetch());
-      decoder = new RowResultDecoder<>(cmd.collector(), false, statement.rowDesc);
+      decoder = new MySQLRowResultDecoder<>(cmd.collector(), false, statement.rowDesc);
     } else {
       if (cmd.fetch() > 0) {
         //TODO Cursor_type is READ_ONLY?
@@ -93,7 +93,7 @@ class ExtendedQueryCommandCodec<R> extends QueryCommandBaseCodec<R, ExtendedQuer
               // need to reset packet number so that we can send a fetch request
               this.sequenceId = 0;
               // send fetch after cursor opened
-              decoder = new RowResultDecoder<>(cmd.collector(), false, statement.rowDesc);
+              decoder = new MySQLRowResultDecoder<>(cmd.collector(), false, statement.rowDesc);
 
               statement.isCursorOpen = true;
 

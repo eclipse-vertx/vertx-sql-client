@@ -23,12 +23,12 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
 
   ExtendedQueryCommandBaseCodec(C cmd) {
     super(cmd);
-    decoder = new RowResultDecoder<>(cmd.collector(), cmd.isSingleton(), ((PgPreparedStatement)cmd.preparedStatement()).rowDesc());
+    decoder = new PgRowResultDecoder<>(cmd.collector(), cmd.isSingleton(), ((PgPreparedStatement)cmd.preparedStatement()).rowDesc());
   }
 
   @Override
   void handleRowDescription(PgRowDesc rowDescription) {
-    decoder = new RowResultDecoder<>(cmd.collector(), cmd.isSingleton(), rowDescription);
+    decoder = new PgRowResultDecoder<>(cmd.collector(), cmd.isSingleton(), rowDescription);
   }
 
   @Override

@@ -17,34 +17,20 @@
 
 package io.vertx.pgclient.impl.codec;
 
-import io.vertx.sqlclient.Row;
-import io.vertx.pgclient.impl.RowImpl;
 import io.netty.buffer.ByteBuf;
-import io.vertx.sqlclient.impl.RowDecoder;
+import io.vertx.pgclient.impl.RowImpl;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.impl.RowResultDecoder;
 
-import java.util.function.BiConsumer;
 import java.util.stream.Collector;
 
-class RowResultDecoder<C, R> implements RowDecoder {
+class PgRowResultDecoder<C, R> extends RowResultDecoder<C, R> {
 
-  final Collector<Row, C, R> collector;
-  final boolean singleton;
-  final BiConsumer<C, Row> accumulator;
   final PgRowDesc desc;
 
-  private int size;
-  private C container;
-  private Row row;
-
-  RowResultDecoder(Collector<Row, C, R> collector, boolean singleton, PgRowDesc desc) {
-    this.collector = collector;
-    this.singleton = singleton;
-    this.accumulator = collector.accumulator();
+  PgRowResultDecoder(Collector<Row, C, R> collector, boolean singleton, PgRowDesc desc) {
+    super(collector, singleton);
     this.desc = desc;
-  }
-
-  public int size() {
-    return size;
   }
 
   @Override
@@ -78,17 +64,5 @@ class RowResultDecoder<C, R> implements RowDecoder {
     }
     accumulator.accept(container, row);
     size++;
-  }
-
-  R complete() {
-    if (container == null) {
-      container = collector.supplier().get();
-    }
-    return collector.finisher().apply(container);
-  }
-
-  void reset() {
-    container = null;
-    size = 0;
   }
 }
