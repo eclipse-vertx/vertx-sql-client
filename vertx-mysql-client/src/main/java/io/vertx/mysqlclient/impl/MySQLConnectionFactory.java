@@ -1,9 +1,6 @@
 package io.vertx.mysqlclient.impl;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import io.vertx.core.*;
 import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
@@ -16,7 +13,7 @@ import java.nio.charset.Charset;
 public class MySQLConnectionFactory {
   private final NetClient netClient;
   private final Context context;
-
+  private final boolean registerCloseHook;
   private final String host;
   private final int port;
   private final String username;
@@ -27,11 +24,18 @@ public class MySQLConnectionFactory {
   private final boolean cachePreparedStatements;
   private final int preparedStatementCacheSize;
   private final int preparedStatementCacheSqlLimit;
+  private final Closeable hook;
 
-  public MySQLConnectionFactory(Context context, MySQLConnectOptions options) {
+  public MySQLConnectionFactory(Context context, boolean registerCloseHook, MySQLConnectOptions options) {
     NetClientOptions netClientOptions = new NetClientOptions(options);
 
     this.context = context;
+    this.registerCloseHook = registerCloseHook;
+    this.hook = this::close;
+    if (registerCloseHook) {
+      context.addCloseHook(hook);
+    }
+
     this.host = options.getHost();
     this.port = options.getPort();
     this.username = options.getUser();
@@ -43,6 +47,19 @@ public class MySQLConnectionFactory {
     this.preparedStatementCacheSqlLimit = options.getPreparedStatementCacheSqlLimit();
 
     this.netClient = context.owner().createNetClient(netClientOptions);
+  }
+
+  // Called by hook
+  private void close(Handler<AsyncResult<Void>> completionHandler) {
+    netClient.close();
+    completionHandler.handle(Future.succeededFuture());
+  }
+
+  void close() {
+    if (registerCloseHook) {
+      context.removeCloseHook(hook);
+    }
+    netClient.close();
   }
 
   public void connect(Handler<AsyncResult<Connection>> handler) {

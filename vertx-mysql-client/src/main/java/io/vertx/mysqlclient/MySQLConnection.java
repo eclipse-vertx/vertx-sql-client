@@ -25,11 +25,11 @@ public interface MySQLConnection extends SqlConnection {
    * Create a connection to MySQL server with the given {@code connectOptions}.
    *
    * @param vertx the vertx instance
-   * @param options the options for the connection
+   * @param connectOptions the options for the connection
    * @param handler the handler called with the connection or the failure
    */
-  static void connect(Vertx vertx, MySQLConnectOptions options, Handler<AsyncResult<MySQLConnection>> handler) {
-    MySQLConnectionImpl.connect(vertx, options, handler);
+  static void connect(Vertx vertx, MySQLConnectOptions connectOptions, Handler<AsyncResult<MySQLConnection>> handler) {
+    MySQLConnectionImpl.connect(vertx, connectOptions, handler);
   }
 
   @Override
