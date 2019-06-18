@@ -3,6 +3,7 @@ package io.vertx.mysqlclient.impl;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.sqlclient.PoolOptions;
@@ -23,7 +24,7 @@ public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool 
 
   public MySQLPoolImpl(Context context, boolean closeVertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
     super(context, closeVertx, poolOptions);
-    this.factory = new MySQLConnectionFactory(context, connectOptions);
+    this.factory = new MySQLConnectionFactory(context, Vertx.currentContext() != null, connectOptions);
   }
 
   @Override
@@ -49,5 +50,11 @@ public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool 
   @Override
   public <R> MySQLPoolImpl preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
     throw new UnsupportedOperationException("PreparedBatch is not supported for now");
+  }
+
+  @Override
+  protected void doClose() {
+    factory.close();
+    super.doClose();
   }
 }
