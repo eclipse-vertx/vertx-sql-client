@@ -159,7 +159,8 @@ class PgConnectionFactory {
       socketAddress = SocketAddress.domainSocketAddress(host + "/.s.PGSQL." + port);
     }
 
-    Future<NetSocket> future = Future.<NetSocket>future().setHandler(ar -> {
+    Promise<NetSocket> promise = Promise.promise();
+    promise.future().setHandler(ar -> {
       if (ar.succeeded()) {
         NetSocketInternal socket = (NetSocketInternal) ar.result();
         PgSocketConnection conn = newSocketConnection(socket);
@@ -182,10 +183,10 @@ class PgConnectionFactory {
     });
 
     try {
-      client.connect(socketAddress, null, future);
+      client.connect(socketAddress, null, promise);
     } catch (Exception e) {
       // Client is closed
-      future.fail(e);
+      promise.fail(e);
     }
   }
 
