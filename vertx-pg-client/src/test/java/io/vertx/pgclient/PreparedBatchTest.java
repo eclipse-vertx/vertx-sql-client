@@ -52,51 +52,9 @@ public class PreparedBatchTest extends PgTestBase {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       List<Tuple> batch = new ArrayList<>();
-      conn.preparedBatch("INSERT INTO Test (id, val) VALUES ($1, $2)", batch, ctx.asyncAssertSuccess(result -> {
+      conn.preparedBatch("INSERT INTO mutable (id, val) VALUES ($1, $2)", batch, ctx.asyncAssertSuccess(result -> {
         async.complete();
       }));
-    }));
-  }
-
-  @Test
-  public void testInsert(TestContext ctx) {
-    Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      deleteFromTestTable(ctx, conn, () -> {
-        List<Tuple> batch = new ArrayList<>();
-        batch.add(Tuple.of(79991, "batch one"));
-        batch.add(Tuple.of(79992, "batch two"));
-        batch.add(Tuple.of(79993, "batch three"));
-        batch.add(Tuple.of(79994, "batch four"));
-        conn.preparedBatch("INSERT INTO Test (id, val) VALUES ($1, $2)", batch, ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.rowCount());
-          conn.preparedQuery("SELECT * FROM Test WHERE id=$1", Tuple.of(79991), ctx.asyncAssertSuccess(ar1 -> {
-            ctx.assertEquals(1, ar1.size());
-            Row one = ar1.iterator().next();
-            ctx.assertEquals(79991, one.getInteger("id"));
-            ctx.assertEquals("batch one", one.getString("val"));
-            conn.preparedQuery("SELECT * FROM Test WHERE id=$1", Tuple.of(79992), ctx.asyncAssertSuccess(ar2 -> {
-              ctx.assertEquals(1, ar2.size());
-              Row two = ar2.iterator().next();
-              ctx.assertEquals(79992, two.getInteger("id"));
-              ctx.assertEquals("batch two", two.getString("val"));
-              conn.preparedQuery("SELECT * FROM Test WHERE id=$1", Tuple.of(79993), ctx.asyncAssertSuccess(ar3 -> {
-                ctx.assertEquals(1, ar3.size());
-                Row three = ar3.iterator().next();
-                ctx.assertEquals(79993, three.getInteger("id"));
-                ctx.assertEquals("batch three", three.getString("val"));
-                conn.preparedQuery("SELECT * FROM Test WHERE id=$1", Tuple.of(79994), ctx.asyncAssertSuccess(ar4 -> {
-                  ctx.assertEquals(1, ar4.size());
-                  Row four = ar4.iterator().next();
-                  ctx.assertEquals(79994, four.getInteger("id"));
-                  ctx.assertEquals("batch four", four.getString("val"));
-                  async.complete();
-                }));
-              }));
-            }));
-          }));
-        }));
-      });
     }));
   }
 
