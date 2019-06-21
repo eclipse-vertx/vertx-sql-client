@@ -63,8 +63,8 @@ public class MySQLConnectionFactory {
   }
 
   public void connect(Handler<AsyncResult<Connection>> handler) {
-    Future<NetSocket> future = Future.future();
-    future.setHandler(ar1 -> {
+    Promise<NetSocket> promise = Promise.promise();
+    promise.future().setHandler(ar1 -> {
       if (ar1.succeeded()) {
         NetSocketInternal socket = (NetSocketInternal) ar1.result();
         MySQLSocketConnection conn = new MySQLSocketConnection(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, context);
@@ -74,6 +74,6 @@ public class MySQLConnectionFactory {
         handler.handle(Future.failedFuture(ar1.cause()));
       }
     });
-    netClient.connect(port, host, future);
+    netClient.connect(port, host, promise);
   }
 }

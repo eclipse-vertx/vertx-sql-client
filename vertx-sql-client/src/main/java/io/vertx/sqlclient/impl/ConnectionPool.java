@@ -35,7 +35,7 @@ public class ConnectionPool {
 
   private final Consumer<Handler<AsyncResult<Connection>>> connector;
   private final int maxSize;
-  private final ArrayDeque<Future<Connection>> waiters = new ArrayDeque<>();
+  private final ArrayDeque<Promise<Connection>> waiters = new ArrayDeque<>();
   private final Set<PooledConnection> all = new HashSet<>();
   private final ArrayDeque<PooledConnection> available = new ArrayDeque<>();
   private int size;
@@ -69,7 +69,9 @@ public class ConnectionPool {
     if (closed) {
       throw new IllegalStateException("Connection pool closed");
     }
-    waiters.add(Future.<Connection>future().setHandler(holder));
+    Promise<Connection> promise = Promise.promise();
+    promise.future().setHandler(holder);
+    waiters.add(promise);
     check();
   }
 
@@ -81,8 +83,8 @@ public class ConnectionPool {
     for (PooledConnection pooled : new ArrayList<>(all)) {
       pooled.close();
     }
-    Future<Connection> failure = Future.failedFuture("Connection pool close");
-    for (Future<Connection> pending : waiters) {
+    Future<Connection> failure = Future.failedFuture("Connection pool closed");
+    for (Promise<Connection> pending : waiters) {
       try {
         pending.handle(failure);
       } catch (Exception ignore) {
@@ -190,11 +192,11 @@ public class ConnectionPool {
         while (waiters.size() > 0) {
           if (available.size() > 0) {
             PooledConnection proxy = available.poll();
-            Future<Connection> waiter = waiters.poll();
+            Promise<Connection> waiter = waiters.poll();
             waiter.complete(proxy);
           } else {
             if (size < maxSize) {
-              Future<Connection> waiter = waiters.poll();
+              Promise<Connection> waiter = waiters.poll();
               size++;
               connector.accept(ar -> {
                 if (ar.succeeded()) {
@@ -214,7 +216,7 @@ public class ConnectionPool {
                 int numInProgress = size - all.size();
                 int numToFail = waiters.size() - (maxWaitQueueSize + numInProgress);
                 while (numToFail-- > 0) {
-                  Future<Connection> waiter = waiters.pollLast();
+                  Promise<Connection> waiter = waiters.pollLast();
                   waiter.fail(new NoStackTraceThrowable("Max waiter size reached"));
                 }
               }

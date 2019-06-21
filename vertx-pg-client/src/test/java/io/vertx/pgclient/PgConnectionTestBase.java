@@ -302,12 +302,12 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
     Async done = ctx.async();
     vertx.deployVerticle(new AbstractVerticle() {
       @Override
-      public void start(Future<Void> startFuture) throws Exception {
+      public void start(Promise<Void> startPromise) throws Exception {
         connector.accept(ctx.asyncAssertSuccess(conn -> {
           conn.closeHandler(v -> {
             done.complete();
           });
-          startFuture.complete();
+          startPromise.complete();
         }));
       }
     }, ctx.asyncAssertSuccess(id -> {

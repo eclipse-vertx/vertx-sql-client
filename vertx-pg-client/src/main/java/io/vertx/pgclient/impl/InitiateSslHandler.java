@@ -22,20 +22,20 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.DecoderException;
+import io.vertx.core.Promise;
 import io.vertx.pgclient.impl.codec.PgProtocolConstants;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.core.Future;
 import io.vertx.core.VertxException;
 
 public class InitiateSslHandler extends ChannelInboundHandlerAdapter {
 
   private static final int code = 80877103;
   private final SocketConnectionBase conn;
-  private final Future<Void> upgradeFuture;
+  private final Promise<Void> upgradePromise;
 
-  public InitiateSslHandler(SocketConnectionBase conn, Future<Void> upgradeFuture) {
+  public InitiateSslHandler(SocketConnectionBase conn, Promise<Void> upgradePromise) {
     this.conn = conn;
-    this.upgradeFuture = upgradeFuture;
+    this.upgradePromise = upgradePromise;
   }
 
   @Override
@@ -59,16 +59,16 @@ public class InitiateSslHandler extends ChannelInboundHandlerAdapter {
       case PgProtocolConstants.MESSAGE_TYPE_SSL_YES: {
         conn.socket().upgradeToSsl(v -> {
           ctx.pipeline().remove(this);
-          upgradeFuture.complete();
+          upgradePromise.complete();
         });
         break;
       }
       case PgProtocolConstants.MESSAGE_TYPE_SSL_NO: {
-        upgradeFuture.fail(new Exception("Postgres Server does not handle SSL connection"));
+        upgradePromise.fail(new Exception("Postgres Server does not handle SSL connection"));
         break;
       }
       default:
-        upgradeFuture.fail(new Exception("Invalid SSL connection message"));
+        upgradePromise.fail(new Exception("Invalid SSL connection message"));
         break;
     }
   }
@@ -79,13 +79,13 @@ public class InitiateSslHandler extends ChannelInboundHandlerAdapter {
       DecoderException err = (DecoderException) cause;
       cause = err.getCause();
     }
-    upgradeFuture.tryFail(cause);
+    upgradePromise.tryFail(cause);
   }
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     super.channelInactive(ctx);
     // Work around for https://github.com/eclipse-vertx/vert.x/issues/2748
-    upgradeFuture.tryFail(new VertxException("SSL handshake failed", true));
+    upgradePromise.tryFail(new VertxException("SSL handshake failed", true));
   }
 }
