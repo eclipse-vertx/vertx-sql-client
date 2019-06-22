@@ -6,23 +6,17 @@ import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.mysqlclient.MySQLSetOption;
-import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.RowStream;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.SqlResult;
-import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -57,6 +51,41 @@ public class MySQLClientExamples {
 
       // Now close the pool
       client.close();
+    });
+  }
+
+  public void configureFromDataObject(Vertx vertx) {
+
+    // Data object
+    MySQLConnectOptions connectOptions = new MySQLConnectOptions()
+      .setPort(3306)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUser("user")
+      .setPassword("secret");
+
+    // Pool Options
+    PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
+
+    // Create the pool from the data object
+    MySQLPool pool = MySQLPool.pool(vertx, connectOptions, poolOptions);
+
+    pool.getConnection(ar -> {
+      // Handling your connection
+    });
+  }
+
+  public void configureFromUri(Vertx vertx) {
+
+    // Connection URI
+    String connectionUri = "mysql://dbuser:secretpassword@database.server.com:3211/mydb";
+
+    // Create the pool from the connection URI
+    MySQLPool pool = MySQLPool.pool(connectionUri);
+
+    // Create the connection from the connection URI
+    MySQLConnection.connect(vertx, connectionUri, res -> {
+      // Handling your connection
     });
   }
 
