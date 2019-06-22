@@ -24,23 +24,31 @@ import java.net.URLDecoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.lang.Integer.*;
-import static java.lang.String.*;
+import static java.lang.Integer.parseInt;
+import static java.lang.String.format;
 
 /**
- * This is Parser for parsing connection URIs of PostgreSQL.
- * Based on Version 9.6
+ * This is a parser for parsing connection URIs of PostgreSQL.
+ * Based on PostgreSQL 11: postgresql://[user[:password]@][netloc][:port][,...][/dbname][?param1=value1&...]
  *
  * @author Billy Yuan <billy112487983@gmail.com>
  */
 public class PgConnectionUriParser {
-  private static final String FULL_URI_REGEX = "^postgre(?:s|sql)://(?:(\\w+(?::\\S+)?)@)?([0-9.]+|\\[[A-Za-z0-9:]+]|[A-Za-z0-9.%\\-_]+)?(?::(\\d+))?(?:/([A-Za-z0-9_\\-]+))?(?:\\?(.*))?$";
+  private static final String SCHEME_DESIGNATOR_REGEX = "postgre(s|sql)://"; // URI scheme designator
+  private static final String USER_INFO_REGEX = "((?<userinfo>[a-zA-Z0-9\\-._~%]+(:[a-zA-Z0-9\\-._~%]+)?)@)?"; // user name and password
+  private static final String NET_LOCATION_REGEX = "(?<netloc>[0-9.]+|\\[[a-zA-Z0-9:]+]|[a-zA-Z0-9\\-._~%]+)?"; // ip v4/v6 address, host, domain socket address TODO multi-host not supported yet
+  private static final String PORT_REGEX = "(:(?<port>\\d+))?"; // port
+  private static final String DATABASE_REGEX = "(/(?<database>[a-zA-Z0-9\\-._~%]+))?"; // database name
+  private static final String PARAMS_REGEX = "(\\?(?<params>.*))?"; // parameters
 
-  private static final int USER_INFO_GROUP = 1;
-  private static final int NET_LOCATION_GROUP = 2;
-  private static final int PORT_GROUP = 3;
-  private static final int DATABASE_GROUP = 4;
-  private static final int PARAMETER_GROUP = 5;
+  private static final String FULL_URI_REGEX = "^" // regex start
+    + SCHEME_DESIGNATOR_REGEX
+    + USER_INFO_REGEX
+    + NET_LOCATION_REGEX
+    + PORT_REGEX
+    + DATABASE_REGEX
+    + PARAMS_REGEX
+    + "$"; // regex end
 
   public static JsonObject parse(String connectionUri) {
     // if we get any exception during the parsing, then we throw an IllegalArgumentException.
@@ -60,26 +68,26 @@ public class PgConnectionUriParser {
 
     if (matcher.matches()) {
       // parse the user and password
-      parseUserandPassword(matcher.group(USER_INFO_GROUP), configuration);
+      parseUserAndPassword(matcher.group("userinfo"), configuration);
 
       // parse the IP address/host/unix domainSocket address
-      parseNetLocation(matcher.group(NET_LOCATION_GROUP), configuration);
+      parseNetLocation(matcher.group("netloc"), configuration);
 
       // parse the port
-      parsePort(matcher.group(PORT_GROUP), configuration);
+      parsePort(matcher.group("port"), configuration);
 
       // parse the database name
-      parseDatabaseName(matcher.group(DATABASE_GROUP), configuration);
+      parseDatabaseName(matcher.group("database"), configuration);
 
       // parse the parameters
-      parseParameters(matcher.group(PARAMETER_GROUP), configuration);
+      parseParameters(matcher.group("params"), configuration);
 
     } else {
       throw new IllegalArgumentException("Wrong syntax of connection URI");
     }
   }
 
-  private static void parseUserandPassword(String userInfo, JsonObject configuration) {
+  private static void parseUserAndPassword(String userInfo, JsonObject configuration) {
     if (userInfo == null || userInfo.isEmpty()) {
       return;
     }
@@ -114,10 +122,10 @@ public class PgConnectionUriParser {
     try {
       port = parseInt(decodeUrl(portInfo));
     } catch (NumberFormatException e) {
-      throw new IllegalArgumentException("The post must be a valid integer");
+      throw new IllegalArgumentException("The port must be a valid integer");
     }
     if (port > 65535 || port <= 0) {
-      throw new IllegalArgumentException("The post can only range in 1-65535");
+      throw new IllegalArgumentException("The port can only range in 1-65535");
     }
     configuration.put("port", port);
   }
@@ -127,7 +135,6 @@ public class PgConnectionUriParser {
       return;
     }
     configuration.put("database", decodeUrl(databaseInfo));
-
   }
 
   private static void parseParameters(String parametersInfo, JsonObject configuration) {
