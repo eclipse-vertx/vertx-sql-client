@@ -110,7 +110,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     resetIntermediaryResult();
     if (isDecodingCompleted(okPacket)) {
       // no more sql result
-      handleAllResultsetDecodingCompleted(cmd);
+      handleAllResultsetDecodingCompleted();
     }
   }
 
@@ -136,7 +136,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     cmd.resultHandler().handleResult((int) okPacket.affectedRows(), size, rowDesc, result);
   }
 
-  private void handleAllResultsetDecodingCompleted(QueryCommandBase<?> cmd) {
+  private void handleAllResultsetDecodingCompleted() {
     CommandResponse<Boolean> response;
     if (this.failure != null) {
       response = CommandResponse.failure(this.failure);
