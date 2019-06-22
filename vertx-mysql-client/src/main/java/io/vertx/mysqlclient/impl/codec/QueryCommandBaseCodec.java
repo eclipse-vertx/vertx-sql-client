@@ -108,10 +108,14 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     OkPacket okPacket = decodeOkPacketPayload(payload, StandardCharsets.UTF_8);
     handleSingleResultsetEndPacket(okPacket);
     resetIntermediaryResult();
-    if ((okPacket.serverStatusFlags() & ServerStatusFlags.SERVER_MORE_RESULTS_EXISTS) == 0) {
+    if (isDecodingCompleted(okPacket)) {
       // no more sql result
       handleAllResultsetDecodingCompleted(cmd);
     }
+  }
+
+  protected boolean isDecodingCompleted(OkPacket okPacket) {
+    return (okPacket.serverStatusFlags() & ServerStatusFlags.SERVER_MORE_RESULTS_EXISTS) == 0;
   }
 
   private void handleSingleResultsetEndPacket(OkPacket okPacket) {
