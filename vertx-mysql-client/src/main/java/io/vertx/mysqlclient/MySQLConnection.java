@@ -16,6 +16,8 @@ import io.vertx.sqlclient.Tuple;
 
 import java.util.stream.Collector;
 
+import static io.vertx.mysqlclient.MySQLConnectOptions.*;
+
 /**
  * A connection to MySQL server.
  */
@@ -30,6 +32,13 @@ public interface MySQLConnection extends SqlConnection {
    */
   static void connect(Vertx vertx, MySQLConnectOptions connectOptions, Handler<AsyncResult<MySQLConnection>> handler) {
     MySQLConnectionImpl.connect(vertx, connectOptions, handler);
+  }
+
+  /**
+   * Like {@link #connect(Vertx, MySQLConnectOptions, Handler)} with options build from {@code connectionUri}.
+   */
+  static void connect(Vertx vertx, String connectionUri, Handler<AsyncResult<MySQLConnection>> handler) {
+    connect(vertx, fromUri(connectionUri), handler);
   }
 
   @Override

@@ -17,11 +17,35 @@ import io.vertx.sqlclient.Tuple;
 import java.util.List;
 import java.util.stream.Collector;
 
+import static io.vertx.mysqlclient.MySQLConnectOptions.*;
+
 /**
  * A pool of MySQL connections.
  */
 @VertxGen
 public interface MySQLPool extends Pool {
+
+  /**
+   * Like {@link #pool(String, PoolOptions)} with a default {@code poolOptions}.
+   */
+  static MySQLPool pool(String connectionUri) {
+    return pool(connectionUri, new PoolOptions());
+  }
+
+  /**
+   * Like {@link #pool(MySQLConnectOptions, PoolOptions)} with {@code connectOptions} build from {@code connectionUri}.
+   */
+  static MySQLPool pool(String connectionUri, PoolOptions poolOptions) {
+    return pool(fromUri(connectionUri), poolOptions);
+  }
+
+  /**
+   * Like {@link #pool(Vertx, MySQLConnectOptions, PoolOptions)} with {@code connectOptions} build from {@code connectionUri}.
+   */
+  static MySQLPool pool(Vertx vertx, String connectionUri, PoolOptions poolOptions) {
+    return pool(vertx, fromUri(connectionUri), poolOptions);
+  }
+
   /**
    * Create a connection pool to the MySQL server configured with the given {@code connectOptions} and {@code poolOptions}.
    *
