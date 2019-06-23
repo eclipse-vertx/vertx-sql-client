@@ -16,9 +16,13 @@
  */
 package io.vertx.pgclient.impl.codec;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
 class SimpleQueryCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>> {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(PgCommandCodec.class);
 
   SimpleQueryCodec(SimpleQueryCommand<T> cmd) {
     super(cmd);
@@ -32,5 +36,10 @@ class SimpleQueryCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>
   @Override
   void handleRowDescription(PgRowDesc rowDescription) {
     decoder = new RowResultDecoder<>(cmd.collector(), cmd.isSingleton(), rowDescription);
+  }
+
+  @Override
+  void handleParameterStatus(String key, String value) {
+    LOGGER.debug(getClass().getSimpleName() + " should handle message ParameterStatus");
   }
 }
