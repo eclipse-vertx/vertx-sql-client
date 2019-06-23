@@ -61,6 +61,8 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
       return new SimpleQueryCommandCodec((SimpleQueryCommand) cmd);
     } else if (cmd instanceof ExtendedQueryCommand) {
       return new ExtendedQueryCommandCodec((ExtendedQueryCommand) cmd);
+    } else if (cmd instanceof ExtendedBatchQueryCommand<?>) {
+      return new ExtendedBatchQueryCommandCodec<>((ExtendedBatchQueryCommand<?>) cmd);
     } else if (cmd instanceof CloseConnectionCommand) {
       return new CloseConnectionCommandCodec((CloseConnectionCommand) cmd);
     } else if (cmd instanceof PrepareStatementCommand) {
