@@ -48,7 +48,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
   }
 
   @Override
-  void decodePayload(ByteBuf payload, MySQLEncoder encoder, int payloadLength, int sequenceId) {
+  void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
     switch (commandHandlerState) {
       case INIT:
         handleInitPacket(payload);

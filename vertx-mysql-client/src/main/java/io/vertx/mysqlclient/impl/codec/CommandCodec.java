@@ -41,7 +41,7 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     this.cmd = cmd;
   }
 
-  abstract void decodePayload(ByteBuf payload, MySQLEncoder encoder, int payloadLength, int sequenceId);
+  abstract void decodePayload(ByteBuf payload, int payloadLength, int sequenceId);
 
   void encode(MySQLEncoder encoder) {
     this.encoder = encoder;

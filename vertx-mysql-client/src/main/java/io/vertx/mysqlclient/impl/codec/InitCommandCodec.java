@@ -45,7 +45,7 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
   }
 
   @Override
-  void decodePayload(ByteBuf payload, MySQLEncoder encoder, int payloadLength, int sequenceId) {
+  void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
     switch (status) {
       case ST_CONNECTING:
         decodeInit0(encoder, cmd, payload);

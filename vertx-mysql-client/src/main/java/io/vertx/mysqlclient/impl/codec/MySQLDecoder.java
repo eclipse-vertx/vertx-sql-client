@@ -59,7 +59,7 @@ class MySQLDecoder extends ByteToMessageDecoder {
   private void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
     CommandCodec ctx = inflight.peek();
     ctx.sequenceId = sequenceId + 1;
-    ctx.decodePayload(payload, encoder, payloadLength, sequenceId);
+    ctx.decodePayload(payload, payloadLength, sequenceId);
     payload.clear();
   }
 }

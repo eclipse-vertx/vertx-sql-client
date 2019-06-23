@@ -43,7 +43,7 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
   }
 
   @Override
-  void decodePayload(ByteBuf payload, MySQLEncoder encoder, int payloadLength, int sequenceId) {
+  void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
     switch (commandHandlerState) {
       case INIT:
         int firstByte = payload.getUnsignedByte(payload.readerIndex());
