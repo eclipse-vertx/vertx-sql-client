@@ -86,6 +86,39 @@ You can easily get one from the pool:
 
 Once you are done with the connection you must close it to release it to the pool, so it can be reused.
 
+== Configuration
+
+There are several alternatives for you to configure the client.
+
+=== data object
+
+A simple way to configure the client is to specify a `MySQLConnectOptions` data object.
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#configureFromDataObject(io.vertx.core.Vertx)}
+----
+
+=== connection uri
+
+Apart from configuring with a `MySQLConnectOptions` data object, We also provide you an alternative way to connect when you want to configure with a connection URI:
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#configureFromUri(io.vertx.core.Vertx)}
+----
+
+More information about connection string formats can be found in the https://dev.mysql.com/doc/refman/8.0/en/connecting-using-uri-or-key-value-pairs.html#connecting-using-uri[MySQL Reference].
+
+Currently the client supports the following parameter key words in connection uri
+
+* host
+* port
+* user
+* password
+* schema
+* socket
+
 include::queries.adoc[]
 
 include::connections.adoc[]

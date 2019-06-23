@@ -14,6 +14,7 @@ import io.vertx.core.net.PfxOptions;
 import io.vertx.core.net.ProxyOptions;
 import io.vertx.core.net.SSLEngineOptions;
 import io.vertx.core.net.TrustOptions;
+import io.vertx.mysqlclient.impl.MySQLConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
 
 import java.util.Set;
@@ -24,6 +25,18 @@ import java.util.concurrent.TimeUnit;
  */
 @DataObject(generateConverter = true)
 public class MySQLConnectOptions extends SqlConnectOptions {
+
+  /**
+   * Provide a {@link MySQLConnectOptions} configured from a connection URI.
+   *
+   * @param connectionUri the connection URI to configure from
+   * @return a {@link MySQLConnectOptions} parsed from the connection URI
+   * @throws IllegalArgumentException when the {@code connectionUri} is in an invalid format
+   */
+  public static MySQLConnectOptions fromUri(String connectionUri) throws IllegalArgumentException {
+    JsonObject parsedConfiguration = MySQLConnectionUriParser.parse(connectionUri);
+    return new MySQLConnectOptions(parsedConfiguration);
+  }
 
   public static final String DEFAULT_HOST = "localhost";
   public static final int DEFAULT_PORT = 3306;
