@@ -24,7 +24,7 @@ class ChangeUserCommandCodec extends CommandCodec<Void, ChangeUserCommand> {
   }
 
   @Override
-  void decodePayload(ByteBuf payload, MySQLEncoder encoder, int payloadLength, int sequenceId) {
+  void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
     int header = payload.getUnsignedByte(payload.readerIndex());
     switch (header) {
       case 0xFE:

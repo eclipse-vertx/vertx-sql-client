@@ -17,7 +17,7 @@ class DebugCommandCodec extends CommandCodec<Void, DebugCommand> {
   }
 
   @Override
-  void decodePayload(ByteBuf payload, MySQLEncoder encoder, int payloadLength, int sequenceId) {
+  void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
     handleOkPacketOrErrorPacketPayload(payload);
   }
 

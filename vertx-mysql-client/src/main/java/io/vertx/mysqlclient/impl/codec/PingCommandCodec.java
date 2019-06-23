@@ -18,7 +18,7 @@ class PingCommandCodec extends CommandCodec<Void, PingCommand> {
   }
 
   @Override
-  void decodePayload(ByteBuf payload, MySQLEncoder encoder, int payloadLength, int sequenceId) {
+  void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
     // we don't care what the response payload is from the server
     completionHandler.handle(CommandResponse.success(null));
   }
