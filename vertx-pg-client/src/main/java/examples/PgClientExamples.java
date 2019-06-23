@@ -86,6 +86,27 @@ public class PgClientExamples {
     });
   }
 
+  public void configureFromDataObject(Vertx vertx) {
+
+    // Data object
+    PgConnectOptions connectOptions = new PgConnectOptions()
+      .setPort(5432)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUser("user")
+      .setPassword("secret");
+
+    // Pool Options
+    PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
+
+    // Create the pool from the data object
+    PgPool pool = PgPool.pool(vertx, connectOptions, poolOptions);
+
+    pool.getConnection(ar -> {
+      // Handling your connection
+    });
+  }
+
   public void configureFromUri(Vertx vertx) {
 
     // Connection URI

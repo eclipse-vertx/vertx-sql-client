@@ -1,22 +1,5 @@
-/*
- * Copyright (C) 2017 Julien Viet
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-package io.vertx.pgclient.impl;
+package io.vertx.mysqlclient.impl;
 
-import io.vertx.pgclient.SslMode;
 import io.vertx.core.json.JsonObject;
 
 import java.io.UnsupportedEncodingException;
@@ -24,30 +7,28 @@ import java.net.URLDecoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.lang.Integer.parseInt;
-import static java.lang.String.format;
+import static java.lang.Integer.*;
+import static java.lang.String.*;
 
 /**
- * This is a parser for parsing connection URIs of PostgreSQL.
- * Based on PostgreSQL 11: postgresql://[user[:password]@][netloc][:port][,...][/dbname][?param1=value1&...]
- *
- * @author Billy Yuan <billy112487983@gmail.com>
+ * This is a parser for parsing connection URIs of MySQL.
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/connecting-using-uri-or-key-value-pairs.html#connecting-using-uri">MySQL official documentation</a>: [scheme://][user[:[password]]@]host[:port][/schema][?attribute1=value1&attribute2=value2...
  */
-public class PgConnectionUriParser {
-  private static final String SCHEME_DESIGNATOR_REGEX = "postgre(s|sql)://"; // URI scheme designator
-  private static final String USER_INFO_REGEX = "((?<userinfo>[a-zA-Z0-9\\-._~%]+(:[a-zA-Z0-9\\-._~%]+)?)@)?"; // user name and password
-  private static final String NET_LOCATION_REGEX = "(?<netloc>[0-9.]+|\\[[a-zA-Z0-9:]+]|[a-zA-Z0-9\\-._~%]+)?"; // ip v4/v6 address, host, domain socket address TODO multi-host not supported yet
+public class MySQLConnectionUriParser {
+  private static final String SCHEME_DESIGNATOR_REGEX = "mysql://"; // URI scheme designator
+  private static final String USER_INFO_REGEX = "((?<userinfo>[a-zA-Z0-9\\-._~%]+(:[a-zA-Z0-9\\-._~%]*)?)@)?"; // user name and password
+  private static final String NET_LOCATION_REGEX = "(?<host>[0-9.]+|\\[[a-zA-Z0-9:]+]|[a-zA-Z0-9\\-._~%]+)"; // ip v4/v6 address or host name
   private static final String PORT_REGEX = "(:(?<port>\\d+))?"; // port
-  private static final String DATABASE_REGEX = "(/(?<database>[a-zA-Z0-9\\-._~%]+))?"; // database name
-  private static final String PARAMS_REGEX = "(\\?(?<params>.*))?"; // parameters
+  private static final String SCHEMA_REGEX = "(/(?<schema>[a-zA-Z0-9\\-._~%]+))?"; // schema name
+  private static final String ATTRIBUTES_REGEX = "(\\?(?<attributes>.*))?"; // attributes
 
   private static final String FULL_URI_REGEX = "^" // regex start
     + SCHEME_DESIGNATOR_REGEX
     + USER_INFO_REGEX
     + NET_LOCATION_REGEX
     + PORT_REGEX
-    + DATABASE_REGEX
-    + PARAMS_REGEX
+    + SCHEMA_REGEX
+    + ATTRIBUTES_REGEX
     + "$"; // regex end
 
   public static JsonObject parse(String connectionUri) {
@@ -70,17 +51,17 @@ public class PgConnectionUriParser {
       // parse the user and password
       parseUserAndPassword(matcher.group("userinfo"), configuration);
 
-      // parse the IP address/host/unix domainSocket address
-      parseNetLocation(matcher.group("netloc"), configuration);
+      // parse the IP address/hostname
+      parseHost(matcher.group("host"), configuration);
 
       // parse the port
       parsePort(matcher.group("port"), configuration);
 
-      // parse the database name
-      parseDatabaseName(matcher.group("database"), configuration);
+      // parse the schema name
+      parseSchemaName(matcher.group("schema"), configuration);
 
-      // parse the parameters
-      parseParameters(matcher.group("params"), configuration);
+      // parse the attributes
+      parseAttributes(matcher.group("attributes"), configuration);
 
     } else {
       throw new IllegalArgumentException("Wrong syntax of connection URI");
@@ -107,11 +88,11 @@ public class PgConnectionUriParser {
     }
   }
 
-  private static void parseNetLocation(String hostInfo, JsonObject configuration) {
+  private static void parseHost(String hostInfo, JsonObject configuration) {
     if (hostInfo == null || hostInfo.isEmpty()) {
       return;
     }
-    parseNetLocationValue(decodeUrl(hostInfo), configuration);
+    parseHostValue(decodeUrl(hostInfo), configuration);
   }
 
   private static void parsePort(String portInfo, JsonObject configuration) {
@@ -130,58 +111,61 @@ public class PgConnectionUriParser {
     configuration.put("port", port);
   }
 
-  private static void parseDatabaseName(String databaseInfo, JsonObject configuration) {
-    if (databaseInfo == null || databaseInfo.isEmpty()) {
+  private static void parseSchemaName(String schemaInfo, JsonObject configuration) {
+    if (schemaInfo == null || schemaInfo.isEmpty()) {
       return;
     }
-    configuration.put("database", decodeUrl(databaseInfo));
+    configuration.put("database", decodeUrl(schemaInfo));
   }
 
-  private static void parseParameters(String parametersInfo, JsonObject configuration) {
-    if (parametersInfo == null || parametersInfo.isEmpty()) {
+  private static void parseAttributes(String attributesInfo, JsonObject configuration) {
+    if (attributesInfo == null || attributesInfo.isEmpty()) {
       return;
     }
-    for (String parameterPair : parametersInfo.split("&")) {
+    JsonObject properties = new JsonObject();
+    for (String parameterPair : attributesInfo.split("&")) {
       if (parameterPair.isEmpty()) {
         continue;
       }
       int indexOfDelimiter = parameterPair.indexOf("=");
       if (indexOfDelimiter < 0) {
-        throw new IllegalArgumentException(format("Missing delimiter '=' of parameters \"%s\" in the part \"%s\"", parametersInfo, parameterPair));
+        throw new IllegalArgumentException(format("Missing delimiter '=' of parameters \"%s\" in the part \"%s\"", attributesInfo, parameterPair));
       } else {
         String key = parameterPair.substring(0, indexOfDelimiter).toLowerCase();
         String value = decodeUrl(parameterPair.substring(indexOfDelimiter + 1).trim());
         switch (key) {
-          case "port":
-            parsePort(value, configuration);
-            break;
-          case "host":
-            parseNetLocationValue(value, configuration);
-            break;
-          case "hostaddr":
-            configuration.put("host", value);
-            break;
+          // Base Connection Parameters
           case "user":
             configuration.put("user", value);
             break;
           case "password":
             configuration.put("password", value);
             break;
-          case "dbname":
+          case "host":
+            parseHostValue(value, configuration);
+            break;
+          case "port":
+            parsePort(value, configuration);
+            break;
+          case "socket":
+            configuration.put("socket", value);
+            break;
+          case "schema":
             configuration.put("database", value);
             break;
-          case "sslmode":
-            configuration.put("sslMode", SslMode.of(value));
-            break;
+          //TODO Additional Connection Parameters
           default:
             configuration.put(key, value);
             break;
         }
       }
     }
+    if (!properties.isEmpty()) {
+      configuration.put("properties", properties);
+    }
   }
 
-  private static void parseNetLocationValue(String hostValue, JsonObject configuration) {
+  private static void parseHostValue(String hostValue, JsonObject configuration) {
     if (isRegardedAsIpv6Address(hostValue)) {
       configuration.put("host", hostValue.substring(1, hostValue.length() - 1));
     } else {
