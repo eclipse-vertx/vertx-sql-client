@@ -49,7 +49,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
   }
 
   @Override
-  void decodePayload(ByteBuf payload, MySQLEncoder encoder, int payloadLength, int sequenceId) {
+  void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
     if (statement.isCursorOpen) {
       // decoding COM_STMT_FETCH response
       handleRows(payload, payloadLength, super::handleSingleRow);
@@ -88,7 +88,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
             break;
         }
       } else {
-        super.decodePayload(payload, encoder, payloadLength, sequenceId);
+        super.decodePayload(payload, payloadLength, sequenceId);
       }
     }
   }
