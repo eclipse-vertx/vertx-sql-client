@@ -151,7 +151,7 @@ class DataTypeCodec {
         buff.writeCharSequence(String.valueOf(value), StandardCharsets.UTF_8);
         break;
       default:
-        logger.warn("Data type " + id + " does not support text encoding");
+        logger.debug("Data type " + id + " does not support text encoding");
         buff.writeCharSequence(String.valueOf(value), StandardCharsets.UTF_8);
         break;
     }
@@ -328,7 +328,7 @@ class DataTypeCodec {
         binaryEncodeArray((Interval[]) value, DataType.INTERVAL, buff);
         break;
       default:
-        logger.warn("Data type " + id + " does not support binary encoding");
+        logger.debug("Data type " + id + " does not support binary encoding");
         defaultEncodeBinary(value, buff);
         break;
     }
@@ -449,7 +449,7 @@ class DataTypeCodec {
       case INTERVAL_ARRAY:
         return binaryDecodeArray(INTERVAL_ARRAY_FACTORY, DataType.INTERVAL, index, len, buff);
       default:
-        logger.warn("Data type " + id + " does not support binary decoding");
+        logger.debug("Data type " + id + " does not support binary decoding");
         return defaultDecodeBinary(index, len, buff);
     }
   }
