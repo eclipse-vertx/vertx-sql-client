@@ -72,6 +72,12 @@ Set the maximum number of prepared statements that the connection will cache.
 |[[preparedStatementCacheSqlLimit]]`@preparedStatementCacheSqlLimit`|`Number (int)`|+++
 Set the maximum length of prepared statement SQL string that the connection will cache.
 +++
+|[[properties]]`@properties`|`Json object`|+++
+Set properties for this client, which will be sent to server at the connection start.
++++
+|[[propertys]]`@propertys`|`String`|+++
+Add a property for this client, which will be sent to server at the connection start.
++++
 |[[proxyOptions]]`@proxyOptions`|`link:dataobjects.html#ProxyOptions[ProxyOptions]`|-
 |[[receiveBufferSize]]`@receiveBufferSize`|`Number (int)`|-
 |[[reconnectAttempts]]`@reconnectAttempts`|`Number (int)`|-

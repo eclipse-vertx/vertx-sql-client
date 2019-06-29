@@ -49,6 +49,19 @@ public class SqlConnectOptionsConverter {
             obj.setPreparedStatementCacheSqlLimit(((Number)member.getValue()).intValue());
           }
           break;
+        case "properties":
+          if (member.getValue() instanceof JsonObject) {
+            obj.setProperties(((JsonObject)member.getValue()).copy());
+          }
+          break;
+        case "propertys":
+          if (member.getValue() instanceof JsonObject) {
+            ((Iterable<java.util.Map.Entry<String, Object>>)member.getValue()).forEach(entry -> {
+              if (entry.getValue() instanceof String)
+                obj.addProperty(entry.getKey(), (String)entry.getValue());
+            });
+          }
+          break;
         case "user":
           if (member.getValue() instanceof String) {
             obj.setUser((String)member.getValue());
@@ -76,6 +89,9 @@ public class SqlConnectOptionsConverter {
     json.put("port", obj.getPort());
     json.put("preparedStatementCacheMaxSize", obj.getPreparedStatementCacheMaxSize());
     json.put("preparedStatementCacheSqlLimit", obj.getPreparedStatementCacheSqlLimit());
+    if (obj.getProperties() != null) {
+      json.put("properties", obj.getProperties());
+    }
     if (obj.getUser() != null) {
       json.put("user", obj.getUser());
     }
