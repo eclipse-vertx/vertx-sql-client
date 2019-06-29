@@ -134,6 +134,9 @@ Currently the client supports the following parameter key words in connection ur
 * password
 * dbname
 * sslmode
+* properties including(application_name, fallback_application_name, search_path)
+
+Note: configuring properties in connection uri will override the default properties.
 
 === environment variables
 
