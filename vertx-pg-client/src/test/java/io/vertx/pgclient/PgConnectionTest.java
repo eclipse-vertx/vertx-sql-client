@@ -38,6 +38,16 @@ public class PgConnectionTest extends PgConnectionTestBase {
   }
 
   @Test
+  public void testSettingSchema(TestContext ctx) {
+    options.addProperty("search_path", "myschema");
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      conn.query("SHOW search_path;", ctx.asyncAssertSuccess(pgRowSet -> {
+        ctx.assertEquals("myschema", pgRowSet.iterator().next().getString("search_path"));
+      }));
+    }));
+  }
+
+  @Test
   public void testBatchUpdate(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
