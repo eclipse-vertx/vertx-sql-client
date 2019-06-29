@@ -34,11 +34,11 @@ import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 import io.vertx.pgclient.impl.util.Util;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.List;
 
 import static io.vertx.pgclient.impl.util.Util.writeCString;
+import static java.nio.charset.StandardCharsets.*;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
@@ -193,16 +193,10 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     Util.writeCStringUTF8(out, msg.username);
     writeCString(out, StartupMessage.BUFF_DATABASE);
     Util.writeCStringUTF8(out, msg.database);
-    writeCString(out, StartupMessage.BUFF_APPLICATION_NAME);
-    writeCString(out, StartupMessage.BUFF_VERTX_PG_CLIENT);
-    writeCString(out, StartupMessage.BUFF_CLIENT_ENCODING);
-    writeCString(out, StartupMessage.BUFF_UTF8);
-    writeCString(out, StartupMessage.BUFF_DATE_STYLE);
-    writeCString(out, StartupMessage.BUFF_ISO);
-    writeCString(out, StartupMessage.BUFF_INTERVAL_STYLE);
-    writeCString(out, StartupMessage.BUFF_INTERVAL_STYLE_TYPE);
-    writeCString(out, StartupMessage.BUFF_EXTRA_FLOAT_DIGITS);
-    writeCString(out, StartupMessage.BUFF_2);
+    msg.properties.forEach(property -> {
+      writeCString(out, property.getKey(), UTF_8);
+      writeCString(out, property.getValue().toString(), UTF_8);
+    });
 
     out.writeByte(0);
     out.setInt(pos, out.writerIndex() - pos);
@@ -324,7 +318,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     out.writeByte(EXECUTE);
     out.writeInt(0);
     if (portal != null) {
-      out.writeCharSequence(portal, StandardCharsets.UTF_8);
+      out.writeCharSequence(portal, UTF_8);
     }
     out.writeByte(0);
     out.writeInt(rowCount); // Zero denotes "no limit" maybe for ReadStream<Row>
@@ -345,7 +339,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     out.writeByte(BIND);
     out.writeInt(0);
     if (portal != null) {
-      out.writeCharSequence(portal, StandardCharsets.UTF_8);
+      out.writeCharSequence(portal, UTF_8);
     }
     out.writeByte(0);
     if (bind.statement == 0) {

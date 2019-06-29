@@ -37,7 +37,7 @@ class InitCommandCodec extends PgCommandCodec<Connection, InitCommand> {
   @Override
   void encode(PgEncoder encoder) {
     this.encoder = encoder;
-    encoder.writeStartupMessage(new StartupMessage(cmd.username(), cmd.database()));
+    encoder.writeStartupMessage(new StartupMessage(cmd.username(), cmd.database(), cmd.properties()));
   }
 
   @Override

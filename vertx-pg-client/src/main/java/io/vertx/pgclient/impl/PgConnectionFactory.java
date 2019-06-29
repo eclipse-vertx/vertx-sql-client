@@ -17,6 +17,7 @@
 
 package io.vertx.pgclient.impl;
 
+import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.SslMode;
 import io.vertx.sqlclient.impl.Connection;
@@ -41,6 +42,7 @@ class PgConnectionFactory {
   private final String database;
   private final String username;
   private final String password;
+  private final JsonObject properties;
   private final boolean cachePreparedStatements;
   private final int preparedStatementCacheSize;
   private final int preparedStatementCacheSqlLimit;
@@ -73,6 +75,7 @@ class PgConnectionFactory {
     this.database = options.getDatabase();
     this.username = options.getUser();
     this.password = options.getPassword();
+    this.properties = options.getProperties().copy();
     this.cachePreparedStatements = options.getCachePreparedStatements();
     this.pipeliningLimit = options.getPipeliningLimit();
     this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
@@ -100,7 +103,7 @@ class PgConnectionFactory {
       if (ar.succeeded()) {
         PgSocketConnection conn = ar.result();
         conn.init();
-        conn.sendStartupMessage(username, password, database, completionHandler);
+        conn.sendStartupMessage(username, password, database, properties, completionHandler);
       } else {
         completionHandler.handle(CommandResponse.failure(ar.cause()));
       }

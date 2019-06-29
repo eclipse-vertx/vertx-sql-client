@@ -94,6 +94,12 @@ public class PgConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_PASSWORD = "pass";
   public static final int DEFAULT_PIPELINING_LIMIT = 256;
   public static final SslMode DEFAULT_SSLMODE = SslMode.DISABLE;
+  public static final JsonObject DEFAULT_PROPERTIES = new JsonObject()
+    .put("application_name", "vertx-pg-client")
+    .put("client_encoding", "utf8")
+    .put("DateStyle", "ISO")
+    .put("intervalStyle", "postgres")
+    .put("extra_float_digits", "2");
 
   private int pipeliningLimit;
   private SslMode sslMode;
@@ -162,6 +168,16 @@ public class PgConnectOptions extends SqlConnectOptions {
   @Override
   public PgConnectOptions setPreparedStatementCacheSqlLimit(int preparedStatementCacheSqlLimit) {
     return (PgConnectOptions) super.setPreparedStatementCacheSqlLimit(preparedStatementCacheSqlLimit);
+  }
+
+  @Override
+  public PgConnectOptions setProperties(JsonObject properties) {
+    return (PgConnectOptions) super.setProperties(properties);
+  }
+
+  @Override
+  public PgConnectOptions addProperty(String key, String value) {
+    return (PgConnectOptions) super.addProperty(key, value);
   }
 
   /**
@@ -413,6 +429,7 @@ public class PgConnectOptions extends SqlConnectOptions {
     this.setDatabase(DEFAULT_DATABASE);
     pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
     sslMode = DEFAULT_SSLMODE;
+    this.setProperties(DEFAULT_PROPERTIES);
   }
 
   @Override
