@@ -228,6 +228,7 @@ public abstract class SqlConnectOptions extends NetClientOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public SqlConnectOptions setProperties(JsonObject properties) {
+    checkParameterNonNull(properties, "Properties can not be null");
     this.properties = properties;
     return this;
   }
@@ -240,6 +241,8 @@ public abstract class SqlConnectOptions extends NetClientOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public SqlConnectOptions addProperty(String key, String value) {
+    checkParameterNonNull(key, "Property key can not be null");
+    checkParameterNonNull(value, "Property value can not be null");
     this.properties.put(key, value);
     return this;
   }
