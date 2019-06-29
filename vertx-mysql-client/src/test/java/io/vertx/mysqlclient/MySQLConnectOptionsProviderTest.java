@@ -1,8 +1,7 @@
 package io.vertx.mysqlclient;
 
+import org.junit.Assert;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 public class MySQLConnectOptionsProviderTest {
   private String connectionUri;
@@ -32,7 +31,7 @@ public class MySQLConnectOptionsProviderTest {
 
   @Test
   public void testValidUri3() {
-    connectionUri = "mysql://myhost:5433";
+    connectionUri = "mysql://myhost:3306";
     actualConfiguration = MySQLConnectOptions.fromUri(connectionUri);
 
     expectedConfiguration = new MySQLConnectOptions()
@@ -116,5 +115,9 @@ public class MySQLConnectOptionsProviderTest {
   public void testInvalidUri4() {
     connectionUri = "mysql://user@localhost?port=1234&port";
     actualConfiguration = MySQLConnectOptions.fromUri(connectionUri);
+  }
+
+  private static void assertEquals(MySQLConnectOptions expectedConfiguration, MySQLConnectOptions actualConfiguration) {
+    Assert.assertEquals(expectedConfiguration.toJson(), actualConfiguration.toJson());
   }
 }

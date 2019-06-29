@@ -17,6 +17,7 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.core.json.JsonObject;
 import io.vertx.mysqlclient.impl.CharacterSetMapping;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.mysqlclient.impl.util.Native41Authenticator;
@@ -24,7 +25,9 @@ import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.InitCommand;
 
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 import static io.vertx.mysqlclient.impl.codec.CapabilitiesFlag.*;
 import static io.vertx.mysqlclient.impl.codec.Packets.*;
@@ -120,11 +123,14 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
       if (cmd.database() != null && !cmd.database().isEmpty()) {
         encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_WITH_DB;
       }
-      encoder.clientCapabilitiesFlag &= initialHandshakePacket.getServerCapabilitiesFlags();
       String authMethodName = initialHandshakePacket.getAuthMethodName();
       byte[] serverScramble = initialHandshakePacket.getScramble();
-      HandshakeResponse handshakeResponse = new HandshakeResponse(cmd.username(), StandardCharsets.UTF_8, cmd.password(), cmd.database(), serverScramble, encoder.clientCapabilitiesFlag, authMethodName, null);
-      sendHandshakeResponseMessage(handshakeResponse);
+      JsonObject clientConnectionAttributes = cmd.properties().getJsonObject("clientConnectionAttributes");
+      if (clientConnectionAttributes != null && !clientConnectionAttributes.isEmpty()) {
+        encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_ATTRS;
+      }
+      encoder.clientCapabilitiesFlag &= initialHandshakePacket.getServerCapabilitiesFlags();
+      sendHandshakeResponseMessage(cmd.username(), cmd.password(), cmd.database(), StandardCharsets.UTF_8, serverScramble, authMethodName, clientConnectionAttributes);
     }
   }
 
@@ -144,7 +150,7 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     }
   }
 
-  private void sendHandshakeResponseMessage(HandshakeResponse message) {
+  private void sendHandshakeResponseMessage(String username, String password, String database, Charset charset, byte[] serverScramble, String authMethodName, JsonObject clientConnectionAttributes) {
     ByteBuf packet = allocateBuffer();
     // encode packet header
     int packetStartIdx = packet.writerIndex();
@@ -152,20 +158,19 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     packet.writeByte(sequenceId);
 
     // encode packet payload
-    int clientCapabilitiesFlags = message.getClientCapabilitiesFlags();
-    packet.writeIntLE(message.getClientCapabilitiesFlags());
-    packet.writeIntLE(message.getMaxPacketSize());
-    packet.writeByte(CharacterSetMapping.getCharsetByteValue(message.getCharset().name()));
+    int clientCapabilitiesFlags = encoder.clientCapabilitiesFlag;
+    packet.writeIntLE(clientCapabilitiesFlags);
+    packet.writeIntLE(0xFFFFFF);
+    packet.writeByte(CharacterSetMapping.getCharsetByteValue(charset.name()));
     byte[] filler = new byte[23];
     packet.writeBytes(filler);
-    BufferUtils.writeNullTerminatedString(packet, message.getUsername(), StandardCharsets.UTF_8);
-    String password = message.getPassword();
+    BufferUtils.writeNullTerminatedString(packet, username, StandardCharsets.UTF_8);
     if (password == null || password.isEmpty()) {
       packet.writeByte(0);
     } else {
       //TODO support different auth methods here
 
-      byte[] scrambledPassword = Native41Authenticator.encode(message.getPassword(), StandardCharsets.UTF_8, message.getScramble());
+      byte[] scrambledPassword = Native41Authenticator.encode(password, StandardCharsets.UTF_8, serverScramble);
       if ((clientCapabilitiesFlags & CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA) != 0) {
         BufferUtils.writeLengthEncodedInteger(packet, scrambledPassword.length);
         packet.writeBytes(scrambledPassword);
@@ -177,23 +182,19 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
       }
     }
     if ((clientCapabilitiesFlags & CLIENT_CONNECT_WITH_DB) != 0) {
-      BufferUtils.writeNullTerminatedString(packet, message.getDatabase(), StandardCharsets.UTF_8);
+      BufferUtils.writeNullTerminatedString(packet, database, StandardCharsets.UTF_8);
     }
     if ((clientCapabilitiesFlags & CLIENT_PLUGIN_AUTH) != 0) {
-      BufferUtils.writeNullTerminatedString(packet, message.getAuthMethodName(), StandardCharsets.UTF_8);
+      BufferUtils.writeNullTerminatedString(packet, authMethodName, StandardCharsets.UTF_8);
     }
     if ((clientCapabilitiesFlags & CLIENT_CONNECT_ATTRS) != 0) {
       ByteBuf kv = encoder.chctx.alloc().ioBuffer();
-      try {
-        message.getClientConnectAttrs().forEach((key, value) -> {
-          BufferUtils.writeLengthEncodedString(kv, key, StandardCharsets.UTF_8);
-          BufferUtils.writeLengthEncodedString(kv, value, StandardCharsets.UTF_8);
-        });
-        BufferUtils.writeLengthEncodedInteger(packet, kv.readableBytes());
-        packet.writeBytes(kv);
-      } finally {
-        kv.release();
-      }
+      clientConnectionAttributes.forEach(attribute -> {
+        BufferUtils.writeLengthEncodedString(kv, attribute.getKey(), StandardCharsets.UTF_8);
+        BufferUtils.writeLengthEncodedString(kv, attribute.getValue().toString(), StandardCharsets.UTF_8);
+      });
+      BufferUtils.writeLengthEncodedInteger(packet, kv.readableBytes());
+      packet.writeBytes(kv);
     }
 
     // set payload length
