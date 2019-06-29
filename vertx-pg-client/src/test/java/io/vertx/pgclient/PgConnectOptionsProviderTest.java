@@ -16,9 +16,9 @@
  */
 package io.vertx.pgclient;
 
+import io.vertx.core.json.JsonObject;
+import org.junit.Assert;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 /**
  * @author Billy Yuan <billy112487983@gmail.com>
@@ -150,6 +150,33 @@ public class PgConnectOptionsProviderTest {
     assertEquals(expectedConfiguration, actualConfiguration);
   }
 
+  @Test
+  public void testValidUri11() {
+    connectionUri = "postgresql://user@myhost?application_name=myapp";
+    actualConfiguration = PgConnectOptions.fromUri(connectionUri);
+
+    expectedConfiguration = new PgConnectOptions()
+      .setHost("myhost")
+      .setUser("user")
+      .setProperties(new JsonObject().put("application_name", "myapp"));
+
+    assertEquals(expectedConfiguration, actualConfiguration);
+  }
+
+  @Test
+  public void testValidUri12() {
+    connectionUri = "postgresql://?fallback_application_name=myapp&search_path=myschema";
+    actualConfiguration = PgConnectOptions.fromUri(connectionUri);
+
+    expectedConfiguration = new PgConnectOptions()
+      .setProperties(new JsonObject()
+        .put("fallback_application_name", "myapp")
+        .put("search_path", "myschema"));
+
+    assertEquals(expectedConfiguration, actualConfiguration);
+  }
+
+
   @Test(expected = IllegalArgumentException.class)
   public void testInvalidUri1() {
     connectionUri = "postgrsql://username";
@@ -178,5 +205,9 @@ public class PgConnectOptionsProviderTest {
   public void testInvalidUri5() {
     connectionUri = "postgresql://user@localhost?port=1234&port";
     actualConfiguration = PgConnectOptions.fromUri(connectionUri);
+  }
+
+  private static void assertEquals(PgConnectOptions expectedConfiguration, PgConnectOptions actualConfiguration) {
+    Assert.assertEquals(expectedConfiguration.toJson(), actualConfiguration.toJson());
   }
 }

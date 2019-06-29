@@ -291,6 +291,20 @@ public class PgConnectionUriParserTest {
     assertEquals(expectedParsedResult, actualParsedResult);
   }
 
+  @Test
+  public void testParsingProperties() {
+    uri = "postgresql://?application_name=myapp&search_path=myschema";
+
+    actualParsedResult = parse(uri);
+
+    expectedParsedResult = new JsonObject()
+      .put("properties", new JsonObject()
+        .put("application_name", "myapp")
+        .put("search_path", "myschema"));
+
+    assertEquals(expectedParsedResult, actualParsedResult);
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void testParsingInvalidUri1() {
     uri = "postgresql://us@er@@";
