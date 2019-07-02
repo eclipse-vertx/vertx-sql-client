@@ -4,6 +4,9 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClientOptions;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Connect options for configuring {@link SqlConnection} or {@link Pool}.
  */
@@ -21,7 +24,7 @@ public abstract class SqlConnectOptions extends NetClientOptions {
   private boolean cachePreparedStatements = DEFAULT_CACHE_PREPARED_STATEMENTS;
   private int preparedStatementCacheMaxSize = DEFAULT_PREPARED_STATEMENT_CACHE_MAX_SIZE;
   private int preparedStatementCacheSqlLimit = DEFAULT_PREPARED_STATEMENT_CACHE_SQL_LIMIT;
-  private JsonObject properties;
+  private Map<String, String> properties;
 
   public SqlConnectOptions() {
     super();
@@ -44,7 +47,7 @@ public abstract class SqlConnectOptions extends NetClientOptions {
     this.cachePreparedStatements = other.cachePreparedStatements;
     this.preparedStatementCacheMaxSize = other.preparedStatementCacheMaxSize;
     this.preparedStatementCacheSqlLimit = other.preparedStatementCacheSqlLimit;
-    this.properties = other.properties.copy();
+    this.properties = new HashMap<>(other.properties);
   }
 
   /**
@@ -217,7 +220,7 @@ public abstract class SqlConnectOptions extends NetClientOptions {
   /**
    * @return the value of current connection properties
    */
-  public JsonObject getProperties() {
+  public Map<String, String> getProperties() {
     return properties;
   }
 
@@ -227,7 +230,7 @@ public abstract class SqlConnectOptions extends NetClientOptions {
    * @param properties the value of properties to specify
    * @return a reference to this, so the API can be used fluently
    */
-  public SqlConnectOptions setProperties(JsonObject properties) {
+  public SqlConnectOptions setProperties(Map<String, String> properties) {
     checkParameterNonNull(properties, "Properties can not be null");
     this.properties = properties;
     return this;

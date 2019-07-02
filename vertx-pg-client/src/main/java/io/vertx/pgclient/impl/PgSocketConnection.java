@@ -19,7 +19,6 @@ package io.vertx.pgclient.impl;
 
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
-import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.impl.codec.PgCodec;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
@@ -28,6 +27,8 @@ import io.vertx.sqlclient.impl.command.InitCommand;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.NetSocketInternal;
+
+import java.util.Map;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -55,7 +56,7 @@ public class PgSocketConnection extends SocketConnectionBase {
     super.init();
   }
 
-  public void sendStartupMessage(String username, String password, String database, JsonObject properties, Handler<? super CommandResponse<Connection>> completionHandler) {
+  public void sendStartupMessage(String username, String password, String database, Map<String, String> properties, Handler<? super CommandResponse<Connection>> completionHandler) {
     InitCommand cmd = new InitCommand(this, username, password, database, properties);
     cmd.handler = completionHandler;
     schedule(cmd);

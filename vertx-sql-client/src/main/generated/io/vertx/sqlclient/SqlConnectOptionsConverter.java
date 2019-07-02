@@ -51,7 +51,12 @@ public class SqlConnectOptionsConverter {
           break;
         case "properties":
           if (member.getValue() instanceof JsonObject) {
-            obj.setProperties(((JsonObject)member.getValue()).copy());
+            java.util.Map<String, java.lang.String> map = new java.util.LinkedHashMap<>();
+            ((Iterable<java.util.Map.Entry<String, Object>>)member.getValue()).forEach(entry -> {
+              if (entry.getValue() instanceof String)
+                map.put(entry.getKey(), (String)entry.getValue());
+            });
+            obj.setProperties(map);
           }
           break;
         case "propertys":
@@ -90,7 +95,9 @@ public class SqlConnectOptionsConverter {
     json.put("preparedStatementCacheMaxSize", obj.getPreparedStatementCacheMaxSize());
     json.put("preparedStatementCacheSqlLimit", obj.getPreparedStatementCacheSqlLimit());
     if (obj.getProperties() != null) {
-      json.put("properties", obj.getProperties());
+      JsonObject map = new JsonObject();
+      obj.getProperties().forEach((key, value) -> map.put(key, value));
+      json.put("properties", map);
     }
     if (obj.getUser() != null) {
       json.put("user", obj.getUser());

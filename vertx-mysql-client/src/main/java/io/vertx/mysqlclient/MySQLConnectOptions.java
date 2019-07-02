@@ -17,6 +17,8 @@ import io.vertx.core.net.TrustOptions;
 import io.vertx.mysqlclient.impl.MySQLConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -43,9 +45,12 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_USER = "root";
   public static final String DEFAULT_PASSWORD = "";
   public static final String DEFAULT_SCHEMA = "";
-  public static final JsonObject DEFAULT_CONNECTION_ATTRIBUTES = new JsonObject()
-    .put("_client_name", "vertx-mysql-client")
-    .put("_client_version", "3.8.0");
+  public static final Map<String, String> DEFAULT_CONNECTION_ATTRIBUTES = new HashMap<>();
+
+  static {
+    DEFAULT_CONNECTION_ATTRIBUTES.put("_client_name", "vertx-mysql-client");
+    DEFAULT_CONNECTION_ATTRIBUTES.put("_client_version", "3.8.0");
+  }
 
   public MySQLConnectOptions() {
     super();
@@ -101,7 +106,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   }
 
   @Override
-  public MySQLConnectOptions setProperties(JsonObject properties) {
+  public MySQLConnectOptions setProperties(Map<String, String> properties) {
     return (MySQLConnectOptions) super.setProperties(properties);
   }
 

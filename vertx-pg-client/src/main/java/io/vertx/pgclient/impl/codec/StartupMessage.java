@@ -19,7 +19,8 @@ package io.vertx.pgclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.vertx.core.json.JsonObject;
+
+import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -33,9 +34,9 @@ class StartupMessage {
 
   final String username;
   final String database;
-  final JsonObject properties;
+  final Map<String, String> properties;
 
-  StartupMessage(String username, String database, JsonObject properties) {
+  StartupMessage(String username, String database, Map<String, String> properties) {
     this.username = username;
     this.database = database;
     this.properties = properties;

@@ -16,12 +16,13 @@
  */
 package io.vertx.pgclient.impl;
 
-import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.SslMode;
 import io.vertx.core.json.JsonObject;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -142,7 +143,7 @@ public class PgConnectionUriParser {
     if (parametersInfo == null || parametersInfo.isEmpty()) {
       return;
     }
-    JsonObject properties = new JsonObject();
+    Map<String, String> properties = new HashMap<>();
     for (String parameterPair : parametersInfo.split("&")) {
       if (parameterPair.isEmpty()) {
         continue;

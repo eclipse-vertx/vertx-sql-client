@@ -17,7 +17,6 @@
 
 package io.vertx.pgclient.impl;
 
-import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.SslMode;
 import io.vertx.sqlclient.impl.Connection;
@@ -25,6 +24,9 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.core.*;
 import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.core.net.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -42,7 +44,7 @@ class PgConnectionFactory {
   private final String database;
   private final String username;
   private final String password;
-  private final JsonObject properties;
+  private final Map<String, String> properties;
   private final boolean cachePreparedStatements;
   private final int preparedStatementCacheSize;
   private final int preparedStatementCacheSqlLimit;
@@ -75,7 +77,7 @@ class PgConnectionFactory {
     this.database = options.getDatabase();
     this.username = options.getUser();
     this.password = options.getPassword();
-    this.properties = options.getProperties().copy();
+    this.properties = new HashMap<>(options.getProperties());
     this.cachePreparedStatements = options.getCachePreparedStatements();
     this.pipeliningLimit = options.getPipeliningLimit();
     this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();

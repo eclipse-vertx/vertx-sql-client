@@ -24,6 +24,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.*;
 import io.vertx.sqlclient.SqlConnectOptions;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -94,12 +96,15 @@ public class PgConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_PASSWORD = "pass";
   public static final int DEFAULT_PIPELINING_LIMIT = 256;
   public static final SslMode DEFAULT_SSLMODE = SslMode.DISABLE;
-  public static final JsonObject DEFAULT_PROPERTIES = new JsonObject()
-    .put("application_name", "vertx-pg-client")
-    .put("client_encoding", "utf8")
-    .put("DateStyle", "ISO")
-    .put("intervalStyle", "postgres")
-    .put("extra_float_digits", "2");
+  public static final Map<String, String> DEFAULT_PROPERTIES = new HashMap<>();
+
+  static {
+    DEFAULT_PROPERTIES.put("application_name", "vertx-pg-client");
+    DEFAULT_PROPERTIES.put("client_encoding", "utf8");
+    DEFAULT_PROPERTIES.put("DateStyle", "ISO");
+    DEFAULT_PROPERTIES.put("intervalStyle", "postgres");
+    DEFAULT_PROPERTIES.put("extra_float_digits", "2");
+  }
 
   private int pipeliningLimit;
   private SslMode sslMode;
@@ -171,7 +176,7 @@ public class PgConnectOptions extends SqlConnectOptions {
   }
 
   @Override
-  public PgConnectOptions setProperties(JsonObject properties) {
+  public PgConnectOptions setProperties(Map<String, String> properties) {
     return (PgConnectOptions) super.setProperties(properties);
   }
 

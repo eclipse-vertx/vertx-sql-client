@@ -21,12 +21,13 @@ import io.netty.channel.ChannelPipeline;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.impl.NetSocketInternal;
-import io.vertx.core.json.JsonObject;
 import io.vertx.mysqlclient.impl.codec.MySQLCodec;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.InitCommand;
+
+import java.util.Map;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -43,7 +44,7 @@ public class MySQLSocketConnection extends SocketConnectionBase {
     super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, 1, context);
   }
 
-  void sendStartupMessage(String username, String password, String database, JsonObject properties, Handler<? super CommandResponse<Connection>> completionHandler) {
+  void sendStartupMessage(String username, String password, String database, Map<String, String> properties, Handler<? super CommandResponse<Connection>> completionHandler) {
     InitCommand cmd = new InitCommand(this, username, password, database, properties);
     cmd.handler = completionHandler;
     schedule(cmd);

@@ -16,9 +16,11 @@
  */
 package io.vertx.pgclient;
 
-import io.vertx.core.json.JsonObject;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Billy Yuan <billy112487983@gmail.com>
@@ -155,10 +157,13 @@ public class PgConnectOptionsProviderTest {
     connectionUri = "postgresql://user@myhost?application_name=myapp";
     actualConfiguration = PgConnectOptions.fromUri(connectionUri);
 
+    Map<String, String> expectedProperties = new HashMap<>();
+    expectedProperties.put("application_name", "myapp");
+
     expectedConfiguration = new PgConnectOptions()
       .setHost("myhost")
       .setUser("user")
-      .setProperties(new JsonObject().put("application_name", "myapp"));
+      .setProperties(expectedProperties);
 
     assertEquals(expectedConfiguration, actualConfiguration);
   }
@@ -168,10 +173,12 @@ public class PgConnectOptionsProviderTest {
     connectionUri = "postgresql://?fallback_application_name=myapp&search_path=myschema";
     actualConfiguration = PgConnectOptions.fromUri(connectionUri);
 
+    Map<String, String> expectedProperties = new HashMap<>();
+    expectedProperties.put("fallback_application_name", "myapp");
+    expectedProperties.put("search_path", "myschema");
+
     expectedConfiguration = new PgConnectOptions()
-      .setProperties(new JsonObject()
-        .put("fallback_application_name", "myapp")
-        .put("search_path", "myschema"));
+      .setProperties(expectedProperties);
 
     assertEquals(expectedConfiguration, actualConfiguration);
   }

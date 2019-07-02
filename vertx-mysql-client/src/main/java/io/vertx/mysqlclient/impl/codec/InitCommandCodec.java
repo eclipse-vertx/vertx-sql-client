@@ -17,7 +17,6 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.core.json.JsonObject;
 import io.vertx.mysqlclient.impl.CharacterSetMapping;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.mysqlclient.impl.util.Native41Authenticator;
@@ -125,7 +124,7 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
       }
       String authMethodName = initialHandshakePacket.getAuthMethodName();
       byte[] serverScramble = initialHandshakePacket.getScramble();
-      JsonObject clientConnectionAttributes = cmd.properties().getJsonObject("clientConnectionAttributes");
+      Map<String, String> clientConnectionAttributes = cmd.properties();
       if (clientConnectionAttributes != null && !clientConnectionAttributes.isEmpty()) {
         encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_ATTRS;
       }
@@ -150,7 +149,7 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     }
   }
 
-  private void sendHandshakeResponseMessage(String username, String password, String database, Charset charset, byte[] serverScramble, String authMethodName, JsonObject clientConnectionAttributes) {
+  private void sendHandshakeResponseMessage(String username, String password, String database, Charset charset, byte[] serverScramble, String authMethodName, Map<String, String> clientConnectionAttributes) {
     ByteBuf packet = allocateBuffer();
     // encode packet header
     int packetStartIdx = packet.writerIndex();
@@ -189,9 +188,9 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     }
     if ((clientCapabilitiesFlags & CLIENT_CONNECT_ATTRS) != 0) {
       ByteBuf kv = encoder.chctx.alloc().ioBuffer();
-      clientConnectionAttributes.forEach(attribute -> {
-        BufferUtils.writeLengthEncodedString(kv, attribute.getKey(), StandardCharsets.UTF_8);
-        BufferUtils.writeLengthEncodedString(kv, attribute.getValue().toString(), StandardCharsets.UTF_8);
+      clientConnectionAttributes.forEach((key, value) -> {
+        BufferUtils.writeLengthEncodedString(kv, key, StandardCharsets.UTF_8);
+        BufferUtils.writeLengthEncodedString(kv, value, StandardCharsets.UTF_8);
       });
       BufferUtils.writeLengthEncodedInteger(packet, kv.readableBytes());
       packet.writeBytes(kv);

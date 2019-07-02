@@ -17,9 +17,10 @@
 
 package io.vertx.sqlclient.impl.command;
 
-import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
+
+import java.util.Map;
 
 /**
  * Initialize the connection so it can be used to interact with the database.
@@ -32,14 +33,14 @@ public class InitCommand extends CommandBase<Connection> {
   private final String username;
   private final String password;
   private final String database;
-  private final JsonObject properties;
+  private final Map<String, String> properties;
 
   public InitCommand(
     SocketConnectionBase conn,
     String username,
     String password,
     String database,
-    JsonObject properties) {
+    Map<String, String> properties) {
     this.conn = conn;
     this.username = username;
     this.password = password;
@@ -63,7 +64,7 @@ public class InitCommand extends CommandBase<Connection> {
     return database;
   }
 
-  public JsonObject properties() {
+  public Map<String, String> properties() {
     return properties;
   }
 
