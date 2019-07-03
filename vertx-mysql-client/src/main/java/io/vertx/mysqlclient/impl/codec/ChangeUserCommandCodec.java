@@ -78,10 +78,10 @@ class ChangeUserCommandCodec extends CommandCodec<Void, ChangeUserCommand> {
     }
     if ((encoder.clientCapabilitiesFlag & CLIENT_CONNECT_ATTRS) != 0) {
       ByteBuf kv = encoder.chctx.alloc().ioBuffer();
-      clientConnectionAttributes.forEach((key, value) -> {
-        BufferUtils.writeLengthEncodedString(kv, key, StandardCharsets.UTF_8);
-        BufferUtils.writeLengthEncodedString(kv, value, StandardCharsets.UTF_8);
-      });
+      for (Map.Entry<String, String> attribute : clientConnectionAttributes.entrySet()) {
+        BufferUtils.writeLengthEncodedString(kv, attribute.getKey(), StandardCharsets.UTF_8);
+        BufferUtils.writeLengthEncodedString(kv, attribute.getValue(), StandardCharsets.UTF_8);
+      }
       BufferUtils.writeLengthEncodedInteger(packet, kv.readableBytes());
       packet.writeBytes(kv);
     }
