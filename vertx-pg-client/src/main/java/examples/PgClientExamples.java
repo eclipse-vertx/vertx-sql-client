@@ -107,6 +107,14 @@ public class PgClientExamples {
     });
   }
 
+  public void configureDefaultSchema() {
+    // Data object
+    PgConnectOptions connectOptions = new PgConnectOptions();
+
+    // Set the default schema
+    connectOptions.addProperty("search_path", "myschema");
+  }
+
   public void configureFromUri(Vertx vertx) {
 
     // Connection URI

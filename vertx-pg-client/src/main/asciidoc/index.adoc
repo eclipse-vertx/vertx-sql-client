@@ -114,6 +114,15 @@ A simple way to configure the client is to specify a `PgConnectOptions` data obj
 {@link examples.PgClientExamples#configureFromDataObject(io.vertx.core.Vertx)}
 ----
 
+You can also configure the generic properties with the `setProperties` or `addProperty` methods. Note `setProperties` will override the default client properties.
+
+For example, you can set a default schema for the connection with adding a `search_path` property.
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#configureDefaultSchema()}
+----
+
 === connection uri
 
 Apart from configuring with a `PgConnectOptions` data object, We also provide you an alternative way to connect when you want to configure with a connection URI:
@@ -136,7 +145,7 @@ Currently the client supports the following parameter key words in connection ur
 * sslmode
 * properties including(application_name, fallback_application_name, search_path)
 
-Note: configuring properties in connection uri will override the default properties.
+Note: configuring properties in connection URI will override the default properties.
 
 === environment variables
 
