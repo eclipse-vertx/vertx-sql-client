@@ -99,6 +99,13 @@ A simple way to configure the client is to specify a `MySQLConnectOptions` data 
 {@link examples.MySQLClientExamples#configureFromDataObject(io.vertx.core.Vertx)}
 ----
 
+You can also configure the connection attributes with the `setProperties` or `addProperty` methods. Note `setProperties` will override the default client properties.
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#configureConnectionAttributes()}
+----
+
 === connection uri
 
 Apart from configuring with a `MySQLConnectOptions` data object, We also provide you an alternative way to connect when you want to configure with a connection URI:
