@@ -123,6 +123,8 @@ For example, you can set a default schema for the connection with adding a `sear
 {@link examples.PgClientExamples#configureDefaultSchema()}
 ----
 
+More information about the available properties can be found in the https://www.postgresql.org/docs/current/runtime-config-client.html[PostgreSQL Manuals].
+
 === connection uri
 
 Apart from configuring with a `PgConnectOptions` data object, We also provide you an alternative way to connect when you want to configure with a connection URI:
