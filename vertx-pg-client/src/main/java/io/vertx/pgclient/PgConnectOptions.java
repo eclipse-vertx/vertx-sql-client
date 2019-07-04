@@ -24,6 +24,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.*;
 import io.vertx.sqlclient.SqlConnectOptions;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -96,14 +97,16 @@ public class PgConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_PASSWORD = "pass";
   public static final int DEFAULT_PIPELINING_LIMIT = 256;
   public static final SslMode DEFAULT_SSLMODE = SslMode.DISABLE;
-  public static final Map<String, String> DEFAULT_PROPERTIES = new HashMap<>();
+  public static final Map<String, String> DEFAULT_PROPERTIES;
 
   static {
-    DEFAULT_PROPERTIES.put("application_name", "vertx-pg-client");
-    DEFAULT_PROPERTIES.put("client_encoding", "utf8");
-    DEFAULT_PROPERTIES.put("DateStyle", "ISO");
-    DEFAULT_PROPERTIES.put("intervalStyle", "postgres");
-    DEFAULT_PROPERTIES.put("extra_float_digits", "2");
+    Map<String, String> defaultProperties = new HashMap<>();
+    defaultProperties.put("application_name", "vertx-pg-client");
+    defaultProperties.put("client_encoding", "utf8");
+    defaultProperties.put("DateStyle", "ISO");
+    defaultProperties.put("intervalStyle", "postgres");
+    defaultProperties.put("extra_float_digits", "2");
+    DEFAULT_PROPERTIES = Collections.unmodifiableMap(defaultProperties);
   }
 
   private int pipeliningLimit;

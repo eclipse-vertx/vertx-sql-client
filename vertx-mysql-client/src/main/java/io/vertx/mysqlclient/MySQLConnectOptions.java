@@ -17,6 +17,7 @@ import io.vertx.core.net.TrustOptions;
 import io.vertx.mysqlclient.impl.MySQLConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -45,11 +46,13 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_USER = "root";
   public static final String DEFAULT_PASSWORD = "";
   public static final String DEFAULT_SCHEMA = "";
-  public static final Map<String, String> DEFAULT_CONNECTION_ATTRIBUTES = new HashMap<>();
+  public static final Map<String, String> DEFAULT_CONNECTION_ATTRIBUTES;
 
   static {
-    DEFAULT_CONNECTION_ATTRIBUTES.put("_client_name", "vertx-mysql-client");
-    DEFAULT_CONNECTION_ATTRIBUTES.put("_client_version", "3.8.0");
+    Map<String, String> defaultAttributes = new HashMap<>();
+    defaultAttributes.put("_client_name", "vertx-mysql-client");
+    defaultAttributes.put("_client_version", "3.8.0");
+    DEFAULT_CONNECTION_ATTRIBUTES = Collections.unmodifiableMap(defaultAttributes);
   }
 
   public MySQLConnectOptions() {
