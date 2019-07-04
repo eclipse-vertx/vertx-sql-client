@@ -24,6 +24,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.*;
 import io.vertx.sqlclient.SqlConnectOptions;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -94,6 +97,17 @@ public class PgConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_PASSWORD = "pass";
   public static final int DEFAULT_PIPELINING_LIMIT = 256;
   public static final SslMode DEFAULT_SSLMODE = SslMode.DISABLE;
+  public static final Map<String, String> DEFAULT_PROPERTIES;
+
+  static {
+    Map<String, String> defaultProperties = new HashMap<>();
+    defaultProperties.put("application_name", "vertx-pg-client");
+    defaultProperties.put("client_encoding", "utf8");
+    defaultProperties.put("DateStyle", "ISO");
+    defaultProperties.put("intervalStyle", "postgres");
+    defaultProperties.put("extra_float_digits", "2");
+    DEFAULT_PROPERTIES = Collections.unmodifiableMap(defaultProperties);
+  }
 
   private int pipeliningLimit;
   private SslMode sslMode;
@@ -162,6 +176,16 @@ public class PgConnectOptions extends SqlConnectOptions {
   @Override
   public PgConnectOptions setPreparedStatementCacheSqlLimit(int preparedStatementCacheSqlLimit) {
     return (PgConnectOptions) super.setPreparedStatementCacheSqlLimit(preparedStatementCacheSqlLimit);
+  }
+
+  @Override
+  public PgConnectOptions setProperties(Map<String, String> properties) {
+    return (PgConnectOptions) super.setProperties(properties);
+  }
+
+  @Override
+  public PgConnectOptions addProperty(String key, String value) {
+    return (PgConnectOptions) super.addProperty(key, value);
   }
 
   /**
@@ -413,6 +437,7 @@ public class PgConnectOptions extends SqlConnectOptions {
     this.setDatabase(DEFAULT_DATABASE);
     pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
     sslMode = DEFAULT_SSLMODE;
+    this.setProperties(DEFAULT_PROPERTIES);
   }
 
   @Override

@@ -20,6 +20,8 @@ package io.vertx.sqlclient.impl.command;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
 
+import java.util.Map;
+
 /**
  * Initialize the connection so it can be used to interact with the database.
  *
@@ -31,16 +33,19 @@ public class InitCommand extends CommandBase<Connection> {
   private final String username;
   private final String password;
   private final String database;
+  private final Map<String, String> properties;
 
   public InitCommand(
     SocketConnectionBase conn,
     String username,
     String password,
-    String database) {
+    String database,
+    Map<String, String> properties) {
     this.conn = conn;
     this.username = username;
     this.password = password;
     this.database = database;
+    this.properties = properties;
   }
 
   public SocketConnectionBase connection() {
@@ -57,6 +62,10 @@ public class InitCommand extends CommandBase<Connection> {
 
   public String database() {
     return database;
+  }
+
+  public Map<String, String> properties() {
+    return properties;
   }
 
 }

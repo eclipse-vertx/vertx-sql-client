@@ -99,6 +99,15 @@ A simple way to configure the client is to specify a `MySQLConnectOptions` data 
 {@link examples.MySQLClientExamples#configureFromDataObject(io.vertx.core.Vertx)}
 ----
 
+You can also configure the connection attributes with the `setProperties` or `addProperty` methods. Note `setProperties` will override the default client properties.
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#configureConnectionAttributes()}
+----
+
+More information about client connection attributes can be found in the https://dev.mysql.com/doc/refman/8.0/en/performance-schema-connection-attribute-tables.html[MySQL Reference Manual].
+
 === connection uri
 
 Apart from configuring with a `MySQLConnectOptions` data object, We also provide you an alternative way to connect when you want to configure with a connection URI:
@@ -108,7 +117,7 @@ Apart from configuring with a `MySQLConnectOptions` data object, We also provide
 {@link examples.MySQLClientExamples#configureFromUri(io.vertx.core.Vertx)}
 ----
 
-More information about connection string formats can be found in the https://dev.mysql.com/doc/refman/8.0/en/connecting-using-uri-or-key-value-pairs.html#connecting-using-uri[MySQL Reference].
+More information about connection string formats can be found in the https://dev.mysql.com/doc/refman/8.0/en/connecting-using-uri-or-key-value-pairs.html#connecting-using-uri[MySQL Reference Manual].
 
 Currently the client supports the following parameter key words in connection uri
 

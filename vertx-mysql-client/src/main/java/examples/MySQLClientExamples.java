@@ -17,6 +17,7 @@ import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -73,6 +74,20 @@ public class MySQLClientExamples {
     pool.getConnection(ar -> {
       // Handling your connection
     });
+  }
+
+  public void configureConnectionAttributes() {
+    // Data object
+    MySQLConnectOptions connectOptions = new MySQLConnectOptions();
+
+    // Add a connection attribute
+    connectOptions.addProperty("_java_version", "1.8.0_212");
+
+    // Override the attributes
+    Map<String, String> attributes = new HashMap<>();
+    attributes.put("_client_name", "myapp");
+    attributes.put("_client_version", "1.0.0");
+    connectOptions.setProperties(attributes);
   }
 
   public void configureFromUri(Vertx vertx) {

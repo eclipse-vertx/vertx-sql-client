@@ -4,6 +4,8 @@ import io.vertx.core.json.JsonObject;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -122,7 +124,7 @@ public class MySQLConnectionUriParser {
     if (attributesInfo == null || attributesInfo.isEmpty()) {
       return;
     }
-    JsonObject properties = new JsonObject();
+    Map<String, String> properties = new HashMap<>();
     for (String parameterPair : attributesInfo.split("&")) {
       if (parameterPair.isEmpty()) {
         continue;

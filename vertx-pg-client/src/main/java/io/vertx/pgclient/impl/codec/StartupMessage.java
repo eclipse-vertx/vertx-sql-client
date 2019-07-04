@@ -20,6 +20,8 @@ package io.vertx.pgclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
+import java.util.Map;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -29,22 +31,14 @@ class StartupMessage {
 
   static final ByteBuf BUFF_USER = Unpooled.copiedBuffer("user", UTF_8).asReadOnly();
   static final ByteBuf BUFF_DATABASE = Unpooled.copiedBuffer("database", UTF_8).asReadOnly();
-  static final ByteBuf BUFF_APPLICATION_NAME = Unpooled.copiedBuffer("application_name", UTF_8).asReadOnly();
-  static final ByteBuf BUFF_VERTX_PG_CLIENT = Unpooled.copiedBuffer("vertx-pg-client", UTF_8).asReadOnly();
-  static final ByteBuf BUFF_CLIENT_ENCODING = Unpooled.copiedBuffer("client_encoding", UTF_8).asReadOnly();
-  static final ByteBuf BUFF_UTF8 = Unpooled.copiedBuffer("utf8", UTF_8).asReadOnly();
-  static final ByteBuf BUFF_DATE_STYLE = Unpooled.copiedBuffer("DateStyle", UTF_8).asReadOnly();
-  static final ByteBuf BUFF_ISO = Unpooled.copiedBuffer("ISO", UTF_8).asReadOnly();
-  static final ByteBuf BUFF_INTERVAL_STYLE = Unpooled.copiedBuffer("intervalStyle", UTF_8).asReadOnly();
-  static final ByteBuf BUFF_INTERVAL_STYLE_TYPE = Unpooled.copiedBuffer("postgres", UTF_8).asReadOnly();
-  static final ByteBuf BUFF_EXTRA_FLOAT_DIGITS = Unpooled.copiedBuffer("extra_float_digits", UTF_8).asReadOnly();
-  static final ByteBuf BUFF_2 = Unpooled.copiedBuffer("2", UTF_8).asReadOnly();
 
   final String username;
   final String database;
+  final Map<String, String> properties;
 
-  StartupMessage(String username, String database) {
+  StartupMessage(String username, String database, Map<String, String> properties) {
     this.username = username;
     this.database = database;
+    this.properties = properties;
   }
 }

@@ -16,9 +16,11 @@
  */
 package io.vertx.pgclient;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Billy Yuan <billy112487983@gmail.com>
@@ -150,6 +152,38 @@ public class PgConnectOptionsProviderTest {
     assertEquals(expectedConfiguration, actualConfiguration);
   }
 
+  @Test
+  public void testValidUri11() {
+    connectionUri = "postgresql://user@myhost?application_name=myapp";
+    actualConfiguration = PgConnectOptions.fromUri(connectionUri);
+
+    Map<String, String> expectedProperties = new HashMap<>();
+    expectedProperties.put("application_name", "myapp");
+
+    expectedConfiguration = new PgConnectOptions()
+      .setHost("myhost")
+      .setUser("user")
+      .setProperties(expectedProperties);
+
+    assertEquals(expectedConfiguration, actualConfiguration);
+  }
+
+  @Test
+  public void testValidUri12() {
+    connectionUri = "postgresql://?fallback_application_name=myapp&search_path=myschema";
+    actualConfiguration = PgConnectOptions.fromUri(connectionUri);
+
+    Map<String, String> expectedProperties = new HashMap<>();
+    expectedProperties.put("fallback_application_name", "myapp");
+    expectedProperties.put("search_path", "myschema");
+
+    expectedConfiguration = new PgConnectOptions()
+      .setProperties(expectedProperties);
+
+    assertEquals(expectedConfiguration, actualConfiguration);
+  }
+
+
   @Test(expected = IllegalArgumentException.class)
   public void testInvalidUri1() {
     connectionUri = "postgrsql://username";
@@ -178,5 +212,9 @@ public class PgConnectOptionsProviderTest {
   public void testInvalidUri5() {
     connectionUri = "postgresql://user@localhost?port=1234&port";
     actualConfiguration = PgConnectOptions.fromUri(connectionUri);
+  }
+
+  private static void assertEquals(PgConnectOptions expectedConfiguration, PgConnectOptions actualConfiguration) {
+    Assert.assertEquals(expectedConfiguration.toJson(), actualConfiguration.toJson());
   }
 }
