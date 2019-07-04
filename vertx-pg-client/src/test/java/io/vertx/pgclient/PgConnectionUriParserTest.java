@@ -19,6 +19,9 @@ package io.vertx.pgclient;
 import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static io.vertx.pgclient.impl.PgConnectionUriParser.*;
 import static org.junit.Assert.*;
 
@@ -287,6 +290,22 @@ public class PgConnectionUriParserTest {
       .put("host", "localhost")
       .put("port", 1234)
       .put("sslMode", "REQUIRE");
+
+    assertEquals(expectedParsedResult, actualParsedResult);
+  }
+
+  @Test
+  public void testParsingProperties() {
+    uri = "postgresql://?application_name=myapp&search_path=myschema";
+
+    actualParsedResult = parse(uri);
+
+    Map<String, String> expectedProperties = new HashMap<>();
+    expectedProperties.put("application_name", "myapp");
+    expectedProperties.put("search_path", "myschema");
+
+    expectedParsedResult = new JsonObject()
+      .put("properties", expectedProperties);
 
     assertEquals(expectedParsedResult, actualParsedResult);
   }

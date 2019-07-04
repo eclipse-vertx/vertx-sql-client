@@ -25,6 +25,9 @@ import io.vertx.core.*;
 import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.core.net.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
@@ -41,6 +44,7 @@ class PgConnectionFactory {
   private final String database;
   private final String username;
   private final String password;
+  private final Map<String, String> properties;
   private final boolean cachePreparedStatements;
   private final int preparedStatementCacheSize;
   private final int preparedStatementCacheSqlLimit;
@@ -73,6 +77,7 @@ class PgConnectionFactory {
     this.database = options.getDatabase();
     this.username = options.getUser();
     this.password = options.getPassword();
+    this.properties = new HashMap<>(options.getProperties());
     this.cachePreparedStatements = options.getCachePreparedStatements();
     this.pipeliningLimit = options.getPipeliningLimit();
     this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
@@ -100,7 +105,7 @@ class PgConnectionFactory {
       if (ar.succeeded()) {
         PgSocketConnection conn = ar.result();
         conn.init();
-        conn.sendStartupMessage(username, password, database, completionHandler);
+        conn.sendStartupMessage(username, password, database, properties, completionHandler);
       } else {
         completionHandler.handle(CommandResponse.failure(ar.cause()));
       }

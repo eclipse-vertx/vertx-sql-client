@@ -8,9 +8,10 @@ import io.vertx.mysqlclient.impl.util.Native41Authenticator;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
+import static io.vertx.mysqlclient.impl.codec.CapabilitiesFlag.*;
 import static io.vertx.mysqlclient.impl.codec.Packets.*;
-import static io.vertx.mysqlclient.impl.codec.CapabilitiesFlag.CLIENT_PLUGIN_AUTH;
 
 class ChangeUserCommandCodec extends CommandCodec<Void, ChangeUserCommand> {
   ChangeUserCommandCodec(ChangeUserCommand cmd) {
@@ -71,8 +72,19 @@ class ChangeUserCommandCodec extends CommandCodec<Void, ChangeUserCommand> {
     if ((encoder.clientCapabilitiesFlag & CLIENT_PLUGIN_AUTH) != 0) {
       BufferUtils.writeNullTerminatedString(packet, "mysql_native_password", StandardCharsets.UTF_8);
     }
-    // properties support
-
+    Map<String, String> clientConnectionAttributes = cmd.connectionAttributes();
+    if (clientConnectionAttributes != null && !clientConnectionAttributes.isEmpty()) {
+      encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_ATTRS;
+    }
+    if ((encoder.clientCapabilitiesFlag & CLIENT_CONNECT_ATTRS) != 0) {
+      ByteBuf kv = encoder.chctx.alloc().ioBuffer();
+      for (Map.Entry<String, String> attribute : clientConnectionAttributes.entrySet()) {
+        BufferUtils.writeLengthEncodedString(kv, attribute.getKey(), StandardCharsets.UTF_8);
+        BufferUtils.writeLengthEncodedString(kv, attribute.getValue(), StandardCharsets.UTF_8);
+      }
+      BufferUtils.writeLengthEncodedInteger(packet, kv.readableBytes());
+      packet.writeBytes(kv);
+    }
 
     // set payload length
     int lenOfPayload = packet.writerIndex() - packetStartIdx - 4;

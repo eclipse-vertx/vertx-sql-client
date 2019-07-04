@@ -21,6 +21,8 @@ import io.vertx.core.json.JsonObject;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -141,6 +143,7 @@ public class PgConnectionUriParser {
     if (parametersInfo == null || parametersInfo.isEmpty()) {
       return;
     }
+    Map<String, String> properties = new HashMap<>();
     for (String parameterPair : parametersInfo.split("&")) {
       if (parameterPair.isEmpty()) {
         continue;
@@ -173,11 +176,23 @@ public class PgConnectionUriParser {
           case "sslmode":
             configuration.put("sslMode", SslMode.of(value));
             break;
+          case "application_name":
+            properties.put("application_name", value);
+            break;
+          case "fallback_application_name":
+            properties.put("fallback_application_name", value);
+            break;
+          case "search_path":
+            properties.put("search_path", value);
+            break;
           default:
             configuration.put(key, value);
             break;
         }
       }
+    }
+    if (!properties.isEmpty()) {
+      configuration.put("properties", properties);
     }
   }
 

@@ -9,6 +9,8 @@ import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
 
 import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MySQLConnectionFactory {
   private final NetClient netClient;
@@ -19,6 +21,7 @@ public class MySQLConnectionFactory {
   private final String username;
   private final String password;
   private final String database;
+  private final Map<String, String> properties;
   private final Charset charset;
   private final boolean ssl = false;
   private final boolean cachePreparedStatements;
@@ -41,6 +44,8 @@ public class MySQLConnectionFactory {
     this.username = options.getUser();
     this.password = options.getPassword();
     this.database = options.getDatabase();
+    this.properties = new HashMap<>(options.getProperties());
+    // TODO collation support in properties
     this.charset = CharacterSetMapping.getCharset("UTF-8"); // Make it an option later
     this.cachePreparedStatements = options.getCachePreparedStatements();
     this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
@@ -69,7 +74,7 @@ public class MySQLConnectionFactory {
         NetSocketInternal socket = (NetSocketInternal) ar1.result();
         MySQLSocketConnection conn = new MySQLSocketConnection(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, context);
         conn.init();
-        conn.sendStartupMessage(username, password, database, handler);
+        conn.sendStartupMessage(username, password, database, properties, handler);
       } else {
         handler.handle(Future.failedFuture(ar1.cause()));
       }

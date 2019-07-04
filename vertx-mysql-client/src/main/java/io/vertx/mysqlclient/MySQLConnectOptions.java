@@ -17,6 +17,9 @@ import io.vertx.core.net.TrustOptions;
 import io.vertx.mysqlclient.impl.MySQLConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -43,6 +46,14 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_USER = "root";
   public static final String DEFAULT_PASSWORD = "";
   public static final String DEFAULT_SCHEMA = "";
+  public static final Map<String, String> DEFAULT_CONNECTION_ATTRIBUTES;
+
+  static {
+    Map<String, String> defaultAttributes = new HashMap<>();
+    defaultAttributes.put("_client_name", "vertx-mysql-client");
+    defaultAttributes.put("_client_version", "3.8.0");
+    DEFAULT_CONNECTION_ATTRIBUTES = Collections.unmodifiableMap(defaultAttributes);
+  }
 
   public MySQLConnectOptions() {
     super();
@@ -95,6 +106,16 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   @Override
   public MySQLConnectOptions setPreparedStatementCacheSqlLimit(int preparedStatementCacheSqlLimit) {
     return (MySQLConnectOptions) super.setPreparedStatementCacheSqlLimit(preparedStatementCacheSqlLimit);
+  }
+
+  @Override
+  public MySQLConnectOptions setProperties(Map<String, String> properties) {
+    return (MySQLConnectOptions) super.setProperties(properties);
+  }
+
+  @Override
+  public MySQLConnectOptions addProperty(String key, String value) {
+    return (MySQLConnectOptions) super.addProperty(key, value);
   }
 
   @Override
@@ -321,6 +342,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     this.setUser(DEFAULT_USER);
     this.setPassword(DEFAULT_PASSWORD);
     this.setDatabase(DEFAULT_SCHEMA);
+    this.setProperties(DEFAULT_CONNECTION_ATTRIBUTES);
   }
 
   @Override
