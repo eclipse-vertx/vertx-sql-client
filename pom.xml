@@ -53,8 +53,6 @@
     <jmh.version>1.19</jmh.version>
     <docs.dir>${project.basedir}/src/main/docs</docs.dir>
     <generated.dir>${project.basedir}/src/main/generated</generated.dir>
-    <!-- Set to a value for testing with a specific database -->
-    <embedded.postgres.version />
     <connection.uri />
     <tls.connection.uri />
     <unix.socket.directory />
