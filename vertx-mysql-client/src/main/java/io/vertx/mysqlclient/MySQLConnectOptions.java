@@ -342,7 +342,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     this.setUser(DEFAULT_USER);
     this.setPassword(DEFAULT_PASSWORD);
     this.setDatabase(DEFAULT_SCHEMA);
-    this.setProperties(DEFAULT_CONNECTION_ATTRIBUTES);
+    this.setProperties(new HashMap<>(DEFAULT_CONNECTION_ATTRIBUTES));
   }
 
   @Override

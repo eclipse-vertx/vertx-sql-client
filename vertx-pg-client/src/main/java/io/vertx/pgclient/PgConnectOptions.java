@@ -437,7 +437,7 @@ public class PgConnectOptions extends SqlConnectOptions {
     this.setDatabase(DEFAULT_DATABASE);
     pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
     sslMode = DEFAULT_SSLMODE;
-    this.setProperties(DEFAULT_PROPERTIES);
+    this.setProperties(new HashMap<>(DEFAULT_PROPERTIES));
   }
 
   @Override
