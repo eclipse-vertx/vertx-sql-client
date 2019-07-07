@@ -1,10 +1,12 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.mysqlclient.MySQLCollation;
 import io.vertx.mysqlclient.impl.MySQLRowImpl;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.RowDecoder;
 
+import java.nio.charset.Charset;
 import java.util.function.BiConsumer;
 import java.util.stream.Collector;
 
@@ -59,15 +61,17 @@ class RowResultDecoder<C, R> implements RowDecoder {
         int val = c + 2;
         int bytePos = val >> 3;
         int bitPos = val & 7;
-        byte mask = (byte)(1 << bitPos);
-        byte nullByte = (byte)(in.getByte(nullBitmapIdx + bytePos) & mask);
+        byte mask = (byte) (1 << bitPos);
+        byte nullByte = (byte) (in.getByte(nullBitmapIdx + bytePos) & mask);
         Object decoded = null;
         if (nullByte == 0) {
           // non-null
           ColumnDefinition columnDef = rowDesc.columnDefinitions()[c];
           DataType dataType = columnDef.type();
+          int collationId = rowDesc.columnDefinitions()[c].characterSet();
+          Charset charset = Charset.forName(MySQLCollation.valueOf(collationId).mappedJavaCharsetName());
           int columnDefinitionFlags = columnDef.flags();
-          decoded = DataTypeCodec.decodeBinary(dataType,columnDefinitionFlags, in);
+          decoded = DataTypeCodec.decodeBinary(dataType, charset, columnDefinitionFlags, in);
         }
         row.addValue(decoded);
       }
@@ -80,7 +84,9 @@ class RowResultDecoder<C, R> implements RowDecoder {
         } else {
           DataType dataType = rowDesc.columnDefinitions()[c].type();
           int columnDefinitionFlags = rowDesc.columnDefinitions()[c].flags();
-          decoded = DataTypeCodec.decodeText(dataType, columnDefinitionFlags, in);
+          int collationId = rowDesc.columnDefinitions()[c].characterSet();
+          Charset charset = Charset.forName(MySQLCollation.valueOf(collationId).mappedJavaCharsetName());
+          decoded = DataTypeCodec.decodeText(dataType, charset, columnDefinitionFlags, in);
         }
         row.addValue(decoded);
       }

@@ -2,10 +2,12 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.mysqlclient.MySQLCollation;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommandBase;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -73,7 +75,8 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
       for (int i = 0; i < numOfParams; i++) {
         Object value = params.getValue(i);
         if (value != null) {
-          DataTypeCodec.encodeBinary(parseDataTypeByEncodingValue(value), value, packet);
+          MySQLCollation collation = MySQLCollation.valueOf(paramsColumnDefinitions[i].characterSet());
+          DataTypeCodec.encodeBinary(parseDataTypeByEncodingValue(value), Charset.forName(collation.mappedJavaCharsetName()), value, packet);
         } else {
           nullBitmap[i / 8] |= (1 << (i & 7));
         }
