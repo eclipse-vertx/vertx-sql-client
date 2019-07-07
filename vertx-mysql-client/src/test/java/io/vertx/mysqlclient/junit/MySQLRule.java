@@ -23,6 +23,7 @@ import com.wix.mysql.config.Charset;
 import com.wix.mysql.config.MysqldConfig;
 import com.wix.mysql.config.SchemaConfig;
 import com.wix.mysql.distribution.Version;
+import io.vertx.mysqlclient.MySQLCollation;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import org.junit.rules.ExternalResource;
 
@@ -34,8 +35,8 @@ public class MySQLRule extends ExternalResource {
   private static EmbeddedMysql mysql;
 
   public synchronized static MySQLConnectOptions startMysql() throws Exception {
-    MysqldConfig mysqldConfig = MysqldConfig.aMysqldConfig(getMySQLVersion())
-      .withCharset(Charset.UTF8)
+    MysqldConfig mysqldConfig = MysqldConfig.aMysqldConfig(com.wix.mysql.distribution.Version.v5_7_latest)
+      .withCharset(Charset.UTF8MB4)
       .withUser("mysql", "password")
       .withPort(3306)
       .withServerVariable("max_allowed_packet", 32 * 1024 * 1024)
@@ -43,7 +44,7 @@ public class MySQLRule extends ExternalResource {
       .build();
 
     SchemaConfig schemaConfig = SchemaConfig.aSchemaConfig("testschema")
-      .withCharset(Charset.UTF8)
+      .withCharset(Charset.UTF8MB4)
       .withScripts(ScriptResolver.classPathScripts("init.sql"))
       .withScripts(Sources.fromString("CREATE USER 'superuser'@'localhost' IDENTIFIED BY 'password';GRANT ALL ON *.* TO 'superuser'@'localhost' WITH GRANT OPTION;"))
       .build();
@@ -58,8 +59,8 @@ public class MySQLRule extends ExternalResource {
       .setPort(mysqldConfig.getPort())
       .setUser(mysqldConfig.getUsername())
       .setPassword(mysqldConfig.getPassword())
-      .setDatabase(schemaConfig.getName());
-
+      .setDatabase(schemaConfig.getName())
+      .setCollation(MySQLCollation.valueOf(mysqldConfig.getCharset().getCollate()));
   }
 
   public synchronized static void stopMysql() throws Exception {
