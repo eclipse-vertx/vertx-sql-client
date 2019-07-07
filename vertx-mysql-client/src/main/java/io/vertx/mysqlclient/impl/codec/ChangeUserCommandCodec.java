@@ -1,12 +1,13 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.mysqlclient.impl.CharacterSetMapping;
+import io.vertx.mysqlclient.MySQLCollation;
 import io.vertx.mysqlclient.impl.command.ChangeUserCommand;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.mysqlclient.impl.util.Native41Authenticator;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
@@ -67,7 +68,10 @@ class ChangeUserCommandCodec extends CommandCodec<Void, ChangeUserCommand> {
       packet.writeCharSequence(password, StandardCharsets.UTF_8);
     }
     BufferUtils.writeNullTerminatedString(packet, cmd.database(), StandardCharsets.UTF_8);
-    packet.writeShortLE(CharacterSetMapping.getCharsetByteValue("UTF-8"));
+    MySQLCollation collation = cmd.collation();
+    int collationId = collation.collationId();
+    encoder.charset = Charset.forName(collation.mappedJavaCharsetName());
+    packet.writeShortLE(collationId);
 
     if ((encoder.clientCapabilitiesFlag & CLIENT_PLUGIN_AUTH) != 0) {
       BufferUtils.writeNullTerminatedString(packet, "mysql_native_password", StandardCharsets.UTF_8);

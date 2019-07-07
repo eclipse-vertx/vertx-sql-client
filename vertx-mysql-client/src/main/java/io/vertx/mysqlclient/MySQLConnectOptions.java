@@ -46,6 +46,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_USER = "root";
   public static final String DEFAULT_PASSWORD = "";
   public static final String DEFAULT_SCHEMA = "";
+  public static final MySQLCollation DEFAULT_COLLATION = MySQLCollation.utf8mb4_general_ci;
   public static final Map<String, String> DEFAULT_CONNECTION_ATTRIBUTES;
 
   static {
@@ -55,17 +56,42 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     DEFAULT_CONNECTION_ATTRIBUTES = Collections.unmodifiableMap(defaultAttributes);
   }
 
+  private MySQLCollation collation;
+
   public MySQLConnectOptions() {
     super();
+    this.collation = DEFAULT_COLLATION;
   }
 
   public MySQLConnectOptions(JsonObject json) {
     super(json);
+    this.collation = DEFAULT_COLLATION;
     MySQLConnectOptionsConverter.fromJson(json, this);
   }
 
   public MySQLConnectOptions(MySQLConnectOptions other) {
     super(other);
+    this.collation = other.collation;
+  }
+
+  /**
+   * Get the collation for the connection.
+   *
+   * @return the MySQL collation
+   */
+  public MySQLCollation getCollation() {
+    return collation;
+  }
+
+  /**
+   * Set the collation for the connection.
+   *
+   * @param collation the collation to set
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MySQLConnectOptions setCollation(MySQLCollation collation) {
+    this.collation = collation;
+    return this;
   }
 
   @Override

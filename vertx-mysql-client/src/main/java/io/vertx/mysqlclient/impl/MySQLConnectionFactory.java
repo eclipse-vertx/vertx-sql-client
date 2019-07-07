@@ -45,6 +45,7 @@ public class MySQLConnectionFactory {
     this.password = options.getPassword();
     this.database = options.getDatabase();
     this.properties = new HashMap<>(options.getProperties());
+    properties.put("collation", options.getCollation().name());
     // TODO collation support in properties
     this.charset = CharacterSetMapping.getCharset("UTF-8"); // Make it an option later
     this.cachePreparedStatements = options.getCachePreparedStatements();
