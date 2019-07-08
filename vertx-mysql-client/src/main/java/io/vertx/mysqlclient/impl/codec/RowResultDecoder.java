@@ -49,27 +49,24 @@ class RowResultDecoder<C, R> implements RowDecoder {
     if (rowDesc.dataFormat() == DataFormat.BINARY) {
       // BINARY row decoding
       // 0x00 packet header
-      in.readByte();
       // null_bitmap
       int nullBitmapLength = (len + 7 + 2) >>  3;
-      byte[] nullBitmap = new byte[nullBitmapLength];
-      in.readBytes(nullBitmap);
+      int nullBitmapIdx = 1 + in.readerIndex();
+      in.skipBytes(1 + nullBitmapLength);
 
       // values
-      final int offset = 2;
       for (int c = 0; c < len; c++) {
-        Object decoded = null;
-
-        int val = c + offset;
+        int val = c + 2;
         int bytePos = val >> 3;
         int bitPos = val & 7;
         byte mask = (byte)(1 << bitPos);
-        byte nullByte = (byte)(nullBitmap[bytePos] & mask);
-
+        byte nullByte = (byte)(in.getByte(nullBitmapIdx + bytePos) & mask);
+        Object decoded = null;
         if (nullByte == 0) {
           // non-null
-          DataType dataType = rowDesc.columnDefinitions()[c].type();
-          int columnDefinitionFlags = rowDesc.columnDefinitions()[c].flags();
+          ColumnDefinition columnDef = rowDesc.columnDefinitions()[c];
+          DataType dataType = columnDef.type();
+          int columnDefinitionFlags = columnDef.flags();
           decoded = DataTypeCodec.decodeBinary(dataType,columnDefinitionFlags, in);
         }
         row.addValue(decoded);
