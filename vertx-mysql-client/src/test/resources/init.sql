@@ -34,15 +34,16 @@ CREATE TABLE datatype
     `MediumText`   MEDIUMTEXT,
     `LongText`     LONGTEXT,
     test_year      YEAR,
-    test_timestamp TIMESTAMP
+    test_timestamp TIMESTAMP,
+    test_datetime  DATETIME(6)
 );
 
 INSERT INTO datatype
 VALUES (1, 'HELLO', 'HELLO, WORLD', 'TINYBLOB', 'BLOB', 'MEDIUMBLOB', 'LONGBLOB', 'TINYTEXT', 'TEXT', 'MEDIUMTEXT',
-        'LONGTEXT', '2019', '2000-01-01 10:20:30');
+        'LONGTEXT', '2019', '2000-01-01 10:20:30', '2000-01-01 10:20:30.123456');
 INSERT INTO datatype
 VALUES (2, 'hello', 'hello, world', 'tinyblob', 'blob', 'mediumblob', 'longblob', 'tinytext', 'text', 'mediumtext',
-        'longtext', '2019', '2000-01-01 10:20:30');
+        'longtext', '2019', '2000-01-01 10:20:30', '2000-01-01 10:20:30.123456');
 
 # @Deprecated--- This part is only for mysql tests and should be moved out of TCK tests ---
 
