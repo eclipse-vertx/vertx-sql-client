@@ -272,21 +272,20 @@ class DataTypeCodec {
     int second = value.getSecond();
     int microsecond = value.getNano() / 1000;
 
-    if (microsecond == 0) {
-      if (hour == 0 && minute == 0) {
-        buffer.writeByte(4);
-        buffer.writeShortLE(year);
-        buffer.writeByte(month);
-        buffer.writeByte(day);
-      } else {
-        buffer.writeByte(7);
-        buffer.writeShortLE(year);
-        buffer.writeByte(month);
-        buffer.writeByte(day);
-        buffer.writeByte(hour);
-        buffer.writeByte(minute);
-        buffer.writeByte(second);
-      }
+    // LocalDateTime does not have a zero value of month or day
+    if (hour == 0 && minute == 0 && second == 0 && microsecond == 0) {
+      buffer.writeByte(4);
+      buffer.writeShortLE(year);
+      buffer.writeByte(month);
+      buffer.writeByte(day);
+    } else if (microsecond == 0) {
+      buffer.writeByte(7);
+      buffer.writeShortLE(year);
+      buffer.writeByte(month);
+      buffer.writeByte(day);
+      buffer.writeByte(hour);
+      buffer.writeByte(minute);
+      buffer.writeByte(second);
     } else {
       buffer.writeByte(11);
       buffer.writeShortLE(year);
@@ -295,7 +294,7 @@ class DataTypeCodec {
       buffer.writeByte(hour);
       buffer.writeByte(minute);
       buffer.writeByte(second);
-      buffer.writeByte(microsecond);
+      buffer.writeIntLE(microsecond);
     }
   }
 
