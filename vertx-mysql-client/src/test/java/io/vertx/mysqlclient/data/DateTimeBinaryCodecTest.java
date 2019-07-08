@@ -63,6 +63,31 @@ public class DateTimeBinaryCodecTest extends DateTimeCodecTest {
     testBinaryEncodeGeneric(ctx, "test_timestamp", LocalDateTime.of(2001, 6, 20, 19, 40, 0));
   }
 
+  @Test
+  public void testDecodeDatetime(TestContext ctx) {
+    testBinaryDecodeGenericWithTable(ctx, "test_datetime", LocalDateTime.of(2000, 1, 1, 10, 20, 30, 123456000));
+  }
+
+  @Test
+  public void testEncodeDatetimeWithoutTime(TestContext ctx) {
+    testBinaryEncodeGeneric(ctx, "test_datetime", LocalDateTime.of(2001, 6, 20, 0, 0, 0, 0));
+  }
+
+  @Test
+  public void testEncodeDatetimeWithoutMicrosecond(TestContext ctx) {
+    testBinaryEncodeGeneric(ctx, "test_datetime", LocalDateTime.of(2001, 6, 20, 19, 40, 10));
+  }
+
+  @Test
+  public void testEncodeDatetimeWithMicrosecond(TestContext ctx) {
+    testBinaryEncodeGeneric(ctx, "test_datetime", LocalDateTime.of(2001, 6, 20, 19, 40, 0, 5000000));
+  }
+
+  @Test
+  public void testEncodeDatetimeWithOnlyMicrosecond(TestContext ctx) {
+    testBinaryEncodeGeneric(ctx, "test_datetime", LocalDateTime.of(2001, 6, 20, 0, 0, 0, 123456000));
+  }
+
   private void testEncodeTime(TestContext ctx, Duration param, Duration expected) {
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("UPDATE basicdatatype SET `test_time` = ?" + " WHERE id = 2", Tuple.tuple().addValue(expected), ctx.asyncAssertSuccess(updateResult -> {
