@@ -51,7 +51,7 @@ class RowResultDecoder<C, R> implements RowDecoder {
       // 0x00 packet header
       in.readByte();
       // null_bitmap
-      int nullBitmapLength = (len + 7 + 2) / 8;
+      int nullBitmapLength = (len + 7 + 2) >>  3;
       byte[] nullBitmap = new byte[nullBitmapLength];
       in.readBytes(nullBitmap);
 
@@ -60,10 +60,11 @@ class RowResultDecoder<C, R> implements RowDecoder {
       for (int c = 0; c < len; c++) {
         Object decoded = null;
 
-        int bytePos = (c + offset) / 8;
-        int bitPos = (c + offset) % 8;
-        byte nullByte = nullBitmap[bytePos];
-        nullByte &= (1 << (7 - bitPos));
+        int val = c + offset;
+        int bytePos = val >> 3;
+        int bitPos = val & 7;
+        byte mask = (byte)(1 << bitPos);
+        byte nullByte = (byte)(nullBitmap[bytePos] & mask);
 
         if (nullByte == 0) {
           // non-null

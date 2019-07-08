@@ -89,4 +89,33 @@ public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
       }));
     }));
   }
+
+  @Test
+  public void testNullValues(TestContext ctx) {
+    connector.connect(ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("SELECT " +
+        "test_int_2," +
+        "test_int_4," +
+        "test_int_8," +
+        "test_float_4," +
+        "test_float_8," +
+        "test_numeric," +
+        "test_decimal," +
+        "test_boolean," +
+        "test_char," +
+        "test_varchar," +
+        "test_date," +
+        "test_time " +
+        "from basicdatatype where id= 3", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.size());
+        Row row = result.iterator().next();
+        ctx.assertEquals(12, row.size());
+        for (int i = 0;i < 12;i++) {
+          ctx.assertNull(row.getValue(i));
+        }
+        conn.close();
+      }));
+    }));
+  }
+
 }
