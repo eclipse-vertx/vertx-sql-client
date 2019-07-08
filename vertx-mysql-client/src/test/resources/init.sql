@@ -164,19 +164,19 @@ SET sql_mode = 'ANSI';
 DROP TABLE IF EXISTS basicdatatype;
 CREATE TABLE basicdatatype
 (
-  id           INTEGER          NOT NULL,
-  test_int_2   SMALLINT         NOT NULL,
-  test_int_4   INTEGER          NOT NULL,
-  test_int_8   BIGINT           NOT NULL,
-  test_float_4 REAL             NOT NULL,
-  test_float_8 DOUBLE PRECISION NOT NULL,
-  test_numeric NUMERIC(5, 2)    NOT NULL,
-  test_decimal DECIMAL          NOT NULL,
-  test_boolean BOOLEAN          NOT NULL,
-  test_char    CHAR(8)          NOT NULL,
-  test_varchar VARCHAR(20)      NOT NULL,
-  test_date    DATE             NOT NULL,
-  test_time    TIME(6)          NOT NULL
+  id           INTEGER,
+  test_int_2   SMALLINT,
+  test_int_4   INTEGER,
+  test_int_8   BIGINT,
+  test_float_4 REAL,
+  test_float_8 DOUBLE PRECISION,
+  test_numeric NUMERIC(5, 2),
+  test_decimal DECIMAL,
+  test_boolean BOOLEAN,
+  test_char    CHAR(8),
+  test_varchar VARCHAR(20),
+  test_date    DATE,
+  test_time    TIME(6)
 );
 INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_float_8, test_numeric,
                           test_decimal, test_boolean, test_char, test_varchar, test_date, test_time)
