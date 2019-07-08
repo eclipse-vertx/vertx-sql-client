@@ -359,6 +359,9 @@ INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, 
                           test_decimal, test_boolean, test_char, test_varchar, test_date, test_time)
 VALUES ('2', '32767', '2147483647', '9223372036854775807', '3.40282E38', '1.7976931348623157E308', '999.99',
         '12345', TRUE, 'testchar', 'testvarchar', '2019-01-01', '18:45:02');
+INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_float_8, test_numeric,
+                          test_decimal, test_boolean, test_char, test_varchar, test_date, test_time)
+VALUES ('3', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 -- table for test ANSI SQL data type codecs
 
 -- TCK usage --
