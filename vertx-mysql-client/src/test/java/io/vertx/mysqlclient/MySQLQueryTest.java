@@ -41,6 +41,44 @@ public class MySQLQueryTest extends MySQLTestBase {
   }
 
   @Test
+  public void testColumnCollation(TestContext ctx) {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("CREATE TEMPORARY TABLE chinese_city (\n" +
+        "\tid INTEGER,\n" +
+        "\tcity_name VARCHAR(20) COLLATE gbk_chinese_ci);\n" +
+        "INSERT INTO chinese_city VALUES (1, '北京');\n" +
+        "INSERT INTO chinese_city VALUES (2, '上海');\n" +
+        "INSERT INTO chinese_city VALUES (3, '广州');\n" +
+        "INSERT INTO chinese_city VALUES (4, '深圳');\n" +
+        "INSERT INTO chinese_city VALUES (5, '武汉');\n" +
+        "INSERT INTO chinese_city VALUES (6, '成都');", ctx.asyncAssertSuccess(res0 -> {
+        conn.query("SELECT id, city_name FROM chinese_city", ctx.asyncAssertSuccess(res1 -> {
+          ctx.assertEquals(6, res1.size());
+          RowIterator iterator = res1.iterator();
+          Row row1 = iterator.next();
+          ctx.assertEquals(1, row1.getInteger("id"));
+          ctx.assertEquals("北京", row1.getString("city_name"));
+          Row row2 = iterator.next();
+          ctx.assertEquals(2, row2.getInteger("id"));
+          ctx.assertEquals("上海", row2.getString("city_name"));
+          Row row3 = iterator.next();
+          ctx.assertEquals(3, row3.getInteger("id"));
+          ctx.assertEquals("广州", row3.getString("city_name"));
+          Row row4 = iterator.next();
+          ctx.assertEquals(4, row4.getInteger("id"));
+          ctx.assertEquals("深圳", row4.getString("city_name"));
+          Row row5 = iterator.next();
+          ctx.assertEquals(5, row5.getInteger("id"));
+          ctx.assertEquals("武汉", row5.getString("city_name"));
+          Row row6 = iterator.next();
+          ctx.assertEquals(6, row6.getInteger("id"));
+          ctx.assertEquals("成都", row6.getString("city_name"));
+        }));
+      }));
+    }));
+  }
+
+  @Test
   public void testEmoji(TestContext ctx) {
     // use these for tests 😀🤣😊😇😳😱👍🖐⚽
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
