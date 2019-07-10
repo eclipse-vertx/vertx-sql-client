@@ -73,6 +73,7 @@ public class MySQLQueryTest extends MySQLTestBase {
           Row row6 = iterator.next();
           ctx.assertEquals(6, row6.getInteger("id"));
           ctx.assertEquals("成都", row6.getString("city_name"));
+          conn.close();
         }));
       }));
     }));
@@ -111,6 +112,7 @@ public class MySQLQueryTest extends MySQLTestBase {
           Row row6 = iterator.next();
           ctx.assertEquals(6, row6.getInteger("id"));
           ctx.assertEquals("成都", row6.getString("city_name"));
+          conn.close();
         }));
       }));
     }));
@@ -162,6 +164,7 @@ public class MySQLQueryTest extends MySQLTestBase {
           Row row9 = iterator.next();
           ctx.assertEquals(9, row9.getInteger("id"));
           ctx.assertEquals("\u26bd", row9.getString("expression"));
+          conn.close();
         }));
       }));
     }));
