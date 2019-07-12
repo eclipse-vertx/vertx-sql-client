@@ -94,6 +94,10 @@ public class MySQLRule extends ExternalResource {
     return version;
   }
 
+  public boolean isUsingMySQL5_6() {
+    return MySQLRule.getMySQLVersion() == Version.v5_6_latest;
+  }
+
   private MySQLConnectOptions options;
 
   public MySQLConnectOptions options() {
