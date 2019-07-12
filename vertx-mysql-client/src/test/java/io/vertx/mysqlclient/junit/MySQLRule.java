@@ -40,7 +40,6 @@ public class MySQLRule extends ExternalResource {
       .withPort(3306)
       .withServerVariable("max_allowed_packet", 32 * 1024 * 1024)
       .withServerVariable("max_prepared_stmt_count", 16382)
-      .withServerVariable("innodb-log-file-size", 503316480) // for MySQL 5.6
       .build();
 
     SchemaConfig schemaConfig = SchemaConfig.aSchemaConfig("testschema")
