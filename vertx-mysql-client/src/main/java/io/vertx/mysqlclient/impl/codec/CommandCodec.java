@@ -144,6 +144,13 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     return new OkPacket(affectedRows, lastInsertId, serverStatusFlags, numberOfWarnings, statusInfo, sessionStateInfo);
   }
 
+  EofPacket decodeEofPacketPayload(ByteBuf payload) {
+    payload.skipBytes(1); // skip EOF_Packet header
+    int numberOfWarnings = payload.readUnsignedShortLE();
+    int serverStatusFlags = payload.readUnsignedShortLE();
+    return new EofPacket(numberOfWarnings, serverStatusFlags);
+  }
+
   String readRestOfPacketString(ByteBuf payload, Charset charset) {
     return BufferUtils.readFixedLengthString(payload, payload.readableBytes(), charset);
   }
@@ -162,5 +169,15 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     int flags = payload.readUnsignedShortLE();
     byte decimals = payload.readByte();
     return new ColumnDefinition(catalog, schema, table, orgTable, name, orgName, characterSet, columnLength, type, flags, decimals);
+  }
+
+  void skipEofPacketIfNeeded(ByteBuf payload) {
+    if (!isDeprecatingEofFlagEnabled()) {
+      payload.skipBytes(5);
+    }
+  }
+
+  boolean isDeprecatingEofFlagEnabled() {
+    return (encoder.clientCapabilitiesFlag & CapabilitiesFlag.CLIENT_DEPRECATE_EOF) != 0;
   }
 }

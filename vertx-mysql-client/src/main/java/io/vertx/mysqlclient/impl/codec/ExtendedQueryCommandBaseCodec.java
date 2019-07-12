@@ -5,6 +5,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommandBase;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,7 +29,8 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
     // may receive ERR_Packet, OK_Packet, Binary Protocol Resultset
     int firstByte = payload.getUnsignedByte(payload.readerIndex());
     if (firstByte == OK_PACKET_HEADER) {
-      handleSingleResultsetDecodingCompleted(payload);
+      OkPacket okPacket = decodeOkPacketPayload(payload, StandardCharsets.UTF_8);
+      handleSingleResultsetDecodingCompleted(okPacket.serverStatusFlags(), (int) okPacket.affectedRows());
     } else if (firstByte == ERROR_PACKET_HEADER) {
       handleErrorPacketPayload(payload);
     } else {

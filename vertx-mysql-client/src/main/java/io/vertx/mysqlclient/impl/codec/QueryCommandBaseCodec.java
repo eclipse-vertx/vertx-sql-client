@@ -56,6 +56,10 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
       case HANDLING_COLUMN_DEFINITION:
         handleResultsetColumnDefinitions(payload);
         break;
+      case COLUMN_DEFINITIONS_DECODING_COMPLETED:
+        skipEofPacketIfNeeded(payload);
+        handleResultsetColumnDefinitionsDecodingCompleted();
+        break;
       case HANDLING_ROW_DATA_OR_END_PACKET:
         handleRows(payload, payloadLength, this::handleSingleRow);
         break;
@@ -74,10 +78,20 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     ColumnDefinition def = decodeColumnDefinitionPacketPayload(payload);
     columnDefinitions[currentColumn++] = def;
     if (currentColumn == columnDefinitions.length) {
-      // all column definitions have been handled, switch to row data handling
-      commandHandlerState = CommandHandlerState.HANDLING_ROW_DATA_OR_END_PACKET;
-      decoder = new RowResultDecoder<>(cmd.collector(), false/*cmd.isSingleton()*/, new MySQLRowDesc(columnDefinitions, format));
+      // all column definitions have been decoded, switch to column definitions decoding completed state
+      if (isDeprecatingEofFlagEnabled()) {
+        // we enabled the DEPRECATED_EOF flag and don't need to accept an EOF_Packet
+        handleResultsetColumnDefinitionsDecodingCompleted();
+      } else {
+        // we need to decode an EOF_Packet before handling rows, to be compatible with MySQL version below 5.7.5
+        commandHandlerState = CommandHandlerState.COLUMN_DEFINITIONS_DECODING_COMPLETED;
+      }
     }
+  }
+
+  protected void handleResultsetColumnDefinitionsDecodingCompleted() {
+    commandHandlerState = CommandHandlerState.HANDLING_ROW_DATA_OR_END_PACKET;
+    decoder = new RowResultDecoder<>(cmd.collector(), false/*cmd.isSingleton()*/, new MySQLRowDesc(columnDefinitions, format));
   }
 
   protected void handleRows(ByteBuf payload, int payloadLength, Consumer<ByteBuf> singleRowHandler) {
@@ -93,7 +107,16 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     // enabling CLIENT_DEPRECATE_EOF capability will receive an OK_Packet with a EOF_Packet header here
     // we need check this is not a row data by checking packet length < 0xFFFFFF
     else if (first == EOF_PACKET_HEADER && payloadLength < 0xFFFFFF) {
-      handleSingleResultsetDecodingCompleted(payload);
+      int serverStatusFlags;
+      int affectedRows = 0;
+      if (isDeprecatingEofFlagEnabled()) {
+        OkPacket okPacket = decodeOkPacketPayload(payload, StandardCharsets.UTF_8);
+        serverStatusFlags = okPacket.serverStatusFlags();
+        affectedRows = (int) okPacket.affectedRows();
+      } else {
+        serverStatusFlags = decodeEofPacketPayload(payload).serverStatusFlags();
+      }
+      handleSingleResultsetDecodingCompleted(serverStatusFlags, affectedRows);
     } else {
       singleRowHandler.accept(payload);
     }
@@ -104,22 +127,21 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     decoder.decodeRow(columnDefinitions.length, payload);
   }
 
-  protected void handleSingleResultsetDecodingCompleted(ByteBuf payload) {
-    OkPacket okPacket = decodeOkPacketPayload(payload, StandardCharsets.UTF_8);
-    handleSingleResultsetEndPacket(okPacket);
+  protected void handleSingleResultsetDecodingCompleted(int serverStatusFlags, int affectedRows) {
+    handleSingleResultsetEndPacket(serverStatusFlags, affectedRows);
     resetIntermediaryResult();
-    if (isDecodingCompleted(okPacket)) {
+    if (isDecodingCompleted(serverStatusFlags)) {
       // no more sql result
       handleAllResultsetDecodingCompleted();
     }
   }
 
-  protected boolean isDecodingCompleted(OkPacket okPacket) {
-    return (okPacket.serverStatusFlags() & ServerStatusFlags.SERVER_MORE_RESULTS_EXISTS) == 0;
+  protected boolean isDecodingCompleted(int serverStatusFlags) {
+    return (serverStatusFlags & ServerStatusFlags.SERVER_MORE_RESULTS_EXISTS) == 0;
   }
 
-  private void handleSingleResultsetEndPacket(OkPacket okPacket) {
-    this.result = (okPacket.serverStatusFlags() & ServerStatusFlags.SERVER_STATUS_LAST_ROW_SENT) == 0;
+  private void handleSingleResultsetEndPacket(int serverStatusFlags, int affectedRows) {
+    this.result = (serverStatusFlags & ServerStatusFlags.SERVER_STATUS_LAST_ROW_SENT) == 0;
     T result;
     int size;
     RowDesc rowDesc;
@@ -133,7 +155,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
       size = 0;
       rowDesc = null;
     }
-    cmd.resultHandler().handleResult((int) okPacket.affectedRows(), size, rowDesc, result);
+    cmd.resultHandler().handleResult(affectedRows, size, rowDesc, result);
   }
 
   private void handleAllResultsetDecodingCompleted() {
@@ -160,6 +182,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
   protected enum CommandHandlerState {
     INIT,
     HANDLING_COLUMN_DEFINITION,
+    COLUMN_DEFINITIONS_DECODING_COMPLETED,
     HANDLING_ROW_DATA_OR_END_PACKET
   }
 }
