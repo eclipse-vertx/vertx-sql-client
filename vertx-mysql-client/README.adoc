@@ -17,6 +17,7 @@
 * [ ] TLS support
 * [ ] Add support for more authentication methods(caching_sha2_password)
 * [ ] Authentication methods switch
+* [ ] Transaction management
 * [ ] Text Protocol(Local INFILE Request)
 * [ ] Text Protocol(All Utility Commands)
 * [ ] Full data type support
