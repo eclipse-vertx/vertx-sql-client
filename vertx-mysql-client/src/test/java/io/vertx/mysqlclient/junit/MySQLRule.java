@@ -22,15 +22,19 @@ import com.wix.mysql.Sources;
 import com.wix.mysql.config.Charset;
 import com.wix.mysql.config.MysqldConfig;
 import com.wix.mysql.config.SchemaConfig;
+import com.wix.mysql.distribution.Version;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import org.junit.rules.ExternalResource;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MySQLRule extends ExternalResource {
 
   private static EmbeddedMysql mysql;
 
   public synchronized static MySQLConnectOptions startMysql() throws Exception {
-    MysqldConfig mysqldConfig = MysqldConfig.aMysqldConfig(com.wix.mysql.distribution.Version.v5_7_latest)
+    MysqldConfig mysqldConfig = MysqldConfig.aMysqldConfig(getMySQLVersion())
       .withCharset(Charset.UTF8)
       .withUser("mysql", "password")
       .withPort(3306)
@@ -66,6 +70,31 @@ public class MySQLRule extends ExternalResource {
         mysql = null;
       }
     }
+  }
+
+  private static final Map<String, Version> supportedMySQLVersions = new HashMap<>();
+
+  static {
+    supportedMySQLVersions.put("5.6", Version.v5_6_latest);
+    supportedMySQLVersions.put("5.7", Version.v5_7_latest);
+  }
+
+  private static Version getMySQLVersion() {
+    String specifiedVersion = System.getProperty("embedded.mysql.version");
+    Version version;
+    if (specifiedVersion == null || specifiedVersion.isEmpty()) {
+      version = Version.v5_7_latest;
+    } else {
+      version = supportedMySQLVersions.get(specifiedVersion);
+    }
+    if (version == null) {
+      throw new IllegalArgumentException("embedded MySQL only supports the following versions: " + supportedMySQLVersions.keySet().toString() + "instead of " + specifiedVersion);
+    }
+    return version;
+  }
+
+  public boolean isUsingMySQL5_6() {
+    return MySQLRule.getMySQLVersion() == Version.v5_6_latest;
   }
 
   private MySQLConnectOptions options;

@@ -35,8 +35,8 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
     super.encode(encoder);
 
     if (statement.isCursorOpen) {
-      sendStatementFetchCommand(statement.statementId, cmd.fetch());
       decoder = new RowResultDecoder<>(cmd.collector(), false, statement.rowDesc);
+      sendStatementFetchCommand(statement.statementId, cmd.fetch());
     } else {
       if (cmd.fetch() > 0) {
         //TODO Cursor_type is READ_ONLY?
@@ -51,41 +51,44 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
   @Override
   void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
     if (statement.isCursorOpen) {
-      // decoding COM_STMT_FETCH response
-      handleRows(payload, payloadLength, super::handleSingleRow);
+      int first = payload.getUnsignedByte(payload.readerIndex());
+      if (first == ERROR_PACKET_HEADER) {
+        handleErrorPacketPayload(payload);
+      } else {
+        // decoding COM_STMT_FETCH response
+        handleRows(payload, payloadLength, super::handleSingleRow);
+      }
     } else {
       // decoding COM_STMT_EXECUTE response
       if (cmd.fetch() > 0) {
         switch (commandHandlerState) {
           case INIT:
-            handleResultsetColumnCountPacketBody(payload);
+            int first = payload.getUnsignedByte(payload.readerIndex());
+            if (first == ERROR_PACKET_HEADER) {
+              handleErrorPacketPayload(payload);
+            } else {
+              handleResultsetColumnCountPacketBody(payload);
+            }
             break;
           case HANDLING_COLUMN_DEFINITION:
             handleResultsetColumnDefinitions(payload);
             break;
+          case COLUMN_DEFINITIONS_DECODING_COMPLETED:
+            // accept an EOF_Packet when DEPRECATE_EOF is not enabled
+            skipEofPacketIfNeeded(payload);
           case HANDLING_ROW_DATA_OR_END_PACKET:
-            /*
-              Resultset row can begin with 0xfe byte (when using text protocol with a field length > 0xffffff)
-              To ensure that packets beginning with 0xfe correspond to the ending packet (EOF_Packet or OK_Packet with a 0xFE header),
-              the packet length must be checked and must be less than 0xffffff in length.
-             */
-            int first = payload.getUnsignedByte(payload.readerIndex());
-            if (first == ERROR_PACKET_HEADER) {
-              handleErrorPacketPayload(payload);
-            }
-            // enabling CLIENT_DEPRECATE_EOF capability will receive an OK_Packet with a EOF_Packet header here
-            // we need check this is not a row data by checking packet length < 0xFFFFFF
-            else if (first == EOF_PACKET_HEADER && payloadLength < 0xFFFFFF) {
-              // need to reset packet number so that we can send a fetch request
-              this.sequenceId = 0;
-              // send fetch after cursor opened
-              decoder = new RowResultDecoder<>(cmd.collector(), false, statement.rowDesc);
+            handleResultsetColumnDefinitionsDecodingCompleted();
+            // need to reset packet number so that we can send a fetch request
+            this.sequenceId = 0;
+            // send fetch after cursor opened
+            decoder = new RowResultDecoder<>(cmd.collector(), false, statement.rowDesc);
 
-              statement.isCursorOpen = true;
+            statement.isCursorOpen = true;
 
-              sendStatementFetchCommand(statement.statementId, cmd.fetch());
-            }
+            sendStatementFetchCommand(statement.statementId, cmd.fetch());
             break;
+          default:
+            throw new IllegalStateException("Unexpected state for decoding COM_STMT_EXECUTE response with cursor opening");
         }
       } else {
         super.decodePayload(payload, payloadLength, sequenceId);

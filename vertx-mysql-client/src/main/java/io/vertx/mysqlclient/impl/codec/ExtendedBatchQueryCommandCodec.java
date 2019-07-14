@@ -30,14 +30,14 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
   }
 
   @Override
-  protected void handleSingleResultsetDecodingCompleted(ByteBuf payload) {
-    super.handleSingleResultsetDecodingCompleted(payload);
+  protected void handleSingleResultsetDecodingCompleted(int serverStatusFlags, int affectedRows) {
+    super.handleSingleResultsetDecodingCompleted(serverStatusFlags, affectedRows);
     doExecuteBatch();
   }
 
   @Override
-  protected boolean isDecodingCompleted(OkPacket okPacket) {
-    return super.isDecodingCompleted(okPacket) && batchIdx == params.size();
+  protected boolean isDecodingCompleted(int serverStatusFlags) {
+    return super.isDecodingCompleted(serverStatusFlags) && batchIdx == params.size();
   }
 
   private void doExecuteBatch() {

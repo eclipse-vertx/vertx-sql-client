@@ -96,7 +96,6 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
     clientCapabilitiesFlag |= CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA;
     clientCapabilitiesFlag |= CLIENT_SECURE_CONNECTION;
     clientCapabilitiesFlag |= CLIENT_PROTOCOL_41;
-    clientCapabilitiesFlag |= CLIENT_DEPRECATE_EOF;
     clientCapabilitiesFlag |= CLIENT_TRANSACTIONS;
     clientCapabilitiesFlag |= CLIENT_MULTI_STATEMENTS;
     clientCapabilitiesFlag |= CLIENT_MULTI_RESULTS;

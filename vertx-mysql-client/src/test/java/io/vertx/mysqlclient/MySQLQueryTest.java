@@ -7,6 +7,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -101,6 +102,7 @@ public class MySQLQueryTest extends MySQLTestBase {
 
   @Test
   public void testEncodePacketSizeMoreThan16MB(TestContext ctx) {
+    Assume.assumeFalse(rule.isUsingMySQL5_6());
     int dataSize = 20 * 1024 * 1024; // 20MB payload
     byte[] data = new byte[dataSize];
     ThreadLocalRandom.current().nextBytes(data);

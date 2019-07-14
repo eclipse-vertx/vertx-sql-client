@@ -63,6 +63,17 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     short protocolVersion = payload.readUnsignedByte();
 
     String serverVersion = BufferUtils.readNullTerminatedString(payload, StandardCharsets.US_ASCII);
+    // we assume the server version follows ${major}.${minor}.${version} in https://dev.mysql.com/doc/refman/8.0/en/which-version.html
+    String[] versionNumbers = serverVersion.split("\\.");
+    int majorVersion = Integer.parseInt(versionNumbers[0]);
+    int minorVersion = Integer.parseInt(versionNumbers[1]);
+    int releaseNumber = Integer.parseInt(versionNumbers[2]); // we don't support dev version
+    if (majorVersion == 5 && (minorVersion < 7 || (minorVersion == 7 && releaseNumber < 5))) {
+      // EOF_HEADER is enabled
+    } else {
+      encoder.clientCapabilitiesFlag |= CLIENT_DEPRECATE_EOF;
+    }
+
     long connectionId = payload.readUnsignedIntLE();
 
     // read first part of scramble
