@@ -1,7 +1,7 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.mysqlclient.MySQLCollation;
+import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.impl.MySQLRowImpl;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.RowDecoder;
@@ -69,7 +69,7 @@ class RowResultDecoder<C, R> implements RowDecoder {
           ColumnDefinition columnDef = rowDesc.columnDefinitions()[c];
           DataType dataType = columnDef.type();
           int collationId = rowDesc.columnDefinitions()[c].characterSet();
-          Charset charset = Charset.forName(MySQLCollation.valueOf(collationId).mappedJavaCharsetName());
+          Charset charset = Charset.forName(MySQLCollation.valueOfId(collationId).mappedJavaCharsetName());
           int columnDefinitionFlags = columnDef.flags();
           decoded = DataTypeCodec.decodeBinary(dataType, charset, columnDefinitionFlags, in);
         }
@@ -85,7 +85,7 @@ class RowResultDecoder<C, R> implements RowDecoder {
           DataType dataType = rowDesc.columnDefinitions()[c].type();
           int columnDefinitionFlags = rowDesc.columnDefinitions()[c].flags();
           int collationId = rowDesc.columnDefinitions()[c].characterSet();
-          Charset charset = Charset.forName(MySQLCollation.valueOf(collationId).mappedJavaCharsetName());
+          Charset charset = Charset.forName(MySQLCollation.valueOfId(collationId).mappedJavaCharsetName());
           decoded = DataTypeCodec.decodeText(dataType, charset, columnDefinitionFlags, in);
         }
         row.addValue(decoded);

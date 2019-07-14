@@ -1,6 +1,6 @@
 package io.vertx.mysqlclient.impl.command;
 
-import io.vertx.mysqlclient.MySQLCollation;
+import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.sqlclient.impl.command.CommandBase;
 
 import java.util.Map;

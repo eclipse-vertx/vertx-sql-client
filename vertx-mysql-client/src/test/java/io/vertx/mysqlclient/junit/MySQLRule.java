@@ -23,7 +23,7 @@ import com.wix.mysql.config.Charset;
 import com.wix.mysql.config.MysqldConfig;
 import com.wix.mysql.config.SchemaConfig;
 import com.wix.mysql.distribution.Version;
-import io.vertx.mysqlclient.MySQLCollation;
+import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import org.junit.rules.ExternalResource;
 
@@ -60,7 +60,7 @@ public class MySQLRule extends ExternalResource {
       .setUser(mysqldConfig.getUsername())
       .setPassword(mysqldConfig.getPassword())
       .setDatabase(schemaConfig.getName())
-      .setCollation(MySQLCollation.valueOf(mysqldConfig.getCharset().getCollate()));
+      .setCollation(mysqldConfig.getCharset().getCollate());
   }
 
   public synchronized static void stopMysql() throws Exception {

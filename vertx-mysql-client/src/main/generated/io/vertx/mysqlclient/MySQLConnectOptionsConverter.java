@@ -16,7 +16,7 @@ public class MySQLConnectOptionsConverter {
       switch (member.getKey()) {
         case "collation":
           if (member.getValue() instanceof String) {
-            obj.setCollation(io.vertx.mysqlclient.MySQLCollation.valueOf((String)member.getValue()));
+            obj.setCollation((String)member.getValue());
           }
           break;
       }
@@ -29,7 +29,7 @@ public class MySQLConnectOptionsConverter {
 
   public static void toJson(MySQLConnectOptions obj, java.util.Map<String, Object> json) {
     if (obj.getCollation() != null) {
-      json.put("collation", obj.getCollation().name());
+      json.put("collation", obj.getCollation());
     }
   }
 }

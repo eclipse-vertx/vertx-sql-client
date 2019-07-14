@@ -115,7 +115,14 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
 
   @Override
   public MySQLConnection changeUser(MySQLConnectOptions options, Handler<AsyncResult<Void>> handler) {
-    ChangeUserCommand cmd = new ChangeUserCommand(options.getUser(), options.getPassword(), options.getDatabase(), options.getCollation(), options.getProperties());
+    MySQLCollation collation;
+    try {
+      collation = MySQLCollation.valueOfName(options.getCollation());
+    } catch (IllegalArgumentException e) {
+      handler.handle(Future.failedFuture(e));
+      return this;
+    }
+    ChangeUserCommand cmd = new ChangeUserCommand(options.getUser(), options.getPassword(), options.getDatabase(), collation, options.getProperties());
     cmd.handler = handler;
     schedule(cmd);
     return this;

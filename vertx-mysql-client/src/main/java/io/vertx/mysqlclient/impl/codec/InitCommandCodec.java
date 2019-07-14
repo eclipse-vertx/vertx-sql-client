@@ -17,7 +17,7 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.mysqlclient.MySQLCollation;
+import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.mysqlclient.impl.util.Native41Authenticator;
 import io.vertx.sqlclient.impl.Connection;
@@ -136,7 +136,13 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
       String authMethodName = initialHandshakePacket.getAuthMethodName();
       byte[] serverScramble = initialHandshakePacket.getScramble();
       Map<String, String> properties = cmd.properties();
-      MySQLCollation collation = MySQLCollation.valueOf(properties.get("collation"));
+      MySQLCollation collation;
+      try {
+        collation = MySQLCollation.valueOfName(properties.get("collation"));
+      } catch (IllegalArgumentException e) {
+        completionHandler.handle(CommandResponse.failure(e));
+        return;
+      }
       int collationId = collation.collationId();
       encoder.charset = Charset.forName(collation.mappedJavaCharsetName());
       properties.remove("collation");

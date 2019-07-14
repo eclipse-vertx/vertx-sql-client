@@ -8,7 +8,6 @@ import io.vertx.core.net.NetSocket;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
 
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,7 +21,6 @@ public class MySQLConnectionFactory {
   private final String password;
   private final String database;
   private final Map<String, String> properties;
-  private final Charset charset;
   private final boolean ssl = false;
   private final boolean cachePreparedStatements;
   private final int preparedStatementCacheSize;
@@ -45,9 +43,7 @@ public class MySQLConnectionFactory {
     this.password = options.getPassword();
     this.database = options.getDatabase();
     this.properties = new HashMap<>(options.getProperties());
-    properties.put("collation", options.getCollation().name());
-    // TODO collation support in properties
-    this.charset = CharacterSetMapping.getCharset("UTF-8"); // Make it an option later
+    properties.put("collation", options.getCollation());
     this.cachePreparedStatements = options.getCachePreparedStatements();
     this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
     this.preparedStatementCacheSqlLimit = options.getPreparedStatementCacheSqlLimit();

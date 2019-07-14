@@ -1,7 +1,7 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.mysqlclient.MySQLCollation;
+import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.impl.command.ChangeUserCommand;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.mysqlclient.impl.util.Native41Authenticator;

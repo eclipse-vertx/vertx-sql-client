@@ -13,7 +13,7 @@
 |===
 ^|Name | Type ^| Description
 |[[cachePreparedStatements]]`@cachePreparedStatements`|`Boolean`|-
-|[[collation]]`@collation`|`link:enums.html#MySQLCollation[MySQLCollation]`|+++
+|[[collation]]`@collation`|`String`|+++
 Set the collation for the connection.
 +++
 |[[connectTimeout]]`@connectTimeout`|`Number (int)`|-

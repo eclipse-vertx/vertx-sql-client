@@ -1,4 +1,4 @@
-package io.vertx.mysqlclient;
+package io.vertx.mysqlclient.impl;
 
 /**
  * MySQL collation which is a set of rules for comparing characters in a character set.
@@ -237,13 +237,21 @@ public enum MySQLCollation {
     this.collationId = collationId;
   }
 
+  public static MySQLCollation valueOfName(String collationName) throws IllegalArgumentException{
+    try {
+      return MySQLCollation.valueOf(collationName);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("Unknown MySQL collation: [" + collationName + "]");
+    }
+  }
+
   /**
    * Get the MySQL collation with a correlative collation id.
    *
    * @param collationId id of the collation
    * @return the collation
    */
-  public static MySQLCollation valueOf(int collationId) {
+  public static MySQLCollation valueOfId(int collationId) {
     switch (collationId) {
       case 1:
         return big5_chinese_ci;

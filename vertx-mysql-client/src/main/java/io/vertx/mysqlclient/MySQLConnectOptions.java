@@ -46,7 +46,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_USER = "root";
   public static final String DEFAULT_PASSWORD = "";
   public static final String DEFAULT_SCHEMA = "";
-  public static final MySQLCollation DEFAULT_COLLATION = MySQLCollation.utf8mb4_general_ci;
+  public static final String DEFAULT_COLLATION = "utf8mb4_general_ci";
   public static final Map<String, String> DEFAULT_CONNECTION_ATTRIBUTES;
 
   static {
@@ -56,7 +56,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     DEFAULT_CONNECTION_ATTRIBUTES = Collections.unmodifiableMap(defaultAttributes);
   }
 
-  private MySQLCollation collation;
+  private String collation;
 
   public MySQLConnectOptions() {
     super();
@@ -79,7 +79,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
    *
    * @return the MySQL collation
    */
-  public MySQLCollation getCollation() {
+  public String getCollation() {
     return collation;
   }
 
@@ -89,7 +89,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
    * @param collation the collation to set
    * @return a reference to this, so the API can be used fluently
    */
-  public MySQLConnectOptions setCollation(MySQLCollation collation) {
+  public MySQLConnectOptions setCollation(String collation) {
     this.collation = collation;
     return this;
   }

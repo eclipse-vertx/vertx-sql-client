@@ -2,7 +2,7 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.mysqlclient.MySQLCollation;
+import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommandBase;
 
@@ -75,7 +75,7 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
       for (int i = 0; i < numOfParams; i++) {
         Object value = params.getValue(i);
         if (value != null) {
-          MySQLCollation collation = MySQLCollation.valueOf(paramsColumnDefinitions[i].characterSet());
+          MySQLCollation collation = MySQLCollation.valueOfId(paramsColumnDefinitions[i].characterSet());
           DataTypeCodec.encodeBinary(parseDataTypeByEncodingValue(value), Charset.forName(collation.mappedJavaCharsetName()), value, packet);
         } else {
           nullBitmap[i / 8] |= (1 << (i & 7));
