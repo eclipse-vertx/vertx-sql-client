@@ -13,13 +13,21 @@ before_script:
 jobs:
   include:
     - stage: test
+      name: "MySQL 5.6"
+      jdk: openjdk8
+      script: mvn -q clean verify -B -Dembedded.mysql.version=5.6 --projects vertx-sql-client,vertx-mysql-client
+    - stage: test
+      name: "MySQL 5.7"
+      jdk: openjdk8
+      script: mvn -q clean verify -B -Dembedded.mysql.version=5.7 --projects vertx-sql-client,vertx-mysql-client
+    - stage: test
       name: "Postgres 9"
       jdk: openjdk8
-      script: mvn -q clean verify -B -Dembedded.postgres.version=9.6
+      script: mvn -q clean verify -B -Dembedded.postgres.version=9.6 --projects vertx-sql-client,vertx-pg-client
     - stage: test
       name: "Postgres 10"
       jdk: openjdk8
-      script: mvn -q clean verify -B -Dembedded.postgres.version=10.6
+      script: mvn -q clean verify -B -Dembedded.postgres.version=10.6 --projects vertx-sql-client,vertx-pg-client
     - stage: deploy
       name: "Deploy to Sonatype's snapshots repository"
       if: type != pull_request AND env(SONATYPE_NEXUS_USERNAME) IS present

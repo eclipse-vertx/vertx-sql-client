@@ -6,6 +6,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -98,6 +99,8 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
 
   @Test
   public void testResetConnection(TestContext ctx) {
+    //TODO does not pass in MySQL 5.6 due to unknown command?
+    Assume.assumeFalse(rule.isUsingMySQL5_6());
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("CREATE TEMPORARY TABLE temp (temp INTEGER)", ctx.asyncAssertSuccess(res1 -> {
         conn.query("SELECT * FROM temp", ctx.asyncAssertSuccess(res2 -> {
@@ -113,6 +116,7 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
 
   @Test
   public void testChangeUser(TestContext ctx) {
+    Assume.assumeFalse(rule.isUsingMySQL5_6());
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT current_user()", ctx.asyncAssertSuccess(res1 -> {
         Row row1 = res1.iterator().next();
