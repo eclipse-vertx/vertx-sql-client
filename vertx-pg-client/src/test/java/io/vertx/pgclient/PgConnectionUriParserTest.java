@@ -357,4 +357,16 @@ public class PgConnectionUriParserTest {
     uri = "postgresql://?sslmode=invalidsslmode";
     actualParsedResult = parse(uri);
   }
+
+  @Test
+  public void testParsingUserInfoContainExclamationMark(){
+    uri = "postgresql://user!name:dd!dd@127.0.0.1:1234/dbname";
+    actualParsedResult = parse(uri);
+  }
+
+  @Test
+  public void testParsingSchemaContainExclamationMark(){
+    uri = "postgresql://username:dddd@127.0.0.1:1234/!dbname";
+    actualParsedResult = parse(uri);
+  }
 }
