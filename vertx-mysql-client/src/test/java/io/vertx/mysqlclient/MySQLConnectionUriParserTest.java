@@ -221,4 +221,10 @@ public class MySQLConnectionUriParserTest {
     uri = "mysql://@@/dbname?host";
     actualParsedResult = parse(uri);
   }
+
+  @Test
+  public void testParsingUserInfoContainExclamationMark(){
+      uri = "mysql://user!name:dd!dd@127.0.0.1:3306/dbname";
+      actualParsedResult = parse(uri);
+  }
 }
