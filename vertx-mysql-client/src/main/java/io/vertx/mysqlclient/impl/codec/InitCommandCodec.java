@@ -17,7 +17,7 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.mysqlclient.impl.CharacterSetMapping;
+import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.mysqlclient.impl.util.Native41Authenticator;
 import io.vertx.sqlclient.impl.Connection;
@@ -135,12 +135,23 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
       }
       String authMethodName = initialHandshakePacket.getAuthMethodName();
       byte[] serverScramble = initialHandshakePacket.getScramble();
-      Map<String, String> clientConnectionAttributes = cmd.properties();
+      Map<String, String> properties = cmd.properties();
+      MySQLCollation collation;
+      try {
+        collation = MySQLCollation.valueOfName(properties.get("collation"));
+      } catch (IllegalArgumentException e) {
+        completionHandler.handle(CommandResponse.failure(e));
+        return;
+      }
+      int collationId = collation.collationId();
+      encoder.charset = Charset.forName(collation.mappedJavaCharsetName());
+      properties.remove("collation");
+      Map<String, String> clientConnectionAttributes = properties;
       if (clientConnectionAttributes != null && !clientConnectionAttributes.isEmpty()) {
         encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_ATTRS;
       }
       encoder.clientCapabilitiesFlag &= initialHandshakePacket.getServerCapabilitiesFlags();
-      sendHandshakeResponseMessage(cmd.username(), cmd.password(), cmd.database(), StandardCharsets.UTF_8, serverScramble, authMethodName, clientConnectionAttributes);
+      sendHandshakeResponseMessage(cmd.username(), cmd.password(), cmd.database(), collationId, serverScramble, authMethodName, clientConnectionAttributes);
     }
   }
 
@@ -160,7 +171,7 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     }
   }
 
-  private void sendHandshakeResponseMessage(String username, String password, String database, Charset charset, byte[] serverScramble, String authMethodName, Map<String, String> clientConnectionAttributes) {
+  private void sendHandshakeResponseMessage(String username, String password, String database, int collationId, byte[] serverScramble, String authMethodName, Map<String, String> clientConnectionAttributes) {
     ByteBuf packet = allocateBuffer();
     // encode packet header
     int packetStartIdx = packet.writerIndex();
@@ -171,7 +182,7 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     int clientCapabilitiesFlags = encoder.clientCapabilitiesFlag;
     packet.writeIntLE(clientCapabilitiesFlags);
     packet.writeIntLE(0xFFFFFF);
-    packet.writeByte(CharacterSetMapping.getCharsetByteValue(charset.name()));
+    packet.writeByte(collationId);
     byte[] filler = new byte[23];
     packet.writeBytes(filler);
     BufferUtils.writeNullTerminatedString(packet, username, StandardCharsets.UTF_8);

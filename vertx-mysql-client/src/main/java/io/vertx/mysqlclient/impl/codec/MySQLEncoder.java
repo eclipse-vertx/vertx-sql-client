@@ -12,6 +12,8 @@ import io.vertx.mysqlclient.impl.command.SetOptionCommand;
 import io.vertx.mysqlclient.impl.command.StatisticsCommand;
 import io.vertx.sqlclient.impl.command.*;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 
 import static io.vertx.mysqlclient.impl.codec.CapabilitiesFlag.*;
@@ -22,9 +24,11 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
   ChannelHandlerContext chctx;
 
   int clientCapabilitiesFlag = 0x00000000;
+  Charset charset;
 
   MySQLEncoder(ArrayDeque<CommandCodec<?, ?>> inflight) {
     this.inflight = inflight;
+    this.charset = StandardCharsets.UTF_8;
     initSupportedCapabilitiesFlags();
   }
 
