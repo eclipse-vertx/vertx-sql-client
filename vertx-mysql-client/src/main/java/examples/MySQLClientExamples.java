@@ -76,6 +76,22 @@ public class MySQLClientExamples {
     });
   }
 
+  public void configureConnectionCharset() {
+    MySQLConnectOptions connectOptions = new MySQLConnectOptions();
+
+    // set connection character set to utf8 instead of the default charset utf8mb4
+    connectOptions.setCharset("utf8");
+  }
+
+  public void configureConnectionCollation() {
+    MySQLConnectOptions connectOptions = new MySQLConnectOptions();
+
+    // set connection collation to utf8_general_ci instead of the default collation utf8mb4_general_ci
+    // setting a collation will override the charset option
+    connectOptions.setCharset("gbk");
+    connectOptions.setCollation("utf8_general_ci");
+  }
+
   public void configureConnectionAttributes() {
     // Data object
     MySQLConnectOptions connectOptions = new MySQLConnectOptions();
