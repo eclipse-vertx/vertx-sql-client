@@ -13,6 +13,9 @@
 |===
 ^|Name | Type ^| Description
 |[[cachePreparedStatements]]`@cachePreparedStatements`|`Boolean`|-
+|[[charset]]`@charset`|`String`|+++
+Set the charset for the connection.
++++
 |[[collation]]`@collation`|`String`|+++
 Set the collation for the connection.
 +++
