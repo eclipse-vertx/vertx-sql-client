@@ -41,6 +41,32 @@ public class MySQLQueryTest extends MySQLTestBase {
   }
 
   @Test
+  public void testConnectionCollation(TestContext ctx) {
+    MySQLConnectOptions connectOptions = options.setCollation("gbk_chinese_ci");
+    MySQLConnection.connect(vertx, connectOptions, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SHOW VARIABLES LIKE 'collation_connection';", ctx.asyncAssertSuccess(res -> {
+        Row row = res.iterator().next();
+        ctx.assertEquals("gbk_chinese_ci", row.getString("Value"));
+        conn.close();
+      }));
+    }));
+  }
+
+  @Test
+  public void testConnectionCharset(TestContext ctx) {
+    MySQLConnectOptions connectOptions = options.setCollation(null).setCharset("gbk");
+    MySQLConnection.connect(vertx, connectOptions, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SHOW VARIABLES LIKE 'collation_connection';", ctx.asyncAssertSuccess(res -> {
+        ctx.assertEquals("gbk_chinese_ci", res.iterator().next().getString("Value"));
+        conn.query("SHOW VARIABLES LIKE 'character_set_connection';", ctx.asyncAssertSuccess(res2 -> {
+          ctx.assertEquals("gbk", res2.iterator().next().getString("Value"));
+          conn.close();
+        }));
+      }));
+    }));
+  }
+
+  @Test
   public void testTableCollation(TestContext ctx) {
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("CREATE TEMPORARY TABLE chinese_city (\n" +
@@ -80,11 +106,89 @@ public class MySQLQueryTest extends MySQLTestBase {
   }
 
   @Test
+  public void testTableCharset(TestContext ctx) {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("CREATE TEMPORARY TABLE chinese_city (\n" +
+        "\tid INTEGER,\n" +
+        "\tcity_name VARCHAR(20)) CHARACTER SET gbk;\n" +
+        "INSERT INTO chinese_city VALUES (1, '\u5317\u4EAC');\n" +
+        "INSERT INTO chinese_city VALUES (2, '\u4E0A\u6D77');\n" +
+        "INSERT INTO chinese_city VALUES (3, '\u5E7F\u5DDE');\n" +
+        "INSERT INTO chinese_city VALUES (4, '\u6DF1\u5733');\n" +
+        "INSERT INTO chinese_city VALUES (5, '\u6B66\u6C49');\n" +
+        "INSERT INTO chinese_city VALUES (6, '\u6210\u90FD');", ctx.asyncAssertSuccess(res0 -> {
+        conn.query("SELECT id, city_name FROM chinese_city", ctx.asyncAssertSuccess(res1 -> {
+          ctx.assertEquals(6, res1.size());
+          RowIterator iterator = res1.iterator();
+          Row row1 = iterator.next();
+          ctx.assertEquals(1, row1.getInteger("id"));
+          ctx.assertEquals("\u5317\u4EAC", row1.getString("city_name"));
+          Row row2 = iterator.next();
+          ctx.assertEquals(2, row2.getInteger("id"));
+          ctx.assertEquals("\u4E0A\u6D77", row2.getString("city_name"));
+          Row row3 = iterator.next();
+          ctx.assertEquals(3, row3.getInteger("id"));
+          ctx.assertEquals("\u5E7F\u5DDE", row3.getString("city_name"));
+          Row row4 = iterator.next();
+          ctx.assertEquals(4, row4.getInteger("id"));
+          ctx.assertEquals("\u6DF1\u5733", row4.getString("city_name"));
+          Row row5 = iterator.next();
+          ctx.assertEquals(5, row5.getInteger("id"));
+          ctx.assertEquals("\u6B66\u6C49", row5.getString("city_name"));
+          Row row6 = iterator.next();
+          ctx.assertEquals(6, row6.getInteger("id"));
+          ctx.assertEquals("\u6210\u90FD", row6.getString("city_name"));
+          conn.close();
+        }));
+      }));
+    }));
+  }
+
+  @Test
   public void testColumnCollation(TestContext ctx) {
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("CREATE TEMPORARY TABLE chinese_city (\n" +
         "\tid INTEGER,\n" +
         "\tcity_name VARCHAR(20) COLLATE gbk_chinese_ci);\n" +
+        "INSERT INTO chinese_city VALUES (1, '\u5317\u4EAC');\n" +
+        "INSERT INTO chinese_city VALUES (2, '\u4E0A\u6D77');\n" +
+        "INSERT INTO chinese_city VALUES (3, '\u5E7F\u5DDE');\n" +
+        "INSERT INTO chinese_city VALUES (4, '\u6DF1\u5733');\n" +
+        "INSERT INTO chinese_city VALUES (5, '\u6B66\u6C49');\n" +
+        "INSERT INTO chinese_city VALUES (6, '\u6210\u90FD');", ctx.asyncAssertSuccess(res0 -> {
+        conn.query("SELECT id, city_name FROM chinese_city", ctx.asyncAssertSuccess(res1 -> {
+          ctx.assertEquals(6, res1.size());
+          RowIterator iterator = res1.iterator();
+          Row row1 = iterator.next();
+          ctx.assertEquals(1, row1.getInteger("id"));
+          ctx.assertEquals("\u5317\u4EAC", row1.getString("city_name"));
+          Row row2 = iterator.next();
+          ctx.assertEquals(2, row2.getInteger("id"));
+          ctx.assertEquals("\u4E0A\u6D77", row2.getString("city_name"));
+          Row row3 = iterator.next();
+          ctx.assertEquals(3, row3.getInteger("id"));
+          ctx.assertEquals("\u5E7F\u5DDE", row3.getString("city_name"));
+          Row row4 = iterator.next();
+          ctx.assertEquals(4, row4.getInteger("id"));
+          ctx.assertEquals("\u6DF1\u5733", row4.getString("city_name"));
+          Row row5 = iterator.next();
+          ctx.assertEquals(5, row5.getInteger("id"));
+          ctx.assertEquals("\u6B66\u6C49", row5.getString("city_name"));
+          Row row6 = iterator.next();
+          ctx.assertEquals(6, row6.getInteger("id"));
+          ctx.assertEquals("\u6210\u90FD", row6.getString("city_name"));
+          conn.close();
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testColumnCharset(TestContext ctx) {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("CREATE TEMPORARY TABLE chinese_city (\n" +
+        "\tid INTEGER,\n" +
+        "\tcity_name VARCHAR(20) CHARACTER SET gbk);\n" +
         "INSERT INTO chinese_city VALUES (1, '\u5317\u4EAC');\n" +
         "INSERT INTO chinese_city VALUES (2, '\u4E0A\u6D77');\n" +
         "INSERT INTO chinese_city VALUES (3, '\u5E7F\u5DDE');\n" +
