@@ -63,11 +63,21 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     short protocolVersion = payload.readUnsignedByte();
 
     String serverVersion = BufferUtils.readNullTerminatedString(payload, StandardCharsets.US_ASCII);
-    // we assume the server version follows ${major}.${minor}.${version} in https://dev.mysql.com/doc/refman/8.0/en/which-version.html
+    // we assume the server version follows ${major}.${minor}.${release} in https://dev.mysql.com/doc/refman/8.0/en/which-version.html
     String[] versionNumbers = serverVersion.split("\\.");
     int majorVersion = Integer.parseInt(versionNumbers[0]);
     int minorVersion = Integer.parseInt(versionNumbers[1]);
-    int releaseNumber = Integer.parseInt(versionNumbers[2]); // we don't support dev version
+    // we should truncate the possible suffixes here
+    String releaseVersion = versionNumbers[2];
+    int releaseNumber;
+    int indexOfFirstSeparator = releaseVersion.indexOf("-");
+    if (indexOfFirstSeparator != -1) {
+      // handle unstable release suffixes
+      String releaseNumberString = releaseVersion.substring(0, indexOfFirstSeparator);
+      releaseNumber = Integer.parseInt(releaseNumberString);
+    } else {
+      releaseNumber = Integer.parseInt(versionNumbers[2]);
+    }
     if (majorVersion == 5 && (minorVersion < 7 || (minorVersion == 7 && releaseNumber < 5))) {
       // EOF_HEADER is enabled
     } else {
