@@ -13,6 +13,9 @@
 |===
 ^|Name | Type ^| Description
 |[[cachePreparedStatements]]`@cachePreparedStatements`|`Boolean`|-
+|[[collation]]`@collation`|`String`|+++
+Set the collation for the connection.
++++
 |[[connectTimeout]]`@connectTimeout`|`Number (int)`|-
 |[[crlPaths]]`@crlPaths`|`Array of String`|-
 |[[crlValues]]`@crlValues`|`Array of Buffer`|-

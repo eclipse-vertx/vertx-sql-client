@@ -6,7 +6,7 @@ import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.sqlclient.data.Numeric;
 
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,8 +15,6 @@ import java.time.format.DateTimeFormatterBuilder;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.temporal.ChronoField.*;
 
-//TODO charset injection
-//TODO 2: In MySQL, there is no way to tell a Result is a BOOLEAN type or a INT1 type so we need to take a look at the type mapping later
 class DataTypeCodec {
   // binary codec protocol: https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_binary_resultset.html#sect_protocol_binary_resultset_row_value
 
@@ -35,45 +33,44 @@ class DataTypeCodec {
     .appendFraction(MICRO_OF_SECOND, 0, 6, true)
     .toFormatter();
 
-  static Object decodeText(DataType dataType, int columnDefinitionFlags, ByteBuf buffer) {
+  static Object decodeText(DataType dataType, Charset charset, int columnDefinitionFlags, ByteBuf buffer) {
     int length = (int) BufferUtils.readLengthEncodedInteger(buffer);
-    ByteBuf data = buffer.slice(buffer.readerIndex(), length);
-    buffer.skipBytes(length);
+    ByteBuf data = buffer.readSlice(length);
     switch (dataType) {
       case INT1:
-        return textDecodeInt1(data);
+        return textDecodeInt1(charset, data);
       case INT2:
       case YEAR:
-        return textDecodeInt2(data);
+        return textDecodeInt2(charset, data);
       case INT3:
-        return textDecodeInt3(data);
+        return textDecodeInt3(charset, data);
       case INT4:
-        return textDecodeInt4(data);
+        return textDecodeInt4(charset, data);
       case INT8:
-        return textDecodeInt8(data);
+        return textDecodeInt8(charset, data);
       case FLOAT:
-        return textDecodeFloat(data);
+        return textDecodeFloat(charset, data);
       case DOUBLE:
-        return textDecodeDouble(data);
+        return textDecodeDouble(charset, data);
       case NUMERIC:
-        return textDecodeNUMERIC(data);
+        return textDecodeNUMERIC(charset, data);
       case DATE:
-        return textDecodeDate(data);
+        return textDecodeDate(charset, data);
       case TIME:
-        return textDecodeTime(data);
+        return textDecodeTime(charset, data);
       case DATETIME:
       case TIMESTAMP:
-        return textDecodeDateTime(data);
+        return textDecodeDateTime(charset, data);
       case STRING:
       case VARSTRING:
       case BLOB:
       default:
-        return textDecodeBlobOrText(columnDefinitionFlags, data);
+        return textDecodeBlobOrText(charset, columnDefinitionFlags, data);
     }
   }
 
   //TODO take care of unsigned numeric values here?
-  static void encodeBinary(DataType dataType, Object value, ByteBuf buffer) {
+  static void encodeBinary(DataType dataType, Charset charset, Object value, ByteBuf buffer) {
     switch (dataType) {
       case INT1:
         if (value instanceof Boolean) {
@@ -104,7 +101,7 @@ class DataTypeCodec {
         binaryEncodeDouble((Number) value, buffer);
         break;
       case NUMERIC:
-        binaryEncodeNumeric((Numeric) value, buffer);
+        binaryEncodeNumeric(charset, (Numeric) value, buffer);
         break;
       case BLOB:
         binaryEncodeBlob((Buffer) value, buffer);
@@ -121,12 +118,12 @@ class DataTypeCodec {
       case STRING:
       case VARSTRING:
       default:
-        binaryEncodeText(String.valueOf(value), buffer);
+        binaryEncodeText(charset, String.valueOf(value), buffer);
         break;
     }
   }
 
-  static Object decodeBinary(DataType dataType, int columnDefinitionFlags, ByteBuf buffer) {
+  static Object decodeBinary(DataType dataType, Charset charset, int columnDefinitionFlags, ByteBuf buffer) {
     switch (dataType) {
       case INT1:
         return binaryDecodeInt1(buffer);
@@ -144,7 +141,7 @@ class DataTypeCodec {
       case DOUBLE:
         return binaryDecodeDouble(buffer);
       case NUMERIC:
-        return binaryDecodeNumeric(buffer);
+        return binaryDecodeNumeric(charset, buffer);
       case DATE:
         return binaryDecodeDate(buffer);
       case TIME:
@@ -156,7 +153,7 @@ class DataTypeCodec {
       case VARSTRING:
       case BLOB:
       default:
-        return binaryDecodeBlobOrText(columnDefinitionFlags, buffer);
+        return binaryDecodeBlobOrText(charset, columnDefinitionFlags, buffer);
     }
   }
 
@@ -197,12 +194,12 @@ class DataTypeCodec {
     buffer.writeDoubleLE(value.doubleValue());
   }
 
-  private static void binaryEncodeNumeric(Numeric value, ByteBuf buffer) {
-    BufferUtils.writeLengthEncodedString(buffer, value.toString(), StandardCharsets.UTF_8);
+  private static void binaryEncodeNumeric(Charset charset, Numeric value, ByteBuf buffer) {
+    BufferUtils.writeLengthEncodedString(buffer, value.toString(), charset);
   }
 
-  private static void binaryEncodeText(String value, ByteBuf buffer) {
-    BufferUtils.writeLengthEncodedString(buffer, value, StandardCharsets.UTF_8);
+  private static void binaryEncodeText(Charset charset, String value, ByteBuf buffer) {
+    BufferUtils.writeLengthEncodedString(buffer, value, charset);
   }
 
   private static void binaryEncodeBlob(Buffer value, ByteBuf buffer) {
@@ -326,15 +323,15 @@ class DataTypeCodec {
     return buffer.readDoubleLE();
   }
 
-  private static Numeric binaryDecodeNumeric(ByteBuf buffer) {
-    return Numeric.parse(BufferUtils.readLengthEncodedString(buffer, StandardCharsets.UTF_8));
+  private static Numeric binaryDecodeNumeric(Charset charset, ByteBuf buffer) {
+    return Numeric.parse(BufferUtils.readLengthEncodedString(buffer, charset));
   }
 
-  private static Object binaryDecodeBlobOrText(int columnDefinitionFlags, ByteBuf buffer) {
+  private static Object binaryDecodeBlobOrText(Charset charset, int columnDefinitionFlags, ByteBuf buffer) {
     if (isBinaryField(columnDefinitionFlags)) {
       return binaryDecodeBlob(buffer);
     } else {
-      return binaryDecodeText(buffer);
+      return binaryDecodeText(charset, buffer);
     }
   }
 
@@ -345,8 +342,8 @@ class DataTypeCodec {
     return Buffer.buffer(copy);
   }
 
-  private static String binaryDecodeText(ByteBuf buffer) {
-    return BufferUtils.readLengthEncodedString(buffer, StandardCharsets.UTF_8);
+  private static String binaryDecodeText(Charset charset, ByteBuf buffer) {
+    return BufferUtils.readLengthEncodedString(buffer, charset);
   }
 
   private static LocalDateTime binaryDecodeDatetime(ByteBuf buffer) {
@@ -412,43 +409,43 @@ class DataTypeCodec {
     }
   }
 
-  private static Byte textDecodeInt1(ByteBuf buffer) {
-    return Byte.parseByte(buffer.toString(StandardCharsets.UTF_8));
+  private static Byte textDecodeInt1(Charset charset, ByteBuf buffer) {
+    return Byte.parseByte(buffer.toString(charset));
   }
 
-  private static Short textDecodeInt2(ByteBuf buffer) {
-    return Short.parseShort(buffer.toString(StandardCharsets.UTF_8));
+  private static Short textDecodeInt2(Charset charset, ByteBuf buffer) {
+    return Short.parseShort(buffer.toString(charset));
   }
 
-  private static Integer textDecodeInt3(ByteBuf buffer) {
-    return Integer.parseInt(buffer.toString(StandardCharsets.UTF_8));
+  private static Integer textDecodeInt3(Charset charset, ByteBuf buffer) {
+    return Integer.parseInt(buffer.toString(charset));
   }
 
-  private static Integer textDecodeInt4(ByteBuf buffer) {
-    return Integer.parseInt(buffer.toString(StandardCharsets.UTF_8));
+  private static Integer textDecodeInt4(Charset charset, ByteBuf buffer) {
+    return Integer.parseInt(buffer.toString(charset));
   }
 
-  private static Long textDecodeInt8(ByteBuf buffer) {
-    return Long.parseLong(buffer.toString(StandardCharsets.UTF_8));
+  private static Long textDecodeInt8(Charset charset, ByteBuf buffer) {
+    return Long.parseLong(buffer.toString(charset));
   }
 
-  private static Float textDecodeFloat(ByteBuf buffer) {
-    return Float.parseFloat(buffer.toString(StandardCharsets.UTF_8));
+  private static Float textDecodeFloat(Charset charset, ByteBuf buffer) {
+    return Float.parseFloat(buffer.toString(charset));
   }
 
-  private static Double textDecodeDouble(ByteBuf buffer) {
-    return Double.parseDouble(buffer.toString(StandardCharsets.UTF_8));
+  private static Double textDecodeDouble(Charset charset, ByteBuf buffer) {
+    return Double.parseDouble(buffer.toString(charset));
   }
 
-  private static Number textDecodeNUMERIC(ByteBuf buff) {
-    return Numeric.parse(buff.toString(StandardCharsets.UTF_8));
+  private static Number textDecodeNUMERIC(Charset charset, ByteBuf buff) {
+    return Numeric.parse(buff.toString(charset));
   }
 
-  private static Object textDecodeBlobOrText(int columnDefinitionFlags, ByteBuf buffer) {
+  private static Object textDecodeBlobOrText(Charset charset, int columnDefinitionFlags, ByteBuf buffer) {
     if (isBinaryField(columnDefinitionFlags)) {
       return textDecodeBlob(buffer);
     } else {
-      return textDecodeText(buffer);
+      return textDecodeText(charset, buffer);
     }
   }
 
@@ -456,18 +453,18 @@ class DataTypeCodec {
     return Buffer.buffer(buffer.copy());
   }
 
-  private static String textDecodeText(ByteBuf buffer) {
-    return buffer.toString(StandardCharsets.UTF_8);
+  private static String textDecodeText(Charset charset, ByteBuf buffer) {
+    return buffer.toString(charset);
   }
 
-  private static LocalDate textDecodeDate(ByteBuf buffer) {
-    CharSequence cs = buffer.toString(StandardCharsets.UTF_8);
+  private static LocalDate textDecodeDate(Charset charset, ByteBuf buffer) {
+    CharSequence cs = buffer.toString(charset);
     return LocalDate.parse(cs);
   }
 
-  private static Duration textDecodeTime(ByteBuf buffer) {
+  private static Duration textDecodeTime(Charset charset, ByteBuf buffer) {
     // HH:mm:ss or HHH:mm:ss
-    String timeString = buffer.toString(StandardCharsets.UTF_8);
+    String timeString = buffer.toString(charset);
     boolean isNegative = timeString.charAt(0) == '-';
     if (isNegative) {
       timeString = timeString.substring(1);
@@ -493,8 +490,8 @@ class DataTypeCodec {
     }
   }
 
-  private static LocalDateTime textDecodeDateTime(ByteBuf buffer) {
-    CharSequence cs = buffer.toString(StandardCharsets.UTF_8);
+  private static LocalDateTime textDecodeDateTime(Charset charset, ByteBuf buffer) {
+    CharSequence cs = buffer.toString(charset);
     if (cs.equals("0000-00-00 00:00:00")) {
       // Invalid datetime will be converted to zero
       return null;
