@@ -22,11 +22,11 @@
   <parent>
     <groupId>io.vertx</groupId>
     <artifactId>vertx-sql-client-parent</artifactId>
-    <version>3.8.0</version>
+    <version>3.8.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>vertx-mysql-client</artifactId>
-  <version>3.8.0</version>
+  <version>3.8.1-SNAPSHOT</version>
 
   <name>Vertx MySQL Client</name>
   <url>https://github.com/eclipse-vertx/vertx-sql-client</url>
@@ -59,7 +59,7 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-sql-client</artifactId>
-      <version>3.8.0</version>
+      <version>3.8.1-SNAPSHOT</version>
     </dependency>
 
     <!-- Testing purposes -->
@@ -72,7 +72,7 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-sql-client</artifactId>
-      <version>3.8.0</version>
+      <version>3.8.1-SNAPSHOT</version>
       <classifier>tests</classifier>
       <type>test-jar</type>
     </dependency>
