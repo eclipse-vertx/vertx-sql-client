@@ -13,6 +13,24 @@ import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
 public class MySQLCollationTest extends MySQLTestBase {
+  private static final String PREPARE_TESTING_TABLE_DATA = "CREATE TEMPORARY TABLE chinese_city (\n" +
+    "\tid INTEGER,\n" +
+    "\tcity_name VARCHAR(20)) COLLATE utf8_general_ci;\n" +
+    "INSERT INTO chinese_city VALUES (1, '\u5317\u4EAC');\n" +
+    "INSERT INTO chinese_city VALUES (2, '\u4E0A\u6D77');\n" +
+    "INSERT INTO chinese_city VALUES (3, '\u5E7F\u5DDE');\n" +
+    "INSERT INTO chinese_city VALUES (4, '\u6DF1\u5733');\n" +
+    "INSERT INTO chinese_city VALUES (5, '\u6B66\u6C49');\n" +
+    "INSERT INTO chinese_city VALUES (6, '\u6210\u90FD');";
+  private static final String PREPARE_TESTING_COLUMN_DATA = "CREATE TEMPORARY TABLE chinese_city (\n" +
+    "\tid INTEGER,\n" +
+    "\tcity_name VARCHAR(20) COLLATE gbk_chinese_ci);\n" +
+    "INSERT INTO chinese_city VALUES (1, '\u5317\u4EAC');\n" +
+    "INSERT INTO chinese_city VALUES (2, '\u4E0A\u6D77');\n" +
+    "INSERT INTO chinese_city VALUES (3, '\u5E7F\u5DDE');\n" +
+    "INSERT INTO chinese_city VALUES (4, '\u6DF1\u5733');\n" +
+    "INSERT INTO chinese_city VALUES (5, '\u6B66\u6C49');\n" +
+    "INSERT INTO chinese_city VALUES (6, '\u6210\u90FD');";
 
   Vertx vertx;
   MySQLConnectOptions options;
@@ -57,250 +75,42 @@ public class MySQLCollationTest extends MySQLTestBase {
 
   @Test
   public void testTableCollationBinary(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("CREATE TEMPORARY TABLE chinese_city (\n" +
-        "\tid INTEGER,\n" +
-        "\tcity_name VARCHAR(20)) COLLATE utf8_general_ci;\n" +
-        "INSERT INTO chinese_city VALUES (1, '\u5317\u4EAC');\n" +
-        "INSERT INTO chinese_city VALUES (2, '\u4E0A\u6D77');\n" +
-        "INSERT INTO chinese_city VALUES (3, '\u5E7F\u5DDE');\n" +
-        "INSERT INTO chinese_city VALUES (4, '\u6DF1\u5733');\n" +
-        "INSERT INTO chinese_city VALUES (5, '\u6B66\u6C49');\n" +
-        "INSERT INTO chinese_city VALUES (6, '\u6210\u90FD');", ctx.asyncAssertSuccess(res0 -> {
-        conn.preparedQuery("SELECT id, city_name FROM chinese_city where city_name = ?", Tuple.tuple().addString("\u5317\u4EAC"), ctx.asyncAssertSuccess(res1 -> {
-          ctx.assertEquals(1, res1.size());
-          Row row = res1.iterator().next();
-          ctx.assertEquals(1, row.getInteger("id"));
-          ctx.assertEquals("\u5317\u4EAC", row.getString("city_name"));
-          conn.close();
-        }));
-      }));
-    }));
+    testBinary(ctx, PREPARE_TESTING_TABLE_DATA);
   }
 
   @Test
   public void testTableCollationText(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("CREATE TEMPORARY TABLE chinese_city (\n" +
-        "\tid INTEGER,\n" +
-        "\tcity_name VARCHAR(20)) COLLATE gbk_chinese_ci;\n" +
-        "INSERT INTO chinese_city VALUES (1, '\u5317\u4EAC');\n" +
-        "INSERT INTO chinese_city VALUES (2, '\u4E0A\u6D77');\n" +
-        "INSERT INTO chinese_city VALUES (3, '\u5E7F\u5DDE');\n" +
-        "INSERT INTO chinese_city VALUES (4, '\u6DF1\u5733');\n" +
-        "INSERT INTO chinese_city VALUES (5, '\u6B66\u6C49');\n" +
-        "INSERT INTO chinese_city VALUES (6, '\u6210\u90FD');", ctx.asyncAssertSuccess(res0 -> {
-        conn.query("SELECT id, city_name FROM chinese_city", ctx.asyncAssertSuccess(res1 -> {
-          ctx.assertEquals(6, res1.size());
-          RowIterator iterator = res1.iterator();
-          Row row1 = iterator.next();
-          ctx.assertEquals(1, row1.getInteger("id"));
-          ctx.assertEquals("\u5317\u4EAC", row1.getString("city_name"));
-          Row row2 = iterator.next();
-          ctx.assertEquals(2, row2.getInteger("id"));
-          ctx.assertEquals("\u4E0A\u6D77", row2.getString("city_name"));
-          Row row3 = iterator.next();
-          ctx.assertEquals(3, row3.getInteger("id"));
-          ctx.assertEquals("\u5E7F\u5DDE", row3.getString("city_name"));
-          Row row4 = iterator.next();
-          ctx.assertEquals(4, row4.getInteger("id"));
-          ctx.assertEquals("\u6DF1\u5733", row4.getString("city_name"));
-          Row row5 = iterator.next();
-          ctx.assertEquals(5, row5.getInteger("id"));
-          ctx.assertEquals("\u6B66\u6C49", row5.getString("city_name"));
-          Row row6 = iterator.next();
-          ctx.assertEquals(6, row6.getInteger("id"));
-          ctx.assertEquals("\u6210\u90FD", row6.getString("city_name"));
-          conn.close();
-        }));
-      }));
-    }));
+    testText(ctx, PREPARE_TESTING_TABLE_DATA);
   }
 
   @Test
   public void testTableCharsetBinary(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("CREATE TEMPORARY TABLE chinese_city (\n" +
-        "\tid INTEGER,\n" +
-        "\tcity_name VARCHAR(20)) CHARACTER SET gbk;\n" +
-        "INSERT INTO chinese_city VALUES (1, '\u5317\u4EAC');\n" +
-        "INSERT INTO chinese_city VALUES (2, '\u4E0A\u6D77');\n" +
-        "INSERT INTO chinese_city VALUES (3, '\u5E7F\u5DDE');\n" +
-        "INSERT INTO chinese_city VALUES (4, '\u6DF1\u5733');\n" +
-        "INSERT INTO chinese_city VALUES (5, '\u6B66\u6C49');\n" +
-        "INSERT INTO chinese_city VALUES (6, '\u6210\u90FD');", ctx.asyncAssertSuccess(res0 -> {
-        conn.preparedQuery("SELECT id, city_name FROM chinese_city where city_name = ?", Tuple.tuple().addString("\u5317\u4EAC"), ctx.asyncAssertSuccess(res1 -> {
-          ctx.assertEquals(1, res1.size());
-          Row row = res1.iterator().next();
-          ctx.assertEquals(1, row.getInteger("id"));
-          ctx.assertEquals("\u5317\u4EAC", row.getString("city_name"));
-          conn.close();
-        }));
-      }));
-    }));
+    testBinary(ctx, PREPARE_TESTING_TABLE_DATA);
   }
 
   @Test
   public void testTableCharsetText(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("CREATE TEMPORARY TABLE chinese_city (\n" +
-        "\tid INTEGER,\n" +
-        "\tcity_name VARCHAR(20)) CHARACTER SET gbk;\n" +
-        "INSERT INTO chinese_city VALUES (1, '\u5317\u4EAC');\n" +
-        "INSERT INTO chinese_city VALUES (2, '\u4E0A\u6D77');\n" +
-        "INSERT INTO chinese_city VALUES (3, '\u5E7F\u5DDE');\n" +
-        "INSERT INTO chinese_city VALUES (4, '\u6DF1\u5733');\n" +
-        "INSERT INTO chinese_city VALUES (5, '\u6B66\u6C49');\n" +
-        "INSERT INTO chinese_city VALUES (6, '\u6210\u90FD');", ctx.asyncAssertSuccess(res0 -> {
-        conn.query("SELECT id, city_name FROM chinese_city", ctx.asyncAssertSuccess(res1 -> {
-          ctx.assertEquals(6, res1.size());
-          RowIterator iterator = res1.iterator();
-          Row row1 = iterator.next();
-          ctx.assertEquals(1, row1.getInteger("id"));
-          ctx.assertEquals("\u5317\u4EAC", row1.getString("city_name"));
-          Row row2 = iterator.next();
-          ctx.assertEquals(2, row2.getInteger("id"));
-          ctx.assertEquals("\u4E0A\u6D77", row2.getString("city_name"));
-          Row row3 = iterator.next();
-          ctx.assertEquals(3, row3.getInteger("id"));
-          ctx.assertEquals("\u5E7F\u5DDE", row3.getString("city_name"));
-          Row row4 = iterator.next();
-          ctx.assertEquals(4, row4.getInteger("id"));
-          ctx.assertEquals("\u6DF1\u5733", row4.getString("city_name"));
-          Row row5 = iterator.next();
-          ctx.assertEquals(5, row5.getInteger("id"));
-          ctx.assertEquals("\u6B66\u6C49", row5.getString("city_name"));
-          Row row6 = iterator.next();
-          ctx.assertEquals(6, row6.getInteger("id"));
-          ctx.assertEquals("\u6210\u90FD", row6.getString("city_name"));
-          conn.close();
-        }));
-      }));
-    }));
+    testText(ctx, PREPARE_TESTING_TABLE_DATA);
   }
 
   @Test
   public void testColumnCollationBinary(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("CREATE TEMPORARY TABLE chinese_city (\n" +
-        "\tid INTEGER,\n" +
-        "\tcity_name VARCHAR(20) COLLATE gbk_chinese_ci);\n" +
-        "INSERT INTO chinese_city VALUES (1, '\u5317\u4EAC');\n" +
-        "INSERT INTO chinese_city VALUES (2, '\u4E0A\u6D77');\n" +
-        "INSERT INTO chinese_city VALUES (3, '\u5E7F\u5DDE');\n" +
-        "INSERT INTO chinese_city VALUES (4, '\u6DF1\u5733');\n" +
-        "INSERT INTO chinese_city VALUES (5, '\u6B66\u6C49');\n" +
-        "INSERT INTO chinese_city VALUES (6, '\u6210\u90FD');", ctx.asyncAssertSuccess(res0 -> {
-        conn.preparedQuery("SELECT id, city_name FROM chinese_city where city_name = ?", Tuple.tuple().addString("\u5317\u4EAC"), ctx.asyncAssertSuccess(res1 -> {
-          ctx.assertEquals(1, res1.size());
-          Row row = res1.iterator().next();
-          ctx.assertEquals(1, row.getInteger("id"));
-          ctx.assertEquals("\u5317\u4EAC", row.getString("city_name"));
-          conn.close();
-        }));
-      }));
-    }));
+    testBinary(ctx, PREPARE_TESTING_COLUMN_DATA);
   }
 
   @Test
   public void testColumnCollationText(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("CREATE TEMPORARY TABLE chinese_city (\n" +
-        "\tid INTEGER,\n" +
-        "\tcity_name VARCHAR(20) COLLATE gbk_chinese_ci);\n" +
-        "INSERT INTO chinese_city VALUES (1, '\u5317\u4EAC');\n" +
-        "INSERT INTO chinese_city VALUES (2, '\u4E0A\u6D77');\n" +
-        "INSERT INTO chinese_city VALUES (3, '\u5E7F\u5DDE');\n" +
-        "INSERT INTO chinese_city VALUES (4, '\u6DF1\u5733');\n" +
-        "INSERT INTO chinese_city VALUES (5, '\u6B66\u6C49');\n" +
-        "INSERT INTO chinese_city VALUES (6, '\u6210\u90FD');", ctx.asyncAssertSuccess(res0 -> {
-        conn.query("SELECT id, city_name FROM chinese_city", ctx.asyncAssertSuccess(res1 -> {
-          ctx.assertEquals(6, res1.size());
-          RowIterator iterator = res1.iterator();
-          Row row1 = iterator.next();
-          ctx.assertEquals(1, row1.getInteger("id"));
-          ctx.assertEquals("\u5317\u4EAC", row1.getString("city_name"));
-          Row row2 = iterator.next();
-          ctx.assertEquals(2, row2.getInteger("id"));
-          ctx.assertEquals("\u4E0A\u6D77", row2.getString("city_name"));
-          Row row3 = iterator.next();
-          ctx.assertEquals(3, row3.getInteger("id"));
-          ctx.assertEquals("\u5E7F\u5DDE", row3.getString("city_name"));
-          Row row4 = iterator.next();
-          ctx.assertEquals(4, row4.getInteger("id"));
-          ctx.assertEquals("\u6DF1\u5733", row4.getString("city_name"));
-          Row row5 = iterator.next();
-          ctx.assertEquals(5, row5.getInteger("id"));
-          ctx.assertEquals("\u6B66\u6C49", row5.getString("city_name"));
-          Row row6 = iterator.next();
-          ctx.assertEquals(6, row6.getInteger("id"));
-          ctx.assertEquals("\u6210\u90FD", row6.getString("city_name"));
-          conn.close();
-        }));
-      }));
-    }));
+    testText(ctx, PREPARE_TESTING_COLUMN_DATA);
   }
 
   @Test
   public void testColumnCharsetBinary(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("CREATE TEMPORARY TABLE chinese_city (\n" +
-        "\tid INTEGER,\n" +
-        "\tcity_name VARCHAR(20) CHARACTER SET gbk);\n" +
-        "INSERT INTO chinese_city VALUES (1, '\u5317\u4EAC');\n" +
-        "INSERT INTO chinese_city VALUES (2, '\u4E0A\u6D77');\n" +
-        "INSERT INTO chinese_city VALUES (3, '\u5E7F\u5DDE');\n" +
-        "INSERT INTO chinese_city VALUES (4, '\u6DF1\u5733');\n" +
-        "INSERT INTO chinese_city VALUES (5, '\u6B66\u6C49');\n" +
-        "INSERT INTO chinese_city VALUES (6, '\u6210\u90FD');", ctx.asyncAssertSuccess(res0 -> {
-        conn.preparedQuery("SELECT id, city_name FROM chinese_city where city_name = ?", Tuple.tuple().addString("\u5317\u4EAC"), ctx.asyncAssertSuccess(res1 -> {
-          ctx.assertEquals(1, res1.size());
-          Row row = res1.iterator().next();
-          ctx.assertEquals(1, row.getInteger("id"));
-          ctx.assertEquals("\u5317\u4EAC", row.getString("city_name"));
-          conn.close();
-        }));
-      }));
-    }));
+    testBinary(ctx, PREPARE_TESTING_COLUMN_DATA);
   }
 
   @Test
   public void testColumnCharsetText(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("CREATE TEMPORARY TABLE chinese_city (\n" +
-        "\tid INTEGER,\n" +
-        "\tcity_name VARCHAR(20) CHARACTER SET gbk);\n" +
-        "INSERT INTO chinese_city VALUES (1, '\u5317\u4EAC');\n" +
-        "INSERT INTO chinese_city VALUES (2, '\u4E0A\u6D77');\n" +
-        "INSERT INTO chinese_city VALUES (3, '\u5E7F\u5DDE');\n" +
-        "INSERT INTO chinese_city VALUES (4, '\u6DF1\u5733');\n" +
-        "INSERT INTO chinese_city VALUES (5, '\u6B66\u6C49');\n" +
-        "INSERT INTO chinese_city VALUES (6, '\u6210\u90FD');", ctx.asyncAssertSuccess(res0 -> {
-        conn.query("SELECT id, city_name FROM chinese_city", ctx.asyncAssertSuccess(res1 -> {
-          ctx.assertEquals(6, res1.size());
-          RowIterator iterator = res1.iterator();
-          Row row1 = iterator.next();
-          ctx.assertEquals(1, row1.getInteger("id"));
-          ctx.assertEquals("\u5317\u4EAC", row1.getString("city_name"));
-          Row row2 = iterator.next();
-          ctx.assertEquals(2, row2.getInteger("id"));
-          ctx.assertEquals("\u4E0A\u6D77", row2.getString("city_name"));
-          Row row3 = iterator.next();
-          ctx.assertEquals(3, row3.getInteger("id"));
-          ctx.assertEquals("\u5E7F\u5DDE", row3.getString("city_name"));
-          Row row4 = iterator.next();
-          ctx.assertEquals(4, row4.getInteger("id"));
-          ctx.assertEquals("\u6DF1\u5733", row4.getString("city_name"));
-          Row row5 = iterator.next();
-          ctx.assertEquals(5, row5.getInteger("id"));
-          ctx.assertEquals("\u6B66\u6C49", row5.getString("city_name"));
-          Row row6 = iterator.next();
-          ctx.assertEquals(6, row6.getInteger("id"));
-          ctx.assertEquals("\u6210\u90FD", row6.getString("city_name"));
-          conn.close();
-        }));
-      }));
-    }));
+    testText(ctx, PREPARE_TESTING_COLUMN_DATA);
   }
 
   @Test
@@ -349,6 +159,50 @@ public class MySQLCollationTest extends MySQLTestBase {
           Row row9 = iterator.next();
           ctx.assertEquals(9, row9.getInteger("id"));
           ctx.assertEquals("\u26bd", row9.getString("expression"));
+          conn.close();
+        }));
+      }));
+    }));
+  }
+
+  private void testBinary(TestContext ctx, String prepareDataSql) {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query(prepareDataSql, ctx.asyncAssertSuccess(res0 -> {
+        conn.preparedQuery("SELECT id, city_name FROM chinese_city where city_name = ?", Tuple.tuple().addString("\u5317\u4EAC"), ctx.asyncAssertSuccess(res1 -> {
+          ctx.assertEquals(1, res1.size());
+          Row row = res1.iterator().next();
+          ctx.assertEquals(1, row.getInteger("id"));
+          ctx.assertEquals("\u5317\u4EAC", row.getString("city_name"));
+          conn.close();
+        }));
+      }));
+    }));
+  }
+
+  private void testText(TestContext ctx, String prepareDataSql) {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query(prepareDataSql, ctx.asyncAssertSuccess(res0 -> {
+        conn.query("SELECT id, city_name FROM chinese_city", ctx.asyncAssertSuccess(res1 -> {
+          ctx.assertEquals(6, res1.size());
+          RowIterator iterator = res1.iterator();
+          Row row1 = iterator.next();
+          ctx.assertEquals(1, row1.getInteger("id"));
+          ctx.assertEquals("\u5317\u4EAC", row1.getString("city_name"));
+          Row row2 = iterator.next();
+          ctx.assertEquals(2, row2.getInteger("id"));
+          ctx.assertEquals("\u4E0A\u6D77", row2.getString("city_name"));
+          Row row3 = iterator.next();
+          ctx.assertEquals(3, row3.getInteger("id"));
+          ctx.assertEquals("\u5E7F\u5DDE", row3.getString("city_name"));
+          Row row4 = iterator.next();
+          ctx.assertEquals(4, row4.getInteger("id"));
+          ctx.assertEquals("\u6DF1\u5733", row4.getString("city_name"));
+          Row row5 = iterator.next();
+          ctx.assertEquals(5, row5.getInteger("id"));
+          ctx.assertEquals("\u6B66\u6C49", row5.getString("city_name"));
+          Row row6 = iterator.next();
+          ctx.assertEquals(6, row6.getInteger("id"));
+          ctx.assertEquals("\u6210\u90FD", row6.getString("city_name"));
           conn.close();
         }));
       }));
