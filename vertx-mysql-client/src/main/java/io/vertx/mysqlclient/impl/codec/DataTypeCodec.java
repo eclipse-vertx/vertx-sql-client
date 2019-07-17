@@ -7,6 +7,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.sqlclient.data.Numeric;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -70,7 +71,7 @@ class DataTypeCodec {
   }
 
   //TODO take care of unsigned numeric values here?
-  static void encodeBinary(DataType dataType, Charset charset, Object value, ByteBuf buffer) {
+  static void encodeBinary(DataType dataType, Object value, ByteBuf buffer) {
     switch (dataType) {
       case INT1:
         if (value instanceof Boolean) {
@@ -101,7 +102,7 @@ class DataTypeCodec {
         binaryEncodeDouble((Number) value, buffer);
         break;
       case NUMERIC:
-        binaryEncodeNumeric(charset, (Numeric) value, buffer);
+        binaryEncodeNumeric((Numeric) value, buffer);
         break;
       case BLOB:
         binaryEncodeBlob((Buffer) value, buffer);
@@ -118,7 +119,7 @@ class DataTypeCodec {
       case STRING:
       case VARSTRING:
       default:
-        binaryEncodeText(charset, String.valueOf(value), buffer);
+        binaryEncodeText(String.valueOf(value), buffer);
         break;
     }
   }
@@ -194,12 +195,12 @@ class DataTypeCodec {
     buffer.writeDoubleLE(value.doubleValue());
   }
 
-  private static void binaryEncodeNumeric(Charset charset, Numeric value, ByteBuf buffer) {
-    BufferUtils.writeLengthEncodedString(buffer, value.toString(), charset);
+  private static void binaryEncodeNumeric(Numeric value, ByteBuf buffer) {
+    BufferUtils.writeLengthEncodedString(buffer, value.toString());
   }
 
-  private static void binaryEncodeText(Charset charset, String value, ByteBuf buffer) {
-    BufferUtils.writeLengthEncodedString(buffer, value, charset);
+  private static void binaryEncodeText(String value, ByteBuf buffer) {
+    BufferUtils.writeLengthEncodedString(buffer, value);
   }
 
   private static void binaryEncodeBlob(Buffer value, ByteBuf buffer) {

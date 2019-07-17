@@ -75,8 +75,7 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
       for (int i = 0; i < numOfParams; i++) {
         Object value = params.getValue(i);
         if (value != null) {
-          MySQLCollation collation = MySQLCollation.valueOfId(paramsColumnDefinitions[i].characterSet());
-          DataTypeCodec.encodeBinary(parseDataTypeByEncodingValue(value), Charset.forName(collation.mappedJavaCharsetName()), value, packet);
+          DataTypeCodec.encodeBinary(parseDataTypeByEncodingValue(value), value, packet);
         } else {
           nullBitmap[i / 8] |= (1 << (i & 7));
         }
