@@ -16,6 +16,7 @@ scalability and low overhead.
 * Java 8 Date and Time
 * MySQL utilities commands support
 * Compatible with MySQL 5.6 and 5.7
+* Rich collation and charset support
 
 == Usage
 
@@ -91,7 +92,7 @@ Once you are done with the connection you must close it to release it to the poo
 
 There are several alternatives for you to configure the client.
 
-=== data object
+=== Data Object
 
 A simple way to configure the client is to specify a `MySQLConnectOptions` data object.
 
@@ -99,6 +100,31 @@ A simple way to configure the client is to specify a `MySQLConnectOptions` data 
 ----
 {@link examples.MySQLClientExamples#configureFromDataObject(io.vertx.core.Vertx)}
 ----
+
+==== collations and character sets
+
+The Reactive MySQL client supports configuring collations or character sets and map them to a correlative `java.nio.charset.Charset`.
+For example, you can specify charset for a connection like
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#configureConnectionCharset()}
+----
+
+You can also specify collation for a connection like
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#configureConnectionCollation()}
+----
+
+MySQL will take `utf8mb4` as the default charset. Note setting a collation on the data object will override the charset option.
+
+You can execute SQL `SHOW COLLATION;` or `SHOW CHARACTER SET;` to get the supported collations and charsets.
+
+More information about MySQL charsets and collations can be found in the https://dev.mysql.com/doc/refman/8.0/en/charset.html[MySQL Reference Manual].
+
+==== connection attributes
 
 You can also configure the connection attributes with the `setProperties` or `addProperty` methods. Note `setProperties` will override the default client properties.
 
@@ -109,7 +135,7 @@ You can also configure the connection attributes with the `setProperties` or `ad
 
 More information about client connection attributes can be found in the https://dev.mysql.com/doc/refman/8.0/en/performance-schema-connection-attribute-tables.html[MySQL Reference Manual].
 
-=== connection uri
+=== connection URI
 
 Apart from configuring with a `MySQLConnectOptions` data object, We also provide you an alternative way to connect when you want to configure with a connection URI:
 

@@ -1,5 +1,9 @@
 package io.vertx.mysqlclient.impl;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * MySQL collation which is a set of rules for comparing characters in a character set.
  */
@@ -227,6 +231,52 @@ public enum MySQLCollation {
   gb18030_bin("gb18030", "GB18030", 249),
   gb18030_unicode_520_ci("gb18030", "GB18030", 250);
 
+  private static final Map<String, String> charsetToDefaultCollationMapping = new HashMap<>();
+
+  static {
+    charsetToDefaultCollationMapping.put("big5", "big5_chinese_ci");
+    charsetToDefaultCollationMapping.put("dec8", "dec8_swedish_ci");
+    charsetToDefaultCollationMapping.put("cp850", "cp850_general_ci");
+    charsetToDefaultCollationMapping.put("hp8", "hp8_english_ci");
+    charsetToDefaultCollationMapping.put("koi8r", "koi8r_general_ci");
+    charsetToDefaultCollationMapping.put("latin1", "latin1_swedish_ci");
+    charsetToDefaultCollationMapping.put("latin2", "latin2_general_ci");
+    charsetToDefaultCollationMapping.put("swe7", "swe7_swedish_ci");
+    charsetToDefaultCollationMapping.put("ascii", "ascii_general_ci");
+    charsetToDefaultCollationMapping.put("ujis", "ujis_japanese_ci");
+    charsetToDefaultCollationMapping.put("sjis", "sjis_japanese_ci");
+    charsetToDefaultCollationMapping.put("hebrew", "hebrew_general_ci");
+    charsetToDefaultCollationMapping.put("tis620", "tis620_thai_ci");
+    charsetToDefaultCollationMapping.put("euckr", "euckr_korean_ci");
+    charsetToDefaultCollationMapping.put("koi8u", "koi8u_general_ci");
+    charsetToDefaultCollationMapping.put("gb2312", "gb2312_chinese_ci");
+    charsetToDefaultCollationMapping.put("greek", "greek_general_ci");
+    charsetToDefaultCollationMapping.put("cp1250", "cp1250_general_ci");
+    charsetToDefaultCollationMapping.put("gbk", "gbk_chinese_ci");
+    charsetToDefaultCollationMapping.put("latin5", "latin5_turkish_ci");
+    charsetToDefaultCollationMapping.put("armscii8", "armscii8_general_ci");
+    charsetToDefaultCollationMapping.put("utf8", "utf8_general_ci");
+    charsetToDefaultCollationMapping.put("ucs2", "ucs2_general_ci");
+    charsetToDefaultCollationMapping.put("cp866", "cp866_general_ci");
+    charsetToDefaultCollationMapping.put("keybcs2", "keybcs2_general_ci");
+    charsetToDefaultCollationMapping.put("macce", "macce_general_ci");
+    charsetToDefaultCollationMapping.put("macroman", "macroman_general_ci");
+    charsetToDefaultCollationMapping.put("cp852", "cp852_general_ci");
+    charsetToDefaultCollationMapping.put("latin7", "latin7_general_ci");
+    charsetToDefaultCollationMapping.put("utf8mb4", "utf8mb4_general_ci");
+    charsetToDefaultCollationMapping.put("cp1251", "cp1251_general_ci");
+    charsetToDefaultCollationMapping.put("utf16", "utf16_general_ci");
+    charsetToDefaultCollationMapping.put("utf16le", "utf16le_general_ci");
+    charsetToDefaultCollationMapping.put("cp1256", "cp1256_general_ci");
+    charsetToDefaultCollationMapping.put("cp1257", "cp1257_general_ci");
+    charsetToDefaultCollationMapping.put("utf32", "utf32_general_ci");
+    charsetToDefaultCollationMapping.put("binary", "binary");
+    charsetToDefaultCollationMapping.put("geostd8", "geostd8_general_ci");
+    charsetToDefaultCollationMapping.put("cp932", "cp932_japanese_ci");
+    charsetToDefaultCollationMapping.put("eucjpms", "eucjpms_japanese_ci");
+    charsetToDefaultCollationMapping.put("gb18030", "gb18030_chinese_ci");
+  }
+
   private final String mysqlCharsetName;
   private final String mappedJavaCharsetName;
   private final int collationId;
@@ -237,7 +287,7 @@ public enum MySQLCollation {
     this.collationId = collationId;
   }
 
-  public static MySQLCollation valueOfName(String collationName) throws IllegalArgumentException{
+  public static MySQLCollation valueOfName(String collationName) throws IllegalArgumentException {
     try {
       return MySQLCollation.valueOf(collationName);
     } catch (IllegalArgumentException e) {
@@ -699,6 +749,15 @@ public enum MySQLCollation {
         return gb18030_unicode_520_ci;
       default:
         throw new UnsupportedOperationException("Collation of Id [" + collationId + "] is unknown to this client");
+    }
+  }
+
+  public static String getDefaultCollationFromCharsetName(String charset) {
+    String defaultCollationName = charsetToDefaultCollationMapping.get(charset);
+    if (defaultCollationName == null) {
+      throw new IllegalArgumentException("Unknown charset name: [" + charset + "]");
+    } else {
+      return defaultCollationName;
     }
   }
 

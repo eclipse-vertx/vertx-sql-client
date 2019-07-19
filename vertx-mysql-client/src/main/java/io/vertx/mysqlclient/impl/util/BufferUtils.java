@@ -64,6 +64,12 @@ public class BufferUtils {
     buffer.writeBytes(bytes);
   }
 
+  public static void writeLengthEncodedString(ByteBuf buffer, String value) {
+    byte[] bytes = value.getBytes();
+    writeLengthEncodedInteger(buffer, bytes.length);
+    buffer.writeBytes(bytes);
+  }
+
   public static String readLengthEncodedString(ByteBuf buffer, Charset charset) {
     long length = readLengthEncodedInteger(buffer);
     return readFixedLengthString(buffer, (int) length, charset);
