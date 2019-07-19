@@ -46,7 +46,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_USER = "root";
   public static final String DEFAULT_PASSWORD = "";
   public static final String DEFAULT_SCHEMA = "";
-  public static final String DEFAULT_COLLATION = "utf8mb4_general_ci";
+  public static final String DEFAULT_CHARSET = "utf8mb4";
   public static final Map<String, String> DEFAULT_CONNECTION_ATTRIBUTES;
 
   static {
@@ -57,21 +57,23 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   }
 
   private String collation;
+  private String charset;
 
   public MySQLConnectOptions() {
     super();
-    this.collation = DEFAULT_COLLATION;
+    this.charset = DEFAULT_CHARSET;
   }
 
   public MySQLConnectOptions(JsonObject json) {
     super(json);
-    this.collation = DEFAULT_COLLATION;
+    this.charset = DEFAULT_CHARSET;
     MySQLConnectOptionsConverter.fromJson(json, this);
   }
 
   public MySQLConnectOptions(MySQLConnectOptions other) {
     super(other);
     this.collation = other.collation;
+    this.charset = other.charset;
   }
 
   /**
@@ -91,6 +93,26 @@ public class MySQLConnectOptions extends SqlConnectOptions {
    */
   public MySQLConnectOptions setCollation(String collation) {
     this.collation = collation;
+    return this;
+  }
+
+  /**
+   * Get the charset for the connection.
+   *
+   * @return the MySQL collation
+   */
+  public String getCharset() {
+    return charset;
+  }
+
+  /**
+   * Set the charset for the connection.
+   *
+   * @param charset the charset to set
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MySQLConnectOptions setCharset(String charset) {
+    this.charset = charset;
     return this;
   }
 

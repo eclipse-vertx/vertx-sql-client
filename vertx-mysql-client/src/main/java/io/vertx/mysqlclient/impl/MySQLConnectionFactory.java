@@ -43,7 +43,15 @@ public class MySQLConnectionFactory {
     this.password = options.getPassword();
     this.database = options.getDatabase();
     this.properties = new HashMap<>(options.getProperties());
-    properties.put("collation", options.getCollation());
+    String collation;
+    if (options.getCollation() != null) {
+      // override the collation if configured
+      collation = options.getCollation();
+    } else {
+      String charset = options.getCharset();
+      collation = MySQLCollation.getDefaultCollationFromCharsetName(charset);
+    }
+    properties.put("collation", collation);
     this.cachePreparedStatements = options.getCachePreparedStatements();
     this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
     this.preparedStatementCacheSqlLimit = options.getPreparedStatementCacheSqlLimit();

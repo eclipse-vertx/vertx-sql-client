@@ -23,7 +23,6 @@ import com.wix.mysql.config.Charset;
 import com.wix.mysql.config.MysqldConfig;
 import com.wix.mysql.config.SchemaConfig;
 import com.wix.mysql.distribution.Version;
-import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import org.junit.rules.ExternalResource;
 
