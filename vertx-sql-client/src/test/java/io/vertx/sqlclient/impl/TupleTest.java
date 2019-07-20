@@ -15,7 +15,7 @@
  *
  */
 
-package io.vertx.pgclient;
+package io.vertx.sqlclient.impl;
 
 import io.vertx.sqlclient.Tuple;
 import org.junit.Test;
