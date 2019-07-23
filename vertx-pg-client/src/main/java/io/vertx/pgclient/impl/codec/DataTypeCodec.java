@@ -611,12 +611,12 @@ class DataTypeCodec {
       case JSON:
       case JSONB:
         if (value == null ||
-          value == Tuple.JSON_NULL ||
-          value instanceof String ||
-          value instanceof Boolean ||
-          value instanceof Number ||
-          value instanceof JsonObject ||
-          value instanceof JsonArray) {
+            value == Tuple.JSON_NULL ||
+            value instanceof String ||
+            value instanceof Boolean ||
+            value instanceof Number ||
+            value instanceof JsonObject ||
+            value instanceof JsonArray) {
           return value;
         } else {
           return REFUSED_SENTINEL;
@@ -1305,7 +1305,7 @@ class DataTypeCodec {
     binaryEncodeJSON(value, buff);
   }
 
-  private static Object binaryDecodeTsVector(int index, int len, ByteBuf buff) {
+  private static String binaryDecodeTsVector(int index, int len, ByteBuf buff) {
     return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
   }
 
@@ -1313,7 +1313,7 @@ class DataTypeCodec {
     buff.writeCharSequence(String.valueOf(value), StandardCharsets.UTF_8);
   }
 
-  private static Object binaryDecodeTsQuery(int index, int len, ByteBuf buff) {
+  private static String binaryDecodeTsQuery(int index, int len, ByteBuf buff) {
     return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
   }
 
@@ -1321,11 +1321,11 @@ class DataTypeCodec {
     buff.writeCharSequence(String.valueOf(value), StandardCharsets.UTF_8);
   }
 
-  private static Object textDecodeTsVector(int index, int len, ByteBuf buff) {
+  private static String textDecodeTsVector(int index, int len, ByteBuf buff) {
     return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
   }
 
-  private static Object textDecodeTsQuery(int index, int len, ByteBuf buff) {
+  private static String textDecodeTsQuery(int index, int len, ByteBuf buff) {
     return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
   }
   /**
