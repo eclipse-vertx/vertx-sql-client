@@ -485,6 +485,33 @@ public class PgClientExamples {
     });
   }
 
+
+  public void tsQuery01Example(SqlClient client) {
+    client.preparedQuery("SELECT to_tsvector( $1 ) @@ to_tsquery( $2 )", Tuple.of("fat cats ate fat rats", "fat & rat"),  ar -> {
+      if (ar.succeeded()) {
+        RowSet rows = ar.result();
+        for (Row row : rows) {
+          System.out.println("Match : " + row.getBoolean(0));
+        }
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
+  }
+
+  public void tsQuery02Example(SqlClient client) {
+    client.preparedQuery("SELECT to_tsvector( $1 ), to_tsquery( $2 )", Tuple.of("fat cats ate fat rats", "fat & rat"),  ar -> {
+      if (ar.succeeded()) {
+        RowSet rows = ar.result();
+        for (Row row : rows) {
+          System.out.println("Vector : " + row.getString(0) + ", query : "+row.getString(1));
+        }
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
+  }
+
   public void collector01Example(SqlClient client) {
 
     // Create a collector projecting a row set to a map

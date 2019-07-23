@@ -116,7 +116,11 @@ enum DataType {
   OID(26, true, Object.class),
   OID_ARRAY(1028, true, Object[].class),
   VOID(2278, true, Object.class),
-  UNKNOWN(705, false, String.class);
+  UNKNOWN(705, false, String.class),
+  TS_VECTOR(3614, false, String.class),
+  TS_VECTOR_ARRAY(3643, false, String[].class),
+  TS_QUERY(3615, false,  String.class),
+  TS_QUERY_ARRAY(3645, false,  String[].class);
 
   private static final Logger logger = LoggerFactory.getLogger(DataType.class);
 
