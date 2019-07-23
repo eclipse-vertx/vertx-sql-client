@@ -224,6 +224,8 @@ Currently the client supports the following PostgreSQL types
 * PATH (`io.vertx.pgclient.data.Path`)
 * POLYGON (`io.vertx.pgclient.data.Polygon`)
 * CIRCLE (`io.vertx.pgclient.data.Circle`)
+* TSVECTOR (`java.lang.String`)
+* TSQUERY (`java.lang.String`)
 
 Tuple decoding uses the above types when storing values, it also performs on the flu conversion the actual value when possible:
 
@@ -291,6 +293,22 @@ You can also write to PostgreSQL by providing a string
 [source,$lang]
 ----
 {@link examples.PgClientExamples#customType02Example}
+----
+
+== Handling text search
+
+Text search is handling using java `String`
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#tsQuery01Example}
+----
+
+`tsvector` and `tsquery` can be fetched from db using java `String`
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#tsQuery02Example}
 ----
 
 == Collector queries

@@ -327,6 +327,18 @@ class DataTypeCodec {
       case INTERVAL_ARRAY:
         binaryEncodeArray((Interval[]) value, DataType.INTERVAL, buff);
         break;
+      case TS_QUERY:
+        binaryEncodeTsQuery((String) value, buff);
+        break;
+      case TS_QUERY_ARRAY:
+        binaryEncodeArray((String[]) value, DataType.TS_QUERY, buff);
+        break;
+      case TS_VECTOR:
+        binaryEncodeTsVector((String) value, buff);
+        break;
+      case TS_VECTOR_ARRAY:
+        binaryEncodeArray((String[]) value, DataType.TS_VECTOR, buff);
+        break;
       default:
         logger.debug("Data type " + id + " does not support binary encoding");
         defaultEncodeBinary(value, buff);
@@ -448,6 +460,14 @@ class DataTypeCodec {
         return binaryDecodeINTERVAL(index, len, buff);
       case INTERVAL_ARRAY:
         return binaryDecodeArray(INTERVAL_ARRAY_FACTORY, DataType.INTERVAL, index, len, buff);
+      case TS_QUERY:
+        return binaryDecodeTsQuery(index, len, buff);
+      case TS_QUERY_ARRAY:
+        return binaryDecodeArray(STRING_ARRAY_FACTORY, DataType.TS_QUERY, index, len, buff);
+      case TS_VECTOR:
+        return binaryDecodeTsVector(index, len, buff);
+      case TS_VECTOR_ARRAY:
+        return binaryDecodeArray(STRING_ARRAY_FACTORY, DataType.TS_VECTOR, index, len, buff);
       default:
         logger.debug("Data type " + id + " does not support binary decoding");
         return defaultDecodeBinary(index, len, buff);
@@ -537,7 +557,7 @@ class DataTypeCodec {
       case JSON_ARRAY:
         return textDecodeArray(JSON_ARRAY_FACTORY, DataType.JSON, index, len, buff);
       case JSONB:
-         return textDecodeJSONB(index, len, buff);
+        return textDecodeJSONB(index, len, buff);
       case JSONB_ARRAY:
         return textDecodeArray(JSON_ARRAY_FACTORY, DataType.JSONB, index, len, buff);
       case POINT:
@@ -572,10 +592,19 @@ class DataTypeCodec {
         return textDecodeINTERVAL(index, len, buff);
       case INTERVAL_ARRAY:
         return textDecodeArray(INTERVAL_ARRAY_FACTORY, DataType.INTERVAL, index, len, buff);
+      case TS_QUERY:
+        return textDecodeTsQuery(index, len, buff);
+      case TS_QUERY_ARRAY:
+        return textDecodeArray(STRING_ARRAY_FACTORY, DataType.TS_QUERY, index, len, buff);
+      case TS_VECTOR:
+        return textDecodeTsVector(index, len, buff);
+      case TS_VECTOR_ARRAY:
+        return textDecodeArray(STRING_ARRAY_FACTORY, DataType.TS_VECTOR, index, len, buff);
       default:
         return defaultDecodeText(index, len, buff);
     }
   }
+
 
   public static Object prepare(DataType type, Object value) {
     switch (type) {
@@ -1276,6 +1305,29 @@ class DataTypeCodec {
     binaryEncodeJSON(value, buff);
   }
 
+  private static String binaryDecodeTsVector(int index, int len, ByteBuf buff) {
+    return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
+  }
+
+  private static void binaryEncodeTsVector(String value, ByteBuf buff) {
+    buff.writeCharSequence(String.valueOf(value), StandardCharsets.UTF_8);
+  }
+
+  private static String binaryDecodeTsQuery(int index, int len, ByteBuf buff) {
+    return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
+  }
+
+  private static void binaryEncodeTsQuery(String value, ByteBuf buff) {
+    buff.writeCharSequence(String.valueOf(value), StandardCharsets.UTF_8);
+  }
+
+  private static String textDecodeTsVector(int index, int len, ByteBuf buff) {
+    return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
+  }
+
+  private static String textDecodeTsQuery(int index, int len, ByteBuf buff) {
+    return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
+  }
   /**
    * Decode the specified {@code buff} formatted as a decimal string starting at the readable index
    * with the specified {@code length} to a long.
@@ -1448,7 +1500,7 @@ class DataTypeCodec {
       && Character.toUpperCase(buff.getByte(index + 1)) == 'U'
       && Character.toUpperCase(buff.getByte(index + 2)) == 'L'
       && Character.toUpperCase(buff.getByte(index + 3)) == 'L'
-      ) {
+    ) {
       return null;
     } else {
       boolean escaped = buff.getByte(index) == '"';
