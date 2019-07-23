@@ -137,6 +137,11 @@ public class TupleTest {
     } catch (IllegalArgumentException e) {
       assertEquals("mismatched type [java.lang.String] for the value of type [io.vertx.core.buffer.impl.BufferImpl]", e.getMessage());
     }
+    try {
+      tuple.get(null, 1);
+    } catch (IllegalArgumentException e) {
+      assertEquals("Accessor type can not be null", e.getMessage());
+    }
   }
 
   @Test
@@ -218,6 +223,11 @@ public class TupleTest {
       tuple.getValues(Buffer.class, 10);
     } catch (IllegalArgumentException e) {
       assertEquals("mismatched array element type [io.vertx.core.buffer.Buffer] for the value of type [[Ljava.time.LocalDateTime;]", e.getMessage());
+    }
+    try {
+      tuple.getValues(null, 1);
+    } catch (IllegalArgumentException e) {
+      assertEquals("Accessor type can not be null", e.getMessage());
     }
   }
 }

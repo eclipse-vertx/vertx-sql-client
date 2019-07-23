@@ -17,7 +17,6 @@
 
 package io.vertx.sqlclient.impl;
 
-import io.vertx.core.buffer.impl.BufferImpl;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.core.buffer.Buffer;
 
@@ -42,6 +41,9 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public <T> T get(Class<T> type, int pos) {
+    if (type == null) {
+      throw new IllegalArgumentException("Accessor type can not be null");
+    }
     Object value = this.get(pos);
     if (value.getClass() == type) {
       return type.cast(value);
@@ -61,6 +63,9 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public <T> T[] getValues(Class<T> type, int pos) {
+    if (type == null) {
+      throw new IllegalArgumentException("Accessor type can not be null");
+    }
     Object value = this.get(pos);
     if (value.getClass().isArray() && value.getClass().getComponentType() == type) {
       return (T[]) value;
