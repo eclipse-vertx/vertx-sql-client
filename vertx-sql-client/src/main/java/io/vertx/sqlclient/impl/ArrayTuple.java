@@ -41,12 +41,37 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
 
   @Override
   public <T> T get(Class<T> type, int pos) {
-    throw new UnsupportedOperationException();
+    if (type == null) {
+      throw new IllegalArgumentException("Accessor type can not be null");
+    }
+    Object value = this.get(pos);
+    if (value.getClass() == type) {
+      return type.cast(value);
+    } else {
+      try {
+        if (value instanceof Buffer) {
+          return type.cast(value);
+        } else if (value instanceof Temporal) {
+          return type.cast(value);
+        }
+      } catch (ClassCastException e) {
+        throw new IllegalArgumentException("mismatched type [" + type.getName() + "] for the value of type [" + value.getClass().getName() + "]");
+      }
+      throw new IllegalArgumentException("mismatched type [" + type.getName() + "] for the value of type [" + value.getClass().getName() + "]");
+    }
   }
 
   @Override
   public <T> T[] getValues(Class<T> type, int pos) {
-    throw new UnsupportedOperationException();
+    if (type == null) {
+      throw new IllegalArgumentException("Accessor type can not be null");
+    }
+    Object value = this.get(pos);
+    if (value.getClass().isArray() && value.getClass().getComponentType() == type) {
+      return (T[]) value;
+    } else {
+      throw new IllegalArgumentException("mismatched array element type [" + type.getName() + "] for the value of type [" + value.getClass().getName() + "]");
+    }
   }
 
   @Override
