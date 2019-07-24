@@ -258,7 +258,6 @@ _MONEY_, _BIT_, _VARBIT_, _MACADDR_, _INET_, _CIDR_, _MACADDR8_,
 _XML_, _HSTORE_, _OID_,
 _VOID_
 
-
 are not implemented yet (PR are welcome).
 
 == Developers
