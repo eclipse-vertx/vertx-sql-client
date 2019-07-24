@@ -177,16 +177,16 @@ public class ColumnChecker {
       try {
         check.accept((R) actual);
       } catch (AssertionError cause) {
-        AssertionFailedError failure = new AssertionFailedError("Expected that " + byIndexMeth + " would not fail");
-        failure.initCause(cause);
+        AssertionFailedError failure = new AssertionFailedError("Expected that " + byIndexMeth + " would not fail: " + cause.getMessage());
+        failure.setStackTrace(failure.getStackTrace());
         throw failure;
       }
       actual = byNameGetter.apply(row, name);
       try {
         check.accept((R) actual);
       } catch (AssertionError cause) {
-        AssertionFailedError failure = new AssertionFailedError("Expected that " + byNameMeth + " would not fail");
-        failure.initCause(cause);
+        AssertionFailedError failure = new AssertionFailedError("Expected that " + byNameMeth + " would not fail: " + cause.getMessage());
+        failure.setStackTrace(failure.getStackTrace());
         throw failure;
       }
     });
