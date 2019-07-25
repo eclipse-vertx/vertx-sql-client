@@ -241,10 +241,6 @@ public class PgConnectOptions extends SqlConnectOptions {
     return (PgConnectOptions)super.setSoLinger(soLinger);
   }
 
-  public PgConnectOptions setUsePooledBuffers(boolean usePooledBuffers) {
-    return (PgConnectOptions)super.setUsePooledBuffers(usePooledBuffers);
-  }
-
   @Override
   public PgConnectOptions setIdleTimeout(int idleTimeout) {
     return (PgConnectOptions)super.setIdleTimeout(idleTimeout);

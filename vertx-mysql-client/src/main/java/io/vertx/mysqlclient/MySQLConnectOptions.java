@@ -206,10 +206,6 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     return (MySQLConnectOptions) super.setSoLinger(soLinger);
   }
 
-  public MySQLConnectOptions setUsePooledBuffers(boolean usePooledBuffers) {
-    return (MySQLConnectOptions) super.setUsePooledBuffers(usePooledBuffers);
-  }
-
   @Override
   public MySQLConnectOptions setIdleTimeout(int idleTimeout) {
     return (MySQLConnectOptions) super.setIdleTimeout(idleTimeout);
