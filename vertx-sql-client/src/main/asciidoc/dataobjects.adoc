@@ -98,7 +98,6 @@ Add a property for this client, which will be sent to server at the connection s
 |[[trustAll]]`@trustAll`|`Boolean`|-
 |[[trustStoreOptions]]`@trustStoreOptions`|`link:dataobjects.html#JksOptions[JksOptions]`|-
 |[[useAlpn]]`@useAlpn`|`Boolean`|-
-|[[usePooledBuffers]]`@usePooledBuffers`|`Boolean`|-
 |[[user]]`@user`|`String`|+++
 Specify the user account to be used for the authentication.
 +++

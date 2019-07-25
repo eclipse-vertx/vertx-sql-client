@@ -4,12 +4,21 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import io.vertx.core.spi.json.JsonCodec;
 
 /**
- * Converter for {@link io.vertx.pgclient.data.Path}.
+ * Converter and Codec for {@link io.vertx.pgclient.data.Path}.
  * NOTE: This class has been automatically generated from the {@link io.vertx.pgclient.data.Path} original class using Vert.x codegen.
  */
-public class PathConverter {
+public class PathConverter implements JsonCodec<Path, JsonObject> {
+
+  public static final PathConverter INSTANCE = new PathConverter();
+
+  @Override public JsonObject encode(Path value) { return (value != null) ? value.toJson() : null; }
+
+  @Override public Path decode(JsonObject value) { return (value != null) ? new Path(value) : null; }
+
+  @Override public Class<Path> getTargetClass() { return Path.class; }
 
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, Path obj) {
     for (java.util.Map.Entry<String, Object> member : json) {

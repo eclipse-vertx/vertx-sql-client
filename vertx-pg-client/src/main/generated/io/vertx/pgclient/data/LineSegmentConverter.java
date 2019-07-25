@@ -4,12 +4,21 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import io.vertx.core.spi.json.JsonCodec;
 
 /**
- * Converter for {@link io.vertx.pgclient.data.LineSegment}.
+ * Converter and Codec for {@link io.vertx.pgclient.data.LineSegment}.
  * NOTE: This class has been automatically generated from the {@link io.vertx.pgclient.data.LineSegment} original class using Vert.x codegen.
  */
-public class LineSegmentConverter {
+public class LineSegmentConverter implements JsonCodec<LineSegment, JsonObject> {
+
+  public static final LineSegmentConverter INSTANCE = new LineSegmentConverter();
+
+  @Override public JsonObject encode(LineSegment value) { return (value != null) ? value.toJson() : null; }
+
+  @Override public LineSegment decode(JsonObject value) { return (value != null) ? new LineSegment(value) : null; }
+
+  @Override public Class<LineSegment> getTargetClass() { return LineSegment.class; }
 
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, LineSegment obj) {
     for (java.util.Map.Entry<String, Object> member : json) {

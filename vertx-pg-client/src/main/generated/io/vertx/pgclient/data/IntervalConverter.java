@@ -4,12 +4,21 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import io.vertx.core.spi.json.JsonCodec;
 
 /**
- * Converter for {@link io.vertx.pgclient.data.Interval}.
+ * Converter and Codec for {@link io.vertx.pgclient.data.Interval}.
  * NOTE: This class has been automatically generated from the {@link io.vertx.pgclient.data.Interval} original class using Vert.x codegen.
  */
-public class IntervalConverter {
+public class IntervalConverter implements JsonCodec<Interval, JsonObject> {
+
+  public static final IntervalConverter INSTANCE = new IntervalConverter();
+
+  @Override public JsonObject encode(Interval value) { return (value != null) ? value.toJson() : null; }
+
+  @Override public Interval decode(JsonObject value) { return (value != null) ? new Interval(value) : null; }
+
+  @Override public Class<Interval> getTargetClass() { return Interval.class; }
 
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, Interval obj) {
     for (java.util.Map.Entry<String, Object> member : json) {

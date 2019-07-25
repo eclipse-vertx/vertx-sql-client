@@ -4,12 +4,21 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import io.vertx.core.spi.json.JsonCodec;
 
 /**
- * Converter for {@link io.vertx.pgclient.data.Polygon}.
+ * Converter and Codec for {@link io.vertx.pgclient.data.Polygon}.
  * NOTE: This class has been automatically generated from the {@link io.vertx.pgclient.data.Polygon} original class using Vert.x codegen.
  */
-public class PolygonConverter {
+public class PolygonConverter implements JsonCodec<Polygon, JsonObject> {
+
+  public static final PolygonConverter INSTANCE = new PolygonConverter();
+
+  @Override public JsonObject encode(Polygon value) { return (value != null) ? value.toJson() : null; }
+
+  @Override public Polygon decode(JsonObject value) { return (value != null) ? new Polygon(value) : null; }
+
+  @Override public Class<Polygon> getTargetClass() { return Polygon.class; }
 
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, Polygon obj) {
     for (java.util.Map.Entry<String, Object> member : json) {

@@ -4,12 +4,21 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import io.vertx.core.spi.json.JsonCodec;
 
 /**
- * Converter for {@link io.vertx.pgclient.data.Circle}.
+ * Converter and Codec for {@link io.vertx.pgclient.data.Circle}.
  * NOTE: This class has been automatically generated from the {@link io.vertx.pgclient.data.Circle} original class using Vert.x codegen.
  */
-public class CircleConverter {
+public class CircleConverter implements JsonCodec<Circle, JsonObject> {
+
+  public static final CircleConverter INSTANCE = new CircleConverter();
+
+  @Override public JsonObject encode(Circle value) { return (value != null) ? value.toJson() : null; }
+
+  @Override public Circle decode(JsonObject value) { return (value != null) ? new Circle(value) : null; }
+
+  @Override public Class<Circle> getTargetClass() { return Circle.class; }
 
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, Circle obj) {
     for (java.util.Map.Entry<String, Object> member : json) {

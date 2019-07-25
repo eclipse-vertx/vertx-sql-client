@@ -4,12 +4,21 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import io.vertx.core.spi.json.JsonCodec;
 
 /**
- * Converter for {@link io.vertx.sqlclient.PoolOptions}.
+ * Converter and Codec for {@link io.vertx.sqlclient.PoolOptions}.
  * NOTE: This class has been automatically generated from the {@link io.vertx.sqlclient.PoolOptions} original class using Vert.x codegen.
  */
-public class PoolOptionsConverter {
+public class PoolOptionsConverter implements JsonCodec<PoolOptions, JsonObject> {
+
+  public static final PoolOptionsConverter INSTANCE = new PoolOptionsConverter();
+
+  @Override public JsonObject encode(PoolOptions value) { return (value != null) ? value.toJson() : null; }
+
+  @Override public PoolOptions decode(JsonObject value) { return (value != null) ? new PoolOptions(value) : null; }
+
+  @Override public Class<PoolOptions> getTargetClass() { return PoolOptions.class; }
 
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, PoolOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
