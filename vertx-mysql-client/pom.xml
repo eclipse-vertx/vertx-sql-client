@@ -26,7 +26,6 @@
   </parent>
 
   <artifactId>vertx-mysql-client</artifactId>
-  <version>3.8.1-SNAPSHOT</version>
 
   <name>Vertx MySQL Client</name>
   <url>https://github.com/eclipse-vertx/vertx-sql-client</url>
