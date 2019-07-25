@@ -1,5 +1,13 @@
 = The Reactive PostgreSQL Client
 
+Documentation:
+
+- https://vertx.io/docs/vertx-pg-client/java/[Java documentation]
+- https://vertx.io/docs/vertx-pg-client/kotlin/[Kotlin documentation]
+- https://vertx.io/docs/vertx-pg-client/js/[JavaScript documentation]
+- https://vertx.io/docs/vertx-pg-client/groovy/[Groovy documentation]
+- https://vertx.io/docs/vertx-pg-client/ruby/[Ruby documentation]
+
 == Features
 
 - Event driven
