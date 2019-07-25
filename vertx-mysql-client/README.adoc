@@ -1,5 +1,13 @@
 = The Reactive MySQL Client
 
+Documentation:
+
+- https://vertx.io/docs/vertx-mysql-client/java/[Java documentation]
+- https://vertx.io/docs/vertx-mysql-client/kotlin/[Kotlin documentation]
+- https://vertx.io/docs/vertx-mysql-client/js/[JavaScript documentation]
+- https://vertx.io/docs/vertx-mysql-client/groovy/[Groovy documentation]
+- https://vertx.io/docs/vertx-mysql-client/ruby/[Ruby documentation]
+
 == Supports
 
 - Connection management
