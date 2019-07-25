@@ -241,7 +241,6 @@ public class PgConnectOptions extends SqlConnectOptions {
     return (PgConnectOptions)super.setSoLinger(soLinger);
   }
 
-  @Override
   public PgConnectOptions setUsePooledBuffers(boolean usePooledBuffers) {
     return (PgConnectOptions)super.setUsePooledBuffers(usePooledBuffers);
   }
