@@ -206,7 +206,6 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     return (MySQLConnectOptions) super.setSoLinger(soLinger);
   }
 
-  @Override
   public MySQLConnectOptions setUsePooledBuffers(boolean usePooledBuffers) {
     return (MySQLConnectOptions) super.setUsePooledBuffers(usePooledBuffers);
   }
