@@ -26,7 +26,7 @@
   </parent>
 
   <artifactId>vertx-sql-client</artifactId>
-  <version>3.8.1-SNAPSHOT</version>
+  <version>4.0.0-SNAPSHOT</version>
 
   <properties>
     <docs.dir>${project.basedir}/src/main/docs</docs.dir>
