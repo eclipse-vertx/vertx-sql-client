@@ -60,7 +60,6 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-sql-client</artifactId>
-      <version>3.8.1-SNAPSHOT</version>
     </dependency>
 
     <!-- Testing purposes -->
@@ -73,8 +72,6 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-sql-client</artifactId>
-      <version>3.8.1-SNAPSHOT</version>
-      <classifier>tests</classifier>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
