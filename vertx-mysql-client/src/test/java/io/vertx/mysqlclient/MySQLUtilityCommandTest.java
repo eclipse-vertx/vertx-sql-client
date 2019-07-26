@@ -116,18 +116,18 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
 
   @Test
   public void testChangeUser(TestContext ctx) {
-    Assume.assumeFalse(rule.isUsingMySQL5_6());
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT current_user()", ctx.asyncAssertSuccess(res1 -> {
         Row row1 = res1.iterator().next();
-        ctx.assertEquals("mysql@localhost", row1.getValue(0));
+        String username = row1.getString(0);
+        ctx.assertEquals("mysql", username.substring(0, username.lastIndexOf('@')));
         MySQLConnectOptions changeUserOptions = new MySQLConnectOptions()
           .setUser("superuser")
           .setPassword("password")
           .setDatabase("emptyschema");
         conn.changeUser(changeUserOptions, ctx.asyncAssertSuccess(v2 -> {
           conn.query("SELECT current_user();SELECT database();", ctx.asyncAssertSuccess(res2 -> {
-            ctx.assertEquals("superuser@localhost", res2.iterator().next().getValue(0));
+            ctx.assertEquals("superuser@%", res2.iterator().next().getString(0));
             ctx.assertEquals("emptyschema", res2.next().iterator().next().getValue(0));
             conn.close();
           }));
