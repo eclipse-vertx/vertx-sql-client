@@ -29,10 +29,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MySQLRule extends ExternalResource {
+  private static final String connectionUri = System.getProperty("connection.uri");
 
   private static EmbeddedMysql mysql;
 
   public synchronized static MySQLConnectOptions startMysql() throws Exception {
+    if (connectionUri != null && !connectionUri.isEmpty()) {
+      return MySQLConnectOptions.fromUri(connectionUri);
+    }
+
     MysqldConfig mysqldConfig = MysqldConfig.aMysqldConfig(com.wix.mysql.distribution.Version.v5_7_latest)
       .withCharset(Charset.UTF8MB4)
       .withUser("mysql", "password")
