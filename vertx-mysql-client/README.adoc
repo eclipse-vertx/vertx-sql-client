@@ -65,3 +65,51 @@ these data types are not fully supported yet:
 * [ ] String: ENUM, SET
 * [ ] JSON
 * [ ] Spatial data types
+
+== Developers
+
+=== Testing
+
+Out of the box, the test suite runs an embedded MySQL server 5.7 by default.
+
+You can change the version of the embedded MySQL by passing a `embedded.mysql.version` like this:
+
+```
+> mvn test -Dembedded.mysql.version=5.6
+```
+
+The following versions of embedded MySQL are supported:
+
+- `5.6`
+- `5.7`
+
+=== Testing with an external database
+
+You can run tests with an external database:
+
+- the script `docker/mysql/resources/create-mysql.sql` creates the test data
+
+You need to add some properties for testing:
+
+
+```
+> mvn test -Dconnection.uri=mysql://$username:$password@$host:$port/$database
+```
+
+- connection.uri: configure the client to connect the specified database
+
+=== Testing with Docker
+
+Run the MySQL container with `docker-compose`:
+
+```
+> cd docker/mysql
+> docker-compose up --build -V
+```
+
+Run tests:
+
+```
+> mvn test -Dconnection.uri=mysql://$username:$password@$host:$port/$database
+```
+
