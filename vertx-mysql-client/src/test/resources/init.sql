@@ -1,3 +1,12 @@
+# testing change schema
+CREATE DATABASE emptyschema;
+GRANT ALL ON emptyschema.* TO 'mysql'@'%';
+
+# testing change user
+CREATE USER 'superuser'@'localhost' IDENTIFIED BY 'password';
+GRANT ALL ON *.* TO 'superuser'@'localhost' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+
 # @Deprecated--- This part is only for mysql tests and should be moved out of TCK tests ---
 DROP TABLE IF EXISTS collectorTest;
 CREATE TABLE collectorTest

@@ -18,7 +18,6 @@ package io.vertx.mysqlclient.junit;
 
 import com.wix.mysql.EmbeddedMysql;
 import com.wix.mysql.ScriptResolver;
-import com.wix.mysql.Sources;
 import com.wix.mysql.config.Charset;
 import com.wix.mysql.config.MysqldConfig;
 import com.wix.mysql.config.SchemaConfig;
@@ -45,12 +44,10 @@ public class MySQLRule extends ExternalResource {
     SchemaConfig schemaConfig = SchemaConfig.aSchemaConfig("testschema")
       .withCharset(Charset.UTF8MB4)
       .withScripts(ScriptResolver.classPathScripts("init.sql"))
-      .withScripts(Sources.fromString("CREATE USER 'superuser'@'localhost' IDENTIFIED BY 'password';GRANT ALL ON *.* TO 'superuser'@'localhost' WITH GRANT OPTION;"))
       .build();
 
     mysql = EmbeddedMysql.anEmbeddedMysql(mysqldConfig)
       .addSchema(schemaConfig)
-      .addSchema("emptyschema")
       .start();
 
     return new MySQLConnectOptions()
