@@ -24,6 +24,8 @@ import com.wix.mysql.config.SchemaConfig;
 import com.wix.mysql.distribution.Version;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import org.junit.rules.ExternalResource;
+import org.testcontainers.containers.BindMode;
+import org.testcontainers.containers.GenericContainer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,12 +34,9 @@ public class MySQLRule extends ExternalResource {
   private static final String connectionUri = System.getProperty("connection.uri");
 
   private static EmbeddedMysql mysql;
+  private static GenericContainer mariadb;
 
-  public synchronized static MySQLConnectOptions startMysql() throws Exception {
-    if (connectionUri != null && !connectionUri.isEmpty()) {
-      return MySQLConnectOptions.fromUri(connectionUri);
-    }
-
+  public synchronized static MySQLConnectOptions startMySQL() throws Exception {
     MysqldConfig mysqldConfig = MysqldConfig.aMysqldConfig(com.wix.mysql.distribution.Version.v5_7_latest)
       .withCharset(Charset.UTF8MB4)
       .withUser("mysql", "password")
@@ -65,7 +64,7 @@ public class MySQLRule extends ExternalResource {
       .setCollation(mysqldConfig.getCharset().getCollate());
   }
 
-  public synchronized static void stopMysql() throws Exception {
+  public synchronized static void stopMySQL() throws Exception {
     if (mysql != null) {
       try {
         mysql.stop();
@@ -83,7 +82,7 @@ public class MySQLRule extends ExternalResource {
   }
 
   private static Version getMySQLVersion() {
-    String specifiedVersion = System.getProperty("embedded.mysql.version");
+    String specifiedVersion = System.getProperty("embedded.database.version");
     Version version;
     if (specifiedVersion == null || specifiedVersion.isEmpty()) {
       version = Version.v5_7_latest;
@@ -96,11 +95,16 @@ public class MySQLRule extends ExternalResource {
     return version;
   }
 
+  public boolean isUsingMariaDB() {
+    return mariadb != null;
+  }
+
   public boolean isUsingMySQL5_6() {
-    return MySQLRule.getMySQLVersion() == Version.v5_6_latest;
+    return mysql != null && MySQLRule.getMySQLVersion() == Version.v5_6_latest;
   }
 
   private MySQLConnectOptions options;
+  private Server database;
 
   public MySQLConnectOptions options() {
     return new MySQLConnectOptions(options);
@@ -108,16 +112,89 @@ public class MySQLRule extends ExternalResource {
 
   @Override
   protected void before() throws Throwable {
-    options = startMysql();
+    // use an external database for testing
+    if (connectionUri != null && !connectionUri.isEmpty()) {
+      options = MySQLConnectOptions.fromUri(connectionUri);
+      return;
+    }
+
+    String databaseInfoString = System.getProperty("embedded.database.server");
+    if (databaseInfoString != null && !databaseInfoString.isEmpty()) {
+      database = parseDatabase(databaseInfoString);
+    } else {
+      database = Server.MySQL;
+    }
+    if (database == Server.MySQL) {
+      options = startMySQL();
+    } else if (database == Server.MariaDB) {
+      options = startMariaDB();
+    }
   }
 
   @Override
   protected void after() {
     if (options != null) {
       try {
-        stopMysql();
+        if (database == Server.MySQL) {
+          stopMySQL();
+        } else if (database == Server.MariaDB) {
+          stopMariaDB();
+        }
       } catch (Exception e) {
         e.printStackTrace();
+      }
+    }
+  }
+
+  private enum Server {
+    MySQL, MariaDB
+  }
+
+  private static Server parseDatabase(String databaseInfo) throws IllegalArgumentException {
+    switch (databaseInfo.toLowerCase()) {
+      case "mysql":
+        return Server.MySQL;
+      case "mariadb":
+        return Server.MariaDB;
+      default:
+        throw new IllegalArgumentException("Unknown database: " + databaseInfo);
+    }
+  }
+
+  public synchronized static MySQLConnectOptions startMariaDB() throws Exception {
+    String tag;
+    String specifiedVersion = System.getProperty("embedded.database.version");
+    if (specifiedVersion == null || specifiedVersion.isEmpty()) {
+      tag = "10.4";
+    } else {
+      // we would not check this
+      tag = specifiedVersion;
+    }
+
+    mariadb = new GenericContainer("mariadb:" + tag)
+      .withEnv("MYSQL_USER", "mysql")
+      .withEnv("MYSQL_PASSWORD", "password")
+      .withEnv("MYSQL_ROOT_PASSWORD", "password")
+      .withEnv("MYSQL_DATABASE", "testschema")
+      .withCommand("--max_allowed_packet=33554432 --max_prepared_stmt_count=16382 --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci")
+      .withExposedPorts(3306)
+      .withClasspathResourceMapping("init.sql", "/docker-entrypoint-initdb.d/create-mysql.sql", BindMode.READ_ONLY);
+    mariadb.start();
+
+    return new MySQLConnectOptions()
+      .setPort(mariadb.getMappedPort(3306))
+      .setHost(mariadb.getContainerIpAddress())
+      .setDatabase("testschema")
+      .setUser("mysql")
+      .setPassword("password");
+  }
+
+  public synchronized static void stopMariaDB() throws Exception {
+    if (mariadb != null) {
+      try {
+        mariadb.stop();
+      } finally {
+        mariadb = null;
       }
     }
   }
