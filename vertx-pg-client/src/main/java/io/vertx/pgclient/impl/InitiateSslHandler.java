@@ -22,6 +22,8 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.DecoderException;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.pgclient.impl.codec.PgProtocolConstants;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
@@ -57,10 +59,18 @@ public class InitiateSslHandler extends ChannelInboundHandlerAdapter {
     byteBuf.release();
     switch (b) {
       case PgProtocolConstants.MESSAGE_TYPE_SSL_YES: {
-        conn.socket().upgradeToSsl(v -> {
+        Handler handler = o -> {
+          if (o instanceof AsyncResult) {
+            AsyncResult res = (AsyncResult) o;
+            if (res.failed()) {
+              // Connection close will fail the promise
+              return;
+            }
+          }
           ctx.pipeline().remove(this);
           upgradePromise.complete();
-        });
+        };
+        conn.socket().upgradeToSsl(handler);
         break;
       }
       case PgProtocolConstants.MESSAGE_TYPE_SSL_NO: {
