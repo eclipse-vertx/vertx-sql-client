@@ -155,7 +155,6 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
       }
       int collationId = collation.collationId();
       encoder.charset = Charset.forName(collation.mappedJavaCharsetName());
-      properties.remove("collation");
       Map<String, String> clientConnectionAttributes = properties;
       if (clientConnectionAttributes != null && !clientConnectionAttributes.isEmpty()) {
         encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_ATTRS;
@@ -221,8 +220,12 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     if ((clientCapabilitiesFlags & CLIENT_CONNECT_ATTRS) != 0) {
       ByteBuf kv = encoder.chctx.alloc().ioBuffer();
       for (Map.Entry<String, String> attribute : clientConnectionAttributes.entrySet()) {
-        BufferUtils.writeLengthEncodedString(kv, attribute.getKey(), StandardCharsets.UTF_8);
-        BufferUtils.writeLengthEncodedString(kv, attribute.getValue(), StandardCharsets.UTF_8);
+        if (attribute.getKey().equals("collation")) {
+          // we store the collation in the properties but it's not an attribute
+        } else {
+          BufferUtils.writeLengthEncodedString(kv, attribute.getKey(), StandardCharsets.UTF_8);
+          BufferUtils.writeLengthEncodedString(kv, attribute.getValue(), StandardCharsets.UTF_8);
+        }
       }
       BufferUtils.writeLengthEncodedInteger(packet, kv.readableBytes());
       packet.writeBytes(kv);
