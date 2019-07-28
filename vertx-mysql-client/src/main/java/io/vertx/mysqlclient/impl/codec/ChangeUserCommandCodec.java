@@ -79,12 +79,14 @@ class ChangeUserCommandCodec extends CommandCodec<Void, ChangeUserCommand> {
     Map<String, String> clientConnectionAttributes = cmd.connectionAttributes();
     if (clientConnectionAttributes != null && !clientConnectionAttributes.isEmpty()) {
       encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_ATTRS;
-    }
-    if ((encoder.clientCapabilitiesFlag & CLIENT_CONNECT_ATTRS) != 0) {
       ByteBuf kv = encoder.chctx.alloc().ioBuffer();
       for (Map.Entry<String, String> attribute : clientConnectionAttributes.entrySet()) {
-        BufferUtils.writeLengthEncodedString(kv, attribute.getKey(), StandardCharsets.UTF_8);
-        BufferUtils.writeLengthEncodedString(kv, attribute.getValue(), StandardCharsets.UTF_8);
+        if (attribute.getKey().equals("collation")) {
+          // we store the collation in the properties but it's not an attribute
+        } else {
+          BufferUtils.writeLengthEncodedString(kv, attribute.getKey(), StandardCharsets.UTF_8);
+          BufferUtils.writeLengthEncodedString(kv, attribute.getValue(), StandardCharsets.UTF_8);
+        }
       }
       BufferUtils.writeLengthEncodedInteger(packet, kv.readableBytes());
       packet.writeBytes(kv);
