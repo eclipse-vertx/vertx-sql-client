@@ -70,12 +70,12 @@ these data types are not fully supported yet:
 
 === Testing
 
-Out of the box, the test suite runs an embedded MySQL server 5.7 by default.
+Out of the box, the test suite runs a Docker container using https://www.testcontainers.org/[TestContainers] by default.
 
-You can change the server type of the embedded database by passing a case-insensitive `embedded.database.server` option like this:
+You can change the database type of the server by passing a case-insensitive `testing.mysql.database.server` option like this:
 
 ```
-> mvn test -Dembedded.database.server=MySQL
+> mvn test -Dtesting.mysql.database.server=MySQL
 ```
 
 The following database servers are supported:
@@ -83,21 +83,15 @@ The following database servers are supported:
 - `MySQL`
 - `MariaDB`
 
-You can also change the version of the embedded database by passing a `embedded.database.version` option like this:
+If the database server is not specified, then `MySQL` will be used by default.
+
+You can also change the version of the database by passing an optional Docker tag named `testing.mysql.database.version` like this:
 
 ```
-> mvn test -Dembedded.mysql.version=5.6
+> mvn test -Dtesting.mysql.database.version=5.6.45
 ```
 
-The following versions of embedded MySQL are supported:
-
-- `5.6`
-- `5.7`
-
-The MariaDB database for testing is using TestContainers so the version should be a Docker tag like this:
-
-- `10.3`
-- `10.4`
+If the database version is not specified, then `5.7` will be used by default for MySQL while `10.4` will be used by default for MariaDB.
 
 === Testing with an external database
 
