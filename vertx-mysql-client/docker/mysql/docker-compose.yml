@@ -13,4 +13,4 @@ services:
       MYSQL_DATABASE: testschema
     command: --max_allowed_packet=33554432 --max_prepared_stmt_count=16382 --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
     volumes:
-      - ./resources/create-mysql.sql:/docker-entrypoint-initdb.d/create-mysql.sql
+      - ../../src/test/resources/init.sql:/docker-entrypoint-initdb.d/init.sql

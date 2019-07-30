@@ -49,7 +49,7 @@ public class MySQLRule extends ExternalResource {
       .withEnv("MYSQL_DATABASE", "testschema")
       .withCommand("--max_allowed_packet=33554432 --max_prepared_stmt_count=16382 --local_infile=true --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci")
       .withExposedPorts(3306)
-      .withClasspathResourceMapping("init.sql", "/docker-entrypoint-initdb.d/create-mysql.sql", BindMode.READ_ONLY);
+      .withClasspathResourceMapping("init.sql", "/docker-entrypoint-initdb.d/init.sql", BindMode.READ_ONLY);
   }
 
   public synchronized static void stopServer() throws Exception {
