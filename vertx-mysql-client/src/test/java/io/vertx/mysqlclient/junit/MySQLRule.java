@@ -24,12 +24,14 @@ import org.testcontainers.containers.GenericContainer;
 public class MySQLRule extends ExternalResource {
   private static final String connectionUri = System.getProperty("connection.uri");
 
-  private static GenericContainer server;
+  private GenericContainer server;
   private MySQLConnectOptions options;
   private DatabaseType databaseType;
   private String databaseVersion;
 
-  public synchronized static MySQLConnectOptions startServer(DatabaseType databaseType, String databaseVersion) throws Exception {
+  public static final MySQLRule SHARED_INSTANCE = new MySQLRule();
+
+  public synchronized MySQLConnectOptions startServer(DatabaseType databaseType, String databaseVersion) throws Exception {
     initServer(databaseType, databaseVersion);
     server.start();
 
@@ -41,7 +43,17 @@ public class MySQLRule extends ExternalResource {
       .setPassword("password");
   }
 
-  private static void initServer(DatabaseType serverType, String version) {
+  public synchronized void stopServer() throws Exception {
+    if (server != null) {
+      try {
+        server.stop();
+      } finally {
+        server = null;
+      }
+    }
+  }
+
+  private void initServer(DatabaseType serverType, String version) {
     server = new GenericContainer(serverType.toDockerImageName() + ":" + version)
       .withEnv("MYSQL_USER", "mysql")
       .withEnv("MYSQL_PASSWORD", "password")
@@ -50,16 +62,6 @@ public class MySQLRule extends ExternalResource {
       .withCommand("--max_allowed_packet=33554432 --max_prepared_stmt_count=16382 --local_infile=true --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci")
       .withExposedPorts(3306)
       .withClasspathResourceMapping("init.sql", "/docker-entrypoint-initdb.d/init.sql", BindMode.READ_ONLY);
-  }
-
-  public synchronized static void stopServer() throws Exception {
-    if (server != null) {
-      try {
-        server.stop();
-      } finally {
-        server = null;
-      }
-    }
   }
 
   private static DatabaseType parseDatabaseTypeString(String databaseInfo) throws IllegalArgumentException {
@@ -101,6 +103,11 @@ public class MySQLRule extends ExternalResource {
       return;
     }
 
+    // We do not need to launch another server if it's a shared instance
+    if (this.server != null) {
+      return;
+    }
+
     // server type
     String databaseTypeString = System.getProperty("testing.mysql.database.server");
     if (isSystemPropertyValid(databaseTypeString)) {
@@ -133,7 +140,10 @@ public class MySQLRule extends ExternalResource {
   protected void after() {
     if (!isTestingWithExternalDatabase()) {
       try {
-        stopServer();
+        if (this != SHARED_INSTANCE) {
+          // we don't shutdown the shared instance to boost testing
+          stopServer();
+        }
       } catch (Exception e) {
         e.printStackTrace();
       }

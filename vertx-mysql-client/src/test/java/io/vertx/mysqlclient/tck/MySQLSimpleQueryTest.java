@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 public class MySQLSimpleQueryTest extends SimpleQueryTestBase {
 
   @ClassRule
-  public static MySQLRule rule = new MySQLRule();
+  public static MySQLRule rule = MySQLRule.SHARED_INSTANCE;
 
   @Override
   protected void initConnector() {
