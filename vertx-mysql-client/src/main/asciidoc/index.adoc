@@ -241,6 +241,11 @@ create easily create a string directly from the row set:
 {@link examples.MySQLClientExamples#collector02Example(io.vertx.sqlclient.SqlClient)}
 ----
 
+== MySQL LOCAL INFILE
+
+This client supports for handling the LOCAL INFILE Request, if you want to load data from a local file into the server, you can use query
+`LOAD DATA LOCAL INFILE '<filename>' INTO TABLE <table>;`. More information can be found in the https://dev.mysql.com/doc/refman/8.0/en/load-data.html[MySQL Reference Manual].
+
 == MySQL utility command
 
 Sometimes you want to use MySQL utility commands and we provide support for this.
