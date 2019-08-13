@@ -17,8 +17,8 @@
 
 package io.vertx.sqlclient.impl;
 
-import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.PropertyKind;
+import io.vertx.sqlclient.SqlResult;
 
 import java.util.List;
 import java.util.Map;
@@ -48,7 +48,20 @@ public abstract class SqlResultBase<T, R extends SqlResultBase<T, R>> implements
 
   @Override
   public <V> V property(PropertyKind<V> property) {
-    return property.type().cast(properties.get(property));
+    if (property == null) {
+      throw new IllegalArgumentException("Property can not be null");
+    }
+    if (properties == null) {
+      return null;
+    } else {
+      Object value = properties.get(property);
+      Class<V> type = property.type();
+      if (type == null) {
+        throw new IllegalArgumentException("Property type can not be null");
+      }
+      // if the property is unknown or the value is null then we return null to the user
+      return type.cast(value);
+    }
   }
 
   @Override
