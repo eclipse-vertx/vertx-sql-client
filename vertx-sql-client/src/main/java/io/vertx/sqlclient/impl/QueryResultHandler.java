@@ -17,10 +17,14 @@
 
 package io.vertx.sqlclient.impl;
 
+import io.vertx.sqlclient.SqlResultProperty;
+
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 public interface QueryResultHandler<T> {
+
+  <V> void addProperty(SqlResultProperty<V> property, V value);
 
   void handleResult(int updatedCount, int size, RowDesc desc, T result);
 

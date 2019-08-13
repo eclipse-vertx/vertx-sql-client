@@ -57,6 +57,8 @@ public interface SqlResult<T> {
    */
   int size();
 
+  <V> V property(SqlResultProperty<V> property);
+
   /**
    * Get the result value.
    *

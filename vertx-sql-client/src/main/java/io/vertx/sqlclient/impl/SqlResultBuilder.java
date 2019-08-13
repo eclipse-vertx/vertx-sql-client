@@ -20,7 +20,9 @@ package io.vertx.sqlclient.impl;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.sqlclient.SqlResultProperty;
 
+import java.util.HashMap;
 import java.util.function.Function;
 
 /**
@@ -56,6 +58,21 @@ public class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlRes
         h = h.next;
       }
       h.next = result;
+    }
+  }
+
+  @Override
+  public <V> void addProperty(SqlResultProperty<V> property, V value) {
+    if (first != null) {
+      R r = first;
+      while (r.next != null) {
+        r = r.next;
+      }
+      if (r.sqlResultProperties == null) {
+        // lazy init
+        r.sqlResultProperties = new HashMap<>();
+      }
+      r.sqlResultProperties.put(property, value);
     }
   }
 
