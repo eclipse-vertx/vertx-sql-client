@@ -8,9 +8,6 @@ By default prepared query execution fetches all rows, you can use a
 {@link examples.SqlClientExamples#usingCursors01(io.vertx.sqlclient.SqlConnection)}
 ----
 
-PostreSQL destroys cursors at the end of a transaction, so the cursor API shall be used
-within a transaction, otherwise you will likely get the `34000` PostgreSQL error.
-
 Cursors shall be closed when they are released prematurely:
 
 [source,$lang]
