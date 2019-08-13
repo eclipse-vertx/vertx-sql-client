@@ -157,6 +157,17 @@ Currently the client supports the following parameter key words in connection ur
 
 include::queries.adoc[]
 
+== MySQL LAST_INSERT_ID
+
+You can get the auto incremented value if you insert a record into the table.
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#lastInsertId(io.vertx.sqlclient.SqlClient)}
+----
+
+More information can be found in https://dev.mysql.com/doc/refman/8.0/en/getting-unique-id.html[How to Get the Unique ID for the Last Inserted Row].
+
 include::connections.adoc[]
 
 include::cursor.adoc[]
