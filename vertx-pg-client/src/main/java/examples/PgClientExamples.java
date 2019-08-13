@@ -577,4 +577,18 @@ public class PgClientExamples {
       }
     });
   }
+
+  public void returning(SqlClient client) {
+    client.preparedQuery("INSERT INTO color (color_name) VALUES ($1), ($2), ($3) RETURNING color_id", Tuple.of("white", "red", "blue"), ar -> {
+      if (ar.succeeded()) {
+        RowSet rows = ar.result();
+        System.out.println(rows.rowCount());
+        for (Row row : rows) {
+          System.out.println("generated key: " + row.getInteger("color_id"));
+        }
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
+  }
 }
