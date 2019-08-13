@@ -29,7 +29,7 @@ public abstract class SqlResultBase<T, R extends SqlResultBase<T, R>> implements
   List<String> columnNames;
   int size;
   R next;
-  Map<PropertyKind<?>, Object> sqlResultProperties;
+  Map<PropertyKind<?>, Object> properties;
 
   @Override
   public List<String> columnsNames() {
@@ -48,7 +48,7 @@ public abstract class SqlResultBase<T, R extends SqlResultBase<T, R>> implements
 
   @Override
   public <V> V property(PropertyKind<V> property) {
-    return property.type().cast(sqlResultProperties.get(property));
+    return property.type().cast(properties.get(property));
   }
 
   @Override

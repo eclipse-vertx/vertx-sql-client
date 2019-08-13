@@ -68,11 +68,11 @@ public class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlRes
       while (r.next != null) {
         r = r.next;
       }
-      if (r.sqlResultProperties == null) {
+      if (r.properties == null) {
         // lazy init
-        r.sqlResultProperties = new HashMap<>();
+        r.properties = new HashMap<>();
       }
-      r.sqlResultProperties.put(property, value);
+      r.properties.put(property, value);
     }
   }
 
