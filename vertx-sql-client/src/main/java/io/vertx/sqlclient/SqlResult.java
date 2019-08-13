@@ -57,7 +57,14 @@ public interface SqlResult<T> {
    */
   int size();
 
-  <V> V property(PropertyKind<V> property);
+  /**
+   * Get the property with the specified {@link PropertyKind}.
+   *
+   * @param propertyKind the kind of the property
+   * @param <V> the type of the property value
+   * @return the value of the property
+   */
+  <V> V property(PropertyKind<V> propertyKind);
 
   /**
    * Get the result value.
