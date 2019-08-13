@@ -32,8 +32,8 @@ public class SqlResultTest {
     PropertyKind<String> nullTypePropertyKind = () -> null;
     try {
       rowSet.property(nullTypePropertyKind);
-    } catch (IllegalArgumentException e) {
-      Assert.assertEquals("Property type can not be null", e.getMessage());
+    } catch (NullPointerException ignored) {
+      // NPE
     }
   }
 

@@ -56,9 +56,6 @@ public abstract class SqlResultBase<T, R extends SqlResultBase<T, R>> implements
     } else {
       Object value = properties.get(property);
       Class<V> type = property.type();
-      if (type == null) {
-        throw new IllegalArgumentException("Property type can not be null");
-      }
       // if the property is unknown or the value is null then we return null to the user
       return type.cast(value);
     }
