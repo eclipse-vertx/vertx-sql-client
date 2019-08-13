@@ -2,9 +2,11 @@ package io.vertx.mysqlclient;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.FileSystem;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.Tuple;
 import org.junit.After;
 import org.junit.Assume;
@@ -12,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -133,6 +136,52 @@ public class MySQLQueryTest extends MySQLTestBase {
         ctx.assertEquals("test", row2.getValue(0));
         ctx.assertEquals("test", row2.getString(0));
         conn.close();
+      }));
+    }));
+  }
+
+  @Test
+  public void testLocalInfileRequest(TestContext ctx) {
+    FileSystem fileSystem = vertx.fileSystem();
+    Buffer fileData = Buffer.buffer().appendString("Fluffy,Harold,cat,f,1993-02-04,NULL")
+      .appendString("\n")
+      .appendString("Bowser,Diane,dog,m,1979-08-31,1995-07-29")
+      .appendString("\n")
+      .appendString("Whistler,Gwen,bird,NULL,1997-12-09,NULL");
+    fileSystem.createTempFile(null, null, ctx.asyncAssertSuccess(filename -> {
+      fileSystem.writeFile(filename, fileData, ctx.asyncAssertSuccess(write -> {
+        MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+          conn.query("TRUNCATE TABLE localinfile", ctx.asyncAssertSuccess(cleanup -> {
+            conn.query("LOAD DATA LOCAL INFILE '" + filename + "' INTO TABLE localinfile FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n';", ctx.asyncAssertSuccess(v -> {
+              conn.query("SELECT * FROM localinfile", ctx.asyncAssertSuccess(rowSet -> {
+                ctx.assertEquals(3, rowSet.size());
+                RowIterator iterator = rowSet.iterator();
+                Row row1 = iterator.next();
+                ctx.assertEquals("Fluffy", row1.getValue(0));
+                ctx.assertEquals("Harold", row1.getValue(1));
+                ctx.assertEquals("cat", row1.getValue(2));
+                ctx.assertEquals("f", row1.getValue(3));
+                ctx.assertEquals(LocalDate.of(1993, 2, 4), row1.getValue(4));
+                ctx.assertEquals(null, row1.getValue(5));
+                Row row2 = iterator.next();
+                ctx.assertEquals("Bowser", row2.getValue(0));
+                ctx.assertEquals("Diane", row2.getValue(1));
+                ctx.assertEquals("dog", row2.getValue(2));
+                ctx.assertEquals("m", row2.getValue(3));
+                ctx.assertEquals(LocalDate.of(1979, 8, 31), row2.getValue(4));
+                ctx.assertEquals(LocalDate.of(1995, 7, 29), row2.getValue(5));
+                Row row3 = iterator.next();
+                ctx.assertEquals("Whistler", row3.getValue(0));
+                ctx.assertEquals("Gwen", row3.getValue(1));
+                ctx.assertEquals("bird", row3.getValue(2));
+                ctx.assertEquals(null, row3.getValue(3));
+                ctx.assertEquals(LocalDate.of(1997, 12, 9), row3.getValue(4));
+                ctx.assertEquals(null, row3.getValue(5));
+                conn.close();
+              }));
+            }));
+          }));
+        }));
       }));
     }));
   }

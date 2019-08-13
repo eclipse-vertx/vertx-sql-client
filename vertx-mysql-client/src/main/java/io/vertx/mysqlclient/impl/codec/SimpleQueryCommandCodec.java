@@ -17,9 +17,9 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 
 import static io.vertx.mysqlclient.impl.codec.Packets.*;
@@ -46,8 +46,10 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
     } else if (firstByte == ERROR_PACKET_HEADER) {
       handleErrorPacketPayload(payload);
     } else if (firstByte == 0xFB) {
-      //TODO LOCAL INFILE Request support
-      completionHandler.handle(CommandResponse.failure(new UnsupportedOperationException("LOCAL INFILE is not supported for now")));
+      payload.skipBytes(1);
+      String filename = readRestOfPacketString(payload, StandardCharsets.UTF_8);
+      sendFileWrappedInPacket(filename);
+      sendEmptyPacket();
     } else {
       handleResultsetColumnCountPacketBody(payload);
     }
@@ -69,5 +71,30 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
     packet.setMediumLE(packetStartIdx, payloadLength);
 
     sendPacket(packet, payloadLength);
+  }
+
+  private void sendFileWrappedInPacket(String filePath) {
+    /*
+      We will try to use zero-copy file transfer in order to gain better performance.
+      File content needs to be wrapped in MySQL packets so we calculate the length of the file and then send a pre-calculated packet header with the content.
+     */
+    File file = new File(filePath);
+    long length = file.length();
+    // 16MB+ packet necessary?
+
+    ByteBuf packetHeader = allocateBuffer(4);
+    packetHeader.writeMediumLE((int) length);
+    packetHeader.writeByte(sequenceId++);
+    encoder.chctx.write(packetHeader);
+    encoder.socketConnection.socket().sendFile(filePath, 0);
+  }
+
+  private void sendEmptyPacket() {
+    ByteBuf packet = allocateBuffer(4);
+    // encode packet header
+    packet.writeMediumLE(0);
+    packet.writeByte(sequenceId);
+
+    sendNonSplitPacket(packet);
   }
 }

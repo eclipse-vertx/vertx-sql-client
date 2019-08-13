@@ -52,7 +52,7 @@ public class MySQLSocketConnection extends SocketConnectionBase {
 
   @Override
   public void init() {
-    codec = new MySQLCodec();
+    codec = new MySQLCodec(this);
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     pipeline.addBefore("handler", "codec", codec);
     super.init();

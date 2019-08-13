@@ -17,6 +17,7 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.channel.CombinedChannelDuplexHandler;
+import io.vertx.mysqlclient.impl.MySQLSocketConnection;
 
 import java.util.ArrayDeque;
 
@@ -24,8 +25,8 @@ public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQL
 
   private final ArrayDeque<CommandCodec<?, ?>> inflight = new ArrayDeque<>();
 
-  public MySQLCodec() {
-    MySQLEncoder encoder = new MySQLEncoder(inflight);
+  public MySQLCodec(MySQLSocketConnection mySQLSocketConnection) {
+    MySQLEncoder encoder = new MySQLEncoder(inflight, mySQLSocketConnection);
     MySQLDecoder decoder = new MySQLDecoder(inflight, encoder);
     init(decoder, encoder);
   }
