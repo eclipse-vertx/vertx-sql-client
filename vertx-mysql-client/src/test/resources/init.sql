@@ -123,6 +123,38 @@ INSERT INTO Fortune (message) VALUES ('Computers make very fast, very accurate m
 INSERT INTO Fortune (message) VALUES ('<script>alert("This should not be displayed in a browser alert box.");</script>');
 INSERT INTO Fortune (message) VALUES ('フレームワークのベンチマーク');
 
+-- local infile test table
+-- https://dev.mysql.com/doc/refman/8.0/en/loading-tables.html
+DROP TABLE IF EXISTS localinfile;
+CREATE TABLE localinfile
+(
+    name    VARCHAR(20),
+    owner   VARCHAR(20),
+    species VARCHAR(20),
+    sex     CHAR,
+    birth   DATE,
+    death   DATE
+);
+
+-- INSERT INTO localinfile
+-- VALUES ('Fluffy', 'Harold', 'cat', 'f', '1993-02-04', NULL);
+-- INSERT INTO localinfile
+-- VALUES ('Claws', 'Gwen', 'cat', 'm', '1994-03-17', NULL);
+-- INSERT INTO localinfile
+-- VALUES ('Buffy', 'Harold', 'dog', 'f', '1989-05-13', NULL);
+-- INSERT INTO localinfile
+-- VALUES ('Fang', 'Benny', 'dog', 'm', '1990-08-27', NULL);
+-- INSERT INTO localinfile
+-- VALUES ('Bowser', 'Diane', 'dog', 'm', '1979-08-31', '1995-07-29');
+-- INSERT INTO localinfile
+-- VALUES ('Chirpy', 'Gwen', 'bird', 'f', '1998-09-11', NULL);
+-- INSERT INTO localinfile
+-- VALUES ('Chirpy', 'Gwen', 'bird', 'f', '1998-09-11', NULL);
+-- INSERT INTO localinfile
+-- VALUES ('Whistler', 'Gwen', 'bird', NULL, '1997-12-09', NULL);
+-- INSERT INTO localinfile
+-- VALUES ('Slim', 'Benny', 'snake', 'm', '1996-04-29', NULL);
+
 -- TCK usage --
 -- immutable for select query testing --
 DROP TABLE IF EXISTS immutable;
