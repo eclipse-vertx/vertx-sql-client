@@ -2,10 +2,7 @@ package examples;
 
 import io.vertx.core.Vertx;
 import io.vertx.docgen.Source;
-import io.vertx.mysqlclient.MySQLConnectOptions;
-import io.vertx.mysqlclient.MySQLConnection;
-import io.vertx.mysqlclient.MySQLPool;
-import io.vertx.mysqlclient.MySQLSetOption;
+import io.vertx.mysqlclient.*;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
@@ -203,6 +200,18 @@ public class MySQLClientExamples {
         });
       } else {
         System.out.println("Could not connect: " + ar1.cause().getMessage());
+      }
+    });
+  }
+
+  public void lastInsertId(SqlClient client) {
+    client.query("INSERT INTO test(val) VALUES ('v1')", ar -> {
+      if (ar.succeeded()) {
+        RowSet rows = ar.result();
+        int lastInsertId = rows.property(MySQLClient.LAST_INSERTED_ID);
+        System.out.println("Last inserted id is: " + lastInsertId);
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
       }
     });
   }

@@ -17,6 +17,7 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.mysqlclient.MySQLClient;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.RowDesc;
@@ -108,15 +109,17 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     // we need check this is not a row data by checking packet length < 0xFFFFFF
     else if (first == EOF_PACKET_HEADER && payloadLength < 0xFFFFFF) {
       int serverStatusFlags;
-      int affectedRows = 0;
+      int affectedRows = -1;
+      int lastInsertId = -1;
       if (isDeprecatingEofFlagEnabled()) {
         OkPacket okPacket = decodeOkPacketPayload(payload, StandardCharsets.UTF_8);
         serverStatusFlags = okPacket.serverStatusFlags();
         affectedRows = (int) okPacket.affectedRows();
+        lastInsertId = (int) okPacket.lastInsertId();
       } else {
         serverStatusFlags = decodeEofPacketPayload(payload).serverStatusFlags();
       }
-      handleSingleResultsetDecodingCompleted(serverStatusFlags, affectedRows);
+      handleSingleResultsetDecodingCompleted(serverStatusFlags, affectedRows, lastInsertId);
     } else {
       singleRowHandler.accept(payload);
     }
@@ -127,8 +130,8 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     decoder.decodeRow(columnDefinitions.length, payload);
   }
 
-  protected void handleSingleResultsetDecodingCompleted(int serverStatusFlags, int affectedRows) {
-    handleSingleResultsetEndPacket(serverStatusFlags, affectedRows);
+  protected void handleSingleResultsetDecodingCompleted(int serverStatusFlags, int affectedRows, int lastInsertId) {
+    handleSingleResultsetEndPacket(serverStatusFlags, affectedRows, lastInsertId);
     resetIntermediaryResult();
     if (isDecodingCompleted(serverStatusFlags)) {
       // no more sql result
@@ -140,7 +143,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     return (serverStatusFlags & ServerStatusFlags.SERVER_MORE_RESULTS_EXISTS) == 0;
   }
 
-  private void handleSingleResultsetEndPacket(int serverStatusFlags, int affectedRows) {
+  private void handleSingleResultsetEndPacket(int serverStatusFlags, int affectedRows, int lastInsertId) {
     this.result = (serverStatusFlags & ServerStatusFlags.SERVER_STATUS_LAST_ROW_SENT) == 0;
     T result;
     int size;
@@ -156,6 +159,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
       rowDesc = null;
     }
     cmd.resultHandler().handleResult(affectedRows, size, rowDesc, result);
+    cmd.resultHandler().addProperty(MySQLClient.LAST_INSERTED_ID, lastInsertId);
   }
 
   private void handleAllResultsetDecodingCompleted() {

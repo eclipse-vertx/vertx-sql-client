@@ -43,6 +43,48 @@ public class MySQLQueryTest extends MySQLTestBase {
   }
 
   @Test
+  public void testLastInsertIdWithDefaultValue(TestContext ctx) {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("CREATE TEMPORARY TABLE last_insert_id(id INTEGER PRIMARY KEY AUTO_INCREMENT, val VARCHAR(20));", ctx.asyncAssertSuccess(createTableResult -> {
+        int lastInsertId1 = createTableResult.property(MySQLClient.LAST_INSERTED_ID);
+        ctx.assertEquals(0, lastInsertId1);
+        conn.query("INSERT INTO last_insert_id(val) VALUES('test')", ctx.asyncAssertSuccess(insertResult1 -> {
+          int lastInsertId2 = insertResult1.property(MySQLClient.LAST_INSERTED_ID);
+          ctx.assertEquals(1, lastInsertId2);
+          conn.query("INSERT INTO last_insert_id(val) VALUES('test2')", ctx.asyncAssertSuccess(insertResult2 -> {
+            int lastInsertId3 = insertResult2.property(MySQLClient.LAST_INSERTED_ID);
+            ctx.assertEquals(2, lastInsertId3);
+            conn.close();
+          }));
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testLastInsertIdWithSpecifiedValue(TestContext ctx) {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("CREATE TEMPORARY TABLE last_insert_id(id INTEGER PRIMARY KEY AUTO_INCREMENT, val VARCHAR(20));", ctx.asyncAssertSuccess(createTableResult -> {
+        int lastInsertId1 = createTableResult.property(MySQLClient.LAST_INSERTED_ID);
+        ctx.assertEquals(0, lastInsertId1);
+        conn.query("ALTER TABLE last_insert_id AUTO_INCREMENT=1234", ctx.asyncAssertSuccess(alterTableResult -> {
+          int lastInsertId2 = createTableResult.property(MySQLClient.LAST_INSERTED_ID);
+          ctx.assertEquals(0, lastInsertId2);
+          conn.query("INSERT INTO last_insert_id(val) VALUES('test')", ctx.asyncAssertSuccess(insertResult1 -> {
+            int lastInsertId3 = insertResult1.property(MySQLClient.LAST_INSERTED_ID);
+            ctx.assertEquals(1234, lastInsertId3);
+            conn.query("INSERT INTO last_insert_id(val) VALUES('test2')", ctx.asyncAssertSuccess(insertResult2 -> {
+              int lastInsertId4 = insertResult2.property(MySQLClient.LAST_INSERTED_ID);
+              ctx.assertEquals(1235, lastInsertId4);
+              conn.close();
+            }));
+          }));
+        }));
+      }));
+    }));
+  }
+
+  @Test
   public void testCachePreparedStatementWithDifferentSql(TestContext ctx) {
     // we set the cache size to be the same with max_prepared_stmt_count
     MySQLConnection.connect(vertx, options.setCachePreparedStatements(true)
