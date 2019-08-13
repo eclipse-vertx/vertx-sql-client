@@ -20,7 +20,7 @@ package io.vertx.sqlclient.impl;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.sqlclient.SqlResultProperty;
+import io.vertx.sqlclient.PropertyKind;
 
 import java.util.HashMap;
 import java.util.function.Function;
@@ -62,7 +62,7 @@ public class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlRes
   }
 
   @Override
-  public <V> void addProperty(SqlResultProperty<V> property, V value) {
+  public <V> void addProperty(PropertyKind<V> property, V value) {
     if (first != null) {
       R r = first;
       while (r.next != null) {

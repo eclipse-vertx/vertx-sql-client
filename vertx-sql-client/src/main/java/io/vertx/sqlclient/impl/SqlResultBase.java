@@ -18,7 +18,7 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.sqlclient.SqlResult;
-import io.vertx.sqlclient.SqlResultProperty;
+import io.vertx.sqlclient.PropertyKind;
 
 import java.util.List;
 import java.util.Map;
@@ -29,7 +29,7 @@ public abstract class SqlResultBase<T, R extends SqlResultBase<T, R>> implements
   List<String> columnNames;
   int size;
   R next;
-  Map<SqlResultProperty<?>, Object> sqlResultProperties;
+  Map<PropertyKind<?>, Object> sqlResultProperties;
 
   @Override
   public List<String> columnsNames() {
@@ -47,9 +47,8 @@ public abstract class SqlResultBase<T, R extends SqlResultBase<T, R>> implements
   }
 
   @Override
-  @SuppressWarnings("unchecked")
-  public <V> V property(SqlResultProperty<V> property) {
-    return (V) sqlResultProperties.getOrDefault(property, null);
+  public <V> V property(PropertyKind<V> property) {
+    return property.type().cast(sqlResultProperties.get(property));
   }
 
   @Override

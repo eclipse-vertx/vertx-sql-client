@@ -17,7 +17,7 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.mysqlclient.MySQLResult;
+import io.vertx.mysqlclient.MySQLClient;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.RowDesc;
@@ -159,7 +159,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
       rowDesc = null;
     }
     cmd.resultHandler().handleResult(affectedRows, size, rowDesc, result);
-    cmd.resultHandler().addProperty(MySQLResult.LAST_INSERTED_ID, lastInsertId);
+    cmd.resultHandler().addProperty(MySQLClient.LAST_INSERTED_ID, lastInsertId);
   }
 
   private void handleAllResultsetDecodingCompleted() {
