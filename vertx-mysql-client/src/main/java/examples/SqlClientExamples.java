@@ -110,10 +110,6 @@ public class SqlClientExamples {
     // TODO
   }
 
-  public void queries10(SqlClient client) {
-    // TODO
-  }
-
   public void usingConnections01(Vertx vertx, Pool pool) {
 
     pool.getConnection(ar1 -> {

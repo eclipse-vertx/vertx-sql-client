@@ -182,6 +182,13 @@ $ PGUSER=user \
 
 include::queries.adoc[]
 
+You can fetch generated keys with a 'RETURNING' clause in your query:
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#returning(io.vertx.sqlclient.SqlClient)}
+----
+
 include::connections.adoc[]
 
 include::transactions.adoc[]

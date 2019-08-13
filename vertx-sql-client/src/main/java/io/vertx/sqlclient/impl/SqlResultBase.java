@@ -17,9 +17,11 @@
 
 package io.vertx.sqlclient.impl;
 
+import io.vertx.sqlclient.PropertyKind;
 import io.vertx.sqlclient.SqlResult;
 
 import java.util.List;
+import java.util.Map;
 
 public abstract class SqlResultBase<T, R extends SqlResultBase<T, R>> implements SqlResult<T> {
 
@@ -27,6 +29,7 @@ public abstract class SqlResultBase<T, R extends SqlResultBase<T, R>> implements
   List<String> columnNames;
   int size;
   R next;
+  Map<PropertyKind<?>, Object> properties;
 
   @Override
   public List<String> columnsNames() {
@@ -41,6 +44,21 @@ public abstract class SqlResultBase<T, R extends SqlResultBase<T, R>> implements
   @Override
   public int size() {
     return size;
+  }
+
+  @Override
+  public <V> V property(PropertyKind<V> property) {
+    if (property == null) {
+      throw new IllegalArgumentException("Property can not be null");
+    }
+    if (properties == null) {
+      return null;
+    } else {
+      Object value = properties.get(property);
+      Class<V> type = property.type();
+      // if the property is unknown or the value is null then we return null to the user
+      return type.cast(value);
+    }
   }
 
   @Override

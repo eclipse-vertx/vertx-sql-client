@@ -68,9 +68,3 @@ You can cache prepared queries:
 {@link examples.SqlClientExamples#queries09(io.vertx.core.Vertx, SqlConnectOptions, PoolOptions)}
 ----
 
-You can fetch generated keys with a 'RETURNING' clause in your query:
-
-[source,$lang]
-----
-{@link examples.SqlClientExamples#queries10(io.vertx.sqlclient.SqlClient)}
-----
