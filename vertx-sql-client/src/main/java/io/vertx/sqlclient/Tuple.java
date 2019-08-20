@@ -26,6 +26,7 @@ import io.vertx.core.buffer.Buffer;
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.temporal.Temporal;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -169,12 +170,29 @@ public interface Tuple {
   }
 
   /**
+   * Create a tuple of six elements.
+   *
+   * @param elements the list of elements
+   * @return the tuple
+   */
+  static Tuple tuple(List<Object> elements) {
+    ArrayTuple tuple = new ArrayTuple(5);
+    return tuple;
+  }
+
+  /**
    * Get a boolean value at {@code pos}.
    *
    * @param pos the position
    * @return the value or {@code null}
    */
-  Boolean getBoolean(int pos);
+  default Boolean getBoolean(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Boolean) {
+      return (Boolean) val;
+    }
+    return null;
+  }
 
   /**
    * Get an object value at {@code pos}.
@@ -190,7 +208,15 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  Short getShort(int pos);
+  default Short getShort(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Short) {
+      return (Short) val;
+    } else if (val instanceof Number) {
+      return ((Number) val).shortValue();
+    }
+    return null;
+  }
 
   /**
    * Get an integer value at {@code pos}.
@@ -198,7 +224,15 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  Integer getInteger(int pos);
+  default Integer getInteger(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Integer) {
+      return (Integer) val;
+    } else if (val instanceof Number) {
+      return ((Number) val).intValue();
+    }
+    return null;
+  }
 
   /**
    * Get a long value at {@code pos}.
@@ -206,7 +240,15 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  Long getLong(int pos);
+  default Long getLong(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Long) {
+      return (Long) val;
+    } else if (val instanceof Number) {
+      return ((Number) val).longValue();
+    }
+    return null;
+  }
 
   /**
    * Get a float value at {@code pos}.
@@ -214,7 +256,15 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  Float getFloat(int pos);
+  default Float getFloat(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Float) {
+      return (Float) val;
+    } else if (val instanceof Number) {
+      return ((Number) val).floatValue();
+    }
+    return null;
+  }
 
   /**
    * Get a double value at {@code pos}.
@@ -222,7 +272,15 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  Double getDouble(int pos);
+  default Double getDouble(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Double) {
+      return (Double) val;
+    } else if (val instanceof Number) {
+      return ((Number) val).doubleValue();
+    }
+    return null;
+  }
 
   /**
    * Get a string value at {@code pos}.
@@ -230,7 +288,13 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  String getString(int pos);
+  default String getString(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof String) {
+      return (String) val;
+    }
+    return null;
+  }
 
   /**
    * Get a {@link java.time.temporal.Temporal} value at {@code pos}.
@@ -239,7 +303,13 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Temporal getTemporal(int pos);
+  default Temporal getTemporal(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Temporal) {
+      return (Temporal) val;
+    }
+    return null;
+  }
 
   /**
    * Get {@link java.time.LocalDate} value at {@code pos}.
@@ -248,7 +318,13 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  LocalDate getLocalDate(int pos);
+  default LocalDate getLocalDate(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof LocalDate) {
+      return (LocalDate) val;
+    }
+    return null;
+  }
 
   /**
    * Get {@link java.time.LocalTime} value at {@code pos}.
@@ -257,7 +333,13 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  LocalTime getLocalTime(int pos);
+  default LocalTime getLocalTime(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof LocalTime) {
+      return (LocalTime) val;
+    }
+    return null;
+  }
 
   /**
    * Get {@link java.time.LocalDateTime} value at {@code pos}.
@@ -266,7 +348,13 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  LocalDateTime getLocalDateTime(int pos);
+  default LocalDateTime getLocalDateTime(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof LocalDateTime) {
+      return (LocalDateTime) val;
+    }
+    return null;
+  }
 
   /**
    * Get {@link java.time.OffsetTime} value at {@code pos}.
@@ -275,7 +363,13 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  OffsetTime getOffsetTime(int pos);
+  default OffsetTime getOffsetTime(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof OffsetTime) {
+      return (OffsetTime) val;
+    }
+    return null;
+  }
 
   /**
    * Get {@link java.time.OffsetDateTime} value at {@code pos}.
@@ -284,7 +378,13 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  OffsetDateTime getOffsetDateTime(int pos);
+  default OffsetDateTime getOffsetDateTime(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof OffsetDateTime) {
+      return (OffsetDateTime) val;
+    }
+    return null;
+  }
 
   /**
    * Get {@link java.util.UUID} value at {@code pos}.
@@ -293,7 +393,13 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  UUID getUUID(int pos);
+  default UUID getUUID(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof UUID) {
+      return (UUID) val;
+    }
+    return null;
+  }
 
   /**
    * Get {@link BigDecimal} value at {@code pos}.
@@ -302,7 +408,15 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  BigDecimal getBigDecimal(int pos);
+  default BigDecimal getBigDecimal(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof BigDecimal) {
+      return (BigDecimal) val;
+    } else if (val instanceof Number) {
+      return new BigDecimal(val.toString());
+    }
+    return null;
+  }
 
   /**
    * Get an array of {@link Integer} value at {@code pos}.
@@ -311,7 +425,14 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Integer[] getIntegerArray(int pos);
+  default Integer[] getIntegerArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Integer[]) {
+      return (Integer[]) val;
+    } else {
+      return null;
+    }
+  }
 
   /**
    * Get an array of {@link Boolean} value at {@code pos}.
@@ -320,7 +441,14 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Boolean[] getBooleanArray(int pos);
+  default Boolean[] getBooleanArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Boolean[]) {
+      return (Boolean[]) val;
+    } else {
+      return null;
+    }
+  }
 
   /**
    * Get an array of  {@link Short} value at {@code pos}.
@@ -329,7 +457,14 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Short[] getShortArray(int pos);
+  default Short[] getShortArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Short[]) {
+      return (Short[]) val;
+    } else {
+      return null;
+    }
+  }
 
   /**
    * Get an array of {@link Long} value at {@code pos}.
@@ -338,7 +473,14 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Long[] getLongArray(int pos);
+  default Long[] getLongArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Long[]) {
+      return (Long[]) val;
+    } else {
+      return null;
+    }
+  }
 
   /**
    * Get an array of  {@link Float} value at {@code pos}.
@@ -347,7 +489,14 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Float[] getFloatArray(int pos);
+  default Float[] getFloatArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Float[]) {
+      return (Float[]) val;
+    } else {
+      return null;
+    }
+  }
 
   /**
    * Get an array of  {@link Double} value at {@code pos}.
@@ -356,7 +505,14 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Double[] getDoubleArray(int pos);
+  default Double[] getDoubleArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Double[]) {
+      return (Double[]) val;
+    } else {
+      return null;
+    }
+  }
 
   /**
    * Get an array of  {@link String} value at {@code pos}.
@@ -365,7 +521,14 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  String[] getStringArray(int pos);
+  default String[] getStringArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof String[]) {
+      return (String[]) val;
+    } else {
+      return null;
+    }
+  }
 
   /**
    * Get an array of  {@link LocalDate} value at {@code pos}.
@@ -374,7 +537,14 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  LocalDate[] getLocalDateArray(int pos);
+  default LocalDate[] getLocalDateArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof LocalDate[]) {
+      return (LocalDate[]) val;
+    } else {
+      return null;
+    }
+  }
 
   /**
    * Get an array of  {@link LocalTime} value at {@code pos}.
@@ -383,7 +553,14 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  LocalTime[] getLocalTimeArray(int pos);
+  default LocalTime[] getLocalTimeArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof LocalTime[]) {
+      return (LocalTime[]) val;
+    } else {
+      return null;
+    }
+  }
 
   /**
    * Get an array of  {@link OffsetTime} value at {@code pos}.
@@ -392,7 +569,14 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  OffsetTime[] getOffsetTimeArray(int pos);
+  default OffsetTime[] getOffsetTimeArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof OffsetTime[]) {
+      return (OffsetTime[]) val;
+    } else {
+      return null;
+    }
+  }
 
   /**
    * Get an array of  {@link LocalDateTime} value at {@code pos}.
@@ -401,7 +585,14 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  LocalDateTime[] getLocalDateTimeArray(int pos);
+  default LocalDateTime[] getLocalDateTimeArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof LocalDateTime[]) {
+      return (LocalDateTime[]) val;
+    } else {
+      return null;
+    }
+  }
 
   /**
    * Get an array of  {@link OffsetDateTime} value at {@code pos}.
@@ -410,7 +601,14 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  OffsetDateTime[] getOffsetDateTimeArray(int pos);
+  default OffsetDateTime[] getOffsetDateTimeArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof OffsetDateTime[]) {
+      return (OffsetDateTime[]) val;
+    } else {
+      return null;
+    }
+  }
 
   /**
    * Get an array of  {@link Buffer} value at {@code pos}.
@@ -419,7 +617,14 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore
-  Buffer[] getBufferArray(int pos);
+  default Buffer[] getBufferArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Buffer[]) {
+      return (Buffer[]) val;
+    } else {
+      return null;
+    }
+  }
 
   /**
    * Get an array of {@link UUID} value at {@code pos}.
@@ -428,7 +633,14 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  UUID[] getUUIDArray(int pos);
+  default UUID[] getUUIDArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof UUID[]) {
+      return (UUID[]) val;
+    } else {
+      return null;
+    }
+  }
 
   /**
    * Get a buffer value at {@code pos}.
@@ -436,7 +648,13 @@ public interface Tuple {
    * @param pos the position
    * @return the value or {@code null}
    */
-  Buffer getBuffer(int pos);
+  default Buffer getBuffer(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Buffer) {
+      return (Buffer) val;
+    }
+    return null;
+  }
 
   /**
    * Add a boolean value at the end of the tuple.
@@ -445,7 +663,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  Tuple addBoolean(Boolean value);
+  default Tuple addBoolean(Boolean value) {
+    return addValue(value);
+  }
 
   /**
    * Add an object value at the end of the tuple.
@@ -463,7 +683,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  Tuple addShort(Short value);
+  default Tuple addShort(Short value) {
+    return addValue(value);
+  }
 
   /**
    * Add an integer value at the end of the tuple.
@@ -472,7 +694,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  Tuple addInteger(Integer value);
+  default Tuple addInteger(Integer value)  {
+    return addValue(value);
+  }
 
   /**
    * Add a long value at the end of the tuple.
@@ -481,7 +705,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  Tuple addLong(Long value);
+  default Tuple addLong(Long value) {
+    return addValue(value);
+  }
 
   /**
    * Add a float value at the end of the tuple.
@@ -490,7 +716,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  Tuple addFloat(Float value);
+  default Tuple addFloat(Float value) {
+    return addValue(value);
+  }
 
   /**
    * Add a double value at the end of the tuple.
@@ -499,7 +727,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  Tuple addDouble(Double value);
+  default Tuple addDouble(Double value) {
+    return addValue(value);
+  }
 
   /**
    * Add a string value at the end of the tuple.
@@ -508,7 +738,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  Tuple addString(String value);
+  default Tuple addString(String value) {
+    return addValue(value);
+  }
 
   /**
    * Add a buffer value at the end of the tuple.
@@ -517,7 +749,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  Tuple addBuffer(Buffer value);
+  default Tuple addBuffer(Buffer value) {
+    return addValue(value);
+  }
 
   /**
    * Add a {@link java.time.temporal.Temporal} value at the end of the tuple.
@@ -526,7 +760,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addTemporal(Temporal value);
+  default Tuple addTemporal(Temporal value) {
+    return addValue(value);
+  }
 
   /**
    * Add a {@link java.time.LocalDate} value at the end of the tuple.
@@ -535,7 +771,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addLocalDate(LocalDate value);
+  default Tuple addLocalDate(LocalDate value) {
+    return addValue(value);
+  }
 
   /**
    * Add a {@link java.time.LocalTime} value at the end of the tuple.
@@ -544,7 +782,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addLocalTime(LocalTime value);
+  default Tuple addLocalTime(LocalTime value) {
+    return addValue(value);
+  }
 
   /**
    * Add a {@link java.time.LocalDateTime} value at the end of the tuple.
@@ -553,7 +793,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addLocalDateTime(LocalDateTime value);
+  default Tuple addLocalDateTime(LocalDateTime value) {
+    return addValue(value);
+  }
 
   /**
    * Add a {@link java.time.OffsetTime} value at the end of the tuple.
@@ -562,7 +804,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addOffsetTime(OffsetTime value);
+  default Tuple addOffsetTime(OffsetTime value) {
+    return addValue(value);
+  }
 
   /**
    * Add a {@link java.time.OffsetDateTime} value at the end of the tuple.
@@ -571,7 +815,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addOffsetDateTime(OffsetDateTime value);
+  default Tuple addOffsetDateTime(OffsetDateTime value) {
+    return addValue(value);
+  }
 
   /**
    * Add a {@link java.util.UUID} value at the end of the tuple.
@@ -580,7 +826,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addUUID(UUID value);
+  default Tuple addUUID(UUID value) {
+    return addValue(value);
+  }
 
   /**
    * Add a {@link BigDecimal} value at the end of the tuple.
@@ -589,7 +837,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addBigDecimal(BigDecimal value);
+  default Tuple addBigDecimal(BigDecimal value) {
+    return addValue(value);
+  }
 
   /**
    * Add an array of {@code Integer} value at the end of the tuple.
@@ -598,7 +848,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addIntegerArray(Integer[] value);
+  default Tuple addIntegerArray(Integer[] value) {
+    return addValue(value);
+  }
 
   /**
    * Add an array of {@code Boolean} value at the end of the tuple.
@@ -607,7 +859,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addBooleanArray(Boolean[] value);
+  default Tuple addBooleanArray(Boolean[] value) {
+    return addValue(value);
+  }
 
   /**
    * Add an array of {@link Short} value at the end of the tuple.
@@ -616,7 +870,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addShortArray(Short[] value);
+  default Tuple addShortArray(Short[] value) {
+    return addValue(value);
+  }
 
   /**
    * Add an array of {@link Long} value at the end of the tuple.
@@ -625,7 +881,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addLongArray(Long[] value);
+  default Tuple addLongArray(Long[] value) {
+    return addValue(value);
+  }
 
   /**
    * Add an array of {@link Float} value at the end of the tuple.
@@ -634,7 +892,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addFloatArray(Float[] value);
+  default Tuple addFloatArray(Float[] value) {
+    return addValue(value);
+  }
 
   /**
    * Add an array of {@link Double} value at the end of the tuple.
@@ -643,7 +903,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addDoubleArray(Double[] value);
+  default Tuple addDoubleArray(Double[] value) {
+    return addValue(value);
+  }
 
   /**
    * Add an array of {@link String} value at the end of the tuple.
@@ -652,7 +914,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addStringArray(String[] value);
+  default Tuple addStringArray(String[] value) {
+    return addValue(value);
+  }
 
   /**
    * Add an array of {@link LocalDate} value at the end of the tuple.
@@ -661,7 +925,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addLocalDateArray(LocalDate[] value);
+  default Tuple addLocalDateArray(LocalDate[] value) {
+    return addValue(value);
+  }
 
   /**
    * Add an array of {@link LocalTime} value at the end of the tuple.
@@ -670,7 +936,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addLocalTimeArray(LocalTime[] value);
+  default Tuple addLocalTimeArray(LocalTime[] value) {
+    return addValue(value);
+  }
 
   /**
    * Add an array of {@link OffsetTime} value at the end of the tuple.
@@ -679,7 +947,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addOffsetTimeArray(OffsetTime[] value);
+  default Tuple addOffsetTimeArray(OffsetTime[] value) {
+    return addValue(value);
+  }
 
   /**
    * Add an array of {@link LocalDateTime} value at the end of the tuple.
@@ -688,7 +958,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addLocalDateTimeArray(LocalDateTime[] value);
+  default Tuple addLocalDateTimeArray(LocalDateTime[] value) {
+    return addValue(value);
+  }
 
   /**
    * Add an array of {@link OffsetDateTime} value at the end of the tuple.
@@ -697,7 +969,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addOffsetDateTimeArray(OffsetDateTime[] value);
+  default Tuple addOffsetDateTimeArray(OffsetDateTime[] value) {
+    return addValue(value);
+  }
 
   /**
    * Add an array of {@link Buffer} value at the end of the tuple.
@@ -706,7 +980,9 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore
-  Tuple addBufferArray(Buffer[] value);
+  default Tuple addBufferArray(Buffer[] value) {
+    return addValue(value);
+  }
 
   /**
    * Add an array of {@link UUID} value at the end of the tuple.
@@ -715,15 +991,48 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Tuple addUUIDArray(UUID[] value);
+  default Tuple addUUIDArray(UUID[] value) {
+    return addValue(value);
+  }
 
-  <T> T get(Class<T> type, int pos);
+  default <T> T get(Class<T> type, int pos) {
+    if (type == null) {
+      throw new IllegalArgumentException("Accessor type can not be null");
+    }
+    Object value = getValue(pos);
+    if (value.getClass() == type) {
+      return type.cast(value);
+    } else {
+      try {
+        if (value instanceof Buffer) {
+          return type.cast(value);
+        } else if (value instanceof Temporal) {
+          return type.cast(value);
+        }
+      } catch (ClassCastException e) {
+        throw new IllegalArgumentException("mismatched type [" + type.getName() + "] for the value of type [" + value.getClass().getName() + "]");
+      }
+      throw new IllegalArgumentException("mismatched type [" + type.getName() + "] for the value of type [" + value.getClass().getName() + "]");
+    }
+  }
 
   @GenIgnore
-  <T> T[] getValues(Class<T> type, int pos);
+  default <T> T[] getValues(Class<T> type, int pos) {
+    if (type == null) {
+      throw new IllegalArgumentException("Accessor type can not be null");
+    }
+    Object value = getValue(pos);
+    if (value.getClass().isArray() && value.getClass().getComponentType() == type) {
+      return (T[]) value;
+    } else {
+      throw new IllegalArgumentException("mismatched array element type [" + type.getName() + "] for the value of type [" + value.getClass().getName() + "]");
+    }
+  }
 
   @GenIgnore
-  <T> Tuple addValues(T[] value);
+  default <T> Tuple addValues(T[] value) {
+    return addValue(value);
+  }
 
   /**
    * @return the tuple size
