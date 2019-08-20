@@ -70,6 +70,7 @@ public interface Tuple {
    *
    * @return the list wrapped as a tuple
    */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   static Tuple wrap(Object... array) {
     return new ListTuple(Arrays.asList(array));
   }
