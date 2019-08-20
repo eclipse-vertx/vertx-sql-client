@@ -20,20 +20,93 @@ package io.vertx.sqlclient.impl;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.sqlclient.Tuple;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.temporal.Temporal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.UUID;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
+@RunWith(Parameterized.class)
 public class TupleTest {
+
+  enum TupleKind {
+
+    DEFAULT() {
+      @Override
+      Tuple tuple() {
+        return Tuple.tuple();
+      }
+
+      @Override
+      Tuple of(Object... elements) {
+        if (elements.length == 0) {
+          throw new IllegalArgumentException();
+        }
+        return Tuple.of(elements[0], Arrays.copyOfRange(elements, 1, elements.length));
+      }
+    }, WRAP_LIST() {
+      @Override
+      Tuple tuple() {
+        return Tuple.wrap(new ArrayList<>());
+      }
+
+      @Override
+      Tuple of(Object... elements) {
+        if (elements.length == 0) {
+          throw new IllegalArgumentException();
+        }
+        return Tuple.wrap(new ArrayList<>(Arrays.asList(elements)));
+      }
+    }, WRAP_ARRAY() {
+      @Override
+      Tuple tuple() {
+        return Tuple.wrap(new ArrayList<>());
+      }
+
+      @Override
+      Tuple of(Object... elements) {
+        return Tuple.wrap(elements);
+      }
+    };
+
+    abstract Tuple tuple();
+
+    abstract Tuple of(Object... elements);
+  }
+
+  @Parameterized.Parameters
+  public static Collection<Object[]> data() {
+    return Arrays.asList(new Object[][] {
+      { TupleKind.DEFAULT },
+      { TupleKind.WRAP_LIST}
+    });
+  }
+
+  private TupleKind kind;
+
+  public TupleTest(TupleKind kind) {
+    this.kind = kind;
+  }
+
+  public Tuple tuple() {
+    return kind.tuple();
+  }
+
+  public Tuple of(Object... elements) {
+    return kind.of(elements);
+  }
 
   @Test
   public void testNumbers() {
-    Tuple tuple = Tuple.of((byte) 127, (short) 4000, 1_000_000, 1_000_000_000L, 4.5F, 4.5D);
+    Tuple tuple = of((byte) 127, (short) 4000, 1_000_000, 1_000_000_000L, 4.5F, 4.5D);
     assertEquals(127, (short) tuple.getShort(0));
     assertEquals(4000, (short) tuple.getShort(1));
     assertEquals(4, (short) tuple.getShort(4));
@@ -66,7 +139,7 @@ public class TupleTest {
 
   @Test
   public void testAccessors() {
-    Tuple tuple = Tuple.tuple();
+    Tuple tuple = tuple();
     tuple.addBoolean(true);
     tuple.addShort((short) 123);
     tuple.addInteger(12345);
@@ -161,7 +234,7 @@ public class TupleTest {
     OffsetDateTime[] offsetDateTimeArray = new OffsetDateTime[]{OffsetDateTime.MAX};
     UUID[] uuidArray = new UUID[]{UUID.randomUUID()};
 
-    Tuple tuple = Tuple.tuple();
+    Tuple tuple = tuple();
     tuple.addBooleanArray(booleanArray);
     tuple.addShortArray(shortArray);
     tuple.addIntegerArray(integerArray);
