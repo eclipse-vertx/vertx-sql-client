@@ -22,10 +22,12 @@ import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.sqlclient.impl.ListTuple;
 
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.temporal.Temporal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -48,6 +50,28 @@ public interface Tuple {
    */
   static Tuple tuple() {
     return new ArrayTuple(10);
+  }
+
+  /**
+   * Wrap the provided {@code list} with a tuple.
+   * <br/>
+   * The list is not copied and is used as store for tuple elements.
+   *
+   * @return the list wrapped as a tuple
+   */
+  static Tuple wrap(List<Object> list) {
+    return new ListTuple(list);
+  }
+
+  /**
+   * Wrap the provided {@code array} with a tuple.
+   * <br/>
+   * The array is not copied and is used as store for tuple elements.
+   *
+   * @return the list wrapped as a tuple
+   */
+  static Tuple wrap(Object... array) {
+    return new ListTuple(Arrays.asList(array));
   }
 
   /**
