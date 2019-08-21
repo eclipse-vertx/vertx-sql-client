@@ -195,6 +195,9 @@ include::transactions.adoc[]
 
 include::cursor.adoc[]
 
+Note: PostreSQL destroys cursors at the end of a transaction, so the cursor API shall be used
+within a transaction, otherwise you will likely get the `34000` PostgreSQL error.
+
 == PostgreSQL type mapping
 
 Currently the client supports the following PostgreSQL types

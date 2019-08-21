@@ -121,7 +121,7 @@ public class SqlClientExamples {
 
   public void queries09(Vertx vertx, SqlConnectOptions connectOptions, PoolOptions poolOptions) {
 
-    // Enable prepare statements
+    // Enable prepare statements caching
     connectOptions.setCachePreparedStatements(true);
   }
 

@@ -25,6 +25,9 @@ import java.time.*;
 import java.time.temporal.Temporal;
 import java.util.UUID;
 
+/**
+ * Represents single row of the result set.
+ */
 @VertxGen
 public interface Row extends Tuple {
 
