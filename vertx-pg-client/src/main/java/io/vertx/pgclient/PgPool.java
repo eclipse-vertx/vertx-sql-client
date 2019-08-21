@@ -71,6 +71,13 @@ public interface PgPool extends Pool {
   }
 
   /**
+   * Like {@link #pool(Vertx, String,PoolOptions)} with a default {@code poolOptions}.
+   */
+  static PgPool pool(Vertx vertx, String connectionUri) {
+    return pool(vertx, PgConnectOptions.fromUri(connectionUri), new PoolOptions());
+  }
+
+  /**
    * Like {@link #pool(Vertx, PgConnectOptions, PoolOptions)} with {@code connectOptions} build from the environment variables.
    */
   static PgPool pool(Vertx vertx, PoolOptions poolOptions) {

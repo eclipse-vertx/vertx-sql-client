@@ -40,6 +40,13 @@ public interface MySQLPool extends Pool {
   }
 
   /**
+   * Like {@link #pool(Vertx, String,PoolOptions)} with a default {@code poolOptions}..
+   */
+  static MySQLPool pool(Vertx vertx, String connectionUri) {
+    return pool(vertx, fromUri(connectionUri), new PoolOptions());
+  }
+
+  /**
    * Like {@link #pool(Vertx, MySQLConnectOptions, PoolOptions)} with {@code connectOptions} build from {@code connectionUri}.
    */
   static MySQLPool pool(Vertx vertx, String connectionUri, PoolOptions poolOptions) {
