@@ -103,11 +103,28 @@ public class SqlClientExamples {
   }
 
   public void queries08(SqlClient client) {
-    // TODO
+
+    // Add commands to the batch
+    List<Tuple> batch = new ArrayList<>();
+    batch.add(Tuple.of("julien", "Julien Viet"));
+    batch.add(Tuple.of("emad", "Emad Alblueshi"));
+
+    // Execute the prepared batch
+    client.preparedBatch("INSERT INTO USERS (id, name) VALUES (?, ?)", batch, res -> {
+      if (res.succeeded()) {
+
+        // Process rows
+        RowSet rows = res.result();
+      } else {
+        System.out.println("Batch failed " + res.cause());
+      }
+    });
   }
 
   public void queries09(Vertx vertx, SqlConnectOptions connectOptions, PoolOptions poolOptions) {
-    // TODO
+
+    // Enable prepare statements caching
+    connectOptions.setCachePreparedStatements(true);
   }
 
   public void usingConnections01(Vertx vertx, Pool pool) {
@@ -146,19 +163,40 @@ public class SqlClientExamples {
   }
 
   public void usingConnections03(SqlConnection connection) {
-    // TODO
+    connection.prepare("INSERT INTO USERS (id, name) VALUES (?, ?)", ar1 -> {
+      if (ar1.succeeded()) {
+        PreparedQuery prepared = ar1.result();
+
+        // Create a query : bind parameters
+        List<Tuple> batch = new ArrayList();
+
+        // Add commands to the createBatch
+        batch.add(Tuple.of("julien", "Julien Viet"));
+        batch.add(Tuple.of("emad", "Emad Alblueshi"));
+
+        prepared.batch(batch, res -> {
+          if (res.succeeded()) {
+
+            // Process rows
+            RowSet rows = res.result();
+          } else {
+            System.out.println("Batch failed " + res.cause());
+          }
+        });
+      }
+    });
   }
 
   public void transaction01(Pool pool) {
-    // TODO
+    throw new UnsupportedOperationException();
   }
 
   public void transaction02(Transaction tx) {
-    // TODO
+    throw new UnsupportedOperationException();
   }
 
   public void transaction03(Pool pool) {
-    // TODO
+    throw new UnsupportedOperationException();
   }
 
   public void usingCursors01(SqlConnection connection) {
