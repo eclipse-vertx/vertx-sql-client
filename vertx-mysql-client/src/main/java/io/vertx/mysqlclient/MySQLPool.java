@@ -47,6 +47,13 @@ public interface MySQLPool extends Pool {
   }
 
   /**
+   * Like {@link #pool(Vertx, String,PoolOptions)} with a default {@code poolOptions}..
+   */
+  static MySQLPool pool(Vertx vertx, String connectionUri) {
+    return pool(vertx, fromUri(connectionUri), new PoolOptions());
+  }
+
+  /**
    * Create a connection pool to the MySQL server configured with the given {@code connectOptions} and {@code poolOptions}.
    *
    * @param connectOptions the options for the connection
