@@ -47,6 +47,8 @@ or by name
 {@link examples.SqlClientExamples#queries06(io.vertx.sqlclient.Row)}
 ----
 
+The client will not do any magic here and the column name is identified with the name in the table regardless of how your SQL text is.
+
 You can access a wide variety of of types
 
 [source,$lang]
