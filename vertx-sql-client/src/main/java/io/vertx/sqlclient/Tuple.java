@@ -195,14 +195,15 @@ public interface Tuple {
   }
 
   /**
-   * Create a tuple of six elements.
+   * Create a tuple with the provided {@code elements} list.
+   * <p/>
+   * The {@code elements} list is not modified.
    *
    * @param elements the list of elements
    * @return the tuple
    */
   static Tuple tuple(List<Object> elements) {
-    ArrayTuple tuple = new ArrayTuple(5);
-    return tuple;
+    return new ArrayTuple(elements);
   }
 
   /**
