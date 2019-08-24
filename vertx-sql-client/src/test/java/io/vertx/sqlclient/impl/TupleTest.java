@@ -39,7 +39,7 @@ public class TupleTest {
 
   enum TupleKind {
 
-    DEFAULT() {
+    ELEMENTS() {
       @Override
       Tuple tuple() {
         return Tuple.tuple();
@@ -51,6 +51,19 @@ public class TupleTest {
           throw new IllegalArgumentException();
         }
         return Tuple.of(elements[0], Arrays.copyOfRange(elements, 1, elements.length));
+      }
+    },LIST() {
+      @Override
+      Tuple tuple() {
+        return Tuple.tuple();
+      }
+
+      @Override
+      Tuple of(Object... elements) {
+        if (elements.length == 0) {
+          throw new IllegalArgumentException();
+        }
+        return Tuple.tuple(Arrays.asList(elements));
       }
     }, WRAP_LIST() {
       @Override
@@ -85,8 +98,10 @@ public class TupleTest {
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {
-      { TupleKind.DEFAULT },
-      { TupleKind.WRAP_LIST}
+      { TupleKind.ELEMENTS},
+      { TupleKind.LIST},
+      { TupleKind.WRAP_LIST},
+      { TupleKind.WRAP_ARRAY}
     });
   }
 
