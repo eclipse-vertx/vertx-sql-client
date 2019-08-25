@@ -81,4 +81,73 @@ public class MySQLStoredProgramsTest extends MySQLTestBase {
       }));
     }));
   }
+
+  @Test
+  public void testInParameters(TestContext ctx) {
+    // example borrowed from https://dev.mysql.com/doc/refman/8.0/en/stored-programs-defining.html
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("DROP PROCEDURE IF EXISTS dorepeat;", ctx.asyncAssertSuccess(cleanProcedure -> {
+        conn.query("CREATE PROCEDURE dorepeat(p1 INT)\n" +
+          "BEGIN\n" +
+          "    SET @x = 0;\n" +
+          "    REPEAT\n" +
+          "        SET @x = @x + 1;\n" +
+          "    UNTIL @x > p1 END REPEAT;\n" +
+          "end;", ctx.asyncAssertSuccess(createProcedure -> {
+          conn.query("CALL dorepeat(1000);", ctx.asyncAssertSuccess(callProcedure -> {
+            conn.query("SELECT @x;", ctx.asyncAssertSuccess(result -> {
+              ctx.assertEquals(1, result.size());
+              Row row = result.iterator().next();
+              ctx.assertEquals(1001, row.getInteger(0));
+              conn.close();
+            }));
+          }));
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testOutParameters(TestContext ctx) {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("DROP PROCEDURE IF EXISTS test_out_parameter;", ctx.asyncAssertSuccess(cleanProcedure -> {
+        conn.query("CREATE PROCEDURE test_out_parameter(OUT p1 VARCHAR(20))\n" +
+          "BEGIN\n" +
+          "    SELECT 'hello,world!' INTO p1;\n" +
+          "end;", ctx.asyncAssertSuccess(createProcedure -> {
+          conn.query("CALL test_out_parameter(@OUT);", ctx.asyncAssertSuccess(callProcedure -> {
+            conn.query("SELECT @OUT;", ctx.asyncAssertSuccess(result -> {
+              ctx.assertEquals(1, result.size());
+              Row row = result.iterator().next();
+              ctx.assertEquals("hello,world!", row.getValue(0));
+              ctx.assertEquals("hello,world!", row.getString(0));
+              conn.close();
+            }));
+          }));
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testInOutParameters(TestContext ctx) {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("DROP PROCEDURE IF EXISTS test_inout_parameter;", ctx.asyncAssertSuccess(cleanProcedure -> {
+        conn.query("CREATE PROCEDURE test_inout_parameter(INOUT p1 INT)\n" +
+          "BEGIN\n" +
+          "    SET p1 = p1 + 12345;\n" +
+          "end;", ctx.asyncAssertSuccess(createProcedure -> {
+          conn.query("SET @INOUT = 98765;\n" +
+            "CALL test_inout_parameter(@INOUT);", ctx.asyncAssertSuccess(callProcedure -> {
+            conn.query("SELECT @INOUT;", ctx.asyncAssertSuccess(result -> {
+              ctx.assertEquals(1, result.size());
+              Row row = result.iterator().next();
+              ctx.assertEquals(111110, row.getInteger(0));
+              conn.close();
+            }));
+          }));
+        }));
+      }));
+    }));
+  }
 }
