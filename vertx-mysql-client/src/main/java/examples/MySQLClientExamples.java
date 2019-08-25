@@ -297,6 +297,38 @@ public class MySQLClientExamples {
       });
   }
 
+  public void storedProcedureExample(SqlClient client) {
+    client.query("CREATE PROCEDURE multi() BEGIN\n" +
+      "  SELECT 1;\n" +
+      "  SELECT 1;\n" +
+      "  INSERT INTO ins VALUES (1);\n" +
+      "  INSERT INTO ins VALUES (2);\n" +
+      "END;", ar1 -> {
+      if (ar1.succeeded()) {
+        // create stored procedure success
+        client.query("CALL multi();", ar2 -> {
+          if (ar2.succeeded()) {
+            // handle the result
+            RowSet result1 = ar2.result();
+            Row row1 = result1.iterator().next();
+            System.out.println("First result: " + row1.getInteger(0));
+
+            RowSet result2 = result1.next();
+            Row row2 = result2.iterator().next();
+            System.out.println("Second result: " + row2.getInteger(0));
+
+            RowSet result3 = result2.next();
+            System.out.println("Affected rows: " + result3.rowCount());
+          } else {
+            System.out.println("Failure: " + ar2.cause().getMessage());
+          }
+        });
+      } else {
+        System.out.println("Failure: " + ar1.cause().getMessage());
+      }
+    });
+  }
+
   public void pingExample(MySQLConnection connection) {
     connection.ping(ar -> {
       System.out.println("The server has responded to the PING");

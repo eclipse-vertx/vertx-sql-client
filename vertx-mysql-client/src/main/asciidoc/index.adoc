@@ -252,6 +252,15 @@ create easily create a string directly from the row set:
 {@link examples.MySQLClientExamples#collector02Example(io.vertx.sqlclient.SqlClient)}
 ----
 
+== MySQL Stored Procedure
+
+This client supports for running stored procedures in queries, the result will be retrieved from the server following the https://dev.mysql.com/doc/dev/mysql-server/8.0.12/page_protocol_command_phase_sp.html[MySQL protocol] without any magic here.
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#storedProcedureExample(io.vertx.sqlclient.SqlClient)}
+----
+
 == MySQL LOCAL INFILE
 
 This client supports for handling the LOCAL INFILE Request, if you want to load data from a local file into the server, you can use query
