@@ -14,6 +14,7 @@ scalability and low overhead.
 * RxJava 1 and RxJava 2
 * Direct memory to object without unnecessary copies
 * Java 8 Date and Time
+* Stored Procedures support
 * MySQL utilities commands support
 * Compatible with MySQL 5.6 and 5.7
 * Rich collation and charset support
@@ -260,6 +261,8 @@ This client supports for running stored procedures in queries, the result will b
 ----
 {@link examples.MySQLClientExamples#storedProcedureExample(io.vertx.sqlclient.SqlClient)}
 ----
+
+Note: Prepared statements binding OUT parameters is not supported for now.
 
 == MySQL LOCAL INFILE
 
