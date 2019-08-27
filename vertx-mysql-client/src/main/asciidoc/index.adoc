@@ -255,7 +255,7 @@ create easily create a string directly from the row set:
 
 == MySQL Stored Procedure
 
-This client supports for running stored procedures in queries, the result will be retrieved from the server following the https://dev.mysql.com/doc/dev/mysql-server/8.0.12/page_protocol_command_phase_sp.html[MySQL protocol] without any magic here.
+You can run stored procedures in queries. The result will be retrieved from the server following the https://dev.mysql.com/doc/dev/mysql-server/8.0.12/page_protocol_command_phase_sp.html[MySQL protocol] without any magic here.
 
 [source,$lang]
 ----
