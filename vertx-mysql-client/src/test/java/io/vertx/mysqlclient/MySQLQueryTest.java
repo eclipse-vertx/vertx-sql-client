@@ -169,20 +169,6 @@ public class MySQLQueryTest extends MySQLTestBase {
   }
 
   @Test
-  public void testMultiResult(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 1; SELECT \'test\';", ctx.asyncAssertSuccess(result -> {
-        Row row1 = result.iterator().next();
-        ctx.assertEquals(1, row1.getInteger(0));
-        Row row2 = result.next().iterator().next();
-        ctx.assertEquals("test", row2.getValue(0));
-        ctx.assertEquals("test", row2.getString(0));
-        conn.close();
-      }));
-    }));
-  }
-
-  @Test
   public void testLocalInfileRequest(TestContext ctx) {
     FileSystem fileSystem = vertx.fileSystem();
     Buffer fileData = Buffer.buffer().appendString("Fluffy,Harold,cat,f,1993-02-04,NULL")

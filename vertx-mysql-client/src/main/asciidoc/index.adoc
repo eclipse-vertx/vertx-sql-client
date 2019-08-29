@@ -14,6 +14,7 @@ scalability and low overhead.
 * RxJava 1 and RxJava 2
 * Direct memory to object without unnecessary copies
 * Java 8 Date and Time
+* Stored Procedures support
 * MySQL utilities commands support
 * Seamlessly working with MySQL 5.7 and MariaDB 10.4
 * Compatible with MySQL 5.6 and MariaDB 10.x
@@ -252,6 +253,17 @@ create easily create a string directly from the row set:
 ----
 {@link examples.MySQLClientExamples#collector02Example(io.vertx.sqlclient.SqlClient)}
 ----
+
+== MySQL Stored Procedure
+
+You can run stored procedures in queries. The result will be retrieved from the server following the https://dev.mysql.com/doc/dev/mysql-server/8.0.12/page_protocol_command_phase_sp.html[MySQL protocol] without any magic here.
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#storedProcedureExample(io.vertx.sqlclient.SqlClient)}
+----
+
+Note: Prepared statements binding OUT parameters is not supported for now.
 
 == MySQL LOCAL INFILE
 
