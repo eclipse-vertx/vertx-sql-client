@@ -64,7 +64,11 @@ public class MySQLStoredProgramsTest extends MySQLTestBase {
 
               RowSet thirdResult = secondResult.next();
               ctx.assertEquals(0, thirdResult.size());
-              ctx.assertEquals(1, thirdResult.rowCount()); // will only return the affected_rows of the last INSERT statement
+              if (rule.isUsingMariaDB()) {
+                ctx.assertEquals(2, thirdResult.rowCount());
+              } else {
+                ctx.assertEquals(1, thirdResult.rowCount()); // will only return the affected_rows of the last INSERT statement
+              }
 
               conn.query("SELECT id FROM ins", ctx.asyncAssertSuccess(queryRes -> {
                 ctx.assertEquals(2, queryRes.size());
