@@ -5,7 +5,7 @@
 - Connection management
 - Connection pooling
 - MySQL Native41 authentication
-- Text protocol(Simple Query)
+- Text protocol
 - Data type mapping
 - Prepared statement
 - Cursor
@@ -18,13 +18,9 @@
 * [ ] Add support for more authentication methods(caching_sha2_password)
 * [ ] Authentication methods switch
 * [ ] Transaction management
-* [ ] Text Protocol(Local INFILE Request)
-* [ ] Text Protocol(All Utility Commands)
 * [ ] Full data type support
 * [ ] Compression
-* [ ] Stored Procedures(OUT parameters)
 * [ ] Replication Protocol(Binlog)
-* [ ] Charset options
 
 == Supported Data type
 
