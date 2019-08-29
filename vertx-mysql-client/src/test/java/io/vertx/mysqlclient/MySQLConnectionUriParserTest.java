@@ -21,6 +21,16 @@ public class MySQLConnectionUriParserTest {
     assertEquals(expectedParsedResult, actualParsedResult);
   }
 
+  @Test
+  public void testParsingMariaDBUriSchemeDesignator() {
+    uri = "mariadb://localhost";
+    actualParsedResult = parse(uri);
+
+    expectedParsedResult = new JsonObject().put("host", "localhost");
+
+    assertEquals(expectedParsedResult, actualParsedResult);
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void testParsingInvalidUriSchemeDesignator() {
     uri = "mysqle://localhost";

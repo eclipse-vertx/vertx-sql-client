@@ -1,6 +1,7 @@
 package io.vertx.mysqlclient.data;
 
 import io.vertx.ext.unit.TestContext;
+import org.junit.Assume;
 import org.junit.Test;
 
 import java.time.Duration;
@@ -54,6 +55,7 @@ public abstract class DateTimeCodecTest extends MySQLDataTypeTestBase {
 
   @Test
   public void testDecodeFractionalSecondsPartTruncation(TestContext ctx) {
+    Assume.assumeFalse(rule.isUsingMariaDB()); // MariaDB has not auto rounding for fractional seconds
     testDecodeGeneric(ctx, "11:12:00.123456", "TIME(4)", "test_time", Duration.ofHours(11).plusMinutes(12).plusNanos(123500000));
   }
 
@@ -69,6 +71,7 @@ public abstract class DateTimeCodecTest extends MySQLDataTypeTestBase {
 
   @Test
   public void testDecodeDatetimeWithFractionalSecondsTruncation(TestContext ctx) {
+    Assume.assumeFalse(rule.isUsingMariaDB()); // MariaDB has not auto rounding for fractional seconds
     testDecodeGeneric(ctx, "2000-01-01 10:20:30.123456", "DATETIME(4)", "test_datetime", LocalDateTime.of(2000, 1, 1, 10, 20, 30, 123500000));
   }
 
