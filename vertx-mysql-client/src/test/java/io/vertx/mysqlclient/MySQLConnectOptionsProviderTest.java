@@ -93,6 +93,21 @@ public class MySQLConnectOptionsProviderTest {
     assertEquals(expectedConfiguration, actualConfiguration);
   }
 
+  @Test
+  public void testValidUri8() {
+    connectionUri = "mariadb://other@localhost/otherdb?port=3306&password=secret";
+    actualConfiguration = MySQLConnectOptions.fromUri(connectionUri);
+
+    expectedConfiguration = new MySQLConnectOptions()
+      .setUser("other")
+      .setPassword("secret")
+      .setHost("localhost")
+      .setPort(3306)
+      .setDatabase("otherdb");
+
+    assertEquals(expectedConfiguration, actualConfiguration);
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void testInvalidUri1() {
     connectionUri = "mysql://username:password@loc//dbname";

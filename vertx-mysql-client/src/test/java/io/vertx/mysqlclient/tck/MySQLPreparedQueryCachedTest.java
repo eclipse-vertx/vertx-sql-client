@@ -12,7 +12,7 @@ import org.junit.runner.RunWith;
 @RunWith(VertxUnitRunner.class)
 public class MySQLPreparedQueryCachedTest extends PreparedQueryCachedTestBase {
   @ClassRule
-  public static MySQLRule rule = new MySQLRule();
+  public static MySQLRule rule = MySQLRule.SHARED_INSTANCE;
 
   @Override
   protected void initConnector() {

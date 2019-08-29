@@ -15,7 +15,8 @@ scalability and low overhead.
 * Direct memory to object without unnecessary copies
 * Java 8 Date and Time
 * MySQL utilities commands support
-* Compatible with MySQL 5.6 and 5.7
+* Seamlessly working with MySQL 5.7 and MariaDB 10.4
+* Compatible with MySQL 5.6 and MariaDB 10.x
 * Rich collation and charset support
 
 == Usage
