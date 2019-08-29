@@ -17,7 +17,7 @@ import static java.lang.String.*;
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/connecting-using-uri-or-key-value-pairs.html#connecting-using-uri">MySQL official documentation</a>: [scheme://][user[:[password]]@]host[:port][/schema][?attribute1=value1&attribute2=value2...
  */
 public class MySQLConnectionUriParser {
-  private static final String SCHEME_DESIGNATOR_REGEX = "mysql://"; // URI scheme designator
+  private static final String SCHEME_DESIGNATOR_REGEX = "(mysql|mariadb)://"; // URI scheme designator
   private static final String USER_INFO_REGEX = "((?<userinfo>[a-zA-Z0-9\\-._~%!]+(:[a-zA-Z0-9\\-._~%!]*)?)@)?"; // user name and password
   private static final String NET_LOCATION_REGEX = "(?<host>[0-9.]+|\\[[a-zA-Z0-9:]+]|[a-zA-Z0-9\\-._~%]+)"; // ip v4/v6 address or host name
   private static final String PORT_REGEX = "(:(?<port>\\d+))?"; // port

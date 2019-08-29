@@ -7,7 +7,7 @@ import org.junit.ClassRule;
 public abstract class MySQLTestBase {
 
   @ClassRule
-  public static MySQLRule rule = new MySQLRule();
+  public static MySQLRule rule = MySQLRule.SHARED_INSTANCE;
 
   protected static MySQLConnectOptions options;
 

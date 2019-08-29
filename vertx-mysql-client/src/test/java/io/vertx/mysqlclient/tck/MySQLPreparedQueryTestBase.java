@@ -9,7 +9,7 @@ import org.junit.Test;
 
 public abstract class MySQLPreparedQueryTestBase extends PreparedQueryTestBase {
   @ClassRule
-  public static MySQLRule rule = new MySQLRule();
+  public static MySQLRule rule = MySQLRule.SHARED_INSTANCE;
 
   @Override
   protected String statement(String... parts) {
