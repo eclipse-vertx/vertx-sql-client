@@ -17,11 +17,10 @@
 
 package io.vertx.pgclient.impl.codec;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
-import io.vertx.core.json.Json;
+import io.vertx.core.spi.json.JsonCodec;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.pgclient.data.*;
@@ -32,7 +31,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.time.format.DateTimeFormatterBuilder;
@@ -1253,7 +1251,7 @@ class DataTypeCodec {
     if (value == Tuple.JSON_NULL) {
       s = "null";
     } else {
-      s = io.vertx.core.json.Json.encode(value);
+      s = JsonCodec.INSTANCE.toString(value);
     }
     buff.writeCharSequence(s, StandardCharsets.UTF_8);
   }
@@ -1275,22 +1273,14 @@ class DataTypeCodec {
     } else if (s.charAt(pos) == '[') {
       value = new JsonArray(s);
     } else {
-      try {
-        JsonNode json = Json.mapper.readTree(s);
-        if (json.isNumber()) {
-          return json.numberValue();
-        } else if (json.isBoolean()) {
-          return json.booleanValue();
-        } else if (json.isTextual()) {
-          return json.textValue();
-        } else if (json.isNull()) {
-          return Tuple.JSON_NULL;
-        } else {
-          return null;
-        }
-      } catch (IOException e) {
-        // do nothing
+      Object o = JsonCodec.INSTANCE.fromString(s, Object.class);
+      if (o == null) {
+        return Tuple.JSON_NULL;
       }
+      if (o instanceof Number || o instanceof Boolean || o instanceof String) {
+        return o;
+      }
+      return null;
     }
     return value;
   }
