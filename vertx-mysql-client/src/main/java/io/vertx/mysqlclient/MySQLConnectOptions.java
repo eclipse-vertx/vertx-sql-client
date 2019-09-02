@@ -14,13 +14,11 @@ import io.vertx.core.net.PfxOptions;
 import io.vertx.core.net.ProxyOptions;
 import io.vertx.core.net.SSLEngineOptions;
 import io.vertx.core.net.TrustOptions;
+import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.impl.MySQLConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -92,6 +90,9 @@ public class MySQLConnectOptions extends SqlConnectOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public MySQLConnectOptions setCollation(String collation) {
+    if (collation != null && !MySQLCollation.supportedCollationNames.contains(collation)) {
+      throw new IllegalArgumentException("Unsupported collation: " + collation);
+    }
     this.collation = collation;
     return this;
   }
@@ -112,6 +113,9 @@ public class MySQLConnectOptions extends SqlConnectOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public MySQLConnectOptions setCharset(String charset) {
+    if (charset != null && !MySQLCollation.supportedCharsetNames.contains(charset)) {
+      throw new IllegalArgumentException("Unsupported charset: " + charset);
+    }
     this.charset = charset;
     return this;
   }
