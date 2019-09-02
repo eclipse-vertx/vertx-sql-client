@@ -11,6 +11,19 @@ services:
       MYSQL_PASSWORD: password
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: testschema
-    command: --max_allowed_packet=33554432 --max_prepared_stmt_count=16382 --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
+    command: --max_allowed_packet=33554432 --max_prepared_stmt_count=16382 --local_infile=ON --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
     volumes:
       - ../../src/test/resources/init.sql:/docker-entrypoint-initdb.d/init.sql
+  test-tls-mysql:
+    image: mysql:5.7
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_USER: mysql
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: testschema
+    volumes:
+      - ../../src/test/resources/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ../../src/test/resources/tls/conf:/etc/mysql/conf.d
+      - ../../src/test/resources/tls/files:/etc/mysql/tls
