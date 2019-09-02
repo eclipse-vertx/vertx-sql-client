@@ -146,13 +146,7 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
       String authMethodName = initialHandshakePacket.getAuthMethodName();
       byte[] serverScramble = initialHandshakePacket.getScramble();
       Map<String, String> properties = cmd.properties();
-      MySQLCollation collation;
-      try {
-        collation = MySQLCollation.valueOfName(properties.get("collation"));
-      } catch (IllegalArgumentException e) {
-        completionHandler.handle(CommandResponse.failure(e));
-        return;
-      }
+      MySQLCollation collation = MySQLCollation.valueOfName(properties.get("collation"));
       int collationId = collation.collationId();
       encoder.charset = Charset.forName(collation.mappedJavaCharsetName());
       Map<String, String> clientConnectionAttributes = properties;
