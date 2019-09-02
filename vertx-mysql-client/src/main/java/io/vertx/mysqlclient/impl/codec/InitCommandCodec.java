@@ -42,6 +42,8 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
 
   private int status = 0;
 
+  private MySQLCollation collation;
+
   InitCommandCodec(InitCommand cmd) {
     super(cmd);
   }
@@ -146,15 +148,14 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
       String authMethodName = initialHandshakePacket.getAuthMethodName();
       byte[] serverScramble = initialHandshakePacket.getScramble();
       Map<String, String> properties = cmd.properties();
-      MySQLCollation collation = MySQLCollation.valueOfName(properties.get("collation"));
-      int collationId = collation.collationId();
+      collation = MySQLCollation.valueOfName(properties.get("collation"));
       encoder.charset = Charset.forName(collation.mappedJavaCharsetName());
       Map<String, String> clientConnectionAttributes = properties;
       if (clientConnectionAttributes != null && !clientConnectionAttributes.isEmpty()) {
         encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_ATTRS;
       }
       encoder.clientCapabilitiesFlag &= initialHandshakePacket.getServerCapabilitiesFlags();
-      sendHandshakeResponseMessage(cmd.username(), cmd.password(), cmd.database(), collationId, serverScramble, authMethodName, clientConnectionAttributes);
+      sendHandshakeResponseMessage(cmd.username(), cmd.password(), cmd.database(), serverScramble, authMethodName, clientConnectionAttributes);
     }
   }
 
@@ -174,7 +175,7 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     }
   }
 
-  private void sendHandshakeResponseMessage(String username, String password, String database, int collationId, byte[] serverScramble, String authMethodName, Map<String, String> clientConnectionAttributes) {
+  private void sendHandshakeResponseMessage(String username, String password, String database, byte[] serverScramble, String authMethodName, Map<String, String> clientConnectionAttributes) {
     ByteBuf packet = allocateBuffer();
     // encode packet header
     int packetStartIdx = packet.writerIndex();
@@ -185,7 +186,7 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     int clientCapabilitiesFlags = encoder.clientCapabilitiesFlag;
     packet.writeIntLE(clientCapabilitiesFlags);
     packet.writeIntLE(0xFFFFFF);
-    packet.writeByte(collationId);
+    packet.writeByte(collation.collationId());
     byte[] filler = new byte[23];
     packet.writeBytes(filler);
     BufferUtils.writeNullTerminatedString(packet, username, StandardCharsets.UTF_8);
@@ -214,8 +215,8 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     if ((clientCapabilitiesFlags & CLIENT_CONNECT_ATTRS) != 0) {
       ByteBuf kv = encoder.chctx.alloc().ioBuffer();
       for (Map.Entry<String, String> attribute : clientConnectionAttributes.entrySet()) {
-        if (attribute.getKey().equals("collation")) {
-          // we store the collation in the properties but it's not an attribute
+        if (nonAttributePropertyKeys.contains(attribute.getKey())) {
+          // we store it in the properties but it's not an attribute
         } else {
           BufferUtils.writeLengthEncodedString(kv, attribute.getKey(), StandardCharsets.UTF_8);
           BufferUtils.writeLengthEncodedString(kv, attribute.getValue(), StandardCharsets.UTF_8);
