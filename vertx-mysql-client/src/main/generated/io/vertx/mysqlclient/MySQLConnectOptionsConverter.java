@@ -24,6 +24,11 @@ public class MySQLConnectOptionsConverter {
             obj.setCollation((String)member.getValue());
           }
           break;
+        case "sslMode":
+          if (member.getValue() instanceof String) {
+            obj.setSslMode(io.vertx.mysqlclient.SslMode.valueOf((String)member.getValue()));
+          }
+          break;
       }
     }
   }
@@ -38,6 +43,9 @@ public class MySQLConnectOptionsConverter {
     }
     if (obj.getCollation() != null) {
       json.put("collation", obj.getCollation());
+    }
+    if (obj.getSslMode() != null) {
+      json.put("sslMode", obj.getSslMode().name());
     }
   }
 }
