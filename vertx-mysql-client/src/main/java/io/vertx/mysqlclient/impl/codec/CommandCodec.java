@@ -33,7 +33,7 @@ import static io.vertx.mysqlclient.impl.codec.Packets.*;
 
 abstract class CommandCodec<R, C extends CommandBase<R>> {
 
-  protected static final List<String> nonAttributePropertyKeys = Collections.unmodifiableList(Arrays.asList("collation"));
+  protected static final List<String> nonAttributePropertyKeys = Collections.unmodifiableList(Arrays.asList("collation", "sslMode"));
 
   Handler<? super CommandResponse<R>> completionHandler;
   public Throwable failure;
