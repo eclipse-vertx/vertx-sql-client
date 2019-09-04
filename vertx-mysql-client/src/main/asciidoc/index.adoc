@@ -16,6 +16,7 @@ scalability and low overhead.
 * Direct memory to object without unnecessary copies
 * Java 8 Date and Time
 * Stored Procedures support
+* TLS/SSL support
 * MySQL utilities commands support
 * Seamlessly working with MySQL 5.7 and MariaDB 10.4
 * Compatible with MySQL 5.6 and MariaDB 10.x
