@@ -56,6 +56,7 @@ public class MySQLTLSTest {
   public void testSuccessWithDisabledSslMode(TestContext ctx) {
     options.setSslMode(SslMode.DISABLED);
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      ctx.assertFalse(conn.isSSL());
       conn.query("SELECT 1", ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
         conn.close();
@@ -72,6 +73,7 @@ public class MySQLTLSTest {
       .setKeyPath("tls/files/client-key.pem"));
 
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      ctx.assertTrue(conn.isSSL());
       conn.query("SELECT 1", ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
         conn.close();
@@ -88,6 +90,7 @@ public class MySQLTLSTest {
       .setKeyPath("tls/files/client-key.pem"));
 
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      ctx.assertTrue(conn.isSSL());
       conn.query("SELECT 1", ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
         conn.close();
@@ -101,6 +104,7 @@ public class MySQLTLSTest {
     options.setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"));
 
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      ctx.assertTrue(conn.isSSL());
       conn.query("SELECT 1", ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
         conn.close();
@@ -114,6 +118,7 @@ public class MySQLTLSTest {
     options.setTrustAll(true);
 
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      ctx.assertTrue(conn.isSSL());
       conn.query("SELECT 1", ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
         conn.close();
@@ -130,6 +135,7 @@ public class MySQLTLSTest {
       .setKeyPath("tls/files/client-key.pem"));
 
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      ctx.assertTrue(conn.isSSL());
       conn.query("SELECT 1", ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
         conn.close();
