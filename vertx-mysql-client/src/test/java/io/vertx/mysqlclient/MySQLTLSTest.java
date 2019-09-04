@@ -177,4 +177,12 @@ public class MySQLTLSTest {
       ctx.assertEquals("Host verification algorithm must be specified under VERIFY_IDENTITY ssl-mode.", error.getMessage());
     }));
   }
+
+  @Test
+  public void testConnFail(TestContext ctx) {
+    options.setSslMode(SslMode.REQUIRED);
+
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertFailure(error -> {
+    }));
+  }
 }
