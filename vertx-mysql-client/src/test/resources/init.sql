@@ -76,8 +76,6 @@ CREATE TABLE world (
   PRIMARY KEY  (id)
 )
 ENGINE=INNODB;
-GRANT SELECT, UPDATE ON world TO 'benchmarkdbuser'@'%' IDENTIFIED BY 'benchmarkdbpass';
-GRANT SELECT, UPDATE ON world TO 'benchmarkdbuser'@'localhost' IDENTIFIED BY 'benchmarkdbpass';
 
 DELIMITER #
 CREATE PROCEDURE load_data()
@@ -107,8 +105,6 @@ CREATE TABLE Fortune (
   PRIMARY KEY  (id)
 )
 ENGINE=INNODB;
-GRANT SELECT ON Fortune TO 'mysql'@'%' IDENTIFIED BY 'password';
-GRANT SELECT ON Fortune TO 'mysql'@'localhost' IDENTIFIED BY 'password';
 
 INSERT INTO Fortune (message) VALUES ('fortune: No such file or directory');
 INSERT INTO Fortune (message) VALUES ('A computer scientist is someone who fixes things that aren''t broken.');
