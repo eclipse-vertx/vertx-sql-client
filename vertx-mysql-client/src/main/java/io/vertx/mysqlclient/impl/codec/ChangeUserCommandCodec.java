@@ -38,7 +38,7 @@ class ChangeUserCommandCodec extends CommandCodec<Void, ChangeUserCommand> {
         }
         byte[] scramble = new byte[20];
         payload.readBytes(scramble);
-        byte[] scrambledPassword = Native41Authenticator.encode(cmd.password(), StandardCharsets.UTF_8, scramble);
+        byte[] scrambledPassword = Native41Authenticator.encode(cmd.password().getBytes(), scramble);
         sendAuthSwitchResponse(scrambledPassword);
         break;
       case OK_PACKET_HEADER:

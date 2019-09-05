@@ -210,7 +210,7 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
           case "mysql_native_password":
             byte[] challenge = new byte[20];
             payload.readBytes(challenge);
-            byte[] scrambledPassword = Native41Authenticator.encode(cmd.password(), StandardCharsets.UTF_8, challenge);
+            byte[] scrambledPassword = Native41Authenticator.encode(cmd.password().getBytes(), challenge);
 
             ByteBuf packet = allocateBuffer(24);
             packet.writeMediumLE(20);
@@ -266,7 +266,7 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     } else {
       //TODO support different auth methods here
 
-      byte[] scrambledPassword = Native41Authenticator.encode(password, StandardCharsets.UTF_8, serverScramble);
+      byte[] scrambledPassword = Native41Authenticator.encode(password.getBytes(), serverScramble);
       if ((clientCapabilitiesFlags & CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA) != 0) {
         BufferUtils.writeLengthEncodedInteger(packet, scrambledPassword.length);
         packet.writeBytes(scrambledPassword);
