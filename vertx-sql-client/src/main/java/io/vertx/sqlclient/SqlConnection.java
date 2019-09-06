@@ -22,8 +22,10 @@ import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.json.JsonObject;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collector;
 
 /**
@@ -86,11 +88,25 @@ public interface SqlConnection extends SqlClient {
   SqlConnection preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
   @Override
+  <R> SqlConnection preparedQuery(String sql, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> SqlConnection preparedQuery(String sql, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @Override
   @GenIgnore
   <R> SqlConnection preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   @Override
   SqlConnection query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
+
+  @Override
+  <R> SqlConnection query(String sql, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> SqlConnection query(String sql, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
 
   @Override
   @GenIgnore
@@ -100,11 +116,25 @@ public interface SqlConnection extends SqlClient {
   SqlConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
 
   @Override
+  <R> SqlConnection preparedQuery(String sql, Tuple arguments, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> SqlConnection preparedQuery(String sql, Tuple arguments, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @Override
   @GenIgnore
   <R> SqlConnection preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   @Override
   SqlConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
+
+  @Override
+  <R> SqlConnection preparedBatch(String sql, List<Tuple> batch, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> SqlConnection preparedBatch(String sql, List<Tuple> batch, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
 
   @Override
   @GenIgnore

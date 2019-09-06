@@ -6,15 +6,18 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.json.JsonObject;
 import io.vertx.mysqlclient.impl.MySQLPoolImpl;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collector;
 
 import static io.vertx.mysqlclient.MySQLConnectOptions.*;
@@ -79,6 +82,13 @@ public interface MySQLPool extends Pool {
   @Override
   MySQLPool preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  @Override
+  <R> MySQLPool preparedQuery(String sql, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> MySQLPool preparedQuery(String sql, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
+
   @GenIgnore
   @Override
   <R> MySQLPool preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
@@ -91,7 +101,21 @@ public interface MySQLPool extends Pool {
   <R> MySQLPool query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   @Override
+  <R> MySQLPool query(String sql, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> MySQLPool query(String sql, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @Override
   MySQLPool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
+
+  @Override
+  <R> MySQLPool preparedQuery(String sql, Tuple arguments, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> MySQLPool preparedQuery(String sql, Tuple arguments, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
 
   @GenIgnore
   @Override
@@ -99,6 +123,13 @@ public interface MySQLPool extends Pool {
 
   @Override
   MySQLPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
+
+  @Override
+  <R> MySQLPool preparedBatch(String sql, List<Tuple> batch, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> MySQLPool preparedBatch(String sql, List<Tuple> batch, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
 
   @GenIgnore
   @Override

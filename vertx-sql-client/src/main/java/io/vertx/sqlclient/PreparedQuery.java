@@ -17,6 +17,7 @@
 
 package io.vertx.sqlclient;
 
+import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.impl.ArrayTuple;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
@@ -25,6 +26,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collector;
 
 /**
@@ -59,6 +61,37 @@ public interface PreparedQuery {
    */
   @Fluent
   PreparedQuery execute(Tuple args, Handler<AsyncResult<RowSet<Row>>> handler);
+
+  /**
+   * Create a cursor with the provided {@code arguments}.
+   * <br/>
+   * The row set is mapped to the POJO {@code <R>}.
+   * <br/>
+   * The POJO is mapped by the {@code mapping} function.
+   *
+   * @param args the list of arguments
+   * @param mapping the mapping function
+   * @return the query
+   * @param <R> the POJO type mapped by {@link JsonObject#mapTo(Class)}
+   */
+  @GenIgnore
+  <R> PreparedQuery execute(Tuple args, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  /**
+   * Create a cursor with the provided {@code arguments}.
+   * <br/>
+   * The row set is mapped to the POJO {@code <R>}.
+   * <br/>
+   * The POJO is mapped by the {@link JsonObject#mapTo(Class)} with a {@link JsonObject}
+   * created by the row values keyed by the row names.
+   *
+   * @param args the list of arguments
+   * @param type the mapping type
+   * @return the query
+   * @param <R> the POJO type mapped by {@link JsonObject#mapTo(Class)}
+   */
+  @GenIgnore
+  <R> PreparedQuery execute(Tuple args, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
 
   /**
    * Create a cursor with the provided {@code arguments}.
@@ -107,6 +140,35 @@ public interface PreparedQuery {
    */
   @Fluent
   PreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<RowSet<Row>>> handler);
+
+  /**
+   * Execute a batch.
+   * <br/>
+   * The row set is mapped to the POJO {@code <R>}.
+   * <br/>
+   * The POJO is mapped by the {@code mapping} function.
+   *
+   * @param argsList the list of tuple for the batch
+   * @param mapping the mapping function
+   * @return the createBatch
+   */
+  @GenIgnore
+  <R> PreparedQuery batch(List<Tuple> argsList, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  /**
+   * Execute a batch.
+   * <br/>
+   * The row set is mapped to the POJO {@code <R>}.
+   * <br/>
+   * The POJO is mapped by the {@link JsonObject#mapTo(Class)} with a {@link JsonObject}
+   * created by the row values keyed by the row names.
+   *
+   * @param argsList the list of tuple for the batch
+   * @param type the mapping type
+   * @return the createBatch
+   */
+  @GenIgnore
+  <R> PreparedQuery batch(List<Tuple> argsList, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
 
   /**
    * Execute a batch.

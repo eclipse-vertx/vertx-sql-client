@@ -21,8 +21,10 @@ import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.json.JsonObject;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collector;
 
 /**
@@ -37,11 +39,25 @@ public interface Pool extends SqlClient {
   Pool preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
   @Override
+  <R> Pool preparedQuery(String sql, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> Pool preparedQuery(String sql, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @Override
   @GenIgnore
   <R> Pool preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   @Override
   Pool query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
+
+  @Override
+  <R> Pool query(String sql, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> Pool query(String sql, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
 
   @Override
   @GenIgnore
@@ -51,11 +67,25 @@ public interface Pool extends SqlClient {
   Pool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
 
   @Override
+  <R> Pool preparedQuery(String sql, Tuple arguments, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> Pool preparedQuery(String sql, Tuple arguments, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @Override
   @GenIgnore
   <R> Pool preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   @Override
   Pool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
+
+  @Override
+  <R> Pool preparedBatch(String sql, List<Tuple> batch, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> Pool preparedBatch(String sql, List<Tuple> batch, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
 
   @Override
   @GenIgnore

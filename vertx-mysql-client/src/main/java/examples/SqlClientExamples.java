@@ -17,6 +17,7 @@
 package examples;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Pool;
@@ -125,6 +126,42 @@ public class SqlClientExamples {
 
     // Enable prepare statements caching
     connectOptions.setCachePreparedStatements(true);
+  }
+
+  public class User {
+    User() {
+    }
+    User(JsonObject json) {
+    }
+    String getUserName() {
+      throw new UnsupportedOperationException();
+    }
+  }
+
+  public void mapping01(SqlClient client) {
+    client.query("SELECT * FROM users WHERE id='julien'", json -> new User(json), ar -> {
+      if (ar.succeeded()) {
+        RowSet<User> result = ar.result();
+        for (User user : result) {
+          System.out.println("Got user " + user.getUserName());
+        }
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
+  }
+
+  public void mapping02(SqlClient client) {
+    client.query("SELECT * FROM users WHERE id='julien'", User.class, ar -> {
+      if (ar.succeeded()) {
+        RowSet<User> result = ar.result();
+        for (User user : result) {
+          System.out.println("Got user " + user.getUserName());
+        }
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
   }
 
   public void usingConnections01(Vertx vertx, Pool pool) {

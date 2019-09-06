@@ -235,6 +235,10 @@ The {@link io.vertx.sqlclient.data.Numeric} Java type is used to represent the M
 {@link examples.MySQLClientExamples#numericExample(io.vertx.sqlclient.Row)}
 ----
 
+== Simple object mapping
+
+include::pojo_mapping.adoc[]
+
 == Collector queries
 
 You can use Java collectors with the query API:

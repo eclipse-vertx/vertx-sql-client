@@ -125,6 +125,14 @@ public class SqlClientExamples {
     connectOptions.setCachePreparedStatements(true);
   }
 
+  public void mapping01(SqlClient client) {
+    throw new UnsupportedOperationException();
+  }
+
+  public void mapping02(SqlClient client) {
+    throw new UnsupportedOperationException();
+  }
+
   public void usingConnections01(Vertx vertx, Pool pool) {
 
     pool.getConnection(ar1 -> {

@@ -17,6 +17,7 @@
 
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.impl.command.CommandScheduler;
 import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
@@ -39,7 +40,17 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
 
   @Override
   public C query(String sql, Handler<AsyncResult<RowSet<Row>>> handler) {
-    return query(sql, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
+    return query(sql, false, RowSetImpl.rowSetAdapter(), RowSetImpl.COLLECTOR, handler);
+  }
+
+  @Override
+  public <R> C query(String sql, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler) {
+    return query(sql, false, RowSetImpl.rowSetAdapter(), RowSetImpl.mappingCollector(mapping), handler);
+  }
+
+  @Override
+  public <R> C query(String sql, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler) {
+    return query(sql, json -> json.mapTo(type), handler);
   }
 
   @Override
@@ -60,7 +71,17 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
 
   @Override
   public C preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler) {
-    return preparedQuery(sql, arguments, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
+    return preparedQuery(sql, arguments, RowSetImpl.rowSetAdapter(), RowSetImpl.COLLECTOR, handler);
+  }
+
+  @Override
+  public <R> C preparedQuery(String sql, Tuple arguments, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler) {
+    return preparedQuery(sql, arguments, RowSetImpl.rowSetAdapter(), RowSetImpl.mappingCollector(mapping), handler);
+  }
+
+  @Override
+  public <R> C preparedQuery(String sql, Tuple arguments, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler) {
+    return preparedQuery(sql, arguments, json -> json.mapTo(type), handler);
   }
 
   @Override
@@ -97,13 +118,33 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
   }
 
   @Override
+  public <R> C preparedQuery(String sql, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler) {
+    return preparedQuery(sql, ArrayTuple.EMPTY, mapping, handler);
+  }
+
+  @Override
+  public <R> C preparedQuery(String sql, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler) {
+    return preparedQuery(sql, ArrayTuple.EMPTY, type, handler);
+  }
+
+  @Override
   public <R> C preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
     return preparedQuery(sql, ArrayTuple.EMPTY, collector, handler);
   }
 
   @Override
   public C preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler) {
-    return preparedBatch(sql, batch, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
+    return preparedBatch(sql, batch, RowSetImpl.rowSetAdapter(), RowSetImpl.COLLECTOR, handler);
+  }
+
+  @Override
+  public <R> C preparedBatch(String sql, List<Tuple> batch, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler) {
+    return preparedBatch(sql, batch, RowSetImpl.rowSetAdapter(), RowSetImpl.mappingCollector(mapping), handler);
+  }
+
+  @Override
+  public <R> C preparedBatch(String sql, List<Tuple> batch, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler) {
+    return preparedBatch(sql, batch, json -> json.mapTo(type), handler);
   }
 
   @Override

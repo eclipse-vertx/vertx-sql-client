@@ -322,6 +322,10 @@ Text search is handling using java `String`
 {@link examples.PgClientExamples#tsQuery02Example}
 ----
 
+== Simple object mapping
+
+include::pojo_mapping.adoc[]
+
 == Collector queries
 
 You can use Java collectors with the query API:

@@ -1,0 +1,26 @@
+The SQL client does not aim to be an ORM, nevertheless it provides simply support for mapping rows
+to POJO (Plain Old Java Object).
+
+For the moment, this feature is supported for reading:
+
+- Simple queries
+- Prepared queries
+- Batch queries
+
+The way it works is very simple, each row is converted to a JSON object keyed by row names.
+
+You can provide a function that turns this JSON row into any object:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#mapping01(io.vertx.sqlclient.SqlClient)}
+----
+
+You can also provide a class literal to let the underlying JSON mapper do the mapping for you:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#mapping02(io.vertx.sqlclient.SqlClient)}
+----
+
+This is literaly mapping the JSON object to a POJO with {@link io.vertx.core.json.JsonObject#mapTo(java.lang.Class)}.

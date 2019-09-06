@@ -22,8 +22,10 @@ import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.json.JsonObject;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collector;
 
 /**
@@ -43,6 +45,40 @@ public interface SqlClient {
    */
   @Fluent
   SqlClient query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
+
+  /**
+   * Execute a simple query.
+   * <br/>
+   * The row set is mapped to the POJO {@code <R>}.
+   * <br/>
+   * The POJO is mapped by the {@code mapping} function.
+   *
+   * @param sql the query SQL
+   * @param mapping the mapping function
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
+   * @param <R> the POJO type mapped by the {@code mapping} function
+   */
+  @Fluent
+  <R> SqlClient query(String sql, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  /**
+   * Execute a simple query.
+   * <br/>
+   * The row set is mapped to the POJO {@code <R>}.
+   * <br/>
+   * The POJO is mapped by the {@link JsonObject#mapTo(Class)} with a {@link JsonObject}
+   * created by the row values keyed by the row names.
+   *
+   * @param sql the query SQL
+   * @param type the mapping type
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
+   * @param <R> the POJO type mapped by {@link JsonObject#mapTo(Class)}
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Fluent
+  <R> SqlClient query(String sql, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
 
   /**
    * Execute a simple query.
@@ -67,6 +103,38 @@ public interface SqlClient {
 
   /**
    * Prepare and execute a query.
+   * <br/>
+   * The row set is mapped to the POJO {@code <R>}.
+   * <br/>
+   * The POJO is mapped by the {@code mapping} function.
+   *
+   * @param sql the prepared query SQL
+   * @param mapping the mapping function
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  <R> SqlClient preparedQuery(String sql, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  /**
+   * Prepare and execute a query.
+   * <br/>
+   * The row set is mapped to the POJO {@code <R>}.
+   * <br/>
+   * The POJO is mapped by the {@link JsonObject#mapTo(Class)} with a {@link JsonObject}
+   * created by the row values keyed by the row names.
+   *
+   * @param sql the prepared query SQL
+   * @param type the mapping type
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  <R> SqlClient preparedQuery(String sql, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
+
+  /**
+   * Prepare and execute a query.
    *
    * @param sql the prepared query SQL
    * @param collector the collector
@@ -86,6 +154,40 @@ public interface SqlClient {
    */
   @Fluent
   SqlClient preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
+
+  /**
+   * Prepare, execute a query and provide a POJO mapped row result.
+   * <br/>
+   * The row set is mapped to the POJO {@code <R>}.
+   * <br/>
+   * The POJO is mapped by the {@code mapping} function.
+   *
+   * @param sql the prepared query SQL
+   * @param arguments the list of arguments
+   * @param mapping the mapping function
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  <R> SqlClient preparedQuery(String sql, Tuple arguments, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  /**
+   * Prepare, execute a query and provide a POJO mapped row result.
+   * <br/>
+   * The row set is mapped to the POJO {@code <R>}.
+   * <br/>
+   * The POJO is mapped by the {@link JsonObject#mapTo(Class)} with a {@link JsonObject}
+   * created by the row values keyed by the row names.
+   *
+   * @param sql the prepared query SQL
+   * @param arguments the list of arguments
+   * @param type the mapping type
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  <R> SqlClient preparedQuery(String sql, Tuple arguments, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
 
   /**
    * Prepare and execute a query.
@@ -109,6 +211,40 @@ public interface SqlClient {
    */
   @Fluent
   SqlClient preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
+
+  /**
+   * Prepare and execute a batch.
+   * <br/>
+   * The row set is mapped to the POJO {@code <R>}.
+   * <br/>
+   * The POJO is mapped by the {@code mapping} function.
+   *
+   * @param sql the prepared query SQL
+   * @param batch the batch of tuples
+   * @param mapping the mapping function
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  <R> SqlClient preparedBatch(String sql, List<Tuple> batch, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  /**
+   * Prepare and execute a batch.
+   * <br/>
+   * The row set is mapped to the POJO {@code <R>}.
+   * <br/>
+   * The POJO is mapped by the {@link JsonObject#mapTo(Class)} with a {@link JsonObject}
+   * created by the row values keyed by the row names.
+   *
+   * @param sql the prepared query SQL
+   * @param batch the batch of tuples
+   * @param type the mapping type
+   * @param handler the handler notified with the execution result
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  <R> SqlClient preparedBatch(String sql, List<Tuple> batch, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
 
   /**
    * Prepare and execute a createBatch.

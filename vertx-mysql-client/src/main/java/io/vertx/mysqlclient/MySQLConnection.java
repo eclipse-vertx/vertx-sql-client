@@ -6,14 +6,18 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.mysqlclient.impl.MySQLConnectionImpl;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
 
+import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collector;
 
 import static io.vertx.mysqlclient.MySQLConnectOptions.*;
@@ -53,6 +57,13 @@ public interface MySQLConnection extends SqlConnection {
   @Override
   MySQLConnection preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  @Override
+  <R> MySQLConnection preparedQuery(String sql, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> MySQLConnection preparedQuery(String sql, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
+
   @GenIgnore
   @Override
   <R> MySQLConnection preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
@@ -65,11 +76,39 @@ public interface MySQLConnection extends SqlConnection {
   <R> MySQLConnection query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   @Override
+  <R> MySQLConnection query(String sql, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> MySQLConnection query(String sql, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @Override
   MySQLConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
+
+  @Override
+  <R> MySQLConnection preparedQuery(String sql, Tuple arguments, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> MySQLConnection preparedQuery(String sql, Tuple arguments, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
 
   @GenIgnore
   @Override
   <R> MySQLConnection preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+
+  @Override
+  MySQLConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
+
+  @Override
+  <R> MySQLConnection preparedBatch(String sql, List<Tuple> batch, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> MySQLConnection preparedBatch(String sql, List<Tuple> batch, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore
+  @Override
+  <R> MySQLConnection preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   /**
    * Send a PING command to check if the server is alive.
@@ -98,7 +137,6 @@ public interface MySQLConnection extends SqlConnection {
    */
   @Fluent
   MySQLConnection getInternalStatistics(Handler<AsyncResult<String>> handler);
-
 
   /**
    * Send a SET_OPTION command to set options for the current connection.

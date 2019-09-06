@@ -16,13 +16,13 @@
  */
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Row;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
@@ -37,7 +37,30 @@ class RowSetImpl<R> extends SqlResultBase<RowSet<R>, RowSetImpl<R>> implements R
     (set) -> set
   );
 
-  static Function<RowSet<Row>, RowSetImpl<Row>> FACTORY = rs -> (RowSetImpl) rs;
+  static <R> Collector<Row, RowSetImpl<R>, RowSet<R>> mappingCollector(Function<JsonObject, R> f) {
+    return Collector.of(
+      RowSetImpl::new,
+      (set, row) -> {
+        JsonObject o = new JsonObject();
+        int size = row.size();
+        for (int idx = 0;idx < size;idx++) {
+          String key = row.getColumnName(idx);
+          Object value = row.getValue(idx);
+          o.put(key, value);
+        }
+        R apply = f.apply(o);
+        set.list.add(apply);
+      },
+      (set1, set2) -> null, // Shall not be invoked as this is sequential
+      (set) -> set
+    );
+  }
+
+  private static final Function FACTORY = rs -> (RowSetImpl) rs;
+
+  static <R> Function<RowSet<R>, RowSetImpl<R>> rowSetAdapter() {
+    return FACTORY;
+  }
 
   private ArrayList<R> list = new ArrayList<>();
 

@@ -17,6 +17,7 @@
 
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
 import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
@@ -53,17 +54,26 @@ class PreparedQueryImpl implements PreparedQuery {
 
   @Override
   public PreparedQuery execute(Tuple args, Handler<AsyncResult<RowSet<Row>>> handler) {
-    return execute(args, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
+    return execute(args, RowSetImpl.rowSetAdapter(), RowSetImpl.COLLECTOR, handler);
+  }
+
+  @Override
+  public <R> PreparedQuery execute(Tuple args, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler) {
+    return execute(args, RowSetImpl.rowSetAdapter(), RowSetImpl.mappingCollector(mapping), handler);
+  }
+
+  @Override
+  public <R> PreparedQuery execute(Tuple args, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler) {
+    return execute(args, json -> json.mapTo(type),  handler);
   }
 
   @Override
   public <R> PreparedQuery execute(Tuple args, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
-    return execute(args, true, SqlResultImpl::new, collector, handler);
+    return execute(args, SqlResultImpl::new, collector, handler);
   }
 
   private <R1, R2 extends SqlResultBase<R1, R2>, R3 extends SqlResult<R1>> PreparedQuery execute(
     Tuple args,
-    boolean singleton,
     Function<R1, R2> factory,
     Collector<Row, ?, R1> collector,
     Handler<AsyncResult<R3>> handler) {
@@ -116,7 +126,17 @@ class PreparedQueryImpl implements PreparedQuery {
   }
 
   public PreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<RowSet<Row>>> handler) {
-    return batch(argsList, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
+    return batch(argsList, RowSetImpl.rowSetAdapter(), RowSetImpl.COLLECTOR, handler);
+  }
+
+  @Override
+  public <R> PreparedQuery batch(List<Tuple> argsList, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler) {
+    return batch(argsList, RowSetImpl.rowSetAdapter(), RowSetImpl.mappingCollector(mapping), handler);
+  }
+
+  @Override
+  public <R> PreparedQuery batch(List<Tuple> argsList, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler) {
+    return batch(argsList, json -> json.mapTo(type), handler);
   }
 
   @Override

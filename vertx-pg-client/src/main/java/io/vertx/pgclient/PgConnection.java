@@ -17,6 +17,7 @@
 
 package io.vertx.pgclient;
 
+import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.impl.PgConnectionImpl;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.SqlResult;
@@ -30,6 +31,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.*;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collector;
 
 /**
@@ -105,17 +107,47 @@ public interface PgConnection extends SqlConnection {
   PgConnection closeHandler(Handler<Void> handler);
   PgConnection preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  @Override
+  <R> PgConnection preparedQuery(String sql, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> PgConnection preparedQuery(String sql, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
+
   @GenIgnore
   <R> PgConnection preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
   PgConnection query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
+
+  @Override
+  <R> PgConnection query(String sql, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> PgConnection query(String sql, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
 
   @GenIgnore
   <R> PgConnection query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
   PgConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  @Override
+  <R> PgConnection preparedQuery(String sql, Tuple arguments, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> PgConnection preparedQuery(String sql, Tuple arguments, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
+
   @GenIgnore
   <R> PgConnection preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+
+  @Override
   PgConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
+
+  @Override
+  <R> PgConnection preparedBatch(String sql, List<Tuple> batch, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> PgConnection preparedBatch(String sql, List<Tuple> batch, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
 
   @GenIgnore
   <R> PgConnection preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);

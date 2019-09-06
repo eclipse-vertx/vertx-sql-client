@@ -19,6 +19,7 @@ package io.vertx.sqlclient.tck;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.SqlClient;
@@ -77,6 +78,47 @@ public abstract class SimpleQueryTestBase {
         Tuple row = result.iterator().next();
         ctx.assertEquals(1, row.getInteger(0));
         ctx.assertEquals("fortune: No such file or directory", row.getString(1));
+      }));
+    }));
+  }
+
+  @Test
+  public void testQueryMapped(TestContext ctx) {
+    connect(ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT id, message from immutable", json -> json, ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(12, result.size());
+        JsonObject row = result.iterator().next();
+        ctx.assertEquals(1, row.getInteger("id"));
+        ctx.assertEquals("fortune: No such file or directory", row.getString("message"));
+      }));
+    }));
+  }
+
+  public static class Immutable {
+    public int id;
+    public String message;
+  }
+
+  @Test
+  public void testQueryMappedToPojo(TestContext ctx) {
+    connect(ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT id, message from immutable", Immutable.class, ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(12, result.size());
+        Immutable row = result.iterator().next();
+        ctx.assertEquals(1, row.id);
+        ctx.assertEquals("fortune: No such file or directory", row.message);
+      }));
+    }));
+  }
+
+  @Test
+  public void testQueryMappingError(TestContext ctx) {
+    RuntimeException failure = new RuntimeException();
+    connect(ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT id, message from immutable", json -> {
+        throw failure;
+      }, ctx.asyncAssertFailure(err -> {
+        ctx.assertEquals(err, failure);
       }));
     }));
   }

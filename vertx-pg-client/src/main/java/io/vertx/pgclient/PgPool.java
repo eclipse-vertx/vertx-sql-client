@@ -17,8 +17,10 @@
 
 package io.vertx.pgclient;
 
+import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.impl.PgPoolImpl;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Row;
@@ -32,6 +34,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collector;
 
 /**
@@ -118,17 +121,45 @@ public interface PgPool extends Pool {
 
   PgPool preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  @Override
+  <R> PgPool preparedQuery(String sql, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> PgPool preparedQuery(String sql, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
+
   @GenIgnore
   <R> PgPool preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
   PgPool query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
+
+  @Override
+  <R> PgPool query(String sql, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> PgPool query(String sql, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
 
   @GenIgnore
   <R> PgPool query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
   PgPool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  @Override
+  <R> PgPool preparedQuery(String sql, Tuple arguments, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> PgPool preparedQuery(String sql, Tuple arguments, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
+
   @GenIgnore
   <R> PgPool preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
   PgPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
+
+  @Override
+  <R> PgPool preparedBatch(String sql, List<Tuple> batch, Function<JsonObject, R> mapping, Handler<AsyncResult<RowSet<R>>> handler);
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Override
+  <R> PgPool preparedBatch(String sql, List<Tuple> batch, Class<R> type, Handler<AsyncResult<RowSet<R>>> handler);
 
   @GenIgnore
   <R> PgPool preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
