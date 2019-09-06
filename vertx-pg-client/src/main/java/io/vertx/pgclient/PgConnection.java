@@ -103,19 +103,19 @@ public interface PgConnection extends SqlConnection {
   PgConnection prepare(String sql, Handler<AsyncResult<PreparedQuery>> handler);
   PgConnection exceptionHandler(Handler<Throwable> handler);
   PgConnection closeHandler(Handler<Void> handler);
-  PgConnection preparedQuery(String sql, Handler<AsyncResult<RowSet>> handler);
+  PgConnection preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
   @GenIgnore
   <R> PgConnection preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-  PgConnection query(String sql, Handler<AsyncResult<RowSet>> handler);
+  PgConnection query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
   @GenIgnore
   <R> PgConnection query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-  PgConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet>> handler);
+  PgConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
 
   @GenIgnore
   <R> PgConnection preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-  PgConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet>> handler);
+  PgConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
 
   @GenIgnore
   <R> PgConnection preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);

@@ -27,7 +27,7 @@ import io.vertx.core.Handler;
 
 import java.util.Iterator;
 
-public class RowStreamImpl implements RowStream<Row>, Handler<AsyncResult<RowSet>> {
+public class RowStreamImpl implements RowStream<Row>, Handler<AsyncResult<RowSet<Row>>> {
 
   private final PreparedQueryImpl ps;
   private final int fetch;
@@ -114,7 +114,7 @@ public class RowStreamImpl implements RowStream<Row>, Handler<AsyncResult<RowSet
   }
 
   @Override
-  public void handle(AsyncResult<RowSet> ar) {
+  public void handle(AsyncResult<RowSet<Row>> ar) {
     if (ar.failed()) {
       Handler<Throwable> handler;
       synchronized (RowStreamImpl.this) {

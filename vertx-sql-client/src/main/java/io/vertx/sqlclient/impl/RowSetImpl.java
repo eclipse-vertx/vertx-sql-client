@@ -24,9 +24,9 @@ import java.util.NoSuchElementException;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
-class RowSetImpl extends SqlResultBase<RowSet, RowSetImpl> implements RowSet {
+class RowSetImpl<R> extends SqlResultBase<RowSet<R>, RowSetImpl<R>> implements RowSet<R> {
 
-  static Collector<Row, RowSetImpl, RowSet> COLLECTOR = Collector.of(
+  static Collector<Row, RowSetImpl<Row>, RowSet<Row>> COLLECTOR = Collector.of(
     RowSetImpl::new,
     (set, row) -> {
       if (set.head == null) {
@@ -40,32 +40,32 @@ class RowSetImpl extends SqlResultBase<RowSet, RowSetImpl> implements RowSet {
     (set) -> set
   );
 
-  static Function<RowSet, RowSetImpl> FACTORY = rs -> (RowSetImpl) rs;
+  static Function<RowSet<Row>, RowSetImpl<Row>> FACTORY = rs -> (RowSetImpl) rs;
 
   private RowInternal head;
   private RowInternal tail;
 
   @Override
-  public RowSet value() {
+  public RowSet<R> value() {
     return this;
   }
 
   @Override
-  public RowIterator iterator() {
-    return new RowIterator() {
+  public RowIterator<R> iterator() {
+    return new RowIterator<R>() {
       RowInternal current = head;
       @Override
       public boolean hasNext() {
         return current != null;
       }
       @Override
-      public Row next() {
+      public R next() {
         if (current == null) {
           throw new NoSuchElementException();
         }
         RowInternal r = current;
         current = current.getNext();
-        return r;
+        return (R) r;
       }
     };
   }

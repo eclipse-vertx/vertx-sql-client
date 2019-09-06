@@ -58,11 +58,11 @@ public class MySQLStoredProgramsTest extends MySQLTestBase {
               ctx.assertEquals(1, result.size());
               ctx.assertEquals(123, result.iterator().next().getInteger(0));
 
-              RowSet secondResult = result.next();
+              RowSet<Row> secondResult = result.next();
               ctx.assertEquals(1, secondResult.size());
               ctx.assertEquals(456, secondResult.iterator().next().getInteger(0));
 
-              RowSet thirdResult = secondResult.next();
+              RowSet<Row> thirdResult = secondResult.next();
               ctx.assertEquals(0, thirdResult.size());
               if (rule.isUsingMariaDB()) {
                 ctx.assertEquals(2, thirdResult.rowCount());
@@ -72,7 +72,7 @@ public class MySQLStoredProgramsTest extends MySQLTestBase {
 
               conn.query("SELECT id FROM ins", ctx.asyncAssertSuccess(queryRes -> {
                 ctx.assertEquals(2, queryRes.size());
-                RowIterator rowIterator = queryRes.iterator();
+                RowIterator<Row> rowIterator = queryRes.iterator();
                 Row row1 = rowIterator.next();
                 ctx.assertEquals(1, row1.getValue(0));
                 Row row2 = rowIterator.next();

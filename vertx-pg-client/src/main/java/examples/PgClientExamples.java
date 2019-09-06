@@ -64,7 +64,7 @@ public class PgClientExamples {
     // A simple query
     client.query("SELECT * FROM users WHERE id='julien'", ar -> {
       if (ar.succeeded()) {
-        RowSet result = ar.result();
+        RowSet<Row> result = ar.result();
         System.out.println("Got " + result.size() + " rows ");
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
@@ -275,7 +275,7 @@ public class PgClientExamples {
 
   public void typeMapping01(Pool pool) {
     pool.query("SELECT 1::BIGINT \"VAL\"", ar -> {
-      RowSet rowSet = ar.result();
+      RowSet<Row> rowSet = ar.result();
       Row row = rowSet.iterator().next();
 
       // Stored as java.lang.Long
@@ -288,7 +288,7 @@ public class PgClientExamples {
 
   public void typeMapping02(Pool pool) {
     pool.query("SELECT 1::BIGINT \"VAL\"", ar -> {
-      RowSet rowSet = ar.result();
+      RowSet<Row> rowSet = ar.result();
       Row row = rowSet.iterator().next();
 
       // Stored as java.lang.Long
@@ -464,7 +464,7 @@ public class PgClientExamples {
   public void customType01Example(SqlClient client) {
     client.preparedQuery("SELECT address, (address).city FROM address_book WHERE id=$1", Tuple.of(3),  ar -> {
       if (ar.succeeded()) {
-        RowSet rows = ar.result();
+        RowSet<Row> rows = ar.result();
         for (Row row : rows) {
           System.out.println("Full Address " + row.getString(0) + ", City " + row.getString(1));
         }
@@ -477,7 +477,7 @@ public class PgClientExamples {
   public void customType02Example(SqlClient client) {
     client.preparedQuery("INSERT INTO address_book (id, address) VALUES ($1, $2)", Tuple.of(3, "('Anytown', 'Second Ave', false)"),  ar -> {
       if (ar.succeeded()) {
-        RowSet rows = ar.result();
+        RowSet<Row> rows = ar.result();
         System.out.println(rows.rowCount());
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
@@ -489,7 +489,7 @@ public class PgClientExamples {
   public void tsQuery01Example(SqlClient client) {
     client.preparedQuery("SELECT to_tsvector( $1 ) @@ to_tsquery( $2 )", Tuple.of("fat cats ate fat rats", "fat & rat"),  ar -> {
       if (ar.succeeded()) {
-        RowSet rows = ar.result();
+        RowSet<Row> rows = ar.result();
         for (Row row : rows) {
           System.out.println("Match : " + row.getBoolean(0));
         }
@@ -502,7 +502,7 @@ public class PgClientExamples {
   public void tsQuery02Example(SqlClient client) {
     client.preparedQuery("SELECT to_tsvector( $1 ), to_tsquery( $2 )", Tuple.of("fat cats ate fat rats", "fat & rat"),  ar -> {
       if (ar.succeeded()) {
-        RowSet rows = ar.result();
+        RowSet<Row> rows = ar.result();
         for (Row row : rows) {
           System.out.println("Vector : " + row.getString(0) + ", query : "+row.getString(1));
         }
@@ -581,7 +581,7 @@ public class PgClientExamples {
   public void returning(SqlClient client) {
     client.preparedQuery("INSERT INTO color (color_name) VALUES ($1), ($2), ($3) RETURNING color_id", Tuple.of("white", "red", "blue"), ar -> {
       if (ar.succeeded()) {
-        RowSet rows = ar.result();
+        RowSet<Row> rows = ar.result();
         System.out.println(rows.rowCount());
         for (Row row : rows) {
           System.out.println("generated key: " + row.getInteger("color_id"));

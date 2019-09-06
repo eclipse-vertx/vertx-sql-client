@@ -83,28 +83,28 @@ public interface SqlConnection extends SqlClient {
   void close();
 
   @Override
-  SqlConnection preparedQuery(String sql, Handler<AsyncResult<RowSet>> handler);
+  SqlConnection preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
   @Override
   @GenIgnore
   <R> SqlConnection preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   @Override
-  SqlConnection query(String sql, Handler<AsyncResult<RowSet>> handler);
+  SqlConnection query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
   @Override
   @GenIgnore
   <R> SqlConnection query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   @Override
-  SqlConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet>> handler);
+  SqlConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
 
   @Override
   @GenIgnore
   <R> SqlConnection preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   @Override
-  SqlConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet>> handler);
+  SqlConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
 
   @Override
   @GenIgnore

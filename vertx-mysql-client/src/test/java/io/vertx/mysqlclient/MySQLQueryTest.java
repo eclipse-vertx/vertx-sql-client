@@ -183,7 +183,7 @@ public class MySQLQueryTest extends MySQLTestBase {
             conn.query("LOAD DATA LOCAL INFILE '" + filename + "' INTO TABLE localinfile FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n';", ctx.asyncAssertSuccess(v -> {
               conn.query("SELECT * FROM localinfile", ctx.asyncAssertSuccess(rowSet -> {
                 ctx.assertEquals(3, rowSet.size());
-                RowIterator iterator = rowSet.iterator();
+                RowIterator<Row> iterator = rowSet.iterator();
                 Row row1 = iterator.next();
                 ctx.assertEquals("Fluffy", row1.getValue(0));
                 ctx.assertEquals("Harold", row1.getValue(1));

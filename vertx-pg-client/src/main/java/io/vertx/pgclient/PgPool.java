@@ -116,19 +116,19 @@ public interface PgPool extends Pool {
     return new PgPoolImpl(vertx.getOrCreateContext(), false, connectOptions, poolOptions);
   }
 
-  PgPool preparedQuery(String sql, Handler<AsyncResult<RowSet>> handler);
+  PgPool preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
   @GenIgnore
   <R> PgPool preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-  PgPool query(String sql, Handler<AsyncResult<RowSet>> handler);
+  PgPool query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
   @GenIgnore
   <R> PgPool query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-  PgPool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet>> handler);
+  PgPool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
 
   @GenIgnore
   <R> PgPool preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-  PgPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet>> handler);
+  PgPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
 
   @GenIgnore
   <R> PgPool preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
