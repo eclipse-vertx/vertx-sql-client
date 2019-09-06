@@ -23,12 +23,12 @@ import io.vertx.codegen.annotations.VertxGen;
  * A set of rows.
  */
 @VertxGen
-public interface RowSet extends Iterable<Row>, SqlResult<RowSet> {
+public interface RowSet<R> extends Iterable<R>, SqlResult<RowSet<R>> {
 
   @Override
-  RowIterator iterator();
+  RowIterator<R> iterator();
 
   @Override
-  RowSet next();
+  RowSet<R> next();
 
 }

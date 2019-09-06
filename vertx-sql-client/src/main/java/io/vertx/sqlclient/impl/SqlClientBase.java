@@ -38,7 +38,7 @@ import java.util.stream.Collector;
 public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, CommandScheduler {
 
   @Override
-  public C query(String sql, Handler<AsyncResult<RowSet>> handler) {
+  public C query(String sql, Handler<AsyncResult<RowSet<Row>>> handler) {
     return query(sql, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
   }
 
@@ -59,7 +59,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
   }
 
   @Override
-  public C preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet>> handler) {
+  public C preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler) {
     return preparedQuery(sql, arguments, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
   }
 
@@ -93,7 +93,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
   }
 
   @Override
-  public C preparedQuery(String sql, Handler<AsyncResult<RowSet>> handler) {
+  public C preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler) {
     return preparedQuery(sql, ArrayTuple.EMPTY, handler);
   }
 
@@ -103,7 +103,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
   }
 
   @Override
-  public C preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet>> handler) {
+  public C preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler) {
     return preparedBatch(sql, batch, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
   }
 

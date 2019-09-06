@@ -17,6 +17,7 @@
 
 package io.vertx.pgclient;
 
+import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Transaction;
@@ -406,7 +407,7 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
         Transaction tx = conn.begin();
         AtomicInteger failures = new AtomicInteger();
         tx.abortHandler(v -> ctx.assertEquals(0, failures.getAndIncrement()));
-        AtomicReference<AsyncResult<RowSet>> queryAfterFailed = new AtomicReference<>();
+        AtomicReference<AsyncResult<RowSet<Row>>> queryAfterFailed = new AtomicReference<>();
         AtomicReference<AsyncResult<Void>> commit = new AtomicReference<>();
         conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-1')", ar1 -> { });
         conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-2')", ar2 -> {

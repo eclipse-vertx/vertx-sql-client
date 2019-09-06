@@ -21,6 +21,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.sqlclient.Cursor;
+import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 
@@ -36,7 +37,7 @@ public class CursorImpl implements Cursor {
 
   private String id;
   private boolean closed;
-  private SqlResultBuilder<RowSet, RowSetImpl, RowSet> result;
+  private SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> result;
 
   CursorImpl(PreparedQueryImpl ps, Tuple params) {
     this.ps = ps;
@@ -52,7 +53,7 @@ public class CursorImpl implements Cursor {
   }
 
   @Override
-  public synchronized void read(int count, Handler<AsyncResult<RowSet>> handler) {
+  public synchronized void read(int count, Handler<AsyncResult<RowSet<Row>>> handler) {
     if (id == null) {
       id = UUID.randomUUID().toString();
       result = new SqlResultBuilder<>(RowSetImpl.FACTORY, handler);

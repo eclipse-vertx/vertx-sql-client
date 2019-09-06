@@ -24,12 +24,12 @@ import java.util.Iterator;
  * An iterator for processing rows.
  */
 @VertxGen
-public interface RowIterator extends Iterator<Row> {
+public interface RowIterator<R> extends Iterator<R> {
 
   @Override
   boolean hasNext();
 
   @Override
-  Row next();
+  R next();
 
 }

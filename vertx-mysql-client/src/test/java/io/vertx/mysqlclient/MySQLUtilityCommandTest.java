@@ -82,7 +82,7 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
         ctx.assertEquals(1, rowSet1.size());
         Row row1 = rowSet1.iterator().next();
         ctx.assertEquals(1, row1.getInteger(0));
-        RowSet rowSet2 = rowSet1.next();
+        RowSet<Row> rowSet2 = rowSet1.next();
         ctx.assertEquals(1, rowSet2.size());
         Row row2 = rowSet2.iterator().next();
         ctx.assertEquals(2, row2.getInteger(0));

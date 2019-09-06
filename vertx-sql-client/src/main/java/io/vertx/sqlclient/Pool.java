@@ -34,28 +34,28 @@ import java.util.stream.Collector;
 public interface Pool extends SqlClient {
 
   @Override
-  Pool preparedQuery(String sql, Handler<AsyncResult<RowSet>> handler);
+  Pool preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
   @Override
   @GenIgnore
   <R> Pool preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   @Override
-  Pool query(String sql, Handler<AsyncResult<RowSet>> handler);
+  Pool query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
   @Override
   @GenIgnore
   <R> Pool query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   @Override
-  Pool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet>> handler);
+  Pool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
 
   @Override
   @GenIgnore
   <R> Pool preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   @Override
-  Pool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet>> handler);
+  Pool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
 
   @Override
   @GenIgnore

@@ -17,6 +17,7 @@
 
 package io.vertx.pgclient;
 
+import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.Tuple;
@@ -72,7 +73,7 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
         Tuple row1 = result1.iterator().next();
         ctx.assertTrue(row1.getValue(0) instanceof Integer);
         ctx.assertTrue(row1.getValue(1) instanceof String);
-        RowSet result2 = result1.next();
+        RowSet<Row> result2 = result1.next();
         ctx.assertNotNull(result2);
         ctx.assertEquals(1, result2.size());
         ctx.assertEquals(Arrays.asList("message", "id"), result2.columnsNames());

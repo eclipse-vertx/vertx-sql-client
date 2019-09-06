@@ -42,7 +42,7 @@ public interface SqlClient {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  SqlClient query(String sql, Handler<AsyncResult<RowSet>> handler);
+  SqlClient query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
   /**
    * Execute a simple query.
@@ -63,7 +63,7 @@ public interface SqlClient {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  SqlClient preparedQuery(String sql, Handler<AsyncResult<RowSet>> handler);
+  SqlClient preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
   /**
    * Prepare and execute a query.
@@ -85,7 +85,7 @@ public interface SqlClient {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  SqlClient preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet>> handler);
+  SqlClient preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
 
   /**
    * Prepare and execute a query.
@@ -108,7 +108,7 @@ public interface SqlClient {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  SqlClient preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet>> handler);
+  SqlClient preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
 
   /**
    * Prepare and execute a createBatch.

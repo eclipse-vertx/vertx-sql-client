@@ -52,7 +52,7 @@ class PreparedQueryImpl implements PreparedQuery {
   }
 
   @Override
-  public PreparedQuery execute(Tuple args, Handler<AsyncResult<RowSet>> handler) {
+  public PreparedQuery execute(Tuple args, Handler<AsyncResult<RowSet<Row>>> handler) {
     return execute(args, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
   }
 
@@ -117,7 +117,7 @@ class PreparedQueryImpl implements PreparedQuery {
     });
   }
 
-  public PreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<RowSet>> handler) {
+  public PreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<RowSet<Row>>> handler) {
     return batch(argsList, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
   }
 

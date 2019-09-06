@@ -131,7 +131,7 @@ public class MySQLCollationTest extends MySQLTestBase {
         "INSERT INTO emoji VALUES (8, '\uD83D\uDD90');\n" +
         "INSERT INTO emoji VALUES (9, '\u26bd');", ctx.asyncAssertSuccess(res0 -> {
         conn.query("SELECT id, expression FROM emoji", ctx.asyncAssertSuccess(res1 -> {
-          RowIterator iterator = res1.iterator();
+          RowIterator<Row> iterator = res1.iterator();
           Row row1 = iterator.next();
           ctx.assertEquals(1, row1.getInteger("id"));
           ctx.assertEquals("\uD83D\uDE00", row1.getString("expression"));
@@ -184,7 +184,7 @@ public class MySQLCollationTest extends MySQLTestBase {
       conn.query(prepareDataSql, ctx.asyncAssertSuccess(res0 -> {
         conn.query("SELECT id, city_name FROM chinese_city", ctx.asyncAssertSuccess(res1 -> {
           ctx.assertEquals(6, res1.size());
-          RowIterator iterator = res1.iterator();
+          RowIterator<Row> iterator = res1.iterator();
           Row row1 = iterator.next();
           ctx.assertEquals(1, row1.getInteger("id"));
           ctx.assertEquals("\u5317\u4EAC", row1.getString("city_name"));
