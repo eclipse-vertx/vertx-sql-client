@@ -23,6 +23,7 @@ import io.vertx.pgclient.data.Box;
 import io.vertx.pgclient.data.Circle;
 import io.vertx.pgclient.data.Line;
 import io.vertx.pgclient.data.LineSegment;
+import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.pgclient.data.Path;
 import io.vertx.pgclient.data.Polygon;
@@ -30,7 +31,6 @@ import io.vertx.pgclient.data.Interval;
 import io.vertx.pgclient.data.Point;
 import io.vertx.sqlclient.impl.ArrayTuple;
 import io.vertx.sqlclient.impl.RowDesc;
-import io.vertx.sqlclient.impl.RowInternal;
 import io.vertx.core.buffer.Buffer;
 
 import java.math.BigDecimal;
@@ -39,10 +39,8 @@ import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.UUID;
 
-public class RowImpl extends ArrayTuple implements RowInternal {
+public class RowImpl extends ArrayTuple implements Row {
 
-  // Linked list
-  private RowInternal next;
   private final RowDesc desc;
 
   public RowImpl(RowDesc desc) {
@@ -678,15 +676,5 @@ public class RowImpl extends ArrayTuple implements RowInternal {
     } else {
       return null;
     }
-  }
-
-  @Override
-  public void setNext(RowInternal next) {
-    this.next = next;
-  }
-
-  @Override
-  public RowInternal getNext() {
-    return next;
   }
 }

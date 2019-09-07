@@ -20,6 +20,8 @@ import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Row;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
 import java.util.stream.Collector;
@@ -29,12 +31,7 @@ class RowSetImpl<R> extends SqlResultBase<RowSet<R>, RowSetImpl<R>> implements R
   static Collector<Row, RowSetImpl<Row>, RowSet<Row>> COLLECTOR = Collector.of(
     RowSetImpl::new,
     (set, row) -> {
-      if (set.head == null) {
-        set.head = set.tail = (RowInternal) row;
-      } else {
-        set.tail.setNext((RowInternal) row);;
-        set.tail = set.tail.getNext();
-      }
+      set.list.add(row);
     },
     (set1, set2) -> null, // Shall not be invoked as this is sequential
     (set) -> set
@@ -42,8 +39,7 @@ class RowSetImpl<R> extends SqlResultBase<RowSet<R>, RowSetImpl<R>> implements R
 
   static Function<RowSet<Row>, RowSetImpl<Row>> FACTORY = rs -> (RowSetImpl) rs;
 
-  private RowInternal head;
-  private RowInternal tail;
+  private ArrayList<R> list = new ArrayList<>();
 
   @Override
   public RowSet<R> value() {
@@ -52,20 +48,15 @@ class RowSetImpl<R> extends SqlResultBase<RowSet<R>, RowSetImpl<R>> implements R
 
   @Override
   public RowIterator<R> iterator() {
+    Iterator<R> i = list.iterator();
     return new RowIterator<R>() {
-      RowInternal current = head;
       @Override
       public boolean hasNext() {
-        return current != null;
+        return i.hasNext();
       }
       @Override
       public R next() {
-        if (current == null) {
-          throw new NoSuchElementException();
-        }
-        RowInternal r = current;
-        current = current.getNext();
-        return (R) r;
+        return i.next();
       }
     };
   }
