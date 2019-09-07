@@ -18,9 +18,76 @@
 package io.vertx.sqlclient.impl;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.sqlclient.Row;
 
-public interface RowDecoder {
+import java.util.function.BiConsumer;
+import java.util.stream.Collector;
 
-  void decodeRow(int len, ByteBuf in);
+public abstract class RowDecoder<C, R> {
 
+  private final Collector<Row, C, R> collector;
+  private BiConsumer<C, Row> accumulator;
+
+  private int size;
+  private C container;
+  private Throwable failure;
+  private R result;
+
+  protected RowDecoder(Collector<Row, C, R> collector) {
+    this.collector = collector;
+
+    reset();
+  }
+
+  public int size() {
+    return size;
+  }
+
+  protected abstract Row decodeRow(int len, ByteBuf in);
+
+  public void handleRow(int len, ByteBuf in) {
+    if (failure != null) {
+      return;
+    }
+    Row row = decodeRow(len, in);
+    if (accumulator == null) {
+      try {
+        accumulator = collector.accumulator();
+      } catch (Exception e) {
+        failure = e;
+        return;
+      }
+    }
+    try {
+      accumulator.accept(container, row);
+    } catch (Exception e) {
+      failure = e;
+      return;
+    }
+    size++;
+  }
+
+  public R result() {
+    return result;
+  }
+
+  public Throwable complete() {
+    try {
+      result = collector.finisher().apply(container);
+    } catch (Exception e) {
+      failure = e;
+    }
+    return failure;
+  }
+
+  public void reset() {
+    size = 0;
+    failure = null;
+    result = null;
+    try {
+      this.container = collector.supplier().get();
+    } catch (Exception e) {
+      failure = e;
+    }
+  }
 }

@@ -63,6 +63,8 @@ public interface PreparedQuery {
   /**
    * Create a cursor with the provided {@code arguments}.
    *
+   * The collector will be provided
+   *
    * @param args the list of arguments
    * @param collector the collector
    * @return the query

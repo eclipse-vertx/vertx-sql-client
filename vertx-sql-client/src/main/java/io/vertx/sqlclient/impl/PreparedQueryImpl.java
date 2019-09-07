@@ -68,14 +68,13 @@ class PreparedQueryImpl implements PreparedQuery {
     Collector<Row, ?, R1> collector,
     Handler<AsyncResult<R3>> handler) {
     SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, handler);
-    return execute(args, 0, null, false, singleton, collector, b, b);
+    return execute(args, 0, null, false, collector, b, b);
   }
 
   <A, R> PreparedQuery execute(Tuple args,
                                int fetch,
                                String cursorId,
                                boolean suspended,
-                               boolean singleton,
                                Collector<Row, A, R> collector,
                                QueryResultHandler<R> resultHandler,
                                Handler<AsyncResult<Boolean>> handler) {
@@ -90,14 +89,13 @@ class PreparedQueryImpl implements PreparedQuery {
           fetch,
           cursorId,
           suspended,
-          singleton,
           collector,
           resultHandler);
         cmd.handler = handler;
         conn.schedule(cmd);
       }
     } else {
-      context.runOnContext(v -> execute(args, fetch, cursorId, suspended, singleton, collector, resultHandler, handler));
+      context.runOnContext(v -> execute(args, fetch, cursorId, suspended, collector, resultHandler, handler));
     }
     return this;
   }
@@ -118,17 +116,16 @@ class PreparedQueryImpl implements PreparedQuery {
   }
 
   public PreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<RowSet<Row>>> handler) {
-    return batch(argsList, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
+    return batch(argsList, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
   }
 
   @Override
   public <R> PreparedQuery batch(List<Tuple> argsList, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
-    return batch(argsList, true, SqlResultImpl::new, collector, handler);
+    return batch(argsList, SqlResultImpl::new, collector, handler);
   }
 
   private <R1, R2 extends SqlResultBase<R1, R2>, R3 extends SqlResult<R1>> PreparedQuery batch(
     List<Tuple> argsList,
-    boolean singleton,
     Function<R1, R2> factory,
     Collector<Row, ?, R1> collector,
     Handler<AsyncResult<R3>> handler) {
@@ -140,7 +137,7 @@ class PreparedQueryImpl implements PreparedQuery {
       }
     }
     SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, handler);
-    ExtendedBatchQueryCommand cmd = new ExtendedBatchQueryCommand<>(ps, argsList, singleton, collector, b);
+    ExtendedBatchQueryCommand cmd = new ExtendedBatchQueryCommand<>(ps, argsList, collector, b);
     cmd.handler = b;
     conn.schedule(cmd);
     return this;

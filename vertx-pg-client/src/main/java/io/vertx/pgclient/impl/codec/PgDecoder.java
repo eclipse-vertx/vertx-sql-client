@@ -186,7 +186,7 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
     PgCommandCodec<?, ?> codec = inflight.peek();
     QueryCommandBaseCodec<?, ?> cmd = (QueryCommandBaseCodec<?, ?>) codec;
     int len = in.readUnsignedShort();
-    cmd.decoder.decodeRow(len, in);
+    cmd.decoder.handleRow(len, in);
   }
 
   private void  decodeRowDescription(ByteBuf in) {

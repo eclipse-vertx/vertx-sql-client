@@ -34,19 +34,22 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends P
   public void handleCommandComplete(int updated) {
     this.result = false;
     T result;
+    Throwable failure;
     int size;
     RowDesc desc;
     if (decoder != null) {
-      result = decoder.complete();
+      failure = decoder.complete();
+      result = decoder.result();
       desc = decoder.desc;
       size = decoder.size();
       decoder.reset();
     } else {
+      failure = null;
       result = emptyResult(cmd.collector());
       size = 0;
       desc = null;
     }
-    cmd.resultHandler().handleResult(updated, size, desc, result);
+    cmd.resultHandler().handleResult(updated, size, desc, result, failure);
   }
 
   @Override

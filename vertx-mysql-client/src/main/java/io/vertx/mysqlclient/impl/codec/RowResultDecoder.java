@@ -1,62 +1,26 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.impl.MySQLRowImpl;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.RowDecoder;
 
 import java.nio.charset.Charset;
-import java.util.function.BiConsumer;
 import java.util.stream.Collector;
 
-class RowResultDecoder<C, R> implements RowDecoder {
+class RowResultDecoder<C, R> extends RowDecoder<C, R> {
   private static final int NULL = 0xFB;
 
-  private final Collector<Row, C, R> collector;
-  private final boolean singleton;
-  private BiConsumer<C, Row> accumulator;
   MySQLRowDesc rowDesc;
 
-  private int size;
-  private C container;
-  private Row row;
-  private Throwable failure;
-  private R result;
-
-  RowResultDecoder(Collector<Row, C, R> collector, boolean singleton, MySQLRowDesc rowDesc) {
-    this.collector = collector;
-    this.singleton = singleton;
+  RowResultDecoder(Collector<Row, C, R> collector, MySQLRowDesc rowDesc) {
+    super(collector);
     this.rowDesc = rowDesc;
-
-    try {
-      this.container = collector.supplier().get();
-    } catch (Exception e) {
-      failure = e;
-    }
-
-  }
-
-  public int size() {
-    return size;
   }
 
   @Override
-  public void decodeRow(int len, ByteBuf in) {
-    if (failure != null) {
-      return;
-    }
-    if (singleton) {
-      if (row == null) {
-        row = new MySQLRowImpl(rowDesc);
-      } else {
-        row.clear();
-      }
-    } else {
-      row = new MySQLRowImpl(rowDesc);
-    }
+  protected Row decodeRow(int len, ByteBuf in) {
     Row row = new MySQLRowImpl(rowDesc);
     if (rowDesc.dataFormat() == DataFormat.BINARY) {
       // BINARY row decoding
@@ -101,43 +65,7 @@ class RowResultDecoder<C, R> implements RowDecoder {
         row.addValue(decoded);
       }
     }
-    if (accumulator == null) {
-      try {
-        accumulator = collector.accumulator();
-      } catch (Exception e) {
-        failure = e;
-        return;
-      }
-    }
-    try {
-      accumulator.accept(container, row);
-    } catch (Exception e) {
-      failure = e;
-      return;
-    }
-    size++;
-  }
-
-  public R result() {
-    return result;
-  }
-
-  public Throwable complete() {
-    if (failure == null) {
-      try {
-        result = collector.finisher().apply(container);
-      } catch (Exception e) {
-        failure = e;
-      }
-    }
-    return failure;
-  }
-
-  public void reset() {
-    container = null;
-    size = 0;
-    failure = null;
-    result = null;
+    return row;
   }
 }
 

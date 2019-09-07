@@ -57,10 +57,10 @@ public class CursorImpl implements Cursor {
     if (id == null) {
       id = UUID.randomUUID().toString();
       result = new SqlResultBuilder<>(RowSetImpl.FACTORY, handler);
-      ps.execute(params, count, id, false, false, RowSetImpl.COLLECTOR, result, result);
+      ps.execute(params, count, id, false, RowSetImpl.COLLECTOR, result, result);
     } else if (result.isSuspended()) {
       result = new SqlResultBuilder<>(RowSetImpl.FACTORY, handler);
-      ps.execute(params, count, id, true, false, RowSetImpl.COLLECTOR, result, result);
+      ps.execute(params, count, id, true, RowSetImpl.COLLECTOR, result, result);
     } else {
       throw new IllegalStateException();
     }
