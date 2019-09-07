@@ -15,9 +15,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -263,6 +269,116 @@ public class MySQLQueryTest extends MySQLTestBase {
         Map<Integer, DummyObject> map = result.value();
         DummyObject actual = map.get(1);
         ctx.assertEquals(expected, actual);
+        conn.close();
+      }));
+    }));
+  }
+
+  private static class CollectorBase implements Collector<Row, Object, Object> {
+    @Override
+    public Supplier<Object> supplier() {
+      return () -> null;
+    }
+
+    @Override
+    public BiConsumer<Object, Row> accumulator() {
+      return (a, t) -> {
+
+      };
+    }
+
+    @Override
+    public BinaryOperator<Object> combiner() {
+      return (a, a2) -> null;
+    }
+
+    @Override
+    public Function<Object, Object> finisher() {
+      return a -> null;
+    }
+
+    @Override
+    public Set<Characteristics> characteristics() {
+      return Collections.emptySet();
+    }
+  }
+
+  @Test
+  public void testCollectorFailureProvidingSupplier(TestContext ctx) {
+    RuntimeException cause = new RuntimeException();
+    testCollectorFailure(ctx, cause, new CollectorBase() {
+      @Override
+      public Supplier<Object> supplier() {
+        throw cause;
+      }
+    });
+  }
+
+  @Test
+  public void testCollectorFailureInSupplier(TestContext ctx) {
+    RuntimeException cause = new RuntimeException();
+    testCollectorFailure(ctx, cause, new CollectorBase() {
+      @Override
+      public Supplier<Object> supplier() {
+        return () -> {
+          throw cause;
+        };
+      }
+    });
+  }
+
+  @Test
+  public void testCollectorFailureProvidingAccumulator(TestContext ctx) {
+    RuntimeException cause = new RuntimeException();
+    testCollectorFailure(ctx, cause, new CollectorBase() {
+      @Override
+      public BiConsumer<Object, Row> accumulator() {
+        throw cause;
+      }
+    });
+  }
+
+  @Test
+  public void testCollectorFailureInAccumulator(TestContext ctx) {
+    RuntimeException cause = new RuntimeException();
+    testCollectorFailure(ctx, cause, new CollectorBase() {
+      @Override
+      public BiConsumer<Object, Row> accumulator() {
+        return (o, row) -> {
+          throw cause;
+        };
+      }
+    });
+  }
+
+  @Test
+  public void testCollectorFailureProvidingFinisher(TestContext ctx) {
+    RuntimeException cause = new RuntimeException();
+    testCollectorFailure(ctx, cause, new CollectorBase() {
+      @Override
+      public Function<Object, Object> finisher() {
+        throw cause;
+      }
+    });
+  }
+
+  @Test
+  public void testCollectorFailureInFinisher(TestContext ctx) {
+    RuntimeException cause = new RuntimeException();
+    testCollectorFailure(ctx, cause, new CollectorBase() {
+      @Override
+      public Function<Object, Object> finisher() {
+        return o -> {
+          throw cause;
+        };
+      }
+    });
+  }
+
+  private void testCollectorFailure(TestContext ctx, Throwable cause, Collector<Row, Object, Object> collector) {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT * FROM collectorTest WHERE id = 1", collector, ctx.asyncAssertFailure(result -> {
+        ctx.assertEquals(cause, result);
         conn.close();
       }));
     }));

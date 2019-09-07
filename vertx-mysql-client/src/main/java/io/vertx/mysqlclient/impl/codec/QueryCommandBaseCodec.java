@@ -17,6 +17,8 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.mysqlclient.MySQLClient;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.sqlclient.Row;
@@ -146,19 +148,22 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
   private void handleSingleResultsetEndPacket(int serverStatusFlags, int affectedRows, int lastInsertId) {
     this.result = (serverStatusFlags & ServerStatusFlags.SERVER_STATUS_LAST_ROW_SENT) == 0;
     T result;
+    Throwable failure;
     int size;
     RowDesc rowDesc;
     if (decoder != null) {
-      result = decoder.complete();
+      failure = decoder.complete();
+      result = decoder.result();
       rowDesc = decoder.rowDesc;
       size = decoder.size();
       decoder.reset();
     } else {
       result = emptyResult(cmd.collector());
+      failure = null;
       size = 0;
       rowDesc = null;
     }
-    cmd.resultHandler().handleResult(affectedRows, size, rowDesc, result);
+    cmd.resultHandler().handleResult(affectedRows, size, rowDesc, result, failure);
     cmd.resultHandler().addProperty(MySQLClient.LAST_INSERTED_ID, lastInsertId);
   }
 
