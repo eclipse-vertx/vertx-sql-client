@@ -17,8 +17,6 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.mysqlclient.MySQLClient;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.sqlclient.Row;
@@ -94,7 +92,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
 
   protected void handleResultsetColumnDefinitionsDecodingCompleted() {
     commandHandlerState = CommandHandlerState.HANDLING_ROW_DATA_OR_END_PACKET;
-    decoder = new RowResultDecoder<>(cmd.collector(), false/*cmd.isSingleton()*/, new MySQLRowDesc(columnDefinitions, format));
+    decoder = new RowResultDecoder<>(cmd.collector(), /*cmd.isSingleton()*/ new MySQLRowDesc(columnDefinitions, format));
   }
 
   protected void handleRows(ByteBuf payload, int payloadLength, Consumer<ByteBuf> singleRowHandler) {
@@ -129,7 +127,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
 
   protected void handleSingleRow(ByteBuf payload) {
     // accept a row data
-    decoder.decodeRow(columnDefinitions.length, payload);
+    decoder.handleRow(columnDefinitions.length, payload);
   }
 
   protected void handleSingleResultsetDecodingCompleted(int serverStatusFlags, int affectedRows, int lastInsertId) {

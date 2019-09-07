@@ -84,6 +84,8 @@ public class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlRes
     suspended = res.succeeded() && res.result();
     if (res.failed()) {
       handler.handle((AsyncResult) res);
+    } else if (first == null) {
+      handler.handle(Future.succeededFuture());
     } else if (first.failure != null) {
       handler.handle(Future.failedFuture(first.failure));
     } else {

@@ -35,7 +35,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
     super.encode(encoder);
 
     if (statement.isCursorOpen) {
-      decoder = new RowResultDecoder<>(cmd.collector(), false, statement.rowDesc);
+      decoder = new RowResultDecoder<>(cmd.collector(), statement.rowDesc);
       sendStatementFetchCommand(statement.statementId, cmd.fetch());
     } else {
       if (cmd.fetch() > 0) {
@@ -81,7 +81,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
             // need to reset packet number so that we can send a fetch request
             this.sequenceId = 0;
             // send fetch after cursor opened
-            decoder = new RowResultDecoder<>(cmd.collector(), false, statement.rowDesc);
+            decoder = new RowResultDecoder<>(cmd.collector(), statement.rowDesc);
 
             statement.isCursorOpen = true;
 
