@@ -1,4 +1,5 @@
 = Reactive MySQL Client
+:PREPARED_PARAMS: `?`
 
 The Reactive MySQL Client is a client for MySQL with a straightforward API focusing on
 scalability and low overhead.
