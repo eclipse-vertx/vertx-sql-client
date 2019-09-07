@@ -1,6 +1,8 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.impl.MySQLRowImpl;
 import io.vertx.sqlclient.Row;
@@ -15,18 +17,26 @@ class RowResultDecoder<C, R> implements RowDecoder {
 
   private final Collector<Row, C, R> collector;
   private final boolean singleton;
-  private final BiConsumer<C, Row> accumulator;
+  private BiConsumer<C, Row> accumulator;
   MySQLRowDesc rowDesc;
 
   private int size;
   private C container;
   private Row row;
+  private Throwable failure;
+  private R result;
 
   RowResultDecoder(Collector<Row, C, R> collector, boolean singleton, MySQLRowDesc rowDesc) {
     this.collector = collector;
     this.singleton = singleton;
-    this.accumulator = collector.accumulator();
     this.rowDesc = rowDesc;
+
+    try {
+      this.container = collector.supplier().get();
+    } catch (Exception e) {
+      failure = e;
+    }
+
   }
 
   public int size() {
@@ -35,8 +45,8 @@ class RowResultDecoder<C, R> implements RowDecoder {
 
   @Override
   public void decodeRow(int len, ByteBuf in) {
-    if (container == null) {
-      container = collector.supplier().get();
+    if (failure != null) {
+      return;
     }
     if (singleton) {
       if (row == null) {
@@ -91,20 +101,43 @@ class RowResultDecoder<C, R> implements RowDecoder {
         row.addValue(decoded);
       }
     }
-    accumulator.accept(container, row);
+    if (accumulator == null) {
+      try {
+        accumulator = collector.accumulator();
+      } catch (Exception e) {
+        failure = e;
+        return;
+      }
+    }
+    try {
+      accumulator.accept(container, row);
+    } catch (Exception e) {
+      failure = e;
+      return;
+    }
     size++;
   }
 
-  public R complete() {
-    if (container == null) {
-      container = collector.supplier().get();
+  public R result() {
+    return result;
+  }
+
+  public Throwable complete() {
+    if (failure == null) {
+      try {
+        result = collector.finisher().apply(container);
+      } catch (Exception e) {
+        failure = e;
+      }
     }
-    return collector.finisher().apply(container);
+    return failure;
   }
 
   public void reset() {
     container = null;
     size = 0;
+    failure = null;
+    result = null;
   }
 }
 

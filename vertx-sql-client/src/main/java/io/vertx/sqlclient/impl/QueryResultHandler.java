@@ -26,6 +26,6 @@ public interface QueryResultHandler<T> {
 
   <V> void addProperty(PropertyKind<V> property, V value);
 
-  void handleResult(int updatedCount, int size, RowDesc desc, T result);
+  void handleResult(int updatedCount, int size, RowDesc desc, T result, Throwable failure);
 
 }
