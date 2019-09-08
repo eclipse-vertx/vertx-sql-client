@@ -19,6 +19,7 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
+import io.vertx.mysqlclient.impl.util.CachingSha2Authenticator;
 import io.vertx.mysqlclient.impl.util.Native41Authenticator;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.command.CommandResponse;
@@ -33,7 +34,7 @@ import static io.vertx.mysqlclient.impl.codec.Packets.*;
 
 class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
 
-  private static final int SCRAMBLE_LENGTH = 20;
+  private static final int NONCE_LENGTH = 20;
   private static final int AUTH_PLUGIN_DATA_PART1_LENGTH = 8;
 
   private static final int ST_CONNECTING = 0;
@@ -41,8 +42,11 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
   private static final int ST_CONNECTED = 2;
 
   private static final int AUTH_SWITCH_REQUEST_STATUS_FLAG = 0xFE;
+  private static final int AUTH_MORE_DATA_STATUS_FLAG = 0x01;
+  private static final int FAST_AUTH_STATUS_FLAG = 0x03;
+  private static final int FULL_AUTHENTICATION_STATUS_FLAG = 0x04;
 
-  private int status = 0;
+  private int status = ST_CONNECTING;
 
   private MySQLCollation collation;
 
@@ -91,7 +95,7 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     long connectionId = payload.readUnsignedIntLE();
 
     // read first part of scramble
-    byte[] scramble = new byte[SCRAMBLE_LENGTH];
+    byte[] scramble = new byte[NONCE_LENGTH];
     payload.readBytes(scramble, 0, AUTH_PLUGIN_DATA_PART1_LENGTH);
 
     //filler
@@ -122,7 +126,7 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     payload.readerIndex(payload.readerIndex() + 10);
 
     // Rest of the plugin provided data
-    payload.readBytes(scramble, AUTH_PLUGIN_DATA_PART1_LENGTH, Math.max(SCRAMBLE_LENGTH - AUTH_PLUGIN_DATA_PART1_LENGTH, lenOfAuthPluginData - 9));
+    payload.readBytes(scramble, AUTH_PLUGIN_DATA_PART1_LENGTH, Math.max(NONCE_LENGTH - AUTH_PLUGIN_DATA_PART1_LENGTH, lenOfAuthPluginData - 9));
     payload.readByte(); // reserved byte
 
     String authPluginName = null;
@@ -206,27 +210,56 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
         // Protocol::AuthSwitchRequest
         payload.skipBytes(1); // status flag, always 0xFE
         String pluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.UTF_8);
+        byte[] nonce = new byte[NONCE_LENGTH];
+        payload.readBytes(nonce);
+        byte[] scrambledPassword;
         switch (pluginName) {
           case "mysql_native_password":
-            byte[] challenge = new byte[20];
-            payload.readBytes(challenge);
-            byte[] scrambledPassword = Native41Authenticator.encode(cmd.password().getBytes(), challenge);
-
-            ByteBuf packet = allocateBuffer(24);
-            packet.writeMediumLE(20);
-            packet.writeByte(sequenceId);
-            packet.writeBytes(scrambledPassword);
-            sendNonSplitPacket(packet);
-
+            scrambledPassword = Native41Authenticator.encode(cmd.password().getBytes(), nonce);
+            break;
+          case "caching_sha2_password":
+            scrambledPassword = CachingSha2Authenticator.encode(cmd.password().getBytes(), nonce);
             break;
           default:
-            //TODO support more auth methods here
             completionHandler.handle(CommandResponse.failure(new UnsupportedOperationException("Unsupported authentication method: " + pluginName)));
             return;
         }
+        int scrambledPasswordPacketLength = scrambledPassword.length;
+        ByteBuf scrambledPasswordPacket = allocateBuffer(scrambledPasswordPacketLength + 4);
+        scrambledPasswordPacket.writeMediumLE(scrambledPasswordPacketLength);
+        scrambledPasswordPacket.writeByte(sequenceId);
+        scrambledPasswordPacket.writeBytes(scrambledPassword);
+        sendNonSplitPacket(scrambledPasswordPacket);
+        break;
+      case AUTH_MORE_DATA_STATUS_FLAG:
+        payload.skipBytes(1); // skip the status flag
+        byte flag = payload.readByte();
+        if (flag == FULL_AUTHENTICATION_STATUS_FLAG) {
+          if (encoder.socketConnection.isSsl()) {
+            // send the non-scrambled password directly since it's on a secure connection
+            byte[] password = cmd.password().getBytes();
+            int nonScrambledPasswordPacketLength = password.length + 1;
+            ByteBuf nonScrambledPasswordPacket = allocateBuffer(nonScrambledPasswordPacketLength + 4);
+            nonScrambledPasswordPacket.writeMediumLE(nonScrambledPasswordPacketLength);
+            nonScrambledPasswordPacket.writeByte(sequenceId);
+            nonScrambledPasswordPacket.writeBytes(password);
+            nonScrambledPasswordPacket.writeByte(0x00); // end with a 0x00
+            sendNonSplitPacket(nonScrambledPasswordPacket);
+          } else {
+            //TODO public key exchange support?
+            completionHandler.handle(CommandResponse.failure(new UnsupportedOperationException("Public Key Request is not supported by now, you should use caching_sha2_password authentication with TLS enabled")));
+            return;
+          }
+        } else if (flag == FAST_AUTH_STATUS_FLAG) {
+          // fast auth success
+          return;
+        } else {
+          throw new UnsupportedOperationException("Unsupported flag for AuthMoreData : " + flag);
+        }
         break;
       default:
-        throw new UnsupportedOperationException();
+        completionHandler.handle(CommandResponse.failure(new IllegalStateException("Unhandled state with header: " + header)));
+        return;
     }
   }
 
@@ -247,7 +280,7 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     sendNonSplitPacket(packet);
   }
 
-  private void sendHandshakeResponseMessage(String username, String password, String database, byte[] serverScramble, String authMethodName, Map<String, String> clientConnectionAttributes) {
+  private void sendHandshakeResponseMessage(String username, String password, String database, byte[] nonce, String authMethodName, Map<String, String> clientConnectionAttributes) {
     ByteBuf packet = allocateBuffer();
     // encode packet header
     int packetStartIdx = packet.writerIndex();
@@ -257,16 +290,25 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     // encode packet payload
     int clientCapabilitiesFlags = encoder.clientCapabilitiesFlag;
     packet.writeIntLE(clientCapabilitiesFlags);
-    packet.writeIntLE(0xFFFFFF);
+    packet.writeIntLE(PACKET_PAYLOAD_LENGTH_LIMIT);
     packet.writeByte(collation.collationId());
     packet.writeZero(23); // filler
     BufferUtils.writeNullTerminatedString(packet, username, StandardCharsets.UTF_8);
     if (password == null || password.isEmpty()) {
       packet.writeByte(0);
     } else {
-      //TODO support different auth methods here
-
-      byte[] scrambledPassword = Native41Authenticator.encode(password.getBytes(), serverScramble);
+      byte[] scrambledPassword;
+      switch (authMethodName) {
+        case "mysql_native_password":
+          scrambledPassword = Native41Authenticator.encode(password.getBytes(), nonce);
+          break;
+        case "caching_sha2_password":
+          scrambledPassword = CachingSha2Authenticator.encode(password.getBytes(), nonce);
+          break;
+        default:
+          completionHandler.handle(CommandResponse.failure(new UnsupportedOperationException("Unsupported authentication method: " + authMethodName)));
+          return;
+      }
       if ((clientCapabilitiesFlags & CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA) != 0) {
         BufferUtils.writeLengthEncodedInteger(packet, scrambledPassword.length);
         packet.writeBytes(scrambledPassword);
