@@ -55,6 +55,7 @@ public class MySQLConnectionFactory {
     properties.put("collation", collation);
     SslMode sslMode = options.getSslMode();
     properties.put("sslMode", sslMode.name());
+    properties.put("serverRSAPublicKey", options.getServerRsaPublicKey());
 
     // check the SSLMode here
     switch (sslMode) {

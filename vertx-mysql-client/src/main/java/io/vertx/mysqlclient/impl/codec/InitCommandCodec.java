@@ -242,23 +242,7 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
         payload.skipBytes(1); // skip the status flag
         if (isWaitingForRsaPublicKey){
           String serverRsaPublicKey = readRestOfPacketString(payload, StandardCharsets.UTF_8);
-
-          byte[] encryptedPassword;
-          try {
-            byte[] password = cmd.password().getBytes();
-            byte[] passwordInput =  Arrays.copyOf(password, password.length + 1); // need to append 0x00(NULL) to the password
-            encryptedPassword = RsaPublicKeyEncryptor.encrypt(passwordInput, authData, serverRsaPublicKey);
-          } catch (Exception e) {
-            completionHandler.handle(CommandResponse.failure(e));
-            return;
-          }
-
-          ByteBuf buf = allocateBuffer(encryptedPassword.length + 4);
-          buf.writeMediumLE(encryptedPassword.length);
-          buf.writeByte(sequenceId);
-          buf.writeBytes(encryptedPassword);
-          sendNonSplitPacket(buf);
-
+          sendEncryptedPasswordWithServerRsaPublicKey(serverRsaPublicKey);
         } else {
           byte flag = payload.readByte();
           if (flag == FULL_AUTHENTICATION_STATUS_FLAG) {
@@ -274,8 +258,8 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
               sendNonSplitPacket(nonScrambledPasswordPacket);
             } else {
               // use server Public Key to encrypt password
-              String serverRsaPublicKeyContent = null; //TODO make it configurable
-              if (serverRsaPublicKeyContent == null) {
+              String serverRsaPublicKey = cmd.properties().get("serverRSAPublicKey");
+              if (serverRsaPublicKey == null) {
                 // send a public key request
                 isWaitingForRsaPublicKey = true;
                 ByteBuf rsaPublicKeyRequest = allocateBuffer(5);
@@ -285,7 +269,7 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
                 sendNonSplitPacket(rsaPublicKeyRequest);
               } else {
                 // send encrypted password
-                //TODO
+                sendEncryptedPasswordWithServerRsaPublicKey(serverRsaPublicKey);
               }
             }
           } else if (flag == FAST_AUTH_STATUS_FLAG) {
@@ -300,6 +284,24 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
         completionHandler.handle(CommandResponse.failure(new IllegalStateException("Unhandled state with header: " + header)));
         return;
     }
+  }
+
+  private void sendEncryptedPasswordWithServerRsaPublicKey(String serverRsaPublicKeyContent) {
+    byte[] encryptedPassword;
+    try {
+      byte[] password = cmd.password().getBytes();
+      byte[] passwordInput = Arrays.copyOf(password, password.length + 1); // need to append 0x00(NULL) to the password
+      encryptedPassword = RsaPublicKeyEncryptor.encrypt(passwordInput, authData, serverRsaPublicKeyContent);
+    } catch (Exception e) {
+      completionHandler.handle(CommandResponse.failure(e));
+      return;
+    }
+
+    ByteBuf buf = allocateBuffer(encryptedPassword.length + 4);
+    buf.writeMediumLE(encryptedPassword.length);
+    buf.writeByte(sequenceId);
+    buf.writeBytes(encryptedPassword);
+    sendNonSplitPacket(buf);
   }
 
   private void sendSslRequest() {

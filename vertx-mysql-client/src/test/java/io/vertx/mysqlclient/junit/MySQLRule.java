@@ -74,7 +74,8 @@ public class MySQLRule extends ExternalResource {
       server.withClasspathResourceMapping("tls/conf", "/etc/mysql/conf.d", BindMode.READ_ONLY);
       server.withClasspathResourceMapping("tls/files", "/etc/mysql/tls", BindMode.READ_ONLY);
     } else {
-      server.withCommand("--max_allowed_packet=33554432 --max_prepared_stmt_count=16382 --local_infile=true --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci");
+      server.withClasspathResourceMapping("tls/files", "/etc/mysql/tls", BindMode.READ_ONLY);
+      server.withCommand("--max_allowed_packet=33554432 --max_prepared_stmt_count=16382 --local_infile=true --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci --caching-sha2-password-public-key-path=/etc/mysql/tls/public_key.pem --caching-sha2-password-private-key-path=/etc/mysql/tls/private_key.pem");
     }
   }
 
