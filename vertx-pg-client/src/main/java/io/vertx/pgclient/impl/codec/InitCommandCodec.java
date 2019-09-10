@@ -25,10 +25,14 @@ import io.vertx.pgclient.impl.PgSocketConnection;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
+import io.netty.buffer.ByteBuf;
+import io.vertx.pgclient.impl.util.ScramAuthentication;
+
 class InitCommandCodec extends PgCommandCodec<Connection, InitCommand> {
 
   private PgEncoder encoder;
   private String encoding;
+  private ScramAuthentication scramAuthentication;
 
   InitCommandCodec(InitCommand cmd) {
     super(cmd);
@@ -50,6 +54,24 @@ class InitCommandCodec extends PgCommandCodec<Connection, InitCommand> {
   public void handleAuthenticationClearTextPassword() {
     encoder.writePasswordMessage(new PasswordMessage(cmd.username(), cmd.password(), null));
     encoder.flush();
+  }
+
+  @Override
+  void handleAuthenticationSasl(ByteBuf in) {
+	  scramAuthentication = new ScramAuthentication(cmd.username(), cmd.password());
+	  encoder.writeScramClientInitialMessage(scramAuthentication.createInitialSaslMessage(in));
+	  encoder.flush();
+  }
+
+  @Override
+  void handleAuthenticationSaslContinue(ByteBuf in) {
+	  encoder.writeScramClientFinalMessage(new ScramClientFinalMessage(scramAuthentication.receiveServerFirstMessage(in)));
+	  encoder.flush();
+  }
+
+  @Override
+  void handleAuthenticationSaslFinal(ByteBuf in) {
+	  scramAuthentication.checkServerFinalMessage(in);
   }
 
   @Override
