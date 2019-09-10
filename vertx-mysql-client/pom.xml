@@ -67,6 +67,7 @@
       <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
+    
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-sql-client</artifactId>

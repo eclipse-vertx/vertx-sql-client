@@ -284,7 +284,7 @@ The following versions of embedded Postgres are supported:
 
 - `9.6`
 - `10.6` (default)
-- `11.1` (not supported on Linux)
+- `11.x` (Unix Domain Socket Test are ignored)
 
 === Testing with an external database
 

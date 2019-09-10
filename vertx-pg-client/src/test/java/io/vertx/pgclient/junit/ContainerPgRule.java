@@ -29,6 +29,13 @@ import org.testcontainers.utility.MountableFile;
 
 import io.vertx.pgclient.PgConnectOptions;
 
+/**
+ * Postgresql test database based on https://www.testcontainers.org
+ * Require Docker
+ * Testing can also be done on an external database by setting the system properties :
+ *  - connection.uri
+ *  - tls.connection.uri
+ */
 public class ContainerPgRule extends ExternalResource {
 
   private static final String connectionUri = System.getProperty("connection.uri");
@@ -38,16 +45,10 @@ public class ContainerPgRule extends ExternalResource {
   private PgConnectOptions options;
   private String databaseVersion;
   private boolean ssl;
-  private boolean minimumV10;
 
   
   public ContainerPgRule ssl(boolean ssl) {
     this.ssl = ssl;
-    return this;
-  }
-  
-  public ContainerPgRule minimumV10(boolean minimumV10) {
-    this.minimumV10 = minimumV10;
     return this;
   }
   

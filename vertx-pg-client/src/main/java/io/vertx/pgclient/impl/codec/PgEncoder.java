@@ -21,25 +21,24 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.vertx.sqlclient.Tuple;
+import io.vertx.pgclient.impl.util.Util;
 import io.vertx.sqlclient.impl.ParamDesc;
 import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
 import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
+import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 import io.vertx.sqlclient.impl.command.InitCommand;
-import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
-import io.vertx.pgclient.impl.util.Util;
 
 import java.util.ArrayDeque;
-import java.util.List;
 import java.util.Map;
 
 import static io.vertx.pgclient.impl.util.Util.writeCString;
-import static java.nio.charset.StandardCharsets.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
@@ -210,6 +209,33 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     out.writeInt(0);
     Util.writeCStringUTF8(out, msg.hash);
     out.setInt(pos + 1, out.writerIndex() - pos- 1);
+  }
+
+  void writeScramClientInitialMessage(ScramClientInitialMessage msg) {
+    ensureBuffer();
+    out.writeByte(PASSWORD_MESSAGE);
+    int totalLengthPosition = out.writerIndex();
+    out.writeInt(0); // message length -> will be set later
+
+    Util.writeCStringUTF8(out, msg.mecanism);
+    int msgPosition = out.writerIndex();
+    out.writeInt(0);
+    out.writeCharSequence(msg.message, UTF_8);
+
+    // rewind to set the message and total length
+    out.setInt(msgPosition, out.writerIndex() - msgPosition - Integer.BYTES);
+    out.setInt(totalLengthPosition, out.writerIndex() - totalLengthPosition);
+  }
+
+  void writeScramClientFinalMessage(ScramClientFinalMessage msg) {
+    ensureBuffer();
+    out.writeByte(PASSWORD_MESSAGE);
+    int totalLengthPosition = out.writerIndex();
+    out.writeInt(0); // message length -> will be set later
+    out.writeCharSequence(msg.message, UTF_8);
+      
+    // rewind to set the message length
+    out.setInt(totalLengthPosition, out.writerIndex() - totalLengthPosition);
   }
 
   /**

@@ -61,6 +61,14 @@
       <artifactId>vertx-sql-client</artifactId>
     </dependency>
 
+    <!-- sasl scram authentication -->
+    <dependency>
+      <groupId>com.ongres.scram</groupId>
+      <artifactId>client</artifactId>
+      <version>1.0.0-beta.2</version>
+      <optional>true</optional>
+    </dependency>
+    
     <!-- Testing purposes -->
     <dependency>
       <groupId>ru.yandex.qatools.embed</groupId>
