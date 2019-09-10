@@ -340,6 +340,18 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
         inflight.peek().handleAuthenticationClearTextPassword();
       }
       break;
+      case PgProtocolConstants.AUTHENTICATION_TYPE_SASL: {
+        inflight.peek().handleAuthenticationSasl(in);
+      }
+      break;
+      case PgProtocolConstants.AUTHENTICATION_TYPE_SASL_CONTINUE: {
+        inflight.peek().handleAuthenticationSaslContinue(in);
+      }
+      break;
+      case PgProtocolConstants.AUTHENTICATION_TYPE_SASL_FINAL: {
+        inflight.peek().handleAuthenticationSaslFinal(in);
+      }
+      break;
       case PgProtocolConstants.AUTHENTICATION_TYPE_KERBEROS_V5:
       case PgProtocolConstants.AUTHENTICATION_TYPE_SCM_CREDENTIAL:
       case PgProtocolConstants.AUTHENTICATION_TYPE_GSS:

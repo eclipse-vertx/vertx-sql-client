@@ -181,6 +181,32 @@ $ PGUSER=user \
 {@link examples.PgClientExamples#configureFromEnv(io.vertx.core.Vertx)}
 ----
 
+=== SASL SCRAM-SHA-256 authentication mechanism.
+
+To use the sasl SCRAM-SHA-256 authentication add the following dependency to the _dependencies_ section of your build descriptor:
+
+* Maven (in your `pom.xml`):
+
+[source,xml]
+----
+<dependency>
+  <groupId>com.ongres.scram</groupId>
+  <artifactId>client</artifactId>
+  <version>1.0.0-beta.2</version>
+</dependency>
+----
+* Gradle (in your `build.gradle` file):
+
+[source,groovy]
+----
+dependencies {
+  compile 'com.ongres.scram:client:1.0.0-beta.2'
+}
+----
+
+Note that SCRAM-SHA-256-PLUS (added in Postgresql 11) is not supported.
+
+
 include::queries.adoc[]
 
 You can fetch generated keys with a 'RETURNING' clause in your query:
