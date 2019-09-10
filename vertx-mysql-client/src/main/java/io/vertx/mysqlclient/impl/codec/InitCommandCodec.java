@@ -21,12 +21,14 @@ import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.mysqlclient.impl.util.CachingSha2Authenticator;
 import io.vertx.mysqlclient.impl.util.Native41Authenticator;
+import io.vertx.mysqlclient.impl.util.RsaPublicKeyEncryptor;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.InitCommand;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Map;
 
 import static io.vertx.mysqlclient.impl.codec.CapabilitiesFlag.*;
@@ -43,8 +45,12 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
 
   private static final int AUTH_SWITCH_REQUEST_STATUS_FLAG = 0xFE;
   private static final int AUTH_MORE_DATA_STATUS_FLAG = 0x01;
+  private static final int AUTH_PUBLIC_KEY_REQUEST_FLAG = 0x02;
   private static final int FAST_AUTH_STATUS_FLAG = 0x03;
   private static final int FULL_AUTHENTICATION_STATUS_FLAG = 0x04;
+
+  private boolean isWaitingForRsaPublicKey = false; // FIXME remove this later
+  private byte[] authData;
 
   private int status = ST_CONNECTING;
 
@@ -127,6 +133,7 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
 
     // Rest of the plugin provided data
     payload.readBytes(scramble, AUTH_PLUGIN_DATA_PART1_LENGTH, Math.max(NONCE_LENGTH - AUTH_PLUGIN_DATA_PART1_LENGTH, lenOfAuthPluginData - 9));
+    authData = Arrays.copyOf(scramble, NONCE_LENGTH);
     payload.readByte(); // reserved byte
 
     String authPluginName = null;
@@ -233,28 +240,60 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
         break;
       case AUTH_MORE_DATA_STATUS_FLAG:
         payload.skipBytes(1); // skip the status flag
-        byte flag = payload.readByte();
-        if (flag == FULL_AUTHENTICATION_STATUS_FLAG) {
-          if (encoder.socketConnection.isSsl()) {
-            // send the non-scrambled password directly since it's on a secure connection
+        if (isWaitingForRsaPublicKey){
+          String serverRsaPublicKey = readRestOfPacketString(payload, StandardCharsets.UTF_8);
+
+          byte[] encryptedPassword;
+          try {
             byte[] password = cmd.password().getBytes();
-            int nonScrambledPasswordPacketLength = password.length + 1;
-            ByteBuf nonScrambledPasswordPacket = allocateBuffer(nonScrambledPasswordPacketLength + 4);
-            nonScrambledPasswordPacket.writeMediumLE(nonScrambledPasswordPacketLength);
-            nonScrambledPasswordPacket.writeByte(sequenceId);
-            nonScrambledPasswordPacket.writeBytes(password);
-            nonScrambledPasswordPacket.writeByte(0x00); // end with a 0x00
-            sendNonSplitPacket(nonScrambledPasswordPacket);
-          } else {
-            //TODO public key exchange support?
-            completionHandler.handle(CommandResponse.failure(new UnsupportedOperationException("Public Key Request is not supported by now, you should use caching_sha2_password authentication with TLS enabled")));
+            byte[] passwordInput =  Arrays.copyOf(password, password.length + 1); // need to append 0x00(NULL) to the password
+            encryptedPassword = RsaPublicKeyEncryptor.encrypt(passwordInput, authData, serverRsaPublicKey);
+          } catch (Exception e) {
+            completionHandler.handle(CommandResponse.failure(e));
             return;
           }
-        } else if (flag == FAST_AUTH_STATUS_FLAG) {
-          // fast auth success
-          return;
+
+          ByteBuf buf = allocateBuffer(encryptedPassword.length + 4);
+          buf.writeMediumLE(encryptedPassword.length);
+          buf.writeByte(sequenceId);
+          buf.writeBytes(encryptedPassword);
+          sendNonSplitPacket(buf);
+
         } else {
-          throw new UnsupportedOperationException("Unsupported flag for AuthMoreData : " + flag);
+          byte flag = payload.readByte();
+          if (flag == FULL_AUTHENTICATION_STATUS_FLAG) {
+            if (encoder.socketConnection.isSsl()) {
+              // send the non-scrambled password directly since it's on a secure connection
+              byte[] password = cmd.password().getBytes();
+              int nonScrambledPasswordPacketLength = password.length + 1;
+              ByteBuf nonScrambledPasswordPacket = allocateBuffer(nonScrambledPasswordPacketLength + 4);
+              nonScrambledPasswordPacket.writeMediumLE(nonScrambledPasswordPacketLength);
+              nonScrambledPasswordPacket.writeByte(sequenceId);
+              nonScrambledPasswordPacket.writeBytes(password);
+              nonScrambledPasswordPacket.writeByte(0x00); // end with a 0x00
+              sendNonSplitPacket(nonScrambledPasswordPacket);
+            } else {
+              // use server Public Key to encrypt password
+              String serverRsaPublicKeyContent = null; //TODO make it configurable
+              if (serverRsaPublicKeyContent == null) {
+                // send a public key request
+                isWaitingForRsaPublicKey = true;
+                ByteBuf rsaPublicKeyRequest = allocateBuffer(5);
+                rsaPublicKeyRequest.writeMediumLE(1);
+                rsaPublicKeyRequest.writeByte(sequenceId);
+                rsaPublicKeyRequest.writeByte(AUTH_PUBLIC_KEY_REQUEST_FLAG);
+                sendNonSplitPacket(rsaPublicKeyRequest);
+              } else {
+                // send encrypted password
+                //TODO
+              }
+            }
+          } else if (flag == FAST_AUTH_STATUS_FLAG) {
+            // fast auth success
+            return;
+          } else {
+            throw new UnsupportedOperationException("Unsupported flag for AuthMoreData : " + flag);
+          }
         }
         break;
       default:
