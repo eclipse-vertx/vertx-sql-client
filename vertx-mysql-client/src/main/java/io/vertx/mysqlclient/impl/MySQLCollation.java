@@ -228,7 +228,8 @@ public enum MySQLCollation {
   utf8mb4_vietnamese_ci("utf8mb4", "UTF-8", 247),
   gb18030_chinese_ci("gb18030", "GB18030", 248),
   gb18030_bin("gb18030", "GB18030", 249),
-  gb18030_unicode_520_ci("gb18030", "GB18030", 250);
+  gb18030_unicode_520_ci("gb18030", "GB18030", 250),
+  utf8mb4_0900_ai_ci("utf8mb4", "UTF-8", 255);
 
   public static final List<String> SUPPORTED_COLLATION_NAMES = Arrays.stream(values()).map(Enum::name).collect(Collectors.toList());
   public static final List<String> SUPPORTED_CHARSET_NAMES = Arrays.stream(values()).map(MySQLCollation::mysqlCharsetName).distinct().collect(Collectors.toList());
@@ -749,6 +750,8 @@ public enum MySQLCollation {
         return gb18030_bin;
       case 250:
         return gb18030_unicode_520_ci;
+      case 255:
+        return utf8mb4_0900_ai_ci;
       default:
         throw new UnsupportedOperationException("Collation of Id [" + collationId + "] is unknown to this client");
     }
