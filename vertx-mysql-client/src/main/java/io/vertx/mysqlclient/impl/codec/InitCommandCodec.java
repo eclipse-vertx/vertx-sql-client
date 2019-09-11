@@ -167,7 +167,7 @@ class InitCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitCo
   }
 
   private void doSendHandshakeResponseMessage(String authMethodName, byte[] nonce, int serverCapabilitiesFlags) {
-    if (cmd.database() != null && !cmd.database().isEmpty()) {
+    if (!cmd.database().isEmpty()) {
       encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_WITH_DB;
     }
     Map<String, String> properties = cmd.properties();
@@ -255,7 +255,7 @@ class InitCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitCo
     packet.writeByte(collation.collationId());
     packet.writeZero(23); // filler
     BufferUtils.writeNullTerminatedString(packet, username, StandardCharsets.UTF_8);
-    if (password == null || password.isEmpty()) {
+    if (password.isEmpty()) {
       packet.writeByte(0);
     } else {
       byte[] scrambledPassword;
