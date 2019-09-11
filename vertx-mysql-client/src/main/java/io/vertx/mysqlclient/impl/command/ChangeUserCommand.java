@@ -10,13 +10,15 @@ public class ChangeUserCommand extends CommandBase<Void> {
   private final String password;
   private final String database;
   private final MySQLCollation collation;
+  private final String serverRsaPublicKey;
   private final Map<String, String> connectionAttributes;
 
-  public ChangeUserCommand(String username, String password, String database, MySQLCollation collation, Map<String, String> connectionAttributes) {
+  public ChangeUserCommand(String username, String password, String database, MySQLCollation collation, String serverRsaPublicKey, Map<String, String> connectionAttributes) {
     this.username = username;
     this.password = password;
     this.database = database;
     this.collation = collation;
+    this.serverRsaPublicKey = serverRsaPublicKey;
     this.connectionAttributes = connectionAttributes;
   }
 
@@ -34,6 +36,10 @@ public class ChangeUserCommand extends CommandBase<Void> {
 
   public MySQLCollation collation() {
     return collation;
+  }
+
+  public String serverRsaPublicKey() {
+    return serverRsaPublicKey;
   }
 
   public Map<String, String> connectionAttributes() {

@@ -139,7 +139,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
       handler.handle(Future.failedFuture(e));
       return this;
     }
-    ChangeUserCommand cmd = new ChangeUserCommand(options.getUser(), options.getPassword(), options.getDatabase(), collation, options.getProperties());
+    ChangeUserCommand cmd = new ChangeUserCommand(options.getUser(), options.getPassword(), options.getDatabase(), collation, options.getServerRsaPublicKey(), options.getProperties());
     cmd.handler = handler;
     schedule(cmd);
     return this;

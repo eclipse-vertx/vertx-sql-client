@@ -135,4 +135,35 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
       }));
     }));
   }
+
+  @Test
+  public void testChangeUserAuthWithServerRsaPublicKey(TestContext ctx) {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT current_user()", ctx.asyncAssertSuccess(res1 -> {
+        Row row1 = res1.iterator().next();
+        String username = row1.getString(0);
+        ctx.assertEquals("mysql", username.substring(0, username.lastIndexOf('@')));
+        MySQLConnectOptions changeUserOptions = new MySQLConnectOptions()
+          .setUser("superuser")
+          .setPassword("password")
+          .setDatabase("emptyschema")
+          .setServerRsaPublicKey("-----BEGIN PUBLIC KEY-----\n" +
+            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3yvG5s0qrV7jxVlp0sMj\n" +
+            "xP0a6BuLKCMjb0o88hDsJ3xz7PpHNKazuEAfPxiRFVAV3edqfSiXoQw+lJf4haEG\n" +
+            "HQe12Nfhs+UhcAeTKXRlZP/JNmI+BGoBduQ1rCId9bKYbXn4pvyS/a1ft7SwFkhx\n" +
+            "aogCur7iIB0WUWvwkQ0fEj/Mlhw93lLVyx7hcGFq4FOAKFYr3A0xrHP1IdgnD8QZ\n" +
+            "0fUbgGLWWLOossKrbUP5HWko1ghLPIbfmU6o890oj1ZWQewj1Rs9Er92/UDj/JXx\n" +
+            "7ha1P+ZOgPBlV037KDQMS6cUh9vTablEHsMLhDZanymXzzjBkL+wH/b9cdL16LkQ\n" +
+            "5QIDAQAB\n" +
+            "-----END PUBLIC KEY-----\n");
+        conn.changeUser(changeUserOptions, ctx.asyncAssertSuccess(v2 -> {
+          conn.query("SELECT current_user();SELECT database();", ctx.asyncAssertSuccess(res2 -> {
+            ctx.assertEquals("superuser@%", res2.iterator().next().getString(0));
+            ctx.assertEquals("emptyschema", res2.next().iterator().next().getValue(0));
+            conn.close();
+          }));
+        }));
+      }));
+    }));
+  }
 }
