@@ -52,6 +52,9 @@ Set the collation for the connection.
 |[[reuseAddress]]`@reuseAddress`|`Boolean`|-
 |[[reusePort]]`@reusePort`|`Boolean`|-
 |[[sendBufferSize]]`@sendBufferSize`|`Number (int)`|-
+|[[serverRsaPublicKey]]`@serverRsaPublicKey`|`String`|+++
+Set the server RSA public key which is mostly used for encrypting password under insecure connections when performing authentication.
++++
 |[[soLinger]]`@soLinger`|`Number (int)`|-
 |[[ssl]]`@ssl`|`Boolean`|-
 |[[sslHandshakeTimeout]]`@sslHandshakeTimeout`|`Number (long)`|-
