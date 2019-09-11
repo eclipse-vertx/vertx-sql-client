@@ -41,7 +41,6 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   static {
     Map<String, String> defaultAttributes = new HashMap<>();
     defaultAttributes.put("_client_name", "vertx-mysql-client");
-    defaultAttributes.put("_client_version", "3.8.0");
     DEFAULT_CONNECTION_ATTRIBUTES = Collections.unmodifiableMap(defaultAttributes);
   }
 
@@ -87,7 +86,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public MySQLConnectOptions setCollation(String collation) {
-    if (collation != null && !MySQLCollation.supportedCollationNames.contains(collation)) {
+    if (collation != null && !MySQLCollation.SUPPORTED_COLLATION_NAMES.contains(collation)) {
       throw new IllegalArgumentException("Unsupported collation: " + collation);
     }
     this.collation = collation;
@@ -110,7 +109,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public MySQLConnectOptions setCharset(String charset) {
-    if (charset != null && !MySQLCollation.supportedCharsetNames.contains(charset)) {
+    if (charset != null && !MySQLCollation.SUPPORTED_CHARSET_NAMES.contains(charset)) {
       throw new IllegalArgumentException("Unsupported charset: " + charset);
     }
     this.charset = charset;
