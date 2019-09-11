@@ -53,19 +53,19 @@ class InitCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitCo
   }
 
   @Override
-  void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
+  void decodePayload(ByteBuf payload, int payloadLength) {
     switch (status) {
       case ST_CONNECTING:
-        decodeInit0(encoder, cmd, payload);
+        handleInitialHandshake(payload);
         status = ST_AUTHENTICATING;
         break;
       case ST_AUTHENTICATING:
-        decodeInit1(cmd, payload);
+        handleAuthentication(payload);
         break;
     }
   }
 
-  private void decodeInit0(MySQLEncoder encoder, InitCommand cmd, ByteBuf payload) {
+  private void handleInitialHandshake(ByteBuf payload) {
     short protocolVersion = payload.readUnsignedByte();
 
     String serverVersion = BufferUtils.readNullTerminatedString(payload, StandardCharsets.US_ASCII);
@@ -181,7 +181,7 @@ class InitCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitCo
     sendHandshakeResponseMessage(cmd.username(), cmd.password(), cmd.database(), nonce, authMethodName, clientConnectionAttributes);
   }
 
-  private void decodeInit1(InitCommand cmd, ByteBuf payload) {
+  private void handleAuthentication(ByteBuf payload) {
     int header = payload.getUnsignedByte(payload.readerIndex());
     switch (header) {
       case OK_PACKET_HEADER:

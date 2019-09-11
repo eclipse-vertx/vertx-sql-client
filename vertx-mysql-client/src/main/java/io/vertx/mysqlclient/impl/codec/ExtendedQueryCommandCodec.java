@@ -49,7 +49,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
   }
 
   @Override
-  void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
+  void decodePayload(ByteBuf payload, int payloadLength) {
     if (statement.isCursorOpen) {
       int first = payload.getUnsignedByte(payload.readerIndex());
       if (first == ERROR_PACKET_HEADER) {
@@ -92,7 +92,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
             throw new IllegalStateException("Unexpected state for decoding COM_STMT_EXECUTE response with cursor opening");
         }
       } else {
-        super.decodePayload(payload, payloadLength, sequenceId);
+        super.decodePayload(payload, payloadLength);
       }
     }
   }

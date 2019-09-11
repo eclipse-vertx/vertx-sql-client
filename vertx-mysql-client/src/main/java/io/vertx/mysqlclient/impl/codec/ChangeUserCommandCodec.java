@@ -6,12 +6,10 @@ import io.vertx.mysqlclient.impl.command.ChangeUserCommand;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.mysqlclient.impl.util.CachingSha2Authenticator;
 import io.vertx.mysqlclient.impl.util.Native41Authenticator;
-import io.vertx.mysqlclient.impl.util.RsaPublicKeyEncryptor;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Map;
 
 import static io.vertx.mysqlclient.impl.codec.CapabilitiesFlag.*;
@@ -29,7 +27,7 @@ class ChangeUserCommandCodec extends AuthenticationCommandBaseCodec<Void, Change
   }
 
   @Override
-  void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
+  void decodePayload(ByteBuf payload, int payloadLength) {
     int header = payload.getUnsignedByte(payload.readerIndex());
     switch (header) {
       case AUTH_SWITCH_REQUEST_STATUS_FLAG:
