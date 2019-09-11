@@ -76,7 +76,12 @@ public class MySQLRule extends ExternalResource {
       server.withClasspathResourceMapping("tls/files", "/etc/mysql/tls", BindMode.READ_ONLY);
     } else {
       server.withClasspathResourceMapping("tls/files", "/etc/mysql/tls", BindMode.READ_ONLY);
-      server.withCommand("--max_allowed_packet=33554432 --max_prepared_stmt_count=16382 --local_infile=true --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci --caching-sha2-password-public-key-path=/etc/mysql/tls/public_key.pem --caching-sha2-password-private-key-path=/etc/mysql/tls/private_key.pem");
+      String cmd = "--max_allowed_packet=33554432 --max_prepared_stmt_count=16382 --local_infile=true --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci";
+      if (isUsingMySQL8()) {
+        // introduced in MySQL 8.0.3
+        cmd += " --caching-sha2-password-public-key-path=/etc/mysql/tls/public_key.pem --caching-sha2-password-private-key-path=/etc/mysql/tls/private_key.pem";
+      }
+      server.withCommand(cmd);
     }
   }
 
@@ -109,6 +114,10 @@ public class MySQLRule extends ExternalResource {
 
   public boolean isUsingMySQL5_6() {
     return databaseType == DatabaseType.MySQL && databaseVersion.contains("5.6");
+  }
+
+  public boolean isUsingMySQL8() {
+    return databaseType == DatabaseType.MySQL && (databaseVersion.equals("8") || databaseVersion.contains("8."));
   }
 
   public MySQLConnectOptions options() {

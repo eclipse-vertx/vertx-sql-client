@@ -76,6 +76,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
           case COLUMN_DEFINITIONS_DECODING_COMPLETED:
             // accept an EOF_Packet when DEPRECATE_EOF is not enabled
             skipEofPacketIfNeeded(payload);
+            // do not need a break clause here
           case HANDLING_ROW_DATA_OR_END_PACKET:
             handleResultsetColumnDefinitionsDecodingCompleted();
             // need to reset packet number so that we can send a fetch request
