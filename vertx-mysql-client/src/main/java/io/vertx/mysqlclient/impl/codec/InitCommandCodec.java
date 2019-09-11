@@ -21,7 +21,6 @@ import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.mysqlclient.impl.util.CachingSha2Authenticator;
 import io.vertx.mysqlclient.impl.util.Native41Authenticator;
-import io.vertx.mysqlclient.impl.util.RsaPublicKeyEncryptor;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.InitCommand;
@@ -29,28 +28,21 @@ import io.vertx.sqlclient.impl.command.InitCommand;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import static io.vertx.mysqlclient.impl.codec.CapabilitiesFlag.*;
 import static io.vertx.mysqlclient.impl.codec.Packets.*;
 
-class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
+class InitCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitCommand> {
 
-  private static final int NONCE_LENGTH = 20;
+  private static final List<String> nonAttributePropertyKeys = Collections.unmodifiableList(Arrays.asList("collation", "sslMode", "serverRSAPublicKey"));
   private static final int AUTH_PLUGIN_DATA_PART1_LENGTH = 8;
 
   private static final int ST_CONNECTING = 0;
   private static final int ST_AUTHENTICATING = 1;
   private static final int ST_CONNECTED = 2;
-
-  private static final int AUTH_SWITCH_REQUEST_STATUS_FLAG = 0xFE;
-  private static final int AUTH_MORE_DATA_STATUS_FLAG = 0x01;
-  private static final int AUTH_PUBLIC_KEY_REQUEST_FLAG = 0x02;
-  private static final int FAST_AUTH_STATUS_FLAG = 0x03;
-  private static final int FULL_AUTHENTICATION_STATUS_FLAG = 0x04;
-
-  private boolean isWaitingForRsaPublicKey = false; // FIXME remove this later
-  private byte[] authData;
 
   private int status = ST_CONNECTING;
 
@@ -133,7 +125,7 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
 
     // Rest of the plugin provided data
     payload.readBytes(scramble, AUTH_PLUGIN_DATA_PART1_LENGTH, Math.max(NONCE_LENGTH - AUTH_PLUGIN_DATA_PART1_LENGTH, lenOfAuthPluginData - 9));
-    authData = Arrays.copyOf(scramble, NONCE_LENGTH);
+    authPluginData = Arrays.copyOf(scramble, NONCE_LENGTH);
     payload.readByte(); // reserved byte
 
     String authPluginName = null;
@@ -214,71 +206,10 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
         handleErrorPacketPayload(payload);
         break;
       case AUTH_SWITCH_REQUEST_STATUS_FLAG:
-        // Protocol::AuthSwitchRequest
-        payload.skipBytes(1); // status flag, always 0xFE
-        String pluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.UTF_8);
-        byte[] nonce = new byte[NONCE_LENGTH];
-        payload.readBytes(nonce);
-        byte[] scrambledPassword;
-        switch (pluginName) {
-          case "mysql_native_password":
-            scrambledPassword = Native41Authenticator.encode(cmd.password().getBytes(), nonce);
-            break;
-          case "caching_sha2_password":
-            scrambledPassword = CachingSha2Authenticator.encode(cmd.password().getBytes(), nonce);
-            break;
-          default:
-            completionHandler.handle(CommandResponse.failure(new UnsupportedOperationException("Unsupported authentication method: " + pluginName)));
-            return;
-        }
-        int scrambledPasswordPacketLength = scrambledPassword.length;
-        ByteBuf scrambledPasswordPacket = allocateBuffer(scrambledPasswordPacketLength + 4);
-        scrambledPasswordPacket.writeMediumLE(scrambledPasswordPacketLength);
-        scrambledPasswordPacket.writeByte(sequenceId);
-        scrambledPasswordPacket.writeBytes(scrambledPassword);
-        sendNonSplitPacket(scrambledPasswordPacket);
+        handleAuthSwitchRequest(cmd.password().getBytes(), payload);
         break;
       case AUTH_MORE_DATA_STATUS_FLAG:
-        payload.skipBytes(1); // skip the status flag
-        if (isWaitingForRsaPublicKey){
-          String serverRsaPublicKey = readRestOfPacketString(payload, StandardCharsets.UTF_8);
-          sendEncryptedPasswordWithServerRsaPublicKey(serverRsaPublicKey);
-        } else {
-          byte flag = payload.readByte();
-          if (flag == FULL_AUTHENTICATION_STATUS_FLAG) {
-            if (encoder.socketConnection.isSsl()) {
-              // send the non-scrambled password directly since it's on a secure connection
-              byte[] password = cmd.password().getBytes();
-              int nonScrambledPasswordPacketLength = password.length + 1;
-              ByteBuf nonScrambledPasswordPacket = allocateBuffer(nonScrambledPasswordPacketLength + 4);
-              nonScrambledPasswordPacket.writeMediumLE(nonScrambledPasswordPacketLength);
-              nonScrambledPasswordPacket.writeByte(sequenceId);
-              nonScrambledPasswordPacket.writeBytes(password);
-              nonScrambledPasswordPacket.writeByte(0x00); // end with a 0x00
-              sendNonSplitPacket(nonScrambledPasswordPacket);
-            } else {
-              // use server Public Key to encrypt password
-              String serverRsaPublicKey = cmd.properties().get("serverRSAPublicKey");
-              if (serverRsaPublicKey == null) {
-                // send a public key request
-                isWaitingForRsaPublicKey = true;
-                ByteBuf rsaPublicKeyRequest = allocateBuffer(5);
-                rsaPublicKeyRequest.writeMediumLE(1);
-                rsaPublicKeyRequest.writeByte(sequenceId);
-                rsaPublicKeyRequest.writeByte(AUTH_PUBLIC_KEY_REQUEST_FLAG);
-                sendNonSplitPacket(rsaPublicKeyRequest);
-              } else {
-                // send encrypted password
-                sendEncryptedPasswordWithServerRsaPublicKey(serverRsaPublicKey);
-              }
-            }
-          } else if (flag == FAST_AUTH_STATUS_FLAG) {
-            // fast auth success
-            return;
-          } else {
-            throw new UnsupportedOperationException("Unsupported flag for AuthMoreData : " + flag);
-          }
-        }
+        handleAuthMoreData(cmd.password().getBytes(), payload);
         break;
       default:
         completionHandler.handle(CommandResponse.failure(new IllegalStateException("Unhandled state with header: " + header)));
@@ -286,22 +217,25 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     }
   }
 
-  private void sendEncryptedPasswordWithServerRsaPublicKey(String serverRsaPublicKeyContent) {
-    byte[] encryptedPassword;
-    try {
-      byte[] password = cmd.password().getBytes();
-      byte[] passwordInput = Arrays.copyOf(password, password.length + 1); // need to append 0x00(NULL) to the password
-      encryptedPassword = RsaPublicKeyEncryptor.encrypt(passwordInput, authData, serverRsaPublicKeyContent);
-    } catch (Exception e) {
-      completionHandler.handle(CommandResponse.failure(e));
-      return;
+  private void handleAuthSwitchRequest(byte[] password, ByteBuf payload) {
+    // Protocol::AuthSwitchRequest
+    payload.skipBytes(1); // status flag, always 0xFE
+    String pluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.UTF_8);
+    byte[] nonce = new byte[NONCE_LENGTH];
+    payload.readBytes(nonce);
+    byte[] scrambledPassword;
+    switch (pluginName) {
+      case "mysql_native_password":
+        scrambledPassword = Native41Authenticator.encode(password, nonce);
+        break;
+      case "caching_sha2_password":
+        scrambledPassword = CachingSha2Authenticator.encode(password, nonce);
+        break;
+      default:
+        completionHandler.handle(CommandResponse.failure(new UnsupportedOperationException("Unsupported authentication method: " + pluginName)));
+        return;
     }
-
-    ByteBuf buf = allocateBuffer(encryptedPassword.length + 4);
-    buf.writeMediumLE(encryptedPassword.length);
-    buf.writeByte(sequenceId);
-    buf.writeBytes(encryptedPassword);
-    sendNonSplitPacket(buf);
+    sendBytesAsPacket(scrambledPassword);
   }
 
   private void sendSslRequest() {
@@ -385,6 +319,11 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     packet.setMediumLE(packetStartIdx, payloadLength);
 
     sendPacket(packet, payloadLength);
+  }
+
+  @Override
+  protected String getServerPublicKey() {
+    return cmd.properties().get("serverRSAPublicKey");
   }
 
   private boolean isTlsSupportedByServer(int serverCapabilitiesFlags) {
