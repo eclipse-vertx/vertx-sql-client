@@ -100,7 +100,7 @@ class InitCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitCo
     payload.readByte();
 
     // read lower 2 bytes of Capabilities flags
-    int serverCapabilitiesFlags = payload.readUnsignedShortLE();
+    int lowerServerCapabilitiesFlags = payload.readUnsignedShortLE();
 
     short characterSet = payload.readUnsignedByte();
 
@@ -108,7 +108,7 @@ class InitCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitCo
 
     // read upper 2 bytes of Capabilities flags
     int capabilityFlagsUpper = payload.readUnsignedShortLE();
-    serverCapabilitiesFlags |= (capabilityFlagsUpper << 16);
+    final int serverCapabilitiesFlags = (lowerServerCapabilitiesFlags | (capabilityFlagsUpper << 16));
 
     // length of the combined auth_plugin_data (scramble)
     short lenOfAuthPluginData;
@@ -128,20 +128,8 @@ class InitCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitCo
     authPluginData = Arrays.copyOf(scramble, NONCE_LENGTH);
     payload.readByte(); // reserved byte
 
-    String authPluginName = null;
-    if (isClientPluginAuthSupported) {
-      authPluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.UTF_8);
-    }
-
-    //TODO we may not need an extra object here?(inline)
-    InitialHandshakePacket initialHandshakePacket = new InitialHandshakePacket(serverVersion,
-      connectionId,
-      serverCapabilitiesFlags,
-      characterSet,
-      statusFlags,
-      scramble,
-      authPluginName
-    );
+    // we assume the server supports auth plugin
+    final String authPluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.UTF_8);
 
     boolean upgradeToSsl;
     String sslMode = cmd.properties().get("sslMode");
@@ -168,22 +156,20 @@ class InitCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitCo
 
       encoder.socketConnection.upgradeToSSLConnection(upgrade -> {
         if (upgrade.succeeded()) {
-          doSendHandshakeResponseMessage(initialHandshakePacket);
+          doSendHandshakeResponseMessage(authPluginName, scramble, serverCapabilitiesFlags);
         } else {
           completionHandler.handle(CommandResponse.failure(upgrade.cause()));
         }
       });
     } else {
-      doSendHandshakeResponseMessage(initialHandshakePacket);
+      doSendHandshakeResponseMessage(authPluginName, scramble, serverCapabilitiesFlags);
     }
   }
 
-  private void doSendHandshakeResponseMessage(InitialHandshakePacket initialHandshakePacket) {
+  private void doSendHandshakeResponseMessage(String authMethodName, byte[] nonce, int serverCapabilitiesFlags) {
     if (cmd.database() != null && !cmd.database().isEmpty()) {
       encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_WITH_DB;
     }
-    String authMethodName = initialHandshakePacket.getAuthMethodName();
-    byte[] serverScramble = initialHandshakePacket.getScramble();
     Map<String, String> properties = cmd.properties();
     checkCollation();
     encoder.charset = Charset.forName(collation.mappedJavaCharsetName());
@@ -191,8 +177,8 @@ class InitCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitCo
     if (clientConnectionAttributes != null && !clientConnectionAttributes.isEmpty()) {
       encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_ATTRS;
     }
-    encoder.clientCapabilitiesFlag &= initialHandshakePacket.getServerCapabilitiesFlags();
-    sendHandshakeResponseMessage(cmd.username(), cmd.password(), cmd.database(), serverScramble, authMethodName, clientConnectionAttributes);
+    encoder.clientCapabilitiesFlag &= serverCapabilitiesFlags;
+    sendHandshakeResponseMessage(cmd.username(), cmd.password(), cmd.database(), nonce, authMethodName, clientConnectionAttributes);
   }
 
   private void decodeInit1(InitCommand cmd, ByteBuf payload) {
