@@ -33,6 +33,7 @@ public class MySQLRule extends ExternalResource {
   private boolean ssl;
 
   public static final MySQLRule SHARED_INSTANCE = new MySQLRule();
+  public static final MySQLRule SHARED_TLS_INSTANCE = new MySQLRule().ssl(true);
 
   public MySQLRule ssl(boolean ssl) {
     this.ssl = ssl;

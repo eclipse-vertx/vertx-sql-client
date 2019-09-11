@@ -18,7 +18,7 @@ import org.junit.runner.RunWith;
 public class MySQLTLSTest {
 
   @ClassRule
-  public static MySQLRule rule = new MySQLRule().ssl(true);
+  public static MySQLRule rule = MySQLRule.SHARED_TLS_INSTANCE;
 
   Vertx vertx;
   MySQLConnectOptions options;
