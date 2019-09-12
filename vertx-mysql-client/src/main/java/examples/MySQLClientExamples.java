@@ -330,6 +330,25 @@ public class MySQLClientExamples {
     });
   }
 
+  public void rsaPublicKeyExample() {
+
+    MySQLConnectOptions options = new MySQLConnectOptions()
+      .setPort(3306)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUser("user")
+      .setPassword("secret")
+      .setServerRsaPublicKey("-----BEGIN PUBLIC KEY-----\n" +
+        "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3yvG5s0qrV7jxVlp0sMj\n" +
+        "xP0a6BuLKCMjb0o88hDsJ3xz7PpHNKazuEAfPxiRFVAV3edqfSiXoQw+lJf4haEG\n" +
+        "HQe12Nfhs+UhcAeTKXRlZP/JNmI+BGoBduQ1rCId9bKYbXn4pvyS/a1ft7SwFkhx\n" +
+        "aogCur7iIB0WUWvwkQ0fEj/Mlhw93lLVyx7hcGFq4FOAKFYr3A0xrHP1IdgnD8QZ\n" +
+        "0fUbgGLWWLOossKrbUP5HWko1ghLPIbfmU6o890oj1ZWQewj1Rs9Er92/UDj/JXx\n" +
+        "7ha1P+ZOgPBlV037KDQMS6cUh9vTablEHsMLhDZanymXzzjBkL+wH/b9cdL16LkQ\n" +
+        "5QIDAQAB\n" +
+        "-----END PUBLIC KEY-----\n");
+  }
+
   public void tlsExample(Vertx vertx) {
 
     MySQLConnectOptions options = new MySQLConnectOptions()
