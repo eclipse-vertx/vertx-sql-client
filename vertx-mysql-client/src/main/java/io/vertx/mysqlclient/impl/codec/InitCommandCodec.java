@@ -93,8 +93,8 @@ class InitCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitCo
     long connectionId = payload.readUnsignedIntLE();
 
     // read first part of scramble
-    byte[] scramble = new byte[NONCE_LENGTH];
-    payload.readBytes(scramble, 0, AUTH_PLUGIN_DATA_PART1_LENGTH);
+    this.authPluginData = new byte[NONCE_LENGTH];
+    payload.readBytes(authPluginData, 0, AUTH_PLUGIN_DATA_PART1_LENGTH);
 
     //filler
     payload.readByte();
@@ -124,8 +124,7 @@ class InitCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitCo
     payload.readerIndex(payload.readerIndex() + 10);
 
     // Rest of the plugin provided data
-    payload.readBytes(scramble, AUTH_PLUGIN_DATA_PART1_LENGTH, Math.max(NONCE_LENGTH - AUTH_PLUGIN_DATA_PART1_LENGTH, lenOfAuthPluginData - 9));
-    authPluginData = Arrays.copyOf(scramble, NONCE_LENGTH);
+    payload.readBytes(authPluginData, AUTH_PLUGIN_DATA_PART1_LENGTH, Math.max(NONCE_LENGTH - AUTH_PLUGIN_DATA_PART1_LENGTH, lenOfAuthPluginData - 9));
     payload.readByte(); // reserved byte
 
     // we assume the server supports auth plugin
@@ -156,13 +155,13 @@ class InitCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitCo
 
       encoder.socketConnection.upgradeToSSLConnection(upgrade -> {
         if (upgrade.succeeded()) {
-          doSendHandshakeResponseMessage(authPluginName, scramble, serverCapabilitiesFlags);
+          doSendHandshakeResponseMessage(authPluginName, authPluginData, serverCapabilitiesFlags);
         } else {
           completionHandler.handle(CommandResponse.failure(upgrade.cause()));
         }
       });
     } else {
-      doSendHandshakeResponseMessage(authPluginName, scramble, serverCapabilitiesFlags);
+      doSendHandshakeResponseMessage(authPluginName, authPluginData, serverCapabilitiesFlags);
     }
   }
 
