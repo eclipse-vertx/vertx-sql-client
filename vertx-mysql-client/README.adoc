@@ -25,7 +25,6 @@ Documentation:
 * [ ] TLS support
 * [ ] Add support for more authentication methods(caching_sha2_password)
 * [ ] Authentication methods switch
-* [ ] Transaction management
 * [ ] Full data type support
 * [ ] Compression
 * [ ] Replication Protocol(Binlog)

@@ -31,11 +31,6 @@ public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool 
   }
 
   @Override
-  public void begin(Handler<AsyncResult<Transaction>> handler) {
-    throw new UnsupportedOperationException("Transaction is not supported for now");
-  }
-
-  @Override
   protected void doClose() {
     factory.close();
     super.doClose();

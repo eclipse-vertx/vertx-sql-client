@@ -5,6 +5,9 @@ GRANT ALL ON emptyschema.* TO 'mysql'@'%';
 # testing change user
 CREATE USER 'superuser'@'%' IDENTIFIED BY 'password';
 GRANT ALL ON emptyschema.* TO 'superuser'@'%' WITH GRANT OPTION;
+
+# allow access to information_schema
+GRANT PROCESS ON *.* TO 'mysql'@'%';
 FLUSH PRIVILEGES;
 
 USE testschema;
