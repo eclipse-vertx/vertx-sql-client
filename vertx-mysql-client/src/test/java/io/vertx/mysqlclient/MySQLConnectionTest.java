@@ -40,4 +40,13 @@ public class MySQLConnectionTest extends MySQLTestBase {
     }));
   }
 
+  @Test
+  public void testConnectWithEmptyPassword(TestContext ctx) {
+    options.setUser("emptypassuser")
+      .setPassword("")
+      .setDatabase("emptyschema");
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.close();
+    }));
+  }
 }

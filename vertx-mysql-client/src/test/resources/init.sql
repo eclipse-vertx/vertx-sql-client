@@ -7,6 +7,11 @@ CREATE USER 'superuser'@'%' IDENTIFIED BY 'password';
 GRANT ALL ON emptyschema.* TO 'superuser'@'%' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 
+# testing empty password
+CREATE USER 'emptypassuser'@'%' IDENTIFIED BY '';
+GRANT ALL ON emptyschema.* TO 'emptypassuser'@'%' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+
 USE testschema;
 
 # @Deprecated--- This part is only for mysql tests and should be moved out of TCK tests ---
