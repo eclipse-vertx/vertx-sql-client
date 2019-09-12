@@ -2,7 +2,7 @@ version: "3"
 
 services:
   test-mysql:
-    image: mysql:5.7
+    image: mysql:8.0
 #    image: mariadb:10.4
     ports:
       - "3306:3306"
@@ -12,11 +12,12 @@ services:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: testschema
     command: --max_allowed_packet=33554432 --max_prepared_stmt_count=16382 --local_infile=ON --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci --caching-sha2-password-public-key-path=/etc/mysql/tls/public_key.pem --caching-sha2-password-private-key-path=/etc/mysql/tls/private_key.pem
+#    note caching-sha2-password-public-key-path and caching-sha2-password-private-key-path are introduced in MySQL 8.0.3
     volumes:
       - ../../src/test/resources/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ../../src/test/resources/tls/files:/etc/mysql/tls
   test-tls-mysql:
-    image: mysql:5.7
+    image: mysql:8.0
     ports:
       - "3307:3306"
     environment:
