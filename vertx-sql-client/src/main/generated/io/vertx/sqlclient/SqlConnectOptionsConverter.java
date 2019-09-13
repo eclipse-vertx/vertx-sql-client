@@ -4,19 +4,13 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import io.vertx.core.spi.json.JsonEncoder;
 
 /**
- * Converter and Codec for {@link io.vertx.sqlclient.SqlConnectOptions}.
+ * Converter and mapper for {@link io.vertx.sqlclient.SqlConnectOptions}.
  * NOTE: This class has been automatically generated from the {@link io.vertx.sqlclient.SqlConnectOptions} original class using Vert.x codegen.
  */
-public class SqlConnectOptionsConverter implements JsonEncoder<SqlConnectOptions, JsonObject> {
+public class SqlConnectOptionsConverter {
 
-  public static final SqlConnectOptionsConverter INSTANCE = new SqlConnectOptionsConverter();
-
-  @Override public JsonObject encode(SqlConnectOptions value) { return (value != null) ? value.toJson() : null; }
-
-  @Override public Class<SqlConnectOptions> getTargetClass() { return SqlConnectOptions.class; }
 
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, SqlConnectOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
