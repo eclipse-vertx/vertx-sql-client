@@ -1,11 +1,9 @@
 package io.vertx.mysqlclient;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Transaction;
 import org.junit.After;
 import org.junit.Before;
@@ -139,14 +137,14 @@ public class MySQLConnectionTestBase extends MySQLTestBase {
         Transaction tx = conn.begin();
         AtomicInteger failures = new AtomicInteger();
         tx.abortHandler(v -> ctx.assertEquals(0, failures.getAndIncrement()));
-        AtomicReference<AsyncResult<RowSet>> queryAfterFailed = new AtomicReference<>();
-        AtomicReference<AsyncResult<Void>> commit = new AtomicReference<>();
+        AtomicReference<Boolean> queryAfterFailed = new AtomicReference<>();
+        AtomicReference<Boolean> commit = new AtomicReference<>();
         conn.query("INSERT INTO mutable (id, val) VALUES (1, 'val-1')", ar1 -> { });
         conn.query("INSERT INTO mutable (id, val) VALUES (1, 'val-2')", ar2 -> {
           ctx.assertNotNull(queryAfterFailed.get());
-          ctx.assertTrue(queryAfterFailed.get().failed());
+          ctx.assertTrue(queryAfterFailed.get());
           ctx.assertNotNull(commit.get());
-          ctx.assertTrue(commit.get().failed());
+          ctx.assertTrue(commit.get());
           ctx.assertTrue(ar2.failed());
           ctx.assertEquals(1, failures.get());
           // This query won't be made in the same TX
@@ -155,8 +153,8 @@ public class MySQLConnectionTestBase extends MySQLTestBase {
             done.complete();
           }));
         });
-        conn.query("SELECT id FROM mutable", queryAfterFailed::set);
-        tx.commit(commit::set);
+        conn.query("SELECT id FROM mutable", result -> queryAfterFailed.set(result.failed()));
+        tx.commit(result -> commit.set(result.failed()));
       });
     }));
   }
