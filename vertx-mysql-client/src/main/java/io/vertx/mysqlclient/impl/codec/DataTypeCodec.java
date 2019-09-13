@@ -66,7 +66,7 @@ class DataTypeCodec {
       case VARSTRING:
       case BLOB:
       default:
-        return textDecodeBlobOrText(charset, columnDefinitionFlags, data);
+        return textDecodeBlobOrText(charset, columnDefinitionFlags, data, length);
     }
   }
 
@@ -338,9 +338,12 @@ class DataTypeCodec {
 
   private static Buffer binaryDecodeBlob(ByteBuf buffer) {
     int len = (int) BufferUtils.readLengthEncodedInteger(buffer);
-    ByteBuf copy = buffer.copy(buffer.readerIndex(), len);
+
+    Buffer target = Buffer.buffer(len);
+    target.appendBuffer(Buffer.buffer(buffer.slice(buffer.readerIndex(), len)));
     buffer.skipBytes(len);
-    return Buffer.buffer(copy);
+
+    return target;
   }
 
   private static String binaryDecodeText(Charset charset, ByteBuf buffer) {
@@ -442,16 +445,19 @@ class DataTypeCodec {
     return Numeric.parse(buff.toString(charset));
   }
 
-  private static Object textDecodeBlobOrText(Charset charset, int columnDefinitionFlags, ByteBuf buffer) {
+  private static Object textDecodeBlobOrText(Charset charset, int columnDefinitionFlags,
+    ByteBuf buffer, int length) {
     if (isBinaryField(columnDefinitionFlags)) {
-      return textDecodeBlob(buffer);
+      return textDecodeBlob(buffer, length);
     } else {
       return textDecodeText(charset, buffer);
     }
   }
 
-  private static Buffer textDecodeBlob(ByteBuf buffer) {
-    return Buffer.buffer(buffer.copy());
+  private static Buffer textDecodeBlob(ByteBuf buffer, int length) {
+    Buffer target = Buffer.buffer(length);
+    target.appendBuffer(Buffer.buffer(buffer));
+    return target;
   }
 
   private static String textDecodeText(Charset charset, ByteBuf buffer) {

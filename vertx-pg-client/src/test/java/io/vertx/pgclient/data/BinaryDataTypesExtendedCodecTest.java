@@ -1,5 +1,8 @@
 package io.vertx.pgclient.data;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 import io.vertx.pgclient.PgConnection;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
@@ -24,7 +27,10 @@ public class BinaryDataTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
           p.execute(Tuple.of(Buffer.buffer(bytes)), ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Bytea")
               .returns(Tuple::getValue, Row::getValue, Buffer.buffer(bytes))
-              .returns(Tuple::getBuffer, Row::getBuffer, Buffer.buffer(bytes))
+              .<Buffer>returns(Tuple::getBuffer, Row::getBuffer, buffer -> {
+                assertFalse(buffer.getByteBuf().isDirect());
+                assertEquals(Buffer.buffer(bytes), buffer);
+              })
               .forRow(result.iterator().next());
             async.complete();
           }));
