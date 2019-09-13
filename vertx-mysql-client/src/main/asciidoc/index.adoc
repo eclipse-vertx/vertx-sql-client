@@ -371,3 +371,39 @@ For example, you can disable `CLIENT_MULTI_STATEMENTS` with this command.
 {@link examples.MySQLClientExamples#setOptionExample01(io.vertx.mysqlclient.MySQLConnection)}
 ----
 
+== MySQL and MariaDB version support matrix
+
+[cols="^,^,^,^", options="header"]
+|====
+
+2+| MySQL
+2+| MariaDB
+
+| Version | Supported | Version | Supported
+
+|`5.5`
+|&#10004;
+|`10.1`
+|&#10004;
+
+|`5.6`
+|&#10004;
+|`10.2`
+|&#10004;
+
+|`5.7`
+|&#10004;
+|`10.3`
+|&#10004;
+
+|`8.0`
+|&#10004;
+|`10.4`
+|&#10004;
+
+|====
+
+Known issues:
+
+- Reset connection utility command does not work in MySQL 5.5, 5.6 and MariaDB 10.1
+- Change user utility command is not supported with MariaDB 10.2 and 10.3

@@ -99,7 +99,6 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
 
   @Test
   public void testResetConnection(TestContext ctx) {
-    //TODO does not pass in MySQL 5.6 due to unknown command?
     Assume.assumeFalse(rule.isUsingMySQL5_6());
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("CREATE TEMPORARY TABLE temp (temp INTEGER)", ctx.asyncAssertSuccess(res1 -> {
