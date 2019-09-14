@@ -88,8 +88,24 @@ public class StringDataTypeTest extends MySQLDataTypeTestBase {
   }
 
   @Test
+  public void testTextDecodeBlobDoesNotLeakDirectBuffer(TestContext ctx) {
+    testTextDecodeGenericWithTable(ctx, "Blob", (row, columnName) -> {
+      boolean isDirectBuffer = ((Buffer) row.getValue(0)).getByteBuf().isDirect();
+      ctx.assertFalse(isDirectBuffer);
+    });
+  }
+
+  @Test
   public void testBinaryDecodeBlob(TestContext ctx) {
     testBinaryDecodeGenericWithTable(ctx, "Blob", Buffer.buffer("BLOB"));
+  }
+
+  @Test
+  public void testBinaryDecodeBlobDoesNotLeakDirectBuffer(TestContext ctx) {
+    testBinaryDecodeGenericWithTable(ctx, "Blob", (row, columnName) -> {
+      boolean isDirectBuffer = ((Buffer) row.getValue(0)).getByteBuf().isDirect();
+      ctx.assertFalse(isDirectBuffer);
+    });
   }
 
   @Test
