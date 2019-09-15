@@ -234,8 +234,7 @@ class InitCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitCo
     packet.writeIntLE(PACKET_PAYLOAD_LENGTH_LIMIT);
     checkCollation();
     packet.writeByte(collation.collationId());
-    byte[] filler = new byte[23];
-    packet.writeBytes(filler);
+    packet.writeZero(23); // filler
 
     sendNonSplitPacket(packet);
   }
