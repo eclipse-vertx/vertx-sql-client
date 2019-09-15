@@ -1079,7 +1079,9 @@ class DataTypeCodec {
   }
 
   private static Buffer binaryDecodeBYTEA(int index, int len, ByteBuf buff) {
-    return Buffer.buffer(buff.copy(index, len));
+    Buffer target = Buffer.buffer(len);
+    target.appendBuffer(Buffer.buffer(buff.slice(index, len)));
+    return target;
   }
 
   private static void binaryEncodeUUID(UUID uuid, ByteBuf buff) {
