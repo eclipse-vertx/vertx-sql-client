@@ -259,8 +259,7 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     packet.writeIntLE(clientCapabilitiesFlags);
     packet.writeIntLE(0xFFFFFF);
     packet.writeByte(collation.collationId());
-    byte[] filler = new byte[23];
-    packet.writeBytes(filler);
+    packet.writeZero(23); // filler
     BufferUtils.writeNullTerminatedString(packet, username, StandardCharsets.UTF_8);
     if (password == null || password.isEmpty()) {
       packet.writeByte(0);
