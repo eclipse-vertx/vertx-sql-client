@@ -56,6 +56,9 @@ Set the collation for the connection.
 |[[ssl]]`@ssl`|`Boolean`|-
 |[[sslHandshakeTimeout]]`@sslHandshakeTimeout`|`Number (long)`|-
 |[[sslHandshakeTimeoutUnit]]`@sslHandshakeTimeoutUnit`|`link:enums.html#TimeUnit[TimeUnit]`|-
+|[[sslMode]]`@sslMode`|`link:enums.html#SslMode[SslMode]`|+++
+Set the link for the client, this option can be used to specify the desired security state of the connection to the server.
++++
 |[[tcpCork]]`@tcpCork`|`Boolean`|-
 |[[tcpFastOpen]]`@tcpFastOpen`|`Boolean`|-
 |[[tcpKeepAlive]]`@tcpKeepAlive`|`Boolean`|-

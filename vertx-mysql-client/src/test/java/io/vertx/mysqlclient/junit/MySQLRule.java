@@ -23,16 +23,24 @@ import org.testcontainers.containers.GenericContainer;
 
 public class MySQLRule extends ExternalResource {
   private static final String connectionUri = System.getProperty("connection.uri");
+  private static final String tlsConnectionUri = System.getProperty("tls.connection.uri");
 
   private GenericContainer server;
   private MySQLConnectOptions options;
   private DatabaseType databaseType;
   private String databaseVersion;
 
+  private boolean ssl;
+
   public static final MySQLRule SHARED_INSTANCE = new MySQLRule();
 
-  public synchronized MySQLConnectOptions startServer(DatabaseType databaseType, String databaseVersion) throws Exception {
-    initServer(databaseType, databaseVersion);
+  public MySQLRule ssl(boolean ssl) {
+    this.ssl = ssl;
+    return this;
+  }
+
+  public synchronized MySQLConnectOptions startServer(DatabaseType databaseType, String databaseVersion, boolean ssl) throws Exception {
+    initServer(databaseType, databaseVersion, ssl);
     server.start();
 
     return new MySQLConnectOptions()
@@ -53,15 +61,21 @@ public class MySQLRule extends ExternalResource {
     }
   }
 
-  private void initServer(DatabaseType serverType, String version) {
+  private void initServer(DatabaseType serverType, String version, boolean ssl) {
     server = new GenericContainer(serverType.toDockerImageName() + ":" + version)
       .withEnv("MYSQL_USER", "mysql")
       .withEnv("MYSQL_PASSWORD", "password")
       .withEnv("MYSQL_ROOT_PASSWORD", "password")
       .withEnv("MYSQL_DATABASE", "testschema")
-      .withCommand("--max_allowed_packet=33554432 --max_prepared_stmt_count=16382 --local_infile=true --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci")
       .withExposedPorts(3306)
       .withClasspathResourceMapping("init.sql", "/docker-entrypoint-initdb.d/init.sql", BindMode.READ_ONLY);
+
+    if (ssl) {
+      server.withClasspathResourceMapping("tls/conf", "/etc/mysql/conf.d", BindMode.READ_ONLY);
+      server.withClasspathResourceMapping("tls/files", "/etc/mysql/tls", BindMode.READ_ONLY);
+    } else {
+      server.withCommand("--max_allowed_packet=33554432 --max_prepared_stmt_count=16382 --local_infile=true --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci");
+    }
   }
 
   private static DatabaseType parseDatabaseTypeString(String databaseInfo) throws IllegalArgumentException {
@@ -77,6 +91,10 @@ public class MySQLRule extends ExternalResource {
 
   public static boolean isTestingWithExternalDatabase() {
     return isSystemPropertyValid(connectionUri);
+  }
+
+  public static boolean isTlsTestingWithExternalDatabase() {
+    return isSystemPropertyValid(tlsConnectionUri);
   }
 
   private static boolean isSystemPropertyValid(String systemProperty) {
@@ -98,8 +116,14 @@ public class MySQLRule extends ExternalResource {
   @Override
   protected void before() throws Throwable {
     // use an external database for testing
-    if (isTestingWithExternalDatabase()) {
+    if (isTestingWithExternalDatabase() && !ssl) {
       options = MySQLConnectOptions.fromUri(connectionUri);
+      return;
+    }
+
+    // use an external database for tls testing
+    if (isTlsTestingWithExternalDatabase() && ssl) {
+      options = MySQLConnectOptions.fromUri(tlsConnectionUri);
       return;
     }
 
@@ -133,7 +157,7 @@ public class MySQLRule extends ExternalResource {
       }
     }
 
-    options = startServer(databaseType, databaseVersion);
+    options = startServer(databaseType, databaseVersion, ssl);
   }
 
   @Override

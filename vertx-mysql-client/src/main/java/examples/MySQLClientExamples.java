@@ -1,6 +1,7 @@
 package examples;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
 import io.vertx.mysqlclient.*;
 import io.vertx.sqlclient.Pool;
@@ -325,6 +326,26 @@ public class MySQLClientExamples {
         });
       } else {
         System.out.println("Failure: " + ar1.cause().getMessage());
+      }
+    });
+  }
+
+  public void tlsExample(Vertx vertx) {
+
+    MySQLConnectOptions options = new MySQLConnectOptions()
+      .setPort(3306)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUser("user")
+      .setPassword("secret")
+      .setSslMode(SslMode.VERIFY_CA)
+      .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/cert.pem"));
+
+    MySQLConnection.connect(vertx, options, res -> {
+      if (res.succeeded()) {
+        // Connected with SSL
+      } else {
+        System.out.println("Could not connect " + res.cause());
       }
     });
   }

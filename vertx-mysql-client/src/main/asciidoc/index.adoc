@@ -16,6 +16,7 @@ scalability and low overhead.
 * Direct memory to object without unnecessary copies
 * Java 8 Date and Time
 * Stored Procedures support
+* TLS/SSL support
 * MySQL utilities commands support
 * Seamlessly working with MySQL 5.7 and MariaDB 10.4
 * Compatible with MySQL 5.6 and MariaDB 10.x
@@ -270,6 +271,20 @@ Note: Prepared statements binding OUT parameters is not supported for now.
 
 This client supports for handling the LOCAL INFILE Request, if you want to load data from a local file into the server, you can use query
 `LOAD DATA LOCAL INFILE '<filename>' INTO TABLE <table>;`. More information can be found in the https://dev.mysql.com/doc/refman/8.0/en/load-data.html[MySQL Reference Manual].
+
+== Using SSL/TLS
+
+To configure the client to use SSL connection, you can configure the {@link io.vertx.mysqlclient.MySQLConnectOptions}
+like a Vert.x `NetClient`.
+All https://dev.mysql.com/doc/refman/8.0/en/connection-options.html#option_general_ssl-mode[SSL modes] are supported and you are able to configure `sslmode`. The client is in `DISABLED` SSL mode by default.
+`ssl` parameter is kept as a mere shortcut for setting `sslmode`. `setSsl(true)` is equivalent to `setSslMode(VERIFY_CA)` and `setSsl(false)` is equivalent to `setSslMode(DISABLED)`.
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#tlsExample}
+----
+
+More information can be found in the http://vertx.io/docs/vertx-core/java/#ssl[Vert.x documentation].
 
 == MySQL utility command
 

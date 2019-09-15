@@ -25,10 +25,15 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static io.vertx.mysqlclient.impl.codec.Packets.*;
 
 abstract class CommandCodec<R, C extends CommandBase<R>> {
+
+  protected static final List<String> nonAttributePropertyKeys = Collections.unmodifiableList(Arrays.asList("collation", "sslMode"));
 
   Handler<? super CommandResponse<R>> completionHandler;
   public Throwable failure;

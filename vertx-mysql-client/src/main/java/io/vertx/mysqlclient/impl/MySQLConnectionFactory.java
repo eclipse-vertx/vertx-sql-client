@@ -5,7 +5,9 @@ import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
+import io.vertx.core.net.TrustOptions;
 import io.vertx.mysqlclient.MySQLConnectOptions;
+import io.vertx.mysqlclient.SslMode;
 import io.vertx.sqlclient.impl.Connection;
 
 import java.util.HashMap;
@@ -21,7 +23,6 @@ public class MySQLConnectionFactory {
   private final String password;
   private final String database;
   private final Map<String, String> properties;
-  private final boolean ssl = false;
   private final boolean cachePreparedStatements;
   private final int preparedStatementCacheSize;
   private final int preparedStatementCacheSqlLimit;
@@ -52,6 +53,24 @@ public class MySQLConnectionFactory {
       collation = MySQLCollation.getDefaultCollationFromCharsetName(charset);
     }
     properties.put("collation", collation);
+    SslMode sslMode = options.getSslMode();
+    properties.put("sslMode", sslMode.name());
+
+    // check the SSLMode here
+    switch (sslMode) {
+      case VERIFY_IDENTITY:
+        String hostnameVerificationAlgorithm = netClientOptions.getHostnameVerificationAlgorithm();
+        if (hostnameVerificationAlgorithm == null || hostnameVerificationAlgorithm.isEmpty()) {
+          throw new IllegalArgumentException("Host verification algorithm must be specified under VERIFY_IDENTITY ssl-mode.");
+        }
+      case VERIFY_CA:
+        TrustOptions trustOptions = netClientOptions.getTrustOptions();
+        if (trustOptions == null) {
+          throw new IllegalArgumentException("Trust options must be specified under " + sslMode.name() + " ssl-mode.");
+        }
+        break;
+    }
+
     this.cachePreparedStatements = options.getCachePreparedStatements();
     this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
     this.preparedStatementCacheSqlLimit = options.getPreparedStatementCacheSqlLimit();
