@@ -40,7 +40,11 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
   private static final int ST_AUTHENTICATING = 1;
   private static final int ST_CONNECTED = 2;
 
+  private static final int AUTH_SWITCH_REQUEST_STATUS_FLAG = 0xFE;
+
   private int status = 0;
+
+  private MySQLCollation collation;
 
   InitCommandCodec(InitCommand cmd) {
     super(cmd);
@@ -136,36 +140,59 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
       authPluginName
     );
 
-    boolean ssl = false;
-    if (ssl) {
-      //TODO ssl
-    } else {
-      if (cmd.database() != null && !cmd.database().isEmpty()) {
-        encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_WITH_DB;
-      }
-      String authMethodName = initialHandshakePacket.getAuthMethodName();
-      byte[] serverScramble = initialHandshakePacket.getScramble();
-      Map<String, String> properties = cmd.properties();
-      MySQLCollation collation;
-      try {
-        collation = MySQLCollation.valueOfName(properties.get("collation"));
-      } catch (IllegalArgumentException e) {
-        completionHandler.handle(CommandResponse.failure(e));
+    boolean upgradeToSsl;
+    String sslMode = cmd.properties().get("sslMode");
+    switch (sslMode) {
+      case "DISABLED":
+        upgradeToSsl = false;
+        break;
+      case "PREFERRED":
+        upgradeToSsl = isTlsSupportedByServer(serverCapabilitiesFlags);
+        break;
+      case "REQUIRED":
+      case "VERIFY_CA":
+      case "VERIFY_IDENTITY":
+        upgradeToSsl = true;
+        break;
+      default:
+        completionHandler.handle(CommandResponse.failure(new IllegalStateException("Unknown SSL mode to handle: " + sslMode)));
         return;
-      }
-      int collationId = collation.collationId();
-      encoder.charset = Charset.forName(collation.mappedJavaCharsetName());
-      Map<String, String> clientConnectionAttributes = properties;
-      if (clientConnectionAttributes != null && !clientConnectionAttributes.isEmpty()) {
-        encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_ATTRS;
-      }
-      encoder.clientCapabilitiesFlag &= initialHandshakePacket.getServerCapabilitiesFlags();
-      sendHandshakeResponseMessage(cmd.username(), cmd.password(), cmd.database(), collationId, serverScramble, authMethodName, clientConnectionAttributes);
+    }
+
+    if (upgradeToSsl) {
+      encoder.clientCapabilitiesFlag |= CLIENT_SSL;
+      sendSslRequest();
+
+      encoder.socketConnection.upgradeToSSLConnection(upgrade -> {
+        if (upgrade.succeeded()) {
+          doSendHandshakeResponseMessage(initialHandshakePacket);
+        } else {
+          completionHandler.handle(CommandResponse.failure(upgrade.cause()));
+        }
+      });
+    } else {
+      doSendHandshakeResponseMessage(initialHandshakePacket);
     }
   }
 
+  private void doSendHandshakeResponseMessage(InitialHandshakePacket initialHandshakePacket) {
+    if (cmd.database() != null && !cmd.database().isEmpty()) {
+      encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_WITH_DB;
+    }
+    String authMethodName = initialHandshakePacket.getAuthMethodName();
+    byte[] serverScramble = initialHandshakePacket.getScramble();
+    Map<String, String> properties = cmd.properties();
+    checkCollation();
+    encoder.charset = Charset.forName(collation.mappedJavaCharsetName());
+    Map<String, String> clientConnectionAttributes = properties;
+    if (clientConnectionAttributes != null && !clientConnectionAttributes.isEmpty()) {
+      encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_ATTRS;
+    }
+    encoder.clientCapabilitiesFlag &= initialHandshakePacket.getServerCapabilitiesFlags();
+    sendHandshakeResponseMessage(cmd.username(), cmd.password(), cmd.database(), serverScramble, authMethodName, clientConnectionAttributes);
+  }
+
   private void decodeInit1(InitCommand cmd, ByteBuf payload) {
-    //TODO auth switch support
     int header = payload.getUnsignedByte(payload.readerIndex());
     switch (header) {
       case OK_PACKET_HEADER:
@@ -175,12 +202,52 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
       case ERROR_PACKET_HEADER:
         handleErrorPacketPayload(payload);
         break;
+      case AUTH_SWITCH_REQUEST_STATUS_FLAG:
+        // Protocol::AuthSwitchRequest
+        payload.skipBytes(1); // status flag, always 0xFE
+        String pluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.UTF_8);
+        switch (pluginName) {
+          case "mysql_native_password":
+            byte[] challenge = new byte[20];
+            payload.readBytes(challenge);
+            byte[] scrambledPassword = Native41Authenticator.encode(cmd.password(), StandardCharsets.UTF_8, challenge);
+
+            ByteBuf packet = allocateBuffer(24);
+            packet.writeMediumLE(20);
+            packet.writeByte(sequenceId);
+            packet.writeBytes(scrambledPassword);
+            sendNonSplitPacket(packet);
+
+            break;
+          default:
+            //TODO support more auth methods here
+            completionHandler.handle(CommandResponse.failure(new UnsupportedOperationException("Unsupported authentication method: " + pluginName)));
+            return;
+        }
+        break;
       default:
         throw new UnsupportedOperationException();
     }
   }
 
-  private void sendHandshakeResponseMessage(String username, String password, String database, int collationId, byte[] serverScramble, String authMethodName, Map<String, String> clientConnectionAttributes) {
+  private void sendSslRequest() {
+    ByteBuf packet = allocateBuffer(36);
+    // encode packet header
+    packet.writeMediumLE(32);
+    packet.writeByte(sequenceId);
+
+    // encode SSLRequest payload
+    packet.writeIntLE(encoder.clientCapabilitiesFlag);
+    packet.writeIntLE(PACKET_PAYLOAD_LENGTH_LIMIT);
+    checkCollation();
+    packet.writeByte(collation.collationId());
+    byte[] filler = new byte[23];
+    packet.writeBytes(filler);
+
+    sendNonSplitPacket(packet);
+  }
+
+  private void sendHandshakeResponseMessage(String username, String password, String database, byte[] serverScramble, String authMethodName, Map<String, String> clientConnectionAttributes) {
     ByteBuf packet = allocateBuffer();
     // encode packet header
     int packetStartIdx = packet.writerIndex();
@@ -191,9 +258,8 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     int clientCapabilitiesFlags = encoder.clientCapabilitiesFlag;
     packet.writeIntLE(clientCapabilitiesFlags);
     packet.writeIntLE(0xFFFFFF);
-    packet.writeByte(collationId);
-    byte[] filler = new byte[23];
-    packet.writeBytes(filler);
+    packet.writeByte(collation.collationId());
+    packet.writeZero(23); // filler
     BufferUtils.writeNullTerminatedString(packet, username, StandardCharsets.UTF_8);
     if (password == null || password.isEmpty()) {
       packet.writeByte(0);
@@ -220,8 +286,8 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     if ((clientCapabilitiesFlags & CLIENT_CONNECT_ATTRS) != 0) {
       ByteBuf kv = encoder.chctx.alloc().ioBuffer();
       for (Map.Entry<String, String> attribute : clientConnectionAttributes.entrySet()) {
-        if (attribute.getKey().equals("collation")) {
-          // we store the collation in the properties but it's not an attribute
+        if (nonAttributePropertyKeys.contains(attribute.getKey())) {
+          // we store it in the properties but it's not an attribute
         } else {
           BufferUtils.writeLengthEncodedString(kv, attribute.getKey(), StandardCharsets.UTF_8);
           BufferUtils.writeLengthEncodedString(kv, attribute.getValue(), StandardCharsets.UTF_8);
@@ -236,5 +302,15 @@ class InitCommandCodec extends CommandCodec<Connection, InitCommand> {
     packet.setMediumLE(packetStartIdx, payloadLength);
 
     sendPacket(packet, payloadLength);
+  }
+
+  private boolean isTlsSupportedByServer(int serverCapabilitiesFlags) {
+    return (serverCapabilitiesFlags & CLIENT_SSL) != 0;
+  }
+
+  private void checkCollation() {
+    if (this.collation == null) {
+      collation = MySQLCollation.valueOfName(cmd.properties().get("collation"));
+    }
   }
 }

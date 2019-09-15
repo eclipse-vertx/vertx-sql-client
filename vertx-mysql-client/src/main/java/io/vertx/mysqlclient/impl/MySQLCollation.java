@@ -1,8 +1,7 @@
 package io.vertx.mysqlclient.impl;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * MySQL collation which is a set of rules for comparing characters in a character set.
@@ -230,6 +229,9 @@ public enum MySQLCollation {
   gb18030_chinese_ci("gb18030", "GB18030", 248),
   gb18030_bin("gb18030", "GB18030", 249),
   gb18030_unicode_520_ci("gb18030", "GB18030", 250);
+
+  public static final List<String> supportedCollationNames = Arrays.stream(values()).map(Enum::name).collect(Collectors.toList());
+  public static final List<String> supportedCharsetNames = Arrays.stream(values()).map(MySQLCollation::mysqlCharsetName).distinct().collect(Collectors.toList());
 
   private static final Map<String, String> charsetToDefaultCollationMapping = new HashMap<>();
 

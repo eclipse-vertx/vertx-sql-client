@@ -24,7 +24,13 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
   public static void connect(Vertx vertx, MySQLConnectOptions options, Handler<AsyncResult<MySQLConnection>> handler) {
     Context ctx = Vertx.currentContext();
     if (ctx != null) {
-      MySQLConnectionFactory client = new MySQLConnectionFactory(ctx, false, options);
+      MySQLConnectionFactory client;
+      try {
+        client = new MySQLConnectionFactory(ctx, false, options);
+      } catch (Exception e) {
+        handler.handle(Future.failedFuture(e));
+        return;
+      }
       client.connect(ar-> {
         if (ar.succeeded()) {
           Connection conn = ar.result();

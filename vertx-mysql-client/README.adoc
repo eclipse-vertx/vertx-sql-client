@@ -22,7 +22,6 @@ Documentation:
 
 == TODO
 
-* [ ] TLS support
 * [ ] Add support for more authentication methods(caching_sha2_password)
 * [ ] Authentication methods switch
 * [ ] Transaction management
