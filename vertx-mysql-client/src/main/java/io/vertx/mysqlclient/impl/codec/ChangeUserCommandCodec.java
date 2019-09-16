@@ -45,11 +45,6 @@ class ChangeUserCommandCodec extends AuthenticationCommandBaseCodec<Void, Change
     }
   }
 
-  @Override
-  protected String getServerPublicKey() {
-    return cmd.serverRsaPublicKey();
-  }
-
   private void handleAuthSwitchRequest(byte[] password, ByteBuf payload) {
     // Protocol::AuthSwitchRequest
     payload.skipBytes(1); // status flag, always 0xFE
@@ -89,7 +84,7 @@ class ChangeUserCommandCodec extends AuthenticationCommandBaseCodec<Void, Change
       packet.writeCharSequence(password, StandardCharsets.UTF_8);
     }
     BufferUtils.writeNullTerminatedString(packet, cmd.database(), StandardCharsets.UTF_8);
-    MySQLCollation collation = cmd.collation();
+    MySQLCollation collation = MySQLCollation.valueOfName(cmd.collation());
     int collationId = collation.collationId();
     encoder.charset = Charset.forName(collation.mappedJavaCharsetName());
     packet.writeShortLE(collationId);
@@ -100,14 +95,7 @@ class ChangeUserCommandCodec extends AuthenticationCommandBaseCodec<Void, Change
     Map<String, String> clientConnectionAttributes = cmd.connectionAttributes();
     if (clientConnectionAttributes != null && !clientConnectionAttributes.isEmpty()) {
       encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_ATTRS;
-      ByteBuf kv = encoder.chctx.alloc().ioBuffer();
-      for (Map.Entry<String, String> attribute : clientConnectionAttributes.entrySet()) {
-        // just directly send the attributes
-        BufferUtils.writeLengthEncodedString(kv, attribute.getKey(), StandardCharsets.UTF_8);
-        BufferUtils.writeLengthEncodedString(kv, attribute.getValue(), StandardCharsets.UTF_8);
-      }
-      BufferUtils.writeLengthEncodedInteger(packet, kv.readableBytes());
-      packet.writeBytes(kv);
+      encodeConnectionAttributes(clientConnectionAttributes, packet);
     }
 
     // set payload length

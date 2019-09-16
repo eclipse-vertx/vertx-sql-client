@@ -17,27 +17,24 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.mysqlclient.SslMode;
 import io.vertx.mysqlclient.impl.MySQLCollation;
+import io.vertx.mysqlclient.impl.command.InitialHandshakeCommand;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.mysqlclient.impl.util.CachingSha2Authenticator;
 import io.vertx.mysqlclient.impl.util.Native41Authenticator;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.command.CommandResponse;
-import io.vertx.sqlclient.impl.command.InitCommand;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import static io.vertx.mysqlclient.impl.codec.CapabilitiesFlag.*;
 import static io.vertx.mysqlclient.impl.codec.Packets.*;
 
-class InitCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitCommand> {
+class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitialHandshakeCommand> {
 
-  private static final List<String> nonAttributePropertyKeys = Collections.unmodifiableList(Arrays.asList("collation", "sslMode", "serverRSAPublicKey"));
   private static final int AUTH_PLUGIN_DATA_PART1_LENGTH = 8;
 
   private static final int ST_CONNECTING = 0;
@@ -48,7 +45,7 @@ class InitCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitCo
 
   private MySQLCollation collation;
 
-  InitCommandCodec(InitCommand cmd) {
+  InitialHandshakeCommandCodec(InitialHandshakeCommand cmd) {
     super(cmd);
   }
 
@@ -131,17 +128,17 @@ class InitCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitCo
     final String authPluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.UTF_8);
 
     boolean upgradeToSsl;
-    String sslMode = cmd.properties().get("sslMode");
+    SslMode sslMode = cmd.sslMode();
     switch (sslMode) {
-      case "DISABLED":
+      case DISABLED:
         upgradeToSsl = false;
         break;
-      case "PREFERRED":
+      case PREFERRED:
         upgradeToSsl = isTlsSupportedByServer(serverCapabilitiesFlags);
         break;
-      case "REQUIRED":
-      case "VERIFY_CA":
-      case "VERIFY_IDENTITY":
+      case REQUIRED:
+      case VERIFY_CA:
+      case VERIFY_IDENTITY:
         upgradeToSsl = true;
         break;
       default:
@@ -169,10 +166,9 @@ class InitCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitCo
     if (!cmd.database().isEmpty()) {
       encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_WITH_DB;
     }
-    Map<String, String> properties = cmd.properties();
     checkCollation();
     encoder.charset = Charset.forName(collation.mappedJavaCharsetName());
-    Map<String, String> clientConnectionAttributes = properties;
+    Map<String, String> clientConnectionAttributes = cmd.connectionAttributes();
     if (clientConnectionAttributes != null && !clientConnectionAttributes.isEmpty()) {
       encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_ATTRS;
     }
@@ -285,17 +281,7 @@ class InitCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitCo
       BufferUtils.writeNullTerminatedString(packet, authMethodName, StandardCharsets.UTF_8);
     }
     if ((clientCapabilitiesFlags & CLIENT_CONNECT_ATTRS) != 0) {
-      ByteBuf kv = encoder.chctx.alloc().ioBuffer();
-      for (Map.Entry<String, String> attribute : clientConnectionAttributes.entrySet()) {
-        if (nonAttributePropertyKeys.contains(attribute.getKey())) {
-          // we store it in the properties but it's not an attribute
-        } else {
-          BufferUtils.writeLengthEncodedString(kv, attribute.getKey(), StandardCharsets.UTF_8);
-          BufferUtils.writeLengthEncodedString(kv, attribute.getValue(), StandardCharsets.UTF_8);
-        }
-      }
-      BufferUtils.writeLengthEncodedInteger(packet, kv.readableBytes());
-      packet.writeBytes(kv);
+      encodeConnectionAttributes(clientConnectionAttributes, packet);
     }
 
     // set payload length
@@ -305,18 +291,13 @@ class InitCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitCo
     sendPacket(packet, payloadLength);
   }
 
-  @Override
-  protected String getServerPublicKey() {
-    return cmd.properties().get("serverRSAPublicKey");
-  }
-
   private boolean isTlsSupportedByServer(int serverCapabilitiesFlags) {
     return (serverCapabilitiesFlags & CLIENT_SSL) != 0;
   }
 
   private void checkCollation() {
     if (this.collation == null) {
-      collation = MySQLCollation.valueOfName(cmd.properties().get("collation"));
+      collation = MySQLCollation.valueOfName(cmd.collation());
     }
   }
 }

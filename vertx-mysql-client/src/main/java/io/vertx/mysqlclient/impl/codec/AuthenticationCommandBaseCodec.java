@@ -1,14 +1,16 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.mysqlclient.impl.command.AuthenticationCommandBase;
+import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.mysqlclient.impl.util.RsaPublicKeyEncryptor;
-import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Map;
 
-abstract class AuthenticationCommandBaseCodec<R, C extends CommandBase<R>> extends CommandCodec<R, C> {
+abstract class AuthenticationCommandBaseCodec<R, C extends AuthenticationCommandBase<R>> extends CommandCodec<R, C> {
   protected static final int NONCE_LENGTH = 20;
   protected static final int AUTH_SWITCH_REQUEST_STATUS_FLAG = 0xFE;
 
@@ -44,7 +46,7 @@ abstract class AuthenticationCommandBaseCodec<R, C extends CommandBase<R>> exten
           sendNonSplitPacket(nonScrambledPasswordPacket);
         } else {
           // use server Public Key to encrypt password
-          String serverRsaPublicKey = getServerPublicKey();
+          String serverRsaPublicKey = cmd.serverRsaPublicKey();
           if (serverRsaPublicKey == null) {
             // send a public key request
             isWaitingForRsaPublicKey = true;
@@ -62,12 +64,11 @@ abstract class AuthenticationCommandBaseCodec<R, C extends CommandBase<R>> exten
         // fast auth success
         return;
       } else {
-        throw new UnsupportedOperationException("Unsupported flag for AuthMoreData : " + flag);
+        completionHandler.handle(CommandResponse.failure(new UnsupportedOperationException("Unsupported flag for AuthMoreData : " + flag)));
+        return;
       }
     }
   }
-
-  abstract protected String getServerPublicKey();
 
   protected final void sendEncryptedPasswordWithServerRsaPublicKey(byte[] password, String serverRsaPublicKeyContent) {
     byte[] encryptedPassword;
@@ -79,5 +80,15 @@ abstract class AuthenticationCommandBaseCodec<R, C extends CommandBase<R>> exten
       return;
     }
     sendBytesAsPacket(encryptedPassword);
+  }
+
+  protected final void encodeConnectionAttributes(Map<String, String> clientConnectionAttributes, ByteBuf packet) {
+    ByteBuf kv = encoder.chctx.alloc().ioBuffer();
+    for (Map.Entry<String, String> attribute : clientConnectionAttributes.entrySet()) {
+      BufferUtils.writeLengthEncodedString(kv, attribute.getKey(), StandardCharsets.UTF_8);
+      BufferUtils.writeLengthEncodedString(kv, attribute.getValue(), StandardCharsets.UTF_8);
+    }
+    BufferUtils.writeLengthEncodedInteger(packet, kv.readableBytes());
+    packet.writeBytes(kv);
   }
 }

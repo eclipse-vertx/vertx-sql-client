@@ -21,11 +21,12 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.*;
 import io.vertx.core.impl.NetSocketInternal;
+import io.vertx.mysqlclient.SslMode;
 import io.vertx.mysqlclient.impl.codec.MySQLCodec;
+import io.vertx.mysqlclient.impl.command.InitialHandshakeCommand;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
-import io.vertx.sqlclient.impl.command.InitCommand;
 
 import java.util.Map;
 
@@ -44,8 +45,8 @@ public class MySQLSocketConnection extends SocketConnectionBase {
     super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, 1, context);
   }
 
-  void sendStartupMessage(String username, String password, String database, Map<String, String> properties, Handler<? super CommandResponse<Connection>> completionHandler) {
-    InitCommand cmd = new InitCommand(this, username, password, database, properties);
+  void sendStartupMessage(String username, String password, String database, String collation, String serverRsaPublicKey, Map<String, String> properties, SslMode sslMode, Handler<? super CommandResponse<Connection>> completionHandler) {
+    InitialHandshakeCommand cmd = new InitialHandshakeCommand(this, username, password, database, collation, serverRsaPublicKey, properties, sslMode);
     cmd.handler = completionHandler;
     schedule(cmd);
   }
