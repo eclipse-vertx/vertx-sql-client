@@ -24,9 +24,9 @@ public class MySQLConnectOptionsConverter {
             obj.setCollation((String)member.getValue());
           }
           break;
-        case "serverRsaPublicKey":
-          if (member.getValue() instanceof String) {
-            obj.setServerRsaPublicKey((String)member.getValue());
+        case "serverRsaPublicKeyOptions":
+          if (member.getValue() instanceof JsonObject) {
+            obj.setServerRsaPublicKeyOptions(new io.vertx.mysqlclient.MySQLServerRsaPublicKeyOptions((JsonObject)member.getValue()));
           }
           break;
         case "sslMode":
@@ -49,8 +49,8 @@ public class MySQLConnectOptionsConverter {
     if (obj.getCollation() != null) {
       json.put("collation", obj.getCollation());
     }
-    if (obj.getServerRsaPublicKey() != null) {
-      json.put("serverRsaPublicKey", obj.getServerRsaPublicKey());
+    if (obj.getServerRsaPublicKeyOptions() != null) {
+      json.put("serverRsaPublicKeyOptions", obj.getServerRsaPublicKeyOptions().toJson());
     }
     if (obj.getSslMode() != null) {
       json.put("sslMode", obj.getSslMode().name());

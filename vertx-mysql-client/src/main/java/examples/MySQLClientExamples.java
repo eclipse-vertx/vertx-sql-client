@@ -1,6 +1,7 @@
 package examples;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
 import io.vertx.mysqlclient.*;
@@ -332,21 +333,31 @@ public class MySQLClientExamples {
 
   public void rsaPublicKeyExample() {
 
-    MySQLConnectOptions options = new MySQLConnectOptions()
+    MySQLConnectOptions options1 = new MySQLConnectOptions()
       .setPort(3306)
       .setHost("the-host")
       .setDatabase("the-db")
       .setUser("user")
       .setPassword("secret")
-      .setServerRsaPublicKey("-----BEGIN PUBLIC KEY-----\n" +
-        "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3yvG5s0qrV7jxVlp0sMj\n" +
-        "xP0a6BuLKCMjb0o88hDsJ3xz7PpHNKazuEAfPxiRFVAV3edqfSiXoQw+lJf4haEG\n" +
-        "HQe12Nfhs+UhcAeTKXRlZP/JNmI+BGoBduQ1rCId9bKYbXn4pvyS/a1ft7SwFkhx\n" +
-        "aogCur7iIB0WUWvwkQ0fEj/Mlhw93lLVyx7hcGFq4FOAKFYr3A0xrHP1IdgnD8QZ\n" +
-        "0fUbgGLWWLOossKrbUP5HWko1ghLPIbfmU6o890oj1ZWQewj1Rs9Er92/UDj/JXx\n" +
-        "7ha1P+ZOgPBlV037KDQMS6cUh9vTablEHsMLhDZanymXzzjBkL+wH/b9cdL16LkQ\n" +
-        "5QIDAQAB\n" +
-        "-----END PUBLIC KEY-----\n");
+      .setServerRsaPublicKeyOptions(new MySQLServerRsaPublicKeyOptions()
+        .setKeyPath("tls/files/public_key.pem")); // configure with path of the public key
+
+    MySQLConnectOptions options2 = new MySQLConnectOptions()
+      .setPort(3306)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUser("user")
+      .setPassword("secret")
+      .setServerRsaPublicKeyOptions(new MySQLServerRsaPublicKeyOptions()
+        .setBuffer(Buffer.buffer("-----BEGIN PUBLIC KEY-----\n" +
+          "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3yvG5s0qrV7jxVlp0sMj\n" +
+          "xP0a6BuLKCMjb0o88hDsJ3xz7PpHNKazuEAfPxiRFVAV3edqfSiXoQw+lJf4haEG\n" +
+          "HQe12Nfhs+UhcAeTKXRlZP/JNmI+BGoBduQ1rCId9bKYbXn4pvyS/a1ft7SwFkhx\n" +
+          "aogCur7iIB0WUWvwkQ0fEj/Mlhw93lLVyx7hcGFq4FOAKFYr3A0xrHP1IdgnD8QZ\n" +
+          "0fUbgGLWWLOossKrbUP5HWko1ghLPIbfmU6o890oj1ZWQewj1Rs9Er92/UDj/JXx\n" +
+          "7ha1P+ZOgPBlV037KDQMS6cUh9vTablEHsMLhDZanymXzzjBkL+wH/b9cdL16LkQ\n" +
+          "5QIDAQAB\n" +
+          "-----END PUBLIC KEY-----\n"))); // configure with buffer of the public key
   }
 
   public void tlsExample(Vertx vertx) {

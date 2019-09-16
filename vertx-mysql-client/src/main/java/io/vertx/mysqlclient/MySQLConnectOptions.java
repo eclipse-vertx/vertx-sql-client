@@ -47,7 +47,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   private String collation;
   private String charset;
   private SslMode sslMode;
-  private String serverRsaPublicKey;
+  private MySQLServerRsaPublicKeyOptions serverRsaPublicKeyOptions;
 
   public MySQLConnectOptions() {
     super();
@@ -67,7 +67,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     this.collation = other.collation;
     this.charset = other.charset;
     this.sslMode = other.sslMode;
-    this.serverRsaPublicKey = other.serverRsaPublicKey;
+    this.serverRsaPublicKeyOptions = other.serverRsaPublicKeyOptions != null ? new MySQLServerRsaPublicKeyOptions(other.serverRsaPublicKeyOptions) : null;
   }
 
   /**
@@ -149,21 +149,21 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   /**
    * Set the server RSA public key which is mostly used for encrypting password under insecure connections when performing authentication.
    *
-   * @param serverRsaPublicKey the value of the server RSA public key
+   * @param serverRsaPublicKeyOptions the options of the server RSA public key
    * @return a reference to this, so the API can be used fluently
    */
-  public MySQLConnectOptions setServerRsaPublicKey(String serverRsaPublicKey) {
-    this.serverRsaPublicKey = serverRsaPublicKey;
+  public MySQLConnectOptions setServerRsaPublicKeyOptions(MySQLServerRsaPublicKeyOptions serverRsaPublicKeyOptions) {
+    this.serverRsaPublicKeyOptions = serverRsaPublicKeyOptions;
     return this;
   }
 
   /**
-   * Get the value of the server RSA public key.
+   * Get the options of the server RSA public key.
    *
    * @return a reference to this, so the API can be used fluently
    */
-  public String getServerRsaPublicKey() {
-    return serverRsaPublicKey;
+  public MySQLServerRsaPublicKeyOptions getServerRsaPublicKeyOptions() {
+    return serverRsaPublicKeyOptions;
   }
 
   @Override

@@ -1,12 +1,14 @@
 package io.vertx.mysqlclient.impl;
 
 import io.vertx.core.*;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.TrustOptions;
 import io.vertx.mysqlclient.MySQLConnectOptions;
+import io.vertx.mysqlclient.MySQLServerRsaPublicKeyOptions;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.sqlclient.impl.Connection;
 
@@ -25,7 +27,7 @@ public class MySQLConnectionFactory {
   private final Map<String, String> connectionAttributes;
   private final String collation;
   private final SslMode sslMode;
-  private final String serverRsaPublicKey;
+  private final Buffer serverRsaPublicKey;
   private final boolean cachePreparedStatements;
   private final int preparedStatementCacheSize;
   private final int preparedStatementCacheSqlLimit;
@@ -57,7 +59,17 @@ public class MySQLConnectionFactory {
     }
     this.collation = collation;
     this.sslMode = options.getSslMode();
-    this.serverRsaPublicKey = options.getServerRsaPublicKey();
+
+    // server RSA public key
+    Buffer serverRsaPublicKey = null;
+    MySQLServerRsaPublicKeyOptions serverRsaPublicKeyOptions = options.getServerRsaPublicKeyOptions();
+    if (serverRsaPublicKeyOptions != null) {
+      serverRsaPublicKey = serverRsaPublicKeyOptions.getBuffer();
+      if (serverRsaPublicKey == null) {
+        serverRsaPublicKey = context.owner().fileSystem().readFileBlocking(serverRsaPublicKeyOptions.getKeyPath());
+      }
+    }
+    this.serverRsaPublicKey = serverRsaPublicKey;
 
     // check the SSLMode here
     switch (sslMode) {

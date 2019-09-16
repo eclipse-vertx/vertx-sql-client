@@ -1,5 +1,6 @@
 package io.vertx.mysqlclient.impl.command;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
@@ -15,7 +16,7 @@ public class InitialHandshakeCommand extends AuthenticationCommandBase<Connectio
                                  String password,
                                  String database,
                                  String collation,
-                                 String serverRsaPublicKey,
+                                 Buffer serverRsaPublicKey,
                                  Map<String, String> connectionAttributes,
                                  SslMode sslMode) {
     super(username, password, database, collation, serverRsaPublicKey, connectionAttributes);

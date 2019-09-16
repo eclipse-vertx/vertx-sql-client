@@ -1,6 +1,7 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.mysqlclient.impl.command.AuthenticationCommandBase;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.mysqlclient.impl.util.RsaPublicKeyEncryptor;
@@ -46,7 +47,7 @@ abstract class AuthenticationCommandBaseCodec<R, C extends AuthenticationCommand
           sendNonSplitPacket(nonScrambledPasswordPacket);
         } else {
           // use server Public Key to encrypt password
-          String serverRsaPublicKey = cmd.serverRsaPublicKey();
+          Buffer serverRsaPublicKey = cmd.serverRsaPublicKey();
           if (serverRsaPublicKey == null) {
             // send a public key request
             isWaitingForRsaPublicKey = true;
@@ -57,7 +58,7 @@ abstract class AuthenticationCommandBaseCodec<R, C extends AuthenticationCommand
             sendNonSplitPacket(rsaPublicKeyRequest);
           } else {
             // send encrypted password
-            sendEncryptedPasswordWithServerRsaPublicKey(password, serverRsaPublicKey);
+            sendEncryptedPasswordWithServerRsaPublicKey(password, serverRsaPublicKey.toString());
           }
         }
       } else if (flag == FAST_AUTH_STATUS_FLAG) {

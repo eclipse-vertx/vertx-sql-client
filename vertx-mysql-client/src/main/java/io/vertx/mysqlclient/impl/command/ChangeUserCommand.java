@@ -1,5 +1,7 @@
 package io.vertx.mysqlclient.impl.command;
 
+import io.vertx.core.buffer.Buffer;
+
 import java.util.Map;
 
 public class ChangeUserCommand extends AuthenticationCommandBase<Void> {
@@ -7,7 +9,7 @@ public class ChangeUserCommand extends AuthenticationCommandBase<Void> {
                            String password,
                            String database,
                            String collation,
-                           String serverRsaPublicKey,
+                           Buffer serverRsaPublicKey,
                            Map<String, String> connectionAttributes) {
     super(username, password, database, collation, serverRsaPublicKey, connectionAttributes);
   }
