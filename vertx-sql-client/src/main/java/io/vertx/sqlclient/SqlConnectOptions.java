@@ -110,7 +110,7 @@ public abstract class SqlConnectOptions extends NetClientOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public SqlConnectOptions setUser(String user) {
-    checkParameterNonNull(host, "User account can not be null");
+    checkParameterNonNull(user, "User account can not be null");
     this.user = user;
     return this;
   }
@@ -131,7 +131,7 @@ public abstract class SqlConnectOptions extends NetClientOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public SqlConnectOptions setPassword(String password) {
-    checkParameterNonNull(host, "Password can not be null");
+    checkParameterNonNull(password, "Password can not be null");
     this.password = password;
     return this;
   }
@@ -152,7 +152,7 @@ public abstract class SqlConnectOptions extends NetClientOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public SqlConnectOptions setDatabase(String database) {
-    checkParameterNonNull(host, "Database name can not be null");
+    checkParameterNonNull(database, "Database name can not be null");
     this.database = database;
     return this;
   }
