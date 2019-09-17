@@ -1,6 +1,7 @@
 package io.vertx.mysqlclient;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.*;
@@ -233,6 +234,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     return (MySQLConnectOptions) super.setProperties(properties);
   }
 
+  @GenIgnore
   @Override
   public MySQLConnectOptions addProperty(String key, String value) {
     return (MySQLConnectOptions) super.addProperty(key, value);

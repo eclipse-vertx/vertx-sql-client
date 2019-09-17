@@ -1,6 +1,7 @@
 package io.vertx.mysqlclient;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mysqlclient.impl.MySQLCollation;
@@ -134,6 +135,7 @@ public class MySQLAuthOptions {
    * @param value the value of property value
    * @return a reference to this, so the API can be used fluently
    */
+  @GenIgnore
   public MySQLAuthOptions addProperty(String key, String value) {
     checkParameterNonNull(key, "Property key can not be null");
     checkParameterNonNull(value, "Property value can not be null");

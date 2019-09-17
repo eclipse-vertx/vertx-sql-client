@@ -44,14 +44,6 @@ public class MySQLAuthOptionsConverter {
             obj.setProperties(map);
           }
           break;
-        case "propertys":
-          if (member.getValue() instanceof JsonObject) {
-            ((Iterable<java.util.Map.Entry<String, Object>>)member.getValue()).forEach(entry -> {
-              if (entry.getValue() instanceof String)
-                obj.addProperty(entry.getKey(), (String)entry.getValue());
-            });
-          }
-          break;
         case "serverRsaPublicKeyPath":
           if (member.getValue() instanceof String) {
             obj.setServerRsaPublicKeyPath((String)member.getValue());

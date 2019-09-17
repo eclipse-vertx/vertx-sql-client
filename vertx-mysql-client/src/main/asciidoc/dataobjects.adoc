@@ -27,9 +27,6 @@ Specify the user password to be used for the authentication.
 |[[properties]]`@properties`|`String`|+++
 Set connection attributes which will be sent to server at the re-authentication.
 +++
-|[[propertys]]`@propertys`|`String`|+++
-Add a property for this client, which will be sent to server at the re-authentication.
-+++
 |[[serverRsaPublicKeyPath]]`@serverRsaPublicKeyPath`|`String`|+++
 Set the path of server RSA public key which is mostly used for encrypting password under insecure connections when performing authentication.
 +++
@@ -85,7 +82,6 @@ Set the collation for the connection.
 |[[preparedStatementCacheMaxSize]]`@preparedStatementCacheMaxSize`|`Number (int)`|-
 |[[preparedStatementCacheSqlLimit]]`@preparedStatementCacheSqlLimit`|`Number (int)`|-
 |[[properties]]`@properties`|`String`|-
-|[[propertys]]`@propertys`|`String`|-
 |[[proxyOptions]]`@proxyOptions`|`link:dataobjects.html#ProxyOptions[ProxyOptions]`|-
 |[[receiveBufferSize]]`@receiveBufferSize`|`Number (int)`|-
 |[[reconnectAttempts]]`@reconnectAttempts`|`Number (int)`|-

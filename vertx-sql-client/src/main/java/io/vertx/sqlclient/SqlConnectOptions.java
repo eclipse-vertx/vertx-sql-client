@@ -1,6 +1,7 @@
 package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClientOptions;
 
@@ -243,6 +244,7 @@ public abstract class SqlConnectOptions extends NetClientOptions {
    * @param value the value of property value
    * @return a reference to this, so the API can be used fluently
    */
+  @GenIgnore
   public SqlConnectOptions addProperty(String key, String value) {
     checkParameterNonNull(key, "Property key can not be null");
     checkParameterNonNull(value, "Property value can not be null");
