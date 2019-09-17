@@ -1,10 +1,10 @@
 = Cheatsheets
 
-[[MySQLChangeUserOptions]]
-== MySQLChangeUserOptions
+[[MySQLAuthOptions]]
+== MySQLAuthOptions
 
 ++++
- Authentication options for MySQL CHANGE_USER command.
+ Authentication options for MySQL authentication which can be used for CHANGE_USER command.
 ++++
 '''
 

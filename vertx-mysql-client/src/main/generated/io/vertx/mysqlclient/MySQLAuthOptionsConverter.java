@@ -6,12 +6,12 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Converter for {@link io.vertx.mysqlclient.MySQLChangeUserOptions}.
- * NOTE: This class has been automatically generated from the {@link io.vertx.mysqlclient.MySQLChangeUserOptions} original class using Vert.x codegen.
+ * Converter for {@link io.vertx.mysqlclient.MySQLAuthOptions}.
+ * NOTE: This class has been automatically generated from the {@link io.vertx.mysqlclient.MySQLAuthOptions} original class using Vert.x codegen.
  */
-public class MySQLChangeUserOptionsConverter {
+public class MySQLAuthOptionsConverter {
 
-  public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, MySQLChangeUserOptions obj) {
+  public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, MySQLAuthOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
         case "charset":
@@ -71,11 +71,11 @@ public class MySQLChangeUserOptionsConverter {
     }
   }
 
-  public static void toJson(MySQLChangeUserOptions obj, JsonObject json) {
+  public static void toJson(MySQLAuthOptions obj, JsonObject json) {
     toJson(obj, json.getMap());
   }
 
-  public static void toJson(MySQLChangeUserOptions obj, java.util.Map<String, Object> json) {
+  public static void toJson(MySQLAuthOptions obj, java.util.Map<String, Object> json) {
     if (obj.getCharset() != null) {
       json.put("charset", obj.getCharset());
     }

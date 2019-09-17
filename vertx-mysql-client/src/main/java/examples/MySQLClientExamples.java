@@ -395,7 +395,7 @@ public class MySQLClientExamples {
   }
 
   public void changeUserExample(MySQLConnection connection) {
-    MySQLChangeUserOptions authenticationOptions = new MySQLChangeUserOptions()
+    MySQLAuthOptions authenticationOptions = new MySQLAuthOptions()
       .setUser("newuser")
       .setPassword("newpassword")
       .setDatabase("newdatabase");

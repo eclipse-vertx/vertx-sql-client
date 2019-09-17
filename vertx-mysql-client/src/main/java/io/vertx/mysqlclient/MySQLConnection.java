@@ -136,5 +136,5 @@ public interface MySQLConnection extends SqlConnection {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  MySQLConnection changeUser(MySQLChangeUserOptions options, Handler<AsyncResult<Void>> handler);
+  MySQLConnection changeUser(MySQLAuthOptions options, Handler<AsyncResult<Void>> handler);
 }

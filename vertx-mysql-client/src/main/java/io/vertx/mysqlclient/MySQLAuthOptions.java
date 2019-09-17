@@ -11,10 +11,10 @@ import java.util.Map;
 import static io.vertx.mysqlclient.MySQLConnectOptions.*;
 
 /**
- * Authentication options for MySQL CHANGE_USER command.
+ * Authentication options for MySQL authentication which can be used for CHANGE_USER command.
  */
 @DataObject(generateConverter = true)
-public class MySQLChangeUserOptions {
+public class MySQLAuthOptions {
   private String user;
   private String password;
   private String database;
@@ -24,16 +24,16 @@ public class MySQLChangeUserOptions {
   private Buffer serverRsaPublicKeyValue;
   private Map<String, String> properties;
 
-  public MySQLChangeUserOptions() {
+  public MySQLAuthOptions() {
     init();
   }
 
-  public MySQLChangeUserOptions(JsonObject json) {
+  public MySQLAuthOptions(JsonObject json) {
     init();
-    MySQLChangeUserOptionsConverter.fromJson(json, this);
+    MySQLAuthOptionsConverter.fromJson(json, this);
   }
 
-  public MySQLChangeUserOptions(MySQLChangeUserOptions other) {
+  public MySQLAuthOptions(MySQLAuthOptions other) {
     init();
     this.user = other.user;
     this.password = other.password;
@@ -60,7 +60,7 @@ public class MySQLChangeUserOptions {
    * @param user the user to specify
    * @return a reference to this, so the API can be used fluently
    */
-  public MySQLChangeUserOptions setUser(String user) {
+  public MySQLAuthOptions setUser(String user) {
     checkParameterNonNull(user, "User account can not be null");
     this.user = user;
     return this;
@@ -81,7 +81,7 @@ public class MySQLChangeUserOptions {
    * @param password the password to specify
    * @return a reference to this, so the API can be used fluently
    */
-  public MySQLChangeUserOptions setPassword(String password) {
+  public MySQLAuthOptions setPassword(String password) {
     checkParameterNonNull(password, "Password can not be null");
     this.password = password;
     return this;
@@ -102,7 +102,7 @@ public class MySQLChangeUserOptions {
    * @param database the database name to specify
    * @return a reference to this, so the API can be used fluently
    */
-  public MySQLChangeUserOptions setDatabase(String database) {
+  public MySQLAuthOptions setDatabase(String database) {
     checkParameterNonNull(database, "Database name can not be null");
     this.database = database;
     return this;
@@ -121,7 +121,7 @@ public class MySQLChangeUserOptions {
    * @param properties the value of properties to specify
    * @return a reference to this, so the API can be used fluently
    */
-  public MySQLChangeUserOptions setProperties(Map<String, String> properties) {
+  public MySQLAuthOptions setProperties(Map<String, String> properties) {
     checkParameterNonNull(properties, "Properties can not be null");
     this.properties = properties;
     return this;
@@ -134,7 +134,7 @@ public class MySQLChangeUserOptions {
    * @param value the value of property value
    * @return a reference to this, so the API can be used fluently
    */
-  public MySQLChangeUserOptions addProperty(String key, String value) {
+  public MySQLAuthOptions addProperty(String key, String value) {
     checkParameterNonNull(key, "Property key can not be null");
     checkParameterNonNull(value, "Property value can not be null");
     this.properties.put(key, value);
@@ -156,7 +156,7 @@ public class MySQLChangeUserOptions {
    * @param collation the collation to set
    * @return a reference to this, so the API can be used fluently
    */
-  public MySQLChangeUserOptions setCollation(String collation) {
+  public MySQLAuthOptions setCollation(String collation) {
     if (collation != null && !MySQLCollation.SUPPORTED_COLLATION_NAMES.contains(collation)) {
       throw new IllegalArgumentException("Unsupported collation: " + collation);
     }
@@ -179,7 +179,7 @@ public class MySQLChangeUserOptions {
    * @param charset the charset to set
    * @return a reference to this, so the API can be used fluently
    */
-  public MySQLChangeUserOptions setCharset(String charset) {
+  public MySQLAuthOptions setCharset(String charset) {
     if (charset != null && !MySQLCollation.SUPPORTED_CHARSET_NAMES.contains(charset)) {
       throw new IllegalArgumentException("Unsupported charset: " + charset);
     }
@@ -202,7 +202,7 @@ public class MySQLChangeUserOptions {
    * @param serverRsaPublicKeyPath the path of the server RSA public key
    * @return a reference to this, so the API can be used fluently
    */
-  public MySQLChangeUserOptions setServerRsaPublicKeyPath(String serverRsaPublicKeyPath) {
+  public MySQLAuthOptions setServerRsaPublicKeyPath(String serverRsaPublicKeyPath) {
     this.serverRsaPublicKeyPath = serverRsaPublicKeyPath;
     return this;
   }
@@ -222,14 +222,14 @@ public class MySQLChangeUserOptions {
    * @param serverRsaPublicKeyValue the path of the server RSA public key
    * @return a reference to this, so the API can be used fluently
    */
-  public MySQLChangeUserOptions setServerRsaPublicKeyValue(Buffer serverRsaPublicKeyValue) {
+  public MySQLAuthOptions setServerRsaPublicKeyValue(Buffer serverRsaPublicKeyValue) {
     this.serverRsaPublicKeyValue = serverRsaPublicKeyValue;
     return this;
   }
 
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
-    MySQLChangeUserOptionsConverter.toJson(this, json);
+    MySQLAuthOptionsConverter.toJson(this, json);
     return json;
   }
 

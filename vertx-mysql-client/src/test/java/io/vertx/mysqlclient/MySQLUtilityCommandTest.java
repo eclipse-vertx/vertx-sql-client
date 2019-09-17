@@ -121,7 +121,7 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
         Row row1 = res1.iterator().next();
         String username = row1.getString(0);
         ctx.assertEquals("mysql", username.substring(0, username.lastIndexOf('@')));
-        MySQLChangeUserOptions changeUserOptions = new MySQLChangeUserOptions()
+        MySQLAuthOptions changeUserOptions = new MySQLAuthOptions()
           .setUser("superuser")
           .setPassword("password")
           .setDatabase("emptyschema");
@@ -143,7 +143,7 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
         Row row1 = res1.iterator().next();
         String username = row1.getString(0);
         ctx.assertEquals("mysql", username.substring(0, username.lastIndexOf('@')));
-        MySQLChangeUserOptions changeUserOptions = new MySQLChangeUserOptions()
+        MySQLAuthOptions changeUserOptions = new MySQLAuthOptions()
           .setUser("superuser")
           .setPassword("password")
           .setDatabase("emptyschema")
