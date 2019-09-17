@@ -1,5 +1,46 @@
 = Cheatsheets
 
+[[MySQLChangeUserOptions]]
+== MySQLChangeUserOptions
+
+++++
+ Authentication options for MySQL CHANGE_USER command.
+++++
+'''
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[charset]]`@charset`|`String`|+++
+Set the charset for the connection.
++++
+|[[collation]]`@collation`|`String`|+++
+Set the collation for the connection.
++++
+|[[database]]`@database`|`String`|+++
+Specify the default database for the re-authentication.
++++
+|[[password]]`@password`|`String`|+++
+Specify the user password to be used for the authentication.
++++
+|[[properties]]`@properties`|`String`|+++
+Set connection attributes which will be sent to server at the re-authentication.
++++
+|[[propertys]]`@propertys`|`String`|+++
+Add a property for this client, which will be sent to server at the re-authentication.
++++
+|[[serverRsaPublicKeyPath]]`@serverRsaPublicKeyPath`|`String`|+++
+Set the path of server RSA public key which is mostly used for encrypting password under insecure connections when performing authentication.
++++
+|[[serverRsaPublicKeyValue]]`@serverRsaPublicKeyValue`|`Buffer`|+++
+Set the value of server RSA public key which is mostly used for encrypting password under insecure connections when performing authentication.
++++
+|[[user]]`@user`|`String`|+++
+Specify the user account to be used for the authentication.
++++
+|===
+
 [[MySQLConnectOptions]]
 == MySQLConnectOptions
 

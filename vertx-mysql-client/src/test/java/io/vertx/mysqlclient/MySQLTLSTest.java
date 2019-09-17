@@ -203,7 +203,7 @@ public class MySQLTLSTest {
         Row row1 = res1.iterator().next();
         String username = row1.getString(0);
         ctx.assertEquals("mysql", username.substring(0, username.lastIndexOf('@')));
-        MySQLConnectOptions changeUserOptions = new MySQLConnectOptions()
+        MySQLChangeUserOptions changeUserOptions = new MySQLChangeUserOptions()
           .setUser("superuser")
           .setPassword("password")
           .setDatabase("emptyschema");

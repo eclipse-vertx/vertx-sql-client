@@ -131,10 +131,10 @@ public interface MySQLConnection extends SqlConnection {
   /**
    * Send a CHANGE_USER command to change the user of the current connection, this operation will also reset connection state.
    *
-   * @param options authentication options, only username, password, database, collation, serverRsaPublicKey and properties will be used.
+   * @param options authentication options
    * @param handler the handler
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  MySQLConnection changeUser(MySQLConnectOptions options, Handler<AsyncResult<Void>> handler);
+  MySQLConnection changeUser(MySQLChangeUserOptions options, Handler<AsyncResult<Void>> handler);
 }

@@ -6,6 +6,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.mysqlclient.MySQLChangeUserOptions;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.mysqlclient.MySQLSetOption;
@@ -121,7 +122,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
   }
 
   @Override
-  public MySQLConnection changeUser(MySQLConnectOptions options, Handler<AsyncResult<Void>> handler) {
+  public MySQLConnection changeUser(MySQLChangeUserOptions options, Handler<AsyncResult<Void>> handler) {
     String collation;
     if (options.getCollation() != null) {
       // override the collation if configured
