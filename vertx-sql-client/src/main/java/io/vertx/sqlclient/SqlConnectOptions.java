@@ -7,6 +7,7 @@ import io.vertx.core.net.NetClientOptions;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Connect options for configuring {@link SqlConnection} or {@link Pool}.
@@ -67,7 +68,7 @@ public abstract class SqlConnectOptions extends NetClientOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public SqlConnectOptions setHost(String host) {
-    checkParameterNonNull(host, "Host can not be null");
+    Objects.requireNonNull(host, "Host can not be null");
     this.host = host;
     return this;
   }
@@ -111,7 +112,7 @@ public abstract class SqlConnectOptions extends NetClientOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public SqlConnectOptions setUser(String user) {
-    checkParameterNonNull(user, "User account can not be null");
+    Objects.requireNonNull(user, "User account can not be null");
     this.user = user;
     return this;
   }
@@ -132,7 +133,7 @@ public abstract class SqlConnectOptions extends NetClientOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public SqlConnectOptions setPassword(String password) {
-    checkParameterNonNull(password, "Password can not be null");
+    Objects.requireNonNull(password, "Password can not be null");
     this.password = password;
     return this;
   }
@@ -153,7 +154,7 @@ public abstract class SqlConnectOptions extends NetClientOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public SqlConnectOptions setDatabase(String database) {
-    checkParameterNonNull(database, "Database name can not be null");
+    Objects.requireNonNull(database, "Database name can not be null");
     this.database = database;
     return this;
   }
@@ -232,7 +233,7 @@ public abstract class SqlConnectOptions extends NetClientOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public SqlConnectOptions setProperties(Map<String, String> properties) {
-    checkParameterNonNull(properties, "Properties can not be null");
+    Objects.requireNonNull(properties, "Properties can not be null");
     this.properties = properties;
     return this;
   }
@@ -246,8 +247,8 @@ public abstract class SqlConnectOptions extends NetClientOptions {
    */
   @GenIgnore
   public SqlConnectOptions addProperty(String key, String value) {
-    checkParameterNonNull(key, "Property key can not be null");
-    checkParameterNonNull(value, "Property value can not be null");
+    Objects.requireNonNull(key, "Property key can not be null");
+    Objects.requireNonNull(value, "Property value can not be null");
     this.properties.put(key, value);
     return this;
   }
@@ -264,10 +265,4 @@ public abstract class SqlConnectOptions extends NetClientOptions {
    * Initialize with the default options.
    */
   abstract protected void init();
-
-  protected void checkParameterNonNull(Object parameter, String message) {
-    if (parameter == null) {
-      throw new IllegalArgumentException(message);
-    }
-  }
 }

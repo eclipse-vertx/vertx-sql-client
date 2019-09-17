@@ -8,6 +8,7 @@ import io.vertx.mysqlclient.impl.MySQLCollation;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static io.vertx.mysqlclient.MySQLConnectOptions.*;
 
@@ -62,7 +63,7 @@ public class MySQLAuthOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public MySQLAuthOptions setUser(String user) {
-    checkParameterNonNull(user, "User account can not be null");
+    Objects.requireNonNull(user, "User account can not be null");
     this.user = user;
     return this;
   }
@@ -83,7 +84,7 @@ public class MySQLAuthOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public MySQLAuthOptions setPassword(String password) {
-    checkParameterNonNull(password, "Password can not be null");
+    Objects.requireNonNull(password, "Password can not be null");
     this.password = password;
     return this;
   }
@@ -104,7 +105,7 @@ public class MySQLAuthOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public MySQLAuthOptions setDatabase(String database) {
-    checkParameterNonNull(database, "Database name can not be null");
+    Objects.requireNonNull(database, "Database name can not be null");
     this.database = database;
     return this;
   }
@@ -123,7 +124,7 @@ public class MySQLAuthOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public MySQLAuthOptions setProperties(Map<String, String> properties) {
-    checkParameterNonNull(properties, "Properties can not be null");
+    Objects.requireNonNull(properties, "Properties can not be null");
     this.properties = properties;
     return this;
   }
@@ -137,8 +138,8 @@ public class MySQLAuthOptions {
    */
   @GenIgnore
   public MySQLAuthOptions addProperty(String key, String value) {
-    checkParameterNonNull(key, "Property key can not be null");
-    checkParameterNonNull(value, "Property value can not be null");
+    Objects.requireNonNull(key, "Property key can not be null");
+    Objects.requireNonNull(value, "Property value can not be null");
     this.properties.put(key, value);
     return this;
   }
@@ -241,11 +242,5 @@ public class MySQLAuthOptions {
     this.database = DEFAULT_SCHEMA;
     this.charset = DEFAULT_CHARSET;
     this.properties = new HashMap<>(DEFAULT_CONNECTION_ATTRIBUTES);
-  }
-
-  private void checkParameterNonNull(Object parameter, String message) {
-    if (parameter == null) {
-      throw new IllegalArgumentException(message);
-    }
   }
 }
