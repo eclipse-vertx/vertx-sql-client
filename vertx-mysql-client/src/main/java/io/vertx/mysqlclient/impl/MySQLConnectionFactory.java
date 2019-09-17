@@ -8,7 +8,6 @@ import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.TrustOptions;
 import io.vertx.mysqlclient.MySQLConnectOptions;
-import io.vertx.mysqlclient.MySQLServerRsaPublicKeyOptions;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.sqlclient.impl.Connection;
 
@@ -62,11 +61,11 @@ public class MySQLConnectionFactory {
 
     // server RSA public key
     Buffer serverRsaPublicKey = null;
-    MySQLServerRsaPublicKeyOptions serverRsaPublicKeyOptions = options.getServerRsaPublicKeyOptions();
-    if (serverRsaPublicKeyOptions != null) {
-      serverRsaPublicKey = serverRsaPublicKeyOptions.getBuffer();
-      if (serverRsaPublicKey == null) {
-        serverRsaPublicKey = context.owner().fileSystem().readFileBlocking(serverRsaPublicKeyOptions.getKeyPath());
+    if (options.getServerRsaPublicKeyValue() != null) {
+      serverRsaPublicKey = options.getServerRsaPublicKeyValue();
+    } else {
+      if (options.getServerRsaPublicKeyPath() != null) {
+        serverRsaPublicKey = context.owner().fileSystem().readFileBlocking(options.getServerRsaPublicKeyPath());
       }
     }
     this.serverRsaPublicKey = serverRsaPublicKey;

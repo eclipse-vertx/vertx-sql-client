@@ -27,16 +27,15 @@ public class MySQLConnectionTest extends MySQLTestBase {
 
   @Test
   public void testAuthenticationWithEncryptPasswordByServerPublicKey(TestContext ctx) {
-    options.setServerRsaPublicKeyOptions(new MySQLServerRsaPublicKeyOptions()
-      .setBuffer(Buffer.buffer("-----BEGIN PUBLIC KEY-----\n" +
-        "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3yvG5s0qrV7jxVlp0sMj\n" +
-        "xP0a6BuLKCMjb0o88hDsJ3xz7PpHNKazuEAfPxiRFVAV3edqfSiXoQw+lJf4haEG\n" +
-        "HQe12Nfhs+UhcAeTKXRlZP/JNmI+BGoBduQ1rCId9bKYbXn4pvyS/a1ft7SwFkhx\n" +
-        "aogCur7iIB0WUWvwkQ0fEj/Mlhw93lLVyx7hcGFq4FOAKFYr3A0xrHP1IdgnD8QZ\n" +
-        "0fUbgGLWWLOossKrbUP5HWko1ghLPIbfmU6o890oj1ZWQewj1Rs9Er92/UDj/JXx\n" +
-        "7ha1P+ZOgPBlV037KDQMS6cUh9vTablEHsMLhDZanymXzzjBkL+wH/b9cdL16LkQ\n" +
-        "5QIDAQAB\n" +
-        "-----END PUBLIC KEY-----\n")));
+    options.setServerRsaPublicKeyValue(Buffer.buffer("-----BEGIN PUBLIC KEY-----\n" +
+      "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3yvG5s0qrV7jxVlp0sMj\n" +
+      "xP0a6BuLKCMjb0o88hDsJ3xz7PpHNKazuEAfPxiRFVAV3edqfSiXoQw+lJf4haEG\n" +
+      "HQe12Nfhs+UhcAeTKXRlZP/JNmI+BGoBduQ1rCId9bKYbXn4pvyS/a1ft7SwFkhx\n" +
+      "aogCur7iIB0WUWvwkQ0fEj/Mlhw93lLVyx7hcGFq4FOAKFYr3A0xrHP1IdgnD8QZ\n" +
+      "0fUbgGLWWLOossKrbUP5HWko1ghLPIbfmU6o890oj1ZWQewj1Rs9Er92/UDj/JXx\n" +
+      "7ha1P+ZOgPBlV037KDQMS6cUh9vTablEHsMLhDZanymXzzjBkL+wH/b9cdL16LkQ\n" +
+      "5QIDAQAB\n" +
+      "-----END PUBLIC KEY-----\n"));
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.close();
     }));
@@ -44,8 +43,7 @@ public class MySQLConnectionTest extends MySQLTestBase {
 
   @Test
   public void testAuthenticationWithEncryptPasswordByServerPublicKeyInPath(TestContext ctx) {
-    options.setServerRsaPublicKeyOptions(new MySQLServerRsaPublicKeyOptions()
-      .setKeyPath("tls/files/public_key.pem"));
+    options.setServerRsaPublicKeyPath("tls/files/public_key.pem");
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.close();
     }));

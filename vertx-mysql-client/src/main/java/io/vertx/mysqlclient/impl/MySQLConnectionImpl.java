@@ -8,7 +8,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLConnection;
-import io.vertx.mysqlclient.MySQLServerRsaPublicKeyOptions;
 import io.vertx.mysqlclient.MySQLSetOption;
 import io.vertx.mysqlclient.impl.command.ChangeUserCommand;
 import io.vertx.mysqlclient.impl.command.DebugCommand;
@@ -132,11 +131,11 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
       collation = MySQLCollation.getDefaultCollationFromCharsetName(charset);
     }
     Buffer serverRsaPublicKey = null;
-    MySQLServerRsaPublicKeyOptions serverRsaPublicKeyOptions = options.getServerRsaPublicKeyOptions();
-    if (serverRsaPublicKeyOptions != null) {
-      serverRsaPublicKey = serverRsaPublicKeyOptions.getBuffer();
-      if (serverRsaPublicKey == null) {
-        serverRsaPublicKey = context.owner().fileSystem().readFileBlocking(serverRsaPublicKeyOptions.getKeyPath());
+    if (options.getServerRsaPublicKeyValue() != null) {
+      serverRsaPublicKey = options.getServerRsaPublicKeyValue();
+    } else {
+      if (options.getServerRsaPublicKeyPath() != null) {
+        serverRsaPublicKey = context.owner().fileSystem().readFileBlocking(options.getServerRsaPublicKeyPath());
       }
     }
     ChangeUserCommand cmd = new ChangeUserCommand(options.getUser(), options.getPassword(), options.getDatabase(), collation, serverRsaPublicKey, options.getProperties());

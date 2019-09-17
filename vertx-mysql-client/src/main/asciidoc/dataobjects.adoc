@@ -52,8 +52,11 @@ Set the collation for the connection.
 |[[reuseAddress]]`@reuseAddress`|`Boolean`|-
 |[[reusePort]]`@reusePort`|`Boolean`|-
 |[[sendBufferSize]]`@sendBufferSize`|`Number (int)`|-
-|[[serverRsaPublicKeyOptions]]`@serverRsaPublicKeyOptions`|`link:dataobjects.html#MySQLServerRsaPublicKeyOptions[MySQLServerRsaPublicKeyOptions]`|+++
-Set the server RSA public key which is mostly used for encrypting password under insecure connections when performing authentication.
+|[[serverRsaPublicKeyPath]]`@serverRsaPublicKeyPath`|`String`|+++
+Set the path of server RSA public key which is mostly used for encrypting password under insecure connections when performing authentication.
++++
+|[[serverRsaPublicKeyValue]]`@serverRsaPublicKeyValue`|`Buffer`|+++
+Set the value of server RSA public key which is mostly used for encrypting password under insecure connections when performing authentication.
 +++
 |[[soLinger]]`@soLinger`|`Number (int)`|-
 |[[ssl]]`@ssl`|`Boolean`|-
@@ -73,21 +76,5 @@ Set the link for the client, this option can be used to specify the desired secu
 |[[useAlpn]]`@useAlpn`|`Boolean`|-
 |[[usePooledBuffers]]`@usePooledBuffers`|`Boolean`|-
 |[[user]]`@user`|`String`|-
-|===
-
-[[MySQLServerRsaPublicKeyOptions]]
-== MySQLServerRsaPublicKeyOptions
-
-++++
- Key Options of server RSA public key used for encrypting password during authentication under insecure connections.
-++++
-'''
-
-[cols=">25%,25%,50%"]
-[frame="topbot"]
-|===
-^|Name | Type ^| Description
-|[[buffer]]`@buffer`|`Buffer`|-
-|[[keyPath]]`@keyPath`|`String`|-
 |===
 

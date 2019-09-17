@@ -47,7 +47,8 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   private String collation;
   private String charset;
   private SslMode sslMode;
-  private MySQLServerRsaPublicKeyOptions serverRsaPublicKeyOptions;
+  private String serverRsaPublicKeyPath;
+  private Buffer serverRsaPublicKeyValue;
 
   public MySQLConnectOptions() {
     super();
@@ -67,7 +68,8 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     this.collation = other.collation;
     this.charset = other.charset;
     this.sslMode = other.sslMode;
-    this.serverRsaPublicKeyOptions = other.serverRsaPublicKeyOptions != null ? new MySQLServerRsaPublicKeyOptions(other.serverRsaPublicKeyOptions) : null;
+    this.serverRsaPublicKeyPath = other.serverRsaPublicKeyPath;
+    this.serverRsaPublicKeyValue = other.serverRsaPublicKeyValue != null ? other.serverRsaPublicKeyValue.copy() : null;
   }
 
   /**
@@ -147,23 +149,43 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   }
 
   /**
-   * Set the server RSA public key which is mostly used for encrypting password under insecure connections when performing authentication.
+   * Set the path of server RSA public key which is mostly used for encrypting password under insecure connections when performing authentication.
    *
-   * @param serverRsaPublicKeyOptions the options of the server RSA public key
+   * @param serverRsaPublicKeyPath the path of the server RSA public key
    * @return a reference to this, so the API can be used fluently
    */
-  public MySQLConnectOptions setServerRsaPublicKeyOptions(MySQLServerRsaPublicKeyOptions serverRsaPublicKeyOptions) {
-    this.serverRsaPublicKeyOptions = serverRsaPublicKeyOptions;
+  public MySQLConnectOptions setServerRsaPublicKeyPath(String serverRsaPublicKeyPath) {
+    this.serverRsaPublicKeyPath = serverRsaPublicKeyPath;
     return this;
   }
 
   /**
-   * Get the options of the server RSA public key.
+   * Get the path of the server RSA public key.
    *
    * @return a reference to this, so the API can be used fluently
    */
-  public MySQLServerRsaPublicKeyOptions getServerRsaPublicKeyOptions() {
-    return serverRsaPublicKeyOptions;
+  public String getServerRsaPublicKeyPath() {
+    return serverRsaPublicKeyPath;
+  }
+
+  /**
+   * Set the value of server RSA public key which is mostly used for encrypting password under insecure connections when performing authentication.
+   *
+   * @param serverRsaPublicKeyValue the path of the server RSA public key
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MySQLConnectOptions setServerRsaPublicKeyValue(Buffer serverRsaPublicKeyValue) {
+    this.serverRsaPublicKeyValue = serverRsaPublicKeyValue;
+    return this;
+  }
+
+  /**
+   * Get the value of the server RSA public key.
+   *
+   * @return a reference to this, so the API can be used fluently
+   */
+  public Buffer getServerRsaPublicKeyValue() {
+    return serverRsaPublicKeyValue;
   }
 
   @Override
