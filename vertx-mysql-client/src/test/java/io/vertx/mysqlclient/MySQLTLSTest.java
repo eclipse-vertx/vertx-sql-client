@@ -7,6 +7,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mysqlclient.junit.MySQLRule;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.Row;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -17,7 +18,7 @@ import org.junit.runner.RunWith;
 public class MySQLTLSTest {
 
   @ClassRule
-  public static MySQLRule rule = new MySQLRule().ssl(true);
+  public static MySQLRule rule = MySQLRule.SHARED_TLS_INSTANCE;
 
   Vertx vertx;
   MySQLConnectOptions options;
@@ -189,6 +190,31 @@ public class MySQLTLSTest {
     options.setSslMode(SslMode.REQUIRED);
 
     MySQLConnection.connect(vertx, options, ctx.asyncAssertFailure(error -> {
+    }));
+  }
+
+  @Test
+  public void testChangeUser(TestContext ctx) {
+    options.setSslMode(SslMode.REQUIRED);
+    options.setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"));
+
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT current_user()", ctx.asyncAssertSuccess(res1 -> {
+        Row row1 = res1.iterator().next();
+        String username = row1.getString(0);
+        ctx.assertEquals("mysql", username.substring(0, username.lastIndexOf('@')));
+        MySQLAuthOptions changeUserOptions = new MySQLAuthOptions()
+          .setUser("superuser")
+          .setPassword("password")
+          .setDatabase("emptyschema");
+        conn.changeUser(changeUserOptions, ctx.asyncAssertSuccess(v2 -> {
+          conn.query("SELECT current_user();SELECT database();", ctx.asyncAssertSuccess(res2 -> {
+            ctx.assertEquals("superuser@%", res2.iterator().next().getString(0));
+            ctx.assertEquals("emptyschema", res2.next().iterator().next().getValue(0));
+            conn.close();
+          }));
+        }));
+      }));
     }));
   }
 }

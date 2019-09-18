@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.impl.command.ChangeUserCommand;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
+import io.vertx.mysqlclient.impl.util.CachingSha2Authenticator;
 import io.vertx.mysqlclient.impl.util.Native41Authenticator;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
@@ -14,7 +15,7 @@ import java.util.Map;
 import static io.vertx.mysqlclient.impl.codec.CapabilitiesFlag.*;
 import static io.vertx.mysqlclient.impl.codec.Packets.*;
 
-class ChangeUserCommandCodec extends CommandCodec<Void, ChangeUserCommand> {
+class ChangeUserCommandCodec extends AuthenticationCommandBaseCodec<Void, ChangeUserCommand> {
   ChangeUserCommandCodec(ChangeUserCommand cmd) {
     super(cmd);
   }
@@ -26,20 +27,14 @@ class ChangeUserCommandCodec extends CommandCodec<Void, ChangeUserCommand> {
   }
 
   @Override
-  void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
+  void decodePayload(ByteBuf payload, int payloadLength) {
     int header = payload.getUnsignedByte(payload.readerIndex());
     switch (header) {
-      case 0xFE:
-        String pluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.UTF_8);
-        if (pluginName.equals("caching_sha2_password")) {
-          // TODO support different auth methods later
-          completionHandler.handle(CommandResponse.failure(new UnsupportedOperationException("unsupported authentication method: " + pluginName)));
-          return;
-        }
-        byte[] scramble = new byte[20];
-        payload.readBytes(scramble);
-        byte[] scrambledPassword = Native41Authenticator.encode(cmd.password(), StandardCharsets.UTF_8, scramble);
-        sendAuthSwitchResponse(scrambledPassword);
+      case AUTH_SWITCH_REQUEST_STATUS_FLAG:
+        handleAuthSwitchRequest(cmd.password().getBytes(), payload);
+        break;
+      case AUTH_MORE_DATA_STATUS_FLAG:
+        handleAuthMoreData(cmd.password().getBytes(), payload);
         break;
       case OK_PACKET_HEADER:
         completionHandler.handle(CommandResponse.success(null));
@@ -48,6 +43,27 @@ class ChangeUserCommandCodec extends CommandCodec<Void, ChangeUserCommand> {
         handleErrorPacketPayload(payload);
         break;
     }
+  }
+
+  private void handleAuthSwitchRequest(byte[] password, ByteBuf payload) {
+    // Protocol::AuthSwitchRequest
+    payload.skipBytes(1); // status flag, always 0xFE
+    String pluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.UTF_8);
+    authPluginData = new byte[NONCE_LENGTH];
+    payload.readBytes(authPluginData);
+    byte[] scrambledPassword;
+    switch (pluginName) {
+      case "mysql_native_password":
+        scrambledPassword = Native41Authenticator.encode(password, authPluginData);
+        break;
+      case "caching_sha2_password":
+        scrambledPassword = CachingSha2Authenticator.encode(password, authPluginData);
+        break;
+      default:
+        completionHandler.handle(CommandResponse.failure(new UnsupportedOperationException("Unsupported authentication method: " + pluginName)));
+        return;
+    }
+    sendBytesAsPacket(scrambledPassword);
   }
 
   private void sendChangeUserCommand() {
@@ -68,7 +84,7 @@ class ChangeUserCommandCodec extends CommandCodec<Void, ChangeUserCommand> {
       packet.writeCharSequence(password, StandardCharsets.UTF_8);
     }
     BufferUtils.writeNullTerminatedString(packet, cmd.database(), StandardCharsets.UTF_8);
-    MySQLCollation collation = cmd.collation();
+    MySQLCollation collation = MySQLCollation.valueOfName(cmd.collation());
     int collationId = collation.collationId();
     encoder.charset = Charset.forName(collation.mappedJavaCharsetName());
     packet.writeShortLE(collationId);
@@ -79,17 +95,7 @@ class ChangeUserCommandCodec extends CommandCodec<Void, ChangeUserCommand> {
     Map<String, String> clientConnectionAttributes = cmd.connectionAttributes();
     if (clientConnectionAttributes != null && !clientConnectionAttributes.isEmpty()) {
       encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_ATTRS;
-      ByteBuf kv = encoder.chctx.alloc().ioBuffer();
-      for (Map.Entry<String, String> attribute : clientConnectionAttributes.entrySet()) {
-        if (nonAttributePropertyKeys.contains(attribute.getKey())) {
-          // we store it in the properties but it's not an attribute
-        } else {
-          BufferUtils.writeLengthEncodedString(kv, attribute.getKey(), StandardCharsets.UTF_8);
-          BufferUtils.writeLengthEncodedString(kv, attribute.getValue(), StandardCharsets.UTF_8);
-        }
-      }
-      BufferUtils.writeLengthEncodedInteger(packet, kv.readableBytes());
-      packet.writeBytes(kv);
+      encodeConnectionAttributes(clientConnectionAttributes, packet);
     }
 
     // set payload length
@@ -97,18 +103,5 @@ class ChangeUserCommandCodec extends CommandCodec<Void, ChangeUserCommand> {
     packet.setMediumLE(packetStartIdx, lenOfPayload);
 
     sendPacket(packet, lenOfPayload);
-  }
-
-  private void sendAuthSwitchResponse(byte[] responseData) {
-    int payloadLength = responseData.length;
-    ByteBuf packet = allocateBuffer(payloadLength + 4);
-    // encode packet header
-    packet.writeMediumLE(payloadLength);
-    packet.writeByte(sequenceId);
-
-    // encode packet payload
-    packet.writeBytes(responseData);
-
-    sendNonSplitPacket(packet);
   }
 }

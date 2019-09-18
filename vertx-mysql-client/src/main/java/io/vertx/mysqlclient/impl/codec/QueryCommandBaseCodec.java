@@ -49,7 +49,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
   }
 
   @Override
-  void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
+  void decodePayload(ByteBuf payload, int payloadLength) {
     switch (commandHandlerState) {
       case INIT:
         handleInitPacket(payload);

@@ -17,7 +17,7 @@ class CloseConnectionCommandCodec extends CommandCodec<Void, CloseConnectionComm
   }
 
   @Override
-  void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
+  void decodePayload(ByteBuf payload, int payloadLength) {
     // connection will be terminated later
   }
 
