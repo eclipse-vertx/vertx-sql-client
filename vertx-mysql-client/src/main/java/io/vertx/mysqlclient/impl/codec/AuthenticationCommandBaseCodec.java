@@ -63,10 +63,8 @@ abstract class AuthenticationCommandBaseCodec<R, C extends AuthenticationCommand
         }
       } else if (flag == FAST_AUTH_STATUS_FLAG) {
         // fast auth success
-        return;
       } else {
         completionHandler.handle(CommandResponse.failure(new UnsupportedOperationException("Unsupported flag for AuthMoreData : " + flag)));
-        return;
       }
     }
   }

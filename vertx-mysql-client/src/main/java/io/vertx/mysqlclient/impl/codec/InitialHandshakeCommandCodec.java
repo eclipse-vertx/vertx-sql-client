@@ -194,7 +194,6 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
         break;
       default:
         completionHandler.handle(CommandResponse.failure(new IllegalStateException("Unhandled state with header: " + header)));
-        return;
     }
   }
 
