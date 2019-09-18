@@ -1,5 +1,43 @@
 = Cheatsheets
 
+[[MySQLAuthOptions]]
+== MySQLAuthOptions
+
+++++
+ Authentication options for MySQL authentication which can be used for CHANGE_USER command.
+++++
+'''
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[charset]]`@charset`|`String`|+++
+Set the charset for the connection.
++++
+|[[collation]]`@collation`|`String`|+++
+Set the collation for the connection.
++++
+|[[database]]`@database`|`String`|+++
+Specify the default database for the re-authentication.
++++
+|[[password]]`@password`|`String`|+++
+Specify the user password to be used for the authentication.
++++
+|[[properties]]`@properties`|`String`|+++
+Set connection attributes which will be sent to server at the re-authentication.
++++
+|[[serverRsaPublicKeyPath]]`@serverRsaPublicKeyPath`|`String`|+++
+Set the path of server RSA public key which is mostly used for encrypting password under insecure connections when performing authentication.
++++
+|[[serverRsaPublicKeyValue]]`@serverRsaPublicKeyValue`|`Buffer`|+++
+Set the value of server RSA public key which is mostly used for encrypting password under insecure connections when performing authentication.
++++
+|[[user]]`@user`|`String`|+++
+Specify the user account to be used for the authentication.
++++
+|===
+
 [[MySQLConnectOptions]]
 == MySQLConnectOptions
 
@@ -44,7 +82,6 @@ Set the collation for the connection.
 |[[preparedStatementCacheMaxSize]]`@preparedStatementCacheMaxSize`|`Number (int)`|-
 |[[preparedStatementCacheSqlLimit]]`@preparedStatementCacheSqlLimit`|`Number (int)`|-
 |[[properties]]`@properties`|`String`|-
-|[[propertys]]`@propertys`|`String`|-
 |[[proxyOptions]]`@proxyOptions`|`link:dataobjects.html#ProxyOptions[ProxyOptions]`|-
 |[[receiveBufferSize]]`@receiveBufferSize`|`Number (int)`|-
 |[[reconnectAttempts]]`@reconnectAttempts`|`Number (int)`|-
@@ -52,6 +89,12 @@ Set the collation for the connection.
 |[[reuseAddress]]`@reuseAddress`|`Boolean`|-
 |[[reusePort]]`@reusePort`|`Boolean`|-
 |[[sendBufferSize]]`@sendBufferSize`|`Number (int)`|-
+|[[serverRsaPublicKeyPath]]`@serverRsaPublicKeyPath`|`String`|+++
+Set the path of server RSA public key which is mostly used for encrypting password under insecure connections when performing authentication.
++++
+|[[serverRsaPublicKeyValue]]`@serverRsaPublicKeyValue`|`Buffer`|+++
+Set the value of server RSA public key which is mostly used for encrypting password under insecure connections when performing authentication.
++++
 |[[soLinger]]`@soLinger`|`Number (int)`|-
 |[[ssl]]`@ssl`|`Boolean`|-
 |[[sslHandshakeTimeout]]`@sslHandshakeTimeout`|`Number (long)`|-

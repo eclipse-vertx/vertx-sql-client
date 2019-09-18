@@ -17,7 +17,7 @@ class SetOptionCommandCodec extends CommandCodec<Void, SetOptionCommand> {
   }
 
   @Override
-  void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
+  void decodePayload(ByteBuf payload, int payloadLength) {
     handleOkPacketOrErrorPacketPayload(payload);
   }
 

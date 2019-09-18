@@ -4,13 +4,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.vertx.mysqlclient.impl.MySQLSocketConnection;
-import io.vertx.mysqlclient.impl.command.ChangeUserCommand;
-import io.vertx.mysqlclient.impl.command.DebugCommand;
-import io.vertx.mysqlclient.impl.command.InitDbCommand;
-import io.vertx.mysqlclient.impl.command.PingCommand;
-import io.vertx.mysqlclient.impl.command.ResetConnectionCommand;
-import io.vertx.mysqlclient.impl.command.SetOptionCommand;
-import io.vertx.mysqlclient.impl.command.StatisticsCommand;
+import io.vertx.mysqlclient.impl.command.*;
 import io.vertx.sqlclient.impl.command.*;
 
 import java.nio.charset.Charset;
@@ -62,8 +56,8 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
   }
 
   private CommandCodec<?, ?> wrap(CommandBase<?> cmd) {
-    if (cmd instanceof InitCommand) {
-      return new InitCommandCodec((InitCommand) cmd);
+    if (cmd instanceof InitialHandshakeCommand) {
+      return new InitialHandshakeCommandCodec((InitialHandshakeCommand) cmd);
     } else if (cmd instanceof SimpleQueryCommand) {
       return new SimpleQueryCommandCodec((SimpleQueryCommand) cmd);
     } else if (cmd instanceof ExtendedQueryCommand) {

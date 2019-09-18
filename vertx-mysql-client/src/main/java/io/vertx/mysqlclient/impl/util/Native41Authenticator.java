@@ -1,6 +1,5 @@
 package io.vertx.mysqlclient.impl.util;
 
-import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -10,11 +9,10 @@ public class Native41Authenticator {
    * Calculate method: SHA1( password ) XOR SHA1( "20-bytes random data from server" <concat> SHA1( SHA1( password ) ) )
    *
    * @param password password value
-   * @param charset  charset of password
    * @param salt     20 byte random challenge from server
    * @return scrambled password
    */
-  public static byte[] encode(String password, Charset charset, byte[] salt) {
+  public static byte[] encode(byte[] password, byte[] salt) {
     MessageDigest messageDigest;
     try {
       messageDigest = MessageDigest.getInstance("SHA-1");
@@ -22,9 +20,8 @@ public class Native41Authenticator {
       throw new RuntimeException(e);
     }
 
-    byte[] passwordBytes = password.getBytes(charset);
     // SHA1(password)
-    byte[] passwordHash1 = messageDigest.digest(passwordBytes);
+    byte[] passwordHash1 = messageDigest.digest(password);
     messageDigest.reset();
     // SHA1(SHA1(password))
     byte[] passwordHash2 = messageDigest.digest(passwordHash1);

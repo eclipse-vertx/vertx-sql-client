@@ -1,4 +1,4 @@
-package io.vertx.mysqlclient;
+package io.vertx.mysqlclient.impl;
 
 import io.vertx.core.json.JsonObject;
 import org.junit.Test;

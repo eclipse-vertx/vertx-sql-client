@@ -40,7 +40,7 @@ final class CapabilitiesFlag {
    */
   @Deprecated
   static final int CLIENT_RESERVED = 0x00004000;
-  @Deprecated
+//  @Deprecated
   // CLIENT_RESERVED2
   static final int CLIENT_SECURE_CONNECTION = 0x00008000;
   @Deprecated

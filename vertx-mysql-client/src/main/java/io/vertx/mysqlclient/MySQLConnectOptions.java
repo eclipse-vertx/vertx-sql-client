@@ -1,6 +1,7 @@
 package io.vertx.mysqlclient;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.*;
@@ -41,13 +42,14 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   static {
     Map<String, String> defaultAttributes = new HashMap<>();
     defaultAttributes.put("_client_name", "vertx-mysql-client");
-    defaultAttributes.put("_client_version", "3.8.0");
     DEFAULT_CONNECTION_ATTRIBUTES = Collections.unmodifiableMap(defaultAttributes);
   }
 
   private String collation;
   private String charset;
   private SslMode sslMode;
+  private String serverRsaPublicKeyPath;
+  private Buffer serverRsaPublicKeyValue;
 
   public MySQLConnectOptions() {
     super();
@@ -67,6 +69,8 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     this.collation = other.collation;
     this.charset = other.charset;
     this.sslMode = other.sslMode;
+    this.serverRsaPublicKeyPath = other.serverRsaPublicKeyPath;
+    this.serverRsaPublicKeyValue = other.serverRsaPublicKeyValue != null ? other.serverRsaPublicKeyValue.copy() : null;
   }
 
   /**
@@ -85,7 +89,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public MySQLConnectOptions setCollation(String collation) {
-    if (collation != null && !MySQLCollation.supportedCollationNames.contains(collation)) {
+    if (collation != null && !MySQLCollation.SUPPORTED_COLLATION_NAMES.contains(collation)) {
       throw new IllegalArgumentException("Unsupported collation: " + collation);
     }
     this.collation = collation;
@@ -108,7 +112,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public MySQLConnectOptions setCharset(String charset) {
-    if (charset != null && !MySQLCollation.supportedCharsetNames.contains(charset)) {
+    if (charset != null && !MySQLCollation.SUPPORTED_CHARSET_NAMES.contains(charset)) {
       throw new IllegalArgumentException("Unsupported charset: " + charset);
     }
     this.charset = charset;
@@ -143,6 +147,46 @@ public class MySQLConnectOptions extends SqlConnectOptions {
       setSslMode(SslMode.DISABLED);
     }
     return this;
+  }
+
+  /**
+   * Set the path of server RSA public key which is mostly used for encrypting password under insecure connections when performing authentication.
+   *
+   * @param serverRsaPublicKeyPath the path of the server RSA public key
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MySQLConnectOptions setServerRsaPublicKeyPath(String serverRsaPublicKeyPath) {
+    this.serverRsaPublicKeyPath = serverRsaPublicKeyPath;
+    return this;
+  }
+
+  /**
+   * Get the path of the server RSA public key.
+   *
+   * @return a reference to this, so the API can be used fluently
+   */
+  public String getServerRsaPublicKeyPath() {
+    return serverRsaPublicKeyPath;
+  }
+
+  /**
+   * Set the value of server RSA public key which is mostly used for encrypting password under insecure connections when performing authentication.
+   *
+   * @param serverRsaPublicKeyValue the path of the server RSA public key
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MySQLConnectOptions setServerRsaPublicKeyValue(Buffer serverRsaPublicKeyValue) {
+    this.serverRsaPublicKeyValue = serverRsaPublicKeyValue;
+    return this;
+  }
+
+  /**
+   * Get the value of the server RSA public key.
+   *
+   * @return a reference to this, so the API can be used fluently
+   */
+  public Buffer getServerRsaPublicKeyValue() {
+    return serverRsaPublicKeyValue;
   }
 
   @Override
@@ -190,6 +234,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     return (MySQLConnectOptions) super.setProperties(properties);
   }
 
+  @GenIgnore
   @Override
   public MySQLConnectOptions addProperty(String key, String value) {
     return (MySQLConnectOptions) super.addProperty(key, value);

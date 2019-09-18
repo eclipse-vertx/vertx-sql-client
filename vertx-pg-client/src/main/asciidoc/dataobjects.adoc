@@ -143,7 +143,6 @@
 |[[preparedStatementCacheMaxSize]]`@preparedStatementCacheMaxSize`|`Number (int)`|-
 |[[preparedStatementCacheSqlLimit]]`@preparedStatementCacheSqlLimit`|`Number (int)`|-
 |[[properties]]`@properties`|`String`|-
-|[[propertys]]`@propertys`|`String`|-
 |[[proxyOptions]]`@proxyOptions`|`link:dataobjects.html#ProxyOptions[ProxyOptions]`|-
 |[[receiveBufferSize]]`@receiveBufferSize`|`Number (int)`|-
 |[[reconnectAttempts]]`@reconnectAttempts`|`Number (int)`|-

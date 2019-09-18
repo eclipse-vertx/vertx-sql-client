@@ -8,22 +8,8 @@ Documentation:
 - https://vertx.io/docs/vertx-mysql-client/groovy/[Groovy documentation]
 - https://vertx.io/docs/vertx-mysql-client/ruby/[Ruby documentation]
 
-== Supports
-
-- Connection management
-- Connection pooling
-- MySQL Native41 authentication
-- Text protocol
-- Data type mapping
-- Prepared statement
-- Cursor
-- Multi-statement
-- Multi-resultset
-
 == TODO
 
-* [ ] Add support for more authentication methods(caching_sha2_password)
-* [ ] Authentication methods switch
 * [ ] Transaction management
 * [ ] Full data type support
 * [ ] Compression

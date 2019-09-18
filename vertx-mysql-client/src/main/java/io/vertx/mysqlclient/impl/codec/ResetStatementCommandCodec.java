@@ -21,7 +21,7 @@ class ResetStatementCommandCodec extends CommandCodec<Void, CloseCursorCommand> 
   }
 
   @Override
-  void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
+  void decodePayload(ByteBuf payload, int payloadLength) {
     handleOkPacketOrErrorPacketPayload(payload);
   }
 

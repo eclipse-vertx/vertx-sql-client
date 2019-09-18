@@ -1,6 +1,7 @@
 package io.vertx.mysqlclient.impl;
 
 import io.vertx.core.*;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
@@ -10,7 +11,7 @@ import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.sqlclient.impl.Connection;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 
 public class MySQLConnectionFactory {
@@ -22,7 +23,10 @@ public class MySQLConnectionFactory {
   private final String username;
   private final String password;
   private final String database;
-  private final Map<String, String> properties;
+  private final Map<String, String> connectionAttributes;
+  private final String collation;
+  private final SslMode sslMode;
+  private final Buffer serverRsaPublicKey;
   private final boolean cachePreparedStatements;
   private final int preparedStatementCacheSize;
   private final int preparedStatementCacheSqlLimit;
@@ -43,7 +47,7 @@ public class MySQLConnectionFactory {
     this.username = options.getUser();
     this.password = options.getPassword();
     this.database = options.getDatabase();
-    this.properties = new HashMap<>(options.getProperties());
+    this.connectionAttributes = Collections.unmodifiableMap(options.getProperties());
     String collation;
     if (options.getCollation() != null) {
       // override the collation if configured
@@ -52,9 +56,19 @@ public class MySQLConnectionFactory {
       String charset = options.getCharset();
       collation = MySQLCollation.getDefaultCollationFromCharsetName(charset);
     }
-    properties.put("collation", collation);
-    SslMode sslMode = options.getSslMode();
-    properties.put("sslMode", sslMode.name());
+    this.collation = collation;
+    this.sslMode = options.getSslMode();
+
+    // server RSA public key
+    Buffer serverRsaPublicKey = null;
+    if (options.getServerRsaPublicKeyValue() != null) {
+      serverRsaPublicKey = options.getServerRsaPublicKeyValue();
+    } else {
+      if (options.getServerRsaPublicKeyPath() != null) {
+        serverRsaPublicKey = context.owner().fileSystem().readFileBlocking(options.getServerRsaPublicKeyPath());
+      }
+    }
+    this.serverRsaPublicKey = serverRsaPublicKey;
 
     // check the SSLMode here
     switch (sslMode) {
@@ -98,7 +112,7 @@ public class MySQLConnectionFactory {
         NetSocketInternal socket = (NetSocketInternal) ar1.result();
         MySQLSocketConnection conn = new MySQLSocketConnection(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, context);
         conn.init();
-        conn.sendStartupMessage(username, password, database, properties, handler);
+        conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, connectionAttributes, sslMode, handler);
       } else {
         handler.handle(Future.failedFuture(ar1.cause()));
       }
