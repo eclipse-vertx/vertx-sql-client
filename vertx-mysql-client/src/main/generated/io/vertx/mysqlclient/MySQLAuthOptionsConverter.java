@@ -6,10 +6,11 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Converter for {@link io.vertx.mysqlclient.MySQLAuthOptions}.
+ * Converter and mapper for {@link io.vertx.mysqlclient.MySQLAuthOptions}.
  * NOTE: This class has been automatically generated from the {@link io.vertx.mysqlclient.MySQLAuthOptions} original class using Vert.x codegen.
  */
 public class MySQLAuthOptionsConverter {
+
 
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, MySQLAuthOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
