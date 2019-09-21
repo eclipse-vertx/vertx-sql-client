@@ -120,8 +120,8 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
     schedule(new PrepareStatementCommand(sql), cr -> {
       if (cr.succeeded()) {
         PreparedStatement ps = cr.result();
-        for  (Tuple args : batch) {
-          String msg = ps.prepare((List<Object>) args);
+        for (Tuple arguments : batch) {
+          String msg = ps.prepare((List<Object>) arguments);
           if (msg != null) {
             handler.handle(Future.failedFuture(msg));
             return;
