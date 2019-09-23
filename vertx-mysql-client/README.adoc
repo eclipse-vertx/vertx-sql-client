@@ -15,37 +15,16 @@ Documentation:
 * [ ] Compression
 * [ ] Replication Protocol(Binlog)
 
-== Supported Data type
-
-MySQL data types are mapped as below.
-
-- BOOLEAN(j.l.Byte)
-- INT1(j.l.Byte)
-- INT2(j.l.Short)
-- INT3(j.l.Integer)
-- INT4(j.l.Integer)
-- INT8(j.l.Long)
-- FLOAT(j.l.Float)
-- DOUBLE(j.l.Double)
-- NUMERIC,DECIMAL(i.r.p.data.Numeric)
-- CHAR(j.l.String)
-- BINARY(i.v.c.b.Buffer)
-- VARCHAR(j.l.String)
-- VARBINARY(i.v.c.b.Buffer)
-- TINYBLOB/BLOB/MEDIUMBLOB/LONGBLOB(i.v.c.b.Buffer)
-- TINYTEXT/TEXT/MEDIUMTEXT/LONGTEXT(j.l.String)
-- DATE(j.t.LocalDate)
-- DATETIME(j.t.LocalDateTime)
-- TIME(j.t.Duration)
-- TIMESTAMP(j.t.LocalDateTime)
-- YEAR(j.l.Short)
+== Unsupported Data type
 
 these data types are not fully supported yet:
 
 * [ ] Numeric: BIT
-* [ ] String: ENUM, SET
+* [ ] String: SET
 * [ ] JSON
 * [ ] Spatial data types
+
+Contributions are welcome!
 
 == Developers
 
