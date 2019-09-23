@@ -20,7 +20,6 @@ Documentation:
 these data types are not fully supported yet:
 
 * [ ] Numeric: BIT
-* [ ] String: SET
 * [ ] JSON
 * [ ] Spatial data types
 

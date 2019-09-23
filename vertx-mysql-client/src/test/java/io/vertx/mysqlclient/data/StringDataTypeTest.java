@@ -28,6 +28,7 @@ public class StringDataTypeTest extends MySQLDataTypeTestBase {
         ctx.assertEquals("MEDIUMTEXT", row.getValue(9));
         ctx.assertEquals("LONGTEXT", row.getValue(10));
         ctx.assertEquals("small", row.getValue(11));
+        ctx.assertEquals("a,b", row.getValue(12));
         conn.close();
       }));
     }));
@@ -212,5 +213,20 @@ public class StringDataTypeTest extends MySQLDataTypeTestBase {
   @Test
   public void testBinaryDecodeEnum(TestContext ctx) {
     testBinaryDecodeGenericWithTable(ctx, "test_enum", "small");
+  }
+
+  @Test
+  public void testBinaryEncodeSet(TestContext ctx) {
+    testBinaryEncodeGeneric(ctx, "test_set", "a,b,c");
+  }
+
+  @Test
+  public void testTextDecodeSet(TestContext ctx) {
+    testTextDecodeGenericWithTable(ctx, "test_set", "a,b");
+  }
+
+  @Test
+  public void testBinaryDecodeSet(TestContext ctx) {
+    testBinaryDecodeGenericWithTable(ctx, "test_set", "a,b");
   }
 }
