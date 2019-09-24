@@ -205,6 +205,8 @@ Currently the client supports the following MySQL types
 * MEDIUMTEXT (`java.lang.String`)
 * LONGBLOB (`io.vertx.core.buffer.Buffer`)
 * LONGTEXT (`java.lang.String`)
+* ENUM (`java.lang.String`)
+* SET (`java.lang.String`)
 
 Tuple decoding uses the above types when storing values
 
