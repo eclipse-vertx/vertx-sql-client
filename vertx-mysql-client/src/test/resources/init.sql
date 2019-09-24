@@ -29,6 +29,8 @@ CREATE TABLE datatype
     `Text`         TEXT,
     `MediumText`   MEDIUMTEXT,
     `LongText`     LONGTEXT,
+    `test_enum`    ENUM ('x-small', 'small', 'medium', 'large', 'x-large'),
+    `test_set`     SET ('a', 'b', 'c', 'd'),
     test_year      YEAR,
     test_timestamp TIMESTAMP,
     test_datetime  DATETIME(6)
@@ -36,10 +38,10 @@ CREATE TABLE datatype
 
 INSERT INTO datatype
 VALUES (1, 'HELLO', 'HELLO, WORLD', 'TINYBLOB', 'BLOB', 'MEDIUMBLOB', 'LONGBLOB', 'TINYTEXT', 'TEXT', 'MEDIUMTEXT',
-        'LONGTEXT', '2019', '2000-01-01 10:20:30', '2000-01-01 10:20:30.123456');
+        'LONGTEXT', 'small', 'a,b', '2019', '2000-01-01 10:20:30', '2000-01-01 10:20:30.123456');
 INSERT INTO datatype
 VALUES (2, 'hello', 'hello, world', 'tinyblob', 'blob', 'mediumblob', 'longblob', 'tinytext', 'text', 'mediumtext',
-        'longtext', '2019', '2000-01-01 10:20:30', '2000-01-01 10:20:30.123456');
+        'longtext', 'large', 'b,c,d', '2019', '2000-01-01 10:20:30', '2000-01-01 10:20:30.123456');
 
 # TFB tables
 
