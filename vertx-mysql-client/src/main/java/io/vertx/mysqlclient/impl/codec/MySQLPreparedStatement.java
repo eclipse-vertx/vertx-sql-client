@@ -20,8 +20,7 @@ package io.vertx.mysqlclient.impl.codec;
 import io.vertx.sqlclient.impl.ParamDesc;
 import io.vertx.sqlclient.impl.PreparedStatement;
 import io.vertx.sqlclient.impl.RowDesc;
-
-import java.util.List;
+import io.vertx.sqlclient.impl.TupleInternal;
 
 class MySQLPreparedStatement implements PreparedStatement {
 
@@ -55,7 +54,7 @@ class MySQLPreparedStatement implements PreparedStatement {
   }
 
   @Override
-  public String prepare(List<Object> values) {
+  public String prepare(TupleInternal values) {
     return paramDesc.prepare(values);
   }
 }

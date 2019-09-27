@@ -1,9 +1,10 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.vertx.mysqlclient.impl.util.Util;
+import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.ParamDesc;
+import io.vertx.sqlclient.impl.TupleInternal;
 
-import java.util.List;
 import java.util.stream.Stream;
 
 class MySQLParamDesc extends ParamDesc {
@@ -18,7 +19,7 @@ class MySQLParamDesc extends ParamDesc {
   }
 
   @Override
-  public String prepare(List<Object> values) {
+  public String prepare(TupleInternal values) {
     if (values.size() != paramDefinitions.length) {
       return buildReport(values);
     }
@@ -39,7 +40,8 @@ class MySQLParamDesc extends ParamDesc {
   }
 
   // reuse from pg
-  private String buildReport(List<Object> values) {
-    return Util.buildInvalidArgsError(values.stream(), Stream.of(paramDefinitions).map(paramDefinition -> paramDefinition.type()).map(dataType -> dataType.binaryType));
+
+  private String buildReport(Tuple values) {
+    return Util.buildInvalidArgsError(values, Stream.of(paramDefinitions).map(paramDefinition -> paramDefinition.type()).map(dataType -> dataType.binaryType));
   }
 }

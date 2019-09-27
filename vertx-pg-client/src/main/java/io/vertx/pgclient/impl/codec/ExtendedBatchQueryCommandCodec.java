@@ -42,7 +42,7 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
         this.result = false;
       } else {
         for (Tuple param : cmd.params()) {
-          encoder.writeBind(ps.bind, cmd.cursorId(), (List<Object>) param);
+          encoder.writeBind(ps.bind, cmd.cursorId(), param);
           encoder.writeExecute(cmd.cursorId(), cmd.fetch());
         }
       }

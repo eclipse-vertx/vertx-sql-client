@@ -60,24 +60,24 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
 
   @Override
   public C preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler) {
-    return preparedQuery(sql, arguments, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
+    return preparedQuery(sql, (TupleInternal)arguments, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
   }
 
   @Override
   public <R> C preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
-    return preparedQuery(sql, arguments, SqlResultImpl::new, collector, handler);
+    return preparedQuery(sql, (TupleInternal)arguments, SqlResultImpl::new, collector, handler);
   }
 
   private <R1, R2 extends SqlResultBase<R1, R2>, R3 extends SqlResult<R1>> C preparedQuery(
     String sql,
-    Tuple arguments,
+    TupleInternal arguments,
     Function<R1, R2> factory,
     Collector<Row, ?, R1> collector,
     Handler<AsyncResult<R3>> handler) {
     schedule(new PrepareStatementCommand(sql), cr -> {
       if (cr.succeeded()) {
         PreparedStatement ps = cr.result();
-        String msg = ps.prepare((List<Object>) arguments);
+        String msg = ps.prepare(arguments);
         if (msg != null) {
           handler.handle(Future.failedFuture(msg));
         } else {
@@ -121,7 +121,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
       if (cr.succeeded()) {
         PreparedStatement ps = cr.result();
         for  (Tuple args : batch) {
-          String msg = ps.prepare((List<Object>) args);
+          String msg = ps.prepare((TupleInternal) args);
           if (msg != null) {
             handler.handle(Future.failedFuture(msg));
             return;

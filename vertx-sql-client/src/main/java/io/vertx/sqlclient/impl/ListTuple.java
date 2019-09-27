@@ -21,7 +21,7 @@ import io.vertx.sqlclient.Tuple;
 
 import java.util.List;
 
-public class ListTuple implements Tuple {
+public class ListTuple implements TupleInternal {
 
   private final List<Object> list;
 
@@ -38,6 +38,11 @@ public class ListTuple implements Tuple {
   public Tuple addValue(Object value) {
     list.add(value);
     return this;
+  }
+
+  @Override
+  public void setValue(int pos, Object value) {
+    list.set(pos, value);
   }
 
   @Override

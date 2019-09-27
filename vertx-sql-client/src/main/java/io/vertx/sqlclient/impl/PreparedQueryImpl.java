@@ -53,16 +53,16 @@ class PreparedQueryImpl implements PreparedQuery {
 
   @Override
   public PreparedQuery execute(Tuple args, Handler<AsyncResult<RowSet<Row>>> handler) {
-    return execute(args, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
+    return execute((TupleInternal)args, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
   }
 
   @Override
   public <R> PreparedQuery execute(Tuple args, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
-    return execute(args, true, SqlResultImpl::new, collector, handler);
+    return execute((TupleInternal)args, true, SqlResultImpl::new, collector, handler);
   }
 
   private <R1, R2 extends SqlResultBase<R1, R2>, R3 extends SqlResult<R1>> PreparedQuery execute(
-    Tuple args,
+    TupleInternal args,
     boolean singleton,
     Function<R1, R2> factory,
     Collector<Row, ?, R1> collector,
@@ -71,7 +71,7 @@ class PreparedQueryImpl implements PreparedQuery {
     return execute(args, 0, null, false, collector, b, b);
   }
 
-  <A, R> PreparedQuery execute(Tuple args,
+  <A, R> PreparedQuery execute(TupleInternal args,
                                int fetch,
                                String cursorId,
                                boolean suspended,
@@ -79,7 +79,7 @@ class PreparedQueryImpl implements PreparedQuery {
                                QueryResultHandler<R> resultHandler,
                                Handler<AsyncResult<Boolean>> handler) {
     if (context == Vertx.currentContext()) {
-      String msg = ps.prepare((List<Object>) args);
+      String msg = ps.prepare(args);
       if (msg != null) {
         handler.handle(Future.failedFuture(msg));
       } else {
@@ -102,7 +102,11 @@ class PreparedQueryImpl implements PreparedQuery {
 
   @Override
   public Cursor cursor(Tuple args) {
-    String msg = ps.prepare((List<Object>) args);
+    return cursor((TupleInternal) args);
+  }
+
+  private Cursor cursor(TupleInternal args) {
+    String msg = ps.prepare(args);
     if (msg != null) {
       throw new IllegalArgumentException(msg);
     }
@@ -130,7 +134,7 @@ class PreparedQueryImpl implements PreparedQuery {
     Collector<Row, ?, R1> collector,
     Handler<AsyncResult<R3>> handler) {
     for  (Tuple args : argsList) {
-      String msg = ps.prepare((List<Object>) args);
+      String msg = ps.prepare((TupleInternal)args);
       if (msg != null) {
         handler.handle(Future.failedFuture(msg));
         return this;
