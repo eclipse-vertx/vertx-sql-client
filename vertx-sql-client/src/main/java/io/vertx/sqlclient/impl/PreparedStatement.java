@@ -17,8 +17,6 @@
 
 package io.vertx.sqlclient.impl;
 
-import java.util.List;
-
 public interface PreparedStatement {
 
   ParamDesc paramDesc();
@@ -27,5 +25,5 @@ public interface PreparedStatement {
 
   String sql();
 
-  String prepare(List<Object> values);
+  String prepare(TupleInternal values);
 }

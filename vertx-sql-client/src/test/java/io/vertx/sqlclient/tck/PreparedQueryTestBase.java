@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -93,6 +94,19 @@ public abstract class PreparedQueryTestBase {
   public void testPreparedQuery(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery(statement("SELECT * FROM immutable WHERE id=", ""), Tuple.of(1), ctx.asyncAssertSuccess(rowSet -> {
+        ctx.assertEquals(1, rowSet.size());
+        Tuple row = rowSet.iterator().next();
+        ctx.assertEquals(1, row.getInteger(0));
+        ctx.assertEquals("fortune: No such file or directory", row.getString(1));
+        conn.close();
+      }));
+    }));
+  }
+
+  @Test
+  public void testPreparedQueryWithWrappedParams(TestContext ctx) {
+    connect(ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery(statement("SELECT * FROM immutable WHERE id=", ""), Tuple.wrap(Arrays.asList(1)), ctx.asyncAssertSuccess(rowSet -> {
         ctx.assertEquals(1, rowSet.size());
         Tuple row = rowSet.iterator().next();
         ctx.assertEquals(1, row.getInteger(0));

@@ -20,6 +20,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
+import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.ParamDesc;
 import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.TxStatus;
@@ -334,7 +335,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
    * <p>
    * The response is either {@link BindComplete} or {@link ErrorResponse}.
    */
-  void writeBind(Bind bind, String portal, List<Object> paramValues) {
+  void writeBind(Bind bind, String portal, Tuple paramValues) {
     ensureBuffer();
     int pos = out.writerIndex();
     out.writeByte(BIND);
@@ -357,7 +358,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     }
     out.writeShort(paramLen);
     for (int c = 0;c < paramLen;c++) {
-      Object param = paramValues.get(c);
+      Object param = paramValues.getValue(c);
       if (param == null) {
         // NULL value
         out.writeInt(-1);
