@@ -2,6 +2,7 @@ package io.vertx.sqlclient.tck;
 
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;
 
 import java.time.LocalDate;
@@ -33,7 +34,6 @@ public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
     testDecodeGeneric(ctx, "test_float_8", Double.class, (double) 1.7976931348623157E308);
   }
 
-/*
   @Test
   public void testNumeric(TestContext ctx) {
     testDecodeGeneric(ctx, "test_numeric", Numeric.class, Numeric.parse("999.99"));
@@ -43,7 +43,6 @@ public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
   public void testDecimal(TestContext ctx) {
     testDecodeGeneric(ctx, "test_decimal", Numeric.class, Numeric.parse("12345"));
   }
-*/
 
   @Test
   public void testBoolean(TestContext ctx) {
@@ -106,11 +105,11 @@ public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
         "test_varchar," +
         "test_date," +
         "test_time " +
-        "from basicdatatype where id= 3", ctx.asyncAssertSuccess(result -> {
+        "from basicdatatype where id = 3", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         ctx.assertEquals(12, row.size());
-        for (int i = 0;i < 12;i++) {
+        for (int i = 0; i < 12; i++) {
           ctx.assertNull(row.getValue(i));
         }
         conn.close();
