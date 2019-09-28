@@ -364,5 +364,23 @@ INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, 
 VALUES (3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 -- table for test ANSI SQL data type codecs
 
+-- Collector API testing
+DROP TABLE IF EXISTS collector_test;
+CREATE TABLE collector_test
+(
+    id           INT4,
+    test_int_2   INT2,
+    test_int_4   INT4,
+    test_int_8   INT8,
+    test_float   FLOAT4,
+    test_double  FLOAT8,
+    test_varchar VARCHAR(20)
+);
+
+INSERT INTO collector_test
+VALUES (1, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'HELLO,WORLD');
+INSERT INTO collector_test
+VALUES (2, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'hello,world');
+
 -- TCK usage --
 

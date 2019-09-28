@@ -14,26 +14,6 @@ FLUSH PRIVILEGES;
 
 USE testschema;
 
-# @Deprecated--- This part is only for mysql tests and should be moved out of TCK tests ---
-DROP TABLE IF EXISTS collectorTest;
-CREATE TABLE collectorTest
-(
-  id        INT NOT NULL PRIMARY KEY,
-  `Int2`    SMALLINT,
-  `Int3`    MEDIUMINT,
-  `Int4`    INT,
-  `Int8`    BIGINT,
-  `Float`   FLOAT,
-  `Double`  DOUBLE,
-  `Varchar` VARCHAR(20)
-);
-
-
-INSERT INTO collectorTest
-VALUES (1, 32767, 8388607, 2147483647, 9223372036854775807, 123.456, 1.234567, 'HELLO,WORLD');
-INSERT INTO collectorTest
-VALUES (2, 32767, 8388607, 2147483647, 9223372036854775807, 123.456, 1.234567, 'hello,world');
-
 # datatype testing table
 DROP TABLE IF EXISTS datatype;
 CREATE TABLE datatype
@@ -62,8 +42,6 @@ VALUES (1, 'HELLO', 'HELLO, WORLD', 'TINYBLOB', 'BLOB', 'MEDIUMBLOB', 'LONGBLOB'
 INSERT INTO datatype
 VALUES (2, 'hello', 'hello, world', 'tinyblob', 'blob', 'mediumblob', 'longblob', 'tinytext', 'text', 'mediumtext',
         'longtext', 'large', 'b,c,d', '2019', '2000-01-01 10:20:30', '2000-01-01 10:20:30.123456');
-
-# @Deprecated--- This part is only for mysql tests and should be moved out of TCK tests ---
 
 # TFB tables
 
@@ -237,5 +215,23 @@ INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, 
                           test_decimal, test_boolean, test_char, test_varchar, test_date, test_time)
 VALUES (3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 -- table for test ANSI SQL data type codecs
+
+-- Collector API testing
+DROP TABLE IF EXISTS collector_test;
+CREATE TABLE collector_test
+(
+    id             INT,
+    `test_int_2`   SMALLINT,
+    `test_int_4`   INT,
+    `test_int_8`   BIGINT,
+    `test_float`   FLOAT,
+    `test_double`  DOUBLE,
+    `test_varchar` VARCHAR(20)
+);
+
+INSERT INTO collector_test
+VALUES (1, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'HELLO,WORLD');
+INSERT INTO collector_test
+VALUES (2, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'hello,world');
 
 -- TCK usage --
