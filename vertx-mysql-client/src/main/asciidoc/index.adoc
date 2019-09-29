@@ -282,7 +282,7 @@ So if you're on a insecure connection and want to avoid the risk of exposing the
 {@link examples.MySQLClientExamples#rsaPublicKeyExample}
 ----
 
-More information about client connection attributes can be found in the https://dev.mysql.com/doc/refman/8.0/en/caching-sha2-pluggable-authentication.html[MySQL Reference Manual].
+More information about the `caching_sha2_password` authentication method can be found in the https://dev.mysql.com/doc/refman/8.0/en/caching-sha2-pluggable-authentication.html[MySQL Reference Manual].
 
 == Using SSL/TLS
 
