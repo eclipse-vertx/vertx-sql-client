@@ -337,32 +337,50 @@ CREATE TABLE mutable
 DROP TABLE IF EXISTS basicdatatype;
 CREATE TABLE basicdatatype
 (
-  id           INTEGER,
-  test_int_2   SMALLINT,
-  test_int_4   INTEGER,
-  test_int_8   BIGINT,
-  test_float_4 REAL,
-  test_float_8 DOUBLE PRECISION,
-  test_numeric NUMERIC(5, 2),
-  test_decimal DECIMAL,
-  test_boolean BOOLEAN,
-  test_char    CHAR(8),
-  test_varchar VARCHAR(20),
-  test_date    DATE,
-  test_time    TIME
+    id           INTEGER,
+    test_int_2   SMALLINT,
+    test_int_4   INTEGER,
+    test_int_8   BIGINT,
+    test_float_4 REAL,
+    test_float_8 DOUBLE PRECISION,
+    test_numeric NUMERIC(5, 2),
+    test_decimal DECIMAL,
+    test_boolean BOOLEAN,
+    test_char    CHAR(8),
+    test_varchar VARCHAR(20),
+    test_date    DATE,
+    test_time    TIME
 );
 INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_float_8, test_numeric,
                           test_decimal, test_boolean, test_char, test_varchar, test_date, test_time)
-VALUES ('1', '32767', '2147483647', '9223372036854775807', '3.40282E38', '1.7976931348623157E308', '999.99',
-        '12345', TRUE, 'testchar', 'testvarchar', '2019-01-01', '18:45:02');
+VALUES (1, 32767, 2147483647, 9223372036854775807, 3.40282E38, 1.7976931348623157E308, 999.99,
+        12345, TRUE, 'testchar', 'testvarchar', '2019-01-01', '18:45:02');
 INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_float_8, test_numeric,
                           test_decimal, test_boolean, test_char, test_varchar, test_date, test_time)
-VALUES ('2', '32767', '2147483647', '9223372036854775807', '3.40282E38', '1.7976931348623157E308', '999.99',
-        '12345', TRUE, 'testchar', 'testvarchar', '2019-01-01', '18:45:02');
+VALUES (2, 32767, 2147483647, 9223372036854775807, 3.40282E38, 1.7976931348623157E308, 999.99,
+        12345, TRUE, 'testchar', 'testvarchar', '2019-01-01', '18:45:02');
 INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_float_8, test_numeric,
                           test_decimal, test_boolean, test_char, test_varchar, test_date, test_time)
-VALUES ('3', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+VALUES (3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 -- table for test ANSI SQL data type codecs
+
+-- Collector API testing
+DROP TABLE IF EXISTS collector_test;
+CREATE TABLE collector_test
+(
+    id           INT4,
+    test_int_2   INT2,
+    test_int_4   INT4,
+    test_int_8   INT8,
+    test_float   FLOAT4,
+    test_double  FLOAT8,
+    test_varchar VARCHAR(20)
+);
+
+INSERT INTO collector_test
+VALUES (1, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'HELLO,WORLD');
+INSERT INTO collector_test
+VALUES (2, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'hello,world');
 
 -- TCK usage --
 
