@@ -17,14 +17,15 @@
 
 package io.vertx.pgclient;
 
-import io.vertx.pgclient.junit.PgRule;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.pgclient.junit.ContainerPgRule;
+import io.vertx.sqlclient.SqlClient;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -34,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class PgTestBase {
 
   @ClassRule
-  public static PgRule rule = new PgRule();
+  public static ContainerPgRule rule = new ContainerPgRule();
 
   protected PgConnectOptions options;
 

@@ -1,6 +1,6 @@
 package io.vertx.pgclient.tck;
 
-import io.vertx.pgclient.junit.PgRule;
+import io.vertx.pgclient.junit.ContainerPgRule;
 import io.vertx.sqlclient.tck.BinaryDataTypeEncodeTestBase;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.ClassRule;
@@ -8,8 +8,8 @@ import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
 public class PgBinaryDataTypeEncodeTest extends BinaryDataTypeEncodeTestBase {
-    @ClassRule
-  public static PgRule rule = new PgRule();
+  @ClassRule
+  public static ContainerPgRule rule = new ContainerPgRule();
 
   @Override
   protected void initConnector() {
