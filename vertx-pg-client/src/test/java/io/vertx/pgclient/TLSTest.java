@@ -17,22 +17,25 @@
 
 package io.vertx.pgclient;
 
-import io.vertx.pgclient.junit.PgRule;
-import io.vertx.sqlclient.Tuple;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxException;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.*;
-import org.junit.runner.RunWith;
+import io.vertx.pgclient.junit.ContainerPgRule;
+import io.vertx.sqlclient.Tuple;
 
 @RunWith(VertxUnitRunner.class)
 public class TLSTest {
 
   @ClassRule
-  public static PgRule rule = new PgRule().ssl(true);
+  public static ContainerPgRule rule = new ContainerPgRule().ssl(true);
 
   private Vertx vertx;
 
