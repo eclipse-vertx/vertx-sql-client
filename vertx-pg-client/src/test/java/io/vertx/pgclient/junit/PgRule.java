@@ -16,16 +16,9 @@
  */
 package io.vertx.pgclient.junit;
 
-import de.flapdoodle.embed.process.config.IRuntimeConfig;
-import de.flapdoodle.embed.process.config.io.ProcessOutput;
-import de.flapdoodle.embed.process.runtime.ICommandLinePostProcessor;
-import de.flapdoodle.embed.process.runtime.ProcessControl;
-import de.flapdoodle.embed.process.store.IArtifactStore;
-import io.vertx.pgclient.PgConnectOptions;
-import org.junit.rules.ExternalResource;
-import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
-import ru.yandex.qatools.embed.postgresql.PostgresProcess;
-import ru.yandex.qatools.embed.postgresql.distribution.Version;
+import static org.junit.Assert.assertTrue;
+import static ru.yandex.qatools.embed.postgresql.distribution.Version.V10_6;
+import static ru.yandex.qatools.embed.postgresql.distribution.Version.V9_6_11;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,30 +37,37 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertTrue;
-import static ru.yandex.qatools.embed.postgresql.distribution.Version.V10_6;
-import static ru.yandex.qatools.embed.postgresql.distribution.Version.V11_1;
-import static ru.yandex.qatools.embed.postgresql.distribution.Version.V9_6_11;
+import org.junit.AssumptionViolatedException;
+import org.junit.rules.ExternalResource;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 
+import de.flapdoodle.embed.process.config.IRuntimeConfig;
+import de.flapdoodle.embed.process.config.io.ProcessOutput;
+import de.flapdoodle.embed.process.runtime.ICommandLinePostProcessor;
+import de.flapdoodle.embed.process.runtime.ProcessControl;
+import de.flapdoodle.embed.process.store.IArtifactStore;
+import io.vertx.pgclient.PgConnectOptions;
+import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
+import ru.yandex.qatools.embed.postgresql.PostgresProcess;
+import ru.yandex.qatools.embed.postgresql.distribution.Version;
+
+
+/**
+ * @deprecated EmbeddedPostgres is not maintained any more (must be kept until the unix domain socket tests migration)
+ */
+@Deprecated
 public class PgRule extends ExternalResource {
 
   private static final String connectionUri = System.getProperty("connection.uri");
-  private static final String tlsConnectionUri = System.getProperty("tls.connection.uri");
   private static EmbeddedPostgres postgres;
 
   public synchronized static PgConnectOptions startPg() throws Exception {
-    return startPg(false, false);
+    return startPg(false);
   }
 
-  public synchronized static PgConnectOptions startPg(boolean domainSockets, boolean ssl) throws Exception {
-    if (domainSockets && ssl) {
-      throw new IllegalArgumentException("ssl should be disabled when testing with Unix domain socket");
-    }
-    if (ssl) {
-      if (tlsConnectionUri != null && !tlsConnectionUri.isEmpty()) {
-        return PgConnectOptions.fromUri(tlsConnectionUri);
-      }
-    }
+  public synchronized static PgConnectOptions startPg(boolean domainSockets) throws Exception {
+   
     if (connectionUri != null && !connectionUri.isEmpty()) {
       return PgConnectOptions.fromUri(connectionUri);
     }
@@ -81,11 +81,6 @@ public class PgRule extends ExternalResource {
       config = EmbeddedPostgres.cachedRuntimeConfig(targetDir.toPath());
     } else {
       throw new AssertionError("Cannot access target dir");
-    }
-
-    // SSL
-    if (ssl) {
-      config = useSSLRuntimeConfig(config);
     }
 
     // Domain sockets
@@ -167,29 +162,6 @@ public class PgRule extends ExternalResource {
     return file;
   }
 
-  // ssl=on just enables the possibility of using SSL which does not force clients to use SSL
-  private static IRuntimeConfig useSSLRuntimeConfig(IRuntimeConfig config) throws Exception {
-    File sslKey = getTestResource("server.key");
-    Files.setPosixFilePermissions(sslKey.toPath(), Collections.singleton(PosixFilePermission.OWNER_READ));
-    File sslCrt = getTestResource("server.crt");
-
-    return new RunTimeConfigBase(config) {
-      @Override
-      public ICommandLinePostProcessor getCommandLinePostProcessor() {
-        ICommandLinePostProcessor commandLinePostProcessor = config.getCommandLinePostProcessor();
-        return (distribution, args) -> {
-          List<String> result = commandLinePostProcessor.process(distribution, args);
-          if (result.get(0).endsWith("postgres")) {
-            result = new ArrayList<>(result);
-            result.add("--ssl=on");
-            result.add("--ssl_cert_file=" + sslCrt.getAbsolutePath());
-            result.add("--ssl_key_file=" + sslKey.getAbsolutePath());
-          }
-          return result;
-        };
-      }
-    };
-  }
 
   private static IRuntimeConfig useDomainSocketRunTimeConfig(IRuntimeConfig config, File sock) throws Exception {
     return new RunTimeConfigBase(config) {
@@ -252,10 +224,8 @@ public class PgRule extends ExternalResource {
   static {
     supportedPgVersions.put("9.6", V9_6_11);
     supportedPgVersions.put("10.6", V10_6);
-    supportedPgVersions.put("11.1", V11_1);
   }
 
-  private boolean ssl;
   private boolean domainSockets;
   private PgConnectOptions options;
 
@@ -263,10 +233,6 @@ public class PgRule extends ExternalResource {
     return new PgConnectOptions(options);
   }
 
-  public PgRule ssl(boolean ssl) {
-    this.ssl = ssl;
-    return this;
-  }
 
   public PgRule domainSockets(boolean domainSockets) {
     this.domainSockets = domainSockets;
@@ -275,7 +241,7 @@ public class PgRule extends ExternalResource {
 
   @Override
   protected void before() throws Throwable {
-    options = startPg(domainSockets, ssl);
+    options = startPg(domainSockets);
   }
 
   @Override
@@ -288,4 +254,27 @@ public class PgRule extends ExternalResource {
       }
     }
   }
+  
+  @Override
+  public Statement apply(Statement base, Description description) {
+    return new Statement() {
+      @Override
+      public void evaluate() throws Throwable {
+        try {
+          getPostgresVersion();
+        }
+        catch (Exception e) {
+          throw new AssumptionViolatedException(e.getMessage());
+        }
+        
+        before();
+        try {
+          base.evaluate();
+        } finally {
+          after();
+        }
+      }
+    };
+  }
+
 }

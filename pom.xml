@@ -59,6 +59,7 @@
     <!-- We skip sources jar generation as we do it with the assembly plugin to have greater control over the content -->
     <source.skip>true</source.skip>
     <kotlin.version>1.3.0</kotlin.version>
+    <testcontainers.version>1.12.0</testcontainers.version>
   </properties>
 
   <dependencyManagement>

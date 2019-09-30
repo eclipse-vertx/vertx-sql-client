@@ -43,7 +43,7 @@ public class UnixDomainSocketTest {
   }
 
   @ClassRule
-  public static PgRule rule = new PgRule().ssl(false).domainSockets(nativeTransportEnabled);
+  public static PgRule rule = new PgRule().domainSockets(nativeTransportEnabled);
   private PgPool client;
   private PgConnectOptions options;
 
