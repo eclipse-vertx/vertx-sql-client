@@ -42,7 +42,7 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     this.cmd = cmd;
   }
 
-  abstract void decodePayload(ByteBuf payload, int payloadLength, int sequenceId);
+  abstract void decodePayload(ByteBuf payload, int payloadLength);
 
   void encode(MySQLEncoder encoder) {
     this.encoder = encoder;
@@ -90,6 +90,19 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
   void sendNonSplitPacket(ByteBuf packet) {
     sequenceId++;
     encoder.chctx.writeAndFlush(packet);
+  }
+
+  final void sendBytesAsPacket(byte[] payload) {
+    int payloadLength = payload.length;
+    ByteBuf packet = allocateBuffer(payloadLength + 4);
+    // encode packet header
+    packet.writeMediumLE(payloadLength);
+    packet.writeByte(sequenceId);
+
+    // encode packet payload
+    packet.writeBytes(payload);
+
+    sendNonSplitPacket(packet);
   }
 
   void handleOkPacketOrErrorPacketPayload(ByteBuf payload) {

@@ -38,7 +38,7 @@ import java.util.stream.Collector;
 public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, CommandScheduler {
 
   @Override
-  public C query(String sql, Handler<AsyncResult<RowSet>> handler) {
+  public C query(String sql, Handler<AsyncResult<RowSet<Row>>> handler) {
     return query(sql, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
   }
 
@@ -59,31 +59,30 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
   }
 
   @Override
-  public C preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet>> handler) {
-    return preparedQuery(sql, arguments, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
+  public C preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler) {
+    return preparedQuery(sql, (TupleInternal)arguments, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
   }
 
   @Override
   public <R> C preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
-    return preparedQuery(sql, arguments, true, SqlResultImpl::new, collector, handler);
+    return preparedQuery(sql, (TupleInternal)arguments, SqlResultImpl::new, collector, handler);
   }
 
   private <R1, R2 extends SqlResultBase<R1, R2>, R3 extends SqlResult<R1>> C preparedQuery(
     String sql,
-    Tuple arguments,
-    boolean singleton,
+    TupleInternal arguments,
     Function<R1, R2> factory,
     Collector<Row, ?, R1> collector,
     Handler<AsyncResult<R3>> handler) {
     schedule(new PrepareStatementCommand(sql), cr -> {
       if (cr.succeeded()) {
         PreparedStatement ps = cr.result();
-        String msg = ps.prepare((List<Object>) arguments);
+        String msg = ps.prepare(arguments);
         if (msg != null) {
           handler.handle(Future.failedFuture(msg));
         } else {
           SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, handler);
-          cr.scheduler.schedule(new ExtendedQueryCommand<>(ps, arguments, singleton, collector, b), b);
+          cr.scheduler.schedule(new ExtendedQueryCommand<>(ps, arguments, collector, b), b);
         }
       } else {
         handler.handle(Future.failedFuture(cr.cause()));
@@ -93,7 +92,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
   }
 
   @Override
-  public C preparedQuery(String sql, Handler<AsyncResult<RowSet>> handler) {
+  public C preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler) {
     return preparedQuery(sql, ArrayTuple.EMPTY, handler);
   }
 
@@ -103,19 +102,18 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
   }
 
   @Override
-  public C preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet>> handler) {
-    return preparedBatch(sql, batch, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
+  public C preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler) {
+    return preparedBatch(sql, batch, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
   }
 
   @Override
   public <R> C preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
-    return preparedBatch(sql, batch, true, SqlResultImpl::new, collector, handler);
+    return preparedBatch(sql, batch, SqlResultImpl::new, collector, handler);
   }
 
   private <R1, R2 extends SqlResultBase<R1, R2>, R3 extends SqlResult<R1>> C preparedBatch(
     String sql,
     List<Tuple> batch,
-    boolean singleton,
     Function<R1, R2> factory,
     Collector<Row, ?, R1> collector,
     Handler<AsyncResult<R3>> handler) {
@@ -123,7 +121,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
       if (cr.succeeded()) {
         PreparedStatement ps = cr.result();
         for  (Tuple args : batch) {
-          String msg = ps.prepare((List<Object>) args);
+          String msg = ps.prepare((TupleInternal) args);
           if (msg != null) {
             handler.handle(Future.failedFuture(msg));
             return;
@@ -133,7 +131,6 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
         cr.scheduler.schedule(new ExtendedBatchQueryCommand<>(
           ps,
           batch,
-          singleton,
           collector,
           b), b);
       } else {

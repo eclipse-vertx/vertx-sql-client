@@ -7,46 +7,20 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.RowDecoder;
 
 import java.nio.charset.Charset;
-import java.util.function.BiConsumer;
 import java.util.stream.Collector;
 
-class RowResultDecoder<C, R> implements RowDecoder {
+class RowResultDecoder<C, R> extends RowDecoder<C, R> {
   private static final int NULL = 0xFB;
 
-  private final Collector<Row, C, R> collector;
-  private final boolean singleton;
-  private final BiConsumer<C, Row> accumulator;
   MySQLRowDesc rowDesc;
 
-  private int size;
-  private C container;
-  private Row row;
-
-  RowResultDecoder(Collector<Row, C, R> collector, boolean singleton, MySQLRowDesc rowDesc) {
-    this.collector = collector;
-    this.singleton = singleton;
-    this.accumulator = collector.accumulator();
+  RowResultDecoder(Collector<Row, C, R> collector, MySQLRowDesc rowDesc) {
+    super(collector);
     this.rowDesc = rowDesc;
   }
 
-  public int size() {
-    return size;
-  }
-
   @Override
-  public void decodeRow(int len, ByteBuf in) {
-    if (container == null) {
-      container = collector.supplier().get();
-    }
-    if (singleton) {
-      if (row == null) {
-        row = new MySQLRowImpl(rowDesc);
-      } else {
-        row.clear();
-      }
-    } else {
-      row = new MySQLRowImpl(rowDesc);
-    }
+  protected Row decodeRow(int len, ByteBuf in) {
     Row row = new MySQLRowImpl(rowDesc);
     if (rowDesc.dataFormat() == DataFormat.BINARY) {
       // BINARY row decoding
@@ -91,20 +65,7 @@ class RowResultDecoder<C, R> implements RowDecoder {
         row.addValue(decoded);
       }
     }
-    accumulator.accept(container, row);
-    size++;
-  }
-
-  public R complete() {
-    if (container == null) {
-      container = collector.supplier().get();
-    }
-    return collector.finisher().apply(container);
-  }
-
-  public void reset() {
-    container = null;
-    size = 0;
+    return row;
   }
 }
 

@@ -17,7 +17,7 @@ class InitDbCommandCodec extends CommandCodec<Void, InitDbCommand> {
   }
 
   @Override
-  void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
+  void decodePayload(ByteBuf payload, int payloadLength) {
     handleOkPacketOrErrorPacketPayload(payload);
   }
 

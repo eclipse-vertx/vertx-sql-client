@@ -49,7 +49,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
   }
 
   @Override
-  void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
+  void decodePayload(ByteBuf payload, int payloadLength) {
     switch (commandHandlerState) {
       case INIT:
         handleInitPacket(payload);
@@ -92,7 +92,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
 
   protected void handleResultsetColumnDefinitionsDecodingCompleted() {
     commandHandlerState = CommandHandlerState.HANDLING_ROW_DATA_OR_END_PACKET;
-    decoder = new RowResultDecoder<>(cmd.collector(), false/*cmd.isSingleton()*/, new MySQLRowDesc(columnDefinitions, format));
+    decoder = new RowResultDecoder<>(cmd.collector(), /*cmd.isSingleton()*/ new MySQLRowDesc(columnDefinitions, format));
   }
 
   protected void handleRows(ByteBuf payload, int payloadLength, Consumer<ByteBuf> singleRowHandler) {
@@ -127,7 +127,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
 
   protected void handleSingleRow(ByteBuf payload) {
     // accept a row data
-    decoder.decodeRow(columnDefinitions.length, payload);
+    decoder.handleRow(columnDefinitions.length, payload);
   }
 
   protected void handleSingleResultsetDecodingCompleted(int serverStatusFlags, int affectedRows, int lastInsertId) {
@@ -146,19 +146,22 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
   private void handleSingleResultsetEndPacket(int serverStatusFlags, int affectedRows, int lastInsertId) {
     this.result = (serverStatusFlags & ServerStatusFlags.SERVER_STATUS_LAST_ROW_SENT) == 0;
     T result;
+    Throwable failure;
     int size;
     RowDesc rowDesc;
     if (decoder != null) {
-      result = decoder.complete();
+      failure = decoder.complete();
+      result = decoder.result();
       rowDesc = decoder.rowDesc;
       size = decoder.size();
       decoder.reset();
     } else {
       result = emptyResult(cmd.collector());
+      failure = null;
       size = 0;
       rowDesc = null;
     }
-    cmd.resultHandler().handleResult(affectedRows, size, rowDesc, result);
+    cmd.resultHandler().handleResult(affectedRows, size, rowDesc, result, failure);
     cmd.resultHandler().addProperty(MySQLClient.LAST_INSERTED_ID, lastInsertId);
   }
 

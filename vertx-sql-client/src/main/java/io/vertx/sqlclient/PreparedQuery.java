@@ -39,7 +39,7 @@ public interface PreparedQuery {
    * Calls {@link #execute(Tuple, Handler)} with an empty tuple argument.
    */
   @Fluent
-  default PreparedQuery execute(Handler<AsyncResult<RowSet>> handler) {
+  default PreparedQuery execute(Handler<AsyncResult<RowSet<Row>>> handler) {
     return execute(ArrayTuple.EMPTY, handler);
   }
 
@@ -58,10 +58,12 @@ public interface PreparedQuery {
    * @return the query
    */
   @Fluent
-  PreparedQuery execute(Tuple args, Handler<AsyncResult<RowSet>> handler);
+  PreparedQuery execute(Tuple args, Handler<AsyncResult<RowSet<Row>>> handler);
 
   /**
    * Create a cursor with the provided {@code arguments}.
+   *
+   * The collector will be provided
    *
    * @param args the list of arguments
    * @param collector the collector
@@ -104,7 +106,7 @@ public interface PreparedQuery {
    * @return the createBatch
    */
   @Fluent
-  PreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<RowSet>> handler);
+  PreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<RowSet<Row>>> handler);
 
   /**
    * Execute a batch.

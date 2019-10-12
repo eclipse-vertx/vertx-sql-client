@@ -19,8 +19,11 @@ package io.vertx.pgclient.impl.util;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.sqlclient.Tuple;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -66,8 +69,12 @@ public class Util {
     dst.writeByte(0);
   }
 
-  public static String buildInvalidArgsError(Stream<Object> values, Stream<Class> types) {
-    return "Values [" + values.map(String::valueOf).collect(Collectors.joining(", ")) +
+  public static String buildInvalidArgsError(Tuple values, Stream<Class> types) {
+    List<Object> tmp = new ArrayList<>(values.size());
+    for (int i = 0;i < values.size();i++) {
+      tmp.add(values.getValue(i));
+    }
+    return "Values [" + tmp.stream().map(String::valueOf).collect(Collectors.joining(", ")) +
       "] cannot be coerced to [" + types
       .map(Class::getSimpleName)
       .collect(Collectors.joining(", ")) + "]";

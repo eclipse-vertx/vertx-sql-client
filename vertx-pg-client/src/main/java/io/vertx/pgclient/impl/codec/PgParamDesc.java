@@ -16,11 +16,12 @@
  */
 package io.vertx.pgclient.impl.codec;
 
+import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.ParamDesc;
 import io.vertx.pgclient.impl.util.Util;
+import io.vertx.sqlclient.impl.TupleInternal;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -40,27 +41,27 @@ class PgParamDesc extends ParamDesc {
   }
 
   @Override
-  public String prepare(List<Object> values) {
+  public String prepare(TupleInternal values) {
     if (values.size() != paramDataTypes.length) {
       return buildReport(values);
     }
     for (int i = 0;i < paramDataTypes.length;i++) {
       DataType paramDataType = paramDataTypes[i];
-      Object value = values.get(i);
+      Object value = values.getValue(i);
       Object val = DataTypeCodec.prepare(paramDataType, value);
       if (val != value) {
         if (val == DataTypeCodec.REFUSED_SENTINEL) {
           return buildReport(values);
         } else {
-          values.set(i, val);
+          values.setValue(i, val);
         }
       }
     }
     return null;
   }
 
-  private String buildReport(List<Object> values) {
-    return Util.buildInvalidArgsError(values.stream(), Stream.of(paramDataTypes).map(type -> type.decodingType));
+  private String buildReport(Tuple values) {
+    return Util.buildInvalidArgsError(values, Stream.of(paramDataTypes).map(type -> type.decodingType));
   }
 
   @Override

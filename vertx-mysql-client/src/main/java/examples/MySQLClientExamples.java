@@ -1,6 +1,8 @@
 package examples;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
 import io.vertx.mysqlclient.*;
 import io.vertx.sqlclient.Pool;
@@ -41,7 +43,7 @@ public class MySQLClientExamples {
     // A simple query
     client.query("SELECT * FROM users WHERE id='julien'", ar -> {
       if (ar.succeeded()) {
-        RowSet result = ar.result();
+        RowSet<Row> result = ar.result();
         System.out.println("Got " + result.size() + " rows ");
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
@@ -207,7 +209,7 @@ public class MySQLClientExamples {
   public void lastInsertId(SqlClient client) {
     client.query("INSERT INTO test(val) VALUES ('v1')", ar -> {
       if (ar.succeeded()) {
-        RowSet rows = ar.result();
+        RowSet<Row> rows = ar.result();
         int lastInsertId = rows.property(MySQLClient.LAST_INSERTED_ID);
         System.out.println("Last inserted id is: " + lastInsertId);
       } else {
@@ -219,7 +221,7 @@ public class MySQLClientExamples {
   public void booleanExample01(SqlClient client) {
     client.query("SELECT graduated FROM students WHERE id = 0", ar -> {
       if (ar.succeeded()) {
-        RowSet rowSet = ar.result();
+        RowSet<Row> rowSet = ar.result();
         for (Row row : rowSet) {
           int pos = row.getColumnIndex("graduated");
           Byte value = row.get(Byte.class, pos);
@@ -309,15 +311,15 @@ public class MySQLClientExamples {
         client.query("CALL multi();", ar2 -> {
           if (ar2.succeeded()) {
             // handle the result
-            RowSet result1 = ar2.result();
+            RowSet<Row> result1 = ar2.result();
             Row row1 = result1.iterator().next();
             System.out.println("First result: " + row1.getInteger(0));
 
-            RowSet result2 = result1.next();
+            RowSet<Row> result2 = result1.next();
             Row row2 = result2.iterator().next();
             System.out.println("Second result: " + row2.getInteger(0));
 
-            RowSet result3 = result2.next();
+            RowSet<Row> result3 = result2.next();
             System.out.println("Affected rows: " + result3.rowCount());
           } else {
             System.out.println("Failure: " + ar2.cause().getMessage());
@@ -325,6 +327,53 @@ public class MySQLClientExamples {
         });
       } else {
         System.out.println("Failure: " + ar1.cause().getMessage());
+      }
+    });
+  }
+
+  public void rsaPublicKeyExample() {
+
+    MySQLConnectOptions options1 = new MySQLConnectOptions()
+      .setPort(3306)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUser("user")
+      .setPassword("secret")
+      .setServerRsaPublicKeyPath("tls/files/public_key.pem"); // configure with path of the public key
+
+    MySQLConnectOptions options2 = new MySQLConnectOptions()
+      .setPort(3306)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUser("user")
+      .setPassword("secret")
+      .setServerRsaPublicKeyValue(Buffer.buffer("-----BEGIN PUBLIC KEY-----\n" +
+        "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3yvG5s0qrV7jxVlp0sMj\n" +
+        "xP0a6BuLKCMjb0o88hDsJ3xz7PpHNKazuEAfPxiRFVAV3edqfSiXoQw+lJf4haEG\n" +
+        "HQe12Nfhs+UhcAeTKXRlZP/JNmI+BGoBduQ1rCId9bKYbXn4pvyS/a1ft7SwFkhx\n" +
+        "aogCur7iIB0WUWvwkQ0fEj/Mlhw93lLVyx7hcGFq4FOAKFYr3A0xrHP1IdgnD8QZ\n" +
+        "0fUbgGLWWLOossKrbUP5HWko1ghLPIbfmU6o890oj1ZWQewj1Rs9Er92/UDj/JXx\n" +
+        "7ha1P+ZOgPBlV037KDQMS6cUh9vTablEHsMLhDZanymXzzjBkL+wH/b9cdL16LkQ\n" +
+        "5QIDAQAB\n" +
+        "-----END PUBLIC KEY-----\n")); // configure with buffer of the public key
+  }
+
+  public void tlsExample(Vertx vertx) {
+
+    MySQLConnectOptions options = new MySQLConnectOptions()
+      .setPort(3306)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUser("user")
+      .setPassword("secret")
+      .setSslMode(SslMode.VERIFY_CA)
+      .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/cert.pem"));
+
+    MySQLConnection.connect(vertx, options, res -> {
+      if (res.succeeded()) {
+        // Connected with SSL
+      } else {
+        System.out.println("Could not connect " + res.cause());
       }
     });
   }
@@ -346,7 +395,7 @@ public class MySQLClientExamples {
   }
 
   public void changeUserExample(MySQLConnection connection) {
-    MySQLConnectOptions authenticationOptions = new MySQLConnectOptions()
+    MySQLAuthOptions authenticationOptions = new MySQLAuthOptions()
       .setUser("newuser")
       .setPassword("newpassword")
       .setDatabase("newdatabase");

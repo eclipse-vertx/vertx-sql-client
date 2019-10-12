@@ -1,4 +1,5 @@
 = Reactive MySQL Client
+:PREPARED_PARAMS: `?`
 
 The Reactive MySQL Client is a client for MySQL with a straightforward API focusing on
 scalability and low overhead.
@@ -15,9 +16,9 @@ scalability and low overhead.
 * Direct memory to object without unnecessary copies
 * Java 8 Date and Time
 * Stored Procedures support
+* TLS/SSL support
 * MySQL utilities commands support
-* Seamlessly working with MySQL 5.7 and MariaDB 10.4
-* Compatible with MySQL 5.6 and MariaDB 10.x
+* Working with MySQL and MariaDB
 * Rich collation and charset support
 
 == Usage
@@ -204,6 +205,8 @@ Currently the client supports the following MySQL types
 * MEDIUMTEXT (`java.lang.String`)
 * LONGBLOB (`io.vertx.core.buffer.Buffer`)
 * LONGTEXT (`java.lang.String`)
+* ENUM (`java.lang.String`)
+* SET (`java.lang.String`)
 
 Tuple decoding uses the above types when storing values
 
@@ -269,6 +272,33 @@ Note: Prepared statements binding OUT parameters is not supported for now.
 
 This client supports for handling the LOCAL INFILE Request, if you want to load data from a local file into the server, you can use query
 `LOAD DATA LOCAL INFILE '<filename>' INTO TABLE <table>;`. More information can be found in the https://dev.mysql.com/doc/refman/8.0/en/load-data.html[MySQL Reference Manual].
+
+== Authentication
+
+MySQL 8.0 introduces a new authentication method named `caching_sha2_password` and it's the default one to authenticate.
+In order to connect to the server using this new authentication method, you need either use a secure connection(i.e. enable TLS/SSL) or exchange the encrypted password using an RSA key pair to avoid leaks of password. The RSA key pair is automatically exchanged during the communication, but the server RSA public key may be hacked during the process since it's transferred on a insecure connection.
+So if you're on a insecure connection and want to avoid the risk of exposing the server RSA public key, you can set the server RSA public key like this:
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#rsaPublicKeyExample}
+----
+
+More information about the `caching_sha2_password` authentication method can be found in the https://dev.mysql.com/doc/refman/8.0/en/caching-sha2-pluggable-authentication.html[MySQL Reference Manual].
+
+== Using SSL/TLS
+
+To configure the client to use SSL connection, you can configure the {@link io.vertx.mysqlclient.MySQLConnectOptions}
+like a Vert.x `NetClient`.
+All https://dev.mysql.com/doc/refman/8.0/en/connection-options.html#option_general_ssl-mode[SSL modes] are supported and you are able to configure `sslmode`. The client is in `DISABLED` SSL mode by default.
+`ssl` parameter is kept as a mere shortcut for setting `sslmode`. `setSsl(true)` is equivalent to `setSslMode(VERIFY_CA)` and `setSsl(false)` is equivalent to `setSslMode(DISABLED)`.
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#tlsExample}
+----
+
+More information can be found in the http://vertx.io/docs/vertx-core/java/#ssl[Vert.x documentation].
 
 == MySQL utility command
 
@@ -343,3 +373,39 @@ For example, you can disable `CLIENT_MULTI_STATEMENTS` with this command.
 {@link examples.MySQLClientExamples#setOptionExample01(io.vertx.mysqlclient.MySQLConnection)}
 ----
 
+== MySQL and MariaDB version support matrix
+
+[cols="^,^,^,^", options="header"]
+|====
+
+2+| MySQL
+2+| MariaDB
+
+| Version | Supported | Version | Supported
+
+|`5.5`
+|&#10004;
+|`10.1`
+|&#10004;
+
+|`5.6`
+|&#10004;
+|`10.2`
+|&#10004;
+
+|`5.7`
+|&#10004;
+|`10.3`
+|&#10004;
+
+|`8.0`
+|&#10004;
+|`10.4`
+|&#10004;
+
+|====
+
+Known issues:
+
+- Reset connection utility command does not work in MySQL 5.5, 5.6 and MariaDB 10.1
+- Change user utility command is not supported with MariaDB 10.2 and 10.3

@@ -21,6 +21,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.sqlclient.Cursor;
+import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 
@@ -32,13 +33,13 @@ import java.util.UUID;
 public class CursorImpl implements Cursor {
 
   private final PreparedQueryImpl ps;
-  private final Tuple params;
+  private final TupleInternal params;
 
   private String id;
   private boolean closed;
-  private SqlResultBuilder<RowSet, RowSetImpl, RowSet> result;
+  private SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> result;
 
-  CursorImpl(PreparedQueryImpl ps, Tuple params) {
+  CursorImpl(PreparedQueryImpl ps, TupleInternal params) {
     this.ps = ps;
     this.params = params;
   }
@@ -52,14 +53,14 @@ public class CursorImpl implements Cursor {
   }
 
   @Override
-  public synchronized void read(int count, Handler<AsyncResult<RowSet>> handler) {
+  public synchronized void read(int count, Handler<AsyncResult<RowSet<Row>>> handler) {
     if (id == null) {
       id = UUID.randomUUID().toString();
       result = new SqlResultBuilder<>(RowSetImpl.FACTORY, handler);
-      ps.execute(params, count, id, false, false, RowSetImpl.COLLECTOR, result, result);
+      ps.execute(params, count, id, false, RowSetImpl.COLLECTOR, result, result);
     } else if (result.isSuspended()) {
       result = new SqlResultBuilder<>(RowSetImpl.FACTORY, handler);
-      ps.execute(params, count, id, true, false, RowSetImpl.COLLECTOR, result, result);
+      ps.execute(params, count, id, true, RowSetImpl.COLLECTOR, result, result);
     } else {
       throw new IllegalStateException();
     }

@@ -17,7 +17,6 @@
 
 package io.vertx.pgclient.impl.codec;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
@@ -32,7 +31,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.time.format.DateTimeFormatterBuilder;
@@ -1081,7 +1079,9 @@ class DataTypeCodec {
   }
 
   private static Buffer binaryDecodeBYTEA(int index, int len, ByteBuf buff) {
-    return Buffer.buffer(buff.copy(index, len));
+    Buffer target = Buffer.buffer(len);
+    target.appendBuffer(Buffer.buffer(buff.slice(index, len)));
+    return target;
   }
 
   private static void binaryEncodeUUID(UUID uuid, ByteBuf buff) {
@@ -1253,7 +1253,7 @@ class DataTypeCodec {
     if (value == Tuple.JSON_NULL) {
       s = "null";
     } else {
-      s = io.vertx.core.json.Json.encode(value);
+      s = Json.encode(value);
     }
     buff.writeCharSequence(s, StandardCharsets.UTF_8);
   }
@@ -1275,22 +1275,14 @@ class DataTypeCodec {
     } else if (s.charAt(pos) == '[') {
       value = new JsonArray(s);
     } else {
-      try {
-        JsonNode json = Json.mapper.readTree(s);
-        if (json.isNumber()) {
-          return json.numberValue();
-        } else if (json.isBoolean()) {
-          return json.booleanValue();
-        } else if (json.isTextual()) {
-          return json.textValue();
-        } else if (json.isNull()) {
-          return Tuple.JSON_NULL;
-        } else {
-          return null;
-        }
-      } catch (IOException e) {
-        // do nothing
+      Object o = Json.decodeValue(s);
+      if (o == null) {
+        return Tuple.JSON_NULL;
       }
+      if (o instanceof Number || o instanceof Boolean || o instanceof String) {
+        return o;
+      }
+      return null;
     }
     return value;
   }

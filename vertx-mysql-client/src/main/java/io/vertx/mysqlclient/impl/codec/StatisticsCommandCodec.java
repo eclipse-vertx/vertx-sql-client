@@ -20,7 +20,7 @@ class StatisticsCommandCodec extends CommandCodec<String, StatisticsCommand> {
   }
 
   @Override
-  void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
+  void decodePayload(ByteBuf payload, int payloadLength) {
     completionHandler.handle(CommandResponse.success(payload.toString(StandardCharsets.UTF_8)));
   }
 

@@ -30,6 +30,7 @@ public abstract class SqlResultBase<T, R extends SqlResultBase<T, R>> implements
   int size;
   R next;
   Map<PropertyKind<?>, Object> properties;
+  Throwable failure;
 
   @Override
   public List<String> columnsNames() {

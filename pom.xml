@@ -25,7 +25,7 @@
   </parent>
 
   <artifactId>vertx-sql-client-parent</artifactId>
-  <version>3.8.2-SNAPSHOT</version>
+  <version>3.8.3-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Vertx SQL Client parent</name>
@@ -47,7 +47,7 @@
   </scm>
 
   <properties>
-    <stack.version>3.8.2-SNAPSHOT</stack.version>
+    <stack.version>3.8.3-SNAPSHOT</stack.version>
     <doc.skip>true</doc.skip>
     <jmh.version>1.19</jmh.version>
     <docs.dir>${project.basedir}/src/main/docs</docs.dir>
@@ -59,6 +59,7 @@
     <!-- We skip sources jar generation as we do it with the assembly plugin to have greater control over the content -->
     <source.skip>true</source.skip>
     <kotlin.version>1.3.0</kotlin.version>
+    <testcontainers.version>1.12.0</testcontainers.version>
   </properties>
 
   <dependencyManagement>

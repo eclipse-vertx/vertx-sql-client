@@ -52,35 +52,34 @@ class PreparedQueryImpl implements PreparedQuery {
   }
 
   @Override
-  public PreparedQuery execute(Tuple args, Handler<AsyncResult<RowSet>> handler) {
-    return execute(args, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
+  public PreparedQuery execute(Tuple args, Handler<AsyncResult<RowSet<Row>>> handler) {
+    return execute((TupleInternal)args, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
   }
 
   @Override
   public <R> PreparedQuery execute(Tuple args, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
-    return execute(args, true, SqlResultImpl::new, collector, handler);
+    return execute((TupleInternal)args, true, SqlResultImpl::new, collector, handler);
   }
 
   private <R1, R2 extends SqlResultBase<R1, R2>, R3 extends SqlResult<R1>> PreparedQuery execute(
-    Tuple args,
+    TupleInternal args,
     boolean singleton,
     Function<R1, R2> factory,
     Collector<Row, ?, R1> collector,
     Handler<AsyncResult<R3>> handler) {
     SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, handler);
-    return execute(args, 0, null, false, singleton, collector, b, b);
+    return execute(args, 0, null, false, collector, b, b);
   }
 
-  <A, R> PreparedQuery execute(Tuple args,
+  <A, R> PreparedQuery execute(TupleInternal args,
                                int fetch,
                                String cursorId,
                                boolean suspended,
-                               boolean singleton,
                                Collector<Row, A, R> collector,
                                QueryResultHandler<R> resultHandler,
                                Handler<AsyncResult<Boolean>> handler) {
     if (context == Vertx.currentContext()) {
-      String msg = ps.prepare((List<Object>) args);
+      String msg = ps.prepare(args);
       if (msg != null) {
         handler.handle(Future.failedFuture(msg));
       } else {
@@ -90,21 +89,24 @@ class PreparedQueryImpl implements PreparedQuery {
           fetch,
           cursorId,
           suspended,
-          singleton,
           collector,
           resultHandler);
         cmd.handler = handler;
         conn.schedule(cmd);
       }
     } else {
-      context.runOnContext(v -> execute(args, fetch, cursorId, suspended, singleton, collector, resultHandler, handler));
+      context.runOnContext(v -> execute(args, fetch, cursorId, suspended, collector, resultHandler, handler));
     }
     return this;
   }
 
   @Override
   public Cursor cursor(Tuple args) {
-    String msg = ps.prepare((List<Object>) args);
+    return cursor((TupleInternal) args);
+  }
+
+  private Cursor cursor(TupleInternal args) {
+    String msg = ps.prepare(args);
     if (msg != null) {
       throw new IllegalArgumentException(msg);
     }
@@ -117,30 +119,29 @@ class PreparedQueryImpl implements PreparedQuery {
     });
   }
 
-  public PreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<RowSet>> handler) {
-    return batch(argsList, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
+  public PreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<RowSet<Row>>> handler) {
+    return batch(argsList, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
   }
 
   @Override
   public <R> PreparedQuery batch(List<Tuple> argsList, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
-    return batch(argsList, true, SqlResultImpl::new, collector, handler);
+    return batch(argsList, SqlResultImpl::new, collector, handler);
   }
 
   private <R1, R2 extends SqlResultBase<R1, R2>, R3 extends SqlResult<R1>> PreparedQuery batch(
     List<Tuple> argsList,
-    boolean singleton,
     Function<R1, R2> factory,
     Collector<Row, ?, R1> collector,
     Handler<AsyncResult<R3>> handler) {
     for  (Tuple args : argsList) {
-      String msg = ps.prepare((List<Object>) args);
+      String msg = ps.prepare((TupleInternal)args);
       if (msg != null) {
         handler.handle(Future.failedFuture(msg));
         return this;
       }
     }
     SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, handler);
-    ExtendedBatchQueryCommand cmd = new ExtendedBatchQueryCommand<>(ps, argsList, singleton, collector, b);
+    ExtendedBatchQueryCommand cmd = new ExtendedBatchQueryCommand<>(ps, argsList, collector, b);
     cmd.handler = b;
     conn.schedule(cmd);
     return this;

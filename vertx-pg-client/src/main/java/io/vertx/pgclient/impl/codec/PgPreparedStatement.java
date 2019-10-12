@@ -19,9 +19,9 @@ package io.vertx.pgclient.impl.codec;
 
 import io.vertx.sqlclient.impl.PreparedStatement;
 import io.vertx.sqlclient.impl.ParamDesc;
+import io.vertx.sqlclient.impl.TupleInternal;
 
 import java.util.Arrays;
-import java.util.List;
 
 class PgPreparedStatement implements PreparedStatement {
 
@@ -70,7 +70,7 @@ class PgPreparedStatement implements PreparedStatement {
   }
 
   @Override
-  public String prepare(List<Object> values) {
+  public String prepare(TupleInternal values) {
     return paramDesc.prepare(values);
   }
 }

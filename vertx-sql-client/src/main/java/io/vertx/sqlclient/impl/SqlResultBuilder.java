@@ -17,12 +17,14 @@
 
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.Future;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.sqlclient.PropertyKind;
 
 import java.util.HashMap;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -41,15 +43,16 @@ public class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlRes
   }
 
   @Override
-  public void handleResult(int updatedCount, int size, RowDesc desc, T result) {
+  public void handleResult(int updatedCount, int size, RowDesc desc, T result, Throwable failure) {
     R r = factory.apply(result);
+    r.failure = failure;
     r.updated = updatedCount;
     r.size = size;
     r.columnNames = desc != null ? desc.columnNames() : null;
-    handleResult(r);
+    handleResult(r, failure);
   }
 
-  private void handleResult(R result) {
+  private void handleResult(R result, Throwable failure) {
     if (first == null) {
       first = result;
     } else {
@@ -79,7 +82,15 @@ public class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlRes
   @Override
   public void handle(AsyncResult<Boolean> res) {
     suspended = res.succeeded() && res.result();
-    handler.handle((AsyncResult<L>) res.map(first));
+    if (res.failed()) {
+      handler.handle((AsyncResult) res);
+    } else if (first == null) {
+      handler.handle(Future.succeededFuture());
+    } else if (first.failure != null) {
+      handler.handle(Future.failedFuture(first.failure));
+    } else {
+      handler.handle(Future.succeededFuture((L) first));
+    }
   }
 
   public boolean isSuspended() {

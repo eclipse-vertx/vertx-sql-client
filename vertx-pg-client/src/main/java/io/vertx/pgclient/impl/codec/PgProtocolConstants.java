@@ -29,6 +29,9 @@ public class PgProtocolConstants {
   public static final int AUTHENTICATION_TYPE_GSS = 7;
   public static final int AUTHENTICATION_TYPE_GSS_CONTINUE = 8;
   public static final int AUTHENTICATION_TYPE_SSPI = 9;
+  public static final int AUTHENTICATION_TYPE_SASL = 10;
+  public static final int AUTHENTICATION_TYPE_SASL_CONTINUE = 11;
+  public static final int AUTHENTICATION_TYPE_SASL_FINAL = 12;
 
   public static final byte ERROR_OR_NOTICE_SEVERITY = 'S';
   public static final byte ERROR_OR_NOTICE_CODE = 'C';

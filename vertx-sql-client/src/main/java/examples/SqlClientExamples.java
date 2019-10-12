@@ -38,7 +38,7 @@ public class SqlClientExamples {
   public void queries01(SqlClient client) {
     client.query("SELECT * FROM users WHERE id='julien'", ar -> {
       if (ar.succeeded()) {
-        RowSet result = ar.result();
+        RowSet<Row> result = ar.result();
         System.out.println("Got " + result.size() + " rows ");
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
@@ -50,7 +50,7 @@ public class SqlClientExamples {
   public void queries02(SqlClient client) {
     client.preparedQuery("SELECT * FROM users WHERE id=$1", Tuple.of("julien"), ar -> {
       if (ar.succeeded()) {
-        RowSet rows = ar.result();
+        RowSet<Row> rows = ar.result();
         System.out.println("Got " + rows.size() + " rows ");
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
@@ -61,7 +61,7 @@ public class SqlClientExamples {
   public void queries03(SqlClient client) {
     client.preparedQuery("SELECT first_name, last_name FROM users", ar -> {
       if (ar.succeeded()) {
-        RowSet rows = ar.result();
+        RowSet<Row> rows = ar.result();
         for (Row row : rows) {
           System.out.println("User " + row.getString(0) + " " + row.getString(1));
         }
@@ -74,7 +74,7 @@ public class SqlClientExamples {
   public void queries04(SqlClient client) {
     client.preparedQuery("INSERT INTO users (first_name, last_name) VALUES ($1, $2)", Tuple.of("Julien", "Viet"),  ar -> {
       if (ar.succeeded()) {
-        RowSet rows = ar.result();
+        RowSet<Row> rows = ar.result();
         System.out.println(rows.rowCount());
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
@@ -112,7 +112,7 @@ public class SqlClientExamples {
       if (res.succeeded()) {
 
         // Process rows
-        RowSet rows = res.result();
+        RowSet<Row> rows = res.result();
       } else {
         System.out.println("Batch failed " + res.cause());
       }
@@ -153,7 +153,7 @@ public class SqlClientExamples {
         pq.execute(Tuple.of("julien"), ar2 -> {
           if (ar2.succeeded()) {
             // All rows
-            RowSet rows = ar2.result();
+            RowSet<Row> rows = ar2.result();
           }
         });
       }
@@ -176,7 +176,7 @@ public class SqlClientExamples {
           if (res.succeeded()) {
 
             // Process rows
-            RowSet rows = res.result();
+            RowSet<Row> rows = res.result();
           } else {
             System.out.println("Batch failed " + res.cause());
           }
@@ -277,7 +277,7 @@ public class SqlClientExamples {
         // Read 50 rows
         cursor.read(50, ar2 -> {
           if (ar2.succeeded()) {
-            RowSet rows = ar2.result();
+            RowSet<Row> rows = ar2.result();
 
             // Check for more ?
             if (cursor.hasMore()) {

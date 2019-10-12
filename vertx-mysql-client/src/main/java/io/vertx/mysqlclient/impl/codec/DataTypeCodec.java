@@ -1,6 +1,7 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.core.buffer.Buffer;
@@ -36,37 +37,41 @@ class DataTypeCodec {
 
   static Object decodeText(DataType dataType, Charset charset, int columnDefinitionFlags, ByteBuf buffer) {
     int length = (int) BufferUtils.readLengthEncodedInteger(buffer);
-    ByteBuf data = buffer.readSlice(length);
-    switch (dataType) {
-      case INT1:
-        return textDecodeInt1(charset, data);
-      case INT2:
-      case YEAR:
-        return textDecodeInt2(charset, data);
-      case INT3:
-        return textDecodeInt3(charset, data);
-      case INT4:
-        return textDecodeInt4(charset, data);
-      case INT8:
-        return textDecodeInt8(charset, data);
-      case FLOAT:
-        return textDecodeFloat(charset, data);
-      case DOUBLE:
-        return textDecodeDouble(charset, data);
-      case NUMERIC:
-        return textDecodeNUMERIC(charset, data);
-      case DATE:
-        return textDecodeDate(charset, data);
-      case TIME:
-        return textDecodeTime(charset, data);
-      case DATETIME:
-      case TIMESTAMP:
-        return textDecodeDateTime(charset, data);
-      case STRING:
-      case VARSTRING:
-      case BLOB:
-      default:
-        return textDecodeBlobOrText(charset, columnDefinitionFlags, data);
+    int index = buffer.readerIndex();
+    try {
+      switch (dataType) {
+        case INT1:
+          return textDecodeInt1(charset, buffer, index, length);
+        case INT2:
+        case YEAR:
+          return textDecodeInt2(charset, buffer, index, length);
+        case INT3:
+          return textDecodeInt3(charset, buffer, index, length);
+        case INT4:
+          return textDecodeInt4(charset, buffer, index, length);
+        case INT8:
+          return textDecodeInt8(charset, buffer, index, length);
+        case FLOAT:
+          return textDecodeFloat(charset, buffer, index, length);
+        case DOUBLE:
+          return textDecodeDouble(charset, buffer, index, length);
+        case NUMERIC:
+          return textDecodeNUMERIC(charset, buffer, index, length);
+        case DATE:
+          return textDecodeDate(charset, buffer, index, length);
+        case TIME:
+          return textDecodeTime(charset, buffer, index, length);
+        case DATETIME:
+        case TIMESTAMP:
+          return textDecodeDateTime(charset, buffer, index, length);
+        case STRING:
+        case VARSTRING:
+        case BLOB:
+        default:
+          return textDecodeBlobOrText(charset, columnDefinitionFlags, buffer, index, length);
+      }
+    } finally {
+      buffer.readerIndex(index + length);
     }
   }
 
@@ -338,9 +343,12 @@ class DataTypeCodec {
 
   private static Buffer binaryDecodeBlob(ByteBuf buffer) {
     int len = (int) BufferUtils.readLengthEncodedInteger(buffer);
-    ByteBuf copy = buffer.copy(buffer.readerIndex(), len);
+
+    Buffer target = Buffer.buffer(len);
+    target.appendBuffer(Buffer.buffer(buffer.slice(buffer.readerIndex(), len)));
     buffer.skipBytes(len);
-    return Buffer.buffer(copy);
+
+    return target;
   }
 
   private static String binaryDecodeText(Charset charset, ByteBuf buffer) {
@@ -410,62 +418,65 @@ class DataTypeCodec {
     }
   }
 
-  private static Byte textDecodeInt1(Charset charset, ByteBuf buffer) {
-    return Byte.parseByte(buffer.toString(charset));
+  private static Byte textDecodeInt1(Charset charset, ByteBuf buffer, int index, int length) {
+    return Byte.parseByte(buffer.toString(index, length, charset));
   }
 
-  private static Short textDecodeInt2(Charset charset, ByteBuf buffer) {
-    return Short.parseShort(buffer.toString(charset));
+  private static Short textDecodeInt2(Charset charset, ByteBuf buffer, int index, int length) {
+    return Short.parseShort(buffer.toString(index, length, charset));
   }
 
-  private static Integer textDecodeInt3(Charset charset, ByteBuf buffer) {
-    return Integer.parseInt(buffer.toString(charset));
+  private static Integer textDecodeInt3(Charset charset, ByteBuf buffer, int index, int length) {
+    return Integer.parseInt(buffer.toString(index, length, charset));
   }
 
-  private static Integer textDecodeInt4(Charset charset, ByteBuf buffer) {
-    return Integer.parseInt(buffer.toString(charset));
+  private static Integer textDecodeInt4(Charset charset, ByteBuf buffer, int index, int length) {
+    return Integer.parseInt(buffer.toString(index, length, charset));
   }
 
-  private static Long textDecodeInt8(Charset charset, ByteBuf buffer) {
-    return Long.parseLong(buffer.toString(charset));
+  private static Long textDecodeInt8(Charset charset, ByteBuf buffer, int index, int length) {
+    return Long.parseLong(buffer.toString(index, length, charset));
   }
 
-  private static Float textDecodeFloat(Charset charset, ByteBuf buffer) {
-    return Float.parseFloat(buffer.toString(charset));
+  private static Float textDecodeFloat(Charset charset, ByteBuf buffer, int index, int length) {
+    return Float.parseFloat(buffer.toString(index, length, charset));
   }
 
-  private static Double textDecodeDouble(Charset charset, ByteBuf buffer) {
-    return Double.parseDouble(buffer.toString(charset));
+  private static Double textDecodeDouble(Charset charset, ByteBuf buffer, int index, int length) {
+    return Double.parseDouble(buffer.toString(index, length, charset));
   }
 
-  private static Number textDecodeNUMERIC(Charset charset, ByteBuf buff) {
-    return Numeric.parse(buff.toString(charset));
+  private static Number textDecodeNUMERIC(Charset charset, ByteBuf buff, int index, int length) {
+    return Numeric.parse(buff.toString(index, length, charset));
   }
 
-  private static Object textDecodeBlobOrText(Charset charset, int columnDefinitionFlags, ByteBuf buffer) {
+  private static Object textDecodeBlobOrText(Charset charset, int columnDefinitionFlags,
+    ByteBuf buffer, int index, int length) {
     if (isBinaryField(columnDefinitionFlags)) {
-      return textDecodeBlob(buffer);
+      return textDecodeBlob(buffer, index, length);
     } else {
-      return textDecodeText(charset, buffer);
+      return textDecodeText(charset, buffer, index, length);
     }
   }
 
-  private static Buffer textDecodeBlob(ByteBuf buffer) {
-    return Buffer.buffer(buffer.copy());
+  private static Buffer textDecodeBlob(ByteBuf buffer, int index, int length) {
+    ByteBuf copy = Unpooled.buffer(length);
+    copy.writeBytes(buffer, index, length);
+    return Buffer.buffer(copy);
   }
 
-  private static String textDecodeText(Charset charset, ByteBuf buffer) {
-    return buffer.toString(charset);
+  private static String textDecodeText(Charset charset, ByteBuf buffer, int index, int length) {
+    return buffer.toString(index, length, charset);
   }
 
-  private static LocalDate textDecodeDate(Charset charset, ByteBuf buffer) {
-    CharSequence cs = buffer.toString(charset);
+  private static LocalDate textDecodeDate(Charset charset, ByteBuf buffer, int index, int length) {
+    CharSequence cs = buffer.toString(index, length, charset);
     return LocalDate.parse(cs);
   }
 
-  private static Duration textDecodeTime(Charset charset, ByteBuf buffer) {
+  private static Duration textDecodeTime(Charset charset, ByteBuf buffer, int index, int length) {
     // HH:mm:ss or HHH:mm:ss
-    String timeString = buffer.toString(charset);
+    String timeString = buffer.toString(index, length, charset);
     boolean isNegative = timeString.charAt(0) == '-';
     if (isNegative) {
       timeString = timeString.substring(1);
@@ -491,7 +502,7 @@ class DataTypeCodec {
     }
   }
 
-  private static LocalDateTime textDecodeDateTime(Charset charset, ByteBuf buffer) {
+  private static LocalDateTime textDecodeDateTime(Charset charset, ByteBuf buffer, int index, int length) {
     CharSequence cs = buffer.toString(charset);
     if (cs.equals("0000-00-00 00:00:00")) {
       // Invalid datetime will be converted to zero

@@ -147,7 +147,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     Async async = ctx.async();
     PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
       test.accept(conn, failure -> {
-        ctx.assertEquals(Util.buildInvalidArgsError(Stream.of("invalid-id"), Stream.of(Number.class)), failure.getMessage());
+        ctx.assertEquals(Util.buildInvalidArgsError(Tuple.of("invalid-id"), Stream.of(Number.class)), failure.getMessage());
         async.complete();
       });
       conn.preparedQuery("SELECT * FROM Fortune WHERE id=$1", Tuple.of("invalid-id"), ctx.asyncAssertFailure(failure -> {

@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public abstract class PreparedBatchTestBase {
@@ -45,8 +46,8 @@ public abstract class PreparedBatchTestBase {
       List<Tuple> batch = new ArrayList<>();
       batch.add(Tuple.of(79991, "batch one"));
       batch.add(Tuple.of(79992, "batch two"));
-      batch.add(Tuple.of(79993, "batch three"));
-      batch.add(Tuple.of(79994, "batch four"));
+      batch.add(Tuple.wrap(Arrays.asList(79993, "batch three")));
+      batch.add(Tuple.wrap(Arrays.asList(79994, "batch four")));
 
       conn.preparedBatch(statement("INSERT INTO mutable (id, val) VALUES (", ", ", ")"), batch, ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());

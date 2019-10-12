@@ -36,7 +36,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
       if (ps.bind.statement == 0) {
         encoder.writeParse(new Parse(ps.sql()));
       }
-      encoder.writeBind(ps.bind, cmd.cursorId(), (List<Object>) cmd.params());
+      encoder.writeBind(ps.bind, cmd.cursorId(), cmd.params());
       encoder.writeExecute(cmd.cursorId(), cmd.fetch());
       encoder.writeSync();
     }

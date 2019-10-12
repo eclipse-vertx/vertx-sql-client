@@ -10,27 +10,12 @@ GRANT ALL ON emptyschema.* TO 'superuser'@'%' WITH GRANT OPTION;
 GRANT PROCESS ON *.* TO 'mysql'@'%';
 FLUSH PRIVILEGES;
 
+# testing empty password
+CREATE USER 'emptypassuser'@'%' IDENTIFIED BY '';
+GRANT ALL ON emptyschema.* TO 'emptypassuser'@'%' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+
 USE testschema;
-
-# @Deprecated--- This part is only for mysql tests and should be moved out of TCK tests ---
-DROP TABLE IF EXISTS collectorTest;
-CREATE TABLE collectorTest
-(
-  id        INT NOT NULL PRIMARY KEY,
-  `Int2`    SMALLINT,
-  `Int3`    MEDIUMINT,
-  `Int4`    INT,
-  `Int8`    BIGINT,
-  `Float`   FLOAT,
-  `Double`  DOUBLE,
-  `Varchar` VARCHAR(20)
-);
-
-
-INSERT INTO collectorTest
-VALUES (1, 32767, 8388607, 2147483647, 9223372036854775807, 123.456, 1.234567, 'HELLO,WORLD');
-INSERT INTO collectorTest
-VALUES (2, 32767, 8388607, 2147483647, 9223372036854775807, 123.456, 1.234567, 'hello,world');
 
 # datatype testing table
 DROP TABLE IF EXISTS datatype;
@@ -47,6 +32,8 @@ CREATE TABLE datatype
     `Text`         TEXT,
     `MediumText`   MEDIUMTEXT,
     `LongText`     LONGTEXT,
+    `test_enum`    ENUM ('x-small', 'small', 'medium', 'large', 'x-large'),
+    `test_set`     SET ('a', 'b', 'c', 'd'),
     test_year      YEAR,
     test_timestamp TIMESTAMP,
     test_datetime  DATETIME(6)
@@ -54,12 +41,10 @@ CREATE TABLE datatype
 
 INSERT INTO datatype
 VALUES (1, 'HELLO', 'HELLO, WORLD', 'TINYBLOB', 'BLOB', 'MEDIUMBLOB', 'LONGBLOB', 'TINYTEXT', 'TEXT', 'MEDIUMTEXT',
-        'LONGTEXT', '2019', '2000-01-01 10:20:30', '2000-01-01 10:20:30.123456');
+        'LONGTEXT', 'small', 'a,b', '2019', '2000-01-01 10:20:30', '2000-01-01 10:20:30.123456');
 INSERT INTO datatype
 VALUES (2, 'hello', 'hello, world', 'tinyblob', 'blob', 'mediumblob', 'longblob', 'tinytext', 'text', 'mediumtext',
-        'longtext', '2019', '2000-01-01 10:20:30', '2000-01-01 10:20:30.123456');
-
-# @Deprecated--- This part is only for mysql tests and should be moved out of TCK tests ---
+        'longtext', 'large', 'b,c,d', '2019', '2000-01-01 10:20:30', '2000-01-01 10:20:30.123456');
 
 # TFB tables
 
@@ -79,8 +64,6 @@ CREATE TABLE world (
   PRIMARY KEY  (id)
 )
 ENGINE=INNODB;
-GRANT SELECT, UPDATE ON world TO 'benchmarkdbuser'@'%' IDENTIFIED BY 'benchmarkdbpass';
-GRANT SELECT, UPDATE ON world TO 'benchmarkdbuser'@'localhost' IDENTIFIED BY 'benchmarkdbpass';
 
 DELIMITER #
 CREATE PROCEDURE load_data()
@@ -110,8 +93,6 @@ CREATE TABLE Fortune (
   PRIMARY KEY  (id)
 )
 ENGINE=INNODB;
-GRANT SELECT ON Fortune TO 'mysql'@'%' IDENTIFIED BY 'password';
-GRANT SELECT ON Fortune TO 'mysql'@'localhost' IDENTIFIED BY 'password';
 
 INSERT INTO Fortune (message) VALUES ('fortune: No such file or directory');
 INSERT INTO Fortune (message) VALUES ('A computer scientist is someone who fixes things that aren''t broken.');
@@ -211,31 +192,49 @@ SET sql_mode = 'ANSI';
 DROP TABLE IF EXISTS basicdatatype;
 CREATE TABLE basicdatatype
 (
-  id           INTEGER,
-  test_int_2   SMALLINT,
-  test_int_4   INTEGER,
-  test_int_8   BIGINT,
-  test_float_4 REAL,
-  test_float_8 DOUBLE PRECISION,
-  test_numeric NUMERIC(5, 2),
-  test_decimal DECIMAL,
-  test_boolean BOOLEAN,
-  test_char    CHAR(8),
-  test_varchar VARCHAR(20),
-  test_date    DATE,
-  test_time    TIME(6)
+    id           INTEGER,
+    test_int_2   SMALLINT,
+    test_int_4   INTEGER,
+    test_int_8   BIGINT,
+    test_float_4 REAL,
+    test_float_8 DOUBLE PRECISION,
+    test_numeric NUMERIC(5, 2),
+    test_decimal DECIMAL,
+    test_boolean BOOLEAN,
+    test_char    CHAR(8),
+    test_varchar VARCHAR(20),
+    test_date    DATE,
+    test_time    TIME(6)
 );
 INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_float_8, test_numeric,
                           test_decimal, test_boolean, test_char, test_varchar, test_date, test_time)
-VALUES ('1', '32767', '2147483647', '9223372036854775807', '3.40282E38', '1.7976931348623157E308', '999.99',
-        '12345', TRUE, 'testchar', 'testvarchar', '2019-01-01', '18:45:02');
+VALUES (1, 32767, 2147483647, 9223372036854775807, 3.40282E38, 1.7976931348623157E308, 999.99,
+        12345, TRUE, 'testchar', 'testvarchar', '2019-01-01', '18:45:02');
 INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_float_8, test_numeric,
                           test_decimal, test_boolean, test_char, test_varchar, test_date, test_time)
-VALUES ('2', '32767', '2147483647', '9223372036854775807', '3.40282E38', '1.7976931348623157E308', '999.99',
-        '12345', TRUE, 'testchar', 'testvarchar', '2019-01-01', '18:45:02');
+VALUES (2, 32767, 2147483647, 9223372036854775807, 3.40282E38, 1.7976931348623157E308, 999.99,
+        12345, TRUE, 'testchar', 'testvarchar', '2019-01-01', '18:45:02');
 INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_float_8, test_numeric,
                           test_decimal, test_boolean, test_char, test_varchar, test_date, test_time)
-VALUES ('3', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+VALUES (3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 -- table for test ANSI SQL data type codecs
+
+-- Collector API testing
+DROP TABLE IF EXISTS collector_test;
+CREATE TABLE collector_test
+(
+    id             INT,
+    `test_int_2`   SMALLINT,
+    `test_int_4`   INT,
+    `test_int_8`   BIGINT,
+    `test_float`   FLOAT,
+    `test_double`  DOUBLE,
+    `test_varchar` VARCHAR(20)
+);
+
+INSERT INTO collector_test
+VALUES (1, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'HELLO,WORLD');
+INSERT INTO collector_test
+VALUES (2, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'hello,world');
 
 -- TCK usage --

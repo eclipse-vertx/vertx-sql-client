@@ -1,8 +1,8 @@
 package io.vertx.mysqlclient.impl;
 
+import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.ArrayTuple;
-import io.vertx.sqlclient.impl.RowInternal;
 import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.core.buffer.Buffer;
 
@@ -17,10 +17,9 @@ import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.UUID;
 
-public class MySQLRowImpl extends ArrayTuple implements RowInternal {
+public class MySQLRowImpl extends ArrayTuple implements Row {
 
   private final RowDesc rowDesc;
-  MySQLRowImpl next;
 
   public MySQLRowImpl(RowDesc rowDesc) {
     super(rowDesc.columnNames().size());
@@ -248,16 +247,6 @@ public class MySQLRowImpl extends ArrayTuple implements RowInternal {
   @Override
   public UUID[] getUUIDArray(String name) {
     throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public RowInternal getNext() {
-    return next;
-  }
-
-  @Override
-  public void setNext(RowInternal next) {
-    this.next = (MySQLRowImpl) next;
   }
 
   @Override

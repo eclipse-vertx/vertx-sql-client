@@ -21,7 +21,7 @@ class CloseStatementCommandCodec extends CommandCodec<Void, CloseStatementComman
   }
 
   @Override
-  void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
+  void decodePayload(ByteBuf payload, int payloadLength) {
     // no statement response
   }
 

@@ -22,7 +22,7 @@ import io.vertx.sqlclient.Tuple;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class ArrayTuple extends ArrayList<Object> implements Tuple {
+public class ArrayTuple extends ArrayList<Object> implements TupleInternal {
 
   public static Tuple EMPTY = new ArrayTuple(0);
 
@@ -43,5 +43,10 @@ public class ArrayTuple extends ArrayList<Object> implements Tuple {
   public Tuple addValue(Object value) {
     add(value);
     return this;
+  }
+
+  @Override
+  public void setValue(int pos, Object value) {
+    set(pos, value);
   }
 }

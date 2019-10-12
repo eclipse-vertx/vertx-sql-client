@@ -27,6 +27,8 @@ public class StringDataTypeTest extends MySQLDataTypeTestBase {
         ctx.assertEquals("TEXT", row.getValue(8));
         ctx.assertEquals("MEDIUMTEXT", row.getValue(9));
         ctx.assertEquals("LONGTEXT", row.getValue(10));
+        ctx.assertEquals("small", row.getValue(11));
+        ctx.assertEquals("a,b", row.getValue(12));
         conn.close();
       }));
     }));
@@ -88,8 +90,24 @@ public class StringDataTypeTest extends MySQLDataTypeTestBase {
   }
 
   @Test
+  public void testTextDecodeBlobDoesNotLeakDirectBuffer(TestContext ctx) {
+    testTextDecodeGenericWithTable(ctx, "Blob", (row, columnName) -> {
+      boolean isDirectBuffer = ((Buffer) row.getValue(0)).getByteBuf().isDirect();
+      ctx.assertFalse(isDirectBuffer);
+    });
+  }
+
+  @Test
   public void testBinaryDecodeBlob(TestContext ctx) {
     testBinaryDecodeGenericWithTable(ctx, "Blob", Buffer.buffer("BLOB"));
+  }
+
+  @Test
+  public void testBinaryDecodeBlobDoesNotLeakDirectBuffer(TestContext ctx) {
+    testBinaryDecodeGenericWithTable(ctx, "Blob", (row, columnName) -> {
+      boolean isDirectBuffer = ((Buffer) row.getValue(0)).getByteBuf().isDirect();
+      ctx.assertFalse(isDirectBuffer);
+    });
   }
 
   @Test
@@ -180,5 +198,35 @@ public class StringDataTypeTest extends MySQLDataTypeTestBase {
   @Test
   public void testBinaryDecodeLongText(TestContext ctx) {
     testBinaryDecodeGenericWithTable(ctx, "LongText", "LONGTEXT");
+  }
+
+  @Test
+  public void testBinaryEncodeEnum(TestContext ctx) {
+    testBinaryEncodeGeneric(ctx, "test_enum", "medium");
+  }
+
+  @Test
+  public void testTextDecodeEnum(TestContext ctx) {
+    testTextDecodeGenericWithTable(ctx, "test_enum", "small");
+  }
+
+  @Test
+  public void testBinaryDecodeEnum(TestContext ctx) {
+    testBinaryDecodeGenericWithTable(ctx, "test_enum", "small");
+  }
+
+  @Test
+  public void testBinaryEncodeSet(TestContext ctx) {
+    testBinaryEncodeGeneric(ctx, "test_set", "a,b,c");
+  }
+
+  @Test
+  public void testTextDecodeSet(TestContext ctx) {
+    testTextDecodeGenericWithTable(ctx, "test_set", "a,b");
+  }
+
+  @Test
+  public void testBinaryDecodeSet(TestContext ctx) {
+    testBinaryDecodeGenericWithTable(ctx, "test_set", "a,b");
   }
 }

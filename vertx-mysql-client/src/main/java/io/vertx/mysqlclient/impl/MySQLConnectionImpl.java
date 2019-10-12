@@ -5,6 +5,8 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.mysqlclient.MySQLAuthOptions;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.mysqlclient.MySQLSetOption;
@@ -24,7 +26,13 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
   public static void connect(Vertx vertx, MySQLConnectOptions options, Handler<AsyncResult<MySQLConnection>> handler) {
     Context ctx = Vertx.currentContext();
     if (ctx != null) {
-      MySQLConnectionFactory client = new MySQLConnectionFactory(ctx, false, options);
+      MySQLConnectionFactory client;
+      try {
+        client = new MySQLConnectionFactory(ctx, false, options);
+      } catch (Exception e) {
+        handler.handle(Future.failedFuture(e));
+        return;
+      }
       client.connect(ar-> {
         if (ar.succeeded()) {
           Connection conn = ar.result();
@@ -104,26 +112,24 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
   }
 
   @Override
-  public MySQLConnection changeUser(MySQLConnectOptions options, Handler<AsyncResult<Void>> handler) {
-    String collationName = options.getCollation();
-    MySQLCollation collation;
-    if (collationName == null) {
+  public MySQLConnection changeUser(MySQLAuthOptions options, Handler<AsyncResult<Void>> handler) {
+    String collation;
+    if (options.getCollation() != null) {
       // override the collation if configured
+      collation = options.getCollation();
+    } else {
       String charset = options.getCharset();
-      try {
-        collationName = MySQLCollation.getDefaultCollationFromCharsetName(charset);
-      } catch (IllegalArgumentException e) {
-        handler.handle(Future.failedFuture(e));
-        return this;
+      collation = MySQLCollation.getDefaultCollationFromCharsetName(charset);
+    }
+    Buffer serverRsaPublicKey = null;
+    if (options.getServerRsaPublicKeyValue() != null) {
+      serverRsaPublicKey = options.getServerRsaPublicKeyValue();
+    } else {
+      if (options.getServerRsaPublicKeyPath() != null) {
+        serverRsaPublicKey = context.owner().fileSystem().readFileBlocking(options.getServerRsaPublicKeyPath());
       }
     }
-    try {
-      collation = MySQLCollation.valueOfName(collationName);
-    } catch (IllegalArgumentException e) {
-      handler.handle(Future.failedFuture(e));
-      return this;
-    }
-    ChangeUserCommand cmd = new ChangeUserCommand(options.getUser(), options.getPassword(), options.getDatabase(), collation, options.getProperties());
+    ChangeUserCommand cmd = new ChangeUserCommand(options.getUser(), options.getPassword(), options.getDatabase(), collation, serverRsaPublicKey, options.getProperties());
     cmd.handler = handler;
     schedule(cmd);
     return this;

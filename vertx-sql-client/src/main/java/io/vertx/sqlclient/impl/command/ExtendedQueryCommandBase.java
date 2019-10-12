@@ -32,13 +32,11 @@ public abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
   protected final int fetch;
   protected final String cursorId;
   protected final boolean suspended;
-  private final boolean singleton;
 
   ExtendedQueryCommandBase(PreparedStatement ps,
                            int fetch,
                            String cursorId,
                            boolean suspended,
-                           boolean singleton,
                            Collector<Row, ?, R> collector,
                            QueryResultHandler<R> resultHandler) {
     super(collector, resultHandler);
@@ -46,7 +44,6 @@ public abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
     this.fetch = fetch;
     this.cursorId = cursorId;
     this.suspended = suspended;
-    this.singleton = singleton;
   }
 
   public PreparedStatement preparedStatement() {
@@ -63,10 +60,6 @@ public abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
 
   public boolean isSuspended() {
     return suspended;
-  }
-
-  public boolean isSingleton() {
-    return singleton;
   }
 
   @Override

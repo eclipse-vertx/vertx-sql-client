@@ -10,9 +10,11 @@ Here is how to run simple queries:
 {@link examples.SqlClientExamples#queries01(io.vertx.sqlclient.SqlClient)}
 ----
 
+=== Prepared queries
+
 You can do the same with prepared queries.
 
-The SQL string can refer to parameters by position, using `$1`, `$2`, etc…​
+The SQL string can refer to parameters by position, using the database syntax {PREPARED_PARAMS}
 
 [source,$lang]
 ----
@@ -56,13 +58,6 @@ You can access a wide variety of of types
 {@link examples.SqlClientExamples#queries07(io.vertx.sqlclient.Row)}
 ----
 
-You can execute prepared batch
-
-[source,$lang]
-----
-{@link examples.SqlClientExamples#queries08(io.vertx.sqlclient.SqlClient)}
-----
-
 You can cache prepared queries:
 
 [source,$lang]
@@ -70,3 +65,11 @@ You can cache prepared queries:
 {@link examples.SqlClientExamples#queries09(io.vertx.core.Vertx, SqlConnectOptions, PoolOptions)}
 ----
 
+=== Batches
+
+You can execute prepared batch
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#queries08(io.vertx.sqlclient.SqlClient)}
+----

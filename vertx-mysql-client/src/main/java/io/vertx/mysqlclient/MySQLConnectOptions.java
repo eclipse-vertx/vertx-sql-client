@@ -1,26 +1,15 @@
 package io.vertx.mysqlclient;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.ClientOptionsBase;
-import io.vertx.core.net.JdkSSLEngineOptions;
-import io.vertx.core.net.JksOptions;
-import io.vertx.core.net.KeyCertOptions;
-import io.vertx.core.net.OpenSSLEngineOptions;
-import io.vertx.core.net.PemKeyCertOptions;
-import io.vertx.core.net.PemTrustOptions;
-import io.vertx.core.net.PfxOptions;
-import io.vertx.core.net.ProxyOptions;
-import io.vertx.core.net.SSLEngineOptions;
-import io.vertx.core.net.TrustOptions;
+import io.vertx.core.net.*;
+import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.impl.MySQLConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -48,25 +37,30 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_SCHEMA = "";
   public static final String DEFAULT_CHARSET = "utf8mb4";
   public static final Map<String, String> DEFAULT_CONNECTION_ATTRIBUTES;
+  public static final SslMode DEFAULT_SSL_MODE = SslMode.DISABLED;
 
   static {
     Map<String, String> defaultAttributes = new HashMap<>();
     defaultAttributes.put("_client_name", "vertx-mysql-client");
-    defaultAttributes.put("_client_version", "3.8.0");
     DEFAULT_CONNECTION_ATTRIBUTES = Collections.unmodifiableMap(defaultAttributes);
   }
 
   private String collation;
   private String charset;
+  private SslMode sslMode;
+  private String serverRsaPublicKeyPath;
+  private Buffer serverRsaPublicKeyValue;
 
   public MySQLConnectOptions() {
     super();
     this.charset = DEFAULT_CHARSET;
+    this.sslMode = DEFAULT_SSL_MODE;
   }
 
   public MySQLConnectOptions(JsonObject json) {
     super(json);
     this.charset = DEFAULT_CHARSET;
+    this.sslMode = DEFAULT_SSL_MODE;
     MySQLConnectOptionsConverter.fromJson(json, this);
   }
 
@@ -74,6 +68,9 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     super(other);
     this.collation = other.collation;
     this.charset = other.charset;
+    this.sslMode = other.sslMode;
+    this.serverRsaPublicKeyPath = other.serverRsaPublicKeyPath;
+    this.serverRsaPublicKeyValue = other.serverRsaPublicKeyValue != null ? other.serverRsaPublicKeyValue.copy() : null;
   }
 
   /**
@@ -92,6 +89,9 @@ public class MySQLConnectOptions extends SqlConnectOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public MySQLConnectOptions setCollation(String collation) {
+    if (collation != null && !MySQLCollation.SUPPORTED_COLLATION_NAMES.contains(collation)) {
+      throw new IllegalArgumentException("Unsupported collation: " + collation);
+    }
     this.collation = collation;
     return this;
   }
@@ -112,8 +112,81 @@ public class MySQLConnectOptions extends SqlConnectOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public MySQLConnectOptions setCharset(String charset) {
+    if (charset != null && !MySQLCollation.SUPPORTED_CHARSET_NAMES.contains(charset)) {
+      throw new IllegalArgumentException("Unsupported charset: " + charset);
+    }
     this.charset = charset;
     return this;
+  }
+
+  /**
+   * Get the value of the configured SSL mode.
+   *
+   * @return the sslmode
+   */
+  public SslMode getSslMode() {
+    return sslMode;
+  }
+
+  /**
+   * Set the {@link SslMode} for the client, this option can be used to specify the desired security state of the connection to the server.
+   *
+   * @param sslMode the ssl-mode to specify
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MySQLConnectOptions setSslMode(SslMode sslMode) {
+    this.sslMode = sslMode;
+    return this;
+  }
+
+  @Override
+  public MySQLConnectOptions setSsl(boolean ssl) {
+    if (ssl) {
+      setSslMode(SslMode.VERIFY_CA);
+    } else {
+      setSslMode(SslMode.DISABLED);
+    }
+    return this;
+  }
+
+  /**
+   * Set the path of server RSA public key which is mostly used for encrypting password under insecure connections when performing authentication.
+   *
+   * @param serverRsaPublicKeyPath the path of the server RSA public key
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MySQLConnectOptions setServerRsaPublicKeyPath(String serverRsaPublicKeyPath) {
+    this.serverRsaPublicKeyPath = serverRsaPublicKeyPath;
+    return this;
+  }
+
+  /**
+   * Get the path of the server RSA public key.
+   *
+   * @return a reference to this, so the API can be used fluently
+   */
+  public String getServerRsaPublicKeyPath() {
+    return serverRsaPublicKeyPath;
+  }
+
+  /**
+   * Set the value of server RSA public key which is mostly used for encrypting password under insecure connections when performing authentication.
+   *
+   * @param serverRsaPublicKeyValue the path of the server RSA public key
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MySQLConnectOptions setServerRsaPublicKeyValue(Buffer serverRsaPublicKeyValue) {
+    this.serverRsaPublicKeyValue = serverRsaPublicKeyValue;
+    return this;
+  }
+
+  /**
+   * Get the value of the server RSA public key.
+   *
+   * @return a reference to this, so the API can be used fluently
+   */
+  public Buffer getServerRsaPublicKeyValue() {
+    return serverRsaPublicKeyValue;
   }
 
   @Override
@@ -161,6 +234,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     return (MySQLConnectOptions) super.setProperties(properties);
   }
 
+  @GenIgnore
   @Override
   public MySQLConnectOptions addProperty(String key, String value) {
     return (MySQLConnectOptions) super.addProperty(key, value);
@@ -375,6 +449,8 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   public MySQLConnectOptions setSslHandshakeTimeoutUnit(TimeUnit sslHandshakeTimeoutUnit) {
     return (MySQLConnectOptions) super.setSslHandshakeTimeoutUnit(sslHandshakeTimeoutUnit);
   }
+
+
 
   /**
    * Initialize with the default options.

@@ -35,7 +35,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
     super.encode(encoder);
 
     if (statement.isCursorOpen) {
-      decoder = new RowResultDecoder<>(cmd.collector(), false, statement.rowDesc);
+      decoder = new RowResultDecoder<>(cmd.collector(), statement.rowDesc);
       sendStatementFetchCommand(statement.statementId, cmd.fetch());
     } else {
       if (cmd.fetch() > 0) {
@@ -49,7 +49,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
   }
 
   @Override
-  void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
+  void decodePayload(ByteBuf payload, int payloadLength) {
     if (statement.isCursorOpen) {
       int first = payload.getUnsignedByte(payload.readerIndex());
       if (first == ERROR_PACKET_HEADER) {
@@ -76,12 +76,13 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
           case COLUMN_DEFINITIONS_DECODING_COMPLETED:
             // accept an EOF_Packet when DEPRECATE_EOF is not enabled
             skipEofPacketIfNeeded(payload);
+            // do not need a break clause here
           case HANDLING_ROW_DATA_OR_END_PACKET:
             handleResultsetColumnDefinitionsDecodingCompleted();
             // need to reset packet number so that we can send a fetch request
             this.sequenceId = 0;
             // send fetch after cursor opened
-            decoder = new RowResultDecoder<>(cmd.collector(), false, statement.rowDesc);
+            decoder = new RowResultDecoder<>(cmd.collector(), statement.rowDesc);
 
             statement.isCursorOpen = true;
 
@@ -91,7 +92,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
             throw new IllegalStateException("Unexpected state for decoding COM_STMT_EXECUTE response with cursor opening");
         }
       } else {
-        super.decodePayload(payload, payloadLength, sequenceId);
+        super.decodePayload(payload, payloadLength);
       }
     }
   }

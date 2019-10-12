@@ -16,6 +16,7 @@
  */
 package io.vertx.sqlclient.impl;
 
+import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.CommandBase;
@@ -199,9 +200,9 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
     return this;
   }
 
-  private CommandBase doQuery(String sql, Handler<AsyncResult<RowSet>> handler) {
-    SqlResultBuilder<RowSet, RowSetImpl, RowSet> b = new SqlResultBuilder<>(RowSetImpl.FACTORY, handler);
-    SimpleQueryCommand<RowSet> cmd = new SimpleQueryCommand<>(sql, false, RowSetImpl.COLLECTOR, b);
+  private CommandBase doQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler) {
+    SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> b = new SqlResultBuilder<>(RowSetImpl.FACTORY, handler);
+    SimpleQueryCommand<RowSet<Row>> cmd = new SimpleQueryCommand<>(sql, false, RowSetImpl.COLLECTOR, b);
     cmd.handler = b;
     return cmd;
   }
