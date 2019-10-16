@@ -86,6 +86,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     } else {
       encoder.clientCapabilitiesFlag |= CLIENT_DEPRECATE_EOF;
     }
+    setAdditionalClientCapabilitiesFlags();
 
     long connectionId = payload.readUnsignedIntLE();
 
@@ -159,6 +160,12 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
       });
     } else {
       doSendHandshakeResponseMessage(authPluginName, authPluginData, serverCapabilitiesFlags);
+    }
+  }
+
+  private void setAdditionalClientCapabilitiesFlags() {
+    if (!cmd.useAffectedRows()) {
+      encoder.clientCapabilitiesFlag |= CLIENT_FOUND_ROWS;
     }
   }
 
