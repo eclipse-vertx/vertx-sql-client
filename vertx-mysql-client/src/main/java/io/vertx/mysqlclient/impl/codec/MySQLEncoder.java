@@ -18,7 +18,7 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
   private final ArrayDeque<CommandCodec<?, ?>> inflight;
   ChannelHandlerContext chctx;
 
-  int clientCapabilitiesFlag = 0x00000000;
+  int clientCapabilitiesFlag;
   Charset charset;
   MySQLSocketConnection socketConnection;
 
@@ -26,7 +26,6 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
     this.inflight = inflight;
     this.socketConnection = mySQLSocketConnection;
     this.charset = StandardCharsets.UTF_8;
-    initSupportedCapabilitiesFlags();
   }
 
   @Override
@@ -92,16 +91,4 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
     }
   }
 
-  private void initSupportedCapabilitiesFlags() {
-    clientCapabilitiesFlag |= CLIENT_PLUGIN_AUTH;
-    clientCapabilitiesFlag |= CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA;
-    clientCapabilitiesFlag |= CLIENT_SECURE_CONNECTION;
-    clientCapabilitiesFlag |= CLIENT_PROTOCOL_41;
-    clientCapabilitiesFlag |= CLIENT_TRANSACTIONS;
-    clientCapabilitiesFlag |= CLIENT_MULTI_STATEMENTS;
-    clientCapabilitiesFlag |= CLIENT_MULTI_RESULTS;
-    clientCapabilitiesFlag |= CLIENT_PS_MULTI_RESULTS;
-    clientCapabilitiesFlag |= CLIENT_SESSION_TRACK;
-    clientCapabilitiesFlag |= CLIENT_LOCAL_FILES;
-  }
 }
