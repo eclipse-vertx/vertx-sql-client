@@ -188,15 +188,81 @@ public class SqlClientExamples {
   }
 
   public void transaction01(Pool pool) {
-    throw new UnsupportedOperationException();
+    pool.getConnection(res -> {
+      if (res.succeeded()) {
+
+        // Transaction must use a connection
+        SqlConnection conn = res.result();
+
+        // Begin the transaction
+        Transaction tx = conn.begin();
+
+        // Various statements
+        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar1 -> {
+          if (ar1.succeeded()) {
+            conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')", ar2 -> {
+              if (ar2.succeeded()) {
+                // Commit the transaction
+                tx.commit(ar3 -> {
+                  if (ar3.succeeded()) {
+                    System.out.println("Transaction succeeded");
+                  } else {
+                    System.out.println("Transaction failed " + ar3.cause().getMessage());
+                  }
+                  // Return the connection to the pool
+                  conn.close();
+                });
+              } else {
+                // Return the connection to the pool
+                conn.close();
+              }
+            });
+          } else {
+            // Return the connection to the pool
+            conn.close();
+          }
+        });
+      }
+    });
   }
 
   public void transaction02(Transaction tx) {
-    throw new UnsupportedOperationException();
+    tx.abortHandler(v -> {
+      System.out.println("Transaction failed => rollbacked");
+    });
   }
 
   public void transaction03(Pool pool) {
-    throw new UnsupportedOperationException();
+
+    // Acquire a transaction and begin the transaction
+    pool.begin(res -> {
+      if (res.succeeded()) {
+
+        // Get the transaction
+        Transaction tx = res.result();
+
+        // Various statements
+        tx.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar1 -> {
+          if (ar1.succeeded()) {
+            tx.query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')", ar2 -> {
+              if (ar2.succeeded()) {
+                // Commit the transaction
+                // the connection will automatically return to the pool
+                tx.commit(ar3 -> {
+                  if (ar3.succeeded()) {
+                    System.out.println("Transaction succeeded");
+                  } else {
+                    System.out.println("Transaction failed " + ar3.cause().getMessage());
+                  }
+                });
+              }
+            });
+          } else {
+            // No need to close connection as transaction will abort and be returned to the pool
+          }
+        });
+      }
+    });
   }
 
   public void usingCursors01(SqlConnection connection) {

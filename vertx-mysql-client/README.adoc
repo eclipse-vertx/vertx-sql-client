@@ -10,7 +10,6 @@ Documentation:
 
 == TODO
 
-* [ ] Transaction management
 * [ ] Full data type support
 * [ ] Compression
 * [ ] Replication Protocol(Binlog)
