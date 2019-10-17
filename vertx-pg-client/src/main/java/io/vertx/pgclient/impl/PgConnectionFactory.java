@@ -22,7 +22,7 @@ import io.vertx.pgclient.SslMode;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.core.*;
-import io.vertx.core.impl.NetSocketInternal;
+import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.net.*;
 
 import java.util.HashMap;
