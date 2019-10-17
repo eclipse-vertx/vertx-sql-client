@@ -155,6 +155,9 @@ public class MySQLConnectionUriParser {
           case "schema":
             configuration.put("database", value);
             break;
+          case "useaffectedrows":
+            configuration.put("useAffectedRows", Boolean.parseBoolean(value));
+            break;
           //TODO Additional Connection Parameters
           default:
             configuration.put(key, value);

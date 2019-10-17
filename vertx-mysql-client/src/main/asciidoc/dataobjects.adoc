@@ -110,6 +110,12 @@ Set the link for the client, this option can be used to specify the desired secu
 |[[trafficClass]]`@trafficClass`|`Number (int)`|-
 |[[trustAll]]`@trustAll`|`Boolean`|-
 |[[trustStoreOptions]]`@trustStoreOptions`|`link:dataobjects.html#JksOptions[JksOptions]`|-
+|[[useAffectedRows]]`@useAffectedRows`|`Boolean`|+++
+Sets how affected rows are calculated on update/delete/insert, if set to <code>true</code> an update that effectively
+ does not change any data returns zero affected rows.
+
+ See <a href="https://dev.mysql.com/doc/refman/8.0/en/mysql-affected-rows.html">mysql-affected-rows</a> for details.
++++
 |[[useAlpn]]`@useAlpn`|`Boolean`|-
 |[[usePooledBuffers]]`@usePooledBuffers`|`Boolean`|-
 |[[user]]`@user`|`String`|-

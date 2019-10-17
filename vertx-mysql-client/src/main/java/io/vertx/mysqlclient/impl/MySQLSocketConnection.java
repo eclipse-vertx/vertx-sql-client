@@ -46,8 +46,16 @@ public class MySQLSocketConnection extends SocketConnectionBase {
     super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, 1, context);
   }
 
-  void sendStartupMessage(String username, String password, String database, String collation, Buffer serverRsaPublicKey, Map<String, String> properties, SslMode sslMode, Handler<? super CommandResponse<Connection>> completionHandler) {
-    InitialHandshakeCommand cmd = new InitialHandshakeCommand(this, username, password, database, collation, serverRsaPublicKey, properties, sslMode);
+  void sendStartupMessage(String username,
+                          String password,
+                          String database,
+                          String collation,
+                          boolean useAffectedRows,
+                          Buffer serverRsaPublicKey,
+                          Map<String, String> properties,
+                          SslMode sslMode,
+                          Handler<? super CommandResponse<Connection>> completionHandler) {
+    InitialHandshakeCommand cmd = new InitialHandshakeCommand(this, username, password, database, collation, useAffectedRows, serverRsaPublicKey, properties, sslMode);
     cmd.handler = completionHandler;
     schedule(cmd);
   }

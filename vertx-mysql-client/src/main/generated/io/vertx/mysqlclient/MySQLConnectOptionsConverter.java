@@ -39,6 +39,11 @@ public class MySQLConnectOptionsConverter {
             obj.setSslMode(io.vertx.mysqlclient.SslMode.valueOf((String)member.getValue()));
           }
           break;
+        case "useAffectedRows":
+          if (member.getValue() instanceof Boolean) {
+            obj.setUseAffectedRows((Boolean)member.getValue());
+          }
+          break;
       }
     }
   }
@@ -63,5 +68,6 @@ public class MySQLConnectOptionsConverter {
     if (obj.getSslMode() != null) {
       json.put("sslMode", obj.getSslMode().name());
     }
+    json.put("useAffectedRows", obj.isUseAffectedRows());
   }
 }

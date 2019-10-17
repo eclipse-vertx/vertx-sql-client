@@ -25,6 +25,7 @@ public class MySQLConnectionFactory {
   private final String database;
   private final Map<String, String> connectionAttributes;
   private final String collation;
+  private final boolean useAffectedRows;
   private final SslMode sslMode;
   private final Buffer serverRsaPublicKey;
   private final boolean cachePreparedStatements;
@@ -57,6 +58,7 @@ public class MySQLConnectionFactory {
       collation = MySQLCollation.getDefaultCollationFromCharsetName(charset);
     }
     this.collation = collation;
+    this.useAffectedRows = options.isUseAffectedRows();
     this.sslMode = options.getSslMode();
 
     // server RSA public key
@@ -112,7 +114,7 @@ public class MySQLConnectionFactory {
         NetSocketInternal socket = (NetSocketInternal) ar1.result();
         MySQLSocketConnection conn = new MySQLSocketConnection(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, context);
         conn.init();
-        conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, connectionAttributes, sslMode, handler);
+        conn.sendStartupMessage(username, password, database, collation, useAffectedRows, serverRsaPublicKey, connectionAttributes, sslMode, handler);
       } else {
         handler.handle(Future.failedFuture(ar1.cause()));
       }
