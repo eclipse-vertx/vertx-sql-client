@@ -10,21 +10,21 @@ import java.util.Map;
 public class InitialHandshakeCommand extends AuthenticationCommandBase<Connection> {
   private final SocketConnectionBase conn;
   private final SslMode sslMode;
-  private final boolean useAffectedRows;
+  private final int initialCapabilitiesFlags;
 
   public InitialHandshakeCommand(SocketConnectionBase conn,
                                  String username,
                                  String password,
                                  String database,
                                  String collation,
-                                 boolean useAffectedRows,
                                  Buffer serverRsaPublicKey,
                                  Map<String, String> connectionAttributes,
-                                 SslMode sslMode) {
+                                 SslMode sslMode,
+                                 int initialCapabilitiesFlags) {
     super(username, password, database, collation, serverRsaPublicKey, connectionAttributes);
     this.conn = conn;
     this.sslMode = sslMode;
-    this.useAffectedRows = useAffectedRows;
+    this.initialCapabilitiesFlags = initialCapabilitiesFlags;
   }
 
   public SocketConnectionBase connection() {
@@ -35,7 +35,7 @@ public class InitialHandshakeCommand extends AuthenticationCommandBase<Connectio
     return sslMode;
   }
 
-  public boolean useAffectedRows() {
-    return useAffectedRows;
+  public int initialCapabilitiesFlags() {
+    return initialCapabilitiesFlags;
   }
 }
