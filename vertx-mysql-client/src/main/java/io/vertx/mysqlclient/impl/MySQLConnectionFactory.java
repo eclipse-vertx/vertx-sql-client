@@ -58,7 +58,7 @@ public class MySQLConnectionFactory {
       collation = MySQLCollation.getDefaultCollationFromCharsetName(charset);
     }
     this.collation = collation;
-    this.useAffectedRows = options.getUseAffectedRows();
+    this.useAffectedRows = options.isUseAffectedRows();
     this.sslMode = options.getSslMode();
 
     // server RSA public key

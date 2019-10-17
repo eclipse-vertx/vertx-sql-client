@@ -69,6 +69,6 @@ public class MySQLConnectOptionsConverter {
     if (obj.getSslMode() != null) {
       json.put("sslMode", obj.getSslMode().name());
     }
-    json.put("useAffectedRows", obj.getUseAffectedRows());
+    json.put("useAffectedRows", obj.isUseAffectedRows());
   }
 }

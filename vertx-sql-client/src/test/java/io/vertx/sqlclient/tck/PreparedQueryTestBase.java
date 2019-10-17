@@ -139,18 +139,6 @@ public abstract class PreparedQueryTestBase {
   }
 
   @Test
-  public void testPreparedUpdateWithoutChange(TestContext ctx) {
-    connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("INSERT INTO mutable (id, val) VALUES (2, 'Scream If You Wanna Go Faster')", ctx.asyncAssertSuccess(r1 -> {
-        ctx.assertEquals(1, r1.rowCount());
-        conn.preparedQuery("UPDATE mutable SET val = 'Scream If You Wanna Go Faster' WHERE id = 2", ctx.asyncAssertSuccess(res1 -> {
-          ctx.assertEquals(1, res1.rowCount());
-        }));
-      }));
-    }));
-  }
-
-  @Test
   public void testPreparedUpdateWithParams(TestContext ctx) {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("INSERT INTO mutable (id, val) VALUES (2, 'Whatever')", ctx.asyncAssertSuccess(r1 -> {

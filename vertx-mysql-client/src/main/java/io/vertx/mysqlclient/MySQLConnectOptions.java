@@ -129,7 +129,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
    *
    * @return how affected rows are calculated on update/delete/insert.
    */
-  public boolean getUseAffectedRows() {
+  public boolean isUseAffectedRows() {
     return useAffectedRows;
   }
 

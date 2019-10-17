@@ -48,6 +48,7 @@ public class MySQLClientCapabilitiesTest extends MySQLTestBase {
         conn
           .query("UPDATE vehicle SET type = 'bike' WHERE id = 1;", ctx.asyncAssertSuccess(res1 -> {
             ctx.assertEquals(expectedRowCount, res1.rowCount());
+            conn.close();
           }));
       }));
     }));
