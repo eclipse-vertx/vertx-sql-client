@@ -36,6 +36,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_PASSWORD = "";
   public static final String DEFAULT_SCHEMA = "";
   public static final String DEFAULT_CHARSET = "utf8mb4";
+  public static final boolean DEFAULT_USE_AFFECTED_ROWS = false;
   public static final Map<String, String> DEFAULT_CONNECTION_ATTRIBUTES;
   public static final SslMode DEFAULT_SSL_MODE = SslMode.DISABLED;
 
@@ -47,6 +48,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
 
   private String collation;
   private String charset;
+  private Boolean useAffectedRows;
   private SslMode sslMode;
   private String serverRsaPublicKeyPath;
   private Buffer serverRsaPublicKeyValue;
@@ -55,12 +57,14 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     super();
     this.charset = DEFAULT_CHARSET;
     this.sslMode = DEFAULT_SSL_MODE;
+    this.useAffectedRows = DEFAULT_USE_AFFECTED_ROWS;
   }
 
   public MySQLConnectOptions(JsonObject json) {
     super(json);
     this.charset = DEFAULT_CHARSET;
     this.sslMode = DEFAULT_SSL_MODE;
+    this.useAffectedRows = DEFAULT_USE_AFFECTED_ROWS;
     MySQLConnectOptionsConverter.fromJson(json, this);
   }
 
@@ -68,6 +72,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     super(other);
     this.collation = other.collation;
     this.charset = other.charset;
+    this.useAffectedRows = other.useAffectedRows;
     this.sslMode = other.sslMode;
     this.serverRsaPublicKeyPath = other.serverRsaPublicKeyPath;
     this.serverRsaPublicKeyValue = other.serverRsaPublicKeyValue != null ? other.serverRsaPublicKeyValue.copy() : null;
@@ -116,6 +121,29 @@ public class MySQLConnectOptions extends SqlConnectOptions {
       throw new IllegalArgumentException("Unsupported charset: " + charset);
     }
     this.charset = charset;
+    return this;
+  }
+
+  /**
+   * Get how affected rows are calculated on update/delete/insert.
+   *
+   * @return how affected rows are calculated on update/delete/insert.
+   */
+  public boolean isUseAffectedRows() {
+    return useAffectedRows;
+  }
+
+  /**
+   * Sets how affected rows are calculated on update/delete/insert, if set to <code>true</code> an update that effectively
+   * does not change any data returns zero affected rows.
+   *
+   * See <a href="https://dev.mysql.com/doc/refman/8.0/en/mysql-affected-rows.html">mysql-affected-rows</a> for details.
+   *
+   * @param useAffectedRows whether only affected rows are count
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MySQLConnectOptions setUseAffectedRows(boolean useAffectedRows) {
+    this.useAffectedRows = useAffectedRows;
     return this;
   }
 

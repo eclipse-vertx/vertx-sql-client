@@ -108,6 +108,30 @@ public class MySQLConnectOptionsProviderTest {
     assertEquals(expectedConfiguration, actualConfiguration);
   }
 
+  @Test
+  public void testValidUri9() {
+    connectionUri = "mysql://myhost?useAffectedRows=true";
+    actualConfiguration = MySQLConnectOptions.fromUri(connectionUri);
+
+    expectedConfiguration = new MySQLConnectOptions()
+      .setHost("myhost")
+      .setUseAffectedRows(true);
+
+    assertEquals(expectedConfiguration, actualConfiguration);
+  }
+
+  @Test
+  public void testValidUri10() {
+    connectionUri = "mysql://myhost?useAffectedRows=all_except_true_is_false";
+    actualConfiguration = MySQLConnectOptions.fromUri(connectionUri);
+
+    expectedConfiguration = new MySQLConnectOptions()
+      .setHost("myhost")
+      .setUseAffectedRows(false);
+
+    assertEquals(expectedConfiguration, actualConfiguration);
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void testInvalidUri1() {
     connectionUri = "mysql://username:password@loc//dbname";
