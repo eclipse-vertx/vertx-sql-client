@@ -1,0 +1,133 @@
+= Reactive MSSQL Client
+
+The Reactive MSSQL Client is a client for Microsoft SQL Server with a straightforward API focusing on
+scalability and low overhead.
+
+*Features*
+
+* Event driven
+* Lightweight
+* Built-in connection pooling
+* Direct memory to object without unnecessary copies
+* Java 8 Date and Time
+
+== Usage
+
+To use the Reactive MSSQL Client add the following dependency to the _dependencies_ section of your build descriptor:
+
+* Maven (in your `pom.xml`):
+
+[source,xml]
+----
+<dependency>
+  <groupId>${maven.groupId}</groupId>
+  <artifactId>${maven.artifactId}</artifactId>
+  <version>${maven.version}</version>
+</dependency>
+----
+* Gradle (in your `build.gradle` file):
+
+[source,groovy]
+----
+dependencies {
+  compile '${maven.groupId}:${maven.artifactId}:${maven.version}'
+}
+----
+
+== Getting started
+
+Here is the simplest way to connect, query and disconnect
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#gettingStarted()}
+----
+
+== Connecting to SQL Server
+
+Most of the time you will use a pool to connect to MSSQL:
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#connecting01}
+----
+
+The pooled client uses a connection pool and any operation will borrow a connection from the pool
+to execute the operation and release it to the pool.
+
+If you are running with Vert.x you can pass it your Vertx instance:
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#connecting02}
+----
+
+You need to release the pool when you don't need it anymore:
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#connecting03}
+----
+
+When you need to execute several operations on the same connection, you need to use a client
+{@link io.vertx.mssqlclient.MSSQLConnection connection}.
+
+You can easily get one from the pool:
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#connecting04}
+----
+
+Once you are done with the connection you must close it to release it to the pool, so it can be reused.
+
+== Configuration
+
+=== Data Object
+
+A simple way to configure the client is to specify a `MSSQLConnectOptions` data object.
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#configureFromDataObject(io.vertx.core.Vertx)}
+----
+
+include::queries.adoc[]
+
+== DATATYPE support
+
+Currently the client supports the following SQL Server types
+
+* TINYINT(`java.lang.Byte`)
+* SMALLINT(`java.lang.Short`)
+* INT(`java.lang.Integer`)
+* BIGINT(`java.lang.Long`)
+* BIT(`java.lang.Boolean`)
+* REAL(`java.lang.Float`)
+* DOUBLE(`java.lang.Double`)
+* CHAR(`java.lang.String`)
+* VARCHAR(`java.lang.String`)
+* DATE(`java.time.LocalDate`)
+* TIME(`java.time.LocalTime`)
+
+Tuple decoding uses the above types when storing values
+
+== Collector queries
+
+You can use Java collectors with the query API:
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#collector01Example(io.vertx.sqlclient.SqlClient)}
+----
+
+The collector processing must not keep a reference on the {@link io.vertx.sqlclient.Row} as
+there is a single row used for processing the entire set.
+
+The Java `Collectors` provides many interesting predefined collectors, for example you can
+create easily create a string directly from the row set:
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#collector02Example(io.vertx.sqlclient.SqlClient)}
+----
