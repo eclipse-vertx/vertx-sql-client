@@ -63,6 +63,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
   }
 
   private void handleInitialHandshake(ByteBuf payload) {
+    encoder.clientCapabilitiesFlag = cmd.initialCapabilitiesFlags();
     short protocolVersion = payload.readUnsignedByte();
 
     String serverVersion = BufferUtils.readNullTerminatedString(payload, StandardCharsets.US_ASCII);
@@ -86,7 +87,6 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     } else {
       encoder.clientCapabilitiesFlag |= CLIENT_DEPRECATE_EOF;
     }
-    setAdditionalClientCapabilitiesFlags();
 
     long connectionId = payload.readUnsignedIntLE();
 
@@ -163,22 +163,10 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     }
   }
 
-  private void setAdditionalClientCapabilitiesFlags() {
-    if (!cmd.useAffectedRows()) {
-      encoder.clientCapabilitiesFlag |= CLIENT_FOUND_ROWS;
-    }
-  }
-
   private void doSendHandshakeResponseMessage(String authMethodName, byte[] nonce, int serverCapabilitiesFlags) {
-    if (!cmd.database().isEmpty()) {
-      encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_WITH_DB;
-    }
     checkCollation();
     encoder.charset = Charset.forName(collation.mappedJavaCharsetName());
     Map<String, String> clientConnectionAttributes = cmd.connectionAttributes();
-    if (clientConnectionAttributes != null && !clientConnectionAttributes.isEmpty()) {
-      encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_ATTRS;
-    }
     encoder.clientCapabilitiesFlag &= serverCapabilitiesFlags;
     sendHandshakeResponseMessage(cmd.username(), cmd.password(), cmd.database(), nonce, authMethodName, clientConnectionAttributes);
   }

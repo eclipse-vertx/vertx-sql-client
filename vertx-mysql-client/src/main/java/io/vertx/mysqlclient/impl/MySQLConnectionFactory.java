@@ -14,6 +14,8 @@ import io.vertx.sqlclient.impl.Connection;
 import java.util.Collections;
 import java.util.Map;
 
+import static io.vertx.mysqlclient.impl.codec.CapabilitiesFlag.*;
+
 public class MySQLConnectionFactory {
   private final NetClient netClient;
   private final Context context;
@@ -31,6 +33,7 @@ public class MySQLConnectionFactory {
   private final boolean cachePreparedStatements;
   private final int preparedStatementCacheSize;
   private final int preparedStatementCacheSqlLimit;
+  private final int initialCapabilitiesFlags;
   private final Closeable hook;
 
   public MySQLConnectionFactory(Context context, boolean registerCloseHook, MySQLConnectOptions options) {
@@ -48,7 +51,7 @@ public class MySQLConnectionFactory {
     this.username = options.getUser();
     this.password = options.getPassword();
     this.database = options.getDatabase();
-    this.connectionAttributes = Collections.unmodifiableMap(options.getProperties());
+    this.connectionAttributes = options.getProperties() == null ? null : Collections.unmodifiableMap(options.getProperties());
     String collation;
     if (options.getCollation() != null) {
       // override the collation if configured
@@ -71,6 +74,7 @@ public class MySQLConnectionFactory {
       }
     }
     this.serverRsaPublicKey = serverRsaPublicKey;
+    this.initialCapabilitiesFlags = initCapabilitiesFlags();
 
     // check the SSLMode here
     switch (sslMode) {
@@ -114,11 +118,26 @@ public class MySQLConnectionFactory {
         NetSocketInternal socket = (NetSocketInternal) ar1.result();
         MySQLSocketConnection conn = new MySQLSocketConnection(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, context);
         conn.init();
-        conn.sendStartupMessage(username, password, database, collation, useAffectedRows, serverRsaPublicKey, connectionAttributes, sslMode, handler);
+        conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, connectionAttributes, sslMode, initialCapabilitiesFlags, handler);
       } else {
         handler.handle(Future.failedFuture(ar1.cause()));
       }
     });
     netClient.connect(port, host, promise);
+  }
+
+  private int initCapabilitiesFlags() {
+    int capabilitiesFlags = CLIENT_SUPPORTED_CAPABILITIES_FLAGS;
+    if (database != null && !database.isEmpty()) {
+      capabilitiesFlags |= CLIENT_CONNECT_WITH_DB;
+    }
+    if (connectionAttributes != null && !connectionAttributes.isEmpty()) {
+      capabilitiesFlags |= CLIENT_CONNECT_ATTRS;
+    }
+    if (!useAffectedRows) {
+      capabilitiesFlags |= CLIENT_FOUND_ROWS;
+    }
+
+    return capabilitiesFlags;
   }
 }

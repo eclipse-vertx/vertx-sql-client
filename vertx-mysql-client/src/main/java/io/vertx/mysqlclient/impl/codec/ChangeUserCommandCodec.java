@@ -92,10 +92,11 @@ class ChangeUserCommandCodec extends AuthenticationCommandBaseCodec<Void, Change
     if ((encoder.clientCapabilitiesFlag & CLIENT_PLUGIN_AUTH) != 0) {
       BufferUtils.writeNullTerminatedString(packet, "mysql_native_password", StandardCharsets.UTF_8);
     }
-    Map<String, String> clientConnectionAttributes = cmd.connectionAttributes();
-    if (clientConnectionAttributes != null && !clientConnectionAttributes.isEmpty()) {
-      encoder.clientCapabilitiesFlag |= CLIENT_CONNECT_ATTRS;
-      encodeConnectionAttributes(clientConnectionAttributes, packet);
+    if ((encoder.clientCapabilitiesFlag & CLIENT_CONNECT_ATTRS) != 0) {
+      Map<String, String> clientConnectionAttributes = cmd.connectionAttributes();
+      if (clientConnectionAttributes != null) {
+        encodeConnectionAttributes(clientConnectionAttributes, packet);
+      }
     }
 
     // set payload length
