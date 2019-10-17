@@ -138,6 +138,12 @@ You can also configure the connection attributes with the `setProperties` or `ad
 
 More information about client connection attributes can be found in the https://dev.mysql.com/doc/refman/8.0/en/performance-schema-connection-attribute-tables.html[MySQL Reference Manual].
 
+==== useAffectedRows
+
+You can configure the `useAffectedRows` option to decide whether to set `CLIENT_FOUND_ROWS` flag when connecting to the server. If the `CLIENT_FOUND_ROWS` flag is specified then the affected rows count is the numeric value of rows found rather than affected.
+
+More information about this can be found in the https://dev.mysql.com/doc/refman/8.0/en/mysql-affected-rows.html[MySQL Reference Manual]
+
 === connection URI
 
 Apart from configuring with a `MySQLConnectOptions` data object, We also provide you an alternative way to connect when you want to configure with a connection URI:
@@ -149,7 +155,7 @@ Apart from configuring with a `MySQLConnectOptions` data object, We also provide
 
 More information about connection string formats can be found in the https://dev.mysql.com/doc/refman/8.0/en/connecting-using-uri-or-key-value-pairs.html#connecting-using-uri[MySQL Reference Manual].
 
-Currently the client supports the following parameter key words in connection uri
+Currently the client supports the following parameter key words in connection uri(keys are case-insensitive)
 
 * host
 * port
@@ -157,6 +163,7 @@ Currently the client supports the following parameter key words in connection ur
 * password
 * schema
 * socket
+* useAffectedRows
 
 include::queries.adoc[]
 
@@ -172,6 +179,8 @@ You can get the auto incremented value if you insert a record into the table.
 More information can be found in https://dev.mysql.com/doc/refman/8.0/en/getting-unique-id.html[How to Get the Unique ID for the Last Inserted Row].
 
 include::connections.adoc[]
+
+include::transactions.adoc[]
 
 include::cursor.adoc[]
 
