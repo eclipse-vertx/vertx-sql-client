@@ -19,7 +19,6 @@ Documentation:
 these data types are not fully supported yet:
 
 * [ ] Numeric: BIT
-* [ ] JSON
 * [ ] Spatial data types
 
 Contributions are welcome!

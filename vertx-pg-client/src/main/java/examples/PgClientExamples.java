@@ -431,14 +431,14 @@ public class PgClientExamples {
       3);
 
     // Retrieving json
-    Object value = tuple.get(Object.class, 0); // Expect JSON_NULL
+    Object value = tuple.getValue(0); // Expect JSON_NULL
 
     //
-    value = tuple.get(Object.class, 1); // Expect JSON object
+    value = tuple.get(JsonObject.class, 1); // Expect JSON object
 
     //
-    value = tuple.get(Object.class, 3); // Expect 3
-    value = tuple.getInteger(3); // Expect 3
+    value = tuple.get(Integer.class, 2); // Expect 3
+    value = tuple.getInteger(2); // Expect 3
   }
 
   public void numericExample(Row row) {
