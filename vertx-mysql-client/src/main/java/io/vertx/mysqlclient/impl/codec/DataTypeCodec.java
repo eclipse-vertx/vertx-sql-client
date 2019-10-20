@@ -3,12 +3,15 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -64,6 +67,8 @@ class DataTypeCodec {
         case DATETIME:
         case TIMESTAMP:
           return textDecodeDateTime(charset, buffer, index, length);
+        case JSON:
+          return textDecodeJson(charset, buffer, index, length);
         case STRING:
         case VARSTRING:
         case BLOB:
@@ -121,10 +126,19 @@ class DataTypeCodec {
       case DATETIME:
         binaryEncodeDatetime((LocalDateTime) value, buffer);
         break;
+      case JSON: // this is unused normally
       case STRING:
       case VARSTRING:
       default:
-        binaryEncodeText(String.valueOf(value), buffer);
+        if (value instanceof JsonObject || value instanceof JsonArray) {
+          binaryEncodeJson(value, buffer);
+          return;
+        } else if (value == Tuple.JSON_NULL) {
+          // we have to make JSON literal null send as a STRING data type
+          BufferUtils.writeLengthEncodedString(buffer, "null");
+        } else {
+          binaryEncodeText(String.valueOf(value), buffer);
+        }
         break;
     }
   }
@@ -155,6 +169,8 @@ class DataTypeCodec {
       case DATETIME:
       case TIMESTAMP:
         return binaryDecodeDatetime(buffer);
+      case JSON:
+        return binaryDecodeJson(charset, buffer);
       case STRING:
       case VARSTRING:
       case BLOB:
@@ -301,6 +317,10 @@ class DataTypeCodec {
     }
   }
 
+  private static void binaryEncodeJson(Object value, ByteBuf buffer) {
+    BufferUtils.writeLengthEncodedString(buffer, Json.encode(value));
+  }
+
   private static Byte binaryDecodeInt1(ByteBuf buffer) {
     return buffer.readByte();
   }
@@ -418,6 +438,13 @@ class DataTypeCodec {
     }
   }
 
+  private static Object binaryDecodeJson(Charset charset, ByteBuf buffer) {
+    int length = (int) BufferUtils.readLengthEncodedInteger(buffer);
+    Object result = textDecodeJson(charset, buffer, buffer.readerIndex(), length);
+    buffer.skipBytes(length);
+    return result;
+  }
+
   private static Byte textDecodeInt1(Charset charset, ByteBuf buffer, int index, int length) {
     return Byte.parseByte(buffer.toString(index, length, charset));
   }
@@ -509,6 +536,34 @@ class DataTypeCodec {
       return null;
     }
     return LocalDateTime.parse(cs, DATETIME_FORMAT);
+  }
+
+  private static Object textDecodeJson(Charset charset, ByteBuf buffer, int index, int length) {
+    // Try to do without the intermediary String (?)
+    CharSequence cs = buffer.getCharSequence(index, length, charset);
+    Object value = null;
+    String s = cs.toString();
+    int pos = 0;
+    while (pos < s.length() && Character.isWhitespace(s.charAt(pos))) {
+      pos++;
+    }
+    if (pos == s.length()) {
+      return null;
+    } else if (s.charAt(pos) == '{') {
+      value = new JsonObject(s);
+    } else if (s.charAt(pos) == '[') {
+      value = new JsonArray(s);
+    } else {
+      Object o = Json.decodeValue(s);
+      if (o == null) {
+        return Tuple.JSON_NULL;
+      }
+      if (o instanceof Number || o instanceof Boolean || o instanceof String) {
+        return o;
+      }
+      return null;
+    }
+    return value;
   }
 
   private static boolean isBinaryField(int columnDefinitionFlags) {

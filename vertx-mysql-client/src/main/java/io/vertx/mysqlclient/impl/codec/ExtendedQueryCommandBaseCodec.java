@@ -2,12 +2,10 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommandBase;
 
 import java.nio.charset.StandardCharsets;
-import java.nio.charset.Charset;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -129,7 +127,13 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
     } else if (value instanceof LocalDateTime) {
       // ProtocolBinary::MYSQL_TYPE_DATETIME, ProtocolBinary::MYSQL_TYPE_TIMESTAMP
       return DataType.DATETIME;
-    } else {
+    }
+//    else if (value instanceof JsonObject || value instanceof JsonArray) {
+////     note we don't need this in MySQL
+//      // ProtocolBinary::MYSQL_TYPE_JSON
+//      return DataType.JSON;
+//    }
+    else {
       /*
         ProtocolBinary::MYSQL_TYPE_STRING, ProtocolBinary::MYSQL_TYPE_VARCHAR, ProtocolBinary::MYSQL_TYPE_VAR_STRING,
         ProtocolBinary::MYSQL_TYPE_ENUM, ProtocolBinary::MYSQL_TYPE_SET, ProtocolBinary::MYSQL_TYPE_GEOMETRY,

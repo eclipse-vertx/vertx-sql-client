@@ -1,5 +1,7 @@
 package io.vertx.mysqlclient.impl;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.ArrayTuple;
@@ -54,6 +56,10 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
       return type.cast(getLocalDateTime(pos));
     } else if (type == Duration.class) {
       return type.cast(getDuration(pos));
+    } else if (type == JsonObject.class) {
+      return type.cast(getJsonObject(pos));
+    } else if (type == JsonArray.class) {
+      return type.cast(getJsonArray(pos));
     } else {
       throw new UnsupportedOperationException("Unsupported type " + type.getName());
     }
@@ -255,8 +261,8 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
     Object val = get(pos);
     if (val instanceof Boolean) {
       return (Boolean) val;
-    } else if (val instanceof Byte) {
-      return (Byte) val != 0;
+    } else if (val instanceof Number) {
+      return ((Number) val).byteValue() != 0;
     }
     return null;
   }
@@ -285,6 +291,23 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
     Object val = get(pos);
     if (val instanceof Duration) {
       return (Duration) val;
+    }
+    return null;
+  }
+
+  private JsonObject getJsonObject(int pos) {
+    Object val = get(pos);
+    if (val instanceof JsonObject) {
+      return (JsonObject) val;
+    }
+    return null;
+  }
+
+
+  private JsonArray getJsonArray(int pos) {
+    Object val = get(pos);
+    if (val instanceof JsonArray) {
+      return (JsonArray) val;
     }
     return null;
   }
