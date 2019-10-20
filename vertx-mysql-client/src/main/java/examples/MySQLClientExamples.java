@@ -2,6 +2,7 @@ package examples;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
 import io.vertx.mysqlclient.*;
@@ -241,6 +242,25 @@ public class MySQLClientExamples {
         System.out.println("Failure: " + ar.cause().getMessage());
       }
     });
+  }
+
+  public void jsonExample() {
+
+    // Create a tuple
+    Tuple tuple = Tuple.of(
+      Tuple.JSON_NULL,
+      new JsonObject().put("foo", "bar"),
+      3);
+
+    // Retrieving json
+    Object value = tuple.getValue(0); // Expect JSON_NULL
+
+    //
+    value = tuple.get(JsonObject.class, 1); // Expect JSON object
+
+    //
+    value = tuple.get(Integer.class, 2); // Expect 3
+    value = tuple.getInteger(2); // Expect 3
   }
 
   public void numericExample(Row row) {
