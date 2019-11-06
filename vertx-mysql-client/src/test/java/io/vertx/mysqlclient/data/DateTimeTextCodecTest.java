@@ -12,6 +12,21 @@ import java.time.LocalDateTime;
 @RunWith(VertxUnitRunner.class)
 public class DateTimeTextCodecTest extends DateTimeCodecTest {
   @Test
+  public void testTextDecodeAll(TestContext ctx) {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT `test_year`, `test_timestamp`, `test_datetime` FROM datatype WHERE id = 1", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.size());
+        Row row = result.iterator().next();
+        ctx.assertEquals(3, row.size());
+        ctx.assertEquals((short) 2019, row.getValue(0));
+        ctx.assertEquals(LocalDateTime.of(2000, 1, 1, 10, 20, 30), row.getValue(1));
+        ctx.assertEquals(LocalDateTime.of(2000, 1, 1, 10, 20, 30, 123456000), row.getValue(2));
+        conn.close();
+      }));
+    }));
+  }
+
+  @Test
   public void testDecodeYear(TestContext ctx) {
     testTextDecodeGenericWithTable(ctx, "test_year", (short) 2019);
   }

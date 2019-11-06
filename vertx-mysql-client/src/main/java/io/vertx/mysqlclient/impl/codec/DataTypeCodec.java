@@ -503,7 +503,7 @@ class DataTypeCodec {
   }
 
   private static LocalDateTime textDecodeDateTime(Charset charset, ByteBuf buffer, int index, int length) {
-    CharSequence cs = buffer.toString(charset);
+    CharSequence cs = buffer.toString(index, length, charset);
     if (cs.equals("0000-00-00 00:00:00")) {
       // Invalid datetime will be converted to zero
       return null;
