@@ -5,7 +5,7 @@ import io.vertx.mssqlclient.impl.command.PreLoginCommand;
 import io.netty.channel.ChannelPipeline;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
-import io.vertx.core.impl.NetSocketInternal;
+import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;

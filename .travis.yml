@@ -43,6 +43,10 @@ jobs:
       name: "Postgres 11"
       jdk: openjdk8
       script: mvn -q clean verify -B -Dembedded.postgres.version=11.5 --projects vertx-sql-client,vertx-pg-client
+    - stage: test
+      name: "MSSQL 2017-CU12"
+      jdk: openjdk8
+      script: mvn -q clean verify -B --projects vertx-sql-client,vertx-mssql-client
     - stage: deploy
       name: "Deploy to Sonatype's snapshots repository"
       if: type != pull_request AND env(SONATYPE_NEXUS_USERNAME) IS present

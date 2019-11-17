@@ -128,11 +128,6 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
   }
 
   @Override
-  public MSSQLConnectOptions setUsePooledBuffers(boolean usePooledBuffers) {
-    return (MSSQLConnectOptions) super.setUsePooledBuffers(usePooledBuffers);
-  }
-
-  @Override
   public MSSQLConnectOptions setIdleTimeout(int idleTimeout) {
     return (MSSQLConnectOptions) super.setIdleTimeout(idleTimeout);
   }
