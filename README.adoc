@@ -10,6 +10,7 @@ Supported databases
 
 ** link:vertx-pg-client/README.adoc[Reactive PostgreSQL Client]
 ** link:vertx-mysql-client[Reactive MySQL Client]
+** link:vertx-mssql-client[Reactive MSSQL Client]
 
 This project is the natural evolution of the original Reactive PostgreSQL Client and will be part of Vert.x 3.8 stack release.
 
