@@ -22,7 +22,6 @@ import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.vertx.sqlclient.impl.Notification;
-import io.vertx.sqlclient.impl.TxStatus;
 import io.vertx.pgclient.impl.util.Util;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.ByteProcessor;
@@ -218,15 +217,14 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
 
   private void decodeReadyForQuery(ByteBuf in) {
     byte id = in.readByte();
-    TxStatus txStatus;
     if (id == I) {
-      txStatus = TxStatus.IDLE;
+      // IDLE
     } else if (id == T) {
-      txStatus = TxStatus.ACTIVE;
+      // ACTIVE
     } else {
-      txStatus = TxStatus.FAILED;
+      // FAILED
     }
-    inflight.peek().handleReadyForQuery(txStatus);
+    inflight.peek().handleReadyForQuery();
   }
 
   private void decodeError(ByteBuf in) {

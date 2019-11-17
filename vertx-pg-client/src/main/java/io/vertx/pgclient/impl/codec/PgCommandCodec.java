@@ -17,7 +17,6 @@
 package io.vertx.pgclient.impl.codec;
 
 import io.vertx.pgclient.PgException;
-import io.vertx.sqlclient.impl.TxStatus;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.core.Handler;
@@ -115,12 +114,12 @@ abstract class PgCommandCodec<R, C extends CommandBase<R>> {
    * <p>
    * FAILED : Failed transaction block (queries will be rejected until block is ended)
    */
-  void handleReadyForQuery(TxStatus txStatus) {
+  void handleReadyForQuery() {
     CommandResponse<R> resp;
     if (failure != null) {
-      resp = CommandResponse.failure(failure, txStatus);
+      resp = CommandResponse.failure(failure);
     } else {
-      resp = CommandResponse.success(result, txStatus);
+      resp = CommandResponse.success(result);
     }
     completionHandler.handle(resp);
   }

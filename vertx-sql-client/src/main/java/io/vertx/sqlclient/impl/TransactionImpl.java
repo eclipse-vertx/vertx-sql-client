@@ -126,7 +126,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
     cmd.handler = ar -> {
       synchronized (TransactionImpl.this) {
         status = ST_PENDING;
-        if (ar.txStatus() == TxStatus.FAILED) {
+        if (ar.toAsyncResult().failed()) {
           // We won't recover from this so rollback
           CommandBase<?> c;
           while ((c = pending.poll()) != null) {

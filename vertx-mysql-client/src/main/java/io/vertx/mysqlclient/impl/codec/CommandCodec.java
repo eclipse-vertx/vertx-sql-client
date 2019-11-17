@@ -20,7 +20,6 @@ import io.netty.buffer.ByteBuf;
 import io.vertx.core.Handler;
 import io.vertx.mysqlclient.MySQLException;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
-import io.vertx.sqlclient.impl.TxStatus;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
@@ -127,7 +126,7 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
       sqlState = BufferUtils.readFixedLengthString(payload, 5, StandardCharsets.UTF_8);
     }
     String errorMessage = readRestOfPacketString(payload, StandardCharsets.UTF_8);
-    completionHandler.handle(CommandResponse.failure(new MySQLException(errorMessage, errorCode, sqlState), TxStatus.FAILED));
+    completionHandler.handle(CommandResponse.failure(new MySQLException(errorMessage, errorCode, sqlState)));
   }
 
   OkPacket decodeOkPacketPayload(ByteBuf payload, Charset charset) {
