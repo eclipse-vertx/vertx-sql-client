@@ -153,7 +153,7 @@ public abstract class SocketConnectionBase implements Connection {
           psCache.put(psCmd.sql(), cached);
           Handler<? super CommandResponse<PreparedStatement>> a = psCmd.handler;
           ((CachedPreparedStatement) psCmd.cached).get(a);
-          psCmd.handler = (Handler<? super CommandResponse<PreparedStatement>>) psCmd.cached;
+          psCmd.handler = (Handler<CommandResponse<PreparedStatement>>) psCmd.cached;
         }
       }
     }

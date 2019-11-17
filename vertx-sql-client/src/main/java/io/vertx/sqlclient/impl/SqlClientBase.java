@@ -54,7 +54,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
     Collector<Row, ?, R1> collector,
     Handler<AsyncResult<R3>> handler) {
     SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, handler);
-    schedule(new SimpleQueryCommand<>(sql, singleton, collector, b), b);
+    schedule(new SimpleQueryCommand<>(sql, singleton, collector, b), (Handler)b);
     return (C) this;
   }
 
@@ -82,7 +82,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
           handler.handle(Future.failedFuture(msg));
         } else {
           SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, handler);
-          cr.scheduler.schedule(new ExtendedQueryCommand<>(ps, arguments, collector, b), b);
+          cr.scheduler.schedule(new ExtendedQueryCommand<>(ps, arguments, collector, b), (Handler) b);
         }
       } else {
         handler.handle(Future.failedFuture(cr.cause()));
@@ -132,7 +132,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
           ps,
           batch,
           collector,
-          b), b);
+          b), (Handler)b);
       } else {
         handler.handle(Future.failedFuture(cr.cause()));
       }

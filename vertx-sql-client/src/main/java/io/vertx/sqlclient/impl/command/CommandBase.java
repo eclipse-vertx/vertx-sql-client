@@ -25,7 +25,7 @@ import io.vertx.core.Handler;
 
 public abstract class CommandBase<R> {
 
-  public Handler<? super CommandResponse<R>> handler;
+  public Handler<CommandResponse<R>> handler;
 
   public final void fail(Throwable err) {
     handler.handle(CommandResponse.failure(err));

@@ -156,7 +156,7 @@ class PreparedQueryImpl implements PreparedQuery {
   public void close(Handler<AsyncResult<Void>> completionHandler) {
     if (closed.compareAndSet(false, true)) {
       CloseStatementCommand cmd = new CloseStatementCommand(ps);
-      cmd.handler = completionHandler;
+      cmd.handler = (Handler) completionHandler;
       conn.schedule(cmd);
     } else {
       completionHandler.handle(Future.failedFuture("Already closed"));
@@ -165,7 +165,7 @@ class PreparedQueryImpl implements PreparedQuery {
 
   void closeCursor(String cursorId, Handler<AsyncResult<Void>> handler) {
     CloseCursorCommand cmd = new CloseCursorCommand(cursorId, ps);
-    cmd.handler = handler;
+    cmd.handler = (Handler) handler;
     conn.schedule(cmd);
   }
 }

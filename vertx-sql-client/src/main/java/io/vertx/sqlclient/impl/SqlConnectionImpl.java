@@ -45,7 +45,7 @@ public abstract class SqlConnectionImpl<C extends SqlConnectionImpl> extends Sql
   }
 
   @Override
-  public <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
+  public <R> void schedule(CommandBase<R> cmd, Handler<CommandResponse<R>> handler) {
     cmd.handler = cr -> {
       // Tx might be gone ???
       cr.scheduler = this;

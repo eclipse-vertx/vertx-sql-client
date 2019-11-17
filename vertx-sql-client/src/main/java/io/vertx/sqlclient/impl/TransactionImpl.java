@@ -104,7 +104,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   }
 
   @Override
-  public <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
+  public <R> void schedule(CommandBase<R> cmd, Handler<CommandResponse<R>> handler) {
     cmd.handler = cr -> {
       cr.scheduler = this;
       handler.handle(cr);
@@ -203,7 +203,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   private CommandBase doQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler) {
     SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> b = new SqlResultBuilder<>(RowSetImpl.FACTORY, handler);
     SimpleQueryCommand<RowSet<Row>> cmd = new SimpleQueryCommand<>(sql, false, RowSetImpl.COLLECTOR, b);
-    cmd.handler = b;
+    cmd.handler = (Handler) b;
     return cmd;
   }
 }

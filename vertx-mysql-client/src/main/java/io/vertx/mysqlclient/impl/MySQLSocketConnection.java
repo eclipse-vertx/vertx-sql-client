@@ -54,7 +54,7 @@ public class MySQLSocketConnection extends SocketConnectionBase {
                           Map<String, String> properties,
                           SslMode sslMode,
                           int initialCapabilitiesFlags,
-                          Handler<? super CommandResponse<Connection>> completionHandler) {
+                          Handler<CommandResponse<Connection>> completionHandler) {
     InitialHandshakeCommand cmd = new InitialHandshakeCommand(this, username, password, database, collation, serverRsaPublicKey, properties, sslMode, initialCapabilitiesFlags);
     cmd.handler = completionHandler;
     schedule(cmd);

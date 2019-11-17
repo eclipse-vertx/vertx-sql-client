@@ -53,7 +53,7 @@ class MSSQLConnectionFactory {
         conn.init();
         conn.sendPreLoginMessage(false, preLogin -> {
           if (preLogin.succeeded()) {
-            conn.sendLoginMessage(username, password, database, properties, completionHandler);
+            conn.sendLoginMessage(username, password, database, properties, (Handler)completionHandler);
           } else {
             completionHandler.handle(Future.failedFuture(preLogin.cause()));
           }

@@ -105,7 +105,7 @@ class PgConnectionFactory {
       if (ar.succeeded()) {
         PgSocketConnection conn = ar.result();
         conn.init();
-        conn.sendStartupMessage(username, password, database, properties, completionHandler);
+        conn.sendStartupMessage(username, password, database, properties, (Handler)completionHandler);
       } else {
         completionHandler.handle(CommandResponse.failure(ar.cause()));
       }

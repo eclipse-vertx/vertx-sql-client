@@ -82,7 +82,7 @@ public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> i
   }
 
   @Override
-  public <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
+  public <R> void schedule(CommandBase<R> cmd, Handler<CommandResponse<R>> handler) {
     Context current = Vertx.currentContext();
     if (current == context) {
       pool.acquire(new CommandWaiter() { // SHOULD BE IT !!!!!
@@ -91,7 +91,7 @@ public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> i
           cmd.handler = ar -> {
             ar.scheduler = new CommandScheduler() {
               @Override
-              public <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
+              public <R> void schedule(CommandBase<R> cmd, Handler<CommandResponse<R>> handler) {
                 cmd.handler = cr -> {
                   cr.scheduler = this;
                   handler.handle(cr);

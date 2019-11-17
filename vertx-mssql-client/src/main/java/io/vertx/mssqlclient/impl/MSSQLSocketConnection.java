@@ -24,13 +24,13 @@ class MSSQLSocketConnection extends SocketConnectionBase {
   }
 
   // command response should show what capabilities server provides
-  void sendPreLoginMessage(boolean ssl, Handler<? super CommandResponse<Void>> completionHandler) {
+  void sendPreLoginMessage(boolean ssl, Handler<CommandResponse<Void>> completionHandler) {
     PreLoginCommand cmd = new PreLoginCommand(ssl);
     cmd.handler = completionHandler;
     schedule(cmd);
   }
 
-  void sendLoginMessage(String username, String password, String database, Map<String, String> properties, Handler<? super CommandResponse<Connection>> completionHandler) {
+  void sendLoginMessage(String username, String password, String database, Map<String, String> properties, Handler<CommandResponse<Connection>> completionHandler) {
     InitCommand cmd = new InitCommand(this, username, password, database, properties);
     cmd.handler = completionHandler;
     schedule(cmd);
