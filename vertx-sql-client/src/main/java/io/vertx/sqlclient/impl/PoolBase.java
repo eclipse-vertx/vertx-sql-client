@@ -89,12 +89,12 @@ public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> i
         @Override
         protected void onSuccess(Connection conn) {
           cmd.handler = ar -> {
-            if (ar.succeeded()) {
+            if (ar.toAsyncResult().succeeded()) {
               ar.scheduler = new CommandScheduler() {
                 @Override
                 public <R> void schedule(CommandBase<R> cmd, Handler<CommandResponse<R>> handler) {
                   cmd.handler = cr -> {
-                    if (cr.succeeded()) {
+                    if (cr.toAsyncResult().succeeded()) {
                       cr.scheduler = this;
                     }
                     handler.handle(cr);

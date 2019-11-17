@@ -36,10 +36,10 @@ public abstract class SqlConnectionBase<C extends SqlConnectionBase> extends Sql
 
   public C prepare(String sql, Handler<AsyncResult<PreparedQuery>> handler) {
     schedule(new PrepareStatementCommand(sql), cr -> {
-      if (cr.succeeded()) {
-        handler.handle(Future.succeededFuture(new PreparedQueryImpl(conn, context, cr.result())));
+      if (cr.toAsyncResult().succeeded()) {
+        handler.handle(Future.succeededFuture(new PreparedQueryImpl(conn, context, cr.toAsyncResult().result())));
       } else {
-        handler.handle(Future.failedFuture(cr.cause()));
+        handler.handle(Future.failedFuture(cr.toAsyncResult().cause()));
       }
     });
     return (C) this;

@@ -54,7 +54,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
     Collector<Row, ?, R1> collector,
     Handler<AsyncResult<R3>> handler) {
     SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, handler);
-    schedule(new SimpleQueryCommand<>(sql, singleton, collector, b), (Handler)b);
+    schedule(new SimpleQueryCommand<>(sql, singleton, collector, b), ar -> b.handle(ar.toAsyncResult()));
     return (C) this;
   }
 
@@ -75,17 +75,17 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
     Collector<Row, ?, R1> collector,
     Handler<AsyncResult<R3>> handler) {
     schedule(new PrepareStatementCommand(sql), cr -> {
-      if (cr.succeeded()) {
-        PreparedStatement ps = cr.result();
+      if (cr.toAsyncResult().succeeded()) {
+        PreparedStatement ps = cr.toAsyncResult().result();
         String msg = ps.prepare(arguments);
         if (msg != null) {
           handler.handle(Future.failedFuture(msg));
         } else {
           SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, handler);
-          cr.scheduler.schedule(new ExtendedQueryCommand<>(ps, arguments, collector, b), (Handler) b);
+          cr.scheduler.schedule(new ExtendedQueryCommand<>(ps, arguments, collector, b), ar -> b.handle(ar.toAsyncResult()));
         }
       } else {
-        handler.handle(Future.failedFuture(cr.cause()));
+        handler.handle(Future.failedFuture(cr.toAsyncResult().cause()));
       }
     });
     return (C) this;
@@ -118,8 +118,8 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
     Collector<Row, ?, R1> collector,
     Handler<AsyncResult<R3>> handler) {
     schedule(new PrepareStatementCommand(sql), cr -> {
-      if (cr.succeeded()) {
-        PreparedStatement ps = cr.result();
+      if (cr.toAsyncResult().succeeded()) {
+        PreparedStatement ps = cr.toAsyncResult().result();
         for  (Tuple args : batch) {
           String msg = ps.prepare((TupleInternal) args);
           if (msg != null) {
@@ -132,9 +132,9 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
           ps,
           batch,
           collector,
-          b), (Handler)b);
+          b), ar -> b.handle(ar.toAsyncResult()));
       } else {
-        handler.handle(Future.failedFuture(cr.cause()));
+        handler.handle(Future.failedFuture(cr.toAsyncResult().cause()));
       }
     });
     return (C) this;

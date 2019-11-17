@@ -141,7 +141,7 @@ public abstract class SocketConnectionBase implements Connection {
       CachedPreparedStatement cached = psCache.get(psCmd.sql());
       if (cached != null) {
         psCmd.cached = cached;
-        Handler<? super CommandResponse<PreparedStatement>> handler = psCmd.handler;
+        Handler<CommandResponse<PreparedStatement>> handler = psCmd.handler;
         cached.get(handler);
         return;
       } else {
@@ -151,7 +151,7 @@ public abstract class SocketConnectionBase implements Connection {
           psCmd.statement = psSeq.next();
           psCmd.cached = cached = new CachedPreparedStatement();
           psCache.put(psCmd.sql(), cached);
-          Handler<? super CommandResponse<PreparedStatement>> a = psCmd.handler;
+          Handler<CommandResponse<PreparedStatement>> a = psCmd.handler;
           ((CachedPreparedStatement) psCmd.cached).get(a);
           psCmd.handler = (Handler<CommandResponse<PreparedStatement>>) psCmd.cached;
         }
@@ -169,10 +169,10 @@ public abstract class SocketConnectionBase implements Connection {
 
   static class CachedPreparedStatement implements Handler<CommandResponse<PreparedStatement>> {
 
-    private final Deque<Handler<? super CommandResponse<PreparedStatement>>> waiters = new ArrayDeque<>();
+    private final Deque<Handler<CommandResponse<PreparedStatement>>> waiters = new ArrayDeque<>();
     CommandResponse<PreparedStatement> resp;
 
-    void get(Handler<? super CommandResponse<PreparedStatement>> handler) {
+    void get(Handler<CommandResponse<PreparedStatement>> handler) {
       if (resp != null) {
         handler.handle(resp);
       } else {
@@ -183,7 +183,7 @@ public abstract class SocketConnectionBase implements Connection {
     @Override
     public void handle(CommandResponse<PreparedStatement> event) {
       resp = event;
-      Handler<? super CommandResponse<PreparedStatement>> waiter;
+      Handler<CommandResponse<PreparedStatement>> waiter;
       while ((waiter = waiters.poll()) != null) {
         waiter.handle(resp);
       }

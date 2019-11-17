@@ -25,9 +25,9 @@ class PreparedStatementCache extends LinkedHashMap<String, CachedPreparedStateme
     CachedPreparedStatement cachedPreparedStatementToRemove = eldest.getValue();
 
     if (needRemove) {
-      if (cachedPreparedStatementToRemove.resp.succeeded()) {
+      if (cachedPreparedStatementToRemove.resp.toAsyncResult().succeeded()) {
         // close the statement after it has been evicted from the cache
-        PreparedStatement statement = cachedPreparedStatementToRemove.resp.result();
+        PreparedStatement statement = cachedPreparedStatementToRemove.resp.toAsyncResult().result();
         CloseStatementCommand cmd = new CloseStatementCommand(statement);
         cmd.handler = ar -> {
         };
