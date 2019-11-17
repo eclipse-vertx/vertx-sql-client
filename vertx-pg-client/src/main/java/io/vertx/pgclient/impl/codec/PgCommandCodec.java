@@ -16,6 +16,7 @@
  */
 package io.vertx.pgclient.impl.codec;
 
+import io.vertx.pgclient.PgException;
 import io.vertx.sqlclient.impl.TxStatus;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.CommandBase;
@@ -29,7 +30,7 @@ abstract class PgCommandCodec<R, C extends CommandBase<R>> {
 
   Handler<? super CommandResponse<R>> completionHandler;
   Handler<NoticeResponse> noticeHandler;
-  Throwable failure;
+  PgException failure;
   R result;
   final C cmd;
 
