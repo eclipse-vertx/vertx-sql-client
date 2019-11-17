@@ -106,7 +106,9 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   @Override
   public <R> void schedule(CommandBase<R> cmd, Handler<CommandResponse<R>> handler) {
     cmd.handler = cr -> {
-      cr.scheduler = this;
+      if (cr.succeeded()) {
+        cr.scheduler = this;
+      }
       handler.handle(cr);
     };
     schedule(cmd);

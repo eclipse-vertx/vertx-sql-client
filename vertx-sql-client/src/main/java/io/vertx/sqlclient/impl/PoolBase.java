@@ -89,16 +89,20 @@ public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> i
         @Override
         protected void onSuccess(Connection conn) {
           cmd.handler = ar -> {
-            ar.scheduler = new CommandScheduler() {
-              @Override
-              public <R> void schedule(CommandBase<R> cmd, Handler<CommandResponse<R>> handler) {
-                cmd.handler = cr -> {
-                  cr.scheduler = this;
-                  handler.handle(cr);
-                };
-                conn.schedule(cmd);
-              }
-            };
+            if (ar.succeeded()) {
+              ar.scheduler = new CommandScheduler() {
+                @Override
+                public <R> void schedule(CommandBase<R> cmd, Handler<CommandResponse<R>> handler) {
+                  cmd.handler = cr -> {
+                    if (cr.succeeded()) {
+                      cr.scheduler = this;
+                    }
+                    handler.handle(cr);
+                  };
+                  conn.schedule(cmd);
+                }
+              };
+            }
             handler.handle(ar);
           };
           conn.schedule(cmd);

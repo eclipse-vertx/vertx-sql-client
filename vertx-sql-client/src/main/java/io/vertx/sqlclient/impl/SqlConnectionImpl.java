@@ -48,7 +48,9 @@ public abstract class SqlConnectionImpl<C extends SqlConnectionImpl> extends Sql
   public <R> void schedule(CommandBase<R> cmd, Handler<CommandResponse<R>> handler) {
     cmd.handler = cr -> {
       // Tx might be gone ???
-      cr.scheduler = this;
+      if (cr.succeeded()) {
+        cr.scheduler = this;
+      }
       handler.handle(cr);
     };
     schedule(cmd);
