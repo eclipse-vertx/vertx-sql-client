@@ -23,7 +23,6 @@ public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
 
   private final String sql;
   public long statement; // 0 means unamed statement otherwise CString
-  public Object cached;
 
   public PrepareStatementCommand(String sql) {
     this.sql = sql;

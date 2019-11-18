@@ -36,21 +36,31 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   private static final int ST_COMPLETED = 3;
 
   private final Handler<Void> disposeHandler;
-  private Deque<CommandBase<?>> pending = new ArrayDeque<>();
+  private Deque<ScheduledCommand<?>> pending = new ArrayDeque<>();
   private Handler<Void> failedHandler;
   private int status = ST_BEGIN;
 
   public TransactionImpl(Context context, Connection conn, Handler<Void> disposeHandler) {
     super(context, conn);
     this.disposeHandler = disposeHandler;
-    doSchedule(doQuery("BEGIN", this::afterBegin));
+    ScheduledCommand<Boolean> b = doQuery("BEGIN", this::afterBegin);
+    doSchedule(b.cmd, b.handler);
   }
 
-  private void doSchedule(CommandBase<?> cmd) {
+  static class ScheduledCommand<R> {
+    final CommandBase<R> cmd;
+    final Handler<AsyncResult<R>> handler;
+    ScheduledCommand(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
+      this.cmd = cmd;
+      this.handler = handler;
+    }
+  }
+
+  private <R> void doSchedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
     if (context == Vertx.currentContext()) {
-      conn.schedule(cmd);
+      conn.schedule(cmd, handler);
     } else {
-      context.runOnContext(v -> conn.schedule(cmd));
+      context.runOnContext(v -> conn.schedule(cmd, handler));
     }
   }
 
@@ -76,15 +86,16 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
       case ST_BEGIN:
         break;
       case ST_PENDING: {
-        CommandBase<?> cmd = pending.poll();
+        ScheduledCommand<?> cmd = pending.poll();
         if (cmd != null) {
-          if (isComplete(cmd)) {
+          Handler h = cmd.handler;
+          if (isComplete(cmd.cmd)) {
             status = ST_COMPLETED;
           } else {
-            wrap(cmd);
+            h = wrap(h);
             status = ST_PROCESSING;
           }
-          doSchedule(cmd);
+          doSchedule(cmd.cmd, h);
         }
         break;
       }
@@ -93,9 +104,9 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
       case ST_COMPLETED: {
         if (pending.size() > 0) {
           VertxException err = new VertxException("Transaction already completed");
-          CommandBase<?> cmd;
+          ScheduledCommand<?> cmd;
           while ((cmd = pending.poll()) != null) {
-            cmd.fail(err);
+            cmd.cmd.fail(err);
           }
         }
         break;
@@ -104,39 +115,36 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   }
 
   @Override
-  public <R> void schedule(CommandBase<R> cmd, Handler<CommandResponse<R>> handler) {
-    cmd.handler = cr -> {
-      if (cr.toAsyncResult().succeeded()) {
-        cr.scheduler = this;
-      }
-      handler.handle(cr);
-    };
-    schedule(cmd);
+  public <R> void schedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
+    schedule__(cmd, handler);
   }
 
-  public void schedule(CommandBase<?> cmd) {
+  public <R> void schedule__(ScheduledCommand<R> b) {
     synchronized (this) {
-      pending.add(cmd);
+      pending.add(b);
     }
     checkPending();
   }
 
-  private <T> void wrap(CommandBase<T> cmd) {
-    Handler<? super CommandResponse<T>> handler = cmd.handler;
-    cmd.handler = ar -> {
+  public <R> void schedule__(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
+    schedule__(new ScheduledCommand<>(cmd, handler));
+  }
+
+  private <T> Handler<AsyncResult<T>> wrap(Handler<AsyncResult<T>> handler) {
+    return ar -> {
       synchronized (TransactionImpl.this) {
         status = ST_PENDING;
-        if (ar.toAsyncResult().failed()) {
+        if (ar.failed()) {
           // We won't recover from this so rollback
-          CommandBase<?> c;
+          ScheduledCommand<?> c;
           while ((c = pending.poll()) != null) {
-            c.fail(new RuntimeException("rollback exception"));
+            c.handler.handle(Future.failedFuture("Rollback exception"));
           }
           Handler<Void> h = failedHandler;
           if (h != null) {
             context.runOnContext(h);
           }
-          schedule(doQuery("ROLLBACK", ar2 -> {
+          schedule__(doQuery("ROLLBACK", ar2 -> {
             disposeHandler.handle(null);
             handler.handle(ar);
           }));
@@ -158,7 +166,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
       case ST_BEGIN:
       case ST_PENDING:
       case ST_PROCESSING:
-        schedule(doQuery("COMMIT", ar -> {
+        schedule__(doQuery("COMMIT", ar -> {
           disposeHandler.handle(null);
           if (handler != null) {
             if (ar.succeeded()) {
@@ -183,7 +191,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   }
 
   public void rollback(Handler<AsyncResult<Void>> handler) {
-    schedule(doQuery("ROLLBACK", ar -> {
+    schedule__(doQuery("ROLLBACK", ar -> {
       disposeHandler.handle(null);
       if (handler != null) {
         handler.handle(ar.mapEmpty());
@@ -202,10 +210,9 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
     return this;
   }
 
-  private CommandBase doQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler) {
+  private ScheduledCommand<Boolean> doQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler) {
     SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> b = new SqlResultBuilder<>(RowSetImpl.FACTORY, handler);
     SimpleQueryCommand<RowSet<Row>> cmd = new SimpleQueryCommand<>(sql, false, RowSetImpl.COLLECTOR, b);
-    cmd.handler = ar -> b.handle(ar.toAsyncResult());
-    return cmd;
+    return new ScheduledCommand<>(cmd, b);
   }
 }

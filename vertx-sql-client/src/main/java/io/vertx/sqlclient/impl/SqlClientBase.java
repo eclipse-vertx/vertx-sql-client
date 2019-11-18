@@ -17,6 +17,7 @@
 
 package io.vertx.sqlclient.impl;
 
+import io.vertx.sqlclient.impl.command.BiCommand;
 import io.vertx.sqlclient.impl.command.CommandScheduler;
 import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
@@ -54,7 +55,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
     Collector<Row, ?, R1> collector,
     Handler<AsyncResult<R3>> handler) {
     SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, handler);
-    schedule(new SimpleQueryCommand<>(sql, singleton, collector, b), ar -> b.handle(ar.toAsyncResult()));
+    schedule(new SimpleQueryCommand<>(sql, singleton, collector, b), b);
     return (C) this;
   }
 
@@ -74,20 +75,16 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
     Function<R1, R2> factory,
     Collector<Row, ?, R1> collector,
     Handler<AsyncResult<R3>> handler) {
-    schedule(new PrepareStatementCommand(sql), cr -> {
-      if (cr.toAsyncResult().succeeded()) {
-        PreparedStatement ps = cr.toAsyncResult().result();
-        String msg = ps.prepare(arguments);
-        if (msg != null) {
-          handler.handle(Future.failedFuture(msg));
-        } else {
-          SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, handler);
-          cr.scheduler.schedule(new ExtendedQueryCommand<>(ps, arguments, collector, b), ar -> b.handle(ar.toAsyncResult()));
-        }
+    SqlResultBuilder<R1, R2, R3> builder = new SqlResultBuilder<>(factory, handler);
+    BiCommand<PreparedStatement, Boolean> abc = new BiCommand<>(new PrepareStatementCommand(sql), ps -> {
+      String msg = ps.prepare(arguments);
+      if (msg != null) {
+        return Future.failedFuture(msg);
       } else {
-        handler.handle(Future.failedFuture(cr.toAsyncResult().cause()));
+        return Future.succeededFuture(new ExtendedQueryCommand<>(ps, arguments, collector, builder));
       }
     });
+    schedule(abc, builder);
     return (C) this;
   }
 
@@ -117,26 +114,21 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
     Function<R1, R2> factory,
     Collector<Row, ?, R1> collector,
     Handler<AsyncResult<R3>> handler) {
-    schedule(new PrepareStatementCommand(sql), cr -> {
-      if (cr.toAsyncResult().succeeded()) {
-        PreparedStatement ps = cr.toAsyncResult().result();
-        for  (Tuple args : batch) {
-          String msg = ps.prepare((TupleInternal) args);
-          if (msg != null) {
-            handler.handle(Future.failedFuture(msg));
-            return;
-          }
+    SqlResultBuilder<R1, R2, R3> builder = new SqlResultBuilder<>(factory, handler);
+    BiCommand<PreparedStatement, Boolean> abc = new BiCommand<>(new PrepareStatementCommand(sql), ps -> {
+      for  (Tuple args : batch) {
+        String msg = ps.prepare((TupleInternal) args);
+        if (msg != null) {
+          return Future.failedFuture(msg);
         }
-        SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, handler);
-        cr.scheduler.schedule(new ExtendedBatchQueryCommand<>(
-          ps,
-          batch,
-          collector,
-          b), ar -> b.handle(ar.toAsyncResult()));
-      } else {
-        handler.handle(Future.failedFuture(cr.toAsyncResult().cause()));
       }
+      return Future.succeededFuture(new ExtendedBatchQueryCommand<>(
+        ps,
+        batch,
+        collector,
+        builder));
     });
+    schedule(abc, builder);
     return (C) this;
   }
 }

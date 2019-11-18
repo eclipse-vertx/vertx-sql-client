@@ -27,14 +27,12 @@ class MSSQLSocketConnection extends SocketConnectionBase {
   // command response should show what capabilities server provides
   void sendPreLoginMessage(boolean ssl, Handler<AsyncResult<Void>> completionHandler) {
     PreLoginCommand cmd = new PreLoginCommand(ssl);
-    cmd.handler = ar -> completionHandler.handle(ar.toAsyncResult());
-    schedule(cmd);
+    schedule(cmd, completionHandler);
   }
 
   void sendLoginMessage(String username, String password, String database, Map<String, String> properties, Handler<AsyncResult<Connection>> completionHandler) {
     InitCommand cmd = new InitCommand(this, username, password, database, properties);
-    cmd.handler = ar -> completionHandler.handle(ar.toAsyncResult());
-    schedule(cmd);
+    schedule(cmd, completionHandler);
   }
 
   @Override

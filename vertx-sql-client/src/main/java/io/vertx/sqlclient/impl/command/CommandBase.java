@@ -17,6 +17,8 @@
 
 package io.vertx.sqlclient.impl.command;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 /**
@@ -25,9 +27,15 @@ import io.vertx.core.Handler;
 
 public abstract class CommandBase<R> {
 
-  public Handler<CommandResponse<R>> handler;
+  public Handler<AsyncResult<R>> handler;
 
   public final void fail(Throwable err) {
-    handler.handle(CommandResponse.failure(err));
+    complete(Future.failedFuture(err));
+  }
+
+  public final void complete(AsyncResult<R> resp) {
+    if (handler != null) {
+      handler.handle(resp);
+    }
   }
 }

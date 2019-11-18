@@ -82,36 +82,18 @@ public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> i
   }
 
   @Override
-  public <R> void schedule(CommandBase<R> cmd, Handler<CommandResponse<R>> handler) {
+  public <R> void schedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
     Context current = Vertx.currentContext();
     if (current == context) {
-      pool.acquire(new CommandWaiter() { // SHOULD BE IT !!!!!
+      pool.acquire(new CommandWaiter() {
         @Override
         protected void onSuccess(Connection conn) {
-          cmd.handler = ar -> {
-            if (ar.toAsyncResult().succeeded()) {
-              ar.scheduler = new CommandScheduler() {
-                @Override
-                public <R> void schedule(CommandBase<R> cmd, Handler<CommandResponse<R>> handler) {
-                  cmd.handler = cr -> {
-                    if (cr.toAsyncResult().succeeded()) {
-                      cr.scheduler = this;
-                    }
-                    handler.handle(cr);
-                  };
-                  conn.schedule(cmd);
-                }
-              };
-            }
-            handler.handle(ar);
-          };
-          conn.schedule(cmd);
+          conn.schedule(cmd, handler);
           conn.close(this);
         }
         @Override
         protected void onFailure(Throwable cause) {
-          cmd.handler = handler;
-          cmd.fail(cause);
+          handler.handle(Future.failedFuture(cause));
         }
       });
     } else {

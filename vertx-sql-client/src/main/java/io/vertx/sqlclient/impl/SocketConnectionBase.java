@@ -19,7 +19,9 @@ package io.vertx.sqlclient.impl;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderException;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxException;
@@ -30,6 +32,7 @@ import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.function.Function;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -122,12 +125,34 @@ public abstract class SocketConnectionBase implements Connection {
     }
   }
 
-  public void schedule(CommandBase<?> cmd) {
-    if (cmd.handler == null) {
+  private <R, T> void schedule(BiCommand<T, R> cmd, Handler<AsyncResult<R>> handler) {
+    schedule(cmd.first, cr -> {
+      if (cr.succeeded()) {
+        AsyncResult<CommandBase<R>> next = cmd.then.apply(cr.result());
+        if (next.succeeded()) {
+          schedule(next.result(), handler);
+        } else {
+          handler.handle(Future.failedFuture(next.cause()));
+        }
+      } else {
+        handler.handle(Future.failedFuture(cr.cause()));
+      }
+    });
+  }
+
+  @Override
+  public <R> void schedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
+    if (handler == null) {
       throw new IllegalArgumentException();
     }
     if (Vertx.currentContext() != context) {
       throw new IllegalStateException();
+    }
+
+    // Special handling for bi commands
+    if (cmd instanceof BiCommand<?, ?>) {
+      schedule((BiCommand<? ,R>) cmd, handler);
+      return;
     }
 
     // Special handling for cache
@@ -139,24 +164,26 @@ public abstract class SocketConnectionBase implements Connection {
         return;
       }
       CachedPreparedStatement cached = psCache.get(psCmd.sql());
+      Handler<AsyncResult<PreparedStatement>> orig = (Handler) handler;
       if (cached != null) {
-        psCmd.cached = cached;
-        Handler<CommandResponse<PreparedStatement>> handler = psCmd.handler;
-        cached.get(handler);
+        psCmd.handler = orig;
+        cached.get(psCmd::complete);
         return;
       } else {
         if (psCache.size() >= psCache.getCapacity() && !psCache.isReady()) {
           // only if the prepared statement is ready then it can be evicted
         } else {
+          cached = new CachedPreparedStatement();
           psCmd.statement = psSeq.next();
-          psCmd.cached = cached = new CachedPreparedStatement();
+          cached.get(orig);
           psCache.put(psCmd.sql(), cached);
-          Handler<CommandResponse<PreparedStatement>> a = psCmd.handler;
-          ((CachedPreparedStatement) psCmd.cached).get(a);
-          psCmd.handler = (Handler<CommandResponse<PreparedStatement>>) psCmd.cached;
+          handler = (Handler) cached;
         }
       }
     }
+
+    //
+    cmd.handler = handler;
 
     //
     if (status == Status.CONNECTED) {
@@ -167,12 +194,12 @@ public abstract class SocketConnectionBase implements Connection {
     }
   }
 
-  static class CachedPreparedStatement implements Handler<CommandResponse<PreparedStatement>> {
+  static class CachedPreparedStatement implements Handler<AsyncResult<PreparedStatement>> {
 
-    private final Deque<Handler<CommandResponse<PreparedStatement>>> waiters = new ArrayDeque<>();
-    CommandResponse<PreparedStatement> resp;
+    private final Deque<Handler<AsyncResult<PreparedStatement>>> waiters = new ArrayDeque<>();
+    AsyncResult<PreparedStatement> resp;
 
-    void get(Handler<CommandResponse<PreparedStatement>> handler) {
+    void get(Handler<AsyncResult<PreparedStatement>> handler) {
       if (resp != null) {
         handler.handle(resp);
       } else {
@@ -181,9 +208,9 @@ public abstract class SocketConnectionBase implements Connection {
     }
 
     @Override
-    public void handle(CommandResponse<PreparedStatement> event) {
+    public void handle(AsyncResult<PreparedStatement> event) {
       resp = event;
-      Handler<CommandResponse<PreparedStatement>> waiter;
+      Handler<AsyncResult<PreparedStatement>> waiter;
       while ((waiter = waiters.poll()) != null) {
         waiter.handle(resp);
       }
@@ -207,7 +234,7 @@ public abstract class SocketConnectionBase implements Connection {
       inflight--;
       checkPending();
       CommandResponse resp =(CommandResponse) msg;
-      resp.cmd.handler.handle(msg);
+      resp.fire();
     } else if (msg instanceof Notification) {
       handleNotification((Notification) msg);
     } else if (msg instanceof Notice) {

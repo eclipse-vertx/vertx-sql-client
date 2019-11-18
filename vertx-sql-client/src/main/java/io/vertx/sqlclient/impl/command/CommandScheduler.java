@@ -16,11 +16,12 @@
  */
 package io.vertx.sqlclient.impl.command;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
 @FunctionalInterface
 public interface CommandScheduler {
 
-  <R> void schedule(CommandBase<R> cmd, Handler<CommandResponse<R>> handler);
+  <R> void schedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler);
 
 }

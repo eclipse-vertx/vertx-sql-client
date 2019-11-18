@@ -18,7 +18,6 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.core.*;
@@ -45,19 +44,12 @@ public abstract class SqlConnectionImpl<C extends SqlConnectionImpl> extends Sql
   }
 
   @Override
-  public <R> void schedule(CommandBase<R> cmd, Handler<CommandResponse<R>> handler) {
+  public <R> void schedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
     if (context == Vertx.currentContext()) {
       if (tx != null) {
         tx.schedule(cmd, handler);
       } else {
-        cmd.handler = cr -> {
-          // Tx might be gone ???
-          if (cr.toAsyncResult().succeeded()) {
-            cr.scheduler = this;
-          }
-          handler.handle(cr);
-        };
-        conn.schedule(cmd);
+        conn.schedule(cmd, handler);
       }
     } else {
       context.runOnContext(v -> {

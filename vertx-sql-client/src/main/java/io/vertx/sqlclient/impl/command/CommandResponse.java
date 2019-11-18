@@ -11,15 +11,14 @@ public class CommandResponse<R> {
   }
 
   public static <R> CommandResponse<R> failure(Throwable cause) {
-    return new CommandResponse<R>(Future.failedFuture(cause));
+    return new CommandResponse<>(Future.failedFuture(cause));
   }
 
   public static <R> CommandResponse<R> success(R result) {
-    return new CommandResponse<R>(Future.succeededFuture(result));
+    return new CommandResponse<>(Future.succeededFuture(result));
   }
 
   // The connection that executed the command
-  public CommandScheduler scheduler;
   public CommandBase<R> cmd;
   private final AsyncResult<R> res;
 
@@ -31,4 +30,9 @@ public class CommandResponse<R> {
     return res;
   }
 
+  public void fire() {
+    if (cmd.handler != null) {
+      cmd.handler.handle(toAsyncResult());
+    }
+  }
 }

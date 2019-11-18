@@ -118,7 +118,7 @@ public class MySQLConnectionFactory {
         NetSocketInternal socket = (NetSocketInternal) ar1.result();
         MySQLSocketConnection conn = new MySQLSocketConnection(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, context);
         conn.init();
-        conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, connectionAttributes, sslMode, initialCapabilitiesFlags, ar -> handler.handle(ar.toAsyncResult()));
+        conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, connectionAttributes, sslMode, initialCapabilitiesFlags, handler);
       } else {
         handler.handle(Future.failedFuture(ar1.cause()));
       }

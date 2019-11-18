@@ -91,8 +91,7 @@ class PreparedQueryImpl implements PreparedQuery {
           suspended,
           collector,
           resultHandler);
-        cmd.handler = ar -> handler.handle(ar.toAsyncResult());
-        conn.schedule(cmd);
+        conn.schedule(cmd, handler);
       }
     } else {
       context.runOnContext(v -> execute(args, fetch, cursorId, suspended, collector, resultHandler, handler));
@@ -142,8 +141,7 @@ class PreparedQueryImpl implements PreparedQuery {
     }
     SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, handler);
     ExtendedBatchQueryCommand<R1> cmd = new ExtendedBatchQueryCommand<>(ps, argsList, collector, b);
-    cmd.handler = ar -> b.handle(ar.toAsyncResult());
-    conn.schedule(cmd);
+    conn.schedule(cmd, b);
     return this;
   }
 
@@ -156,8 +154,7 @@ class PreparedQueryImpl implements PreparedQuery {
   public void close(Handler<AsyncResult<Void>> completionHandler) {
     if (closed.compareAndSet(false, true)) {
       CloseStatementCommand cmd = new CloseStatementCommand(ps);
-      cmd.handler = ar -> completionHandler.handle(ar.toAsyncResult());
-      conn.schedule(cmd);
+      conn.schedule(cmd, completionHandler);
     } else {
       completionHandler.handle(Future.failedFuture("Already closed"));
     }
@@ -165,7 +162,6 @@ class PreparedQueryImpl implements PreparedQuery {
 
   void closeCursor(String cursorId, Handler<AsyncResult<Void>> handler) {
     CloseCursorCommand cmd = new CloseCursorCommand(cursorId, ps);
-    cmd.handler = ar -> handler.handle(ar.toAsyncResult());
-    conn.schedule(cmd);
+    conn.schedule(cmd, handler);
   }
 }

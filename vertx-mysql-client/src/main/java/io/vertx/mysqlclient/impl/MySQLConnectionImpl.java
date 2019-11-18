@@ -17,7 +17,6 @@ import io.vertx.mysqlclient.impl.command.PingCommand;
 import io.vertx.mysqlclient.impl.command.ResetConnectionCommand;
 import io.vertx.mysqlclient.impl.command.SetOptionCommand;
 import io.vertx.mysqlclient.impl.command.StatisticsCommand;
-import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 
@@ -66,42 +65,42 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
   @Override
   public MySQLConnection ping(Handler<AsyncResult<Void>> handler) {
     PingCommand cmd = new PingCommand();
-    schedule(cmd, ar -> handler.handle(ar.toAsyncResult()));
+    schedule(cmd, handler);
     return this;
   }
 
   @Override
   public MySQLConnection specifySchema(String schemaName, Handler<AsyncResult<Void>> handler) {
     InitDbCommand cmd = new InitDbCommand(schemaName);
-    schedule(cmd, ar -> handler.handle(ar.toAsyncResult()));
+    schedule(cmd, handler);
     return this;
   }
 
   @Override
   public MySQLConnection getInternalStatistics(Handler<AsyncResult<String>> handler) {
     StatisticsCommand cmd = new StatisticsCommand();
-    schedule(cmd, ar -> handler.handle(ar.toAsyncResult()));
+    schedule(cmd, handler);
     return this;
   }
 
   @Override
   public MySQLConnection setOption(MySQLSetOption option, Handler<AsyncResult<Void>> handler) {
     SetOptionCommand cmd = new SetOptionCommand(option);
-    schedule(cmd, ar -> handler.handle(ar.toAsyncResult()));
+    schedule(cmd, handler);
     return this;
   }
 
   @Override
   public MySQLConnection resetConnection(Handler<AsyncResult<Void>> handler) {
     ResetConnectionCommand cmd = new ResetConnectionCommand();
-    schedule(cmd, ar -> handler.handle(ar.toAsyncResult()));
+    schedule(cmd, handler);
     return this;
   }
 
   @Override
   public MySQLConnection debug(Handler<AsyncResult<Void>> handler) {
     DebugCommand cmd = new DebugCommand();
-    schedule(cmd, ar -> handler.handle(ar.toAsyncResult()));
+    schedule(cmd, handler);
     return this;
   }
 
@@ -124,7 +123,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
       }
     }
     ChangeUserCommand cmd = new ChangeUserCommand(options.getUser(), options.getPassword(), options.getDatabase(), collation, serverRsaPublicKey, options.getProperties());
-    schedule(cmd, ar -> handler.handle(ar.toAsyncResult()));
+    schedule(cmd, handler);
     return this;
   }
 }

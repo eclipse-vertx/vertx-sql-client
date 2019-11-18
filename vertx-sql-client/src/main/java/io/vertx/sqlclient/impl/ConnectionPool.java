@@ -107,8 +107,8 @@ public class ConnectionPool {
     }
 
     @Override
-    public void schedule(CommandBase<?> cmd) {
-      conn.schedule(cmd);
+    public <R> void schedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
+      conn.schedule(cmd, handler);
     }
 
     /**

@@ -22,7 +22,6 @@ public class CloseConnectionCommand extends CommandBase<Void> {
   public static final CloseConnectionCommand INSTANCE = new CloseConnectionCommand();
 
   private CloseConnectionCommand() {
-    handler = ar -> {};
   }
 
 }
