@@ -66,48 +66,42 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
   @Override
   public MySQLConnection ping(Handler<AsyncResult<Void>> handler) {
     PingCommand cmd = new PingCommand();
-    cmd.handler = ar -> handler.handle(ar.toAsyncResult());
-    schedule(cmd);
+    schedule(cmd, ar -> handler.handle(ar.toAsyncResult()));
     return this;
   }
 
   @Override
   public MySQLConnection specifySchema(String schemaName, Handler<AsyncResult<Void>> handler) {
     InitDbCommand cmd = new InitDbCommand(schemaName);
-    cmd.handler = ar -> handler.handle(ar.toAsyncResult());
-    schedule(cmd);
+    schedule(cmd, ar -> handler.handle(ar.toAsyncResult()));
     return this;
   }
 
   @Override
   public MySQLConnection getInternalStatistics(Handler<AsyncResult<String>> handler) {
     StatisticsCommand cmd = new StatisticsCommand();
-    cmd.handler = ar -> handler.handle(ar.toAsyncResult());
-    schedule(cmd);
+    schedule(cmd, ar -> handler.handle(ar.toAsyncResult()));
     return this;
   }
 
   @Override
   public MySQLConnection setOption(MySQLSetOption option, Handler<AsyncResult<Void>> handler) {
     SetOptionCommand cmd = new SetOptionCommand(option);
-    cmd.handler = ar -> handler.handle(ar.toAsyncResult());
-    schedule(cmd);
+    schedule(cmd, ar -> handler.handle(ar.toAsyncResult()));
     return this;
   }
 
   @Override
   public MySQLConnection resetConnection(Handler<AsyncResult<Void>> handler) {
     ResetConnectionCommand cmd = new ResetConnectionCommand();
-    cmd.handler = ar -> handler.handle(ar.toAsyncResult());
-    schedule(cmd);
+    schedule(cmd, ar -> handler.handle(ar.toAsyncResult()));
     return this;
   }
 
   @Override
   public MySQLConnection debug(Handler<AsyncResult<Void>> handler) {
     DebugCommand cmd = new DebugCommand();
-    cmd.handler = ar -> handler.handle(ar.toAsyncResult());
-    schedule(cmd);
+    schedule(cmd, ar -> handler.handle(ar.toAsyncResult()));
     return this;
   }
 
@@ -130,8 +124,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
       }
     }
     ChangeUserCommand cmd = new ChangeUserCommand(options.getUser(), options.getPassword(), options.getDatabase(), collation, serverRsaPublicKey, options.getProperties());
-    cmd.handler = ar -> handler.handle(ar.toAsyncResult());
-    schedule(cmd);
+    schedule(cmd, ar -> handler.handle(ar.toAsyncResult()));
     return this;
   }
 }

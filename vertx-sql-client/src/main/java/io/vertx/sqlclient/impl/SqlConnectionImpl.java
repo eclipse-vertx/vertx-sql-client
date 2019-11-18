@@ -46,26 +46,22 @@ public abstract class SqlConnectionImpl<C extends SqlConnectionImpl> extends Sql
 
   @Override
   public <R> void schedule(CommandBase<R> cmd, Handler<CommandResponse<R>> handler) {
-    cmd.handler = cr -> {
-      // Tx might be gone ???
-      if (cr.toAsyncResult().succeeded()) {
-        cr.scheduler = this;
-      }
-      handler.handle(cr);
-    };
-    schedule(cmd);
-  }
-
-  protected void schedule(CommandBase<?> cmd) {
     if (context == Vertx.currentContext()) {
       if (tx != null) {
-        tx.schedule(cmd);
+        tx.schedule(cmd, handler);
       } else {
+        cmd.handler = cr -> {
+          // Tx might be gone ???
+          if (cr.toAsyncResult().succeeded()) {
+            cr.scheduler = this;
+          }
+          handler.handle(cr);
+        };
         conn.schedule(cmd);
       }
     } else {
       context.runOnContext(v -> {
-        schedule(cmd);
+        schedule(cmd, handler);
       });
     }
   }
