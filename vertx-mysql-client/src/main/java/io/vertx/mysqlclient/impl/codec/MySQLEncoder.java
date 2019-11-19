@@ -20,6 +20,7 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
 
   int clientCapabilitiesFlag;
   Charset charset;
+  Charset encodingCharset;
   MySQLSocketConnection socketConnection;
 
   MySQLEncoder(ArrayDeque<CommandCodec<?, ?>> inflight, MySQLSocketConnection mySQLSocketConnection) {
