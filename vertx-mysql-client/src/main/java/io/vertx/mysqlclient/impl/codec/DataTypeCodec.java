@@ -83,7 +83,7 @@ class DataTypeCodec {
   }
 
   //TODO take care of unsigned numeric values here?
-  static void encodeBinary(DataType dataType, Object value, ByteBuf buffer) {
+  static void encodeBinary(DataType dataType, Object value, Charset charset, ByteBuf buffer) {
     switch (dataType) {
       case INT1:
         if (value instanceof Boolean) {
@@ -114,7 +114,7 @@ class DataTypeCodec {
         binaryEncodeDouble((Number) value, buffer);
         break;
       case NUMERIC:
-        binaryEncodeNumeric((Numeric) value, buffer);
+        binaryEncodeNumeric((Numeric) value, buffer, charset);
         break;
       case BLOB:
         binaryEncodeBlob((Buffer) value, buffer);
@@ -133,13 +133,13 @@ class DataTypeCodec {
       case VARSTRING:
       default:
         if (value instanceof JsonObject || value instanceof JsonArray) {
-          binaryEncodeJson(value, buffer);
+          binaryEncodeJson(value, buffer, charset);
           return;
         } else if (value == Tuple.JSON_NULL) {
           // we have to make JSON literal null send as a STRING data type
-          BufferUtils.writeLengthEncodedString(buffer, "null");
+          BufferUtils.writeLengthEncodedString(buffer, "null", charset);
         } else {
-          binaryEncodeText(String.valueOf(value), buffer);
+          binaryEncodeText(String.valueOf(value), buffer, charset);
         }
         break;
     }
@@ -220,12 +220,12 @@ class DataTypeCodec {
     buffer.writeDoubleLE(value.doubleValue());
   }
 
-  private static void binaryEncodeNumeric(Numeric value, ByteBuf buffer) {
-    BufferUtils.writeLengthEncodedString(buffer, value.toString());
+  private static void binaryEncodeNumeric(Numeric value, ByteBuf buffer, Charset charset) {
+    BufferUtils.writeLengthEncodedString(buffer, value.toString(), charset);
   }
 
-  private static void binaryEncodeText(String value, ByteBuf buffer) {
-    BufferUtils.writeLengthEncodedString(buffer, value);
+  private static void binaryEncodeText(String value, ByteBuf buffer, Charset charset) {
+    BufferUtils.writeLengthEncodedString(buffer, value, charset);
   }
 
   private static void binaryEncodeBlob(Buffer value, ByteBuf buffer) {
@@ -321,8 +321,8 @@ class DataTypeCodec {
     }
   }
 
-  private static void binaryEncodeJson(Object value, ByteBuf buffer) {
-    BufferUtils.writeLengthEncodedString(buffer, Json.encode(value));
+  private static void binaryEncodeJson(Object value, ByteBuf buffer, Charset charset) {
+    BufferUtils.writeLengthEncodedString(buffer, Json.encode(value), charset);
   }
 
   private static Byte binaryDecodeInt1(ByteBuf buffer) {

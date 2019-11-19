@@ -9,6 +9,7 @@ import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.impl.MySQLConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
 
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -39,6 +40,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   public static final boolean DEFAULT_USE_AFFECTED_ROWS = false;
   public static final Map<String, String> DEFAULT_CONNECTION_ATTRIBUTES;
   public static final SslMode DEFAULT_SSL_MODE = SslMode.DISABLED;
+  public static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
 
   static {
     Map<String, String> defaultAttributes = new HashMap<>();
@@ -52,12 +54,14 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   private SslMode sslMode;
   private String serverRsaPublicKeyPath;
   private Buffer serverRsaPublicKeyValue;
+  private String characterEncoding;
 
   public MySQLConnectOptions() {
     super();
     this.charset = DEFAULT_CHARSET;
     this.sslMode = DEFAULT_SSL_MODE;
     this.useAffectedRows = DEFAULT_USE_AFFECTED_ROWS;
+    this.characterEncoding = DEFAULT_CHARACTER_ENCODING;
   }
 
   public MySQLConnectOptions(JsonObject json) {
@@ -65,6 +69,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     this.charset = DEFAULT_CHARSET;
     this.sslMode = DEFAULT_SSL_MODE;
     this.useAffectedRows = DEFAULT_USE_AFFECTED_ROWS;
+    this.characterEncoding = DEFAULT_CHARACTER_ENCODING;
     MySQLConnectOptionsConverter.fromJson(json, this);
   }
 
@@ -76,6 +81,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     this.sslMode = other.sslMode;
     this.serverRsaPublicKeyPath = other.serverRsaPublicKeyPath;
     this.serverRsaPublicKeyValue = other.serverRsaPublicKeyValue != null ? other.serverRsaPublicKeyValue.copy() : null;
+    this.characterEncoding = other.characterEncoding;
   }
 
   /**
@@ -121,6 +127,30 @@ public class MySQLConnectOptions extends SqlConnectOptions {
       throw new IllegalArgumentException("Unsupported charset: " + charset);
     }
     this.charset = charset;
+    return this;
+  }
+
+  /**
+   * Get the Java charset for encoding string values.
+   *
+   * @return the charset name
+   */
+  public String getCharacterEncoding() {
+    return characterEncoding;
+  }
+
+  /**
+   * Set the Java charset for encoding string values, this value is UTF-8 by default.
+   *
+   * @param characterEncoding the Java charset to configure
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MySQLConnectOptions setCharacterEncoding(String characterEncoding) {
+    if (characterEncoding != null && !Charset.isSupported(characterEncoding)) {
+      throw new IllegalArgumentException("Unsupported Java charset: " + characterEncoding);
+    } else {
+      this.characterEncoding = characterEncoding;
+    }
     return this;
   }
 

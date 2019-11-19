@@ -51,6 +51,9 @@ Specify the user account to be used for the authentication.
 |===
 ^|Name | Type ^| Description
 |[[cachePreparedStatements]]`@cachePreparedStatements`|`Boolean`|-
+|[[characterEncoding]]`@characterEncoding`|`String`|+++
+Set the Java charset for encoding string values, this value is UTF-8 by default.
++++
 |[[charset]]`@charset`|`String`|+++
 Set the charset for the connection.
 +++

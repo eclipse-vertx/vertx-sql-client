@@ -31,10 +31,10 @@ class ChangeUserCommandCodec extends AuthenticationCommandBaseCodec<Void, Change
     int header = payload.getUnsignedByte(payload.readerIndex());
     switch (header) {
       case AUTH_SWITCH_REQUEST_STATUS_FLAG:
-        handleAuthSwitchRequest(cmd.password().getBytes(), payload);
+        handleAuthSwitchRequest(cmd.password().getBytes(StandardCharsets.UTF_8), payload);
         break;
       case AUTH_MORE_DATA_STATUS_FLAG:
-        handleAuthMoreData(cmd.password().getBytes(), payload);
+        handleAuthMoreData(cmd.password().getBytes(StandardCharsets.UTF_8), payload);
         break;
       case OK_PACKET_HEADER:
         completionHandler.handle(CommandResponse.success(null));

@@ -64,7 +64,7 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
 
     // encode packet payload
     packet.writeByte(CommandType.COM_QUERY);
-    packet.writeCharSequence(cmd.sql(), StandardCharsets.UTF_8);
+    packet.writeCharSequence(cmd.sql(), encoder.encodingCharset);
 
     // set payload length
     int payloadLength = packet.writerIndex() - packetStartIdx - 4;
