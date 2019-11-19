@@ -21,6 +21,7 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.mysqlclient.impl.codec.MySQLCodec;
@@ -42,7 +43,7 @@ public class MySQLSocketConnection extends SocketConnectionBase {
                                boolean cachePreparedStatements,
                                int preparedStatementCacheSize,
                                int preparedStatementCacheSqlLimit,
-                               Context context) {
+                               ContextInternal context) {
     super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, 1, context);
   }
 
@@ -54,7 +55,7 @@ public class MySQLSocketConnection extends SocketConnectionBase {
                           Map<String, String> properties,
                           SslMode sslMode,
                           int initialCapabilitiesFlags,
-                          Handler<AsyncResult<Connection>> completionHandler) {
+                          Promise<Connection> completionHandler) {
     InitialHandshakeCommand cmd = new InitialHandshakeCommand(this, username, password, database, collation, serverRsaPublicKey, properties, sslMode, initialCapabilitiesFlags);
     schedule(cmd, completionHandler);
   }

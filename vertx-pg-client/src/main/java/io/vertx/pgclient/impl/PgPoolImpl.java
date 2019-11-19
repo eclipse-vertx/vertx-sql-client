@@ -17,6 +17,7 @@
 
 package io.vertx.pgclient.impl;
 
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.pgclient.*;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.impl.Connection;
@@ -36,24 +37,45 @@ import io.vertx.core.*;
 public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
 
   private final PgConnectionFactory factory;
+  private final ContextInternal contextHook;
+  private final Closeable hook;
 
-  public PgPoolImpl(Context context, boolean closeVertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
+  public PgPoolImpl(ContextInternal context, boolean closeVertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
     super(context, closeVertx, poolOptions);
-    this.factory = new PgConnectionFactory(context, Vertx.currentContext() != null, connectOptions);
+    this.factory = new PgConnectionFactory(context.owner(), connectOptions);
+
+    if (context.deploymentID() != null) {
+      contextHook = context;
+      hook = completion -> {
+        closeInternal();
+        completion.complete();
+      };
+      context.addCloseHook(hook);
+    } else {
+      contextHook = null;
+      hook = null;
+    }
   }
 
   @Override
-  public void connect(Handler<AsyncResult<Connection>> completionHandler) {
-    factory.connectAndInit(completionHandler);
+  public void connect(ContextInternal context, Handler<AsyncResult<Connection>> completionHandler) {
+    factory.connectAndInit(context).setHandler(completionHandler);
   }
 
   @Override
-  protected SqlConnectionImpl wrap(Context context, Connection conn) {
+  protected SqlConnectionImpl wrap(ContextInternal context, Connection conn) {
     return new PgConnectionImpl(factory, context, conn);
   }
 
   @Override
   protected void doClose() {
+    if (hook != null) {
+      contextHook.removeCloseHook(hook);
+    }
+    closeInternal();
+  }
+
+  private void closeInternal() {
     factory.close();
     super.doClose();
   }

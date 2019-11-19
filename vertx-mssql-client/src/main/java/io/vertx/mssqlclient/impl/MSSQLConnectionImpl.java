@@ -1,5 +1,6 @@
 package io.vertx.mssqlclient.impl;
 
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLConnection;
 import io.vertx.core.AsyncResult;
@@ -13,25 +14,21 @@ import io.vertx.sqlclient.impl.SqlConnectionImpl;
 public class MSSQLConnectionImpl extends SqlConnectionImpl<MSSQLConnectionImpl> implements MSSQLConnection {
   private final MSSQLConnectionFactory factory;
 
-  public MSSQLConnectionImpl(MSSQLConnectionFactory factory, Context context, Connection conn) {
+  public MSSQLConnectionImpl(MSSQLConnectionFactory factory, ContextInternal context, Connection conn) {
     super(context, conn);
     this.factory = factory;
   }
 
   public static void connect(Vertx vertx, MSSQLConnectOptions options, Handler<AsyncResult<MSSQLConnection>> handler) {
-    Context ctx = Vertx.currentContext();
+    ContextInternal ctx = (ContextInternal) Vertx.currentContext();
     if (ctx != null) {
-      MSSQLConnectionFactory client = new MSSQLConnectionFactory(ctx, false, options);
-      client.create(ar -> {
-        if (ar.succeeded()) {
-          Connection conn = ar.result();
+      MSSQLConnectionFactory client = new MSSQLConnectionFactory(vertx, options);
+      client.create(ctx)
+        .<MSSQLConnection>map(conn -> {
           MSSQLConnectionImpl c = new MSSQLConnectionImpl(client, ctx, conn);
           conn.init(c);
-          handler.handle(Future.succeededFuture(c));
-        } else {
-          handler.handle(Future.failedFuture(ar.cause()));
-        }
-      });
+          return c;
+        }).setHandler(handler);
     } else {
       vertx.runOnContext(v -> {
         connect(vertx, options, handler);

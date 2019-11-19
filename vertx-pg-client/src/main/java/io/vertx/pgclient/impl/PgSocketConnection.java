@@ -19,10 +19,10 @@ package io.vertx.pgclient.impl;
 
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.pgclient.impl.codec.PgCodec;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.InitCommand;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
@@ -44,7 +44,7 @@ public class PgSocketConnection extends SocketConnectionBase {
                             int preparedStatementCacheSize,
                             int preparedStatementCacheSqlLimit,
                             int pipeliningLimit,
-                            Context context) {
+                            ContextInternal context) {
     super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, pipeliningLimit, context);
   }
 
@@ -56,7 +56,7 @@ public class PgSocketConnection extends SocketConnectionBase {
     super.init();
   }
 
-  public void sendStartupMessage(String username, String password, String database, Map<String, String> properties, Handler<AsyncResult<Connection>> completionHandler) {
+  void sendStartupMessage(String username, String password, String database, Map<String, String> properties, Promise<Connection> completionHandler) {
     InitCommand cmd = new InitCommand(this, username, password, database, properties);
     schedule(cmd, completionHandler);
   }

@@ -17,6 +17,7 @@
 
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.Transaction;
@@ -31,7 +32,7 @@ public abstract class SqlConnectionImpl<C extends SqlConnectionImpl> extends Sql
   private volatile Handler<Void> closeHandler;
   private TransactionImpl tx;
 
-  public SqlConnectionImpl(Context context, Connection conn) {
+  public SqlConnectionImpl(ContextInternal context, Connection conn) {
     super(context, conn);
   }
 
@@ -45,16 +46,10 @@ public abstract class SqlConnectionImpl<C extends SqlConnectionImpl> extends Sql
 
   @Override
   public <R> void schedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
-    if (context == Vertx.currentContext()) {
-      if (tx != null) {
-        tx.schedule(cmd, handler);
-      } else {
-        conn.schedule(cmd, handler);
-      }
+    if (tx != null) {
+      tx.schedule(cmd, handler);
     } else {
-      context.runOnContext(v -> {
-        schedule(cmd, handler);
-      });
+      conn.schedule(cmd, context.promise(handler));
     }
   }
 

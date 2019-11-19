@@ -17,6 +17,7 @@
 
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
 import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
@@ -41,11 +42,11 @@ import java.util.stream.Collector;
 class PreparedQueryImpl implements PreparedQuery {
 
   private final Connection conn;
-  private final Context context;
+  private final ContextInternal context;
   private final PreparedStatement ps;
   private final AtomicBoolean closed = new AtomicBoolean();
 
-  PreparedQueryImpl(Connection conn, Context context, PreparedStatement ps) {
+  PreparedQueryImpl(Connection conn, ContextInternal context, PreparedStatement ps) {
     this.conn = conn;
     this.context = context;
     this.ps = ps;
@@ -91,7 +92,7 @@ class PreparedQueryImpl implements PreparedQuery {
           suspended,
           collector,
           resultHandler);
-        conn.schedule(cmd, handler);
+        conn.schedule(cmd, context.promise(handler));
       }
     } else {
       context.runOnContext(v -> execute(args, fetch, cursorId, suspended, collector, resultHandler, handler));
@@ -141,7 +142,7 @@ class PreparedQueryImpl implements PreparedQuery {
     }
     SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, handler);
     ExtendedBatchQueryCommand<R1> cmd = new ExtendedBatchQueryCommand<>(ps, argsList, collector, b);
-    conn.schedule(cmd, b);
+    conn.schedule(cmd, context.promise(b));
     return this;
   }
 
@@ -154,7 +155,7 @@ class PreparedQueryImpl implements PreparedQuery {
   public void close(Handler<AsyncResult<Void>> completionHandler) {
     if (closed.compareAndSet(false, true)) {
       CloseStatementCommand cmd = new CloseStatementCommand(ps);
-      conn.schedule(cmd, completionHandler);
+      conn.schedule(cmd, context.promise(completionHandler));
     } else {
       completionHandler.handle(Future.failedFuture("Already closed"));
     }
@@ -162,6 +163,6 @@ class PreparedQueryImpl implements PreparedQuery {
 
   void closeCursor(String cursorId, Handler<AsyncResult<Void>> handler) {
     CloseCursorCommand cmd = new CloseCursorCommand(cursorId, ps);
-    conn.schedule(cmd, handler);
+    conn.schedule(cmd, context.promise(handler));
   }
 }

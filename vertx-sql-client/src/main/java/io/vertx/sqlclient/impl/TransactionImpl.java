@@ -16,6 +16,7 @@
  */
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.impl.command.CommandResponse;
@@ -40,7 +41,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   private Handler<Void> failedHandler;
   private int status = ST_BEGIN;
 
-  public TransactionImpl(Context context, Connection conn, Handler<Void> disposeHandler) {
+  public TransactionImpl(ContextInternal context, Connection conn, Handler<Void> disposeHandler) {
     super(context, conn);
     this.disposeHandler = disposeHandler;
     ScheduledCommand<Boolean> b = doQuery("BEGIN", this::afterBegin);
@@ -57,11 +58,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   }
 
   private <R> void doSchedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
-    if (context == Vertx.currentContext()) {
-      conn.schedule(cmd, handler);
-    } else {
-      context.runOnContext(v -> conn.schedule(cmd, handler));
-    }
+    conn.schedule(cmd, context.promise(handler));
   }
 
   private synchronized void afterBegin(AsyncResult<?> ar) {

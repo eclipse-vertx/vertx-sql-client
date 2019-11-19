@@ -17,6 +17,7 @@
 
 package io.vertx.pgclient;
 
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.pgclient.impl.PgConnectionImpl;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.SqlResult;
@@ -52,7 +53,7 @@ public interface PgConnection extends SqlConnection {
    * @param handler the handler called with the connection or the failure
    */
   static void connect(Vertx vertx, PgConnectOptions options, Handler<AsyncResult<PgConnection>> handler) {
-    PgConnectionImpl.connect(vertx, options, handler);
+    PgConnectionImpl.connect((ContextInternal) vertx.getOrCreateContext(), options, handler);
   }
 
   /**

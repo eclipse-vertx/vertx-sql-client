@@ -20,7 +20,6 @@ package io.vertx.sqlclient.impl;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.core.*;
-import io.vertx.core.impl.NoStackTraceThrowable;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -35,7 +34,7 @@ public class ConnectionPool {
 
   private final Consumer<Handler<AsyncResult<Connection>>> connector;
   private final int maxSize;
-  private final ArrayDeque<Promise<Connection>> waiters = new ArrayDeque<>();
+  private final ArrayDeque<Handler<AsyncResult<Connection>>> waiters = new ArrayDeque<>();
   private final Set<PooledConnection> all = new HashSet<>();
   private final ArrayDeque<PooledConnection> available = new ArrayDeque<>();
   private int size;
@@ -65,13 +64,11 @@ public class ConnectionPool {
     return size;
   }
 
-  public void acquire(Handler<AsyncResult<Connection>> holder) {
+  public void acquire(Handler<AsyncResult<Connection>> waiter) {
     if (closed) {
       throw new IllegalStateException("Connection pool closed");
     }
-    Promise<Connection> promise = Promise.promise();
-    promise.future().setHandler(holder);
-    waiters.add(promise);
+    waiters.add(waiter);
     check();
   }
 
@@ -84,7 +81,7 @@ public class ConnectionPool {
       pooled.close();
     }
     Future<Connection> failure = Future.failedFuture("Connection pool closed");
-    for (Promise<Connection> pending : waiters) {
+    for (Handler<AsyncResult<Connection>> pending : waiters) {
       try {
         pending.handle(failure);
       } catch (Exception ignore) {
@@ -107,7 +104,7 @@ public class ConnectionPool {
     }
 
     @Override
-    public <R> void schedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
+    public <R> void schedule(CommandBase<R> cmd, Promise<R> handler) {
       conn.schedule(cmd, handler);
     }
 
@@ -192,11 +189,11 @@ public class ConnectionPool {
         while (waiters.size() > 0) {
           if (available.size() > 0) {
             PooledConnection proxy = available.poll();
-            Promise<Connection> waiter = waiters.poll();
-            waiter.complete(proxy);
+            Handler<AsyncResult<Connection>> waiter = waiters.poll();
+            waiter.handle(Future.succeededFuture(proxy));
           } else {
             if (size < maxSize) {
-              Promise<Connection> waiter = waiters.poll();
+              Handler<AsyncResult<Connection>> waiter = waiters.poll();
               size++;
               connector.accept(ar -> {
                 if (ar.succeeded()) {
@@ -204,10 +201,10 @@ public class ConnectionPool {
                   PooledConnection proxy = new PooledConnection(conn);
                   all.add(proxy);
                   conn.init(proxy);
-                  waiter.complete(proxy);
+                  waiter.handle(Future.succeededFuture(proxy));
                 } else {
                   size--;
-                  waiter.fail(ar.cause());
+                  waiter.handle(Future.failedFuture(ar.cause()));
                   check();
                 }
               });
@@ -216,8 +213,8 @@ public class ConnectionPool {
                 int numInProgress = size - all.size();
                 int numToFail = waiters.size() - (maxWaitQueueSize + numInProgress);
                 while (numToFail-- > 0) {
-                  Promise<Connection> waiter = waiters.pollLast();
-                  waiter.fail(new NoStackTraceThrowable("Max waiter size reached"));
+                  Handler<AsyncResult<Connection>> waiter = waiters.pollLast();
+                  waiter.handle(Future.failedFuture("Max waiter size reached"));
                 }
               }
               break;

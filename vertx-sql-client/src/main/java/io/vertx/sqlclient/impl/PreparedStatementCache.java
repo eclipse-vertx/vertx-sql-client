@@ -1,5 +1,6 @@
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.Promise;
 import io.vertx.sqlclient.impl.SocketConnectionBase.CachedPreparedStatement;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
 
@@ -29,7 +30,7 @@ class PreparedStatementCache extends LinkedHashMap<String, CachedPreparedStateme
         // close the statement after it has been evicted from the cache
         PreparedStatement statement = cachedPreparedStatementToRemove.resp.result();
         CloseStatementCommand cmd = new CloseStatementCommand(statement);
-        conn.schedule(cmd, ar -> {});
+        conn.schedule(cmd, Promise.promise()); // Shall be empty ?
       }
       return true;
     }

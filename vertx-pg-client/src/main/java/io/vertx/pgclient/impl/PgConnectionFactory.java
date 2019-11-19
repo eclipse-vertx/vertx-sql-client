@@ -17,10 +17,11 @@
 
 package io.vertx.pgclient.impl;
 
+import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.SslMode;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.core.*;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.net.*;
@@ -34,8 +35,6 @@ import java.util.Map;
 class PgConnectionFactory {
 
   private final NetClient client;
-  private final Context ctx;
-  private final boolean registerCloseHook;
   private final String host;
   private final int port;
   private final SslMode sslMode;
@@ -50,19 +49,8 @@ class PgConnectionFactory {
   private final int preparedStatementCacheSqlLimit;
   private final int pipeliningLimit;
   private final boolean isUsingDomainSocket;
-  private final Closeable hook;
 
-  PgConnectionFactory(Context context,
-                             boolean registerCloseHook,
-                             PgConnectOptions options) {
-
-    hook = this::close;
-    this.registerCloseHook = registerCloseHook;
-
-    ctx = context;
-    if (registerCloseHook) {
-      ctx.addCloseHook(hook);
-    }
+  PgConnectionFactory(VertxInternal vertx, PgConnectOptions options) {
 
     NetClientOptions netClientOptions = new NetClientOptions(options);
 
@@ -83,80 +71,46 @@ class PgConnectionFactory {
     this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
     this.preparedStatementCacheSqlLimit = options.getPreparedStatementCacheSqlLimit();
     this.isUsingDomainSocket = options.isUsingDomainSocket();
-
-    this.client = context.owner().createNetClient(netClientOptions);
-  }
-
-  // Called by hook
-  private void close(Handler<AsyncResult<Void>> completionHandler) {
-    client.close();
-    completionHandler.handle(Future.succeededFuture());
+    this.client = vertx.createNetClient(netClientOptions);
   }
 
   void close() {
-    if (registerCloseHook) {
-      ctx.removeCloseHook(hook);
-    }
     client.close();
   }
 
-  void connectAndInit(Handler<AsyncResult<Connection>> completionHandler) {
-    connect(ar -> {
-      if (ar.succeeded()) {
-        PgSocketConnection conn = ar.result();
+  Future<Connection> connectAndInit(ContextInternal ctx) {
+    return connect(ctx)
+      .flatMap(conn -> {
         conn.init();
-        conn.sendStartupMessage(username, password, database, properties, completionHandler);
-      } else {
-        completionHandler.handle(Future.failedFuture(ar.cause()));
-      }
-    });
+        return Future.<Connection>future(p -> conn.sendStartupMessage(username, password, database, properties, p))
+          .map(conn);
+      });
   }
 
-  void connect(Handler<AsyncResult<PgSocketConnection>> handler) {
+  Future<PgSocketConnection> connect(ContextInternal ctx) {
     switch (sslMode) {
       case DISABLE:
-        doConnect(false, handler);
-        break;
+        return doConnect(ctx, false);
       case ALLOW:
-        doConnect(false, ar -> {
-          if (ar.succeeded()) {
-            handler.handle(Future.succeededFuture(ar.result()));
-          } else {
-            doConnect(true, handler);
-          }
-        });
-        break;
+        return doConnect(ctx, false).recover(err -> doConnect(ctx, true));
       case PREFER:
-        doConnect(true, ar -> {
-          if (ar.succeeded()) {
-            handler.handle(Future.succeededFuture(ar.result()));
-          } else {
-            doConnect(false, handler);
-          }
-        });
-        break;
+        return doConnect(ctx, true).recover(err -> doConnect(ctx, false));
       case VERIFY_FULL:
         if (hostnameVerificationAlgorithm == null || hostnameVerificationAlgorithm.isEmpty()) {
-          handler.handle(Future.failedFuture(new IllegalArgumentException("Host verification algorithm must be specified under verify-full sslmode")));
-          return;
+          return ctx.failedFuture(new IllegalArgumentException("Host verification algorithm must be specified under verify-full sslmode"));
         }
       case VERIFY_CA:
         if (trustOptions == null) {
-          handler.handle(Future.failedFuture(new IllegalArgumentException("Trust options must be specified under verify-full or verify-ca sslmode")));
-          return;
+          return ctx.failedFuture(new IllegalArgumentException("Trust options must be specified under verify-full or verify-ca sslmode"));
         }
       case REQUIRE:
-        doConnect(true, handler);
-        break;
+        return doConnect(ctx, true);
       default:
-        throw new IllegalArgumentException("Unsupported SSL mode");
+        return ctx.failedFuture(new IllegalArgumentException("Unsupported SSL mode"));
     }
   }
 
-  private void doConnect(boolean ssl, Handler<AsyncResult<PgSocketConnection>> handler) {
-    if (Vertx.currentContext() != ctx) {
-      throw new IllegalStateException();
-    }
+  private Future<PgSocketConnection> doConnect(ContextInternal ctx, boolean ssl) {
     SocketAddress socketAddress;
     if (!isUsingDomainSocket) {
       socketAddress = SocketAddress.inetSocketAddress(port, host);
@@ -164,38 +118,31 @@ class PgConnectionFactory {
       socketAddress = SocketAddress.domainSocketAddress(host + "/.s.PGSQL." + port);
     }
 
-    Promise<NetSocket> promise = Promise.promise();
-    promise.future().setHandler(ar -> {
-      if (ar.succeeded()) {
-        NetSocketInternal socket = (NetSocketInternal) ar.result();
-        PgSocketConnection conn = newSocketConnection(socket);
-
-        if (ssl && !isUsingDomainSocket) {
-          // upgrade connection to SSL if needed
-          conn.upgradeToSSLConnection(ar2 -> {
-            if (ar2.succeeded()) {
-              handler.handle(Future.succeededFuture(conn));
-            } else {
-              handler.handle(Future.failedFuture(ar2.cause()));
-            }
-          });
-        } else {
-          handler.handle(Future.succeededFuture(conn));
-        }
-      } else {
-        handler.handle(Future.failedFuture(ar.cause()));
-      }
-    });
-
+    Future<NetSocket> soFut;
     try {
-      client.connect(socketAddress, null, promise);
+      soFut = client.connect(socketAddress, (String) null);
     } catch (Exception e) {
       // Client is closed
-      promise.fail(e);
+      return ctx.failedFuture(e);
+    }
+    Future<PgSocketConnection> connFut = soFut.map(so -> newSocketConnection(ctx, (NetSocketInternal) so));
+    if (ssl && !isUsingDomainSocket) {
+      // upgrade connection to SSL if needed
+      return connFut.flatMap(conn -> Future.future(p -> {
+        conn.upgradeToSSLConnection(ar2 -> {
+          if (ar2.succeeded()) {
+            p.complete(conn);
+          } else {
+            p.fail(ar2.cause());
+          }
+        });
+      }));
+    } else {
+      return connFut;
     }
   }
 
-  private PgSocketConnection newSocketConnection(NetSocketInternal socket) {
+  private PgSocketConnection newSocketConnection(ContextInternal ctx, NetSocketInternal socket) {
     return new PgSocketConnection(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, pipeliningLimit, ctx);
   }
 }

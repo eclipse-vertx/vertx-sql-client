@@ -1,6 +1,8 @@
 package io.vertx.mssqlclient.impl;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Promise;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.mssqlclient.impl.codec.MSSQLCodec;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
 import io.netty.channel.ChannelPipeline;
@@ -20,19 +22,23 @@ class MSSQLSocketConnection extends SocketConnectionBase {
                         int preparedStatementCacheSize,
                         int preparedStatementCacheSqlLimit,
                         int pipeliningLimit,
-                        Context context) {
+                        ContextInternal context) {
     super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, pipeliningLimit, context);
   }
 
   // command response should show what capabilities server provides
   void sendPreLoginMessage(boolean ssl, Handler<AsyncResult<Void>> completionHandler) {
     PreLoginCommand cmd = new PreLoginCommand(ssl);
-    schedule(cmd, completionHandler);
+    Promise<Void> promise = Promise.promise();
+    promise.future().setHandler(completionHandler);
+    schedule(cmd, promise);
   }
 
   void sendLoginMessage(String username, String password, String database, Map<String, String> properties, Handler<AsyncResult<Connection>> completionHandler) {
     InitCommand cmd = new InitCommand(this, username, password, database, properties);
-    schedule(cmd, completionHandler);
+    Promise<Connection> promise = Promise.promise();
+    promise.future().setHandler(completionHandler);
+    schedule(cmd, promise);
   }
 
   @Override

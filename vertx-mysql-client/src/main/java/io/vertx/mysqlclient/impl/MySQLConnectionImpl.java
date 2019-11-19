@@ -1,11 +1,11 @@
 package io.vertx.mysqlclient.impl;
 
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.mysqlclient.MySQLAuthOptions;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLConnection;
@@ -23,25 +23,22 @@ import io.vertx.sqlclient.impl.SqlConnectionImpl;
 public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> implements MySQLConnection {
 
   public static void connect(Vertx vertx, MySQLConnectOptions options, Handler<AsyncResult<MySQLConnection>> handler) {
-    Context ctx = Vertx.currentContext();
+    ContextInternal ctx = (ContextInternal) Vertx.currentContext();
     if (ctx != null) {
       MySQLConnectionFactory client;
       try {
-        client = new MySQLConnectionFactory(ctx, false, options);
+        client = new MySQLConnectionFactory(vertx, options);
       } catch (Exception e) {
         handler.handle(Future.failedFuture(e));
         return;
       }
-      client.connect(ar-> {
-        if (ar.succeeded()) {
-          Connection conn = ar.result();
-          MySQLConnectionImpl p = new MySQLConnectionImpl(client, ctx, conn);
-          conn.init(p);
-          handler.handle(Future.succeededFuture(p));
-        } else {
-          handler.handle(Future.failedFuture(ar.cause()));
-        }
-      });
+      client.connect(ctx)
+        .map(conn -> {
+          MySQLConnectionImpl mySQLConnection = new MySQLConnectionImpl(client, ctx, conn);
+          conn.init(mySQLConnection);
+          return (MySQLConnection)mySQLConnection;
+        })
+        .setHandler(handler);
     } else {
       vertx.runOnContext(v -> {
         connect(vertx, options, handler);
@@ -51,7 +48,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
 
   private final MySQLConnectionFactory factory;
 
-  public MySQLConnectionImpl(MySQLConnectionFactory factory, Context context, Connection conn) {
+  public MySQLConnectionImpl(MySQLConnectionFactory factory, ContextInternal context, Connection conn) {
     super(context, conn);
 
     this.factory = factory;

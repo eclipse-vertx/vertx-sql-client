@@ -2,6 +2,7 @@ package io.vertx.mysqlclient.impl;
 
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
@@ -18,8 +19,6 @@ import static io.vertx.mysqlclient.impl.codec.CapabilitiesFlag.*;
 
 public class MySQLConnectionFactory {
   private final NetClient netClient;
-  private final Context context;
-  private final boolean registerCloseHook;
   private final String host;
   private final int port;
   private final String username;
@@ -34,17 +33,9 @@ public class MySQLConnectionFactory {
   private final int preparedStatementCacheSize;
   private final int preparedStatementCacheSqlLimit;
   private final int initialCapabilitiesFlags;
-  private final Closeable hook;
 
-  public MySQLConnectionFactory(Context context, boolean registerCloseHook, MySQLConnectOptions options) {
+  public MySQLConnectionFactory(Vertx vertx, MySQLConnectOptions options) {
     NetClientOptions netClientOptions = new NetClientOptions(options);
-
-    this.context = context;
-    this.registerCloseHook = registerCloseHook;
-    this.hook = this::close;
-    if (registerCloseHook) {
-      context.addCloseHook(hook);
-    }
 
     this.host = options.getHost();
     this.port = options.getPort();
@@ -70,7 +61,7 @@ public class MySQLConnectionFactory {
       serverRsaPublicKey = options.getServerRsaPublicKeyValue();
     } else {
       if (options.getServerRsaPublicKeyPath() != null) {
-        serverRsaPublicKey = context.owner().fileSystem().readFileBlocking(options.getServerRsaPublicKeyPath());
+        serverRsaPublicKey = vertx.fileSystem().readFileBlocking(options.getServerRsaPublicKeyPath());
       }
     }
     this.serverRsaPublicKey = serverRsaPublicKey;
@@ -95,7 +86,7 @@ public class MySQLConnectionFactory {
     this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
     this.preparedStatementCacheSqlLimit = options.getPreparedStatementCacheSqlLimit();
 
-    this.netClient = context.owner().createNetClient(netClientOptions);
+    this.netClient = vertx.createNetClient(netClientOptions);
   }
 
   // Called by hook
@@ -105,25 +96,20 @@ public class MySQLConnectionFactory {
   }
 
   void close() {
-    if (registerCloseHook) {
-      context.removeCloseHook(hook);
-    }
     netClient.close();
   }
 
-  public void connect(Handler<AsyncResult<Connection>> handler) {
-    Promise<NetSocket> promise = Promise.promise();
-    promise.future().setHandler(ar1 -> {
-      if (ar1.succeeded()) {
-        NetSocketInternal socket = (NetSocketInternal) ar1.result();
-        MySQLSocketConnection conn = new MySQLSocketConnection(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, context);
-        conn.init();
-        conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, connectionAttributes, sslMode, initialCapabilitiesFlags, handler);
-      } else {
-        handler.handle(Future.failedFuture(ar1.cause()));
-      }
-    });
-    netClient.connect(port, host, promise);
+  public Future<Connection> connect(ContextInternal context) {
+    Future<NetSocket> fut = netClient.connect(port, host);
+    return fut
+      .map(so -> {
+        MySQLSocketConnection mySQLSocketConnection = new MySQLSocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, context);
+        mySQLSocketConnection.init();
+        return mySQLSocketConnection;
+      })
+      .flatMap(conn -> Future.future(p -> {
+        conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, connectionAttributes, sslMode, initialCapabilitiesFlags, p);
+      }));
   }
 
   private int initCapabilitiesFlags() {

@@ -17,14 +17,12 @@
 
 package io.vertx.sqlclient.impl;
 
-import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.CommandResponse;
-import io.vertx.sqlclient.impl.command.CommandScheduler;
 
-import java.util.function.Function;
+public interface Connection {
 
-public interface Connection extends CommandScheduler {
+  <R> void schedule(CommandBase<R> cmd, Promise<R> handler);
 
   void init(Holder holder);
 

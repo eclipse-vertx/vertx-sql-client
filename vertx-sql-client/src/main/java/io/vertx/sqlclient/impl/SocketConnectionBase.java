@@ -23,8 +23,10 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxException;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -32,7 +34,6 @@ import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.function.Function;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -51,7 +52,7 @@ public abstract class SocketConnectionBase implements Connection {
   private final int preparedStatementCacheSqlLimit;
   private final StringLongSequence psSeq = new StringLongSequence();
   private final ArrayDeque<CommandBase<?>> pending = new ArrayDeque<>();
-  private final Context context;
+  private final ContextInternal context;
   private int inflight;
   private Holder holder;
   private final int pipeliningLimit;
@@ -64,7 +65,7 @@ public abstract class SocketConnectionBase implements Connection {
                               int preparedStatementCacheSize,
                               int preparedStatementCacheSqlLimit,
                               int pipeliningLimit,
-                              Context context) {
+                              ContextInternal context) {
     this.socket = socket;
     this.context = context;
     this.pipeliningLimit = pipeliningLimit;
@@ -125,12 +126,17 @@ public abstract class SocketConnectionBase implements Connection {
     }
   }
 
-  private <R, T> void schedule(BiCommand<T, R> cmd, Handler<AsyncResult<R>> handler) {
-    schedule(cmd.first, cr -> {
+  @Override
+  public <R> void schedule(CommandBase<R> cmd, Promise<R> promise) {
+    context.dispatch(null, v -> doSchedule(cmd, promise));
+  }
+
+  private <R, T> void doSchedule(BiCommand<T, R> cmd, Handler<AsyncResult<R>> handler) {
+    doSchedule(cmd.first, cr -> {
       if (cr.succeeded()) {
         AsyncResult<CommandBase<R>> next = cmd.then.apply(cr.result());
         if (next.succeeded()) {
-          schedule(next.result(), handler);
+          doSchedule(next.result(), handler);
         } else {
           handler.handle(Future.failedFuture(next.cause()));
         }
@@ -140,8 +146,7 @@ public abstract class SocketConnectionBase implements Connection {
     });
   }
 
-  @Override
-  public <R> void schedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
+  private <R> void doSchedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
     if (handler == null) {
       throw new IllegalArgumentException();
     }
@@ -151,7 +156,7 @@ public abstract class SocketConnectionBase implements Connection {
 
     // Special handling for bi commands
     if (cmd instanceof BiCommand<?, ?>) {
-      schedule((BiCommand<? ,R>) cmd, handler);
+      doSchedule((BiCommand<? ,R>) cmd, handler);
       return;
     }
 

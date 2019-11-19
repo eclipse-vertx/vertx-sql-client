@@ -16,6 +16,7 @@
  */
 package io.vertx.pgclient.impl;
 
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.pgclient.PgNotification;
@@ -29,33 +30,27 @@ import io.vertx.core.Vertx;
 
 public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implements PgConnection  {
 
-  public static void connect(Vertx vertx, PgConnectOptions options, Handler<AsyncResult<PgConnection>> handler) {
-    Context ctx = Vertx.currentContext();
-    if (ctx != null) {
-      if (options.isUsingDomainSocket() && !vertx.isNativeTransportEnabled()) {
+  public static void connect(ContextInternal context, PgConnectOptions options, Handler<AsyncResult<PgConnection>> handler) {
+    if (Vertx.currentContext() == context) {
+      if (options.isUsingDomainSocket() && !context.owner().isNativeTransportEnabled()) {
         handler.handle(Future.failedFuture("Native transport is not available"));
       } else {
-        PgConnectionFactory client = new PgConnectionFactory(ctx, false, options);
-        client.connectAndInit(ar -> {
-          if (ar.succeeded()) {
-            Connection conn = ar.result();
-            PgConnectionImpl p = new PgConnectionImpl(client, ctx, conn);
-            conn.init(p);
-            handler.handle(Future.succeededFuture(p));
-          } else {
-            handler.handle(Future.failedFuture(ar.cause()));
-          }
-        });
+        PgConnectionFactory client = new PgConnectionFactory(context.owner(), options);
+        client.connectAndInit(context).map(conn -> {
+          PgConnectionImpl p = new PgConnectionImpl(client, context, conn);
+          conn.init(p);
+          return (PgConnection)p;
+        }).setHandler(handler);
       }
     } else {
-      vertx.runOnContext(v -> connect(vertx, options, handler));
+      context.runOnContext(v -> connect(context, options, handler));
     }
   }
 
   private final PgConnectionFactory factory;
   private volatile Handler<PgNotification> notificationHandler;
 
-  public PgConnectionImpl(PgConnectionFactory factory, Context context, Connection conn) {
+  PgConnectionImpl(PgConnectionFactory factory, ContextInternal context, Connection conn) {
     super(context, conn);
 
     this.factory = factory;
@@ -89,7 +84,7 @@ public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implem
   public PgConnection cancelRequest(Handler<AsyncResult<Void>> handler) {
     Context current = Vertx.currentContext();
     if (current == context) {
-      factory.connect(ar -> {
+      factory.connect(context).setHandler(ar -> {
         if (ar.succeeded()) {
           PgSocketConnection conn = ar.result();
           conn.sendCancelRequestMessage(this.processId(), this.secretKey(), handler);

@@ -17,6 +17,7 @@
 
 package io.vertx.pgclient;
 
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.pgclient.impl.PgPoolImpl;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlResult;
@@ -105,7 +106,7 @@ public interface PgPool extends Pool {
     if (connectOptions.isUsingDomainSocket()) {
       vertxOptions.setPreferNativeTransport(true);
     }
-    Vertx vertx = Vertx.vertx(vertxOptions);
+    VertxInternal vertx = (VertxInternal) Vertx.vertx(vertxOptions);
     return new PgPoolImpl(vertx.getOrCreateContext(), true, connectOptions, poolOptions);
   }
 
@@ -113,7 +114,7 @@ public interface PgPool extends Pool {
    * Like {@link #pool(PgConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static PgPool pool(Vertx vertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    return new PgPoolImpl(vertx.getOrCreateContext(), false, connectOptions, poolOptions);
+    return new PgPoolImpl(((VertxInternal)vertx).getOrCreateContext(), false, connectOptions, poolOptions);
   }
 
   PgPool preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);

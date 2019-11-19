@@ -19,6 +19,7 @@ package io.vertx.sqlclient.impl.pool;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.command.CommandResponse;
@@ -50,7 +51,7 @@ class SimpleConnection implements Connection {
   }
 
   @Override
-  public <R> void schedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
+  public <R> void schedule(CommandBase<R> cmd, Promise<R> handler) {
     throw new UnsupportedOperationException();
   }
 

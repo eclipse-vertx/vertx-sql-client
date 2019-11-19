@@ -17,6 +17,7 @@
 
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.core.*;
@@ -26,10 +27,10 @@ import io.vertx.core.*;
  */
 public abstract class SqlConnectionBase<C extends SqlConnectionBase> extends SqlClientBase<C> {
 
-  protected final Context context;
+  protected final ContextInternal context;
   protected final Connection conn;
 
-  protected SqlConnectionBase(Context context, Connection conn) {
+  protected SqlConnectionBase(ContextInternal context, Connection conn) {
     this.context = context;
     this.conn = conn;
   }

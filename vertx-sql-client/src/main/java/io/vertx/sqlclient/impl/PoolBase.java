@@ -17,19 +17,21 @@
 
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.Promise;
+import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.PromiseInternal;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.CommandResponse;
-import io.vertx.sqlclient.impl.command.CommandScheduler;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxException;
+
+import java.util.function.Function;
 
 /**
  * Todo :
@@ -42,29 +44,36 @@ import io.vertx.core.VertxException;
  */
 public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> implements Pool {
 
-  private final Context context;
+  private final ContextInternal context;
   private final ConnectionPool pool;
   private final boolean closeVertx;
 
-  public PoolBase(Context context, boolean closeVertx, PoolOptions options) {
+  public PoolBase(ContextInternal context, boolean closeVertx, PoolOptions options) {
     int maxSize = options.getMaxSize();
     if (maxSize < 1) {
       throw new IllegalArgumentException("Pool max size must be > 0");
     }
     this.context = context;
-    this.pool = new ConnectionPool(this::connect, maxSize, options.getMaxWaitQueueSize());
+    this.pool = new ConnectionPool(h -> connect(context, h), maxSize, options.getMaxWaitQueueSize());
     this.closeVertx = closeVertx;
   }
 
-  public abstract void connect(Handler<AsyncResult<Connection>> completionHandler);
+  /**
+   * Create a connection and connect to the database server.
+   *
+   * @param context the connection context
+   * @param completionHandler the handler completed with the result
+   */
+  public abstract void connect(ContextInternal context, Handler<AsyncResult<Connection>> completionHandler);
 
   @Override
   public void getConnection(Handler<AsyncResult<SqlConnection>> handler) {
-    Context current = Vertx.currentContext();
+    ContextInternal current = context.owner().getOrCreateContext();
+    ConnectionWaiter waiter = new ConnectionWaiter(current, handler);
     if (current == context) {
-      pool.acquire(new ConnectionWaiter(handler));
+      pool.acquire(waiter.promise);
     } else {
-      context.runOnContext(v -> getConnection(handler));
+      context.runOnContext(v -> pool.acquire(waiter.promise));
     }
   }
 
@@ -83,22 +92,27 @@ public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> i
 
   @Override
   public <R> void schedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
-    Context current = Vertx.currentContext();
+    ContextInternal current = context.owner().getOrCreateContext();
+    PromiseInternal<R> promise = current.promise(handler);
     if (current == context) {
-      pool.acquire(new CommandWaiter() {
-        @Override
-        protected void onSuccess(Connection conn) {
-          conn.schedule(cmd, handler);
-          conn.close(this);
-        }
-        @Override
-        protected void onFailure(Throwable cause) {
-          handler.handle(Future.failedFuture(cause));
-        }
-      });
+      schedule(cmd, promise);
     } else {
-      context.runOnContext(v -> schedule(cmd, handler));
+      context.runOnContext(v -> schedule(cmd, promise));
     }
+  }
+
+  private <R> void schedule(CommandBase<R> cmd, Promise<R> promise) {
+    pool.acquire(new CommandWaiter() {
+      @Override
+      protected void onSuccess(Connection conn) {
+        conn.schedule(cmd, promise);
+        conn.close(this);
+      }
+      @Override
+      protected void onFailure(Throwable cause) {
+        promise.fail(cause);
+      }
+    });
   }
 
   private abstract class CommandWaiter implements Connection.Holder, Handler<AsyncResult<Connection>> {
@@ -132,26 +146,28 @@ public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> i
     }
   }
 
-  protected abstract SqlConnectionImpl wrap(Context context, Connection conn);
+  protected abstract SqlConnectionImpl wrap(ContextInternal context, Connection conn);
 
-  private class ConnectionWaiter implements Handler<AsyncResult<Connection>> {
+  private class ConnectionWaiter {
 
+    private final ContextInternal context;
     private final Handler<AsyncResult<SqlConnection>> handler;
+    private final Promise<Connection> promise;
 
-    private ConnectionWaiter(Handler<AsyncResult<SqlConnection>> handler) {
+    private ConnectionWaiter(ContextInternal context, Handler<AsyncResult<SqlConnection>> handler) {
+      this.context = context;
       this.handler = handler;
-    }
+      this.promise = context.promise();
 
-    @Override
-    public void handle(AsyncResult<Connection> ar) {
-      if (ar.succeeded()) {
-        Connection conn = ar.result();
-        SqlConnectionImpl holder = wrap(context, conn);
-        conn.init(holder);
-        handler.handle(Future.succeededFuture(holder));
-      } else {
-        handler.handle(Future.failedFuture(ar.cause()));
-      }
+      Future<Connection> future = promise.future();
+      future.map(new Function<Connection, SqlConnection>() {
+        @Override
+        public SqlConnection apply(Connection conn) {
+          SqlConnectionImpl wrapper = wrap(context, conn);
+          conn.init(wrapper);
+          return wrapper;
+        }
+      }).setHandler(handler);
     }
   }
 

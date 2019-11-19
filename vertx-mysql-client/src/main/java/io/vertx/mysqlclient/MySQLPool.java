@@ -6,6 +6,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.mysqlclient.impl.MySQLPoolImpl;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Pool;
@@ -66,14 +67,14 @@ public interface MySQLPool extends Pool {
     }
     VertxOptions vertxOptions = new VertxOptions();
     Vertx vertx = Vertx.vertx(vertxOptions);
-    return new MySQLPoolImpl(vertx.getOrCreateContext(), true, connectOptions, poolOptions);
+    return new MySQLPoolImpl((ContextInternal) vertx.getOrCreateContext(), true, connectOptions, poolOptions);
   }
 
   /**
    * Like {@link #pool(MySQLConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static MySQLPool pool(Vertx vertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    return new MySQLPoolImpl(vertx.getOrCreateContext(), false, connectOptions, poolOptions);
+    return new MySQLPoolImpl((ContextInternal) vertx.getOrCreateContext(), false, connectOptions, poolOptions);
   }
 
   @Override
