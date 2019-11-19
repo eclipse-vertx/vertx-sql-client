@@ -1,5 +1,11 @@
 package io.vertx.mysqlclient.impl;
 
+import io.netty.util.collection.IntObjectHashMap;
+import io.netty.util.collection.IntObjectMap;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -231,10 +237,13 @@ public enum MySQLCollation {
   gb18030_unicode_520_ci("gb18030", "GB18030", 250),
   utf8mb4_0900_ai_ci("utf8mb4", "UTF-8", 255);
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(MySQLCollation.class);
+
   public static final List<String> SUPPORTED_COLLATION_NAMES = Arrays.stream(values()).map(Enum::name).collect(Collectors.toList());
   public static final List<String> SUPPORTED_CHARSET_NAMES = Arrays.stream(values()).map(MySQLCollation::mysqlCharsetName).distinct().collect(Collectors.toList());
 
   private static final Map<String, String> charsetToDefaultCollationMapping = new HashMap<>();
+  private static final IntObjectMap<Charset> idToJavaCharsetMapping = new IntObjectHashMap<>();
 
   static {
     charsetToDefaultCollationMapping.put("big5", "big5_chinese_ci");
@@ -278,6 +287,15 @@ public enum MySQLCollation {
     charsetToDefaultCollationMapping.put("cp932", "cp932_japanese_ci");
     charsetToDefaultCollationMapping.put("eucjpms", "eucjpms_japanese_ci");
     charsetToDefaultCollationMapping.put("gb18030", "gb18030_chinese_ci");
+
+    for (MySQLCollation collation : MySQLCollation.values()) {
+      try {
+        Charset charset = Charset.forName(collation.mappedJavaCharsetName);
+        idToJavaCharsetMapping.put(collation.collationId, charset);
+      } catch (Exception e) {
+        LOGGER.warn("Java charset: [" + collation.mysqlCharsetName + "] is not supported by this platform.");
+      }
+    }
   }
 
   private final String mysqlCharsetName;
@@ -299,461 +317,17 @@ public enum MySQLCollation {
   }
 
   /**
-   * Get the MySQL collation with a correlative collation id.
+   * Get the Java charset with a correlative collation id.
    *
    * @param collationId id of the collation
-   * @return the collation
+   * @return the charset
    */
-  public static MySQLCollation valueOfId(int collationId) {
-    switch (collationId) {
-      case 1:
-        return big5_chinese_ci;
-      case 2:
-        return latin2_czech_cs;
-      case 3:
-        return dec8_swedish_ci;
-      case 4:
-        return cp850_general_ci;
-      case 5:
-        return latin1_german1_ci;
-      case 6:
-        return hp8_english_ci;
-      case 7:
-        return koi8r_general_ci;
-      case 8:
-        return latin1_swedish_ci;
-      case 9:
-        return latin2_general_ci;
-      case 10:
-        return swe7_swedish_ci;
-      case 11:
-        return ascii_general_ci;
-      case 12:
-        return ujis_japanese_ci;
-      case 13:
-        return sjis_japanese_ci;
-      case 14:
-        return cp1251_bulgarian_ci;
-      case 15:
-        return latin1_danish_ci;
-      case 16:
-        return hebrew_general_ci;
-      case 18:
-        return tis620_thai_ci;
-      case 19:
-        return euckr_korean_ci;
-      case 20:
-        return latin7_estonian_cs;
-      case 21:
-        return latin2_hungarian_ci;
-      case 22:
-        return koi8u_general_ci;
-      case 23:
-        return cp1251_ukrainian_ci;
-      case 24:
-        return gb2312_chinese_ci;
-      case 25:
-        return greek_general_ci;
-      case 26:
-        return cp1250_general_ci;
-      case 27:
-        return latin2_croatian_ci;
-      case 28:
-        return gbk_chinese_ci;
-      case 29:
-        return cp1257_lithuanian_ci;
-      case 30:
-        return latin5_turkish_ci;
-      case 31:
-        return latin1_german2_ci;
-      case 32:
-        return armscii8_general_ci;
-      case 33:
-        return utf8_general_ci;
-      case 34:
-        return cp1250_czech_cs;
-      case 35:
-        return ucs2_general_ci;
-      case 36:
-        return cp866_general_ci;
-      case 37:
-        return keybcs2_general_ci;
-      case 38:
-        return macce_general_ci;
-      case 39:
-        return macroman_general_ci;
-      case 40:
-        return cp852_general_ci;
-      case 41:
-        return latin7_general_ci;
-      case 42:
-        return latin7_general_cs;
-      case 43:
-        return macce_bin;
-      case 44:
-        return cp1250_croatian_ci;
-      case 45:
-        return utf8mb4_general_ci;
-      case 46:
-        return utf8mb4_bin;
-      case 47:
-        return latin1_bin;
-      case 48:
-        return latin1_general_ci;
-      case 49:
-        return latin1_general_cs;
-      case 50:
-        return cp1251_bin;
-      case 51:
-        return cp1251_general_ci;
-      case 52:
-        return cp1251_general_cs;
-      case 53:
-        return macroman_bin;
-      case 54:
-        return utf16_general_ci;
-      case 55:
-        return utf16_bin;
-      case 56:
-        return utf16le_general_ci;
-      case 57:
-        return cp1256_general_ci;
-      case 58:
-        return cp1257_bin;
-      case 59:
-        return cp1257_general_ci;
-      case 60:
-        return utf32_general_ci;
-      case 61:
-        return utf32_bin;
-      case 62:
-        return utf16le_bin;
-      case 63:
-        return binary;
-      case 64:
-        return armscii8_bin;
-      case 65:
-        return ascii_bin;
-      case 66:
-        return cp1250_bin;
-      case 67:
-        return cp1256_bin;
-      case 68:
-        return cp866_bin;
-      case 69:
-        return dec8_bin;
-      case 70:
-        return greek_bin;
-      case 71:
-        return hebrew_bin;
-      case 72:
-        return hp8_bin;
-      case 73:
-        return keybcs2_bin;
-      case 74:
-        return koi8r_bin;
-      case 75:
-        return koi8u_bin;
-      case 77:
-        return latin2_bin;
-      case 78:
-        return latin5_bin;
-      case 79:
-        return latin7_bin;
-      case 80:
-        return cp850_bin;
-      case 81:
-        return cp852_bin;
-      case 82:
-        return swe7_bin;
-      case 83:
-        return utf8_bin;
-      case 84:
-        return big5_bin;
-      case 85:
-        return euckr_bin;
-      case 86:
-        return gb2312_bin;
-      case 87:
-        return gbk_bin;
-      case 88:
-        return sjis_bin;
-      case 89:
-        return tis620_bin;
-      case 90:
-        return ucs2_bin;
-      case 91:
-        return ujis_bin;
-      case 92:
-        return geostd8_general_ci;
-      case 93:
-        return geostd8_bin;
-      case 94:
-        return latin1_spanish_ci;
-      case 95:
-        return cp932_japanese_ci;
-      case 96:
-        return cp932_bin;
-      case 97:
-        return eucjpms_japanese_ci;
-      case 98:
-        return eucjpms_bin;
-      case 99:
-        return cp1250_polish_ci;
-      case 101:
-        return utf16_unicode_ci;
-      case 102:
-        return utf16_icelandic_ci;
-      case 103:
-        return utf16_latvian_ci;
-      case 104:
-        return utf16_romanian_ci;
-      case 105:
-        return utf16_slovenian_ci;
-      case 106:
-        return utf16_polish_ci;
-      case 107:
-        return utf16_estonian_ci;
-      case 108:
-        return utf16_spanish_ci;
-      case 109:
-        return utf16_swedish_ci;
-      case 110:
-        return utf16_turkish_ci;
-      case 111:
-        return utf16_czech_ci;
-      case 112:
-        return utf16_danish_ci;
-      case 113:
-        return utf16_lithuanian_ci;
-      case 114:
-        return utf16_slovak_ci;
-      case 115:
-        return utf16_spanish2_ci;
-      case 116:
-        return utf16_roman_ci;
-      case 117:
-        return utf16_persian_ci;
-      case 118:
-        return utf16_esperanto_ci;
-      case 119:
-        return utf16_hungarian_ci;
-      case 120:
-        return utf16_sinhala_ci;
-      case 121:
-        return utf16_german2_ci;
-      case 122:
-        return utf16_croatian_ci;
-      case 123:
-        return utf16_unicode_520_ci;
-      case 124:
-        return utf16_vietnamese_ci;
-      case 128:
-        return ucs2_unicode_ci;
-      case 129:
-        return ucs2_icelandic_ci;
-      case 130:
-        return ucs2_latvian_ci;
-      case 131:
-        return ucs2_romanian_ci;
-      case 132:
-        return ucs2_slovenian_ci;
-      case 133:
-        return ucs2_polish_ci;
-      case 134:
-        return ucs2_estonian_ci;
-      case 135:
-        return ucs2_spanish_ci;
-      case 136:
-        return ucs2_swedish_ci;
-      case 137:
-        return ucs2_turkish_ci;
-      case 138:
-        return ucs2_czech_ci;
-      case 139:
-        return ucs2_danish_ci;
-      case 140:
-        return ucs2_lithuanian_ci;
-      case 141:
-        return ucs2_slovak_ci;
-      case 142:
-        return ucs2_spanish2_ci;
-      case 143:
-        return ucs2_roman_ci;
-      case 144:
-        return ucs2_persian_ci;
-      case 145:
-        return ucs2_esperanto_ci;
-      case 146:
-        return ucs2_hungarian_ci;
-      case 147:
-        return ucs2_sinhala_ci;
-      case 148:
-        return ucs2_german2_ci;
-      case 149:
-        return ucs2_croatian_ci;
-      case 150:
-        return ucs2_unicode_520_ci;
-      case 151:
-        return ucs2_vietnamese_ci;
-      case 159:
-        return ucs2_general_mysql500_ci;
-      case 160:
-        return utf32_unicode_ci;
-      case 161:
-        return utf32_icelandic_ci;
-      case 162:
-        return utf32_latvian_ci;
-      case 163:
-        return utf32_romanian_ci;
-      case 164:
-        return utf32_slovenian_ci;
-      case 165:
-        return utf32_polish_ci;
-      case 166:
-        return utf32_estonian_ci;
-      case 167:
-        return utf32_spanish_ci;
-      case 168:
-        return utf32_swedish_ci;
-      case 169:
-        return utf32_turkish_ci;
-      case 170:
-        return utf32_czech_ci;
-      case 171:
-        return utf32_danish_ci;
-      case 172:
-        return utf32_lithuanian_ci;
-      case 173:
-        return utf32_slovak_ci;
-      case 174:
-        return utf32_spanish2_ci;
-      case 175:
-        return utf32_roman_ci;
-      case 176:
-        return utf32_persian_ci;
-      case 177:
-        return utf32_esperanto_ci;
-      case 178:
-        return utf32_hungarian_ci;
-      case 179:
-        return utf32_sinhala_ci;
-      case 180:
-        return utf32_german2_ci;
-      case 181:
-        return utf32_croatian_ci;
-      case 182:
-        return utf32_unicode_520_ci;
-      case 183:
-        return utf32_vietnamese_ci;
-      case 192:
-        return utf8_unicode_ci;
-      case 193:
-        return utf8_icelandic_ci;
-      case 194:
-        return utf8_latvian_ci;
-      case 195:
-        return utf8_romanian_ci;
-      case 196:
-        return utf8_slovenian_ci;
-      case 197:
-        return utf8_polish_ci;
-      case 198:
-        return utf8_estonian_ci;
-      case 199:
-        return utf8_spanish_ci;
-      case 200:
-        return utf8_swedish_ci;
-      case 201:
-        return utf8_turkish_ci;
-      case 202:
-        return utf8_czech_ci;
-      case 203:
-        return utf8_danish_ci;
-      case 204:
-        return utf8_lithuanian_ci;
-      case 205:
-        return utf8_slovak_ci;
-      case 206:
-        return utf8_spanish2_ci;
-      case 207:
-        return utf8_roman_ci;
-      case 208:
-        return utf8_persian_ci;
-      case 209:
-        return utf8_esperanto_ci;
-      case 210:
-        return utf8_hungarian_ci;
-      case 211:
-        return utf8_sinhala_ci;
-      case 212:
-        return utf8_german2_ci;
-      case 213:
-        return utf8_croatian_ci;
-      case 214:
-        return utf8_unicode_520_ci;
-      case 215:
-        return utf8_vietnamese_ci;
-      case 223:
-        return utf8_general_mysql500_ci;
-      case 224:
-        return utf8mb4_unicode_ci;
-      case 225:
-        return utf8mb4_icelandic_ci;
-      case 226:
-        return utf8mb4_latvian_ci;
-      case 227:
-        return utf8mb4_romanian_ci;
-      case 228:
-        return utf8mb4_slovenian_ci;
-      case 229:
-        return utf8mb4_polish_ci;
-      case 230:
-        return utf8mb4_estonian_ci;
-      case 231:
-        return utf8mb4_spanish_ci;
-      case 232:
-        return utf8mb4_swedish_ci;
-      case 233:
-        return utf8mb4_turkish_ci;
-      case 234:
-        return utf8mb4_czech_ci;
-      case 235:
-        return utf8mb4_danish_ci;
-      case 236:
-        return utf8mb4_lithuanian_ci;
-      case 237:
-        return utf8mb4_slovak_ci;
-      case 238:
-        return utf8mb4_spanish2_ci;
-      case 239:
-        return utf8mb4_roman_ci;
-      case 240:
-        return utf8mb4_persian_ci;
-      case 241:
-        return utf8mb4_esperanto_ci;
-      case 242:
-        return utf8mb4_hungarian_ci;
-      case 243:
-        return utf8mb4_sinhala_ci;
-      case 244:
-        return utf8mb4_german2_ci;
-      case 245:
-        return utf8mb4_croatian_ci;
-      case 246:
-        return utf8mb4_unicode_520_ci;
-      case 247:
-        return utf8mb4_vietnamese_ci;
-      case 248:
-        return gb18030_chinese_ci;
-      case 249:
-        return gb18030_bin;
-      case 250:
-        return gb18030_unicode_520_ci;
-      case 255:
-        return utf8mb4_0900_ai_ci;
-      default:
-        throw new UnsupportedOperationException("Collation of Id [" + collationId + "] is unknown to this client");
+  public static Charset getJavaCharsetByCollationId(int collationId) {
+    Charset charset = idToJavaCharsetMapping.get(collationId);
+    if (charset == null) {
+      throw new UnsupportedOperationException("Collation of Id [" + collationId + "] is unknown to this client");
+    } else {
+      return charset;
     }
   }
 
