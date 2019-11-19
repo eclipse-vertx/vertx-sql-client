@@ -12,6 +12,7 @@ import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.sqlclient.impl.Connection;
 
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Map;
 
@@ -26,6 +27,7 @@ public class MySQLConnectionFactory {
   private final String database;
   private final Map<String, String> connectionAttributes;
   private final String collation;
+  private final Charset charsetEncoding;
   private final boolean useAffectedRows;
   private final SslMode sslMode;
   private final Buffer serverRsaPublicKey;
@@ -47,9 +49,17 @@ public class MySQLConnectionFactory {
     if (options.getCollation() != null) {
       // override the collation if configured
       collation = options.getCollation();
+      MySQLCollation mySQLCollation = MySQLCollation.valueOfName(collation);
+      charsetEncoding = Charset.forName(mySQLCollation.mappedJavaCharsetName());
     } else {
       String charset = options.getCharset();
       collation = MySQLCollation.getDefaultCollationFromCharsetName(charset);
+      String characterEncoding = options.getCharacterEncoding();
+      if (characterEncoding == null) {
+        charsetEncoding = Charset.defaultCharset();
+      } else {
+        charsetEncoding = Charset.forName(options.getCharacterEncoding());
+      }
     }
     this.collation = collation;
     this.useAffectedRows = options.isUseAffectedRows();
@@ -108,7 +118,7 @@ public class MySQLConnectionFactory {
         return mySQLSocketConnection;
       })
       .flatMap(conn -> Future.future(p -> {
-        conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, connectionAttributes, sslMode, initialCapabilitiesFlags, p);
+        conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, connectionAttributes, sslMode, initialCapabilitiesFlags, charsetEncoding, p);
       }));
   }
 

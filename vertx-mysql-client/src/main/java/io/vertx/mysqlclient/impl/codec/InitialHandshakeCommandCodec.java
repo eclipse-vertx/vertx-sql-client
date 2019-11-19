@@ -64,6 +64,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
 
   private void handleInitialHandshake(ByteBuf payload) {
     encoder.clientCapabilitiesFlag = cmd.initialCapabilitiesFlags();
+    encoder.encodingCharset = cmd.charsetEncoding();
     short protocolVersion = payload.readUnsignedByte();
 
     String serverVersion = BufferUtils.readNullTerminatedString(payload, StandardCharsets.US_ASCII);
@@ -182,10 +183,10 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
         handleErrorPacketPayload(payload);
         break;
       case AUTH_SWITCH_REQUEST_STATUS_FLAG:
-        handleAuthSwitchRequest(cmd.password().getBytes(), payload);
+        handleAuthSwitchRequest(cmd.password().getBytes(StandardCharsets.UTF_8), payload);
         break;
       case AUTH_MORE_DATA_STATUS_FLAG:
-        handleAuthMoreData(cmd.password().getBytes(), payload);
+        handleAuthMoreData(cmd.password().getBytes(StandardCharsets.UTF_8), payload);
         break;
       default:
         completionHandler.handle(CommandResponse.failure(new IllegalStateException("Unhandled state with header: " + header)));
@@ -249,10 +250,10 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
       byte[] scrambledPassword;
       switch (authMethodName) {
         case "mysql_native_password":
-          scrambledPassword = Native41Authenticator.encode(password.getBytes(), nonce);
+          scrambledPassword = Native41Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), nonce);
           break;
         case "caching_sha2_password":
-          scrambledPassword = CachingSha2Authenticator.encode(password.getBytes(), nonce);
+          scrambledPassword = CachingSha2Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), nonce);
           break;
         default:
           completionHandler.handle(CommandResponse.failure(new UnsupportedOperationException("Unsupported authentication method: " + authMethodName)));

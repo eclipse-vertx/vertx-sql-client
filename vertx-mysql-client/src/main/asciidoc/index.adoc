@@ -114,6 +114,10 @@ For example, you can specify charset for a connection like
 {@link examples.MySQLClientExamples#configureConnectionCharset()}
 ----
 
+The Reactive MySQL Client will take `utf8mb4` as the default charset. String values like password and error messages are always decoded in `UTF-8` charset.
+
+`characterEncoding` option is used to determine which Java charset will be used to encode String values such as query string and parameter values, the charset is `UTF-8` by default and if it's set to `null` then the client will use the default Java charset instead.
+
 You can also specify collation for a connection like
 
 [source,$lang]
@@ -121,9 +125,9 @@ You can also specify collation for a connection like
 {@link examples.MySQLClientExamples#configureConnectionCollation()}
 ----
 
-MySQL will take `utf8mb4` as the default charset. Note setting a collation on the data object will override the charset option.
+Note setting a collation on the data object will override the *charset* and *characterEncoding* option.
 
-You can execute SQL `SHOW COLLATION;` or `SHOW CHARACTER SET;` to get the supported collations and charsets.
+You can execute SQL `SHOW COLLATION;` or `SHOW CHARACTER SET;` to get the supported collations and charsets by the server.
 
 More information about MySQL charsets and collations can be found in the https://dev.mysql.com/doc/refman/8.0/en/charset.html[MySQL Reference Manual].
 

@@ -30,6 +30,7 @@ import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
+import java.nio.charset.Charset;
 import java.util.Map;
 
 /**
@@ -55,8 +56,9 @@ public class MySQLSocketConnection extends SocketConnectionBase {
                           Map<String, String> properties,
                           SslMode sslMode,
                           int initialCapabilitiesFlags,
+                          Charset charsetEncoding,
                           Promise<Connection> completionHandler) {
-    InitialHandshakeCommand cmd = new InitialHandshakeCommand(this, username, password, database, collation, serverRsaPublicKey, properties, sslMode, initialCapabilitiesFlags);
+    InitialHandshakeCommand cmd = new InitialHandshakeCommand(this, username, password, database, collation, serverRsaPublicKey, properties, sslMode, initialCapabilitiesFlags, charsetEncoding);
     schedule(cmd, completionHandler);
   }
 
