@@ -73,7 +73,7 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
       for (int i = 0; i < numOfParams; i++) {
         Object value = params.getValue(i);
         if (value != null) {
-          DataTypeCodec.encodeBinary(parseDataTypeByEncodingValue(value), value, packet);
+          DataTypeCodec.encodeBinary(parseDataTypeByEncodingValue(value), value, encoder.encodingCharset, packet);
         } else {
           nullBitmap[i / 8] |= (1 << (i & 7));
         }
