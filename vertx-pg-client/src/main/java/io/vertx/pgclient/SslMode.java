@@ -16,10 +16,15 @@
  */
 package io.vertx.pgclient;
 
+import io.vertx.codegen.annotations.VertxGen;
+
 /**
- * The different values for the sslmode parameter provide different levels of protection.
- * See more information in <a href="https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-PROTECTION">Protection Provided in Different Modes</a>.
+ * The different values for the sslmode parameter provide different levels of
+ * protection. See more information in <a href=
+ * "https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-PROTECTION">Protection
+ * Provided in Different Modes</a>.
  */
+@VertxGen
 public enum SslMode {
 
   /**
