@@ -1,9 +1,12 @@
 package io.vertx.mysqlclient;
 
+import io.vertx.codegen.annotations.VertxGen;
+
 /**
  * This parameter specifies the desired security state of the connection to the server.
  * More information can be found in <a href="https://dev.mysql.com/doc/refman/8.0/en/connection-options.html#option_general_ssl-mode">MySQL Reference Manual</a>
  */
+@VertxGen
 public enum SslMode {
 
   /**
