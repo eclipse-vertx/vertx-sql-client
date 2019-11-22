@@ -69,17 +69,6 @@ public class Util {
     dst.writeByte(0);
   }
 
-  public static String buildInvalidArgsError(Tuple values, Stream<Class> types) {
-    List<Object> tmp = new ArrayList<>(values.size());
-    for (int i = 0;i < values.size();i++) {
-      tmp.add(values.getValue(i));
-    }
-    return "Values [" + tmp.stream().map(String::valueOf).collect(Collectors.joining(", ")) +
-      "] cannot be coerced to [" + types
-      .map(Class::getSimpleName)
-      .collect(Collectors.joining(", ")) + "]";
-  }
-
   private static final int FIRST_HALF_BYTE_MASK = 0x0F;
 
   public static int writeHexString(Buffer buffer, ByteBuf to) {
