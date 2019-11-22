@@ -1,0 +1,35 @@
+= Enums
+
+[[SslMode]]
+== SslMode
+
+++++
+ The different values for the sslmode parameter provide different levels of protection.
+ See more information in <a href="https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-PROTECTION">Protection Provided in Different Modes</a>.
+++++
+'''
+
+[cols=">25%,75%"]
+[frame="topbot"]
+|===
+^|Name | Description
+|[[DISABLE]]`DISABLE`|+++
+only try a non-SSL connection.
++++
+|[[ALLOW]]`ALLOW`|+++
+first try a non-SSL connection; if that fails, try an SSL connection.
++++
+|[[PREFER]]`PREFER`|+++
+first try an SSL connection; if that fails, try a non-SSL connection.
++++
+|[[REQUIRE]]`REQUIRE`|+++
+only try an SSL connection. If a root CA file is present, verify the certificate in the same way as if verify-ca was specified.
++++
+|[[VERIFY_CA]]`VERIFY_CA`|+++
+only try an SSL connection, and verify that the server certificate is issued by a trusted certificate authority (CA).
++++
+|[[VERIFY_FULL]]`VERIFY_FULL`|+++
+only try an SSL connection, verify that the server certificate is issued by a trusted CA and that the requested server host name matches that in the certificate.
++++
+|===
+
