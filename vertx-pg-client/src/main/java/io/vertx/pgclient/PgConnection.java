@@ -53,7 +53,17 @@ public interface PgConnection extends SqlConnection {
    * @param handler the handler called with the connection or the failure
    */
   static void connect(Vertx vertx, PgConnectOptions options, Handler<AsyncResult<PgConnection>> handler) {
-    PgConnectionImpl.connect((ContextInternal) vertx.getOrCreateContext(), options, handler);
+    Future<PgConnection> fut = connect(vertx, options);
+    if (handler != null) {
+      fut.onComplete(handler);
+    }
+  }
+
+  /**
+   * Like {@link #connect(Vertx, PgConnectOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  static Future<PgConnection> connect(Vertx vertx, PgConnectOptions options) {
+    return PgConnectionImpl.connect((ContextInternal) vertx.getOrCreateContext(), options);
   }
 
   /**
@@ -64,10 +74,24 @@ public interface PgConnection extends SqlConnection {
   }
 
   /**
+   * Like {@link #connect(Vertx, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  static Future<PgConnection> connect(Vertx vertx) {
+    return connect(vertx, PgConnectOptions.fromEnv());
+  }
+
+  /**
    * Like {@link #connect(Vertx, PgConnectOptions, Handler)} with options build from {@code connectionUri}.
    */
   static void connect(Vertx vertx, String connectionUri, Handler<AsyncResult<PgConnection>> handler) {
     connect(vertx, PgConnectOptions.fromUri(connectionUri), handler);
+  }
+
+  /**
+   * Like {@link #connect(Vertx, String, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  static Future<PgConnection> connect(Vertx vertx, String connectionUri) {
+    return connect(vertx, PgConnectOptions.fromUri(connectionUri));
   }
 
   /**

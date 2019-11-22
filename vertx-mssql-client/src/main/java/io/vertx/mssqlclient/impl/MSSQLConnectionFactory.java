@@ -34,7 +34,7 @@ class MSSQLConnectionFactory {
     this.netClient = vertx.createNetClient(netClientOptions);
   }
 
-  public Future<Connection> create(ContextInternal context) {
+  Future<Connection> create(ContextInternal context) {
     Future<NetSocket> fut = netClient.connect(port, host);
     return fut
       .map(so -> new MSSQLSocketConnection((NetSocketInternal) so, false, 0, 0, 1, context))

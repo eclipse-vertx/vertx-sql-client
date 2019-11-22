@@ -19,6 +19,7 @@ package io.vertx.sqlclient.impl;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderException;
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -150,7 +151,8 @@ public abstract class SocketConnectionBase implements Connection {
     if (handler == null) {
       throw new IllegalArgumentException();
     }
-    if (Vertx.currentContext() != context) {
+    Context context = Vertx.currentContext();
+    if (context != this.context) {
       throw new IllegalStateException();
     }
 

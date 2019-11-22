@@ -19,6 +19,7 @@ package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 /**
@@ -36,6 +37,11 @@ public interface Cursor {
   void read(int count, Handler<AsyncResult<RowSet<Row>>> handler);
 
   /**
+   * Like {@link #read(int, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<RowSet<Row>> read(int count);
+
+  /**
    * Returns {@code true} when the cursor has results in progress and the {@link #read} should be called to retrieve
    * them.
    *
@@ -48,9 +54,7 @@ public interface Cursor {
    * <p/>
    * It should be called for prepared queries executed with a fetch size.
    */
-  default void close() {
-    close(ar -> {});
-  }
+  Future<Void> close();
 
   /**
    * Like {@link #close()} but with a {@code completionHandler} called when the cursor has been released.

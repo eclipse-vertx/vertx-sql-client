@@ -54,12 +54,19 @@ class PreparedQueryImpl implements PreparedQuery {
 
   @Override
   public PreparedQuery execute(Tuple args, Handler<AsyncResult<RowSet<Row>>> handler) {
-    return execute((TupleInternal)args, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
+    return execute((TupleInternal)args, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, context.promise(handler));
+  }
+
+  @Override
+  public Future<RowSet<Row>> execute(Tuple args) {
+    Promise<RowSet<Row>> promise = context.promise();
+    execute((TupleInternal)args, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, promise);
+    return promise.future();
   }
 
   @Override
   public <R> PreparedQuery execute(Tuple args, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
-    return execute((TupleInternal)args, true, SqlResultImpl::new, collector, handler);
+    return execute((TupleInternal)args, true, SqlResultImpl::new, collector, context.promise(handler));
   }
 
   private <R1, R2 extends SqlResultBase<R1, R2>, R3 extends SqlResult<R1>> PreparedQuery execute(
@@ -67,7 +74,7 @@ class PreparedQueryImpl implements PreparedQuery {
     boolean singleton,
     Function<R1, R2> factory,
     Collector<Row, ?, R1> collector,
-    Handler<AsyncResult<R3>> handler) {
+    Promise<R3> handler) {
     SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, handler);
     return execute(args, 0, null, false, collector, b, b);
   }
@@ -78,7 +85,7 @@ class PreparedQueryImpl implements PreparedQuery {
                                boolean suspended,
                                Collector<Row, A, R> collector,
                                QueryResultHandler<R> resultHandler,
-                               Handler<AsyncResult<Boolean>> handler) {
+                               Promise<Boolean> handler) {
     if (context == Vertx.currentContext()) {
       String msg = ps.prepare(args);
       if (msg != null) {
@@ -92,7 +99,7 @@ class PreparedQueryImpl implements PreparedQuery {
           suspended,
           collector,
           resultHandler);
-        conn.schedule(cmd, context.promise(handler));
+        conn.schedule(cmd, handler);
       }
     } else {
       context.runOnContext(v -> execute(args, fetch, cursorId, suspended, collector, resultHandler, handler));
@@ -110,29 +117,57 @@ class PreparedQueryImpl implements PreparedQuery {
     if (msg != null) {
       throw new IllegalArgumentException(msg);
     }
-    return new CursorImpl(this, args);
+    return new CursorImpl(this, context, args);
   }
 
   @Override
-  public void close() {
-    close(ar -> {
-    });
+  public Future<Void> close() {
+    if (closed.compareAndSet(false, true)) {
+      Promise<Void> promise = context.promise();
+      CloseStatementCommand cmd = new CloseStatementCommand(ps);
+      conn.schedule(cmd, promise);
+      return promise.future();
+    } else {
+      return context.failedFuture("Already closed");
+    }
   }
 
   public PreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<RowSet<Row>>> handler) {
-    return batch(argsList, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
+    Future<RowSet<Row>> fut = batch(argsList);
+    if (handler != null) {
+      fut.setHandler(handler);
+    }
+    return this;
+  }
+
+  @Override
+  public Future<RowSet<Row>> batch(List<Tuple> argsList) {
+    Promise<RowSet<Row>> promise = context.promise();
+    batch(argsList, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, promise);
+    return promise.future();
   }
 
   @Override
   public <R> PreparedQuery batch(List<Tuple> argsList, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
-    return batch(argsList, SqlResultImpl::new, collector, handler);
+    Future<SqlResult<R>> fut = batch(argsList, collector);
+    if (handler != null) {
+      fut.setHandler(handler);
+    }
+    return this;
+  }
+
+  @Override
+  public <R> Future<SqlResult<R>> batch(List<Tuple> argsList, Collector<Row, ?, R> collector) {
+    Promise<SqlResult<R>> promise = context.promise();
+    batch(argsList, SqlResultImpl::new, collector, promise);
+    return promise.future();
   }
 
   private <R1, R2 extends SqlResultBase<R1, R2>, R3 extends SqlResult<R1>> PreparedQuery batch(
     List<Tuple> argsList,
     Function<R1, R2> factory,
     Collector<Row, ?, R1> collector,
-    Handler<AsyncResult<R3>> handler) {
+    Promise<R3> handler) {
     for  (Tuple args : argsList) {
       String msg = ps.prepare((TupleInternal)args);
       if (msg != null) {
@@ -140,7 +175,8 @@ class PreparedQueryImpl implements PreparedQuery {
         return this;
       }
     }
-    SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, handler);
+    Promise<R3> p = context.promise(handler);
+    SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, p);
     ExtendedBatchQueryCommand<R1> cmd = new ExtendedBatchQueryCommand<>(ps, argsList, collector, b);
     conn.schedule(cmd, context.promise(b));
     return this;
@@ -148,21 +184,19 @@ class PreparedQueryImpl implements PreparedQuery {
 
   @Override
   public RowStream<Row> createStream(int fetch, Tuple args) {
-    return new RowStreamImpl(this, fetch, args);
+    return new RowStreamImpl(this, context, fetch, args);
   }
 
   @Override
   public void close(Handler<AsyncResult<Void>> completionHandler) {
-    if (closed.compareAndSet(false, true)) {
-      CloseStatementCommand cmd = new CloseStatementCommand(ps);
-      conn.schedule(cmd, context.promise(completionHandler));
-    } else {
-      completionHandler.handle(Future.failedFuture("Already closed"));
+    Future<Void> fut = close();
+    if (completionHandler != null) {
+      fut.setHandler(completionHandler);
     }
   }
 
-  void closeCursor(String cursorId, Handler<AsyncResult<Void>> handler) {
+  void closeCursor(String cursorId, Promise<Void> promise) {
     CloseCursorCommand cmd = new CloseCursorCommand(cursorId, ps);
-    conn.schedule(cmd, context.promise(handler));
+    conn.schedule(cmd, promise);
   }
 }

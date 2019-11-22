@@ -17,12 +17,9 @@
 
 package io.vertx.sqlclient.impl;
 
-import io.vertx.core.Promise;
-import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.impl.command.CommandScheduler;
 
-public interface Connection {
-
-  <R> void schedule(CommandBase<R> cmd, Promise<R> handler);
+public interface Connection extends CommandScheduler  {
 
   void init(Holder holder);
 

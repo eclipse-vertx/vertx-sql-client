@@ -4,6 +4,7 @@ import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.mysqlclient.impl.MySQLConnectionImpl;
@@ -31,7 +32,17 @@ public interface MySQLConnection extends SqlConnection {
    * @param handler the handler called with the connection or the failure
    */
   static void connect(Vertx vertx, MySQLConnectOptions connectOptions, Handler<AsyncResult<MySQLConnection>> handler) {
-    MySQLConnectionImpl.connect(vertx, connectOptions, handler);
+    Future<MySQLConnection> fut = connect(vertx, connectOptions);
+    if (handler != null) {
+      fut.onComplete(handler);
+    }
+  }
+
+  /**
+   * Like {@link #connect(Vertx, MySQLConnectOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  static Future<MySQLConnection> connect(Vertx vertx, MySQLConnectOptions connectOptions) {
+    return MySQLConnectionImpl.connect(vertx, connectOptions);
   }
 
   /**
@@ -39,6 +50,13 @@ public interface MySQLConnection extends SqlConnection {
    */
   static void connect(Vertx vertx, String connectionUri, Handler<AsyncResult<MySQLConnection>> handler) {
     connect(vertx, fromUri(connectionUri), handler);
+  }
+
+  /**
+   * Like {@link #connect(Vertx, String, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  static Future<MySQLConnection> connect(Vertx vertx, String connectionUri) {
+    return connect(vertx, fromUri(connectionUri));
   }
 
   @Override
@@ -81,6 +99,11 @@ public interface MySQLConnection extends SqlConnection {
   MySQLConnection ping(Handler<AsyncResult<Void>> handler);
 
   /**
+   * Like {@link #ping(Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<Void> ping();
+
+  /**
    * Send a INIT_DB command to change the default schema of the connection.
    *
    * @param schemaName name of the schema to change to
@@ -91,6 +114,11 @@ public interface MySQLConnection extends SqlConnection {
   MySQLConnection specifySchema(String schemaName, Handler<AsyncResult<Void>> handler);
 
   /**
+   * Like {@link #specifySchema(String, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<Void> specifySchema(String schemaName);
+
+  /**
    * Send a STATISTICS command to get a human readable string of the server internal status.
    *
    * @param handler the handler notified with the execution result
@@ -98,6 +126,11 @@ public interface MySQLConnection extends SqlConnection {
    */
   @Fluent
   MySQLConnection getInternalStatistics(Handler<AsyncResult<String>> handler);
+
+  /**
+   * Like {@link #getInternalStatistics(Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<String> getInternalStatistics();
 
 
   /**
@@ -111,6 +144,11 @@ public interface MySQLConnection extends SqlConnection {
   MySQLConnection setOption(MySQLSetOption option, Handler<AsyncResult<Void>> handler);
 
   /**
+   * Like {@link #setOption(MySQLSetOption, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<Void> setOption(MySQLSetOption option);
+
+  /**
    * Send a RESET_CONNECTION command to reset the session state.
    *
    * @param handler the handler notified with the execution result
@@ -118,6 +156,11 @@ public interface MySQLConnection extends SqlConnection {
    */
   @Fluent
   MySQLConnection resetConnection(Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Like {@link #resetConnection(Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<Void> resetConnection();
 
   /**
    * Send a DEBUG command to dump debug information to the server's stdout.
@@ -129,6 +172,11 @@ public interface MySQLConnection extends SqlConnection {
   MySQLConnection debug(Handler<AsyncResult<Void>> handler);
 
   /**
+   * Like {@link #debug(Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<Void> debug();
+
+  /**
    * Send a CHANGE_USER command to change the user of the current connection, this operation will also reset connection state.
    *
    * @param options authentication options
@@ -137,4 +185,9 @@ public interface MySQLConnection extends SqlConnection {
    */
   @Fluent
   MySQLConnection changeUser(MySQLAuthOptions options, Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Like {@link #changeUser(MySQLAuthOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<Void> changeUser(MySQLAuthOptions options);
 }

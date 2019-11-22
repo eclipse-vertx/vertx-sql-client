@@ -1,6 +1,7 @@
 package io.vertx.mssqlclient.impl;
 
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.PromiseInternal;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLConnection;
 import io.vertx.core.AsyncResult;
@@ -19,21 +20,19 @@ public class MSSQLConnectionImpl extends SqlConnectionImpl<MSSQLConnectionImpl> 
     this.factory = factory;
   }
 
-  public static void connect(Vertx vertx, MSSQLConnectOptions options, Handler<AsyncResult<MSSQLConnection>> handler) {
-    ContextInternal ctx = (ContextInternal) Vertx.currentContext();
-    if (ctx != null) {
-      MSSQLConnectionFactory client = new MSSQLConnectionFactory(vertx, options);
+  public static Future<MSSQLConnection> connect(Vertx vertx, MSSQLConnectOptions options) {
+    ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
+    PromiseInternal<MSSQLConnection> promise = ctx.promise();
+    MSSQLConnectionFactory client = new MSSQLConnectionFactory(vertx, options);
+    ctx.dispatch(null, v -> {
       client.create(ctx)
         .<MSSQLConnection>map(conn -> {
-          MSSQLConnectionImpl c = new MSSQLConnectionImpl(client, ctx, conn);
-          conn.init(c);
-          return c;
-        }).setHandler(handler);
-    } else {
-      vertx.runOnContext(v -> {
-        connect(vertx, options, handler);
-      });
-    }
+          MSSQLConnectionImpl msConn = new MSSQLConnectionImpl(client, ctx, conn);
+          conn.init(msConn);
+          return msConn;
+        }).setHandler(promise);
+    });
+    return promise.future();
   }
 
   @Override

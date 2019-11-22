@@ -2,6 +2,7 @@ package io.vertx.mssqlclient;
 
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.Future;
 import io.vertx.mssqlclient.impl.MSSQLConnectionImpl;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -30,7 +31,17 @@ public interface MSSQLConnection extends SqlConnection {
    * @param handler        the handler called with the connection or the failure
    */
   static void connect(Vertx vertx, MSSQLConnectOptions connectOptions, Handler<AsyncResult<MSSQLConnection>> handler) {
-    MSSQLConnectionImpl.connect(vertx, connectOptions, handler);
+    Future<MSSQLConnection> fut = MSSQLConnectionImpl.connect(vertx, connectOptions);
+    if (handler != null) {
+      fut.setHandler(handler);
+    }
+  }
+
+  /**
+   * Like {@link #connect(Vertx, MSSQLConnectOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  static Future<MSSQLConnection> connect(Vertx vertx, MSSQLConnectOptions connectOptions) {
+    return MSSQLConnectionImpl.connect(vertx, connectOptions);
   }
 
   @Override

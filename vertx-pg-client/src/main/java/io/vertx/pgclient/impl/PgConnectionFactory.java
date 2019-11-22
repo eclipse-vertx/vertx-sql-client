@@ -111,6 +111,12 @@ class PgConnectionFactory {
   }
 
   private Future<PgSocketConnection> doConnect(ContextInternal ctx, boolean ssl) {
+    Promise<PgSocketConnection> promise = ctx.promise();
+    ctx.dispatch(null, v -> doConnect(ctx, ssl, promise));
+    return promise.future();
+  }
+
+  private void doConnect(ContextInternal ctx, boolean ssl, Promise<PgSocketConnection> promise) {
     SocketAddress socketAddress;
     if (!isUsingDomainSocket) {
       socketAddress = SocketAddress.inetSocketAddress(port, host);
@@ -123,12 +129,13 @@ class PgConnectionFactory {
       soFut = client.connect(socketAddress, (String) null);
     } catch (Exception e) {
       // Client is closed
-      return ctx.failedFuture(e);
+      promise.fail(e);
+      return;
     }
     Future<PgSocketConnection> connFut = soFut.map(so -> newSocketConnection(ctx, (NetSocketInternal) so));
     if (ssl && !isUsingDomainSocket) {
       // upgrade connection to SSL if needed
-      return connFut.flatMap(conn -> Future.future(p -> {
+      connFut = connFut.flatMap(conn -> Future.future(p -> {
         conn.upgradeToSSLConnection(ar2 -> {
           if (ar2.succeeded()) {
             p.complete(conn);
@@ -137,9 +144,8 @@ class PgConnectionFactory {
           }
         });
       }));
-    } else {
-      return connFut;
     }
+    connFut.setHandler(promise);
   }
 
   private PgSocketConnection newSocketConnection(ContextInternal ctx, NetSocketInternal socket) {

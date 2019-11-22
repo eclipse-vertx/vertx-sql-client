@@ -1,5 +1,6 @@
 package io.vertx.mssqlclient.impl;
 
+import io.vertx.core.Future;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLPool;
@@ -32,8 +33,8 @@ public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool 
   }
 
   @Override
-  public void begin(Handler<AsyncResult<Transaction>> handler) {
-    throw new UnsupportedOperationException("Transaction is not supported for now");
+  public Future<Transaction> begin() {
+    return Future.failedFuture("Transaction is not supported for now");
   }
 
   @Override

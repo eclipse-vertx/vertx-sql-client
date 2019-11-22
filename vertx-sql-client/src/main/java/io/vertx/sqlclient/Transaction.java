@@ -20,6 +20,7 @@ import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 import java.util.List;
@@ -41,9 +42,14 @@ public interface Transaction extends SqlClient {
   Transaction prepare(String sql, Handler<AsyncResult<PreparedQuery>> handler);
 
   /**
+   * Like {@link #prepare(String, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<PreparedQuery> prepare(String sql);
+
+  /**
    * Commit the current transaction.
    */
-  void commit();
+  Future<Void> commit();
 
   /**
    * Like {@link #commit} with an handler to be notified when the transaction commit has completed
@@ -53,7 +59,7 @@ public interface Transaction extends SqlClient {
   /**
    * Rollback the current transaction.
    */
-  void rollback();
+  Future<Void> rollback();
 
   /**
    * Like {@link #rollback} with an handler to be notified when the transaction rollback has completed

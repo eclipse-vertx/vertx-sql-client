@@ -31,8 +31,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 
-import java.util.function.Function;
-
 /**
  * Todo :
  *
@@ -58,6 +56,16 @@ public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> i
     this.closeVertx = closeVertx;
   }
 
+  @Override
+  protected <T> Promise<T> promise() {
+    return context.owner().promise();
+  }
+
+  @Override
+  protected <T> Promise<T> promise(Handler<AsyncResult<T>> handler) {
+    return context.owner().promise(handler);
+  }
+
   /**
    * Create a connection and connect to the database server.
    *
@@ -68,40 +76,53 @@ public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> i
 
   @Override
   public void getConnection(Handler<AsyncResult<SqlConnection>> handler) {
-    ContextInternal current = context.owner().getOrCreateContext();
-    ConnectionWaiter waiter = new ConnectionWaiter(current, handler);
-    if (current == context) {
-      pool.acquire(waiter.promise);
-    } else {
-      context.runOnContext(v -> pool.acquire(waiter.promise));
+    Future<SqlConnection> fut = getConnection();
+    if (handler != null) {
+      fut.setHandler(handler);
     }
   }
 
   @Override
-  public void begin(Handler<AsyncResult<Transaction>> handler) {
-    getConnection(ar -> {
-      if (ar.succeeded()) {
-        SqlConnectionImpl conn = (SqlConnectionImpl) ar.result();
-        Transaction tx = conn.begin(true);
-        handler.handle(Future.succeededFuture(tx));
-      } else {
-        handler.handle(Future.failedFuture(ar.cause()));
-      }
+  public Future<SqlConnection> getConnection() {
+    ContextInternal current = context.owner().getOrCreateContext();
+    Promise<Connection> promise = current.promise();
+    context.dispatch(promise, pool::acquire);
+    return promise.future().map(conn -> {
+      SqlConnectionImpl wrapper = wrap(current, conn);
+      conn.init(wrapper);
+      return wrapper;
     });
   }
 
   @Override
-  public <R> void schedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
-    ContextInternal current = context.owner().getOrCreateContext();
-    PromiseInternal<R> promise = current.promise(handler);
-    if (current == context) {
-      schedule(cmd, promise);
-    } else {
-      context.runOnContext(v -> schedule(cmd, promise));
+  public Future<Transaction> begin() {
+    Future<SqlConnection> fut = getConnection();
+    return fut.map(c -> {
+      SqlConnectionImpl conn = (SqlConnectionImpl) c;
+      return conn.begin(true);
+    });
+  }
+
+  @Override
+  public void begin(Handler<AsyncResult<Transaction>> handler) {
+    Future<Transaction> fut = begin();
+    if (handler != null) {
+      fut.setHandler(handler);
     }
   }
 
-  private <R> void schedule(CommandBase<R> cmd, Promise<R> promise) {
+  @Override
+  public <R> void schedule(CommandBase<R> cmd, Promise<R> handler) {
+    ContextInternal current = context.owner().getOrCreateContext();
+    PromiseInternal<R> promise = current.promise(handler);
+    if (current == context) {
+      biltoSchedule(cmd, promise);
+    } else {
+      context.runOnContext(v -> biltoSchedule(cmd, promise));
+    }
+  }
+
+  private <R> void biltoSchedule(CommandBase<R> cmd, Promise<R> promise) {
     pool.acquire(new CommandWaiter() {
       @Override
       protected void onSuccess(Connection conn) {
@@ -147,29 +168,6 @@ public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> i
   }
 
   protected abstract SqlConnectionImpl wrap(ContextInternal context, Connection conn);
-
-  private class ConnectionWaiter {
-
-    private final ContextInternal context;
-    private final Handler<AsyncResult<SqlConnection>> handler;
-    private final Promise<Connection> promise;
-
-    private ConnectionWaiter(ContextInternal context, Handler<AsyncResult<SqlConnection>> handler) {
-      this.context = context;
-      this.handler = handler;
-      this.promise = context.promise();
-
-      Future<Connection> future = promise.future();
-      future.map(new Function<Connection, SqlConnection>() {
-        @Override
-        public SqlConnection apply(Connection conn) {
-          SqlConnectionImpl wrapper = wrap(context, conn);
-          conn.init(wrapper);
-          return wrapper;
-        }
-      }).setHandler(handler);
-    }
-  }
 
   protected void doClose() {
     pool.close();

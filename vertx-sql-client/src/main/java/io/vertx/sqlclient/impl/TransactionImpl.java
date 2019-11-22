@@ -19,7 +19,6 @@ package io.vertx.sqlclient.impl;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Transaction;
-import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.QueryCommandBase;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
@@ -41,10 +40,10 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   private Handler<Void> failedHandler;
   private int status = ST_BEGIN;
 
-  public TransactionImpl(ContextInternal context, Connection conn, Handler<Void> disposeHandler) {
+  TransactionImpl(ContextInternal context, Connection conn, Handler<Void> disposeHandler) {
     super(context, conn);
     this.disposeHandler = disposeHandler;
-    ScheduledCommand<Boolean> b = doQuery("BEGIN", this::afterBegin);
+    ScheduledCommand<Boolean> b = doQuery("BEGIN", context.promise(this::afterBegin));
     doSchedule(b.cmd, b.handler);
   }
 
@@ -55,6 +54,16 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
       this.cmd = cmd;
       this.handler = handler;
     }
+  }
+
+  @Override
+  protected <T> Promise<T> promise() {
+    return context.promise();
+  }
+
+  @Override
+  protected <T> Promise<T> promise(Handler<AsyncResult<T>> handler) {
+    return context.promise(handler);
   }
 
   private <R> void doSchedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
@@ -112,7 +121,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   }
 
   @Override
-  public <R> void schedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
+  public <R> void schedule(CommandBase<R> cmd, Promise<R> handler) {
     schedule__(cmd, handler);
   }
 
@@ -141,10 +150,10 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
           if (h != null) {
             context.runOnContext(h);
           }
-          schedule__(doQuery("ROLLBACK", ar2 -> {
+          schedule__(doQuery("ROLLBACK", context.promise(ar2 -> {
             disposeHandler.handle(null);
             handler.handle(ar);
-          }));
+          })));
         } else {
           handler.handle(ar);
           checkPending();
@@ -154,8 +163,21 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   }
 
   @Override
-  public void commit() {
-    commit(null);
+  public Future<Void> commit() {
+    switch (status) {
+      case ST_BEGIN:
+      case ST_PENDING:
+      case ST_PROCESSING:
+        Promise<RowSet<Row>> promise = context.promise();
+        schedule__(doQuery("COMMIT", promise));
+        Future<RowSet<Row>> fut = promise.future();
+        fut.onComplete(ar -> disposeHandler.handle(null));
+        return fut.mapEmpty();
+      case ST_COMPLETED:
+        return context.failedFuture("Transaction already completed");
+      default:
+        throw new IllegalStateException();
+    }
   }
 
   public void commit(Handler<AsyncResult<Void>> handler) {
@@ -163,7 +185,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
       case ST_BEGIN:
       case ST_PENDING:
       case ST_PROCESSING:
-        schedule__(doQuery("COMMIT", ar -> {
+        schedule__(doQuery("COMMIT", context.promise(ar -> {
           disposeHandler.handle(null);
           if (handler != null) {
             if (ar.succeeded()) {
@@ -172,7 +194,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
               handler.handle(Future.failedFuture(ar.cause()));
             }
           }
-        }));
+        })));
         break;
       case ST_COMPLETED:
         if (handler != null) {
@@ -183,17 +205,19 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   }
 
   @Override
-  public void rollback() {
-    rollback(null);
+  public Future<Void> rollback() {
+    Promise<RowSet<Row>> promise = context.promise();
+    schedule__(doQuery("ROLLBACK", promise));
+    Future<Void> fut = promise.future().mapEmpty();
+    fut.onComplete(ar -> disposeHandler.handle(null));
+    return fut;
   }
 
   public void rollback(Handler<AsyncResult<Void>> handler) {
-    schedule__(doQuery("ROLLBACK", ar -> {
-      disposeHandler.handle(null);
-      if (handler != null) {
-        handler.handle(ar.mapEmpty());
-      }
-    }));
+    Future<Void> fut = rollback();
+    if (handler != null) {
+      fut.setHandler(handler);
+    }
   }
 
   @Override
@@ -207,7 +231,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
     return this;
   }
 
-  private ScheduledCommand<Boolean> doQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler) {
+  private ScheduledCommand<Boolean> doQuery(String sql, Promise<RowSet<Row>> handler) {
     SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> b = new SqlResultBuilder<>(RowSetImpl.FACTORY, handler);
     SimpleQueryCommand<RowSet<Row>> cmd = new SimpleQueryCommand<>(sql, false, RowSetImpl.COLLECTOR, b);
     return new ScheduledCommand<>(cmd, b);

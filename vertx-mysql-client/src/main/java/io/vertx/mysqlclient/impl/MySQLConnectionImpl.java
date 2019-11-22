@@ -3,6 +3,7 @@ package io.vertx.mysqlclient.impl;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
@@ -22,28 +23,26 @@ import io.vertx.sqlclient.impl.SqlConnectionImpl;
 
 public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> implements MySQLConnection {
 
-  public static void connect(Vertx vertx, MySQLConnectOptions options, Handler<AsyncResult<MySQLConnection>> handler) {
-    ContextInternal ctx = (ContextInternal) Vertx.currentContext();
-    if (ctx != null) {
-      MySQLConnectionFactory client;
-      try {
-        client = new MySQLConnectionFactory(vertx, options);
-      } catch (Exception e) {
-        handler.handle(Future.failedFuture(e));
-        return;
-      }
-      client.connect(ctx)
-        .map(conn -> {
-          MySQLConnectionImpl mySQLConnection = new MySQLConnectionImpl(client, ctx, conn);
-          conn.init(mySQLConnection);
-          return (MySQLConnection)mySQLConnection;
-        })
-        .setHandler(handler);
-    } else {
-      vertx.runOnContext(v -> {
-        connect(vertx, options, handler);
-      });
+  public static Future<MySQLConnection> connect(Vertx vertx, MySQLConnectOptions options) {
+    ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
+    MySQLConnectionFactory client;
+    try {
+      client = new MySQLConnectionFactory(vertx, options);
+    } catch (Exception e) {
+      return ctx.failedFuture(e);
     }
+    Promise<MySQLConnection> promise = ctx.promise();
+    ctx.dispatch(null, v -> connect(client, ctx, promise));
+    return promise.future();
+  }
+
+  private static void connect(MySQLConnectionFactory client, ContextInternal ctx, Promise<MySQLConnection> promise) {
+    client.connect(ctx)
+      .map(conn -> {
+        MySQLConnectionImpl mySQLConnection = new MySQLConnectionImpl(client, ctx, conn);
+        conn.init(mySQLConnection);
+        return (MySQLConnection) mySQLConnection;
+      }).onComplete(promise);
   }
 
   private final MySQLConnectionFactory factory;
@@ -61,48 +60,111 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
 
   @Override
   public MySQLConnection ping(Handler<AsyncResult<Void>> handler) {
-    PingCommand cmd = new PingCommand();
-    schedule(cmd, handler);
+    Future<Void> fut = ping();
+    if (handler != null) {
+      fut.onComplete(handler);
+    }
     return this;
+  }
+
+  @Override
+  public Future<Void> ping() {
+    Promise<Void> promise = promise();
+    schedule(new PingCommand(), promise);
+    return promise.future();
   }
 
   @Override
   public MySQLConnection specifySchema(String schemaName, Handler<AsyncResult<Void>> handler) {
-    InitDbCommand cmd = new InitDbCommand(schemaName);
-    schedule(cmd, handler);
+    Future<Void> fut = specifySchema(schemaName);
+    if (handler != null) {
+      fut.onComplete(handler);
+    }
     return this;
+  }
+
+  @Override
+  public Future<Void> specifySchema(String schemaName) {
+    Promise<Void> promise = promise();
+    schedule(new InitDbCommand(schemaName), promise);
+    return promise.future();
   }
 
   @Override
   public MySQLConnection getInternalStatistics(Handler<AsyncResult<String>> handler) {
-    StatisticsCommand cmd = new StatisticsCommand();
-    schedule(cmd, handler);
+    Future<String> fut = getInternalStatistics();
+    if (handler != null) {
+      fut.onComplete(handler);
+    }
     return this;
+  }
+
+  @Override
+  public Future<String> getInternalStatistics() {
+    Promise<String> promise = promise();
+    schedule(new StatisticsCommand(), promise);
+    return promise.future();
   }
 
   @Override
   public MySQLConnection setOption(MySQLSetOption option, Handler<AsyncResult<Void>> handler) {
-    SetOptionCommand cmd = new SetOptionCommand(option);
-    schedule(cmd, handler);
+    Future<Void> fut = setOption(option);
+    if (handler != null) {
+      fut.onComplete(handler);
+    }
     return this;
+  }
+
+  @Override
+  public Future<Void> setOption(MySQLSetOption option) {
+    Promise<Void> promise = promise();
+    schedule(new SetOptionCommand(option), promise);
+    return promise.future();
   }
 
   @Override
   public MySQLConnection resetConnection(Handler<AsyncResult<Void>> handler) {
-    ResetConnectionCommand cmd = new ResetConnectionCommand();
-    schedule(cmd, handler);
+    Future<Void> fut = resetConnection();
+    if (handler != null) {
+      fut.onComplete(handler);
+    }
     return this;
+  }
+
+  @Override
+  public Future<Void> resetConnection() {
+    Promise<Void> promise = promise();
+    schedule(new ResetConnectionCommand(), promise);
+    return promise.future();
   }
 
   @Override
   public MySQLConnection debug(Handler<AsyncResult<Void>> handler) {
-    DebugCommand cmd = new DebugCommand();
-    schedule(cmd, handler);
+    Future<Void> fut = debug();
+    if (handler != null) {
+      fut.onComplete(handler);
+    }
     return this;
   }
 
   @Override
+  public Future<Void> debug() {
+    Promise<Void> promise = promise();
+    schedule(new DebugCommand(), promise);
+    return promise.future();
+  }
+
+  @Override
   public MySQLConnection changeUser(MySQLAuthOptions options, Handler<AsyncResult<Void>> handler) {
+    Future<Void> fut = changeUser(options);
+    if (handler != null) {
+      fut.onComplete(handler);
+    }
+    return this;
+  }
+
+  @Override
+  public Future<Void> changeUser(MySQLAuthOptions options) {
     String collation;
     if (options.getCollation() != null) {
       // override the collation if configured
@@ -120,7 +182,8 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
       }
     }
     ChangeUserCommand cmd = new ChangeUserCommand(options.getUser(), options.getPassword(), options.getDatabase(), collation, serverRsaPublicKey, options.getProperties());
-    schedule(cmd, handler);
-    return this;
+    Promise<Void> promise = promise();
+    schedule(cmd, promise);
+    return promise.future();
   }
 }

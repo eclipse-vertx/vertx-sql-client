@@ -37,6 +37,16 @@ public abstract class SqlConnectionImpl<C extends SqlConnectionImpl> extends Sql
   }
 
   @Override
+  protected <T> Promise<T> promise() {
+    return context.promise();
+  }
+
+  @Override
+  protected <T> Promise<T> promise(Handler<AsyncResult<T>> handler) {
+    return context.promise(handler);
+  }
+
+  @Override
   public void handleClosed() {
     Handler<Void> handler = closeHandler;
     if (handler != null) {
@@ -45,11 +55,11 @@ public abstract class SqlConnectionImpl<C extends SqlConnectionImpl> extends Sql
   }
 
   @Override
-  public <R> void schedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
+  public <R> void schedule(CommandBase<R> cmd, Promise<R> promise) {
     if (tx != null) {
-      tx.schedule(cmd, handler);
+      tx.schedule(cmd, promise);
     } else {
-      conn.schedule(cmd, context.promise(handler));
+      conn.schedule(cmd, promise);
     }
   }
 

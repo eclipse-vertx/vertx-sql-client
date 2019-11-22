@@ -16,6 +16,7 @@
  */
 package io.vertx.pgclient.impl;
 
+import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
@@ -30,20 +31,17 @@ import io.vertx.core.Vertx;
 
 public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implements PgConnection  {
 
-  public static void connect(ContextInternal context, PgConnectOptions options, Handler<AsyncResult<PgConnection>> handler) {
-    if (Vertx.currentContext() == context) {
-      if (options.isUsingDomainSocket() && !context.owner().isNativeTransportEnabled()) {
-        handler.handle(Future.failedFuture("Native transport is not available"));
-      } else {
-        PgConnectionFactory client = new PgConnectionFactory(context.owner(), options);
-        client.connectAndInit(context).map(conn -> {
-          PgConnectionImpl p = new PgConnectionImpl(client, context, conn);
-          conn.init(p);
-          return (PgConnection)p;
-        }).setHandler(handler);
-      }
+  public static Future<PgConnection> connect(ContextInternal context, PgConnectOptions options) {
+    if (options.isUsingDomainSocket() && !context.owner().isNativeTransportEnabled()) {
+      return context.failedFuture("Native transport is not available");
     } else {
-      context.runOnContext(v -> connect(context, options, handler));
+      PgConnectionFactory client = new PgConnectionFactory(context.owner(), options);
+      return client.connectAndInit(context)
+        .map(conn -> {
+        PgConnectionImpl pgConn = new PgConnectionImpl(client, context, conn);
+        conn.init(pgConn);
+        return pgConn;
+      });
     }
   }
 

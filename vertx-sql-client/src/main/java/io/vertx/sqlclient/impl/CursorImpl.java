@@ -20,10 +20,11 @@ package io.vertx.sqlclient.impl;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.Tuple;
 
 import java.util.UUID;
 
@@ -33,14 +34,16 @@ import java.util.UUID;
 public class CursorImpl implements Cursor {
 
   private final PreparedQueryImpl ps;
+  private final ContextInternal context;
   private final TupleInternal params;
 
   private String id;
   private boolean closed;
   private SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> result;
 
-  CursorImpl(PreparedQueryImpl ps, TupleInternal params) {
+  CursorImpl(PreparedQueryImpl ps, ContextInternal context, TupleInternal params) {
     this.ps = ps;
+    this.context = context;
     this.params = params;
   }
 
@@ -53,30 +56,51 @@ public class CursorImpl implements Cursor {
   }
 
   @Override
-  public synchronized void read(int count, Handler<AsyncResult<RowSet<Row>>> handler) {
-    if (id == null) {
-      id = UUID.randomUUID().toString();
-      result = new SqlResultBuilder<>(RowSetImpl.FACTORY, handler);
-      ps.execute(params, count, id, false, RowSetImpl.COLLECTOR, result, result);
-    } else if (result.isSuspended()) {
-      result = new SqlResultBuilder<>(RowSetImpl.FACTORY, handler);
-      ps.execute(params, count, id, true, RowSetImpl.COLLECTOR, result, result);
-    } else {
-      throw new IllegalStateException();
+  public void read(int count, Handler<AsyncResult<RowSet<Row>>> handler) {
+    Future<RowSet<Row>> fut = read(count);
+    if (handler != null) {
+      fut.setHandler(handler);
     }
   }
 
   @Override
+  public synchronized Future<RowSet<Row>> read(int count) {
+    Promise<RowSet<Row>> promise = context.promise();
+    if (id == null) {
+      id = UUID.randomUUID().toString();
+      result = new SqlResultBuilder<>(RowSetImpl.FACTORY, promise);
+      ps.execute(params, count, id, false, RowSetImpl.COLLECTOR, result, result);
+    } else if (result.isSuspended()) {
+      result = new SqlResultBuilder<>(RowSetImpl.FACTORY, promise);
+      ps.execute(params, count, id, true, RowSetImpl.COLLECTOR, result, result);
+    } else {
+      throw new IllegalStateException();
+    }
+    return promise.future();
+  }
+
+  @Override
   public synchronized void close(Handler<AsyncResult<Void>> completionHandler) {
+    close (context.promise(completionHandler));
+  }
+
+  @Override
+  public synchronized Future<Void> close() {
+    Promise<Void> promise = context.promise();
+    close (promise);
+    return promise.future();
+  }
+
+  private synchronized void close(Promise<Void> promise) {
     if (!closed) {
       closed = true;
       if (id == null) {
-        completionHandler.handle(Future.succeededFuture());
+        promise.complete();
       } else {
         String id = this.id;
         this.id = null;
         result = null;
-        ps.closeCursor(id, completionHandler);
+        ps.closeCursor(id, promise);
       }
     }
   }

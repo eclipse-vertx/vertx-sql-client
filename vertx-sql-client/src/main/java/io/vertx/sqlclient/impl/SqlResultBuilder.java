@@ -18,6 +18,7 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -30,14 +31,14 @@ import java.util.function.Function;
 /**
  * A query result handler for building a {@link SqlResult}.
  */
-public class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlResult<T>> implements QueryResultHandler<T>, Handler<AsyncResult<Boolean>> {
+public class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlResult<T>> implements QueryResultHandler<T>, Promise<Boolean> {
 
-  private final Handler<AsyncResult<L>> handler;
+  private final Promise<L> handler;
   private final Function<T, R> factory;
   private R first;
   private boolean suspended;
 
-  SqlResultBuilder(Function<T, R> factory, Handler<AsyncResult<L>> handler) {
+  SqlResultBuilder(Function<T, R> factory, Promise<L> handler) {
     this.factory = factory;
     this.handler = handler;
   }
@@ -80,17 +81,25 @@ public class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlRes
   }
 
   @Override
-  public void handle(AsyncResult<Boolean> res) {
-    suspended = res.succeeded() && res.result();
-    if (res.failed()) {
-      handler.handle((AsyncResult) res);
-    } else if (first == null) {
-      handler.handle(Future.succeededFuture());
+  public boolean tryComplete(Boolean result) {
+    suspended = result;
+    if (first == null) {
+      return handler.tryComplete();
     } else if (first.failure != null) {
-      handler.handle(Future.failedFuture(first.failure));
+      return handler.tryFail(first.failure);
     } else {
-      handler.handle(Future.succeededFuture((L) first));
+      return handler.tryComplete((L) first);
     }
+  }
+
+  @Override
+  public boolean tryFail(Throwable cause) {
+    return handler.tryFail(cause);
+  }
+
+  @Override
+  public Future<Boolean> future() {
+    throw new UnsupportedOperationException();
   }
 
   public boolean isSuspended() {

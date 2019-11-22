@@ -21,6 +21,7 @@ import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 import java.util.List;
@@ -45,6 +46,11 @@ public interface SqlClient {
   SqlClient query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
   /**
+   * Like {@link #query(String, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<RowSet<Row>> query(String sql);
+
+  /**
    * Execute a simple query.
    *
    * @param sql the query SQL
@@ -56,6 +62,12 @@ public interface SqlClient {
   <R> SqlClient query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   /**
+   * Like {@link #query(String, Collector, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  @GenIgnore
+  <R> Future<SqlResult<R>> query(String sql, Collector<Row, ?, R> collector);
+
+  /**
    * Prepare and execute a query.
    *
    * @param sql the prepared query SQL
@@ -64,6 +76,11 @@ public interface SqlClient {
    */
   @Fluent
   SqlClient preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
+
+  /**
+   * Like {@link #preparedQuery(String, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<RowSet<Row>> preparedQuery(String sql);
 
   /**
    * Prepare and execute a query.
@@ -77,6 +94,12 @@ public interface SqlClient {
   <R> SqlClient preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   /**
+   * Like {@link #preparedQuery(String, Collector, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  @GenIgnore
+  <R> Future<SqlResult<R>> preparedQuery(String sql, Collector<Row, ?, R> collector);
+
+  /**
    * Prepare and execute a query.
    *
    * @param sql the prepared query SQL
@@ -86,6 +109,11 @@ public interface SqlClient {
    */
   @Fluent
   SqlClient preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
+
+  /**
+   * Like {@link #preparedQuery(String, Tuple, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<RowSet<Row>> preparedQuery(String sql, Tuple arguments);
 
   /**
    * Prepare and execute a query.
@@ -100,6 +128,12 @@ public interface SqlClient {
   <R> SqlClient preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   /**
+   * Like {@link #preparedQuery(String, Tuple, Collector, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  @GenIgnore
+  <R> Future<SqlResult<R>> preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector);
+
+  /**
    * Prepare and execute a createBatch.
    *
    * @param sql the prepared query SQL
@@ -109,6 +143,11 @@ public interface SqlClient {
    */
   @Fluent
   SqlClient preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
+
+  /**
+   * Like {@link #preparedBatch(String, List, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<RowSet<Row>> preparedBatch(String sql, List<Tuple> batch);
 
   /**
    * Prepare and execute a createBatch.
@@ -121,6 +160,12 @@ public interface SqlClient {
    */
   @GenIgnore
   <R> SqlClient preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+
+  /**
+   * Like {@link #preparedBatch(String, List, Collector, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  @GenIgnore
+  <R> Future<SqlResult<R>> preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector);
 
   /**
    * Close the client and release the associated resources.

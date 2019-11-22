@@ -20,6 +20,7 @@ package io.vertx.sqlclient;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 import java.util.List;
@@ -69,12 +70,22 @@ public interface Pool extends SqlClient {
   void getConnection(Handler<AsyncResult<SqlConnection>> handler);
 
   /**
+   * Like {@link #getConnection(Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<SqlConnection> getConnection();
+
+  /**
    * Borrow a connection from the pool and begin a transaction, the underlying connection will be returned
    * to the pool when the transaction ends.
    *
    * @return the transaction
    */
   void begin(Handler<AsyncResult<Transaction>> handler);
+
+  /**
+   * Like {@link #begin(Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<Transaction> begin();
 
   /**
    * Close the pool and release the associated resources.

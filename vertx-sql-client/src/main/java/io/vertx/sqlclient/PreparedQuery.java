@@ -17,6 +17,7 @@
 
 package io.vertx.sqlclient;
 
+import io.vertx.core.Future;
 import io.vertx.sqlclient.impl.ArrayTuple;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
@@ -44,6 +45,13 @@ public interface PreparedQuery {
   }
 
   /**
+   * Like {@link #execute(Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  default Future<RowSet<Row>> execute() {
+    return execute(ArrayTuple.EMPTY);
+  }
+
+  /**
    * Calls {@link #execute(Tuple, Collector, Handler)} with an empty tuple argument.
    */
   @GenIgnore
@@ -59,6 +67,11 @@ public interface PreparedQuery {
    */
   @Fluent
   PreparedQuery execute(Tuple args, Handler<AsyncResult<RowSet<Row>>> handler);
+
+  /**
+   * Like {@link #execute(Tuple, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<RowSet<Row>> execute(Tuple args);
 
   /**
    * Create a cursor with the provided {@code arguments}.
@@ -109,6 +122,11 @@ public interface PreparedQuery {
   PreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<RowSet<Row>>> handler);
 
   /**
+   * Like {@link #batch(List, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<RowSet<Row>> batch(List<Tuple> argsList);
+
+  /**
    * Execute a batch.
    *
    * @param argsList the list of tuple for the batch
@@ -119,9 +137,15 @@ public interface PreparedQuery {
   <R> PreparedQuery batch(List<Tuple> argsList, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   /**
+   * Like {@link #batch(List, Collector, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  @GenIgnore
+  <R> Future<SqlResult<R>> batch(List<Tuple> argsList, Collector<Row, ?, R> collector);
+
+  /**
    * Close the prepared query and release its resources.
    */
-  void close();
+  Future<Void> close();
 
   /**
    * Like {@link #close()} but notifies the {@code completionHandler} when it's closed.
