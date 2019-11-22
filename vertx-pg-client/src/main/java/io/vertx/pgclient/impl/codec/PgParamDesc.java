@@ -17,6 +17,7 @@
 package io.vertx.pgclient.impl.codec;
 
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.impl.ErrorMessageFactory;
 import io.vertx.sqlclient.impl.ParamDesc;
 import io.vertx.pgclient.impl.util.Util;
 import io.vertx.sqlclient.impl.TupleInternal;
@@ -42,26 +43,24 @@ class PgParamDesc extends ParamDesc {
 
   @Override
   public String prepare(TupleInternal values) {
-    if (values.size() != paramDataTypes.length) {
-      return buildReport(values);
+    int numberOfParams = values.size();
+    int paramDescLength = paramDataTypes.length;
+    if (numberOfParams != paramDescLength) {
+      return ErrorMessageFactory.buildWhenArgumentsLengthNotMatched(paramDescLength, numberOfParams);
     }
-    for (int i = 0;i < paramDataTypes.length;i++) {
+    for (int i = 0; i < paramDescLength; i++) {
       DataType paramDataType = paramDataTypes[i];
       Object value = values.getValue(i);
       Object val = DataTypeCodec.prepare(paramDataType, value);
       if (val != value) {
         if (val == DataTypeCodec.REFUSED_SENTINEL) {
-          return buildReport(values);
+          return ErrorMessageFactory.buildWhenArgumentsTypeNotMatched(paramDataType.decodingType, i, value);
         } else {
           values.setValue(i, val);
         }
       }
     }
     return null;
-  }
-
-  private String buildReport(Tuple values) {
-    return Util.buildInvalidArgsError(values, Stream.of(paramDataTypes).map(type -> type.decodingType));
   }
 
   @Override
