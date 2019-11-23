@@ -196,6 +196,7 @@ Currently the client supports the following MySQL types
 * BIGINT (`java.lang.Long`)
 * FLOAT (`java.lang.Float`)
 * DOUBLE (`java.lang.Double`)
+* BIT (`java.lang.Long`)
 * NUMERIC (`io.vertx.sqlclient.data.Numeric`)
 * DATE (`java.time.LocalDate`)
 * DATETIME (`java.time.LocalDateTime`)
@@ -253,6 +254,9 @@ MySQL `JSON` data type is represented by the following Java types:
 ----
 {@link examples.MySQLClientExamples#jsonExample()}
 ----
+
+=== Handling BIT
+The `BIT` data type is mapped to `java.lang.Long` type, but Java has no notion of unsigned numeric values, so if you want to insert or update a record with the max value of `BIT(64)`, you can do some tricks setting the parameter to `-1L`.
 
 === Handling NUMERIC
 

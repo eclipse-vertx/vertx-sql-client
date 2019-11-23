@@ -36,15 +36,16 @@ CREATE TABLE datatype
     `test_set`     SET ('a', 'b', 'c', 'd'),
     test_year      YEAR,
     test_timestamp TIMESTAMP,
-    test_datetime  DATETIME(6)
+    test_datetime  DATETIME(6),
+    `test_bit`     BIT(64)
 );
 
 INSERT INTO datatype
 VALUES (1, 'HELLO', 'HELLO, WORLD', 'TINYBLOB', 'BLOB', 'MEDIUMBLOB', 'LONGBLOB', 'TINYTEXT', 'TEXT', 'MEDIUMTEXT',
-        'LONGTEXT', 'small', 'a,b', '2019', '2000-01-01 10:20:30', '2000-01-01 10:20:30.123456');
+        'LONGTEXT', 'small', 'a,b', '2019', '2000-01-01 10:20:30', '2000-01-01 10:20:30.123456', b'11110');
 INSERT INTO datatype
 VALUES (2, 'hello', 'hello, world', 'tinyblob', 'blob', 'mediumblob', 'longblob', 'tinytext', 'text', 'mediumtext',
-        'longtext', 'large', 'b,c,d', '2019', '2000-01-01 10:20:30', '2000-01-01 10:20:30.123456');
+        'longtext', 'large', 'b,c,d', '2019', '2000-01-01 10:20:30', '2000-01-01 10:20:30.123456', b'11110');
 
 # TFB tables
 
