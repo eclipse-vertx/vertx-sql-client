@@ -3,6 +3,8 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.data.Numeric;
 
 import java.time.Duration;
@@ -33,6 +35,8 @@ public enum DataType {
   JSON(ColumnDefinition.ColumnType.MYSQL_TYPE_JSON, Object.class, Object.class),
   NULL(ColumnDefinition.ColumnType.MYSQL_TYPE_NULL, Object.class, Object.class); // useful for mariadb prepare statement response
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(DataType.class);
+
   private static IntObjectMap<DataType> idToDataType = new IntObjectHashMap<>();
 
   static {
@@ -54,9 +58,8 @@ public enum DataType {
   public static DataType valueOf(int value) {
     DataType dataType = idToDataType.get(value);
     if (dataType == null) {
-//      logger.warn("MySQL type =" + value + " not handled - using unknown type instead");
-      //TODO need better handling
-      return null;
+      LOGGER.warn(String.format("MySQL data type Id =[%d] not handled - using string type instead", value));
+      return VARSTRING;
     } else {
       return dataType;
     }
