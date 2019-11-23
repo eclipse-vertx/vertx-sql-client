@@ -58,6 +58,8 @@ class DataTypeCodec {
           return textDecodeFloat(charset, buffer, index, length);
         case DOUBLE:
           return textDecodeDouble(charset, buffer, index, length);
+        case BIT:
+          return textDecodeBit(charset, buffer, index, length);
         case NUMERIC:
           return textDecodeNUMERIC(charset, buffer, index, length);
         case DATE:
@@ -160,6 +162,8 @@ class DataTypeCodec {
         return binaryDecodeFloat(buffer);
       case DOUBLE:
         return binaryDecodeDouble(buffer);
+      case BIT:
+        return binaryDecodeBit(buffer);
       case NUMERIC:
         return binaryDecodeNumeric(charset, buffer);
       case DATE:
@@ -349,6 +353,14 @@ class DataTypeCodec {
     return buffer.readDoubleLE();
   }
 
+  private static Long binaryDecodeBit(ByteBuf buffer) {
+    int length = (int) BufferUtils.readLengthEncodedInteger(buffer);
+    int idx = buffer.readerIndex();
+    Long result = decodeBit(buffer, buffer.readerIndex(), length);
+    buffer.readerIndex(idx + length);
+    return result;
+  }
+
   private static Numeric binaryDecodeNumeric(Charset charset, ByteBuf buffer) {
     return Numeric.parse(BufferUtils.readLengthEncodedString(buffer, charset));
   }
@@ -473,6 +485,10 @@ class DataTypeCodec {
     return Double.parseDouble(buffer.toString(index, length, charset));
   }
 
+  private static Long textDecodeBit(Charset charset, ByteBuf buffer, int index, int length) {
+    return decodeBit(buffer, index, length);
+  }
+
   private static Number textDecodeNUMERIC(Charset charset, ByteBuf buff, int index, int length) {
     return Numeric.parse(buff.toString(index, length, charset));
   }
@@ -568,5 +584,15 @@ class DataTypeCodec {
 
   private static boolean isBinaryField(int columnDefinitionFlags) {
     return (columnDefinitionFlags & ColumnDefinition.ColumnDefinitionFlags.BINARY_FLAG) != 0;
+  }
+
+  private static Long decodeBit(ByteBuf buffer, int index, int length) {
+    byte[] value = new byte[length];
+    buffer.getBytes(index, value, 0, length);
+    long result = 0;
+    for (byte b : value) {
+      result = (b & 0xFF) | (result << 8);
+    }
+    return result;
   }
 }

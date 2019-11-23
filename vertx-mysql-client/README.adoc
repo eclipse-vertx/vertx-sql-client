@@ -18,7 +18,6 @@ Documentation:
 
 these data types are not fully supported yet:
 
-* [ ] Numeric: BIT
 * [ ] Spatial data types
 
 Contributions are welcome!
