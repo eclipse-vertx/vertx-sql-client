@@ -19,7 +19,9 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
-import static io.vertx.mysqlclient.impl.codec.Packets.*;
+import static io.vertx.mysqlclient.impl.codec.Packets.ERROR_PACKET_HEADER;
+import static io.vertx.mysqlclient.impl.codec.Packets.EnumCursorType.CURSOR_TYPE_NO_CURSOR;
+import static io.vertx.mysqlclient.impl.codec.Packets.EnumCursorType.CURSOR_TYPE_READ_ONLY;
 
 class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
   ExtendedQueryCommandCodec(ExtendedQueryCommand<R> cmd) {
@@ -39,11 +41,10 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
       sendStatementFetchCommand(statement.statementId, cmd.fetch());
     } else {
       if (cmd.fetch() > 0) {
-        //TODO Cursor_type is READ_ONLY?
-        sendStatementExecuteCommand(statement.statementId, statement.paramDesc.paramDefinitions(), sendType, cmd.params(), (byte) 0x01);
+        sendStatementExecuteCommand(statement.statementId, statement.paramDesc.paramDefinitions(), sendType, cmd.params(), CURSOR_TYPE_READ_ONLY);
       } else {
         // CURSOR_TYPE_NO_CURSOR
-        sendStatementExecuteCommand(statement.statementId, statement.paramDesc.paramDefinitions(), sendType, cmd.params(), (byte) 0x00);
+        sendStatementExecuteCommand(statement.statementId, statement.paramDesc.paramDefinitions(), sendType, cmd.params(), CURSOR_TYPE_NO_CURSOR);
       }
     }
   }
