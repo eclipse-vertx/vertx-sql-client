@@ -1,13 +1,12 @@
 package io.vertx.mysqlclient.impl.codec;
 
-import io.netty.buffer.ByteBuf;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
 
 import java.util.List;
 
-import static io.vertx.mysqlclient.impl.codec.Packets.*;
+import static io.vertx.mysqlclient.impl.codec.Packets.EnumCursorType.CURSOR_TYPE_NO_CURSOR;
 
 class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedBatchQueryCommand<R>> {
 
@@ -44,7 +43,7 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
     if (batchIdx < params.size()) {
       this.sequenceId = 0;
       Tuple param = params.get(batchIdx);
-      sendStatementExecuteCommand(statement.statementId, statement.paramDesc.paramDefinitions(), sendType, param, (byte) 0x00);
+      sendStatementExecuteCommand(statement.statementId, statement.paramDesc.paramDefinitions(), sendType, param, CURSOR_TYPE_NO_CURSOR);
       batchIdx++;
     }
   }
