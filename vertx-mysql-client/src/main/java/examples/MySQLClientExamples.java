@@ -17,6 +17,7 @@ import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 
 import java.math.BigDecimal;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collector;
@@ -216,6 +217,16 @@ public class MySQLClientExamples {
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
       }
+    });
+  }
+
+  public void implicitTypeConversionExample(SqlClient client) {
+    client.preparedQuery("SELECT * FROM students WHERE updated_time = ?", Tuple.of(LocalTime.of(19, 10, 25)), ar -> {
+      // handle the results
+    });
+    // this will also work with implicit type conversion
+    client.preparedQuery("SELECT * FROM students WHERE updated_time = ?", Tuple.of("19:10:25"), ar -> {
+      // handle the results
     });
   }
 
