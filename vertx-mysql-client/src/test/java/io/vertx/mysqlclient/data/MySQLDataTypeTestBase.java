@@ -4,10 +4,13 @@ import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.mysqlclient.MySQLTestBase;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.TestContext;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+
 import org.junit.After;
 import org.junit.Before;
 
@@ -82,6 +85,15 @@ public abstract class MySQLDataTypeTestBase extends MySQLTestBase {
           ctx.assertEquals(expected, row.getValue(columnName));
           conn.close();
         }));
+      }));
+    }));
+  }
+
+  protected void testBinaryDecode(TestContext ctx, String sql, Tuple params, Consumer<RowSet<Row>> checker) {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery(sql, params, ctx.asyncAssertSuccess(result -> {
+        checker.accept(result);
+        conn.close();
       }));
     }));
   }
