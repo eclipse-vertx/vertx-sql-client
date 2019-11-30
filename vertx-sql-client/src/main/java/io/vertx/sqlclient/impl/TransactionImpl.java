@@ -206,11 +206,15 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
 
   @Override
   public Future<Void> rollback() {
-    Promise<RowSet<Row>> promise = context.promise();
-    schedule__(doQuery("ROLLBACK", promise));
-    Future<Void> fut = promise.future().mapEmpty();
-    fut.onComplete(ar -> disposeHandler.handle(null));
-    return fut;
+    if (status == ST_COMPLETED) {
+      return context.failedFuture("Transaction already completed");
+    } else {
+      Promise<RowSet<Row>> promise = context.promise();
+      schedule__(doQuery("ROLLBACK", promise));
+      Future<Void> fut = promise.future().mapEmpty();
+      fut.onComplete(ar -> disposeHandler.handle(null));
+      return fut;
+    }
   }
 
   public void rollback(Handler<AsyncResult<Void>> handler) {
