@@ -35,7 +35,7 @@ public class MySQLPreparedQueryTest extends MySQLPreparedQueryTestBase {
   @Ignore
   @Override
   public void testPreparedQueryParamCoercionTypeError(TestContext ctx) {
-    // Does not pass, we can't achieve this feature on MySQL for now, see MySQLParamDesc#prepare for reasons.
+    // we use implicit type conversion for MySQL client
     super.testPreparedQueryParamCoercionTypeError(ctx);
   }
 }

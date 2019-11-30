@@ -6,9 +6,11 @@ import io.vertx.sqlclient.impl.TupleInternal;
 
 class MySQLParamDesc extends ParamDesc {
   private final ColumnDefinition[] paramDefinitions;
+  private boolean sendTypesToServer;
 
   MySQLParamDesc(ColumnDefinition[] paramDefinitions) {
     this.paramDefinitions = paramDefinitions;
+    this.sendTypesToServer = false;
   }
 
   ColumnDefinition[] paramDefinitions() {
@@ -22,19 +24,23 @@ class MySQLParamDesc extends ParamDesc {
     if (numberOfParameters != paramDescLength) {
       return ErrorMessageFactory.buildWhenArgumentsLengthNotMatched(paramDescLength, numberOfParameters);
     }
-//    for (int i = 0;i < paramDefinitions.length;i++) {
-//      DataType paramDataType = paramDefinitions[i].type();
-//      Object value = values.get(i);
-//      Object val = DataTypeCodec.prepare(paramDataType, value);
-//      if (val != value) {
-//        if (val == DataTypeCodec.REFUSED_SENTINEL) {
-//          return buildReport(values);
-//        } else {
-//          values.set(i, val);
-//        }
-//      }
-//    }
-    // TODO we can't really achieve type check for params because MySQL prepare response does not provide any useful information for param definitions
+
+    // binding the parameters
+    boolean reboundParameters = false;
+    for (int i = 0; i < values.size(); i++) {
+      Object value = values.getValue(i);
+      DataType dataType = DataTypeCodec.inferDataTypeByEncodingValue(value);
+      DataType paramDataType = paramDefinitions[i].getType();
+      if (paramDataType != dataType) {
+        paramDefinitions[i].setType(dataType);
+        reboundParameters = true;
+      }
+    }
+    sendTypesToServer = reboundParameters; // parameter must be re-bound
     return null;
+  }
+
+  public boolean sendTypesToServer() {
+    return sendTypesToServer;
   }
 }
