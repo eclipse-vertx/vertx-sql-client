@@ -30,6 +30,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.sqlclient.impl.codec.CommonCodec;
 
 import java.nio.charset.StandardCharsets;
 import java.time.*;
@@ -668,7 +669,7 @@ class DataTypeCodec {
   }
 
   private static Short textDecodeINT2(int index, int len, ByteBuf buff) {
-    return (short) DataTypeCodec.decodeDecStringToLong(index, len, buff);
+    return (short) CommonCodec.decodeDecStringToLong(index, len, buff);
   }
 
   private static Short binaryDecodeINT2(int index, int len, ByteBuf buff) {
@@ -680,7 +681,7 @@ class DataTypeCodec {
   }
 
   private static Integer textDecodeINT4(int index, int len, ByteBuf buff) {
-    return (int) decodeDecStringToLong(index, len, buff);
+    return (int) CommonCodec.decodeDecStringToLong(index, len, buff);
   }
 
   private static Integer binaryDecodeINT4(int index, int len, ByteBuf buff) {
@@ -692,7 +693,7 @@ class DataTypeCodec {
   }
 
   private static Long textDecodeINT8(int index, int len, ByteBuf buff) {
-    return decodeDecStringToLong(index, len, buff);
+    return CommonCodec.decodeDecStringToLong(index, len, buff);
   }
 
   private static Long binaryDecodeINT8(int index, int len, ByteBuf buff) {
@@ -1319,35 +1320,6 @@ class DataTypeCodec {
 
   private static String textDecodeTsQuery(int index, int len, ByteBuf buff) {
     return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
-  }
-  /**
-   * Decode the specified {@code buff} formatted as a decimal string starting at the readable index
-   * with the specified {@code length} to a long.
-   *
-   * @param index the hex string index
-   * @param len the hex string length
-   * @param buff the byte buff to read from
-   * @return the decoded value as a long
-   */
-  private static long decodeDecStringToLong(int index, int len, ByteBuf buff) {
-    long value = 0;
-    if (len > 0) {
-      int to = index + len;
-      boolean neg = false;
-      if (buff.getByte(index) == '-') {
-        neg = true;
-        index++;
-      }
-      while (index < to) {
-        byte ch = buff.getByte(index++);
-        byte nibble = (byte)(ch - '0');
-        value = value * 10 + nibble;
-      }
-      if (neg) {
-        value = -value;
-      }
-    }
-    return value;
   }
 
   /**
