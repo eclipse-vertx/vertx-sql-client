@@ -100,4 +100,8 @@ final class Packets {
     static final byte CURSOR_TYPE_FOR_UPDATE = 2;
     static final byte CURSOR_TYPE_SCROLLABLE = 4;
   }
+
+  static final class ParameterFlag {
+    static final int UNSIGNED = 0x80;
+  }
 }

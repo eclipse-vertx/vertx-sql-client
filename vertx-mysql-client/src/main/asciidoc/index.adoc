@@ -194,14 +194,22 @@ Currently the client supports the following MySQL types
 
 * BOOL,BOOLEAN (`java.lang.Byte`)
 * TINYINT (`java.lang.Byte`)
+* TINYINT UNSIGNED(`java.lang.Short`)
 * SMALLINT (`java.lang.Short`)
+* SMALLINT UNSIGNED(`java.lang.Integer`)
 * MEDIUMINT (`java.lang.Integer`)
+* MEDIUMINT UNSIGNED(`java.lang.Integer`)
 * INT,INTEGER (`java.lang.Integer`)
+* INTEGER UNSIGNED(`java.lang.Long`)
 * BIGINT (`java.lang.Long`)
+* BIGINT UNSIGNED(`io.vertx.sqlclient.data.Numeric`)
 * FLOAT (`java.lang.Float`)
+* FLOAT UNSIGNED(`java.lang.Float`)
 * DOUBLE (`java.lang.Double`)
+* DOUBLE UNSIGNED(`java.lang.Double`)
 * BIT (`java.lang.Long`)
 * NUMERIC (`io.vertx.sqlclient.data.Numeric`)
+* NUMERIC UNSIGNED(`io.vertx.sqlclient.data.Numeric`)
 * DATE (`java.time.LocalDate`)
 * DATETIME (`java.time.LocalDateTime`)
 * TIME (`java.time.Duration`)
@@ -224,6 +232,8 @@ Currently the client supports the following MySQL types
 * JSON (`io.vertx.core.json.JsonObject`, `io.vertx.core.json.JsonArray`, `Number`, `Boolean`, `String`, `io.vertx.sqlclient.Tuple#JSON_NULL`)
 
 Tuple decoding uses the above types when storing values
+
+Note: In Java there is no specific representations for unsigned numeric values, so this client will convert an unsigned value to the correlated Java type.
 
 === Implicit type conversion
 
