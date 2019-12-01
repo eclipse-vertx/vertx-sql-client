@@ -181,26 +181,9 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   }
 
   public void commit(Handler<AsyncResult<Void>> handler) {
-    switch (status) {
-      case ST_BEGIN:
-      case ST_PENDING:
-      case ST_PROCESSING:
-        schedule__(doQuery("COMMIT", context.promise(ar -> {
-          disposeHandler.handle(null);
-          if (handler != null) {
-            if (ar.succeeded()) {
-              handler.handle(Future.succeededFuture());
-            } else {
-              handler.handle(Future.failedFuture(ar.cause()));
-            }
-          }
-        })));
-        break;
-      case ST_COMPLETED:
-        if (handler != null) {
-          handler.handle(Future.failedFuture("Transaction already completed"));
-        }
-        break;
+    Future<Void> fut = commit();
+    if (handler != null) {
+      fut.setHandler(handler);
     }
   }
 
