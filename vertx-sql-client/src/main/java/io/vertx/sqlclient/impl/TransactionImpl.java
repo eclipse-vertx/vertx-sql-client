@@ -181,12 +181,18 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   }
 
   public void rollback(Handler<AsyncResult<Void>> handler) {
-    schedule(doQuery("ROLLBACK", ar -> {
-      disposeHandler.handle(null);
+    if (status == ST_COMPLETED) {
       if (handler != null) {
-        handler.handle(ar.mapEmpty());
+        handler.handle(Future.failedFuture("Transaction already completed"));
       }
-    }));
+    } else {
+      schedule(doQuery("ROLLBACK", ar -> {
+        disposeHandler.handle(null);
+        if (handler != null) {
+          handler.handle(ar.mapEmpty());
+        }
+      }));
+    }
   }
 
   @Override
