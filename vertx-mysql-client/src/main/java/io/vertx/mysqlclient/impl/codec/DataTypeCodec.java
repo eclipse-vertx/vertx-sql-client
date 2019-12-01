@@ -10,6 +10,7 @@ import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
+import io.vertx.sqlclient.impl.codec.CommonCodec;
 
 import java.math.BigInteger;
 import java.nio.charset.Charset;
@@ -569,23 +570,23 @@ class DataTypeCodec {
   }
 
   private static Byte textDecodeInt1(Charset charset, ByteBuf buffer, int index, int length) {
-    return Byte.parseByte(buffer.toString(index, length, charset));
+    return (byte) CommonCodec.decodeDecStringToLong(index, length, buffer);
   }
 
   private static Short textDecodeInt2(Charset charset, ByteBuf buffer, int index, int length) {
-    return Short.parseShort(buffer.toString(index, length, charset));
+    return (short) CommonCodec.decodeDecStringToLong(index, length, buffer);
   }
 
   private static Integer textDecodeInt3(Charset charset, ByteBuf buffer, int index, int length) {
-    return Integer.parseInt(buffer.toString(index, length, charset));
+    return (int) CommonCodec.decodeDecStringToLong(index, length, buffer);
   }
 
   private static Integer textDecodeInt4(Charset charset, ByteBuf buffer, int index, int length) {
-    return Integer.parseInt(buffer.toString(index, length, charset));
+    return (int) CommonCodec.decodeDecStringToLong(index, length, buffer);
   }
 
   private static Long textDecodeInt8(Charset charset, ByteBuf buffer, int index, int length) {
-    return Long.parseLong(buffer.toString(index, length, charset));
+    return CommonCodec.decodeDecStringToLong(index, length, buffer);
   }
 
   private static Float textDecodeFloat(Charset charset, ByteBuf buffer, int index, int length) {
