@@ -57,7 +57,7 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
 
   private void doExecuteBatch() {
     if (batchIdx < params.size()) {
-      this.sequenceId = 0;
+      encoder.sequenceId = 0;
       Tuple param = params.get(batchIdx);
       sendBatchStatementExecuteCommand(statement, param);
       batchIdx++;
@@ -69,7 +69,7 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
     // encode packet header
     int packetStartIdx = packet.writerIndex();
     packet.writeMediumLE(0); // will set payload length later by calculation
-    packet.writeByte(sequenceId);
+    packet.writeByte(encoder.sequenceId);
 
     // encode packet payload
     packet.writeByte(CommandType.COM_STMT_EXECUTE);
