@@ -30,7 +30,7 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
     int firstByte = payload.getUnsignedByte(payload.readerIndex());
     if (firstByte == OK_PACKET_HEADER) {
       OkPacket okPacket = decodeOkPacketPayload(payload, StandardCharsets.UTF_8);
-      handleSingleResultsetDecodingCompleted(okPacket.serverStatusFlags(), (int) okPacket.affectedRows(), (int) okPacket.lastInsertId());
+      handleSingleResultsetDecodingCompleted(okPacket.serverStatusFlags(), okPacket.affectedRows(), okPacket.lastInsertId());
     } else if (firstByte == ERROR_PACKET_HEADER) {
       handleErrorPacketPayload(payload);
     } else {

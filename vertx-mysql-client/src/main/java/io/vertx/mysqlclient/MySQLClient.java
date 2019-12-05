@@ -11,5 +11,5 @@ public interface MySQLClient {
   /**
    * SqlResult Property for last_insert_id
    */
-  PropertyKind<Integer> LAST_INSERTED_ID = () -> Integer.class;
+  PropertyKind<Long> LAST_INSERTED_ID = () -> Long.class;
 }
