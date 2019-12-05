@@ -109,13 +109,13 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     // we need check this is not a row data by checking packet length < 0xFFFFFF
     else if (first == EOF_PACKET_HEADER && payloadLength < 0xFFFFFF) {
       int serverStatusFlags;
-      int affectedRows = -1;
-      int lastInsertId = -1;
+      long affectedRows = -1;
+      long lastInsertId = -1;
       if (isDeprecatingEofFlagEnabled()) {
         OkPacket okPacket = decodeOkPacketPayload(payload, StandardCharsets.UTF_8);
         serverStatusFlags = okPacket.serverStatusFlags();
-        affectedRows = (int) okPacket.affectedRows();
-        lastInsertId = (int) okPacket.lastInsertId();
+        affectedRows = okPacket.affectedRows();
+        lastInsertId = okPacket.lastInsertId();
       } else {
         serverStatusFlags = decodeEofPacketPayload(payload).serverStatusFlags();
       }
@@ -130,7 +130,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     decoder.handleRow(columnDefinitions.length, payload);
   }
 
-  protected void handleSingleResultsetDecodingCompleted(int serverStatusFlags, int affectedRows, int lastInsertId) {
+  protected void handleSingleResultsetDecodingCompleted(int serverStatusFlags, long affectedRows, long lastInsertId) {
     handleSingleResultsetEndPacket(serverStatusFlags, affectedRows, lastInsertId);
     resetIntermediaryResult();
     if (isDecodingCompleted(serverStatusFlags)) {
@@ -143,7 +143,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     return (serverStatusFlags & ServerStatusFlags.SERVER_MORE_RESULTS_EXISTS) == 0;
   }
 
-  private void handleSingleResultsetEndPacket(int serverStatusFlags, int affectedRows, int lastInsertId) {
+  private void handleSingleResultsetEndPacket(int serverStatusFlags, long affectedRows, long lastInsertId) {
     this.result = (serverStatusFlags & ServerStatusFlags.SERVER_STATUS_LAST_ROW_SENT) == 0;
     T result;
     Throwable failure;
@@ -161,7 +161,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
       size = 0;
       rowDesc = null;
     }
-    cmd.resultHandler().handleResult(affectedRows, size, rowDesc, result, failure);
+    cmd.resultHandler().handleResult((int) affectedRows, size, rowDesc, result, failure);
     cmd.resultHandler().addProperty(MySQLClient.LAST_INSERTED_ID, lastInsertId);
   }
 

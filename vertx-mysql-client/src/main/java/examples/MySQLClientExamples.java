@@ -211,7 +211,7 @@ public class MySQLClientExamples {
     client.query("INSERT INTO test(val) VALUES ('v1')", ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rows = ar.result();
-        int lastInsertId = rows.property(MySQLClient.LAST_INSERTED_ID);
+        long lastInsertId = rows.property(MySQLClient.LAST_INSERTED_ID);
         System.out.println("Last inserted id is: " + lastInsertId);
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());
