@@ -41,7 +41,7 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
         if (nullByte == 0) {
           // non-null
           ColumnDefinition columnDef = rowDesc.columnDefinitions()[c];
-          DataType dataType = columnDef.type();
+          DataType dataType = columnDef.getType();
           int collationId = rowDesc.columnDefinitions()[c].characterSet();
           Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);
           int columnDefinitionFlags = columnDef.flags();
@@ -56,7 +56,7 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
         if (in.getUnsignedByte(in.readerIndex()) == NULL) {
           in.skipBytes(1);
         } else {
-          DataType dataType = rowDesc.columnDefinitions()[c].type();
+          DataType dataType = rowDesc.columnDefinitions()[c].getType();
           int columnDefinitionFlags = rowDesc.columnDefinitions()[c].flags();
           int collationId = rowDesc.columnDefinitions()[c].characterSet();
           Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);

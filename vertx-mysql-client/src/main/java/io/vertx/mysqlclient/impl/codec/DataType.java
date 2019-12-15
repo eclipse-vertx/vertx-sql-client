@@ -59,7 +59,7 @@ public enum DataType {
     DataType dataType = idToDataType.get(value);
     if (dataType == null) {
       LOGGER.warn(String.format("MySQL data type Id =[%d] not handled - using string type instead", value));
-      return VARSTRING;
+      return STRING;
     } else {
       return dataType;
     }

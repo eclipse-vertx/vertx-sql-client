@@ -225,6 +225,61 @@ Currently the client supports the following MySQL types
 
 Tuple decoding uses the above types when storing values
 
+=== Implicit type conversion
+
+The Reactive MySQL Client supports implicit type conversions when executing a prepared statement.
+Suppose you have a `TIME` column in your table, the two examples below will both work here.
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#implicitTypeConversionExample(io.vertx.sqlclient.SqlClient)}
+----
+
+The MySQL data type for encoding will be inferred from the parameter values and here is the type mapping
+
+|===
+|Parameter value type |encoding MySQL type
+
+|null
+|MYSQL_TYPE_NULL
+
+|java.lang.Byte
+|MYSQL_TYPE_TINY
+
+|java.lang.Boolean
+|MYSQL_TYPE_TINY
+
+|java.lang.Short
+|MYSQL_TYPE_SHORT
+
+|java.lang.Integer
+|MYSQL_TYPE_LONG
+
+|java.lang.Long
+|MYSQL_TYPE_LONGLONG
+
+|java.lang.Double
+|MYSQL_TYPE_DOUBLE
+
+|java.lang.Float
+|MYSQL_TYPE_FLOAT
+
+|java.time.LocalDate
+|MYSQL_TYPE_DATE
+
+|java.time.Duration
+|MYSQL_TYPE_TIME
+
+|io.vertx.core.buffer.Buffer
+|MYSQL_TYPE_BLOB
+
+|java.time.LocalDateTime
+|MYSQL_TYPE_DATETIME
+
+|default
+|MYSQL_TYPE_STRING
+|===
+
 === Handling BOOLEAN
 
 In MySQL `BOOLEAN` and `BOOL` data types are synonyms for `TINYINT(1)`. A value of zero is considered false, non-zero values are considered true.
