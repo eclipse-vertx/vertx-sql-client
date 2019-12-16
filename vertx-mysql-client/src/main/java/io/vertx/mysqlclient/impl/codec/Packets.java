@@ -91,4 +91,13 @@ final class Packets {
     static final int SERVER_STATUS_IN_TRANS_READONLY = 0x2000;
     static final int SERVER_SESSION_STATE_CHANGED = 0x4000;
   }
+
+  static final class EnumCursorType {
+    static final byte CURSOR_TYPE_NO_CURSOR = 0;
+    static final byte CURSOR_TYPE_READ_ONLY = 1;
+
+    // not supported by the server for now
+    static final byte CURSOR_TYPE_FOR_UPDATE = 2;
+    static final byte CURSOR_TYPE_SCROLLABLE = 4;
+  }
 }

@@ -183,12 +183,56 @@ class DataTypeCodec {
     }
   }
 
-  public static Object prepare(DataType type, Object value) {
-    switch (type) {
-      //TODO handle json + unknown?
-      default:
-        Class<?> javaType = type.binaryType;
-        return value == null || javaType.isInstance(value) ? value : REFUSED_SENTINEL;
+  public static DataType inferDataTypeByEncodingValue(Object value) {
+    if (value == null) {
+      // ProtocolBinary::MYSQL_TYPE_NULL
+      return DataType.NULL;
+    } else if (value instanceof Byte) {
+      // ProtocolBinary::MYSQL_TYPE_TINY
+      return DataType.INT1;
+    } else if (value instanceof Boolean) {
+      // ProtocolBinary::MYSQL_TYPE_TINY
+      return DataType.INT1;
+    } else if (value instanceof Short) {
+      // ProtocolBinary::MYSQL_TYPE_SHORT, ProtocolBinary::MYSQL_TYPE_YEAR
+      return DataType.INT2;
+    } else if (value instanceof Integer) {
+      // ProtocolBinary::MYSQL_TYPE_LONG, ProtocolBinary::MYSQL_TYPE_INT24
+      return DataType.INT4;
+    } else if (value instanceof Long) {
+      // ProtocolBinary::MYSQL_TYPE_LONGLONG
+      return DataType.INT8;
+    } else if (value instanceof Double) {
+      // ProtocolBinary::MYSQL_TYPE_DOUBLE
+      return DataType.DOUBLE;
+    } else if (value instanceof Float) {
+      // ProtocolBinary::MYSQL_TYPE_FLOAT
+      return DataType.FLOAT;
+    } else if (value instanceof LocalDate) {
+      // ProtocolBinary::MYSQL_TYPE_DATE
+      return DataType.DATE;
+    } else if (value instanceof Duration) {
+      // ProtocolBinary::MYSQL_TYPE_TIME
+      return DataType.TIME;
+    } else if (value instanceof Buffer) {
+      // ProtocolBinary::MYSQL_TYPE_LONG_BLOB, ProtocolBinary::MYSQL_TYPE_MEDIUM_BLOB, ProtocolBinary::MYSQL_TYPE_BLOB, ProtocolBinary::MYSQL_TYPE_TINY_BLOB
+      return DataType.BLOB;
+    } else if (value instanceof LocalDateTime) {
+      // ProtocolBinary::MYSQL_TYPE_DATETIME, ProtocolBinary::MYSQL_TYPE_TIMESTAMP
+      return DataType.DATETIME;
+    }
+//    else if (value instanceof JsonObject || value instanceof JsonArray) {
+////     note we don't need this in MySQL
+//      // ProtocolBinary::MYSQL_TYPE_JSON
+//      return DataType.JSON;
+//    }
+    else {
+      /*
+        ProtocolBinary::MYSQL_TYPE_STRING, ProtocolBinary::MYSQL_TYPE_VARCHAR, ProtocolBinary::MYSQL_TYPE_VAR_STRING,
+        ProtocolBinary::MYSQL_TYPE_ENUM, ProtocolBinary::MYSQL_TYPE_SET, ProtocolBinary::MYSQL_TYPE_GEOMETRY,
+        ProtocolBinary::MYSQL_TYPE_BIT, ProtocolBinary::MYSQL_TYPE_DECIMAL, ProtocolBinary::MYSQL_TYPE_NEWDECIMAL
+       */
+      return DataType.STRING;
     }
   }
 

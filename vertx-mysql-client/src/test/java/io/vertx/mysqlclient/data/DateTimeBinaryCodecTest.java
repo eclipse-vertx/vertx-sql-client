@@ -4,11 +4,13 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.Tuple;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @RunWith(VertxUnitRunner.class)
@@ -101,6 +103,29 @@ public class DateTimeBinaryCodecTest extends DateTimeCodecTest {
   @Test
   public void testEncodeDatetimeWithOnlyMicrosecond(TestContext ctx) {
     testBinaryEncodeGeneric(ctx, "test_datetime", LocalDateTime.of(2001, 6, 20, 0, 0, 0, 123456000));
+  }
+
+  @Test
+  public void testEncodeCastStringToDate(TestContext ctx) {
+    testBinaryDecode(ctx, "SELECT * FROM basicdatatype WHERE id = 1 AND `test_date` = ?", Tuple.of("2019-01-01"), result -> {
+      ctx.assertEquals(1, result.size());
+      RowIterator<Row> iterator = result.iterator();
+      Row row = iterator.next();
+      ctx.assertEquals(1, row.getInteger("id"));
+      ctx.assertEquals(LocalDate.of(2019, 1, 1), row.getLocalDate("test_date"));
+    });
+  }
+
+  @Test
+  public void testEncodeCastStringToTime(TestContext ctx) {
+    testBinaryDecode(ctx, "SELECT * FROM basicdatatype WHERE id = 1 AND `test_time` = ?", Tuple.of("18:45:02"), result -> {
+      ctx.assertEquals(1, result.size());
+      RowIterator<Row> iterator = result.iterator();
+      Row row = iterator.next();
+      ctx.assertEquals(1, row.getInteger("id"));
+      Duration expected = Duration.ZERO.plusHours(18).plusMinutes(45).plusSeconds(2);
+      ctx.assertEquals(expected, row.getValue("test_time"));
+    });
   }
 
   private void testEncodeTime(TestContext ctx, Duration param, Duration expected) {

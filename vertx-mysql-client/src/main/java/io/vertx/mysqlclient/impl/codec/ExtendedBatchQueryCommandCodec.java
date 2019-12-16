@@ -7,7 +7,7 @@ import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
 
 import java.util.List;
 
-import static io.vertx.mysqlclient.impl.codec.Packets.*;
+import static io.vertx.mysqlclient.impl.codec.Packets.EnumCursorType.CURSOR_TYPE_NO_CURSOR;
 
 class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedBatchQueryCommand<R>> {
 
@@ -44,8 +44,60 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
     if (batchIdx < params.size()) {
       this.sequenceId = 0;
       Tuple param = params.get(batchIdx);
-      sendStatementExecuteCommand(statement.statementId, statement.paramDesc.paramDefinitions(), sendType, param, (byte) 0x00);
+      sendBatchStatementExecuteCommand(statement, param);
       batchIdx++;
     }
+  }
+
+  private void sendBatchStatementExecuteCommand(MySQLPreparedStatement statement, Tuple params) {
+    ByteBuf packet = allocateBuffer();
+    // encode packet header
+    int packetStartIdx = packet.writerIndex();
+    packet.writeMediumLE(0); // will set payload length later by calculation
+    packet.writeByte(sequenceId);
+
+    // encode packet payload
+    packet.writeByte(CommandType.COM_STMT_EXECUTE);
+    packet.writeIntLE((int) statement.statementId);
+    packet.writeByte(CURSOR_TYPE_NO_CURSOR);
+    // iteration count, always 1
+    packet.writeIntLE(1);
+
+    ColumnDefinition[] paramsColumnDefinitions = statement.paramDesc.paramDefinitions();
+    int numOfParams = paramsColumnDefinitions.length;
+    int bitmapLength = (numOfParams + 7) / 8;
+    byte[] nullBitmap = new byte[bitmapLength];
+
+    int pos = packet.writerIndex();
+
+    if (numOfParams > 0) {
+      // write a dummy bitmap first
+      packet.writeBytes(nullBitmap);
+      packet.writeByte(1);
+      for (int i = 0; i < params.size(); i++) {
+        Object param = params.getValue(i);
+        DataType dataType = DataTypeCodec.inferDataTypeByEncodingValue(param);
+        packet.writeByte(dataType.id);
+        packet.writeByte(0); // parameter flag: signed
+      }
+
+      for (int i = 0; i < numOfParams; i++) {
+        Object value = params.getValue(i);
+        if (value != null) {
+          DataTypeCodec.encodeBinary(DataTypeCodec.inferDataTypeByEncodingValue(value), value, encoder.encodingCharset, packet);
+        } else {
+          nullBitmap[i / 8] |= (1 << (i & 7));
+        }
+      }
+
+      // padding null-bitmap content
+      packet.setBytes(pos, nullBitmap);
+    }
+
+    // set payload length
+    int payloadLength = packet.writerIndex() - packetStartIdx - 4;
+    packet.setMediumLE(packetStartIdx, payloadLength);
+
+    sendPacket(packet, payloadLength);
   }
 }
