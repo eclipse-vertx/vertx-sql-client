@@ -19,34 +19,73 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.sqlclient.Tuple;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
-public class ArrayTuple extends ArrayList<Object> implements TupleInternal {
+public class ArrayTuple implements TupleInternal {
 
   public static Tuple EMPTY = new ArrayTuple(0);
 
+  private Object[] values;
+  private int size;
+
   public ArrayTuple(int len) {
-    super(len);
+    values = new Object[len];
+    size = 0;
   }
 
   public ArrayTuple(Collection<?> c) {
-    super(c);
+    values = new Object[c.size()];
+    size = 0;
+    for (Object elt : c) {
+      addValue(elt);
+    }
+  }
+
+  public ArrayTuple(Tuple tuple) {
+    values = new Object[tuple.size()];
+    size = values.length;
+    for (int idx = 0;idx < size;idx++) {
+      values[idx] = tuple.getValue(idx);
+    }
   }
 
   @Override
   public Object getValue(int pos) {
-    return get(pos);
+    return pos >= 0 && pos < size ? values[pos] : null;
   }
 
   @Override
   public Tuple addValue(Object value) {
-    add(value);
+    if (size >= values.length) {
+      Object[] copy = new Object[values.length << 1 + 1];
+      System.arraycopy(values, 0, copy, 0, values.length);
+      values = copy;
+    }
+    values[size++] = value;
     return this;
   }
 
   @Override
+  public int size() {
+    return size;
+  }
+
+  @Override
+  public void clear() {
+    for (int i = 0;i < values.length;i++) {
+      values[i] = null;
+    }
+    size = 0;
+  }
+
+  @Override
   public void setValue(int pos, Object value) {
-    set(pos, value);
+    if (pos < 0) {
+      throw new IndexOutOfBoundsException("Invali position " + pos + ": must be > 0");
+    }
+    if (pos > size) {
+      throw new IndexOutOfBoundsException("Invali position " + pos + ": must be < " + size);
+    }
+    values[pos] = value;
   }
 }
