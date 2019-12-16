@@ -84,64 +84,11 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
     return rowDesc.columnNames().indexOf(name);
   }
 
-  @Override
-  public Object getValue(String name) {
-    int pos = rowDesc.columnIndex(name);
-    return pos == -1 ? null : getValue(pos);
-  }
-
-  @Override
-  public Boolean getBoolean(String name) {
-    int pos = rowDesc.columnIndex(name);
-    return pos == -1 ? null : getBoolean(pos);
-  }
-
-  @Override
-  public Short getShort(String name) {
-    int pos = rowDesc.columnIndex(name);
-    return pos == -1 ? null : getShort(pos);
-  }
-
-  @Override
-  public Integer getInteger(String name) {
-    int pos = rowDesc.columnIndex(name);
-    return pos == -1 ? null : getInteger(pos);
-  }
-
-  @Override
-  public Long getLong(String name) {
-    int pos = rowDesc.columnIndex(name);
-    return pos == -1 ? null : getLong(pos);
-  }
-
-  @Override
-  public Float getFloat(String name) {
-    int pos = rowDesc.columnIndex(name);
-    return pos == -1 ? null : getFloat(pos);
-  }
-
-  @Override
-  public Double getDouble(String name) {
-    int pos = rowDesc.columnIndex(name);
-    return pos == -1 ? null : getDouble(pos);
-  }
-
   public Numeric getNumeric(String name) {
     int pos = rowDesc.columnIndex(name);
     return pos == -1 ? null : getNumeric(pos);
   }
 
-  @Override
-  public String getString(String name) {
-    int pos = rowDesc.columnIndex(name);
-    return pos == -1 ? null : getString(pos);
-  }
-
-  @Override
-  public Buffer getBuffer(String name) {
-    int pos = rowDesc.columnIndex(name);
-    return pos == -1 ? null : getBuffer(pos);
-  }
 
   @Override
   public Temporal getTemporal(String name) {
@@ -149,20 +96,8 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public LocalDate getLocalDate(String name) {
-    int pos = rowDesc.columnIndex(name);
-    return pos == -1 ? null : getLocalDate(pos);
-  }
-
-  @Override
   public LocalTime getLocalTime(String name) {
     throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public LocalDateTime getLocalDateTime(String name) {
-    int pos = rowDesc.columnIndex(name);
-    return pos == -1 ? null : getLocalDateTime(pos);
   }
 
   @Override

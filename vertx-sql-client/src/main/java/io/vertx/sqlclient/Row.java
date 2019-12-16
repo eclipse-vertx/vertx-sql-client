@@ -48,20 +48,26 @@ public interface Row extends Tuple {
   int getColumnIndex(String name);
 
   /**
-   * Get a boolean value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  Boolean getBoolean(String name);
-
-  /**
    * Get an object value at {@code pos}.
    *
    * @param name the column
    * @return the value or {@code null}
    */
-  Object getValue(String name);
+  default Object getValue(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getValue(pos);
+  }
+
+  /**
+   * Get a boolean value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  default Boolean getBoolean(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getBoolean(pos);
+  }
 
   /**
    * Get a short value at {@code pos}.
@@ -69,7 +75,10 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  Short getShort(String name);
+  default Short getShort(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getShort(pos);
+  }
 
   /**
    * Get an integer value at {@code pos}.
@@ -77,7 +86,10 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  Integer getInteger(String name);
+  default Integer getInteger(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getInteger(pos);
+  }
 
   /**
    * Get a long value at {@code pos}.
@@ -85,7 +97,10 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  Long getLong(String name);
+  default Long getLong(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getLong(pos);
+  }
 
   /**
    * Get a float value at {@code pos}.
@@ -93,7 +108,10 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  Float getFloat(String name);
+  default Float getFloat(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getFloat(pos);
+  }
 
   /**
    * Get a double value at {@code pos}.
@@ -101,7 +119,10 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  Double getDouble(String name);
+  default Double getDouble(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getDouble(pos);
+  }
 
   /**
    * Get a string value at {@code pos}.
@@ -109,15 +130,10 @@ public interface Row extends Tuple {
    * @param name the column
    * @return the value or {@code null}
    */
-  String getString(String name);
-
-  /**
-   * Get a buffer value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  Buffer getBuffer(String name);
+  default String getString(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getString(pos);
+  }
 
   /**
    * Get a temporal value at {@code pos}.
@@ -126,7 +142,10 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Temporal getTemporal(String name);
+  default Temporal getTemporal(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getTemporal(pos);
+  }
 
   /**
    * Get {@link java.time.LocalDate} value at {@code pos}.
@@ -135,7 +154,10 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  LocalDate getLocalDate(String name);
+  default LocalDate getLocalDate(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getLocalDate(pos);
+  }
 
   /**
    * Get {@link java.time.LocalTime} value at {@code pos}.
@@ -144,7 +166,10 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  LocalTime getLocalTime(String name);
+  default LocalTime getLocalTime(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getLocalTime(pos);
+  }
 
   /**
    * Get {@link java.time.LocalDateTime} value at {@code pos}.
@@ -153,7 +178,10 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  LocalDateTime getLocalDateTime(String name);
+  default LocalDateTime getLocalDateTime(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getLocalDateTime(pos);
+  }
 
   /**
    * Get {@link java.time.OffsetTime} value at {@code pos}.
@@ -162,7 +190,10 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  OffsetTime getOffsetTime(String name);
+  default OffsetTime getOffsetTime(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getOffsetTime(pos);
+  }
 
   /**
    * Get {@link java.time.OffsetDateTime} value at {@code pos}.
@@ -171,7 +202,21 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  OffsetDateTime getOffsetDateTime(String name);
+  default OffsetDateTime getOffsetDateTime(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getOffsetDateTime(pos);
+  }
+
+  /**
+   * Get a buffer value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  default Buffer getBuffer(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getBuffer(pos);
+  }
 
   /**
    * Get {@link java.util.UUID} value at {@code pos}.
@@ -180,7 +225,10 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  UUID getUUID(String name);
+  default UUID getUUID(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getUUID(pos);
+  }
 
   /**
    * Get {@link BigDecimal} value at {@code pos}.
@@ -189,16 +237,10 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  BigDecimal getBigDecimal(String name);
-
-  /**
-   * Get an array of {@link Integer} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Integer[] getIntegerArray(String name);
+  default BigDecimal getBigDecimal(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getBigDecimal(pos);
+  }
 
   /**
    * Get an array of {@link Boolean} value at {@code pos}.
@@ -207,7 +249,10 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Boolean[] getBooleanArray(String name);
+  default Boolean[] getBooleanArray(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getBooleanArray(pos);
+  }
 
   /**
    * Get an array of {@link Short} value at {@code pos}.
@@ -216,7 +261,22 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Short[] getShortArray(String name);
+  default Short[] getShortArray(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getShortArray(pos);
+  }
+
+  /**
+   * Get an array of {@link Integer} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default Integer[] getIntegerArray(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getIntegerArray(pos);
+  }
 
   /**
    * Get an array of {@link Long} value at {@code pos}.
@@ -225,7 +285,10 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Long[] getLongArray(String name);
+  default Long[] getLongArray(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getLongArray(pos);
+  }
 
   /**
    * Get an array of {@link Float} value at {@code pos}.
@@ -234,7 +297,10 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Float[] getFloatArray(String name);
+  default Float[] getFloatArray(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getFloatArray(pos);
+  }
 
   /**
    * Get an array of {@link Double} value at {@code pos}.
@@ -243,7 +309,10 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Double[] getDoubleArray(String name);
+  default Double[] getDoubleArray(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getDoubleArray(pos);
+  }
 
   /**
    * Get an array of {@link String} value at {@code pos}.
@@ -252,7 +321,22 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  String[] getStringArray(String name);
+  default String[] getStringArray(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getStringArray(pos);
+  }
+
+  /**
+   * Get an array of {@link Temporal} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default Temporal[] getTemporalArray(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getTemporalArray(pos);
+  }
 
   /**
    * Get an array of {@link LocalDate} value at {@code pos}.
@@ -261,7 +345,10 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  LocalDate[] getLocalDateArray(String name);
+  default LocalDate[] getLocalDateArray(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getLocalDateArray(pos);
+  }
 
   /**
    * Get an array of {@link LocalTime} value at {@code pos}.
@@ -270,16 +357,10 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  LocalTime[] getLocalTimeArray(String name);
-
-  /**
-   * Get an array of {@link OffsetTime} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  OffsetTime[] getOffsetTimeArray(String name);
+  default LocalTime[] getLocalTimeArray(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getLocalTimeArray(pos);
+  }
 
   /**
    * Get an array of {@link LocalDateTime} value at {@code pos}.
@@ -288,7 +369,22 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  LocalDateTime[] getLocalDateTimeArray(String name);
+  default LocalDateTime[] getLocalDateTimeArray(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getLocalDateTimeArray(pos);
+  }
+
+  /**
+   * Get an array of {@link OffsetTime} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default OffsetTime[] getOffsetTimeArray(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getOffsetTimeArray(pos);
+  }
 
   /**
    * Get an array of {@link OffsetDateTime} value at {@code pos}.
@@ -297,7 +393,10 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  OffsetDateTime[] getOffsetDateTimeArray(String name);
+  default OffsetDateTime[] getOffsetDateTimeArray(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getOffsetDateTimeArray(pos);
+  }
 
   /**
    * Get an array of {@link Buffer} value at {@code pos}.
@@ -306,7 +405,10 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore
-  Buffer[] getBufferArray(String name);
+  default Buffer[] getBufferArray(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getBufferArray(pos);
+  }
 
   /**
    * Get an array of {@link UUID} value at {@code pos}.
@@ -315,7 +417,22 @@ public interface Row extends Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  UUID[] getUUIDArray(String name);
+  default UUID[] getUUIDArray(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getUUIDArray(pos);
+  }
+
+  /**
+   * Get an array of {@link BigDecimal} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default BigDecimal[] getBigDecimalArray(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getBigDecimalArray(pos);
+  }
 
   @GenIgnore
   <T> T[] getValues(Class<T> type, int idx);

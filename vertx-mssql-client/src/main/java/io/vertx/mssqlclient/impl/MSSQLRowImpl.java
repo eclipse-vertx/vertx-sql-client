@@ -39,54 +39,6 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public Boolean getBoolean(String columnName) {
-    int pos = rowDesc.columnIndex(columnName);
-    return pos == -1 ? null : getBoolean(pos);
-  }
-
-  @Override
-  public Object getValue(String columnName) {
-    int pos = rowDesc.columnIndex(columnName);
-    return pos == -1 ? null : getValue(pos);
-  }
-
-  @Override
-  public Short getShort(String columnName) {
-    int pos = rowDesc.columnIndex(columnName);
-    return pos == -1 ? null : getShort(pos);
-  }
-
-  @Override
-  public Integer getInteger(String columnName) {
-    int pos = rowDesc.columnIndex(columnName);
-    return pos == -1 ? null : getInteger(pos);
-  }
-
-  @Override
-  public Long getLong(String columnName) {
-    int pos = rowDesc.columnIndex(columnName);
-    return pos == -1 ? null : getLong(pos);
-  }
-
-  @Override
-  public Float getFloat(String columnName) {
-    int pos = rowDesc.columnIndex(columnName);
-    return pos == -1 ? null : getFloat(pos);
-  }
-
-  @Override
-  public Double getDouble(String columnName) {
-    int pos = rowDesc.columnIndex(columnName);
-    return pos == -1 ? null : getDouble(pos);
-  }
-
-  @Override
-  public String getString(String columnName) {
-    int pos = rowDesc.columnIndex(columnName);
-    return pos == -1 ? null : getString(pos);
-  }
-
-  @Override
   public Buffer getBuffer(String columnName) {
     throw new UnsupportedOperationException();
   }
@@ -94,18 +46,6 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
   @Override
   public Temporal getTemporal(String columnName) {
     throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public LocalDate getLocalDate(String columnName) {
-    int pos = rowDesc.columnIndex(columnName);
-    return pos == -1 ? null : getLocalDate(pos);
-  }
-
-  @Override
-  public LocalTime getLocalTime(String columnName) {
-    int pos = rowDesc.columnIndex(columnName);
-    return pos == -1 ? null : getLocalTime(pos);
   }
 
   @Override
