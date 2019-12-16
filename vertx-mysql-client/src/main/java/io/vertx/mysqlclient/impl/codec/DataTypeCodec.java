@@ -10,7 +10,9 @@ import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
+import io.vertx.sqlclient.impl.codec.CommonCodec;
 
+import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -44,16 +46,33 @@ class DataTypeCodec {
     try {
       switch (dataType) {
         case INT1:
-          return textDecodeInt1(charset, buffer, index, length);
-        case INT2:
+          if (isUnsignedNumeric(columnDefinitionFlags)) {
+            return textDecodeInt2(charset, buffer, index, length);
+          } else {
+            return textDecodeInt1(charset, buffer, index, length);
+          }
         case YEAR:
           return textDecodeInt2(charset, buffer, index, length);
+        case INT2:
+          if (isUnsignedNumeric(columnDefinitionFlags)) {
+            return textDecodeInt4(charset, buffer, index, length);
+          } else {
+            return textDecodeInt2(charset, buffer, index, length);
+          }
         case INT3:
-          return textDecodeInt3(charset, buffer, index, length);
-        case INT4:
           return textDecodeInt4(charset, buffer, index, length);
+        case INT4:
+          if (isUnsignedNumeric(columnDefinitionFlags)) {
+            return textDecodeInt8(charset, buffer, index, length);
+          } else {
+            return textDecodeInt4(charset, buffer, index, length);
+          }
         case INT8:
-          return textDecodeInt8(charset, buffer, index, length);
+          if (isUnsignedNumeric(columnDefinitionFlags)) {
+            return textDecodeNUMERIC(charset, buffer, index, length);
+          } else {
+            return textDecodeInt8(charset, buffer, index, length);
+          }
         case FLOAT:
           return textDecodeFloat(charset, buffer, index, length);
         case DOUBLE:
@@ -82,7 +101,6 @@ class DataTypeCodec {
     }
   }
 
-  //TODO take care of unsigned numeric values here?
   static void encodeBinary(DataType dataType, Object value, Charset charset, ByteBuf buffer) {
     switch (dataType) {
       case INT1:
@@ -148,16 +166,37 @@ class DataTypeCodec {
   static Object decodeBinary(DataType dataType, Charset charset, int columnDefinitionFlags, ByteBuf buffer) {
     switch (dataType) {
       case INT1:
-        return binaryDecodeInt1(buffer);
+        if (isUnsignedNumeric(columnDefinitionFlags)) {
+          return binaryDecodeUnsignedInt1(buffer);
+        } else {
+          return binaryDecodeInt1(buffer);
+        }
       case YEAR:
-      case INT2:
         return binaryDecodeInt2(buffer);
+      case INT2:
+        if (isUnsignedNumeric(columnDefinitionFlags)) {
+          return binaryDecodeUnsignedInt2(buffer);
+        } else {
+          return binaryDecodeInt2(buffer);
+        }
       case INT3:
-        return binaryDecodeInt3(buffer);
+        if (isUnsignedNumeric(columnDefinitionFlags)) {
+          return binaryDecodeUnsignedInt3(buffer);
+        } else {
+          return binaryDecodeInt3(buffer);
+        }
       case INT4:
-        return binaryDecodeInt4(buffer);
+        if (isUnsignedNumeric(columnDefinitionFlags)) {
+          return binaryDecodeUnsignedInt4(buffer);
+        } else {
+          return binaryDecodeInt4(buffer);
+        }
       case INT8:
-        return binaryDecodeInt8(buffer);
+        if (isUnsignedNumeric(columnDefinitionFlags)) {
+          return binaryDecodeUnsignedInt8(buffer);
+        } else {
+          return binaryDecodeInt8(buffer);
+        }
       case FLOAT:
         return binaryDecodeFloat(buffer);
       case DOUBLE:
@@ -373,20 +412,49 @@ class DataTypeCodec {
     return buffer.readByte();
   }
 
+  private static Short binaryDecodeUnsignedInt1(ByteBuf buffer) {
+    return buffer.readUnsignedByte();
+  }
+
   private static Short binaryDecodeInt2(ByteBuf buffer) {
     return buffer.readShortLE();
+  }
+
+  private static Integer binaryDecodeUnsignedInt2(ByteBuf buffer) {
+    return buffer.readUnsignedShortLE();
   }
 
   private static Integer binaryDecodeInt3(ByteBuf buffer) {
     return buffer.readIntLE();
   }
 
+  private static Integer binaryDecodeUnsignedInt3(ByteBuf buffer) {
+    return buffer.readIntLE() & 0xFFFFFF;
+  }
+
   private static Integer binaryDecodeInt4(ByteBuf buffer) {
     return buffer.readIntLE();
   }
 
+  private static Long binaryDecodeUnsignedInt4(ByteBuf buffer) {
+    return buffer.readUnsignedIntLE();
+  }
+
   private static Long binaryDecodeInt8(ByteBuf buffer) {
     return buffer.readLongLE();
+  }
+
+  private static Numeric binaryDecodeUnsignedInt8(ByteBuf buffer) {
+    byte[] bigIntValue = new byte[8];
+    buffer.readBytes(bigIntValue); // little endian
+    for (int i = 0; i < 4; i++) {
+      // swap to big endian order
+      byte tmp = bigIntValue[i];
+      bigIntValue[i] = bigIntValue[7-i];
+      bigIntValue[7-i] = tmp;
+    }
+    BigInteger value = new BigInteger(1, bigIntValue);
+    return Numeric.create(value);
   }
 
   private static Float binaryDecodeFloat(ByteBuf buffer) {
@@ -502,23 +570,23 @@ class DataTypeCodec {
   }
 
   private static Byte textDecodeInt1(Charset charset, ByteBuf buffer, int index, int length) {
-    return Byte.parseByte(buffer.toString(index, length, charset));
+    return (byte) CommonCodec.decodeDecStringToLong(index, length, buffer);
   }
 
   private static Short textDecodeInt2(Charset charset, ByteBuf buffer, int index, int length) {
-    return Short.parseShort(buffer.toString(index, length, charset));
+    return (short) CommonCodec.decodeDecStringToLong(index, length, buffer);
   }
 
   private static Integer textDecodeInt3(Charset charset, ByteBuf buffer, int index, int length) {
-    return Integer.parseInt(buffer.toString(index, length, charset));
+    return (int) CommonCodec.decodeDecStringToLong(index, length, buffer);
   }
 
   private static Integer textDecodeInt4(Charset charset, ByteBuf buffer, int index, int length) {
-    return Integer.parseInt(buffer.toString(index, length, charset));
+    return (int) CommonCodec.decodeDecStringToLong(index, length, buffer);
   }
 
   private static Long textDecodeInt8(Charset charset, ByteBuf buffer, int index, int length) {
-    return Long.parseLong(buffer.toString(index, length, charset));
+    return CommonCodec.decodeDecStringToLong(index, length, buffer);
   }
 
   private static Float textDecodeFloat(Charset charset, ByteBuf buffer, int index, int length) {
@@ -628,6 +696,10 @@ class DataTypeCodec {
 
   private static boolean isBinaryField(int columnDefinitionFlags) {
     return (columnDefinitionFlags & ColumnDefinition.ColumnDefinitionFlags.BINARY_FLAG) != 0;
+  }
+
+  private static boolean isUnsignedNumeric(int columnDefinitionFlags) {
+    return (columnDefinitionFlags & ColumnDefinition.ColumnDefinitionFlags.UNSIGNED_FLAG) != 0;
   }
 
   private static Long decodeBit(ByteBuf buffer, int index, int length) {
