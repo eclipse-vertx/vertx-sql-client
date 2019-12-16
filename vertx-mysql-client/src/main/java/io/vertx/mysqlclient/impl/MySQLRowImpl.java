@@ -258,7 +258,7 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
   @Override
   public Boolean getBoolean(int pos) {
     // in MySQL BOOLEAN type is mapped to TINYINT
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof Boolean) {
       return (Boolean) val;
     } else if (val instanceof Number) {
@@ -268,7 +268,7 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
   }
 
   public Numeric getNumeric(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof Numeric) {
       return (Numeric) val;
     } else if (val instanceof Number) {
@@ -278,7 +278,7 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
   }
 
   private Byte getByte(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof Byte) {
       return (Byte) val;
     } else if (val instanceof Number) {
@@ -288,7 +288,7 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
   }
 
   private Duration getDuration(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof Duration) {
       return (Duration) val;
     }
@@ -296,7 +296,7 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
   }
 
   private JsonObject getJsonObject(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof JsonObject) {
       return (JsonObject) val;
     }
@@ -305,7 +305,7 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
 
 
   private JsonArray getJsonArray(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof JsonArray) {
       return (JsonArray) val;
     }

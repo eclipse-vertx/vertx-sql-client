@@ -122,7 +122,7 @@ public class RowImpl extends ArrayTuple implements Row {
     } else if (type == JsonArray.class) {
       return type.cast(getJson(pos));
     } else if (type == Object.class) {
-      return type.cast(get(pos));
+      return type.cast(getValue(pos));
     }
     throw new UnsupportedOperationException("Unsupported type " + type.getName());
   }
@@ -472,7 +472,7 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   public Character getChar(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof Character) {
       return (Character) val;
     } else {
@@ -481,7 +481,7 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   public Numeric getNumeric(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof Numeric) {
       return (Numeric) val;
     } else if (val instanceof Number) {
@@ -494,7 +494,7 @@ public class RowImpl extends ArrayTuple implements Row {
    * Get a {@link io.vertx.core.json.JsonObject} or {@link io.vertx.core.json.JsonArray} value.
    */
   public Object getJson(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof JsonObject) {
       return val;
     } else if (val instanceof JsonArray) {
@@ -505,7 +505,7 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   public Point getPoint(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof Point) {
       return (Point) val;
     } else {
@@ -514,7 +514,7 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   public Line getLine(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof Line) {
       return (Line) val;
     } else {
@@ -523,7 +523,7 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   public LineSegment getLineSegment(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof LineSegment) {
       return (LineSegment) val;
     } else {
@@ -532,7 +532,7 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   public Box getBox(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof Box) {
       return (Box) val;
     } else {
@@ -541,7 +541,7 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   public Path getPath(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof Path) {
       return (Path) val;
     } else {
@@ -550,7 +550,7 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   public Polygon getPolygon(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof Polygon) {
       return (Polygon) val;
     } else {
@@ -559,7 +559,7 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   public Circle getCircle(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof Circle) {
       return (Circle) val;
     } else {
@@ -568,7 +568,7 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   public Interval getInterval(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof Interval) {
       return (Interval) val;
     } else {
@@ -577,7 +577,7 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   public Character[] getCharArray(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof Character[]) {
       return (Character[]) val;
     } else {
@@ -589,7 +589,7 @@ public class RowImpl extends ArrayTuple implements Row {
    * Get a {@code Json} array value, the {@code Json} value may be a string, number, JSON object, array, boolean or null.
    */
   public Object[] getJsonArray(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof Object[]) {
       return (Object[]) val;
     } else {
@@ -598,7 +598,7 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   public Numeric[] getNumericArray(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof Numeric[]) {
       return (Numeric[]) val;
     } else {
@@ -607,7 +607,7 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   public Point[] getPointArray(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof Point[]) {
       return (Point[]) val;
     } else {
@@ -616,7 +616,7 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   public Line[] getLineArray(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof Line[]) {
       return (Line[]) val;
     } else {
@@ -625,7 +625,7 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   public LineSegment[] getLineSegmentArray(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof LineSegment[]) {
       return (LineSegment[]) val;
     } else {
@@ -634,7 +634,7 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   public Box[] getBoxArray(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof Box[]) {
       return (Box[]) val;
     } else {
@@ -643,7 +643,7 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   public Path[] getPathArray(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof Path[]) {
       return (Path[]) val;
     } else {
@@ -652,7 +652,7 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   public Polygon[] getPolygonArray(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof Polygon[]) {
       return (Polygon[]) val;
     } else {
@@ -661,7 +661,7 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   public Circle[] getCircleArray(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof Circle[]) {
       return (Circle[]) val;
     } else {
@@ -670,7 +670,7 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   public Interval[] getIntervalArray(int pos) {
-    Object val = get(pos);
+    Object val = getValue(pos);
     if (val instanceof Interval[]) {
       return (Interval[]) val;
     } else {
