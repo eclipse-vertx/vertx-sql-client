@@ -229,4 +229,49 @@ public class StringDataTypeTest extends MySQLDataTypeTestBase {
   public void testBinaryDecodeSet(TestContext ctx) {
     testBinaryDecodeGenericWithTable(ctx, "test_set", "a,b");
   }
+
+  @Test
+  public void testBinaryEncodeVarcharBinary(TestContext ctx) {
+    testBinaryEncodeGeneric(ctx, "test_varchar_binary", "Hello, world!");
+  }
+
+  @Test
+  public void testTextDecodeVarcharBinary(TestContext ctx) {
+    testTextDecodeGenericWithTable(ctx, "test_varchar_binary", "VARCHAR binary");
+  }
+
+  @Test
+  public void testBinaryDecodeVarcharBinary(TestContext ctx) {
+    testBinaryDecodeGenericWithTable(ctx, "test_varchar_binary", "VARCHAR binary");
+  }
+
+  @Test
+  public void testBinaryEncodeVarcharWithBinaryCollation(TestContext ctx) {
+    testBinaryEncodeGeneric(ctx, "test_varchar_with_binary_collation", Buffer.buffer("Hello, world!"));
+  }
+
+  @Test
+  public void testTextDecodeVarcharWithBinaryCollation(TestContext ctx) {
+    testTextDecodeGenericWithTable(ctx, "test_varchar_with_binary_collation", Buffer.buffer("VARCHAR with binary collation"));
+  }
+
+  @Test
+  public void testBinaryDecodeVarcharWithBinaryCollation(TestContext ctx) {
+    testBinaryDecodeGenericWithTable(ctx, "test_varchar_with_binary_collation", Buffer.buffer("VARCHAR with binary collation"));
+  }
+
+  @Test
+  public void testBinaryEncodeTextBinary(TestContext ctx) {
+    testBinaryEncodeGeneric(ctx, "test_text_binary", "Hello, world!");
+  }
+
+  @Test
+  public void testTextDecodeTextBinary(TestContext ctx) {
+    testTextDecodeGenericWithTable(ctx, "test_text_binary", "TEXT binary");
+  }
+
+  @Test
+  public void testBinaryDecodeTextBinary(TestContext ctx) {
+    testBinaryDecodeGenericWithTable(ctx, "test_text_binary", "TEXT binary");
+  }
 }
