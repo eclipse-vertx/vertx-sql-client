@@ -21,38 +21,42 @@ USE testschema;
 DROP TABLE IF EXISTS datatype;
 CREATE TABLE datatype
 (
-    id                        INT NOT NULL PRIMARY KEY,
-    `Binary`                  BINARY(5),
-    `VarBinary`               VARBINARY(20),
-    `TinyBlob`                TINYBLOB,
-    `Blob`                    BLOB,
-    `MediumBlob`              MEDIUMBLOB,
-    `LongBlob`                LONGBLOB,
-    `TinyText`                TINYTEXT,
-    `Text`                    TEXT,
-    `MediumText`              MEDIUMTEXT,
-    `LongText`                LONGTEXT,
-    `test_enum`               ENUM ('x-small', 'small', 'medium', 'large', 'x-large'),
-    `test_set`                SET ('a', 'b', 'c', 'd'),
-    test_year                 YEAR,
-    test_timestamp            TIMESTAMP,
-    test_datetime             DATETIME(6),
-    `test_bit`                BIT(64),
-    `test_unsigned_tinyint`   TINYINT UNSIGNED,
-    `test_unsigned_smallint`  SMALLINT UNSIGNED,
-    `test_unsigned_mediumint` MEDIUMINT UNSIGNED,
-    `test_unsigned_int`       INT UNSIGNED,
-    `test_unsigned_bigint`    BIGINT UNSIGNED
+    id                                   INT NOT NULL PRIMARY KEY,
+    `Binary`                             BINARY(5),
+    `VarBinary`                          VARBINARY(20),
+    `TinyBlob`                           TINYBLOB,
+    `Blob`                               BLOB,
+    `MediumBlob`                         MEDIUMBLOB,
+    `LongBlob`                           LONGBLOB,
+    `TinyText`                           TINYTEXT,
+    `Text`                               TEXT,
+    `MediumText`                         MEDIUMTEXT,
+    `LongText`                           LONGTEXT,
+    `test_enum`                          ENUM ('x-small', 'small', 'medium', 'large', 'x-large'),
+    `test_set`                           SET ('a', 'b', 'c', 'd'),
+    test_year                            YEAR,
+    test_timestamp                       TIMESTAMP,
+    test_datetime                        DATETIME(6),
+    `test_bit`                           BIT(64),
+    `test_unsigned_tinyint`              TINYINT UNSIGNED,
+    `test_unsigned_smallint`             SMALLINT UNSIGNED,
+    `test_unsigned_mediumint`            MEDIUMINT UNSIGNED,
+    `test_unsigned_int`                  INT UNSIGNED,
+    `test_unsigned_bigint`               BIGINT UNSIGNED,
+    `test_varchar_binary`                VARCHAR(50) BINARY,
+    `test_varchar_with_binary_collation` VARCHAR(50) COLLATE `binary`,
+    `test_text_binary`                   TEXT BINARY
 );
 
 INSERT INTO datatype
 VALUES (1, 'HELLO', 'HELLO, WORLD', 'TINYBLOB', 'BLOB', 'MEDIUMBLOB', 'LONGBLOB', 'TINYTEXT', 'TEXT', 'MEDIUMTEXT',
         'LONGTEXT', 'small', 'a,b', '2019', '2000-01-01 10:20:30', '2000-01-01 10:20:30.123456', b'11110', 255, 65535,
-        16777215, 4294967295, 18446744073709551615);
+        16777215, 4294967295, 18446744073709551615, 'VARCHAR binary', 'VARCHAR with binary collation', 'TEXT binary');
 INSERT INTO datatype
 VALUES (2, 'hello', 'hello, world', 'tinyblob', 'blob', 'mediumblob', 'longblob', 'tinytext', 'text', 'mediumtext',
         'longtext', 'large', 'b,c,d', '2019', '2000-01-01 10:20:30', '2000-01-01 10:20:30.123456', b'11110', 255, 65535,
-        16777215, 4294967295, 18446744073709551615);
+        16777215, 4294967295, 18446744073709551615, 'VARCHAR binary', 'VARCHAR with binary collation', 'TEXT binary');
+
 # TFB tables
 
 # To maintain consistency across servers and fix a problem with the jdbc per
