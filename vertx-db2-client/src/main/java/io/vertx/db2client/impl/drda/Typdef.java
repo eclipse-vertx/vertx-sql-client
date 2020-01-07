@@ -688,7 +688,7 @@ public class Typdef implements Cloneable {
         Types.DECIMAL, // 0x0F null Fixed Decimal
         Types.DECIMAL, // 0x10 Zone Decimal
         Types.DECIMAL, // 0x11 null Zone Decimal
-        Types.DECIMAL, // 0x12 Numeirc
+        Types.DECIMAL, // 0x12 Numeric
         Types.DECIMAL, // 0x13 null Numeric
         0x00, // 0x14 Empties
         0x00, // 0x15 Empties

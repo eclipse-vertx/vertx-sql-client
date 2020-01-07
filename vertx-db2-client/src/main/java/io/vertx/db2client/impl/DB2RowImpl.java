@@ -90,65 +90,65 @@ public class DB2RowImpl extends ArrayTuple implements Row {
         if (name == null) {
             throw new NullPointerException();
         }
-        return rowDesc.columnNames().indexOf(name);
+        return rowDesc.columnNames().indexOf(name.toUpperCase()); // DB2 column names are always in uppercase
     }
 
     @Override
     public Object getValue(String name) {
-        int pos = rowDesc.columnIndex(name);
+        int pos = getColumnIndex(name);
         return pos == -1 ? null : getValue(pos);
     }
 
     @Override
     public Boolean getBoolean(String name) {
-        int pos = rowDesc.columnIndex(name);
+        int pos = getColumnIndex(name);
         return pos == -1 ? null : getBoolean(pos);
     }
 
     @Override
     public Short getShort(String name) {
-        int pos = rowDesc.columnIndex(name);
+        int pos = getColumnIndex(name);
         return pos == -1 ? null : getShort(pos);
     }
 
     @Override
     public Integer getInteger(String name) {
-        int pos = rowDesc.columnIndex(name);
+        int pos = getColumnIndex(name);
         return pos == -1 ? null : getInteger(pos);
     }
 
     @Override
     public Long getLong(String name) {
-        int pos = rowDesc.columnIndex(name);
+        int pos = getColumnIndex(name);
         return pos == -1 ? null : getLong(pos);
     }
 
     @Override
     public Float getFloat(String name) {
-        int pos = rowDesc.columnIndex(name);
+        int pos = getColumnIndex(name);
         return pos == -1 ? null : getFloat(pos);
     }
 
     @Override
     public Double getDouble(String name) {
-        int pos = rowDesc.columnIndex(name);
+        int pos = getColumnIndex(name);
         return pos == -1 ? null : getDouble(pos);
     }
 
     public Numeric getNumeric(String name) {
-        int pos = rowDesc.columnIndex(name);
+        int pos = getColumnIndex(name);
         return pos == -1 ? null : getNumeric(pos);
     }
 
     @Override
     public String getString(String name) {
-        int pos = rowDesc.columnIndex(name);
+        int pos = getColumnIndex(name);
         return pos == -1 ? null : getString(pos);
     }
 
     @Override
     public Buffer getBuffer(String name) {
-        int pos = rowDesc.columnIndex(name);
+        int pos = getColumnIndex(name);
         return pos == -1 ? null : getBuffer(pos);
     }
 
@@ -159,7 +159,7 @@ public class DB2RowImpl extends ArrayTuple implements Row {
 
     @Override
     public LocalDate getLocalDate(String name) {
-        int pos = rowDesc.columnIndex(name);
+        int pos = getColumnIndex(name);
         return pos == -1 ? null : getLocalDate(pos);
     }
 
@@ -170,7 +170,7 @@ public class DB2RowImpl extends ArrayTuple implements Row {
 
     @Override
     public LocalDateTime getLocalDateTime(String name) {
-        int pos = rowDesc.columnIndex(name);
+        int pos = getColumnIndex(name);
         return pos == -1 ? null : getLocalDateTime(pos);
     }
 

@@ -31,9 +31,11 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 
 import io.netty.buffer.ByteBuf;
@@ -56,6 +58,8 @@ public class Cursor {
     static final Charset UTF_16BE = Charset.forName("UTF-16BE");
     static final Charset UTF_8 = Charset.forName("UTF-8");
     static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
+    
+    private static final DateTimeFormatter db2TimeFormat = DateTimeFormatter.ofPattern("HH.mm.ss");
 
     // unused protocol element: SBCS_CLOB = 8;
     // unused protocol element: MBCS_CLOB = 9;
@@ -344,7 +348,8 @@ public class Cursor {
 
     // Build a Java short from a 2-byte signed binary representation.
     private final short get_SMALLINT(int column) {
-        return dataBuffer_.getShort(columnDataPosition_[column - 1]);
+        // @AGG force Little Endian
+        return dataBuffer_.getShortLE(columnDataPosition_[column - 1]);
 //        return SignedBinary.getShort(dataBuffer_,
 //                columnDataPosition_[column - 1]);
     }
@@ -359,21 +364,24 @@ public class Cursor {
 
     // Build a Java long from an 8-byte signed binary representation.
     private final long get_BIGINT(int column) {
-        return dataBuffer_.getLong(columnDataPosition_[column - 1]);
+        // @AGG force Little Endian
+        return dataBuffer_.getLongLE(columnDataPosition_[column - 1]);
 //        return SignedBinary.getLong(dataBuffer_,
 //                columnDataPosition_[column - 1]);
     }
 
     // Build a Java float from a 4-byte floating point representation.
     private final float get_FLOAT(int column) {
-        return dataBuffer_.getFloat(columnDataPosition_[column - 1]);
+        // @AGG force Little Endian
+        return dataBuffer_.getFloatLE(columnDataPosition_[column - 1]);
 //        return FloatingPoint.getFloat(dataBuffer_,
 //                columnDataPosition_[column - 1]);
     }
 
     // Build a Java double from an 8-byte floating point representation.
     private final double get_DOUBLE(int column) {
-        return dataBuffer_.getDouble(columnDataPosition_[column - 1]);
+        // @AGG force Little Endian
+        return dataBuffer_.getDoubleLE(columnDataPosition_[column - 1]);
 //        return FloatingPoint.getDouble(dataBuffer_,
 //                columnDataPosition_[column - 1]);
     }
@@ -454,8 +462,8 @@ public class Cursor {
             throw new IllegalStateException("SQLState.CHARACTER_CONVERTER_NOT_AVAILABLE");
         }
 
-        dataBuffer_.readerIndex(columnDataPosition_[column - 1] + 2);
-        String tempString = dataBuffer_.readCharSequence(columnDataComputedLength_[column - 1] - 2, charset_[column - 1]).toString();
+        dataBuffer_.readerIndex(columnDataPosition_[column - 1]);
+        String tempString = dataBuffer_.readCharSequence(columnDataComputedLength_[column - 1], charset_[column - 1]).toString();
 //        String tempString = new String(dataBuffer_,
 //                columnDataPosition_[column - 1],
 //                columnDataComputedLength_[column - 1],
@@ -465,22 +473,30 @@ public class Cursor {
                                                  tempString.length()));
     }
 
-//    // Build a JDBC Date object from the DERBY ISO DATE field.
-//    private Date getDATE(int column, Calendar cal) throws SQLException {
+    // Build a JDBC Date object from the DERBY ISO DATE field.
+    private LocalDate getDATE(int column) {
+        dataBuffer_.readerIndex(columnDataPosition_[column - 1]);
+        // DATE column is always 10 chars long
+        String dateString = dataBuffer_.readCharSequence(10, charset_[column - 1]).toString();
+        return LocalDate.parse(dateString);
 //        return DateTime.dateBytesToDate(dataBuffer_,
 //            columnDataPosition_[column - 1],
 //            cal,
 //            charset_[column - 1]);
-//    }
-//
-//    // Build a JDBC Time object from the DERBY ISO TIME field.
-//    private Time getTIME(int column, Calendar cal) throws SQLException {
+    }
+
+    // Build a JDBC Time object from the DERBY ISO TIME field.
+    private LocalTime getTIME(int column) {
+        dataBuffer_.readerIndex(columnDataPosition_[column - 1]);
+        // Time column is always 8 chars long
+        String timeString = dataBuffer_.readCharSequence(8, charset_[column - 1]).toString();
+        return LocalTime.parse(timeString, db2TimeFormat);
 //        return DateTime.timeBytesToTime(dataBuffer_,
 //                columnDataPosition_[column - 1],
 //                cal,
 //                charset_[column - 1]);
-//    }
-//
+    }
+
 //    // Build a JDBC Timestamp object from the DERBY ISO TIMESTAMP field.
 //    private final Timestamp getTIMESTAMP(int column, Calendar cal)
 //            throws SQLException {
@@ -588,19 +604,19 @@ public class Cursor {
         }
     }
 
-    /**
-     * Instantiate an instance of Calendar that can be re-used for getting
-     * Time, Timestamp, and Date values from this cursor.  Assumption is
-     * that all users of the returned Calendar object will clear it as
-     * appropriate before using it.
-     */
-    private Calendar getRecyclableCalendar()
-    {
-        if (recyclableCalendar_ == null)
-            recyclableCalendar_ = new GregorianCalendar();
-
-        return recyclableCalendar_;
-    }
+//    /**
+//     * Instantiate an instance of Calendar that can be re-used for getting
+//     * Time, Timestamp, and Date values from this cursor.  Assumption is
+//     * that all users of the returned Calendar object will clear it as
+//     * appropriate before using it.
+//     */
+//    private Calendar getRecyclableCalendar()
+//    {
+//        if (recyclableCalendar_ == null)
+//            recyclableCalendar_ = new GregorianCalendar();
+//
+//        return recyclableCalendar_;
+//    }
 
 //    /**
 //     * Returns a reference to the locator procedures.
@@ -1130,7 +1146,9 @@ public class Cursor {
             return get_BOOLEAN(column);
         case Types.SMALLINT:
             // See Table 4 in JDBC 1 spec (pg. 932 in jdbc book)
-            return Integer.valueOf(get_SMALLINT(column));
+            // @AGG since this is not JDBC, just return as a short
+            //return Integer.valueOf(get_SMALLINT(column));
+            return get_SMALLINT(column);
         case Types.INTEGER:
             return get_INTEGER(column);
         case Types.BIGINT:
@@ -1141,10 +1159,10 @@ public class Cursor {
             return get_DOUBLE(column);
         case Types.DECIMAL:
             return get_DECIMAL(column);
-//        case Types.DATE:
-//            return getDATE(column, getRecyclableCalendar());
-//        case Types.TIME:
-//            return getTIME(column, getRecyclableCalendar());
+        case Types.DATE:
+            return getDATE(column);
+        case Types.TIME:
+            return getTIME(column);
 //        case Types.TIMESTAMP:
 //            return getTIMESTAMP(column, getRecyclableCalendar());
         case Types.CHAR:
@@ -1164,7 +1182,7 @@ public class Cursor {
 //        case Types.CLOB:
 //            return getClobColumn_(column, agent_, true);
         default:
-            throw coercionError("Object", column );
+            throw coercionError("Object type: ", column );
         }
     }
 

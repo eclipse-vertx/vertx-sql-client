@@ -1031,7 +1031,7 @@ public class DRDAConnectResponse extends DRDAResponse {
         // the managerCount should be equal to the same number of
         // managers sent on the excsat.
 
-        System.out.println("Database server attributes:");
+//        System.out.println("Database server attributes:");
         // read each of the manager levels returned from the server.
         for (int i = 0; i < managerCount; i++) {
 
@@ -1044,22 +1044,22 @@ public class DRDAConnectResponse extends DRDAResponse {
             // for this driver.  Also make sure unexpected managers are not returned.
             switch (managerCodePoint) {
                 case CodePoint.AGENT:
-                    System.out.println("  AGENT=" + managerLevel);
-                    break;
+//                    System.out.println("  AGENT=" + managerLevel);
+//                    break;
                 case CodePoint.SQLAM:
-                    System.out.println("  SQLAM=" + managerLevel);
-                    break;
+//                    System.out.println("  SQLAM=" + managerLevel);
+//                    break;
                 case CodePoint.UNICODEMGR:
-                    System.out.println("  UNICODEMGR=" + managerLevel);
-                    break;
+//                    System.out.println("  UNICODEMGR=" + managerLevel);
+//                    break;
                 case CodePoint.RDB:
-                    System.out.println("  RDB=" + managerLevel);
-                    break;
+//                    System.out.println("  RDB=" + managerLevel);
+//                    break;
                 case CodePoint.SECMGR:
-                    System.out.println("  SECMGR=" + managerLevel);
-                    break;
+//                    System.out.println("  SECMGR=" + managerLevel);
+//                    break;
                 case CodePoint.CMNTCPIP:
-                    System.out.println("  CMNTCPIP=" + managerLevel);
+//                    System.out.println("  CMNTCPIP=" + managerLevel);
                     break;
                 default:
                     System.out.println("  WARN: Unknown manager codepoint: 0x" + Integer.toHexString(managerCodePoint));
