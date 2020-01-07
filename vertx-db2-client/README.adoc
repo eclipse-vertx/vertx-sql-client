@@ -1,0 +1,67 @@
+= TODO
+
+= The Reactive DB2 Client
+
+Documentation:
+
+- https://vertx.io/docs/vertx-mysql-client/java/[Java documentation]
+- https://vertx.io/docs/vertx-mysql-client/kotlin/[Kotlin documentation]
+- https://vertx.io/docs/vertx-mysql-client/js/[JavaScript documentation]
+- https://vertx.io/docs/vertx-mysql-client/groovy/[Groovy documentation]
+- https://vertx.io/docs/vertx-mysql-client/ruby/[Ruby documentation]
+
+=== Testing
+
+Out of the box, the test suite runs a Docker container using https://www.testcontainers.org/[TestContainers] by default.
+
+You can change the database type of the server by passing a case-insensitive `testing.mysql.database.server` option like this:
+
+```
+> mvn test -Dtesting.mysql.database.server=MySQL
+```
+
+The following database servers are supported:
+
+- `MySQL`
+- `MariaDB`
+
+If the database server is not specified, then `MySQL` will be used by default.
+
+You can also change the version of the database by passing an optional Docker tag named `testing.mysql.database.version` like this:
+
+```
+> mvn test -Dtesting.mysql.database.version=5.6.45
+```
+
+If the database version is not specified, then `5.7` will be used by default for MySQL while `10.4` will be used by default for MariaDB.
+
+=== Testing with an external database
+
+You can run tests with an external database:
+
+- the script `docker/mysql/resources/create-mysql.sql` creates the test data
+
+You need to add some properties for testing:
+
+
+```
+> mvn test -Dconnection.uri=mysql://$username:$password@$host:$port/$database
+```
+
+- connection.uri: configure the client to connect the specified database
+
+=== Testing with Docker
+
+Run the MySQL container with `docker-compose`:
+
+```
+> cd docker/mysql
+> docker-compose up --build -V
+```
+
+Run tests:
+
+```
+> mvn test -Dconnection.uri=mysql://$username:$password@$host:$port/$database
+```
+
