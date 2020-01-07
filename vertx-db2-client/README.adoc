@@ -1,67 +1,45 @@
-= TODO
+= The Reactive DB2 Client
 
-== The Reactive DB2 Client
+== How to use it
 
-Documentation:
+See `src/main/java/examples/DB2ClientExamples.java`
 
-- https://vertx.io/docs/vertx-mysql-client/java/[Java documentation]
-- https://vertx.io/docs/vertx-mysql-client/kotlin/[Kotlin documentation]
-- https://vertx.io/docs/vertx-mysql-client/js/[JavaScript documentation]
-- https://vertx.io/docs/vertx-mysql-client/groovy/[Groovy documentation]
-- https://vertx.io/docs/vertx-mysql-client/ruby/[Ruby documentation]
-
-=== Testing
+== Testing
 
 Out of the box, the test suite runs a Docker container using https://www.testcontainers.org/[TestContainers] by default.
 
-You can change the database type of the server by passing a case-insensitive `testing.mysql.database.server` option like this:
+Since DB2 container takes about 2 minutes to start, it is good to reuse containers across multiple runs. To container reuse, create a file at `~/.testcontainers.properties` and add the following property:
 
+.~/.testcontainers.properties
 ```
-> mvn test -Dtesting.mysql.database.server=MySQL
-```
-
-The following database servers are supported:
-
-- `MySQL`
-- `MariaDB`
-
-If the database server is not specified, then `MySQL` will be used by default.
-
-You can also change the version of the database by passing an optional Docker tag named `testing.mysql.database.version` like this:
-
-```
-> mvn test -Dtesting.mysql.database.version=5.6.45
+testcontainers.reuse.enable=true
 ```
 
-If the database version is not specified, then `5.7` will be used by default for MySQL while `10.4` will be used by default for MariaDB.
-
-=== Testing with an external database
-
-You can run tests with an external database:
-
-- the script `docker/mysql/resources/create-mysql.sql` creates the test data
-
-You need to add some properties for testing:
-
+Just run the following Maven command:
 
 ```
-> mvn test -Dconnection.uri=mysql://$username:$password@$host:$port/$database
+mvn test
 ```
 
-- connection.uri: configure the client to connect the specified database
+== Testing with an external database
 
-=== Testing with Docker
+If you want to use an external database, you must set the following environment variables:
 
-Run the MySQL container with `docker-compose`:
+- DB2_HOST: The hostname of the machine where DB2 is
+- DB2_PORT: The port DB2 is running on
+- DB2_NAME: The name of the DB2 database instance
+- DB2_USER: The DB2 username
+- DB2_PASS: The DB2 password
+
+If you want to run the automated tests against an external database, you must manually populate it with the data in `src/test/resources/init.sql`
+
+== Testing with Docker
+
+Start a DB2 container with the following script:
 
 ```
-> cd docker/mysql
-> docker-compose up --build -V
+./scripts/db2.sh
 ```
 
-Run tests:
-
-```
-> mvn test -Dconnection.uri=mysql://$username:$password@$host:$port/$database
-```
+If you want to run the automated tests against this database, you must manually populate it with the data in `src/test/resources/init.sql`
 
