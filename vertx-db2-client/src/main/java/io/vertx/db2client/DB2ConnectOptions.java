@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2019,2020 IBM Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.vertx.db2client;
 
 import java.util.Collections;
@@ -14,6 +29,19 @@ import io.vertx.sqlclient.SqlConnectOptions;
  */
 @DataObject(generateConverter = true)
 public class DB2ConnectOptions extends SqlConnectOptions {
+    
+    /**
+     * Provide a {@link DB2ConnectOptions} configured from a connection URI.
+     *
+     * @param connectionUri the connection URI to configure from
+     * @return a {@link DB2ConnectOptions} parsed from the connection URI
+     * @throws IllegalArgumentException when the {@code connectionUri} is in an invalid format
+     */
+    public static DB2ConnectOptions fromUri(String connectionUri) throws IllegalArgumentException {
+        throw new UnsupportedOperationException("Not implemented");
+//      JsonObject parsedConfiguration = DB2ConnectionUriParser.parse(connectionUri);
+//      return new DB2ConnectOptions(parsedConfiguration);
+    }
 
     public static final String DEFAULT_HOST = "localhost";
     public static final int DEFAULT_PORT = 50000;

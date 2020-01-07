@@ -1,6 +1,6 @@
 = TODO
 
-= The Reactive DB2 Client
+== The Reactive DB2 Client
 
 Documentation:
 
