@@ -28,69 +28,65 @@ public class DB2Codec extends CombinedChannelDuplexHandler<DB2Decoder, DB2Encode
 
   private final ArrayDeque<CommandCodec<?, ?>> inflight = new ArrayDeque<>();
   
-  private static final boolean DEBUG_BYTES = true;
-
   public DB2Codec(DB2SocketConnection mySQLSocketConnection) {
     DB2Encoder encoder = new DB2Encoder(inflight, mySQLSocketConnection);
     DB2Decoder decoder = new DB2Decoder(inflight);
     init(decoder, encoder);
   }
   
-  public static void dumpBuffer(ByteBuf buffer) {
-      dumpBuffer(buffer, buffer.readableBytes());
+  public static String dumpBuffer(ByteBuf buffer) {
+      return dumpBuffer(buffer, buffer.readableBytes());
   }
   
-  public static void dumpBuffer(ByteBuf buffer, int length) {
-      dumpBuffer(buffer, length, -1);
+  public static String dumpBuffer(ByteBuf buffer, int length) {
+      return dumpBuffer(buffer, length, -1);
   }
   
-  public static void dumpBuffer(ByteBuf buffer, int length, int calloutIndex) {
-      if (!DEBUG_BYTES)
-          return;
-      System.out.println(buffer.toString());
+  public static String dumpBuffer(ByteBuf buffer, int length, int calloutIndex) {
+      StringBuilder sb = new StringBuilder();
+      sb.append(buffer.toString()).append('\n');
       ByteBuf copy = buffer.slice(buffer.readerIndex(), length);
-      System.out.print("  hex / dec   0  1  2  3  4  5  6  7    8  9  A  B  C  D  E  F ");
+      sb.append("  hex / dec   0  1  2  3  4  5  6  7    8  9  A  B  C  D  E  F \n");
       StringBuilder asciiLine = new StringBuilder(18);
       for (int i = 0; i < copy.writerIndex(); i++) {
           if (calloutIndex >= 0 
                   && calloutIndex / 16 == i / 16 - 1
                   && i % 16 == 0) {
-              System.out.print("\n              ");
+              sb.append("\n              ");
               for  (int j = 0; j < 16; j++) {
                   if (j == calloutIndex % 16)
-                      System.out.print("^^");
+                      sb.append("^^");
                   else
-                      System.out.print("  ");
+                      sb.append("  ");
                   if (j == 8)
-                      System.out.print("  ");
+                      sb.append("  ");
                   if (j < 15)
-                      System.out.print(' ');
+                      sb.append(' ');
               }
           }
           if (i % 16 == 0) {
-              System.out.print("  " + asciiLine.toString());
+              sb.append("  " + asciiLine.toString());
               asciiLine = new StringBuilder(18);
-              System.out.printf("\n  %04x/%04d", i, i);
+              sb.append(String.format("\n  %04x/%04d", i, i));
           }
           
           if (i % 8 == 0) {
               asciiLine.append("  ");
-              System.out.print("  ");
+              sb.append("  ");
           }
-          System.out.print(" ");
+          sb.append(" ");
           byte b = copy.getByte(i);
-          System.out.print(String.format("%02x", b));
+          sb.append(String.format("%02x", b));
           if (b > 0x1F && b < 0x7F)
               asciiLine.append((char) b);
           else
               asciiLine.append('.');
       }
-      System.out.println();
+      sb.append("\n");
+      return sb.toString();
   }
   
   public static void dumpBytes(byte[] bytes) {
-      if (!DEBUG_BYTES)
-          return;
       for (int i = 0; i < bytes.length; i++) {
           if (i % 16 == 0)
               System.out.print("\n  ");

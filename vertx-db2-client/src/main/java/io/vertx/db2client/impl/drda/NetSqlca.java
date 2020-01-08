@@ -15,6 +15,8 @@
  */
 package io.vertx.db2client.impl.drda;
 
+import java.util.Arrays;
+
 /**
  * A SQLCA stands for "SQL Communication Area"
  * The primary purpose is for tracking the SQLCode.
@@ -78,16 +80,19 @@ public class NetSqlca {
    }
    
    /**
+    * Checks the SQL code of the SQLCA. Possible values are documented at:
+    * https://www.ibm.com/support/knowledgecenter/SSEPEK_11.0.0/codes/src/tpc/db2z_n.html
     * @param sqlca The SQL Communication Area to complete
     * @return The sqlcode
     */
-   public static int complete(NetSqlca sqlca) {
-       if (sqlca == null)
+   public static int complete(NetSqlca sqlca, int... allowedCodes) {
+       if (sqlca == null || sqlca.sqlCode_ == 0)
            return 0;
-       if (sqlca.sqlCode_ < 0) {
-           throw new IllegalStateException("Read exception sqlcode=" + sqlca.sqlCode_);
+       boolean allowed = Arrays.stream(allowedCodes).anyMatch(code -> code == sqlca.sqlCode_);
+       if (!allowed && sqlca.sqlCode_ < 0) {
+           throw new IllegalStateException("ERROR sqlcode=" + sqlca.sqlCode_ );
        }
-       if (sqlca.sqlCode_ > 0) {
+       if (!allowed && sqlca.sqlCode_ > 0) {
            System.out.println("WARNING sqlcode=" + sqlca.sqlCode_);
        }
        return sqlca.sqlCode_;

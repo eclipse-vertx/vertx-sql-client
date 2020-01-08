@@ -786,10 +786,13 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             // Set the cursor state if null SQLCA or sqlcode is equal to 0.
             if (netSqlca != null) {
                 int sqlcode = netSqlca.getSqlCode();
-                if (sqlcode == 100 || sqlcode == 20237)
+                if (sqlcode == 100 || sqlcode == 20237) {
                     cursor.setAllRowsReceivedFromServer(true);
-                else
-                    NetSqlca.complete(netSqlca);
+                } else {
+                    // @AGG tolerate -501 which means cursor was not open
+                    // TODO: revisit call flow to see if we can avoid flowing a CLSQRY on an already closed cursor
+                    NetSqlca.complete(netSqlca, -501);
+                }
                 
             }
         } else {
@@ -852,7 +855,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             case CodePoint.SQLCARD:
                 NetSqlca netSqlca = parseSQLCARD(null);
                 if (netSqlca != null) {
-                    NetSqlca.complete(netSqlca);
+                    NetSqlca.complete(netSqlca, 100); // sqlcode=100 means no rows updated
                     if (netSqlca.getSqlCode() >= 0) {
                         updateCount = netSqlca.getUpdateCount();
                     }

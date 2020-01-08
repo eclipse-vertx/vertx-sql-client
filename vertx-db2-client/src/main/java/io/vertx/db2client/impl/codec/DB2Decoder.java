@@ -75,9 +75,9 @@ class DB2Decoder extends ByteToMessageDecoder {
             ctx.decodePayload(payload, payloadLength);
         } catch (Throwable t) {
             int i = payload.readerIndex();
-            LOG.error("FATAL: Error parsing buffer at index " + i + " / 0x" + Integer.toHexString(i), t);
             payload.readerIndex(startIndex);
-            DB2Codec.dumpBuffer(payload, payloadLength, i);
+            LOG.error("FATAL: Error parsing buffer at index " + i + " / 0x" + Integer.toHexString(i) + "\n" + 
+                    DB2Codec.dumpBuffer(payload, payloadLength, i), t);
             ctx.completionHandler.handle(CommandResponse.failure(t));
         }
         payload.clear();

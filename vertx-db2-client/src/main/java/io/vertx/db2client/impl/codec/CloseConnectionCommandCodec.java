@@ -56,7 +56,6 @@ class CloseConnectionCommandCodec extends CommandCodec<Void, CloseConnectionComm
   void decodePayload(ByteBuf payload, int payloadLength) {
 	  if (LOG.isDebugEnabled())
 		  LOG.debug("disconnect reply");
-      // TODO @AGG closes failing due to magic bit 'd0' never being set
       try {
           DRDAQueryResponse closeCursor = new DRDAQueryResponse(payload, cm);
           closeCursor.readCursorClose();
