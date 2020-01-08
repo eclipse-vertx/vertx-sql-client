@@ -21,9 +21,13 @@ import java.util.List;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
 class DB2Decoder extends ByteToMessageDecoder {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(CloseConnectionCommandCodec.class);
 
     private final ArrayDeque<CommandCodec<?, ?>> inflight;
     
@@ -42,7 +46,8 @@ class DB2Decoder extends ByteToMessageDecoder {
             // wait until we have more bytes to read
             return;
         }
-        System.out.println("@AGG received " + payloadLength + " bytes for " + inflight.peek());
+        if (LOG.isDebugEnabled())
+        	LOG.debug("received " + payloadLength + " bytes for " + inflight.peek());
         decodePayload(in.readRetainedSlice(payloadLength), payloadLength, in.getShort(in.readerIndex() + 4));
     }
     
@@ -70,10 +75,9 @@ class DB2Decoder extends ByteToMessageDecoder {
             ctx.decodePayload(payload, payloadLength);
         } catch (Throwable t) {
             int i = payload.readerIndex();
-            System.out.println("FATAL: Error parsing buffer at index " + i + " / 0x" + Integer.toHexString(i));
+            LOG.error("FATAL: Error parsing buffer at index " + i + " / 0x" + Integer.toHexString(i), t);
             payload.readerIndex(startIndex);
             DB2Codec.dumpBuffer(payload, payloadLength, i);
-            t.printStackTrace();
             ctx.completionHandler.handle(CommandResponse.failure(t));
         }
         payload.clear();

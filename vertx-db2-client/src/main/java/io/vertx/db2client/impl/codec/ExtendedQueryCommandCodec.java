@@ -20,6 +20,8 @@ import java.util.stream.Collector;
 import com.ibm.db2.jcc.am.ResultSet;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
 import io.vertx.sqlclient.Row;
@@ -29,6 +31,9 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
 class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(ExtendedQueryCommandCodec.class);
+	
     ExtendedQueryCommandCodec(ExtendedQueryCommand<R> cmd) {
         super(cmd);
         if (cmd.fetch() > 0) {
@@ -41,9 +46,9 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
 
     @Override
     void encode(DB2Encoder encoder) {
-        System.out.println("@AGG extended query encode");
         super.encode(encoder);
-        System.out.println("@AGG statement: " + statement);
+        if (LOG.isDebugEnabled())        
+        	LOG.debug("Extended query encode: statement=" + statement);
         
         ByteBuf packet = allocateBuffer();
         DRDAQueryRequest openQuery = new DRDAQueryRequest(packet, ccsidManager);
@@ -72,7 +77,8 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
     
     @Override
     void decodePayload(ByteBuf payload, int payloadLength) {
-        System.out.println("@AGG extended query decode");
+    	if (LOG.isDebugEnabled())        
+        	LOG.debug("Extended query decode");
         if (DRDAQueryRequest.isQuery(cmd.sql())) {
         	decodeQuery(payload);
         } else { // is update
@@ -114,7 +120,6 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
     }
     
     private void decodeUpdate(ByteBuf payload) {
-        System.out.println("@AGG decode update");
         DRDAQueryResponse updateResponse = new DRDAQueryResponse(payload, ccsidManager);
         int updatedCount = (int) updateResponse.readExecute();
         // TODO: If auto-generated keys, read an OPNQRY here

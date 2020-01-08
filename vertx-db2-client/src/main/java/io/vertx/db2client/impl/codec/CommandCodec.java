@@ -17,10 +17,14 @@ package io.vertx.db2client.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.core.Handler;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
 abstract class CommandCodec<R, C extends CommandBase<R>> {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(CommandCodec.class);
 
     Handler<? super CommandResponse<R>> completionHandler;
     public Throwable failure;
@@ -48,7 +52,8 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     }
 
     void sendPacket(ByteBuf packet, int payloadLength) {
-        System.out.println("@AGG sending packet size=" + payloadLength + "  " + packet);
+    	if (LOG.isDebugEnabled())
+    		LOG.debug("sending packet size=" + payloadLength + "  " + packet);
 //        DB2Codec.dumpBuffer(packet);
         if (payloadLength >= DB2Codec.PACKET_PAYLOAD_LENGTH_LIMIT) {
             /*

@@ -133,8 +133,9 @@ public abstract class DRDAResponse {
 //        } else {
 //            connection.completeLocalRollback();
 //        }
-        if (uowdsp == CodePoint.UOWDSP_COMMIT)
-            System.out.println("@AGG commit completed normally");
+        if (uowdsp == CodePoint.UOWDSP_COMMIT) {
+            //System.out.println("@AGG commit completed normally");
+        }
     }
     
     // Relational Database Name specifies the name of a relational
@@ -317,7 +318,7 @@ public abstract class DRDAResponse {
         skipFastBytes(16);
 
         long sqldsRowc = readFastLong(); // ROW_COUNT
-        System.out.println("@AGG row count: " + sqldsRowc);
+        //System.out.println("@AGG row count: " + sqldsRowc);
 
         skipFastBytes(24);
 

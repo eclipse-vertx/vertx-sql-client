@@ -20,6 +20,8 @@ import java.util.ArrayDeque;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.db2client.impl.DB2SocketConnection;
 import io.vertx.db2client.impl.command.InitialHandshakeCommand;
 import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
@@ -29,6 +31,8 @@ import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
 class DB2Encoder extends ChannelOutboundHandlerAdapter {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(DB2Encoder.class);
 
     private final ArrayDeque<CommandCodec<?, ?>> inflight;
     ChannelHandlerContext chctx;
@@ -47,7 +51,8 @@ class DB2Encoder extends ChannelOutboundHandlerAdapter {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        System.out.println("@AGG writing command: " + msg);
+    	if (LOG.isDebugEnabled())
+    		LOG.debug("writing command: " + msg);
         if (msg instanceof CommandBase<?>) {
             CommandBase<?> cmd = (CommandBase<?>) msg;
             write(cmd);

@@ -876,7 +876,6 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
                     NetSqlca.complete(netSqlca);
                     if (netSqlca.getSqlCode() >= 0) {
                         updateCount = netSqlca.getUpdateCount();
-                        System.out.println("@AGG got update count: " + updateCount);
                     }
                 }
                 break;

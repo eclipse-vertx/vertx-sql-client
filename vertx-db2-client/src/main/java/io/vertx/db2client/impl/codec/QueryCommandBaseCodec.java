@@ -55,7 +55,6 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     }
 
     private void decodeUpdate(ByteBuf payload) {
-        System.out.println("@AGG decode update");
         DRDAQueryResponse updateResponse = new DRDAQueryResponse(payload, ccsidManager);
         int updatedCount = (int) updateResponse.readExecuteImmediate();
         // TODO: If auto-generated keys, read an OPNQRY here
@@ -68,7 +67,6 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     }
 
     private void decodeQuery(ByteBuf payload) {
-        System.out.println("@AGG decode QueryCommandBaseCodec state=" + commandHandlerState);
         switch (commandHandlerState) {
         case HANDLING_COLUMN_DEFINITION:
             DRDAQueryResponse resp = new DRDAQueryResponse(payload, ccsidManager);

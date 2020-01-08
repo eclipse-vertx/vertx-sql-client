@@ -52,7 +52,6 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
     }
 
     private void sendStatementPrepareCommand() {
-        System.out.println("@AGG PS encode");
         ByteBuf packet = allocateBuffer();
         // encode packet header
         int packetStartIdx = packet.writerIndex();
@@ -70,7 +69,6 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
 
     @Override
     void decodePayload(ByteBuf payload, int payloadLength) {
-        System.out.println("@AGG inside PS decode");
         switch (commandHandlerState) {
         case INIT:
             DRDAQueryResponse response = new DRDAQueryResponse(payload, ccsidManager);

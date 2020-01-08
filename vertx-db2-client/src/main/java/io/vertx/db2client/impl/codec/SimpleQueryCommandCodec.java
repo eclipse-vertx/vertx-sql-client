@@ -48,7 +48,6 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
     }
 
     private void sendUpdateCommand() {
-        System.out.println("@AGG sending update command");
         ByteBuf packet = allocateBuffer();
         int packetStartIdx = packet.writerIndex();
         DRDAQueryRequest updateCommand = new DRDAQueryRequest(packet, ccsidManager);
