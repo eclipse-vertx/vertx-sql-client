@@ -72,7 +72,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
             DRDAQueryResponse resp = new DRDAQueryResponse(payload, ccsidManager);
             resp.readPrepareDescribeOutput();
             resp.readBeginOpenQuery();
-            columnDefinitions = resp.getColumnMetaData();
+            columnDefinitions = resp.getOutputColumnMetaData();
             decoder = new RowResultDecoder<>(cmd.collector(), new DB2RowDesc(columnDefinitions), resp.getCursor(),
                     resp);
             commandHandlerState = CommandHandlerState.HANDLING_ROW_DATA;

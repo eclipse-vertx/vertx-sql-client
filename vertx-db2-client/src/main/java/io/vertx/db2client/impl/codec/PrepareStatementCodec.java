@@ -37,7 +37,8 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
     }
 
     private CommandHandlerState commandHandlerState = CommandHandlerState.INIT;
-    private ColumnMetaData columnDescs;
+    private ColumnMetaData paramDesc;
+    private ColumnMetaData rowDesc;
     private final CCSIDManager ccsidManager = new CCSIDManager();
     private Section section;
 
@@ -73,8 +74,8 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
         case INIT:
             DRDAQueryResponse response = new DRDAQueryResponse(payload, ccsidManager);
             response.readPrepareDescribeInputOutput();
-            ColumnMetaData columnMd = response.getColumnMetaData();
-            columnDescs = columnMd;
+            rowDesc = response.getOutputColumnMetaData();
+            paramDesc = response.getInputColumnMetaData();
             handleColumnDefinitionsDecodingCompleted();
             commandHandlerState = CommandHandlerState.COLUMN_DEFINITIONS_DECODING_COMPLETED;
             break;
@@ -85,12 +86,14 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
 
     private void handleReadyForQuery() {
         completionHandler.handle(CommandResponse.success(new DB2PreparedStatement(cmd.sql(),
-                new DB2ParamDesc(columnDescs), new DB2RowDesc(columnDescs), section)));
+                new DB2ParamDesc(paramDesc), new DB2RowDesc(rowDesc), section)));
     }
 
     private void resetIntermediaryResult() {
         commandHandlerState = CommandHandlerState.INIT;
-        columnDescs = null;
+        rowDesc = null;
+        paramDesc = null;
+        section = null;
     }
 
     private void handleColumnDefinitionsDecodingCompleted() {

@@ -29,7 +29,8 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //    protected ByteBuf longValueForDecryption_ = null;
 //    protected int longCountForDecryption_ = 0;
     
-    private ColumnMetaData columnMetaData = null;
+    private ColumnMetaData outputColumnMetaData = null;
+    private ColumnMetaData inputColumnMetaData = null;
     
     private int fetchSize = 0; // @AGG move this onto some sort of result class
     
@@ -54,7 +55,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
     }
     
     private void completePrepareDescribe() {
-        if (columnMetaData == null) {
+        if (outputColumnMetaData == null) {
             return;
         }
         // TODO: @AGG move this stuff to non-DRDA class
@@ -78,56 +79,34 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //        }
 
         startSameIdChainParse();
-        parseDSCSQLSTTreply(/*preparedStatement, */1); // anything other than 0 for input
+        parseDSCSQLSTTreply(/*preparedStatement, */false);
         endOfSameIdChainData();
     }
     
     // Parse the reply for the Describe SQL Statement Command.
     // This method handles the parsing of all command replies and reply data
     // for the dscsqlstt command.
-    private void parseDSCSQLSTTreply(int metaDataType) {// 0 is output, else input
+    private void parseDSCSQLSTTreply(boolean isOutput) {
         int peekCP = parseTypdefsOrMgrlvlovrs();
 
+        ColumnMetaData columnMetaData = new ColumnMetaData();
+        if (isOutput)
+            outputColumnMetaData = new ColumnMetaData();
+        else
+            inputColumnMetaData = new ColumnMetaData();
+        
         if (peekCP == CodePoint.SQLDARD) {
-            ColumnMetaData columnMetaData = null;
-
-            if (columnMetaData == null) {
-                //columnMetaData = ClientDriver.getFactory().newColumnMetaData(netAgent_.logWriter_);
-                columnMetaData = new ColumnMetaData();
-            }
-
+            // SQLDARD here means we have some data to parse
             NetSqlca netSqlca = parseSQLDARD(columnMetaData, false);  // false means do not skip SQLDARD bytes
-            if (columnMetaData.columns_ == 0) {
-                columnMetaData = null;
-            }
-
-            if (metaDataType == 0) // DESCRIBE OUTPUT
-            {
-                NetSqlca.complete(netSqlca);
-                this.columnMetaData = columnMetaData;
-//                ps.completeDescribeOutput(columnMetaData, netSqlca);
-            } else {
-                NetSqlca.complete(netSqlca);
-                this.columnMetaData = columnMetaData;
-                //ps.completeDescribeInput(columnMetaData, netSqlca);
-            }
+            NetSqlca.complete(netSqlca);
         } else if (peekCP == CodePoint.SQLCARD) {
+            // SQLCARD here means there was no data to parse, just a return code
             NetSqlca netSqlca = parseSQLCARD(null);
-            if (metaDataType == 0) // DESCRIBE OUTPUT
-            {
-                NetSqlca.complete(netSqlca);
-                this.columnMetaData = null;
-                //ps.completeDescribeOutput(null, netSqlca);
-            } else {
-                NetSqlca.complete(netSqlca);
-                this.columnMetaData = null;
-                //ps.completeDescribeInput(null, netSqlca);
-            }
+            NetSqlca.complete(netSqlca);
         } else {
             throw new IllegalStateException("Parse describe error");
             //parseDescribeError(ps);
         }
-
     }
     
     @Deprecated // @AGG reads all data sync
@@ -158,8 +137,8 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
                 peekCP = parseTypdefsOrMgrlvlovrs();
 
                 if (peekCP == CodePoint.SQLDARD) {
-                    columnMetaData = new ColumnMetaData();// ClientDriver.getFactory().newColumnMetaData(netAgent_.logWriter_);
-                    NetSqlca netSqlca = parseSQLDARD(columnMetaData, false);  // false means do not skip SQLDARD bytes
+                    outputColumnMetaData = new ColumnMetaData();// ClientDriver.getFactory().newColumnMetaData(netAgent_.logWriter_);
+                    NetSqlca netSqlca = parseSQLDARD(outputColumnMetaData, false);  // false means do not skip SQLDARD bytes
 
                     //For java stored procedure, we got the resultSetMetaData from server,
                     //Do we need to save the resultSetMetaData and propagate netSqlca?
@@ -1060,8 +1039,8 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             peekCP = parseTypdefsOrMgrlvlovrs();
 
             if (peekCP == CodePoint.SQLDARD) {
-                columnMetaData = new ColumnMetaData();// ClientDriver.getFactory().newColumnMetaData(netAgent_.logWriter_);
-                NetSqlca netSqlca = parseSQLDARD(columnMetaData, false);  // false means do not skip SQLDARD bytes
+                outputColumnMetaData = new ColumnMetaData();// ClientDriver.getFactory().newColumnMetaData(netAgent_.logWriter_);
+                NetSqlca netSqlca = parseSQLDARD(outputColumnMetaData, false);  // false means do not skip SQLDARD bytes
 
                 //For java stored procedure, we got the resultSetMetaData from server,
                 //Do we need to save the resultSetMetaData and propagate netSqlca?
@@ -1244,15 +1223,25 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
      * @AGG temporary hack to get the column metadata
      * @return
      */
-    public ColumnMetaData getColumnMetaData() {
-        if (columnMetaData == null)
+    public ColumnMetaData getOutputColumnMetaData() {
+        if (outputColumnMetaData == null)
             throw new IllegalStateException("ColumnMetaData has not been created yet");
-        return columnMetaData;
+        return outputColumnMetaData;
     }
     
-    public void setColumnMetaData(ColumnMetaData md) {
+    public void setOutputColumnMetaData(ColumnMetaData md) {
         Objects.requireNonNull(md);
-        this.columnMetaData = md;
+        this.outputColumnMetaData = md;
+    }
+    
+    /**
+     * @AGG temporary hack to get the column metadata
+     * @return
+     */
+    public ColumnMetaData getInputColumnMetaData() {
+        if (inputColumnMetaData == null)
+            throw new IllegalStateException("ColumnMetaData has not been created yet");
+        return inputColumnMetaData;
     }
     
     private void parseSQLDTARDdata(/*NetCursor netCursor*/) {
@@ -1393,7 +1382,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
                 // i.e. from integer to char.
                 int columns = peekTotalColumnCount(tripletLength);
                 // peek ahead to get the total number of columns.
-                columnMetaData.setColumnCount(columns);
+                outputColumnMetaData.setColumnCount(columns);
                 cursor.initializeColumnInfoArrays(Typdef.targetTypdef, columns);
                 columnCount += parseSQLDTAGRPdataLabelsAndUpdateColumn(/*cursor, */columnCount, tripletLength);
                 break;
@@ -1913,11 +1902,11 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             NetSqlca netSqlca = null;
             boolean nullSqlca = peekForNullSqlcagrp();
             if (nullSqlca && peekNumOfColumns() == 0) {
-                netSqlca = parseSQLDARD(columnMetaData, true); // true means to skip the rest of SQLDARD bytes
+                netSqlca = parseSQLDARD(outputColumnMetaData, true); // true means to skip the rest of SQLDARD bytes
             } else {
                 //columnMetaData = ClientDriver.getFactory().newColumnMetaData(netAgent_.logWriter_);
-                columnMetaData = new ColumnMetaData();
-                netSqlca = parseSQLDARD(columnMetaData, false); // false means do not skip SQLDARD bytes.
+                outputColumnMetaData = new ColumnMetaData();
+                netSqlca = parseSQLDARD(outputColumnMetaData, false); // false means do not skip SQLDARD bytes.
             }
 
             // @AGG not implemented, checks for error codes on the sqlca
@@ -2635,7 +2624,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         columnMetaData.nullable_[columnNumber] = (sqlType | 0x01) == sqlType; //Utils.isSqlTypeNullable(sqlType);
         columnMetaData.sqlCcsid_[columnNumber] = ccsid;
         columnMetaData.types_[columnNumber] =
-            ClientTypes.mapDERBYTypeToDriverType(
+            ClientTypes.mapDB2TypeToDriverType(
                 true, sqlType, columnLength, ccsid);
             // true means isDescribed
 

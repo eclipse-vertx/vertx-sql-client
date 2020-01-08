@@ -88,7 +88,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
     
     private void decodeQuery(ByteBuf payload) {
         DRDAQueryResponse resp = new DRDAQueryResponse(payload, ccsidManager);
-        resp.setColumnMetaData(columnDefinitions);
+        resp.setOutputColumnMetaData(columnDefinitions);
         resp.readBeginOpenQuery();
         decoder = new RowResultDecoder<>(cmd.collector(), new DB2RowDesc(columnDefinitions), resp.getCursor(), resp);
         commandHandlerState = CommandHandlerState.HANDLING_ROW_DATA;

@@ -135,7 +135,7 @@ public class ClientTypes {
         }
     }
 
-    static public int mapDERBYTypeToDriverType(boolean isDescribed, int sqlType, long length, int ccsid) {
+    static public int mapDB2TypeToDriverType(boolean isDescribed, int sqlType, long length, int ccsid) {
         switch (sqlType & ~1) { // Utils.getNonNullableSqlType(sqlType)) { // mask the isNullable bit
         case DRDAConstants.DB2_SQLTYPE_BOOLEAN:
             return BOOLEAN;
