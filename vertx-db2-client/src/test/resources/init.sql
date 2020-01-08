@@ -67,3 +67,19 @@ VALUES (2, 32767, 2147483647, 9223372036854775807,
         '2019-01-01', '18:45:02');
 INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_float_8, test_numeric, test_decimal, test_boolean, test_char, test_varchar, test_date, test_time)
 VALUES (3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+
+-- Collector API testing
+DROP TABLE IF EXISTS collector_test;
+CREATE TABLE collector_test
+(
+    id           INT,
+    test_int_2   SMALLINT,
+    test_int_4   INT,
+    test_int_8   BIGINT,
+    test_float   FLOAT,
+    test_double  DOUBLE,
+    test_varchar VARCHAR(20)
+);
+
+INSERT INTO collector_test VALUES (1, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'HELLO,WORLD');
+INSERT INTO collector_test VALUES (2, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'hello,world');
