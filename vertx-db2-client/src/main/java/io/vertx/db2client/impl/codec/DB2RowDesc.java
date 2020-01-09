@@ -15,24 +15,32 @@
  */
 package io.vertx.db2client.impl.codec;
 
-import io.vertx.db2client.impl.drda.ColumnMetaData;
-import io.vertx.sqlclient.impl.RowDesc;
-
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import io.vertx.db2client.impl.drda.ColumnMetaData;
+import io.vertx.sqlclient.impl.RowDesc;
 
 class DB2RowDesc extends RowDesc {
 
     private final ColumnMetaData columnDefinitions;
 
     DB2RowDesc(ColumnMetaData columnDefinitions) {
-        super(Collections.unmodifiableList(Stream.of(columnDefinitions.sqlxName_).collect(Collectors.toList())));
+        super(toList(columnDefinitions.sqlxName_));
         this.columnDefinitions = columnDefinitions;
     }
 
     ColumnMetaData columnDefinitions() {
         return columnDefinitions;
+    }
+    
+    private static List<String> toList(String[] array) {
+    	if (array == null || array.length == 0)
+    		return Collections.emptyList();
+    	else
+    		return Collections.unmodifiableList(Stream.of(array).collect(Collectors.toList()));
     }
 
 }

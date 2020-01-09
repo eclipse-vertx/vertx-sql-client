@@ -49,8 +49,8 @@ public class NetSqlca {
     protected String sqlState_;       // SQLSTATE
 
     // raw sqlca data fields before unicode conversion
-    protected byte[] sqlErrmcBytes_;
-    protected byte[] sqlErrpBytes_;
+    protected byte[] sqlErrmcBytes_; // SQL Error Message / Reason Code
+    protected byte[] sqlErrpBytes_; // SQL Error Process
     protected byte[] sqlWarnBytes_;
     
     private boolean containsSqlcax_ = true;
@@ -90,7 +90,9 @@ public class NetSqlca {
            return 0;
        boolean allowed = Arrays.stream(allowedCodes).anyMatch(code -> code == sqlca.sqlCode_);
        if (!allowed && sqlca.sqlCode_ < 0) {
-           throw new IllegalStateException("ERROR sqlcode=" + sqlca.sqlCode_ );
+    	   // TODO: May want to go through the DB2 SQL error code doc above and provide English 
+    	   // messages to go along with the corresponding SQLcode to save users needing to look them up
+           throw new IllegalStateException("ERROR sqlcode=" + sqlca.sqlCode_ + "  Full Sqlca: " + sqlca.toString());
        }
        if (!allowed && sqlca.sqlCode_ > 0) {
            System.out.println("WARNING sqlcode=" + sqlca.sqlCode_);
@@ -484,6 +486,12 @@ public class NetSqlca {
         sqlStates_ = states;
         sqlErrmcMessages_ = tokens;
     }
+    
+    private String bytes2String(byte[] bytes) {
+        if (bytes == null)
+            return null;
+        return bytes2String(bytes, 0, bytes.length);
+    }
 
     protected String bytes2String(byte[] bytes, int offset, int length) {
         // Network server uses utf8 encoding
@@ -513,8 +521,7 @@ public class NetSqlca {
         return containsSqlcax_;
     }
 
-    public void resetRowsetSqlca(int sqlCode,
-                                 String sqlState) {
+    public void resetRowsetSqlca(int sqlCode, String sqlState) {
         sqlCode_ = sqlCode;
         sqlState_ = sqlState;
         sqlErrpBytes_ = null;
@@ -526,5 +533,17 @@ public class NetSqlca {
 
     public long getRowsetRowCount() {
         return rowsetRowCount_;
+    }
+    
+    @Override
+    public String toString() {
+        return super.toString() + 
+                "  sqlCode=" + sqlCode_ + 
+                "  sqlErrd=" + Arrays.toString(sqlErrd_) + 
+                "  sqlErrmc="  + bytes2String(sqlErrmcBytes_) + 
+                "  sqlErrp=" + bytes2String(sqlErrpBytes_) + 
+                "  sqlState=" + sqlState_ + 
+                "  sqlStates=" + Arrays.deepToString(sqlStates_) +
+                "  sqlWarn=" + bytes2String(sqlWarnBytes_);
     }
 }

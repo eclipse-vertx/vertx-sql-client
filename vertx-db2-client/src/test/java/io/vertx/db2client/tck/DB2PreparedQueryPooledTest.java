@@ -1,11 +1,9 @@
 package io.vertx.db2client.tck;
 
-import io.vertx.ext.unit.junit.VertxUnitRunner;
-
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
-@Ignore // TODO @AGG get this TCK test passing
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 @RunWith(VertxUnitRunner.class)
 public class DB2PreparedQueryPooledTest extends DB2PreparedQueryTestBase {
   @Override

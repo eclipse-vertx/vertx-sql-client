@@ -46,7 +46,7 @@ public class DB2Codec extends CombinedChannelDuplexHandler<DB2Decoder, DB2Encode
       StringBuilder sb = new StringBuilder();
       sb.append(buffer.toString()).append('\n');
       ByteBuf copy = buffer.slice(buffer.readerIndex(), length);
-      sb.append("  hex / dec   0  1  2  3  4  5  6  7    8  9  A  B  C  D  E  F \n");
+      sb.append("  hex / dec   0  1  2  3  4  5  6  7    8  9  A  B  C  D  E  F     01234567  89ABCDEF");
       StringBuilder asciiLine = new StringBuilder(18);
       for (int i = 0; i < copy.writerIndex(); i++) {
           if (calloutIndex >= 0 
@@ -81,6 +81,9 @@ public class DB2Codec extends CombinedChannelDuplexHandler<DB2Decoder, DB2Encode
               asciiLine.append((char) b);
           else
               asciiLine.append('.');
+          
+          if (i + 1 == copy.writerIndex())
+              sb.append("  " + asciiLine.toString());
       }
       sb.append("\n");
       return sb.toString();

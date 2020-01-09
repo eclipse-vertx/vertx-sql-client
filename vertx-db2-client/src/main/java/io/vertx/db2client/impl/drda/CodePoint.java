@@ -319,9 +319,16 @@ public class CodePoint {
     public static final int CCSIDSBC = 0x119C;
     
     /** 
-     * @AGG not sure what codepoint this is but getting it at the end of a ACCRDBRM.TYPEDEFOVR
+     * @AGG had to add this codepoint.
+     * Perhaps CCSID for XML characters?
      */
     public static final int CCSIDXML = 0x1913;
+    
+    /**
+     * Server Diagnostic Information
+     * @AGG added this code point from a PRPSQLSTTreply eror path
+     */
+    public static final int SRVDGN = 0x1153;
 
     /** 
      * Describes the communications manager that supports

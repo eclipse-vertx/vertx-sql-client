@@ -15,15 +15,26 @@
  */
 package examples;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Types;
+import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Pool;
+import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Tuple;
 
 /**
@@ -31,49 +42,29 @@ import io.vertx.sqlclient.Tuple;
  * the script at scripts/db2.sh
  */
 public class DB2ClientExamples {
-
+	
+	static final String HOST = "localhost";
+//	static final String HOST = "192.168.1.22";
+	static final int PORT = 50000;
+	static final String DB_NAME = "vertx_db";
+	static final String DB_USER = "db2user";
+	static final String DB_PASS = "db2pass";
+    
+    static {
+        System.setProperty("java.util.logging.config.file", Paths.get("src", "test", "resources", "vertx-default-jul-logging.properties").toString());
+    }
+    
     public static void runJDBC() throws Exception {
-        try (Connection con = DriverManager.getConnection("jdbc:db2://192.168.1.22:32772/test", "db2inst1", "foobar1234")) {
-            con.createStatement().execute("DROP TABLE IF exists mutable");
-            con.createStatement().execute("CREATE TABLE mutable\n" + 
-                    "            (\n" + 
-                    "              id  integer       NOT NULL,\n" + 
-                    "              val varchar(2048) NOT NULL,\n" + 
-                    "              PRIMARY KEY (id)\n" + 
-                    "            )");
+        try (Connection con = DriverManager.getConnection("jdbc:db2://" + HOST + ":" + PORT + "/" + DB_NAME, DB_USER, DB_PASS)) {
+            runInitSql(con);
             
-            con.createStatement().execute("DROP TABLE IF EXISTS immutable");
-                    con.createStatement().execute("CREATE TABLE immutable (" +
-            "id      integer       NOT NULL, " +
-              "message varchar(2048) NOT NULL," +
-              "PRIMARY KEY (id)" +
-              ")");
-
-            con.createStatement().execute("INSERT INTO immutable (id, message) VALUES (1, 'fortune: No such file or directory');");
-            con.createStatement().execute("INSERT INTO immutable (id, message) VALUES (2, 'A computer scientist is someone who fixes things that aren''t broken.')");
-            con.createStatement().execute("INSERT INTO immutable (id, message) VALUES (3, 'After enough decimal places, nobody gives a damn.')");
-            con.createStatement().execute("INSERT INTO immutable (id, message) VALUES (4, 'A bad random number generator: 1, 1, 1, 1, 1, 4.33e+67, 1, 1, 1')");
-            con.createStatement().execute("INSERT INTO immutable (id, message) VALUES (5, 'A computer program does what you tell it to do, not what you want it to do.')");
-            con.createStatement().execute("INSERT INTO immutable (id, message) VALUES (6, 'Emacs is a nice operating system, but I prefer UNIX. — Tom Christaensen')");
-            con.createStatement().execute("INSERT INTO immutable (id, message) VALUES (7, 'Any program that runs right is obsolete.')");
-            con.createStatement().execute("INSERT INTO immutable (id, message) VALUES (8, 'A list is only as strong as its weakest link. — Donald Knuth')");
-            con.createStatement().execute("INSERT INTO immutable (id, message) VALUES (9, 'Feature: A bug with seniority.')");
-            con.createStatement().execute("INSERT INTO immutable (id, message) VALUES (10, 'Computers make very fast, very accurate mistakes.')");
-            con.createStatement().execute("INSERT INTO immutable (id, message) VALUES (11, '<script>alert(\"This should not be displayed in a browser alert box.\");</script>')");
-            con.createStatement().execute("INSERT INTO immutable (id, message) VALUES (12, 'フレームワークのベンチマーク')");
-//             con.createStatement().execute("CREATE TABLE users ( id varchar(50) )");
-//             con.createStatement().execute("INSERT INTO users VALUES ('andy')");
-//             con.createStatement().execute("INSERT INTO users VALUES ('julien')");
-//             con.createStatement().execute("INSERT INTO users VALUES ('bob')");
-//             con.createStatement().execute("INSERT INTO users VALUES ('chuck')");
-////            Statement stmt = con.createStatement();
-//            PreparedStatement ps = con.prepareStatement("SELECT * FROM users WHERE id=?");
-//            ps.setString(1, "andy");
-//            ResultSet rs = ps.executeQuery();
-//            // ResultSet rs = stmt.executeQuery("SELECT * FROM users WHERE id='andy'");
-////            ResultSet rs = stmt.executeQuery("SELECT * FROM users");
-//            while (rs.next())
-//                System.out.println("Got JDBC result: " + rs.getString(1));
+            // Insert lots of data to immutable table
+            for (int i = 13; i < 100; i++)
+                con.createStatement().execute("INSERT INTO immutable (id, message) VALUES (" + i + ", 'Sample data " + i + "')");
+            
+//            getDB2Message(con, -804, "01", "07002", -2146303980, 20, 0, 0, -1550, 0);
+            
+            System.out.println("Done with JDBC");
         }
     }
 
@@ -84,15 +75,15 @@ public class DB2ClientExamples {
         
         // Connect options
         DB2ConnectOptions connectOptions = new DB2ConnectOptions()//
-                .setPort(32772)//
-                .setHost("192.168.1.22")//
-                .setDatabase("test")//
-                .setUser("db2inst1")//
-                .setPassword("foobar1234");
+                .setPort(PORT)//
+                .setHost(HOST)//
+                .setDatabase(DB_NAME)//
+                .setUser(DB_USER)//
+                .setPassword(DB_PASS);
 
         // Pool options
         PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
-
+        
         // Create the client pool
         DB2Pool client = DB2Pool.pool(connectOptions, poolOptions);
 
@@ -103,10 +94,86 @@ public class DB2ClientExamples {
 //                System.out.println("Create failed: " + ar.cause());
 //            }
 //        });
-//
-        client.query("SELECT id, message from immutable", ar -> {
-            dumpResults(ar);
-        });
+        
+        final int NUM_QUERIES = 1;
+        long allStart = System.currentTimeMillis();
+        CountDownLatch latch = new CountDownLatch(NUM_QUERIES);
+        
+        for (int i = 0; i < NUM_QUERIES; i++) {
+            final int queryNum = i + 1;
+            long queryStart = System.currentTimeMillis();
+            client.query("SELECT id, message from immutable WHERE id=" + queryNum, ar -> {
+                latch.countDown();
+                if (!ar.succeeded()) {
+                    System.out.println("QUERY " + queryNum + " FAILED");
+                    ar.cause().printStackTrace();
+                } else {
+                    System.out.println("Query " + queryNum + " complete in " + (System.currentTimeMillis() - queryStart) + "ms");
+                }
+//                dumpResults(ar);
+            });
+        }
+        
+        if (!latch.await(15, TimeUnit.SECONDS)) {
+            System.out.println("Queries timed out.");
+        } else {
+            System.out.println("All queries complete in " + (System.currentTimeMillis() - allStart) + "ms");
+        }
+        
+//        client.getConnection(connResult -> {
+//        	final SqlConnection conn = connResult.result(); 
+//        	conn.preparedQuery("INSERT INTO mutable (id, val) VALUES (2, 'Whatever')", insert -> {
+//        		System.out.println("@AGG inside INSERT result. Row count = " + insert.result().rowCount()); // 1
+//        		conn.preparedQuery("UPDATE mutable SET val = 'Rocks!' WHERE id = 2", update -> {
+//        			System.out.println("@AGG inside UPDATE result. Row count = " + update.result().rowCount()); // 1
+//                    conn.preparedQuery("SELECT val FROM mutable WHERE id = 2", select -> {
+//                    	System.out.println("@AGG inside select result is: " + select.result().iterator().next().getValue(0)); // Rocks!
+//                    	conn.close();
+//                    });
+//        		});
+//        	});
+//        });
+        
+//        client.getConnection(connResult -> {
+//        	final SqlConnection conn = connResult.result(); 
+//        	conn.prepare("SELECT * FROM immutable WHERE id=? OR id=? OR id=? OR id=? OR id=? OR id=?", select -> {
+//        		System.out.println("@AGG inside SELECT");
+//        		Cursor query = select.result().cursor(Tuple.of(1, 8, 4, 11, 2, 9));
+//        		query.read(4, result -> {
+//        			System.out.println("@AGG inside query read");
+//        			System.out.println("  size=" + result.result().size()); // 4
+//        			System.out.println("  hasMore=" + query.hasMore()); // true
+//        			query.read(4, moreResults -> {
+//        				System.out.println("@AGG second read");
+//        				System.out.println("  size=" + moreResults.result().size());
+//        				System.out.println("  hasMore=" + query.hasMore());
+//        				conn.close();
+//        			});
+//        		});
+//        	});
+//        });
+        
+//        client.getConnection(ar -> {
+//            System.out.println("@AGG got connection");
+//            SqlConnection con = ar.result();
+//            con.closeHandler(onClose -> {
+//                System.out.println("@AGG connection is closed");
+//            });
+//            con.prepare("SELECT id, message from immutable", ar2 -> {
+//                System.out.println("@AGG inside prepare");
+//                PreparedQuery pq = ar2.result();
+//                Cursor cursor = pq.cursor();
+//                cursor.read(10, ar3 -> {
+//                    System.out.println("@AGG inside cursor read");
+//                    dumpResults(ar3);
+//                });
+//            });
+//        });
+        
+//        client.preparedQuery("SELECT id, message FROM immutable WHERE", ar -> {
+//            System.out.println("@AGG inside PS lambda");
+//            dumpResults(ar);
+//        });
         
 //        client.preparedQuery("SELECT id, message FROM immutable WHERE id=? OR id=?", Tuple.of(1, 2), ar -> {
 //            System.out.println("@AGG inside PS lambda");
@@ -141,37 +208,63 @@ public class DB2ClientExamples {
                 System.out.println("  size=" + result.size());
                 System.out.println("  names=" + result.columnsNames());
                 for (Tuple row : result) {
-                    System.out.println("    " + row);
+                    System.out.println("    id=" + row.getInteger(0) + " message=" + row.getString(1));
                 }
             } else {
                 System.out.println("Failure: " + ar.cause().getMessage());
+                ar.cause().printStackTrace();
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
-    private static void selectAll(DB2Pool client) {
-        client.query("SELECT * FROM users", ar -> {
-            try {
-                if (ar.succeeded()) {
-                    RowSet<Row> result = ar.result();
-                    System.out.println("result=" + result);
-                    System.out.println("  rows=" + result.rowCount());
-                    System.out.println("  size=" + result.size());
-                    System.out.println(" names=" + result.columnsNames());
-                    for (Row row : result) {
-                        System.out.println("  row=" + row);
-                        System.out.println("    name=" + row.getColumnName(0));
-                        System.out.println("    value=" + row.getString(0));
-                    }
-                } else {
-                    System.out.println("Failure: " + ar.cause().getMessage());
-                }
-            } catch (Throwable t) {
-                t.printStackTrace();
+    
+    private static void runInitSql(Connection con) throws Exception {
+        String currentLine = "";
+        for (String sql : Files.readAllLines(Paths.get("src", "test", "resources", "init.sql"))) {
+            if (sql.startsWith("--"))
+                continue;
+            currentLine += sql;
+            if (sql.endsWith(";")) {
+                System.out.println("Run SQL: " + currentLine);
+                con.createStatement().execute(currentLine);
+                currentLine = "";
             }
-        });
+        }
     }
-
+    
+    private static void getDB2Message(Connection con, int sqlCode, String sqlErrmc, String sqlState, int... sqlerrd) throws Exception {
+        if (sqlerrd != null && sqlerrd.length != 6 && sqlerrd.length != 0)
+            throw new IllegalArgumentException("Sqlerrd array must be either length 0 or 6");
+        if (sqlerrd == null || sqlerrd.length == 0)
+            sqlerrd = new int[6];
+        
+        CallableStatement cs = con.prepareCall("call SYSIBM.SQLCAMESSAGE(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        cs.setInt(1, sqlCode);// 0 or sqlcode
+        cs.setShort(2, (short) (sqlErrmc == null ? 0 : sqlErrmc.length())); // 0 or sqlerrmc length
+        cs.setString(3, sqlErrmc); // errmc tokens as string
+        cs.setString(4, "SQLRA144"); // sqlerrp
+        // sqlerrd: sql internal error codes
+        cs.setInt(5, sqlerrd[0]);
+        cs.setInt(6, sqlerrd[1]);
+        cs.setInt(7, sqlerrd[2]);
+        cs.setInt(8, sqlerrd[3]);
+        cs.setInt(9, sqlerrd[4]);
+        cs.setInt(10, sqlerrd[5]);
+        cs.setString(11, null); // sql warn
+        cs.setString(12, sqlState); // sql state string
+        cs.setString(13, null); // message file name
+        cs.setString(14, Locale.getDefault().toString());
+        cs.registerOutParameter(14, Types.VARCHAR);
+        cs.registerOutParameter(15, Types.LONGVARCHAR);
+        cs.registerOutParameter(16, Types.INTEGER);
+        cs.execute();
+        
+        if (cs.getInt(16) == 0) {
+            // Return msg text
+            System.out.println(cs.getString(15));
+        } else {
+            System.out.println("Unable to get DB2 message text");
+        }
+    }
 }

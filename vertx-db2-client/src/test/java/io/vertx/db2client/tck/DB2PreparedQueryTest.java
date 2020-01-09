@@ -16,26 +16,15 @@
  */
 package io.vertx.db2client.tck;
 
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 
-@Ignore // TODO @AGG get this TCK test passing
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 @RunWith(VertxUnitRunner.class)
 public class DB2PreparedQueryTest extends DB2PreparedQueryTestBase {
   @Override
   protected void initConnector() {
     options = rule.options();
     connector = ClientConfig.CONNECT.connect(vertx, options);
-  }
-
-  @Test
-  @Ignore
-  @Override
-  public void testPreparedQueryParamCoercionTypeError(TestContext ctx) {
-    // Does not pass, we can't achieve this feature on MySQL for now, see MySQLParamDesc#prepare for reasons.
-    super.testPreparedQueryParamCoercionTypeError(ctx);
   }
 }

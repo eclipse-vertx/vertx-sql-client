@@ -91,9 +91,9 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 
         ColumnMetaData columnMetaData = new ColumnMetaData();
         if (isOutput)
-            outputColumnMetaData = new ColumnMetaData();
+            outputColumnMetaData = columnMetaData;
         else
-            inputColumnMetaData = new ColumnMetaData();
+            inputColumnMetaData = columnMetaData;
         
         if (peekCP == CodePoint.SQLDARD) {
             // SQLDARD here means we have some data to parse
@@ -324,7 +324,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         // each of these result sets.  Loop through the section array and
         // parse the result set component for each of the retunred result sets.
         if(true)
-        throw new UnsupportedOperationException("@AGG LEFTOFF parse RS data back somehow");
+        throw new UnsupportedOperationException("Results for stored procedures not implemented");
 //        NetResultSet[] resultSets = new NetResultSet[numberOfResultSets];
 //        for (int i = 0; i < numberOfResultSets; i++) {
 //            // parse the result set component of the stored procedure reply.
@@ -1895,6 +1895,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
     private void parsePRPSQLSTTreply() { // @AGG removed callback StatementCallbackInterface statement) {
         int peekCP = parseTypdefsOrMgrlvlovrs();
 
+        outputColumnMetaData = new ColumnMetaData();
         if (peekCP == CodePoint.SQLDARD) {
             // the sqlcagrp is most likely null for insert/update/deletes.  if it is null, then we can
             // peek ahead for the column number which most likely will be 0.  if it is 0, then we will
@@ -1908,7 +1909,8 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
                 netSqlca = parseSQLDARD(outputColumnMetaData, true); // true means to skip the rest of SQLDARD bytes
             } else {
                 //columnMetaData = ClientDriver.getFactory().newColumnMetaData(netAgent_.logWriter_);
-                outputColumnMetaData = new ColumnMetaData();
+            	// @AGG Moved this up so we get col metadata for SQLDARD AND SQLCARD scenarios
+                //outputColumnMetaData = new ColumnMetaData();
                 netSqlca = parseSQLDARD(outputColumnMetaData, false); // false means do not skip SQLDARD bytes.
             }
 
@@ -1956,7 +1958,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             break;
         }
         default:
-            throw new IllegalStateException("Unknown codepoint: " + Integer.toHexString(peekCP));
+        	throwUnknownCodepoint(peekCP);
             // parseCommonError(peekCP);
         }
     }
@@ -1980,13 +1982,17 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
     // Returned from Server:
     // SVRCOD - required  (8 - ERROR)
     // RDBNAM - optional
+    // SRVDGN - optional
     //
     // Also called by NetResultSetReply and NetStatementReply
     private void parseSQLERRRM() {
+    	// TODO @AGG we let this information flow up into the Sqlca so the
+    	// user is presented with as much information as possible on errors
         boolean svrcodReceived = false;
         int svrcod = CodePoint.SVRCOD_INFO;
         boolean rdbnamReceived = false;
         String rdbnam = null;
+        String serverDiagnostics = null;
 
         parseLengthAndMatchCodePoint(CodePoint.SQLERRRM);
         pushLengthOnCollectionStack();
@@ -2008,6 +2014,13 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
                 rdbnamReceived = checkAndGetReceivedFlag(rdbnamReceived);
                 rdbnam = parseRDBNAM(true);
                 peekCP = peekCodePoint();
+            }
+            
+            if (peekCP == CodePoint.SRVDGN) {
+            	foundInPass = true;
+            	parseLengthAndMatchCodePoint(CodePoint.SRVDGN);
+            	serverDiagnostics = readString();
+            	peekCP = peekCodePoint();
             }
 
             if (!foundInPass) {

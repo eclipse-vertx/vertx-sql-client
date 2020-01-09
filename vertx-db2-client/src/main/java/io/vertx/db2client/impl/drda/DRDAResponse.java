@@ -779,7 +779,7 @@ public abstract class DRDAResponse {
     void parseTYPDEFNAM() {
         parseLengthAndMatchCodePoint(CodePoint.TYPDEFNAM);
         String typedef = readString();
-//        netAgent_.targetTypdef_.setTypdefnam(readString());
+        Typdef.targetTypdef.setTypdefnam(typedef);
     }
     
     void parseTYPDEFOVR() {
