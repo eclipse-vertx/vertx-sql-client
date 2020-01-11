@@ -37,6 +37,7 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
     void encode(DB2Encoder encoder) {
         super.encode(encoder);
         try {
+        	querySection = SectionManager.INSTANCE.getDynamicSection();
             if (DRDAQueryRequest.isQuery(cmd.sql()))
                 sendQueryCommand();
             else
@@ -51,8 +52,7 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
         ByteBuf packet = allocateBuffer();
         int packetStartIdx = packet.writerIndex();
         DRDAQueryRequest updateCommand = new DRDAQueryRequest(packet, ccsidManager);
-        Section s = SectionManager.INSTANCE.getDynamicSection();
-        updateCommand.writeExecuteImmediate(cmd.sql(), s, encoder.socketConnection.database());
+        updateCommand.writeExecuteImmediate(cmd.sql(), querySection, encoder.socketConnection.database());
         updateCommand.buildRDBCMM();
         updateCommand.completeCommand();
 
@@ -71,11 +71,10 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
         int packetStartIdx = packet.writerIndex();
 
         DRDAQueryRequest queryCommand = new DRDAQueryRequest(packet, ccsidManager);
-        Section s = SectionManager.INSTANCE.getDynamicSection();
-        queryCommand.writePrepareDescribeOutput(cmd.sql(), encoder.socketConnection.database(), s);
+        queryCommand.writePrepareDescribeOutput(cmd.sql(), encoder.socketConnection.database(), querySection);
         // fetchSize=0 triggers default fetch size (64) to be used (TODO @AGG this should be configurable)
         // @AGG hard coded to TYPE_FORWARD_ONLY
-        queryCommand.writeOpenQuery(s, encoder.socketConnection.database(), 0, 
+        queryCommand.writeOpenQuery(querySection, encoder.socketConnection.database(), 0, 
                 ResultSet.TYPE_FORWARD_ONLY);
         queryCommand.completeCommand();
 

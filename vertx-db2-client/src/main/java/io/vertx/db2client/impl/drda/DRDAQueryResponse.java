@@ -438,7 +438,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         String rsName = parseVCMorVCS();  // ignore length change bt SQLAM 6 and 7
         int rsNumRows = buffer.readInt();//readInt();
         // currently rsLocator and rsNumRows are not being used.
-        section.setCursorName(rsName);
+//        section.setCursorName(rsName);
     }
     
     private String parseVCMorVCS() {
@@ -729,11 +729,12 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 
         pkgsn = readFastUnsignedShort();  // Package Section Number.
         adjustLengths(ddmLength);
-        // this is a server generated section
-        // the -1 is set for holdability and it is not used for generated sections
-        Section section = new Section(pkgid, pkgsn, null, -1, true);
-        section.setPKGNAMCBytes(pkgnamcsnBytes);
-        return section;
+//        // this is a server generated section
+//        // the -1 is set for holdability and it is not used for generated sections
+//        Section section = new Section(pkgid, pkgsn, null, -1, true);
+//        section.setPKGNAMCBytes(pkgnamcsnBytes);
+//        return section;
+        throw new UnsupportedOperationException("Server generated sections not implemented");
     }
 
     
@@ -796,7 +797,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
                 
             }
         } else {
-            throw new IllegalStateException("Close Query error");
+        	throwUnknownCodepoint(peekCP);
 //            parseCloseError(resultSet);
         }
     }

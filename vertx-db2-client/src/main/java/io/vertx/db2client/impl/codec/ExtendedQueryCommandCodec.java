@@ -42,6 +42,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
         }
         // @AGG always carry over column defs?
         columnDefinitions = statement.rowDesc.columnDefinitions();
+        querySection = statement.section;
     }
 
     @Override
@@ -60,13 +61,13 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
             inputs[i] = params.getValue(i);
         
         if (DRDAQueryRequest.isQuery(cmd.sql())) {
-            openQuery.writeOpenQuery(statement.section, dbName, fetchSize, ResultSet.TYPE_FORWARD_ONLY, inputs.length,
+            openQuery.writeOpenQuery(querySection, dbName, fetchSize, ResultSet.TYPE_FORWARD_ONLY, inputs.length,
                     statement.paramDesc.paramDefinitions(), inputs);
             openQuery.completeCommand();
         } else { // is an update
         	boolean outputExpected = false; // TODO @AGG implement later, is true if result set metadata num columns > 0
         	boolean chainAutoCommit = true;
-        	openQuery.writeExecute(statement.section, dbName, statement.paramDesc.paramDefinitions(), inputs, inputs.length, outputExpected, chainAutoCommit);
+        	openQuery.writeExecute(querySection, dbName, statement.paramDesc.paramDefinitions(), inputs, inputs.length, outputExpected, chainAutoCommit);
         	openQuery.buildRDBCMM();
         	openQuery.completeCommand();
         	
@@ -79,6 +80,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
     void decodePayload(ByteBuf payload, int payloadLength) {
     	if (LOG.isDebugEnabled())        
         	LOG.debug("Extended query decode");
+    	
         if (DRDAQueryRequest.isQuery(cmd.sql())) {
         	decodeQuery(payload);
         } else { // is update
@@ -99,7 +101,9 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
             decoder.cursor.setAllRowsReceivedFromServer(true);
         else
             throw new UnsupportedOperationException("Need to fetch more data from DB");
+        
         commandHandlerState = CommandHandlerState.HANDLING_END_OF_QUERY;
+        querySection.release();
         int updatedCount = 0; // @AGG hardcoded to 0
         R result;
         Throwable failure;
@@ -127,6 +131,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
         updateResponse.readLocalCommit();
 
         R result = emptyResult(cmd.collector());
+        querySection.release();
         cmd.resultHandler().handleResult(updatedCount, 0, null, result, null);
         completionHandler.handle(CommandResponse.success(true));
     }

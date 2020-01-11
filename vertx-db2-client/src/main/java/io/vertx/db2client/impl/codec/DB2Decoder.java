@@ -27,7 +27,7 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 
 class DB2Decoder extends ByteToMessageDecoder {
 	
-	private static final Logger LOG = LoggerFactory.getLogger(CloseConnectionCommandCodec.class);
+	private static final Logger LOG = LoggerFactory.getLogger(DB2Decoder.class);
 
     private final ArrayDeque<CommandCodec<?, ?>> inflight;
     

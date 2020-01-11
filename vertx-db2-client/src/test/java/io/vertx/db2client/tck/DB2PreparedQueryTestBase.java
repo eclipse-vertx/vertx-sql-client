@@ -12,9 +12,6 @@ import io.vertx.sqlclient.tck.PreparedQueryTestBase;
 
 public abstract class DB2PreparedQueryTestBase extends PreparedQueryTestBase {
 	
-	// TODO @AGG LEFTOFF: all tests work in isolation but running a full "mvn test"
-	// results in sqlcode=-804 after a while
-	
 	@ClassRule
 	public static DB2Resource rule = DB2Resource.SHARED_INSTANCE;
 

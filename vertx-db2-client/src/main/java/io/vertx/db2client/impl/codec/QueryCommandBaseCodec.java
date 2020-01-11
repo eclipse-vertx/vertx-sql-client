@@ -22,6 +22,7 @@ import io.vertx.db2client.impl.drda.CCSIDManager;
 import io.vertx.db2client.impl.drda.ColumnMetaData;
 import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
+import io.vertx.db2client.impl.drda.Section;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.command.CommandResponse;
@@ -36,6 +37,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     protected CommandHandlerState commandHandlerState = CommandHandlerState.HANDLING_COLUMN_DEFINITION;
     protected ColumnMetaData columnDefinitions;
     protected RowResultDecoder<?, T> decoder;
+    protected Section querySection;
     CCSIDManager ccsidManager = new CCSIDManager();
 
     QueryCommandBaseCodec(C cmd) {
@@ -55,6 +57,8 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     }
 
     private void decodeUpdate(ByteBuf payload) {
+    	querySection.release();
+    	
         DRDAQueryResponse updateResponse = new DRDAQueryResponse(payload, ccsidManager);
         int updatedCount = (int) updateResponse.readExecuteImmediate();
         // TODO: If auto-generated keys, read an OPNQRY here
@@ -85,7 +89,9 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
                 decoder.cursor.setAllRowsReceivedFromServer(true);
             else
                 throw new UnsupportedOperationException("Need to fetch more data from DB");
+            
             commandHandlerState = CommandHandlerState.HANDLING_END_OF_QUERY;
+            querySection.release();
             // decodeQuery(payload);
             // return;
             // case HANDLING_END_OF_QUERY:

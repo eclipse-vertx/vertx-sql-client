@@ -1706,7 +1706,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
 //        if (!canCommandUseDefaultPKGNAMCSN()) { // Always true in derby code
             markLengthBytes(CodePoint.PKGNAMCSN);
             // If PKGNAMCBytes is already available, copy the bytes to the request buffer directly.
-            if (section.getPKGNAMCBytes() != null) {
+            if (section.pkg.pkgNameConsistencyBytes != null) {
                 writeStoredPKGNAMCBytes(section);
             } else {
                 // Mark the beginning of PKGNAMCSN bytes.
@@ -1719,7 +1719,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                 // store the PKGNAMCbytes
                 storePKGNAMCBytes(section);
             }
-            buffer.writeShort(section.getSectionNumber());
+            buffer.writeShort(section.number);
             //write2Bytes(section.getSectionNumber());
             updateLengthBytes();
 //        } else {
@@ -1734,11 +1734,11 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
         buffer.getBytes(startPos, b);
 //        buffer.position(startPos);
 //        buffer.get(b);
-        section.setPKGNAMCBytes(b);
+        section.pkg.pkgNameConsistencyBytes = b;
     }
     
     private void writeStoredPKGNAMCBytes(Section section) {
-        buffer.writeBytes(section.getPKGNAMCBytes());
+        buffer.writeBytes(section.pkg.pkgNameConsistencyBytes);
 //        writeBytes(section.getPKGNAMCBytes());
     }
     
@@ -1787,7 +1787,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
 //        ccsidMgr.convertFromJavaString(
 //                collectionToFlow, netAgent_);
 
-        byte[] pkgNameBytes = ccsidManager.getCCSID().encode(section.getPackageName()).array(); 
+        byte[] pkgNameBytes = ccsidManager.getCCSID().encode(section.pkg.name).array(); 
 //                ccsidMgr.convertFromJavaString(
 //                section.getPackageName(), netAgent_);
         
@@ -1812,7 +1812,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
         }
 
         if (!scldtalenRequired) {
-            scldtalenRequired = checkPKGNAMlengths(section.getPackageName(),
+            scldtalenRequired = checkPKGNAMlengths(section.pkg.name,
                     pkgNameBytes.length,
                     maxIdentifierLength,
                     DRDAConstants.PKG_IDENTIFIER_FIXED_LEN);
