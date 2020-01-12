@@ -18,7 +18,6 @@ package io.vertx.db2client.impl.codec;
 import java.util.stream.Collector;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.db2client.impl.drda.CCSIDManager;
 import io.vertx.db2client.impl.drda.ColumnMetaData;
 import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
@@ -38,7 +37,6 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     protected ColumnMetaData columnDefinitions;
     protected RowResultDecoder<?, T> decoder;
     protected Section querySection;
-    CCSIDManager ccsidManager = new CCSIDManager();
 
     QueryCommandBaseCodec(C cmd) {
         super(cmd);
@@ -59,7 +57,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     private void decodeUpdate(ByteBuf payload) {
     	querySection.release();
     	
-        DRDAQueryResponse updateResponse = new DRDAQueryResponse(payload, ccsidManager);
+        DRDAQueryResponse updateResponse = new DRDAQueryResponse(payload);
         int updatedCount = (int) updateResponse.readExecuteImmediate();
         // TODO: If auto-generated keys, read an OPNQRY here
         // readOpenQuery()
@@ -73,7 +71,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     private void decodeQuery(ByteBuf payload) {
         switch (commandHandlerState) {
         case HANDLING_COLUMN_DEFINITION:
-            DRDAQueryResponse resp = new DRDAQueryResponse(payload, ccsidManager);
+            DRDAQueryResponse resp = new DRDAQueryResponse(payload);
             resp.readPrepareDescribeOutput();
             resp.readBeginOpenQuery();
             columnDefinitions = resp.getOutputColumnMetaData();

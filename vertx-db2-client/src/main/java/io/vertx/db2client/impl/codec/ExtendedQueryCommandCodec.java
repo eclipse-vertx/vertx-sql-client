@@ -52,7 +52,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
         	LOG.debug("Extended query encode: statement=" + statement);
         
         ByteBuf packet = allocateBuffer();
-        DRDAQueryRequest openQuery = new DRDAQueryRequest(packet, ccsidManager);
+        DRDAQueryRequest openQuery = new DRDAQueryRequest(packet);
         String dbName = encoder.socketConnection.database();
         int fetchSize = 0; // TODO @AGG get fetch size from config
         Tuple params = cmd.params();
@@ -89,7 +89,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
     }
     
     private void decodeQuery(ByteBuf payload) {
-        DRDAQueryResponse resp = new DRDAQueryResponse(payload, ccsidManager);
+        DRDAQueryResponse resp = new DRDAQueryResponse(payload);
         resp.setOutputColumnMetaData(columnDefinitions);
         resp.readBeginOpenQuery();
         decoder = new RowResultDecoder<>(cmd.collector(), new DB2RowDesc(columnDefinitions), resp.getCursor(), resp);
@@ -124,7 +124,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
     }
     
     private void decodeUpdate(ByteBuf payload) {
-        DRDAQueryResponse updateResponse = new DRDAQueryResponse(payload, ccsidManager);
+        DRDAQueryResponse updateResponse = new DRDAQueryResponse(payload);
         int updatedCount = (int) updateResponse.readExecute();
         // TODO: If auto-generated keys, read an OPNQRY here
         // readOpenQuery()

@@ -16,7 +16,6 @@
 package io.vertx.db2client.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.db2client.impl.drda.CCSIDManager;
 import io.vertx.db2client.impl.drda.ColumnMetaData;
 import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
@@ -39,7 +38,6 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
     private CommandHandlerState commandHandlerState = CommandHandlerState.INIT;
     private ColumnMetaData paramDesc;
     private ColumnMetaData rowDesc;
-    private final CCSIDManager ccsidManager = new CCSIDManager();
     private Section section;
 
     PrepareStatementCodec(PrepareStatementCommand cmd) {
@@ -56,7 +54,7 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
         ByteBuf packet = allocateBuffer();
         // encode packet header
         int packetStartIdx = packet.writerIndex();
-        DRDAQueryRequest prepareCommand = new DRDAQueryRequest(packet, ccsidManager);
+        DRDAQueryRequest prepareCommand = new DRDAQueryRequest(packet);
         section = SectionManager.INSTANCE.getDynamicSection();
         String dbName = encoder.socketConnection.database();
         prepareCommand.writePrepareDescribeOutput(cmd.sql(), dbName, section);
@@ -72,7 +70,7 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
     void decodePayload(ByteBuf payload, int payloadLength) {
         switch (commandHandlerState) {
         case INIT:
-            DRDAQueryResponse response = new DRDAQueryResponse(payload, ccsidManager);
+            DRDAQueryResponse response = new DRDAQueryResponse(payload);
             response.readPrepareDescribeInputOutput();
             rowDesc = response.getOutputColumnMetaData();
             paramDesc = response.getInputColumnMetaData();

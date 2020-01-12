@@ -21,8 +21,8 @@ import io.netty.buffer.ByteBuf;
 
 public class DRDAConnectResponse extends DRDAResponse {
     
-    public DRDAConnectResponse(ByteBuf buffer, CCSIDManager ccsidManager) {
-        super(buffer, ccsidManager);
+    public DRDAConnectResponse(ByteBuf buffer) {
+        super(buffer);
     }
     
     public void readAccessSecurity(int securityMechanism) {

@@ -38,8 +38,8 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
     
     private NetSqlca sqlca;
     
-    public DRDAQueryResponse(ByteBuf buffer, CCSIDManager ccsidManager) {
-        super(buffer, ccsidManager);
+    public DRDAQueryResponse(ByteBuf buffer) {
+        super(buffer);
     }
     
     public void readPrepareDescribeOutput() { // @AGG removed callback StatementCallbackInterface statement) {
@@ -790,9 +790,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
                 if (sqlcode == 100 || sqlcode == 20237) {
                     cursor.setAllRowsReceivedFromServer(true);
                 } else {
-                    // @AGG tolerate -501 which means cursor was not open
-                    // TODO: revisit call flow to see if we can avoid flowing a CLSQRY on an already closed cursor
-                    NetSqlca.complete(netSqlca, -501);
+                    NetSqlca.complete(netSqlca);
                 }
                 
             }
@@ -1213,20 +1211,12 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //        }
     }
     
-    /**
-     * @AGG temporary hack to get the produced cursor
-     * @return
-     */
     public Cursor getCursor() {
         if (cursor == null)
             throw new IllegalStateException("Cursor has not been created yet");
         return cursor;
     }
     
-    /**
-     * @AGG temporary hack to get the column metadata
-     * @return
-     */
     public ColumnMetaData getOutputColumnMetaData() {
         if (outputColumnMetaData == null)
             throw new IllegalStateException("ColumnMetaData has not been created yet");
@@ -1238,10 +1228,6 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         this.outputColumnMetaData = md;
     }
     
-    /**
-     * @AGG temporary hack to get the column metadata
-     * @return
-     */
     public ColumnMetaData getInputColumnMetaData() {
         if (inputColumnMetaData == null)
             throw new IllegalStateException("ColumnMetaData has not been created yet");
@@ -1910,7 +1896,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
                 netSqlca = parseSQLDARD(outputColumnMetaData, true); // true means to skip the rest of SQLDARD bytes
             } else {
                 //columnMetaData = ClientDriver.getFactory().newColumnMetaData(netAgent_.logWriter_);
-            	// @AGG Moved this up so we get col metadata for SQLDARD AND SQLCARD scenarios
+            	// @AGG Moved this up so we get non-null col metadata for SQLDARD AND SQLCARD scenarios
                 //outputColumnMetaData = new ColumnMetaData();
                 netSqlca = parseSQLDARD(outputColumnMetaData, false); // false means do not skip SQLDARD bytes.
             }

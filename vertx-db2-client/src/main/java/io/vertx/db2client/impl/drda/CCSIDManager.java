@@ -26,23 +26,12 @@ public class CCSIDManager {
     public static final Charset EBCDIC = Charset.forName("CP1047");
     public static final Charset UTF8 = Charset.forName("UTF-8");
     
-    private Charset currentCCSID = EBCDIC;
+    private static Charset currentCCSID = EBCDIC;
     
-    public Charset getCCSID() {
+    public static Charset getCCSID() {
         return currentCCSID;
     }
     
-    public void setCCSID(Charset ccsid) {
-        if (!ccsid.equals(UTF8) && !ccsid.equals(EBCDIC))
-            throw new IllegalArgumentException("Unsupported CCSID: " + ccsid);
-        this.currentCCSID = ccsid;
-    }
+    private CCSIDManager() {}
     
-    public int getCCSIDNumber() {
-        if (currentCCSID.equals(UTF8))
-            return CCSID_UTF8;
-        else
-            return CCSID_EBCDIC;
-    }
-
 }

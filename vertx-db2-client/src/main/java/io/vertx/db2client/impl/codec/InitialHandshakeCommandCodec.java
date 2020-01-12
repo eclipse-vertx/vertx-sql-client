@@ -35,9 +35,6 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     
     private static final int TARGET_SECURITY_MEASURE = DRDAConstants.SECMEC_USRIDPWD;
     
-    // TODO: May need to move this to a higher scope?
-    private final CCSIDManager ccsidManager = new CCSIDManager();
-    
     // TODO: @AGG may need to move this to connection level
     // Correlation Token of the source sent to the server in the accrdb.
     // It is saved like the prddta in case it is needed for a connect reflow.
@@ -57,7 +54,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
 
     @Override
     void decodePayload(ByteBuf payload, int payloadLength) {
-        DRDAConnectResponse response = new DRDAConnectResponse(payload, ccsidManager);
+        DRDAConnectResponse response = new DRDAConnectResponse(payload);
         try {
             switch (status) {
             case ST_CONNECTING:
@@ -66,7 +63,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
                 status = ST_AUTHENTICATING;
                 ByteBuf packet = allocateBuffer();
                 int packetStartIdx = packet.writerIndex();
-                DRDAConnectRequest securityCheck = new DRDAConnectRequest(packet, ccsidManager);
+                DRDAConnectRequest securityCheck = new DRDAConnectRequest(packet);
                 correlationToken = securityCheck.getCorrelationToken(encoder.socketConnection.socket().localAddress().port());
                 securityCheck.buildSECCHK(TARGET_SECURITY_MEASURE,
                         cmd.database(),
@@ -102,7 +99,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     private void sendInitialHandshake() {
         ByteBuf packet = allocateBuffer();
         int packetStartIdx = packet.writerIndex();
-        DRDAConnectRequest cmd = new DRDAConnectRequest(packet, ccsidManager);
+        DRDAConnectRequest cmd = new DRDAConnectRequest(packet);
         try {
             cmd.buildEXCSAT(DRDAConstants.EXTNAM, // externalName,
                     0x07, // 0x0A, // targetAgent,

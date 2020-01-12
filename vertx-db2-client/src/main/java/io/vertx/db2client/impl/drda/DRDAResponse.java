@@ -24,7 +24,6 @@ import io.netty.buffer.ByteBuf;
 public abstract class DRDAResponse {
     
     final ByteBuf buffer;
-    final CCSIDManager ccsidManager;
 
     Deque<Integer> ddmCollectionLenStack = new ArrayDeque<>(4);
     int ddmScalarLen_ = 0; // a value of -1 -> streamed ddm -> length unknown
@@ -41,9 +40,8 @@ public abstract class DRDAResponse {
     final static int END_OF_COLLECTION = -1;
     final static int END_OF_SAME_ID_CHAIN = -2;
 
-    public DRDAResponse(ByteBuf buffer, CCSIDManager ccsidManager) {
+    public DRDAResponse(ByteBuf buffer) {
         this.buffer = buffer;
-        this.ccsidManager = ccsidManager;
     }
     
     protected final void startSameIdChainParse() {
@@ -973,7 +971,7 @@ public abstract class DRDAResponse {
         int len = ddmScalarLen_;
         ensureBLayerDataInBuffer(len);
         adjustLengths(len);
-        String result = buffer.readCharSequence(len, ccsidManager.getCCSID()).toString();
+        String result = buffer.readCharSequence(len, CCSIDManager.getCCSID()).toString();
 //        String result = currentCCSID.decode(buffer); 
 //                netAgent_.getCurrentCcsidManager()
 //                            .convertToJavaString(buffer_, pos_, len);
@@ -1383,7 +1381,7 @@ public abstract class DRDAResponse {
     }
 
     final String readFastString(int length) {
-        String result = buffer.readCharSequence(length, ccsidManager.getCCSID()).toString();
+        String result = buffer.readCharSequence(length, CCSIDManager.getCCSID()).toString();
 //                            .convertToJavaString(buffer_, pos_, length);
         //pos_ += length;
         return result;

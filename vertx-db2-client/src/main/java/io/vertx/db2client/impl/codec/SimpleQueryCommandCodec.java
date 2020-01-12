@@ -18,16 +18,12 @@ package io.vertx.db2client.impl.codec;
 import java.sql.ResultSet;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.db2client.impl.drda.CCSIDManager;
 import io.vertx.db2client.impl.drda.DRDAQueryRequest;
-import io.vertx.db2client.impl.drda.Section;
 import io.vertx.db2client.impl.drda.SectionManager;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
 class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>> {
-
-    private final CCSIDManager ccsidManager = new CCSIDManager();
 
     SimpleQueryCommandCodec(SimpleQueryCommand<T> cmd) {
         super(cmd);
@@ -51,7 +47,7 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
     private void sendUpdateCommand() {
         ByteBuf packet = allocateBuffer();
         int packetStartIdx = packet.writerIndex();
-        DRDAQueryRequest updateCommand = new DRDAQueryRequest(packet, ccsidManager);
+        DRDAQueryRequest updateCommand = new DRDAQueryRequest(packet);
         updateCommand.writeExecuteImmediate(cmd.sql(), querySection, encoder.socketConnection.database());
         updateCommand.buildRDBCMM();
         updateCommand.completeCommand();
@@ -70,7 +66,7 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
         ByteBuf packet = allocateBuffer();
         int packetStartIdx = packet.writerIndex();
 
-        DRDAQueryRequest queryCommand = new DRDAQueryRequest(packet, ccsidManager);
+        DRDAQueryRequest queryCommand = new DRDAQueryRequest(packet);
         queryCommand.writePrepareDescribeOutput(cmd.sql(), encoder.socketConnection.database(), querySection);
         // fetchSize=0 triggers default fetch size (64) to be used (TODO @AGG this should be configurable)
         // @AGG hard coded to TYPE_FORWARD_ONLY

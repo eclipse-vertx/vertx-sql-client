@@ -37,7 +37,6 @@ public abstract class DRDARequest {
     public  static  final   String  DERBY_DRDA_CLIENT_ID = "DNC";
     
     final ByteBuf buffer;
-    final CCSIDManager ccsidManager;
     
     Deque<Integer> markStack = new ArrayDeque<>(4);
 
@@ -53,12 +52,9 @@ public abstract class DRDARequest {
 
     private boolean simpleDssFinalize = false;
     
-    public DRDARequest(ByteBuf buffer, CCSIDManager ccsidManager) {
+    public DRDARequest(ByteBuf buffer) {
         this.buffer = buffer;
-        this.ccsidManager = ccsidManager;
     }
-    
-
     
     String getHostname() {
         try {
@@ -372,7 +368,7 @@ public abstract class DRDARequest {
 
         // pad if we don't reach the byteMinLength limit
         if (stringByteLength < byteMinLength) {
-            padBytes(ccsidManager.getCCSID().encode(" ").get(), byteMinLength - stringByteLength);
+            padBytes(CCSIDManager.getCCSID().encode(" ").get(), byteMinLength - stringByteLength);
             stringByteLength = byteMinLength;
         }
 
@@ -447,7 +443,7 @@ public abstract class DRDARequest {
      */
     private int encodeString(String string) {
         int startPos = buffer.writerIndex();
-        buffer.writeCharSequence(string, ccsidManager.getCCSID());
+        buffer.writeCharSequence(string, CCSIDManager.getCCSID());
         return buffer.writerIndex() - startPos;
     }
     
