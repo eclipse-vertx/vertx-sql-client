@@ -22,6 +22,7 @@ import java.util.Map;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.json.JsonObject;
+import io.vertx.db2client.impl.DB2ConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
 
 /**
@@ -38,9 +39,8 @@ public class DB2ConnectOptions extends SqlConnectOptions {
      * @throws IllegalArgumentException when the {@code connectionUri} is in an invalid format
      */
     public static DB2ConnectOptions fromUri(String connectionUri) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not implemented");
-//      JsonObject parsedConfiguration = DB2ConnectionUriParser.parse(connectionUri);
-//      return new DB2ConnectOptions(parsedConfiguration);
+      JsonObject parsedConfiguration = DB2ConnectionUriParser.parse(connectionUri);
+      return new DB2ConnectOptions(parsedConfiguration);
     }
 
     public static final String DEFAULT_HOST = "localhost";
