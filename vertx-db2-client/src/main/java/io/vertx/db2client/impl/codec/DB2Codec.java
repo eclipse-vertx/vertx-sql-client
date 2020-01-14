@@ -28,8 +28,8 @@ public class DB2Codec extends CombinedChannelDuplexHandler<DB2Decoder, DB2Encode
 
   private final ArrayDeque<CommandCodec<?, ?>> inflight = new ArrayDeque<>();
   
-  public DB2Codec(DB2SocketConnection mySQLSocketConnection) {
-    DB2Encoder encoder = new DB2Encoder(inflight, mySQLSocketConnection);
+  public DB2Codec(DB2SocketConnection db2SocketConnection) {
+    DB2Encoder encoder = new DB2Encoder(inflight, db2SocketConnection);
     DB2Decoder decoder = new DB2Decoder(inflight);
     init(decoder, encoder);
   }

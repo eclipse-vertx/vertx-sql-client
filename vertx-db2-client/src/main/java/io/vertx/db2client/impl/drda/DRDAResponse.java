@@ -1017,7 +1017,7 @@ public abstract class DRDAResponse {
             
         // if we are communicating to an older server, we may get a SYNTAXRM on
         // ACCSEC (missing codepoint RDBNAM) if we were unable to convert to
-        // EBCDIC (See DERBY-4008/DERBY-4004).  In that case we should chain 
+        // EBCDIC.  In that case we should chain 
         // the original conversion exception, so it is clear to the user what
         // the problem was.
 //        if (netAgent_.exceptionConvertingRdbnam != null) {

@@ -325,8 +325,6 @@ public class DRDAConnectResponse extends DRDAResponse {
     * If sent by the server, it contains a PBSD_ISO code point followed by a
     * byte representing the JDBC isolation level, and a PBSD_SCHEMA code point
     * followed by the name of the current schema as an UTF-8 String.
-    *
-    * @throws org.apache.derby.client.am.DisconnectException
     */
    private void parseInitialPBSD() {
        if (peekCodePoint() != CodePoint.PBSD) {

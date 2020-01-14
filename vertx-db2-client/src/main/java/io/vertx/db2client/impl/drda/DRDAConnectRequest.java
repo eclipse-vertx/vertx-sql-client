@@ -406,8 +406,7 @@ public class DRDAConnectRequest extends DRDARequest {
      *
      */
     private void buildRDBNAM(String rdbnam, boolean dontSendOnConversionError) {
-        //DERBY-4805(Increase the length of the RDBNAM field in the 
-        // DRDA implementation)
+        //(Increase the length of the RDBNAM field in the DRDA implementation)
         //The new RDBNAM length in 10.11 is 1024bytes(it used to be 254 bytes).
         //But if a 10.11 or higher client talks to a 10.10 or under server with
         // a RDBNAM > 254 bytes, it will result in a protocol exception
@@ -504,7 +503,6 @@ public class DRDAConnectRequest extends DRDARequest {
     }
     
     private void buildSRVCLSNM() throws SQLException {
-        // Server class name is hard-coded to QDERBY/JVM for dnc.
         writeScalarString(CodePoint.SRVCLSNM, "QDB2/JVM");
     }
     

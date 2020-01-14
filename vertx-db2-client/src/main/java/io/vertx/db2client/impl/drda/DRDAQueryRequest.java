@@ -1018,7 +1018,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                     // dataFormat: java.math.BigDecimal
                     // if null - guess with precision 1, scale 0
                     // if not null - get scale from data and calculate maximum precision.
-                    // DERBY-2073. Get scale and precision from data so we don't lose fractional digits.
+                    // Get scale and precision from data so we don't lose fractional digits.
                     BigDecimal bigDecimal = (BigDecimal) inputRow[i];
                     int scale;
                     int precision;
@@ -1703,7 +1703,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
     // package information and this information is the same except for the section
     // number then only the section number needs to be sent to the server.
     void buildPKGNAMCSN(String dbName, Section section) {
-//        if (!canCommandUseDefaultPKGNAMCSN()) { // Always true in derby code
+//        if (!canCommandUseDefaultPKGNAMCSN()) {
             markLengthBytes(CodePoint.PKGNAMCSN);
             // If PKGNAMCBytes is already available, copy the bytes to the request buffer directly.
             if (section.pkg.pkgNameConsistencyBytes != null) {

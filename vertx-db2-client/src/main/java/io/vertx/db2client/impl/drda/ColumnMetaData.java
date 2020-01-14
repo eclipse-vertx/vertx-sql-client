@@ -34,7 +34,7 @@ public class ColumnMetaData {
     public int[] sqlPrecision_; // adjusted sqllen;
     public int[] sqlScale_;
     public long[] sqlLength_;  // This is maximum length for varchar fields
-    // These are the derby sql types, for use only by ResultSetMetaData, other code should use jdbcTypes_.
+    // These are the sql types, for use only by ResultSetMetaData, other code should use jdbcTypes_.
     // sqlTypes_ is currently not set for input column meta data.
     public int[] sqlType_;
     public int[] sqlCcsid_;

@@ -114,8 +114,6 @@ package io.vertx.db2client.impl.drda;
 		<LI> 2200J-2200R for SQL/XML errors (based on SQL/XML[2006]) </LI>
 		<LI> 42800-? for compatible DB2 errors
 		<LI> 42X00-42Zxx for compilation errors </LI>
-		<LI> 43X00-43Yxx  for org.apache.derby.impl.sql.execute.rts
-		<LI> 44X00  for all other org.apache.derby.catalog.types
 		<LI> 46000  for SQLJ errors (for now, leave this range empty) </LI>
 		<LI> 38000  SQL3 ranges  </LI>
 		<LI> XD00x  Dependency mgr </LI>
@@ -765,7 +763,6 @@ public interface SQLState {
 	String LANG_NULL_TO_PRIMITIVE_PARAMETER                            = "39004";
 	String LANG_SYNTAX_OR_ACCESS_VIOLATION                             = "42000";
 
-	// Fix for Derby-1828 - access rule violations should use SQL state 42
 	String AUTH_NO_TABLE_PERMISSION                                    = "42500";
 	String AUTH_NO_TABLE_PERMISSION_FOR_GRANT                          = "42501";
 	String AUTH_NO_COLUMN_PERMISSION                                   = "42502";
@@ -1096,8 +1093,7 @@ public interface SQLState {
 
 	String LANG_GRANT_REVOKE_WITH_LEGACY_ACCESS                        = "42Z60";
 
-	// 42Z70 - 42Z7Z: For Derby-specific XML compilation errors
-	// (not defined by SQL/XML standard).
+	// For Derby-specific XML compilation errors (not defined by SQL/XML standard).
 	String LANG_ATTEMPT_TO_BIND_XML                                    = "42Z70";
 	String LANG_ATTEMPT_TO_SELECT_XML                                  = "42Z71";
 	String LANG_XML_KEYWORD_MISSING                                    = "42Z72";
@@ -1194,7 +1190,6 @@ public interface SQLState {
     String LUCENE_FIELD_KEY_CONFLICT                                = "42XBN";
     String LUCENE_DUPLICATE_FIELD_NAME                                = "42XBO";
     
-	// org.apache.derby.impl.sql.execute.rts
 	String RTS_ATTACHED_TO											   = "43X00.U";
 	String RTS_BEGIN_SQ_NUMBER										   = "43X01.U";
 	String RTS_ANY_RS												   = "43X02.U";
@@ -1342,7 +1337,6 @@ public interface SQLState {
 	String RTS_USER_SUPPLIED_OPTIMIZER_OVERRIDES_FOR_TABLE			   = "43Y56.U";	
 	String RTS_USER_SUPPLIED_OPTIMIZER_OVERRIDES_FOR_JOIN			   = "43Y57.U";
 
-	// org.apache.derby.catalog.types
 	String TI_SQL_TYPE_NAME			= "44X00.U";
 
 	// INTERNAL EXCEPTIONS
@@ -1483,7 +1477,6 @@ public interface SQLState {
 	String LANG_NO_TRUNCATE_ON_FK_REFERENCE_TABLE                      = "XCL48.S";
 	String LANG_NO_TRUNCATE_ON_ENABLED_DELETE_TRIGGERS                 = "XCL49.S";
 
-    // Initial release of Apache Derby did not support upgrade
 	String LANG_CANT_UPGRADE_DATABASE                                 = "XCL50.S";
 
     String LANG_STATEMENT_CANCELLED_OR_TIMED_OUT                       = "XCL52.S";
@@ -1669,8 +1662,7 @@ public interface SQLState {
     String NET_LOCATOR_STREAM_PARAMS_NOT_SUPPORTED                  = "XN023.C";
     String NET_DISCONNECT_EXCEPTION_ON_READ                         = "XN024.C";
     
-    // XML - Derby-specific XML errors not covered by
-    // SQL standard.
+    // XML - Derby-specific XML errors not covered by SQL standard.
     String LANG_MISSING_XML_CLASSES                                 = "XML00";
     String LANG_UNEXPECTED_XML_EXCEPTION                            = "XML01";
 
@@ -1700,18 +1692,18 @@ public interface SQLState {
     String NET_CONNECT_AUTH_FAILED                          = "08004.C.1";
     String NET_DATABASE_NOT_FOUND                           = "08004.C.2";
     String AUTH_DATABASE_CONNECTION_REFUSED                 = "08004.C.3"; 
-    //DERBY-1828: AUTH_DATABASE_CONNECTION_REFUSED used to be "04501.C"; 
+    // AUTH_DATABASE_CONNECTION_REFUSED used to be "04501.C"; 
     String AUTH_SHUTDOWN_NOT_DB_OWNER                       = "08004.C.4";
     String AUTH_ENCRYPT_NOT_DB_OWNER                        = "08004.C.5";
     String AUTH_HARD_UPGRADE_NOT_DB_OWNER                   = "08004.C.6";
-    //DERBY-1828: AUTH_x_NOT_DB_OWNER used to be "2850H/I/J.C";
+    // AUTH_x_NOT_DB_OWNER used to be "2850H/I/J.C";
     String CANNOT_CONNECT_TO_DB_IN_SLAVE_MODE               = "08004.C.7";
     String AUTH_REPLICATION_NOT_DB_OWNER                    = "08004.C.8";
-    //DERBY-2109: new state/msg (considered sql state 28101.C not appropriate)
+    // new state/msg (considered sql state 28101.C not appropriate)
     String AUTH_SHUTDOWN_MISSING_PERMISSION                 = "08004.C.9";
-    //DERBY-2109: new state/msg
+    // new state/msg
     String AUTH_DATABASE_CREATE_EXCEPTION                   = "08004.C.10";
-    //DERBY-2109: new state/msg
+    // new state/msg
     String AUTH_DATABASE_CREATE_MISSING_PERMISSION          = "08004.C.11";
     String NET_CONNECT_SECMEC_INCOMPATIBLE_SCHEME           = "08004.C.12";
     String AUTH_EMPTY_CREDENTIALS                                  = "08004.C.13";
@@ -1813,8 +1805,7 @@ public interface SQLState {
     // 58009 means connection is terminated by a DRDA-protocol error.  This can be caused by any number
     // of reasons, so this SQL State has a lot of instances. Exceptions that are 
     // not protocol related, e.g. SocketException, IOException etc should use 
-    // SQLState 8006. DERBY-3077. 
-    // 
+    // SQLState 8006. 
     String NET_SQLCDTA_INVALID_FOR_RDBCOLID                         = "58009.C.7";
     String NET_SQLCDTA_INVALID_FOR_PKGID                            = "58009.C.8";
     String NET_PGNAMCSN_INVALID_AT_SQLAM                            = "58009.C.9";
@@ -1838,9 +1829,6 @@ public interface SQLState {
     String DRDA_DDM_PARAMVAL_NOT_SUPPORTED                          = "58017.C";
     String DRDA_NO_AVAIL_CODEPAGE_CONVERSION                        = "57017.C";
     
-	/*
-	** org.apache.derby.database.UserUtility
-		*/
 	String UU_UNKNOWN_PERMISSION									= "XCZ00.S";
 	String UU_UNKNOWN_USER											= "XCZ01.S";
 	String UU_INVALID_PARAMETER										= "XCZ02.S";

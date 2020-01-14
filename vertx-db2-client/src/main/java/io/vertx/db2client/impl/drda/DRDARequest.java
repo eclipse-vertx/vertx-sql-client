@@ -28,13 +28,9 @@ import io.netty.buffer.ByteBuf;
 
 public abstract class DRDARequest {
     
-    // TODO
-    // Derby Product Identifiers as defined by the Open Group.
-    // See http://www.opengroup.org/dbiop/prodid.htm for the
-    // list of legal DRDA Product Identifiers.
-    //
-    public  static  final   String  DERBY_DRDA_SERVER_ID = "CSS";
-    public  static  final   String  DERBY_DRDA_CLIENT_ID = "DNC";
+    // Product Identifiers as defined by the Open Group.
+    public  static  final   String  DB2_DRDA_SERVER_ID = "CSS";
+    public  static  final   String  DB2_DRDA_CLIENT_ID = "DNC";
     
     final ByteBuf buffer;
     

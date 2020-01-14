@@ -31,7 +31,7 @@ public class DB2Exception extends RuntimeException {
   }
 
   /**
-   * Get the error code in the error message sent from MySQL server.
+   * Get the error code in the error message sent from DB2 server.
    *
    * @return the error code
    */
@@ -40,7 +40,7 @@ public class DB2Exception extends RuntimeException {
   }
 
   /**
-   * Get the SQL state in the error message sent from MySQL server.
+   * Get the SQL state in the error message sent from DB2 server.
    *
    * @return the SQL state
    */
@@ -49,7 +49,7 @@ public class DB2Exception extends RuntimeException {
   }
 
   /**
-   * Get the error message in the error message sent from MySQL server.
+   * Get the error message in the error message sent from DB2 server.
    *
    * @return the error message
    */

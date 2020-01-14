@@ -152,8 +152,6 @@ public class NetSqlca {
 //     * <li>If the SQL code is negative, the Sqlca represents an error, and
 //     * the error code is {@code -(sqlCode+1)}.</li>
 //     * </ul>
-//     *
-//     * @see org.apache.derby.impl.drda.DRDAConnThread#getSqlCode(java.sql.SQLException)
 //     */
 //    public synchronized int getErrorCode() {
 //        // Warning or other non-error, return SQL code.
@@ -411,7 +409,7 @@ public class NetSqlca {
 //            sqlState = sqlStates_[messageNumber];
 //            sqlErrmc = sqlErrmcMessages_[messageNumber];
 //        }
-//        return "DERBY SQL error: ERRORCODE: " + errorCode + ", SQLSTATE: " +
+//        return "SQL error: ERRORCODE: " + errorCode + ", SQLSTATE: " +
 //            sqlState + ", SQLERRMC: " + sqlErrmc;
 //    }
 

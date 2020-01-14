@@ -26,7 +26,7 @@ public class ClientTypes {
 
     final static int BIT = Types.BIT; // -7;
 
-    // Not currently supported as a DERBY column type. Mapped to SMALLINT.
+    // Not currently supported as a DB2 column type. Mapped to SMALLINT.
     // final static int TINYINT = Types.TINYINT; // -6;
 
     final static int BOOLEAN = Types.BOOLEAN; // 16;

@@ -148,7 +148,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
                     // this will override the same call made from parsePrepareDescribe
                     //  this will not work, this is not the DA for the stored proc params
                     //
-                    // DERBY-5459. We may now receive a new SQLDARD (unrequested, a
+                    // We may now receive a new SQLDARD (unrequested, a
                     // DRDA protocol extension) when a query is opened iff the
                     // underlying server's prepared statement has been recompiled
                     // since the client first received metadata when preparing the
@@ -635,12 +635,6 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         ensureBLayerDataInBuffer(ddmLength);
 
         int maxDDMlength;
-        //For SQLAM level 7, this was harcoded to be 781 in 10.10 codeline. But
-        // after DERBY-4805 is fixed in Derby 10.11, we allow 1024 bytes for
-        // RDBNAM rather than just 255 characters. Because of this, the 
-        // DDM length in Derby 10.11 can be higher than 781. To be precise,
-        // it is 781-255+1024=1550. The following if statement is doing this
-        // calculation using constant identifiers rather than constant values
 //        if (netAgent_.netConnection_.databaseMetaData_.serverSupportLongRDBNAM()) {
             maxDDMlength = 781 - DRDAConstants.PKG_IDENTIFIER_MAX_LEN + DRDAConstants.RDBNAM_MAX_LEN;
 //        } else {
@@ -1052,7 +1046,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
                 // this will override the same call made from parsePrepareDescribe
                 //  this will not work, this is not the DA for the stored proc params
                 //
-                // DERBY-5459. We may now receive a new SQLDARD (unrequested, a
+                // We may now receive a new SQLDARD (unrequested, a
                 // DRDA protocol extension) when a query is opened iff the
                 // underlying server's prepared statement has been recompiled
                 // since the client first received metadata when preparing the

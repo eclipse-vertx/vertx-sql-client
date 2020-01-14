@@ -473,7 +473,7 @@ public class Cursor {
                                                  tempString.length()));
     }
 
-    // Build a JDBC Date object from the DERBY ISO DATE field.
+    // Build a JDBC Date object from the ISO DATE field.
     private LocalDate getDATE(int column) {
         dataBuffer_.readerIndex(columnDataPosition_[column - 1]);
         // DATE column is always 10 chars long
@@ -485,7 +485,7 @@ public class Cursor {
 //            charset_[column - 1]);
     }
 
-    // Build a JDBC Time object from the DERBY ISO TIME field.
+    // Build a JDBC Time object from the ISO TIME field.
     private LocalTime getTIME(int column) {
         dataBuffer_.readerIndex(columnDataPosition_[column - 1]);
         // Time column is always 8 chars long
@@ -497,7 +497,7 @@ public class Cursor {
 //                charset_[column - 1]);
     }
 
-//    // Build a JDBC Timestamp object from the DERBY ISO TIMESTAMP field.
+//    // Build a JDBC Timestamp object from the ISO TIMESTAMP field.
 //    private final Timestamp getTIMESTAMP(int column, Calendar cal)
 //            throws SQLException {
 //        return DateTime.timestampBytesToTimestamp(
@@ -508,7 +508,7 @@ public class Cursor {
 //            agent_.connection_.serverSupportsTimestampNanoseconds());
 //    }
 //
-//    // Build a JDBC Timestamp object from the DERBY ISO DATE field.
+//    // Build a JDBC Timestamp object from the ISO DATE field.
 //    private final Timestamp getTimestampFromDATE(
 //            int column, Calendar cal) throws SQLException {
 //        return DateTime.dateBytesToTimestamp(dataBuffer_,
@@ -517,7 +517,7 @@ public class Cursor {
 //                charset_[column -1]);
 //    }
 //
-//    // Build a JDBC Timestamp object from the DERBY ISO TIME field.
+//    // Build a JDBC Timestamp object from the ISO TIME field.
 //    private final Timestamp getTimestampFromTIME(
 //            int column, Calendar cal) throws SQLException {
 //        return DateTime.timeBytesToTimestamp(dataBuffer_,
@@ -526,7 +526,7 @@ public class Cursor {
 //                charset_[column -1]);
 //    }
 //
-//    // Build a JDBC Date object from the DERBY ISO TIMESTAMP field.
+//    // Build a JDBC Date object from the ISO TIMESTAMP field.
 //    private final Date getDateFromTIMESTAMP(int column, Calendar cal)
 //            throws SQLException {
 //        return DateTime.timestampBytesToDate(dataBuffer_,
@@ -535,7 +535,7 @@ public class Cursor {
 //                charset_[column -1]);
 //    }
 //
-//    // Build a JDBC Time object from the DERBY ISO TIMESTAMP field.
+//    // Build a JDBC Time object from the ISO TIMESTAMP field.
 //    private final Time getTimeFromTIMESTAMP(int column, Calendar cal)
 //            throws SQLException {
 //        return DateTime.timestampBytesToTime(dataBuffer_,
@@ -548,18 +548,18 @@ public class Cursor {
 //        return getDATE(column, getRecyclableCalendar()).toString();
 //    }
 //
-//    // Build a string object from the DERBY byte TIME representation.
+//    // Build a string object from the byte TIME representation.
 //    private String getStringFromTIME(int column) throws SQLException {
 //        return getTIME(column, getRecyclableCalendar()).toString();
 //    }
 //
-//    // Build a string object from the DERBY byte TIMESTAMP representation.
+//    // Build a string object from the byte TIMESTAMP representation.
 //    private String getStringFromTIMESTAMP(int column) throws SQLException {
 //        return getTIMESTAMP(column, getRecyclableCalendar()).toString();
 //    }
 
     // Extract bytes from a database Types.BINARY field.
-    // This is the DERBY type CHAR(n) FOR BIT DATA.
+    // This is the type CHAR(n) FOR BIT DATA.
     private byte[] get_CHAR_FOR_BIT_DATA(int column) {
         // There is no limit to the size of a column if maxFieldSize is zero.
         // Otherwise, use the smaller of maxFieldSize and the actual column length.
@@ -572,7 +572,7 @@ public class Cursor {
     }
 
     // Extract bytes from a database Types.VARBINARY or LONGVARBINARY field.
-    // This includes the DERBY types:
+    // This includes the types:
     //   VARCHAR(n) FOR BIT DATA
     //   LONG VARCHAR(n) FOR BIT DATA
     private byte[] get_VARCHAR_FOR_BIT_DATA(int column) {
@@ -1297,7 +1297,7 @@ public class Cursor {
         // If we don't have at least one byte in the buffer for the DA null indicator,
         // then we need to send a CNTQRY request to fetch the next block of data.
         // Read the DA null indicator. Do this before we close mark the statement
-        // closed on the server. DERBY-3230
+        // closed on the server.
         daNullIndicator = readFdocaOneByte();
         
         if (netSqlca != null) {
@@ -2070,9 +2070,6 @@ public class Cursor {
         }
     }
 
-//    /**
-//     * @see org.apache.derby.client.am.Cursor#getBlobColumn_
-//     */
 //    public ClientBlob getBlobColumn_(
 //            int column,
 //            Agent agent,
@@ -2115,9 +2112,6 @@ public class Cursor {
 //    }
 
 
-//    /**
-//     * @see org.apache.derby.client.am.Cursor#getClobColumn_
-//     */
 //    public ClientClob getClobColumn_(
 //            int column,
 //            Agent agent,

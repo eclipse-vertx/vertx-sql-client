@@ -44,9 +44,9 @@ public class DB2ConnectionImpl extends SqlConnectionImpl<DB2ConnectionImpl> impl
       private static void connect(DB2ConnectionFactory client, ContextInternal ctx, Promise<DB2Connection> promise) {
         client.connect(ctx)
           .map(conn -> {
-            DB2ConnectionImpl mySQLConnection = new DB2ConnectionImpl(client, ctx, conn);
-            conn.init(mySQLConnection);
-            return (DB2Connection) mySQLConnection;
+            DB2ConnectionImpl db2Connection = new DB2ConnectionImpl(client, ctx, conn);
+            conn.init(db2Connection);
+            return (DB2Connection) db2Connection;
           }).onComplete(promise);
       }
 

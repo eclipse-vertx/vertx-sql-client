@@ -34,7 +34,7 @@ import java.sql.Types;
 import java.util.Calendar;
 import java.util.Locale;
 
-// All currently supported derby types are mapped to one of the following jdbc types:
+// All currently supported types are mapped to one of the following jdbc types:
 // Types.SMALLINT;
 // Types.INTEGER;
 // Types.BIGINT;
@@ -216,8 +216,6 @@ final class CrossConverters {
         }
     }
 
-    // This method is used in lieu of setObject(targetType, sourceObject) because we
-    // don't support the BIT/BOOLEAN as underlying DERBY targetTypes.
     static final boolean setBooleanFromObject(Object source, int sourceType) {
         switch (sourceType) {
         case ClientTypes.SMALLINT:
@@ -241,8 +239,6 @@ final class CrossConverters {
         }
     }
 
-    // This method is used in lieu of setObject(targetType, sourceObject) because we
-    // don't support the BIT/BOOLEAN as underlying DERBY targetTypes.
     static final byte setByteFromObject(Object source, int sourceType) {
         switch (sourceType) {
         case ClientTypes.SMALLINT:
@@ -370,7 +366,6 @@ final class CrossConverters {
         case ClientTypes.DECIMAL:
             // Can't use the following commented out line because it changes precision of the result.
             //return new java.math.BigDecimal (source);
-            // This matches derby semantics
             return new BigDecimal(String.valueOf(source));
 
         case ClientTypes.CHAR:

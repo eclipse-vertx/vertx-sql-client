@@ -77,7 +77,6 @@ public class DRDAConstants {
     public static final int PKG_IDENTIFIER_FIXED_LEN = 18;
 
     // Maximum RDBNAM Identifier Length
-    // this used to be 255 prior to DERBY-4805 fix
     public static final int RDBNAM_MAX_LEN = 1024;
 
     // Maximum RDB Identifier Length
@@ -87,14 +86,13 @@ public class DRDAConstants {
     public static final int PKGCNSTKN_FIXED_LEN = 8;
 
     // Maximum length of a security token.
-    // Anything greater than 32763 bytes of SECTKN would require extended length
-    // DDMs.
+    // Anything greater than 32763 bytes of SECTKN would require extended length DDMs.
     // This seems like an impossible upper bound limit right now so set
     // max to 32763 and cross bridge later.
-    public static final int SECTKN_MAXSIZE = 32763; // this was 255
+    public static final int SECTKN_MAXSIZE = 32763;
 
     // Server class name of the ClientDNC product.
-    public static final String SRVCLSNM_JVM = "QDERBY/JVM";
+    public static final String SRVCLSNM_JVM = "QDB2/JVM";
 
     // Maximum size of SRVNAM Name.
     public static final int SRVNAM_MAXSIZE = 255;

@@ -106,7 +106,6 @@
         </plugin>
       </plugins>
     </pluginManagement>
-    <!-- TODO: enable doc gen later
     <plugins>
       <plugin>
         <groupId>org.bsc.maven</groupId>
@@ -123,7 +122,6 @@
         </executions>
       </plugin>
     </plugins>
-     -->
   </build>
 
 </project>

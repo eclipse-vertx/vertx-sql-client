@@ -36,6 +36,6 @@ public class SqlCode {
     final static SqlCode disconnectError = new SqlCode(40000);
 
     /** SQL code for SQL state 02000 (end of data). DRDA does not
-     * specify the SQL code for this SQL state, but Derby uses 100. */
+     * specify the SQL code for this SQL state, but Derby/DB2 uses 100. */
     public final static SqlCode END_OF_DATA = new SqlCode(100);
 }
