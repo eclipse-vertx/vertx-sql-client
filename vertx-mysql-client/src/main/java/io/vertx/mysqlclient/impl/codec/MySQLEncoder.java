@@ -52,7 +52,7 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
       /*
        * a bit hacky but we need this message delivered to the socket messageHandler
        */
-      if (resp.cause().getMessage().equals("SSL handshake failed")) {
+      if (resp.cause() != null && resp.cause().getMessage().equals("SSL handshake failed")) {
         socketConnection.handleMessage(resp);
         return;
       }
