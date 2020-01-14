@@ -49,6 +49,14 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
     codec.completionHandler = resp -> {
       CommandCodec c = inflight.poll();
       resp.cmd = (CommandBase) c.cmd;
+      /*
+       * a bit hacky but we need this message delivered to the socket messageHandler
+       */
+      if (resp.cause().getMessage().equals("SSL handshake failed")) {
+        socketConnection.handleMessage(resp);
+        return;
+      }
+
       chctx.fireChannelRead(resp);
     };
     inflight.add(codec);
