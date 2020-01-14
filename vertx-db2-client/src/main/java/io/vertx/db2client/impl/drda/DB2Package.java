@@ -17,11 +17,12 @@ import java.util.logging.Logger;
  *   S = Small (64 sections)
  *   H = Hold cursors
  *   N = No Hold cursors
- *   ISO = Isolation level, 1 char (see java.sql.Connection constants)
- *   PKGNUM = Section Number, 2 chars
+ *   ISO = Isolation level, 1 char (0=NC, 1=UR, 2=CS, 3=RS, 4=RR)
+ *   PKGNUM = Section Number (00-FF)
  * - By default there are 3 small and 3 large packages
  *   
  * See this doc for package and section details:
+ * https://www.ibm.com/support/pages/75-ways-demystify-db2-9-tech-tip-db2-cli-packages-demystified
  * https://www.ibm.com/support/knowledgecenter/SSEPGG_11.1.0/com.ibm.db2.luw.apdv.cli.doc/doc/c0004933.html
  */
 public class DB2Package {

@@ -25,6 +25,7 @@ import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.db2client.impl.DB2SocketConnection;
 import io.vertx.db2client.impl.command.InitialHandshakeCommand;
 import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
+import io.vertx.sqlclient.impl.command.CloseStatementCommand;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
@@ -92,8 +93,8 @@ class DB2Encoder extends ChannelOutboundHandlerAdapter {
             return new CloseConnectionCommandCodec((CloseConnectionCommand) cmd);
         } else if (cmd instanceof PrepareStatementCommand) {
             return new PrepareStatementCodec((PrepareStatementCommand) cmd);
-            // } else if (cmd instanceof CloseStatementCommand) {
-            // return new CloseStatementCommandCodec((CloseStatementCommand) cmd);
+        } else if (cmd instanceof CloseStatementCommand) {
+            return new CloseStatementCommandCodec((CloseStatementCommand) cmd);
             // } else if (cmd instanceof CloseCursorCommand) {
             // return new ResetStatementCommandCodec((CloseCursorCommand) cmd);
 //        } else if (cmd instanceof PingCommand) {

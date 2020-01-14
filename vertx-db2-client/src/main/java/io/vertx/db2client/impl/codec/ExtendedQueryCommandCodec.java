@@ -103,7 +103,6 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
             throw new UnsupportedOperationException("Need to fetch more data from DB");
         
         commandHandlerState = CommandHandlerState.HANDLING_END_OF_QUERY;
-        querySection.release();
         int updatedCount = 0; // @AGG hardcoded to 0
         R result;
         Throwable failure;
@@ -131,7 +130,6 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
         updateResponse.readLocalCommit();
 
         R result = emptyResult(cmd.collector());
-        querySection.release();
         cmd.resultHandler().handleResult(updatedCount, 0, null, result, null);
         completionHandler.handle(CommandResponse.success(true));
     }

@@ -16,13 +16,11 @@
  */
 package io.vertx.db2client.tck;
 
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import io.vertx.core.Vertx;
 import io.vertx.db2client.junit.DB2Resource;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -39,14 +37,8 @@ public class DB2SimpleQueryTest extends SimpleQueryTestBase {
         connector = ClientConfig.CONNECT.connect(vertx, rule.options());
     }
 
-    @Before
-    public void setUp(TestContext ctx) throws Exception {
-        vertx = Vertx.vertx();
-        initConnector();
-        cleanTestTable(ctx);
-    }
-
-    private void cleanTestTable(TestContext ctx) {
+    @Override
+    protected void cleanTestTable(TestContext ctx) {
         // use DELETE FROM because DB2 does not support TRUNCATE TABLE
         connect(ctx.asyncAssertSuccess(conn -> {
             conn.query("DELETE FROM mutable", ctx.asyncAssertSuccess(result -> {
