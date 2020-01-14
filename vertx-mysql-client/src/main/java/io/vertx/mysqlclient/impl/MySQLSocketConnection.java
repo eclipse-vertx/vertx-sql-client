@@ -18,7 +18,6 @@
 package io.vertx.mysqlclient.impl;
 
 import io.netty.channel.ChannelPipeline;
-import io.netty.handler.codec.DecoderException;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
@@ -28,7 +27,6 @@ import io.vertx.mysqlclient.impl.codec.MySQLCodec;
 import io.vertx.mysqlclient.impl.command.InitialHandshakeCommand;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.sqlclient.impl.command.CommandResponse;
 
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -70,22 +68,4 @@ public class MySQLSocketConnection extends SocketConnectionBase {
     super.init();
   }
 
-  public void upgradeToSSLConnection(Handler<AsyncResult<Void>> completionHandler) {
-    // Workaround for Vert.x 3.x
-    ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
-    Promise<Void> upgradePromise = Promise.promise();
-    upgradePromise.future().setHandler(ar->{
-      if (ar.succeeded()) {
-        completionHandler.handle(Future.succeededFuture());
-      } else {
-        Throwable cause = ar.cause();
-        if (cause instanceof DecoderException) {
-          DecoderException err = (DecoderException) cause;
-          cause = err.getCause();
-        }
-        completionHandler.handle(Future.failedFuture(cause));
-      }
-    });
-    pipeline.addFirst("initiate-ssl-handler", new InitiateSslHandler(this, upgradePromise));
-  }
 }
