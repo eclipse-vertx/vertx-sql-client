@@ -3,6 +3,7 @@ package io.vertx.mysqlclient;
 import io.vertx.core.Vertx;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.core.net.PemTrustOptions;
+import io.vertx.core.net.SelfSignedCertificate;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mysqlclient.junit.MySQLRule;
@@ -186,8 +187,19 @@ public class MySQLTLSTest {
   }
 
   @Test
-  public void testConnFail(TestContext ctx) {
+  public void testConnFailWithoutCertificate(TestContext ctx) {
     options.setSslMode(SslMode.REQUIRED);
+
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertFailure(error -> {
+    }));
+  }
+
+  @Test
+  public void testConnFailWithWrongCertificate(TestContext ctx) {
+    SelfSignedCertificate certificate = SelfSignedCertificate.create();
+    options.setSslMode(SslMode.REQUIRED)
+      .setKeyCertOptions(certificate.keyCertOptions())
+      .setTrustOptions(certificate.trustOptions());
 
     MySQLConnection.connect(vertx, options, ctx.asyncAssertFailure(error -> {
     }));
