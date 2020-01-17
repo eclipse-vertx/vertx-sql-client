@@ -15,6 +15,7 @@
  */
 package io.vertx.db2client.impl.codec;
 
+import java.math.BigDecimal;
 import java.util.stream.Collector;
 
 import io.netty.buffer.ByteBuf;
@@ -22,6 +23,7 @@ import io.vertx.db2client.impl.DB2RowImpl;
 import io.vertx.db2client.impl.drda.Cursor;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.RowDecoder;
 
 class RowResultDecoder<C, R> extends RowDecoder<C, R> {
@@ -51,6 +53,9 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
         Row row = new DB2RowImpl(rowDesc);
         for (int i = 1; i < rowDesc.columnDefinitions().columns_ + 1; i++) {
             Object o = cursor.getObject(i);
+            if (o instanceof BigDecimal) {
+                o = Numeric.create((BigDecimal) o);
+            }
             row.addValue(o);
         }
         return row;
