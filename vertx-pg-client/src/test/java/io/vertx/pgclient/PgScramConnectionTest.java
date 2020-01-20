@@ -53,7 +53,7 @@ public class PgScramConnectionTest {
 
   @Test
   public void testSaslConnection(TestContext ctx) throws InterruptedException {
-    assumeTrue(ContainerPgRule.isAtLeastPg10());
+    assumeTrue(ContainerPgRule.isSaslAuthenticationSupported());
     Async async = ctx.async();
     PgConnectOptions options = new PgConnectOptions(options());
     options.setUser("saslscram");

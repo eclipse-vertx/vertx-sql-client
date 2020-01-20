@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
+import io.vertx.sqlclient.utils.OperatingSystemUtils;
 import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
@@ -40,25 +41,25 @@ public class ContainerPgRule extends ExternalResource {
 
   private static final String connectionUri = System.getProperty("connection.uri");
   private static final String tlsConnectionUri = System.getProperty("tls.connection.uri");
-  
+
   private PostgreSQLContainer server;
   private PgConnectOptions options;
   private String databaseVersion;
   private boolean ssl;
 
-  
+
   public ContainerPgRule ssl(boolean ssl) {
     this.ssl = ssl;
     return this;
   }
-  
+
   public PgConnectOptions options() {
     return new PgConnectOptions(options);
   }
 
   private void initServer(String version) throws Exception {
     File setupFile = getTestResource("resources" + File.separator + "create-postgres.sql");
-    
+
     server = (PostgreSQLContainer) new PostgreSQLContainer("postgres:" + version)
         .withDatabaseName("postgres")
         .withUsername("postgres")
@@ -70,7 +71,7 @@ public class ContainerPgRule extends ExternalResource {
             .withCopyFileToContainer(MountableFile.forHostPath(getTestResource("ssl.sh").toPath()), "/docker-entrypoint-initdb.d/ssl.sh");
     }
   }
-  
+
   private static File getTestResource(String name) throws Exception {
     File file = null;
     try(InputStream in = new FileInputStream(new File("docker" + File.separator + "postgres" + File.separator + name))) {
@@ -80,10 +81,6 @@ public class ContainerPgRule extends ExternalResource {
       file.deleteOnExit();
     }
     return file;
-  }
-
-  public static boolean isTestingWithExternalDatabase() {
-    return isSystemPropertyValid(connectionUri) || isSystemPropertyValid(tlsConnectionUri);
   }
 
   private static boolean isSystemPropertyValid(String systemProperty) {
@@ -129,15 +126,11 @@ public class ContainerPgRule extends ExternalResource {
   @Override
   protected void before() throws Throwable {
     // use an external database for testing
-    if (isTestingWithExternalDatabase()) {
-      
-      if (ssl) {
-        options =  PgConnectOptions.fromUri(tlsConnectionUri);
-      }
-      else {
-        options =  PgConnectOptions.fromUri(connectionUri);        
-      }
-      
+    if (!ssl && isSystemPropertyValid(connectionUri)) {
+      options = PgConnectOptions.fromUri(connectionUri);
+      return;
+    } else if (ssl && isSystemPropertyValid(tlsConnectionUri)) {
+      options = PgConnectOptions.fromUri(tlsConnectionUri);
       return;
     }
 
@@ -146,13 +139,15 @@ public class ContainerPgRule extends ExternalResource {
       return;
     }
 
-    this.databaseVersion =  getPostgresVersion();
+    this.databaseVersion = getPostgresVersion();
     options = startServer(databaseVersion);
   }
-  
-  public static boolean isAtLeastPg10() {
-    // hackish ;-)
-    return !getPostgresVersion().startsWith("9.");
+
+  public static boolean isSaslAuthenticationSupported() {
+    String version = getPostgresVersion();
+    String[] versionStrings = version.split("\\.");
+    int majorVersionNumber = Integer.parseInt(versionStrings[0]);
+    return majorVersionNumber > 9;
   }
 
   @Override
@@ -164,6 +159,28 @@ public class ContainerPgRule extends ExternalResource {
         e.printStackTrace();
       }
     }
+  }
+
+  private boolean isTestingWithExternalDatabase() {
+    return isTestingTlsWithExternalDatabase() || isCommonTestingWithExternalDatabase();
+  }
+
+  /**
+   * check whether TLS tests are testing with external database
+   */
+  private boolean isTestingTlsWithExternalDatabase() {
+    return ssl && isSystemPropertyValid(tlsConnectionUri);
+  }
+
+  /**
+   * check whether non-TLS tests are testing with external database
+   */
+  private boolean isCommonTestingWithExternalDatabase() {
+    return !ssl && isSystemPropertyValid(connectionUri);
+  }
+
+  public static boolean isUnixDomainSocketSupported() {
+    return !(OperatingSystemUtils.isOsX() || OperatingSystemUtils.isWindows());
   }
 
 }
