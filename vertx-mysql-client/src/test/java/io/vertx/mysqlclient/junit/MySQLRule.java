@@ -175,7 +175,7 @@ public class MySQLRule extends ExternalResource {
   protected void after() {
     if (!isTestingWithExternalDatabase()) {
       try {
-        if (this != SHARED_INSTANCE) {
+        if (this != SHARED_INSTANCE && this != SHARED_TLS_INSTANCE) {
           // we don't shutdown the shared instance to boost testing
           stopServer();
         }
