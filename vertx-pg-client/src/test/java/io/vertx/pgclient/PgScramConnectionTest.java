@@ -35,7 +35,7 @@ import io.vertx.pgclient.junit.PgRule;
 public class PgScramConnectionTest {
 
   @ClassRule
-  public static PgRule rule = new PgRule();
+  public static PgRule rule = PgRule.SHARED_INSTANCE;
 
   private Vertx vertx;
 

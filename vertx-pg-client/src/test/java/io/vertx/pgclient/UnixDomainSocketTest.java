@@ -44,7 +44,7 @@ public class UnixDomainSocketTest {
   }
 
   @ClassRule
-  public static PgRule rule = new PgRule().domainSocket(nativeTransportEnabled);
+  public static PgRule rule = PgRule.SHARED_DOMAIN_SOCKET_INSTANCE;
 
   private PgPool client;
   private PgConnectOptions options;

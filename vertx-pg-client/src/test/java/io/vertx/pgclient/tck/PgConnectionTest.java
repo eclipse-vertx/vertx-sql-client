@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
 @RunWith(VertxUnitRunner.class)
 public class PgConnectionTest extends ConnectionTestBase {
   @ClassRule
-  public static PgRule rule = new PgRule();
+  public static PgRule rule = PgRule.SHARED_INSTANCE;
 
   @Override
   public void setUp() throws Exception {

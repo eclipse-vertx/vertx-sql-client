@@ -10,7 +10,7 @@ import io.vertx.sqlclient.tck.BinaryDataTypeDecodeTestBase;
 @RunWith(VertxUnitRunner.class)
 public class PgBinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase {
   @ClassRule
-  public static PgRule rule = new PgRule();
+  public static PgRule rule = PgRule.SHARED_INSTANCE;
 
   @Override
   protected void initConnector() {

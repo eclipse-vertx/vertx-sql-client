@@ -35,7 +35,7 @@ import io.vertx.sqlclient.Tuple;
 public class TLSTest {
 
   @ClassRule
-  public static PgRule rule = new PgRule().ssl(true);
+  public static PgRule rule = PgRule.SHARED_TLS_INSTANCE;
 
   private Vertx vertx;
 

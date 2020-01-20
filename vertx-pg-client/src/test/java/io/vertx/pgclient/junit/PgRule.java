@@ -48,6 +48,10 @@ public class PgRule extends ExternalResource {
   private boolean ssl;
   private boolean domainSocket;
 
+  public static final PgRule SHARED_INSTANCE = new PgRule();
+  public static final PgRule SHARED_TLS_INSTANCE = new PgRule().ssl(true);
+  public static final PgRule SHARED_DOMAIN_SOCKET_INSTANCE = new PgRule().domainSocket(true);
+
   public PgRule ssl(boolean ssl) {
     this.ssl = ssl;
     return this;
@@ -171,7 +175,9 @@ public class PgRule extends ExternalResource {
   protected void after() {
     if (!isTestingWithExternalDatabase()) {
       try {
-        stopServer();
+        if (this != SHARED_INSTANCE && this != SHARED_TLS_INSTANCE && this != SHARED_DOMAIN_SOCKET_INSTANCE) {
+          stopServer();
+        }
       } catch (Exception e) {
         e.printStackTrace();
       }

@@ -35,7 +35,7 @@ import io.vertx.sqlclient.SqlClient;
 public abstract class PgTestBase {
 
   @ClassRule
-  public static PgRule rule = new PgRule();
+  public static PgRule rule = PgRule.SHARED_INSTANCE;
 
   protected PgConnectOptions options;
 

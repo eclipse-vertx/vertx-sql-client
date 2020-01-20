@@ -9,7 +9,7 @@ import org.junit.runner.RunWith;
 @RunWith(VertxUnitRunner.class)
 public class PgTextDataTypeDecodeTest extends TextDataTypeDecodeTestBase {
   @ClassRule
-  public static PgRule rule = new PgRule();
+  public static PgRule rule = PgRule.SHARED_INSTANCE;
 
   @Override
   protected void initConnector() {

@@ -10,7 +10,7 @@ import io.vertx.sqlclient.tck.CollectorTestBase;
 @RunWith(VertxUnitRunner.class)
 public class PgCollectorTest extends CollectorTestBase {
   @ClassRule
-  public static PgRule rule = new PgRule();
+  public static PgRule rule = PgRule.SHARED_INSTANCE;
 
   @Override
   protected void initConnector() {

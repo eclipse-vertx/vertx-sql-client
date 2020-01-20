@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 public class PgSimpleQueryPooledTest extends SimpleQueryTestBase {
 
   @ClassRule
-  public static PgRule rule = new PgRule();
+  public static PgRule rule = PgRule.SHARED_INSTANCE;
 
   @Override
   protected void initConnector() {

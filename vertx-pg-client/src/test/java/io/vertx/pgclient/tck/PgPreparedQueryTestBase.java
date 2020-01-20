@@ -6,7 +6,7 @@ import org.junit.ClassRule;
 
 public abstract class PgPreparedQueryTestBase extends PreparedQueryTestBase {
   @ClassRule
-  public static PgRule rule = new PgRule();
+  public static PgRule rule = PgRule.SHARED_INSTANCE;
 
   @Override
   protected String statement(String... parts) {
