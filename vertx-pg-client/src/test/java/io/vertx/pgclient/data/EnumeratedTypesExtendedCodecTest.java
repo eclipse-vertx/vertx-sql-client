@@ -115,7 +115,7 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
   public void testEncodeEnumArrayEmptyValues(TestContext ctx) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"ArrayDataType\" SET \"Enum\" = $1 WHERE \"id\" = $2 RETURNING \"Enum\", \"Boolean\"",
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Enum\" = $1 WHERE \"id\" = $2 RETURNING \"Enum\"",
         ctx.asyncAssertSuccess(p -> {
           p.execute(Tuple.tuple()
               .addStringArray(new String[]{})
@@ -124,10 +124,6 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
               ColumnChecker.checkColumn(0, "Enum")
                 .returns(Tuple::getValue, Row::getValue, new String[]{})
                 .returns(Tuple::getStringArray, Row::getStringArray, new String[]{})
-                .forRow(result.iterator().next());
-              ColumnChecker.checkColumn(1, "Boolean")
-                .returns(Tuple::getValue, Row::getValue, new Boolean[]{true})
-                .returns(Tuple::getBooleanArray, Row::getBooleanArray, new Boolean[]{true})
                 .forRow(result.iterator().next());
               async.complete();
             }));
