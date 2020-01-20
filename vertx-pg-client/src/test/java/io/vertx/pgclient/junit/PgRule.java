@@ -23,7 +23,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-import io.vertx.sqlclient.utils.OperatingSystemUtils;
 import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -38,7 +37,7 @@ import io.vertx.pgclient.PgConnectOptions;
  *  - connection.uri
  *  - tls.connection.uri
  */
-public class ContainerPgRule extends ExternalResource {
+public class PgRule extends ExternalResource {
 
   private static final String connectionUri = System.getProperty("connection.uri");
   private static final String tlsConnectionUri = System.getProperty("tls.connection.uri");
@@ -49,12 +48,12 @@ public class ContainerPgRule extends ExternalResource {
   private boolean ssl;
   private boolean domainSocket;
 
-  public ContainerPgRule ssl(boolean ssl) {
+  public PgRule ssl(boolean ssl) {
     this.ssl = ssl;
     return this;
   }
 
-  public ContainerPgRule domainSocket(boolean domainSocket) {
+  public PgRule domainSocket(boolean domainSocket) {
     this.domainSocket = domainSocket;
     return this;
   }

@@ -28,14 +28,14 @@ import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.pgclient.junit.ContainerPgRule;
+import io.vertx.pgclient.junit.PgRule;
 import io.vertx.sqlclient.Tuple;
 
 @RunWith(VertxUnitRunner.class)
 public class TLSTest {
 
   @ClassRule
-  public static ContainerPgRule rule = new ContainerPgRule().ssl(true);
+  public static PgRule rule = new PgRule().ssl(true);
 
   private Vertx vertx;
 

@@ -29,13 +29,13 @@ import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.pgclient.junit.ContainerPgRule;
+import io.vertx.pgclient.junit.PgRule;
 
 @RunWith(VertxUnitRunner.class)
 public class PgScramConnectionTest {
 
   @ClassRule
-  public static ContainerPgRule rule = new ContainerPgRule();
+  public static PgRule rule = new PgRule();
 
   private Vertx vertx;
 
@@ -53,7 +53,7 @@ public class PgScramConnectionTest {
 
   @Test
   public void testSaslConnection(TestContext ctx) throws InterruptedException {
-    assumeTrue(ContainerPgRule.isSaslAuthenticationSupported());
+    assumeTrue(PgRule.isSaslAuthenticationSupported());
     Async async = ctx.async();
     PgConnectOptions options = new PgConnectOptions(options());
     options.setUser("saslscram");

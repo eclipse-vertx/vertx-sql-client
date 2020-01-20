@@ -4,13 +4,13 @@ import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.pgclient.junit.ContainerPgRule;
+import io.vertx.pgclient.junit.PgRule;
 import io.vertx.sqlclient.tck.CollectorTestBase;
 
 @RunWith(VertxUnitRunner.class)
 public class PgCollectorTest extends CollectorTestBase {
   @ClassRule
-  public static ContainerPgRule rule = new ContainerPgRule();
+  public static PgRule rule = new PgRule();
 
   @Override
   protected void initConnector() {

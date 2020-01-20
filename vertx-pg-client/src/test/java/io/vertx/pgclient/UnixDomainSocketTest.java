@@ -16,7 +16,7 @@
  */
 package io.vertx.pgclient;
 
-import io.vertx.pgclient.junit.ContainerPgRule;
+import io.vertx.pgclient.junit.PgRule;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.ext.unit.Async;
@@ -44,7 +44,7 @@ public class UnixDomainSocketTest {
   }
 
   @ClassRule
-  public static ContainerPgRule rule = new ContainerPgRule().domainSocket(nativeTransportEnabled);
+  public static PgRule rule = new PgRule().domainSocket(nativeTransportEnabled);
 
   private PgPool client;
   private PgConnectOptions options;

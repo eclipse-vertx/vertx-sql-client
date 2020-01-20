@@ -24,7 +24,7 @@ import org.junit.runner.RunWith;
 
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.pgclient.junit.ContainerPgRule;
+import io.vertx.pgclient.junit.PgRule;
 import io.vertx.sqlclient.SqlClient;
 
 /**
@@ -35,7 +35,7 @@ import io.vertx.sqlclient.SqlClient;
 public abstract class PgTestBase {
 
   @ClassRule
-  public static ContainerPgRule rule = new ContainerPgRule();
+  public static PgRule rule = new PgRule();
 
   protected PgConnectOptions options;
 
