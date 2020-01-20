@@ -51,6 +51,8 @@ public class UnixDomainSocketTest {
 
   @Before
   public void before() {
+    assumeTrue(nativeTransportEnabled);
+    assumeTrue(isUnixDomainSocketSupported());
     options = rule.options();
     if (isExternalDatabaseSocketPathConfigured()) {
       options.setHost(unixSocketDirectory);
@@ -58,7 +60,6 @@ public class UnixDomainSocketTest {
     if (isExternalDatabaseSocketPortConfigured()) {
       options.setPort(Integer.parseInt(unixSocketPort));
     }
-    assumeTrue(isUnixDomainSocketSupported());
   }
 
   @After
