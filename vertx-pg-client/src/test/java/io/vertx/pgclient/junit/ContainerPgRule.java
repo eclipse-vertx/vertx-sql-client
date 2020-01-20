@@ -25,6 +25,7 @@ import java.nio.file.StandardCopyOption;
 
 import io.vertx.sqlclient.utils.OperatingSystemUtils;
 import org.junit.rules.ExternalResource;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
@@ -46,10 +47,15 @@ public class ContainerPgRule extends ExternalResource {
   private PgConnectOptions options;
   private String databaseVersion;
   private boolean ssl;
-
+  private boolean domainSocket;
 
   public ContainerPgRule ssl(boolean ssl) {
     this.ssl = ssl;
+    return this;
+  }
+
+  public ContainerPgRule domainSocket(boolean domainSocket) {
+    this.domainSocket = domainSocket;
     return this;
   }
 
@@ -58,6 +64,9 @@ public class ContainerPgRule extends ExternalResource {
   }
 
   private void initServer(String version) throws Exception {
+    if (domainSocket && ssl) {
+      throw new IllegalStateException("Can not use Unix domain socket with TLS at the same time.");
+    }
     File setupFile = getTestResource("resources" + File.separator + "create-postgres.sql");
 
     server = (PostgreSQLContainer) new PostgreSQLContainer("postgres:" + version)
@@ -69,6 +78,9 @@ public class ContainerPgRule extends ExternalResource {
       server.withCopyFileToContainer(MountableFile.forHostPath(getTestResource("resources" +File.separator + "server.crt").toPath()), "/server.crt")
             .withCopyFileToContainer(MountableFile.forHostPath(getTestResource("resources" +File.separator + "server.key").toPath()), "/server.key")
             .withCopyFileToContainer(MountableFile.forHostPath(getTestResource("ssl.sh").toPath()), "/docker-entrypoint-initdb.d/ssl.sh");
+    }
+    if (domainSocket) {
+      server.withFileSystemBind("/var/run/postgresql", "/var/run/postgresql", BindMode.READ_WRITE);
     }
   }
 
@@ -91,12 +103,18 @@ public class ContainerPgRule extends ExternalResource {
     initServer(databaseVersion);
     server.start();
 
-    return new PgConnectOptions()
-        .setPort(server.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT))
-        .setHost(server.getContainerIpAddress())
-        .setDatabase("postgres")
-        .setUser("postgres")
-        .setPassword("postgres");
+    PgConnectOptions pgConnectOptions = new PgConnectOptions()
+      .setPort(server.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT))
+      .setHost(server.getContainerIpAddress())
+      .setDatabase("postgres")
+      .setUser("postgres")
+      .setPassword("postgres");
+
+    if (domainSocket) {
+      pgConnectOptions.setHost("/var/run/postgresql")
+        .setPort(5432);
+    }
+    return pgConnectOptions;
   }
 
 
@@ -177,10 +195,6 @@ public class ContainerPgRule extends ExternalResource {
    */
   private boolean isCommonTestingWithExternalDatabase() {
     return !ssl && isSystemPropertyValid(connectionUri);
-  }
-
-  public static boolean isUnixDomainSocketSupported() {
-    return !(OperatingSystemUtils.isOsX() || OperatingSystemUtils.isWindows());
   }
 
 }

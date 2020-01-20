@@ -16,13 +16,14 @@
  */
 package io.vertx.pgclient;
 
-import io.vertx.pgclient.junit.PgRule;
+import io.vertx.pgclient.junit.ContainerPgRule;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.utils.OperatingSystemUtils;
 import org.junit.*;
 import org.junit.runner.RunWith;
 
@@ -43,19 +44,21 @@ public class UnixDomainSocketTest {
   }
 
   @ClassRule
-  public static PgRule rule = new PgRule().domainSockets(nativeTransportEnabled);
+  public static ContainerPgRule rule = new ContainerPgRule().domainSocket(nativeTransportEnabled);
+
   private PgPool client;
   private PgConnectOptions options;
 
   @Before
   public void before() {
     options = rule.options();
-    if (unixSocketDirectory != null && !unixSocketDirectory.isEmpty()) {
+    if (isExternalDatabaseSocketPathConfigured()) {
       options.setHost(unixSocketDirectory);
     }
-    if (unixSocketPort != null && !unixSocketPort.isEmpty()) {
+    if (isExternalDatabaseSocketPortConfigured()) {
       options.setPort(Integer.parseInt(unixSocketPort));
     }
+    assumeTrue(isUnixDomainSocketSupported());
   }
 
   @After
@@ -105,5 +108,29 @@ public class UnixDomainSocketTest {
       assertFalse(pgConnection.isSSL());
       pgConnection.close();
     }));
+  }
+
+  private static boolean isTestingDomainSocketWithExternalDatabase() {
+    return isExternalDatabaseSocketPathConfigured() || isExternalDatabaseSocketPortConfigured();
+  }
+
+  private static boolean isExternalDatabaseSocketPathConfigured() {
+    return unixSocketDirectory != null && !unixSocketDirectory.isEmpty();
+  }
+
+  private static boolean isExternalDatabaseSocketPortConfigured() {
+    return unixSocketPort != null && !unixSocketPort.isEmpty();
+  }
+
+  private static boolean isUnixDomainSocketSupported() {
+    if (OperatingSystemUtils.isWindows()) {
+      return false;
+    } else if (OperatingSystemUtils.isOsX() && !isTestingDomainSocketWithExternalDatabase()) {
+      // Docker does not support Unix domain socket on Mac OS X
+      // see https://github.com/docker/for-mac/issues/483
+      return false;
+    } else {
+      return true;
+    }
   }
 }
