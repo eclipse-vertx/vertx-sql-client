@@ -41,7 +41,6 @@ public class InitiateSslHandler extends ChannelInboundHandlerAdapter {
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-    cause.printStackTrace();
     if (cause instanceof DecoderException) {
       DecoderException err = (DecoderException) cause;
       cause = err.getCause();

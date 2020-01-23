@@ -202,7 +202,7 @@ public abstract class SocketConnectionBase implements Connection {
     }
   }
 
-  private void handleMessage(Object msg) {
+  public void handleMessage(Object msg) {
     if (msg instanceof CommandResponse) {
       inflight--;
       checkPending();
