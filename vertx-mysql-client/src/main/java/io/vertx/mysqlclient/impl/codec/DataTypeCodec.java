@@ -6,6 +6,7 @@ import io.netty.handler.codec.DecoderException;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.sqlclient.Tuple;
@@ -40,61 +41,61 @@ class DataTypeCodec {
     .appendFraction(MICRO_OF_SECOND, 0, 6, true)
     .toFormatter();
 
-  static Object decodeText(DataType dataType, Charset charset, int columnDefinitionFlags, ByteBuf buffer) {
+  static Object decodeText(DataType dataType, int collationId, int columnDefinitionFlags, ByteBuf buffer) {
     int length = (int) BufferUtils.readLengthEncodedInteger(buffer);
     int index = buffer.readerIndex();
     try {
       switch (dataType) {
         case INT1:
           if (isUnsignedNumeric(columnDefinitionFlags)) {
-            return textDecodeInt2(charset, buffer, index, length);
+            return textDecodeInt2(buffer, index, length);
           } else {
-            return textDecodeInt1(charset, buffer, index, length);
+            return textDecodeInt1(buffer, index, length);
           }
         case YEAR:
-          return textDecodeInt2(charset, buffer, index, length);
+          return textDecodeInt2(buffer, index, length);
         case INT2:
           if (isUnsignedNumeric(columnDefinitionFlags)) {
-            return textDecodeInt4(charset, buffer, index, length);
+            return textDecodeInt4(buffer, index, length);
           } else {
-            return textDecodeInt2(charset, buffer, index, length);
+            return textDecodeInt2(buffer, index, length);
           }
         case INT3:
-          return textDecodeInt4(charset, buffer, index, length);
+          return textDecodeInt4(buffer, index, length);
         case INT4:
           if (isUnsignedNumeric(columnDefinitionFlags)) {
-            return textDecodeInt8(charset, buffer, index, length);
+            return textDecodeInt8(buffer, index, length);
           } else {
-            return textDecodeInt4(charset, buffer, index, length);
+            return textDecodeInt4(buffer, index, length);
           }
         case INT8:
           if (isUnsignedNumeric(columnDefinitionFlags)) {
-            return textDecodeNUMERIC(charset, buffer, index, length);
+            return textDecodeNUMERIC(collationId, buffer, index, length);
           } else {
-            return textDecodeInt8(charset, buffer, index, length);
+            return textDecodeInt8(buffer, index, length);
           }
         case FLOAT:
-          return textDecodeFloat(charset, buffer, index, length);
+          return textDecodeFloat(collationId, buffer, index, length);
         case DOUBLE:
-          return textDecodeDouble(charset, buffer, index, length);
+          return textDecodeDouble(collationId, buffer, index, length);
         case BIT:
-          return textDecodeBit(charset, buffer, index, length);
+          return textDecodeBit(buffer, index, length);
         case NUMERIC:
-          return textDecodeNUMERIC(charset, buffer, index, length);
+          return textDecodeNUMERIC(collationId, buffer, index, length);
         case DATE:
-          return textDecodeDate(charset, buffer, index, length);
+          return textDecodeDate(collationId, buffer, index, length);
         case TIME:
-          return textDecodeTime(charset, buffer, index, length);
+          return textDecodeTime(collationId, buffer, index, length);
         case DATETIME:
         case TIMESTAMP:
-          return textDecodeDateTime(charset, buffer, index, length);
+          return textDecodeDateTime(collationId, buffer, index, length);
         case JSON:
-          return textDecodeJson(charset, buffer, index, length);
+          return textDecodeJson(collationId, buffer, index, length);
         case STRING:
         case VARSTRING:
         case BLOB:
         default:
-          return textDecodeBlobOrText(charset, columnDefinitionFlags, buffer, index, length);
+          return textDecodeBlobOrText(collationId, columnDefinitionFlags, buffer, index, length);
       }
     } finally {
       buffer.readerIndex(index + length);
@@ -163,7 +164,7 @@ class DataTypeCodec {
     }
   }
 
-  static Object decodeBinary(DataType dataType, Charset charset, int columnDefinitionFlags, ByteBuf buffer) {
+  static Object decodeBinary(DataType dataType, int collationId, int columnDefinitionFlags, ByteBuf buffer) {
     switch (dataType) {
       case INT1:
         if (isUnsignedNumeric(columnDefinitionFlags)) {
@@ -204,7 +205,7 @@ class DataTypeCodec {
       case BIT:
         return binaryDecodeBit(buffer);
       case NUMERIC:
-        return binaryDecodeNumeric(charset, buffer);
+        return binaryDecodeNumeric(collationId, buffer);
       case DATE:
         return binaryDecodeDate(buffer);
       case TIME:
@@ -213,12 +214,12 @@ class DataTypeCodec {
       case TIMESTAMP:
         return binaryDecodeDatetime(buffer);
       case JSON:
-        return binaryDecodeJson(charset, buffer);
+        return binaryDecodeJson(collationId, buffer);
       case STRING:
       case VARSTRING:
       case BLOB:
       default:
-        return binaryDecodeBlobOrText(charset, columnDefinitionFlags, buffer);
+        return binaryDecodeBlobOrText(collationId, columnDefinitionFlags, buffer);
     }
   }
 
@@ -473,14 +474,16 @@ class DataTypeCodec {
     return result;
   }
 
-  private static Numeric binaryDecodeNumeric(Charset charset, ByteBuf buffer) {
+  private static Numeric binaryDecodeNumeric(int collationId, ByteBuf buffer) {
+    Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);
     return Numeric.parse(BufferUtils.readLengthEncodedString(buffer, charset));
   }
 
-  private static Object binaryDecodeBlobOrText(Charset charset, int columnDefinitionFlags, ByteBuf buffer) {
-    if (isBinaryField(columnDefinitionFlags)) {
+  private static Object binaryDecodeBlobOrText(int collationId, int columnDefinitionFlags, ByteBuf buffer) {
+    if (collationId == MySQLCollation.binary.collationId()) {
       return binaryDecodeBlob(buffer);
     } else {
+      Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);
       return binaryDecodeText(charset, buffer);
     }
   }
@@ -562,54 +565,58 @@ class DataTypeCodec {
     }
   }
 
-  private static Object binaryDecodeJson(Charset charset, ByteBuf buffer) {
+  private static Object binaryDecodeJson(int collationId, ByteBuf buffer) {
     int length = (int) BufferUtils.readLengthEncodedInteger(buffer);
-    Object result = textDecodeJson(charset, buffer, buffer.readerIndex(), length);
+    Object result = textDecodeJson(collationId, buffer, buffer.readerIndex(), length);
     buffer.skipBytes(length);
     return result;
   }
 
-  private static Byte textDecodeInt1(Charset charset, ByteBuf buffer, int index, int length) {
+  private static Byte textDecodeInt1(ByteBuf buffer, int index, int length) {
     return (byte) CommonCodec.decodeDecStringToLong(index, length, buffer);
   }
 
-  private static Short textDecodeInt2(Charset charset, ByteBuf buffer, int index, int length) {
+  private static Short textDecodeInt2(ByteBuf buffer, int index, int length) {
     return (short) CommonCodec.decodeDecStringToLong(index, length, buffer);
   }
 
-  private static Integer textDecodeInt3(Charset charset, ByteBuf buffer, int index, int length) {
+  private static Integer textDecodeInt3(ByteBuf buffer, int index, int length) {
     return (int) CommonCodec.decodeDecStringToLong(index, length, buffer);
   }
 
-  private static Integer textDecodeInt4(Charset charset, ByteBuf buffer, int index, int length) {
+  private static Integer textDecodeInt4(ByteBuf buffer, int index, int length) {
     return (int) CommonCodec.decodeDecStringToLong(index, length, buffer);
   }
 
-  private static Long textDecodeInt8(Charset charset, ByteBuf buffer, int index, int length) {
+  private static Long textDecodeInt8(ByteBuf buffer, int index, int length) {
     return CommonCodec.decodeDecStringToLong(index, length, buffer);
   }
 
-  private static Float textDecodeFloat(Charset charset, ByteBuf buffer, int index, int length) {
+  private static Float textDecodeFloat(int collationId, ByteBuf buffer, int index, int length) {
+    Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);
     return Float.parseFloat(buffer.toString(index, length, charset));
   }
 
-  private static Double textDecodeDouble(Charset charset, ByteBuf buffer, int index, int length) {
+  private static Double textDecodeDouble(int collationId, ByteBuf buffer, int index, int length) {
+    Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);
     return Double.parseDouble(buffer.toString(index, length, charset));
   }
 
-  private static Long textDecodeBit(Charset charset, ByteBuf buffer, int index, int length) {
+  private static Long textDecodeBit(ByteBuf buffer, int index, int length) {
     return decodeBit(buffer, index, length);
   }
 
-  private static Number textDecodeNUMERIC(Charset charset, ByteBuf buff, int index, int length) {
+  private static Number textDecodeNUMERIC(int collationId, ByteBuf buff, int index, int length) {
+    Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);
     return Numeric.parse(buff.toString(index, length, charset));
   }
 
-  private static Object textDecodeBlobOrText(Charset charset, int columnDefinitionFlags,
+  private static Object textDecodeBlobOrText(int collationId, int columnDefinitionFlags,
     ByteBuf buffer, int index, int length) {
-    if (isBinaryField(columnDefinitionFlags)) {
+    if (collationId == MySQLCollation.binary.collationId()) {
       return textDecodeBlob(buffer, index, length);
     } else {
+      Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);
       return textDecodeText(charset, buffer, index, length);
     }
   }
@@ -624,13 +631,15 @@ class DataTypeCodec {
     return buffer.toString(index, length, charset);
   }
 
-  private static LocalDate textDecodeDate(Charset charset, ByteBuf buffer, int index, int length) {
+  private static LocalDate textDecodeDate(int collationId, ByteBuf buffer, int index, int length) {
+    Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);
     CharSequence cs = buffer.toString(index, length, charset);
     return LocalDate.parse(cs);
   }
 
-  private static Duration textDecodeTime(Charset charset, ByteBuf buffer, int index, int length) {
+  private static Duration textDecodeTime(int collationId, ByteBuf buffer, int index, int length) {
     // HH:mm:ss or HHH:mm:ss
+    Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);
     String timeString = buffer.toString(index, length, charset);
     boolean isNegative = timeString.charAt(0) == '-';
     if (isNegative) {
@@ -657,7 +666,8 @@ class DataTypeCodec {
     }
   }
 
-  private static LocalDateTime textDecodeDateTime(Charset charset, ByteBuf buffer, int index, int length) {
+  private static LocalDateTime textDecodeDateTime(int collationId, ByteBuf buffer, int index, int length) {
+    Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);
     CharSequence cs = buffer.toString(index, length, charset);
     if (cs.equals("0000-00-00 00:00:00")) {
       // Invalid datetime will be converted to zero
@@ -666,7 +676,8 @@ class DataTypeCodec {
     return LocalDateTime.parse(cs, DATETIME_FORMAT);
   }
 
-  private static Object textDecodeJson(Charset charset, ByteBuf buffer, int index, int length) {
+  private static Object textDecodeJson(int collationId, ByteBuf buffer, int index, int length) {
+    Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);
     // Try to do without the intermediary String (?)
     CharSequence cs = buffer.getCharSequence(index, length, charset);
     Object value = null;
@@ -692,10 +703,6 @@ class DataTypeCodec {
       return null;
     }
     return value;
-  }
-
-  private static boolean isBinaryField(int columnDefinitionFlags) {
-    return (columnDefinitionFlags & ColumnDefinition.ColumnDefinitionFlags.BINARY_FLAG) != 0;
   }
 
   private static boolean isUnsignedNumeric(int columnDefinitionFlags) {

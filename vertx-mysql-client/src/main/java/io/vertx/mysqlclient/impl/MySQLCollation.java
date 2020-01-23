@@ -6,6 +6,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -293,7 +294,7 @@ public enum MySQLCollation {
         Charset charset = Charset.forName(collation.mappedJavaCharsetName);
         idToJavaCharsetMapping.put(collation.collationId, charset);
       } catch (Exception e) {
-        LOGGER.warn("Java charset: [" + collation.mysqlCharsetName + "] is not supported by this platform.");
+        LOGGER.warn(String.format("Java charset: [%s] is not supported by this platform, data with collation[%s] will be decoded in UTF-8 instead.", collation.mysqlCharsetName, collation.name()));
       }
     }
   }
@@ -325,7 +326,7 @@ public enum MySQLCollation {
   public static Charset getJavaCharsetByCollationId(int collationId) {
     Charset charset = idToJavaCharsetMapping.get(collationId);
     if (charset == null) {
-      throw new UnsupportedOperationException("Collation of Id [" + collationId + "] is unknown to this client");
+      return StandardCharsets.UTF_8;
     } else {
       return charset;
     }
