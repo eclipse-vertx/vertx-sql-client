@@ -20,6 +20,7 @@ import java.nio.file.Paths;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.Types;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
@@ -28,9 +29,11 @@ import java.util.concurrent.TimeUnit;
 import io.vertx.core.AsyncResult;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Pool;
+import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Tuple;
 
 /**
@@ -51,11 +54,28 @@ public class DB2ClientExamples {
     
     public static void runJDBC() throws Exception {
         try (Connection con = DriverManager.getConnection("jdbc:db2://" + HOST + ":" + PORT + "/" + DB_NAME, DB_USER, DB_PASS)) {
-            runInitSql(con);
+//            runInitSql(con);
+//            
+//            // Insert lots of data to immutable table
+//            for (int i = 13; i < 100; i++)
+//                con.createStatement().execute("INSERT INTO immutable (id, message) VALUES (" + i + ", 'Sample data " + i + "')");
             
-            // Insert lots of data to immutable table
-            for (int i = 13; i < 100; i++)
-                con.createStatement().execute("INSERT INTO immutable (id, message) VALUES (" + i + ", 'Sample data " + i + "')");
+            PreparedStatement ps = con.prepareStatement("SELECT * FROM immutable WHERE id=?");
+            ps.setInt(1, 5);
+            ps.executeQuery();
+            
+            ps.setInt(1, 6);
+            ps.executeQuery();
+            
+            ps.setInt(1, 7);
+            ps.executeQuery();
+            
+            ps = con.prepareStatement("SELECT message FROM immutable WHERE id=?");
+            ps.setInt(1, 8);
+            ps.executeQuery();
+            
+            ps.setInt(1, 9);
+            ps.executeQuery();
             
 //            getDB2Message(con, -804, "01", "07002", -2146303980, 20, 0, 0, -1550, 0);
             
@@ -90,31 +110,6 @@ public class DB2ClientExamples {
 //            }
 //        });
         
-        final int NUM_QUERIES = 1;
-        long allStart = System.currentTimeMillis();
-        CountDownLatch latch = new CountDownLatch(NUM_QUERIES);
-        
-        for (int i = 0; i < NUM_QUERIES; i++) {
-            final int queryNum = i + 1;
-            long queryStart = System.currentTimeMillis();
-            client.query("SELECT id, message from immutable WHERE id=" + queryNum, ar -> {
-                latch.countDown();
-                if (!ar.succeeded()) {
-                    System.out.println("QUERY " + queryNum + " FAILED");
-                    ar.cause().printStackTrace();
-                } else {
-                    System.out.println("Query " + queryNum + " complete in " + (System.currentTimeMillis() - queryStart) + "ms");
-                }
-//                dumpResults(ar);
-            });
-        }
-        
-        if (!latch.await(15, TimeUnit.SECONDS)) {
-            System.out.println("Queries timed out.");
-        } else {
-            System.out.println("All queries complete in " + (System.currentTimeMillis() - allStart) + "ms");
-        }
-        
 //        client.getConnection(connResult -> {
 //        	final SqlConnection conn = connResult.result(); 
 //        	conn.preparedQuery("INSERT INTO mutable (id, val) VALUES (2, 'Whatever')", insert -> {
@@ -129,6 +124,7 @@ public class DB2ClientExamples {
 //        	});
 //        });
         
+//        // Tests incremental data fetching
 //        client.getConnection(connResult -> {
 //        	final SqlConnection conn = connResult.result(); 
 //        	conn.prepare("SELECT * FROM immutable WHERE id=? OR id=? OR id=? OR id=? OR id=? OR id=?", select -> {
@@ -138,10 +134,14 @@ public class DB2ClientExamples {
 //        			System.out.println("@AGG inside query read");
 //        			System.out.println("  size=" + result.result().size()); // 4
 //        			System.out.println("  hasMore=" + query.hasMore()); // true
+//        			for (Row r : result.result())
+//        			    System.out.println("Got row: " + r.getInteger(0) + "  " + r.getString(1));
 //        			query.read(4, moreResults -> {
 //        				System.out.println("@AGG second read");
 //        				System.out.println("  size=" + moreResults.result().size());
 //        				System.out.println("  hasMore=" + query.hasMore());
+//        				for (Row r : moreResults.result())
+//        				    System.out.println("Got row: " + r.getInteger(0) + "  " + r.getString(1));
 //        				conn.close();
 //        			});
 //        		});
@@ -165,10 +165,10 @@ public class DB2ClientExamples {
 //            });
 //        });
         
-//        client.preparedQuery("SELECT id, message FROM immutable WHERE", ar -> {
-//            System.out.println("@AGG inside PS lambda");
-//            dumpResults(ar);
-//        });
+        client.preparedQuery("SELECT id, message FROM immutable", ar -> {
+            System.out.println("@AGG inside PS lambda");
+            dumpResults(ar);
+        });
         
 //        client.preparedQuery("SELECT id, message FROM immutable WHERE id=? OR id=?", Tuple.of(1, 2), ar -> {
 //            System.out.println("@AGG inside PS lambda");
@@ -184,6 +184,32 @@ public class DB2ClientExamples {
         client.close();
         waitFor(500);
         System.out.println("Done");
+    }
+    
+    private static void stressTest(int NUM_QUERIES, DB2Pool client) throws Exception {
+        long allStart = System.currentTimeMillis();
+        CountDownLatch latch = new CountDownLatch(NUM_QUERIES);
+        
+        for (int i = 0; i < NUM_QUERIES; i++) {
+            final int queryNum = i + 1;
+            long queryStart = System.currentTimeMillis();
+            client.query("SELECT id, message from immutable WHERE id=" + queryNum, ar -> {
+                latch.countDown();
+                if (!ar.succeeded()) {
+                    System.out.println("QUERY " + queryNum + " FAILED");
+                    ar.cause().printStackTrace();
+                } else {
+                    System.out.println("Query " + queryNum + " complete in " + (System.currentTimeMillis() - queryStart) + "ms");
+                }
+//                dumpResults(ar);
+            });
+        }
+        
+        if (!latch.await(15, TimeUnit.SECONDS)) {
+            System.out.println("Queries timed out.");
+        } else {
+            System.out.println("All queries complete in " + (System.currentTimeMillis() - allStart) + "ms");
+        }
     }
     
     private static void waitFor(int ms) {

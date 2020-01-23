@@ -13,7 +13,9 @@ class CloseStatementCommandCodec extends CommandCodec<Void, CloseStatementComman
   @Override
   void encode(DB2Encoder encoder) {
     DB2PreparedStatement statement = (DB2PreparedStatement) cmd.statement();
-    statement.section.release();
+    statement.close();
+    // Currently all cursors are implicitly closed when complete on the server side
+    // TODO: Flow closes for all remaining cursor that may not have been completed
     completionHandler.handle(CommandResponse.success(null));
   }
 

@@ -872,6 +872,94 @@ public class DRDAConnectResponse extends DRDAResponse {
         // }
     }
     
+    // Command Not Supported Reply Message indicates that the specified
+    // command is not recognized or not supported for the
+    // specified target.  The reply message can be returned
+    // only in accordance with the architected rules for DDM subsetting.
+    // PROTOCOL architects an SQLSTATE of 58014.
+    //
+    // Messages
+    // SQLSTATE : 58014
+    //     The DDM command is not supported.
+    //     SQLCODE : -30070
+    //      <command-identifier> Command is not supported.
+    //     The current transaction is rolled back and the application is
+    //     disconnected from the remote database. The statement cannot be processed.
+    //
+    //
+    // Returned from Server:
+    // SVRCOD - required  (4 - WARNING, 8 - ERROR) (MINLVL 2)
+    // CODPNT - required
+    // RDBNAM - optional (MINLVL 3)
+    //
+    void parseCMDNSPRM() {
+        boolean svrcodReceived = false;
+        int svrcod = CodePoint.SVRCOD_INFO;
+        boolean rdbnamReceived = false;
+        String rdbnam = null;
+        boolean codpntReceived = false;
+        int codpnt = 0;
+
+        parseLengthAndMatchCodePoint(CodePoint.CMDNSPRM);
+        pushLengthOnCollectionStack();
+        int peekCP = peekCodePoint();
+
+        while (peekCP != END_OF_COLLECTION) {
+
+            boolean foundInPass = false;
+
+            if (peekCP == CodePoint.SVRCOD) {
+                foundInPass = true;
+                svrcodReceived = checkAndGetReceivedFlag(svrcodReceived);
+                svrcod = parseSVRCOD(CodePoint.SVRCOD_WARNING, CodePoint.SVRCOD_ERROR);
+                peekCP = peekCodePoint();
+            }
+
+            if (peekCP == CodePoint.RDBNAM) {
+                foundInPass = true;
+                rdbnamReceived = checkAndGetReceivedFlag(rdbnamReceived);
+                rdbnam = parseRDBNAM(true);
+                peekCP = peekCodePoint();
+            }
+
+            if (peekCP == CodePoint.CODPNT) {
+                foundInPass = true;
+                codpntReceived = checkAndGetReceivedFlag(codpntReceived);
+                codpnt = parseCODPNT();
+                peekCP = peekCodePoint();
+            }
+
+            if (!foundInPass) {
+                throwUnknownCodepoint(peekCP);
+            }
+
+        }
+        popCollectionStack();
+        if (!svrcodReceived)
+            throwMissingRequiredCodepoint("SVRCOD", CodePoint.SVRCOD);
+        if (!codpntReceived)
+            throwMissingRequiredCodepoint("CODPNT", CodePoint.CODPNT);
+
+//        netAgent_.setSvrcod(svrcod);
+//        agent_.accumulateChainBreakingReadExceptionAndThrow(new DisconnectException(agent_,
+//            new ClientMessageId(SQLState.DRDA_DDM_COMMAND_NOT_SUPPORTED),
+//                Integer.toHexString(codpnt)));
+        throw new IllegalStateException("DRDA_DDM_COMMAND_NOT_SUPPORTED: " + Integer.toHexString(codpnt));
+    }
+    
+    // The Code Point Data specifies a scalar value that is an architected code point.
+    private int parseCODPNT() {
+        parseLengthAndMatchCodePoint(CodePoint.CODPNT);
+        return parseCODPNTDR();
+    }
+    
+    // Code Point Data Representation specifies the data representation
+    // of a dictionary codepoint.  Code points are hexadecimal aliases for DDM
+    // named terms.
+    private int parseCODPNTDR() {
+        return readUnsignedShort();
+    }
+    
     // The Server Attributes Reply Data (EXCSATRD) returns the following
     // information in response to an EXCSAT command:
     // - the target server's class name

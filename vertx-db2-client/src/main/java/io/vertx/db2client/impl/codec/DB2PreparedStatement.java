@@ -15,7 +15,12 @@
  */
 package io.vertx.db2client.impl.codec;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import io.vertx.db2client.impl.drda.Cursor;
 import io.vertx.db2client.impl.drda.Section;
+import io.vertx.db2client.impl.drda.SectionManager;
 import io.vertx.sqlclient.impl.ParamDesc;
 import io.vertx.sqlclient.impl.PreparedStatement;
 import io.vertx.sqlclient.impl.RowDesc;
@@ -27,6 +32,17 @@ class DB2PreparedStatement implements PreparedStatement {
     final DB2ParamDesc paramDesc;
     final DB2RowDesc rowDesc;
     final Section section;
+    
+    private final Map<String,QueryInstance> activeQueries = new HashMap<>(4);
+    
+    public static class QueryInstance {
+        final String cursorId;
+        long queryInstanceId;
+        Cursor cursor;
+        QueryInstance(String cursorId) {
+            this.cursorId = cursorId;
+        }
+    }
 
     DB2PreparedStatement(String sql, DB2ParamDesc paramDesc, DB2RowDesc rowDesc, Section section) {
         this.paramDesc = paramDesc;
@@ -53,5 +69,22 @@ class DB2PreparedStatement implements PreparedStatement {
     @Override
     public String prepare(TupleInternal values) {
         return paramDesc.prepare(values);
+    }
+    
+    QueryInstance getQueryInstance(String cursorId) {
+        cursorId = cursorId == null ? "NULLID" : cursorId;
+        return activeQueries.computeIfAbsent(cursorId, c -> {
+            System.out.println("@AGG creating new queryInstance with id=" + c);
+            return new QueryInstance(c);
+        });
+    }
+    
+    void closeQuery(QueryInstance query) {
+        activeQueries.remove(query.cursorId);
+    }
+    
+    void close() {
+        activeQueries.values().stream().forEach(this::closeQuery);
+        section.release();
     }
 }

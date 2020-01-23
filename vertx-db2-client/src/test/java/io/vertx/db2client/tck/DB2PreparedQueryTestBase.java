@@ -5,7 +5,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import io.vertx.db2client.junit.DB2Resource;
+import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.sqlclient.Cursor;
+import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.tck.PreparedQueryTestBase;
 
 public abstract class DB2PreparedQueryTestBase extends PreparedQueryTestBase {
@@ -59,9 +62,28 @@ public abstract class DB2PreparedQueryTestBase extends PreparedQueryTestBase {
 	// these tests just issue the prepared query and don't begin a procedure
 
 	@Test
-	@Ignore // TODO: Enable this test after implementing incremental cursor fetch
+	//@Ignore // TODO: Enable this test after implementing incremental cursor fetch
 	@Override
 	public void testQueryCursor(TestContext ctx) {
+	    Async async = ctx.async();
+	    connector.connect(ctx.asyncAssertSuccess(conn -> {
+//	      conn.query("BEGIN", ctx.asyncAssertSuccess(begin -> {
+	        conn.prepare(statement("SELECT * FROM immutable WHERE id="," OR id=", " OR id=", " OR id=", " OR id=", " OR id=",""), ctx.asyncAssertSuccess(ps -> {
+	          Cursor query = ps.cursor(Tuple.of(1, 8, 4, 11, 2, 9));
+	          query.read(4, ctx.asyncAssertSuccess(result -> {
+	            ctx.assertNotNull(result.columnsNames());
+	            ctx.assertEquals(4, result.size());
+	            ctx.assertTrue(query.hasMore());
+	            query.read(4, ctx.asyncAssertSuccess(result2 -> {
+	              ctx.assertNotNull(result.columnsNames());
+	              ctx.assertEquals(4, result.size());
+	              ctx.assertFalse(query.hasMore());
+	              async.complete();
+	            }));
+	          }));
+	        }));
+//	      }));
+	    }));
 	}
 
 	@Test
