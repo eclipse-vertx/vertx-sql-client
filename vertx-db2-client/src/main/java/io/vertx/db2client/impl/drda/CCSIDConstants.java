@@ -16,15 +16,16 @@
 package io.vertx.db2client.impl.drda;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
-public class CCSIDManager {
+public class CCSIDConstants {
     
     public static final int CCSID_EBCDIC = 500; // 0x01F4
     public static final int CCSID_UTF8 = 1208; // 0x04B8
     public static final int TARGET_UNICODE_MGR = CCSID_UTF8;
     
     public static final Charset EBCDIC = Charset.forName("CP1047");
-    public static final Charset UTF8 = Charset.forName("UTF-8");
+    public static final Charset UTF8 = StandardCharsets.UTF_8;
     
     private static Charset currentCCSID = EBCDIC;
     
@@ -32,6 +33,6 @@ public class CCSIDManager {
         return currentCCSID;
     }
     
-    private CCSIDManager() {}
+    private CCSIDConstants() {}
     
 }

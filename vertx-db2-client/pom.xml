@@ -59,19 +59,17 @@
       <artifactId>vertx-sql-client</artifactId>
     </dependency>
     
-    <!-- Temp dependency for cross-checking w/ JDBC -->
-    <dependency>
-        <groupId>com.ibm.db2</groupId>
-        <artifactId>jcc</artifactId>
-        <version>11.1.4.4</version>
-    </dependency>
-
     <!-- Testing purposes -->
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>db2</artifactId>
       <version>${testcontainers.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>com.ibm.db2</groupId>
+        <artifactId>jcc</artifactId>
+        <version>11.1.4.4</version>
     </dependency>
     <dependency>
 	    <groupId>org.slf4j</groupId>

@@ -364,7 +364,7 @@ public abstract class DRDARequest {
 
         // pad if we don't reach the byteMinLength limit
         if (stringByteLength < byteMinLength) {
-            padBytes(CCSIDManager.getCCSID().encode(" ").get(), byteMinLength - stringByteLength);
+            padBytes(CCSIDConstants.getCCSID().encode(" ").get(), byteMinLength - stringByteLength);
             stringByteLength = byteMinLength;
         }
 
@@ -439,7 +439,7 @@ public abstract class DRDARequest {
      */
     private int encodeString(String string) {
         int startPos = buffer.writerIndex();
-        buffer.writeCharSequence(string, CCSIDManager.getCCSID());
+        buffer.writeCharSequence(string, CCSIDConstants.getCCSID());
         return buffer.writerIndex() - startPos;
     }
     

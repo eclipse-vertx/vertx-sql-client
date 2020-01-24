@@ -343,7 +343,7 @@ public class DRDAConnectResponse extends DRDAResponse {
 //                       completeInitialPiggyBackIsolation(readUnsignedByte());
                    break;
                case CodePoint.PBSD_SCHEMA:
-                   String pbSchema = readString(getDdmLength(), CCSIDManager.UTF8);
+                   String pbSchema = readString(getDdmLength(), CCSIDConstants.UTF8);
 //                   netAgent_.netConnection_.
 //                       completeInitialPiggyBackSchema
 //                           (readString(getDdmLength(), Typdef.UTF8ENCODING));

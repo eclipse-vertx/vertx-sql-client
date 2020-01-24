@@ -15,11 +15,9 @@
  */
 package io.vertx.db2client.impl.codec;
 
-import java.sql.SQLException;
-
 import io.netty.buffer.ByteBuf;
 import io.vertx.db2client.impl.command.InitialHandshakeCommand;
-import io.vertx.db2client.impl.drda.CCSIDManager;
+import io.vertx.db2client.impl.drda.CCSIDConstants;
 import io.vertx.db2client.impl.drda.DRDAConnectRequest;
 import io.vertx.db2client.impl.drda.DRDAConnectResponse;
 import io.vertx.db2client.impl.drda.DRDAConnectResponse.RDBAccessData;
@@ -55,8 +53,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     @Override
     void decodePayload(ByteBuf payload, int payloadLength) {
         DRDAConnectResponse response = new DRDAConnectResponse(payload);
-        try {
-            switch (status) {
+        switch (status) {
             case ST_CONNECTING:
                 response.readExchangeServerAttributes();
                 response.readAccessSecurity(TARGET_SECURITY_MEASURE);
@@ -89,10 +86,6 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
                 return;
             default: 
                 throw new IllegalStateException("Unknown state: " + status);
-            }
-        } catch (Throwable t) {
-            t.printStackTrace();
-            completionHandler.handle(CommandResponse.failure(t));
         }
     }
     
@@ -100,24 +93,20 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
         ByteBuf packet = allocateBuffer();
         int packetStartIdx = packet.writerIndex();
         DRDAConnectRequest cmd = new DRDAConnectRequest(packet);
-        try {
-            cmd.buildEXCSAT(DRDAConstants.EXTNAM, // externalName,
-                    0x07, // 0x0A, // targetAgent,
-                    DRDAConstants.TARGET_SQL_AM, // targetSqlam,
-                    0x0C, // targetRdb,
-                    TARGET_SECURITY_MEASURE, //targetSecmgr,
-                    0, // targetCmntcpip,
-                    0, // targetCmnappc, (not used)
-                    0, // targetXamgr,
-                    0, // targetSyncptmgr,
-                    0, // targetRsyncmgr,
-                    CCSIDManager.TARGET_UNICODE_MGR // targetUnicodemgr
-            );
-            cmd.buildACCSEC(TARGET_SECURITY_MEASURE, this.cmd.database(), null);
-            cmd.completeCommand();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        cmd.buildEXCSAT(DRDAConstants.EXTNAM, // externalName,
+                0x07, // 0x0A, // targetAgent,
+                DRDAConstants.TARGET_SQL_AM, // targetSqlam,
+                0x0C, // targetRdb,
+                TARGET_SECURITY_MEASURE, //targetSecmgr,
+                0, // targetCmntcpip,
+                0, // targetCmnappc, (not used)
+                0, // targetXamgr,
+                0, // targetSyncptmgr,
+                0, // targetRsyncmgr,
+                CCSIDConstants.TARGET_UNICODE_MGR // targetUnicodemgr
+        );
+        cmd.buildACCSEC(TARGET_SECURITY_MEASURE, this.cmd.database(), null);
+        cmd.completeCommand();
 
         int lenOfPayload = packet.writerIndex() - packetStartIdx;
         sendPacket(packet, lenOfPayload);

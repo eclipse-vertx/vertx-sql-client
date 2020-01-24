@@ -19,6 +19,7 @@ import java.util.ArrayDeque;
 import java.util.List;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.vertx.core.impl.logging.Logger;
@@ -62,7 +63,6 @@ class DB2Decoder extends ByteToMessageDecoder {
                 dssContinues = false;
             short dssLen = in.getShort(index);
             index += dssLen;
-//                System.out.println("  DSS=" + dssLen + " total=" + index);
         }
         return index;
     }
@@ -76,11 +76,13 @@ class DB2Decoder extends ByteToMessageDecoder {
         } catch (Throwable t) {
             int i = payload.readerIndex();
             payload.readerIndex(startIndex);
-            LOG.error("FATAL: Error parsing buffer at index " + i + " / 0x" + Integer.toHexString(i) + "\n" + 
-                    DB2Codec.dumpBuffer(payload, payloadLength, i), t);
+            StringBuilder sb = new StringBuilder("FATAL: Error parsing buffer at index " + i + " / 0x" + Integer.toHexString(i) + "\n");
+            ByteBufUtil.appendPrettyHexDump(sb, payload);
+            LOG.error(sb.toString(), t);
             ctx.completionHandler.handle(CommandResponse.failure(t));
+        } finally {
+            payload.clear();
+            payload.release();
         }
-        payload.clear();
-        payload.release();
     }
 }

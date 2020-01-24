@@ -386,7 +386,7 @@ public abstract class DRDAResponse {
     // SQLDCXGRP; PROTOCOL TYPE N-GDA; ENVLID 0xD3; Length Override 1
     private int parseSQLDCGRP(NetSqlca[] rowsetSqlca, int lastRow) {
         int sqldcCode = readFastInt(); // SQLCODE
-        String sqldcState = readFastString(5, CCSIDManager.UTF8); // SQLSTATE
+        String sqldcState = readFastString(5, CCSIDConstants.UTF8); // SQLSTATE
         int sqldcReason = readFastInt();  // REASON_CODE
         int sqldcLinen = readFastInt(); // LINE_NUMBER
         int sqldcRown = (int) readFastLong(); // ROW_NUMBER
@@ -971,7 +971,7 @@ public abstract class DRDAResponse {
         int len = ddmScalarLen_;
         ensureBLayerDataInBuffer(len);
         adjustLengths(len);
-        String result = buffer.readCharSequence(len, CCSIDManager.getCCSID()).toString();
+        String result = buffer.readCharSequence(len, CCSIDConstants.getCCSID()).toString();
 //        String result = currentCCSID.decode(buffer); 
 //                netAgent_.getCurrentCcsidManager()
 //                            .convertToJavaString(buffer_, pos_, len);
@@ -1381,7 +1381,7 @@ public abstract class DRDAResponse {
     }
 
     final String readFastString(int length) {
-        String result = buffer.readCharSequence(length, CCSIDManager.getCCSID()).toString();
+        String result = buffer.readCharSequence(length, CCSIDConstants.getCCSID()).toString();
 //                            .convertToJavaString(buffer_, pos_, length);
         //pos_ += length;
         return result;

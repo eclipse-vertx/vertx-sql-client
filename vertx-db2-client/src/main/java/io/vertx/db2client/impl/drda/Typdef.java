@@ -966,7 +966,7 @@ public class Typdef implements Cloneable {
     // analyze exception handling some more here
     Charset getCcsidSbcEncoding() {
         if (ccsidSbcEncoding_ == null) {
-            ccsidSbcEncoding_ = CCSIDManager.UTF8;
+            ccsidSbcEncoding_ = CCSIDConstants.UTF8;
         }
         return ccsidSbcEncoding_;
     }
@@ -988,7 +988,7 @@ public class Typdef implements Cloneable {
     // analyze exception handling some more here
     private Charset getCcsidDbcEncoding() {
         if (ccsidDbcEncoding_ == null) {
-            ccsidDbcEncoding_ = CCSIDManager.UTF8;
+            ccsidDbcEncoding_ = CCSIDConstants.UTF8;
         }
         return ccsidDbcEncoding_;
     }
@@ -1010,7 +1010,7 @@ public class Typdef implements Cloneable {
     // analyze exception handling some more here
     Charset getCcsidMbcEncoding() {
         if (ccsidMbcEncoding_ == null) {
-            ccsidMbcEncoding_ = CCSIDManager.UTF8;
+            ccsidMbcEncoding_ = CCSIDConstants.UTF8;
         }
         return ccsidMbcEncoding_;
     }
@@ -1083,7 +1083,7 @@ public class Typdef implements Cloneable {
             // otherwise the sda.ccsid_ is a placeholder:
             //  CCSIDMBC, CCSIDDDBC, CCSIDSBC to indicate that
             // the actual ccsid is the connection's ccsid (in protocol lingo the connection's typdef ccsid).
-            netCursor.charset_[columnIndex] = CCSIDManager.UTF8;
+            netCursor.charset_[columnIndex] = CCSIDConstants.UTF8;
             netCursor.ccsid_[columnIndex] = sda.ccsid_;
             break;
         }

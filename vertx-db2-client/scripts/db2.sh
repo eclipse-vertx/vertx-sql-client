@@ -8,6 +8,8 @@ echo ""
 echo "### DB will be usable when you see the following message ###"
 echo "    (*) Setup has completed."
 echo ""
+echo "Press Ctrl+C to exit when you are finished"
+echo ""
 docker run --ulimit memlock=-1:-1 -it --rm=true --memory-swappiness=0 \
   --name db2-vertx \
   -e DBNAME=vertx_db \

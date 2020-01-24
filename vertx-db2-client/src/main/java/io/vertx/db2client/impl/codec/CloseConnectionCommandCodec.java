@@ -36,30 +36,21 @@ class CloseConnectionCommandCodec extends CommandCodec<Void, CloseConnectionComm
     if (LOG.isDebugEnabled())
     	LOG.debug("encode close");
     // TODO: @AGG should we also close statements/queries here?
-    try {
-        ByteBuf packet = allocateBuffer();
-        DRDAQueryRequest closeCursor = new DRDAQueryRequest(packet);
-        // TODO: @AGG track open cursors somehow so they can be closed here
-        //closeCursor.buildCLSQRY(SectionManager.INSTANCE.getDynamicSection(), encoder.socketConnection.database(), 1); // @AGG guessing 1 on queryInstanceId
-        closeCursor.buildRDBCMM();
-        closeCursor.completeCommand();
-        sendNonSplitPacket(packet);
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
+    ByteBuf packet = allocateBuffer();
+    DRDAQueryRequest closeCursor = new DRDAQueryRequest(packet);
+    // TODO: @AGG track open cursors somehow so they can be closed here
+    //closeCursor.buildCLSQRY(SectionManager.INSTANCE.getDynamicSection(), encoder.socketConnection.database(), 1); // @AGG guessing 1 on queryInstanceId
+    closeCursor.buildRDBCMM();
+    closeCursor.completeCommand();
+    sendNonSplitPacket(packet);
   }
 
   @Override
   void decodePayload(ByteBuf payload, int payloadLength) {
 	  if (LOG.isDebugEnabled())
 		  LOG.debug("disconnect reply");
-      try {
-          DRDAQueryResponse closeCursor = new DRDAQueryResponse(payload);
-          //closeCursor.readCursorClose();
-          closeCursor.readLocalCommit();
-      } catch (Exception e) {
-          payload.clear();
-          e.printStackTrace();
-      }
+      DRDAQueryResponse closeCursor = new DRDAQueryResponse(payload);
+      //closeCursor.readCursorClose();
+      closeCursor.readLocalCommit();
   }
 }

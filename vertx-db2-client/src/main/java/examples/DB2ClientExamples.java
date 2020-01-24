@@ -40,7 +40,6 @@ import io.vertx.sqlclient.Tuple;
 public class DB2ClientExamples {
 	
 	static final String HOST = "localhost";
-//	static final String HOST = "192.168.1.22";
 	static final int PORT = 50000;
 	static final String DB_NAME = "vertx_db";
 	static final String DB_USER = "db2user";

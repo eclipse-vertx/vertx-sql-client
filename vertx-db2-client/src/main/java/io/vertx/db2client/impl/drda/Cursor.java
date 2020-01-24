@@ -164,11 +164,10 @@ public class Cursor {
     Cursor() {
     }
 
-    Cursor(int qryprctyp)  //protocolType, CodePoint.FIXROWPRC | CodePoint.LMTBLKPRC
-    {
-        if (qryprctyp == CodePoint.FIXROWPRC) {
+    Cursor(int queryProtocolType) {
+        if (queryProtocolType == CodePoint.FIXROWPRC) {
             blocking_ = false;
-        } else if (qryprctyp == CodePoint.LMTBLKPRC) {
+        } else if (queryProtocolType == CodePoint.LMTBLKPRC) {
             blocking_ = true;
         }
     }

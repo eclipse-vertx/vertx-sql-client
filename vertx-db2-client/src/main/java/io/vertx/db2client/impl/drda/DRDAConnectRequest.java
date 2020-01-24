@@ -18,7 +18,6 @@ package io.vertx.db2client.impl.drda;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.sql.SQLException;
 import java.util.Objects;
 
 import io.netty.buffer.ByteBuf;
@@ -85,11 +84,11 @@ public class DRDAConnectRequest extends DRDARequest {
         // data type to the data representation mapping definitions.  This can
         // contain 3 CCSIDs.  The driver will only send the ones which were set.
         buildTYPDEFOVR(true,
-                CCSIDManager.TARGET_UNICODE_MGR,
+                CCSIDConstants.TARGET_UNICODE_MGR,
                 true,
-                CCSIDManager.TARGET_UNICODE_MGR,
+                CCSIDConstants.TARGET_UNICODE_MGR,
                 true,
-                CCSIDManager.TARGET_UNICODE_MGR);
+                CCSIDConstants.TARGET_UNICODE_MGR);
 
         // RDB allow update is an optional parameter which indicates
         // whether the RDB allows the requester to perform update operations
@@ -113,15 +112,15 @@ public class DRDAConnectRequest extends DRDARequest {
         ByteBuffer prddta_ = ByteBuffer.allocate(DRDAConstants.PRDDTA_MAXSIZE);
 
         for (int i = 0; i < DRDAConstants.PRDDTA_ACCT_SUFFIX_LEN_BYTE; i++) {
-            prddta_.put(i, CCSIDManager.getCCSID().encode(" ").get());
+            prddta_.put(i, CCSIDConstants.getCCSID().encode(" ").get());
         }
 
         // Start inserting data right after the length byte.
         prddta_.position(DRDAConstants.PRDDTA_LEN_BYTE + 1);
 
-        prddta_.put(CCSIDManager.getCCSID().encode(DRDAConstants.PRDID));//, prddta_);
+        prddta_.put(CCSIDConstants.getCCSID().encode(DRDAConstants.PRDID));//, prddta_);
 
-        prddta_.put(CCSIDManager.getCCSID().encode(DRDAConstants.PRDDTA_PLATFORM_ID));
+        prddta_.put(CCSIDConstants.getCCSID().encode(DRDAConstants.PRDDTA_PLATFORM_ID));
 //        success &= ccsidMgr.encode(
 //                CharBuffer.wrap(DRDAConstants.PRDDTA_PLATFORM_ID),
 //                prddta_, agent_);
@@ -129,7 +128,7 @@ public class DRDAConnectRequest extends DRDARequest {
         int prddtaLen = prddta_.position();
 
         String extnamTruncated = DRDAConstants.EXTNAM.substring(0, Math.min(DRDAConstants.EXTNAM.length(), DRDAConstants.PRDDTA_APPL_ID_FIXED_LEN));
-        prddta_.put(CCSIDManager.getCCSID().encode(extnamTruncated));
+        prddta_.put(CCSIDConstants.getCCSID().encode(extnamTruncated));
 //        success &= ccsidMgr.encode(
 //                CharBuffer.wrap(extnam_, 0, extnamTruncateLength),
 //                prddta_, agent_);
@@ -196,20 +195,20 @@ public class DRDAConnectRequest extends DRDARequest {
             // the characters 'G' thro 'P'(in order to use the crrtkn as the LUWID when using
             // SNA in a hop site). For example, 0 is mapped to G, 1 is mapped H,etc.
             if (i == 0) {
-                crrtkn_[j] = CCSIDManager.getCCSID().encode("" + (char) (halfByte + 'G')).get(); 
+                crrtkn_[j] = CCSIDConstants.getCCSID().encode("" + (char) (halfByte + 'G')).get(); 
                         //ccsidManager.getCCSID().numToSnaRequiredCrrtknChar_[halfByte];
             } else {
-                crrtkn_[j] = CCSIDManager.getCCSID().encode("" + halfByte).get();
+                crrtkn_[j] = CCSIDConstants.getCCSID().encode("" + halfByte).get();
                         //netAgent_.getCurrentCcsidManager().numToCharRepresentation_[halfByte];
             }
 
             halfByte = (num) & 0x0f;
-            crrtkn_[j + 1] = CCSIDManager.getCCSID().encode("" + halfByte).get();
+            crrtkn_[j + 1] = CCSIDConstants.getCCSID().encode("" + halfByte).get();
             //netAgent_.getCurrentCcsidManager().numToCharRepresentation_[halfByte];
         }
 
         // fill the '.' in between the IP address and the port number
-        crrtkn_[8] = CCSIDManager.getCCSID().encode(".").get();
+        crrtkn_[8] = CCSIDConstants.getCCSID().encode(".").get();
 
         // Port numbers have values which fit in 2 unsigned bytes.
         // Java returns port numbers in an int so the value is not negative.
@@ -219,16 +218,16 @@ public class DRDAConnectRequest extends DRDARequest {
         //int num = netAgent_.socket_.getLocalPort();
 
         int halfByte = (num >> 12) & 0x0f;
-        crrtkn_[9] = CCSIDManager.getCCSID().encode("" + halfByte).get(); 
+        crrtkn_[9] = CCSIDConstants.getCCSID().encode("" + halfByte).get(); 
                 //netAgent_.getCurrentCcsidManager().numToSnaRequiredCrrtknChar_[halfByte];
         halfByte = (num >> 8) & 0x0f;
-        crrtkn_[10] = CCSIDManager.getCCSID().encode("" + halfByte).get();
+        crrtkn_[10] = CCSIDConstants.getCCSID().encode("" + halfByte).get();
                 //netAgent_.getCurrentCcsidManager().numToCharRepresentation_[halfByte];
         halfByte = (num >> 4) & 0x0f;
-        crrtkn_[11] = CCSIDManager.getCCSID().encode("" + halfByte).get();
+        crrtkn_[11] = CCSIDConstants.getCCSID().encode("" + halfByte).get();
                 //netAgent_.getCurrentCcsidManager().numToCharRepresentation_[halfByte];
         halfByte = (num) & 0x0f;
-        crrtkn_[12] = CCSIDManager.getCCSID().encode("" + halfByte).get();
+        crrtkn_[12] = CCSIDConstants.getCCSID().encode("" + halfByte).get();
                 //netAgent_.getCurrentCcsidManager().numToCharRepresentation_[halfByte];
 
         // The final part of CRRTKN is a 6 byte binary number that makes the
@@ -272,7 +271,7 @@ public class DRDAConnectRequest extends DRDARequest {
 
     }
     
-    public void buildACCSEC(int secmec, String rdbnam, byte[] sectkn) throws SQLException {
+    public void buildACCSEC(int secmec, String rdbnam, byte[] sectkn) {
         createCommand();
 
         // place the llcp for the ACCSEC in the buffer. save the length bytes for
@@ -451,7 +450,7 @@ public class DRDAConnectRequest extends DRDARequest {
                      int targetXamgr,
                      int targetSyncptmgr,
                      int targetRsyncmgr,
-                     int targetUnicodemgr) throws SQLException {
+                     int targetUnicodemgr) {
         createCommand();
 
         // begin excsat collection by placing the 4 byte llcp in the buffer.
@@ -502,12 +501,12 @@ public class DRDAConnectRequest extends DRDARequest {
         updateLengthBytes();
     }
     
-    private void buildSRVCLSNM() throws SQLException {
+    private void buildSRVCLSNM() {
         writeScalarString(CodePoint.SRVCLSNM, "QDB2/JVM");
     }
     
     private void buildMGRLVLLS(int agent, int sqlam, int rdb, int secmgr, int xamgr, int syncptmgr, int rsyncmgr,
-            int unicodemgr) throws SQLException {
+            int unicodemgr) {
         markLengthBytes(CodePoint.MGRLVLLS);
 
         // place the managers and their levels in the buffer
@@ -541,7 +540,7 @@ public class DRDAConnectRequest extends DRDARequest {
     
     // The External Name is the name of the job, task, or process on a
     // system for which a DDM server is active.
-    private void buildEXTNAM(String extnam) throws SQLException {
+    private void buildEXTNAM(String extnam) {
         final int MAX_SIZE = 255;
         int extnamTruncateLength = Math.min(extnam.length(),MAX_SIZE);
 
@@ -551,7 +550,7 @@ public class DRDAConnectRequest extends DRDARequest {
     }
     
     // Server Name is the name of the DDM server.
-    private void buildSRVNAM(String srvnam) throws SQLException {
+    private void buildSRVNAM(String srvnam) {
         final int MAX_SIZE = 255;
         int srvnamTruncateLength = Math.min(srvnam.length(),MAX_SIZE);
         

@@ -493,7 +493,7 @@ public class NetSqlca {
 
     protected String bytes2String(byte[] bytes, int offset, int length) {
         // Network server uses utf8 encoding
-        return new String(bytes, offset, length, CCSIDManager.UTF8);
+        return new String(bytes, offset, length, CCSIDConstants.UTF8);
     }
 
     public long getUpdateCount() {

@@ -15,9 +15,8 @@
  */
 package io.vertx.db2client.impl.codec;
 
+import java.sql.ResultSet;
 import java.util.stream.Collector;
-
-import com.ibm.db2.jcc.am.ResultSet;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.core.impl.logging.Logger;
