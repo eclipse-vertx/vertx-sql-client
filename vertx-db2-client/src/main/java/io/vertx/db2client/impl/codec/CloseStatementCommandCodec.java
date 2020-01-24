@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2020 IBM Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.vertx.db2client.impl.codec;
 
 import io.netty.buffer.ByteBuf;
@@ -14,8 +29,6 @@ class CloseStatementCommandCodec extends CommandCodec<Void, CloseStatementComman
   void encode(DB2Encoder encoder) {
     DB2PreparedStatement statement = (DB2PreparedStatement) cmd.statement();
     statement.close();
-    // Currently all cursors are implicitly closed when complete on the server side
-    // TODO: Flow closes for all remaining cursor that may not have been completed
     completionHandler.handle(CommandResponse.success(null));
   }
 

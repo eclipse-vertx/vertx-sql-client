@@ -19,8 +19,6 @@ import java.sql.ResultSet;
 import java.util.stream.Collector;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.db2client.impl.codec.DB2PreparedStatement.QueryInstance;
 import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
@@ -31,8 +29,6 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
 class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
-	
-	private static final Logger LOG = LoggerFactory.getLogger(ExtendedQueryCommandCodec.class);
 	
 	private final QueryInstance queryInstance;
 	
@@ -45,13 +41,10 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
     @Override
     void encode(DB2Encoder encoder) {
         super.encode(encoder);
-        if (LOG.isDebugEnabled())        
-        	LOG.debug("Extended query encode: statement=" + statement);
-        
         ByteBuf packet = allocateBuffer();
         DRDAQueryRequest queryRequest = new DRDAQueryRequest(packet);
         String dbName = encoder.socketConnection.database();
-        int fetchSize = cmd.fetch(); // TODO @AGG get fetch size from config
+        int fetchSize = cmd.fetch();
         Tuple params = cmd.params();
         Object[] inputs = new Object[params.size()];
         for (int i = 0; i < params.size(); i++)
@@ -78,9 +71,6 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
     
     @Override
     void decodePayload(ByteBuf payload, int payloadLength) {
-    	if (LOG.isDebugEnabled())        
-        	LOG.debug("Extended query decode");
-    	
         if (DRDAQueryRequest.isQuery(cmd.sql())) {
         	decodeQuery(payload);
         } else { // is update
@@ -105,8 +95,6 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
             decoder.handleRow(columnDefinitions.columns_, payload);
         }
         boolean hasMoreResults = !decoder.isQueryComplete();
-        if (!hasMoreResults)
-            statement.closeQuery(queryInstance);
         
         commandHandlerState = CommandHandlerState.HANDLING_END_OF_QUERY;
         int updatedCount = 0; // @AGG hardcoded to 0
@@ -134,7 +122,6 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
         // TODO: If auto-generated keys, read an OPNQRY here
         // readOpenQuery()
         updateResponse.readLocalCommit();
-        statement.closeQuery(queryInstance);
 
         R result = emptyResult(cmd.collector());
         cmd.resultHandler().handleResult(updatedCount, 0, null, result, null);

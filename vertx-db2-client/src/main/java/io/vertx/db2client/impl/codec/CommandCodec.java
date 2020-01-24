@@ -17,15 +17,11 @@ package io.vertx.db2client.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.core.Handler;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
 abstract class CommandCodec<R, C extends CommandBase<R>> {
 	
-	private static final Logger LOG = LoggerFactory.getLogger(CommandCodec.class);
-
     Handler<? super CommandResponse<R>> completionHandler;
     public Throwable failure;
     public R result;
@@ -52,8 +48,6 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     }
 
     void sendPacket(ByteBuf packet, int payloadLength) {
-    	if (LOG.isDebugEnabled())
-    		LOG.debug("sending packet size=" + payloadLength + "  " + packet);
 //        DB2Codec.dumpBuffer(packet);
         if (payloadLength >= DB2Codec.PACKET_PAYLOAD_LENGTH_LIMIT) {
             /*
@@ -61,7 +55,7 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
              * here. if payload length is exactly 16MBytes-1byte(0xFFFFFF), an empty packet
              * is needed to indicate the termination.
              */
-            throw new UnsupportedOperationException("TODO @AGG split packets");
+            throw new UnsupportedOperationException("Sending split packets not implemented");
 //            sendSplitPacket(packet);
         } else {
             sendNonSplitPacket(packet);
