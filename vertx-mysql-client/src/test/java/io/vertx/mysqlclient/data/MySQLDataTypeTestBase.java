@@ -73,20 +73,29 @@ public abstract class MySQLDataTypeTestBase extends MySQLTestBase {
     }));
   }
 
-  protected <T> void testBinaryEncodeGeneric(TestContext ctx,
+  protected void testBinaryEncodeGeneric(TestContext ctx,
                                              String columnName,
-                                             T expected) {
+                                             Object param,
+                                             BiConsumer<Row, String> valueAccessor) {
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("UPDATE datatype SET `" + columnName + "` = ?" + " WHERE id = 2", Tuple.tuple().addValue(expected), ctx.asyncAssertSuccess(updateResult -> {
+      conn.preparedQuery("UPDATE datatype SET `" + columnName + "` = ?" + " WHERE id = 2", Tuple.tuple().addValue(param), ctx.asyncAssertSuccess(updateResult -> {
         conn.preparedQuery("SELECT `" + columnName + "` FROM datatype WHERE id = 2", ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
-          ctx.assertEquals(expected, row.getValue(0));
-          ctx.assertEquals(expected, row.getValue(columnName));
+          valueAccessor.accept(row, columnName);
           conn.close();
         }));
       }));
     }));
+  }
+
+  protected <T> void testBinaryEncodeGeneric(TestContext ctx,
+                                             String columnName,
+                                             T expected) {
+    testBinaryEncodeGeneric(ctx, columnName, expected, (row, cName) -> {
+      ctx.assertEquals(expected, row.getValue(0));
+      ctx.assertEquals(expected, row.getValue(columnName));
+    });
   }
 
   protected void testBinaryDecode(TestContext ctx, String sql, Tuple params, Consumer<RowSet<Row>> checker) {
