@@ -19,6 +19,9 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.vertx.core.Handler;
 import io.vertx.mysqlclient.MySQLException;
+import io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag;
+import io.vertx.mysqlclient.impl.datatype.DataType;
+import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
@@ -26,7 +29,7 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-import static io.vertx.mysqlclient.impl.codec.Packets.*;
+import static io.vertx.mysqlclient.impl.protocol.Packets.*;
 
 abstract class CommandCodec<R, C extends CommandBase<R>> {
 

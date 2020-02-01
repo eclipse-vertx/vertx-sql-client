@@ -2,6 +2,7 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.command.InitDbCommand;
+import io.vertx.mysqlclient.impl.protocol.CommandType;
 
 import java.nio.charset.StandardCharsets;
 

@@ -2,9 +2,8 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.command.StatisticsCommand;
+import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.sqlclient.impl.command.CommandResponse;
-
-import java.nio.charset.StandardCharsets;
 
 class StatisticsCommandCodec extends CommandCodec<String, StatisticsCommand> {
   private static final int PAYLOAD_LENGTH = 1;

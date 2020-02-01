@@ -11,8 +11,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 
-import static io.vertx.mysqlclient.impl.codec.CapabilitiesFlag.*;
-
 class MySQLEncoder extends ChannelOutboundHandlerAdapter {
 
   private final ArrayDeque<CommandCodec<?, ?>> inflight;
