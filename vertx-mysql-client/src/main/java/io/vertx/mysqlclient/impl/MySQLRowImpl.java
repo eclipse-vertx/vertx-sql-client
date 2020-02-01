@@ -2,6 +2,8 @@ package io.vertx.mysqlclient.impl;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.mysqlclient.impl.datatype.DataType;
+import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.ArrayTuple;
@@ -96,7 +98,8 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
 
   @Override
   public LocalTime getLocalTime(String name) {
-    throw new UnsupportedOperationException();
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getLocalTime(pos);
   }
 
   @Override
@@ -244,5 +247,18 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
       return (JsonArray) val;
     }
     return null;
+  }
+
+  @Override
+  public LocalTime getLocalTime(int pos) {
+    ColumnDefinition columnDefinition = rowDesc.columnDefinitions()[pos];
+    Object val = getValue(pos);
+    if (columnDefinition.getType() == DataType.TIME && val instanceof Duration) {
+      // map MySQL TIME data type to java.time.LocalTime
+      Duration duration = (Duration) val;
+      return LocalTime.ofNanoOfDay(duration.toNanos());
+    } else {
+      return super.getLocalTime(pos);
+    }
   }
 }
