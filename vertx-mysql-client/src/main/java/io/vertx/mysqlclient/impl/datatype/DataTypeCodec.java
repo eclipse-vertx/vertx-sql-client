@@ -19,6 +19,7 @@ import java.nio.charset.Charset;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatterBuilder;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
@@ -143,7 +144,11 @@ public class DataTypeCodec {
         binaryEncodeDate((LocalDate) value, buffer);
         break;
       case TIME:
-        binaryEncodeTime((Duration) value, buffer);
+        if (value instanceof LocalTime) {
+          binaryEncodeTime((LocalTime) value, buffer);
+        } else {
+          binaryEncodeTime((Duration) value, buffer);
+        }
         break;
       case DATETIME:
         binaryEncodeDatetime((LocalDateTime) value, buffer);
@@ -252,7 +257,7 @@ public class DataTypeCodec {
     } else if (value instanceof LocalDate) {
       // ProtocolBinary::MYSQL_TYPE_DATE
       return DataType.DATE;
-    } else if (value instanceof Duration) {
+    } else if (value instanceof Duration || value instanceof LocalTime) {
       // ProtocolBinary::MYSQL_TYPE_TIME
       return DataType.TIME;
     } else if (value instanceof Buffer) {
@@ -323,6 +328,34 @@ public class DataTypeCodec {
     buffer.writeShortLE(value.getYear());
     buffer.writeByte(value.getMonthValue());
     buffer.writeByte(value.getDayOfMonth());
+  }
+
+  private static void binaryEncodeTime(LocalTime value, ByteBuf buffer) {
+    int hour = value.getHour();
+    int minute = value.getMinute();
+    int second = value.getSecond();
+    int nano = value.getNano();
+    if (nano == 0) {
+      if (hour == 0 && minute == 0 && second == 0) {
+        buffer.writeByte(0);
+      } else {
+        buffer.writeByte(8);
+        buffer.writeByte(0);
+        buffer.writeIntLE(0);
+        buffer.writeByte(hour);
+        buffer.writeByte(minute);
+        buffer.writeByte(second);
+      }
+    } else {
+      int microSecond = nano / 1000;
+      buffer.writeByte(12);
+      buffer.writeByte(0);
+      buffer.writeIntLE(0);
+      buffer.writeByte(hour);
+      buffer.writeByte(minute);
+      buffer.writeByte(second);
+      buffer.writeIntLE(microSecond);
+    }
   }
 
   private static void binaryEncodeTime(Duration value, ByteBuf buffer) {

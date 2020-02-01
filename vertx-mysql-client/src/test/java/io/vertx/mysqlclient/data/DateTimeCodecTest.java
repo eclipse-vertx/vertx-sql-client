@@ -1,11 +1,14 @@
 package io.vertx.mysqlclient.data;
 
 import io.vertx.ext.unit.TestContext;
+import io.vertx.sqlclient.Row;
 import org.junit.Assume;
 import org.junit.Test;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.function.Consumer;
 
 public abstract class DateTimeCodecTest extends MySQLDataTypeTestBase {
   @Test
@@ -49,8 +52,24 @@ public abstract class DateTimeCodecTest extends MySQLDataTypeTestBase {
   }
 
   @Test
+  public void testDecodeTimeAsLocalTimeWithoutFractionalSecondsPart(TestContext ctx) {
+    testDecodeGeneric(ctx, "11:12:00.123456", "TIME", row -> {
+      ctx.assertEquals(LocalTime.of(11, 12, 0), row.getLocalTime(0));
+      ctx.assertEquals(LocalTime.of(11, 12, 0), row.getLocalTime("test_time"));
+    }, "test_time");
+  }
+
+  @Test
   public void testDecodeFractionalSecondsPart(TestContext ctx) {
     testDecodeGeneric(ctx, "11:12:00.123456", "TIME(6)", "test_time", Duration.ofHours(11).plusMinutes(12).plusNanos(123456000));
+  }
+
+  @Test
+  public void testDecodeTimeAsLocalTimeWithFractionalSecondsPart(TestContext ctx) {
+    testDecodeGeneric(ctx, "11:12:00.123456", "TIME(6)", row -> {
+      ctx.assertEquals(LocalTime.of(11, 12, 0,123456000), row.getLocalTime(0));
+      ctx.assertEquals(LocalTime.of(11, 12, 0,123456000), row.getLocalTime("test_time"));
+    }, "test_time");
   }
 
   @Test
@@ -81,4 +100,6 @@ public abstract class DateTimeCodecTest extends MySQLDataTypeTestBase {
   }
 
   protected abstract <T> void testDecodeGeneric(TestContext ctx, String data, String dataType, String columnName, T expected);
+
+  protected abstract void testDecodeGeneric(TestContext ctx, String data, String dataType, Consumer<Row> valueAccessor, String columnName);
 }
