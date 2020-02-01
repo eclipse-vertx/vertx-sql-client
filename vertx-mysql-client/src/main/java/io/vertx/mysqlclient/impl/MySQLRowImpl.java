@@ -5,7 +5,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.ArrayTuple;
-import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.core.buffer.Buffer;
 
 import java.math.BigDecimal;
@@ -21,9 +20,9 @@ import java.util.UUID;
 
 public class MySQLRowImpl extends ArrayTuple implements Row {
 
-  private final RowDesc rowDesc;
+  private final MySQLRowDesc rowDesc;
 
-  public MySQLRowImpl(RowDesc rowDesc) {
+  public MySQLRowImpl(MySQLRowDesc rowDesc) {
     super(rowDesc.columnNames().size());
     this.rowDesc = rowDesc;
   }

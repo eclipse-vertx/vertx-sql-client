@@ -14,20 +14,22 @@
  * limitations under the License.
  *
  */
-package io.vertx.mysqlclient.impl.codec;
+package io.vertx.mysqlclient.impl;
 
+import io.vertx.mysqlclient.impl.datatype.DataFormat;
+import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.sqlclient.impl.RowDesc;
 
 import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-class MySQLRowDesc extends RowDesc {
+public class MySQLRowDesc extends RowDesc {
 
   private final ColumnDefinition[] columnDefinitions;
   private final DataFormat dataFormat;
 
-  MySQLRowDesc(ColumnDefinition[] columnDefinitions, DataFormat dataFormat) {
+  public MySQLRowDesc(ColumnDefinition[] columnDefinitions, DataFormat dataFormat) {
     super(Collections.unmodifiableList(Stream.of(columnDefinitions)
       .map(ColumnDefinition::name)
       .collect(Collectors.toList())));
@@ -35,11 +37,11 @@ class MySQLRowDesc extends RowDesc {
     this.dataFormat = dataFormat;
   }
 
-  ColumnDefinition[] columnDefinitions() {
+  public ColumnDefinition[] columnDefinitions() {
     return columnDefinitions;
   }
 
-  DataFormat dataFormat() {
+  public DataFormat dataFormat() {
     return dataFormat;
   }
 }

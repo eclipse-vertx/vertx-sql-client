@@ -1,12 +1,15 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.mysqlclient.impl.MySQLCollation;
+import io.vertx.mysqlclient.impl.MySQLRowDesc;
 import io.vertx.mysqlclient.impl.MySQLRowImpl;
+import io.vertx.mysqlclient.impl.datatype.DataFormat;
+import io.vertx.mysqlclient.impl.datatype.DataType;
+import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
+import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.RowDecoder;
 
-import java.nio.charset.Charset;
 import java.util.stream.Collector;
 
 class RowResultDecoder<C, R> extends RowDecoder<C, R> {

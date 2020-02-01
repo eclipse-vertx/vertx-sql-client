@@ -17,6 +17,8 @@
 
 package io.vertx.mysqlclient.impl.codec;
 
+import io.vertx.mysqlclient.impl.MySQLParamDesc;
+import io.vertx.mysqlclient.impl.MySQLRowDesc;
 import io.vertx.sqlclient.impl.ParamDesc;
 import io.vertx.sqlclient.impl.PreparedStatement;
 import io.vertx.sqlclient.impl.RowDesc;

@@ -2,6 +2,7 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.command.DebugCommand;
+import io.vertx.mysqlclient.impl.protocol.CommandType;
 
 class DebugCommandCodec extends CommandCodec<Void, DebugCommand> {
   private static final int PAYLOAD_LENGTH = 1;

@@ -1,19 +1,22 @@
-package io.vertx.mysqlclient.impl.codec;
+package io.vertx.mysqlclient.impl;
 
+import io.vertx.mysqlclient.impl.datatype.DataType;
+import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
+import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.sqlclient.impl.ErrorMessageFactory;
 import io.vertx.sqlclient.impl.ParamDesc;
 import io.vertx.sqlclient.impl.TupleInternal;
 
-class MySQLParamDesc extends ParamDesc {
+public class MySQLParamDesc extends ParamDesc {
   private final ColumnDefinition[] paramDefinitions;
   private boolean sendTypesToServer;
 
-  MySQLParamDesc(ColumnDefinition[] paramDefinitions) {
+  public MySQLParamDesc(ColumnDefinition[] paramDefinitions) {
     this.paramDefinitions = paramDefinitions;
     this.sendTypesToServer = false;
   }
 
-  ColumnDefinition[] paramDefinitions() {
+  public ColumnDefinition[] paramDefinitions() {
     return paramDefinitions;
   }
 
