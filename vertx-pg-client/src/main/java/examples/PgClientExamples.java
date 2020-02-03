@@ -34,6 +34,7 @@ import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -585,6 +586,24 @@ public class PgClientExamples {
         System.out.println(rows.rowCount());
         for (Row row : rows) {
           System.out.println("generated key: " + row.getInteger("color_id"));
+        }
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
+  }
+
+  public void resultsetMetadata(SqlClient client) {
+    client.query("SELECT id, name from users", ar -> {
+      if (ar.succeeded()) {
+        RowSet<Row> rows = ar.result();
+        PgResultSetMetadata pgResultSetMetadata = rows.property(PgClient.RESULTSET_METADATA);
+        List<PgColumnMetadata> columnMetadataList = pgResultSetMetadata.columnMetadataList();
+        for (PgColumnMetadata pgColumnMetadata : columnMetadataList) {
+          System.out.println("Field name: " + pgColumnMetadata.name());
+          System.out.println("Field data type OID: " + pgColumnMetadata.dataTypeOID());
+          System.out.println("Field data type length: " + pgColumnMetadata.typeLength());
+          System.out.println("Field format code: " + pgColumnMetadata.formatCode());
         }
       } else {
         System.out.println("Failure: " + ar.cause().getMessage());

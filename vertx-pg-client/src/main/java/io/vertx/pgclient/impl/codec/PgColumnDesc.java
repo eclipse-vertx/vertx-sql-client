@@ -17,13 +17,14 @@
 
 package io.vertx.pgclient.impl.codec;
 
+import io.vertx.pgclient.PgColumnMetadata;
 import io.vertx.pgclient.impl.datatype.DataType;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-class PgColumnDesc {
+class PgColumnDesc implements PgColumnMetadata {
 
   final String name;
   final int relationId;
@@ -41,5 +42,40 @@ class PgColumnDesc {
     this.relationId = relationId;
     this.relationAttributeNo = relationAttributeNo;
     this.typeModifier = typeModifier;
+  }
+
+  @Override
+  public String name() {
+    return name;
+  }
+
+  @Override
+  public int tableOID() {
+    return relationId;
+  }
+
+  @Override
+  public short columnAttributeNumber() {
+    return relationAttributeNo;
+  }
+
+  @Override
+  public int dataTypeOID() {
+    return dataType.id;
+  }
+
+  @Override
+  public short typeLength() {
+    return length;
+  }
+
+  @Override
+  public int typeModifier() {
+    return typeModifier;
+  }
+
+  @Override
+  public short formatCode() {
+    return (short) dataFormat.id;
   }
 }

@@ -17,6 +17,7 @@
 
 package io.vertx.pgclient;
 
+import io.vertx.pgclient.impl.datatype.DataType;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.ext.unit.Async;
@@ -112,6 +113,30 @@ public class PgConnectionTest extends PgConnectionTestBase {
         async.countDown();
       });
       conn.close();
+    }));
+  }
+
+  @Test
+  public void testResultSetMetadata(TestContext ctx) {
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT 'test_string'::VARCHAR(20) AS test_column1, 12345::INT4 AS test_column2", ctx.asyncAssertSuccess(result -> {
+        PgResultSetMetadata pgResultSetMetadata = result.property(PgClient.RESULTSET_METADATA);
+        List<PgColumnMetadata> columnMetadataList = pgResultSetMetadata.columnMetadataList();
+        ctx.assertEquals(2, columnMetadataList.size());
+
+        PgColumnMetadata columnMetadata1 = columnMetadataList.get(0);
+        ctx.assertEquals("test_column1", columnMetadata1.name());
+        ctx.assertEquals(DataType.VARCHAR.id, columnMetadata1.dataTypeOID());
+        ctx.assertEquals((short) -1, columnMetadata1.typeLength()); // variable-length
+        ctx.assertEquals((short) 0, columnMetadata1.formatCode());
+
+        PgColumnMetadata pgColumnMetadata2 = columnMetadataList.get(1);
+        ctx.assertEquals("test_column2", pgColumnMetadata2.name());
+        ctx.assertEquals(DataType.INT4.id, pgColumnMetadata2.dataTypeOID());
+        ctx.assertEquals((short) 4, pgColumnMetadata2.typeLength());
+        ctx.assertEquals((short) 0, pgColumnMetadata2.formatCode());
+        conn.close();
+      }));
     }));
   }
 }

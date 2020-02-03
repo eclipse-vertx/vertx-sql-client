@@ -216,6 +216,13 @@ You can fetch generated keys with a 'RETURNING' clause in your query:
 {@link examples.PgClientExamples#returning(io.vertx.sqlclient.SqlClient)}
 ----
 
+You may also want to get the column metadata of the resultset such as the field data type oid or the data type length:
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#resultsetMetadata(io.vertx.sqlclient.SqlClient)}
+----
+
 include::connections.adoc[]
 
 include::transactions.adoc[]

@@ -16,8 +16,8 @@
  */
 package io.vertx.pgclient.impl.codec;
 
+import io.vertx.pgclient.PgClient;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.command.QueryCommandBase;
 
 import java.util.stream.Collector;
@@ -36,7 +36,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends P
     T result;
     Throwable failure;
     int size;
-    RowDesc desc;
+    PgRowDesc desc;
     if (decoder != null) {
       failure = decoder.complete();
       result = decoder.result();
@@ -50,6 +50,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends P
       desc = null;
     }
     cmd.resultHandler().handleResult(updated, size, desc, result, failure);
+    cmd.resultHandler().addProperty(PgClient.RESULTSET_METADATA, desc);
   }
 
   @Override

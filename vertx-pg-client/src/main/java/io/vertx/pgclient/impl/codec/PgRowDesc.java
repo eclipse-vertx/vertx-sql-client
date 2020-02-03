@@ -16,13 +16,17 @@
  */
 package io.vertx.pgclient.impl.codec;
 
+import io.vertx.pgclient.PgColumnMetadata;
+import io.vertx.pgclient.PgResultSetMetadata;
 import io.vertx.sqlclient.impl.RowDesc;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-class PgRowDesc extends RowDesc {
+class PgRowDesc extends RowDesc implements PgResultSetMetadata {
 
   final PgColumnDesc[] columns;
 
@@ -31,5 +35,10 @@ class PgRowDesc extends RowDesc {
       .map(d -> d.name)
       .collect(Collectors.toList())));
     this.columns = columns;
+  }
+
+  @Override
+  public List<PgColumnMetadata> columnMetadataList() {
+    return Arrays.asList(columns);
   }
 }
