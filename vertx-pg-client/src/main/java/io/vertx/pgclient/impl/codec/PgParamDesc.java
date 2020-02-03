@@ -16,14 +16,13 @@
  */
 package io.vertx.pgclient.impl.codec;
 
-import io.vertx.sqlclient.Tuple;
+import io.vertx.pgclient.impl.datatype.DataType;
+import io.vertx.pgclient.impl.datatype.DataTypeCodec;
 import io.vertx.sqlclient.impl.ErrorMessageFactory;
 import io.vertx.sqlclient.impl.ParamDesc;
-import io.vertx.pgclient.impl.util.Util;
 import io.vertx.sqlclient.impl.TupleInternal;
 
 import java.util.Arrays;
-import java.util.stream.Stream;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>

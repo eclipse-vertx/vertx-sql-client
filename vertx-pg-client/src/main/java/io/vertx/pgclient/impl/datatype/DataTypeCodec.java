@@ -15,7 +15,7 @@
  *
  */
 
-package io.vertx.pgclient.impl.codec;
+package io.vertx.pgclient.impl.datatype;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -52,7 +52,7 @@ import static java.util.concurrent.TimeUnit.*;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-class DataTypeCodec {
+public class DataTypeCodec {
 
   private static final Logger logger = LoggerFactory.getLogger(DataTypeCodec.class);
 
@@ -130,7 +130,7 @@ class DataTypeCodec {
     .appendOffset("+HH:mm", "00:00")
     .toFormatter();
 
-  static void encodeText(DataType id, Object value, ByteBuf buff) {
+  public static void encodeText(DataType id, Object value, ByteBuf buff) {
     int index = buff.writerIndex();
     buff.writeInt(0);
     textEncode(id, value, buff);

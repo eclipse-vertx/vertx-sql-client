@@ -21,6 +21,7 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.vertx.pgclient.impl.datatype.DataType;
 import io.vertx.sqlclient.impl.Notification;
 import io.vertx.pgclient.impl.util.Util;
 import io.netty.buffer.ByteBuf;

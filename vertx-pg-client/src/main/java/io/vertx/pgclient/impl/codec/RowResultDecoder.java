@@ -17,6 +17,7 @@
 
 package io.vertx.pgclient.impl.codec;
 
+import io.vertx.pgclient.impl.datatype.DataTypeCodec;
 import io.vertx.sqlclient.Row;
 import io.vertx.pgclient.impl.RowImpl;
 import io.netty.buffer.ByteBuf;

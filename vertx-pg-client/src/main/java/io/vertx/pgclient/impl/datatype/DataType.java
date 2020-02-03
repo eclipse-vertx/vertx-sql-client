@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package io.vertx.pgclient.impl.codec;
+package io.vertx.pgclient.impl.datatype;
 
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
@@ -40,7 +40,7 @@ import java.util.UUID;
  *
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-enum DataType {
+public enum DataType {
 
   BOOL(16, true, Boolean.class),
   BOOL_ARRAY(1000, true, Boolean[].class),
@@ -124,10 +124,10 @@ enum DataType {
 
   private static final Logger logger = LoggerFactory.getLogger(DataType.class);
 
-  final int id;
-  final boolean supportsBinary;
-  final Class<?> encodingType; // Not really used for now
-  final Class<?> decodingType;
+  public final int id;
+  public final boolean supportsBinary;
+  public final Class<?> encodingType; // Not really used for now
+  public final Class<?> decodingType;
 
   DataType(int id, boolean supportsBinary, Class<?> type) {
     this.id = id;
@@ -143,7 +143,7 @@ enum DataType {
     this.decodingType = decodingType;
   }
 
-  static DataType valueOf(int oid) {
+  public static DataType valueOf(int oid) {
     DataType value = oidToDataType.get(oid);
     if (value == null) {
       logger.debug("Postgres type OID=" + oid + " not handled - using unknown type instead");

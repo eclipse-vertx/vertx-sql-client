@@ -17,6 +17,8 @@
 
 package io.vertx.pgclient.impl.codec;
 
+import io.vertx.pgclient.impl.datatype.DataType;
+
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */

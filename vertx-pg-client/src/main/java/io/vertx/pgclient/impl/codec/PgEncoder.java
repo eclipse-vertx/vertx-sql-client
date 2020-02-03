@@ -20,6 +20,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
+import io.vertx.pgclient.impl.datatype.DataType;
+import io.vertx.pgclient.impl.datatype.DataTypeCodec;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.pgclient.impl.util.Util;
 import io.vertx.sqlclient.impl.ParamDesc;
@@ -233,7 +235,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     int totalLengthPosition = out.writerIndex();
     out.writeInt(0); // message length -> will be set later
     out.writeCharSequence(msg.message, UTF_8);
-      
+
     // rewind to set the message length
     out.setInt(totalLengthPosition, out.writerIndex() - totalLengthPosition);
   }
