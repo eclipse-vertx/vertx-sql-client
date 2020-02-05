@@ -1,10 +1,11 @@
-package io.vertx.mysqlclient.impl.codec;
+package io.vertx.mysqlclient.impl.datatype;
 
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.sqlclient.data.Numeric;
 
 import java.time.Duration;

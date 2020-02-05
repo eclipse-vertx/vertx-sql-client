@@ -2,6 +2,7 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.command.PingCommand;
+import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
 class PingCommandCodec extends CommandCodec<Void, PingCommand> {

@@ -15,7 +15,7 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Map;
 
-import static io.vertx.mysqlclient.impl.codec.CapabilitiesFlag.*;
+import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.*;
 
 public class MySQLConnectionFactory {
   private final NetClient netClient;

@@ -17,12 +17,15 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
+import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
+import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
-import static io.vertx.mysqlclient.impl.codec.Packets.ERROR_PACKET_HEADER;
-import static io.vertx.mysqlclient.impl.codec.Packets.EnumCursorType.CURSOR_TYPE_NO_CURSOR;
-import static io.vertx.mysqlclient.impl.codec.Packets.EnumCursorType.CURSOR_TYPE_READ_ONLY;
+import static io.vertx.mysqlclient.impl.protocol.Packets.ERROR_PACKET_HEADER;
+import static io.vertx.mysqlclient.impl.protocol.Packets.EnumCursorType.CURSOR_TYPE_NO_CURSOR;
+import static io.vertx.mysqlclient.impl.protocol.Packets.EnumCursorType.CURSOR_TYPE_READ_ONLY;
 
 class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
   ExtendedQueryCommandCodec(ExtendedQueryCommand<R> cmd) {

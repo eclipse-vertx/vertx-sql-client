@@ -1,4 +1,4 @@
-package io.vertx.mysqlclient.impl.codec;
+package io.vertx.mysqlclient.impl.datatype;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -7,6 +7,7 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mysqlclient.impl.MySQLCollation;
+import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.sqlclient.Tuple;
@@ -18,12 +19,13 @@ import java.nio.charset.Charset;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatterBuilder;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.temporal.ChronoField.*;
 
-class DataTypeCodec {
+public class DataTypeCodec {
   // binary codec protocol: https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_binary_resultset.html#sect_protocol_binary_resultset_row_value
 
   // Sentinel used when an object is refused by the data type
@@ -41,7 +43,7 @@ class DataTypeCodec {
     .appendFraction(MICRO_OF_SECOND, 0, 6, true)
     .toFormatter();
 
-  static Object decodeText(DataType dataType, int collationId, int columnDefinitionFlags, ByteBuf buffer) {
+  public static Object decodeText(DataType dataType, int collationId, int columnDefinitionFlags, ByteBuf buffer) {
     int length = (int) BufferUtils.readLengthEncodedInteger(buffer);
     int index = buffer.readerIndex();
     try {
@@ -102,7 +104,7 @@ class DataTypeCodec {
     }
   }
 
-  static void encodeBinary(DataType dataType, Object value, Charset charset, ByteBuf buffer) {
+  public static void encodeBinary(DataType dataType, Object value, Charset charset, ByteBuf buffer) {
     switch (dataType) {
       case INT1:
         if (value instanceof Boolean) {
@@ -142,7 +144,11 @@ class DataTypeCodec {
         binaryEncodeDate((LocalDate) value, buffer);
         break;
       case TIME:
-        binaryEncodeTime((Duration) value, buffer);
+        if (value instanceof LocalTime) {
+          binaryEncodeTime((LocalTime) value, buffer);
+        } else {
+          binaryEncodeTime((Duration) value, buffer);
+        }
         break;
       case DATETIME:
         binaryEncodeDatetime((LocalDateTime) value, buffer);
@@ -164,7 +170,7 @@ class DataTypeCodec {
     }
   }
 
-  static Object decodeBinary(DataType dataType, int collationId, int columnDefinitionFlags, ByteBuf buffer) {
+  public static Object decodeBinary(DataType dataType, int collationId, int columnDefinitionFlags, ByteBuf buffer) {
     switch (dataType) {
       case INT1:
         if (isUnsignedNumeric(columnDefinitionFlags)) {
@@ -251,7 +257,7 @@ class DataTypeCodec {
     } else if (value instanceof LocalDate) {
       // ProtocolBinary::MYSQL_TYPE_DATE
       return DataType.DATE;
-    } else if (value instanceof Duration) {
+    } else if (value instanceof Duration || value instanceof LocalTime) {
       // ProtocolBinary::MYSQL_TYPE_TIME
       return DataType.TIME;
     } else if (value instanceof Buffer) {
@@ -322,6 +328,34 @@ class DataTypeCodec {
     buffer.writeShortLE(value.getYear());
     buffer.writeByte(value.getMonthValue());
     buffer.writeByte(value.getDayOfMonth());
+  }
+
+  private static void binaryEncodeTime(LocalTime value, ByteBuf buffer) {
+    int hour = value.getHour();
+    int minute = value.getMinute();
+    int second = value.getSecond();
+    int nano = value.getNano();
+    if (nano == 0) {
+      if (hour == 0 && minute == 0 && second == 0) {
+        buffer.writeByte(0);
+      } else {
+        buffer.writeByte(8);
+        buffer.writeByte(0);
+        buffer.writeIntLE(0);
+        buffer.writeByte(hour);
+        buffer.writeByte(minute);
+        buffer.writeByte(second);
+      }
+    } else {
+      int microSecond = nano / 1000;
+      buffer.writeByte(12);
+      buffer.writeByte(0);
+      buffer.writeIntLE(0);
+      buffer.writeByte(hour);
+      buffer.writeByte(minute);
+      buffer.writeByte(second);
+      buffer.writeIntLE(microSecond);
+    }
   }
 
   private static void binaryEncodeTime(Duration value, ByteBuf buffer) {
