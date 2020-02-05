@@ -1,4 +1,4 @@
-package io.vertx.mysqlclient.impl.codec;
+package io.vertx.mysqlclient.impl.protocol;
 
 /**
  * Values for the capabilities flag bitmask used by Client/Server Protocol.

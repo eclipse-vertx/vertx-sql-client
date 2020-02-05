@@ -280,6 +280,9 @@ The MySQL data type for encoding will be inferred from the parameter values and 
 |java.time.Duration
 |MYSQL_TYPE_TIME
 
+|java.time.LocalTime
+|MYSQL_TYPE_TIME
+
 |io.vertx.core.buffer.Buffer
 |MYSQL_TYPE_BLOB
 
@@ -326,6 +329,10 @@ MySQL `JSON` data type is represented by the following Java types:
 
 === Handling BIT
 The `BIT` data type is mapped to `java.lang.Long` type, but Java has no notion of unsigned numeric values, so if you want to insert or update a record with the max value of `BIT(64)`, you can do some tricks setting the parameter to `-1L`.
+
+=== Handling TIME
+
+MySQL `TIME` data type can be used to represent either time of a day or a time interval which ranges from `-838:59:59` to `838:59:59`. In Reactive MySQL client the `TIME` data type is mapped to `java.time.Duration` natively, but you can also retrieve it as a `java.time.LocalTime` via `Row#getLocalTime` accessor.
 
 === Handling NUMERIC
 

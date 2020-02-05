@@ -2,13 +2,13 @@ package io.vertx.mysqlclient.impl;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.mysqlclient.impl.datatype.DataType;
+import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.ArrayTuple;
-import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.core.buffer.Buffer;
 
-import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,9 +21,9 @@ import java.util.UUID;
 
 public class MySQLRowImpl extends ArrayTuple implements Row {
 
-  private final RowDesc rowDesc;
+  private final MySQLRowDesc rowDesc;
 
-  public MySQLRowImpl(RowDesc rowDesc) {
+  public MySQLRowImpl(MySQLRowDesc rowDesc) {
     super(rowDesc.columnNames().size());
     this.rowDesc = rowDesc;
   }
@@ -67,7 +67,7 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
 
   @Override
   public <T> T[] getValues(Class<T> type, int idx) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException("MySQL Array data type is not supported");
   }
 
   @Override
@@ -97,97 +97,93 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
 
   @Override
   public LocalTime getLocalTime(String name) {
-    throw new UnsupportedOperationException();
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getLocalTime(pos);
   }
 
   @Override
   public OffsetTime getOffsetTime(String name) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(name), name, OffsetTime.class));
   }
 
   @Override
   public OffsetDateTime getOffsetDateTime(String name) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(name), name, OffsetDateTime.class));
   }
 
   @Override
   public UUID getUUID(String name) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public BigDecimal getBigDecimal(String name) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(name), name, UUID.class));
   }
 
   @Override
   public Integer[] getIntegerArray(String name) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(name), name, Integer[].class));
   }
 
   @Override
   public Boolean[] getBooleanArray(String name) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(name), name, Boolean[].class));
   }
 
   @Override
   public Short[] getShortArray(String name) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(name), name, Short[].class));
   }
 
   @Override
   public Long[] getLongArray(String name) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(name), name, Long[].class));
   }
 
   @Override
   public Float[] getFloatArray(String name) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(name), name, Float[].class));
   }
 
   @Override
   public Double[] getDoubleArray(String name) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(name), name, Double[].class));
   }
 
   @Override
   public String[] getStringArray(String name) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(name), name, String[].class));
   }
 
   @Override
   public LocalDate[] getLocalDateArray(String name) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(name), name, LocalDate[].class));
   }
 
   @Override
   public LocalTime[] getLocalTimeArray(String name) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(name), name, LocalTime[].class));
   }
 
   @Override
   public OffsetTime[] getOffsetTimeArray(String name) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(name), name, OffsetTime[].class));
   }
 
   @Override
   public LocalDateTime[] getLocalDateTimeArray(String name) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(name), name, LocalDateTime[].class));
   }
 
   @Override
   public OffsetDateTime[] getOffsetDateTimeArray(String name) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(name), name, OffsetDateTime[].class));
   }
 
   @Override
   public Buffer[] getBufferArray(String name) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(name), name, Buffer[].class));
   }
 
   @Override
   public UUID[] getUUIDArray(String name) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(name), name, UUID[].class));
   }
 
   @Override
@@ -245,5 +241,22 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
       return (JsonArray) val;
     }
     return null;
+  }
+
+  @Override
+  public LocalTime getLocalTime(int pos) {
+    ColumnDefinition columnDefinition = rowDesc.columnDefinitions()[pos];
+    Object val = getValue(pos);
+    if (columnDefinition.getType() == DataType.TIME && val instanceof Duration) {
+      // map MySQL TIME data type to java.time.LocalTime
+      Duration duration = (Duration) val;
+      return LocalTime.ofNanoOfDay(duration.toNanos());
+    } else {
+      return super.getLocalTime(pos);
+    }
+  }
+
+  private <T> String buildIllegalAccessMessage(Object value, String columnName, Class<T> clazz) {
+    return String.format("Can not retrieve row value[%s] as class[%s], columnName=[%s]", value.toString(), clazz.getName(), columnName);
   }
 }

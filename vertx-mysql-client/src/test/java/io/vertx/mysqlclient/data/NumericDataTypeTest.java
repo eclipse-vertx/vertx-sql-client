@@ -9,6 +9,8 @@ import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.math.BigDecimal;
+
 @RunWith(VertxUnitRunner.class)
 public class NumericDataTypeTest extends MySQLDataTypeTestBase {
   @Test
@@ -34,6 +36,18 @@ public class NumericDataTypeTest extends MySQLDataTypeTestBase {
   }
 
   @Test
+  public void testBinaryEncodeBigDecimal(TestContext ctx) {
+    testBinaryEncodeGeneric(ctx, "test_unsigned_bigint", BigDecimal.valueOf(999999999L), (row, columnName) -> {
+      ctx.assertEquals(999999999L, row.getLong(columnName));
+      ctx.assertEquals(999999999L, row.getLong(columnName));
+      ctx.assertEquals(BigDecimal.valueOf(999999999L), row.getBigDecimal(columnName));
+      ctx.assertEquals(BigDecimal.valueOf(999999999L), row.getBigDecimal(columnName));
+      ctx.assertEquals(Numeric.parse("999999999"), row.getValue(0));
+      ctx.assertEquals(Numeric.parse("999999999"), row.getValue(columnName));
+    });
+  }
+
+  @Test
   public void testBinaryDecodeUnsignedTinyInt(TestContext ctx) {
     testBinaryDecodeGenericWithTable(ctx, "test_unsigned_tinyint", ((row, columnName) -> {
       ctx.assertTrue(row.getValue(0) instanceof Short);
@@ -45,6 +59,8 @@ public class NumericDataTypeTest extends MySQLDataTypeTestBase {
       ctx.assertEquals(255, row.getInteger(columnName));
       ctx.assertEquals(255L, row.getLong(0));
       ctx.assertEquals(255L, row.getLong(columnName));
+      ctx.assertEquals(new BigDecimal(255), row.getBigDecimal(0));
+      ctx.assertEquals(new BigDecimal(255), row.getBigDecimal(columnName));
     }));
   }
 
@@ -63,6 +79,8 @@ public class NumericDataTypeTest extends MySQLDataTypeTestBase {
       ctx.assertEquals(65535, row.getInteger(columnName));
       ctx.assertEquals(65535L, row.getLong(0));
       ctx.assertEquals(65535L, row.getLong(columnName));
+      ctx.assertEquals(new BigDecimal(65535), row.getBigDecimal(0));
+      ctx.assertEquals(new BigDecimal(65535), row.getBigDecimal(columnName));
     }));
   }
 
@@ -81,6 +99,8 @@ public class NumericDataTypeTest extends MySQLDataTypeTestBase {
       ctx.assertEquals(16777215, row.getInteger(columnName));
       ctx.assertEquals(16777215L, row.getLong(0));
       ctx.assertEquals(16777215L, row.getLong(columnName));
+      ctx.assertEquals(new BigDecimal(16777215), row.getBigDecimal(0));
+      ctx.assertEquals(new BigDecimal(16777215), row.getBigDecimal(columnName));
     }));
   }
 
@@ -97,6 +117,8 @@ public class NumericDataTypeTest extends MySQLDataTypeTestBase {
       ctx.assertEquals(4294967295L, row.getValue(columnName));
       ctx.assertEquals(4294967295L, row.getLong(0));
       ctx.assertEquals(4294967295L, row.getLong(columnName));
+      ctx.assertEquals(new BigDecimal(4294967295L), row.getBigDecimal(0));
+      ctx.assertEquals(new BigDecimal(4294967295L), row.getBigDecimal(columnName));
     }));
   }
 
@@ -112,6 +134,8 @@ public class NumericDataTypeTest extends MySQLDataTypeTestBase {
       ctx.assertEquals(Numeric.parse("18446744073709551615"), row.getValue(0));
       ctx.assertEquals(Numeric.parse("18446744073709551615"), row.getValue(columnName));
       ctx.assertEquals(Numeric.parse("18446744073709551615"), row.get(Numeric.class, 0));
+      ctx.assertEquals(new BigDecimal("18446744073709551615"), row.getBigDecimal(0));
+      ctx.assertEquals(new BigDecimal("18446744073709551615"), row.getBigDecimal(columnName));
     }));
   }
 
@@ -132,6 +156,8 @@ public class NumericDataTypeTest extends MySQLDataTypeTestBase {
       ctx.assertEquals(255, row.getInteger(columnName));
       ctx.assertEquals(255L, row.getLong(0));
       ctx.assertEquals(255L, row.getLong(columnName));
+      ctx.assertEquals(new BigDecimal(255), row.getBigDecimal(0));
+      ctx.assertEquals(new BigDecimal(255), row.getBigDecimal(columnName));
     }));
   }
 
@@ -145,6 +171,8 @@ public class NumericDataTypeTest extends MySQLDataTypeTestBase {
       ctx.assertEquals(65535, row.getInteger(columnName));
       ctx.assertEquals(65535L, row.getLong(0));
       ctx.assertEquals(65535L, row.getLong(columnName));
+      ctx.assertEquals(new BigDecimal(65535), row.getBigDecimal(0));
+      ctx.assertEquals(new BigDecimal(65535), row.getBigDecimal(columnName));
     }));
   }
 
@@ -158,6 +186,8 @@ public class NumericDataTypeTest extends MySQLDataTypeTestBase {
       ctx.assertEquals(16777215, row.getInteger(columnName));
       ctx.assertEquals(16777215L, row.getLong(0));
       ctx.assertEquals(16777215L, row.getLong(columnName));
+      ctx.assertEquals(new BigDecimal(16777215), row.getBigDecimal(0));
+      ctx.assertEquals(new BigDecimal(16777215), row.getBigDecimal(columnName));
     }));
   }
 
@@ -169,6 +199,8 @@ public class NumericDataTypeTest extends MySQLDataTypeTestBase {
       ctx.assertEquals(4294967295L, row.getValue(columnName));
       ctx.assertEquals(4294967295L, row.getLong(0));
       ctx.assertEquals(4294967295L, row.getLong(columnName));
+      ctx.assertEquals(new BigDecimal(4294967295L), row.getBigDecimal(0));
+      ctx.assertEquals(new BigDecimal(4294967295L), row.getBigDecimal(columnName));
     }));
   }
 
@@ -179,6 +211,8 @@ public class NumericDataTypeTest extends MySQLDataTypeTestBase {
       ctx.assertEquals(Numeric.parse("18446744073709551615"), row.getValue(0));
       ctx.assertEquals(Numeric.parse("18446744073709551615"), row.getValue(columnName));
       ctx.assertEquals(Numeric.parse("18446744073709551615"), row.get(Numeric.class, 0));
+      ctx.assertEquals(new BigDecimal("18446744073709551615"), row.getBigDecimal(0));
+      ctx.assertEquals(new BigDecimal("18446744073709551615"), row.getBigDecimal(columnName));
     }));
   }
 }

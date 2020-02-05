@@ -8,7 +8,7 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 import java.util.ArrayDeque;
 import java.util.List;
 
-import static io.vertx.mysqlclient.impl.codec.Packets.*;
+import static io.vertx.mysqlclient.impl.protocol.Packets.*;
 
 class MySQLDecoder extends ByteToMessageDecoder {
 
