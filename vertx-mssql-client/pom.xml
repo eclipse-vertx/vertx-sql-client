@@ -14,7 +14,7 @@
 
   <name>Vertx MSSQL Client</name>
   <url>https://github.com/eclipse-vertx/vertx-sql-client</url>
-  <description>The Reactive MSSQL client</description>
+  <description>The Reactive MSSQL Client</description>
 
   <properties>
     <doc.skip>false</doc.skip>

@@ -30,7 +30,7 @@
 
   <name>Vertx SQL Client parent</name>
   <url>https://github.com/eclipse-vertx/vertx-sql-client</url>
-  <description>The Reactive SQL client</description>
+  <description>The Reactive SQL Client parent</description>
 
   <licenses>
     <license>

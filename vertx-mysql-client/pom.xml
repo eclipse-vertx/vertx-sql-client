@@ -29,7 +29,7 @@
 
   <name>Vertx MySQL Client</name>
   <url>https://github.com/eclipse-vertx/vertx-sql-client</url>
-  <description>The Reactive MySQL client</description>
+  <description>The Reactive MySQL Client</description>
 
   <properties>
     <doc.skip>false</doc.skip>
@@ -67,7 +67,7 @@
       <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-sql-client</artifactId>

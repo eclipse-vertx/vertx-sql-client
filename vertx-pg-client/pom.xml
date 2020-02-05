@@ -29,7 +29,7 @@
 
   <name>Vertx PostgreSQL Client</name>
   <url>https://github.com/eclipse-vertx/vertx-sql-client</url>
-  <description>The Reactive PostgreSQL client</description>
+  <description>The Reactive PostgreSQL Client</description>
 
   <properties>
     <doc.skip>false</doc.skip>
@@ -68,7 +68,7 @@
       <version>1.0.0-beta.2</version>
       <optional>true</optional>
     </dependency>
-    
+
     <!-- Testing purposes -->
     <dependency>
       <groupId>ru.yandex.qatools.embed</groupId>

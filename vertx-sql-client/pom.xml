@@ -27,6 +27,11 @@
 
   <artifactId>vertx-sql-client</artifactId>
 
+  <name>Vertx SQL Client</name>
+  <url>https://github.com/eclipse-vertx/vertx-sql-client</url>
+  <description>The Reactive SQL Client</description>
+
+
   <properties>
     <docs.dir>${project.basedir}/src/main/docs</docs.dir>
     <generated.dir>${project.basedir}/src/main/generated</generated.dir>
