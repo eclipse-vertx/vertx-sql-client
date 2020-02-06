@@ -47,6 +47,10 @@ jobs:
       name: "MSSQL 2017-CU12"
       jdk: openjdk8
       script: mvn -q clean verify -B --projects vertx-sql-client,vertx-mssql-client
+    - stage: test
+      name: "DB2 11.5"
+      jdk: openjdk8
+      script: mvn -q clean verify -B --projects vertx-sql-client,vertx-db2-client
     - stage: deploy
       name: "Deploy to Sonatype's snapshots repository"
       if: type != pull_request AND env(SONATYPE_NEXUS_USERNAME) IS present

@@ -59,7 +59,7 @@
     <!-- We skip sources jar generation as we do it with the assembly plugin to have greater control over the content -->
     <source.skip>true</source.skip>
     <kotlin.version>1.3.0</kotlin.version>
-    <testcontainers.version>1.12.0</testcontainers.version>
+    <testcontainers.version>1.12.4</testcontainers.version>
   </properties>
 
   <dependencyManagement>
@@ -107,6 +107,7 @@
     <module>vertx-pg-client</module>
     <module>vertx-mysql-client</module>
     <module>vertx-mssql-client</module>
+    <module>vertx-db2-client</module>
   </modules>
 
 
