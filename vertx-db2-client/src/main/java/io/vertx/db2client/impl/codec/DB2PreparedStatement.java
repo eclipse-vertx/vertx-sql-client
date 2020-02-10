@@ -15,7 +15,15 @@
  */
 package io.vertx.db2client.impl.codec;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.db2client.impl.drda.Cursor;
 import io.vertx.db2client.impl.drda.Section;
+import io.vertx.db2client.impl.drda.SectionManager;
 import io.vertx.sqlclient.impl.ParamDesc;
 import io.vertx.sqlclient.impl.PreparedStatement;
 import io.vertx.sqlclient.impl.RowDesc;
@@ -23,10 +31,26 @@ import io.vertx.sqlclient.impl.TupleInternal;
 
 class DB2PreparedStatement implements PreparedStatement {
 
+    private static final Logger LOG = LoggerFactory.getLogger(DB2PreparedStatement.class);
+
     final String sql;
     final DB2ParamDesc paramDesc;
     final DB2RowDesc rowDesc;
     final Section section;
+
+    private final Map<String, QueryInstance> activeQueries = new HashMap<>(4);
+
+    public static class QueryInstance {
+        final String cursorId;
+        long queryInstanceId;
+        Cursor cursor;
+
+        QueryInstance(String cursorId) {
+            if (LOG.isDebugEnabled())
+                LOG.debug("Creating new queryInstance with id=" + cursorId);
+            this.cursorId = cursorId;
+        }
+    }
 
     DB2PreparedStatement(String sql, DB2ParamDesc paramDesc, DB2RowDesc rowDesc, Section section) {
         this.paramDesc = paramDesc;
@@ -53,5 +77,22 @@ class DB2PreparedStatement implements PreparedStatement {
     @Override
     public String prepare(TupleInternal values) {
         return paramDesc.prepare(values);
+    }
+
+    QueryInstance getQueryInstance(String cursorId) {
+        cursorId = cursorId == null ? UUID.randomUUID().toString() : cursorId;
+        return activeQueries.computeIfAbsent(cursorId, c -> {
+            return new QueryInstance(c);
+        });
+    }
+
+    void closeQuery(QueryInstance query) {
+        LOG.debug("Closing queryInstance " + query.cursorId);
+        activeQueries.remove(query.cursorId);
+    }
+
+    void close() {
+        activeQueries.values().stream().forEach(this::closeQuery);
+        section.release();
     }
 }

@@ -16,16 +16,12 @@
 package io.vertx.db2client.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
 import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
 
 class CloseConnectionCommandCodec extends CommandCodec<Void, CloseConnectionCommand> {
-	
-	private static final Logger LOG = LoggerFactory.getLogger(CloseConnectionCommandCodec.class);
-	
+
   CloseConnectionCommandCodec(CloseConnectionCommand cmd) {
     super(cmd);
   }
@@ -33,13 +29,8 @@ class CloseConnectionCommandCodec extends CommandCodec<Void, CloseConnectionComm
   @Override
   void encode(DB2Encoder encoder) {
     super.encode(encoder);
-    if (LOG.isDebugEnabled())
-    	LOG.debug("encode close");
-    // TODO: @AGG should we also close statements/queries here?
     ByteBuf packet = allocateBuffer();
     DRDAQueryRequest closeCursor = new DRDAQueryRequest(packet);
-    // TODO: @AGG track open cursors somehow so they can be closed here
-    //closeCursor.buildCLSQRY(SectionManager.INSTANCE.getDynamicSection(), encoder.socketConnection.database(), 1); // @AGG guessing 1 on queryInstanceId
     closeCursor.buildRDBCMM();
     closeCursor.completeCommand();
     sendNonSplitPacket(packet);
@@ -47,10 +38,7 @@ class CloseConnectionCommandCodec extends CommandCodec<Void, CloseConnectionComm
 
   @Override
   void decodePayload(ByteBuf payload, int payloadLength) {
-	  if (LOG.isDebugEnabled())
-		  LOG.debug("disconnect reply");
       DRDAQueryResponse closeCursor = new DRDAQueryResponse(payload);
-      //closeCursor.readCursorClose();
       closeCursor.readLocalCommit();
   }
 }

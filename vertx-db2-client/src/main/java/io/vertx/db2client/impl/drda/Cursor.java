@@ -1266,11 +1266,8 @@ public class Cursor {
      * server
      * @return <code>true</code> if the current row position is a
      * valid row position.
-     * @exception SQLException
      */
-    protected
-        boolean calculateColumnOffsetsForRow_(int rowIndex,
-                                              boolean allowServerFetch)
+    protected boolean calculateColumnOffsetsForRow_(int rowIndex, boolean allowServerFetch)
     {
         int daNullIndicator = CodePoint.NULLDATA;
         int colNullIndicator = CodePoint.NULLDATA;

@@ -19,8 +19,7 @@ import java.sql.ResultSet;
 import java.util.stream.Collector;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.db2client.impl.codec.DB2PreparedStatement.QueryInstance;
 import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
 import io.vertx.sqlclient.Row;
@@ -31,55 +30,47 @@ import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
 class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
 	
-	private static final Logger LOG = LoggerFactory.getLogger(ExtendedQueryCommandCodec.class);
+	private final QueryInstance queryInstance;
 	
     ExtendedQueryCommandCodec(ExtendedQueryCommand<R> cmd) {
         super(cmd);
-        if (cmd.fetch() > 0) {
-            // restore the state we need for decoding fetch response
-            columnDefinitions = statement.rowDesc.columnDefinitions();
-        }
-        // @AGG always carry over column defs?
         columnDefinitions = statement.rowDesc.columnDefinitions();
-        querySection = statement.section;
+        queryInstance = statement.getQueryInstance(cmd.cursorId());
     }
 
     @Override
     void encode(DB2Encoder encoder) {
         super.encode(encoder);
-        if (LOG.isDebugEnabled())        
-        	LOG.debug("Extended query encode: statement=" + statement);
-        
         ByteBuf packet = allocateBuffer();
-        DRDAQueryRequest openQuery = new DRDAQueryRequest(packet);
+        DRDAQueryRequest queryRequest = new DRDAQueryRequest(packet);
         String dbName = encoder.socketConnection.database();
-        int fetchSize = 0; // TODO @AGG get fetch size from config
+        int fetchSize = cmd.fetch();
         Tuple params = cmd.params();
         Object[] inputs = new Object[params.size()];
         for (int i = 0; i < params.size(); i++)
             inputs[i] = params.getValue(i);
         
         if (DRDAQueryRequest.isQuery(cmd.sql())) {
-            openQuery.writeOpenQuery(querySection, dbName, fetchSize, ResultSet.TYPE_FORWARD_ONLY, inputs.length,
-                    statement.paramDesc.paramDefinitions(), inputs);
-            openQuery.completeCommand();
+            if (queryInstance.cursor == null) {
+                queryRequest.writeOpenQuery(statement.section, dbName, fetchSize, ResultSet.TYPE_FORWARD_ONLY, inputs.length,
+                        statement.paramDesc.paramDefinitions(), inputs);
+            } else {
+                queryRequest.writeFetch(statement.section, dbName, fetchSize, queryInstance.queryInstanceId);
+            }
         } else { // is an update
         	boolean outputExpected = false; // TODO @AGG implement later, is true if result set metadata num columns > 0
         	boolean chainAutoCommit = true;
-        	openQuery.writeExecute(querySection, dbName, statement.paramDesc.paramDefinitions(), inputs, inputs.length, outputExpected, chainAutoCommit);
-        	openQuery.buildRDBCMM();
-        	openQuery.completeCommand();
+        	queryRequest.writeExecute(statement.section, dbName, statement.paramDesc.paramDefinitions(), inputs, inputs.length, outputExpected, chainAutoCommit);
+        	queryRequest.buildRDBCMM();
         	
         	// TODO: for auto generated keys we also need to flow a writeOpenQuery
         }
+        queryRequest.completeCommand();
         encoder.chctx.writeAndFlush(packet);
     }
     
     @Override
     void decodePayload(ByteBuf payload, int payloadLength) {
-    	if (LOG.isDebugEnabled())        
-        	LOG.debug("Extended query decode");
-    	
         if (DRDAQueryRequest.isQuery(cmd.sql())) {
         	decodeQuery(payload);
         } else { // is update
@@ -89,17 +80,21 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
     
     private void decodeQuery(ByteBuf payload) {
         DRDAQueryResponse resp = new DRDAQueryResponse(payload);
-        resp.setOutputColumnMetaData(columnDefinitions);
-        resp.readBeginOpenQuery();
-        decoder = new RowResultDecoder<>(cmd.collector(), new DB2RowDesc(columnDefinitions), resp.getCursor(), resp);
-        commandHandlerState = CommandHandlerState.HANDLING_ROW_DATA;
+        if (queryInstance.cursor == null) {
+            resp.setOutputColumnMetaData(columnDefinitions);
+            resp.readBeginOpenQuery();
+            decoder = new RowResultDecoder<>(cmd.collector(), new DB2RowDesc(columnDefinitions), resp.getCursor(), resp);
+            queryInstance.cursor = resp.getCursor();
+            queryInstance.queryInstanceId = resp.getQueryInstanceId();
+            commandHandlerState = CommandHandlerState.HANDLING_ROW_DATA;
+        } else {
+            resp.readFetch(queryInstance.cursor);
+            decoder = new RowResultDecoder<>(cmd.collector(), statement.rowDesc, queryInstance.cursor, resp);
+        }
         while (decoder.next()) {
             decoder.handleRow(columnDefinitions.columns_, payload);
         }
-        if (decoder.isQueryComplete())
-            decoder.cursor.setAllRowsReceivedFromServer(true);
-        else
-            throw new UnsupportedOperationException("Need to fetch more data from DB");
+        boolean hasMoreResults = !decoder.isQueryComplete();
         
         commandHandlerState = CommandHandlerState.HANDLING_END_OF_QUERY;
         int updatedCount = 0; // @AGG hardcoded to 0
@@ -113,7 +108,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
         size = decoder.size();
         decoder.reset();
         cmd.resultHandler().handleResult(updatedCount, size, rowDesc, result, failure);
-        completionHandler.handle(CommandResponse.success(true));
+        completionHandler.handle(CommandResponse.success(hasMoreResults));
         return;
     }
     

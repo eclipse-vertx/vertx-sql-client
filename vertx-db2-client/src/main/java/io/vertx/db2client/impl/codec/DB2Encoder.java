@@ -25,8 +25,10 @@ import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.db2client.impl.DB2SocketConnection;
 import io.vertx.db2client.impl.command.InitialHandshakeCommand;
 import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
+import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
 import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
@@ -53,7 +55,7 @@ class DB2Encoder extends ChannelOutboundHandlerAdapter {
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
     	if (LOG.isDebugEnabled())
-    		LOG.debug("writing command: " + msg);
+    		LOG.debug(">>> ENCODE " + msg);
         if (msg instanceof CommandBase<?>) {
             CommandBase<?> cmd = (CommandBase<?>) msg;
             write(cmd);
@@ -74,7 +76,8 @@ class DB2Encoder extends ChannelOutboundHandlerAdapter {
         try {
             codec.encode(this);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error("FATAL: Unable to encode command: " + cmd, e);
+            codec.completionHandler.handle(CommandResponse.failure(e));
         }
     }
 
@@ -95,8 +98,8 @@ class DB2Encoder extends ChannelOutboundHandlerAdapter {
             return new PrepareStatementCodec((PrepareStatementCommand) cmd);
         } else if (cmd instanceof CloseStatementCommand) {
             return new CloseStatementCommandCodec((CloseStatementCommand) cmd);
-            // } else if (cmd instanceof CloseCursorCommand) {
-            // return new ResetStatementCommandCodec((CloseCursorCommand) cmd);
+        } else if (cmd instanceof CloseCursorCommand) {
+            return new CloseCursorCommandCodec((CloseCursorCommand) cmd);
 //        } else if (cmd instanceof PingCommand) {
 //            return new PingCommandCodec((PingCommand) cmd);
 //        } else if (cmd instanceof InitDbCommand) {
@@ -112,7 +115,9 @@ class DB2Encoder extends ChannelOutboundHandlerAdapter {
             // } else if (cmd instanceof ChangeUserCommand) {
             // return new ChangeUserCommandCodec((ChangeUserCommand) cmd);
         } else {
-            throw new UnsupportedOperationException("Unsupported command type: " + cmd);
+            UnsupportedOperationException uoe = new UnsupportedOperationException("Unsupported command type: " + cmd);
+            LOG.error(uoe);
+            throw uoe;
         }
     }
 }

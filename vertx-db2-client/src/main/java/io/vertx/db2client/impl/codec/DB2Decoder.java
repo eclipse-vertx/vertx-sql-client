@@ -47,8 +47,6 @@ class DB2Decoder extends ByteToMessageDecoder {
             // wait until we have more bytes to read
             return;
         }
-        if (LOG.isDebugEnabled())
-        	LOG.debug("received " + payloadLength + " bytes for " + inflight.peek());
         decodePayload(in.readRetainedSlice(payloadLength), payloadLength, in.getShort(in.readerIndex() + 4));
     }
     
@@ -72,6 +70,8 @@ class DB2Decoder extends ByteToMessageDecoder {
         ctx.sequenceId = sequenceId + 1;
         int startIndex = payload.readerIndex();
         try {
+            if (LOG.isDebugEnabled())
+                LOG.debug("<<< DECODE " + ctx + " (" + payloadLength + " bytes)");
             ctx.decodePayload(payload, payloadLength);
         } catch (Throwable t) {
             int i = payload.readerIndex();

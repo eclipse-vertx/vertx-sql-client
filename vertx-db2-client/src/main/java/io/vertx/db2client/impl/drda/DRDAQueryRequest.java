@@ -278,7 +278,6 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
             int numInputColumns,
             ColumnMetaData parameterMetaData,
             Object[] inputs) {
-        boolean sendQryrowset = checkSendQryrowset(fetchSize, resultSetType);
         fetchSize = checkFetchsize(fetchSize, resultSetType);
         // think about if there is a way we can call build ddm just passing ddm parameters and not passing the material ps object
         // maybe not, if sometimes we need to set the caches hanging off the ps object during the ddm build
@@ -286,7 +285,6 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
 
         buildOPNQRY(section,
                 dbName,
-                sendQryrowset,
                 fetchSize);
 
 
@@ -311,6 +309,97 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
             buildEXTDTA(parameterMetaData,
                     inputs,
                     false);  //chained, do we chain after Extdta's on open
+        }
+    }
+    
+    public void writeFetch(Section section, String dbName, int fetchSize, long queryId) {
+        // - for forward-only cursors we do not send qryrowset on OPNQRY, fetchSize is ignored.
+        // but qryrowset is sent on EXCSQLSTT for a stored procedure call.
+        boolean sendQryrowset = false; // ((NetStatement) resultSet.statement_.getMaterialStatement()).qryrowsetSentOnOpnqry_;
+
+        boolean sendRtnextdta = false;
+
+        if (sendQryrowset 
+                //&& resultSet.resultSetType_ == ResultSet.TYPE_FORWARD_ONLY
+                //&& ((NetCursor) resultSet.cursor_).hasLobs_) { TODO: support for LOBs
+                ) {
+
+            fetchSize = 1;
+//            resultSet.fetchSize_ = 1;
+            sendRtnextdta = true;
+//            ((NetCursor) resultSet.cursor_).rtnextrow_ = false;
+        }
+        // if one of the result sets returned from a stored procedure is scrollable,
+        // then we set netStatement_.qryrowsetSentOnOpnqry_ to true even though we didn't really
+        // send a qryrowset on excsqlstt for sqlam >= 7. this is ok for scrollable cursors,
+        // but will cause a problem for forward-only cursors. Because if fetchSize was never
+        // set, we will send qryrowset(0), which will cause a syntaxrm.
+        else if (fetchSize == 0) {
+            sendQryrowset = false;
+        }
+
+        buildCNTQRY(section, dbName, sendQryrowset, queryId, fetchSize, sendRtnextdta);
+
+        // TODO: call this if LOBs are present
+//        buildOUTOVR(resultSet, resultSet.resultSetMetaData_, resultSet.firstOutovrBuilt_,
+//                ((NetCursor) resultSet.cursor_).hasLobs_);
+    }
+    
+    // build output overrides
+    private void buildOUTOVR(/*NetResultSet resultSet, */ColumnMetaData resultSetMetaData, boolean firstOutovrBuilt, boolean hasLobs) {
+//        if (hasLobs) {
+//            if (!firstOutovrBuilt) {
+//                buildOUTOVR(resultSetMetaData);
+//                resultSet.firstOutovrBuilt_ = true;
+//            }
+//        }
+    }
+    
+    private void buildCNTQRY(Section section,
+            String dbName,
+            boolean sendQryrowset, long queryInstanceIdentifier, int qryrowsetSize,
+            boolean sendRtnextdta) {
+        buildCoreCNTQRY(section, dbName, sendQryrowset, queryInstanceIdentifier, qryrowsetSize);
+
+        // We will always let RTNEXTDTA default to RTNEXTROW. The only time we need to
+        // send
+        // RTNEXTDTA RTNEXTALL is for a stored procedure returned forward-only ResultSet
+        // that has LOB columns. Since there are LOBs in the
+        // ResultSet, no QRYDTA is returned on execute. On the CNTQRY's, we will
+        // send qryrowset(1) and rtnextall.
+        if (sendRtnextdta) {
+            buildRTNEXTDTA(CodePoint.RTNEXTALL);
+        }
+
+        updateLengthBytes();
+    }
+    
+    private void buildRTNEXTDTA(int rtnextdta) {
+        writeScalar1Byte(CodePoint.RTNEXTDTA, rtnextdta);
+    }
+
+    // buildCoreCntqry builds the common parameters
+    private void buildCoreCNTQRY(Section section,
+                                 String dbName,
+                                 boolean sendQryrowset,
+                                 long queryInstanceIdentifier,
+                                 int qryrowsetSize) {
+        createCommand();
+        markLengthBytes(CodePoint.CNTQRY);
+
+        buildPKGNAMCSN(dbName, section); // 1. packageNameAndConsistencyToken
+        buildQRYBLKSZ(); // 2. qryblksz
+
+        // maxblkext (-1) tells the server that the client is capable of receiving any number of query blocks
+        if (sendQryrowset) {
+            buildMAXBLKEXT(-1); // 3. maxblkext
+        }
+
+        // 4. qryinsid
+        buildQRYINSID(queryInstanceIdentifier);
+
+        if (sendQryrowset) {
+            buildQRYROWSET(qryrowsetSize);  // 5. qryrowset
         }
     }
     
@@ -1343,13 +1432,12 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                                String dbName,
                                int fetchSize,
                                int resultSetType) {
-        boolean sendQryrowset = checkSendQryrowset(fetchSize, resultSetType);
         fetchSize = checkFetchsize(fetchSize, resultSetType);
 
         // think about if there is a way we can call build ddm just passing ddm parameters and not passing the material ps object
         // maybe not, if sometimes we need to set the caches hanging off the ps object during the ddm build
         // maybe we can extricate conditionals in the build ddm logic outside
-        buildOPNQRY(section, dbName, sendQryrowset, fetchSize);
+        buildOPNQRY(section, dbName, fetchSize);
 
 
         // may be able to merge this with firstContinueQuery_ and push above conditional to common
@@ -1464,7 +1552,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
     //
     private void buildOPNQRY(Section section,
             String dbName,
-                     boolean sendQueryRowSet,
+//                     boolean sendQueryRowSet,
                      int fetchSize) {
         createCommand();
         markLengthBytes(CodePoint.OPNQRY);
@@ -1472,9 +1560,14 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
         buildPKGNAMCSN(dbName, section);
         buildQRYBLKSZ();  // specify a hard coded query block size
 
-        if (sendQueryRowSet) {
-            buildMAXBLKEXT(-1);
-            buildQRYROWSET(fetchSize);
+//        if (sendQueryRowSet) {
+//            buildMAXBLKEXT(-1);
+//            buildQRYROWSET(fetchSize);
+//        }
+        
+        if (fetchSize != 0) {
+            System.out.println("@AGG writing fetchSize=" + fetchSize);
+            buildQRYROWSET(fetchSize);            
         }
 
         // Tell the server to close forward-only result sets
