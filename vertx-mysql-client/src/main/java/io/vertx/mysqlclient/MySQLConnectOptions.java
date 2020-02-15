@@ -221,7 +221,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   /**
    * Get the path of the server RSA public key.
    *
-   * @return a reference to this, so the API can be used fluently
+   * @return the public key path
    */
   public String getServerRsaPublicKeyPath() {
     return serverRsaPublicKeyPath;
@@ -230,7 +230,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   /**
    * Set the value of server RSA public key which is mostly used for encrypting password under insecure connections when performing authentication.
    *
-   * @param serverRsaPublicKeyValue the path of the server RSA public key
+   * @param serverRsaPublicKeyValue the value of the server RSA public key
    * @return a reference to this, so the API can be used fluently
    */
   public MySQLConnectOptions setServerRsaPublicKeyValue(Buffer serverRsaPublicKeyValue) {
@@ -241,7 +241,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   /**
    * Get the value of the server RSA public key.
    *
-   * @return a reference to this, so the API can be used fluently
+   * @return the public key value
    */
   public Buffer getServerRsaPublicKeyValue() {
     return serverRsaPublicKeyValue;
