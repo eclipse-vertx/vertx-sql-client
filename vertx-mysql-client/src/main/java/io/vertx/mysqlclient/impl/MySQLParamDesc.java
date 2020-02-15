@@ -20,7 +20,6 @@ public class MySQLParamDesc extends ParamDesc {
     return paramDefinitions;
   }
 
-  @Override
   public String prepare(TupleInternal values) {
     int numberOfParameters = values.size();
     int paramDescLength = paramDefinitions.length;

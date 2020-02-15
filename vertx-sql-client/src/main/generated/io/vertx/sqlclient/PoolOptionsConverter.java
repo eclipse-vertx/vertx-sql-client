@@ -29,6 +29,29 @@ public class PoolOptionsConverter {
     }
   }
 
+  public static PoolOptions fromMap(Iterable<java.util.Map.Entry<String, Object>> map) {
+    PoolOptions obj = new PoolOptions();
+    fromMap(map, obj);
+    return obj;
+  }
+
+  public static void fromMap(Iterable<java.util.Map.Entry<String, Object>> map, PoolOptions obj) {
+    for (java.util.Map.Entry<String, Object> member : map) {
+      switch (member.getKey()) {
+        case "maxSize":
+          if (member.getValue() instanceof Number) {
+            obj.setMaxSize(((Number)member.getValue()).intValue());
+          }
+          break;
+        case "maxWaitQueueSize":
+          if (member.getValue() instanceof Number) {
+            obj.setMaxWaitQueueSize(((Number)member.getValue()).intValue());
+          }
+          break;
+      }
+    }
+  }
+
   public static void toJson(PoolOptions obj, JsonObject json) {
     toJson(obj, json.getMap());
   }

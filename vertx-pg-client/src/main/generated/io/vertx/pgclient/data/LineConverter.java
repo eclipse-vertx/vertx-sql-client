@@ -34,6 +34,34 @@ public class LineConverter {
     }
   }
 
+  public static Line fromMap(Iterable<java.util.Map.Entry<String, Object>> map) {
+    Line obj = new Line();
+    fromMap(map, obj);
+    return obj;
+  }
+
+  public static void fromMap(Iterable<java.util.Map.Entry<String, Object>> map, Line obj) {
+    for (java.util.Map.Entry<String, Object> member : map) {
+      switch (member.getKey()) {
+        case "a":
+          if (member.getValue() instanceof Number) {
+            obj.setA(((Number)member.getValue()).doubleValue());
+          }
+          break;
+        case "b":
+          if (member.getValue() instanceof Number) {
+            obj.setB(((Number)member.getValue()).doubleValue());
+          }
+          break;
+        case "c":
+          if (member.getValue() instanceof Number) {
+            obj.setC(((Number)member.getValue()).doubleValue());
+          }
+          break;
+      }
+    }
+  }
+
   public static void toJson(Line obj, JsonObject json) {
     toJson(obj, json.getMap());
   }

@@ -54,6 +54,54 @@ public class MySQLConnectOptionsConverter {
     }
   }
 
+  public static MySQLConnectOptions fromMap(Iterable<java.util.Map.Entry<String, Object>> map) {
+    MySQLConnectOptions obj = new MySQLConnectOptions();
+    fromMap(map, obj);
+    return obj;
+  }
+
+  public static void fromMap(Iterable<java.util.Map.Entry<String, Object>> map, MySQLConnectOptions obj) {
+    for (java.util.Map.Entry<String, Object> member : map) {
+      switch (member.getKey()) {
+        case "characterEncoding":
+          if (member.getValue() instanceof String) {
+            obj.setCharacterEncoding((String)member.getValue());
+          }
+          break;
+        case "charset":
+          if (member.getValue() instanceof String) {
+            obj.setCharset((String)member.getValue());
+          }
+          break;
+        case "collation":
+          if (member.getValue() instanceof String) {
+            obj.setCollation((String)member.getValue());
+          }
+          break;
+        case "serverRsaPublicKeyPath":
+          if (member.getValue() instanceof String) {
+            obj.setServerRsaPublicKeyPath((String)member.getValue());
+          }
+          break;
+        case "serverRsaPublicKeyValue":
+          if (member.getValue() instanceof io.vertx.core.buffer.Buffer) {
+            obj.setServerRsaPublicKeyValue((io.vertx.core.buffer.Buffer)member.getValue());
+          }
+          break;
+        case "sslMode":
+          if (member.getValue() instanceof io.vertx.mysqlclient.SslMode) {
+            obj.setSslMode((io.vertx.mysqlclient.SslMode)member.getValue());
+          }
+          break;
+        case "useAffectedRows":
+          if (member.getValue() instanceof Boolean) {
+            obj.setUseAffectedRows((Boolean)member.getValue());
+          }
+          break;
+      }
+    }
+  }
+
   public static void toJson(MySQLConnectOptions obj, JsonObject json) {
     toJson(obj, json.getMap());
   }

@@ -41,7 +41,6 @@ class PgParamDesc extends ParamDesc {
     return paramDataTypes;
   }
 
-  @Override
   public String prepare(TupleInternal values) {
     int numberOfParams = values.size();
     int paramDescLength = paramDataTypes.length;

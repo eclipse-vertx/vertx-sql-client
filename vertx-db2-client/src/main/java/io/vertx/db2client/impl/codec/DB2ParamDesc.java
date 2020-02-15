@@ -32,7 +32,6 @@ class DB2ParamDesc extends ParamDesc {
         return paramDefinitions;
     }
 
-    @Override
     public String prepare(TupleInternal values) {
         if (values.size() != paramDefinitions.columns_) {
             return buildReport(values);

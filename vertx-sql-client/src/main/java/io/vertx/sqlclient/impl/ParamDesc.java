@@ -21,6 +21,5 @@ package io.vertx.sqlclient.impl;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public abstract class ParamDesc {
-  public abstract String prepare(TupleInternal values);
+public class ParamDesc {
 }

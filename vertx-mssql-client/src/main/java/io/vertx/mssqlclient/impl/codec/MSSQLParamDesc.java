@@ -15,7 +15,6 @@ class MSSQLParamDesc extends ParamDesc {
     return paramDescriptions;
   }
 
-  @Override
   public String prepare(TupleInternal values) {
     int numberOfParameters = values.size();
     int paramDescLength = paramDescriptions.length;

@@ -29,6 +29,29 @@ public class LineSegmentConverter {
     }
   }
 
+  public static LineSegment fromMap(Iterable<java.util.Map.Entry<String, Object>> map) {
+    LineSegment obj = new LineSegment();
+    fromMap(map, obj);
+    return obj;
+  }
+
+  public static void fromMap(Iterable<java.util.Map.Entry<String, Object>> map, LineSegment obj) {
+    for (java.util.Map.Entry<String, Object> member : map) {
+      switch (member.getKey()) {
+        case "p1":
+          if (member.getValue() instanceof io.vertx.pgclient.data.Point) {
+            obj.setP1((io.vertx.pgclient.data.Point)member.getValue());
+          }
+          break;
+        case "p2":
+          if (member.getValue() instanceof io.vertx.pgclient.data.Point) {
+            obj.setP2((io.vertx.pgclient.data.Point)member.getValue());
+          }
+          break;
+      }
+    }
+  }
+
   public static void toJson(LineSegment obj, JsonObject json) {
     toJson(obj, json.getMap());
   }

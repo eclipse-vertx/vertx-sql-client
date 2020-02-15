@@ -31,6 +31,31 @@ public class PgConnectOptionsConverter {
     }
   }
 
+  public static PgConnectOptions fromMap(Iterable<java.util.Map.Entry<String, Object>> map) {
+    PgConnectOptions obj = new PgConnectOptions();
+    fromMap(map, obj);
+    return obj;
+  }
+
+  public static void fromMap(Iterable<java.util.Map.Entry<String, Object>> map, PgConnectOptions obj) {
+    for (java.util.Map.Entry<String, Object> member : map) {
+      switch (member.getKey()) {
+        case "pipeliningLimit":
+          if (member.getValue() instanceof Number) {
+            obj.setPipeliningLimit(((Number)member.getValue()).intValue());
+          }
+          break;
+        case "sslMode":
+          if (member.getValue() instanceof io.vertx.pgclient.SslMode) {
+            obj.setSslMode((io.vertx.pgclient.SslMode)member.getValue());
+          }
+          break;
+        case "usingDomainSocket":
+          break;
+      }
+    }
+  }
+
   public static void toJson(PgConnectOptions obj, JsonObject json) {
     toJson(obj, json.getMap());
   }

@@ -29,6 +29,29 @@ public class CircleConverter {
     }
   }
 
+  public static Circle fromMap(Iterable<java.util.Map.Entry<String, Object>> map) {
+    Circle obj = new Circle();
+    fromMap(map, obj);
+    return obj;
+  }
+
+  public static void fromMap(Iterable<java.util.Map.Entry<String, Object>> map, Circle obj) {
+    for (java.util.Map.Entry<String, Object> member : map) {
+      switch (member.getKey()) {
+        case "centerPoint":
+          if (member.getValue() instanceof io.vertx.pgclient.data.Point) {
+            obj.setCenterPoint((io.vertx.pgclient.data.Point)member.getValue());
+          }
+          break;
+        case "radius":
+          if (member.getValue() instanceof Number) {
+            obj.setRadius(((Number)member.getValue()).doubleValue());
+          }
+          break;
+      }
+    }
+  }
+
   public static void toJson(Circle obj, JsonObject json) {
     toJson(obj, json.getMap());
   }

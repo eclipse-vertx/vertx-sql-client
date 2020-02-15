@@ -29,6 +29,19 @@ public class PolygonConverter {
     }
   }
 
+  public static Polygon fromMap(Iterable<java.util.Map.Entry<String, Object>> map) {
+    Polygon obj = new Polygon();
+    fromMap(map, obj);
+    return obj;
+  }
+
+  public static void fromMap(Iterable<java.util.Map.Entry<String, Object>> map, Polygon obj) {
+    for (java.util.Map.Entry<String, Object> member : map) {
+      switch (member.getKey()) {
+      }
+    }
+  }
+
   public static void toJson(Polygon obj, JsonObject json) {
     toJson(obj, json.getMap());
   }
