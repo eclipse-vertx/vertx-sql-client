@@ -17,8 +17,10 @@
 
 package io.vertx.sqlclient.impl.pool;
 
-import io.vertx.sqlclient.impl.ConnectionPool;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.ConnectionFactory;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -218,11 +220,16 @@ public class ConnectionPoolTest {
     SimpleHolder holder2 = new SimpleHolder();
     SimpleConnection conn = new SimpleConnection();
     ConnectionPool[] poolRef = new ConnectionPool[1];
-    ConnectionPool pool = new ConnectionPool(ar -> {
-      poolRef[0].acquire(holder2);
-      assertFalse(holder2.isComplete());
-      ar.handle(Future.succeededFuture(conn));
-      assertFalse(holder2.isComplete());
+    ConnectionPool pool = new ConnectionPool(new ConnectionFactory() {
+      @Override
+      public Future<Connection> connect() {
+        Promise<Connection> promise = Promise.promise();
+        poolRef[0].acquire(holder2);
+        assertFalse(holder2.isComplete());
+        promise.complete(conn);
+        assertFalse(holder2.isComplete());
+        return promise.future();
+      }
     }, 1, 0);
     poolRef[0] = pool;
     SimpleHolder holder1 = new SimpleHolder();

@@ -16,7 +16,6 @@
  */
 package io.vertx.pgclient.impl;
 
-import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
@@ -35,8 +34,8 @@ public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implem
     if (options.isUsingDomainSocket() && !context.owner().isNativeTransportEnabled()) {
       return context.failedFuture("Native transport is not available");
     } else {
-      PgConnectionFactory client = new PgConnectionFactory(context.owner(), options);
-      return client.connectAndInit(context)
+      PgConnectionFactory client = new PgConnectionFactory(context.owner(), context, options);
+      return client.connect()
         .map(conn -> {
         PgConnectionImpl pgConn = new PgConnectionImpl(client, context, conn);
         conn.init(pgConn);
@@ -82,14 +81,7 @@ public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implem
   public PgConnection cancelRequest(Handler<AsyncResult<Void>> handler) {
     Context current = Vertx.currentContext();
     if (current == context) {
-      factory.connect(context).setHandler(ar -> {
-        if (ar.succeeded()) {
-          PgSocketConnection conn = ar.result();
-          conn.sendCancelRequestMessage(this.processId(), this.secretKey(), handler);
-        } else {
-          handler.handle(Future.failedFuture(ar.cause()));
-        }
-      });
+      factory.cancelRequest(this.processId(), this.secretKey(), handler);
     } else {
       context.runOnContext(v -> cancelRequest(handler));
     }

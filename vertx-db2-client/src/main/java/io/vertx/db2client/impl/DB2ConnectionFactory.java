@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.net.NetClient;
@@ -27,9 +28,11 @@ import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.ConnectionFactory;
 
-public class DB2ConnectionFactory {
+public class DB2ConnectionFactory implements ConnectionFactory {
     private final NetClient netClient;
+    private final ContextInternal context;
     private final String host;
     private final int port;
     private final String username;
@@ -39,10 +42,11 @@ public class DB2ConnectionFactory {
     private final boolean cachePreparedStatements;
     private final int preparedStatementCacheSize;
     private final int preparedStatementCacheSqlLimit;
-    
-    public DB2ConnectionFactory(Vertx vertx, DB2ConnectOptions options) {
+
+    public DB2ConnectionFactory(Vertx vertx, ContextInternal context, DB2ConnectOptions options) {
         NetClientOptions netClientOptions = new NetClientOptions(options);
 
+        this.context = context;
         this.host = options.getHost();
         this.port = options.getPort();
         this.username = options.getUser();
@@ -61,16 +65,24 @@ public class DB2ConnectionFactory {
       netClient.close();
     }
 
-    public Future<Connection> connect(ContextInternal context) {
-        Future<NetSocket> fut = netClient.connect(port, host);
-        return fut
-          .map(so -> {
-              DB2SocketConnection conn = new DB2SocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, context);
-            conn.init();
-            return conn;
-          })
-          .flatMap(conn -> Future.future(p -> {
-              conn.sendStartupMessage(username, password, database, connectionAttributes, p);
-          }));
+  @Override
+  public Future<Connection> connect() {
+    Promise<Connection> promise = context.promise();
+    context.dispatch(null, v -> doConnect(promise));
+    return promise.future();
+  }
+
+  public void doConnect(Promise<Connection> promise) {
+    Future<NetSocket> fut = netClient.connect(port, host);
+    fut.setHandler(ar -> {
+      if (ar.succeeded()) {
+        NetSocket so = ar.result();
+        DB2SocketConnection conn = new DB2SocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, context);
+        conn.init();
+        conn.sendStartupMessage(username, password, database, connectionAttributes, promise);
+      } else {
+        promise.fail(ar.cause());
       }
+    });
+  }
 }

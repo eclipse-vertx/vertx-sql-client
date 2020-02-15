@@ -11,6 +11,7 @@ import io.vertx.core.net.TrustOptions;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.ConnectionFactory;
 
 import java.nio.charset.Charset;
 import java.util.Collections;
@@ -18,8 +19,9 @@ import java.util.Map;
 
 import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.*;
 
-public class MySQLConnectionFactory {
+public class MySQLConnectionFactory implements ConnectionFactory {
   private final NetClient netClient;
+  private final ContextInternal context;
   private final String host;
   private final int port;
   private final String username;
@@ -36,9 +38,10 @@ public class MySQLConnectionFactory {
   private final int preparedStatementCacheSqlLimit;
   private final int initialCapabilitiesFlags;
 
-  public MySQLConnectionFactory(Vertx vertx, MySQLConnectOptions options) {
+  public MySQLConnectionFactory(Vertx vertx, ContextInternal context, MySQLConnectOptions options) {
     NetClientOptions netClientOptions = new NetClientOptions(options);
 
+    this.context = context;
     this.host = options.getHost();
     this.port = options.getPort();
     this.username = options.getUser();
@@ -109,17 +112,25 @@ public class MySQLConnectionFactory {
     netClient.close();
   }
 
-  public Future<Connection> connect(ContextInternal context) {
+  @Override
+  public Future<Connection> connect() {
+    Promise<Connection> promise = context.promise();
+    context.dispatch(null, v -> doConnect(promise));
+    return promise.future();
+  }
+
+  private void doConnect(Promise<Connection> promise) {
     Future<NetSocket> fut = netClient.connect(port, host);
-    return fut
-      .map(so -> {
-        MySQLSocketConnection mySQLSocketConnection = new MySQLSocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, context);
-        mySQLSocketConnection.init();
-        return mySQLSocketConnection;
-      })
-      .flatMap(conn -> Future.future(p -> {
-        conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, connectionAttributes, sslMode, initialCapabilitiesFlags, charsetEncoding, p);
-      }));
+    fut.setHandler(ar -> {
+      if (ar.succeeded()) {
+        NetSocket so = ar.result();
+        MySQLSocketConnection conn = new MySQLSocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, context);
+        conn.init();
+        conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, connectionAttributes, sslMode, initialCapabilitiesFlags, charsetEncoding, promise);
+      } else {
+        promise.fail(ar.cause());
+      }
+    });
   }
 
   private int initCapabilitiesFlags() {

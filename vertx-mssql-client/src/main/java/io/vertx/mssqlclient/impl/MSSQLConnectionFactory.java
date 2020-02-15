@@ -8,13 +8,15 @@ import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.ConnectionFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 
-class MSSQLConnectionFactory {
+class MSSQLConnectionFactory implements ConnectionFactory {
 
   private final NetClient netClient;
+  private final ContextInternal context;
   private final String host;
   private final int port;
   private final String username;
@@ -22,9 +24,10 @@ class MSSQLConnectionFactory {
   private final String database;
   private final Map<String, String> properties;
 
-  MSSQLConnectionFactory(Vertx vertx, MSSQLConnectOptions options) {
+  MSSQLConnectionFactory(Vertx vertx, ContextInternal context, MSSQLConnectOptions options) {
     NetClientOptions netClientOptions = new NetClientOptions(options);
 
+    this.context = context;
     this.host = options.getHost();
     this.port = options.getPort();
     this.username = options.getUser();
@@ -34,22 +37,31 @@ class MSSQLConnectionFactory {
     this.netClient = vertx.createNetClient(netClientOptions);
   }
 
-  Future<Connection> create(ContextInternal context) {
+  @Override
+  public Future<Connection> connect() {
+    Promise<Connection> promise = context.promise();
+    context.dispatch(null, v -> doConnect(promise));
+    return promise.future();
+  }
+
+  public void doConnect(Promise<Connection> promise) {
     Future<NetSocket> fut = netClient.connect(port, host);
-    return fut
-      .map(so -> new MSSQLSocketConnection((NetSocketInternal) so, false, 0, 0, 1, context))
-      .flatMap(conn -> {
+    fut.setHandler(ar -> {
+      if (ar.succeeded()) {
+        NetSocket so = ar.result();
+        MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, false, 0, 0, 1, context);
         conn.init();
-        return Future.future(p -> {
-          conn.sendPreLoginMessage(false, preLogin -> {
-            if (preLogin.succeeded()) {
-              conn.sendLoginMessage(username, password, database, properties, p);
-            } else {
-              p.fail(preLogin.cause());
-            }
-          });
+        conn.sendPreLoginMessage(false, preLogin -> {
+          if (preLogin.succeeded()) {
+            conn.sendLoginMessage(username, password, database, properties, promise);
+          } else {
+            promise.fail(preLogin.cause());
+          }
         });
-      });
+      } else {
+        promise.fail(ar.cause());
+      }
+    });
   }
 
   // Called by hook

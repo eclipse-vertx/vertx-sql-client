@@ -27,7 +27,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
     MySQLConnectionFactory client;
     try {
-      client = new MySQLConnectionFactory(vertx, options);
+      client = new MySQLConnectionFactory(vertx, ctx, options);
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }
@@ -37,7 +37,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
   }
 
   private static void connect(MySQLConnectionFactory client, ContextInternal ctx, Promise<MySQLConnection> promise) {
-    client.connect(ctx)
+    client.connect()
       .map(conn -> {
         MySQLConnectionImpl mySQLConnection = new MySQLConnectionImpl(client, ctx, conn);
         conn.init(mySQLConnection);

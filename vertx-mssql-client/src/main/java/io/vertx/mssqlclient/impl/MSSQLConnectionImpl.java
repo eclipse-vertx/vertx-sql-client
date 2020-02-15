@@ -4,10 +4,7 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.PromiseInternal;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLConnection;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
@@ -23,9 +20,9 @@ public class MSSQLConnectionImpl extends SqlConnectionImpl<MSSQLConnectionImpl> 
   public static Future<MSSQLConnection> connect(Vertx vertx, MSSQLConnectOptions options) {
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
     PromiseInternal<MSSQLConnection> promise = ctx.promise();
-    MSSQLConnectionFactory client = new MSSQLConnectionFactory(vertx, options);
+    MSSQLConnectionFactory client = new MSSQLConnectionFactory(vertx, ctx, options);
     ctx.dispatch(null, v -> {
-      client.create(ctx)
+      client.connect()
         .<MSSQLConnection>map(conn -> {
           MSSQLConnectionImpl msConn = new MSSQLConnectionImpl(client, ctx, conn);
           conn.init(msConn);

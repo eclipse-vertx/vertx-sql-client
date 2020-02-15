@@ -43,7 +43,6 @@ import io.vertx.core.Vertx;
 public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> implements Pool {
 
   private final ContextInternal context;
-  private final ConnectionPool pool;
   private final boolean closeVertx;
 
   public PoolBase(ContextInternal context, boolean closeVertx, PoolOptions options) {
@@ -52,7 +51,6 @@ public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> i
       throw new IllegalArgumentException("Pool max size must be > 0");
     }
     this.context = context;
-    this.pool = new ConnectionPool(h -> connect(context, h), maxSize, options.getMaxWaitQueueSize());
     this.closeVertx = closeVertx;
   }
 
@@ -69,10 +67,11 @@ public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> i
   /**
    * Create a connection and connect to the database server.
    *
-   * @param context the connection context
    * @param completionHandler the handler completed with the result
    */
-  public abstract void connect(ContextInternal context, Handler<AsyncResult<Connection>> completionHandler);
+  public abstract void connect(Handler<AsyncResult<Connection>> completionHandler);
+
+  public abstract void acquire(Handler<AsyncResult<Connection>> completionHandler);
 
   @Override
   public void getConnection(Handler<AsyncResult<SqlConnection>> handler) {
@@ -86,7 +85,7 @@ public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> i
   public Future<SqlConnection> getConnection() {
     ContextInternal current = context.owner().getOrCreateContext();
     Promise<Connection> promise = current.promise();
-    context.dispatch(promise, pool::acquire);
+    acquire(promise);
     return promise.future().map(conn -> {
       SqlConnectionImpl wrapper = wrap(current, conn);
       conn.init(wrapper);
@@ -123,7 +122,7 @@ public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> i
   }
 
   private <R> void biltoSchedule(CommandBase<R> cmd, Promise<R> promise) {
-    pool.acquire(new CommandWaiter() {
+    acquire(new CommandWaiter() {
       @Override
       protected void onSuccess(Connection conn) {
         conn.schedule(cmd, promise);
@@ -170,7 +169,6 @@ public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> i
   protected abstract SqlConnectionImpl wrap(ContextInternal context, Connection conn);
 
   protected void doClose() {
-    pool.close();
     if (closeVertx) {
       context.owner().close();
     }

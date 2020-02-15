@@ -17,15 +17,24 @@
 
 package io.vertx.sqlclient.impl.pool;
 
+import io.vertx.core.Promise;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.sqlclient.impl.ConnectionFactory;
 
 import java.util.ArrayDeque;
 import java.util.function.Consumer;
 
-class ConnectionQueue extends ArrayDeque<Handler<AsyncResult<Connection>>> implements Consumer<Handler<AsyncResult<Connection>>> {
+class ConnectionQueue extends ArrayDeque<Handler<AsyncResult<Connection>>> implements Consumer<Handler<AsyncResult<Connection>>>, ConnectionFactory {
+
+  @Override
+  public Future<Connection> connect() {
+    Promise<Connection> promise = Promise.promise();
+    accept(promise);
+    return promise.future();
+  }
 
   @Override
   public void accept(Handler<AsyncResult<Connection>> event) {

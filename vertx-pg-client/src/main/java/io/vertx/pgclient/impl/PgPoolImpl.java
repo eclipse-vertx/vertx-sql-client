@@ -24,6 +24,7 @@ import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.core.*;
+import io.vertx.sqlclient.impl.pool.ConnectionPool;
 
 /**
  * Todo :
@@ -37,12 +38,14 @@ import io.vertx.core.*;
 public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
 
   private final PgConnectionFactory factory;
+  private final ConnectionPool pool;
   private final ContextInternal contextHook;
   private final Closeable hook;
 
   public PgPoolImpl(ContextInternal context, boolean closeVertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
     super(context, closeVertx, poolOptions);
-    this.factory = new PgConnectionFactory(context.owner(), connectOptions);
+    this.factory = new PgConnectionFactory(context.owner(), context, connectOptions);
+    this.pool = new ConnectionPool(factory, context, poolOptions.getMaxSize(), poolOptions.getMaxWaitQueueSize());
 
     if (context.deploymentID() != null) {
       contextHook = context;
@@ -58,8 +61,13 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
   }
 
   @Override
-  public void connect(ContextInternal context, Handler<AsyncResult<Connection>> completionHandler) {
-    factory.connectAndInit(context).setHandler(completionHandler);
+  public void connect(Handler<AsyncResult<Connection>> completionHandler) {
+    factory.connect().setHandler(completionHandler);
+  }
+
+  @Override
+  public void acquire(Handler<AsyncResult<Connection>> completionHandler) {
+    pool.acquire(completionHandler);
   }
 
   @Override
@@ -76,6 +84,7 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
   }
 
   private void closeInternal() {
+    pool.close();
     factory.close();
     super.doClose();
   }

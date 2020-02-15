@@ -25,6 +25,7 @@ import io.vertx.sqlclient.impl.Connection;
 import io.vertx.core.*;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.net.*;
+import io.vertx.sqlclient.impl.ConnectionFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,9 +33,10 @@ import java.util.Map;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class PgConnectionFactory {
+class PgConnectionFactory implements ConnectionFactory {
 
   private final NetClient client;
+  private final ContextInternal context;
   private final String host;
   private final int port;
   private final SslMode sslMode;
@@ -50,13 +52,14 @@ class PgConnectionFactory {
   private final int pipeliningLimit;
   private final boolean isUsingDomainSocket;
 
-  PgConnectionFactory(VertxInternal vertx, PgConnectOptions options) {
+  PgConnectionFactory(VertxInternal vertx, ContextInternal context, PgConnectOptions options) {
 
     NetClientOptions netClientOptions = new NetClientOptions(options);
 
     // Make sure ssl=false as we will use STARTLS
     netClientOptions.setSsl(false);
 
+    this.context = context;
     this.sslMode = options.getSslMode();
     this.hostnameVerificationAlgorithm = netClientOptions.getHostnameVerificationAlgorithm();
     this.trustOptions = netClientOptions.getTrustOptions();
@@ -78,45 +81,58 @@ class PgConnectionFactory {
     client.close();
   }
 
-  Future<Connection> connectAndInit(ContextInternal ctx) {
-    return connect(ctx)
+  public void cancelRequest(int processId, int secretKey, Handler<AsyncResult<Void>> handler) {
+    doConnect().setHandler(ar -> {
+      if (ar.succeeded()) {
+        PgSocketConnection conn = (PgSocketConnection) ar.result();
+        conn.sendCancelRequestMessage(processId, secretKey, handler);
+      } else {
+        handler.handle(Future.failedFuture(ar.cause()));
+      }
+    });
+  }
+
+  @Override
+  public Future<Connection> connect() {
+    return doConnect()
       .flatMap(conn -> {
-        conn.init();
-        return Future.<Connection>future(p -> conn.sendStartupMessage(username, password, database, properties, p))
+        PgSocketConnection socket = (PgSocketConnection) conn;
+        socket.init();
+        return Future.<Connection>future(p -> socket.sendStartupMessage(username, password, database, properties, p))
           .map(conn);
       });
   }
 
-  Future<PgSocketConnection> connect(ContextInternal ctx) {
+  private Future<Connection> doConnect() {
     switch (sslMode) {
       case DISABLE:
-        return doConnect(ctx, false);
+        return doConnect( false);
       case ALLOW:
-        return doConnect(ctx, false).recover(err -> doConnect(ctx, true));
+        return doConnect( false).recover(err -> doConnect( true));
       case PREFER:
-        return doConnect(ctx, true).recover(err -> doConnect(ctx, false));
+        return doConnect( true).recover(err -> doConnect( false));
       case VERIFY_FULL:
         if (hostnameVerificationAlgorithm == null || hostnameVerificationAlgorithm.isEmpty()) {
-          return ctx.failedFuture(new IllegalArgumentException("Host verification algorithm must be specified under verify-full sslmode"));
+          return context.failedFuture(new IllegalArgumentException("Host verification algorithm must be specified under verify-full sslmode"));
         }
       case VERIFY_CA:
         if (trustOptions == null) {
-          return ctx.failedFuture(new IllegalArgumentException("Trust options must be specified under verify-full or verify-ca sslmode"));
+          return context.failedFuture(new IllegalArgumentException("Trust options must be specified under verify-full or verify-ca sslmode"));
         }
       case REQUIRE:
-        return doConnect(ctx, true);
+        return doConnect(true);
       default:
-        return ctx.failedFuture(new IllegalArgumentException("Unsupported SSL mode"));
+        return context.failedFuture(new IllegalArgumentException("Unsupported SSL mode"));
     }
   }
 
-  private Future<PgSocketConnection> doConnect(ContextInternal ctx, boolean ssl) {
-    Promise<PgSocketConnection> promise = ctx.promise();
-    ctx.dispatch(null, v -> doConnect(ctx, ssl, promise));
+  private Future<Connection> doConnect(boolean ssl) {
+    Promise<Connection> promise = context.promise();
+    context.dispatch(null, v -> doConnect(ssl, promise));
     return promise.future();
   }
 
-  private void doConnect(ContextInternal ctx, boolean ssl, Promise<PgSocketConnection> promise) {
+  private void doConnect(boolean ssl, Promise<Connection> promise) {
     SocketAddress socketAddress;
     if (!isUsingDomainSocket) {
       socketAddress = SocketAddress.inetSocketAddress(port, host);
@@ -132,11 +148,12 @@ class PgConnectionFactory {
       promise.fail(e);
       return;
     }
-    Future<PgSocketConnection> connFut = soFut.map(so -> newSocketConnection(ctx, (NetSocketInternal) so));
+    Future<Connection> connFut = soFut.map(so -> newSocketConnection((NetSocketInternal) so));
     if (ssl && !isUsingDomainSocket) {
       // upgrade connection to SSL if needed
       connFut = connFut.flatMap(conn -> Future.future(p -> {
-        conn.upgradeToSSLConnection(ar2 -> {
+        PgSocketConnection socket = (PgSocketConnection) conn;
+        socket.upgradeToSSLConnection(ar2 -> {
           if (ar2.succeeded()) {
             p.complete(conn);
           } else {
@@ -148,7 +165,7 @@ class PgConnectionFactory {
     connFut.setHandler(promise);
   }
 
-  private PgSocketConnection newSocketConnection(ContextInternal ctx, NetSocketInternal socket) {
-    return new PgSocketConnection(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, pipeliningLimit, ctx);
+  private PgSocketConnection newSocketConnection(NetSocketInternal socket) {
+    return new PgSocketConnection(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, pipeliningLimit, context);
   }
 }

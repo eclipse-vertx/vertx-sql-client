@@ -32,7 +32,7 @@ public class DB2ConnectionImpl extends SqlConnectionImpl<DB2ConnectionImpl> impl
         ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
         DB2ConnectionFactory client;
         try {
-          client = new DB2ConnectionFactory(vertx, options);
+          client = new DB2ConnectionFactory(vertx, ctx, options);
         } catch (Exception e) {
           return ctx.failedFuture(e);
         }
@@ -42,7 +42,7 @@ public class DB2ConnectionImpl extends SqlConnectionImpl<DB2ConnectionImpl> impl
       }
 
       private static void connect(DB2ConnectionFactory client, ContextInternal ctx, Promise<DB2Connection> promise) {
-        client.connect(ctx)
+        client.connect()
           .map(conn -> {
             DB2ConnectionImpl db2Connection = new DB2ConnectionImpl(client, ctx, conn);
             conn.init(db2Connection);
