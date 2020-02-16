@@ -21,6 +21,7 @@ import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.pgclient.PgNotification;
 import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.Notification;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
@@ -60,10 +61,14 @@ public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implem
   }
 
 
-  public void handleNotification(int processId, String channel, String payload) {
+  public void handleEvent(Object event) {
     Handler<PgNotification> handler = notificationHandler;
-    if (handler != null) {
-      handler.handle(new PgNotification().setProcessId(processId).setChannel(channel).setPayload(payload));
+    if (handler != null && event instanceof Notification) {
+      Notification notification = (Notification) event;
+      handler.handle(new PgNotification()
+        .setChannel(notification.getChannel())
+        .setProcessId(notification.getProcessId())
+        .setPayload(notification.getPayload()));
     }
   }
 

@@ -125,7 +125,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
     protected abstract void onFailure(Throwable cause);
 
     @Override
-    public void handleNotification(int processId, String channel, String payload) {
+    public void handleEvent(Object event) {
       // What should we do ?
     }
 

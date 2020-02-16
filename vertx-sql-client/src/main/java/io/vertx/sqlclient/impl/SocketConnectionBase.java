@@ -19,7 +19,6 @@ package io.vertx.sqlclient.impl;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderException;
-import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -41,7 +40,7 @@ import java.util.Deque;
  */
 public abstract class SocketConnectionBase implements Connection {
 
-  private static final Logger logger = LoggerFactory.getLogger(SocketConnectionBase.class);
+  protected static final Logger logger = LoggerFactory.getLogger(SocketConnectionBase.class);
 
   public enum Status {
 
@@ -236,27 +235,19 @@ public abstract class SocketConnectionBase implements Connection {
     }
   }
 
-  private void handleMessage(Object msg) {
+  protected void handleMessage(Object msg) {
     if (msg instanceof CommandResponse) {
       inflight--;
       checkPending();
       CommandResponse resp =(CommandResponse) msg;
       resp.fire();
-    } else if (msg instanceof Notification) {
-      handleNotification((Notification) msg);
-    } else if (msg instanceof Notice) {
-      handleNotice((Notice) msg);
     }
   }
 
-  private void handleNotification(Notification response) {
+  protected void handleEvent(Object event) {
     if (holder != null) {
-      holder.handleNotification(response.getProcessId(), response.getChannel(), response.getPayload());
+      holder.handleEvent(event);
     }
-  }
-
-  private void handleNotice(Notice notice) {
-    notice.log(logger);
   }
 
   private void handleClosed(Void v) {

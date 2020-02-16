@@ -55,11 +55,6 @@ public class DB2ConnectionImpl extends SqlConnectionImpl<DB2ConnectionImpl> impl
     }
 
     @Override
-    public void handleNotification(int processId, String channel, String payload) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public DB2Connection ping(Handler<AsyncResult<Void>> handler) {
         throw new UnsupportedOperationException("Ping command not implemented");
 //        PingCommand cmd = new PingCommand();

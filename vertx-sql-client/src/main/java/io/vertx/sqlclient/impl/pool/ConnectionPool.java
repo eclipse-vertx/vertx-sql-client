@@ -171,9 +171,9 @@ public class ConnectionPool {
     }
 
     @Override
-    public void handleNotification(int processId, String channel, String payload) {
+    public void handleEvent(Object event) {
       if (holder != null) {
-        holder.handleNotification(processId, channel, payload);
+        holder.handleEvent(event);
       }
     }
 

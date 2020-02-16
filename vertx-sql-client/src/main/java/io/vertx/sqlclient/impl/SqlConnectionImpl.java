@@ -110,7 +110,8 @@ public abstract class SqlConnectionImpl<C extends SqlConnection> extends SqlConn
     return tx;
   }
 
-  public abstract void handleNotification(int processId, String channel, String payload);
+  public void handleEvent(Object event) {
+  }
 
   @Override
   public void close() {

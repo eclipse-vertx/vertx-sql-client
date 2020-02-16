@@ -22,6 +22,8 @@ import io.netty.handler.codec.DecoderException;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.pgclient.impl.codec.PgCodec;
 import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.Notice;
+import io.vertx.sqlclient.impl.Notification;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
 import io.vertx.sqlclient.impl.command.InitCommand;
 import io.vertx.core.*;
@@ -81,6 +83,20 @@ public class PgSocketConnection extends SocketConnectionBase {
         handler.handle(Future.failedFuture(ar.cause()));
       }
     });
+  }
+
+  @Override
+  protected void handleMessage(Object msg) {
+    super.handleMessage(msg);
+    if (msg instanceof Notification) {
+      handleEvent(msg);
+    } else if (msg instanceof Notice) {
+      handleNotice((Notice) msg);
+    }
+  }
+
+  private void handleNotice(Notice notice) {
+    notice.log(logger);
   }
 
   @Override

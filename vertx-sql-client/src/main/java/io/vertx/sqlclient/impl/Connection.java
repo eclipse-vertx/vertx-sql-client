@@ -33,7 +33,7 @@ public interface Connection extends CommandScheduler  {
 
   interface Holder {
 
-    void handleNotification(int processId, String channel, String payload);
+    void handleEvent(Object event);
 
     void handleClosed();
 

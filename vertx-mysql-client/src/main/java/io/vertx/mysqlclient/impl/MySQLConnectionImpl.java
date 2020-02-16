@@ -54,11 +54,6 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
   }
 
   @Override
-  public void handleNotification(int processId, String channel, String payload) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public MySQLConnection ping(Handler<AsyncResult<Void>> handler) {
     Future<Void> fut = ping();
     if (handler != null) {

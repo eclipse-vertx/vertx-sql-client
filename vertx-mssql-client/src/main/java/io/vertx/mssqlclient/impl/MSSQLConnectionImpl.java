@@ -31,9 +31,4 @@ public class MSSQLConnectionImpl extends SqlConnectionImpl<MSSQLConnectionImpl> 
     });
     return promise.future();
   }
-
-  @Override
-  public void handleNotification(int processId, String channel, String payload) {
-    throw new UnsupportedOperationException();
-  }
 }
