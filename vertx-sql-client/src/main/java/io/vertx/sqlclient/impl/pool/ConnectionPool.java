@@ -31,6 +31,11 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
+ * Todo :
+ *
+ * - handle timeout when acquiring a connection
+ * - for per statement pooling, have several physical connection and use the less busy one to avoid head of line blocking effect
+ *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 public class ConnectionPool {

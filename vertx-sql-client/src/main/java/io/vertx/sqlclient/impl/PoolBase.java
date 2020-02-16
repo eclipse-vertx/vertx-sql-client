@@ -29,11 +29,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 /**
- * Todo :
- *
- * - handle timeout when acquiring a connection
- * - for per statement pooling, have several physical connection and use the less busy one to avoid head of line blocking effect
- *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
