@@ -43,7 +43,7 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
   private final Closeable hook;
 
   public PgPoolImpl(ContextInternal context, boolean closeVertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    super(context, closeVertx, poolOptions);
+    super(context.owner(), closeVertx);
     this.factory = new PgConnectionFactory(context.owner(), context, connectOptions);
     this.pool = new ConnectionPool(factory, context, poolOptions.getMaxSize(), poolOptions.getMaxWaitQueueSize());
 

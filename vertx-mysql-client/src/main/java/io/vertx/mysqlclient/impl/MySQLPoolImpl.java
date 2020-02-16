@@ -16,7 +16,7 @@ public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool 
   private final ConnectionPool pool;
 
   public MySQLPoolImpl(ContextInternal context, boolean closeVertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    super(context, closeVertx, poolOptions);
+    super(context.owner(), closeVertx);
     this.factory = new MySQLConnectionFactory(context.owner(), context, connectOptions);
     this.pool = new ConnectionPool(factory, context, poolOptions.getMaxSize(), poolOptions.getMaxWaitQueueSize());
   }

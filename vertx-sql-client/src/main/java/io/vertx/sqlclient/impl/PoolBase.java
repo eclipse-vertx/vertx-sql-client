@@ -19,17 +19,14 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.PromiseInternal;
-import io.vertx.sqlclient.PoolOptions;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 
 /**
  * Todo :
@@ -42,26 +39,22 @@ import io.vertx.core.Vertx;
  */
 public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> implements Pool {
 
-  private final ContextInternal context;
+  private final VertxInternal vertx;
   private final boolean closeVertx;
 
-  public PoolBase(ContextInternal context, boolean closeVertx, PoolOptions options) {
-    int maxSize = options.getMaxSize();
-    if (maxSize < 1) {
-      throw new IllegalArgumentException("Pool max size must be > 0");
-    }
-    this.context = context;
+  public PoolBase(VertxInternal vertx, boolean closeVertx) {
+    this.vertx = vertx;
     this.closeVertx = closeVertx;
   }
 
   @Override
   protected <T> Promise<T> promise() {
-    return context.owner().promise();
+    return vertx.promise();
   }
 
   @Override
   protected <T> Promise<T> promise(Handler<AsyncResult<T>> handler) {
-    return context.owner().promise(handler);
+    return vertx.promise(handler);
   }
 
   /**
@@ -83,7 +76,7 @@ public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> i
 
   @Override
   public Future<SqlConnection> getConnection() {
-    ContextInternal current = context.owner().getOrCreateContext();
+    ContextInternal current = vertx.getOrCreateContext();
     Promise<Connection> promise = current.promise();
     acquire(promise);
     return promise.future().map(conn -> {
@@ -111,17 +104,7 @@ public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> i
   }
 
   @Override
-  public <R> void schedule(CommandBase<R> cmd, Promise<R> handler) {
-    ContextInternal current = context.owner().getOrCreateContext();
-    PromiseInternal<R> promise = current.promise(handler);
-    if (current == context) {
-      biltoSchedule(cmd, promise);
-    } else {
-      context.runOnContext(v -> biltoSchedule(cmd, promise));
-    }
-  }
-
-  private <R> void biltoSchedule(CommandBase<R> cmd, Promise<R> promise) {
+  public <R> void schedule(CommandBase<R> cmd, Promise<R> promise) {
     acquire(new CommandWaiter() {
       @Override
       protected void onSuccess(Connection conn) {
@@ -170,17 +153,12 @@ public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> i
 
   protected void doClose() {
     if (closeVertx) {
-      context.owner().close();
+      vertx.close();
     }
   }
 
   @Override
   public void close() {
-    Context current = Vertx.currentContext();
-    if (current == context) {
-      doClose();
-    } else {
-      context.runOnContext(v -> doClose());
-    }
+    doClose();
   }
 }

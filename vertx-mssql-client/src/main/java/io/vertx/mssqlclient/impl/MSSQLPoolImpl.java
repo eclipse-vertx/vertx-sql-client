@@ -18,7 +18,7 @@ public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool 
   private final ConnectionPool pool;
 
   public MSSQLPoolImpl(ContextInternal context, boolean closeVertx, MSSQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    super(context, closeVertx, poolOptions);
+    super(context.owner(), closeVertx);
     this.connectionFactory = new MSSQLConnectionFactory(context.owner(), context, connectOptions);
     this.pool = new ConnectionPool(connectionFactory, context, poolOptions.getMaxSize(), poolOptions.getMaxWaitQueueSize());
   }

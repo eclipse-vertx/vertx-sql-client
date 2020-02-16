@@ -55,7 +55,10 @@ public class ConnectionPool {
   }
 
   public ConnectionPool(ConnectionFactory connector, Context context, int maxSize, int maxWaitQueueSize) {
-    Objects.requireNonNull("No null connector");
+    Objects.requireNonNull(connector, "No null connector");
+    if (maxSize < 1) {
+      throw new IllegalArgumentException("Pool max size must be > 0");
+    }
     this.maxSize = maxSize;
     this.context = (ContextInternal) context;
     this.maxWaitQueueSize = maxWaitQueueSize;

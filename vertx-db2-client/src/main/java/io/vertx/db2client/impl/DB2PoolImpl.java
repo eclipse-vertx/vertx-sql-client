@@ -31,7 +31,7 @@ public class DB2PoolImpl extends PoolBase<DB2PoolImpl> implements DB2Pool {
     private final ConnectionPool pool;
 
     public DB2PoolImpl(ContextInternal context, boolean closeVertx, DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
-        super(context, closeVertx, poolOptions);
+        super(context.owner(), closeVertx);
         this.factory = new DB2ConnectionFactory(context.owner(), context, connectOptions);
         this.pool = new ConnectionPool(factory, context, poolOptions.getMaxSize(), poolOptions.getMaxWaitQueueSize());
     }
