@@ -26,7 +26,7 @@ import io.vertx.core.*;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public abstract class SqlConnectionImpl<C extends SqlConnectionImpl> extends SqlConnectionBase<C> implements SqlConnection, Connection.Holder {
+public abstract class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBase<C> implements SqlConnection, Connection.Holder {
 
   private volatile Handler<Throwable> exceptionHandler;
   private volatile Handler<Void> closeHandler;

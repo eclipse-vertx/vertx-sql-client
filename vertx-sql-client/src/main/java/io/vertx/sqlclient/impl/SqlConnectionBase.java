@@ -19,13 +19,14 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.sqlclient.PreparedQuery;
+import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.core.*;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public abstract class SqlConnectionBase<C extends SqlConnectionBase> extends SqlClientBase<C> {
+public abstract class SqlConnectionBase<C extends SqlClient> extends SqlClientBase<C> {
 
   protected final ContextInternal context;
   protected final Connection conn;

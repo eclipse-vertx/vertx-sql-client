@@ -37,7 +37,7 @@ import io.vertx.core.Handler;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> implements Pool {
+public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implements Pool {
 
   private final VertxInternal vertx;
   private final boolean closeVertx;
