@@ -54,54 +54,6 @@ public class IntervalConverter {
     }
   }
 
-  public static Interval fromMap(Iterable<java.util.Map.Entry<String, Object>> map) {
-    Interval obj = new Interval();
-    fromMap(map, obj);
-    return obj;
-  }
-
-  public static void fromMap(Iterable<java.util.Map.Entry<String, Object>> map, Interval obj) {
-    for (java.util.Map.Entry<String, Object> member : map) {
-      switch (member.getKey()) {
-        case "days":
-          if (member.getValue() instanceof Number) {
-            obj.setDays(((Number)member.getValue()).intValue());
-          }
-          break;
-        case "hours":
-          if (member.getValue() instanceof Number) {
-            obj.setHours(((Number)member.getValue()).intValue());
-          }
-          break;
-        case "microseconds":
-          if (member.getValue() instanceof Number) {
-            obj.setMicroseconds(((Number)member.getValue()).intValue());
-          }
-          break;
-        case "minutes":
-          if (member.getValue() instanceof Number) {
-            obj.setMinutes(((Number)member.getValue()).intValue());
-          }
-          break;
-        case "months":
-          if (member.getValue() instanceof Number) {
-            obj.setMonths(((Number)member.getValue()).intValue());
-          }
-          break;
-        case "seconds":
-          if (member.getValue() instanceof Number) {
-            obj.setSeconds(((Number)member.getValue()).intValue());
-          }
-          break;
-        case "years":
-          if (member.getValue() instanceof Number) {
-            obj.setYears(((Number)member.getValue()).intValue());
-          }
-          break;
-      }
-    }
-  }
-
   public static void toJson(Interval obj, JsonObject json) {
     toJson(obj, json.getMap());
   }

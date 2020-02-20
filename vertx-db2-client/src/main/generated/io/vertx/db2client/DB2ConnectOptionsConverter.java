@@ -19,19 +19,6 @@ public class DB2ConnectOptionsConverter {
     }
   }
 
-  public static DB2ConnectOptions fromMap(Iterable<java.util.Map.Entry<String, Object>> map) {
-    DB2ConnectOptions obj = new DB2ConnectOptions();
-    fromMap(map, obj);
-    return obj;
-  }
-
-  public static void fromMap(Iterable<java.util.Map.Entry<String, Object>> map, DB2ConnectOptions obj) {
-    for (java.util.Map.Entry<String, Object> member : map) {
-      switch (member.getKey()) {
-      }
-    }
-  }
-
   public static void toJson(DB2ConnectOptions obj, JsonObject json) {
     toJson(obj, json.getMap());
   }
