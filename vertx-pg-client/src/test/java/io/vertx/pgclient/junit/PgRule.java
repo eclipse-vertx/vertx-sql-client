@@ -41,6 +41,7 @@ public class PgRule extends ExternalResource {
 
   private static final String connectionUri = System.getProperty("connection.uri");
   private static final String tlsConnectionUri = System.getProperty("tls.connection.uri");
+  private static final String unixSocketConnectionUri = System.getProperty("unix.socket.connection.uri");
 
   private PostgreSQLContainer server;
   private PgConnectOptions options;
@@ -122,7 +123,7 @@ public class PgRule extends ExternalResource {
 
 
   private static String getPostgresVersion() {
-    String specifiedVersion = System.getProperty("embedded.postgres.version");
+    String specifiedVersion = System.getProperty("testing.postgres.database.version");
     String version;
     if (specifiedVersion == null || specifiedVersion.isEmpty()) {
       // if version is not specified then V10.10 will be used by default
@@ -147,11 +148,18 @@ public class PgRule extends ExternalResource {
   @Override
   protected void before() throws Throwable {
     // use an external database for testing
-    if (!ssl && isSystemPropertyValid(connectionUri)) {
+    if (isCommonTestingWithExternalDatabase()) {
       options = PgConnectOptions.fromUri(connectionUri);
       return;
-    } else if (ssl && isSystemPropertyValid(tlsConnectionUri)) {
+    } else if (isTestingTlsWithExternalDatabase()) {
       options = PgConnectOptions.fromUri(tlsConnectionUri);
+      return;
+    } else if (isUnixSocketTestingWithExternalDatabase()) {
+      options = PgConnectOptions.fromUri(unixSocketConnectionUri);
+      return;
+    } else if (domainSocket && isCommonTestingWithExternalDatabase()) {
+      // Unix domain testing with external database is optional
+      options = PgConnectOptions.fromUri(connectionUri);
       return;
     }
 
@@ -185,21 +193,28 @@ public class PgRule extends ExternalResource {
   }
 
   private boolean isTestingWithExternalDatabase() {
-    return isTestingTlsWithExternalDatabase() || isCommonTestingWithExternalDatabase();
+    return isTestingTlsWithExternalDatabase() || isCommonTestingWithExternalDatabase() || isUnixSocketTestingWithExternalDatabase();
   }
 
   /**
    * check whether TLS tests are testing with external database
    */
   private boolean isTestingTlsWithExternalDatabase() {
-    return ssl && isSystemPropertyValid(tlsConnectionUri);
+    return ssl && isSystemPropertyValid(tlsConnectionUri) && !domainSocket;
   }
 
   /**
    * check whether non-TLS tests are testing with external database
    */
   private boolean isCommonTestingWithExternalDatabase() {
-    return !ssl && isSystemPropertyValid(connectionUri);
+    return !ssl && isSystemPropertyValid(connectionUri) && !domainSocket;
+  }
+
+  /**
+   * check whether unix socket tests are testing with external database
+   */
+  public boolean isUnixSocketTestingWithExternalDatabase() {
+    return domainSocket && isSystemPropertyValid(unixSocketConnectionUri);
   }
 
 }

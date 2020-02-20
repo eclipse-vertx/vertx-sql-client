@@ -33,8 +33,6 @@ import static org.junit.Assume.assumeTrue;
 @RunWith(VertxUnitRunner.class)
 public class UnixDomainSocketTest {
 
-  private static final String unixSocketDirectory = System.getProperty("unix.socket.directory");
-  private static final String unixSocketPort = System.getProperty("unix.socket.port");
   private static final boolean nativeTransportEnabled;
 
   static {
@@ -54,12 +52,7 @@ public class UnixDomainSocketTest {
     assumeTrue(nativeTransportEnabled);
     assumeTrue(isUnixDomainSocketSupported());
     options = rule.options();
-    if (isExternalDatabaseSocketPathConfigured()) {
-      options.setHost(unixSocketDirectory);
-    }
-    if (isExternalDatabaseSocketPortConfigured()) {
-      options.setPort(Integer.parseInt(unixSocketPort));
-    }
+    assumeTrue(options.isUsingDomainSocket());
   }
 
   @After
@@ -111,22 +104,10 @@ public class UnixDomainSocketTest {
     }));
   }
 
-  private static boolean isTestingDomainSocketWithExternalDatabase() {
-    return isExternalDatabaseSocketPathConfigured() || isExternalDatabaseSocketPortConfigured();
-  }
-
-  private static boolean isExternalDatabaseSocketPathConfigured() {
-    return unixSocketDirectory != null && !unixSocketDirectory.isEmpty();
-  }
-
-  private static boolean isExternalDatabaseSocketPortConfigured() {
-    return unixSocketPort != null && !unixSocketPort.isEmpty();
-  }
-
-  private static boolean isUnixDomainSocketSupported() {
+  private boolean isUnixDomainSocketSupported() {
     if (OperatingSystemUtils.isWindows()) {
       return false;
-    } else if (OperatingSystemUtils.isOsX() && !isTestingDomainSocketWithExternalDatabase()) {
+    } else if (OperatingSystemUtils.isOsX() && !rule.isUnixSocketTestingWithExternalDatabase()) {
       // Docker does not support Unix domain socket on Mac OS X
       // see https://github.com/docker/for-mac/issues/483
       return false;

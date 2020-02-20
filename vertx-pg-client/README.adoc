@@ -272,19 +272,15 @@ are not implemented yet (PR are welcome).
 
 === Testing
 
-Out of the box, the test suite runs an embedded Postgres by default.
+Out of the box, the test suite runs a Docker container using https://www.testcontainers.org/[TestContainers] by default.
 
-You can change the version of the embedded Postgres by passing a property `embedded.postgres.version` like this:
+You can change the version of the Postgres server by passing a property `testing.postgres.database.version` like this:
 
 ```
-> mvn test -Dembedded.postgres.version=9.6
+> mvn test -Dtesting.postgres.database.version=9.6
 ```
 
-The following versions of embedded Postgres are supported:
-
-- `9.6`
-- `10.6` (default)
-- `11.x` (Unix Domain Socket Test are ignored)
+The database version property would be used as the tag of the Postgres Docker container, if the database version is not specified, then `10.10` will be used by default for MySQL
 
 === Testing with an external database
 
@@ -292,20 +288,18 @@ You can run tests with an external database:
 
 - the script `docker/postgres/resources/create-postgres.sql` creates the test data
 - the `TLSTest` expects the database to be configured with SSL with `docker/postgres/resources/server.key` / `docker/postgres/resources/server.cert``
+- the `UnixDomainSocketTest`
 
 You need to add some properties for testing:
 
 ```
-> mvn test -Dconnection.uri=postgres://$username:$password@$host:$port/$database -Dtls.connection.uri=postgres://$username:$password@$host:$port/$database -Dunix.socket.directory=$path
+> mvn test -Dconnection.uri=postgres://$username:$password@$host:$port/$database -Dtls.connection.uri=postgres://$username:$password@$host:$port/$database -Dunix.socket.connection.uri=postgres://$username:$password@$host:$port/$database
 ```
 
 - connection.uri(mandatory): configure the client to connect the specified database
 - tls.connection.uri(mandatory): configure the client to run `TLSTest` with the specified Postgres with SSL enabled
-- unix.socket.directory(optional): the single unix socket directory(multiple socket directories are not supported) to test Unix domain socket with a specified database, domain socket tests will be skipped if this property is not specified
-(Note: Make sure you can access the unix domain socket with this directory under your host machine)
-- unix.socket.port(optional): unix socket file is named `.s.PGSQL.nnnn` and `nnnn` is the server's port number,
-this property is mostly used when you test with Docker, when you publish your Postgres container port other than 5432 in your host but Postgres may actually listen on a different port in the container,
-you will then need this property to help you connect the Postgres with Unix domain socket
+- unix.socket.connection.uri(optional): test Unix domain socket feature with a specified database, domain socket tests will be skipped if this property is not specified
+(Note: Make sure you can access the unix domain socket with the directory under your host machine, Postgres unix socket file is named `.s.PGSQL.nnnn` and `nnnn` is the server's port number, you will need to set the port option when you publish your Postgres container port other than 5432 in your host but Postgres may actually listen on a different port in the container)
 
 === Testing with Docker
 
@@ -319,5 +313,5 @@ Run the Postgres containers with `docker-compose`:
 Run tests:
 
 ```
-> mvn test -Dconnection.uri=postgres://$username:$password@$host:$port/$database -Dtls.connection.uri=postgres://$username:$password@$host:$port/$database -Dunix.socket.directory=$path -Dunix.socket.port=$port
+> mvn test -Dconnection.uri=postgres://$username:$password@$host:$port/$database -Dtls.connection.uri=postgres://$username:$password@$host:$port/$database
 ```

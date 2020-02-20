@@ -36,7 +36,10 @@
     <docs.dir>${project.basedir}/src/main/docs</docs.dir>
     <generated.dir>${project.basedir}/src/main/generated</generated.dir>
     <!-- Set to a value for testing with a specific database -->
-    <embedded.postgres.version />
+    <testing.postgres.database.version />
+    <connection.uri/>
+    <tls.connection.uri/>
+    <unix.socket.connection.uri/>
   </properties>
 
   <dependencies>
@@ -107,11 +110,10 @@
             <argLine>-Xmx1024M</argLine>
             <systemPropertyVariables>
               <target.dir>${project.build.directory}</target.dir>
-              <embedded.postgres.version>${embedded.postgres.version}</embedded.postgres.version>
+              <testing.postgres.database.version>${testing.postgres.database.version}</testing.postgres.database.version>
               <connection.uri>${connection.uri}</connection.uri>
               <tls.connection.uri>${tls.connection.uri}</tls.connection.uri>
-              <unix.socket.directory>${unix.socket.directory}</unix.socket.directory>
-              <unix.socket.port>${unix.socket.port}</unix.socket.port>
+              <unix.socket.connection.uri>${unix.socket.connection.uri}</unix.socket.connection.uri>
             </systemPropertyVariables>
             <excludes>
               <exclude>io/vertx/pgclient/it/**</exclude>

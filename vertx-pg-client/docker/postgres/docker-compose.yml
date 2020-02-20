@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
     volumes:
-      - /var/run/postgresql:/var/run/postgresql
+#      - /var/run/postgresql:/var/run/postgresql This volume is for unix domain socket testing
       - ./resources/create-postgres.sql:/docker-entrypoint-initdb.d/create-postgres.sql
   tls-test-postgres:
     image: healthcheck/postgres:alpine

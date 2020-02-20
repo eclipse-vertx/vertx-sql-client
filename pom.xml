@@ -52,10 +52,6 @@
     <jmh.version>1.19</jmh.version>
     <docs.dir>${project.basedir}/src/main/docs</docs.dir>
     <generated.dir>${project.basedir}/src/main/generated</generated.dir>
-    <connection.uri/>
-    <tls.connection.uri/>
-    <unix.socket.directory/>
-    <unix.socket.port/>
     <!-- We skip sources jar generation as we do it with the assembly plugin to have greater control over the content -->
     <source.skip>true</source.skip>
     <kotlin.version>1.3.0</kotlin.version>
