@@ -280,7 +280,7 @@ You can change the version of the Postgres server by passing a property `testing
 > mvn test -Dtesting.postgres.database.version=9.6
 ```
 
-The database version property would be used as the tag of the Postgres Docker container, if the database version is not specified, then `10.10` will be used by default for MySQL
+The database version property would be used as the tag of the Postgres Docker container, if the database version is not specified, then `10.10` will be used by default for Postgres
 
 === Testing with an external database
 
