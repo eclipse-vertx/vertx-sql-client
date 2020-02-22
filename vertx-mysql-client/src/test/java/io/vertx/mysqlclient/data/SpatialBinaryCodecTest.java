@@ -88,7 +88,10 @@ public class SpatialBinaryCodecTest extends SpatialDataTypeCodecTestBase {
     testBinaryEncodeGeometry(ctx, multiPoint, result -> {
       Row row = result.iterator().next();
       String text = row.getString(0);
-      ctx.assertEquals("MULTIPOINT((0 0),(1 1),(2 2))", text);
+      // a workaround for MySQL 5.6
+      boolean expected1 = "MULTIPOINT(0 0,1 1,2 2)".equals(text);
+      boolean expected2 = "MULTIPOINT((0 0),(1 1),(2 2))".equals(text);
+      ctx.assertTrue(expected1 || expected2);
     });
   }
 
