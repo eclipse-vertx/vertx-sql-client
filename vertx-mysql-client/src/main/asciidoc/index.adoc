@@ -14,7 +14,7 @@ scalability and low overhead.
 * Row streaming
 * RxJava 1 and RxJava 2
 * Direct memory to object without unnecessary copies
-* Java 8 Date and Time
+* Complete data type support
 * Stored Procedures support
 * TLS/SSL support
 * MySQL utilities commands support
@@ -230,6 +230,7 @@ Currently the client supports the following MySQL types
 * ENUM (`java.lang.String`)
 * SET (`java.lang.String`)
 * JSON (`io.vertx.core.json.JsonObject`, `io.vertx.core.json.JsonArray`, `Number`, `Boolean`, `String`, `io.vertx.sqlclient.Tuple#JSON_NULL`)
+* GEOMETRY(`io.vertx.mysqlclient.data.spatial.*`)
 
 Tuple decoding uses the above types when storing values
 
@@ -289,6 +290,9 @@ The MySQL data type for encoding will be inferred from the parameter values and 
 |java.time.LocalDateTime
 |MYSQL_TYPE_DATETIME
 
+|io.vertx.mysqlclient.data.spatial.*
+|MYSQL_TYPE_BLOB
+
 |default
 |MYSQL_TYPE_STRING
 |===
@@ -341,6 +345,40 @@ The {@link io.vertx.sqlclient.data.Numeric} Java type is used to represent the M
 [source,$lang]
 ----
 {@link examples.MySQLClientExamples#numericExample(io.vertx.sqlclient.Row)}
+----
+
+=== Handling GEOMETRY
+
+MYSQL `GEOMETRY` data type is also supported, Here are some examples showing that you can handle the geometry data in Well-Known Text (WKT) format or Well-Known Binary (WKB) format, the data are decoded as MySQL TEXT OR BLOB data type. There are many great third-party libraries for handling data in this format.
+
+You can fetch spatial data in WKT format:
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#geometryExample01(io.vertx.sqlclient.SqlClient)}
+----
+
+Or you can fetch spatial data in WKB format:
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#geometryExample02(io.vertx.sqlclient.SqlClient)}
+----
+
+We also provide you a simple way to handle the geometry data type in Reactive MySQL Client. 
+
+You can retrieve the geometry data as Vert.x Data Object:
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#geometryExample03(io.vertx.sqlclient.SqlClient)}
+----
+
+You can also take it as a prepared statement parameter in a WKB representation.
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#geometryExample04(io.vertx.sqlclient.SqlClient)}
 ----
 
 == Collector queries
