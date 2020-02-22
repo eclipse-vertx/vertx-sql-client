@@ -64,54 +64,6 @@ public class MySQLAuthOptionsConverter {
     }
   }
 
-  public static MySQLAuthOptions fromMap(Iterable<java.util.Map.Entry<String, Object>> map) {
-    MySQLAuthOptions obj = new MySQLAuthOptions();
-    fromMap(map, obj);
-    return obj;
-  }
-
-  public static void fromMap(Iterable<java.util.Map.Entry<String, Object>> map, MySQLAuthOptions obj) {
-    for (java.util.Map.Entry<String, Object> member : map) {
-      switch (member.getKey()) {
-        case "charset":
-          if (member.getValue() instanceof String) {
-            obj.setCharset((String)member.getValue());
-          }
-          break;
-        case "collation":
-          if (member.getValue() instanceof String) {
-            obj.setCollation((String)member.getValue());
-          }
-          break;
-        case "database":
-          if (member.getValue() instanceof String) {
-            obj.setDatabase((String)member.getValue());
-          }
-          break;
-        case "password":
-          if (member.getValue() instanceof String) {
-            obj.setPassword((String)member.getValue());
-          }
-          break;
-        case "serverRsaPublicKeyPath":
-          if (member.getValue() instanceof String) {
-            obj.setServerRsaPublicKeyPath((String)member.getValue());
-          }
-          break;
-        case "serverRsaPublicKeyValue":
-          if (member.getValue() instanceof io.vertx.core.buffer.Buffer) {
-            obj.setServerRsaPublicKeyValue((io.vertx.core.buffer.Buffer)member.getValue());
-          }
-          break;
-        case "user":
-          if (member.getValue() instanceof String) {
-            obj.setUser((String)member.getValue());
-          }
-          break;
-      }
-    }
-  }
-
   public static void toJson(MySQLAuthOptions obj, JsonObject json) {
     toJson(obj, json.getMap());
   }

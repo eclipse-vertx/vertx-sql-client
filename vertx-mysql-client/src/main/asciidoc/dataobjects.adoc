@@ -1,5 +1,95 @@
 = Cheatsheets
 
+[[Geometry]]
+== Geometry
+
+++++
+ Geometry is an abstract class which represents the base of MySQL geometry data type.
+++++
+'''
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[srid]]`@srid`|`Number (long)`|-
+|===
+
+[[GeometryCollection]]
+== GeometryCollection
+
+++++
+ A GeomCollection is a geometry that is a collection of zero or more geometries of any class.
+++++
+'''
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[srid]]`@srid`|`Number (long)`|-
+|===
+
+[[LineString]]
+== LineString
+
+++++
+ A LineString is a Curve with linear interpolation between points, it may represents a Line or a LinearRing.
+++++
+'''
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[srid]]`@srid`|`Number (long)`|-
+|===
+
+[[MultiLineString]]
+== MultiLineString
+
+++++
+ A MultiLineString is a MultiCurve geometry collection composed of LineString elements.
+++++
+'''
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[srid]]`@srid`|`Number (long)`|-
+|===
+
+[[MultiPoint]]
+== MultiPoint
+
+++++
+ A MultiPoint is a geometry collection composed of Point elements. The points are not connected or ordered in any way.
+++++
+'''
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[srid]]`@srid`|`Number (long)`|-
+|===
+
+[[MultiPolygon]]
+== MultiPolygon
+
+++++
+ A MultiPolygon is a MultiSurface object composed of Polygon elements.
+++++
+'''
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[srid]]`@srid`|`Number (long)`|-
+|===
+
 [[MySQLAuthOptions]]
 == MySQLAuthOptions
 
@@ -70,22 +160,14 @@ Set the collation for the connection.
 |[[hostnameVerificationAlgorithm]]`@hostnameVerificationAlgorithm`|`String`|-
 |[[idleTimeout]]`@idleTimeout`|`Number (int)`|-
 |[[idleTimeoutUnit]]`@idleTimeoutUnit`|`link:enums.html#TimeUnit[TimeUnit]`|-
-|[[jdkSslEngineOptions]]`@jdkSslEngineOptions`|`link:dataobjects.html#JdkSSLEngineOptions[JdkSSLEngineOptions]`|-
-|[[keyStoreOptions]]`@keyStoreOptions`|`link:dataobjects.html#JksOptions[JksOptions]`|-
 |[[localAddress]]`@localAddress`|`String`|-
 |[[logActivity]]`@logActivity`|`Boolean`|-
 |[[metricsName]]`@metricsName`|`String`|-
-|[[openSslEngineOptions]]`@openSslEngineOptions`|`link:dataobjects.html#OpenSSLEngineOptions[OpenSSLEngineOptions]`|-
 |[[password]]`@password`|`String`|-
-|[[pemKeyCertOptions]]`@pemKeyCertOptions`|`link:dataobjects.html#PemKeyCertOptions[PemKeyCertOptions]`|-
-|[[pemTrustOptions]]`@pemTrustOptions`|`link:dataobjects.html#PemTrustOptions[PemTrustOptions]`|-
-|[[pfxKeyCertOptions]]`@pfxKeyCertOptions`|`link:dataobjects.html#PfxOptions[PfxOptions]`|-
-|[[pfxTrustOptions]]`@pfxTrustOptions`|`link:dataobjects.html#PfxOptions[PfxOptions]`|-
 |[[port]]`@port`|`Number (int)`|-
 |[[preparedStatementCacheMaxSize]]`@preparedStatementCacheMaxSize`|`Number (int)`|-
 |[[preparedStatementCacheSqlLimit]]`@preparedStatementCacheSqlLimit`|`Number (int)`|-
 |[[properties]]`@properties`|`String`|-
-|[[proxyOptions]]`@proxyOptions`|`link:dataobjects.html#ProxyOptions[ProxyOptions]`|-
 |[[receiveBufferSize]]`@receiveBufferSize`|`Number (int)`|-
 |[[reconnectAttempts]]`@reconnectAttempts`|`Number (int)`|-
 |[[reconnectInterval]]`@reconnectInterval`|`Number (long)`|-
@@ -112,7 +194,6 @@ Set the link for the client, this option can be used to specify the desired secu
 |[[tcpQuickAck]]`@tcpQuickAck`|`Boolean`|-
 |[[trafficClass]]`@trafficClass`|`Number (int)`|-
 |[[trustAll]]`@trustAll`|`Boolean`|-
-|[[trustStoreOptions]]`@trustStoreOptions`|`link:dataobjects.html#JksOptions[JksOptions]`|-
 |[[useAffectedRows]]`@useAffectedRows`|`Boolean`|+++
 Sets how affected rows are calculated on update/delete/insert, if set to <code>true</code> an update that effectively
  does not change any data returns zero affected rows.
@@ -121,5 +202,37 @@ Sets how affected rows are calculated on update/delete/insert, if set to <code>t
 +++
 |[[useAlpn]]`@useAlpn`|`Boolean`|-
 |[[user]]`@user`|`String`|-
+|===
+
+[[Point]]
+== Point
+
+++++
+ A Point is a geometry that represents a single location in coordinate space.
+++++
+'''
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[srid]]`@srid`|`Number (long)`|-
+|[[x]]`@x`|`Number (double)`|-
+|[[y]]`@y`|`Number (double)`|-
+|===
+
+[[Polygon]]
+== Polygon
+
+++++
+ A Polygon is a planar Surface representing a multisided geometry. It is defined by a single exterior boundary and zero or more interior boundaries, where each interior boundary defines a hole in the Polygon.
+++++
+'''
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[srid]]`@srid`|`Number (long)`|-
 |===
 
