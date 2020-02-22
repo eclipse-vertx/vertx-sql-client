@@ -6,6 +6,7 @@ import io.netty.handler.codec.DecoderException;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.mysqlclient.data.spatial.*;
 import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
@@ -22,6 +23,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatterBuilder;
 
+import static io.vertx.mysqlclient.impl.datatype.GeometryWkbFormatCodec.decodeMySQLGeometry;
+import static io.vertx.mysqlclient.impl.datatype.GeometryWkbFormatCodec.encodeGeometryToMySQLBlob;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.temporal.ChronoField.*;
 
@@ -93,6 +96,8 @@ public class DataTypeCodec {
           return textDecodeDateTime(collationId, buffer, index, length);
         case JSON:
           return textDecodeJson(collationId, buffer, index, length);
+        case GEOMETRY:
+          return textDecodeGeometry(buffer, index, length);
         case STRING:
         case VARSTRING:
         case BLOB:
@@ -138,7 +143,11 @@ public class DataTypeCodec {
         binaryEncodeNumeric((Numeric) value, buffer, charset);
         break;
       case BLOB:
-        binaryEncodeBlob((Buffer) value, buffer);
+        if (value instanceof Geometry) {
+          binaryEncodeGeometry((Geometry) value, buffer);
+        } else {
+          binaryEncodeBlob((Buffer) value, buffer);
+        }
         break;
       case DATE:
         binaryEncodeDate((LocalDate) value, buffer);
@@ -221,6 +230,8 @@ public class DataTypeCodec {
         return binaryDecodeDatetime(buffer);
       case JSON:
         return binaryDecodeJson(collationId, buffer);
+      case GEOMETRY:
+        return binaryDecodeGeometry(buffer);
       case STRING:
       case VARSTRING:
       case BLOB:
@@ -266,6 +277,9 @@ public class DataTypeCodec {
     } else if (value instanceof LocalDateTime) {
       // ProtocolBinary::MYSQL_TYPE_DATETIME, ProtocolBinary::MYSQL_TYPE_TIMESTAMP
       return DataType.DATETIME;
+    } else if (value instanceof Geometry) {
+      // Encoded geometry data in WKB format using BLOB type
+      return DataType.BLOB;
     }
 //    else if (value instanceof JsonObject || value instanceof JsonArray) {
 ////     note we don't need this in MySQL
@@ -751,5 +765,20 @@ public class DataTypeCodec {
       result = (b & 0xFF) | (result << 8);
     }
     return result;
+  }
+
+  private static Object textDecodeGeometry(ByteBuf buffer, int index, int length) {
+    Object geometry = decodeMySQLGeometry(buffer);
+    buffer.readerIndex(index);
+    return geometry;
+  }
+
+  private static Object binaryDecodeGeometry(ByteBuf buffer) {
+    int length = (int) BufferUtils.readLengthEncodedInteger(buffer);
+    return decodeMySQLGeometry(buffer);
+  }
+
+  private static void binaryEncodeGeometry(Geometry value, ByteBuf buffer) {
+    encodeGeometryToMySQLBlob(buffer, value);
   }
 }

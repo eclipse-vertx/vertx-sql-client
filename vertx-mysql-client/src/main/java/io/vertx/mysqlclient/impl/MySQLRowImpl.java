@@ -2,6 +2,7 @@ package io.vertx.mysqlclient.impl;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.mysqlclient.data.spatial.*;
 import io.vertx.mysqlclient.impl.datatype.DataType;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.sqlclient.Row;
@@ -60,6 +61,22 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
       return type.cast(getJsonObject(pos));
     } else if (type == JsonArray.class) {
       return type.cast(getJsonArray(pos));
+    } else if (type == Geometry.class) {
+      return type.cast(getGeometry(pos));
+    } else if (type == Point.class) {
+      return type.cast(getPoint(pos));
+    } else if (type == LineString.class) {
+      return type.cast(getLineString(pos));
+    } else if (type == Polygon.class) {
+      return type.cast(getPolygon(pos));
+    } else if (type == MultiPoint.class) {
+      return type.cast(getMultiPoint(pos));
+    } else if (type == MultiLineString.class) {
+      return type.cast(getMultiLineString(pos));
+    } else if (type == MultiPolygon.class) {
+      return type.cast(getMultiPolygon(pos));
+    } else if (type == GeometryCollection.class) {
+      return type.cast(getGeometryCollection(pos));
     } else {
       throw new UnsupportedOperationException("Unsupported type " + type.getName());
     }
@@ -234,11 +251,74 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
     return null;
   }
 
-
   private JsonArray getJsonArray(int pos) {
     Object val = getValue(pos);
     if (val instanceof JsonArray) {
       return (JsonArray) val;
+    }
+    return null;
+  }
+
+  private Geometry getGeometry(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Geometry) {
+      return (Geometry) val;
+    }
+    return null;
+  }
+
+  private Point getPoint(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Point) {
+      return (Point) val;
+    }
+    return null;
+  }
+
+  private LineString getLineString(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof LineString) {
+      return (LineString) val;
+    }
+    return null;
+  }
+
+  private Polygon getPolygon(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Polygon) {
+      return (Polygon) val;
+    }
+    return null;
+  }
+
+  private MultiPoint getMultiPoint(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof MultiPoint) {
+      return (MultiPoint) val;
+    }
+    return null;
+  }
+
+  private MultiLineString getMultiLineString(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof MultiLineString) {
+      return (MultiLineString) val;
+    }
+    return null;
+  }
+
+  private MultiPolygon getMultiPolygon(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof MultiPolygon) {
+      return (MultiPolygon) val;
+    }
+    return null;
+  }
+
+  private GeometryCollection getGeometryCollection(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof GeometryCollection) {
+      return (GeometryCollection) val;
     }
     return null;
   }
