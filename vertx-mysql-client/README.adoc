@@ -8,20 +8,6 @@ Documentation:
 - https://vertx.io/docs/vertx-mysql-client/groovy/[Groovy documentation]
 - https://vertx.io/docs/vertx-mysql-client/ruby/[Ruby documentation]
 
-== TODO
-
-* [ ] Full data type support
-* [ ] Compression
-* [ ] Replication Protocol(Binlog)
-
-== Unsupported Data type
-
-these data types are not fully supported yet:
-
-* [ ] Spatial data types
-
-Contributions are welcome!
-
 == Developers
 
 === Testing
