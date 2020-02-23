@@ -28,7 +28,6 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.QueryCommandBase;
 
 import java.nio.charset.StandardCharsets;
-import java.util.function.Consumer;
 import java.util.stream.Collector;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.*;
@@ -65,7 +64,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
         handleResultsetColumnDefinitionsDecodingCompleted();
         break;
       case HANDLING_ROW_DATA_OR_END_PACKET:
-        handleRows(payload, payloadLength, this::handleSingleRow);
+        handleRows(payload, payloadLength);
         break;
     }
   }
@@ -98,7 +97,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     decoder = new RowResultDecoder<>(cmd.collector(), /*cmd.isSingleton()*/ new MySQLRowDesc(columnDefinitions, format));
   }
 
-  protected void handleRows(ByteBuf payload, int payloadLength, Consumer<ByteBuf> singleRowHandler) {
+  protected void handleRows(ByteBuf payload, int payloadLength) {
   /*
     Resultset row can begin with 0xfe byte (when using text protocol with a field length > 0xffffff)
     To ensure that packets beginning with 0xfe correspond to the ending packet (EOF_Packet or OK_Packet with a 0xFE header),
@@ -124,13 +123,9 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
       }
       handleSingleResultsetDecodingCompleted(serverStatusFlags, affectedRows, lastInsertId);
     } else {
-      singleRowHandler.accept(payload);
+      // accept a row data
+      decoder.handleRow(columnDefinitions.length, payload);
     }
-  }
-
-  protected void handleSingleRow(ByteBuf payload) {
-    // accept a row data
-    decoder.handleRow(columnDefinitions.length, payload);
   }
 
   protected void handleSingleResultsetDecodingCompleted(int serverStatusFlags, long affectedRows, long lastInsertId) {

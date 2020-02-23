@@ -61,7 +61,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
         handleErrorPacketPayload(payload);
       } else {
         // decoding COM_STMT_FETCH response
-        handleRows(payload, payloadLength, super::handleSingleRow);
+        handleRows(payload, payloadLength);
       }
     } else {
       // decoding COM_STMT_EXECUTE response

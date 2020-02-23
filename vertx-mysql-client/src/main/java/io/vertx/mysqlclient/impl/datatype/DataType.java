@@ -5,6 +5,7 @@ import io.netty.util.collection.IntObjectMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.mysqlclient.data.spatial.Geometry;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.sqlclient.data.Numeric;
 
@@ -34,6 +35,7 @@ public enum DataType {
   TIMESTAMP(ColumnDefinition.ColumnType.MYSQL_TYPE_TIMESTAMP, LocalDateTime.class, LocalDateTime.class),
   BIT(ColumnDefinition.ColumnType.MYSQL_TYPE_BIT, Long.class, Long.class),
   JSON(ColumnDefinition.ColumnType.MYSQL_TYPE_JSON, Object.class, Object.class),
+  GEOMETRY(ColumnDefinition.ColumnType.MYSQL_TYPE_GEOMETRY, Geometry.class, Geometry.class),
   NULL(ColumnDefinition.ColumnType.MYSQL_TYPE_NULL, Object.class, Object.class); // useful for mariadb prepare statement response
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DataType.class);

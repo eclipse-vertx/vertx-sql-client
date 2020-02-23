@@ -106,4 +106,22 @@ public abstract class MySQLDataTypeTestBase extends MySQLTestBase {
       }));
     }));
   }
+
+  protected void testBinaryDecode(TestContext ctx, String sql, Consumer<RowSet<Row>> checker) {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery(sql, ctx.asyncAssertSuccess(result -> {
+        checker.accept(result);
+        conn.close();
+      }));
+    }));
+  }
+
+  protected void testTextDecode(TestContext ctx, String sql, Consumer<RowSet<Row>> checker) {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query(sql, ctx.asyncAssertSuccess(result -> {
+        checker.accept(result);
+        conn.close();
+      }));
+    }));
+  }
 }

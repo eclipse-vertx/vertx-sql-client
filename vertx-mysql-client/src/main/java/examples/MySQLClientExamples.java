@@ -6,6 +6,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
 import io.vertx.mysqlclient.*;
+import io.vertx.mysqlclient.data.spatial.Point;
+import io.vertx.mysqlclient.data.spatial.Polygon;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
@@ -281,6 +283,62 @@ public class MySQLClientExamples {
     } else {
       BigDecimal value = numeric.bigDecimalValue();
     }
+  }
+
+  public void geometryExample01(SqlClient client) {
+    client.query("SELECT ST_AsText(g) FROM geom;", ar -> {
+      if (ar.succeeded()) {
+        // Fetch the spatial data in WKT format
+        RowSet<Row> result = ar.result();
+        for (Row row : result) {
+          String wktString = row.getString(0);
+        }
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
+  }
+
+  public void geometryExample02(SqlClient client) {
+    client.query("SELECT ST_AsBinary(g) FROM geom;", ar -> {
+      if (ar.succeeded()) {
+        // Fetch the spatial data in WKB format
+        RowSet<Row> result = ar.result();
+        for (Row row : result) {
+          Buffer wkbValue = row.getBuffer(0);
+        }
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
+  }
+
+  public void geometryExample03(SqlClient client) {
+    client.query("SELECT g FROM geom;", ar -> {
+      if (ar.succeeded()) {
+        // Fetch the spatial data as a Vert.x Data Object
+        RowSet<Row> result = ar.result();
+        for (Row row : result) {
+          Point point = row.get(Point.class, 0);
+          System.out.println("Point x: " + point.getX());
+          System.out.println("Point y: " + point.getY());
+        }
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
+  }
+
+  public void geometryExample04(SqlClient client) {
+    Point point = new Point(0, 1.5, 1.5);
+    // Send as a WKB representation
+    client.preparedQuery("INSERT INTO geom VALUES (ST_GeomFromWKB(?))", Tuple.of(point), ar -> {
+      if (ar.succeeded()) {
+        System.out.println("Success");
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
   }
 
   public void collector01Example(SqlClient client) {
