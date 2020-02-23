@@ -1,5 +1,6 @@
 package io.vertx.mssqlclient;
 
+import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Future;
@@ -44,39 +45,83 @@ public interface MSSQLConnection extends SqlConnection {
     return MSSQLConnectionImpl.connect(vertx, connectOptions);
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @Override
   MSSQLConnection prepare(String s, Handler<AsyncResult<PreparedQuery>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @Override
   MSSQLConnection exceptionHandler(Handler<Throwable> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @Override
   MSSQLConnection closeHandler(Handler<Void> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @Override
   MSSQLConnection preparedQuery(String s, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @GenIgnore
   @Override
   <R> MSSQLConnection preparedQuery(String s, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @Override
   MSSQLConnection query(String s, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @GenIgnore
   @Override
   <R> MSSQLConnection query(String s, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @Override
   MSSQLConnection preparedQuery(String s, Tuple tuple, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @GenIgnore
   @Override
   <R> MSSQLConnection preparedQuery(String s, Tuple tuple, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @Override
   MSSQLConnection preparedBatch(String s, List<Tuple> list, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @GenIgnore
   @Override
   <R> MSSQLConnection preparedBatch(String s, List<Tuple> list, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);

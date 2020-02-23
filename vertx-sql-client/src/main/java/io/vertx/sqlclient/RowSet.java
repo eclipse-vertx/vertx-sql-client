@@ -20,7 +20,7 @@ package io.vertx.sqlclient;
 import io.vertx.codegen.annotations.VertxGen;
 
 /**
- * A set of rows.
+ * The execution resultSet which in the form of {@link Row rows}.
  */
 @VertxGen
 public interface RowSet<R> extends Iterable<R>, SqlResult<RowSet<R>> {

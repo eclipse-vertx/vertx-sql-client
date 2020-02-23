@@ -35,6 +35,14 @@ import java.util.stream.Collector;
 
 /**
  * A connection to Postgres.
+ * <P>
+ *   The connection object supports all the operations defined in the {@link SqlConnection} interface,
+ *   it also provides additional support:
+ *   <ul>
+ *     <li>Notification</li>
+ *     <li>Request Cancellation</li>
+ *   </ul>
+ * </P>
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
@@ -125,23 +133,84 @@ public interface PgConnection extends SqlConnection {
    */
   int secretKey();
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
+  @Override
   PgConnection prepare(String sql, Handler<AsyncResult<PreparedQuery>> handler);
+
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
+  @Override
   PgConnection exceptionHandler(Handler<Throwable> handler);
+
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
+  @Override
   PgConnection closeHandler(Handler<Void> handler);
+
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
+  @Override
   PgConnection preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @GenIgnore
+  @Override
   <R> PgConnection preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
+  @Override
   PgConnection query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @GenIgnore
+  @Override
   <R> PgConnection query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
+  @Override
   PgConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
+  @Override
   @GenIgnore
   <R> PgConnection preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
+  @Override
   PgConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @GenIgnore
+  @Override
   <R> PgConnection preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 }

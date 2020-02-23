@@ -29,7 +29,9 @@ import java.util.List;
 import java.util.stream.Collector;
 
 /**
- * A prepared query.
+ * An interface which represents a prepared statement, the statement is pre-compiled and
+ * it's more efficient to execute the statement for multiple times.
+ * In addition, this kind of statement provides protection against SQL injection attacks.
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */

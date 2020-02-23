@@ -1,5 +1,6 @@
 package io.vertx.mysqlclient;
 
+import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
@@ -21,7 +22,7 @@ import java.util.stream.Collector;
 import static io.vertx.mysqlclient.MySQLConnectOptions.*;
 
 /**
- * A pool of MySQL connections.
+ * A {@link Pool pool} of {@link MySQLConnection MySQL Connections}.
  */
 @VertxGen
 public interface MySQLPool extends Pool {
@@ -77,30 +78,62 @@ public interface MySQLPool extends Pool {
     return new MySQLPoolImpl((ContextInternal) vertx.getOrCreateContext(), false, connectOptions, poolOptions);
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @Override
   MySQLPool preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @GenIgnore
   @Override
   <R> MySQLPool preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @Override
   MySQLPool query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @GenIgnore
   @Override
   <R> MySQLPool query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @Override
   MySQLPool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @GenIgnore
   @Override
   <R> MySQLPool preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @Override
   MySQLPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @GenIgnore
   @Override
   <R> MySQLPool preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);

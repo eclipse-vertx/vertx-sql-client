@@ -20,7 +20,20 @@ import java.util.stream.Collector;
 import static io.vertx.mysqlclient.MySQLConnectOptions.*;
 
 /**
- * A connection to MySQL server.
+ * An interface which represents a connection to MySQL server.
+ * <P>
+ *   The connection object supports all the operations defined in the {@link SqlConnection} interface,
+ *   in addition it provides MySQL utility command support:
+ *   <ul>
+ *     <li>COM_PING</li>
+ *     <li>COM_CHANGE_USER</li>
+ *     <li>COM_RESET_CONNECTION</li>
+ *     <li>COM_DEBUG</li>
+ *     <li>COM_INIT_DB</li>
+ *     <li>COM_STATISTICS</li>
+ *     <li>COM_SET_OPTION</li>
+ *   </ul>
+ * </P>
  */
 @VertxGen
 public interface MySQLConnection extends SqlConnection {
@@ -59,32 +72,68 @@ public interface MySQLConnection extends SqlConnection {
     return connect(vertx, fromUri(connectionUri));
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @Override
   MySQLConnection prepare(String sql, Handler<AsyncResult<PreparedQuery>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @Override
   MySQLConnection exceptionHandler(Handler<Throwable> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @Override
   MySQLConnection closeHandler(Handler<Void> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @Override
   MySQLConnection preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @GenIgnore
   @Override
   <R> MySQLConnection preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @Override
   MySQLConnection query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @GenIgnore
   @Override
   <R> MySQLConnection query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @Override
   MySQLConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @GenIgnore
   @Override
   <R> MySQLConnection preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
