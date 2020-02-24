@@ -47,6 +47,12 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     @Override
     void encode(DB2Encoder encoder) {
         super.encode(encoder);
+        encoder.socketConnection.closeHandler(h -> {
+          if (status == ST_CONNECTING) {
+            //Sometimes DB2 closes the connection when sending an invalid Database name.
+            cmd.fail(new Throwable("Socket closed during connection"));           
+          }
+        });
         sendInitialHandshake();
     }
 

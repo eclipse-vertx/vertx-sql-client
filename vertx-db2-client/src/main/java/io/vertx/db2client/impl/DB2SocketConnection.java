@@ -18,6 +18,7 @@ package io.vertx.db2client.impl;
 import java.util.Map;
 
 import io.netty.channel.ChannelPipeline;
+import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.net.impl.NetSocketInternal;
@@ -30,6 +31,7 @@ public class DB2SocketConnection extends SocketConnectionBase {
 
     private DB2Codec codec;
     private String dbName;
+    private Handler<Void> closeHandler;
 
     public DB2SocketConnection(NetSocketInternal socket, boolean cachePreparedStatements,
             int preparedStatementCacheSize, int preparedStatementCacheSqlLimit, ContextInternal context) {
@@ -56,5 +58,16 @@ public class DB2SocketConnection extends SocketConnectionBase {
         ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
         pipeline.addBefore("handler", "codec", codec);
         super.init();
+    }
+    
+    @Override
+    public void handleClose(Throwable t) {
+      super.handleClose(t);
+      context().runOnContext(closeHandler);
+    }
+    
+    public DB2SocketConnection closeHandler(Handler<Void> handler) {
+      closeHandler = handler;
+      return this;
     }
 }
