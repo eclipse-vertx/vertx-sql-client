@@ -29,29 +29,6 @@ public class BoxConverter {
     }
   }
 
-  public static Box fromMap(Iterable<java.util.Map.Entry<String, Object>> map) {
-    Box obj = new Box();
-    fromMap(map, obj);
-    return obj;
-  }
-
-  public static void fromMap(Iterable<java.util.Map.Entry<String, Object>> map, Box obj) {
-    for (java.util.Map.Entry<String, Object> member : map) {
-      switch (member.getKey()) {
-        case "lowerLeftCorner":
-          if (member.getValue() instanceof io.vertx.pgclient.data.Point) {
-            obj.setLowerLeftCorner((io.vertx.pgclient.data.Point)member.getValue());
-          }
-          break;
-        case "upperRightCorner":
-          if (member.getValue() instanceof io.vertx.pgclient.data.Point) {
-            obj.setUpperRightCorner((io.vertx.pgclient.data.Point)member.getValue());
-          }
-          break;
-      }
-    }
-  }
-
   public static void toJson(Box obj, JsonObject json) {
     toJson(obj, json.getMap());
   }

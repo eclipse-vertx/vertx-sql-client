@@ -34,24 +34,6 @@ public class PathConverter {
     }
   }
 
-  public static Path fromMap(Iterable<java.util.Map.Entry<String, Object>> map) {
-    Path obj = new Path();
-    fromMap(map, obj);
-    return obj;
-  }
-
-  public static void fromMap(Iterable<java.util.Map.Entry<String, Object>> map, Path obj) {
-    for (java.util.Map.Entry<String, Object> member : map) {
-      switch (member.getKey()) {
-        case "open":
-          if (member.getValue() instanceof Boolean) {
-            obj.setOpen((Boolean)member.getValue());
-          }
-          break;
-      }
-    }
-  }
-
   public static void toJson(Path obj, JsonObject json) {
     toJson(obj, json.getMap());
   }

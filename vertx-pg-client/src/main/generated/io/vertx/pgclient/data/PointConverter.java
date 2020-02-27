@@ -29,29 +29,6 @@ public class PointConverter {
     }
   }
 
-  public static Point fromMap(Iterable<java.util.Map.Entry<String, Object>> map) {
-    Point obj = new Point();
-    fromMap(map, obj);
-    return obj;
-  }
-
-  public static void fromMap(Iterable<java.util.Map.Entry<String, Object>> map, Point obj) {
-    for (java.util.Map.Entry<String, Object> member : map) {
-      switch (member.getKey()) {
-        case "x":
-          if (member.getValue() instanceof Number) {
-            obj.setX(((Number)member.getValue()).doubleValue());
-          }
-          break;
-        case "y":
-          if (member.getValue() instanceof Number) {
-            obj.setY(((Number)member.getValue()).doubleValue());
-          }
-          break;
-      }
-    }
-  }
-
   public static void toJson(Point obj, JsonObject json) {
     toJson(obj, json.getMap());
   }

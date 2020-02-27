@@ -19,19 +19,6 @@ public class MSSQLConnectOptionsConverter {
     }
   }
 
-  public static MSSQLConnectOptions fromMap(Iterable<java.util.Map.Entry<String, Object>> map) {
-    MSSQLConnectOptions obj = new MSSQLConnectOptions();
-    fromMap(map, obj);
-    return obj;
-  }
-
-  public static void fromMap(Iterable<java.util.Map.Entry<String, Object>> map, MSSQLConnectOptions obj) {
-    for (java.util.Map.Entry<String, Object> member : map) {
-      switch (member.getKey()) {
-      }
-    }
-  }
-
   public static void toJson(MSSQLConnectOptions obj, JsonObject json) {
     toJson(obj, json.getMap());
   }

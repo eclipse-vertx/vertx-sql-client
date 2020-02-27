@@ -69,53 +69,6 @@ public class SqlConnectOptionsConverter {
     }
   }
 
-  public static void fromMap(Iterable<java.util.Map.Entry<String, Object>> map, SqlConnectOptions obj) {
-    for (java.util.Map.Entry<String, Object> member : map) {
-      switch (member.getKey()) {
-        case "cachePreparedStatements":
-          if (member.getValue() instanceof Boolean) {
-            obj.setCachePreparedStatements((Boolean)member.getValue());
-          }
-          break;
-        case "database":
-          if (member.getValue() instanceof String) {
-            obj.setDatabase((String)member.getValue());
-          }
-          break;
-        case "host":
-          if (member.getValue() instanceof String) {
-            obj.setHost((String)member.getValue());
-          }
-          break;
-        case "password":
-          if (member.getValue() instanceof String) {
-            obj.setPassword((String)member.getValue());
-          }
-          break;
-        case "port":
-          if (member.getValue() instanceof Number) {
-            obj.setPort(((Number)member.getValue()).intValue());
-          }
-          break;
-        case "preparedStatementCacheMaxSize":
-          if (member.getValue() instanceof Number) {
-            obj.setPreparedStatementCacheMaxSize(((Number)member.getValue()).intValue());
-          }
-          break;
-        case "preparedStatementCacheSqlLimit":
-          if (member.getValue() instanceof Number) {
-            obj.setPreparedStatementCacheSqlLimit(((Number)member.getValue()).intValue());
-          }
-          break;
-        case "user":
-          if (member.getValue() instanceof String) {
-            obj.setUser((String)member.getValue());
-          }
-          break;
-      }
-    }
-  }
-
   public static void toJson(SqlConnectOptions obj, JsonObject json) {
     toJson(obj, json.getMap());
   }
