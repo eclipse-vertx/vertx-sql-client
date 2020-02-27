@@ -26,7 +26,12 @@ import io.vertx.mysqlclient.SslMode;
 import io.vertx.mysqlclient.impl.codec.MySQLCodec;
 import io.vertx.mysqlclient.impl.command.InitialHandshakeCommand;
 import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
+import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.impl.command.QueryCommandBase;
+import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
+import io.vertx.sqlclient.impl.command.TxCommand;
 
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -68,4 +73,18 @@ public class MySQLSocketConnection extends SocketConnectionBase {
     super.init();
   }
 
+  @Override
+  protected <R> void doSchedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
+    if (cmd instanceof TxCommand) {
+      TxCommand tx = (TxCommand) cmd;
+      SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(
+        tx.sql,
+        false,
+        QueryCommandBase.NULL_COLLECTOR,
+        QueryResultHandler.NOOP_HANDLER);
+      super.doSchedule(cmd2, ar -> handler.handle(ar.mapEmpty()));
+    } else {
+      super.doSchedule(cmd, handler);
+    }
+  }
 }
