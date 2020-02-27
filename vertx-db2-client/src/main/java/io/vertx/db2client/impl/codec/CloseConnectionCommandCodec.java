@@ -40,5 +40,6 @@ class CloseConnectionCommandCodec extends CommandCodec<Void, CloseConnectionComm
   void decodePayload(ByteBuf payload, int payloadLength) {
       DRDAQueryResponse closeCursor = new DRDAQueryResponse(payload);
       closeCursor.readLocalCommit();
+      encoder.chctx.channel().close();
   }
 }

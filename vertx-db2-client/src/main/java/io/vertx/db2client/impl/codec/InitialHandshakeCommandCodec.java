@@ -16,6 +16,7 @@
 package io.vertx.db2client.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.db2client.DB2Exception;
 import io.vertx.db2client.impl.command.InitialHandshakeCommand;
 import io.vertx.db2client.impl.drda.CCSIDConstants;
 import io.vertx.db2client.impl.drda.DRDAConnectRequest;
@@ -47,6 +48,14 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     @Override
     void encode(DB2Encoder encoder) {
         super.encode(encoder);
+        encoder.socketConnection.closeHandler(h -> {
+          if (status == ST_CONNECTING) {
+            //Sometimes DB2 closes the connection when sending an invalid Database name.
+            //-4499 = A fatal error occurred that resulted in a disconnect from the data source.
+            //08001 = "The connection was unable to be established"
+            cmd.fail(new DB2Exception("Socket closed during connection", -4499,"08001"));           
+          }
+        });
         sendInitialHandshake();
     }
 
