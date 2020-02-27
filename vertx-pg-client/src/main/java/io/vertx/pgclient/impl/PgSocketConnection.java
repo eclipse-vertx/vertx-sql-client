@@ -24,11 +24,16 @@ import io.vertx.pgclient.impl.codec.PgCodec;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.Notice;
 import io.vertx.sqlclient.impl.Notification;
+import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
+import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.InitCommand;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.impl.NetSocketInternal;
+import io.vertx.sqlclient.impl.command.QueryCommandBase;
+import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
+import io.vertx.sqlclient.impl.command.TxCommand;
 
 import java.util.Map;
 
@@ -127,4 +132,18 @@ public class PgSocketConnection extends SocketConnectionBase {
     pipeline.addBefore("handler", "initiate-ssl-handler", new InitiateSslHandler(this, upgradePromise));
   }
 
+  @Override
+  protected <R> void doSchedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
+    if (cmd instanceof TxCommand) {
+      TxCommand tx = (TxCommand) cmd;
+      SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(
+        tx.sql,
+        false,
+        QueryCommandBase.NULL_COLLECTOR,
+        QueryResultHandler.NOOP_HANDLER);
+      super.doSchedule(cmd2, ar -> handler.handle(ar.mapEmpty()));
+    } else {
+      super.doSchedule(cmd, handler);
+    }
+  }
 }

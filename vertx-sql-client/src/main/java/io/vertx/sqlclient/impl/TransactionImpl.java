@@ -17,12 +17,10 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Transaction;
+import io.vertx.sqlclient.impl.command.TxCommand;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.QueryCommandBase;
-import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
-import io.vertx.sqlclient.RowSet;
 import io.vertx.core.*;
 
 import java.util.ArrayDeque;
@@ -43,7 +41,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   TransactionImpl(ContextInternal context, Connection conn, Handler<Void> disposeHandler) {
     super(context, conn);
     this.disposeHandler = disposeHandler;
-    ScheduledCommand<Boolean> b = doQuery("BEGIN", context.promise(this::afterBegin));
+    ScheduledCommand<Void> b = doQuery(TxCommand.BEGIN, context.promise(this::afterBegin));
     doSchedule(b.cmd, b.handler);
   }
 
@@ -150,7 +148,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
           if (h != null) {
             context.runOnContext(h);
           }
-          schedule__(doQuery("ROLLBACK", context.promise(ar2 -> {
+          schedule__(doQuery(TxCommand.ROLLBACK, context.promise(ar2 -> {
             disposeHandler.handle(null);
             handler.handle(ar);
           })));
@@ -168,9 +166,9 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
       case ST_BEGIN:
       case ST_PENDING:
       case ST_PROCESSING:
-        Promise<RowSet<Row>> promise = context.promise();
-        schedule__(doQuery("COMMIT", promise));
-        Future<RowSet<Row>> fut = promise.future();
+        Promise<Void> promise = context.promise();
+        schedule__(doQuery(TxCommand.COMMIT, promise));
+        Future<Void> fut = promise.future();
         fut.onComplete(ar -> disposeHandler.handle(null));
         return fut.mapEmpty();
       case ST_COMPLETED:
@@ -192,8 +190,8 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
     if (status == ST_COMPLETED) {
       return context.failedFuture("Transaction already completed");
     } else {
-      Promise<RowSet<Row>> promise = context.promise();
-      schedule__(doQuery("ROLLBACK", promise));
+      Promise<Void> promise = context.promise();
+      schedule__(doQuery(TxCommand.ROLLBACK, promise));
       Future<Void> fut = promise.future().mapEmpty();
       fut.onComplete(ar -> disposeHandler.handle(null));
       return fut;
@@ -218,9 +216,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
     return this;
   }
 
-  private ScheduledCommand<Boolean> doQuery(String sql, Promise<RowSet<Row>> handler) {
-    SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> b = new SqlResultBuilder<>(RowSetImpl.FACTORY, handler);
-    SimpleQueryCommand<RowSet<Row>> cmd = new SimpleQueryCommand<>(sql, false, RowSetImpl.COLLECTOR, b);
-    return new ScheduledCommand<>(cmd, b);
+  private ScheduledCommand<Void> doQuery(TxCommand cmd, Promise<Void> handler) {
+    return new ScheduledCommand<>(cmd, handler);
   }
 }

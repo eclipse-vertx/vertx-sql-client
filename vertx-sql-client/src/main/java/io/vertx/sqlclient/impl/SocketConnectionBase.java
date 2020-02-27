@@ -146,7 +146,7 @@ public abstract class SocketConnectionBase implements Connection {
     });
   }
 
-  private <R> void doSchedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
+  protected <R> void doSchedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
     if (handler == null) {
       throw new IllegalArgumentException();
     }
