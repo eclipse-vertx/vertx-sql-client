@@ -47,6 +47,6 @@ public abstract class SqlConnectionBase<C extends SqlClient> extends SqlClientBa
   public Future<PreparedQuery> prepare(String sql) {
     Promise<PreparedStatement> promise = promise();
     schedule(new PrepareStatementCommand(sql), promise);
-    return promise.future().map(cr -> new PreparedQueryImpl(conn, context, cr));
+    return promise.future().map(cr -> new PreparedQueryImpl(conn, context, cr, autoCommit()));
   }
 }

@@ -74,7 +74,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
     Collector<Row, ?, R1> collector,
     Promise<R3> promise) {
     SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, promise);
-    schedule(new SimpleQueryCommand<>(sql, singleton, collector, b), b);
+    schedule(new SimpleQueryCommand<>(sql, singleton, autoCommit(), collector, b), b);
     return (C) this;
   }
 
@@ -114,7 +114,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
       if (msg != null) {
         return Future.failedFuture(msg);
       } else {
-        return Future.succeededFuture(new ExtendedQueryCommand<>(ps, arguments, collector, builder));
+        return Future.succeededFuture(new ExtendedQueryCommand<>(ps, arguments, autoCommit(), collector, builder));
       }
     });
     schedule(abc, builder);
@@ -168,7 +168,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
     preparedBatch(sql, batch, SqlResultImpl::new, collector, promise);
     return promise.future();
   }
-
+  
   private <R1, R2 extends SqlResultBase<R1, R2>, R3 extends SqlResult<R1>> C preparedBatch(
     String sql,
     List<Tuple> batch,
@@ -186,10 +186,15 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
       return Future.succeededFuture(new ExtendedBatchQueryCommand<>(
         ps,
         batch,
+        autoCommit(),
         collector,
         builder));
     });
     schedule(abc, builder);
     return (C) this;
+  }
+  
+  boolean autoCommit() {
+    return true;
   }
 }

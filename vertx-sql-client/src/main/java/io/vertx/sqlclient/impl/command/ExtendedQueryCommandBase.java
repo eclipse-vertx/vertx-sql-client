@@ -37,9 +37,10 @@ public abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
                            int fetch,
                            String cursorId,
                            boolean suspended,
+                           boolean autoCommit,
                            Collector<Row, ?, R> collector,
                            QueryResultHandler<R> resultHandler) {
-    super(collector, resultHandler);
+    super(autoCommit, collector, resultHandler);
     this.ps = ps;
     this.fetch = fetch;
     this.cursorId = cursorId;
@@ -61,7 +62,7 @@ public abstract class ExtendedQueryCommandBase<R> extends QueryCommandBase<R> {
   public boolean isSuspended() {
     return suspended;
   }
-
+  
   @Override
   public String sql() {
     return ps.sql();

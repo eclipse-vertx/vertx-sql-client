@@ -44,12 +44,14 @@ class PreparedQueryImpl implements PreparedQuery {
   private final Connection conn;
   private final ContextInternal context;
   private final PreparedStatement ps;
+  private final boolean autoCommit;
   private final AtomicBoolean closed = new AtomicBoolean();
 
-  PreparedQueryImpl(Connection conn, ContextInternal context, PreparedStatement ps) {
+  PreparedQueryImpl(Connection conn, ContextInternal context, PreparedStatement ps, boolean inTransaction) {
     this.conn = conn;
     this.context = context;
     this.ps = ps;
+    this.autoCommit = inTransaction;
   }
 
   @Override
@@ -97,6 +99,7 @@ class PreparedQueryImpl implements PreparedQuery {
           fetch,
           cursorId,
           suspended,
+          autoCommit,
           collector,
           resultHandler);
         conn.schedule(cmd, handler);
@@ -177,7 +180,7 @@ class PreparedQueryImpl implements PreparedQuery {
     }
     Promise<R3> p = context.promise(handler);
     SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, p);
-    ExtendedBatchQueryCommand<R1> cmd = new ExtendedBatchQueryCommand<>(ps, argsList, collector, b);
+    ExtendedBatchQueryCommand<R1> cmd = new ExtendedBatchQueryCommand<>(ps, argsList, autoCommit, collector, b);
     conn.schedule(cmd, context.promise(b));
     return this;
   }
