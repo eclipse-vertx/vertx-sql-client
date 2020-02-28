@@ -536,11 +536,11 @@ public class NetSqlca {
     @Override
     public String toString() {
         return super.toString() + 
-                "  sqlCode=" + sqlCode_ + 
+                "  sqlCode=" + sqlCode_ +
+                "  sqlState=" + sqlState_ + 
                 "  sqlErrd=" + Arrays.toString(sqlErrd_) + 
                 "  sqlErrmc="  + bytes2String(sqlErrmcBytes_) + 
                 "  sqlErrp=" + bytes2String(sqlErrpBytes_) + 
-                "  sqlState=" + sqlState_ + 
                 "  sqlStates=" + Arrays.deepToString(sqlStates_) +
                 "  sqlWarn=" + bytes2String(sqlWarnBytes_);
     }

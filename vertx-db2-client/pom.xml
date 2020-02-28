@@ -70,6 +70,7 @@
         <groupId>com.ibm.db2</groupId>
         <artifactId>jcc</artifactId>
         <version>11.1.4.4</version>
+        <scope>test</scope>
     </dependency>
     <dependency>
 	    <groupId>org.slf4j</groupId>
@@ -94,6 +95,7 @@
           <configuration>
             <argLine>-Xmx1024M</argLine>
             <failIfNoTests>true</failIfNoTests>
+            <trimStackTrace>false</trimStackTrace>
             <systemPropertyVariables>
               <target.dir>${project.build.directory}</target.dir>
             </systemPropertyVariables>

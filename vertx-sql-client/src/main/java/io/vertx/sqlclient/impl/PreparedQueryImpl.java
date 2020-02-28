@@ -47,11 +47,11 @@ class PreparedQueryImpl implements PreparedQuery {
   private final boolean autoCommit;
   private final AtomicBoolean closed = new AtomicBoolean();
 
-  PreparedQueryImpl(Connection conn, ContextInternal context, PreparedStatement ps, boolean inTransaction) {
+  PreparedQueryImpl(Connection conn, ContextInternal context, PreparedStatement ps, boolean autoCommit) {
     this.conn = conn;
     this.context = context;
     this.ps = ps;
-    this.autoCommit = inTransaction;
+    this.autoCommit = autoCommit;
   }
 
   @Override

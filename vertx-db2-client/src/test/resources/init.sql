@@ -2,7 +2,7 @@
 -- used by TCK
 DROP TABLE IF EXISTS Fortune;
 CREATE TABLE Fortune (
-  id       integer       NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
+  id       integer       NOT NULL GENERATED AS IDENTITY (START WITH 1, INCREMENT BY 1),
   message  varchar(2048),
   PRIMARY KEY  (id)
 );

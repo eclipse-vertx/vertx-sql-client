@@ -56,7 +56,9 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
         int packetStartIdx = packet.writerIndex();
         DRDAQueryRequest updateCommand = new DRDAQueryRequest(packet);
         updateCommand.writeExecuteImmediate(cmd.sql(), querySection, encoder.socketConnection.database());
-        updateCommand.buildRDBCMM();
+        if (cmd.autoCommit()) {
+          updateCommand.buildRDBCMM();
+        }
         updateCommand.completeCommand();
 
         // @AGG TODO: auto-generated keys chain an OPNQRY command
@@ -84,7 +86,7 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
         sendPacket(packet, packet.writerIndex() - packetStartIdx);
     }
     
-    private static <A, T> T emptyResult(Collector<Row, A, T> collector) {
+    static <A, T> T emptyResult(Collector<Row, A, T> collector) {
         return collector.finisher().apply(collector.supplier().get());
     }
 
@@ -103,7 +105,9 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
         int updatedCount = (int) updateResponse.readExecuteImmediate();
         // TODO: If auto-generated keys, read an OPNQRY here
         // readOpenQuery()
-        updateResponse.readLocalCommit();
+        if (cmd.autoCommit()) {
+          updateResponse.readLocalCommit();
+        }
 
         T result = emptyResult(cmd.collector());
         cmd.resultHandler().handleResult(updatedCount, 0, null, result, null);
@@ -135,15 +139,11 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
             // decodeQuery(payload);
             // return;
             // case HANDLING_END_OF_QUERY:
-            int updatedCount = 0; // TODO @AGG hardcoded to 0
-            T result;
-            Throwable failure;
-            int size;
-            RowDesc rowDesc;
-            failure = decoder.complete();
-            result = decoder.result();
-            rowDesc = decoder.rowDesc;
-            size = decoder.size();
+            Throwable failure = decoder.complete();
+            T result = decoder.result();
+            RowDesc rowDesc = decoder.rowDesc;
+            int size = decoder.size();
+            int updatedCount = decoder.size();
             decoder.reset();
             cmd.resultHandler().handleResult(updatedCount, size, rowDesc, result, failure);
             completionHandler.handle(CommandResponse.success(true));
