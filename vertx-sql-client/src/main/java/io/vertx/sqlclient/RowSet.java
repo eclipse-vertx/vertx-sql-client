@@ -20,7 +20,8 @@ package io.vertx.sqlclient;
 import io.vertx.codegen.annotations.VertxGen;
 
 /**
- * A set of rows.
+ * The execution result of the row set of a query provided as {@code <R>}, commonly used as a {@code RowSet<Row>}.
+ * Using a collector query might provide a different result.
  */
 @VertxGen
 public interface RowSet<R> extends Iterable<R>, SqlResult<RowSet<R>> {

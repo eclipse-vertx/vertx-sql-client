@@ -17,6 +17,7 @@
 
 package io.vertx.pgclient;
 
+import io.vertx.codegen.annotations.Fluent;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.pgclient.impl.PgPoolImpl;
 import io.vertx.sqlclient.PoolOptions;
@@ -36,7 +37,7 @@ import java.util.List;
 import java.util.stream.Collector;
 
 /**
- * A pool of PostgreSQL connections.
+ * A {@link Pool pool} of {@link PgConnection PostgreSQL connections}.
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
@@ -117,20 +118,63 @@ public interface PgPool extends Pool {
     return new PgPoolImpl(((VertxInternal)vertx).getOrCreateContext(), false, connectOptions, poolOptions);
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
+  @Override
   PgPool preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
+  @Override
   @GenIgnore
   <R> PgPool preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
+  @Override
   PgPool query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
+  @Override
   @GenIgnore
   <R> PgPool query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
+  @Override
   PgPool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
+  @Override
   @GenIgnore
   <R> PgPool preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
+  @Override
   PgPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
+  @Override
   @GenIgnore
   <R> PgPool preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 

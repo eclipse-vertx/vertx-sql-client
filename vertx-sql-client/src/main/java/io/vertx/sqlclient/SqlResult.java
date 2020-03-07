@@ -22,8 +22,9 @@ import io.vertx.codegen.annotations.VertxGen;
 import java.util.List;
 
 /**
- * Represents the result of an operation on database.
- * @param <T>
+ * An interface that represents the execution result of an operation on the database server.
+ *
+ * @param <T> the execution result type
  */
 @VertxGen
 public interface SqlResult<T> {
@@ -50,18 +51,18 @@ public interface SqlResult<T> {
   int size();
 
   /**
-   * Get the property with the specified {@link PropertyKind}.
+   * Get the specific property with the specified {@link PropertyKind}.
    *
-   * @param propertyKind the kind of the property
+   * @param propertyKind the unique object which is used to indicate which property of the execution result to fetch
    * @param <V> the type of the property value
    * @return the value of the property
    */
   <V> V property(PropertyKind<V> propertyKind);
 
   /**
-   * Get the result value.
+   * Get the execution result value, the execution result type may vary such as a {@link RowSet rowSet} or even a {@link String string}.
    *
-   * @return the result
+   * @return the result value
    */
   T value();
 

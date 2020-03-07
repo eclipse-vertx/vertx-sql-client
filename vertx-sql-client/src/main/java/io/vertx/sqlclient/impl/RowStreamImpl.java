@@ -89,6 +89,7 @@ public class RowStreamImpl implements RowStream<Row>, Handler<AsyncResult<RowSet
     return this;
   }
 
+  @Override
   public RowStream<Row> fetch(long amount) {
     if (amount < 0L) {
       throw new IllegalArgumentException("Invalid fetch amount " + amount);

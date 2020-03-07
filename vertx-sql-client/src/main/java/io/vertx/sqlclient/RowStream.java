@@ -17,6 +17,7 @@
 
 package io.vertx.sqlclient;
 
+import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -29,20 +30,29 @@ import io.vertx.core.streams.ReadStream;
 @VertxGen
 public interface RowStream<T> extends ReadStream<T> {
 
+  @Fluent
   @Override
   RowStream<T> exceptionHandler(Handler<Throwable> handler);
 
+  @Fluent
   @Override
   RowStream<T> handler(Handler<T> handler);
 
+  @Fluent
   @Override
   RowStream<T> pause();
 
+  @Fluent
   @Override
   RowStream<T> resume();
 
+  @Fluent
   @Override
   RowStream<T> endHandler(Handler<Void> endHandler);
+
+  @Fluent
+  @Override
+  RowStream<T> fetch(long l);
 
   /**
    * Close the stream and release the resources.

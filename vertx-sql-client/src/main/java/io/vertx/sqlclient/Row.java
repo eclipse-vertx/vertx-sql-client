@@ -26,7 +26,9 @@ import java.time.temporal.Temporal;
 import java.util.UUID;
 
 /**
- * Represents single row of the result set.
+ * An object that represents a single row of the {@link RowSet execution result rowset}.
+ * Users can retrieve values with the {@code getByIndex} accessor methods or {@code getByColumnName} accessor methods,
+ * it's usually more efficient to use the former one because a column index lookup by could be saved.
  */
 @VertxGen
 public interface Row extends Tuple {

@@ -1,5 +1,6 @@
 package io.vertx.mssqlclient;
 
+import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.impl.ContextInternal;
@@ -14,7 +15,7 @@ import java.util.List;
 import java.util.stream.Collector;
 
 /**
- * A pool of SQL Server connections.
+ * A {@link Pool pool} of {@link MSSQLConnection SQL Server connections}.
  */
 @VertxGen
 public interface MSSQLPool extends Pool {
@@ -41,30 +42,62 @@ public interface MSSQLPool extends Pool {
     return new MSSQLPoolImpl((ContextInternal) vertx.getOrCreateContext(), false, connectOptions, poolOptions);
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @Override
   MSSQLPool preparedQuery(String s, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @GenIgnore
   @Override
   <R> MSSQLPool preparedQuery(String s, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @Override
   MSSQLPool query(String s, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @GenIgnore
   @Override
   <R> MSSQLPool query(String s, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @Override
   MSSQLPool preparedQuery(String s, Tuple tuple, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @GenIgnore
   @Override
   <R> MSSQLPool preparedQuery(String s, Tuple tuple, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @Override
   MSSQLPool preparedBatch(String s, List<Tuple> list, Handler<AsyncResult<RowSet<Row>>> handler);
 
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
   @GenIgnore
   @Override
   <R> MSSQLPool preparedBatch(String s, List<Tuple> list, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
