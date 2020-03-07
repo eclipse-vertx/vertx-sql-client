@@ -27,8 +27,7 @@ public class MySQLRule extends ExternalResource {
 
   private GenericContainer server;
   private MySQLConnectOptions options;
-  private DatabaseType databaseType;
-  private String databaseVersion;
+  private DatabaseServerInfo databaseServerInfo;
 
   private boolean ssl;
 
@@ -40,8 +39,8 @@ public class MySQLRule extends ExternalResource {
     return this;
   }
 
-  public synchronized MySQLConnectOptions startServer(DatabaseType databaseType, String databaseVersion, boolean ssl) throws Exception {
-    initServer(databaseType, databaseVersion, ssl);
+  public synchronized MySQLConnectOptions startServer(boolean ssl) throws Exception {
+    initServer(ssl);
     server.start();
 
     return new MySQLConnectOptions()
@@ -62,8 +61,8 @@ public class MySQLRule extends ExternalResource {
     }
   }
 
-  private void initServer(DatabaseType serverType, String version, boolean ssl) {
-    server = new GenericContainer(serverType.toDockerImageName() + ":" + version)
+  private void initServer(boolean ssl) {
+    server = new GenericContainer(databaseServerInfo.getDatabaseType().toDockerImageName() + ":" + databaseServerInfo.getDockerImageTag())
       .withEnv("MYSQL_USER", "mysql")
       .withEnv("MYSQL_PASSWORD", "password")
       .withEnv("MYSQL_ROOT_PASSWORD", "password")
@@ -109,15 +108,15 @@ public class MySQLRule extends ExternalResource {
   }
 
   public boolean isUsingMariaDB() {
-    return databaseType == DatabaseType.MariaDB;
+    return databaseServerInfo.getDatabaseType() == DatabaseType.MariaDB;
   }
 
   public boolean isUsingMySQL5_6() {
-    return databaseType == DatabaseType.MySQL && databaseVersion.contains("5.6");
+    return databaseServerInfo == DatabaseServerInfo.MySQL_V5_6;
   }
 
   public boolean isUsingMySQL8() {
-    return databaseType == DatabaseType.MySQL && (databaseVersion.equals("8") || databaseVersion.contains("8."));
+    return databaseServerInfo == DatabaseServerInfo.MySQL_V8_0;
   }
 
   public MySQLConnectOptions options() {
@@ -144,6 +143,7 @@ public class MySQLRule extends ExternalResource {
     }
 
     // server type
+    DatabaseType databaseType;
     String databaseTypeString = System.getProperty("testing.mysql.database.server");
     if (isSystemPropertyValid(databaseTypeString)) {
       databaseType = parseDatabaseTypeString(databaseTypeString);
@@ -155,20 +155,21 @@ public class MySQLRule extends ExternalResource {
     // server version
     String databaseVersionString = System.getProperty("testing.mysql.database.version");
     if (isSystemPropertyValid(databaseVersionString)) {
-      databaseVersion = databaseVersionString;
+      this.databaseServerInfo = DatabaseServerInfo.valueOf(databaseType, databaseVersionString);
     } else {
+      // use default version for testing servers
       if (databaseType == DatabaseType.MySQL) {
         // 5.7 by default for MySQL
-        databaseVersion = "5.7";
+        this.databaseServerInfo = DatabaseServerInfo.MySQL_V5_7;
       } else if (databaseType == DatabaseType.MariaDB) {
         // 10.4 by default for MariaDB
-        databaseVersion = "10.4";
+        this.databaseServerInfo = DatabaseServerInfo.MariaDB_V10_4;
       } else {
         throw new IllegalStateException("Unimplemented default version for: " + databaseType);
       }
     }
 
-    options = startServer(databaseType, databaseVersion, ssl);
+    options = startServer(ssl);
   }
 
   @Override
@@ -190,6 +191,56 @@ public class MySQLRule extends ExternalResource {
 
     public String toDockerImageName() {
       return this.name().toLowerCase();
+    }
+  }
+
+  private enum DatabaseServerInfo {
+    MySQL_V5_6(DatabaseType.MySQL, "5.6"),
+    MySQL_V5_7(DatabaseType.MySQL, "5.7"),
+    MySQL_V8_0(DatabaseType.MySQL, "8.0"),
+    MySQL_LATEST(DatabaseType.MySQL, "latest"),
+    MariaDB_V10_4(DatabaseType.MariaDB, "10.4"),
+    MariaDB_LATEST(DatabaseType.MariaDB, "latest"),;
+
+    private final DatabaseType databaseType;
+    private final String dockerImageTag;
+
+    DatabaseServerInfo(DatabaseType databaseType, String dockerImageTag) {
+      this.databaseType = databaseType;
+      this.dockerImageTag = dockerImageTag;
+    }
+
+    public String getDockerImageTag() {
+      return dockerImageTag;
+    }
+
+    public DatabaseType getDatabaseType() {
+      return databaseType;
+    }
+
+    public static DatabaseServerInfo valueOf(DatabaseType databaseType, String dockerImageTag) {
+      switch (databaseType) {
+        case MySQL:
+          if (dockerImageTag.startsWith("5.6")) {
+            return MySQL_V5_6;
+          } else if (dockerImageTag.startsWith("5.7")) {
+            return MySQL_V5_7;
+          } else if (dockerImageTag.startsWith("8")) {
+            return MySQL_V8_0;
+          } else if (dockerImageTag.equalsIgnoreCase("latest")) {
+            return MySQL_LATEST;
+          } else {
+            throw new IllegalArgumentException("Unsupported docker image tag for MySQL server, tag: " + dockerImageTag);
+          }
+        case MariaDB:
+          if (dockerImageTag.startsWith("10.4")) {
+            return MariaDB_V10_4;
+          } else if (dockerImageTag.equalsIgnoreCase("latest")) {
+            return MariaDB_LATEST;
+          }
+        default:
+          throw new IllegalStateException("Unsupported database type: " + databaseType.toDockerImageName());
+      }
     }
   }
 }
