@@ -128,12 +128,14 @@ public class MySQLRule extends ExternalResource {
     // use an external database for testing
     if (isTestingWithExternalDatabase() && !ssl) {
       options = MySQLConnectOptions.fromUri(connectionUri);
+      databaseServerInfo = DatabaseServerInfo.EXTERNAL;
       return;
     }
 
     // use an external database for tls testing
     if (isTlsTestingWithExternalDatabase() && ssl) {
       options = MySQLConnectOptions.fromUri(tlsConnectionUri);
+      databaseServerInfo = DatabaseServerInfo.EXTERNAL;
       return;
     }
 
@@ -200,7 +202,8 @@ public class MySQLRule extends ExternalResource {
     MySQL_V8_0(DatabaseType.MySQL, "8.0"),
     MySQL_LATEST(DatabaseType.MySQL, "latest"),
     MariaDB_V10_4(DatabaseType.MariaDB, "10.4"),
-    MariaDB_LATEST(DatabaseType.MariaDB, "latest"),;
+    MariaDB_LATEST(DatabaseType.MariaDB, "latest"),
+    EXTERNAL(null, null);
 
     private final DatabaseType databaseType;
     private final String dockerImageTag;
