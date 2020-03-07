@@ -37,7 +37,9 @@ public class MySQLTLSTest {
      * see https://mysqlserverteam.com/ssltls-improvements-in-mysql-5-7-10/
      * and https://dev.mysql.com/doc/refman/5.7/en/encrypted-connection-protocols-ciphers.html for more details.
      */
-    options.removeEnabledSecureTransportProtocol("TLSv1.2");
+    if (rule.isUsingMySQL5_6()) {
+      options.removeEnabledSecureTransportProtocol("TLSv1.2");
+    }
   }
 
   @After
