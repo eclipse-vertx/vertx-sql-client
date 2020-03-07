@@ -36,8 +36,8 @@ import java.util.stream.Collector;
 public interface Pool extends SqlClient {
 
   /**
-   * Borrows a connection from the connection pool, the connection will be used to execute a simple query using the given SQL string,
-   * the connection will be returned to the pool when the execution completes and the asynchronous result is represented as {@link RowSet}.
+   * Borrows a connection from the connection pool, the connection will be used to execute a simple query using the given {@code sql} string,
+   * the connection will be returned to the pool when the execution completes and the asynchronous result is represented as a {@link RowSet}.
    *
    * @param sql the query SQL
    * @param handler the handler notified with the execution result
@@ -54,7 +54,7 @@ public interface Pool extends SqlClient {
   Future<RowSet<Row>> query(String sql);
 
   /**
-   * Borrows a connection from the connection pool, the connection will be used to execute a simple query using the given SQL string,
+   * Borrows a connection from the connection pool, the connection will be used to execute a simple query using the given {@code sql} string,
    * the connection will be returned to the pool when the execution completes
    * and the asynchronous result is represented as a collection of elements transformed by the provided {@link java.util.stream.Collector}.
    *
@@ -76,8 +76,8 @@ public interface Pool extends SqlClient {
   <R> Future<SqlResult<R>> query(String sql, Collector<Row, ?, R> collector);
 
   /**
-   * Borrows a connection from the connection pool, the connection will be used to prepare a statement using the given SQL string and execute the prepared statement without any parameter,
-   * the connection will be returned to the pool when the execution completes and the asynchronous result is represented as {@link RowSet}.
+   * Borrows a connection from the connection pool, the connection will be used to execute the given {@code sql} string using a prepared statement without any parameter,
+   * the connection will be returned to the pool when the execution completes and the asynchronous result is represented as a {@link RowSet}.
    *
    * @param sql the prepared query SQL
    * @param handler the handler notified with the execution result
@@ -94,7 +94,7 @@ public interface Pool extends SqlClient {
   Future<RowSet<Row>> preparedQuery(String sql);
 
   /**
-   * Borrows a connection from the connection pool, the connection will be used to prepare a statement using the given SQL string and execute the prepared statement without any parameter,
+   * Borrows a connection from the connection pool, the connection will be used to execute the given {@code sql} string using a prepared statement without any parameter,
    * the connection will be returned to the pool when the execution completes
    * and the asynchronous result is represented as a collection of elements transformed by the provided {@link java.util.stream.Collector}.
    *
@@ -116,9 +116,8 @@ public interface Pool extends SqlClient {
   <R> Future<SqlResult<R>> preparedQuery(String sql, Collector<Row, ?, R> collector);
 
   /**
-   * Borrows a connection from the connection pool, the connection will be used to prepare a statement using the given SQL string
-   * and execute the prepared statement with parameters set in the {@code Tuple},
-   * the connection will be returned to the pool when the execution completes and the asynchronous result is represented as {@link RowSet}.
+   * Borrows a connection from the connection pool, the connection will be used to execute the given {@code sql} string using a prepared statement with parameters set in the {@code Tuple},
+   * the connection will be returned to the pool when the execution completes and the asynchronous result is represented as a {@link RowSet}.
    *
    * @param sql the prepared query SQL
    * @param arguments the list of arguments
@@ -136,8 +135,7 @@ public interface Pool extends SqlClient {
   Future<RowSet<Row>> preparedQuery(String sql, Tuple arguments);
 
   /**
-   * Borrows a connection from the connection pool, the connection will be used to prepare a statement using the given SQL string
-   * and execute the prepared statement with parameters set in the {@code Tuple},
+   * Borrows a connection from the connection pool, the connection will be used to execute the given {@code sql} string using a prepared statement with parameters set in the {@code Tuple},
    * the connection will be returned to the pool when the execution completes and the asynchronous result is represented as a collection of elements transformed by the provided {@link java.util.stream.Collector}.
    *
    * @param sql the prepared query SQL
@@ -159,9 +157,8 @@ public interface Pool extends SqlClient {
   <R> Future<SqlResult<R>> preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector);
 
   /**
-   * Borrows a connection from the connection pool, the connection will be used to prepare a statement using the given SQL string
-   * and execute the prepared statement with a batch of parameters set in the {@code List},
-   * the connection will be returned to the pool when the execution completes and the asynchronous result is represented as {@link RowSet}.
+   * Borrows a connection from the connection pool, the connection will be used to execute the given {@code sql} string using a prepared statement with a batch of parameters set in the {@code List},
+   * the connection will be returned to the pool when the execution completes and the asynchronous result is represented as a {@link RowSet}.
    *
    * @param sql the prepared query SQL
    * @param batch the batch of tuples
@@ -179,8 +176,7 @@ public interface Pool extends SqlClient {
   Future<RowSet<Row>> preparedBatch(String sql, List<Tuple> batch);
 
   /**
-   * Borrows a connection from the connection pool, the connection will be used to prepare a statement using the given SQL string
-   * and execute the prepared statement with a batch of parameters set in the {@code List},
+   * Borrows a connection from the connection pool, the connection will be used to execute the given {@code sql} string using a prepared statement with a batch of parameters set in the {@code List},
    * the connection will be returned to the pool when the execution completes and the asynchronous result is represented as a collection of elements transformed by the provided {@link java.util.stream.Collector}.
    *
    * @param sql the prepared query SQL

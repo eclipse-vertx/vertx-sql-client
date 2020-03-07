@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.stream.Collector;
 
 /**
- * A common interface which defines the SQL client operations with a database server.
+ * Defines common SQL client operations with a database server.
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
@@ -36,7 +36,7 @@ import java.util.stream.Collector;
 public interface SqlClient {
 
   /**
-   * Execute a simple query using the given SQL string, the asynchronous result is represented as {@link RowSet}.
+   * Execute a simple query using the given {@code sql} string, the asynchronous result is represented as a {@link RowSet}.
    *
    * @param sql the query SQL
    * @param handler the handler notified with the execution result
@@ -51,7 +51,7 @@ public interface SqlClient {
   Future<RowSet<Row>> query(String sql);
 
   /**
-   * Execute a simple query using the given SQL string, the asynchronous result is represented as a collection of elements transformed by the provided {@link java.util.stream.Collector}.
+   * Execute a simple query using the given {@code sql} string, the asynchronous result is represented as a collection of elements transformed by the provided {@link java.util.stream.Collector}.
    *
    * @param sql the query SQL
    * @param collector the collector
@@ -68,7 +68,7 @@ public interface SqlClient {
   <R> Future<SqlResult<R>> query(String sql, Collector<Row, ?, R> collector);
 
   /**
-   * Prepare a statement using the given SQL string and execute the prepared statement without any parameter, the asynchronous result is represented as {@link RowSet}.
+   * Execute the given {@code sql} string using a prepared statement without any parameter, the asynchronous result is represented as a {@link RowSet}.
    *
    * @param sql the prepared query SQL
    * @param handler the handler notified with the execution result
@@ -83,7 +83,7 @@ public interface SqlClient {
   Future<RowSet<Row>> preparedQuery(String sql);
 
   /**
-   * Prepare a statement using the given SQL string and execute the prepared statement without any parameter, the asynchronous result is represented as a collection of elements transformed by the provided {@link java.util.stream.Collector}.
+   * Execute the given {@code sql} string using a prepared statement without any parameter, the asynchronous result is represented as a collection of elements transformed by the provided {@link java.util.stream.Collector}.
    *
    * @param sql the prepared query SQL
    * @param collector the collector
@@ -100,7 +100,7 @@ public interface SqlClient {
   <R> Future<SqlResult<R>> preparedQuery(String sql, Collector<Row, ?, R> collector);
 
   /**
-   * Prepare a statement using the given SQL string and execute the prepared statement with parameters set in the {@code Tuple}, the asynchronous result is represented as {@link RowSet}.
+   * Execute the given {@code sql} string using a prepared statement with parameters set in the {@code Tuple}, the asynchronous result is represented as a {@link RowSet}.
    *
    * @param sql the prepared query SQL
    * @param arguments the list of arguments
@@ -116,7 +116,7 @@ public interface SqlClient {
   Future<RowSet<Row>> preparedQuery(String sql, Tuple arguments);
 
   /**
-   * Prepare a statement using the given SQL string and execute the prepared statement with parameters set in the {@code Tuple}, the asynchronous result is represented as a collection of elements transformed by the provided {@link java.util.stream.Collector}.
+   * Execute the given {@code sql} string using a prepared statement with parameters set in the {@code Tuple}, the asynchronous result is represented as a collection of elements transformed by the provided {@link java.util.stream.Collector}.
    *
    * @param sql the prepared query SQL
    * @param arguments the list of arguments
@@ -134,7 +134,7 @@ public interface SqlClient {
   <R> Future<SqlResult<R>> preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector);
 
   /**
-   * Prepare a statement using the given SQL string and execute the prepared statement with a batch of parameters set in the {@code List}, the asynchronous result is represented as {@link RowSet}.
+   * Execute the given {@code sql} string using a prepared statement with a batch of parameters set in the {@code List}, the asynchronous result is represented as a {@link RowSet}.
    *
    * @param sql the prepared query SQL
    * @param batch the batch of tuples
@@ -150,7 +150,7 @@ public interface SqlClient {
   Future<RowSet<Row>> preparedBatch(String sql, List<Tuple> batch);
 
   /**
-   * Prepare a statement using the given SQL string and execute the prepared statement with a batch of parameters set in the {@code List}, the asynchronous result is represented as a collection of elements transformed by the provided {@link java.util.stream.Collector}.
+   * Execute the given {@code sql} string using a prepared statement with a batch of parameters set in the {@code List}, the asynchronous result is represented as a collection of elements transformed by the provided {@link java.util.stream.Collector}.
    *
    * @param sql the prepared query SQL
    * @param batch the batch of tuples

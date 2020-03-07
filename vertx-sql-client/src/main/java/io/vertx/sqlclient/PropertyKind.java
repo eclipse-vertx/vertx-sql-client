@@ -4,8 +4,7 @@ import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 
 /**
- * An interface that represents which kind the property belongs to,
- * this can be used to fetch some specific property of the {@link SqlResult execution result}.
+ * The kind of the property, this can be used to fetch some specific property of the {@link SqlResult execution result}.
  */
 @VertxGen
 public interface PropertyKind<T> {

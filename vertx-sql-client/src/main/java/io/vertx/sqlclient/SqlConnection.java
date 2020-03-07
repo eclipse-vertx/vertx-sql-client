@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.stream.Collector;
 
 /**
- * An interface which represents a connection to the database server.
+ * A connection to the database server.
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
@@ -37,7 +37,7 @@ import java.util.stream.Collector;
 public interface SqlConnection extends SqlClient {
 
   /**
-   * Create a prepared statement using the given SQL string.
+   * Create a prepared statement using the given {@code sql} string.
    *
    * @param sql the sql
    * @param handler the handler notified with the prepared query asynchronously
