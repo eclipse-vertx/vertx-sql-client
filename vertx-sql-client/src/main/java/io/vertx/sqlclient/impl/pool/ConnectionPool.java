@@ -223,7 +223,7 @@ public class ConnectionPool {
             if (size < maxSize) {
               Handler<AsyncResult<Connection>> waiter = waiters.poll();
               size++;
-              connector.connect().setHandler(ar -> {
+              connector.connect().onComplete(ar -> {
                 if (ar.succeeded()) {
                   Connection conn = ar.result();
                   PooledConnection proxy = new PooledConnection(conn);

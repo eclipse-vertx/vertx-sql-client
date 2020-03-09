@@ -117,7 +117,7 @@ public class PgSocketConnection extends SocketConnectionBase {
   void upgradeToSSLConnection(Handler<AsyncResult<Void>> completionHandler) {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     Promise<Void> upgradePromise = Promise.promise();
-    upgradePromise.future().setHandler(ar->{
+    upgradePromise.future().onComplete(ar->{
       if (ar.succeeded()) {
         completionHandler.handle(Future.succeededFuture());
       } else {

@@ -30,14 +30,14 @@ class MSSQLSocketConnection extends SocketConnectionBase {
   void sendPreLoginMessage(boolean ssl, Handler<AsyncResult<Void>> completionHandler) {
     PreLoginCommand cmd = new PreLoginCommand(ssl);
     Promise<Void> promise = Promise.promise();
-    promise.future().setHandler(completionHandler);
+    promise.future().onComplete(completionHandler);
     schedule(cmd, promise);
   }
 
   void sendLoginMessage(String username, String password, String database, Map<String, String> properties, Handler<AsyncResult<Connection>> completionHandler) {
     InitCommand cmd = new InitCommand(this, username, password, database, properties);
     Promise<Connection> promise = Promise.promise();
-    promise.future().setHandler(completionHandler);
+    promise.future().onComplete(completionHandler);
     schedule(cmd, promise);
   }
 

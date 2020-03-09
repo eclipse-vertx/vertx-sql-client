@@ -151,7 +151,7 @@ public class RowStreamImpl implements RowStream<Row>, Handler<AsyncResult<RowSet
   public void close(Handler<AsyncResult<Void>> completionHandler) {
     Future<Void> fut = close();
     if (completionHandler != null) {
-      fut.setHandler(completionHandler);
+      fut.onComplete(completionHandler);
     }
   }
 

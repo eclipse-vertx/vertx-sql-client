@@ -62,7 +62,7 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
 
   @Override
   public void connect(Handler<AsyncResult<Connection>> completionHandler) {
-    factory.connect().setHandler(completionHandler);
+    factory.connect().onComplete(completionHandler);
   }
 
   @Override

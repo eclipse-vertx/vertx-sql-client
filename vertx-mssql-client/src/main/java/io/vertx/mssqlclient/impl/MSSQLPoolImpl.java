@@ -25,7 +25,7 @@ public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool 
 
   @Override
   public void connect(Handler<AsyncResult<Connection>> completionHandler) {
-    connectionFactory.connect().setHandler(completionHandler);
+    connectionFactory.connect().onComplete(completionHandler);
   }
 
   @Override

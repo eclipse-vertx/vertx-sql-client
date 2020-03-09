@@ -121,7 +121,7 @@ public class MySQLConnectionFactory implements ConnectionFactory {
 
   private void doConnect(Promise<Connection> promise) {
     Future<NetSocket> fut = netClient.connect(port, host);
-    fut.setHandler(ar -> {
+    fut.onComplete(ar -> {
       if (ar.succeeded()) {
         NetSocket so = ar.result();
         MySQLSocketConnection conn = new MySQLSocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, context);

@@ -38,7 +38,7 @@ public class DB2PoolImpl extends PoolBase<DB2PoolImpl> implements DB2Pool {
 
     @Override
     public void connect(Handler<AsyncResult<Connection>> completionHandler) {
-      factory.connect().setHandler(completionHandler);
+      factory.connect().onComplete(completionHandler);
     }
 
     @Override

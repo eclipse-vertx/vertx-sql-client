@@ -46,7 +46,7 @@ class MSSQLConnectionFactory implements ConnectionFactory {
 
   public void doConnect(Promise<Connection> promise) {
     Future<NetSocket> fut = netClient.connect(port, host);
-    fut.setHandler(ar -> {
+    fut.onComplete(ar -> {
       if (ar.succeeded()) {
         NetSocket so = ar.result();
         MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, false, 0, 0, 1, context);

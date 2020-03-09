@@ -34,7 +34,7 @@ public interface MSSQLConnection extends SqlConnection {
   static void connect(Vertx vertx, MSSQLConnectOptions connectOptions, Handler<AsyncResult<MSSQLConnection>> handler) {
     Future<MSSQLConnection> fut = MSSQLConnectionImpl.connect(vertx, connectOptions);
     if (handler != null) {
-      fut.setHandler(handler);
+      fut.onComplete(handler);
     }
   }
 

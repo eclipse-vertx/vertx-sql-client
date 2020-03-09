@@ -59,7 +59,7 @@ public class CursorImpl implements Cursor {
   public void read(int count, Handler<AsyncResult<RowSet<Row>>> handler) {
     Future<RowSet<Row>> fut = read(count);
     if (handler != null) {
-      fut.setHandler(handler);
+      fut.onComplete(handler);
     }
   }
 

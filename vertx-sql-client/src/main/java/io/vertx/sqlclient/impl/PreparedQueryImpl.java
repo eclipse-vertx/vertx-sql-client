@@ -135,7 +135,7 @@ class PreparedQueryImpl implements PreparedQuery {
   public PreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<RowSet<Row>>> handler) {
     Future<RowSet<Row>> fut = batch(argsList);
     if (handler != null) {
-      fut.setHandler(handler);
+      fut.onComplete(handler);
     }
     return this;
   }
@@ -151,7 +151,7 @@ class PreparedQueryImpl implements PreparedQuery {
   public <R> PreparedQuery batch(List<Tuple> argsList, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
     Future<SqlResult<R>> fut = batch(argsList, collector);
     if (handler != null) {
-      fut.setHandler(handler);
+      fut.onComplete(handler);
     }
     return this;
   }
@@ -191,7 +191,7 @@ class PreparedQueryImpl implements PreparedQuery {
   public void close(Handler<AsyncResult<Void>> completionHandler) {
     Future<Void> fut = close();
     if (completionHandler != null) {
-      fut.setHandler(completionHandler);
+      fut.onComplete(completionHandler);
     }
   }
 

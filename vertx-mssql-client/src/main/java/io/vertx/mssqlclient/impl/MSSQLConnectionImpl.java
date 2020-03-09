@@ -27,7 +27,7 @@ public class MSSQLConnectionImpl extends SqlConnectionImpl<MSSQLConnectionImpl> 
           MSSQLConnectionImpl msConn = new MSSQLConnectionImpl(client, ctx, conn);
           conn.init(msConn);
           return msConn;
-        }).setHandler(promise);
+        }).onComplete(promise);
     });
     return promise.future();
   }

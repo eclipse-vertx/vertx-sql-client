@@ -23,7 +23,7 @@ public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool 
 
   @Override
   public void connect(Handler<AsyncResult<Connection>> completionHandler) {
-    factory.connect().setHandler(completionHandler);
+    factory.connect().onComplete(completionHandler);
   }
 
   @Override

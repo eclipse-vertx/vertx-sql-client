@@ -39,7 +39,7 @@ public abstract class SqlConnectionBase<C extends SqlClient> extends SqlClientBa
   public C prepare(String sql, Handler<AsyncResult<PreparedQuery>> handler) {
     Future<PreparedQuery> fut = prepare(sql);
     if (handler != null) {
-      fut.setHandler(handler);
+      fut.onComplete(handler);
     }
     return (C)this;
   }

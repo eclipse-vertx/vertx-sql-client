@@ -82,7 +82,7 @@ class PgConnectionFactory implements ConnectionFactory {
   }
 
   public void cancelRequest(int processId, int secretKey, Handler<AsyncResult<Void>> handler) {
-    doConnect().setHandler(ar -> {
+    doConnect().onComplete(ar -> {
       if (ar.succeeded()) {
         PgSocketConnection conn = (PgSocketConnection) ar.result();
         conn.sendCancelRequestMessage(processId, secretKey, handler);
@@ -162,7 +162,7 @@ class PgConnectionFactory implements ConnectionFactory {
         });
       }));
     }
-    connFut.setHandler(promise);
+    connFut.onComplete(promise);
   }
 
   private PgSocketConnection newSocketConnection(NetSocketInternal socket) {

@@ -181,7 +181,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   public void commit(Handler<AsyncResult<Void>> handler) {
     Future<Void> fut = commit();
     if (handler != null) {
-      fut.setHandler(handler);
+      fut.onComplete(handler);
     }
   }
 
@@ -201,7 +201,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   public void rollback(Handler<AsyncResult<Void>> handler) {
     Future<Void> fut = rollback();
     if (handler != null) {
-      fut.setHandler(handler);
+      fut.onComplete(handler);
     }
   }
 

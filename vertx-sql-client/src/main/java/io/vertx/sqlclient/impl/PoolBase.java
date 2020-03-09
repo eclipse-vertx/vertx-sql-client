@@ -65,7 +65,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
   public void getConnection(Handler<AsyncResult<SqlConnection>> handler) {
     Future<SqlConnection> fut = getConnection();
     if (handler != null) {
-      fut.setHandler(handler);
+      fut.onComplete(handler);
     }
   }
 
@@ -94,7 +94,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
   public void begin(Handler<AsyncResult<Transaction>> handler) {
     Future<Transaction> fut = begin();
     if (handler != null) {
-      fut.setHandler(handler);
+      fut.onComplete(handler);
     }
   }
 

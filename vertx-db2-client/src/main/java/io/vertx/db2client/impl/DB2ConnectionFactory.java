@@ -74,7 +74,7 @@ public class DB2ConnectionFactory implements ConnectionFactory {
 
   public void doConnect(Promise<Connection> promise) {
     Future<NetSocket> fut = netClient.connect(port, host);
-    fut.setHandler(ar -> {
+    fut.onComplete(ar -> {
       if (ar.succeeded()) {
         NetSocket so = ar.result();
         DB2SocketConnection conn = new DB2SocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, context);
