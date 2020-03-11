@@ -14,6 +14,7 @@ import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
 
+import java.util.List;
 import java.util.stream.Collector;
 
 import static io.vertx.mysqlclient.MySQLConnectOptions.*;
@@ -70,6 +71,21 @@ public interface MySQLConnection extends SqlConnection {
   @GenIgnore
   @Override
   <R> MySQLConnection preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
+  @Override
+  MySQLConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
+
+  /**
+   * {@inheritDoc}
+   */
+  @Fluent
+  @GenIgnore
+  @Override
+  <R> MySQLConnection preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   /**
    * Send a PING command to check if the server is alive.
