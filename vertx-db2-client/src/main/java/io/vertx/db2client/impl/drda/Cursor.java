@@ -270,7 +270,7 @@ public class Cursor {
     }
 
     final boolean dataBufferHasUnprocessedData() {
-        return (lastValidBytePosition_ - dataBuffer_.readerIndex()) > 0;
+        return dataBuffer_ != null && (lastValidBytePosition_ - dataBuffer_.readerIndex()) > 0;
     }
 
     public final void setIsUpdataDeleteHole(int row, boolean isRowNull) {

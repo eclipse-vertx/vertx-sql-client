@@ -16,15 +16,19 @@
  */
 package io.vertx.sqlclient.impl;
 
-import io.vertx.core.impl.ContextInternal;
-import io.vertx.sqlclient.Transaction;
-import io.vertx.sqlclient.impl.command.TxCommand;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.QueryCommandBase;
-import io.vertx.core.*;
-
 import java.util.ArrayDeque;
 import java.util.Deque;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.VertxException;
+import io.vertx.core.impl.ContextInternal;
+import io.vertx.sqlclient.Transaction;
+import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.impl.command.QueryCommandBase;
+import io.vertx.sqlclient.impl.command.TxCommand;
 
 public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implements Transaction {
 
@@ -219,4 +223,10 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   private ScheduledCommand<Void> doQuery(TxCommand cmd, Promise<Void> handler) {
     return new ScheduledCommand<>(cmd, handler);
   }
+  
+  @Override
+  boolean autoCommit() {
+    return false;
+  }
+  
 }

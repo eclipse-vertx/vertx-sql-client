@@ -33,14 +33,20 @@ public abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
 
   private final QueryResultHandler<T> resultHandler;
   private final Collector<Row, ?, T> collector;
+  private final boolean autoCommit;
 
-  QueryCommandBase(Collector<Row, ?, T> collector, QueryResultHandler<T> resultHandler) {
+  QueryCommandBase(boolean autoCommit, Collector<Row, ?, T> collector, QueryResultHandler<T> resultHandler) {
+    this.autoCommit = autoCommit;
     this.resultHandler = resultHandler;
     this.collector = collector;
   }
 
   public QueryResultHandler<T> resultHandler() {
     return resultHandler;
+  }
+  
+  public boolean autoCommit() {
+    return autoCommit;
   }
 
   public Collector<Row, ?, T> collector() {

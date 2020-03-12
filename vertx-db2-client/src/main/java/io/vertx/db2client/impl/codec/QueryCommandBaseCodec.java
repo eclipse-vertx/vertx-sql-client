@@ -15,16 +15,7 @@
  */
 package io.vertx.db2client.impl.codec;
 
-import java.util.stream.Collector;
-
-import io.netty.buffer.ByteBuf;
 import io.vertx.db2client.impl.drda.ColumnMetaData;
-import io.vertx.db2client.impl.drda.DRDAQueryRequest;
-import io.vertx.db2client.impl.drda.DRDAQueryResponse;
-import io.vertx.db2client.impl.drda.Section;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.impl.RowDesc;
-import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.QueryCommandBase;
 
 abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends CommandCodec<Boolean, C> {
@@ -43,6 +34,6 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
 
     @Override
     public String toString() {
-        return super.toString() + " sql=" + cmd.sql();
+        return super.toString() + " sql=" + cmd.sql() + ", autoCommit=" + cmd.autoCommit();
     }
 }

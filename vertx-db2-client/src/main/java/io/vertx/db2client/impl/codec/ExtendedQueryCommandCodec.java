@@ -61,7 +61,9 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
         	boolean outputExpected = false; // TODO @AGG implement later, is true if result set metadata num columns > 0
         	boolean chainAutoCommit = true;
         	queryRequest.writeExecute(statement.section, dbName, statement.paramDesc.paramDefinitions(), inputs, inputs.length, outputExpected, chainAutoCommit);
-        	queryRequest.buildRDBCMM();
+        	if (cmd.autoCommit()) {
+        	  queryRequest.buildRDBCMM();
+        	}
         	
         	// TODO: for auto generated keys we also need to flow a writeOpenQuery
         }
@@ -97,15 +99,11 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
         boolean hasMoreResults = !decoder.isQueryComplete();
         
         commandHandlerState = CommandHandlerState.HANDLING_END_OF_QUERY;
-        int updatedCount = 0; // @AGG hardcoded to 0
-        R result;
-        Throwable failure;
-        int size;
-        RowDesc rowDesc;
-        failure = decoder.complete();
-        result = decoder.result();
-        rowDesc = decoder.rowDesc;
-        size = decoder.size();
+        Throwable failure = decoder.complete();
+        R result = decoder.result();
+        RowDesc rowDesc = decoder.rowDesc;
+        int size = decoder.size();
+        int updatedCount = decoder.size();
         decoder.reset();
         cmd.resultHandler().handleResult(updatedCount, size, rowDesc, result, failure);
         completionHandler.handle(CommandResponse.success(hasMoreResults));
@@ -121,7 +119,9 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
         int updatedCount = (int) updateResponse.readExecute();
         // TODO: If auto-generated keys, read an OPNQRY here
         // readOpenQuery()
-        updateResponse.readLocalCommit();
+        if (cmd.autoCommit()) {
+          updateResponse.readLocalCommit();
+        }
 
         R result = emptyResult(cmd.collector());
         cmd.resultHandler().handleResult(updatedCount, 0, null, result, null);

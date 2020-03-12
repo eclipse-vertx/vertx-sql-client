@@ -139,6 +139,7 @@ public class PgSocketConnection extends SocketConnectionBase {
       SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(
         tx.sql,
         false,
+        false,
         QueryCommandBase.NULL_COLLECTOR,
         QueryResultHandler.NOOP_HANDLER);
       super.doSchedule(cmd2, ar -> handler.handle(ar.mapEmpty()));
