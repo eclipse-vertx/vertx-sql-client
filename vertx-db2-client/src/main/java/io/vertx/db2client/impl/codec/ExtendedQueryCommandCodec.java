@@ -29,12 +29,11 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
 class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
-	
-	private final QueryInstance queryInstance;
+  
+    final QueryInstance queryInstance;
 	
     ExtendedQueryCommandCodec(ExtendedQueryCommand<R> cmd) {
         super(cmd);
-        columnDefinitions = statement.rowDesc.columnDefinitions();
         queryInstance = statement.getQueryInstance(cmd.cursorId());
     }
 
@@ -52,15 +51,16 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
         
         if (DRDAQueryRequest.isQuery(cmd.sql())) {
             if (queryInstance.cursor == null) {
-                queryRequest.writeOpenQuery(statement.section, dbName, fetchSize, ResultSet.TYPE_FORWARD_ONLY, inputs.length,
-                        statement.paramDesc.paramDefinitions(), inputs);
+                queryRequest.writeOpenQuery(statement.section, dbName, fetchSize, ResultSet.TYPE_FORWARD_ONLY,
+                    inputs.length, statement.paramDesc.paramDefinitions(), inputs);
             } else {
                 queryRequest.writeFetch(statement.section, dbName, fetchSize, queryInstance.queryInstanceId);
             }
         } else { // is an update
         	boolean outputExpected = false; // TODO @AGG implement later, is true if result set metadata num columns > 0
         	boolean chainAutoCommit = true;
-        	queryRequest.writeExecute(statement.section, dbName, statement.paramDesc.paramDefinitions(), inputs, inputs.length, outputExpected, chainAutoCommit);
+        	queryRequest.writeExecute(statement.section, dbName, statement.paramDesc.paramDefinitions(), 
+        	    inputs, inputs.length, outputExpected, chainAutoCommit);
         	if (cmd.autoCommit()) {
         	  queryRequest.buildRDBCMM();
         	}
