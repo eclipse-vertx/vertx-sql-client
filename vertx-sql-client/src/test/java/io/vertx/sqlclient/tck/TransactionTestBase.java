@@ -13,63 +13,56 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.vertx.db2client;
+package io.vertx.sqlclient.tck;
 
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.db2client.junit.DB2Resource;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.Tuple;
 
-@RunWith(VertxUnitRunner.class)
-public class DB2TransactionTest {
+public abstract class TransactionTestBase {
+
+  protected Pool pool;
+  protected Vertx vertx;
+  protected Consumer<Handler<AsyncResult<Transaction>>> connector;
   
-  @ClassRule
-  public static DB2Resource rule = DB2Resource.SHARED_INSTANCE;
+  protected abstract void initConnector();
   
-  private Vertx vertx;
-  private DB2Pool pool;
-  private Consumer<Handler<AsyncResult<Transaction>>> connector;
+  protected abstract Pool nonTxPool();
   
-  @BeforeClass
-  public static void beforeAll(TestContext ctx) throws Exception {
-    DB2Pool pool = DB2Pool.pool(Vertx.vertx(), new DB2ConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
-    pool.query("DELETE FROM mutable", ctx.asyncAssertSuccess(result -> {}));
-  }
+  protected abstract String statement(String... parts);
   
   @Before
-  public void setup() throws Exception {
+  public void setUp(TestContext ctx) throws Exception {
     vertx = Vertx.vertx();
-    connector = handler -> {
-      if (pool == null) {
-        pool = DB2Pool.pool(vertx, new DB2ConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
-      }
-      pool.begin(handler);
-    };
+    initConnector();
+    cleanTestTable(ctx);
   }
 
   @After
-  public void teardown(TestContext ctx) {
+  public void tearDown(TestContext ctx) {
     vertx.close(ctx.asyncAssertSuccess());
   }
   
+  protected void cleanTestTable(TestContext ctx) {
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      conn.query("TRUNCATE TABLE mutable;", ctx.asyncAssertSuccess(result -> {
+        conn.close();
+      }));
+    }));
+  }
+
   @Test
   public void testReleaseConnectionOnCommit(TestContext ctx) {
     Async async = ctx.async();
@@ -121,7 +114,7 @@ public class DB2TransactionTest {
   public void testCommitWithPreparedQuery(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("INSERT INTO mutable (id, val) VALUES (?, ?);", Tuple.of(13, "test message1"), ctx.asyncAssertSuccess(result -> {
+      conn.preparedQuery(statement("INSERT INTO mutable (id, val) VALUES (", ",", ");"), Tuple.of(13, "test message1"), ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
         conn.commit(ctx.asyncAssertSuccess(v1 -> {
           pool.query("SELECT id, val from mutable where id = 13", ctx.asyncAssertSuccess(rowSet -> {
@@ -176,7 +169,7 @@ public class DB2TransactionTest {
   
   @Test
   public void testDelayedCommit(TestContext ctx) {
-    DB2Pool nonTxPool = DB2Pool.pool(vertx, new DB2ConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
+    Pool nonTxPool = nonTxPool();
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       conn.query("INSERT INTO mutable (id, val) VALUES (15, 'wait for it...')", ctx.asyncAssertSuccess(result -> {
@@ -205,5 +198,4 @@ public class DB2TransactionTest {
       }));
     }));
   }
-    
 }

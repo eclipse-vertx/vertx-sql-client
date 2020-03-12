@@ -68,7 +68,8 @@ public class MySQLRule extends ExternalResource {
       .withEnv("MYSQL_ROOT_PASSWORD", "password")
       .withEnv("MYSQL_DATABASE", "testschema")
       .withExposedPorts(3306)
-      .withClasspathResourceMapping("init.sql", "/docker-entrypoint-initdb.d/init.sql", BindMode.READ_ONLY);
+      .withClasspathResourceMapping("init.sql", "/docker-entrypoint-initdb.d/init.sql", BindMode.READ_ONLY)
+      .withReuse(true);
 
     if (ssl) {
       server.withClasspathResourceMapping("tls/conf", "/etc/mysql/conf.d", BindMode.READ_ONLY);
