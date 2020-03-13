@@ -36,13 +36,13 @@ public abstract class TransactionTestBase {
   protected Pool pool;
   protected Vertx vertx;
   protected Consumer<Handler<AsyncResult<Transaction>>> connector;
-  
+
   protected abstract void initConnector();
-  
+
   protected abstract Pool nonTxPool();
-  
+
   protected abstract String statement(String... parts);
-  
+
   @Before
   public void setUp(TestContext ctx) throws Exception {
     vertx = Vertx.vertx();
@@ -54,11 +54,11 @@ public abstract class TransactionTestBase {
   public void tearDown(TestContext ctx) {
     vertx.close(ctx.asyncAssertSuccess());
   }
-  
+
   protected void cleanTestTable(TestContext ctx) {
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("TRUNCATE TABLE mutable;", ctx.asyncAssertSuccess(result -> {
-        conn.close();
+    connector.accept(ctx.asyncAssertSuccess(tx -> {
+      tx.query("TRUNCATE TABLE mutable;", ctx.asyncAssertSuccess(result -> {
+        tx.commit();
       }));
     }));
   }
@@ -113,12 +113,12 @@ public abstract class TransactionTestBase {
   @Test
   public void testCommitWithPreparedQuery(TestContext ctx) {
     Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery(statement("INSERT INTO mutable (id, val) VALUES (", ",", ");"), Tuple.of(13, "test message1"), ctx.asyncAssertSuccess(result -> {
+    connector.accept(ctx.asyncAssertSuccess(tx -> {
+      tx.preparedQuery(statement("INSERT INTO mutable (id, val) VALUES (", ",", ");"), Tuple.of(13, "test message1"), ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
-        conn.commit(ctx.asyncAssertSuccess(v1 -> {
+        tx.commit(ctx.asyncAssertSuccess(v1 -> {
           pool.query("SELECT id, val from mutable where id = 13", ctx.asyncAssertSuccess(rowSet -> {
-            ctx.assertEquals(1, rowSet.rowCount());
+            ctx.assertEquals(1, rowSet.size());
             Row row = rowSet.iterator().next();
             ctx.assertEquals(13, row.getInteger("id"));
             ctx.assertEquals("test message1", row.getString("val"));
@@ -132,12 +132,12 @@ public abstract class TransactionTestBase {
   @Test
   public void testCommitWithQuery(TestContext ctx) {
     Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("INSERT INTO mutable (id, val) VALUES (14, 'test message2');", ctx.asyncAssertSuccess(result -> {
+    connector.accept(ctx.asyncAssertSuccess(tx -> {
+      tx.query("INSERT INTO mutable (id, val) VALUES (14, 'test message2');", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
-        conn.commit(ctx.asyncAssertSuccess(v1 -> {
+        tx.commit(ctx.asyncAssertSuccess(v1 -> {
           pool.query("SELECT id, val from mutable where id = 14", ctx.asyncAssertSuccess(rowSet -> {
-            ctx.assertEquals(1, rowSet.rowCount());
+            ctx.assertEquals(1, rowSet.size());
             Row row = rowSet.iterator().next();
             ctx.assertEquals(14, row.getInteger("id"));
             ctx.assertEquals("test message2", row.getString("val"));
@@ -147,16 +147,16 @@ public abstract class TransactionTestBase {
       }));
     }));
   }
-  
+
   @Test
   public void testRollbackData(TestContext ctx) {
     Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("UPDATE immutable SET message = 'roll me back' WHERE id = 7", ctx.asyncAssertSuccess(result -> {
+    connector.accept(ctx.asyncAssertSuccess(tx -> {
+      tx.query("UPDATE immutable SET message = 'roll me back' WHERE id = 7", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
-        conn.rollback(ctx.asyncAssertSuccess(v1 -> {
+        tx.rollback(ctx.asyncAssertSuccess(v1 -> {
           pool.query("SELECT id, message from immutable where id = 7", ctx.asyncAssertSuccess(rowSet -> {
-            ctx.assertEquals(1, rowSet.rowCount());
+            ctx.assertEquals(1, rowSet.size());
             Row row = rowSet.iterator().next();
             ctx.assertEquals(7, row.getInteger("id"));
             ctx.assertEquals("Any program that runs right is obsolete.", row.getString("message"));
@@ -166,27 +166,27 @@ public abstract class TransactionTestBase {
       }));
     }));
   }
-  
+
   @Test
   public void testDelayedCommit(TestContext ctx) {
     Pool nonTxPool = nonTxPool();
     Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("INSERT INTO mutable (id, val) VALUES (15, 'wait for it...')", ctx.asyncAssertSuccess(result -> {
+    connector.accept(ctx.asyncAssertSuccess(tx -> {
+      tx.query("INSERT INTO mutable (id, val) VALUES (15, 'wait for it...')", ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
         // Should find the data within the same transaction
-        conn.query("SELECT id, val from mutable WHERE id = 15", ctx.asyncAssertSuccess(txRows -> {
-          ctx.assertEquals(1, txRows.rowCount());
+        tx.query("SELECT id, val from mutable WHERE id = 15", ctx.asyncAssertSuccess(txRows -> {
+          ctx.assertEquals(1, txRows.size());
           Row r = txRows.iterator().next();
           ctx.assertEquals(15, r.getInteger("id"));
           ctx.assertEquals("wait for it...", r.getString("val"));
           // Should NOT find the data from outside of the transaction
           nonTxPool.query("SELECT id, val from mutable WHERE id = 15", ctx.asyncAssertSuccess(notFound -> {
-            ctx.assertEquals(0, notFound.rowCount());
-            conn.commit(ctx.asyncAssertSuccess(nonTxRows -> {
+            ctx.assertEquals(0, notFound.size());
+            tx.commit(ctx.asyncAssertSuccess(nonTxRows -> {
               nonTxPool.query("SELECT id, val from mutable WHERE id = 15", ctx.asyncAssertSuccess(nonTxFound -> {
                 // After commiting the transaction, the data should be visible from other connections
-                ctx.assertEquals(1, nonTxFound.rowCount());
+                ctx.assertEquals(1, nonTxFound.size());
                 Row nonTxRow = nonTxFound.iterator().next();
                 ctx.assertEquals(15, nonTxRow.getInteger("id"));
                 ctx.assertEquals("wait for it...", nonTxRow.getString("val"));

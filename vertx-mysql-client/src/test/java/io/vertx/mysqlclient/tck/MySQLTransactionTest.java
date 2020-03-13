@@ -15,12 +15,6 @@
  */
 package io.vertx.mysqlclient.tck;
 
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
@@ -28,13 +22,15 @@ import io.vertx.mysqlclient.junit.MySQLRule;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.tck.TransactionTestBase;
+import org.junit.ClassRule;
+import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
 public class MySQLTransactionTest extends TransactionTestBase {
-  
+
   @ClassRule
   public static MySQLRule rule = MySQLRule.SHARED_INSTANCE;
-  
+
   @Override
   protected void initConnector() {
     connector = handler -> {
@@ -44,43 +40,14 @@ public class MySQLTransactionTest extends TransactionTestBase {
       pool.begin(handler);
     };
   }
-  
+
   @Override
   protected Pool nonTxPool() {
     return MySQLPool.pool(vertx, new MySQLConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
   }
-  
+
   @Override
   protected String statement(String... parts) {
     return String.join("?", parts);
   }
-  
-  @Ignore // TODO: This test fails
-  @Override
-  @Test
-  public void testCommitWithPreparedQuery(TestContext ctx) {
-    super.testCommitWithPreparedQuery(ctx);
-  }
-  
-  @Ignore // TODO: This test fails
-  @Override
-  @Test
-  public void testCommitWithQuery(TestContext ctx) {
-    super.testCommitWithQuery(ctx);
-  }
-  
-  @Ignore // TODO: This test fails
-  @Override
-  @Test
-  public void testDelayedCommit(TestContext ctx) {
-    super.testDelayedCommit(ctx);
-  }
-  
-  @Ignore // TODO: This test fails
-  @Override
-  @Test
-  public void testRollbackData(TestContext ctx) {
-    super.testRollbackData(ctx);
-  }
-  
 }
