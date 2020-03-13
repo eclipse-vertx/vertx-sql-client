@@ -16,29 +16,9 @@ before_script:
 jobs:
   include:
     - stage: test
-      name: "MySQL 5.6"
-      jdk: openjdk8
-      script: mvn -q clean verify -B -Dtesting.mysql.database.server=mysql -Dtesting.mysql.database.version=5.6 --projects vertx-sql-client,vertx-mysql-client
-    - stage: test
-      name: "MySQL 5.7"
-      jdk: openjdk8
-      script: mvn -q clean verify -B -Dtesting.mysql.database.server=mysql -Dtesting.mysql.database.version=5.7 --projects vertx-sql-client,vertx-mysql-client
-    - stage: test
       name: "MySQL 8.0"
       jdk: openjdk8
       script: mvn -q clean verify -B -Dtesting.mysql.database.server=mysql -Dtesting.mysql.database.version=8.0 --projects vertx-sql-client,vertx-mysql-client
-    - stage: test
-      name: "MariaDB 10.4"
-      jdk: openjdk8
-      script: mvn -q clean verify -B -Dtesting.mysql.database.server=mariadb -Dtesting.mysql.database.version=10.4 --projects vertx-sql-client,vertx-mysql-client
-    - stage: test
-      name: "Postgres 9"
-      jdk: openjdk8
-      script: mvn -q clean verify -B -Dembedded.postgres.version=9.6 --projects vertx-sql-client,vertx-pg-client
-    - stage: test
-      name: "Postgres 10"
-      jdk: openjdk8
-      script: mvn -q clean verify -B -Dembedded.postgres.version=10.6 --projects vertx-sql-client,vertx-pg-client
     - stage: test
       name: "Postgres 11"
       jdk: openjdk8
@@ -51,6 +31,26 @@ jobs:
       name: "DB2 11.5"
       jdk: openjdk8
       script: mvn -q clean verify -B --projects vertx-sql-client,vertx-db2-client
+    - stage: test
+      name: "MySQL 5.6"
+      jdk: openjdk8
+      script: mvn -q clean verify -B -Dtesting.mysql.database.server=mysql -Dtesting.mysql.database.version=5.6 --projects vertx-sql-client,vertx-mysql-client
+    - stage: test
+      name: "MySQL 5.7"
+      jdk: openjdk8
+      script: mvn -q clean verify -B -Dtesting.mysql.database.server=mysql -Dtesting.mysql.database.version=5.7 --projects vertx-sql-client,vertx-mysql-client
+    - stage: test
+      name: "MariaDB 10.4"
+      jdk: openjdk8
+      script: mvn -q clean verify -B -Dtesting.mysql.database.server=mariadb -Dtesting.mysql.database.version=10.4 --projects vertx-sql-client,vertx-mysql-client
+    - stage: test
+      name: "Postgres 9"
+      jdk: openjdk8
+      script: mvn -q clean verify -B -Dembedded.postgres.version=9.6 --projects vertx-sql-client,vertx-pg-client
+    - stage: test
+      name: "Postgres 10"
+      jdk: openjdk8
+      script: mvn -q clean verify -B -Dembedded.postgres.version=10.6 --projects vertx-sql-client,vertx-pg-client
     - stage: deploy
       name: "Deploy to Sonatype's snapshots repository"
       if: type != pull_request AND env(SONATYPE_NEXUS_USERNAME) IS present
