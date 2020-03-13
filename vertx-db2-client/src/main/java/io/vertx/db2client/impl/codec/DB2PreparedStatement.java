@@ -23,7 +23,6 @@ import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.db2client.impl.drda.Cursor;
 import io.vertx.db2client.impl.drda.Section;
-import io.vertx.db2client.impl.drda.SectionManager;
 import io.vertx.sqlclient.impl.ParamDesc;
 import io.vertx.sqlclient.impl.PreparedStatement;
 import io.vertx.sqlclient.impl.RowDesc;

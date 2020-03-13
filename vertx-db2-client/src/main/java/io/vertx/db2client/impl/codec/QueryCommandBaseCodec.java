@@ -15,18 +15,15 @@
  */
 package io.vertx.db2client.impl.codec;
 
+import io.netty.buffer.ByteBuf;
 import io.vertx.db2client.impl.drda.ColumnMetaData;
+import io.vertx.db2client.impl.drda.DRDAQueryRequest;
+import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.command.QueryCommandBase;
 
 abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends CommandCodec<Boolean, C> {
 
-    protected static enum CommandHandlerState {
-        HANDLING_COLUMN_DEFINITION, HANDLING_ROW_DATA, HANDLING_END_OF_QUERY
-    }
-
-    protected CommandHandlerState commandHandlerState = CommandHandlerState.HANDLING_COLUMN_DEFINITION;
     protected ColumnMetaData columnDefinitions;
-    protected RowResultDecoder<?, T> decoder;
 
     QueryCommandBaseCodec(C cmd) {
         super(cmd);
@@ -36,4 +33,49 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     public String toString() {
         return super.toString() + " sql=" + cmd.sql() + ", autoCommit=" + cmd.autoCommit();
     }
+    
+    @Override
+    void encode(DB2Encoder encoder) {
+        super.encode(encoder);
+        
+        ByteBuf packet = allocateBuffer();
+        int packetStartIdx = packet.writerIndex();
+        DRDAQueryRequest req = new DRDAQueryRequest(packet);
+        if (DRDAQueryRequest.isQuery(cmd.sql())) {
+        	encodeQuery(req);
+        } else {
+        	encodeUpdate(req);
+        }
+        req.completeCommand();
+        
+        sendPacket(packet, packet.writerIndex() - packetStartIdx);
+    }
+    
+    abstract void encodeQuery(DRDAQueryRequest req);
+    
+    abstract void encodeUpdate(DRDAQueryRequest req);
+    
+    @Override
+    void decodePayload(ByteBuf payload, int payloadLength) {
+        if (DRDAQueryRequest.isQuery(cmd.sql())) {
+            decodeQuery(payload);
+        } else {
+            decodeUpdate(payload);
+        }
+    }
+    
+    abstract void decodeQuery(ByteBuf payload);
+    
+    abstract void decodeUpdate(ByteBuf payload);
+    
+    void handleQueryResult(RowResultDecoder<?, T> decoder) {
+        Throwable failure = decoder.complete();
+        T result = decoder.result();
+        RowDesc rowDesc = decoder.rowDesc;
+        int size = decoder.size();
+        int updatedCount = decoder.size();
+        decoder.reset();
+        cmd.resultHandler().handleResult(updatedCount, size, rowDesc, result, failure);
+    }
+    
 }
