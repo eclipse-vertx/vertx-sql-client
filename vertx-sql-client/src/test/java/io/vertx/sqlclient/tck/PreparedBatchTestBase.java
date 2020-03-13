@@ -78,6 +78,54 @@ public abstract class PreparedBatchTestBase {
       }));
     }));
   }
+  
+  @Test
+  public void testBatchQuery(TestContext ctx) {
+    connector.connect(ctx.asyncAssertSuccess(conn -> {
+      List<Tuple> batch = new ArrayList<>();
+      batch.add(Tuple.of(1));
+      batch.add(Tuple.of(3));
+      batch.add(Tuple.of(5));
+
+      conn.preparedBatch(statement("SELECT * FROM immutable WHERE id=", ""), batch, ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.size());
+        Row row = result.iterator().next();
+        ctx.assertEquals(1, row.getInteger(0));
+        ctx.assertEquals("fortune: No such file or directory", row.getString(1));
+
+        result = result.next();
+        ctx.assertEquals(1, result.size());
+        row = result.iterator().next();
+        ctx.assertEquals(3, row.getInteger(0));
+        ctx.assertEquals("After enough decimal places, nobody gives a damn.", row.getString(1));
+
+        result = result.next();
+        ctx.assertEquals(1, result.size());
+        row = result.iterator().next();
+        ctx.assertEquals(5, row.getInteger(0));
+        ctx.assertEquals("A computer program does what you tell it to do, not what you want it to do.", row.getString(1));
+      }));
+    }));
+  }
+  
+  @Test
+  public void testEmptyBatch(TestContext ctx) {
+	  connector.connect(ctx.asyncAssertSuccess(conn -> {
+		  List<Tuple> batch = new ArrayList<>();
+		  conn.preparedBatch(statement("SELECT * FROM immutable WHERE id=", ""), batch, ctx.asyncAssertFailure(err -> {
+		  }));
+	  }));
+  }
+  
+  @Test
+  public void testIncorrectNumBatchArguments(TestContext ctx) {
+	  connector.connect(ctx.asyncAssertSuccess(conn -> {
+		  List<Tuple> batch = new ArrayList<>();
+		  batch.add(Tuple.of(1, 2));
+		  conn.preparedBatch(statement("SELECT * FROM immutable WHERE id=", ""), batch, ctx.asyncAssertFailure(err -> {
+		  }));
+	  }));
+  }
 
   protected void cleanTestTable(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {

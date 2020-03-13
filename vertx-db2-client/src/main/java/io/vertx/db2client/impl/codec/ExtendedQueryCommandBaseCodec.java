@@ -24,6 +24,7 @@ import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommandBase;
 
 abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBase<R>>
@@ -38,6 +39,13 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
 	}
 
 	void encodePreparedQuery(DRDAQueryRequest queryRequest, QueryInstance queryInstance, Tuple params) {
+	    int requiredParams = statement.paramDesc.paramDefinitions().columns_;
+    	if (params.size() != requiredParams) {
+    		completionHandler.handle(CommandResponse.failure("Only " + params.size() + " prepared statement parameters were provided " +
+    				"but " + requiredParams + " parameters are required."));
+    		return;
+    	}
+	    
 		Object[] inputs = new Object[params.size()];
 		for (int j = 0; j < params.size(); j++)
 			inputs[j] = params.getValue(j);

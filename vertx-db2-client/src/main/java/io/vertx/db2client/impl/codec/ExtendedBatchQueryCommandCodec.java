@@ -31,8 +31,8 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
 
   @Override
   void encode(DB2Encoder encoder) {
-    if (params.isEmpty() && statement.paramDesc.paramDefinitions().columns_ > 0) {
-      completionHandler.handle(CommandResponse.failure("Statement parameter is not set because of the empty batch param list"));
+    if (params.isEmpty()) {
+      completionHandler.handle(CommandResponse.failure("Can not execute batch query with 0 sets of batch parameters."));
       return;
     }
     

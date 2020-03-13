@@ -17,6 +17,7 @@
 package io.vertx.pgclient.impl.codec;
 
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
 
 import java.util.List;
@@ -40,13 +41,14 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
       if (cmd.params().isEmpty()) {
         // We set suspended to false as we won't get a command complete command back from Postgres
         this.result = false;
+        completionHandler.handle(CommandResponse.failure("Can not execute batch query with 0 sets of batch parameters."));
       } else {
         for (Tuple param : cmd.params()) {
           encoder.writeBind(ps.bind, cmd.cursorId(), param);
           encoder.writeExecute(cmd.cursorId(), cmd.fetch());
         }
+        encoder.writeSync();
       }
-      encoder.writeSync();
     }
   }
 }
