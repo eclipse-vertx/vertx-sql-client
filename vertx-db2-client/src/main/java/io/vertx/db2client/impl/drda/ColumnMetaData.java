@@ -15,6 +15,11 @@
  */
 package io.vertx.db2client.impl.drda;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 public class ColumnMetaData {
     
     public int columns_;
@@ -97,5 +102,24 @@ public class ColumnMetaData {
         this.sqlxRdbnam_ = new String[numColumns];
         this.types_ = new int[numColumns];
         this.clientParamtertype_ = new int[numColumns];
+    }
+    
+    public List<String> getColumnNames() {
+    	// Prefer column names from SQLDXGRP if set
+    	if (!isNull(sqlxName_))
+    		return Collections.unmodifiableList(Stream.of(sqlxName_).collect(Collectors.toList()));
+    	// Otherwise use column names from SQLDOPTGRP
+    	if (sqlName_ != null && sqlName_.length > 0)
+    		return Collections.unmodifiableList(Stream.of(sqlName_).collect(Collectors.toList()));
+    	return Collections.emptyList();
+    }
+    
+    private static boolean isNull(String[] arr) {
+    	if (arr == null || arr.length == 0)
+    		return true;
+    	for (String s : arr)
+    		if (s != null)
+    			return false;
+    	return true;
     }
 }
