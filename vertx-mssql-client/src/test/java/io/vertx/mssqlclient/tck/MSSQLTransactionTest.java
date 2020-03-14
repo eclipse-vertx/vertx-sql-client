@@ -30,10 +30,10 @@ import io.vertx.sqlclient.tck.TransactionTestBase;
 @Ignore // TODO: Implement transaction support
 @RunWith(VertxUnitRunner.class)
 public class MSSQLTransactionTest extends TransactionTestBase {
-  
+
   @ClassRule
   public static MSSQLRule rule = MSSQLRule.SHARED_INSTANCE;
-  
+
   @Override
   protected void initConnector() {
     connector = handler -> {
@@ -43,12 +43,12 @@ public class MSSQLTransactionTest extends TransactionTestBase {
       pool.begin(handler);
     };
   }
-  
+
   @Override
   protected Pool nonTxPool() {
     return MSSQLPool.pool(vertx, new MSSQLConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
   }
-  
+
   @Override
   protected String statement(String... parts) {
     StringBuilder sb = new StringBuilder();
@@ -60,5 +60,5 @@ public class MSSQLTransactionTest extends TransactionTestBase {
     }
     return sb.toString();
   }
-  
+
 }
