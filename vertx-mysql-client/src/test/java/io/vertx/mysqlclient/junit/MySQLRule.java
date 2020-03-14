@@ -39,8 +39,8 @@ public class MySQLRule extends ExternalResource {
     return this;
   }
 
-  public synchronized MySQLConnectOptions startServer(boolean ssl) throws Exception {
-    initServer(ssl);
+  public synchronized MySQLConnectOptions startServer() throws Exception {
+    initServer();
     server.start();
 
     return new MySQLConnectOptions()
@@ -61,7 +61,7 @@ public class MySQLRule extends ExternalResource {
     }
   }
 
-  private void initServer(boolean ssl) {
+  private void initServer() {
     server = new GenericContainer(databaseServerInfo.getDatabaseType().toDockerImageName() + ":" + databaseServerInfo.getDockerImageTag())
       .withEnv("MYSQL_USER", "mysql")
       .withEnv("MYSQL_PASSWORD", "password")
@@ -172,7 +172,7 @@ public class MySQLRule extends ExternalResource {
       }
     }
 
-    options = startServer(ssl);
+    options = startServer();
   }
 
   @Override
