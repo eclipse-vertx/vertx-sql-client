@@ -515,3 +515,33 @@ Known issues:
 
 - Reset connection utility command does not work in MySQL 5.5, 5.6 and MariaDB 10.1
 - Change user utility command is not supported with MariaDB 10.2 and 10.3
+
+== Pitfalls & Good Practices
+
+Here are some good practices for you to avoid common pitfalls when using the Reactive MySQL Client.
+
+=== prepared statement count limit
+
+Sometimes you might meet the notorious error `Can't create more than max_prepared_stmt_count statements (current value: 16382)`, this is because the server has reached the limit of total number of prepared statement.
+
+You can adjust the server system variable `max_prepared_stmt_count` but it has an upper bound value so you can't get rid of the error in this way.
+
+The best way to alleviate this is enabling prepared statement caching, so the prepared statements with the same SQL string could be reused and the client does not have to create a brand new prepared statement for every request.
+The prepared statement will be automatically closed when it's evicted from the cache.
+In this way the chances of reaching the limit could be greatly reduced though it could not be totally eliminated.
+
+Note using `SqlClient#preparedQuery` without prepared statement caching enabled will not close the prepared statement after executing!
+
+You can also manage the lifecycle of prepared statements manually by creating a `PreparedQuery` object via `SqlConnection#prepare` interface, or even use the https://dev.mysql.com/doc/refman/8.0/en/sql-prepared-statements.html[SQL syntax prepared statement].
+
+=== demystifying prepared batch
+
+There is time when you want to batch insert data into the database, you can use `SqlClient#preparedBatch` which provides a simple API to handle this.
+Keep in mind that MySQL does not natively support batching protocol so the API is only a sugar by executing the prepared statement one after another, which means more network round trips are required comparing to inserting multiple rows by executing one prepared statement with a list of values.
+
+=== tricky DATE & TIME data types
+
+Handling MYSQL DATE and TIME data types especially with time zones is tricky therefore the Reactive MySQL Client does no magic transformation for those values.
+
+* MySQL DATETIME data type does not contain time zone info, so what you get is identical to what you set no matter what time zone is in the current session.
+* MySQL TIMESTAMP data type contains time zone info, so when you set or get the value it's always transformed by the server with the timezone set in the current session.
