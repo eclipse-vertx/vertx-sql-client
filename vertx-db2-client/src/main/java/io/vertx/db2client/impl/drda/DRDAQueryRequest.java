@@ -275,7 +275,6 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
             String dbName,
             int fetchSize,
             int resultSetType,
-            int numInputColumns,
             ColumnMetaData parameterMetaData,
             Object[] inputs) {
         fetchSize = checkFetchsize(fetchSize, resultSetType);
@@ -291,7 +290,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
         // may be able to merge this with firstContinueQuery_ and push above conditional to common
 //        ((NetStatement) materialPreparedStatement).qryrowsetSentOnOpnqry_ = sendQryrowset;
 
-        if (numInputColumns > 0) {
+        if (inputs != null && inputs.length > 0) {
             if ((extdtaPositions_ != null) && (!extdtaPositions_.isEmpty())) {
                 extdtaPositions_.clear();  // reset extdta column position markers
             }
@@ -300,9 +299,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
 
             // think about having this method return a boolean to
             // indicate the extdta should be built
-            boolean overrideExists = buildSQLDTAcommandData(numInputColumns,
-                    parameterMetaData,
-                    inputs);
+            boolean overrideExists = buildSQLDTAcommandData(parameterMetaData, inputs);
 
             // can we eleminate the chain argument needed for lobs
             // do we chain after Extdta's on open, verify this
@@ -614,8 +611,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
     // that an RDB is executing.
     //
     // preconditions:
-    private boolean buildSQLDTAcommandData(int numInputColumns,
-                                   ColumnMetaData parameterMetaData,
+    private boolean buildSQLDTAcommandData(ColumnMetaData parameterMetaData,
                                    Object[] inputRow) {
         createEncryptedCommandData();
 
@@ -633,14 +629,13 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
 
         boolean overrideExists = false;
 
-        buildFDODSC(numInputColumns,
+        buildFDODSC(inputRow.length,
                 protocolTypesAndLengths,
                 overrideExists,
                 protocolTypeToOverrideLidMapping,
                 mddOverrideArray);
 
-        buildFDODTA(numInputColumns,
-                protocolTypesAndLengths,
+        buildFDODTA(protocolTypesAndLengths,
                 inputRow);
 
         updateLengthBytes(); // for sqldta
@@ -655,7 +650,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
         return overrideExists;
     }
     
-    private void buildFDODTA(int numVars, int[][] protocolTypesAndLengths, Object[] inputs) {
+    private void buildFDODTA(int[][] protocolTypesAndLengths, Object[] inputs) {
 //        try {
 
             Object o = null;
@@ -664,7 +659,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
             buffer.writeByte(FdocaConstants.NULL_LID); // write the 1-byte row indicator
 
             // write data for each input column
-            for (int i = 0; i < numVars; i++) {
+            for (int i = 0; i < inputs.length; i++) {
                 if (inputs[i] == null) {
                     if ((protocolTypesAndLengths[i][0] % 2) == 1) {
                         buffer.writeByte(FdocaConstants.NULL_DATA);
@@ -877,7 +872,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
 //                        break;
                     default:
                         throw new IllegalStateException("SQLState.NET_UNRECOGNIZED_JDBC_TYPE " + protocolTypesAndLengths[i][0] + 
-                                numVars + i);
+                                inputs.length + i);
                     }
                 }
             }
@@ -1452,7 +1447,6 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
     						 String dbName,
                              ColumnMetaData parameterMetaData,
                              Object[] inputs,
-                             int numInputColumns,
                              boolean outputExpected,
                              boolean chained)
     {
@@ -1472,14 +1466,12 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                 false, // sendQryrowset
                 0);               // qryrowset
 
-        if (numInputColumns > 0) {
+        if (inputs != null && inputs.length > 0) {
             if ((extdtaPositions_ != null) && (!extdtaPositions_.isEmpty())) {
                 extdtaPositions_.clear();  // reset extdta column position markers
             }
 
-            boolean overrideExists = buildSQLDTAcommandData(numInputColumns,
-                    parameterMetaData,
-                    inputs);
+            boolean overrideExists = buildSQLDTAcommandData(parameterMetaData, inputs);
 
             // can we eleminate the chain argument needed for lobs
             buildEXTDTA(parameterMetaData, inputs, chained);
