@@ -243,22 +243,6 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
     return null;
   }
 
-  private JsonObject getJsonObject(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof JsonObject) {
-      return (JsonObject) val;
-    }
-    return null;
-  }
-
-  private JsonArray getJsonArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof JsonArray) {
-      return (JsonArray) val;
-    }
-    return null;
-  }
-
   private Geometry getGeometry(int pos) {
     Object val = getValue(pos);
     if (val instanceof Geometry) {

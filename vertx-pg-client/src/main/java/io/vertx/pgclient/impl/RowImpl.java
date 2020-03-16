@@ -178,7 +178,7 @@ public class RowImpl extends ArrayTuple implements Row {
     } else if (type == Box.class) {
       return (T[]) getBoxArray(pos);
     } else if (type == Object.class) {
-      return (T[]) getJsonArray(pos);
+      return (T[]) getJsonArray_(pos);
     }
     throw new UnsupportedOperationException("Unsupported type " + type.getName());
   }
@@ -226,11 +226,6 @@ public class RowImpl extends ArrayTuple implements Row {
   public Interval getInterval(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getInterval(pos);
-  }
-
-  public Object[] getJsonArray(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getJsonArray(pos);
   }
 
   public Numeric[] getNumericArray(String name) {
@@ -400,7 +395,7 @@ public class RowImpl extends ArrayTuple implements Row {
   /**
    * Get a {@code Json} array value, the {@code Json} value may be a string, number, JSON object, array, boolean or null.
    */
-  public Object[] getJsonArray(int pos) {
+  private Object[] getJsonArray_(int pos) {
     Object val = getValue(pos);
     if (val instanceof Object[]) {
       return (Object[]) val;

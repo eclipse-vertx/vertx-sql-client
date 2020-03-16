@@ -17,6 +17,8 @@
 
 package io.vertx.sqlclient;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.impl.ArrayTuple;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
@@ -323,6 +325,34 @@ public interface Tuple {
   }
 
   /**
+   * Get a {@link JsonObject} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  default JsonObject getJsonObject(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof JsonObject) {
+      return (JsonObject) val;
+    }
+    return null;
+  }
+
+  /**
+   * Get a {@link JsonArray} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  default JsonArray getJsonArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof JsonArray) {
+      return (JsonArray) val;
+    }
+    return null;
+  }
+
+  /**
    * Get a {@link java.time.temporal.Temporal} value at {@code pos}.
    *
    * @param pos the position
@@ -340,6 +370,9 @@ public interface Tuple {
   /**
    * Get {@link java.time.LocalDate} value at {@code pos}.
    *
+   * <p>Target element instance of {@code LocalDateTime} will be
+   * coerced to {@code LocalDate}.
+   *
    * @param pos the position
    * @return the value or {@code null}
    */
@@ -348,12 +381,17 @@ public interface Tuple {
     Object val = getValue(pos);
     if (val instanceof LocalDate) {
       return (LocalDate) val;
+    } else if (val instanceof LocalDateTime) {
+      return ((LocalDateTime) val).toLocalDate();
     }
     return null;
   }
 
   /**
    * Get {@link java.time.LocalTime} value at {@code pos}.
+   *
+   * <p>Target element instance of {@code LocalDateTime} will be
+   * coerced to {@code LocalTime}.
    *
    * @param pos the position
    * @return the value or {@code null}
@@ -363,6 +401,8 @@ public interface Tuple {
     Object val = getValue(pos);
     if (val instanceof LocalTime) {
       return (LocalTime) val;
+    } else if (val instanceof LocalDateTime) {
+      return ((LocalDateTime) val).toLocalTime();
     }
     return null;
   }
@@ -385,6 +425,9 @@ public interface Tuple {
   /**
    * Get {@link java.time.OffsetTime} value at {@code pos}.
    *
+   * <p>Target element instance of {@code OffsetDateTime} will be
+   * coerced to {@code OffsetTime}.
+   *
    * @param pos the position
    * @return the value or {@code null}
    */
@@ -393,6 +436,8 @@ public interface Tuple {
     Object val = getValue(pos);
     if (val instanceof OffsetTime) {
       return (OffsetTime) val;
+    } else if (val instanceof OffsetDateTime) {
+      return ((OffsetDateTime)val).toOffsetTime();
     }
     return null;
   }
@@ -461,6 +506,9 @@ public interface Tuple {
   /**
    * Get an array of {@link Boolean} value at {@code pos}.
    *
+   * <p>Target element instance of {@code Object[]} will be
+   * coerced to {@code Boolean[]}.
+   *
    * @param pos the position
    * @return the value or {@code null}
    */
@@ -469,6 +517,13 @@ public interface Tuple {
     Object val = getValue(pos);
     if (val instanceof Boolean[]) {
       return (Boolean[]) val;
+    } else if (val instanceof Object[]) {
+      Object[] array = (Object[]) val;
+      Boolean[] booleanArray = new Boolean[array.length];
+      for (int i = 0;i < array.length;i++) {
+        booleanArray[i] = (Boolean) array[i];
+      }
+      return booleanArray;
     } else {
       return null;
     }
@@ -476,6 +531,9 @@ public interface Tuple {
 
   /**
    * Get an array of  {@link Short} value at {@code pos}.
+   *
+   * <p>Target element instance of {@code Number[]} or {@code Object[]} will be
+   * coerced to {@code Short[]}.
    *
    * @param pos the position
    * @return the value or {@code null}
@@ -485,6 +543,24 @@ public interface Tuple {
     Object val = getValue(pos);
     if (val instanceof Short[]) {
       return (Short[]) val;
+    } else if (val instanceof Number[]) {
+      Number[] a = (Number[]) val;
+      int len = a.length;
+      Short[] arr = new Short[len];
+      for (int i = 0; i < len; i++) {
+        Number elt = a[i];
+        if (elt != null) {
+          arr[i] = elt.shortValue();
+        }
+      }
+      return arr;
+    } else if (val instanceof Object[]) {
+      Object[] array = (Object[]) val;
+      Short[] shortArray = new Short[array.length];
+      for (int i = 0;i < array.length;i++) {
+        shortArray[i] = ((Number) array[i]).shortValue();
+      }
+      return shortArray;
     } else {
       return null;
     }
@@ -492,6 +568,9 @@ public interface Tuple {
 
   /**
    * Get an array of {@link Integer} value at {@code pos}.
+   *
+   * <p>Target element instance of {@code Number[]} or {@code Object[]} will be
+   * coerced to {@code Integer[]}.
    *
    * @param pos the position
    * @return the value or {@code null}
@@ -501,6 +580,24 @@ public interface Tuple {
     Object val = getValue(pos);
     if (val instanceof Integer[]) {
       return (Integer[]) val;
+    } else if (val instanceof Number[]) {
+      Number[] a = (Number[]) val;
+      int len = a.length;
+      Integer[] arr = new Integer[len];
+      for (int i = 0; i < len; i++) {
+        Number elt = a[i];
+        if (elt != null) {
+          arr[i] = elt.intValue();
+        }
+      }
+      return arr;
+    } else if (val instanceof Object[]) {
+      Object[] array = (Object[]) val;
+      Integer[] integerArray = new Integer[array.length];
+      for (int i = 0;i < array.length;i++) {
+        integerArray[i] = ((Number) array[i]).intValue();
+      }
+      return integerArray;
     } else {
       return null;
     }
@@ -508,6 +605,9 @@ public interface Tuple {
 
   /**
    * Get an array of {@link Long} value at {@code pos}.
+   *
+   * <p>Target element instance of {@code Number[]} or {@code Object[]} will be
+   * coerced to {@code Long[]}.
    *
    * @param pos the position
    * @return the value or {@code null}
@@ -517,6 +617,24 @@ public interface Tuple {
     Object val = getValue(pos);
     if (val instanceof Long[]) {
       return (Long[]) val;
+    } else if (val instanceof Number[]) {
+      Number[] a = (Number[]) val;
+      int len = a.length;
+      Long[] arr = new Long[len];
+      for (int i = 0; i < len; i++) {
+        Number elt = a[i];
+        if (elt != null) {
+          arr[i] = elt.longValue();
+        }
+      }
+      return arr;
+    } else if (val instanceof Object[]) {
+      Object[] array = (Object[]) val;
+      Long[] longArray = new Long[array.length];
+      for (int i = 0;i < array.length;i++) {
+        longArray[i] = ((Number) array[i]).longValue();
+      }
+      return longArray;
     } else {
       return null;
     }
@@ -524,6 +642,9 @@ public interface Tuple {
 
   /**
    * Get an array of  {@link Float} value at {@code pos}.
+   *
+   * <p>Target element instance of {@code Number[]} or {@code Object[]} will be
+   * coerced to {@code Float[]}.
    *
    * @param pos the position
    * @return the value or {@code null}
@@ -533,6 +654,24 @@ public interface Tuple {
     Object val = getValue(pos);
     if (val instanceof Float[]) {
       return (Float[]) val;
+    } else if (val instanceof Number[]) {
+      Number[] a = (Number[]) val;
+      int len = a.length;
+      Float[] arr = new Float[len];
+      for (int i = 0; i < len; i++) {
+        Number elt = a[i];
+        if (elt != null) {
+          arr[i] = elt.floatValue();
+        }
+      }
+      return arr;
+    } else if (val instanceof Object[]) {
+      Object[] array = (Object[]) val;
+      Float[] floatArray = new Float[array.length];
+      for (int i = 0;i < array.length;i++) {
+        floatArray[i] = ((Number) array[i]).floatValue();
+      }
+      return floatArray;
     } else {
       return null;
     }
@@ -540,6 +679,9 @@ public interface Tuple {
 
   /**
    * Get an array of  {@link Double} value at {@code pos}.
+   *
+   * <p>Target element instance of {@code Number[]} or {@code Object[]} will be
+   * coerced to {@code Double[]}.
    *
    * @param pos the position
    * @return the value or {@code null}
@@ -549,6 +691,24 @@ public interface Tuple {
     Object val = getValue(pos);
     if (val instanceof Double[]) {
       return (Double[]) val;
+    } else if (val instanceof Number[]) {
+      Number[] a = (Number[]) val;
+      int len = a.length;
+      Double[] arr = new Double[len];
+      for (int i = 0; i < len; i++) {
+        Number elt = a[i];
+        if (elt != null) {
+          arr[i] = elt.doubleValue();
+        }
+      }
+      return arr;
+    } else if (val instanceof Object[]) {
+      Object[] array = (Object[]) val;
+      Double[] doubleArray = new Double[array.length];
+      for (int i = 0;i < array.length;i++) {
+        doubleArray[i] = ((Number) array[i]).doubleValue();
+      }
+      return doubleArray;
     } else {
       return null;
     }
@@ -556,6 +716,9 @@ public interface Tuple {
 
   /**
    * Get an array of  {@link String} value at {@code pos}.
+   *
+   * <p>Target element instance of {@code Object[]} will be
+   * coerced to {@code String[]}.
    *
    * @param pos the position
    * @return the value or {@code null}
@@ -565,6 +728,55 @@ public interface Tuple {
     Object val = getValue(pos);
     if (val instanceof String[]) {
       return (String[]) val;
+    } else if (val instanceof Object[]) {
+      Object[] array = (Object[]) val;
+      String[] stringArray = new String[array.length];
+      for (int i = 0;i < array.length;i++) {
+        stringArray[i] = (String) array[i];
+      }
+      return stringArray;
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * Get an array of  {@link JsonObject} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default JsonObject[] getJsonObjectArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Object[]) {
+      Object[] array = (Object[]) val;
+      JsonObject[] jsonObjectArray = new JsonObject[array.length];
+      for (int i = 0;i < array.length;i++) {
+        jsonObjectArray[i] = (JsonObject) array[i];
+      }
+      return jsonObjectArray;
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * Get an array of  {@link JsonArray} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value or {@code null}
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default JsonArray[] getJsonArrayArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Object[]) {
+      Object[] array = (Object[]) val;
+      JsonArray[] jsonObjectArray = new JsonArray[array.length];
+      for (int i = 0;i < array.length;i++) {
+        jsonObjectArray[i] = (JsonArray) array[i];
+      }
+      return jsonObjectArray;
     } else {
       return null;
     }
@@ -589,6 +801,9 @@ public interface Tuple {
   /**
    * Get an array of  {@link LocalDate} value at {@code pos}.
    *
+   * <p>Target element instance of {@code LocalDateTime[]} will be
+   * coerced to {@code LocalDate[]}.
+   *
    * @param pos the position
    * @return the value or {@code null}
    */
@@ -597,6 +812,17 @@ public interface Tuple {
     Object val = getValue(pos);
     if (val instanceof LocalDate[]) {
       return (LocalDate[]) val;
+    } else if (val instanceof LocalDateTime[]) {
+      LocalDateTime[] a = (LocalDateTime[]) val;
+      int len = a.length;
+      LocalDate[] arr = new LocalDate[len];
+      for (int i = 0; i < len; i++) {
+        LocalDateTime elt = a[i];
+        if (elt != null) {
+          arr[i] = elt.toLocalDate();
+        }
+      }
+      return arr;
     } else {
       return null;
     }
@@ -604,6 +830,9 @@ public interface Tuple {
 
   /**
    * Get an array of  {@link LocalTime} value at {@code pos}.
+   *
+   * <p>Target element instance of {@code LocalDateTime[]} will be
+   * coerced to {@code LocalTime[]}.
    *
    * @param pos the position
    * @return the value or {@code null}
@@ -613,6 +842,17 @@ public interface Tuple {
     Object val = getValue(pos);
     if (val instanceof LocalTime[]) {
       return (LocalTime[]) val;
+    } else if (val instanceof LocalDateTime[]) {
+      LocalDateTime[] a = (LocalDateTime[]) val;
+      int len = a.length;
+      LocalTime[] arr = new LocalTime[len];
+      for (int i = 0; i < len; i++) {
+        LocalDateTime elt = a[i];
+        if (elt != null) {
+          arr[i] = elt.toLocalTime();
+        }
+      }
+      return arr;
     } else {
       return null;
     }
@@ -637,6 +877,9 @@ public interface Tuple {
   /**
    * Get an array of  {@link OffsetTime} value at {@code pos}.
    *
+   * <p>Target element instance of {@code OffsetDateTime[]} will be
+   * coerced to {@code OffsetTime[]}.
+   *
    * @param pos the position
    * @return the value or {@code null}
    */
@@ -645,6 +888,17 @@ public interface Tuple {
     Object val = getValue(pos);
     if (val instanceof OffsetTime[]) {
       return (OffsetTime[]) val;
+    } else if (val instanceof OffsetDateTime[]) {
+      OffsetDateTime[] a = (OffsetDateTime[]) val;
+      int len = a.length;
+      OffsetTime[] arr = new OffsetTime[len];
+      for (int i = 0; i < len; i++) {
+        OffsetDateTime elt = a[i];
+        if (elt != null) {
+          arr[i] = elt.toOffsetTime();
+        }
+      }
+      return arr;
     } else {
       return null;
     }
@@ -801,6 +1055,28 @@ public interface Tuple {
   }
 
   /**
+   * Add a {@link JsonObject} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  default Tuple addJsonObject(JsonObject value) {
+    return addValue(value);
+  }
+
+  /**
+   * Add a {@link JsonArray} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  default Tuple addJsonArray(JsonArray value) {
+    return addValue(value);
+  }
+
+  /**
    * Add a {@link java.time.temporal.Temporal} value at the end of the tuple.
    *
    * @param value the value
@@ -924,6 +1200,9 @@ public interface Tuple {
   /**
    * Add an array of {@code Integer} value at the end of the tuple.
    *
+   * <p>Target element instance of {@code Number[]} will be
+   * coerced to {@code Integer[]}.
+   *
    * @param value the value
    * @return a reference to this, so the API can be used fluently
    */
@@ -973,6 +1252,28 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addStringArray(String[] value) {
+    return addValue(value);
+  }
+
+  /**
+   * Add an array of {@link JsonObject} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default Tuple addJsonObjectArray(JsonObject[] value) {
+    return addValue(value);
+  }
+
+  /**
+   * Add an array of {@link JsonArray} value at the end of the tuple.
+   *
+   * @param value the value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default Tuple addJsonArrayArray(JsonArray[] value) {
     return addValue(value);
   }
 

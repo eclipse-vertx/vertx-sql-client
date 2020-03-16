@@ -169,27 +169,49 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
 
   @Test
   public void testDecodeINT2Array(TestContext ctx) {
-    testDecodeGenericArray(ctx, "ARRAY [1 :: INT2]", "Short", Tuple::getShortArray, Row::getShortArray, (short) 1);
+    testDecodeNumberArray(ctx, "ARRAY [1 :: INT2]", "Short", (short)1);
   }
 
   @Test
   public void testDecodeINT4Array(TestContext ctx) {
-    testDecodeGenericArray(ctx, "ARRAY [2 :: INT4]", "Integer", Tuple::getIntegerArray, Row::getIntegerArray, 2);
+    testDecodeNumberArray(ctx, "ARRAY [2 :: INT4]", "Integer", 2);
   }
 
   @Test
   public void testDecodeINT8Array(TestContext ctx) {
-    testDecodeGenericArray(ctx, "ARRAY [3 :: INT8]", "Long", Tuple::getLongArray, Row::getLongArray, 3L);
+    testDecodeNumberArray(ctx, "ARRAY [3 :: INT8]", "Long", 3L);
   }
 
   @Test
   public void testDecodeFLOAT4Array(TestContext ctx) {
-    testDecodeGenericArray(ctx, "ARRAY [4.1 :: FLOAT4]", "Float", Tuple::getFloatArray, Row::getFloatArray, 4.1f);
+    testDecodeNumberArray(ctx, "ARRAY [4.1 :: FLOAT4]", "Float", 4.1F);
   }
 
   @Test
   public void testDecodeFLOAT8Array(TestContext ctx) {
-    testDecodeGenericArray(ctx, "ARRAY [5.2 :: FLOAT8]", "Double", Tuple::getDoubleArray, Row::getDoubleArray, 5.2d);
+    testDecodeNumberArray(ctx, "ARRAY [5.2 :: FLOAT8]", "Double", 5.2D);
+  }
+
+  protected void testDecodeNumberArray(TestContext ctx,
+                                       String arrayData,
+                                       String columnName,
+                                       Number... value) {
+    Async async = ctx.async();
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT " + arrayData + " \"" + columnName + "\"", ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.size());
+        Row row = result.iterator().next();
+        ColumnChecker.checkColumn(0, columnName)
+          .returns(Tuple::getValue, Row::getValue, value)
+          .returns(Tuple::getShortArray, Row::getShortArray, new Short[]{value[0].shortValue()})
+          .returns(Tuple::getIntegerArray, Row::getIntegerArray, new Integer[]{value[0].intValue()})
+          .returns(Tuple::getLongArray, Row::getLongArray, new Long[]{value[0].longValue()})
+          .returns(Tuple::getFloatArray, Row::getFloatArray, new Float[]{value[0].floatValue()})
+          .returns(Tuple::getDoubleArray, Row::getDoubleArray, new Double[]{value[0].doubleValue()})
+          .forRow(row);
+        async.complete();
+      }));
+    }));
   }
 
   @Test
@@ -202,7 +224,11 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
         ctx.asyncAssertSuccess(result -> {
           ColumnChecker.checkColumn(0, "array")
             .returns(Tuple::getValue, Row::getValue, (Object[]) new Long[0])
+            .returns(Tuple::getShortArray, Row::getShortArray, (Object[]) new Short[0])
+            .returns(Tuple::getIntegerArray, Row::getIntegerArray, (Object[]) new Integer[0])
             .returns(Tuple::getLongArray, Row::getLongArray, (Object[]) new Long[0])
+            .returns(Tuple::getFloatArray, Row::getFloatArray, (Object[]) new Float[0])
+            .returns(Tuple::getDoubleArray, Row::getDoubleArray, (Object[]) new Double[0])
             .forRow(result.iterator().next());
           async.complete();
         }));

@@ -19,6 +19,8 @@ package io.vertx.sqlclient;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.math.BigDecimal;
 import java.time.*;
@@ -135,6 +137,28 @@ public interface Row extends Tuple {
   default String getString(String name) {
     int pos = getColumnIndex(name);
     return pos == -1 ? null : getString(pos);
+  }
+
+  /**
+   * Get a {@link JsonObject} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  default JsonObject getJsonObject(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getJsonObject(pos);
+  }
+
+  /**
+   * Get a {@link JsonArray} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  default JsonArray getJsonArray(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getJsonArray(pos);
   }
 
   /**
@@ -326,6 +350,30 @@ public interface Row extends Tuple {
   default String[] getStringArray(String name) {
     int pos = getColumnIndex(name);
     return pos == -1 ? null : getStringArray(pos);
+  }
+
+  /**
+   * Get an array of {@link JsonObject} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default JsonObject[] getJsonObjectArray(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getJsonObjectArray(pos);
+  }
+
+  /**
+   * Get an array of {@link JsonArray} value at {@code pos}.
+   *
+   * @param name the column
+   * @return the value or {@code null}
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default JsonArray[] getJsonArrayArray(String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getJsonArrayArray(pos);
   }
 
   /**

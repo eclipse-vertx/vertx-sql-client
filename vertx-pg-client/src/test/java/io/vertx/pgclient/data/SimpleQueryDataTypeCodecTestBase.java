@@ -64,6 +64,16 @@ public abstract class SimpleQueryDataTypeCodecTestBase extends DataTypeTestBase 
                                         ColumnChecker.SerializableBiFunction<Tuple, Integer, Object> byIndexGetter,
                                         ColumnChecker.SerializableBiFunction<Row, String, Object> byNameGetter,
                                         Object... expected) {
+    testDecodeGenericArray(ctx, arrayData, columnName, ColumnChecker.checkColumn(0, columnName)
+      .returns(Tuple::getValue, Row::getValue, expected)
+      .returns(byIndexGetter, byNameGetter, expected), expected);
+  }
+
+  protected void testDecodeGenericArray(TestContext ctx,
+                                        String arrayData,
+                                        String columnName,
+                                        ColumnChecker checker,
+                                        Object... expected) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SET TIME ZONE 'UTC'",
@@ -71,10 +81,7 @@ public abstract class SimpleQueryDataTypeCodecTestBase extends DataTypeTestBase 
           conn.query("SELECT " + arrayData + " \"" + columnName + "\"", ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             Row row = result.iterator().next();
-            ColumnChecker.checkColumn(0, columnName)
-              .returns(Tuple::getValue, Row::getValue, expected)
-              .returns(byIndexGetter, byNameGetter, expected)
-              .forRow(row);
+            checker.forRow(row);
             async.complete();
           }));
         }));
