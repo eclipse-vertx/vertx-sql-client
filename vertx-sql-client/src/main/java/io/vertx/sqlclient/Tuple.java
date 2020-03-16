@@ -517,7 +517,7 @@ public interface Tuple {
     Object val = getValue(pos);
     if (val instanceof Boolean[]) {
       return (Boolean[]) val;
-    } else if (val instanceof Object[]) {
+    } else if (val != null && val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Boolean[] booleanArray = new Boolean[array.length];
       for (int i = 0;i < array.length;i++) {
@@ -554,7 +554,7 @@ public interface Tuple {
         }
       }
       return arr;
-    } else if (val instanceof Object[]) {
+    } else if (val != null && val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Short[] shortArray = new Short[array.length];
       for (int i = 0;i < array.length;i++) {
@@ -591,7 +591,7 @@ public interface Tuple {
         }
       }
       return arr;
-    } else if (val instanceof Object[]) {
+    } else if (val != null && val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Integer[] integerArray = new Integer[array.length];
       for (int i = 0;i < array.length;i++) {
@@ -628,7 +628,7 @@ public interface Tuple {
         }
       }
       return arr;
-    } else if (val instanceof Object[]) {
+    } else if (val != null && val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Long[] longArray = new Long[array.length];
       for (int i = 0;i < array.length;i++) {
@@ -665,7 +665,7 @@ public interface Tuple {
         }
       }
       return arr;
-    } else if (val instanceof Object[]) {
+    } else if (val != null && val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Float[] floatArray = new Float[array.length];
       for (int i = 0;i < array.length;i++) {
@@ -702,7 +702,7 @@ public interface Tuple {
         }
       }
       return arr;
-    } else if (val instanceof Object[]) {
+    } else if (val != null && val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Double[] doubleArray = new Double[array.length];
       for (int i = 0;i < array.length;i++) {
@@ -728,7 +728,7 @@ public interface Tuple {
     Object val = getValue(pos);
     if (val instanceof String[]) {
       return (String[]) val;
-    } else if (val instanceof Object[]) {
+    } else if (val != null && val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       String[] stringArray = new String[array.length];
       for (int i = 0;i < array.length;i++) {
@@ -749,7 +749,7 @@ public interface Tuple {
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default JsonObject[] getJsonObjectArray(int pos) {
     Object val = getValue(pos);
-    if (val instanceof Object[]) {
+    if (val != null && val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       JsonObject[] jsonObjectArray = new JsonObject[array.length];
       for (int i = 0;i < array.length;i++) {
@@ -770,7 +770,7 @@ public interface Tuple {
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default JsonArray[] getJsonArrayArray(int pos) {
     Object val = getValue(pos);
-    if (val instanceof Object[]) {
+    if (val != null && val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       JsonArray[] jsonObjectArray = new JsonArray[array.length];
       for (int i = 0;i < array.length;i++) {

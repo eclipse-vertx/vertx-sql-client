@@ -215,6 +215,15 @@ public class ColumnChecker {
     return this;
   }
 
+  public ColumnChecker skip(SerializableBiFunction<Tuple, Integer, Object> byIndexGetter,
+                            SerializableBiFunction<Row, String, Object> byNameGetter) {
+    Method byIndexMeth = byIndexGetter.method();
+    blackList.add(byIndexMeth);
+    Method byNameMeth = byNameGetter.method();
+    blackList.add(byNameMeth);
+    return this;
+  }
+
   public ColumnChecker returns(SerializableBiFunction<Tuple, Integer, Double> byIndexGetter,
                             SerializableBiFunction<Row, String, Double> byNameGetter,
                         double expected, double delta) {

@@ -161,7 +161,7 @@ public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBa
       .returns(Tuple::getLocalTimeArray, Row::getLocalTimeArray, new Object[]{ldt.toLocalTime()})
       .returns(Tuple::getLocalDateArray, Row::getLocalDateArray, new Object[]{ldt.toLocalDate()})
       .returns(Tuple::getLocalDateTimeArray, Row::getLocalDateTimeArray, new Object[]{ldt});
-    testDecodeGenericArray(ctx, "ARRAY ['2017-05-14 19:35:58.237666' :: TIMESTAMP WITHOUT TIME ZONE]", "LocalDateTime", checker, ldt);
+    testDecodeGenericArray(ctx, "ARRAY ['2017-05-14 19:35:58.237666' :: TIMESTAMP WITHOUT TIME ZONE]", "LocalDateTime", checker);
 
   }
 
@@ -171,7 +171,7 @@ public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBa
       .returns(Tuple::getValue, Row::getValue, new Object[]{odt})
       .returns(Tuple::getOffsetTimeArray, Row::getOffsetTimeArray, new Object[]{odt.toOffsetTime()})
       .returns(Tuple::getOffsetDateTimeArray, Row::getOffsetDateTimeArray, new Object[]{odt});
-    testDecodeGenericArray(ctx, "ARRAY ['2017-05-14 23:59:59.237666-03' :: TIMESTAMP WITH TIME ZONE]", "OffsetDateTime", checker, odt);
+    testDecodeGenericArray(ctx, "ARRAY ['2017-05-14 23:59:59.237666-03' :: TIMESTAMP WITH TIME ZONE]", "OffsetDateTime", checker);
   }
 
   @Test

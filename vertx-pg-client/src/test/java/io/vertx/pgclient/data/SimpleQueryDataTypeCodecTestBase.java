@@ -66,14 +66,13 @@ public abstract class SimpleQueryDataTypeCodecTestBase extends DataTypeTestBase 
                                         Object... expected) {
     testDecodeGenericArray(ctx, arrayData, columnName, ColumnChecker.checkColumn(0, columnName)
       .returns(Tuple::getValue, Row::getValue, expected)
-      .returns(byIndexGetter, byNameGetter, expected), expected);
+      .returns(byIndexGetter, byNameGetter, expected));
   }
 
   protected void testDecodeGenericArray(TestContext ctx,
                                         String arrayData,
                                         String columnName,
-                                        ColumnChecker checker,
-                                        Object... expected) {
+                                        ColumnChecker checker) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SET TIME ZONE 'UTC'",
