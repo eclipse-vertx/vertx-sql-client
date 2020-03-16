@@ -43,9 +43,11 @@ public class JsonTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "JsonObject")
             .returns(Tuple::getValue, Row::getValue, object)
+            .returns(Tuple::getJsonObject, Row::getJsonObject, object)
             .forRow(row);
           ColumnChecker.checkColumn(1, "JsonArray")
             .returns(Tuple::getValue, Row::getValue, array)
+            .returns(Tuple::getJsonArray, Row::getJsonArray, array)
             .forRow(row);
           ColumnChecker.checkColumn(2, "TrueValue")
             .returns(Tuple::getValue, Row::getValue, true)
@@ -112,7 +114,9 @@ public class JsonTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
       .skip(Tuple::getLongArray, Row::getLongArray)
       .skip(Tuple::getFloatArray, Row::getFloatArray)
       .skip(Tuple::getDoubleArray, Row::getDoubleArray)
-      .skip(Tuple::getStringArray, Row::getStringArray);
+      .skip(Tuple::getStringArray, Row::getStringArray)
+      .skip(Tuple::getJsonObjectArray, Row::getJsonObjectArray)
+      .skip(Tuple::getJsonArrayArray, Row::getJsonArrayArray);
     testDecodeGenericArray(ctx, "ARRAY ['  {\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []   }' :: JSON, '[1,true,null,9.5,\"Hi\"]' :: JSON, '4' :: JSON, '\"Hello World\"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON]",
       "JSON", checker);
   }
@@ -127,7 +131,9 @@ public class JsonTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
       .skip(Tuple::getLongArray, Row::getLongArray)
       .skip(Tuple::getFloatArray, Row::getFloatArray)
       .skip(Tuple::getDoubleArray, Row::getDoubleArray)
-      .skip(Tuple::getStringArray, Row::getStringArray);
+      .skip(Tuple::getStringArray, Row::getStringArray)
+      .skip(Tuple::getJsonObjectArray, Row::getJsonObjectArray)
+      .skip(Tuple::getJsonArrayArray, Row::getJsonArrayArray);
     testDecodeGenericArray(ctx, "ARRAY ['  {\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []   }' :: JSON, '[1,true,null,9.5,\"Hi\"]' :: JSON, '4' :: JSON, '\"Hello World\"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON]",
       "JSONB", checker);
   }

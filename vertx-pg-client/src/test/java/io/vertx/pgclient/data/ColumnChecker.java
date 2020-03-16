@@ -67,6 +67,10 @@ public class ColumnChecker {
     rowMethods.add(Row::getString);
     tupleMethods.add(Tuple::getBoolean);
     rowMethods.add(Row::getBoolean);
+    tupleMethods.add(Tuple::getJsonObject);
+    rowMethods.add(Row::getJsonObject);
+    tupleMethods.add(Tuple::getJsonArray);
+    rowMethods.add(Row::getJsonArray);
     tupleMethods.add(Tuple::getBuffer);
     rowMethods.add(Row::getBuffer);
     tupleMethods.add(Tuple::getBuffer);
@@ -85,6 +89,10 @@ public class ColumnChecker {
     rowMethods.add(Row::getOffsetDateTime);
     tupleMethods.add(Tuple::getBooleanArray);
     rowMethods.add(Row::getBooleanArray);
+    tupleMethods.add(Tuple::getJsonObjectArray);
+    rowMethods.add(Row::getJsonObjectArray);
+    tupleMethods.add(Tuple::getJsonArrayArray);
+    rowMethods.add(Row::getJsonArrayArray);
     tupleMethods.add(Tuple::getShortArray);
     rowMethods.add(Row::getShortArray);
     tupleMethods.add(Tuple::getIntegerArray);
