@@ -37,20 +37,6 @@ import java.util.stream.Collector;
 public interface SqlConnection extends SqlClient {
 
   /**
-   * Create a prepared statement using the given {@code sql} string.
-   *
-   * @param sql the sql
-   * @param handler the handler notified with the prepared query asynchronously
-   */
-  @Fluent
-  SqlConnection prepare(String sql, Handler<AsyncResult<PreparedQuery>> handler);
-
-  /**
-   * Like {@link #prepare(String, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  Future<PreparedQuery> prepare(String sql);
-
-  /**
    * Set an handler called with connection errors.
    *
    * @param handler the handler
@@ -88,66 +74,66 @@ public interface SqlConnection extends SqlClient {
    */
   void close();
 
-  @Fluent
-  @Override
-  SqlConnection preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  Future<RowSet<Row>> preparedQuery(String sql);
-
-  @Fluent
-  @GenIgnore
-  @Override
-  <R> SqlConnection preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  @GenIgnore
-  @Override
-  <R> Future<SqlResult<R>> preparedQuery(String sql, Collector<Row, ?, R> collector);
-
-  @Fluent
-  @Override
-  SqlConnection query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  Future<RowSet<Row>> query(String sql);
-
-  @Fluent
-  @GenIgnore
-  @Override
-  <R> SqlConnection query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  @GenIgnore
-  @Override
-  <R> Future<SqlResult<R>> query(String sql, Collector<Row, ?, R> collector);
-
-  @Fluent
-  @Override
-  SqlConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  Future<RowSet<Row>> preparedQuery(String sql, Tuple arguments);
-
-  @GenIgnore
-  @Override
-  <R> SqlConnection preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  @GenIgnore
-  @Override
-  <R> Future<SqlResult<R>> preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector);
-
-  @Fluent
-  @Override
-  SqlConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  Future<RowSet<Row>> preparedBatch(String sql, List<Tuple> batch);
-
-  @Fluent
-  @GenIgnore
-  @Override
-  <R> SqlConnection preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  @GenIgnore
-  @Override
-  <R> Future<SqlResult<R>> preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector);
+//  @Fluent
+//  @Override
+//  SqlConnection preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
+//
+//  @Override
+//  Future<RowSet<Row>> preparedQuery(String sql);
+//
+//  @Fluent
+//  @GenIgnore
+//  @Override
+//  <R> SqlConnection preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+//
+//  @GenIgnore
+//  @Override
+//  <R> Future<SqlResult<R>> preparedQuery(String sql, Collector<Row, ?, R> collector);
+//
+//  @Fluent
+//  @Override
+//  SqlConnection query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
+//
+//  @Override
+//  Future<RowSet<Row>> query(String sql);
+//
+//  @Fluent
+//  @GenIgnore
+//  @Override
+//  <R> SqlConnection query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+//
+//  @GenIgnore
+//  @Override
+//  <R> Future<SqlResult<R>> query(String sql, Collector<Row, ?, R> collector);
+//
+//  @Fluent
+//  @Override
+//  SqlConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
+//
+//  @Override
+//  Future<RowSet<Row>> preparedQuery(String sql, Tuple arguments);
+//
+//  @GenIgnore
+//  @Override
+//  <R> SqlConnection preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+//
+//  @GenIgnore
+//  @Override
+//  <R> Future<SqlResult<R>> preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector);
+//
+//  @Fluent
+//  @Override
+//  SqlConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
+//
+//  @Override
+//  Future<RowSet<Row>> preparedBatch(String sql, List<Tuple> batch);
+//
+//  @Fluent
+//  @GenIgnore
+//  @Override
+//  <R> SqlConnection preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+//
+//  @GenIgnore
+//  @Override
+//  <R> Future<SqlResult<R>> preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector);
 }

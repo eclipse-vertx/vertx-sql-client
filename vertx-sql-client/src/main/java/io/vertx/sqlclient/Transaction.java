@@ -33,20 +33,6 @@ import java.util.stream.Collector;
 public interface Transaction extends SqlClient {
 
   /**
-   * Create a prepared query.
-   *
-   * @param sql the sql
-   * @param handler the handler notified with the prepared query asynchronously
-   */
-  @Fluent
-  Transaction prepare(String sql, Handler<AsyncResult<PreparedQuery>> handler);
-
-  /**
-   * Like {@link #prepare(String, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  Future<PreparedQuery> prepare(String sql);
-
-  /**
    * Commit the current transaction.
    */
   Future<Void> commit();
@@ -73,34 +59,6 @@ public interface Transaction extends SqlClient {
    */
   @Fluent
   Transaction abortHandler(Handler<Void> handler);
-
-  @Override
-  Transaction query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  @GenIgnore
-  <R> Transaction query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  @Override
-  Transaction preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  @GenIgnore
-  <R> Transaction preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  @Override
-  Transaction preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  @GenIgnore
-  <R> Transaction preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  @Override
-  Transaction preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  @GenIgnore
-  <R> Transaction preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   /**
    * Rollback the transaction and release the associated resources.

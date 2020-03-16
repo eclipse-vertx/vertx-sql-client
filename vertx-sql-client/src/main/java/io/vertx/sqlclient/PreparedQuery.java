@@ -36,83 +36,30 @@ import java.util.stream.Collector;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 @VertxGen
-public interface PreparedQuery {
+public interface PreparedQuery<R> extends Query<R> {
+	
+	@Override
+	public PreparedQuery<R> withOptions(QueryOptions options);
+	
+	@Override
+	public <T> PreparedQuery<SqlResult<T>> asCollector(Collector<?, ?, T> collector);
+	
+	public PreparedQuery<Cursor> asCursor();
+	
+	public PreparedQuery<RowStream<Row>> asStream(int fetchSize);
+	
+	public Future<R> execute(Tuple args);
+	@Override
+	public default Future<R> execute() {
+		return execute(ArrayTuple.EMPTY);
+	}
 
-  /**
-   * Calls {@link #execute(Tuple, Handler)} with an empty tuple argument.
-   */
-  @Fluent
-  default PreparedQuery execute(Handler<AsyncResult<RowSet<Row>>> handler) {
-    return execute(ArrayTuple.EMPTY, handler);
-  }
+	public void execute(Tuple args, Handler<AsyncResult<R>> handler);
+	@Override
+	public default void execute(Handler<AsyncResult<R>> handler) {
+		execute(ArrayTuple.EMPTY, handler);
+	}
 
-  /**
-   * Like {@link #execute(Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  default Future<RowSet<Row>> execute() {
-    return execute(ArrayTuple.EMPTY);
-  }
-
-  /**
-   * Calls {@link #execute(Tuple, Collector, Handler)} with an empty tuple argument.
-   */
-  @GenIgnore
-  default <R> PreparedQuery execute(Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
-    return execute(ArrayTuple.EMPTY, collector, handler);
-  }
-
-  /**
-   * Create a cursor with the provided {@code arguments}.
-   *
-   * @param args the list of arguments
-   * @return the query
-   */
-  @Fluent
-  PreparedQuery execute(Tuple args, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * Like {@link #execute(Tuple, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  Future<RowSet<Row>> execute(Tuple args);
-
-  /**
-   * Create a cursor with the provided {@code arguments}.
-   *
-   * The collector will be provided
-   *
-   * @param args the list of arguments
-   * @param collector the collector
-   * @return the query
-   */
-  @GenIgnore
-  <R> PreparedQuery execute(Tuple args, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  /**
-   * @return create a query cursor with a {@code fetch} size and empty arguments
-   */
-  default Cursor cursor() {
-    return cursor(ArrayTuple.EMPTY);
-  }
-
-  /**
-   * Create a cursor with the provided {@code arguments}.
-   *
-   * @param args the list of arguments
-   * @return the query
-   */
-  Cursor cursor(Tuple args);
-
-  /**
-   * Execute the prepared query with a cursor and createStream the result. The createStream opens a cursor
-   * with a {@code fetch} size to fetch the results.
-   * <p/>
-   * Note: this requires to be in a transaction, since cursors require it.
-   *
-   * @param fetch the cursor fetch size
-   * @param args the prepared query arguments
-   * @return the createStream
-   */
-  RowStream<Row> createStream(int fetch, Tuple args);
 
   /**
    * Execute a batch.
@@ -120,29 +67,12 @@ public interface PreparedQuery {
    * @param argsList the list of tuple for the batch
    * @return the createBatch
    */
-  @Fluent
-  PreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<RowSet<Row>>> handler);
+  void executeBatch(List<Tuple> argsList, Handler<AsyncResult<RowSet<Row>>> handler);
 
   /**
    * Like {@link #batch(List, Handler)} but returns a {@code Future} of the asynchronous result
    */
-  Future<RowSet<Row>> batch(List<Tuple> argsList);
-
-  /**
-   * Execute a batch.
-   *
-   * @param argsList the list of tuple for the batch
-   * @param collector the collector
-   * @return the createBatch
-   */
-  @GenIgnore
-  <R> PreparedQuery batch(List<Tuple> argsList, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  /**
-   * Like {@link #batch(List, Collector, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  @GenIgnore
-  <R> Future<SqlResult<R>> batch(List<Tuple> argsList, Collector<Row, ?, R> collector);
+  Future<R> executeBatch(List<Tuple> argsList);
 
   /**
    * Close the prepared query and release its resources.
