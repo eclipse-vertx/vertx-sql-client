@@ -15,6 +15,7 @@
  */
 package io.vertx.db2client.impl.drda;
 
+import java.math.BigDecimal;
 import java.sql.Types;
 
 // This enumeration of types represents the typing scheme used by our jdbc driver.
@@ -77,7 +78,7 @@ public class ClientTypes {
     private ClientTypes() {
     }
 
-    static String getTypeString(int type) {
+    public static String getTypeString(int type) {
         switch (type) {
         case BIGINT:
             return "BIGINT";
@@ -197,5 +198,49 @@ public class ClientTypes {
         default:
             return 0;
         }
+    }
+    
+    public static boolean canConvert(Object value, int toType) {
+    	Class<?> clazz = value.getClass();
+    	// Everything can convert to String
+    	if (clazz == String.class)
+    		return true; 
+    	switch (toType) {
+        case ClientTypes.BIGINT:
+        case ClientTypes.BIT:
+        case ClientTypes.BOOLEAN:
+        case ClientTypes.CHAR:
+        case ClientTypes.DECIMAL:
+        case ClientTypes.DOUBLE:
+        case ClientTypes.INTEGER:
+        case ClientTypes.LONGVARCHAR:
+        case ClientTypes.REAL:
+        case ClientTypes.SMALLINT:
+        	return clazz == boolean.class ||
+        		   clazz == Boolean.class ||
+        		   clazz == double.class ||
+        		   clazz == Double.class ||
+        		   clazz == float.class ||
+        		   clazz == Float.class ||
+        		   clazz == int.class ||
+        		   clazz == Integer.class ||
+        		   clazz == long.class ||
+        		   clazz == Long.class ||
+        		   clazz == short.class ||
+        		   clazz == Short.class ||
+        		   clazz == BigDecimal.class;
+        case ClientTypes.BINARY:
+        case ClientTypes.BLOB:
+        	return clazz == boolean.class ||
+        		   clazz == Boolean.class ||
+        	       clazz == byte.class ||
+        	       clazz == Byte.class ||
+        	       clazz == byte[].class;
+        case ClientTypes.VARBINARY:
+        	return clazz == byte[].class;
+        case ClientTypes.VARCHAR:
+        	return clazz == char[].class;
+    	}
+    	return false;
     }
 }

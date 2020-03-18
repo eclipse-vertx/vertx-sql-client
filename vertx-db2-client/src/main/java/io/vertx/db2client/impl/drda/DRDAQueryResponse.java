@@ -117,14 +117,49 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
     }
     
     /**
+     * Parse the reply for the Open Query Command. This method handles the
+     * parsing of all command replies and reply data for the opnqry command.
+     */
+    public void readBeginOpenQuery() { // @AGG removed callback StatementCallbackInterface statementI) {
+    	startSameIdChainParse();
+        int peekCP = peekCodePoint();
+
+        if (peekCP == CodePoint.OPNQRYRM) {
+        	parseBeginOpenQuery();
+//            parseOpenQuery(); // @AGG removed callback statementI);
+//            peekCP = peekCodePoint();
+//            if (peekCP == CodePoint.RDBUPDRM) {
+//                parseRDBUPDRM();
+//                peekCP = peekCodePoint();
+//            }
+        } else if (peekCP == CodePoint.RDBUPDRM) {
+            parseRDBUPDRM();
+            parseBeginOpenQuery();
+//            parseOpenQuery(); // @AGG removed callback statementI);
+//            peekCP = peekCodePoint();
+        } else if (peekCP == CodePoint.OPNQFLRM) {
+            // parseOpenQueryFailure(); // @AGG removed callback statementI);
+            throw new UnsupportedOperationException("OPNQFLRM");
+            //peekCP = peekCodePoint();
+        } else {
+        	throwUnknownCodepoint(peekCP);
+            // parseOpenQueryError(); // @AGG removed callback statementI);
+            throw new UnsupportedOperationException("parseOpenQueryError");
+            //peekCP = peekCodePoint();
+        }
+
+//        if (peekCP == CodePoint.PBSD) {
+//            parsePBSD();
+//        }
+    }
+    
+    /**
      * Reads the following items:
-     * - SQLDA Reply Data (SQLDARD)
      * - Open Query Complete (OPNQRYRM)
      * - Query Answer Set Description (QRYDSC)
      * Does NOT parse result data
      */
-    public void readBeginOpenQuery() {
-        startSameIdChainParse();
+    private void parseBeginOpenQuery() {
         int peekCP = peekCodePoint();
         
         if (peekCP == CodePoint.OPNQRYRM) {

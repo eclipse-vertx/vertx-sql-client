@@ -55,8 +55,6 @@ class DB2Encoder extends ChannelOutboundHandlerAdapter {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-    	if (LOG.isDebugEnabled())
-    		LOG.debug(">>> ENCODE " + msg);
         if (msg instanceof CommandBase<?>) {
             CommandBase<?> cmd = (CommandBase<?>) msg;
             write(cmd);
@@ -84,40 +82,44 @@ class DB2Encoder extends ChannelOutboundHandlerAdapter {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private CommandCodec<?, ?> wrap(CommandBase<?> cmd) {
+    	CommandCodec<?,?> codec = null;
         if (cmd instanceof InitialHandshakeCommand) {
-            return new InitialHandshakeCommandCodec((InitialHandshakeCommand) cmd);
+            codec = new InitialHandshakeCommandCodec((InitialHandshakeCommand) cmd);
         } else if (cmd instanceof SimpleQueryCommand) {
-            return new SimpleQueryCommandCodec((SimpleQueryCommand) cmd);
+            codec = new SimpleQueryCommandCodec((SimpleQueryCommand) cmd);
         } else if (cmd instanceof ExtendedQueryCommand) {
-            return new ExtendedQueryCommandCodec((ExtendedQueryCommand) cmd);
+            codec = new ExtendedQueryCommandCodec((ExtendedQueryCommand) cmd);
         } else if (cmd instanceof ExtendedBatchQueryCommand<?>) {
-          return new ExtendedBatchQueryCommandCodec<>((ExtendedBatchQueryCommand<?>) cmd);
+          codec = new ExtendedBatchQueryCommandCodec<>((ExtendedBatchQueryCommand<?>) cmd);
         } else if (cmd instanceof CloseConnectionCommand) {
-            return new CloseConnectionCommandCodec((CloseConnectionCommand) cmd);
+            codec = new CloseConnectionCommandCodec((CloseConnectionCommand) cmd);
         } else if (cmd instanceof PrepareStatementCommand) {
-            return new PrepareStatementCodec((PrepareStatementCommand) cmd);
+            codec = new PrepareStatementCodec((PrepareStatementCommand) cmd);
         } else if (cmd instanceof CloseStatementCommand) {
-            return new CloseStatementCommandCodec((CloseStatementCommand) cmd);
+            codec = new CloseStatementCommandCodec((CloseStatementCommand) cmd);
         } else if (cmd instanceof CloseCursorCommand) {
-            return new CloseCursorCommandCodec((CloseCursorCommand) cmd);
+            codec = new CloseCursorCommandCodec((CloseCursorCommand) cmd);
 //        } else if (cmd instanceof PingCommand) {
-//            return new PingCommandCodec((PingCommand) cmd);
+//            codec = new PingCommandCodec((PingCommand) cmd);
 //        } else if (cmd instanceof InitDbCommand) {
-//            return new InitDbCommandCodec((InitDbCommand) cmd);
+//            codec = new InitDbCommandCodec((InitDbCommand) cmd);
             // } else if (cmd instanceof StatisticsCommand) {
-            // return new StatisticsCommandCodec((StatisticsCommand) cmd);
+            // codec = new StatisticsCommandCodec((StatisticsCommand) cmd);
             // } else if (cmd instanceof SetOptionCommand) {
-            // return new SetOptionCommandCodec((SetOptionCommand) cmd);
+            // codec = new SetOptionCommandCodec((SetOptionCommand) cmd);
             // } else if (cmd instanceof ResetConnectionCommand) {
-            // return new ResetConnectionCommandCodec((ResetConnectionCommand) cmd);
+            // codec = new ResetConnectionCommandCodec((ResetConnectionCommand) cmd);
             // } else if (cmd instanceof DebugCommand) {
-            // return new DebugCommandCodec((DebugCommand) cmd);
+            // codec = new DebugCommandCodec((DebugCommand) cmd);
             // } else if (cmd instanceof ChangeUserCommand) {
-            // return new ChangeUserCommandCodec((ChangeUserCommand) cmd);
+            // codec = new ChangeUserCommandCodec((ChangeUserCommand) cmd);
         } else {
             UnsupportedOperationException uoe = new UnsupportedOperationException("Unsupported command type: " + cmd);
             LOG.error(uoe);
             throw uoe;
         }
+        if (LOG.isDebugEnabled())
+    		LOG.debug(">>> ENCODE " + codec);
+        return codec;
     }
 }

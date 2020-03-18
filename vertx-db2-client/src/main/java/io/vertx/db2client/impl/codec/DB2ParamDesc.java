@@ -15,8 +15,9 @@
  */
 package io.vertx.db2client.impl.codec;
 
+import io.vertx.db2client.impl.drda.ClientTypes;
 import io.vertx.db2client.impl.drda.ColumnMetaData;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.impl.ErrorMessageFactory;
 import io.vertx.sqlclient.impl.ParamDesc;
 import io.vertx.sqlclient.impl.TupleInternal;
 
@@ -34,27 +35,17 @@ class DB2ParamDesc extends ParamDesc {
 
     public String prepare(TupleInternal values) {
         if (values.size() != paramDefinitions.columns_) {
-            return buildReport(values);
+        	return ErrorMessageFactory.buildWhenArgumentsLengthNotMatched(paramDefinitions.columns_, values.size());
         }
-        // TODO @AGG perform parameter type checking here
+        for (int i = 0; i < paramDefinitions.columns_; i++) {
+        	Object val = values.getValue(i);
+        	int type =  paramDefinitions.types_[i];
+        	if (!ClientTypes.canConvert(val, type)) {
+        		return "Parameter at position [" + i + "] with class = [" + val.getClass() + 
+        				"] cannot be coerced to [" + ClientTypes.getTypeString(type) + "] for encoding";
+        	}
+        }
         return null;
     }
 
-    private String buildReport(Tuple values) {
-        StringBuilder sb = new StringBuilder("Values [");
-        for (int i = 0; i < values.size(); i++) {
-            sb.append(values.getValue(i));
-            if (i < values.size() - 1)
-                sb.append(", ");
-        }
-        sb.append("] cannot be coerced to [");
-        for (int i = 0; i < paramDefinitions.columns_; i++) {
-            // TODO: @AGG print class name here instead of DB type number
-            sb.append(paramDefinitions.types_[i]);
-            if (i < values.size() - 1)
-                sb.append(", ");
-        }
-        sb.append("]");
-        return sb.toString();
-    }
 }

@@ -33,7 +33,7 @@ public enum ClientConfig {
 
   CONNECT() {
     @Override
-    Connector<SqlConnection> connect(Vertx vertx, SqlConnectOptions options) {
+    public Connector<SqlConnection> connect(Vertx vertx, SqlConnectOptions options) {
       return new Connector<SqlConnection>() {
         @Override
         public void connect(Handler<AsyncResult<SqlConnection>> handler) {
@@ -55,7 +55,7 @@ public enum ClientConfig {
 
   POOLED() {
     @Override
-    Connector<SqlConnection> connect(Vertx vertx, SqlConnectOptions options) {
+    public Connector<SqlConnection> connect(Vertx vertx, SqlConnectOptions options) {
       DB2Pool pool = DB2Pool.pool(new DB2ConnectOptions(options.toJson()), new PoolOptions().setMaxSize(1));
       return new Connector<SqlConnection>() {
         @Override
@@ -77,6 +77,6 @@ public enum ClientConfig {
     }
   };
 
-  abstract <C extends SqlClient> Connector<C> connect(Vertx vertx, SqlConnectOptions options);
+  public abstract <C extends SqlClient> Connector<C> connect(Vertx vertx, SqlConnectOptions options);
 
 }
