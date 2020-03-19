@@ -19,6 +19,8 @@ import java.math.BigDecimal;
 import java.util.stream.Collector;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.db2client.impl.DB2RowImpl;
 import io.vertx.db2client.impl.drda.Cursor;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
@@ -27,6 +29,8 @@ import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.RowDecoder;
 
 class RowResultDecoder<C, R> extends RowDecoder<C, R> {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(RowResultDecoder.class);
 
     final DB2RowDesc rowDesc;
     final Cursor cursor;
@@ -57,6 +61,9 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
                 o = Numeric.create((BigDecimal) o);
             }
             row.addValue(o);
+        }
+        if (LOG.isDebugEnabled()) {
+        	LOG.debug("decoded row values: " + row);
         }
         return row;
     }

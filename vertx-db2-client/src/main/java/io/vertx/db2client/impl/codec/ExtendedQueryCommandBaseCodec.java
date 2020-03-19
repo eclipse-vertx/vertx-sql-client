@@ -24,6 +24,7 @@ import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommandBase;
 
@@ -46,9 +47,7 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
     		return;
     	}
 	    
-		Object[] inputs = new Object[params.size()];
-		for (int j = 0; j < params.size(); j++)
-			inputs[j] = params.getValue(j);
+		Object[] inputs = sanitize(params);
 		if (queryInstance.cursor == null) {
 			queryRequest.writeOpenQuery(statement.section, encoder.socketConnection.database(), cmd.fetch(),
 					ResultSet.TYPE_FORWARD_ONLY, statement.paramDesc.paramDefinitions(), inputs);
@@ -59,9 +58,7 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
 	}
 
 	void encodePreparedUpdate(DRDAQueryRequest queryRequest, Tuple params) {
-		Object[] inputs = new Object[params.size()];
-		for (int i = 0; i < params.size(); i++)
-			inputs[i] = params.getValue(i);
+		Object[] inputs = sanitize(params);
 		boolean outputExpected = false; // TODO @AGG implement later, is true if result set metadata num columns > 0
 		boolean chainAutoCommit = true;
 		queryRequest.writeExecute(statement.section, encoder.socketConnection.database(),
@@ -98,5 +95,16 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
 	static <A, T> T emptyResult(Collector<Row, A, T> collector) {
 		return collector.finisher().apply(collector.supplier().get());
 	}
-
+	
+	private static Object[] sanitize(Tuple params) {
+		Object[] inputs = new Object[params.size()];
+		for (int i = 0; i < params.size(); i++) {
+			Object val = params.getValue(i);
+			if (val instanceof Numeric)
+				val = ((Numeric) val).bigDecimalValue();
+			inputs[i] = val;
+		}
+		return inputs;
+	}
+	
 }

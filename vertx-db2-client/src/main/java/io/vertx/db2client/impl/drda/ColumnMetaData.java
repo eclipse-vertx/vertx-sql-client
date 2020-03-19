@@ -15,10 +15,8 @@
  */
 package io.vertx.db2client.impl.drda;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ColumnMetaData {
     
@@ -39,8 +37,9 @@ public class ColumnMetaData {
     public int[] sqlPrecision_; // adjusted sqllen;
     public int[] sqlScale_;
     public long[] sqlLength_;  // This is maximum length for varchar fields
-    // These are the sql types, for use only by ResultSetMetaData, other code should use jdbcTypes_.
-    // sqlTypes_ is currently not set for input column meta data.
+    /**
+     * The DB2 type number. See <code>DRDAConstants#DB2_SQLTYPE_*</code> constants
+     */
     public int[] sqlType_;
     public int[] sqlCcsid_;
     
@@ -66,6 +65,9 @@ public class ColumnMetaData {
     // For performance only, not part of logical model.
     public transient int[][] protocolTypesCache_ = null;
     
+    /**
+     * The client side SQL type. See {@link ClientTypes} constants
+     */
     public transient int[] types_;
     public transient int[] clientParamtertype_;
 
@@ -105,21 +107,48 @@ public class ColumnMetaData {
     }
     
     public List<String> getColumnNames() {
-    	// Prefer column names from SQLDXGRP if set
-    	if (!isNull(sqlxName_))
-    		return Collections.unmodifiableList(Stream.of(sqlxName_).collect(Collectors.toList()));
-    	// Otherwise use column names from SQLDOPTGRP
-    	if (sqlName_ != null && sqlName_.length > 0)
-    		return Collections.unmodifiableList(Stream.of(sqlName_).collect(Collectors.toList()));
-    	return Collections.emptyList();
+    	List<String> cols = new ArrayList<>(columns_);
+    	for (int i = 0; i < columns_; i++) {
+    		cols.add(i, getColumnName(i));
+    	}
+    	return cols;
     }
     
-    private static boolean isNull(String[] arr) {
-    	if (arr == null || arr.length == 0)
-    		return true;
-    	for (String s : arr)
-    		if (s != null)
-    			return false;
-    	return true;
+    public String getColumnName(int i) {
+    	// Prefer column names from SQLDXGRP if set
+    	if (sqlxName_ != null && i < sqlxName_.length && sqlxName_[i] != null)
+    		return sqlxName_[i];
+    	// Otherwise use column names from SQLDOPTGRP
+    	if (sqlName_ != null && i < sqlName_.length)
+    		return sqlName_[i];
+    	return null;
     }
+    
+    @Override
+    public String toString() {
+    	StringBuilder sb = new StringBuilder(super.toString());
+    	sb.append("{");
+    	for (int i = 0; i < columns_; i++) {
+    		sb.append("{name=");
+    		sb.append(getColumnName(i));
+    		sb.append(", type=");
+    		if (types_ != null && i < types_.length) {
+    			sb.append(types_[i]);
+    			sb.append("/");
+    			sb.append(ClientTypes.getTypeString(types_[i]));
+    		} else {
+    			sb.append("null");
+    		}
+    		sb.append(", nullable=");
+    		if (nullable_ != null && i < nullable_.length) {
+    			sb.append(nullable_[i]);
+    		} else {
+    			sb.append("null");
+    		}
+    		sb.append("}");
+    	}
+    	sb.append("}");
+    	return sb.toString();
+    }
+    
 }

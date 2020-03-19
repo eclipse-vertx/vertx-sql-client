@@ -20,35 +20,38 @@ import java.sql.Types;
 
 // This enumeration of types represents the typing scheme used by our jdbc driver.
 // Once this is finished, we need to review our switches to make sure they are exhaustive
-
+/**
+ * Information about DB2 data types. See: <a href=https://www.ibm.com/support/knowledgecenter/SSEPEK_12.0.0/intro/src/tpc/db2z_datatypes.html>
+ * DB2 Data Types</a>
+ */
 public class ClientTypes {
     // -------------------------------- Driver types
     // -------------------------------------------------
 
-    final static int BIT = Types.BIT; // -7;
+	public final static int BIT = Types.BIT; // -7;
 
     // Not currently supported as a DB2 column type. Mapped to SMALLINT.
     // final static int TINYINT = Types.TINYINT; // -6;
 
-    final static int BOOLEAN = Types.BOOLEAN; // 16;
+    public final static int BOOLEAN = Types.BOOLEAN; // 16;
 
-    final static int SMALLINT = Types.SMALLINT; // 5;
+    public final static int SMALLINT = Types.SMALLINT; // 5;
 
-    final static int INTEGER = Types.INTEGER; // 4;
+    public final static int INTEGER = Types.INTEGER; // 4;
 
-    final static int BIGINT = Types.BIGINT; // -5;
+    public final static int BIGINT = Types.BIGINT; // -5;
 
     // We type using DOUBLE
     // final static int FLOAT = Types.FLOAT; // 6;
 
-    final static int REAL = Types.REAL; // 7;
+    public final static int REAL = Types.REAL; // 7;
 
-    final static int DOUBLE = Types.DOUBLE; // 8;
+    public final static int DOUBLE = Types.DOUBLE; // 8;
 
     // We type using DECIMAL
     // final static int NUMERIC = Types.NUMERIC; // 2;
 
-    final static int DECIMAL = Types.DECIMAL; // 3;
+    public final static int DECIMAL = Types.DECIMAL; // 3;
 
     public final static int CHAR = Types.CHAR; // 1;
 
@@ -56,11 +59,11 @@ public class ClientTypes {
 
     public final static int LONGVARCHAR = Types.LONGVARCHAR; // -1;
 
-    final static int DATE = Types.DATE; // 91;
+    public final static int DATE = Types.DATE; // 91;
 
-    final static int TIME = Types.TIME; // 92;
+    public final static int TIME = Types.TIME; // 92;
 
-    final static int TIMESTAMP = Types.TIMESTAMP; // 93;
+    public final static int TIMESTAMP = Types.TIMESTAMP; // 93;
 
     public final static int BINARY = Types.BINARY; // -2;
 
@@ -236,6 +239,15 @@ public class ClientTypes {
         	       clazz == byte.class ||
         	       clazz == Byte.class ||
         	       clazz == byte[].class;
+        case ClientTypes.DATE:
+        	return clazz == java.time.LocalDate.class ||
+        		   clazz == java.sql.Date.class;
+        case ClientTypes.TIME:
+        	return clazz == java.time.LocalTime.class ||
+        	       clazz == java.sql.Time.class;
+        case ClientTypes.TIMESTAMP:
+        	return clazz == java.time.LocalDateTime.class ||
+        	       clazz == java.sql.Timestamp.class;
         case ClientTypes.VARBINARY:
         	return clazz == byte[].class;
         case ClientTypes.VARCHAR:

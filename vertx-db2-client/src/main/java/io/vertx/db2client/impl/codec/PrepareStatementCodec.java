@@ -16,6 +16,8 @@
 package io.vertx.db2client.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.db2client.impl.drda.ColumnMetaData;
 import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
@@ -26,6 +28,8 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 
 class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareStatementCommand> {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(PrepareStatementCodec.class);
 
     private static enum CommandHandlerState {
         INIT, 
@@ -74,6 +78,9 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
             response.readPrepareDescribeInputOutput();
             rowDesc = response.getOutputColumnMetaData();
             paramDesc = response.getInputColumnMetaData();
+            if (LOG.isDebugEnabled()) {
+            	LOG.debug("Prepared parameters: " + paramDesc);
+            }
             handleColumnDefinitionsDecodingCompleted();
             commandHandlerState = CommandHandlerState.COLUMN_DEFINITIONS_DECODING_COMPLETED;
             break;

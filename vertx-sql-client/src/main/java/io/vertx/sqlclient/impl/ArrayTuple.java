@@ -88,4 +88,17 @@ public class ArrayTuple implements TupleInternal {
     }
     values[pos] = value;
   }
+  
+  @Override
+  public String toString() {
+	StringBuilder sb = new StringBuilder();
+	sb.append("[");
+	for (int i = 0; i < size; i++) {
+	  sb.append(values[i]);
+	  if (i + 1 < size)
+	    sb.append(",");
+	}
+	sb.append("]");
+	return sb.toString();
+  }
 }
