@@ -18,6 +18,8 @@ package io.vertx.db2client.impl.drda;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Types;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -72,8 +74,8 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
 
 //        if (((NetStatement) materialStatement).statement_.cursorAttributesToSendOnPrepare_ != null) {
             //buildSQLATTRcommandData(((NetStatement) materialStatement).statement_.cursorAttributesToSendOnPrepare_);
-        buildSQLATTRcommandData("FOR READ ONLY "); // @AGG assuming readonly (query)
-//        }
+        String cursorAttrs = isQuery(sql) ? "FOR READ ONLY " : "FOR UPDATE ";
+        buildSQLATTRcommandData(cursorAttrs);
 
         buildSQLSTTcommandData(sql);  // statement follows in sqlstt command data object
     }
@@ -699,7 +701,6 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
 
                         }
                         break;
-
                     case DRDAConstants.DRDA_TYPE_NBOOLEAN:
                         buffer.writeBoolean(((Boolean) inputs[i]).booleanValue());
                         break;
@@ -716,34 +717,27 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                         buffer.writeDouble(((Double) inputs[i]).doubleValue());
                         break;
                     case DRDAConstants.DRDA_TYPE_NDECIMAL:
-                        writeBigDecimal((BigDecimal) inputs[i], (protocolTypesAndLengths[i][1] >> 8) & 0xff, // described
-                                                                                                             // precision
-                                                                                                             // not
-                                                                                                             // actual
+                        writeBigDecimal((BigDecimal) inputs[i], (protocolTypesAndLengths[i][1] >> 8) & 0xff, // described precision not actual
                                 protocolTypesAndLengths[i][1] & 0xff); // described scale, not actual
                         break;
                     case DRDAConstants.DRDA_TYPE_NDATE:
-                        throw new UnsupportedOperationException("DRDA_TYPE_NDATE");
-//                        // The value may be a Date if it comes from one of the
-//                        // methods that don't specify the calendar, or a
-//                        // DateTimeValue if it comes from a method that does
-//                        // specify the calendar. Convert to DateTimeValue if
-//                        // needed.
-//                        DateTimeValue dateVal = (inputs[i] instanceof Date) ? new DateTimeValue((Date) inputs[i])
-//                                : (DateTimeValue) inputs[i];
-//                        writeDate(dateVal);
-//                        break;
+                        if (inputs[i] instanceof LocalDate) {
+                        	writeDate((LocalDate) inputs[i]);
+                        } else if (inputs[i] instanceof java.sql.Date) {
+                        	writeDate((java.sql.Date) inputs[i]);
+                        } else {
+                        	throw new UnsupportedOperationException("Unsupported input type for DATE column: " + inputs[i].getClass());
+                        }
+                        break;
                     case DRDAConstants.DRDA_TYPE_NTIME:
-                        throw new UnsupportedOperationException("DRDA_TYPE_NTIME");
-//                        // The value may be a Time if it comes from one of the
-//                        // methods that don't specify the calendar, or a
-//                        // DateTimeValue if it comes from a method that does
-//                        // specify the calendar. Convert to DateTimeValue if
-//                        // needed.
-//                        DateTimeValue timeVal = (inputs[i] instanceof Time) ? new DateTimeValue((Time) inputs[i])
-//                                : (DateTimeValue) inputs[i];
-//                        writeTime(timeVal);
-//                        break;
+                    	if (inputs[i] instanceof LocalTime) {
+                        	writeTime((LocalTime) inputs[i]);
+                        } else if (inputs[i] instanceof java.sql.Time) {
+                        	writeTime((java.sql.Time) inputs[i]);
+                        } else {
+                        	throw new UnsupportedOperationException("Unsupported input type for TIME column: " + inputs[i].getClass());
+                        }
+                    	break;
                     case DRDAConstants.DRDA_TYPE_NTIMESTAMP:
                         throw new UnsupportedOperationException("DRDA_TYPE_NTIMESTAMP");
 //                        // The value may be a Timestamp if it comes from one of
@@ -1671,14 +1665,14 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
 //            write2Bytes(0xffff);
         } else {
             if (Typdef.typdef.isCcsidMbcSet()) {
-            byte[] sqlBytes = string.getBytes(Typdef.typdef.getCcsidMbcEncoding());
-            buffer.writeByte(0x00);
+            	byte[] sqlBytes = string.getBytes(Typdef.typdef.getCcsidMbcEncoding());
+            	buffer.writeByte(0x00);
 //                write1Byte(0x00);
-            buffer.writeInt(sqlBytes.length);
+            	buffer.writeInt(sqlBytes.length);
 //                write4Bytes(sqlBytes.length);
-            buffer.writeBytes(sqlBytes);
+            	buffer.writeBytes(sqlBytes);
 //                writeBytes(sqlBytes, sqlBytes.length);
-            buffer.writeByte(0xff);
+            	buffer.writeByte(0xff);
 //                write1Byte(0xff);
             } else {
                 byte[] sqlBytes = string.getBytes(Typdef.typdef.getCcsidSbcEncoding());

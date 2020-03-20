@@ -60,4 +60,12 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
         }
         completionHandler.handle(CommandResponse.success(true));
     }
+    
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(super.toString());
+		sb.append(", params=");
+		sb.append(cmd.params());
+		return sb.toString();
+	}
 }

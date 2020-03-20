@@ -24,14 +24,20 @@ import io.vertx.sqlclient.impl.command.QueryCommandBase;
 abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends CommandCodec<Boolean, C> {
 
     protected ColumnMetaData columnDefinitions;
+    protected final boolean isQuery;
 
     QueryCommandBaseCodec(C cmd) {
         super(cmd);
+        this.isQuery = DRDAQueryRequest.isQuery(cmd.sql());
     }
 
     @Override
     public String toString() {
-        return super.toString() + " sql=" + cmd.sql() + ", autoCommit=" + cmd.autoCommit();
+    	StringBuilder sb = new StringBuilder(super.toString());
+        sb.append(" sql=" + cmd.sql());
+        if (!isQuery)
+          sb.append(", autoCommit=" + cmd.autoCommit());
+        return sb.toString();
     }
     
     @Override
@@ -41,7 +47,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
         ByteBuf packet = allocateBuffer();
         int packetStartIdx = packet.writerIndex();
         DRDAQueryRequest req = new DRDAQueryRequest(packet);
-        if (DRDAQueryRequest.isQuery(cmd.sql())) {
+        if (isQuery) {
         	encodeQuery(req);
         } else {
         	encodeUpdate(req);
@@ -57,7 +63,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     
     @Override
     void decodePayload(ByteBuf payload, int payloadLength) {
-        if (DRDAQueryRequest.isQuery(cmd.sql())) {
+        if (isQuery) {
             decodeQuery(payload);
         } else {
             decodeUpdate(payload);

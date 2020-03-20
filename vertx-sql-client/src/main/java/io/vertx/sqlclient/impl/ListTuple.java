@@ -19,6 +19,7 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.sqlclient.Tuple;
 
+import java.util.Iterator;
 import java.util.List;
 
 public class ListTuple implements TupleInternal {
@@ -53,5 +54,10 @@ public class ListTuple implements TupleInternal {
   @Override
   public void clear() {
     list.clear();
+  }
+  
+  @Override
+  public String toString() {
+	  return list == null ? null : list.toString();
   }
 }

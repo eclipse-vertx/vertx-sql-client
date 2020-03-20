@@ -31,6 +31,8 @@ import java.sql.Ref;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Locale;
 
@@ -595,10 +597,10 @@ final class CrossConverters {
                 return new BigDecimal(source);
 
             case Types.DATE:
-                return date_valueOf(source, null);
+                return getDateFromString(source);
 
             case Types.TIME:
-                return time_valueOf(source, null);
+                return getTimeFromString(source);
 
             case Types.TIMESTAMP:
                 return timestamp_valueOf(source, null);
@@ -1152,53 +1154,22 @@ final class CrossConverters {
 
     //---------------------------- getDate*() methods ----------------------------
 
-    static final Date getDateFromString(String source, Calendar cal) {
-            return date_valueOf(source, cal);
+    static final LocalDate getDateFromString(String source) {
+    	return LocalDate.parse(source);
+//            return date_valueOf(source);
     }
 
     //---------------------------- getTime*() methods ----------------------------
 
-    static final Time getTimeFromString(String source, Calendar cal) {
-            return time_valueOf(source, cal);
+    static final LocalTime getTimeFromString(String source) {
+    	return LocalTime.parse(source);
+//            return time_valueOf(source, cal);
     }
 
     //---------------------------- getTimestamp*() methods -----------------------
 
     static final Timestamp getTimestampFromString(String source, Calendar cal) {
             return timestamp_valueOf(source, cal);
-    }
-
-    /**
-     * Convert a string to a date in the specified calendar. Accept the same
-     * format as {@code Date.valueOf()}.
-     *
-     * @param s the string to parse
-     * @param cal the calendar (or null to use the default calendar)
-     * @return a {@code Date} value that represents the date in the
-     * calendar {@code cal}
-     * @throws IllegalArgumentException if the format of the string is invalid
-     */
-    private static Date date_valueOf(String s, Calendar cal) {
-        String formatError = "JDBC Date format must be yyyy-mm-dd";
-        if (s == null) {
-            throw new IllegalArgumentException(formatError);
-        }
-        s = s.trim();
-
-        if (cal == null) {
-            return Date.valueOf(s);
-        }
-
-        cal.clear();
-        initDatePortion(cal, s);
-
-        // Normalize time components as specified by java.util.Date.
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-
-        return new Date(cal.getTimeInMillis());
     }
 
     /**
@@ -1250,35 +1221,6 @@ final class CrossConverters {
             throw new IllegalArgumentException();
         }
         return result;
-    }
-
-    /**
-     * Convert a string to a time in the specified calendar. Accept the same
-     * format as {@code java.sql.Time.valueOf()}.
-     *
-     * @param s the string to parse
-     * @param cal the calendar (or null to use the default calendar)
-     * @return a {@code java.sql.Time} value that represents the time in the
-     * calendar {@code cal}
-     * @throws IllegalArgumentException if the format of the string is invalid
-     */
-    private static Time time_valueOf(String s, Calendar cal) {
-        if (s == null) {
-            throw new IllegalArgumentException();
-        }
-        s = s.trim();
-
-        if (cal == null) {
-            return Time.valueOf(s);
-        }
-
-        cal.clear();
-        initTimePortion(cal, s);
-
-        // Normalize date components as specified by java.sql.Time.
-        cal.set(1970, Calendar.JANUARY, 1);
-
-        return new Time(cal.getTimeInMillis());
     }
 
     /**

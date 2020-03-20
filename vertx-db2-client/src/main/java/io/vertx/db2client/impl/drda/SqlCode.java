@@ -15,6 +15,11 @@
  */
 package io.vertx.db2client.impl.drda;
 
+/**
+ * Possible values are documented at:
+ * <a href="https://www.ibm.com/support/knowledgecenter/SSEPEK_11.0.0/codes/src/tpc/db2z_n.html">
+ * DB2 SQL Codes</a>
+ */
 public class SqlCode {
     private int code_;
 
