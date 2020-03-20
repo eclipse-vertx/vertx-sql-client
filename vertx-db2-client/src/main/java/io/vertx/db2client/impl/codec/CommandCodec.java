@@ -26,7 +26,6 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     public Throwable failure;
     public R result;
     final C cmd;
-    int sequenceId;
     DB2Encoder encoder;
 
     CommandCodec(C cmd) {
@@ -48,7 +47,6 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     }
 
     void sendPacket(ByteBuf packet, int payloadLength) {
-//        DB2Codec.dumpBuffer(packet);
         if (payloadLength >= DB2Codec.PACKET_PAYLOAD_LENGTH_LIMIT) {
             /*
              * The original packet exceeds the limit of packet length, split the packet
@@ -63,7 +61,6 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     }
 
     void sendNonSplitPacket(ByteBuf packet) {
-        sequenceId++;
         encoder.chctx.writeAndFlush(packet);
     }
 }

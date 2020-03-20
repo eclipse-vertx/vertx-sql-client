@@ -1,8 +1,13 @@
 package io.vertx.db2client;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.rules.TestName;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -21,12 +26,17 @@ public abstract class DB2TestBase {
 	protected Vertx vertx;
 	protected Connector<SqlConnection> connector;
 	protected DB2ConnectOptions options;
+	
+	@Rule
+	public TestName testName = new TestName();
 
 	@Before
 	public void setUp(TestContext ctx) throws Exception {
+		System.out.println(">>> BEGIN " + testName.getMethodName());
 		vertx = Vertx.vertx();
 		initConnector();
-		cleanTestTable(ctx);
+		for (String table : tablesToClean())
+			cleanTestTable(ctx, table);
 	}
 
 	@After
@@ -44,12 +54,16 @@ public abstract class DB2TestBase {
 		connector.connect(handler);
 	}
 
-	protected void cleanTestTable(TestContext ctx) {
+	protected void cleanTestTable(TestContext ctx, String table) {
 		connect(ctx.asyncAssertSuccess(conn -> {
-			conn.query("DELETE FROM mutable", ctx.asyncAssertSuccess(result -> {
+			conn.query("DELETE FROM " + table, ctx.asyncAssertSuccess(result -> {
 				conn.close();
 			}));
 		}));
+	}
+	
+	protected List<String> tablesToClean() {
+		return Collections.emptyList();
 	}
 
 }
