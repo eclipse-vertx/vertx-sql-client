@@ -27,7 +27,7 @@ public class CCSIDConstants {
     public static final Charset EBCDIC = Charset.forName("CP1047");
     public static final Charset UTF8 = StandardCharsets.UTF_8;
     
-    private static Charset currentCCSID = EBCDIC;
+    public static Charset currentCCSID = EBCDIC;
     
     public static Charset getCCSID() {
         return currentCCSID;

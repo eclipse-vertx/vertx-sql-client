@@ -71,6 +71,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
                 int packetStartIdx = packet.writerIndex();
                 DRDAConnectRequest securityCheck = new DRDAConnectRequest(packet);
                 correlationToken = securityCheck.getCorrelationToken(encoder.socketConnection.socket().localAddress().port());
+                CCSIDConstants.currentCCSID = CCSIDConstants.UTF8;
                 securityCheck.buildSECCHK(TARGET_SECURITY_MEASURE,
                         cmd.database(),
                         cmd.username(),
@@ -103,7 +104,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
         int packetStartIdx = packet.writerIndex();
         DRDAConnectRequest cmd = new DRDAConnectRequest(packet);
         cmd.buildEXCSAT(DRDAConstants.EXTNAM, // externalName,
-                0x07, // 0x0A, // targetAgent,
+                0x07, //0x0A, // targetAgent,
                 DRDAConstants.TARGET_SQL_AM, // targetSqlam,
                 0x0C, // targetRdb,
                 TARGET_SECURITY_MEASURE, //targetSecmgr,

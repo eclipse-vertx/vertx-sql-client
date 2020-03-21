@@ -76,8 +76,8 @@ public class DRDAConnectRequest extends DRDARequest {
 //            constructCrrtkn();
 //        }
 
-        Objects.requireNonNull(crrtkn);
-        buildCRRTKN(crrtkn);
+//        Objects.requireNonNull(crrtkn);
+//        buildCRRTKN(crrtkn);
 
         // This specifies the single-byte, double-byte
         // and mixed-byte CCSIDs of the Scalar Data Arrays (SDAs) in the identified
@@ -336,6 +336,8 @@ public class DRDAConnectRequest extends DRDARequest {
         if (sendCcsidMbc) {
             writeScalar2Bytes(CodePoint.CCSIDMBC, ccsidMbc);
         }
+        
+        writeScalar2Bytes(CodePoint.CCSIDXML, ccsidMbc);
 
         updateLengthBytes();
 
@@ -511,15 +513,15 @@ public class DRDAConnectRequest extends DRDARequest {
 
         // place the managers and their levels in the buffer
         buffer.writeShort(CodePoint.AGENT);
-        buffer.writeShort(agent);
+        buffer.writeShort(0x0A);//agent);
         buffer.writeShort(CodePoint.SQLAM);
-        buffer.writeShort(sqlam);
+        buffer.writeShort(0x0B);//sqlam);
         buffer.writeShort(CodePoint.UNICODEMGR);
         buffer.writeShort(unicodemgr);
         buffer.writeShort(CodePoint.RDB);
         buffer.writeShort(rdb);
         buffer.writeShort(CodePoint.SECMGR);
-        buffer.writeShort(secmgr);
+        buffer.writeShort(0x0A);//secmgr);
         buffer.writeShort(CodePoint.CMNTCPIP);// @AGG added
         buffer.writeShort(0x08);
 

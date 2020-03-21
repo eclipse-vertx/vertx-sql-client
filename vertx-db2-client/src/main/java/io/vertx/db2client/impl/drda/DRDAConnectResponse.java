@@ -15,7 +15,10 @@
  */
 package io.vertx.db2client.impl.drda;
 
+import java.net.Inet4Address;
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 
 import io.netty.buffer.ByteBuf;
 
@@ -460,10 +463,21 @@ public class DRDAConnectResponse extends DRDAResponse {
                 crrtkn = parseCRRTKN(false);
                 peekCP = peekCodePoint();
             }
-
+            
+            if (peekCP == CodePoint.SRVLST) {
+              foundInPass = true;
+              parseSRVLST();
+              peekCP = peekCodePoint();
+            }
+            
+            if (peekCP == CodePoint.IPADDR) {
+              foundInPass = true;
+              parseIPADDR();
+              peekCP = peekCodePoint();
+            }
 
             if (!foundInPass) {
-                throw new IllegalStateException("Found unknown codepoint: " + Integer.toHexString(peekCP));
+                throwUnknownCodepoint(peekCP);
                 //doPrmnsprmSemantics(peekCP);
             }
         }
@@ -518,6 +532,97 @@ public class DRDAConnectResponse extends DRDAResponse {
             return null;
         }
         return readBytes();
+    }
+    
+    private void parseSRVLST() {
+      parseLengthAndMatchCodePoint(CodePoint.SRVLST);
+      
+      pushLengthOnCollectionStack();
+      boolean foundInPass = false;
+      boolean foundServerListCount = false;
+      boolean foundServerList = false;
+      int serverListCount = 0;
+      int peekCP = peekCodePoint();
+      while (peekCP != END_OF_COLLECTION) {
+        if (peekCP == CodePoint.SRVLSTCNT) {
+          foundInPass = true;
+          foundServerListCount = true;
+          serverListCount = parseSRVLSTCNT();
+          peekCP = peekCodePoint();
+        }
+        if (peekCP == CodePoint.SRVLSRV) {
+          foundInPass = true;
+          foundServerList = true;
+          // TODO: utilize returned server list for failover/client reroute feature
+          parseSRVLSRV(serverListCount);
+          peekCP = peekCodePoint();
+        }
+        
+        if (!foundInPass)
+          throwUnknownCodepoint(peekCP);
+      }
+      popCollectionStack();
+      
+      if (!foundServerListCount)
+        throwMissingRequiredCodepoint("SRVLSTCNT", CodePoint.SRVLSTCNT);
+      if (!foundServerList)
+        throwMissingRequiredCodepoint("SRVLSRV", CodePoint.SRVLSRV);
+          
+    }
+    
+    private int parseSRVLSTCNT() {
+      parseLengthAndMatchCodePoint(CodePoint.SRVLSTCNT);
+      return readUnsignedShort();
+    }
+    
+    private List<String> parseSRVLSRV(int serverListCount) {
+      parseLengthAndMatchCodePoint(CodePoint.SRVLSRV);
+      
+      List<String> serverList = new ArrayList<>(serverListCount);
+      for (int i = 0; i < serverListCount; i++) {
+        int priority = 0;
+        boolean foundServerPriority = false;
+        int peekCP = peekCodePoint();
+        if (peekCP == CodePoint.SRVPRTY) {
+          foundServerPriority = true;
+          priority = parseSRVPRTY();
+          peekCP = peekCodePoint();
+        }
+        
+        if (peekCP == CodePoint.TCPPORTHOST) {
+          parseTCPPORTHOST(false);
+        } else if (peekCP == CodePoint.IPADDR) {
+          parseIPADDR();
+        } else {
+          throwUnknownCodepoint(peekCP);
+        }
+        
+        if (!foundServerPriority)
+          throwMissingRequiredCodepoint("SRVPRTY", CodePoint.SRVPRTY);
+      }
+      return serverList;
+    }
+    
+    private byte[] parseIPADDR() {
+      parseLengthAndMatchCodePoint(CodePoint.IPADDR);
+      return readBytes();
+    }
+    
+    private Object[] parseTCPPORTHOST(boolean skip) {
+      parseLengthAndMatchCodePoint(CodePoint.TCPPORTHOST);
+      if (skip) {
+        skipBytes();
+        return null;
+      }
+      Object[] hostPort = new Object[2];
+      hostPort[0] = readUnsignedShort();
+      hostPort[1] = readString();
+      return hostPort;
+    }
+    
+    private int parseSRVPRTY() {
+      parseLengthAndMatchCodePoint(CodePoint.SRVPRTY);
+      return readUnsignedShort();
     }
     
     // The User Id specifies an end-user name.
