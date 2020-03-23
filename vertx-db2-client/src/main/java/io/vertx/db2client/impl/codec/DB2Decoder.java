@@ -47,7 +47,7 @@ class DB2Decoder extends ByteToMessageDecoder {
             // wait until we have more bytes to read
             return;
         }
-        decodePayload(in.readRetainedSlice(payloadLength), payloadLength, in.getShort(in.readerIndex() + 4));
+        decodePayload(in.readRetainedSlice(payloadLength), payloadLength);
     }
     
     private int computeLength(ByteBuf in) {
@@ -65,9 +65,8 @@ class DB2Decoder extends ByteToMessageDecoder {
         return index;
     }
 
-    private void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
+    private void decodePayload(ByteBuf payload, int payloadLength) {
         CommandCodec<?,?> ctx = inflight.peek();
-        ctx.sequenceId = sequenceId + 1;
         int startIndex = payload.readerIndex();
         try {
             if (LOG.isDebugEnabled())
