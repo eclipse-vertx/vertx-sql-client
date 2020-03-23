@@ -39,7 +39,7 @@ public class CursorImpl implements Cursor {
 
   private String id;
   private boolean closed;
-  private SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> result;
+  private SqlResultHandler<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> result;
 
   CursorImpl(PreparedQueryImpl ps, ContextInternal context, TupleInternal params) {
     this.ps = ps;
@@ -66,13 +66,12 @@ public class CursorImpl implements Cursor {
   @Override
   public synchronized Future<RowSet<Row>> read(int count) {
     Promise<RowSet<Row>> promise = context.promise();
+    SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
     if (id == null) {
       id = UUID.randomUUID().toString();
-      result = new SqlResultBuilder<>(RowSetImpl.FACTORY, promise);
-      ps.execute(params, count, id, false, RowSetImpl.COLLECTOR, result, result);
+      result = builder.execute(ps.conn, ps.ps, ps.autoCommit, params, count, id, false, promise);
     } else if (result.isSuspended()) {
-      result = new SqlResultBuilder<>(RowSetImpl.FACTORY, promise);
-      ps.execute(params, count, id, true, RowSetImpl.COLLECTOR, result, result);
+      result = builder.execute(ps.conn, ps.ps, ps.autoCommit, params, count, id, true, promise);
     } else {
       throw new IllegalStateException();
     }

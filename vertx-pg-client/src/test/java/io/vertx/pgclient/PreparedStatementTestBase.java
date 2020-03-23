@@ -21,9 +21,10 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.pgclient.impl.util.Util;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowIterator;
+import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.RowStream;
 import io.vertx.sqlclient.Tuple;
 import org.junit.After;
@@ -35,7 +36,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -95,7 +95,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     Async async = ctx.async();
     PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6", ctx.asyncAssertSuccess(ps -> {
-        ps.execute(Tuple.of(1, 8, 4, 11, 2, 9), Collectors.toList(), ctx.asyncAssertSuccess(results -> {
+        ps.collecting(Collectors.toList()).execute(Tuple.of(1, 8, 4, 11, 2, 9), ctx.asyncAssertSuccess(results -> {
           ctx.assertEquals(6, results.size());
           List<Row> list = results.value();
           ctx.assertEquals(list.size(), 6);
@@ -108,7 +108,26 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     }));
   }
 
-/*
+  @Test
+  public void testMappedQuery(TestContext ctx) {
+    Async async = ctx.async();
+    PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT $1 :: INT4", ctx.asyncAssertSuccess(ps -> {
+        ps.mapping(row -> "" + row.getInteger(0)).execute(Tuple.of(1), ctx.asyncAssertSuccess(results -> {
+          ctx.assertEquals(1, results.size());
+          RowSet<String> rows = results.value();
+          ctx.assertEquals(rows.size(), 1);
+          RowIterator<String> it = rows.iterator();
+          ctx.assertEquals("1", it.next());
+          ps.close(ctx.asyncAssertSuccess(result -> {
+            async.complete();
+          }));
+        }));
+      }));
+    }));
+  }
+
+  /*
   @Test
   public void testQueryStream(TestContext ctx) {
     Async async = ctx.async();

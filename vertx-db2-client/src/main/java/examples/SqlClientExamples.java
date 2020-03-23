@@ -151,7 +151,7 @@ public class SqlClientExamples {
   public void usingConnections02(SqlConnection connection) {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
       if (ar1.succeeded()) {
-        PreparedQuery pq = ar1.result();
+        PreparedQuery<RowSet<Row>> pq = ar1.result();
         pq.execute(Tuple.of("andy"), ar2 -> {
           if (ar2.succeeded()) {
             // All rows
@@ -165,7 +165,7 @@ public class SqlClientExamples {
   public void usingConnections03(SqlConnection connection) {
     connection.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", ar1 -> {
       if (ar1.succeeded()) {
-        PreparedQuery prepared = ar1.result();
+        PreparedQuery<RowSet<Row>> prepared = ar1.result();
 
         // Create a query : bind parameters
         List<Tuple> batch = new ArrayList();

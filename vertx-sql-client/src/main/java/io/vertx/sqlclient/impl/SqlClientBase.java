@@ -23,7 +23,6 @@ import io.vertx.sqlclient.impl.command.CommandScheduler;
 import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
-import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Row;
@@ -73,8 +72,8 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
     Function<R1, R2> factory,
     Collector<Row, ?, R1> collector,
     Promise<R3> promise) {
-    SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, promise);
-    schedule(new SimpleQueryCommand<>(sql, singleton, autoCommit(), collector, b), b);
+    SqlResultBuilder<R1, R2, R3> builder = new SqlResultBuilder<>(factory, collector);
+    builder.execute(this, sql, autoCommit(), singleton, promise);
     return (C) this;
   }
 
@@ -108,7 +107,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
     Function<R1, R2> factory,
     Collector<Row, ?, R1> collector,
     Promise<R3> promise) {
-    SqlResultBuilder<R1, R2, R3> builder = new SqlResultBuilder<>(factory, promise);
+    SqlResultHandler<R1, R2, R3> builder = new SqlResultHandler<>(factory, promise);
     BiCommand<PreparedStatement, Boolean> abc = new BiCommand<>(new PrepareStatementCommand(sql), ps -> {
       String msg = ps.prepare(arguments);
       if (msg != null) {
@@ -175,7 +174,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
     Function<R1, R2> factory,
     Collector<Row, ?, R1> collector,
     Promise<R3> handler) {
-    SqlResultBuilder<R1, R2, R3> builder = new SqlResultBuilder<>(factory, handler);
+    SqlResultHandler<R1, R2, R3> builder = new SqlResultHandler<>(factory, handler);
     BiCommand<PreparedStatement, Boolean> abc = new BiCommand<>(new PrepareStatementCommand(sql), ps -> {
       for  (Tuple args : batch) {
         String msg = ps.prepare((TupleInternal) args);

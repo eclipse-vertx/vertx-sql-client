@@ -89,7 +89,7 @@ public interface MySQLConnection extends SqlConnection {
    */
   @Fluent
   @Override
-  MySQLConnection prepare(String sql, Handler<AsyncResult<PreparedQuery>> handler);
+  MySQLConnection prepare(String sql, Handler<AsyncResult<PreparedQuery<RowSet<Row>>>> handler);
 
   /**
    * {@inheritDoc}

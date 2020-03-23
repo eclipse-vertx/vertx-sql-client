@@ -61,7 +61,7 @@ public interface MSSQLConnection extends SqlConnection {
    */
   @Fluent
   @Override
-  MSSQLConnection prepare(String s, Handler<AsyncResult<PreparedQuery>> handler);
+  MSSQLConnection prepare(String s, Handler<AsyncResult<PreparedQuery<RowSet<Row>>>> handler);
 
   /**
    * {@inheritDoc}
