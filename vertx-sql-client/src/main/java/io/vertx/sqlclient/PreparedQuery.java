@@ -132,7 +132,7 @@ public interface PreparedQuery {
    * @return the createBatch
    */
   @GenIgnore
-  <R> PreparedQuery batch(List<Tuple> argsList, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+  <R> void batch(List<Tuple> argsList, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   /**
    * Like {@link #batch(List, Collector, Handler)} but returns a {@code Future} of the asynchronous result

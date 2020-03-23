@@ -155,12 +155,11 @@ class PreparedQueryImpl implements PreparedQuery {
   }
 
   @Override
-  public <R> PreparedQuery batch(List<Tuple> argsList, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
+  public <R> void batch(List<Tuple> argsList, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
     Future<SqlResult<R>> fut = batch(argsList, collector);
     if (handler != null) {
       fut.onComplete(handler);
     }
-    return this;
   }
 
   @Override
@@ -170,7 +169,7 @@ class PreparedQueryImpl implements PreparedQuery {
     return promise.future();
   }
 
-  private <R1, R2 extends SqlResultBase<R1>, R3 extends SqlResult<R1>> PreparedQuery batch(
+  private <R1, R2 extends SqlResultBase<R1>, R3 extends SqlResult<R1>> void batch(
     List<Tuple> argsList,
     Function<R1, R2> factory,
     Collector<Row, ?, R1> collector,
@@ -179,14 +178,13 @@ class PreparedQueryImpl implements PreparedQuery {
       String msg = ps.prepare((TupleInternal)args);
       if (msg != null) {
         handler.handle(Future.failedFuture(msg));
-        return this;
+        return;
       }
     }
     Promise<R3> p = context.promise(handler);
     SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, p);
     ExtendedBatchQueryCommand<R1> cmd = new ExtendedBatchQueryCommand<>(ps, argsList, autoCommit, collector, b);
     conn.schedule(cmd, context.promise(b));
-    return this;
   }
 
   @Override
