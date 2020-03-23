@@ -78,7 +78,7 @@ class PreparedQueryImpl implements PreparedQuery {
     return promise.future();
   }
 
-  private <R1, R2 extends SqlResultBase<R1, R2>, R3 extends SqlResult<R1>> void execute(
+  private <R1, R2 extends SqlResultBase<R1>, R3 extends SqlResult<R1>> void execute(
     Tuple args,
     Function<R1, R2> factory,
     Collector<Row, ?, R1> collector,
@@ -170,7 +170,7 @@ class PreparedQueryImpl implements PreparedQuery {
     return promise.future();
   }
 
-  private <R1, R2 extends SqlResultBase<R1, R2>, R3 extends SqlResult<R1>> PreparedQuery batch(
+  private <R1, R2 extends SqlResultBase<R1>, R3 extends SqlResult<R1>> PreparedQuery batch(
     List<Tuple> argsList,
     Function<R1, R2> factory,
     Collector<Row, ?, R1> collector,

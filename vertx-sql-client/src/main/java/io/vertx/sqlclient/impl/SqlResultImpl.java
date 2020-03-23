@@ -17,7 +17,7 @@
 
 package io.vertx.sqlclient.impl;
 
-public class SqlResultImpl<T> extends SqlResultBase<T, SqlResultImpl<T>> {
+public class SqlResultImpl<T> extends SqlResultBase<T> {
 
   private final T value;
 
@@ -29,4 +29,5 @@ public class SqlResultImpl<T> extends SqlResultBase<T, SqlResultImpl<T>> {
   public T value() {
     return value;
   }
+
 }

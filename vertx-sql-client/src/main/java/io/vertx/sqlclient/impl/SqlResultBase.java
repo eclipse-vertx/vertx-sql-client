@@ -23,12 +23,12 @@ import io.vertx.sqlclient.SqlResult;
 import java.util.List;
 import java.util.Map;
 
-public abstract class SqlResultBase<T, R extends SqlResultBase<T, R>> implements SqlResult<T> {
+public abstract class SqlResultBase<T> implements SqlResult<T> {
 
   int updated;
   List<String> columnNames;
   int size;
-  R next;
+  SqlResult<T> next;
   Map<PropertyKind<?>, Object> properties;
 
   @Override
@@ -62,7 +62,7 @@ public abstract class SqlResultBase<T, R extends SqlResultBase<T, R>> implements
   }
 
   @Override
-  public R next() {
+  public SqlResult<T> next() {
     return next;
   }
 }

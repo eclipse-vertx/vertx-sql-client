@@ -19,6 +19,7 @@ package io.vertx.sqlclient.impl;
 import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.SqlResult;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -26,7 +27,7 @@ import java.util.NoSuchElementException;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
-class RowSetImpl<R> extends SqlResultBase<RowSet<R>, RowSetImpl<R>> implements RowSet<R> {
+class RowSetImpl<R> extends SqlResultBase<RowSet<R>> implements RowSet<R> {
 
   static Collector<Row, RowSetImpl<Row>, RowSet<Row>> COLLECTOR = Collector.of(
     RowSetImpl::new,
@@ -59,5 +60,10 @@ class RowSetImpl<R> extends SqlResultBase<RowSet<R>, RowSetImpl<R>> implements R
         return i.next();
       }
     };
+  }
+
+  @Override
+  public RowSetImpl<R> next() {
+    return (RowSetImpl<R>) super.next();
   }
 }

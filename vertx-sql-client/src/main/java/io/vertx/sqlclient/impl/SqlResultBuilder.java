@@ -28,7 +28,7 @@ import java.util.function.Function;
 /**
  * A query result handler for building a {@link SqlResult}.
  */
-class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlResult<T>> implements QueryResultHandler<T>, Promise<Boolean> {
+class SqlResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> implements QueryResultHandler<T>, Promise<Boolean> {
 
   private final Promise<L> handler;
   private final Function<T, R> factory;

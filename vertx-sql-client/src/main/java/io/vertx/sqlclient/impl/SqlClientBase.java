@@ -67,7 +67,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
     return promise.future();
   }
 
-  private <R1, R2 extends SqlResultBase<R1, R2>, R3 extends SqlResult<R1>> C query(
+  private <R1, R2 extends SqlResultBase<R1>, R3 extends SqlResult<R1>> C query(
     String sql,
     boolean singleton,
     Function<R1, R2> factory,
@@ -102,7 +102,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
     return promise.future();
   }
 
-  private <R1, R2 extends SqlResultBase<R1, R2>, R3 extends SqlResult<R1>> C preparedQuery(
+  private <R1, R2 extends SqlResultBase<R1>, R3 extends SqlResult<R1>> C preparedQuery(
     String sql,
     TupleInternal arguments,
     Function<R1, R2> factory,
@@ -168,8 +168,8 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
     preparedBatch(sql, batch, SqlResultImpl::new, collector, promise);
     return promise.future();
   }
-  
-  private <R1, R2 extends SqlResultBase<R1, R2>, R3 extends SqlResult<R1>> C preparedBatch(
+
+  private <R1, R2 extends SqlResultBase<R1>, R3 extends SqlResult<R1>> C preparedBatch(
     String sql,
     List<Tuple> batch,
     Function<R1, R2> factory,
@@ -193,7 +193,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
     schedule(abc, builder);
     return (C) this;
   }
-  
+
   boolean autoCommit() {
     return true;
   }
