@@ -19,7 +19,6 @@ package io.vertx.sqlclient;
 
 import io.vertx.core.Future;
 import io.vertx.sqlclient.impl.ArrayTuple;
-import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
@@ -41,9 +40,8 @@ public interface PreparedQuery {
   /**
    * Calls {@link #execute(Tuple, Handler)} with an empty tuple argument.
    */
-  @Fluent
-  default PreparedQuery execute(Handler<AsyncResult<RowSet<Row>>> handler) {
-    return execute(ArrayTuple.EMPTY, handler);
+  default void execute(Handler<AsyncResult<RowSet<Row>>> handler) {
+    execute(ArrayTuple.EMPTY, handler);
   }
 
   /**
@@ -57,18 +55,16 @@ public interface PreparedQuery {
    * Calls {@link #execute(Tuple, Collector, Handler)} with an empty tuple argument.
    */
   @GenIgnore
-  default <R> PreparedQuery execute(Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
-    return execute(ArrayTuple.EMPTY, collector, handler);
+  default <R> void execute(Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
+    execute(ArrayTuple.EMPTY, collector, handler);
   }
 
   /**
    * Create a cursor with the provided {@code arguments}.
    *
    * @param args the list of arguments
-   * @return the query
    */
-  @Fluent
-  PreparedQuery execute(Tuple args, Handler<AsyncResult<RowSet<Row>>> handler);
+  void execute(Tuple args, Handler<AsyncResult<RowSet<Row>>> handler);
 
   /**
    * Like {@link #execute(Tuple, Handler)} but returns a {@code Future} of the asynchronous result
@@ -82,10 +78,12 @@ public interface PreparedQuery {
    *
    * @param args the list of arguments
    * @param collector the collector
-   * @return the query
    */
   @GenIgnore
-  <R> PreparedQuery execute(Tuple args, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+  <R> void execute(Tuple args, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
+
+  @GenIgnore
+  <R> Future<SqlResult<R>> execute(Tuple args, Collector<Row, ?, R> collector);
 
   /**
    * @return create a query cursor with a {@code fetch} size and empty arguments
@@ -118,10 +116,8 @@ public interface PreparedQuery {
    * Execute a batch.
    *
    * @param argsList the list of tuple for the batch
-   * @return the createBatch
    */
-  @Fluent
-  PreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<RowSet<Row>>> handler);
+  void batch(List<Tuple> argsList, Handler<AsyncResult<RowSet<Row>>> handler);
 
   /**
    * Like {@link #batch(List, Handler)} but returns a {@code Future} of the asynchronous result

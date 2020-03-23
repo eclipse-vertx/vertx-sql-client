@@ -55,33 +55,39 @@ class PreparedQueryImpl implements PreparedQuery {
   }
 
   @Override
-  public PreparedQuery execute(Tuple args, Handler<AsyncResult<RowSet<Row>>> handler) {
-    return execute((TupleInternal)args, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, context.promise(handler));
+  public void execute(Tuple args, Handler<AsyncResult<RowSet<Row>>> handler) {
+    execute(args, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, context.promise(handler));
   }
 
   @Override
   public Future<RowSet<Row>> execute(Tuple args) {
     Promise<RowSet<Row>> promise = context.promise();
-    execute((TupleInternal)args, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, promise);
+    execute(args, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, promise);
     return promise.future();
   }
 
   @Override
-  public <R> PreparedQuery execute(Tuple args, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
-    return execute((TupleInternal)args, true, SqlResultImpl::new, collector, context.promise(handler));
+  public <R> void execute(Tuple args, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
+    execute(args, SqlResultImpl::new, collector, context.promise(handler));
   }
 
-  private <R1, R2 extends SqlResultBase<R1, R2>, R3 extends SqlResult<R1>> PreparedQuery execute(
-    TupleInternal args,
-    boolean singleton,
+  @Override
+  public <R> Future<SqlResult<R>> execute(Tuple args, Collector<Row, ?, R> collector) {
+    Promise<SqlResult<R>> promise = context.promise();
+    execute(args, SqlResultImpl::new, collector, promise);
+    return promise.future();
+  }
+
+  private <R1, R2 extends SqlResultBase<R1, R2>, R3 extends SqlResult<R1>> void execute(
+    Tuple args,
     Function<R1, R2> factory,
     Collector<Row, ?, R1> collector,
     Promise<R3> handler) {
     SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, handler);
-    return execute(args, 0, null, false, collector, b, b);
+    execute((TupleInternal)args, 0, null, false, collector, b, b);
   }
 
-  <A, R> PreparedQuery execute(TupleInternal args,
+  <A, R> void execute(TupleInternal args,
                                int fetch,
                                String cursorId,
                                boolean suspended,
@@ -107,7 +113,6 @@ class PreparedQueryImpl implements PreparedQuery {
     } else {
       context.runOnContext(v -> execute(args, fetch, cursorId, suspended, collector, resultHandler, handler));
     }
-    return this;
   }
 
   @Override
@@ -135,12 +140,11 @@ class PreparedQueryImpl implements PreparedQuery {
     }
   }
 
-  public PreparedQuery batch(List<Tuple> argsList, Handler<AsyncResult<RowSet<Row>>> handler) {
+  public void batch(List<Tuple> argsList, Handler<AsyncResult<RowSet<Row>>> handler) {
     Future<RowSet<Row>> fut = batch(argsList);
     if (handler != null) {
       fut.onComplete(handler);
     }
-    return this;
   }
 
   @Override

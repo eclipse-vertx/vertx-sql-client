@@ -20,18 +20,15 @@ package io.vertx.sqlclient.impl;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.sqlclient.SqlResult;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 import io.vertx.sqlclient.PropertyKind;
 
 import java.util.HashMap;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
  * A query result handler for building a {@link SqlResult}.
  */
-public class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlResult<T>> implements QueryResultHandler<T>, Promise<Boolean> {
+class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlResult<T>> implements QueryResultHandler<T>, Promise<Boolean> {
 
   private final Promise<L> handler;
   private final Function<T, R> factory;
@@ -50,10 +47,10 @@ public class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlRes
     r.updated = updatedCount;
     r.size = size;
     r.columnNames = desc != null ? desc.columnNames() : null;
-    handleResult(r, failure);
+    handleResult(r);
   }
 
-  private void handleResult(R result, Throwable failure) {
+  private void handleResult(R result) {
     if (first == null) {
       first = result;
     } else {
