@@ -33,6 +33,7 @@ class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlResult<T>>
   private final Promise<L> handler;
   private final Function<T, R> factory;
   private R first;
+  private Throwable failure;
   private boolean suspended;
 
   SqlResultBuilder(Function<T, R> factory, Promise<L> handler) {
@@ -42,12 +43,15 @@ class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlResult<T>>
 
   @Override
   public void handleResult(int updatedCount, int size, RowDesc desc, T result, Throwable failure) {
-    R r = factory.apply(result);
-    r.failure = failure;
-    r.updated = updatedCount;
-    r.size = size;
-    r.columnNames = desc != null ? desc.columnNames() : null;
-    handleResult(r);
+    if (failure != null) {
+      this.failure = failure;
+    } else {
+      R r = factory.apply(result);
+      r.updated = updatedCount;
+      r.size = size;
+      r.columnNames = desc != null ? desc.columnNames() : null;
+      handleResult(r);
+    }
   }
 
   private void handleResult(R result) {
@@ -80,10 +84,8 @@ class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlResult<T>>
   @Override
   public boolean tryComplete(Boolean result) {
     suspended = result;
-    if (first == null) {
-      return handler.tryComplete();
-    } else if (first.failure != null) {
-      return handler.tryFail(first.failure);
+    if (failure != null) {
+      return handler.tryFail(failure);
     } else {
       return handler.tryComplete((L) first);
     }
