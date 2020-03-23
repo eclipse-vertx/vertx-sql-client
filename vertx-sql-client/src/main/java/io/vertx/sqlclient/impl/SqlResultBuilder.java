@@ -33,6 +33,7 @@ class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlResult<T>>
   private final Promise<L> handler;
   private final Function<T, R> factory;
   private R first;
+  private R current;
   private Throwable failure;
   private boolean suspended;
 
@@ -55,24 +56,20 @@ class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlResult<T>>
   }
 
   private void handleResult(R result) {
-    if (first == null) {
+    R c = current;
+    if (c == null) {
       first = result;
+      current = result;
     } else {
-      R h = first;
-      while (h.next != null) {
-        h = h.next;
-      }
-      h.next = result;
+      c.next = result;
+      current = result;
     }
   }
 
   @Override
   public <V> void addProperty(PropertyKind<V> property, V value) {
-    if (first != null) {
-      R r = first;
-      while (r.next != null) {
-        r = r.next;
-      }
+    R r = this.current;
+    if (r != null) {
       if (r.properties == null) {
         // lazy init
         r.properties = new HashMap<>();
