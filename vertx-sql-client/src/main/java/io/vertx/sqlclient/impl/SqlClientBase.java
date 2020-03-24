@@ -18,6 +18,7 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Promise;
+import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Query;
 import io.vertx.sqlclient.impl.command.BiCommand;
 import io.vertx.sqlclient.impl.command.CommandScheduler;
@@ -44,7 +45,8 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
 
   @Override
   public Query<RowSet<Row>> createQuery(String sql) {
-    return QueryImpl.create(this, autoCommit(), false, false, sql);
+    SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
+    return new QueryImpl<>(autoCommit(), false, sql, builder);
   }
 
   @Override
@@ -75,8 +77,9 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
   }
 
   @Override
-  public Query<RowSet<Row>> createPreparedQuery(String sql) {
-    return QueryImpl.create(this, autoCommit(), false, true, sql);
+  public PreparedQuery<RowSet<Row>> createPreparedQuery(String sql) {
+    SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
+    return new PreparedQueryImpl<>(autoCommit(), false, sql, builder);
   }
 
   @Override
@@ -122,5 +125,118 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
 
   boolean autoCommit() {
     return true;
+  }
+
+  private class QueryImpl<T, R extends SqlResult<T>> extends QueryBase<T, R> {
+
+    protected final boolean autoCommit;
+    protected final boolean singleton;
+    protected final String sql;
+
+    private QueryImpl(boolean autoCommit, boolean singleton, String sql, SqlResultBuilder<T, ?, R> builder) {
+      super(builder);
+      this.autoCommit = autoCommit;
+      this.singleton = singleton;
+      this.sql = sql;
+    }
+
+    @Override
+    protected <T2, R2 extends SqlResult<T2>> QueryBase<T2, R2> copy(SqlResultBuilder<T2, ?, R2> builder) {
+      return new QueryImpl<>(autoCommit, singleton, sql, builder);
+    }
+
+    @Override
+    public void execute(Handler<AsyncResult<R>> handler) {
+      execute(promise(handler));
+    }
+
+    @Override
+    public Future<R> execute() {
+      Promise<R> promise = promise();
+      execute(promise);
+      return promise.future();
+    }
+
+    protected void execute(Promise<R> promise) {
+      SqlResultHandler handler = builder.createHandler(promise);
+      builder.execute(SqlClientBase.this, sql, autoCommit, singleton, handler);
+    }
+  }
+
+  private class PreparedQueryImpl<T, R extends SqlResult<T>> extends QueryImpl<T, R> implements PreparedQuery<R> {
+
+    private PreparedQueryImpl(boolean autoCommit, boolean singleton, String sql, SqlResultBuilder<T, ?, R> builder) {
+      super(autoCommit, singleton, sql, builder);
+    }
+
+    @Override
+    public <U> PreparedQuery<SqlResult<U>> collecting(Collector<Row, ?, U> collector) {
+      return (PreparedQuery<SqlResult<U>>) super.collecting(collector);
+    }
+
+    @Override
+    public <U> PreparedQuery<RowSet<U>> mapping(Function<Row, U> mapper) {
+      return (PreparedQuery<RowSet<U>>) super.mapping(mapper);
+    }
+
+    @Override
+    protected <T2, R2 extends SqlResult<T2>> QueryBase<T2, R2> copy(SqlResultBuilder<T2, ?, R2> builder) {
+      return new PreparedQueryImpl<>(autoCommit, singleton, sql, builder);
+    }
+
+    @Override
+    protected void execute(Promise<R> promise) {
+      execute(ArrayTuple.EMPTY, promise);
+    }
+
+    private void execute(Tuple arguments, Promise<R> promise) {
+      SqlResultHandler handler = builder.createHandler(promise);
+      BiCommand<PreparedStatement, Boolean> abc = new BiCommand<>(new PrepareStatementCommand(sql), ps -> {
+        String msg = ps.prepare((TupleInternal) arguments);
+        if (msg != null) {
+          return Future.failedFuture(msg);
+        }
+        return Future.succeededFuture(builder.createCommand(ps, autoCommit, arguments, handler));
+      });
+      schedule(abc, handler);
+    }
+
+    @Override
+    public void execute(Tuple tuple, Handler<AsyncResult<R>> handler) {
+      execute(tuple, promise(handler));
+    }
+
+    @Override
+    public Future<R> execute(Tuple tuple) {
+      Promise<R> promise = promise();
+      execute(tuple, promise);
+      return promise.future();
+    }
+
+    @Override
+    public void batch(List<Tuple> batch, Handler<AsyncResult<R>> handler) {
+      batch(batch, promise(handler));
+    }
+
+    @Override
+    public Future<R> batch(List<Tuple> batch) {
+      Promise<R> promise = promise();
+      batch(batch, promise);
+      return promise.future();
+    }
+
+    private void batch(List<Tuple> batch, Promise<R> promise) {
+      SqlResultHandler handler = builder.createHandler(promise);
+      BiCommand<PreparedStatement, Boolean> abc = new BiCommand<>(new PrepareStatementCommand(sql), ps -> {
+        for  (Tuple args : batch) {
+          String msg = ps.prepare((TupleInternal) args);
+          if (msg != null) {
+            return Future.failedFuture(msg);
+          }
+        }
+        return Future.succeededFuture(builder.createBatchCommand(ps, autoCommit, batch, handler));
+      });
+      schedule(abc, handler);
+    }
   }
 }

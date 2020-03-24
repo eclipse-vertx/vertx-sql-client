@@ -18,6 +18,7 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Query;
 import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
@@ -32,6 +33,8 @@ import io.vertx.core.*;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+import java.util.stream.Collector;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -56,8 +59,9 @@ class PreparedStatementImpl implements PreparedStatement {
   }
 
   @Override
-  public Query<RowSet<Row>> query() {
-    return PreparedQuery.create(this, autoCommit);
+  public PreparedQuery<RowSet<Row>> query() {
+    SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
+    return new PreparedStatementQuery<>(builder);
   }
 
   <R, F extends SqlResult<R>> void execute(Tuple args,
@@ -134,5 +138,68 @@ class PreparedStatementImpl implements PreparedStatement {
   void closeCursor(String cursorId, Promise<Void> promise) {
     CloseCursorCommand cmd = new CloseCursorCommand(cursorId, ps);
     conn.schedule(cmd, promise);
+  }
+
+  private class PreparedStatementQuery<T, R extends SqlResult<T>> extends QueryBase<T, R> implements PreparedQuery<R> {
+
+    public PreparedStatementQuery(SqlResultBuilder<T, ?, R> builder) {
+      super(builder);
+    }
+
+    @Override
+    protected <T2, R2 extends SqlResult<T2>> QueryBase<T2, R2> copy(SqlResultBuilder<T2, ?, R2> builder) {
+      return new PreparedStatementQuery<>(builder);
+    }
+
+    @Override
+    public <U> PreparedQuery<SqlResult<U>> collecting(Collector<Row, ?, U> collector) {
+      return (PreparedQuery<SqlResult<U>>) super.collecting(collector);
+    }
+
+    @Override
+    public <U> PreparedQuery<RowSet<U>> mapping(Function<Row, U> mapper) {
+      return (PreparedQuery<RowSet<U>>) super.mapping(mapper);
+    }
+
+    @Override
+    public void execute(Handler<AsyncResult<R>> handler) {
+      execute(ArrayTuple.EMPTY, handler);
+    }
+
+    @Override
+    public Future<R> execute() {
+      return execute(ArrayTuple.EMPTY);
+    }
+
+    @Override
+    public void execute(Tuple args, Handler<AsyncResult<R>> handler) {
+      execute(args, context.promise(handler));
+    }
+
+    @Override
+    public Future<R> execute(Tuple args) {
+      Promise<R> promise = context.promise();
+      execute(args, promise);
+      return promise.future();
+    }
+
+    private void execute(Tuple args, Promise<R> promise) {
+      PreparedStatementImpl.this.execute(args, 0, null, false, builder, promise);
+    }
+
+    public void batch(List<Tuple> argsList, Handler<AsyncResult<R>> handler) {
+      batch(argsList, context.promise(handler));
+    }
+
+    @Override
+    public Future<R> batch(List<Tuple> argsList) {
+      Promise<R> promise = context.promise();
+      batch(argsList, promise);
+      return promise.future();
+    }
+
+    private void batch(List<Tuple> argsList, Promise<R> promise) {
+      PreparedStatementImpl.this.batch(argsList, builder, promise);
+    }
   }
 }

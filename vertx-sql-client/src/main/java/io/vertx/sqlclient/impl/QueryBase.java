@@ -17,9 +17,6 @@
 
 package io.vertx.sqlclient.impl;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.sqlclient.Query;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
@@ -33,22 +30,10 @@ import java.util.stream.Collector;
  */
 abstract class QueryBase<T, R extends SqlResult<T>> implements Query<R> {
 
-  protected final boolean autoCommit;
   protected final SqlResultBuilder<T, ?, R> builder;
 
-  public QueryBase(boolean autoCommit, SqlResultBuilder<T, ?, R> builder) {
-    this.autoCommit = autoCommit;
+  public QueryBase(SqlResultBuilder<T, ?, R> builder) {
     this.builder = builder;
-  }
-
-  @Override
-  public void execute(Handler<AsyncResult<R>> handler) {
-    execute(ArrayTuple.EMPTY, handler);
-  }
-
-  @Override
-  public Future<R> execute() {
-    return execute(ArrayTuple.EMPTY);
   }
 
   protected abstract <T2, R2  extends SqlResult<T2>> QueryBase<T2, R2> copy(SqlResultBuilder<T2, ?, R2> builder);

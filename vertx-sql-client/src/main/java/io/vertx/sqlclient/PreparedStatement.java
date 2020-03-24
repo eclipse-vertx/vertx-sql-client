@@ -38,7 +38,7 @@ public interface PreparedStatement {
    *
    * @return the query
    */
-  Query<RowSet<Row>> query();
+  PreparedQuery<RowSet<Row>> query();
 
   /**
    * @return create a query cursor with a {@code fetch} size and empty arguments

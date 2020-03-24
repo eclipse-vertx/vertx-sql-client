@@ -23,6 +23,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
@@ -32,29 +33,42 @@ import java.util.stream.Collector;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 @VertxGen
-public interface Query<T> {
+public interface PreparedQuery<T> extends Query<T> {
 
   /**
    * Execute the query.
    *
    * @param handler the handler receiving the response
    */
-  void execute(Handler<AsyncResult<T>> handler);
+  void execute(Tuple tuple, Handler<AsyncResult<T>> handler);
 
   /**
    * Like {@link #execute(Handler)} but returns a {@code Future} of the asynchronous result
    */
-  Future<T> execute();
+  Future<T> execute(Tuple tuple);
+
+  /**
+   * Execute the query.
+   *
+   * @param batch the batch of tuples
+   * @param handler the handler receiving the response
+   */
+  void batch(List<Tuple> batch, Handler<AsyncResult<T>> handler);
+
+  /**
+   * Like {@link #batch(List, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<T> batch(List<Tuple> batch);
 
   /**
    * Use the specified {@code collector} for collecting the query result to {@code <R>}.
    */
   @GenIgnore
-  <R> Query<SqlResult<R>> collecting(Collector<Row, ?, R> collector);
+  <R> PreparedQuery<SqlResult<R>> collecting(Collector<Row, ?, R> collector);
 
   /**
    * Use the specified {@code mapper} for mapping {@link Row} to {@code <U>}.
    */
-  <U> Query<RowSet<U>> mapping(Function<Row, U> mapper);
+  <U> PreparedQuery<RowSet<U>> mapping(Function<Row, U> mapper);
 
 }

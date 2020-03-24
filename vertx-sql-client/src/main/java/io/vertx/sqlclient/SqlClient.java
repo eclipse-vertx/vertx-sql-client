@@ -71,7 +71,7 @@ public interface SqlClient {
   /**
    * Create a query.
    */
-  Query<RowSet<Row>> createPreparedQuery(String sql);
+  PreparedQuery<RowSet<Row>> createPreparedQuery(String sql);
 
   /**
    * Execute the given {@code sql} string using a prepared statement with parameters set in the {@code Tuple}, the asynchronous result is represented as a {@link RowSet}.
