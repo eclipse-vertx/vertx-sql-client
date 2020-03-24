@@ -25,22 +25,22 @@ public class DB2PreparedQueryCachedTest extends PreparedQueryCachedTestBase {
   protected String statement(String... parts) {
     return String.join("?", parts);
   }
-  
+
   @Override
   protected boolean cursorRequiresTx() {
     return false;
   }
-  
+
   @Override
   protected void cleanTestTable(TestContext ctx) {
       // use DELETE FROM because DB2 does not support TRUNCATE TABLE
       connect(ctx.asyncAssertSuccess(conn -> {
-          conn.query("DELETE FROM mutable", ctx.asyncAssertSuccess(result -> {
+          conn.query("DELETE FROM mutable").execute(ctx.asyncAssertSuccess(result -> {
               conn.close();
           }));
       }));
   }
-  
+
   @Test
   @Ignore // TODO: Enable this test after implementing error path handling
   @Override

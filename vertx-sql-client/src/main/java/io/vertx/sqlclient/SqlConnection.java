@@ -23,8 +23,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
-import java.util.List;
-
 /**
  * A connection to the database server.
  *
@@ -85,33 +83,5 @@ public interface SqlConnection extends SqlClient {
    * Close the current connection after all the pending commands have been processed.
    */
   void close();
-
-  @Fluent
-  @Override
-  SqlConnection preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  Future<RowSet<Row>> preparedQuery(String sql);
-
-  @Fluent
-  @Override
-  SqlConnection query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  Future<RowSet<Row>> query(String sql);
-
-  @Fluent
-  @Override
-  SqlConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  Future<RowSet<Row>> preparedQuery(String sql, Tuple arguments);
-
-  @Fluent
-  @Override
-  SqlConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  Future<RowSet<Row>> preparedBatch(String sql, List<Tuple> batch);
 
 }

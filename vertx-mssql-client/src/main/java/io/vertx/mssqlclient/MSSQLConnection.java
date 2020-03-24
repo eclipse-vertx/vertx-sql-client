@@ -19,12 +19,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.PreparedStatement;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.Tuple;
-
-import java.util.List;
 
 /**
  * A connection to Microsoft SQL Server.
@@ -73,33 +68,5 @@ public interface MSSQLConnection extends SqlConnection {
   @Fluent
   @Override
   MSSQLConnection closeHandler(Handler<Void> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  MSSQLConnection preparedQuery(String s, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  MSSQLConnection query(String s, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  MSSQLConnection preparedQuery(String s, Tuple tuple, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  MSSQLConnection preparedBatch(String s, List<Tuple> list, Handler<AsyncResult<RowSet<Row>>> handler);
 
 }

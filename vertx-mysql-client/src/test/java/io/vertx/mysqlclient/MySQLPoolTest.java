@@ -52,15 +52,15 @@ public class MySQLPoolTest extends MySQLTestBase {
   @Test
   public void testContinuouslyQuery(TestContext ctx) {
     Async async = ctx.async(3);
-    pool.preparedQuery("SELECT 1", ctx.asyncAssertSuccess(res1 -> {
+    pool.preparedQuery("SELECT 1").execute(ctx.asyncAssertSuccess(res1 -> {
       ctx.assertEquals(1, res1.size());
       async.countDown();
     }));
-    pool.preparedQuery("SELECT 2", ctx.asyncAssertSuccess(res1 -> {
+    pool.preparedQuery("SELECT 2").execute(ctx.asyncAssertSuccess(res1 -> {
       ctx.assertEquals(1, res1.size());
       async.countDown();
     }));
-    pool.preparedQuery("SELECT 3", ctx.asyncAssertSuccess(res1 -> {
+    pool.preparedQuery("SELECT 3").execute(ctx.asyncAssertSuccess(res1 -> {
       ctx.assertEquals(1, res1.size());
       async.countDown();
     }));

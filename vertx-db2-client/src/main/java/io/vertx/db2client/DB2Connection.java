@@ -24,10 +24,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.db2client.impl.DB2ConnectionImpl;
 import io.vertx.sqlclient.PreparedStatement;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.Tuple;
 
 import static io.vertx.db2client.DB2ConnectOptions.fromUri;
 
@@ -79,15 +76,6 @@ public interface DB2Connection extends SqlConnection {
 
     @Override
     DB2Connection closeHandler(Handler<Void> handler);
-
-    @Override
-    DB2Connection preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-    @Override
-    DB2Connection query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-    @Override
-    DB2Connection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
 
     /**
      * Send a PING command to check if the server is alive.

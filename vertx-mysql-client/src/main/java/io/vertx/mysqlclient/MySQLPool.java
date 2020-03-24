@@ -11,21 +11,13 @@
 
 package io.vertx.mysqlclient;
 
-import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.mysqlclient.impl.MySQLPoolImpl;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.Tuple;
-
-import java.util.List;
 
 import static io.vertx.mysqlclient.MySQLConnectOptions.*;
 
@@ -85,33 +77,5 @@ public interface MySQLPool extends Pool {
   static MySQLPool pool(Vertx vertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
     return new MySQLPoolImpl((ContextInternal) vertx.getOrCreateContext(), false, connectOptions, poolOptions);
   }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  MySQLPool preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  MySQLPool query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  MySQLPool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  MySQLPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
 
 }

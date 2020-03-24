@@ -17,21 +17,13 @@
 
 package io.vertx.pgclient;
 
-import io.vertx.codegen.annotations.Fluent;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.pgclient.impl.PgPoolImpl;
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.Tuple;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-
-import java.util.List;
 
 /**
  * A {@link Pool pool} of {@link PgConnection PostgreSQL connections}.
@@ -114,33 +106,5 @@ public interface PgPool extends Pool {
   static PgPool pool(Vertx vertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
     return new PgPoolImpl(((VertxInternal)vertx).getOrCreateContext(), false, connectOptions, poolOptions);
   }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  PgPool preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  PgPool query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  PgPool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  PgPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
 
 }

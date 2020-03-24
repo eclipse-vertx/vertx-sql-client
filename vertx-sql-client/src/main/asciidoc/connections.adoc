@@ -16,7 +16,7 @@ Prepared queries can be created:
 ----
 
 NOTE: prepared query caching depends on the {@link io.vertx.sqlclient.SqlConnectOptions#setCachePreparedStatements(boolean)} and
-does not depend on whether you are creating prepared queries or use {@link io.vertx.sqlclient.SqlClient#preparedQuery(java.lang.String, io.vertx.core.Handler) direct prepared queries}
+does not depend on whether you are creating prepared queries or use {@link io.vertx.sqlclient.SqlClient#preparedQuery direct prepared queries}
 
 {@link io.vertx.sqlclient.PreparedStatement can perform efficient batching:
 

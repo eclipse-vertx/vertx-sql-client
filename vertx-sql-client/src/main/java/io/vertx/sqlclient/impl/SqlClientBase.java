@@ -44,58 +44,15 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
   protected abstract <T> Promise<T> promise(Handler<AsyncResult<T>> handler);
 
   @Override
-  public Query<RowSet<Row>> createQuery(String sql) {
+  public Query<RowSet<Row>> query(String sql) {
     SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
     return new QueryImpl<>(autoCommit(), false, sql, builder);
   }
 
   @Override
-  public C query(String sql, Handler<AsyncResult<RowSet<Row>>> handler) {
-    createQuery(sql).execute(handler);
-    return (C) this;
-  }
-
-  @Override
-  public Future<RowSet<Row>> query(String sql) {
-    return createQuery(sql).execute();
-  }
-
-  @Override
-  public C preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler) {
-    createPreparedQuery(sql).execute(arguments, handler);
-    return (C) this;
-  }
-
-  @Override
-  public Future<RowSet<Row>> preparedQuery(String sql, Tuple arguments) {
-    return createPreparedQuery(sql).execute(arguments);
-  }
-
-  @Override
-  public C preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler) {
-    return preparedQuery(sql, ArrayTuple.EMPTY, handler);
-  }
-
-  @Override
-  public PreparedQuery<RowSet<Row>> createPreparedQuery(String sql) {
+  public PreparedQuery<RowSet<Row>> preparedQuery(String sql) {
     SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
     return new PreparedQueryImpl<>(autoCommit(), false, sql, builder);
-  }
-
-  @Override
-  public Future<RowSet<Row>> preparedQuery(String sql) {
-    return preparedQuery(sql, ArrayTuple.EMPTY);
-  }
-
-  @Override
-  public C preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler) {
-    createPreparedQuery(sql).batch(batch, handler);
-    return (C) this;
-  }
-
-  @Override
-  public Future<RowSet<Row>> preparedBatch(String sql, List<Tuple> batch) {
-    return createPreparedQuery(sql).batch(batch);
   }
 
   private <R1, R2 extends SqlResultBase<R1>, R3 extends SqlResult<R1>> C preparedBatch(
@@ -214,18 +171,18 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
     }
 
     @Override
-    public void batch(List<Tuple> batch, Handler<AsyncResult<R>> handler) {
-      batch(batch, promise(handler));
+    public void executeBatch(List<Tuple> batch, Handler<AsyncResult<R>> handler) {
+      executeBatch(batch, promise(handler));
     }
 
     @Override
-    public Future<R> batch(List<Tuple> batch) {
+    public Future<R> executeBatch(List<Tuple> batch) {
       Promise<R> promise = promise();
-      batch(batch, promise);
+      executeBatch(batch, promise);
       return promise.future();
     }
 
-    private void batch(List<Tuple> batch, Promise<R> promise) {
+    private void executeBatch(List<Tuple> batch, Promise<R> promise) {
       SqlResultHandler handler = builder.createHandler(promise);
       BiCommand<PreparedStatement, Boolean> abc = new BiCommand<>(new PrepareStatementCommand(sql), ps -> {
         for  (Tuple args : batch) {

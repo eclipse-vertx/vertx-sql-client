@@ -19,12 +19,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.mysqlclient.impl.MySQLConnectionImpl;
 import io.vertx.sqlclient.PreparedStatement;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.Tuple;
-
-import java.util.List;
 
 import static io.vertx.mysqlclient.MySQLConnectOptions.*;
 
@@ -101,34 +96,6 @@ public interface MySQLConnection extends SqlConnection {
   @Fluent
   @Override
   MySQLConnection closeHandler(Handler<Void> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  MySQLConnection preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  MySQLConnection query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  MySQLConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  MySQLConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
 
   /**
    * Send a PING command to check if the server is alive.

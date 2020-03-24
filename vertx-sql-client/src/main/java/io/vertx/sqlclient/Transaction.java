@@ -22,8 +22,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
-import java.util.List;
-
 /**
  * A transaction that allows to control the transaction and receive events.
  */
@@ -71,18 +69,6 @@ public interface Transaction extends SqlClient {
    */
   @Fluent
   Transaction abortHandler(Handler<Void> handler);
-
-  @Override
-  Transaction query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  Transaction preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  Transaction preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  Transaction preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
 
   /**
    * Rollback the transaction and release the associated resources.

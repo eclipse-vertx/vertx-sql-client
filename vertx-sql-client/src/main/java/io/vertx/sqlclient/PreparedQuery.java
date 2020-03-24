@@ -53,12 +53,12 @@ public interface PreparedQuery<T> extends Query<T> {
    * @param batch the batch of tuples
    * @param handler the handler receiving the response
    */
-  void batch(List<Tuple> batch, Handler<AsyncResult<T>> handler);
+  void executeBatch(List<Tuple> batch, Handler<AsyncResult<T>> handler);
 
   /**
-   * Like {@link #batch(List, Handler)} but returns a {@code Future} of the asynchronous result
+   * Like {@link #executeBatch(List, Handler)} but returns a {@code Future} of the asynchronous result
    */
-  Future<T> batch(List<Tuple> batch);
+  Future<T> executeBatch(List<Tuple> batch);
 
   /**
    * Use the specified {@code collector} for collecting the query result to {@code <R>}.

@@ -96,11 +96,11 @@ class SqlResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
   }
 
 
-  void batch(CommandScheduler scheduler,
-             PreparedStatement preparedStatement,
-             boolean autoCommit,
-             List<Tuple> argsList,
-             SqlResultHandler<T, R, L> handler) {
+  void executeBatch(CommandScheduler scheduler,
+                    PreparedStatement preparedStatement,
+                    boolean autoCommit,
+                    List<Tuple> argsList,
+                    SqlResultHandler<T, R, L> handler) {
     for  (Tuple args : argsList) {
       String msg = preparedStatement.prepare((TupleInternal)args);
       if (msg != null) {

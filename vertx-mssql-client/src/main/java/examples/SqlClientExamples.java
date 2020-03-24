@@ -27,7 +27,9 @@ import java.util.List;
 public class SqlClientExamples {
 
   public void queries01(SqlClient client) {
-    client.query("SELECT * FROM users WHERE id='julien'", ar -> {
+    client
+      .query("SELECT * FROM users WHERE id='julien'")
+      .execute(ar -> {
       if (ar.succeeded()) {
         RowSet<Row> result = ar.result();
         System.out.println("Got " + result.size() + " rows ");
@@ -39,7 +41,9 @@ public class SqlClientExamples {
 
 
   public void queries02(SqlClient client) {
-    client.preparedQuery("SELECT * FROM users WHERE id=@p1", Tuple.of("julien"), ar -> {
+    client
+      .preparedQuery("SELECT * FROM users WHERE id=@p1")
+      .execute(Tuple.of("julien"), ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rows = ar.result();
         System.out.println("Got " + rows.size() + " rows ");
@@ -50,7 +54,9 @@ public class SqlClientExamples {
   }
 
   public void queries03(SqlClient client) {
-    client.preparedQuery("SELECT first_name, last_name FROM users", ar -> {
+    client
+      .preparedQuery("SELECT first_name, last_name FROM users")
+      .execute(ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rows = ar.result();
         for (Row row : rows) {
@@ -63,7 +69,9 @@ public class SqlClientExamples {
   }
 
   public void queries04(SqlClient client) {
-    client.preparedQuery("INSERT INTO users (first_name, last_name) VALUES (@p1, @p2)", Tuple.of("Julien", "Viet"), ar -> {
+    client
+      .preparedQuery("INSERT INTO users (first_name, last_name) VALUES (@p1, @p2)")
+      .execute(Tuple.of("Julien", "Viet"), ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rows = ar.result();
         System.out.println(rows.rowCount());
@@ -99,7 +107,9 @@ public class SqlClientExamples {
     batch.add(Tuple.of("emad", "Emad Alblueshi"));
 
     // Execute the prepared batch
-    client.preparedBatch("INSERT INTO USERS (id, name) VALUES (@p1, @p2)", batch, res -> {
+    client
+      .preparedQuery("INSERT INTO USERS (id, name) VALUES (@p1, @p2)")
+      .executeBatch(batch, res -> {
       if (res.succeeded()) {
 
         // Process rows
@@ -122,9 +132,13 @@ public class SqlClientExamples {
       if (ar1.succeeded()) {
         SqlConnection connection = ar1.result();
 
-        connection.query("SELECT * FROM users WHERE id='julien'", ar2 -> {
+        connection
+          .query("SELECT * FROM users WHERE id='julien'")
+          .execute(ar2 -> {
           if (ar1.succeeded()) {
-            connection.query("SELECT * FROM users WHERE id='paulo'", ar3 -> {
+            connection
+              .query("SELECT * FROM users WHERE id='paulo'")
+              .execute(ar3 -> {
               // Do something with rows and return the connection to the pool
               connection.close();
             });
@@ -163,7 +177,7 @@ public class SqlClientExamples {
         batch.add(Tuple.of("julien", "Julien Viet"));
         batch.add(Tuple.of("emad", "Emad Alblueshi"));
 
-        prepared.query().batch(batch, res -> {
+        prepared.query().executeBatch(batch, res -> {
           if (res.succeeded()) {
 
             // Process rows
@@ -187,9 +201,13 @@ public class SqlClientExamples {
         Transaction tx = conn.begin();
 
         // Various statements
-        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar1 -> {
+        conn
+          .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
+          .execute(ar1 -> {
           if (ar1.succeeded()) {
-            conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')", ar2 -> {
+            conn
+              .query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')")
+              .execute(ar2 -> {
               if (ar2.succeeded()) {
                 // Commit the transaction
                 tx.commit(ar3 -> {
@@ -231,9 +249,11 @@ public class SqlClientExamples {
         Transaction tx = res.result();
 
         // Various statements
-        tx.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar1 -> {
+        tx.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
+          .execute(ar1 -> {
           if (ar1.succeeded()) {
-            tx.query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')", ar2 -> {
+            tx.query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')")
+              .execute(ar2 -> {
               if (ar2.succeeded()) {
                 // Commit the transaction
                 // the connection will automatically return to the pool

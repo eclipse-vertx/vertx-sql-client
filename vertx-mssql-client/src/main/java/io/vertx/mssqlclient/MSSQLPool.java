@@ -11,17 +11,12 @@
 
 package io.vertx.mssqlclient;
 
-import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.mssqlclient.impl.MSSQLPoolImpl;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.sqlclient.*;
-
-import java.util.List;
 
 /**
  * A {@link Pool pool} of {@link MSSQLConnection SQL Server connections}.
@@ -50,33 +45,5 @@ public interface MSSQLPool extends Pool {
   static MSSQLPool pool(Vertx vertx, MSSQLConnectOptions connectOptions, PoolOptions poolOptions) {
     return new MSSQLPoolImpl((ContextInternal) vertx.getOrCreateContext(), false, connectOptions, poolOptions);
   }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  MSSQLPool preparedQuery(String s, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  MSSQLPool query(String s, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  MSSQLPool preparedQuery(String s, Tuple tuple, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  MSSQLPool preparedBatch(String s, List<Tuple> list, Handler<AsyncResult<RowSet<Row>>> handler);
 
 }

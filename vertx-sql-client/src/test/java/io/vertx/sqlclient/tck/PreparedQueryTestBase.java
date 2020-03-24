@@ -43,7 +43,9 @@ public abstract class PreparedQueryTestBase {
   private static void insertIntoTestTable(TestContext ctx, SqlClient client, int amount, Runnable completionHandler) {
     AtomicInteger count = new AtomicInteger();
     for (int i = 0; i < 10; i++) {
-      client.query("INSERT INTO mutable (id, val) VALUES (" + i + ", 'Whatever-" + i + "')", ctx.asyncAssertSuccess(r1 -> {
+      client
+        .query("INSERT INTO mutable (id, val) VALUES (" + i + ", 'Whatever-" + i + "')")
+        .execute(ctx.asyncAssertSuccess(r1 -> {
         ctx.assertEquals(1, r1.rowCount());
         if (count.incrementAndGet() == amount) {
           completionHandler.run();
@@ -97,7 +99,9 @@ public abstract class PreparedQueryTestBase {
   @Test
   public void testPreparedQuery(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery(statement("SELECT * FROM immutable WHERE id=", ""), Tuple.of(1), ctx.asyncAssertSuccess(rowSet -> {
+      conn
+        .preparedQuery(statement("SELECT * FROM immutable WHERE id=", ""))
+        .execute(Tuple.of(1), ctx.asyncAssertSuccess(rowSet -> {
         ctx.assertEquals(1, rowSet.size());
         Tuple row = rowSet.iterator().next();
         ctx.assertEquals(1, row.getInteger(0));
@@ -110,7 +114,9 @@ public abstract class PreparedQueryTestBase {
   @Test
   public void testPreparedQueryWithWrappedParams(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery(statement("SELECT * FROM immutable WHERE id=", ""), Tuple.wrap(Arrays.asList(1)), ctx.asyncAssertSuccess(rowSet -> {
+      conn
+        .preparedQuery(statement("SELECT * FROM immutable WHERE id=", ""))
+        .execute(Tuple.wrap(Arrays.asList(1)), ctx.asyncAssertSuccess(rowSet -> {
         ctx.assertEquals(1, rowSet.size());
         Tuple row = rowSet.iterator().next();
         ctx.assertEquals(1, row.getInteger(0));
@@ -145,11 +151,17 @@ public abstract class PreparedQueryTestBase {
   @Test
   public void testPreparedUpdate(TestContext ctx) {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("INSERT INTO mutable (id, val) VALUES (2, 'Whatever')", ctx.asyncAssertSuccess(r1 -> {
+      conn
+        .preparedQuery("INSERT INTO mutable (id, val) VALUES (2, 'Whatever')")
+        .execute(ctx.asyncAssertSuccess(r1 -> {
         ctx.assertEquals(1, r1.rowCount());
-        conn.preparedQuery("UPDATE mutable SET val = 'Rocks!' WHERE id = 2", ctx.asyncAssertSuccess(res1 -> {
+        conn
+          .preparedQuery("UPDATE mutable SET val = 'Rocks!' WHERE id = 2")
+          .execute(ctx.asyncAssertSuccess(res1 -> {
           ctx.assertEquals(1, res1.rowCount());
-          conn.preparedQuery("SELECT val FROM mutable WHERE id = 2", ctx.asyncAssertSuccess(res2 -> {
+          conn
+            .preparedQuery("SELECT val FROM mutable WHERE id = 2")
+            .execute(ctx.asyncAssertSuccess(res2 -> {
             ctx.assertEquals("Rocks!", res2.iterator().next().getValue(0));
             conn.close();
           }));
@@ -161,11 +173,17 @@ public abstract class PreparedQueryTestBase {
   @Test
   public void testPreparedUpdateWithParams(TestContext ctx) {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("INSERT INTO mutable (id, val) VALUES (2, 'Whatever')", ctx.asyncAssertSuccess(r1 -> {
+      conn
+        .preparedQuery("INSERT INTO mutable (id, val) VALUES (2, 'Whatever')")
+        .execute(ctx.asyncAssertSuccess(r1 -> {
         ctx.assertEquals(1, r1.rowCount());
-        conn.preparedQuery(statement("UPDATE mutable SET val = ", " WHERE id = ", ""), Tuple.of("Rocks Again!!", 2), ctx.asyncAssertSuccess(res1 -> {
+        conn
+          .preparedQuery(statement("UPDATE mutable SET val = ", " WHERE id = ", ""))
+          .execute(Tuple.of("Rocks Again!!", 2), ctx.asyncAssertSuccess(res1 -> {
           ctx.assertEquals(1, res1.rowCount());
-          conn.preparedQuery(statement("SELECT val FROM mutable WHERE id = ", ""), Tuple.of(2), ctx.asyncAssertSuccess(res2 -> {
+          conn
+            .preparedQuery(statement("SELECT val FROM mutable WHERE id = ", ""))
+            .execute(Tuple.of(2), ctx.asyncAssertSuccess(res2 -> {
             ctx.assertEquals("Rocks Again!!", res2.iterator().next().getValue(0));
             conn.close();
           }));
@@ -178,7 +196,8 @@ public abstract class PreparedQueryTestBase {
   public void testPreparedUpdateWithNullParams(TestContext ctx) {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery(
-        statement("INSERT INTO mutable (val, id) VALUES (", ",", ")"), Tuple.of(null, 1),
+        statement("INSERT INTO mutable (val, id) VALUES (", ",", ")"))
+        .execute(Tuple.of(null, 1),
         ctx.asyncAssertFailure(error -> {
         })
       );
@@ -207,7 +226,7 @@ public abstract class PreparedQueryTestBase {
             }));
       };
       if (cursorRequiresTx()) {
-          conn.query("BEGIN", ctx.asyncAssertSuccess(begin -> {
+          conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
               queryTest.handle(null);
           }));
       } else {
@@ -234,7 +253,7 @@ public abstract class PreparedQueryTestBase {
             }));
       };
       if (cursorRequiresTx()) {
-          conn.query("BEGIN", ctx.asyncAssertSuccess(begin -> {
+          conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
               queryTest.handle(null);
           }));
       } else {
@@ -261,7 +280,7 @@ public abstract class PreparedQueryTestBase {
             }));
       };
       if (cursorRequiresTx()) {
-          conn.query("BEGIN", ctx.asyncAssertSuccess(begin -> {
+          conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
               queryTest.handle(null);
           }));
       } else {
@@ -291,7 +310,7 @@ public abstract class PreparedQueryTestBase {
             }));
       };
       if (cursorRequiresTx()) {
-          conn.query("BEGIN", ctx.asyncAssertSuccess(begin -> {
+          conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
               queryTest.handle(null);
           }));
       } else {
@@ -339,7 +358,7 @@ public abstract class PreparedQueryTestBase {
             }));
       };
       if (cursorRequiresTx()) {
-          conn.query("BEGIN", ctx.asyncAssertSuccess(begin -> {
+          conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
               queryTest.handle(null);
           }));
       } else {
@@ -350,7 +369,7 @@ public abstract class PreparedQueryTestBase {
 
   protected void cleanTestTable(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("TRUNCATE TABLE mutable;", ctx.asyncAssertSuccess(result -> {
+      conn.preparedQuery("TRUNCATE TABLE mutable;").execute(ctx.asyncAssertSuccess(result -> {
         conn.close();
       }));
     }));

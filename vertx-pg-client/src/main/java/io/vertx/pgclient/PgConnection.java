@@ -20,15 +20,10 @@ package io.vertx.pgclient;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.pgclient.impl.PgConnectionImpl;
 import io.vertx.sqlclient.PreparedStatement;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.Tuple;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.*;
-
-import java.util.List;
 
 /**
  * A connection to Postgres.
@@ -150,33 +145,5 @@ public interface PgConnection extends SqlConnection {
   @Fluent
   @Override
   PgConnection closeHandler(Handler<Void> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  PgConnection preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  PgConnection query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  PgConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  PgConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
 
 }

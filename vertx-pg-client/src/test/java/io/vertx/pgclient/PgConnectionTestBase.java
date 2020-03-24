@@ -99,10 +99,14 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
   public void testTx(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("BEGIN", ctx.asyncAssertSuccess(result1 -> {
+      conn
+        .query("BEGIN")
+        .execute(ctx.asyncAssertSuccess(result1 -> {
         ctx.assertEquals(0, result1.size());
         ctx.assertNotNull(result1.iterator());
-        conn.query("COMMIT", ctx.asyncAssertSuccess(result2 -> {
+        conn
+          .query("COMMIT")
+          .execute(ctx.asyncAssertSuccess(result2 -> {
           ctx.assertEquals(0, result2.size());
           async.complete();
         }));
@@ -269,9 +273,13 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
   public void testUpdateError(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("INSERT INTO Fortune (id, message) VALUES (1, 'Duplicate')", ctx.asyncAssertFailure(err -> {
+      conn
+        .query("INSERT INTO Fortune (id, message) VALUES (1, 'Duplicate')")
+        .execute(ctx.asyncAssertFailure(err -> {
         ctx.assertEquals("23505", ((PgException) err).getCode());
-        conn.query("SELECT 1000", ctx.asyncAssertSuccess(result -> {
+        conn
+          .query("SELECT 1000")
+          .execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           ctx.assertEquals(1000, result.iterator().next().getInteger(0));
           async.complete();
@@ -287,9 +295,13 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
       int id = randomWorld();
       List<Tuple> batch = new ArrayList<>();
       batch.add(Tuple.of(id, 3));
-      conn.preparedBatch("INSERT INTO World (id, randomnumber) VALUES ($1, $2)", batch, ctx.asyncAssertFailure(err -> {
+      conn
+        .preparedQuery("INSERT INTO World (id, randomnumber) VALUES ($1, $2)")
+        .executeBatch(batch, ctx.asyncAssertFailure(err -> {
         ctx.assertEquals("23505", ((PgException) err).getCode());
-        conn.query("SELECT 1000", ctx.asyncAssertSuccess(result -> {
+        conn
+          .preparedQuery("SELECT 1000")
+          .execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           ctx.assertEquals(1000, result.iterator().next().getInteger(0));
           async.complete();
@@ -334,16 +346,22 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
           Transaction tx = conn.begin();
           AtomicInteger u1 = new AtomicInteger();
           AtomicInteger u2 = new AtomicInteger();
-          conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-1')", ctx.asyncAssertSuccess(res1 -> {
+          conn
+            .query("INSERT INTO Test (id, val) VALUES (1, 'val-1')")
+            .execute(ctx.asyncAssertSuccess(res1 -> {
             u1.addAndGet(res1.rowCount());
             exec.execute(() -> {
-              conn.query("INSERT INTO Test (id, val) VALUES (2, 'val-2')", ctx.asyncAssertSuccess(res2 -> {
+              conn
+                .query("INSERT INTO Test (id, val) VALUES (2, 'val-2')")
+                .execute(ctx.asyncAssertSuccess(res2 -> {
                 u2.addAndGet(res2.rowCount());
                 exec.execute(() -> {
                   tx.commit(ctx.asyncAssertSuccess(v -> {
                     ctx.assertEquals(1, u1.get());
                     ctx.assertEquals(1, u2.get());
-                    conn.query("SELECT id FROM Test WHERE id=1 OR id=2", ctx.asyncAssertSuccess(result -> {
+                    conn
+                      .query("SELECT id FROM Test WHERE id=1 OR id=2")
+                      .execute(ctx.asyncAssertSuccess(result -> {
                       ctx.assertEquals(2, result.size());
                       done.complete();
                     }));
@@ -375,18 +393,24 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
           Transaction tx = conn.begin();
           AtomicInteger u1 = new AtomicInteger();
           AtomicInteger u2 = new AtomicInteger();
-          conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-1')", ctx.asyncAssertSuccess(res1 -> {
+          conn
+            .query("INSERT INTO Test (id, val) VALUES (1, 'val-1')")
+            .execute(ctx.asyncAssertSuccess(res1 -> {
             u1.addAndGet(res1.rowCount());
             exec.execute(() -> {
 
             });
-            conn.query("INSERT INTO Test (id, val) VALUES (2, 'val-2')", ctx.asyncAssertSuccess(res2 -> {
+            conn
+              .query("INSERT INTO Test (id, val) VALUES (2, 'val-2')")
+              .execute(ctx.asyncAssertSuccess(res2 -> {
               u2.addAndGet(res2.rowCount());
               exec.execute(() -> {
                 tx.rollback(ctx.asyncAssertSuccess(v -> {
                   ctx.assertEquals(1, u1.get());
                   ctx.assertEquals(1, u2.get());
-                  conn.query("SELECT id FROM Test WHERE id=1 OR id=2", ctx.asyncAssertSuccess(result -> {
+                  conn
+                    .query("SELECT id FROM Test WHERE id=1 OR id=2")
+                    .execute(ctx.asyncAssertSuccess(result -> {
                     ctx.assertEquals(0, result.size());
                     done.complete();
                   }));
@@ -409,8 +433,8 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
         tx.abortHandler(v -> ctx.assertEquals(0, failures.getAndIncrement()));
         AtomicReference<AsyncResult<RowSet<Row>>> queryAfterFailed = new AtomicReference<>();
         AtomicReference<AsyncResult<Void>> commit = new AtomicReference<>();
-        conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-1')", ar1 -> { });
-        conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-2')", ar2 -> {
+        conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-1')").execute(ar1 -> { });
+        conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-2')").execute(ar2 -> {
           ctx.assertNotNull(queryAfterFailed.get());
           ctx.assertTrue(queryAfterFailed.get().failed());
           ctx.assertNotNull(commit.get());
@@ -418,12 +442,12 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
           ctx.assertTrue(ar2.failed());
           ctx.assertEquals(1, failures.get());
           // This query won't be made in the same TX
-          conn.query("SELECT id FROM Test WHERE id=1", ctx.asyncAssertSuccess(result -> {
+          conn.query("SELECT id FROM Test WHERE id=1").execute(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(0, result.size());
             done.complete();
           }));
         });
-        conn.query("SELECT id FROM Test", queryAfterFailed::set);
+        conn.query("SELECT id FROM Test").execute(queryAfterFailed::set);
         tx.commit(commit::set);
       });
     }));

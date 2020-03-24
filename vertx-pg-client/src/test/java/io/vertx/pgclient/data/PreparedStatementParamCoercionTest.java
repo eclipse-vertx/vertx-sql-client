@@ -47,7 +47,7 @@ public class PreparedStatementParamCoercionTest extends DataTypeTestBase {
 
   private void assertCoerceParam(PgConnection conn, TestContext ctx, String query, Object value, Runnable cont) {
     conn
-      .preparedQuery(query, Tuple.of(value),
+      .preparedQuery(query).execute(Tuple.of(value),
         ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           ctx.assertEquals(1, result.iterator().next().getInteger(0));

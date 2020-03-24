@@ -15,20 +15,13 @@
  */
 package io.vertx.db2client;
 
-import java.util.List;
-
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.db2client.impl.DB2PoolImpl;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.Tuple;
 
 import static io.vertx.db2client.DB2ConnectOptions.fromUri;
 
@@ -88,17 +81,4 @@ public interface DB2Pool extends Pool {
     static DB2Pool pool(Vertx vertx, DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
       return new DB2PoolImpl((ContextInternal) vertx.getOrCreateContext(), false, connectOptions, poolOptions);
     }
-
-    @Override
-    DB2Pool preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-    @Override
-    DB2Pool query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-    @Override
-    DB2Pool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
-
-    @Override
-    DB2Pool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
-
 }

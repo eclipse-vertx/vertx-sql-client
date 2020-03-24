@@ -23,12 +23,12 @@ public class DB2SimpleQueryPooledTest extends SimpleQueryTestBase {
     @Override
     protected void cleanTestTable(TestContext ctx) {
         connect(ctx.asyncAssertSuccess(conn -> {
-            conn.query("DELETE FROM mutable", ctx.asyncAssertSuccess(result -> {
+            conn.query("DELETE FROM mutable").execute(ctx.asyncAssertSuccess(result -> {
                 conn.close();
             }));
         }));
     }
-    
+
     @Override
     @Test
     @Ignore // TODO implement error path handling properly

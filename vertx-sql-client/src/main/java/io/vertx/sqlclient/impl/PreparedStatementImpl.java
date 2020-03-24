@@ -19,7 +19,6 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.sqlclient.PreparedQuery;
-import io.vertx.sqlclient.Query;
 import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
 import io.vertx.sqlclient.Cursor;
@@ -111,14 +110,14 @@ class PreparedStatementImpl implements PreparedStatement {
     }
   }
 
-  <R, F extends SqlResult<R>> void batch(List<Tuple> argsList,
-                                         SqlResultBuilder<R, ?, F> builder,
-                                         Promise<F> p) {
+  <R, F extends SqlResult<R>> void executeBatch(List<Tuple> argsList,
+                                                SqlResultBuilder<R, ?, F> builder,
+                                                Promise<F> p) {
     if (context == Vertx.currentContext()) {
       SqlResultHandler handler = builder.createHandler(p);
-      builder.batch(conn, ps, autoCommit, argsList, handler);
+      builder.executeBatch(conn, ps, autoCommit, argsList, handler);
     } else {
-      context.runOnContext(v -> batch(argsList, builder, p));
+      context.runOnContext(v -> executeBatch(argsList, builder, p));
     }
   }
 
@@ -187,19 +186,19 @@ class PreparedStatementImpl implements PreparedStatement {
       PreparedStatementImpl.this.execute(args, 0, null, false, builder, promise);
     }
 
-    public void batch(List<Tuple> argsList, Handler<AsyncResult<R>> handler) {
-      batch(argsList, context.promise(handler));
+    public void executeBatch(List<Tuple> argsList, Handler<AsyncResult<R>> handler) {
+      executeBatch(argsList, context.promise(handler));
     }
 
     @Override
-    public Future<R> batch(List<Tuple> argsList) {
+    public Future<R> executeBatch(List<Tuple> argsList) {
       Promise<R> promise = context.promise();
-      batch(argsList, promise);
+      executeBatch(argsList, promise);
       return promise.future();
     }
 
-    private void batch(List<Tuple> argsList, Promise<R> promise) {
-      PreparedStatementImpl.this.batch(argsList, builder, promise);
+    private void executeBatch(List<Tuple> argsList, Promise<R> promise) {
+      PreparedStatementImpl.this.executeBatch(argsList, builder, promise);
     }
   }
 }
