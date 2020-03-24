@@ -16,9 +16,7 @@
 package io.vertx.db2client;
 
 import java.util.List;
-import java.util.stream.Collector;
 
-import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -30,7 +28,6 @@ import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
 
 import static io.vertx.db2client.DB2ConnectOptions.fromUri;
@@ -95,29 +92,13 @@ public interface DB2Pool extends Pool {
     @Override
     DB2Pool preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
-    @GenIgnore
-    @Override
-    <R> DB2Pool preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
     @Override
     DB2Pool query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-    @GenIgnore
-    @Override
-    <R> DB2Pool query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
     @Override
     DB2Pool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
 
-    @GenIgnore
-    @Override
-    <R> DB2Pool preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
     @Override
     DB2Pool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
-
-    @GenIgnore
-    @Override
-    <R> DB2Pool preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
 }

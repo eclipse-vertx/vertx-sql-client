@@ -12,7 +12,6 @@
 package io.vertx.mssqlclient;
 
 import io.vertx.codegen.annotations.Fluent;
-import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Future;
 import io.vertx.mssqlclient.impl.MSSQLConnectionImpl;
@@ -23,11 +22,9 @@ import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
 
 import java.util.List;
-import java.util.stream.Collector;
 
 /**
  * A connection to Microsoft SQL Server.
@@ -88,24 +85,8 @@ public interface MSSQLConnection extends SqlConnection {
    * {@inheritDoc}
    */
   @Fluent
-  @GenIgnore
-  @Override
-  <R> MSSQLConnection preparedQuery(String s, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
   @Override
   MSSQLConnection query(String s, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @GenIgnore
-  @Override
-  <R> MSSQLConnection query(String s, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   /**
    * {@inheritDoc}
@@ -118,22 +99,7 @@ public interface MSSQLConnection extends SqlConnection {
    * {@inheritDoc}
    */
   @Fluent
-  @GenIgnore
-  @Override
-  <R> MSSQLConnection preparedQuery(String s, Tuple tuple, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
   @Override
   MSSQLConnection preparedBatch(String s, List<Tuple> list, Handler<AsyncResult<RowSet<Row>>> handler);
 
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @GenIgnore
-  @Override
-  <R> MSSQLConnection preparedBatch(String s, List<Tuple> list, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 }

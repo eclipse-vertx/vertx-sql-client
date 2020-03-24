@@ -20,18 +20,15 @@ package io.vertx.pgclient;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.pgclient.impl.PgConnectionImpl;
 import io.vertx.sqlclient.PreparedQuery;
-import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.codegen.annotations.Fluent;
-import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.*;
 
 import java.util.List;
-import java.util.stream.Collector;
 
 /**
  * A connection to Postgres.
@@ -165,24 +162,8 @@ public interface PgConnection extends SqlConnection {
    * {@inheritDoc}
    */
   @Fluent
-  @GenIgnore
-  @Override
-  <R> PgConnection preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
   @Override
   PgConnection query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @GenIgnore
-  @Override
-  <R> PgConnection query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   /**
    * {@inheritDoc}
@@ -196,21 +177,6 @@ public interface PgConnection extends SqlConnection {
    */
   @Fluent
   @Override
-  @GenIgnore
-  <R> PgConnection preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
   PgConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
 
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @GenIgnore
-  @Override
-  <R> PgConnection preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 }

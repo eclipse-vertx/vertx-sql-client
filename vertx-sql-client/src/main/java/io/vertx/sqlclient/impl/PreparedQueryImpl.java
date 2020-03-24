@@ -94,6 +94,7 @@ class PreparedQueryImpl<T, R extends SqlResult<T>> implements PreparedQuery<R> {
                                            SqlResultBuilder<R, ?, F> builder,
                                            Promise<F> p) {
     if (context == Vertx.currentContext()) {
+      SqlResultHandler handler = builder.createHandler(p);
       builder.execute(
         conn,
         ps,
@@ -102,7 +103,7 @@ class PreparedQueryImpl<T, R extends SqlResult<T>> implements PreparedQuery<R> {
         fetch,
         cursorId,
         suspended,
-        p);
+        handler);
     } else {
       context.runOnContext(v -> execute(args, fetch, cursorId, suspended, builder, p));
     }
@@ -152,7 +153,8 @@ class PreparedQueryImpl<T, R extends SqlResult<T>> implements PreparedQuery<R> {
                                          SqlResultBuilder<R, ?, F> builder,
                                          Promise<F> p) {
     if (context == Vertx.currentContext()) {
-      builder.batch(conn, ps, autoCommit, argsList, p);
+      SqlResultHandler handler = builder.createHandler(p);
+      builder.batch(conn, ps, autoCommit, argsList, handler);
     } else {
       context.runOnContext(v -> batch(argsList, builder, p));
     }

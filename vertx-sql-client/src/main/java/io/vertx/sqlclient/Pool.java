@@ -18,14 +18,12 @@
 package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.Fluent;
-import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 import java.util.List;
-import java.util.stream.Collector;
 
 /**
  * A connection pool which reuses a number of SQL connections.
@@ -52,29 +50,7 @@ public interface Pool extends SqlClient {
    */
   @Override
   Future<RowSet<Row>> query(String sql);
-
-  /**
-   * Borrows a connection from the connection pool, the connection will be used to execute a simple query using the given {@code sql} string,
-   * the connection will be returned to the pool when the execution completes
-   * and the asynchronous result is represented as a collection of elements transformed by the provided {@link java.util.stream.Collector}.
-   *
-   * @param sql the query SQL
-   * @param collector the collector
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  @GenIgnore
-  @Override
-  <R> Pool query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  /**
-   * Like {@link #query(String, Collector, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  @GenIgnore
-  @Override
-  <R> Future<SqlResult<R>> query(String sql, Collector<Row, ?, R> collector);
-
+  
   /**
    * Borrows a connection from the connection pool, the connection will be used to execute the given {@code sql} string using a prepared statement without any parameter,
    * the connection will be returned to the pool when the execution completes and the asynchronous result is represented as a {@link RowSet}.
@@ -92,28 +68,6 @@ public interface Pool extends SqlClient {
    */
   @Override
   Future<RowSet<Row>> preparedQuery(String sql);
-
-  /**
-   * Borrows a connection from the connection pool, the connection will be used to execute the given {@code sql} string using a prepared statement without any parameter,
-   * the connection will be returned to the pool when the execution completes
-   * and the asynchronous result is represented as a collection of elements transformed by the provided {@link java.util.stream.Collector}.
-   *
-   * @param sql the prepared query SQL
-   * @param collector the collector
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  @Override
-  @GenIgnore
-  <R> Pool preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  /**
-   * Like {@link #preparedQuery(String, Collector, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  @GenIgnore
-  @Override
-  <R> Future<SqlResult<R>> preparedQuery(String sql, Collector<Row, ?, R> collector);
 
   /**
    * Borrows a connection from the connection pool, the connection will be used to execute the given {@code sql} string using a prepared statement with parameters set in the {@code Tuple},
@@ -135,28 +89,6 @@ public interface Pool extends SqlClient {
   Future<RowSet<Row>> preparedQuery(String sql, Tuple arguments);
 
   /**
-   * Borrows a connection from the connection pool, the connection will be used to execute the given {@code sql} string using a prepared statement with parameters set in the {@code Tuple},
-   * the connection will be returned to the pool when the execution completes and the asynchronous result is represented as a collection of elements transformed by the provided {@link java.util.stream.Collector}.
-   *
-   * @param sql the prepared query SQL
-   * @param arguments the list of arguments
-   * @param collector the collector
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  @Override
-  @GenIgnore
-  <R> Pool preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  /**
-   * Like {@link #preparedQuery(String, Tuple, Collector, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  @GenIgnore
-  @Override
-  <R> Future<SqlResult<R>> preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector);
-
-  /**
    * Borrows a connection from the connection pool, the connection will be used to execute the given {@code sql} string using a prepared statement with a batch of parameters set in the {@code List},
    * the connection will be returned to the pool when the execution completes and the asynchronous result is represented as a {@link RowSet}.
    *
@@ -174,28 +106,6 @@ public interface Pool extends SqlClient {
    */
   @Override
   Future<RowSet<Row>> preparedBatch(String sql, List<Tuple> batch);
-
-  /**
-   * Borrows a connection from the connection pool, the connection will be used to execute the given {@code sql} string using a prepared statement with a batch of parameters set in the {@code List},
-   * the connection will be returned to the pool when the execution completes and the asynchronous result is represented as a collection of elements transformed by the provided {@link java.util.stream.Collector}.
-   *
-   * @param sql the prepared query SQL
-   * @param batch the batch of tuples
-   * @param collector the collector
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  @GenIgnore
-  @Override
-  <R> Pool preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  /**
-   * Like {@link #preparedBatch(String, List, Collector, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  @GenIgnore
-  @Override
-  <R> Future<SqlResult<R>> preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector);
 
   /**
    * Get a connection from the pool.

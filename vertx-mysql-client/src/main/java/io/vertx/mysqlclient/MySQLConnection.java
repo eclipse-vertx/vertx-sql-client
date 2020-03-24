@@ -12,7 +12,6 @@
 package io.vertx.mysqlclient;
 
 import io.vertx.codegen.annotations.Fluent;
-import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -23,11 +22,9 @@ import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
 
 import java.util.List;
-import java.util.stream.Collector;
 
 import static io.vertx.mysqlclient.MySQLConnectOptions.*;
 
@@ -116,24 +113,8 @@ public interface MySQLConnection extends SqlConnection {
    * {@inheritDoc}
    */
   @Fluent
-  @GenIgnore
-  @Override
-  <R> MySQLConnection preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
   @Override
   MySQLConnection query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @GenIgnore
-  @Override
-  <R> MySQLConnection query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   /**
    * {@inheritDoc}
@@ -146,24 +127,8 @@ public interface MySQLConnection extends SqlConnection {
    * {@inheritDoc}
    */
   @Fluent
-  @GenIgnore
-  @Override
-  <R> MySQLConnection preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
   @Override
   MySQLConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @GenIgnore
-  @Override
-  <R> MySQLConnection preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   /**
    * Send a PING command to check if the server is alive.

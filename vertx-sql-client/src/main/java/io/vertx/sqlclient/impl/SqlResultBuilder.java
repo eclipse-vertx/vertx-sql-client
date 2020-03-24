@@ -44,12 +44,15 @@ class SqlResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     this.collector = collector;
   }
 
+  SqlResultHandler<T, R, L> createHandler(Promise<L> resultHandler) {
+    return new SqlResultHandler<>(factory, resultHandler);
+  }
+
   void execute(CommandScheduler scheduler,
-                                    String sql,
-                                    boolean autoCommit,
-                                    boolean singleton,
-                                    Promise<L> resultHandler) {
-    SqlResultHandler<T, R, L> handler = new SqlResultHandler<>(factory, resultHandler);
+               String sql,
+               boolean autoCommit,
+               boolean singleton,
+               SqlResultHandler<T, R, L> handler) {
     SimpleQueryCommand<T> cmd = new SimpleQueryCommand<>(sql, singleton, autoCommit, collector, handler);
     scheduler.schedule(cmd, handler);
   }
@@ -61,13 +64,12 @@ class SqlResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
                                     int fetch,
                                     String cursorId,
                                     boolean suspended,
-                                    Promise<L> resultHandler) {
+                                    SqlResultHandler<T, R, L> handler) {
     String msg = preparedStatement.prepare((TupleInternal) args);
     if (msg != null) {
-      resultHandler.fail(msg);
+      handler.fail(msg);
       return null;
     }
-    SqlResultHandler<T, R, L> handler = new SqlResultHandler<>(factory, resultHandler);
     ExtendedQueryCommand<T> cmd = new ExtendedQueryCommand<>(
       preparedStatement,
       args,
@@ -81,20 +83,39 @@ class SqlResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     return handler;
   }
 
+  ExtendedQueryCommand<T> createCommand(PreparedStatement preparedStatement,
+                                        boolean autoCommit,
+                                        Tuple args,
+                                        SqlResultHandler<T, R, L> handler) {
+    return new ExtendedQueryCommand<>(
+      preparedStatement,
+      args,
+      autoCommit,
+      collector,
+      handler);
+  }
+
+
   void batch(CommandScheduler scheduler,
              PreparedStatement preparedStatement,
              boolean autoCommit,
              List<Tuple> argsList,
-             Promise<L> resultHandler) {
+             SqlResultHandler<T, R, L> handler) {
     for  (Tuple args : argsList) {
       String msg = preparedStatement.prepare((TupleInternal)args);
       if (msg != null) {
-        resultHandler.fail(msg);
+        handler.fail(msg);
         return;
       }
     }
-    SqlResultHandler<T, R, L> handler = new SqlResultHandler<>(factory, resultHandler);
     ExtendedBatchQueryCommand<T> cmd = new ExtendedBatchQueryCommand<>(preparedStatement, argsList, autoCommit, collector, handler);
     scheduler.schedule(cmd, handler);
+  }
+
+  ExtendedBatchQueryCommand<T> createBatchCommand(PreparedStatement preparedStatement,
+                                                  boolean autoCommit,
+                                                  List<Tuple> argsList,
+                                                  SqlResultHandler<T, R, L> handler) {
+    return new ExtendedBatchQueryCommand<>(preparedStatement, argsList, autoCommit, collector, handler);
   }
 }

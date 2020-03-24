@@ -18,10 +18,10 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Promise;
+import io.vertx.sqlclient.Query;
 import io.vertx.sqlclient.impl.command.BiCommand;
 import io.vertx.sqlclient.impl.command.CommandScheduler;
 import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
-import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.RowSet;
@@ -43,81 +43,30 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
   protected abstract <T> Promise<T> promise(Handler<AsyncResult<T>> handler);
 
   @Override
+  public Query<RowSet<Row>> createQuery(String sql) {
+    return QueryImpl.create(this, autoCommit(), false, false, sql);
+  }
+
+  @Override
   public C query(String sql, Handler<AsyncResult<RowSet<Row>>> handler) {
-    return query(sql, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, promise(handler));
+    createQuery(sql).execute(handler);
+    return (C) this;
   }
 
   @Override
   public Future<RowSet<Row>> query(String sql) {
-    Promise<RowSet<Row>> promise = promise();
-    query(sql, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, promise);
-    return promise.future();
-  }
-
-  @Override
-  public <R> C query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
-    return query(sql, true, SqlResultImpl::new, collector, promise(handler));
-  }
-
-  @Override
-  public <R> Future<SqlResult<R>> query(String sql, Collector<Row, ?, R> collector) {
-    Promise<SqlResult<R>> promise = promise();
-    query(sql, true, SqlResultImpl::new, collector, promise);
-    return promise.future();
-  }
-
-  private <R1, R2 extends SqlResultBase<R1>, R3 extends SqlResult<R1>> C query(
-    String sql,
-    boolean singleton,
-    Function<R1, R2> factory,
-    Collector<Row, ?, R1> collector,
-    Promise<R3> promise) {
-    SqlResultBuilder<R1, R2, R3> builder = new SqlResultBuilder<>(factory, collector);
-    builder.execute(this, sql, autoCommit(), singleton, promise);
-    return (C) this;
+    return createQuery(sql).execute();
   }
 
   @Override
   public C preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler) {
-    return preparedQuery(sql, (TupleInternal)arguments, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, promise(handler));
+    createPreparedQuery(sql).execute(arguments, handler);
+    return (C) this;
   }
 
   @Override
   public Future<RowSet<Row>> preparedQuery(String sql, Tuple arguments) {
-    Promise<RowSet<Row>> promise = promise();
-    preparedQuery(sql, (TupleInternal)arguments, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, promise);
-    return promise.future();
-  }
-
-  @Override
-  public <R> C preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
-    return preparedQuery(sql, (TupleInternal)arguments, SqlResultImpl::new, collector, promise(handler));
-  }
-
-  @Override
-  public <R> Future<SqlResult<R>> preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector) {
-    Promise<SqlResult<R>> promise = promise();
-    preparedQuery(sql, (TupleInternal)arguments, SqlResultImpl::new, collector, promise);
-    return promise.future();
-  }
-
-  private <R1, R2 extends SqlResultBase<R1>, R3 extends SqlResult<R1>> C preparedQuery(
-    String sql,
-    TupleInternal arguments,
-    Function<R1, R2> factory,
-    Collector<Row, ?, R1> collector,
-    Promise<R3> promise) {
-    SqlResultHandler<R1, R2, R3> builder = new SqlResultHandler<>(factory, promise);
-    BiCommand<PreparedStatement, Boolean> abc = new BiCommand<>(new PrepareStatementCommand(sql), ps -> {
-      String msg = ps.prepare(arguments);
-      if (msg != null) {
-        return Future.failedFuture(msg);
-      } else {
-        return Future.succeededFuture(new ExtendedQueryCommand<>(ps, arguments, autoCommit(), collector, builder));
-      }
-    });
-    schedule(abc, builder);
-    return (C) this;
+    return createPreparedQuery(sql).execute(arguments);
   }
 
   @Override
@@ -126,46 +75,24 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
   }
 
   @Override
+  public Query<RowSet<Row>> createPreparedQuery(String sql) {
+    return QueryImpl.create(this, autoCommit(), false, true, sql);
+  }
+
+  @Override
   public Future<RowSet<Row>> preparedQuery(String sql) {
-    Promise<RowSet<Row>> promise = promise();
-    preparedQuery(sql, ArrayTuple.EMPTY, promise);
-    return promise.future();
-  }
-
-  @Override
-  public <R> C preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
-    return preparedQuery(sql, ArrayTuple.EMPTY, collector, handler);
-  }
-
-  @Override
-  public <R> Future<SqlResult<R>> preparedQuery(String sql, Collector<Row, ?, R> collector) {
-    Promise<SqlResult<R>> promise = promise();
-    preparedQuery(sql, ArrayTuple.EMPTY, collector, promise);
-    return promise.future();
+    return preparedQuery(sql, ArrayTuple.EMPTY);
   }
 
   @Override
   public C preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler) {
-    return preparedBatch(sql, batch, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, promise(handler));
+    createPreparedQuery(sql).batch(batch, handler);
+    return (C) this;
   }
 
   @Override
   public Future<RowSet<Row>> preparedBatch(String sql, List<Tuple> batch) {
-    Promise<RowSet<Row>> promise = promise();
-    preparedBatch(sql, batch, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, promise);
-    return promise.future();
-  }
-
-  @Override
-  public <R> C preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
-    return preparedBatch(sql, batch, SqlResultImpl::new, collector, promise(handler));
-  }
-
-  @Override
-  public <R> Future<SqlResult<R>> preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector) {
-    Promise<SqlResult<R>> promise = promise();
-    preparedBatch(sql, batch, SqlResultImpl::new, collector, promise);
-    return promise.future();
+    return createPreparedQuery(sql).batch(batch);
   }
 
   private <R1, R2 extends SqlResultBase<R1>, R3 extends SqlResult<R1>> C preparedBatch(

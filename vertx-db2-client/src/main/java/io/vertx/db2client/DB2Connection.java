@@ -15,10 +15,8 @@
  */
 package io.vertx.db2client;
 
-import java.util.stream.Collector;
 
 import io.vertx.codegen.annotations.Fluent;
-import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -29,7 +27,6 @@ import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
 
 import static io.vertx.db2client.DB2ConnectOptions.fromUri;
@@ -86,23 +83,11 @@ public interface DB2Connection extends SqlConnection {
     @Override
     DB2Connection preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
-    @GenIgnore
-    @Override
-    <R> DB2Connection preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
     @Override
     DB2Connection query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
 
-    @GenIgnore
-    @Override
-    <R> DB2Connection query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
     @Override
     DB2Connection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
-
-    @GenIgnore
-    @Override
-    <R> DB2Connection preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
     /**
      * Send a PING command to check if the server is alive.

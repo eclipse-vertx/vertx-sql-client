@@ -360,9 +360,7 @@ public class MySQLClientExamples {
       row -> row.getString("last_name"));
 
     // Run the query with the collector
-    client.query("SELECT * FROM users",
-      collector,
-      ar -> {
+    client.createQuery("SELECT * FROM users").collecting(collector).execute(ar -> {
         if (ar.succeeded()) {
           SqlResult<Map<Long, String>> result = ar.result();
 
@@ -384,9 +382,7 @@ public class MySQLClientExamples {
     );
 
     // Run the query with the collector
-    client.query("SELECT * FROM users",
-      collector,
-      ar -> {
+    client.createQuery("SELECT * FROM users").collecting(collector).execute(ar -> {
         if (ar.succeeded()) {
           SqlResult<String> result = ar.result();
 
