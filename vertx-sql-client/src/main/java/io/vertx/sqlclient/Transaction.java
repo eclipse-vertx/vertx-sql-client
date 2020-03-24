@@ -37,12 +37,12 @@ public interface Transaction extends SqlClient {
    * @param handler the handler notified with the prepared query asynchronously
    */
   @Fluent
-  Transaction prepare(String sql, Handler<AsyncResult<PreparedStatement<RowSet<Row>>>> handler);
+  Transaction prepare(String sql, Handler<AsyncResult<PreparedStatement>> handler);
 
   /**
    * Like {@link #prepare(String, Handler)} but returns a {@code Future} of the asynchronous result
    */
-  Future<PreparedStatement<RowSet<Row>>> prepare(String sql);
+  Future<PreparedStatement> prepare(String sql);
 
   /**
    * Commit the current transaction.

@@ -125,7 +125,7 @@ public class GeometricTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
           Polygon polygon = new Polygon(Arrays.asList(new Point(2.0, 2.0), new Point(3.0, 3.0), new Point(4.0, 2.0)));
           Circle circle = new Circle(new Point(1.0, 1.0), 3.0);
           int id = 2;
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
             .addValue(point)
             .addValue(line)
             .addValue(lineSegment)
@@ -203,7 +203,7 @@ public class GeometricTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
             new Polygon(Arrays.asList(new Point(0.0, 0.0), new Point(0.0, 1.0), new Point(1.0, 2.0), new Point(2.0, 1.0), new Point(2.0, 0.0)))};
           Circle[] circles = {new Circle(new Point(1.0, 1.0), 3.0), new Circle(new Point(2.0, 2.0), 2.0)};
           int id = 2;
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
             .addValues(points)
             .addValues(lines)
             .addValues(lineSegments)

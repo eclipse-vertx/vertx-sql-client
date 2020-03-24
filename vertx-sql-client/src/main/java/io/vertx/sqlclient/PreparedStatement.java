@@ -17,16 +17,11 @@
 
 package io.vertx.sqlclient;
 
-import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.Future;
 import io.vertx.sqlclient.impl.ArrayTuple;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collector;
 
 /**
  * A prepared statement, the statement is pre-compiled and
@@ -36,44 +31,14 @@ import java.util.stream.Collector;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 @VertxGen
-public interface PreparedStatement<T> {
+public interface PreparedStatement {
 
   /**
-   * Calls {@link #execute(Tuple, Handler)} with an empty tuple argument.
-   */
-  default void execute(Handler<AsyncResult<T>> handler) {
-    execute(ArrayTuple.EMPTY, handler);
-  }
-
-  /**
-   * Like {@link #execute(Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  default Future<T> execute() {
-    return execute(ArrayTuple.EMPTY);
-  }
-
-  /**
-   * Create a cursor with the provided {@code arguments}.
+   * Create a query.
    *
-   * @param args the list of arguments
+   * @return the query
    */
-  void execute(Tuple args, Handler<AsyncResult<T>> handler);
-
-  /**
-   * Like {@link #execute(Tuple, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  Future<T> execute(Tuple args);
-
-  /**
-   * Use the specified {@code collector} for collecting the query result to {@code <R>}.
-   */
-  @GenIgnore
-  <R> PreparedStatement<SqlResult<R>> collecting(Collector<Row, ?, R> collector);
-
-  /**
-   * Use the specified {@code mapper} for mapping {@link Row} to {@code <U>}.
-   */
-  <U> PreparedStatement<RowSet<U>> mapping(Function<Row, U> mapper);
+  Query<RowSet<Row>> query();
 
   /**
    * @return create a query cursor with a {@code fetch} size and empty arguments
@@ -101,18 +66,6 @@ public interface PreparedStatement<T> {
    * @return the createStream
    */
   RowStream<Row> createStream(int fetch, Tuple args);
-
-  /**
-   * Execute a batch.
-   *
-   * @param argsList the list of tuple for the batch
-   */
-  void batch(List<Tuple> argsList, Handler<AsyncResult<T>> handler);
-
-  /**
-   * Like {@link #batch(List, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  Future<T> batch(List<Tuple> argsList);
 
   /**
    * Close the prepared query and release its resources.

@@ -72,7 +72,7 @@ public interface DB2Connection extends SqlConnection {
     }
 
     @Override
-    DB2Connection prepare(String sql, Handler<AsyncResult<PreparedStatement<RowSet<Row>>>> handler);
+    DB2Connection prepare(String sql, Handler<AsyncResult<PreparedStatement>> handler);
 
     @Override
     DB2Connection exceptionHandler(Handler<Throwable> handler);

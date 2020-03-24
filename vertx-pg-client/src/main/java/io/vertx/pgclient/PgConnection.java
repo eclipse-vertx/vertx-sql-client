@@ -135,7 +135,7 @@ public interface PgConnection extends SqlConnection {
    */
   @Fluent
   @Override
-  PgConnection prepare(String sql, Handler<AsyncResult<PreparedStatement<RowSet<Row>>>> handler);
+  PgConnection prepare(String sql, Handler<AsyncResult<PreparedStatement>> handler);
 
   /**
    * {@inheritDoc}

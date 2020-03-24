@@ -59,7 +59,7 @@ public abstract class PreparedQueryTestBase {
   protected abstract String statement(String... parts);
 
   protected abstract void initConnector();
-  
+
   protected boolean cursorRequiresTx() {
       return true;
   }
@@ -124,7 +124,7 @@ public abstract class PreparedQueryTestBase {
   public void testPreparedQueryParamCoercionTypeError(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare(statement("SELECT * FROM immutable WHERE id=", ""), ctx.asyncAssertSuccess(ps -> {
-        ps.execute(Tuple.of("1"), ctx.asyncAssertFailure(error -> {
+        ps.query().execute(Tuple.of("1"), ctx.asyncAssertFailure(error -> {
           ctx.assertEquals("Parameter at position[0] with class = [java.lang.String] and value = [1] can not be coerced to the expected class = [java.lang.Number] for encoding.", error.getMessage());
         }));
       }));
@@ -135,7 +135,7 @@ public abstract class PreparedQueryTestBase {
   public void testPreparedQueryParamCoercionQuantityError(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare(statement("SELECT * FROM immutable WHERE id=", ""), ctx.asyncAssertSuccess(ps -> {
-        ps.execute(Tuple.of(1, 2), ctx.asyncAssertFailure(error -> {
+        ps.query().execute(Tuple.of(1, 2), ctx.asyncAssertFailure(error -> {
           ctx.assertEquals("The number of parameters to execute should be consistent with the expected number of parameters = [1] but the actual number is [2].", error.getMessage());
         }));
       }));
@@ -258,7 +258,7 @@ public abstract class PreparedQueryTestBase {
                   }));
                 }));
               }));
-            }));  
+            }));
       };
       if (cursorRequiresTx()) {
           conn.query("BEGIN", ctx.asyncAssertSuccess(begin -> {

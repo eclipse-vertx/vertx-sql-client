@@ -30,13 +30,11 @@ import io.vertx.sqlclient.impl.command.BiCommand;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collector;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class QueryImpl<T, R extends SqlResult<T>> implements Query<R> {
+public class QueryImpl<T, R extends SqlResult<T>> extends QueryBase<T, R> {
 
   static Query<RowSet<Row>> create(SqlClientBase<?> client, boolean autoCommit, boolean singleton, boolean prepared, String sql) {
     SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
@@ -44,29 +42,21 @@ public class QueryImpl<T, R extends SqlResult<T>> implements Query<R> {
   }
 
   private final SqlClientBase<?> scheduler;
-  private final boolean autoCommit;
   private final boolean singleton;
   private final boolean prepared;
   private final String sql;
-  private final SqlResultBuilder<T, ?, R> builder;
 
   public QueryImpl(SqlClientBase<?> client, boolean autoCommit, boolean singleton, boolean prepared, String sql, SqlResultBuilder<T, ?, R> builder) {
+    super(autoCommit, builder);
     this.scheduler = client;
-    this.autoCommit = autoCommit;
     this.singleton = singleton;
     this.prepared = prepared;
     this.sql = sql;
-    this.builder = builder;
   }
 
   @Override
-  public void execute(Handler<AsyncResult<R>> handler) {
-    execute(ArrayTuple.EMPTY, handler);
-  }
-
-  @Override
-  public Future<R> execute() {
-    return execute(ArrayTuple.EMPTY);
+  protected <T2, R2 extends SqlResult<T2>> QueryBase<T2, R2> copy(SqlResultBuilder<T2, ?, R2> builder) {
+    return new QueryImpl<>(scheduler, autoCommit, singleton, prepared, sql, builder);
   }
 
   private void execute(Tuple arguments, Promise<R> promise) {
@@ -95,18 +85,6 @@ public class QueryImpl<T, R extends SqlResult<T>> implements Query<R> {
     Promise<R> promise = scheduler.promise();
     execute(tuple, promise);
     return promise.future();
-  }
-
-  @Override
-  public <U> Query<SqlResult<U>> collecting(Collector<Row, ?, U> collector) {
-    SqlResultBuilder<U, SqlResultImpl<U>, SqlResult<U>> builder = new SqlResultBuilder<>(SqlResultImpl::new, collector);
-    return new QueryImpl<>(scheduler, autoCommit, singleton, prepared, sql, builder);
-  }
-
-  @Override
-  public <U> Query<RowSet<U>> mapping(Function<Row, U> mapper) {
-    SqlResultBuilder<RowSet<U>, RowSetImpl<U>, RowSet<U>> builder = new SqlResultBuilder<>(RowSetImpl.factory(), RowSetImpl.collector(mapper));
-    return new QueryImpl<>(scheduler, autoCommit, singleton, prepared, sql, builder);
   }
 
   @Override

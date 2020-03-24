@@ -22,7 +22,7 @@ public class UUIDTypeExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBas
       conn.prepare("UPDATE \"CharacterDataType\" SET \"uuid\" = $1 WHERE \"id\" = $2 RETURNING \"uuid\"",
         ctx.asyncAssertSuccess(p -> {
           UUID uuid = UUID.fromString("92b53cf1-2ad0-49f9-be9d-ca48966e43ee");
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
             .addUUID(uuid)
             .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
@@ -50,7 +50,7 @@ public class UUIDTypeExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBas
       conn.prepare("UPDATE \"ArrayDataType\" SET \"UUID\" = $1  WHERE \"id\" = $2 RETURNING \"UUID\"",
         ctx.asyncAssertSuccess(p -> {
           final UUID uuid = UUID.fromString("6f790482-b5bd-438b-a8b7-4a0bed747011");
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addUUIDArray(new UUID[]{uuid})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {

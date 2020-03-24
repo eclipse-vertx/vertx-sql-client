@@ -18,6 +18,7 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.sqlclient.Query;
 import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
 import io.vertx.sqlclient.Cursor;
@@ -31,60 +32,32 @@ import io.vertx.core.*;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
-import java.util.stream.Collector;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class PreparedStatementImpl<T, R extends SqlResult<T>> implements PreparedStatement<R> {
+class PreparedStatementImpl implements PreparedStatement {
 
-  static PreparedStatement<RowSet<Row>> create(Connection conn, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
-    SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
-    return new PreparedStatementImpl<>(conn, context, ps, autoCommit, builder);
+  static PreparedStatement create(Connection conn, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
+    return new PreparedStatementImpl(conn, context, ps, autoCommit);
   }
 
   final Connection conn;
-  private final ContextInternal context;
+  final ContextInternal context;
   final io.vertx.sqlclient.impl.PreparedStatement ps;
   final boolean autoCommit;
   private final AtomicBoolean closed = new AtomicBoolean();
-  private SqlResultBuilder<T, ?, R> builder;
 
-  private PreparedStatementImpl(Connection conn, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit, SqlResultBuilder<T, ?, R> builder) {
+  private PreparedStatementImpl(Connection conn, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
     this.conn = conn;
     this.context = context;
     this.ps = ps;
     this.autoCommit = autoCommit;
-    this.builder = builder;
   }
 
   @Override
-  public <R2> PreparedStatement<SqlResult<R2>> collecting(Collector<Row, ?, R2> collector) {
-    SqlResultBuilder<R2, SqlResultImpl<R2>, SqlResult<R2>> builder = new SqlResultBuilder<>(SqlResultImpl::new, collector);
-    return new PreparedStatementImpl<>(conn, context, ps, autoCommit, builder);
-  }
-
-  @Override
-  public <U> PreparedStatement<RowSet<U>> mapping(Function<Row, U> mapper) {
-    SqlResultBuilder<RowSet<U>, RowSetImpl<U>, RowSet<U>> builder = new SqlResultBuilder<>(RowSetImpl.factory(), RowSetImpl.collector(mapper));
-    return new PreparedStatementImpl<>(conn, context, ps, autoCommit, builder);
-  }
-
-  @Override
-  public void execute(Tuple args, Handler<AsyncResult<R>> handler) {
-    execute(args, context.promise(handler));
-  }
-
-  @Override
-  public Future<R> execute(Tuple args) {
-    Promise<R> promise = context.promise();
-    execute(args, promise);
-    return promise.future();
-  }
-
-  private void execute(Tuple args, Promise<R> promise) {
-    execute(args, 0, null, false, builder, promise);
+  public Query<RowSet<Row>> query() {
+    return PreparedQuery.create(this, autoCommit);
   }
 
   <R, F extends SqlResult<R>> void execute(Tuple args,
@@ -132,21 +105,6 @@ class PreparedStatementImpl<T, R extends SqlResult<T>> implements PreparedStatem
     } else {
       return context.failedFuture("Already closed");
     }
-  }
-
-  public void batch(List<Tuple> argsList, Handler<AsyncResult<R>> handler) {
-    batch(argsList, context.promise(handler));
-  }
-
-  @Override
-  public Future<R> batch(List<Tuple> argsList) {
-    Promise<R> promise = context.promise();
-    batch(argsList, promise);
-    return promise.future();
-  }
-
-  private void batch(List<Tuple> argsList, Promise<R> promise) {
-    batch(argsList, builder, promise);
   }
 
   <R, F extends SqlResult<R>> void batch(List<Tuple> argsList,
