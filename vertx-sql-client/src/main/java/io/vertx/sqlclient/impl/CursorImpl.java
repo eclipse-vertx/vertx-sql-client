@@ -33,7 +33,7 @@ import java.util.UUID;
  */
 public class CursorImpl implements Cursor {
 
-  private final PreparedQueryImpl ps;
+  private final PreparedStatementImpl ps;
   private final ContextInternal context;
   private final TupleInternal params;
 
@@ -41,7 +41,7 @@ public class CursorImpl implements Cursor {
   private boolean closed;
   private SqlResultHandler<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> result;
 
-  CursorImpl(PreparedQueryImpl ps, ContextInternal context, TupleInternal params) {
+  CursorImpl(PreparedStatementImpl ps, ContextInternal context, TupleInternal params) {
     this.ps = ps;
     this.context = context;
     this.params = params;

@@ -36,7 +36,7 @@ import java.util.stream.Collector;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 @VertxGen
-public interface PreparedQuery<T> {
+public interface PreparedStatement<T> {
 
   /**
    * Calls {@link #execute(Tuple, Handler)} with an empty tuple argument.
@@ -68,12 +68,12 @@ public interface PreparedQuery<T> {
    * Use the specified {@code collector} for collecting the query result to {@code <R>}.
    */
   @GenIgnore
-  <R> PreparedQuery<SqlResult<R>> collecting(Collector<Row, ?, R> collector);
+  <R> PreparedStatement<SqlResult<R>> collecting(Collector<Row, ?, R> collector);
 
   /**
    * Use the specified {@code mapper} for mapping {@link Row} to {@code <U>}.
    */
-  <U> PreparedQuery<RowSet<U>> mapping(Function<Row, U> mapper);
+  <U> PreparedStatement<RowSet<U>> mapping(Function<Row, U> mapper);
 
   /**
    * @return create a query cursor with a {@code fetch} size and empty arguments

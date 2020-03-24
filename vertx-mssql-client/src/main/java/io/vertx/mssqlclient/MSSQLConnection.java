@@ -18,7 +18,7 @@ import io.vertx.mssqlclient.impl.MSSQLConnectionImpl;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.sqlclient.PreparedQuery;
+import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlConnection;
@@ -58,7 +58,7 @@ public interface MSSQLConnection extends SqlConnection {
    */
   @Fluent
   @Override
-  MSSQLConnection prepare(String s, Handler<AsyncResult<PreparedQuery<RowSet<Row>>>> handler);
+  MSSQLConnection prepare(String s, Handler<AsyncResult<PreparedStatement<RowSet<Row>>>> handler);
 
   /**
    * {@inheritDoc}

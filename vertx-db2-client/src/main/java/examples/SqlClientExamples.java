@@ -20,7 +20,7 @@ import io.vertx.docgen.Source;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.PreparedQuery;
+import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.RowStream;
@@ -151,7 +151,7 @@ public class SqlClientExamples {
   public void usingConnections02(SqlConnection connection) {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
       if (ar1.succeeded()) {
-        PreparedQuery<RowSet<Row>> pq = ar1.result();
+        PreparedStatement<RowSet<Row>> pq = ar1.result();
         pq.execute(Tuple.of("andy"), ar2 -> {
           if (ar2.succeeded()) {
             // All rows
@@ -165,7 +165,7 @@ public class SqlClientExamples {
   public void usingConnections03(SqlConnection connection) {
     connection.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", ar1 -> {
       if (ar1.succeeded()) {
-        PreparedQuery<RowSet<Row>> prepared = ar1.result();
+        PreparedStatement<RowSet<Row>> prepared = ar1.result();
 
         // Create a query : bind parameters
         List<Tuple> batch = new ArrayList();
@@ -269,7 +269,7 @@ public class SqlClientExamples {
   public void usingCursors01(SqlConnection connection) {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
       if (ar1.succeeded()) {
-        PreparedQuery pq = ar1.result();
+        PreparedStatement pq = ar1.result();
 
         // Cursors require to run within a transaction
         Transaction tx = connection.begin();
@@ -307,7 +307,7 @@ public class SqlClientExamples {
   public void usingCursors03(SqlConnection connection) {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
       if (ar1.succeeded()) {
-        PreparedQuery pq = ar1.result();
+        PreparedStatement pq = ar1.result();
 
         // Streams require to run within a transaction
         Transaction tx = connection.begin();

@@ -19,7 +19,7 @@ package io.vertx.pgclient;
 
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.pgclient.impl.PgConnectionImpl;
-import io.vertx.sqlclient.PreparedQuery;
+import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlConnection;
@@ -135,7 +135,7 @@ public interface PgConnection extends SqlConnection {
    */
   @Fluent
   @Override
-  PgConnection prepare(String sql, Handler<AsyncResult<PreparedQuery<RowSet<Row>>>> handler);
+  PgConnection prepare(String sql, Handler<AsyncResult<PreparedStatement<RowSet<Row>>>> handler);
 
   /**
    * {@inheritDoc}

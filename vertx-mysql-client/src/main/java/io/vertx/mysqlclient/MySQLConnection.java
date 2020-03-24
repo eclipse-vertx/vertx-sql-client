@@ -18,7 +18,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.mysqlclient.impl.MySQLConnectionImpl;
-import io.vertx.sqlclient.PreparedQuery;
+import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlConnection;
@@ -86,7 +86,7 @@ public interface MySQLConnection extends SqlConnection {
    */
   @Fluent
   @Override
-  MySQLConnection prepare(String sql, Handler<AsyncResult<PreparedQuery<RowSet<Row>>>> handler);
+  MySQLConnection prepare(String sql, Handler<AsyncResult<PreparedStatement<RowSet<Row>>>> handler);
 
   /**
    * {@inheritDoc}

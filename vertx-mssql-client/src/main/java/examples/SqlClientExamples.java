@@ -140,7 +140,7 @@ public class SqlClientExamples {
   public void usingConnections02(SqlConnection connection) {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE @p1", ar1 -> {
       if (ar1.succeeded()) {
-        PreparedQuery<RowSet<Row>> pq = ar1.result();
+        PreparedStatement<RowSet<Row>> pq = ar1.result();
         pq.execute(Tuple.of("julien"), ar2 -> {
           if (ar2.succeeded()) {
             // All rows
@@ -154,7 +154,7 @@ public class SqlClientExamples {
   public void usingConnections03(SqlConnection connection) {
     connection.prepare("INSERT INTO USERS (id, name) VALUES (@p1, @p2)", ar1 -> {
       if (ar1.succeeded()) {
-        PreparedQuery<RowSet<Row>> prepared = ar1.result();
+        PreparedStatement<RowSet<Row>> prepared = ar1.result();
 
         // Create a query : bind parameters
         List<Tuple> batch = new ArrayList();
@@ -257,7 +257,7 @@ public class SqlClientExamples {
   public void usingCursors01(SqlConnection connection) {
     connection.prepare("SELECT * FROM users WHERE age > @p1", ar1 -> {
       if (ar1.succeeded()) {
-        PreparedQuery pq = ar1.result();
+        PreparedStatement pq = ar1.result();
 
         // Create a cursor
         Cursor cursor = pq.cursor(Tuple.of(18));
@@ -292,7 +292,7 @@ public class SqlClientExamples {
   public void usingCursors03(SqlConnection connection) {
     connection.prepare("SELECT * FROM users WHERE age > @p1", ar1 -> {
       if (ar1.succeeded()) {
-        PreparedQuery pq = ar1.result();
+        PreparedStatement pq = ar1.result();
 
         // Fetch 50 rows at a time
         RowStream<Row> stream = pq.createStream(50, Tuple.of(18));

@@ -50,7 +50,7 @@ public interface Pool extends SqlClient {
    */
   @Override
   Future<RowSet<Row>> query(String sql);
-  
+
   /**
    * Borrows a connection from the connection pool, the connection will be used to execute the given {@code sql} string using a prepared statement without any parameter,
    * the connection will be returned to the pool when the execution completes and the asynchronous result is represented as a {@link RowSet}.

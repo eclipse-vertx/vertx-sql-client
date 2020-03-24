@@ -23,7 +23,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.db2client.impl.DB2ConnectionImpl;
-import io.vertx.sqlclient.PreparedQuery;
+import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlConnection;
@@ -72,7 +72,7 @@ public interface DB2Connection extends SqlConnection {
     }
 
     @Override
-    DB2Connection prepare(String sql, Handler<AsyncResult<PreparedQuery<RowSet<Row>>>> handler);
+    DB2Connection prepare(String sql, Handler<AsyncResult<PreparedStatement<RowSet<Row>>>> handler);
 
     @Override
     DB2Connection exceptionHandler(Handler<Throwable> handler);

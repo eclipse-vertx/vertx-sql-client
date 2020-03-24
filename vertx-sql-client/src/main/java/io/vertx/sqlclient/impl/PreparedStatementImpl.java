@@ -21,7 +21,7 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
 import io.vertx.sqlclient.Cursor;
-import io.vertx.sqlclient.PreparedQuery;
+import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.RowStream;
@@ -37,21 +37,21 @@ import java.util.stream.Collector;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class PreparedQueryImpl<T, R extends SqlResult<T>> implements PreparedQuery<R> {
+class PreparedStatementImpl<T, R extends SqlResult<T>> implements PreparedStatement<R> {
 
-  static PreparedQuery<RowSet<Row>> create(Connection conn, ContextInternal context, PreparedStatement ps, boolean autoCommit) {
+  static PreparedStatement<RowSet<Row>> create(Connection conn, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
     SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
-    return new PreparedQueryImpl<>(conn, context, ps, autoCommit, builder);
+    return new PreparedStatementImpl<>(conn, context, ps, autoCommit, builder);
   }
 
   final Connection conn;
   private final ContextInternal context;
-  final PreparedStatement ps;
+  final io.vertx.sqlclient.impl.PreparedStatement ps;
   final boolean autoCommit;
   private final AtomicBoolean closed = new AtomicBoolean();
   private SqlResultBuilder<T, ?, R> builder;
 
-  private PreparedQueryImpl(Connection conn, ContextInternal context, PreparedStatement ps, boolean autoCommit, SqlResultBuilder<T, ?, R> builder) {
+  private PreparedStatementImpl(Connection conn, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit, SqlResultBuilder<T, ?, R> builder) {
     this.conn = conn;
     this.context = context;
     this.ps = ps;
@@ -60,15 +60,15 @@ class PreparedQueryImpl<T, R extends SqlResult<T>> implements PreparedQuery<R> {
   }
 
   @Override
-  public <R2> PreparedQuery<SqlResult<R2>> collecting(Collector<Row, ?, R2> collector) {
+  public <R2> PreparedStatement<SqlResult<R2>> collecting(Collector<Row, ?, R2> collector) {
     SqlResultBuilder<R2, SqlResultImpl<R2>, SqlResult<R2>> builder = new SqlResultBuilder<>(SqlResultImpl::new, collector);
-    return new PreparedQueryImpl<>(conn, context, ps, autoCommit, builder);
+    return new PreparedStatementImpl<>(conn, context, ps, autoCommit, builder);
   }
 
   @Override
-  public <U> PreparedQuery<RowSet<U>> mapping(Function<Row, U> mapper) {
+  public <U> PreparedStatement<RowSet<U>> mapping(Function<Row, U> mapper) {
     SqlResultBuilder<RowSet<U>, RowSetImpl<U>, RowSet<U>> builder = new SqlResultBuilder<>(RowSetImpl.factory(), RowSetImpl.collector(mapper));
-    return new PreparedQueryImpl<>(conn, context, ps, autoCommit, builder);
+    return new PreparedStatementImpl<>(conn, context, ps, autoCommit, builder);
   }
 
   @Override

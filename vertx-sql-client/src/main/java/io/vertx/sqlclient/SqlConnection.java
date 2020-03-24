@@ -41,12 +41,12 @@ public interface SqlConnection extends SqlClient {
    * @param handler the handler notified with the prepared query asynchronously
    */
   @Fluent
-  SqlConnection prepare(String sql, Handler<AsyncResult<PreparedQuery<RowSet<Row>>>> handler);
+  SqlConnection prepare(String sql, Handler<AsyncResult<PreparedStatement<RowSet<Row>>>> handler);
 
   /**
    * Like {@link #prepare(String, Handler)} but returns a {@code Future} of the asynchronous result
    */
-  Future<PreparedQuery<RowSet<Row>>> prepare(String sql);
+  Future<PreparedStatement<RowSet<Row>>> prepare(String sql);
 
   /**
    * Set an handler called with connection errors.
