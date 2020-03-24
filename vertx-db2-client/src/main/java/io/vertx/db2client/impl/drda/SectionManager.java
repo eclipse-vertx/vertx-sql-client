@@ -32,6 +32,10 @@ public class SectionManager {
     		pkgs.add(new DB2Package(false, i));
     }
     
+    void removeSmallPackages() {
+      pkgs.removeIf(DB2Package::isSmallPackage);
+    }
+    
     @Override
     public String toString() {
     	StringBuilder sb = new StringBuilder("SectionManager info:\n");

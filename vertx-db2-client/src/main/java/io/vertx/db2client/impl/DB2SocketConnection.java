@@ -25,6 +25,7 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.db2client.impl.codec.DB2Codec;
 import io.vertx.db2client.impl.command.InitialHandshakeCommand;
+import io.vertx.db2client.impl.drda.DatabaseMetaData;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
@@ -37,7 +38,7 @@ import io.vertx.sqlclient.impl.command.TxCommand;
 public class DB2SocketConnection extends SocketConnectionBase {
 
     private DB2Codec codec;
-    private String dbName;
+    public final DatabaseMetaData dbMetadata = new DatabaseMetaData();
     private Handler<Void> closeHandler;
 
     public DB2SocketConnection(NetSocketInternal socket, boolean cachePreparedStatements,
@@ -50,15 +51,15 @@ public class DB2SocketConnection extends SocketConnectionBase {
             String database,
             Map<String, String> properties,
             Promise<Connection> completionHandler) {
-        this.dbName = database;
+        dbMetadata.databaseName = database;
         InitialHandshakeCommand cmd = new InitialHandshakeCommand(this, username, password, database, properties);
         schedule(cmd, completionHandler);
     }
 
     public String database() {
-        return dbName;
+        return dbMetadata.databaseName;
     }
-
+    
     @Override
     public void init() {
         codec = new DB2Codec(this);

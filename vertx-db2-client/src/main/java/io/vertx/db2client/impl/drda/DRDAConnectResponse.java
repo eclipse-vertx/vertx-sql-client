@@ -15,7 +15,6 @@
  */
 package io.vertx.db2client.impl.drda;
 
-import java.net.Inet4Address;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +22,9 @@ import java.util.List;
 import io.netty.buffer.ByteBuf;
 
 public class DRDAConnectResponse extends DRDAResponse {
-    
-    public DRDAConnectResponse(ByteBuf buffer) {
-        super(buffer);
+  
+    public DRDAConnectResponse(ByteBuf buffer, DatabaseMetaData metadata) {
+      super(buffer, metadata);
     }
     
     public void readAccessSecurity(int securityMechanism) {
@@ -1088,16 +1087,10 @@ public class DRDAConnectResponse extends DRDAResponse {
         boolean srvnamReceived = false;
         boolean srvrlslvReceived = false;
         String srvrlslv = null;
-
+        
         parseLengthAndMatchCodePoint(CodePoint.EXCSATRD);
         pushLengthOnCollectionStack();
         int peekCP = peekCodePoint();
-        // EXTNAM = 71
-        // MGRLVL = 28
-        // SRVCLS = 19
-        // SRVNAM = 9
-        // SRVREL = 12
-        // total = 139
         while (peekCP != END_OF_COLLECTION) {
             
             boolean foundInPass = false;
@@ -1162,6 +1155,13 @@ public class DRDAConnectResponse extends DRDAResponse {
                 srvrlslvReceived = checkAndGetReceivedFlag(srvrlslvReceived);
                 parseLengthAndMatchCodePoint(CodePoint.SRVRLSLV);
                 srvrlslv = readString(); // parseSRVRLSLV();
+                if (srvrlslv != null && srvrlslv.startsWith("SQL")) {
+                  metadata.setZos(false);
+                } else if (srvrlslv != null && srvrlslv.startsWith("DSN")) {
+                  metadata.setZos(true);
+                } else {
+                  throw new IllegalStateException("Received unknown server product release level: " + srvrlslv);
+                }
                 peekCP = peekCodePoint();
             }
 
@@ -1169,6 +1169,9 @@ public class DRDAConnectResponse extends DRDAResponse {
                 throw new IllegalStateException(String.format("Did not find a codepoint in this pass: %02x", peekCP));
                 //doPrmnsprmSemantics(peekCP);
             }
+            
+            if (!srvrlslvReceived)
+              throwMissingRequiredCodepoint("SRVRLSLV", CodePoint.SRVRLSLV);
 
         }
         

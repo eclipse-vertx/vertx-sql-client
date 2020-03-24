@@ -52,6 +52,10 @@ public class DB2Package {
     		LOG.fine("<init> " + this);
 	}
 	
+	boolean isSmallPackage() {
+	  return maxSections == MAX_SECTIONS_SMALL_PKG;
+	}
+	
 	int sectionsInUse() {
 		return nextAvailableSectionNumber.get() - 1 - freeSections.size();
 	}

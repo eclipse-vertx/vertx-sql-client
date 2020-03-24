@@ -157,20 +157,15 @@ public class Cursor {
     /** Flag indicating whether the result set on the server is
      * implicitly closed when end-of-data is received. */
     private boolean qryclsimpEnabled_;
+    
+    private final DatabaseMetaData metadata;
 
     //-----------------------------constants--------------------------------------
 
     //---------------------constructors/finalizer---------------------------------
 
-    Cursor() {
-    }
-
-    Cursor(int queryProtocolType) {
-        if (queryProtocolType == CodePoint.FIXROWPRC) {
-            blocking_ = false;
-        } else if (queryProtocolType == CodePoint.LMTBLKPRC) {
-            blocking_ = true;
-        }
+    Cursor(DatabaseMetaData metadata) {
+      this.metadata = metadata;
     }
 
     //---------------------constructors/finalizer---------------------------------
@@ -341,6 +336,9 @@ public class Cursor {
     private boolean get_BOOLEAN(int column) {
     	// @AGG force Little Endian
     	// @AGG In DB2 BOOLEAN columns appear to be encoded as two bytes
+      if (metadata.isZos())
+        return dataBuffer_.getShort(columnDataPosition_[column - 1]) != 0;
+      else
     	return dataBuffer_.getShortLE(columnDataPosition_[column - 1]) != 0;
 //        if ( SignedBinary.getByte( dataBuffer_, columnDataPosition_[column - 1] ) == 0 )
 //        { return false; }
@@ -350,6 +348,9 @@ public class Cursor {
     // Build a Java short from a 2-byte signed binary representation.
     private final short get_SMALLINT(int column) {
         // @AGG force Little Endian
+      if (metadata.isZos())
+        return dataBuffer_.getShort(columnDataPosition_[column - 1]);
+      else
         return dataBuffer_.getShortLE(columnDataPosition_[column - 1]);
 //        return SignedBinary.getShort(dataBuffer_,
 //                columnDataPosition_[column - 1]);
@@ -358,6 +359,9 @@ public class Cursor {
     // Build a Java int from a 4-byte signed binary representation.
     protected final int get_INTEGER(int column) {
         // @AGG had to get integer as Little Endian
+      if (metadata.isZos())
+        return dataBuffer_.getInt(columnDataPosition_[column - 1]);
+      else
         return dataBuffer_.getIntLE(columnDataPosition_[column - 1]);
 //        return SignedBinary.getInt(dataBuffer_,
 //                columnDataPosition_[column - 1]);
@@ -366,6 +370,9 @@ public class Cursor {
     // Build a Java long from an 8-byte signed binary representation.
     private final long get_BIGINT(int column) {
         // @AGG force Little Endian
+      if (metadata.isZos())
+        return dataBuffer_.getLong(columnDataPosition_[column - 1]);
+      else
         return dataBuffer_.getLongLE(columnDataPosition_[column - 1]);
 //        return SignedBinary.getLong(dataBuffer_,
 //                columnDataPosition_[column - 1]);
@@ -374,6 +381,9 @@ public class Cursor {
     // Build a Java float from a 4-byte floating point representation.
     private final float get_FLOAT(int column) {
         // @AGG force Little Endian
+      if (metadata.isZos())
+        return dataBuffer_.getFloat(columnDataPosition_[column - 1]);
+      else
         return dataBuffer_.getFloatLE(columnDataPosition_[column - 1]);
 //        return FloatingPoint.getFloat(dataBuffer_,
 //                columnDataPosition_[column - 1]);
@@ -382,6 +392,9 @@ public class Cursor {
     // Build a Java double from an 8-byte floating point representation.
     private final double get_DOUBLE(int column) {
         // @AGG force Little Endian
+      if (metadata.isZos())
+        return dataBuffer_.getDouble(columnDataPosition_[column - 1]);
+      else
         return dataBuffer_.getDoubleLE(columnDataPosition_[column - 1]);
 //        return FloatingPoint.getDouble(dataBuffer_,
 //                columnDataPosition_[column - 1]);
@@ -1541,7 +1554,10 @@ public class Cursor {
 
     private int readFdocaInt() {
         checkForSplitRowAndComplete(4);
-        return dataBuffer_.readIntLE();
+        if (metadata.isZos())
+          return dataBuffer_.readInt();
+        else
+          return dataBuffer_.readIntLE();
 //        int i = SignedBinary.getInt(dataBuffer_, position_);
 //        position_ += 4;
 //        return i;

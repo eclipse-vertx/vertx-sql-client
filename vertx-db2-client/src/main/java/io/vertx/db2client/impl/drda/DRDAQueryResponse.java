@@ -38,8 +38,8 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
     
     private long queryInstanceId = 0;
     
-    public DRDAQueryResponse(ByteBuf buffer) {
-        super(buffer);
+    public DRDAQueryResponse(ByteBuf buffer, DatabaseMetaData metadata) {
+        super(buffer, metadata);
     }
     
     public void readPrepareDescribeOutput() { // @AGG removed callback StatementCallbackInterface statement) {
@@ -623,7 +623,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         } else {
             // keep the PreparedStatementCallbackInterface, since only preparedstatement and callablestatement
             // has parameters or singleton select which translates to sqldtard.
-            cursor = new Cursor();
+            cursor = new Cursor(metadata);
             netSqlca = parseSQLDTARD();//netSqldta);
         }
 
@@ -1556,7 +1556,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //            netCursor.dataBufferStream_ = getData(/*netCursor.dataBufferStream_*/);
 //            netCursor.dataBuffer_ = netCursor.dataBufferStream_.toByteArray();
         if (cursor == null)
-            cursor = new Cursor();
+            cursor = new Cursor(metadata);
         cursor.dataBuffer_ = getData();
 //        } else {
 //            int size = netCursor.dataBufferStream_.size();
@@ -1804,7 +1804,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
     private int parseSQLDTAGRPdataLabelsAndUpdateColumn(/*NetCursor cursor, */int columnIndex, int tripletLength) {
         int numColumns = (tripletLength - 3) / 3;
         for (int i = columnIndex; i < columnIndex + numColumns; i++) {
-            cursor.qrydscTypdef_.updateColumn(cursor, i, readFastUnsignedByte(), readFastUnsignedShort());
+            cursor.qrydscTypdef_.updateColumn(cursor, metadata, i, readFastUnsignedByte(), readFastUnsignedShort());
         }
         return numColumns;
     }
@@ -2072,7 +2072,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //            }
 //        }
         // @AGG returning a cursor instead of a ResultSet
-        cursor = new Cursor();
+        cursor = new Cursor(metadata);
 
         // QRYCLSIMP only applies to OPNQRY, not EXCSQLSTT
 //        final boolean qryclsimp =
@@ -3093,13 +3093,11 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         //   SQLXNAME_s; PROTOCOL TYPE VCS; ENVLID 0x32; Length Override 255
         String sqlxname = parseFastVCMorVCS(); // ID
         
-        // @AGG manually skip remaining (unknown) bytes
-//        if (buffer.isReadable(5))
-//            buffer.skipBytes(5);
-        
         // @AGG manually skip 1 unknown byte
-        if (readUnsignedByte() != CodePoint.NULLDATA)
-            throw new IllegalStateException("@AGG expecting 0xFF here");
+        if (!metadata.isZos()) {
+          if (readUnsignedByte() != CodePoint.NULLDATA)
+              throw new IllegalStateException("@AGG expecting 0xFF here");
+        }
 
         if (columnMetaData.sqlxKeymem_ == null) {
             columnMetaData.sqlxKeymem_ = new short[columnMetaData.columns_];
@@ -3235,7 +3233,10 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         offset = skipSQLDHROW(offset);
 
         //return SignedBinary.getShort(buffer_, pos_ + offset);
-        return buffer.getShortLE(buffer.readerIndex() + offset);
+        if (metadata.isZos())
+          return buffer.getShort(buffer.readerIndex() + offset);
+        else
+          return buffer.getShortLE(buffer.readerIndex() + offset);
     }
     
     private int skipSQLDHROW(int offset) {

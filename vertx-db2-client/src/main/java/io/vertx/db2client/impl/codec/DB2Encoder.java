@@ -75,7 +75,7 @@ class DB2Encoder extends ChannelOutboundHandlerAdapter {
         inflight.add(codec);
         try {
             codec.encode(this);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             LOG.error("FATAL: Unable to encode command: " + cmd, e);
             codec.completionHandler.handle(CommandResponse.failure(e));
         }
@@ -123,4 +123,5 @@ class DB2Encoder extends ChannelOutboundHandlerAdapter {
     		LOG.debug(">>> ENCODE " + codec);
         return codec;
     }
+    
 }
