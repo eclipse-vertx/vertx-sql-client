@@ -105,7 +105,6 @@ public class PgConnectOptions extends SqlConnectOptions {
     defaultProperties.put("application_name", "vertx-pg-client");
     defaultProperties.put("client_encoding", "utf8");
     defaultProperties.put("DateStyle", "ISO");
-    defaultProperties.put("intervalStyle", "postgres");
     defaultProperties.put("extra_float_digits", "2");
     DEFAULT_PROPERTIES = Collections.unmodifiableMap(defaultProperties);
   }
