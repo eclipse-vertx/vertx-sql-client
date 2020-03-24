@@ -81,10 +81,10 @@ public class ArrayTuple implements TupleInternal {
   @Override
   public void setValue(int pos, Object value) {
     if (pos < 0) {
-      throw new IndexOutOfBoundsException("Invali position " + pos + ": must be > 0");
+      throw new IndexOutOfBoundsException("Invalid position " + pos + ": must be >= 0");
     }
-    if (pos > size) {
-      throw new IndexOutOfBoundsException("Invali position " + pos + ": must be < " + size);
+    if (pos >= size) {
+      throw new IndexOutOfBoundsException("Invalid position " + pos + ": must be < " + size);
     }
     values[pos] = value;
   }
