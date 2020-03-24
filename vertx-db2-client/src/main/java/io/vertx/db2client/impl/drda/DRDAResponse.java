@@ -40,6 +40,7 @@ public abstract class DRDAResponse {
 
     final static int END_OF_COLLECTION = -1;
     final static int END_OF_SAME_ID_CHAIN = -2;
+    final static int END_OF_BUFFER = -3;
 
     public DRDAResponse(ByteBuf buffer, DatabaseMetaData metadata) {
         this.buffer = buffer;
@@ -990,7 +991,7 @@ public abstract class DRDAResponse {
         int len = ddmScalarLen_;
         ensureBLayerDataInBuffer(len);
         adjustLengths(len);
-        String result = buffer.readCharSequence(len, CCSIDConstants.getCCSID()).toString();
+        String result = buffer.readCharSequence(len, metadata.getCCSID()).toString();
 //        String result = currentCCSID.decode(buffer); 
 //                netAgent_.getCurrentCcsidManager()
 //                            .convertToJavaString(buffer_, pos_, len);
@@ -1202,14 +1203,14 @@ public abstract class DRDAResponse {
         }
         dssLength_ -= length;
         if (dssLength_ < 0)
-          throw new IllegalStateException("DSS length has gone negitive: " + dssLength_);
+          throw new IllegalStateException("DSS length has gone negative: " + dssLength_);
 //        System.out.println("@AGG reduced len by " + length + " stack is now: " + ddmCollectionLenStack);
     }
     
     protected final void adjustLengths(int length) {
         ddmScalarLen_ -= length;
         if (ddmScalarLen_ < 0)
-          throw new IllegalStateException("DDM scalar length has gone negitive: " + ddmScalarLen_);
+          throw new IllegalStateException("DDM scalar length has gone negative: " + ddmScalarLen_);
         adjustCollectionAndDssLengths(length);
     }
 
@@ -1417,7 +1418,7 @@ public abstract class DRDAResponse {
     }
 
     final String readFastString(int length) {
-        String result = buffer.readCharSequence(length, CCSIDConstants.getCCSID()).toString();
+        String result = buffer.readCharSequence(length, metadata.getCCSID()).toString();
 //                            .convertToJavaString(buffer_, pos_, length);
         //pos_ += length;
         return result;

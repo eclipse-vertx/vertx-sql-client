@@ -37,6 +37,8 @@ public abstract class DRDARequest {
     
     final ByteBuf buffer;
     
+    protected final DatabaseMetaData metadata;
+    
     Deque<Integer> markStack = new ArrayDeque<>(4);
 
     //  This Object tracks the location of the current
@@ -51,8 +53,9 @@ public abstract class DRDARequest {
 
     private boolean simpleDssFinalize = false;
     
-    public DRDARequest(ByteBuf buffer) {
+    public DRDARequest(ByteBuf buffer, DatabaseMetaData metadata) {
         this.buffer = buffer;
+        this.metadata = metadata;
     }
     
     String getHostname() {
@@ -367,7 +370,7 @@ public abstract class DRDARequest {
 
         // pad if we don't reach the byteMinLength limit
         if (stringByteLength < byteMinLength) {
-            padBytes(CCSIDConstants.getCCSID().encode(" ").get(), byteMinLength - stringByteLength);
+            padBytes(metadata.getCCSID().encode(" ").get(), byteMinLength - stringByteLength);
             stringByteLength = byteMinLength;
         }
 
@@ -442,7 +445,7 @@ public abstract class DRDARequest {
      */
     private int encodeString(String string) {
         int startPos = buffer.writerIndex();
-        buffer.writeCharSequence(string, CCSIDConstants.getCCSID());
+        buffer.writeCharSequence(string, metadata.getCCSID());
         return buffer.writerIndex() - startPos;
     }
     

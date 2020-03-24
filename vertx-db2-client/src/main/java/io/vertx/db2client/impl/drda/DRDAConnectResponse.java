@@ -651,8 +651,9 @@ public class DRDAConnectResponse extends DRDAResponse {
     // This method handles the parsing of all command replies and reply data
     // for the secchk command.
     private void parseSECCHKreply() {
-        if (peekCodePoint() != CodePoint.SECCHKRM) {
-            throw new IllegalStateException("Expected CodePoint.SECCHKRM");
+        int peekCP = peekCodePoint();
+        if (peekCP != CodePoint.SECCHKRM) {
+            throwUnknownCodepoint(peekCP);
         }
 
         parseSECCHKRM();

@@ -24,11 +24,8 @@ import io.netty.buffer.ByteBuf;
 
 public class DRDAConnectRequest extends DRDARequest {
   
-    private final DatabaseMetaData metadata;
-    
     public DRDAConnectRequest(ByteBuf buffer, DatabaseMetaData metadata) {
-        super(buffer);
-        this.metadata = metadata;
+        super(buffer, metadata);
     }
     
     // The Access RDB (ACCRDB) command makes a named relational database (RDB)
@@ -117,15 +114,15 @@ public class DRDAConnectRequest extends DRDARequest {
         ByteBuffer prddta_ = ByteBuffer.allocate(DRDAConstants.PRDDTA_MAXSIZE);
 
         for (int i = 0; i < DRDAConstants.PRDDTA_ACCT_SUFFIX_LEN_BYTE; i++) {
-            prddta_.put(i, CCSIDConstants.getCCSID().encode(" ").get());
+            prddta_.put(i, metadata.getCCSID().encode(" ").get());
         }
 
         // Start inserting data right after the length byte.
         prddta_.position(DRDAConstants.PRDDTA_LEN_BYTE + 1);
 
-        prddta_.put(CCSIDConstants.getCCSID().encode(DRDAConstants.PRDID));//, prddta_);
+        prddta_.put(metadata.getCCSID().encode(DRDAConstants.PRDID));//, prddta_);
 
-        prddta_.put(CCSIDConstants.getCCSID().encode(DRDAConstants.PRDDTA_PLATFORM_ID));
+        prddta_.put(metadata.getCCSID().encode(DRDAConstants.PRDDTA_PLATFORM_ID));
 //        success &= ccsidMgr.encode(
 //                CharBuffer.wrap(DRDAConstants.PRDDTA_PLATFORM_ID),
 //                prddta_, agent_);
@@ -133,7 +130,7 @@ public class DRDAConnectRequest extends DRDARequest {
         int prddtaLen = prddta_.position();
 
         String extnamTruncated = DRDAConstants.EXTNAM.substring(0, Math.min(DRDAConstants.EXTNAM.length(), DRDAConstants.PRDDTA_APPL_ID_FIXED_LEN));
-        prddta_.put(CCSIDConstants.getCCSID().encode(extnamTruncated));
+        prddta_.put(metadata.getCCSID().encode(extnamTruncated));
 //        success &= ccsidMgr.encode(
 //                CharBuffer.wrap(extnam_, 0, extnamTruncateLength),
 //                prddta_, agent_);
@@ -200,20 +197,20 @@ public class DRDAConnectRequest extends DRDARequest {
             // the characters 'G' thro 'P'(in order to use the crrtkn as the LUWID when using
             // SNA in a hop site). For example, 0 is mapped to G, 1 is mapped H,etc.
             if (i == 0) {
-                crrtkn_[j] = CCSIDConstants.getCCSID().encode("" + (char) (halfByte + 'G')).get(); 
+                crrtkn_[j] = metadata.getCCSID().encode("" + (char) (halfByte + 'G')).get(); 
                         //ccsidManager.getCCSID().numToSnaRequiredCrrtknChar_[halfByte];
             } else {
-                crrtkn_[j] = CCSIDConstants.getCCSID().encode("" + halfByte).get();
+                crrtkn_[j] = metadata.getCCSID().encode("" + halfByte).get();
                         //netAgent_.getCurrentCcsidManager().numToCharRepresentation_[halfByte];
             }
 
             halfByte = (num) & 0x0f;
-            crrtkn_[j + 1] = CCSIDConstants.getCCSID().encode("" + halfByte).get();
+            crrtkn_[j + 1] = metadata.getCCSID().encode("" + halfByte).get();
             //netAgent_.getCurrentCcsidManager().numToCharRepresentation_[halfByte];
         }
 
         // fill the '.' in between the IP address and the port number
-        crrtkn_[8] = CCSIDConstants.getCCSID().encode(".").get();
+        crrtkn_[8] = metadata.getCCSID().encode(".").get();
 
         // Port numbers have values which fit in 2 unsigned bytes.
         // Java returns port numbers in an int so the value is not negative.
@@ -223,16 +220,16 @@ public class DRDAConnectRequest extends DRDARequest {
         //int num = netAgent_.socket_.getLocalPort();
 
         int halfByte = (num >> 12) & 0x0f;
-        crrtkn_[9] = CCSIDConstants.getCCSID().encode("" + halfByte).get(); 
+        crrtkn_[9] = metadata.getCCSID().encode("" + halfByte).get(); 
                 //netAgent_.getCurrentCcsidManager().numToSnaRequiredCrrtknChar_[halfByte];
         halfByte = (num >> 8) & 0x0f;
-        crrtkn_[10] = CCSIDConstants.getCCSID().encode("" + halfByte).get();
+        crrtkn_[10] = metadata.getCCSID().encode("" + halfByte).get();
                 //netAgent_.getCurrentCcsidManager().numToCharRepresentation_[halfByte];
         halfByte = (num >> 4) & 0x0f;
-        crrtkn_[11] = CCSIDConstants.getCCSID().encode("" + halfByte).get();
+        crrtkn_[11] = metadata.getCCSID().encode("" + halfByte).get();
                 //netAgent_.getCurrentCcsidManager().numToCharRepresentation_[halfByte];
         halfByte = (num) & 0x0f;
-        crrtkn_[12] = CCSIDConstants.getCCSID().encode("" + halfByte).get();
+        crrtkn_[12] = metadata.getCCSID().encode("" + halfByte).get();
                 //netAgent_.getCurrentCcsidManager().numToCharRepresentation_[halfByte];
 
         // The final part of CRRTKN is a 6 byte binary number that makes the
