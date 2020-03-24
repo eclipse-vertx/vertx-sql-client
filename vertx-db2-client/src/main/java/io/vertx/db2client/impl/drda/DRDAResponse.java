@@ -115,6 +115,12 @@ public abstract class DRDAResponse {
                 rdbnam = parseRDBNAM(true);
                 peekCP = peekCodePoint();
             }
+            
+            if (peekCP == CodePoint.RLSCONV) {
+              foundInPass = true;
+              parseRLSCONV();
+              peekCP = peekCodePoint();
+            }
 
 
             if (!foundInPass) {
@@ -136,6 +142,17 @@ public abstract class DRDAResponse {
         if (uowdsp == CodePoint.UOWDSP_COMMIT) {
             //System.out.println("@AGG commit completed normally");
         }
+    }
+    
+    private int parseRLSCONV() {
+      parseLengthAndMatchCodePoint(CodePoint.RLSCONV);
+      int i = readUnsignedByte();
+      if (i != 0xF0 && // NO_TERM
+          i != 0xF1 && // TERM
+          i != 0xF2) { // REUSE
+        throw new IllegalStateException("Unknown value for RLSCONV: " + Integer.toHexString(i));
+      }
+      return i;
     }
     
     // Relational Database Name specifies the name of a relational

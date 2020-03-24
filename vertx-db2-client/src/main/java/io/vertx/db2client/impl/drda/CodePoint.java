@@ -756,6 +756,12 @@ public class CodePoint {
      * End Unit of Work Condition codepoint constant.
      */
     public static final int ENDUOWRM = 0x220C;
+    
+    /**
+     * Release Conversation
+     * See DRDA Arch Vol 3 pg. 765
+     */
+    public static final int RLSCONV = 0x119F; // 4511
 
     /** 
      * Object Not Supported codepoint constant.
