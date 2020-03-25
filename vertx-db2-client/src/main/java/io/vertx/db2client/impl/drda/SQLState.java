@@ -35,7 +35,7 @@ package io.vertx.db2client.impl.drda;
 	</PRE>
 	<BR>
 	A utility static method StandardException.getSQLState(String messageId)
-	exists to convert an field from this class into a five character SQLState.
+	exists to convert a field from this class into a five character SQLState.
 	<P>
 
 	<P>
@@ -300,12 +300,12 @@ public interface SQLState {
 	String STORE_XA_PROTOCOL_VIOLATION                          = "XSAX0.S";
     // STORE_XA_PROTOCOL_VIOLATION_SQLSTATE has no associated message it is
     // just a constant used by the code so that an exception can be caught 
-    // and programatically determined to be a STORE_XA_PROTOCOL_VIOLATION.
+    // and programmatically determined to be a STORE_XA_PROTOCOL_VIOLATION.
 	String STORE_XA_PROTOCOL_VIOLATION_SQLSTATE                 = "XSAX0";
 	String STORE_XA_XAER_DUPID                                  = "XSAX1.S";
     // STORE_XA_XAER_DUPID_SQLSTATE has no associated message it is
     // just a constant used by the code so that an exception can be caught 
-    // and programatically determined to be a STORE_XA_XAER_DUPID.
+    // and programmatically determined to be a STORE_XA_XAER_DUPID.
 	String STORE_XA_XAER_DUPID_SQLSTATE                         = "XSAX1";
 
 	/*
@@ -634,7 +634,7 @@ public interface SQLState {
 	**	46003 - invalid class deletion
 	**	46004 - invalid JAR name
 	** 	46005 - invalid replacement
-	** 	46006 - invalid grantee
+	** 	46006 - invalid guarantee
 	** 	46007 - invalid signature
 	** 	46008 - invalid method specification
 	** 	46009 - invalid REVOKE
@@ -1488,7 +1488,7 @@ public interface SQLState {
 	String	INVALID_SCHEMA_SYS											= "42939";
 
 	/*
-	** Modelled on INVALID_SCHEMA_SYS, although not from DB2
+	** Modeled on INVALID_SCHEMA_SYS, although not from DB2
 	*/
 	String  INVALID_ROLE_SYS                                        = "4293A";
 

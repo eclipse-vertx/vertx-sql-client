@@ -47,14 +47,15 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
     }
     
     /**
-     * @return True if the SQL is a query (i.e. SELECT) and false otherwise
+     * @return True if the SQL is a query (i.e. SELECT or WITH), false otherwise
+     *         IllegalArgumentException thrown if the passed in SQL value is null
      */
     public static boolean isQuery(String sql) {
     	if (sql != null) {
     		return sql.trim().toLowerCase().startsWith("select") 
                 || sql.trim().toLowerCase().startsWith("with");
     	} else {
-    		return false;
+    		throw new IllegalArgumentException("SQLState.NULL_SQL_TEXT");
     	}
     }
     
@@ -1211,7 +1212,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                         lidAndLengths[i][1] = 32767;
                     } else {
                         throw new UnsupportedOperationException("BLOB");
-//                        // Promote to a BLOB. Only reach this path in the absensce of describe information.
+//                        // Promote to a BLOB. Only reach this path in the absence of describe information.
 //                        ClientBlob b = new ClientBlob(ba, netAgent_, 0);
 //
 //                        // inputRow[i] = b;
@@ -1468,7 +1469,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
 
             boolean overrideExists = buildSQLDTAcommandData(parameterMetaData, inputs);
 
-            // can we eleminate the chain argument needed for lobs
+            // can we eliminate the chain argument needed for lobs
             buildEXTDTA(parameterMetaData, inputs, chained);
         }
     }
