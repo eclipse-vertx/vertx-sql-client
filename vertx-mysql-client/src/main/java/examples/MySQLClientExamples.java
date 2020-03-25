@@ -43,7 +43,9 @@ public class MySQLClientExamples {
     MySQLPool client = MySQLPool.pool(connectOptions, poolOptions);
 
     // A simple query
-    client.query("SELECT * FROM users WHERE id='julien'", ar -> {
+    client
+      .query("SELECT * FROM users WHERE id='julien'")
+      .execute(ar -> {
       if (ar.succeeded()) {
         RowSet<Row> result = ar.result();
         System.out.println("Got " + result.size() + " rows ");
@@ -191,9 +193,13 @@ public class MySQLClientExamples {
         SqlConnection conn = ar1.result();
 
         // All operations execute on the same connection
-        conn.query("SELECT * FROM users WHERE id='julien'", ar2 -> {
+        conn
+          .query("SELECT * FROM users WHERE id='julien'")
+          .execute(ar2 -> {
           if (ar2.succeeded()) {
-            conn.query("SELECT * FROM users WHERE id='emad'", ar3 -> {
+            conn
+              .query("SELECT * FROM users WHERE id='emad'")
+              .execute(ar3 -> {
               // Release the connection to the pool
               conn.close();
             });
@@ -209,7 +215,9 @@ public class MySQLClientExamples {
   }
 
   public void lastInsertId(SqlClient client) {
-    client.query("INSERT INTO test(val) VALUES ('v1')", ar -> {
+    client
+      .query("INSERT INTO test(val) VALUES ('v1')")
+      .execute(ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rows = ar.result();
         long lastInsertId = rows.property(MySQLClient.LAST_INSERTED_ID);
@@ -221,17 +229,23 @@ public class MySQLClientExamples {
   }
 
   public void implicitTypeConversionExample(SqlClient client) {
-    client.preparedQuery("SELECT * FROM students WHERE updated_time = ?", Tuple.of(LocalTime.of(19, 10, 25)), ar -> {
+    client
+      .preparedQuery("SELECT * FROM students WHERE updated_time = ?")
+      .execute(Tuple.of(LocalTime.of(19, 10, 25)), ar -> {
       // handle the results
     });
     // this will also work with implicit type conversion
-    client.preparedQuery("SELECT * FROM students WHERE updated_time = ?", Tuple.of("19:10:25"), ar -> {
+    client
+      .preparedQuery("SELECT * FROM students WHERE updated_time = ?")
+      .execute(Tuple.of("19:10:25"), ar -> {
       // handle the results
     });
   }
 
   public void booleanExample01(SqlClient client) {
-    client.query("SELECT graduated FROM students WHERE id = 0", ar -> {
+    client
+      .query("SELECT graduated FROM students WHERE id = 0")
+      .execute(ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rowSet = ar.result();
         for (Row row : rowSet) {
@@ -246,7 +260,9 @@ public class MySQLClientExamples {
   }
 
   public void booleanExample02(SqlClient client) {
-    client.preparedQuery("UPDATE students SET graduated = ? WHERE id = 0", Tuple.of(true), ar -> {
+    client
+      .preparedQuery("UPDATE students SET graduated = ? WHERE id = 0")
+      .execute(Tuple.of(true), ar -> {
       if (ar.succeeded()) {
         System.out.println("Updated with the boolean value");
       } else {
@@ -291,9 +307,7 @@ public class MySQLClientExamples {
       row -> row.getString("last_name"));
 
     // Run the query with the collector
-    client.query("SELECT * FROM users",
-      collector,
-      ar -> {
+    client.query("SELECT * FROM users").collecting(collector).execute(ar -> {
         if (ar.succeeded()) {
           SqlResult<Map<Long, String>> result = ar.result();
 
@@ -315,9 +329,7 @@ public class MySQLClientExamples {
     );
 
     // Run the query with the collector
-    client.query("SELECT * FROM users",
-      collector,
-      ar -> {
+    client.query("SELECT * FROM users").collecting(collector).execute(ar -> {
         if (ar.succeeded()) {
           SqlResult<String> result = ar.result();
 
@@ -336,10 +348,12 @@ public class MySQLClientExamples {
       "  SELECT 1;\n" +
       "  INSERT INTO ins VALUES (1);\n" +
       "  INSERT INTO ins VALUES (2);\n" +
-      "END;", ar1 -> {
+      "END;").execute(ar1 -> {
       if (ar1.succeeded()) {
         // create stored procedure success
-        client.query("CALL multi();", ar2 -> {
+        client
+          .query("CALL multi();")
+          .execute(ar2 -> {
           if (ar2.succeeded()) {
             // handle the result
             RowSet<Row> result1 = ar2.result();

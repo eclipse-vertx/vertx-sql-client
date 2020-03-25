@@ -41,7 +41,7 @@ public class MySQLTransactionTest extends MySQLTestBase {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(transaction -> {
       deleteFromMutableTable(ctx, transaction, () -> {
-        transaction.query("INSERT INTO mutable (id, val) VALUES (9, 'Whatever');", ctx.asyncAssertSuccess(result -> {
+        transaction.query("INSERT INTO mutable (id, val) VALUES (9, 'Whatever');").execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.rowCount());
           transaction.commit(ctx.asyncAssertSuccess(v1 -> {
             // Try acquire a connection
@@ -59,7 +59,7 @@ public class MySQLTransactionTest extends MySQLTestBase {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(transaction -> {
       deleteFromMutableTable(ctx, transaction, () -> {
-        transaction.query("INSERT INTO mutable (id, val) VALUES (9, 'Whatever');", ctx.asyncAssertSuccess(result -> {
+        transaction.query("INSERT INTO mutable (id, val) VALUES (9, 'Whatever');").execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.rowCount());
           transaction.rollback(ctx.asyncAssertSuccess(v1 -> {
             // Try acquire a connection
@@ -83,7 +83,7 @@ public class MySQLTransactionTest extends MySQLTestBase {
         }));
       });
       // Failure will abort
-      conn.query("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(result -> { }));
+      conn.query("SELECT whatever from DOES_NOT_EXIST").execute(ctx.asyncAssertFailure(result -> { }));
     }));
   }
 
@@ -92,10 +92,10 @@ public class MySQLTransactionTest extends MySQLTestBase {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(transaction -> {
       deleteFromMutableTable(ctx, transaction, () -> {
-        transaction.preparedQuery("INSERT INTO mutable (id, val) VALUES (?, ?)", Tuple.of(13, "test message1"), ctx.asyncAssertSuccess(result -> {
+        transaction.preparedQuery("INSERT INTO mutable (id, val) VALUES (?, ?)").execute(Tuple.of(13, "test message1"), ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.rowCount());
           transaction.commit(ctx.asyncAssertSuccess(v1 -> {
-            pool.query("SELECT id, val from mutable where id = 13", ctx.asyncAssertSuccess(rowSet -> {
+            pool.query("SELECT id, val from mutable where id = 13").execute(ctx.asyncAssertSuccess(rowSet -> {
               ctx.assertEquals(1, rowSet.size());
               Row row = rowSet.iterator().next();
               ctx.assertEquals(13, row.getInteger("id"));
@@ -113,10 +113,10 @@ public class MySQLTransactionTest extends MySQLTestBase {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(transaction -> {
       deleteFromMutableTable(ctx, transaction, () -> {
-        transaction.query("INSERT INTO mutable (id, val) VALUES (14, 'test message2');", ctx.asyncAssertSuccess(result -> {
+        transaction.query("INSERT INTO mutable (id, val) VALUES (14, 'test message2');").execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.rowCount());
           transaction.commit(ctx.asyncAssertSuccess(v1 -> {
-            pool.query("SELECT id, val from mutable where id = 14", ctx.asyncAssertSuccess(rowSet -> {
+            pool.query("SELECT id, val from mutable where id = 14").execute(ctx.asyncAssertSuccess(rowSet -> {
               ctx.assertEquals(1, rowSet.size());
               Row row = rowSet.iterator().next();
               ctx.assertEquals(14, row.getInteger("id"));

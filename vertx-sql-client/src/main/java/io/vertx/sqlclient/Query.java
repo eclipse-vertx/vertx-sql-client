@@ -17,38 +17,38 @@
 
 package io.vertx.sqlclient;
 
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 
-import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collector;
 
 /**
- * Defines the client operations with a database server.
+ * A query.
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 @VertxGen
-public interface SqlClient {
+public interface Query<T> {
 
   /**
-   * Create a query, the {@link Query#execute} method must be called to execute the query.
+   * Execute the query.
    *
-   * Create a query.
-   *
-   * @return the query
+   * @param handler the handler receiving the response
    */
-  Query<RowSet<Row>> query(String sql);
+  void execute(Handler<AsyncResult<T>> handler);
 
   /**
-   * Create a prepared query, one of the {@link PreparedQuery#execute}, {@link PreparedQuery#executeBatch}
-   * methods must be called to execute the query.
-   *
-   * @return the prepared query
+   * Use the specified {@code collector} for collecting the query result to {@code <R>}.
    */
-  PreparedQuery<RowSet<Row>> preparedQuery(String sql);
+  @GenIgnore
+  <R> Query<SqlResult<R>> collecting(Collector<Row, ?, R> collector);
 
   /**
-   * Close the client and release the associated resources.
+   * Use the specified {@code mapper} for mapping {@link Row} to {@code <U>}.
    */
-  void close();
+  <U> Query<RowSet<U>> mapping(Function<Row, U> mapper);
 
 }

@@ -27,7 +27,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
       conn.prepare("UPDATE \"TemporalDataType\" SET \"Date\" = $1 WHERE \"id\" = $2 RETURNING \"Date\"",
         ctx.asyncAssertSuccess(p -> {
           LocalDate ld = LocalDate.parse("1981-06-30");
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
             .addLocalDate(ld)
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
@@ -56,7 +56,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
       conn.prepare("UPDATE \"TemporalDataType\" SET \"Date\" = $1 WHERE \"id\" = $2 RETURNING \"Date\"",
         ctx.asyncAssertSuccess(p -> {
           LocalDate ld = LocalDate.parse("2018-05-30");
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addLocalDate(ld)
               .addInteger(4)
             , ctx.asyncAssertSuccess(result -> {
@@ -86,7 +86,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
       conn.prepare("UPDATE  \"TemporalDataType\" SET \"Time\" = $1 WHERE \"id\" = $2 RETURNING \"Time\"",
         ctx.asyncAssertSuccess(p -> {
           LocalTime lt = LocalTime.parse("22:55:04.905120");
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addLocalTime(lt)
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -116,7 +116,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
       conn.prepare("UPDATE \"TemporalDataType\" SET \"TimeTz\" = $1 WHERE \"id\" = $2 RETURNING \"TimeTz\"",
         ctx.asyncAssertSuccess(p -> {
           OffsetTime ot = OffsetTime.parse("20:55:04.905120+03:07");
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
             .addOffsetTime(ot)
             .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
@@ -145,7 +145,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
       conn.prepare("UPDATE \"TemporalDataType\" SET \"Timestamp\" = $1 WHERE \"id\" = $2 RETURNING \"Timestamp\"",
         ctx.asyncAssertSuccess(p -> {
           LocalDateTime ldt = LocalDateTime.parse("1900-02-01T23:57:53.237666");
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
             .addLocalDateTime(ldt)
             .addInteger(4), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
@@ -174,7 +174,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"TemporalDataType\" SET \"Timestamp\" =$1 WHERE \"id\" = $2 RETURNING \"Timestamp\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addLocalDateTime(LocalDateTime.parse("2017-05-14T19:35:58.237666"))
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -201,10 +201,10 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
   public void testEncodeTimestampTzBeforePgEpoch(TestContext ctx) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SET TIME ZONE 'UTC'", ctx.asyncAssertSuccess(v -> {
+      conn.query("SET TIME ZONE 'UTC'").execute(ctx.asyncAssertSuccess(v -> {
         conn.prepare("UPDATE \"TemporalDataType\" SET \"TimestampTz\" =$1 WHERE \"id\" = $2 RETURNING \"TimestampTz\"",
           ctx.asyncAssertSuccess(p -> {
-            p.execute(Tuple.tuple()
+            p.query().execute(Tuple.tuple()
                 .addOffsetDateTime(OffsetDateTime.parse("1800-02-01T23:59:59.237666-03:00"))
                 .addInteger(3)
               , ctx.asyncAssertSuccess(result -> {
@@ -233,10 +233,10 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
   public void testEncodeTimestampTzAfterPgEpoch(TestContext ctx) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SET TIME ZONE 'UTC'", ctx.asyncAssertSuccess(v -> {
+      conn.query("SET TIME ZONE 'UTC'").execute(ctx.asyncAssertSuccess(v -> {
         conn.prepare("UPDATE \"TemporalDataType\" SET \"TimestampTz\" = $1 WHERE \"id\" = $2 RETURNING \"TimestampTz\"",
           ctx.asyncAssertSuccess(p -> {
-            p.execute(Tuple.tuple()
+            p.query().execute(Tuple.tuple()
                 .addOffsetDateTime(OffsetDateTime.parse("2017-06-14T23:59:59.237666-03:00"))
                 .addInteger(1)
               , ctx.asyncAssertSuccess(result -> {
@@ -271,7 +271,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT $1 :: INTERVAL \"Interval\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addValue(interval), ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.tuple().addValue(interval), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -300,7 +300,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
             .minutes(35)
             .seconds(13)
             .microseconds(999998);
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
             .addValue(expected)
             .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
@@ -328,7 +328,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
       conn.prepare("UPDATE \"ArrayDataType\" SET \"LocalDate\" = $1  WHERE \"id\" = $2 RETURNING \"LocalDate\"",
         ctx.asyncAssertSuccess(p -> {
           final LocalDate dt = LocalDate.parse("1998-05-12");
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addLocalDateArray(new LocalDate[]{dt})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -355,7 +355,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
         ctx.asyncAssertSuccess(p -> {
           final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSS");
           final LocalTime dt = LocalTime.parse("17:55:04.90512", dtf);
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addLocalTimeArray(new LocalTime[]{dt})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -381,7 +381,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
       conn.prepare("UPDATE \"ArrayDataType\" SET \"OffsetTime\" = $1  WHERE \"id\" = $2 RETURNING \"OffsetTime\"",
         ctx.asyncAssertSuccess(p -> {
           final OffsetTime dt = OffsetTime.parse("17:56:04.90512+03:07");
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addOffsetTimeArray(new OffsetTime[]{dt})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -407,7 +407,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
       conn.prepare("UPDATE \"ArrayDataType\" SET \"LocalDateTime\" = $1  WHERE \"id\" = $2 RETURNING \"LocalDateTime\"",
         ctx.asyncAssertSuccess(p -> {
           final LocalDateTime dt = LocalDateTime.parse("2017-05-14T19:35:58.237666");
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addLocalDateTimeArray(new LocalDateTime[]{dt})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -433,7 +433,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
       conn.prepare("UPDATE \"ArrayDataType\" SET \"OffsetDateTime\" = $1  WHERE \"id\" = $2 RETURNING \"OffsetDateTime\"",
         ctx.asyncAssertSuccess(p -> {
           final OffsetDateTime dt = OffsetDateTime.parse("2017-05-14T19:35:58.237666Z");
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addOffsetDateTimeArray(new OffsetDateTime[]{dt})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -464,7 +464,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
             Interval.of().years(-2).months(-6),
             Interval.of()
           };
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addValues(intervals)
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -488,7 +488,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT $1 :: " + dataType + " \"" + columnName + "\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addValue(expected), ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.tuple().addValue(expected), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();

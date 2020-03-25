@@ -14,7 +14,7 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"currentMood\" FROM \"EnumDataType\" WHERE \"id\" = $1",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
@@ -35,7 +35,7 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"EnumDataType\" SET \"currentMood\" = $1  WHERE \"id\" = $2 RETURNING \"currentMood\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addString("happy")
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -59,7 +59,7 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Enum\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Enum")
               .returns(Tuple::getValue, Row::getValue, expected)
@@ -77,7 +77,7 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Enum\" = $1 WHERE \"id\" = $2 RETURNING \"Enum\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addStringArray(new String[]{"unhappy"})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -97,7 +97,7 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Enum\" = $1 WHERE \"id\" = $2 RETURNING \"Enum\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addStringArray(new String[]{"unhappy", "ok"})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -117,7 +117,7 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Enum\" = $1 WHERE \"id\" = $2 RETURNING \"Enum\", \"Boolean\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addStringArray(new String[]{})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {

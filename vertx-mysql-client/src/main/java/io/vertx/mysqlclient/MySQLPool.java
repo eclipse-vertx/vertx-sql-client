@@ -1,21 +1,11 @@
 package io.vertx.mysqlclient;
 
-import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.mysqlclient.impl.MySQLPoolImpl;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.SqlResult;
-import io.vertx.sqlclient.Tuple;
-
-import java.util.List;
-import java.util.stream.Collector;
 
 import static io.vertx.mysqlclient.MySQLConnectOptions.*;
 
@@ -76,31 +66,4 @@ public interface MySQLPool extends Pool {
     return new MySQLPoolImpl(vertx.getOrCreateContext(), false, connectOptions, poolOptions);
   }
 
-  @Override
-  MySQLPool preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @GenIgnore
-  @Override
-  <R> MySQLPool preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  @Override
-  MySQLPool query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @GenIgnore
-  @Override
-  <R> MySQLPool query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  @Override
-  MySQLPool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @GenIgnore
-  @Override
-  <R> MySQLPool preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  @Override
-  MySQLPool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @GenIgnore
-  @Override
-  <R> MySQLPool preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 }

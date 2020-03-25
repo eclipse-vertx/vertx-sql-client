@@ -70,7 +70,7 @@ public class RowTest extends PgTestBase {
   public void testGetNonExistingRows(TestContext ctx) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 1 \"foo\"",
+      conn.query("SELECT 1 \"foo\"").execute(
         ctx.asyncAssertSuccess(result -> {
           Row row = result.iterator().next();
           List<Function<String, ?>> functions = Arrays.asList(
@@ -139,7 +139,7 @@ public class RowTest extends PgTestBase {
   public void testGetColumnNameRows(TestContext ctx) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 2 \"foo\"",
+      conn.query("SELECT 2 \"foo\"").execute(
         ctx.asyncAssertSuccess(result -> {
           Row row = result.iterator().next();
           ctx.assertEquals("foo",row.getColumnName(0));
@@ -152,7 +152,7 @@ public class RowTest extends PgTestBase {
   public void testNotEqualGetColumnNameRows(TestContext ctx) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 2 \"foo\"",
+      conn.query("SELECT 2 \"foo\"").execute(
         ctx.asyncAssertSuccess(result -> {
           Row row = result.iterator().next();
           ctx.assertNotEquals("bar",row.getColumnName(0));
@@ -165,7 +165,7 @@ public class RowTest extends PgTestBase {
   public void testNegativeGetColumnNameRows(TestContext ctx) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 2 \"foo\"",
+      conn.query("SELECT 2 \"foo\"").execute(
         ctx.asyncAssertSuccess(result -> {
           Row row = result.iterator().next();
           ctx.assertNull(row.getColumnName(-1));
@@ -178,7 +178,7 @@ public class RowTest extends PgTestBase {
   public void testPreventLengthMaxIndexOutOfBoundGetColumnNameRows(TestContext ctx) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 2 \"foo\"",
+      conn.query("SELECT 2 \"foo\"").execute(
         ctx.asyncAssertSuccess(result -> {
           Row row = result.iterator().next();
           ctx.assertNull(row.getColumnName(1));

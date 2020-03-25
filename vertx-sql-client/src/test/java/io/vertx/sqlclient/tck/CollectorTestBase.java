@@ -59,7 +59,7 @@ public abstract class CollectorTestBase {
       123.456f, 1.234567d, "HELLO,WORLD");
 
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT * FROM collector_test WHERE id = 1", collector, ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT * FROM collector_test WHERE id = 1").collecting(collector).execute(ctx.asyncAssertSuccess(result -> {
         Map<Integer, TestingCollectorObject> map = result.value();
         TestingCollectorObject actual = map.get(1);
         ctx.assertEquals(expected, actual);
@@ -85,7 +85,7 @@ public abstract class CollectorTestBase {
       123.456f, 1.234567d, "HELLO,WORLD");
 
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("SELECT * FROM collector_test WHERE id = 1", collector, ctx.asyncAssertSuccess(result -> {
+      conn.preparedQuery("SELECT * FROM collector_test WHERE id = 1").collecting(collector).execute(ctx.asyncAssertSuccess(result -> {
         Map<Integer, TestingCollectorObject> map = result.value();
         TestingCollectorObject actual = map.get(1);
         ctx.assertEquals(expected, actual);
@@ -168,7 +168,7 @@ public abstract class CollectorTestBase {
 
   private void testCollectorFailure(TestContext ctx, Throwable cause, Collector<Row, Object, Object> collector) {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT * FROM collector_test WHERE id = 1", collector, ctx.asyncAssertFailure(result -> {
+      conn.query("SELECT * FROM collector_test WHERE id = 1").collecting(collector).execute(ctx.asyncAssertFailure(result -> {
         ctx.assertEquals(cause, result);
         conn.close();
       }));

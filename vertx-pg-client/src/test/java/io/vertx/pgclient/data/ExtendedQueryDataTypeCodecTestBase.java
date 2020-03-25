@@ -47,7 +47,7 @@ public abstract class ExtendedQueryDataTypeCodecTestBase extends DataTypeTestBas
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       List<Tuple> batch = Stream.of(expected).map(Tuple::of).collect(Collectors.toList());
-      conn.preparedBatch(sql, batch,
+      conn.preparedQuery(sql).executeBatch( batch,
         ctx.asyncAssertSuccess(result -> {
           for (T n : expected) {
             ctx.assertEquals(result.size(), 1);

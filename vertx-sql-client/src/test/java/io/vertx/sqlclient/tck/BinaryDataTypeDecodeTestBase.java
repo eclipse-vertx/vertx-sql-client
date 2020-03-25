@@ -74,7 +74,7 @@ public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
                                        Class<T> clazz,
                                        T expected) {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("SELECT " + columnName + " FROM basicdatatype WHERE id = 1", ctx.asyncAssertSuccess(result -> {
+      conn.preparedQuery("SELECT " + columnName + " FROM basicdatatype WHERE id = 1").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         ctx.assertEquals(expected, row.getValue(0));
@@ -105,7 +105,7 @@ public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
         "test_varchar," +
         "test_date," +
         "test_time " +
-        "from basicdatatype where id = 3", ctx.asyncAssertSuccess(result -> {
+        "from basicdatatype where id = 3").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         ctx.assertEquals(12, row.size());

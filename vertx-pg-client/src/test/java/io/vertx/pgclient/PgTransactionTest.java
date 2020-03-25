@@ -41,7 +41,7 @@ public class PgTransactionTest extends PgClientTestBase<Transaction> {
   public void testReleaseConnectionOnCommit(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9", ctx.asyncAssertSuccess(result -> {
+      conn.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
         conn.commit(ctx.asyncAssertSuccess(v1 -> {
           // Try acquire a connection
@@ -57,7 +57,7 @@ public class PgTransactionTest extends PgClientTestBase<Transaction> {
   public void testReleaseConnectionOnRollback(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9", ctx.asyncAssertSuccess(result -> {
+      conn.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
         conn.rollback(ctx.asyncAssertSuccess(v1 -> {
           // Try acquire a connection
@@ -80,7 +80,7 @@ public class PgTransactionTest extends PgClientTestBase<Transaction> {
         }));
       });
       // Failure will abort
-      conn.query("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(result -> { }));
+      conn.query("SELECT whatever from DOES_NOT_EXIST").execute(ctx.asyncAssertFailure(result -> { }));
     }));
   }
 
@@ -88,10 +88,10 @@ public class PgTransactionTest extends PgClientTestBase<Transaction> {
   public void testCommitWithPreparedQuery(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("INSERT INTO Fortune (id, message) VALUES ($1, $2);", Tuple.of(13, "test message1"), ctx.asyncAssertSuccess(result -> {
+      conn.preparedQuery("INSERT INTO Fortune (id, message) VALUES ($1, $2);").execute(Tuple.of(13, "test message1"), ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
         conn.commit(ctx.asyncAssertSuccess(v1 -> {
-          pool.query("SELECT id, message from Fortune where id = 13", ctx.asyncAssertSuccess(rowSet -> {
+          pool.query("SELECT id, message from Fortune where id = 13").execute(ctx.asyncAssertSuccess(rowSet -> {
             ctx.assertEquals(1, rowSet.rowCount());
             Row row = rowSet.iterator().next();
             ctx.assertEquals(13, row.getInteger("id"));
@@ -107,10 +107,10 @@ public class PgTransactionTest extends PgClientTestBase<Transaction> {
   public void testCommitWithQuery(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("INSERT INTO Fortune (id, message) VALUES (14, 'test message2');", ctx.asyncAssertSuccess(result -> {
+      conn.query("INSERT INTO Fortune (id, message) VALUES (14, 'test message2');").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
         conn.commit(ctx.asyncAssertSuccess(v1 -> {
-          pool.query("SELECT id, message from Fortune where id = 14", ctx.asyncAssertSuccess(rowSet -> {
+          pool.query("SELECT id, message from Fortune where id = 14").execute(ctx.asyncAssertSuccess(rowSet -> {
             ctx.assertEquals(1, rowSet.rowCount());
             Row row = rowSet.iterator().next();
             ctx.assertEquals(14, row.getInteger("id"));

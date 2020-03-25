@@ -71,7 +71,7 @@ public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBa
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"JsonObject\", \"JsonArray\", \"Number\", \"String\", \"BooleanTrue\", \"BooleanFalse\", \"NullValue\", \"Null\" FROM \"" + tableName + "\" WHERE \"id\" = $1",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -150,7 +150,7 @@ public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBa
         ctx.asyncAssertSuccess(p -> {
           JsonObject object = new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []}");
           JsonArray array = new JsonArray("[1,true,null,9.5,\"Hi\"]");
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
             .addValue(object)
             .addValue(array)
             .addValue(4)

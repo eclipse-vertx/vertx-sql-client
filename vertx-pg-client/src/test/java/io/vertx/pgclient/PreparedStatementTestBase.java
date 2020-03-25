@@ -62,7 +62,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     Async async = ctx.async();
     PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
-        ps.execute(Tuple.of(1), ctx.asyncAssertSuccess(results -> {
+        ps.query().execute(Tuple.of(1), ctx.asyncAssertSuccess(results -> {
           ctx.assertEquals(1, results.size());
           Tuple row = results.iterator().next();
           ctx.assertEquals(1, row.getInteger(0));
@@ -80,7 +80,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     Async async = ctx.async();
     PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6", ctx.asyncAssertSuccess(ps -> {
-        ps.execute(Tuple.of(1, 8, 4, 11, 2, 9), ctx.asyncAssertSuccess(results -> {
+        ps.query().execute(Tuple.of(1, 8, 4, 11, 2, 9), ctx.asyncAssertSuccess(results -> {
           ctx.assertEquals(6, results.size());
           ps.close(ctx.asyncAssertSuccess(result -> {
             async.complete();
@@ -95,7 +95,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     Async async = ctx.async();
     PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1 OR id=$2 OR id=$3 OR id=$4 OR id=$5 OR id=$6", ctx.asyncAssertSuccess(ps -> {
-        ps.execute(Tuple.of(1, 8, 4, 11, 2, 9), Collectors.toList(), ctx.asyncAssertSuccess(results -> {
+        ps.query().collecting(Collectors.toList()).execute(Tuple.of(1, 8, 4, 11, 2, 9), ctx.asyncAssertSuccess(results -> {
           ctx.assertEquals(6, results.size());
           List<Row> list = results.value();
           ctx.assertEquals(list.size(), 6);
@@ -150,7 +150,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
         ctx.assertEquals("Parameter at position[0] with class = [java.lang.String] and value = [invalid-id] can not be coerced to the expected class = [java.lang.Number] for encoding.", failure.getMessage());
         async.complete();
       });
-      conn.preparedQuery("SELECT * FROM Fortune WHERE id=$1", Tuple.of("invalid-id"), ctx.asyncAssertFailure(failure -> {
+      conn.preparedQuery("SELECT * FROM Fortune WHERE id=$1").execute(Tuple.of("invalid-id"), ctx.asyncAssertFailure(failure -> {
       }));
     }));
   }
@@ -159,7 +159,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
   public void testPrepareExecuteValidationError(TestContext ctx) {
     testValidationError(ctx, (conn, cont) -> {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
-        ps.execute(Tuple.of("invalid-id"), ctx.asyncAssertFailure(cont));
+        ps.query().execute(Tuple.of("invalid-id"), ctx.asyncAssertFailure(cont));
       }));
     });
   }
@@ -181,7 +181,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
   public void testPrepareBatchValidationError(TestContext ctx) {
     testValidationError(ctx, (conn, cont) -> {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
-        ps.batch(Collections.singletonList(Tuple.of("invalid-id")), ctx.asyncAssertFailure(cont));
+        ps.query().executeBatch(Collections.singletonList(Tuple.of("invalid-id")), ctx.asyncAssertFailure(cont));
       }));
     });
   }
@@ -189,14 +189,14 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
   @Test
   public void testPreparedQueryValidationError(TestContext ctx) {
     testValidationError(ctx, (conn, cont) -> {
-      conn.preparedQuery("SELECT * FROM Fortune WHERE id=$1", Tuple.of("invalid-id"), ctx.asyncAssertFailure(cont));
+      conn.preparedQuery("SELECT * FROM Fortune WHERE id=$1").execute(Tuple.of("invalid-id"), ctx.asyncAssertFailure(cont));
     });
   }
 
   @Test
   public void testPreparedBatchValidationError(TestContext ctx) {
     testValidationError(ctx, (conn, cont) -> {
-      conn.preparedBatch("SELECT * FROM Fortune WHERE id=$1", Collections.singletonList(Tuple.of("invalid-id")), ctx.asyncAssertFailure(cont));
+      conn.preparedQuery("SELECT * FROM Fortune WHERE id=$1").executeBatch(Collections.singletonList(Tuple.of("invalid-id")), ctx.asyncAssertFailure(cont));
     });
   }
 
@@ -205,7 +205,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .preparedQuery("SELECT 1 WHERE $1::INT4 IS NULL", Tuple.tuple().addInteger(null), ctx.asyncAssertSuccess(result -> {
+        .preparedQuery("SELECT 1 WHERE $1::INT4 IS NULL").execute(Tuple.tuple().addInteger(null), ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           async.complete();
         }));

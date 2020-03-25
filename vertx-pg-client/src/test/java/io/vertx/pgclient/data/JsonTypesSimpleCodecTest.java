@@ -35,7 +35,7 @@ public class JsonTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
           "' 7.502 '::" + type + " \"Number1\"," +
           "' 8 '::" + type + " \"Number2\"," +
           "'\" Really Awesome! \"'::" + type + " \"Text\"," +
-          "NULL::" + type + " \"Null\"",
+          "NULL::" + type + " \"Null\"").execute(
         ctx.asyncAssertSuccess(result -> {
           JsonObject object = new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []}");
           JsonArray array = new JsonArray("[1,true,null,9.5,\"Hi\"]");

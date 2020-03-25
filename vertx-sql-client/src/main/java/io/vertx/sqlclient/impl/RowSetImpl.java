@@ -37,7 +37,22 @@ class RowSetImpl<R> extends SqlResultBase<RowSet<R>, RowSetImpl<R>> implements R
     (set) -> set
   );
 
+  static <U> Collector<Row, RowSetImpl<U>, RowSet<U>> collector(Function<Row, U> mapper) {
+    return Collector.of(
+      RowSetImpl::new,
+      (set, row) -> {
+        set.list.add(mapper.apply(row));
+      },
+      (set1, set2) -> null, // Shall not be invoked as this is sequential
+      (set) -> set
+    );
+  }
+
   static Function<RowSet<Row>, RowSetImpl<Row>> FACTORY = rs -> (RowSetImpl) rs;
+
+  static <U> Function<RowSet<U>, RowSetImpl<U>> factory() {
+    return rs -> (RowSetImpl) rs;
+  }
 
   private ArrayList<R> list = new ArrayList<>();
 

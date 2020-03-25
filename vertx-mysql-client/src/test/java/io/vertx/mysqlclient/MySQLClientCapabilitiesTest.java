@@ -44,9 +44,9 @@ public class MySQLClientCapabilitiesTest extends MySQLTestBase {
   private void testAffectedRowsClientCapability(TestContext ctx, boolean useAffectedRows, int expectedRowCount) {
     MySQLConnectOptions connectOptions = options.setUseAffectedRows(useAffectedRows);
     MySQLConnection.connect(vertx, connectOptions, ctx.asyncAssertSuccess(conn -> {
-      conn.query(PREPARE_TESTING_TABLE_DATA, ctx.asyncAssertSuccess(res0 -> {
+      conn.query(PREPARE_TESTING_TABLE_DATA).execute(ctx.asyncAssertSuccess(res0 -> {
         conn
-          .query("UPDATE vehicle SET type = 'bike' WHERE id = 1;", ctx.asyncAssertSuccess(res1 -> {
+          .query("UPDATE vehicle SET type = 'bike' WHERE id = 1;").execute(ctx.asyncAssertSuccess(res1 -> {
             ctx.assertEquals(expectedRowCount, res1.rowCount());
             conn.close();
           }));

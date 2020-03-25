@@ -41,7 +41,7 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("SELECT \"SmallSerial\" FROM \"NumericDataType\" WHERE \"id\" = 1", ctx.asyncAssertSuccess(result -> {
+        .query("SELECT \"SmallSerial\" FROM \"NumericDataType\" WHERE \"id\" = 1").execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           ctx.assertEquals(1, result.rowCount());
           Row row = result.iterator().next();
@@ -65,7 +65,7 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("SELECT \"Serial\" FROM \"NumericDataType\" WHERE \"id\" = 1", ctx.asyncAssertSuccess(result -> {
+        .query("SELECT \"Serial\" FROM \"NumericDataType\" WHERE \"id\" = 1").execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           ctx.assertEquals(1, result.rowCount());
           Row row = result.iterator().next();
@@ -89,7 +89,7 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("SELECT \"BigSerial\" FROM \"NumericDataType\" WHERE \"id\" = 1", ctx.asyncAssertSuccess(result -> {
+        .query("SELECT \"BigSerial\" FROM \"NumericDataType\" WHERE \"id\" = 1").execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           ctx.assertEquals(1, result.rowCount());
           Row row = result.iterator().next();
@@ -113,7 +113,7 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("SELECT 919.999999999999999999999999999999999999::NUMERIC \"Numeric\", 'NaN'::NUMERIC \"NaN\"", ctx.asyncAssertSuccess(result -> {
+        .query("SELECT 919.999999999999999999999999999999999999::NUMERIC \"Numeric\", 'NaN'::NUMERIC \"NaN\"").execute(ctx.asyncAssertSuccess(result -> {
           Numeric numeric = Numeric.parse("919.999999999999999999999999999999999999");
           Numeric nan = Numeric.parse("NaN");
           ctx.assertEquals(1, result.size());
@@ -148,7 +148,7 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       for (Number value : values) {
         conn
-          .query("SELECT " + value + "::" + type + " \"col\"", ctx.asyncAssertSuccess(result -> {
+          .query("SELECT " + value + "::" + type + " \"col\"").execute(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "col")
@@ -198,7 +198,7 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       // The extra column makes sure that reading the array remains confined in the value since we are doing
       // parsing of the array value
-      conn.query("SELECT '{}'::bigint[] \"array\", 1 \"Extra\"",
+      conn.query("SELECT '{}'::bigint[] \"array\", 1 \"Extra\"").execute(
         ctx.asyncAssertSuccess(result -> {
           ColumnChecker.checkColumn(0, "array")
             .returns(Tuple::getValue, Row::getValue, (Object[]) new Long[0])

@@ -29,9 +29,9 @@ public class MySQLPreparedStatementTest extends MySQLTestBase {
   public void testContinuousPreparedQueriesWithSameTypeParameters(TestContext ctx) {
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT id, message FROM immutable WHERE id = ? AND message = ?", ctx.asyncAssertSuccess(preparedQuery -> {
-        preparedQuery.execute(Tuple.of(1, "fortune: No such file or directory"), ctx.asyncAssertSuccess(res1 -> {
+        preparedQuery.query().execute(Tuple.of(1, "fortune: No such file or directory"), ctx.asyncAssertSuccess(res1 -> {
           ctx.assertEquals(1, res1.size());
-          preparedQuery.execute(Tuple.of(4, "After enough decimal places, nobody gives a damn."), ctx.asyncAssertSuccess(res2 -> {
+          preparedQuery.query().execute(Tuple.of(4, "After enough decimal places, nobody gives a damn."), ctx.asyncAssertSuccess(res2 -> {
             ctx.assertEquals(0, res2.size());
             conn.close();
           }));
@@ -44,9 +44,9 @@ public class MySQLPreparedStatementTest extends MySQLTestBase {
   public void testContinuousPreparedQueriesWithDifferentTypeParameters(TestContext ctx) {
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT id, message FROM immutable WHERE id = ? AND message = ?", ctx.asyncAssertSuccess(preparedQuery -> {
-        preparedQuery.execute(Tuple.of("1", "fortune: No such file or directory"), ctx.asyncAssertSuccess(res1 -> {
+        preparedQuery.query().execute(Tuple.of("1", "fortune: No such file or directory"), ctx.asyncAssertSuccess(res1 -> {
           ctx.assertEquals(1, res1.size());
-          preparedQuery.execute(Tuple.of(4, "A bad random number generator: 1, 1, 1, 1, 1, 4.33e+67, 1, 1, 1"), ctx.asyncAssertSuccess(res2 -> {
+          preparedQuery.query().execute(Tuple.of(4, "A bad random number generator: 1, 1, 1, 1, 1, 4.33e+67, 1, 1, 1"), ctx.asyncAssertSuccess(res2 -> {
             ctx.assertEquals(1, res2.size());
             conn.close();
           }));

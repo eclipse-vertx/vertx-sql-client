@@ -55,7 +55,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     PgPool pool = createPool(options, 4);
     for (int i = 0;i < num;i++) {
       pool.getConnection(ctx.asyncAssertSuccess(conn -> {
-        conn.query("SELECT id, randomnumber from WORLD", ar -> {
+        conn.query("SELECT id, randomnumber from WORLD").execute(ar -> {
           if (ar.succeeded()) {
             SqlResult result = ar.result();
             ctx.assertEquals(10000, result.size());
@@ -75,7 +75,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     Async async = ctx.async(num);
     PgPool pool = createPool(options, 4);
     for (int i = 0;i < num;i++) {
-      pool.query("SELECT id, randomnumber from WORLD", ar -> {
+      pool.query("SELECT id, randomnumber from WORLD").execute(ar -> {
         if (ar.succeeded()) {
           SqlResult result = ar.result();
           ctx.assertEquals(10000, result.size());
@@ -93,7 +93,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     Async async = ctx.async(num);
     PgPool pool = createPool(options, 4);
     for (int i = 0;i < num;i++) {
-      pool.preparedQuery("SELECT id, randomnumber from WORLD where id=$1", Tuple.of(i + 1), ar -> {
+      pool.preparedQuery("SELECT id, randomnumber from WORLD where id=$1").execute(Tuple.of(i + 1), ar -> {
         if (ar.succeeded()) {
           SqlResult result = ar.result();
           ctx.assertEquals(1, result.size());
@@ -112,7 +112,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     Async async = ctx.async(num);
     PgPool pool = createPool(options, 4);
     for (int i = 0;i < num;i++) {
-      pool.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9", ar -> {
+      pool.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9").execute( ar -> {
         if (ar.succeeded()) {
           SqlResult result = ar.result();
           ctx.assertEquals(1, result.rowCount());
@@ -130,7 +130,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     Async async = ctx.async(num);
     PgPool pool = createPool(options, 4);
     for (int i = 0;i < num;i++) {
-      pool.preparedQuery("UPDATE Fortune SET message = 'Whatever' WHERE id = $1", Tuple.of(9), ar -> {
+      pool.preparedQuery("UPDATE Fortune SET message = 'Whatever' WHERE id = $1").execute(Tuple.of(9), ar -> {
         if (ar.succeeded()) {
           SqlResult result = ar.result();
           ctx.assertEquals(1, result.rowCount());
@@ -156,9 +156,9 @@ public abstract class PgPoolTestBase extends PgTestBase {
       pool.getConnection(ctx.asyncAssertSuccess(conn1 -> {
         proxyConn.get().close();
         conn1.closeHandler(v2 -> {
-          conn1.query("never-read", ctx.asyncAssertFailure(err -> {
+          conn1.query("never-read").execute(ctx.asyncAssertFailure(err -> {
             pool.getConnection(ctx.asyncAssertSuccess(conn2 -> {
-              conn2.query("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(v3 -> {
+              conn2.query("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(v3 -> {
                 async.complete();
               }));
             }));
@@ -173,7 +173,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     Async async = ctx.async();
     PgPool pool = createPool(options, 4);
     pool.getConnection(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT pg_sleep(10)", ctx.asyncAssertFailure(error -> {
+      conn.query("SELECT pg_sleep(10)").execute(ctx.asyncAssertFailure(error -> {
         ctx.assertEquals("canceling statement due to user request", error.getMessage());
         conn.close();
         async.complete();

@@ -47,13 +47,13 @@ public class MySQLQueryTest extends MySQLTestBase {
   @Test
   public void testLastInsertIdWithDefaultValue(TestContext ctx) {
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("CREATE TEMPORARY TABLE last_insert_id(id INTEGER PRIMARY KEY AUTO_INCREMENT, val VARCHAR(20));", ctx.asyncAssertSuccess(createTableResult -> {
+      conn.query("CREATE TEMPORARY TABLE last_insert_id(id INTEGER PRIMARY KEY AUTO_INCREMENT, val VARCHAR(20));").execute(ctx.asyncAssertSuccess(createTableResult -> {
         long lastInsertId1 = createTableResult.property(MySQLClient.LAST_INSERTED_ID);
         ctx.assertEquals(0L, lastInsertId1);
-        conn.query("INSERT INTO last_insert_id(val) VALUES('test')", ctx.asyncAssertSuccess(insertResult1 -> {
+        conn.query("INSERT INTO last_insert_id(val) VALUES('test')").execute(ctx.asyncAssertSuccess(insertResult1 -> {
           long lastInsertId2 = insertResult1.property(MySQLClient.LAST_INSERTED_ID);
           ctx.assertEquals(1L, lastInsertId2);
-          conn.query("INSERT INTO last_insert_id(val) VALUES('test2')", ctx.asyncAssertSuccess(insertResult2 -> {
+          conn.query("INSERT INTO last_insert_id(val) VALUES('test2')").execute(ctx.asyncAssertSuccess(insertResult2 -> {
             long lastInsertId3 = insertResult2.property(MySQLClient.LAST_INSERTED_ID);
             ctx.assertEquals(2L, lastInsertId3);
             conn.close();
@@ -66,16 +66,16 @@ public class MySQLQueryTest extends MySQLTestBase {
   @Test
   public void testLastInsertIdWithSpecifiedValue(TestContext ctx) {
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("CREATE TEMPORARY TABLE last_insert_id(id INTEGER PRIMARY KEY AUTO_INCREMENT, val VARCHAR(20));", ctx.asyncAssertSuccess(createTableResult -> {
+      conn.query("CREATE TEMPORARY TABLE last_insert_id(id INTEGER PRIMARY KEY AUTO_INCREMENT, val VARCHAR(20));").execute(ctx.asyncAssertSuccess(createTableResult -> {
         long lastInsertId1 = createTableResult.property(MySQLClient.LAST_INSERTED_ID);
         ctx.assertEquals(0L, lastInsertId1);
-        conn.query("ALTER TABLE last_insert_id AUTO_INCREMENT=1234", ctx.asyncAssertSuccess(alterTableResult -> {
+        conn.query("ALTER TABLE last_insert_id AUTO_INCREMENT=1234").execute(ctx.asyncAssertSuccess(alterTableResult -> {
           long lastInsertId2 = createTableResult.property(MySQLClient.LAST_INSERTED_ID);
           ctx.assertEquals(0L, lastInsertId2);
-          conn.query("INSERT INTO last_insert_id(val) VALUES('test')", ctx.asyncAssertSuccess(insertResult1 -> {
+          conn.query("INSERT INTO last_insert_id(val) VALUES('test')").execute(ctx.asyncAssertSuccess(insertResult1 -> {
             long lastInsertId3 = insertResult1.property(MySQLClient.LAST_INSERTED_ID);
             ctx.assertEquals(1234L, lastInsertId3);
-            conn.query("INSERT INTO last_insert_id(val) VALUES('test2')", ctx.asyncAssertSuccess(insertResult2 -> {
+            conn.query("INSERT INTO last_insert_id(val) VALUES('test2')").execute(ctx.asyncAssertSuccess(insertResult2 -> {
               long lastInsertId4 = insertResult2.property(MySQLClient.LAST_INSERTED_ID);
               ctx.assertEquals(1235L, lastInsertId4);
               conn.close();
@@ -91,7 +91,7 @@ public class MySQLQueryTest extends MySQLTestBase {
     // we set the cache size to be the same with max_prepared_stmt_count
     MySQLConnection.connect(vertx, options.setCachePreparedStatements(true)
       .setPreparedStatementCacheMaxSize(16382), ctx.asyncAssertSuccess(conn -> {
-      conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'", ctx.asyncAssertSuccess(res1 -> {
+      conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'").execute(ctx.asyncAssertSuccess(res1 -> {
         Row row = res1.iterator().next();
         int maxPreparedStatementCount = Integer.parseInt(row.getString(1));
         ctx.assertEquals("max_prepared_stmt_count", row.getString(0));
@@ -100,7 +100,7 @@ public class MySQLQueryTest extends MySQLTestBase {
         for (int i = 0; i < 10000; i++) {
           String randomString = UUID.randomUUID().toString();
           for (int j = 0; j < 2; j++) {
-            conn.preparedQuery("SELECT '" + randomString + "'", ctx.asyncAssertSuccess(res2 -> {
+            conn.preparedQuery("SELECT '" + randomString + "'").execute(ctx.asyncAssertSuccess(res2 -> {
               ctx.assertEquals(randomString, res2.iterator().next().getString(0));
             }));
           }
@@ -112,14 +112,14 @@ public class MySQLQueryTest extends MySQLTestBase {
   @Test
   public void testCachePreparedStatementWithSameSql(TestContext ctx) {
     MySQLConnection.connect(vertx, options.setCachePreparedStatements(true), ctx.asyncAssertSuccess(conn -> {
-      conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'", ctx.asyncAssertSuccess(res1 -> {
+      conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'").execute(ctx.asyncAssertSuccess(res1 -> {
         Row row = res1.iterator().next();
         int maxPreparedStatementCount = Integer.parseInt(row.getString(1));
         ctx.assertEquals("max_prepared_stmt_count", row.getString(0));
         ctx.assertEquals(16382, maxPreparedStatementCount);
 
         for (int i = 0; i < 20000; i++) {
-          conn.preparedQuery("SELECT 'test'", ctx.asyncAssertSuccess(res2 -> {
+          conn.preparedQuery("SELECT 'test'").execute(ctx.asyncAssertSuccess(res2 -> {
             ctx.assertEquals("test", res2.iterator().next().getString(0));
           }));
         }
@@ -136,7 +136,7 @@ public class MySQLQueryTest extends MySQLTestBase {
     String expected = sb.toString();
 
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT REPEAT('abcde', 4000000)", ctx.asyncAssertSuccess(rowSet -> {
+      conn.query("SELECT REPEAT('abcde', 4000000)").execute(ctx.asyncAssertSuccess(rowSet -> {
         ctx.assertEquals(1, rowSet.size());
         Row row = rowSet.iterator().next();
         ctx.assertTrue(row.getString(0).getBytes().length > 0xFFFFFF);
@@ -157,8 +157,8 @@ public class MySQLQueryTest extends MySQLTestBase {
     ctx.assertTrue(buffer.length() > 0xFFFFFF);
 
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("UPDATE datatype SET `LongBlob` = ? WHERE id = 2", Tuple.of(buffer), ctx.asyncAssertSuccess(v -> {
-        conn.preparedQuery("SELECT id, `LongBlob` FROM datatype WHERE id = 2", ctx.asyncAssertSuccess(rowSet -> {
+      conn.preparedQuery("UPDATE datatype SET `LongBlob` = ? WHERE id = 2").execute(Tuple.of(buffer), ctx.asyncAssertSuccess(v -> {
+        conn.preparedQuery("SELECT id, `LongBlob` FROM datatype WHERE id = 2").execute(ctx.asyncAssertSuccess(rowSet -> {
           Row row = rowSet.iterator().next();
           ctx.assertEquals(2, row.getInteger(0));
           ctx.assertEquals(2, row.getInteger("id"));
@@ -181,9 +181,9 @@ public class MySQLQueryTest extends MySQLTestBase {
     fileSystem.createTempFile(null, null, ctx.asyncAssertSuccess(filename -> {
       fileSystem.writeFile(filename, fileData, ctx.asyncAssertSuccess(write -> {
         MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-          conn.query("TRUNCATE TABLE localinfile", ctx.asyncAssertSuccess(cleanup -> {
-            conn.query("LOAD DATA LOCAL INFILE '" + filename + "' INTO TABLE localinfile FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n';", ctx.asyncAssertSuccess(v -> {
-              conn.query("SELECT * FROM localinfile", ctx.asyncAssertSuccess(rowSet -> {
+          conn.query("TRUNCATE TABLE localinfile").execute(ctx.asyncAssertSuccess(cleanup -> {
+            conn.query("LOAD DATA LOCAL INFILE '" + filename + "' INTO TABLE localinfile FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n';").execute(ctx.asyncAssertSuccess(v -> {
+              conn.query("SELECT * FROM localinfile").execute(ctx.asyncAssertSuccess(rowSet -> {
                 ctx.assertEquals(3, rowSet.size());
                 RowIterator<Row> iterator = rowSet.iterator();
                 Row row1 = iterator.next();
