@@ -28,7 +28,7 @@ import java.util.function.Function;
 import java.util.stream.Collector;
 
 /**
- * A query.
+ * A query for a prepared statement allowing parameterized execution of the query.
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
@@ -48,7 +48,7 @@ public interface PreparedQuery<T> extends Query<T> {
   Future<T> execute(Tuple tuple);
 
   /**
-   * Execute the query.
+   * Execute the query with a batch of tuples.
    *
    * @param batch the batch of tuples
    * @param handler the handler receiving the response

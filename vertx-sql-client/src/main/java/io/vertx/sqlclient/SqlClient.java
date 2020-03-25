@@ -19,6 +19,8 @@ package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.VertxGen;
 
+import java.util.List;
+
 /**
  * Defines common SQL client operations with a database server.
  *
@@ -28,12 +30,19 @@ import io.vertx.codegen.annotations.VertxGen;
 public interface SqlClient {
 
   /**
+   * Create a query, the {@link Query#execute} method must be called to execute the query.
+   *
    * Create a query.
+   *
+   * @return the query
    */
   Query<RowSet<Row>> query(String sql);
 
   /**
-   * Create a prepared query.
+   * Create a prepared query, one of the {@link PreparedQuery#execute}, {@link PreparedQuery#executeBatch}
+   * methods must be called to execute the query.
+   *
+   * @return the prepared query
    */
   PreparedQuery<RowSet<Row>> preparedQuery(String sql);
 

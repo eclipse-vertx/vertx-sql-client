@@ -43,10 +43,26 @@ public interface Pool extends SqlClient {
   Future<SqlConnection> getConnection();
 
   /**
+   * {@inheritDoc}
+   *
+   * A connection is borrowed from the connection pool when the query is executed and then immediately returned
+   * to the pool after it completes.
+   */
+  @Override
+  Query<RowSet<Row>> query(String sql);
+
+  /**
+   * {@inheritDoc}
+   *
+   * A connection is borrowed from the connection pool when the query is executed and then immediately returned
+   * to the pool after it completes.
+   */
+  @Override
+  PreparedQuery<RowSet<Row>> preparedQuery(String sql);
+
+  /**
    * Borrow a connection from the pool and begin a transaction, the underlying connection will be returned
    * to the pool when the transaction ends.
-   *
-   * @return the transaction
    */
   void begin(Handler<AsyncResult<Transaction>> handler);
 

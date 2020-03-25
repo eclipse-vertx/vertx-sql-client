@@ -34,9 +34,9 @@ import io.vertx.core.Handler;
 public interface PreparedStatement {
 
   /**
-   * Create a query.
+   * Create a prepared query for this statement.
    *
-   * @return the query
+   * @return the prepared query
    */
   PreparedQuery<RowSet<Row>> query();
 
