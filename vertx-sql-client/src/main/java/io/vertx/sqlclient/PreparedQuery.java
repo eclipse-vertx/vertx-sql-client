@@ -27,7 +27,8 @@ import java.util.function.Function;
 import java.util.stream.Collector;
 
 /**
- * A query for a prepared statement allowing parameterized execution of the query.
+ * A query for a prepared statement allowing parameterized execution of the query, this query will use
+ * a prepared statement.
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */

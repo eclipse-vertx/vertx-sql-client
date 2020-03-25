@@ -22,6 +22,7 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlResult;
 
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
@@ -40,11 +41,13 @@ abstract class QueryBase<T, R extends SqlResult<T>> implements Query<R> {
 
   @Override
   public <U> Query<SqlResult<U>> collecting(Collector<Row, ?, U> collector) {
+    Objects.requireNonNull(collector, "Supplied collector must not be null");
     return copy(new SqlResultBuilder<>(SqlResultImpl::new, collector));
   }
 
   @Override
   public <U> Query<RowSet<U>> mapping(Function<Row, U> mapper) {
+    Objects.requireNonNull(mapper, "Supplied mapper must not be null");
     return copy(new SqlResultBuilder<>(RowSetImpl.factory(), RowSetImpl.collector(mapper)));
   }
 }
