@@ -19,7 +19,7 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"CharacterDataType\" SET \"Name\" = upper($1) WHERE \"id\" = $2 RETURNING \"Name\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
             .addString("vert.x")
             .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
@@ -48,7 +48,7 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"CharacterDataType\" SET \"SingleChar\" = upper($1) WHERE \"id\" = $2 RETURNING \"SingleChar\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
             .addString("b")
             .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
@@ -76,7 +76,7 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"CharacterDataType\" SET \"FixedChar\" = upper($1) WHERE \"id\" = $2 RETURNING \"FixedChar\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
             .addString("no")
             .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
@@ -104,7 +104,7 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"CharacterDataType\" SET \"Text\" = upper($1) WHERE \"id\" = $2 RETURNING \"Text\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
             .addString("Hello World")
             .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
@@ -132,7 +132,7 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"CharacterDataType\" SET \"VarCharacter\" = upper($1) WHERE \"id\" = $2 RETURNING \"VarCharacter\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
             .addString("Great!")
             .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
@@ -161,7 +161,7 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT $1::VARCHAR(" + len + ")",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.of(value), ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.of(value), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(value, result.iterator().next().getString(0));
             async.complete();
           }));
@@ -180,7 +180,7 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Text\" = $1  WHERE \"id\" = $2 RETURNING \"Text\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addStringArray(new String[]{"Knock, knock.Who’s there?"})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {

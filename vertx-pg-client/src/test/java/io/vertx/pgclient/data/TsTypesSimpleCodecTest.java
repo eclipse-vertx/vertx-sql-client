@@ -16,7 +16,7 @@ public class TsTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   public void test_ts_query(TestContext ctx) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 'fat & rat'::tsquery as \"TsQuery\"", ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT 'fat & rat'::tsquery as \"TsQuery\"").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         String expected = "'fat' & 'rat'";
@@ -34,7 +34,7 @@ public class TsTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   public void test_ts_query_null(TestContext ctx) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT null::tsquery as \"TsQuery\"", ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT null::tsquery as \"TsQuery\"").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         String expected = null;
@@ -52,7 +52,7 @@ public class TsTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   public void test_ts_query_array(TestContext ctx) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT ARRAY ['fat & rat'::tsquery ] as \"TsQuery\"", ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT ARRAY ['fat & rat'::tsquery ] as \"TsQuery\"").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         System.out.println(row.getValue(0));
@@ -72,7 +72,7 @@ public class TsTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   public void test_ts_vector_simple(TestContext ctx) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 'a fat cat sat on a mat and ate a fat rat'::tsvector as \"TsVector\"", ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT 'a fat cat sat on a mat and ate a fat rat'::tsvector as \"TsVector\"").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         String expected = "'a' 'and' 'ate' 'cat' 'fat' 'mat' 'on' 'rat' 'sat'";
@@ -90,7 +90,7 @@ public class TsTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   public void test_ts_vector_null(TestContext ctx) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT null::tsvector as \"TsVector\"", ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT null::tsvector as \"TsVector\"").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         String expected = null;
@@ -108,7 +108,7 @@ public class TsTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   public void test_ts_vector_parsed(TestContext ctx) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT to_tsvector('english', 'The Fat Rats') as \"TsVector\"", ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT to_tsvector('english', 'The Fat Rats') as \"TsVector\"").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         String expected = "'fat':2 'rat':3";
@@ -126,7 +126,7 @@ public class TsTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   public void test_ts_vector_array(TestContext ctx) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT ARRAY['a fat cat sat on a mat and ate a fat rat'::tsvector] as \"TsVector\"", ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT ARRAY['a fat cat sat on a mat and ate a fat rat'::tsvector] as \"TsVector\"").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         String[] expected = new String[]{"'a' 'and' 'ate' 'cat' 'fat' 'mat' 'on' 'rat' 'sat'"};

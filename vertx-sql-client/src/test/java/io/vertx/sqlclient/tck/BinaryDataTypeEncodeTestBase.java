@@ -88,8 +88,12 @@ public abstract class BinaryDataTypeEncodeTestBase extends DataTypeTestBase {
                                        Class<T> clazz,
                                        T expected) {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery(statement("UPDATE basicdatatype SET " + columnName + " = ", " WHERE id = 2"), Tuple.tuple().addValue(expected), ctx.asyncAssertSuccess(updateResult -> {
-        conn.preparedQuery("SELECT " + columnName + " FROM basicdatatype WHERE id = 2", ctx.asyncAssertSuccess(result -> {
+      conn
+        .preparedQuery(statement("UPDATE basicdatatype SET " + columnName + " = ", " WHERE id = 2"))
+        .execute(Tuple.tuple().addValue(expected), ctx.asyncAssertSuccess(updateResult -> {
+        conn
+          .preparedQuery("SELECT " + columnName + " FROM basicdatatype WHERE id = 2")
+          .execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           ctx.assertEquals(expected, row.getValue(0));

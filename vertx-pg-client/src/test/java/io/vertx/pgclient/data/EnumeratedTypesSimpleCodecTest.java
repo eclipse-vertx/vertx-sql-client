@@ -13,7 +13,7 @@ public class EnumeratedTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTest
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("SELECT \"currentMood\" FROM \"EnumDataType\" WHERE \"id\" = 5", ctx.asyncAssertSuccess(result -> {
+        .query("SELECT \"currentMood\" FROM \"EnumDataType\" WHERE \"id\" = 5").execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "currentMood")

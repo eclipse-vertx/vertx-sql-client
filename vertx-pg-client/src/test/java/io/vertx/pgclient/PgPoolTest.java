@@ -50,7 +50,7 @@ public class PgPoolTest extends PgPoolTestBase {
         proxyConn.get().close();
       }));
       pool.getConnection(ctx.asyncAssertSuccess(conn -> {
-        conn.query("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(v2 -> {
+        conn.query("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(v2 -> {
           async.complete();
         }));
       }));
@@ -61,7 +61,7 @@ public class PgPoolTest extends PgPoolTestBase {
   public void testAuthFailure(TestContext ctx) {
     Async async = ctx.async();
     PgPool pool = createPool(new PgConnectOptions(options).setPassword("wrong"), 1);
-    pool.query("SELECT id, randomnumber from WORLD", ctx.asyncAssertFailure(v2 -> {
+    pool.query("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertFailure(v2 -> {
       async.complete();
     }));
   }
@@ -107,7 +107,7 @@ public class PgPoolTest extends PgPoolTestBase {
     Async async = ctx.async();
     PgPool pool = PgPool.pool(options, new PoolOptions());
     try {
-      pool.query("SELECT id, randomnumber from WORLD", ctx.asyncAssertSuccess(v -> {
+      pool.query("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(v -> {
         async.complete();
       }));
       async.await(4000);
@@ -141,7 +141,7 @@ public class PgPoolTest extends PgPoolTestBase {
     int numRequests = 2;
     Async async = ctx.async(numRequests);
     for (int i = 0;i < numRequests;i++) {
-      pool.preparedQuery("SELECT * FROM Fortune WHERE id=$1", Tuple.of(1), ctx.asyncAssertSuccess(results -> {
+      pool.preparedQuery("SELECT * FROM Fortune WHERE id=$1").execute(Tuple.of(1), ctx.asyncAssertSuccess(results -> {
         ctx.assertEquals(1, results.size());
         Tuple row = results.iterator().next();
         ctx.assertEquals(1, row.getInteger(0));

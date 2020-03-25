@@ -41,12 +41,12 @@ public class DB2SimpleQueryTest extends SimpleQueryTestBase {
     protected void cleanTestTable(TestContext ctx) {
         // use DELETE FROM because DB2 does not support TRUNCATE TABLE
         connect(ctx.asyncAssertSuccess(conn -> {
-            conn.query("DELETE FROM mutable", ctx.asyncAssertSuccess(result -> {
+            conn.query("DELETE FROM mutable").execute(ctx.asyncAssertSuccess(result -> {
                 conn.close();
             }));
         }));
     }
-    
+
     @Override
     @Test
     @Ignore // TODO implement error path handling properly

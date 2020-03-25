@@ -17,15 +17,7 @@
 
 package io.vertx.sqlclient;
 
-import io.vertx.codegen.annotations.Fluent;
-import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-
-import java.util.List;
-import java.util.stream.Collector;
 
 /**
  * Defines common SQL client operations with a database server.
@@ -36,136 +28,19 @@ import java.util.stream.Collector;
 public interface SqlClient {
 
   /**
-   * Execute a simple query using the given {@code sql} string, the asynchronous result is represented as a {@link RowSet}.
+   * Create a query, the {@link Query#execute} method must be called to execute the query.
    *
-   * @param sql the query SQL
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
+   * @return the query
    */
-  @Fluent
-  SqlClient query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
+  Query<RowSet<Row>> query(String sql);
 
   /**
-   * Like {@link #query(String, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  Future<RowSet<Row>> query(String sql);
-
-  /**
-   * Execute a simple query using the given {@code sql} string, the asynchronous result is represented as a collection of elements transformed by the provided {@link java.util.stream.Collector}.
+   * Create a prepared query, one of the {@link PreparedQuery#execute} or {@link PreparedQuery#executeBatch}
+   * methods must be called to execute the query.
    *
-   * @param sql the query SQL
-   * @param collector the collector
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
+   * @return the prepared query
    */
-  @GenIgnore
-  <R> SqlClient query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  /**
-   * Like {@link #query(String, Collector, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  @GenIgnore
-  <R> Future<SqlResult<R>> query(String sql, Collector<Row, ?, R> collector);
-
-  /**
-   * Execute the given {@code sql} string using a prepared statement without any parameter, the asynchronous result is represented as a {@link RowSet}.
-   *
-   * @param sql the prepared query SQL
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  SqlClient preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * Like {@link #preparedQuery(String, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  Future<RowSet<Row>> preparedQuery(String sql);
-
-  /**
-   * Execute the given {@code sql} string using a prepared statement without any parameter, the asynchronous result is represented as a collection of elements transformed by the provided {@link java.util.stream.Collector}.
-   *
-   * @param sql the prepared query SQL
-   * @param collector the collector
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
-   */
-  @GenIgnore
-  <R> SqlClient preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  /**
-   * Like {@link #preparedQuery(String, Collector, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  @GenIgnore
-  <R> Future<SqlResult<R>> preparedQuery(String sql, Collector<Row, ?, R> collector);
-
-  /**
-   * Execute the given {@code sql} string using a prepared statement with parameters set in the {@code Tuple}, the asynchronous result is represented as a {@link RowSet}.
-   *
-   * @param sql the prepared query SQL
-   * @param arguments the list of arguments
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  SqlClient preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * Like {@link #preparedQuery(String, Tuple, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  Future<RowSet<Row>> preparedQuery(String sql, Tuple arguments);
-
-  /**
-   * Execute the given {@code sql} string using a prepared statement with parameters set in the {@code Tuple}, the asynchronous result is represented as a collection of elements transformed by the provided {@link java.util.stream.Collector}.
-   *
-   * @param sql the prepared query SQL
-   * @param arguments the list of arguments
-   * @param collector the collector
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
-   */
-  @GenIgnore
-  <R> SqlClient preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  /**
-   * Like {@link #preparedQuery(String, Tuple, Collector, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  @GenIgnore
-  <R> Future<SqlResult<R>> preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector);
-
-  /**
-   * Execute the given {@code sql} string using a prepared statement with a batch of parameters set in the {@code List}, the asynchronous result is represented as a {@link RowSet}.
-   *
-   * @param sql the prepared query SQL
-   * @param batch the batch of tuples
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  SqlClient preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * Like {@link #preparedBatch(String, List, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  Future<RowSet<Row>> preparedBatch(String sql, List<Tuple> batch);
-
-  /**
-   * Execute the given {@code sql} string using a prepared statement with a batch of parameters set in the {@code List}, the asynchronous result is represented as a collection of elements transformed by the provided {@link java.util.stream.Collector}.
-   *
-   * @param sql the prepared query SQL
-   * @param batch the batch of tuples
-   * @param collector the collector
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
-   */
-  @GenIgnore
-  <R> SqlClient preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  /**
-   * Like {@link #preparedBatch(String, List, Collector, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  @GenIgnore
-  <R> Future<SqlResult<R>> preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector);
+  PreparedQuery<RowSet<Row>> preparedQuery(String sql);
 
   /**
    * Close the client and release the associated resources.

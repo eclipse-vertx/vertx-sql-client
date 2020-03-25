@@ -19,7 +19,7 @@ public class BooleanTypeExtendedCodecTest extends ExtendedQueryDataTypeCodecTest
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"NumericDataType\" SET \"Boolean\" = $1  WHERE \"id\" = $2 RETURNING \"Boolean\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addBoolean(Boolean.FALSE)
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -49,7 +49,7 @@ public class BooleanTypeExtendedCodecTest extends ExtendedQueryDataTypeCodecTest
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Boolean\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Boolean")
               .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new boolean[]{Boolean.TRUE}))
@@ -67,7 +67,7 @@ public class BooleanTypeExtendedCodecTest extends ExtendedQueryDataTypeCodecTest
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Boolean\" = $1  WHERE \"id\" = $2 RETURNING \"Boolean\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addBooleanArray(new Boolean[]{Boolean.FALSE, Boolean.TRUE})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {

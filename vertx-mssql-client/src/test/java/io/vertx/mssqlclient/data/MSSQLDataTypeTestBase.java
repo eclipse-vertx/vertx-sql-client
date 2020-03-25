@@ -41,7 +41,9 @@ public abstract class MSSQLDataTypeTestBase extends MSSQLTestBase {
                                                         String value,
                                                         T expected) {
     MSSQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT CAST(" + value + " AS " + type + ") AS " + columnName, ctx.asyncAssertSuccess(result -> {
+      conn
+        .query("SELECT CAST(" + value + " AS " + type + ") AS " + columnName)
+        .execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         ctx.assertEquals(expected, row.getValue(0));
@@ -57,7 +59,9 @@ public abstract class MSSQLDataTypeTestBase extends MSSQLTestBase {
                                                                 String value,
                                                                 T expected) {
     MSSQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("SELECT CAST(" + value + " AS " + type + ") AS " + columnName, ctx.asyncAssertSuccess(result -> {
+      conn
+        .preparedQuery("SELECT CAST(" + value + " AS " + type + ") AS " + columnName)
+        .execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         ctx.assertEquals(expected, row.getValue(0));

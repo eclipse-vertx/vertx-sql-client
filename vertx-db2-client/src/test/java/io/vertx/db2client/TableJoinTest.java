@@ -15,16 +15,16 @@ import io.vertx.sqlclient.Row;
  */
 @RunWith(VertxUnitRunner.class)
 public class TableJoinTest extends DB2TestBase {
-	
+
 	@Test
 	public void testColumnRename(TestContext ctx) {
 		connect(ctx.asyncAssertSuccess(conn -> {
 			conn.query("SELECT immutable.id AS \"IMM ID\"," +
 		                      "immutable.message AS IMM_MSG," +
 					          "Fortune.id AS FORT_ID," +
-		                      "Fortune.message AS \"FORT ID\" FROM immutable " + 
-            		"INNER JOIN Fortune ON (immutable.id + 1) = Fortune.id " + 
-					"WHERE immutable.id=1", 
+		                      "Fortune.message AS \"FORT ID\" FROM immutable " +
+            		"INNER JOIN Fortune ON (immutable.id + 1) = Fortune.id " +
+					"WHERE immutable.id=1").execute(
 					ctx.asyncAssertSuccess(rowSet -> {
 				ctx.assertEquals(1, rowSet.size());
 				// TODO This is consistent with how JDBC behaves, but we may want to add an API
@@ -39,13 +39,13 @@ public class TableJoinTest extends DB2TestBase {
 			}));
 		}));
 	}
-	
+
 	@Test
 	public void testInnerJoin(TestContext ctx) {
 		connect(ctx.asyncAssertSuccess(conn -> {
-			conn.query("SELECT immutable.id,immutable.message,Fortune.id,Fortune.message FROM immutable " + 
-            		"INNER JOIN Fortune ON (immutable.id + 1) = Fortune.id " + 
-					"WHERE immutable.id=1", 
+			conn.query("SELECT immutable.id,immutable.message,Fortune.id,Fortune.message FROM immutable " +
+            		"INNER JOIN Fortune ON (immutable.id + 1) = Fortune.id " +
+					"WHERE immutable.id=1").execute(
 					ctx.asyncAssertSuccess(rowSet -> {
 				ctx.assertEquals(1, rowSet.size());
 				ctx.assertEquals(Arrays.asList("ID", "MESSAGE", "ID", "MESSAGE"), rowSet.columnsNames());
@@ -58,32 +58,32 @@ public class TableJoinTest extends DB2TestBase {
 			}));
 		}));
 	}
-	
+
 	@Test
 	public void testInnerJoinPrepared(TestContext ctx) {
 		testJoin(ctx, "INNER JOIN");
 	}
-	
+
 	@Test
 	public void testLeftOuterJoin(TestContext ctx) {
 		testJoin(ctx, "LEFT OUTER JOIN");
 	}
-	
+
 	@Test
 	public void testRightOuterJoin(TestContext ctx) {
 		testJoin(ctx, "RIGHT OUTER JOIN");
 	}
-	
+
 	@Test
 	public void testFullOuterJoin(TestContext ctx) {
 		testJoin(ctx, "FULL OUTER JOIN");
 	}
-	
+
 	private void testJoin(TestContext ctx, String joinType) {
 		connect(ctx.asyncAssertSuccess(conn -> {
-			conn.preparedQuery("SELECT * FROM immutable " + 
-            		joinType + " Fortune ON (immutable.id + 1) = Fortune.id " + 
-					"WHERE immutable.id=1", 
+			conn.preparedQuery("SELECT * FROM immutable " +
+            		joinType + " Fortune ON (immutable.id + 1) = Fortune.id " +
+					"WHERE immutable.id=1").execute(
 					ctx.asyncAssertSuccess(rowSet -> {
 				ctx.assertEquals(1, rowSet.size());
 				ctx.assertEquals(Arrays.asList("ID", "MESSAGE", "ID", "MESSAGE"), rowSet.columnsNames());

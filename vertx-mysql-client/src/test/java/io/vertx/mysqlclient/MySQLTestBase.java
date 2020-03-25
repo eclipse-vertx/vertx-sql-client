@@ -31,7 +31,6 @@ public abstract class MySQLTestBase {
 
   static void deleteFromMutableTable(TestContext ctx, SqlClient client, Runnable completionHandler) {
     client.query(
-      "TRUNCATE TABLE mutable",
-      ctx.asyncAssertSuccess(result -> completionHandler.run()));
+      "TRUNCATE TABLE mutable").execute(ctx.asyncAssertSuccess(result -> completionHandler.run()));
   }
 }

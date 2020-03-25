@@ -21,7 +21,7 @@ import io.vertx.docgen.Source;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.PreparedQuery;
+import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.RowStream;
@@ -38,7 +38,9 @@ import java.util.List;
 public class SqlClientExamples {
 
   public void queries01(SqlClient client) {
-    client.query("SELECT * FROM users WHERE id='julien'", ar -> {
+    client
+      .query("SELECT * FROM users WHERE id='julien'")
+      .execute(ar -> {
       if (ar.succeeded()) {
         RowSet<Row> result = ar.result();
         System.out.println("Got " + result.size() + " rows ");
@@ -50,7 +52,9 @@ public class SqlClientExamples {
 
 
   public void queries02(SqlClient client) {
-    client.preparedQuery("SELECT * FROM users WHERE id=?", Tuple.of("julien"), ar -> {
+    client
+      .preparedQuery("SELECT * FROM users WHERE id=?")
+      .execute(Tuple.of("julien"), ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rows = ar.result();
         System.out.println("Got " + rows.size() + " rows ");
@@ -61,7 +65,9 @@ public class SqlClientExamples {
   }
 
   public void queries03(SqlClient client) {
-    client.preparedQuery("SELECT first_name, last_name FROM users", ar -> {
+    client
+      .preparedQuery("SELECT first_name, last_name FROM users")
+      .execute(ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rows = ar.result();
         for (Row row : rows) {
@@ -74,7 +80,9 @@ public class SqlClientExamples {
   }
 
   public void queries04(SqlClient client) {
-    client.preparedQuery("INSERT INTO users (first_name, last_name) VALUES (?, ?)", Tuple.of("Julien", "Viet"), ar -> {
+    client
+      .preparedQuery("INSERT INTO users (first_name, last_name) VALUES (?, ?)")
+      .execute(Tuple.of("Julien", "Viet"), ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rows = ar.result();
         System.out.println(rows.rowCount());
@@ -110,7 +118,9 @@ public class SqlClientExamples {
     batch.add(Tuple.of("emad", "Emad Alblueshi"));
 
     // Execute the prepared batch
-    client.preparedBatch("INSERT INTO USERS (id, name) VALUES (?, ?)", batch, res -> {
+    client
+      .preparedQuery("INSERT INTO USERS (id, name) VALUES (?, ?)")
+      .executeBatch(batch, res -> {
       if (res.succeeded()) {
 
         // Process rows
@@ -133,9 +143,13 @@ public class SqlClientExamples {
       if (ar1.succeeded()) {
         SqlConnection connection = ar1.result();
 
-        connection.query("SELECT * FROM users WHERE id='julien'", ar2 -> {
+        connection
+          .query("SELECT * FROM users WHERE id='julien'")
+          .execute(ar2 -> {
           if (ar1.succeeded()) {
-            connection.query("SELECT * FROM users WHERE id='paulo'", ar3 -> {
+            connection
+              .query("SELECT * FROM users WHERE id='paulo'")
+              .execute(ar3 -> {
               // Do something with rows and return the connection to the pool
               connection.close();
             });
@@ -151,8 +165,8 @@ public class SqlClientExamples {
   public void usingConnections02(SqlConnection connection) {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE ?", ar1 -> {
       if (ar1.succeeded()) {
-        PreparedQuery pq = ar1.result();
-        pq.execute(Tuple.of("julien"), ar2 -> {
+        PreparedStatement prepared = ar1.result();
+        prepared.query().execute(Tuple.of("julien"), ar2 -> {
           if (ar2.succeeded()) {
             // All rows
             RowSet<Row> rows = ar2.result();
@@ -165,7 +179,7 @@ public class SqlClientExamples {
   public void usingConnections03(SqlConnection connection) {
     connection.prepare("INSERT INTO USERS (id, name) VALUES (?, ?)", ar1 -> {
       if (ar1.succeeded()) {
-        PreparedQuery prepared = ar1.result();
+        PreparedStatement prepared = ar1.result();
 
         // Create a query : bind parameters
         List<Tuple> batch = new ArrayList();
@@ -174,7 +188,7 @@ public class SqlClientExamples {
         batch.add(Tuple.of("julien", "Julien Viet"));
         batch.add(Tuple.of("emad", "Emad Alblueshi"));
 
-        prepared.batch(batch, res -> {
+        prepared.query().executeBatch(batch, res -> {
           if (res.succeeded()) {
 
             // Process rows
@@ -198,9 +212,13 @@ public class SqlClientExamples {
         Transaction tx = conn.begin();
 
         // Various statements
-        conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar1 -> {
+        conn
+          .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
+          .execute(ar1 -> {
           if (ar1.succeeded()) {
-            conn.query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')", ar2 -> {
+            conn
+              .query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')")
+              .execute(ar2 -> {
               if (ar2.succeeded()) {
                 // Commit the transaction
                 tx.commit(ar3 -> {
@@ -242,9 +260,11 @@ public class SqlClientExamples {
         Transaction tx = res.result();
 
         // Various statements
-        tx.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')", ar1 -> {
+        tx.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
+          .execute(ar1 -> {
           if (ar1.succeeded()) {
-            tx.query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')", ar2 -> {
+            tx.query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')")
+              .execute(ar2 -> {
               if (ar2.succeeded()) {
                 // Commit the transaction
                 // the connection will automatically return to the pool
@@ -268,7 +288,7 @@ public class SqlClientExamples {
   public void usingCursors01(SqlConnection connection) {
     connection.prepare("SELECT * FROM users WHERE age > ?", ar1 -> {
       if (ar1.succeeded()) {
-        PreparedQuery pq = ar1.result();
+        PreparedStatement pq = ar1.result();
 
         // Create a cursor
         Cursor cursor = pq.cursor(Tuple.of(18));
@@ -303,7 +323,7 @@ public class SqlClientExamples {
   public void usingCursors03(SqlConnection connection) {
     connection.prepare("SELECT * FROM users WHERE age > ?", ar1 -> {
       if (ar1.succeeded()) {
-        PreparedQuery pq = ar1.result();
+        PreparedStatement pq = ar1.result();
 
         // Fetch 50 rows at a time
         RowStream<Row> stream = pq.createStream(50, Tuple.of(18));

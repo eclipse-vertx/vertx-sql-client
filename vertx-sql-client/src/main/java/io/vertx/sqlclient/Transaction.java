@@ -17,14 +17,10 @@
 package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.Fluent;
-import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-
-import java.util.List;
-import java.util.stream.Collector;
 
 /**
  * A transaction that allows to control the transaction and receive events.
@@ -39,12 +35,12 @@ public interface Transaction extends SqlClient {
    * @param handler the handler notified with the prepared query asynchronously
    */
   @Fluent
-  Transaction prepare(String sql, Handler<AsyncResult<PreparedQuery>> handler);
+  Transaction prepare(String sql, Handler<AsyncResult<PreparedStatement>> handler);
 
   /**
    * Like {@link #prepare(String, Handler)} but returns a {@code Future} of the asynchronous result
    */
-  Future<PreparedQuery> prepare(String sql);
+  Future<PreparedStatement> prepare(String sql);
 
   /**
    * Commit the current transaction.
@@ -73,34 +69,6 @@ public interface Transaction extends SqlClient {
    */
   @Fluent
   Transaction abortHandler(Handler<Void> handler);
-
-  @Override
-  Transaction query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  @GenIgnore
-  <R> Transaction query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  @Override
-  Transaction preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  @GenIgnore
-  <R> Transaction preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  @Override
-  Transaction preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  @GenIgnore
-  <R> Transaction preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  @Override
-  Transaction preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  @GenIgnore
-  <R> Transaction preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 
   /**
    * Rollback the transaction and release the associated resources.

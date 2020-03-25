@@ -29,10 +29,10 @@ import io.vertx.sqlclient.tck.TransactionTestBase;
 
 @RunWith(VertxUnitRunner.class)
 public class DB2TransactionTest extends TransactionTestBase {
-  
+
   @ClassRule
   public static DB2Resource rule = DB2Resource.SHARED_INSTANCE;
-  
+
   @Override
   protected void initConnector() {
     connector = handler -> {
@@ -42,25 +42,25 @@ public class DB2TransactionTest extends TransactionTestBase {
       pool.begin(handler);
     };
   }
-  
+
   @Override
   protected Pool nonTxPool() {
     return DB2Pool.pool(vertx, new DB2ConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
   }
-  
+
   @Override
   protected void cleanTestTable(TestContext ctx) {
     // use DELETE FROM because DB2 does not support TRUNCATE TABLE
     connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("DELETE FROM mutable", ctx.asyncAssertSuccess(result -> {
+      conn.query("DELETE FROM mutable").execute(ctx.asyncAssertSuccess(result -> {
         conn.close();
       }));
     }));
   }
-  
+
   @Override
   protected String statement(String... parts) {
     return String.join("?", parts);
   }
-  
+
 }

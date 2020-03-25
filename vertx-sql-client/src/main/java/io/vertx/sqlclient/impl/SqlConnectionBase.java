@@ -18,7 +18,7 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.sqlclient.PreparedQuery;
+import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.core.*;
@@ -36,17 +36,17 @@ public abstract class SqlConnectionBase<C extends SqlClient> extends SqlClientBa
     this.conn = conn;
   }
 
-  public C prepare(String sql, Handler<AsyncResult<PreparedQuery>> handler) {
-    Future<PreparedQuery> fut = prepare(sql);
+  public C prepare(String sql, Handler<AsyncResult<PreparedStatement>> handler) {
+    Future<PreparedStatement> fut = prepare(sql);
     if (handler != null) {
       fut.onComplete(handler);
     }
     return (C)this;
   }
 
-  public Future<PreparedQuery> prepare(String sql) {
-    Promise<PreparedStatement> promise = promise();
+  public Future<PreparedStatement> prepare(String sql) {
+    Promise<io.vertx.sqlclient.impl.PreparedStatement> promise = promise();
     schedule(new PrepareStatementCommand(sql), promise);
-    return promise.future().map(cr -> new PreparedQueryImpl(conn, context, cr, autoCommit()));
+    return promise.future().map(cr -> PreparedStatementImpl.create(conn, context, cr, autoCommit()));
   }
 }

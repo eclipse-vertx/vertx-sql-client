@@ -31,7 +31,9 @@ public class ContextTest extends PgTestBase {
     connCtx.runOnContext(v1 -> {
       PgConnection.connect(vertx, options, testCtx.asyncAssertSuccess(conn -> {
         testCtx.assertEquals(connCtx, Vertx.currentContext());
-        conn.query("SELECT *  FROM (VALUES ('Hello world')) t1 (col1) WHERE 1 = 1", testCtx.asyncAssertSuccess(result -> {
+        conn
+          .query("SELECT *  FROM (VALUES ('Hello world')) t1 (col1) WHERE 1 = 1")
+          .execute(testCtx.asyncAssertSuccess(result -> {
           testCtx.assertEquals(connCtx, Vertx.currentContext());
           async.complete();
         }));
@@ -49,7 +51,9 @@ public class ContextTest extends PgTestBase {
       appCtx.runOnContext(v -> {
         pool.getConnection(testCtx.asyncAssertSuccess(conn -> {
           testCtx.assertEquals(appCtx, Vertx.currentContext());
-          conn.query("SELECT *  FROM (VALUES ('Hello world')) t1 (col1) WHERE 1 = 1", testCtx.asyncAssertSuccess(result -> {
+          conn
+            .query("SELECT *  FROM (VALUES ('Hello world')) t1 (col1) WHERE 1 = 1")
+            .execute(testCtx.asyncAssertSuccess(result -> {
             testCtx.assertEquals(appCtx, Vertx.currentContext());
             async.complete();
           }));

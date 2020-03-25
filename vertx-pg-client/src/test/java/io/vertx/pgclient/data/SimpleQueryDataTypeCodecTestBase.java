@@ -35,7 +35,7 @@ public abstract class SimpleQueryDataTypeCodecTestBase extends DataTypeTestBase 
                                        T expected) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT '" + data + "' :: " + dataType + " \"" + columnName + "\"", ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT '" + data + "' :: " + dataType + " \"" + columnName + "\"").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         ColumnChecker.checkColumn(0, columnName)
@@ -75,9 +75,9 @@ public abstract class SimpleQueryDataTypeCodecTestBase extends DataTypeTestBase 
                                         ColumnChecker checker) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SET TIME ZONE 'UTC'",
+      conn.query("SET TIME ZONE 'UTC'").execute(
         ctx.asyncAssertSuccess(res -> {
-          conn.query("SELECT " + arrayData + " \"" + columnName + "\"", ctx.asyncAssertSuccess(result -> {
+          conn.query("SELECT " + arrayData + " \"" + columnName + "\"").execute(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             Row row = result.iterator().next();
             checker.forRow(row);
@@ -95,9 +95,9 @@ public abstract class SimpleQueryDataTypeCodecTestBase extends DataTypeTestBase 
                                         Object... expected) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SET TIME ZONE 'UTC'",
+      conn.query("SET TIME ZONE 'UTC'").execute(
         ctx.asyncAssertSuccess(res -> {
-          conn.query("SELECT \"" + columnName + "\" FROM \"" + tableName + "\" WHERE \"id\" = 1",
+          conn.query("SELECT \"" + columnName + "\" FROM \"" + tableName + "\" WHERE \"id\" = 1").execute(
             ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, columnName)
                 .returns(Tuple::getValue, Row::getValue, expected)

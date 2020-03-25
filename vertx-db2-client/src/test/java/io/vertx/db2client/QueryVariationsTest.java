@@ -17,13 +17,13 @@ import io.vertx.sqlclient.Tuple;
  */
 @RunWith(VertxUnitRunner.class)
 public class QueryVariationsTest extends DB2TestBase {
-	
+
 	@Test
 	public void testSubquery(TestContext ctx) {
 		connect(ctx.asyncAssertSuccess(conn -> {
-			conn.query("SELECT id,message FROM immutable " + 
+			conn.query("SELECT id,message FROM immutable " +
 					"WHERE message IN " +
-					"(SELECT message FROM immutable WHERE id = '4' OR id = '7')", 
+					"(SELECT message FROM immutable WHERE id = '4' OR id = '7')").execute(
 					ctx.asyncAssertSuccess(rowSet -> {
 				ctx.assertEquals(2, rowSet.size());
 				ctx.assertEquals(Arrays.asList("ID", "MESSAGE"), rowSet.columnsNames());
@@ -40,13 +40,13 @@ public class QueryVariationsTest extends DB2TestBase {
 			}));
 		}));
 	}
-	
+
 	@Test
 	public void testSubqueryPrepared(TestContext ctx) {
 		connect(ctx.asyncAssertSuccess(conn -> {
-			conn.preparedQuery("SELECT id,message FROM immutable " + 
+			conn.preparedQuery("SELECT id,message FROM immutable " +
 					"WHERE message IN " +
-					"(SELECT message FROM immutable WHERE id = ? OR id = ?)",
+					"(SELECT message FROM immutable WHERE id = ? OR id = ?)").execute(
 					Tuple.of(4, 7),
 					ctx.asyncAssertSuccess(rowSet -> {
 				ctx.assertEquals(2, rowSet.size());
@@ -64,12 +64,12 @@ public class QueryVariationsTest extends DB2TestBase {
 			}));
 		}));
 	}
-	
+
 	@Test
 	public void testLikeQuery(TestContext ctx) {
 		connect(ctx.asyncAssertSuccess(conn -> {
-			conn.query("SELECT id,message FROM immutable " + 
-					"WHERE message LIKE '%computer%'",
+			conn.query("SELECT id,message FROM immutable " +
+					"WHERE message LIKE '%computer%'").execute(
 					ctx.asyncAssertSuccess(rowSet -> {
 				ctx.assertEquals(2, rowSet.size());
 				ctx.assertEquals(Arrays.asList("ID", "MESSAGE"), rowSet.columnsNames());
@@ -86,5 +86,5 @@ public class QueryVariationsTest extends DB2TestBase {
 			}));
 		}));
 	}
-	
+
 }

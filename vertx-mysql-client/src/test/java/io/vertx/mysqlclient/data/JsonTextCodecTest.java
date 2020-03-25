@@ -25,7 +25,7 @@ public class JsonTextCodecTest extends JsonDataTypeTest {
   @Override
   protected void testDecodeJson(TestContext ctx, String script, Object expected, Consumer<Row> checker) {
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query(script, ctx.asyncAssertSuccess(result -> {
+      conn.query(script).execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         ctx.assertEquals(expected, row.getValue(0));

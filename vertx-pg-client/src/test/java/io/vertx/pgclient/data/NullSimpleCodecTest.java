@@ -12,7 +12,7 @@ public class NullSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("SELECT null \"NullValue\"", ctx.asyncAssertSuccess(result -> {
+        .query("SELECT null \"NullValue\"").execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "NullValue").forRow(row);

@@ -67,7 +67,8 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
   public void testMultipleQuery(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT id, message from FORTUNE LIMIT 1;SELECT message, id from FORTUNE LIMIT 1", ctx.asyncAssertSuccess(result1 -> {
+      conn.query("SELECT id, message from FORTUNE LIMIT 1;SELECT message, id from FORTUNE LIMIT 1")
+        .execute(ctx.asyncAssertSuccess(result1 -> {
         ctx.assertEquals(1, result1.size());
         ctx.assertEquals(Arrays.asList("id", "message"), result1.columnsNames());
         Tuple row1 = result1.iterator().next();
@@ -91,7 +92,9 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(client -> {
       deleteFromTestTable(ctx, client, () -> {
-        client.preparedQuery("INSERT INTO Test (id, val) VALUES ($1, $2) RETURNING id", Tuple.of(14, "SomeMessage"), ctx.asyncAssertSuccess(result -> {
+        client
+          .preparedQuery("INSERT INTO Test (id, val) VALUES ($1, $2) RETURNING id")
+          .execute(Tuple.of(14, "SomeMessage"), ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(14, result.iterator().next().getInteger("id"));
           async.complete();
         }));
@@ -104,9 +107,12 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(client -> {
       deleteFromTestTable(ctx, client, () -> {
-        client.preparedQuery("INSERT INTO Test (id, val) VALUES ($1, $2) RETURNING id", Tuple.of(15, "SomeMessage"), ctx.asyncAssertSuccess(result -> {
+        client.preparedQuery("INSERT INTO Test (id, val) VALUES ($1, $2) RETURNING id")
+          .execute(Tuple.of(15, "SomeMessage"), ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(15, result.iterator().next().getInteger("id"));
-          client.preparedQuery("INSERT INTO Test (id, val) VALUES ($1, $2) RETURNING id", Tuple.of(15, "SomeMessage"), ctx.asyncAssertFailure(err -> {
+          client
+            .preparedQuery("INSERT INTO Test (id, val) VALUES ($1, $2) RETURNING id")
+            .execute(Tuple.of(15, "SomeMessage"), ctx.asyncAssertFailure(err -> {
             ctx.assertEquals("23505", ((PgException) err).getCode());
             async.complete();
           }));
@@ -126,7 +132,9 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
       List<Tuple> batch = new ArrayList<>();
       batch.add(Tuple.tuple());
       batch.add(Tuple.tuple());
-      conn.preparedBatch("SELECT count(id) FROM World", batch, ctx.asyncAssertSuccess(result -> {
+      conn
+        .preparedQuery("SELECT count(id) FROM World")
+        .executeBatch(batch, ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(result.size(), result.next().size());
         async.complete();
       }));
@@ -154,10 +162,14 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
   public void testTx(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("BEGIN", ctx.asyncAssertSuccess(result1 -> {
+      conn
+        .query("BEGIN")
+        .execute(ctx.asyncAssertSuccess(result1 -> {
         ctx.assertEquals(0, result1.size());
         ctx.assertNotNull(result1.iterator());
-        conn.query("COMMIT", ctx.asyncAssertSuccess(result2 -> {
+        conn
+          .query("COMMIT")
+          .execute(ctx.asyncAssertSuccess(result2 -> {
           ctx.assertEquals(0, result2.size());
           async.complete();
         }));
