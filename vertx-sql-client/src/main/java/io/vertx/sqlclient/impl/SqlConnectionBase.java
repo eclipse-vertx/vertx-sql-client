@@ -17,7 +17,7 @@
 
 package io.vertx.sqlclient.impl;
 
-import io.vertx.sqlclient.PreparedQuery;
+import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.core.*;
 
@@ -34,10 +34,10 @@ public abstract class SqlConnectionBase<C extends SqlConnectionBase> extends Sql
     this.conn = conn;
   }
 
-  public C prepare(String sql, Handler<AsyncResult<PreparedQuery>> handler) {
+  public C prepare(String sql, Handler<AsyncResult<PreparedStatement>> handler) {
     schedule(new PrepareStatementCommand(sql), cr -> {
       if (cr.succeeded()) {
-        handler.handle(Future.succeededFuture(new PreparedQueryImpl(conn, context, cr.result())));
+        handler.handle(Future.succeededFuture(new PreparedStatementImpl(conn, context, cr.result())));
       } else {
         handler.handle(Future.failedFuture(cr.cause()));
       }

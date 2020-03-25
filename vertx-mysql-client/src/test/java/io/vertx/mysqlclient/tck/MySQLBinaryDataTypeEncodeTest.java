@@ -31,8 +31,8 @@ public class MySQLBinaryDataTypeEncodeTest extends BinaryDataTypeEncodeTestBase 
   @Override
   public void testBoolean(TestContext ctx) {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("UPDATE basicdatatype SET test_boolean = ? WHERE id = 2", Tuple.tuple().addValue(true), ctx.asyncAssertSuccess(updateResult -> {
-        conn.preparedQuery("SELECT test_boolean FROM basicdatatype WHERE id = 2", ctx.asyncAssertSuccess(result -> {
+      conn.preparedQuery("UPDATE basicdatatype SET test_boolean = ? WHERE id = 2").execute(Tuple.tuple().addValue(true), ctx.asyncAssertSuccess(updateResult -> {
+        conn.preparedQuery("SELECT test_boolean FROM basicdatatype WHERE id = 2").execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           ctx.assertEquals(true, row.getBoolean(0));

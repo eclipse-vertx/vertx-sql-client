@@ -25,7 +25,7 @@ public class MySQLTextDataTypeDecodeTest extends TextDataTypeDecodeTestBase {
   @Override
   public void testBoolean(TestContext ctx) {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT test_boolean FROM basicdatatype WHERE id = 1", ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT test_boolean FROM basicdatatype WHERE id = 1").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         ctx.assertEquals(true, row.getBoolean(0));

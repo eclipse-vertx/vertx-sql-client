@@ -17,11 +17,10 @@
 
 package io.vertx.sqlclient.impl;
 
+import io.vertx.sqlclient.PreparedQuery;
+import io.vertx.sqlclient.Query;
 import io.vertx.sqlclient.impl.command.CommandScheduler;
-import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
-import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
-import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Row;
@@ -38,105 +37,102 @@ import java.util.stream.Collector;
 public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, CommandScheduler {
 
   @Override
-  public C query(String sql, Handler<AsyncResult<RowSet<Row>>> handler) {
-    return query(sql, false, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
+  public Query<RowSet<Row>> query(String sql) {
+    SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
+    return new QueryImpl<>( false, sql, builder);
   }
 
   @Override
-  public <R> C query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
-    return query(sql, true, SqlResultImpl::new, collector, handler);
+  public PreparedQuery<RowSet<Row>> preparedQuery(String sql) {
+    SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
+    return new PreparedQueryImpl<>( false, sql, builder);
   }
 
-  private <R1, R2 extends SqlResultBase<R1, R2>, R3 extends SqlResult<R1>> C query(
-    String sql,
-    boolean singleton,
-    Function<R1, R2> factory,
-    Collector<Row, ?, R1> collector,
-    Handler<AsyncResult<R3>> handler) {
-    SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, handler);
-    schedule(new SimpleQueryCommand<>(sql, singleton, collector, b), b);
-    return (C) this;
+  private class QueryImpl<T, R extends SqlResult<T>> extends QueryBase<T, R> {
+
+    protected final boolean singleton;
+    protected final String sql;
+
+    private QueryImpl(boolean singleton, String sql, SqlResultBuilder<T, ?, R> builder) {
+      super(builder);
+      this.singleton = singleton;
+      this.sql = sql;
+    }
+
+    @Override
+    protected <T2, R2 extends SqlResult<T2>> QueryBase<T2, R2> copy(SqlResultBuilder<T2, ?, R2> builder) {
+      return new QueryImpl<>(singleton, sql, builder);
+    }
+
+    @Override
+    public void execute(Handler<AsyncResult<R>> handler) {
+      SqlResultHandler resultHandler = builder.createHandler(handler);
+      schedule(builder.createSimpleQuery(sql, singleton, resultHandler), resultHandler);
+    }
   }
 
-  @Override
-  public C preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler) {
-    return preparedQuery(sql, (TupleInternal)arguments, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
-  }
+  private class PreparedQueryImpl<T, R extends SqlResult<T>> extends QueryImpl<T, R> implements PreparedQuery<R> {
 
-  @Override
-  public <R> C preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
-    return preparedQuery(sql, (TupleInternal)arguments, SqlResultImpl::new, collector, handler);
-  }
+    private PreparedQueryImpl(boolean singleton, String sql, SqlResultBuilder<T, ?, R> builder) {
+      super(singleton, sql, builder);
+    }
 
-  private <R1, R2 extends SqlResultBase<R1, R2>, R3 extends SqlResult<R1>> C preparedQuery(
-    String sql,
-    TupleInternal arguments,
-    Function<R1, R2> factory,
-    Collector<Row, ?, R1> collector,
-    Handler<AsyncResult<R3>> handler) {
-    schedule(new PrepareStatementCommand(sql), cr -> {
-      if (cr.succeeded()) {
-        PreparedStatement ps = cr.result();
-        String msg = ps.prepare(arguments);
-        if (msg != null) {
-          handler.handle(Future.failedFuture(msg));
-        } else {
-          SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, handler);
-          cr.scheduler.schedule(new ExtendedQueryCommand<>(ps, arguments, collector, b), b);
-        }
-      } else {
-        handler.handle(Future.failedFuture(cr.cause()));
-      }
-    });
-    return (C) this;
-  }
+    @Override
+    public <U> PreparedQuery<SqlResult<U>> collecting(Collector<Row, ?, U> collector) {
+      return (PreparedQuery<SqlResult<U>>) super.collecting(collector);
+    }
 
-  @Override
-  public C preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler) {
-    return preparedQuery(sql, ArrayTuple.EMPTY, handler);
-  }
+    @Override
+    public void execute(Handler<AsyncResult<R>> handler) {
+      execute(ArrayTuple.EMPTY, handler);
+    }
 
-  @Override
-  public <R> C preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
-    return preparedQuery(sql, ArrayTuple.EMPTY, collector, handler);
-  }
+    @Override
+    public <U> PreparedQuery<RowSet<U>> mapping(Function<Row, U> mapper) {
+      return (PreparedQuery<RowSet<U>>) super.mapping(mapper);
+    }
 
-  @Override
-  public C preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler) {
-    return preparedBatch(sql, batch, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR, handler);
-  }
+    @Override
+    protected <T2, R2 extends SqlResult<T2>> QueryBase<T2, R2> copy(SqlResultBuilder<T2, ?, R2> builder) {
+      return new PreparedQueryImpl<>(singleton, sql, builder);
+    }
 
-  @Override
-  public <R> C preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler) {
-    return preparedBatch(sql, batch, SqlResultImpl::new, collector, handler);
-  }
-
-  private <R1, R2 extends SqlResultBase<R1, R2>, R3 extends SqlResult<R1>> C preparedBatch(
-    String sql,
-    List<Tuple> batch,
-    Function<R1, R2> factory,
-    Collector<Row, ?, R1> collector,
-    Handler<AsyncResult<R3>> handler) {
-    schedule(new PrepareStatementCommand(sql), cr -> {
-      if (cr.succeeded()) {
-        PreparedStatement ps = cr.result();
-        for  (Tuple args : batch) {
-          String msg = ps.prepare((TupleInternal) args);
+    @Override
+    public void execute(Tuple arguments, Handler<AsyncResult<R>> handler) {
+      SqlResultHandler resultHandler = builder.createHandler(handler);
+      schedule(new PrepareStatementCommand(sql), cr -> {
+        if (cr.succeeded()) {
+          PreparedStatement ps = cr.result();
+          String msg = ps.prepare((TupleInternal) arguments);
           if (msg != null) {
             handler.handle(Future.failedFuture(msg));
-            return;
+          } else {
+            schedule(builder.createExtendedQuery(ps, arguments, resultHandler), resultHandler);
           }
+        } else {
+          handler.handle(Future.failedFuture(cr.cause()));
         }
-        SqlResultBuilder<R1, R2, R3> b = new SqlResultBuilder<>(factory, handler);
-        cr.scheduler.schedule(new ExtendedBatchQueryCommand<>(
-          ps,
-          batch,
-          collector,
-          b), b);
-      } else {
-        handler.handle(Future.failedFuture(cr.cause()));
-      }
-    });
-    return (C) this;
+      });
+    }
+
+    @Override
+    public void executeBatch(List<Tuple> batch, Handler<AsyncResult<R>> handler) {
+      SqlResultHandler resultHandler = builder.createHandler(handler);
+      schedule(new PrepareStatementCommand(sql), cr -> {
+        if (cr.succeeded()) {
+          PreparedStatement ps = cr.result();
+          for  (Tuple args : batch) {
+            String msg = ps.prepare((TupleInternal) args);
+            if (msg != null) {
+              handler.handle(Future.failedFuture(msg));
+              return;
+            }
+          }
+          schedule(builder.createBatchCommand(ps, batch, resultHandler), resultHandler);
+        } else {
+          handler.handle(Future.failedFuture(cr.cause()));
+        }
+      });
+    }
   }
 }

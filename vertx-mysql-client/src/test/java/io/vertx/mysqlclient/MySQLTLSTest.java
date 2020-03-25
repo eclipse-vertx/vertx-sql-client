@@ -61,7 +61,7 @@ public class MySQLTLSTest {
     options.setSslMode(SslMode.DISABLED);
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       ctx.assertFalse(conn.isSSL());
-      conn.query("SELECT 1", ctx.asyncAssertSuccess(res -> {
+      conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
         conn.close();
       }));
@@ -78,7 +78,7 @@ public class MySQLTLSTest {
 
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
-      conn.query("SELECT 1", ctx.asyncAssertSuccess(res -> {
+      conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
         conn.close();
       }));
@@ -95,7 +95,7 @@ public class MySQLTLSTest {
 
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
-      conn.query("SELECT 1", ctx.asyncAssertSuccess(res -> {
+      conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
         conn.close();
       }));
@@ -109,7 +109,7 @@ public class MySQLTLSTest {
 
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
-      conn.query("SELECT 1", ctx.asyncAssertSuccess(res -> {
+      conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
         conn.close();
       }));
@@ -123,7 +123,7 @@ public class MySQLTLSTest {
 
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
-      conn.query("SELECT 1", ctx.asyncAssertSuccess(res -> {
+      conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
         conn.close();
       }));
@@ -140,7 +140,7 @@ public class MySQLTLSTest {
 
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
-      conn.query("SELECT 1", ctx.asyncAssertSuccess(res -> {
+      conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
         conn.close();
       }));
@@ -213,7 +213,7 @@ public class MySQLTLSTest {
     options.setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"));
 
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT current_user()", ctx.asyncAssertSuccess(res1 -> {
+      conn.query("SELECT current_user()").execute(ctx.asyncAssertSuccess(res1 -> {
         Row row1 = res1.iterator().next();
         String username = row1.getString(0);
         ctx.assertEquals("mysql", username.substring(0, username.lastIndexOf('@')));
@@ -222,7 +222,7 @@ public class MySQLTLSTest {
           .setPassword("password")
           .setDatabase("emptyschema");
         conn.changeUser(changeUserOptions, ctx.asyncAssertSuccess(v2 -> {
-          conn.query("SELECT current_user();SELECT database();", ctx.asyncAssertSuccess(res2 -> {
+          conn.query("SELECT current_user();SELECT database();").execute(ctx.asyncAssertSuccess(res2 -> {
             ctx.assertEquals("superuser@%", res2.iterator().next().getString(0));
             ctx.assertEquals("emptyschema", res2.next().iterator().next().getValue(0));
             conn.close();

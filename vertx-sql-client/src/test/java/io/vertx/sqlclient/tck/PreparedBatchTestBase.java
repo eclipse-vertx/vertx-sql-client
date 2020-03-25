@@ -49,24 +49,24 @@ public abstract class PreparedBatchTestBase {
       batch.add(Tuple.wrap(Arrays.asList(79993, "batch three")));
       batch.add(Tuple.wrap(Arrays.asList(79994, "batch four")));
 
-      conn.preparedBatch(statement("INSERT INTO mutable (id, val) VALUES (", ", ", ")"), batch, ctx.asyncAssertSuccess(result -> {
+      conn.preparedQuery(statement("INSERT INTO mutable (id, val) VALUES (", ", ", ")")).executeBatch(batch, ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
-        conn.preparedQuery(statement("SELECT * FROM mutable WHERE id=", ""), Tuple.of(79991), ctx.asyncAssertSuccess(ar1 -> {
+        conn.preparedQuery(statement("SELECT * FROM mutable WHERE id=", "")).execute(Tuple.of(79991), ctx.asyncAssertSuccess(ar1 -> {
           ctx.assertEquals(1, ar1.size());
           Row one = ar1.iterator().next();
           ctx.assertEquals(79991, one.getInteger("id"));
           ctx.assertEquals("batch one", one.getString("val"));
-          conn.preparedQuery(statement("SELECT * FROM mutable WHERE id=", ""), Tuple.of(79992), ctx.asyncAssertSuccess(ar2 -> {
+          conn.preparedQuery(statement("SELECT * FROM mutable WHERE id=", "")).execute(Tuple.of(79992), ctx.asyncAssertSuccess(ar2 -> {
             ctx.assertEquals(1, ar2.size());
             Row two = ar2.iterator().next();
             ctx.assertEquals(79992, two.getInteger("id"));
             ctx.assertEquals("batch two", two.getString("val"));
-            conn.preparedQuery(statement("SELECT * FROM mutable WHERE id=", ""), Tuple.of(79993), ctx.asyncAssertSuccess(ar3 -> {
+            conn.preparedQuery(statement("SELECT * FROM mutable WHERE id=", "")).execute(Tuple.of(79993), ctx.asyncAssertSuccess(ar3 -> {
               ctx.assertEquals(1, ar3.size());
               Row three = ar3.iterator().next();
               ctx.assertEquals(79993, three.getInteger("id"));
               ctx.assertEquals("batch three", three.getString("val"));
-              conn.preparedQuery(statement("SELECT * FROM mutable WHERE id=", ""), Tuple.of(79994), ctx.asyncAssertSuccess(ar4 -> {
+              conn.preparedQuery(statement("SELECT * FROM mutable WHERE id=", "")).execute(Tuple.of(79994), ctx.asyncAssertSuccess(ar4 -> {
                 ctx.assertEquals(1, ar4.size());
                 Row four = ar4.iterator().next();
                 ctx.assertEquals(79994, four.getInteger("id"));
@@ -81,7 +81,7 @@ public abstract class PreparedBatchTestBase {
 
   private void cleanTestTable(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("TRUNCATE TABLE mutable;", ctx.asyncAssertSuccess(result -> {
+      conn.preparedQuery("TRUNCATE TABLE mutable;").execute(ctx.asyncAssertSuccess(result -> {
         conn.close();
       }));
     }));

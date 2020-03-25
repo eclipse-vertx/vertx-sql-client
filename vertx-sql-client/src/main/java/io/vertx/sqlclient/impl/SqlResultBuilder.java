@@ -17,83 +17,72 @@
 
 package io.vertx.sqlclient.impl;
 
-import io.vertx.core.Future;
-import io.vertx.sqlclient.SqlResult;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.sqlclient.PropertyKind;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.SqlResult;
+import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
+import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
-import java.util.HashMap;
-import java.util.function.BiFunction;
+import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collector;
 
 /**
  * A query result handler for building a {@link SqlResult}.
  */
-public class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlResult<T>> implements QueryResultHandler<T>, Handler<AsyncResult<Boolean>> {
+class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlResult<T>> {
 
-  private final Handler<AsyncResult<L>> handler;
   private final Function<T, R> factory;
-  private R first;
-  private boolean suspended;
+  private final Collector<Row, ?, T> collector;
 
-  SqlResultBuilder(Function<T, R> factory, Handler<AsyncResult<L>> handler) {
+  public SqlResultBuilder(Function<T, R> factory,
+                          Collector<Row, ?, T> collector) {
     this.factory = factory;
-    this.handler = handler;
+    this.collector = collector;
   }
 
-  @Override
-  public void handleResult(int updatedCount, int size, RowDesc desc, T result, Throwable failure) {
-    R r = factory.apply(result);
-    r.failure = failure;
-    r.updated = updatedCount;
-    r.size = size;
-    r.columnNames = desc != null ? desc.columnNames() : null;
-    handleResult(r, failure);
+  SqlResultHandler<T, R, L> createHandler(Handler<AsyncResult<L>> resultHandler) {
+    return new SqlResultHandler<>(factory, resultHandler);
   }
 
-  private void handleResult(R result, Throwable failure) {
-    if (first == null) {
-      first = result;
-    } else {
-      R h = first;
-      while (h.next != null) {
-        h = h.next;
-      }
-      h.next = result;
-    }
+  SimpleQueryCommand<T> createSimpleQuery(String sql,
+                                          boolean singleton,
+                                          SqlResultHandler<T, R, L> handler) {
+    return new SimpleQueryCommand<>(sql, singleton, collector, handler);
   }
 
-  @Override
-  public <V> void addProperty(PropertyKind<V> property, V value) {
-    if (first != null) {
-      R r = first;
-      while (r.next != null) {
-        r = r.next;
-      }
-      if (r.properties == null) {
-        // lazy init
-        r.properties = new HashMap<>();
-      }
-      r.properties.put(property, value);
-    }
+  ExtendedQueryCommand<T> createExtendedQuery(PreparedStatement preparedStatement,
+                                              Tuple args,
+                                              SqlResultHandler<T, R, L> handler) {
+    return new ExtendedQueryCommand<>(
+      preparedStatement,
+      args,
+      collector,
+      handler);
   }
 
-  @Override
-  public void handle(AsyncResult<Boolean> res) {
-    suspended = res.succeeded() && res.result();
-    if (res.failed()) {
-      handler.handle((AsyncResult) res);
-    } else if (first == null) {
-      handler.handle(Future.succeededFuture());
-    } else if (first.failure != null) {
-      handler.handle(Future.failedFuture(first.failure));
-    } else {
-      handler.handle(Future.succeededFuture((L) first));
-    }
+  ExtendedQueryCommand<T> createExtendedQuery(PreparedStatement preparedStatement,
+                                              Tuple args,
+                                              int fetch,
+                                              String cursorId,
+                                              boolean suspended,
+                                              SqlResultHandler<T, R, L> handler) {
+    return new ExtendedQueryCommand<>(
+      preparedStatement,
+      args,
+      fetch,
+      cursorId,
+      suspended,
+      collector,
+      handler);
   }
 
-  public boolean isSuspended() {
-    return suspended;
+  ExtendedBatchQueryCommand<T> createBatchCommand(PreparedStatement preparedStatement,
+                                                  List<Tuple> argsList,
+                                                  SqlResultHandler<T, R, L> handler) {
+    return new ExtendedBatchQueryCommand<>(preparedStatement, argsList, collector, handler);
   }
 }

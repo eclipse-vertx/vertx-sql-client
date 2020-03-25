@@ -18,13 +18,9 @@
 package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.Fluent;
-import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-
-import java.util.List;
-import java.util.stream.Collector;
 
 /**
  * A connection to database server.
@@ -42,7 +38,7 @@ public interface SqlConnection extends SqlClient {
    * @param handler the handler notified with the prepared query asynchronously
    */
   @Fluent
-  SqlConnection prepare(String sql, Handler<AsyncResult<PreparedQuery>> handler);
+  SqlConnection prepare(String sql, Handler<AsyncResult<PreparedStatement>> handler);
 
   /**
    * Set an handler called with connection errors.
@@ -82,31 +78,4 @@ public interface SqlConnection extends SqlClient {
    */
   void close();
 
-  @Override
-  SqlConnection preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  @GenIgnore
-  <R> SqlConnection preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  @Override
-  SqlConnection query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  @GenIgnore
-  <R> SqlConnection query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  @Override
-  SqlConnection preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  @GenIgnore
-  <R> SqlConnection preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  @Override
-  SqlConnection preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  @GenIgnore
-  <R> SqlConnection preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
 }

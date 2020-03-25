@@ -17,13 +17,9 @@
 
 package io.vertx.sqlclient;
 
-import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-
-import java.util.List;
-import java.util.stream.Collector;
 
 /**
  * A pool of SQL connections.
@@ -33,34 +29,6 @@ import java.util.stream.Collector;
 @VertxGen
 public interface Pool extends SqlClient {
 
-  @Override
-  Pool preparedQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  @GenIgnore
-  <R> Pool preparedQuery(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  @Override
-  Pool query(String sql, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  @GenIgnore
-  <R> Pool query(String sql, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  @Override
-  Pool preparedQuery(String sql, Tuple arguments, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  @GenIgnore
-  <R> Pool preparedQuery(String sql, Tuple arguments, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
-  @Override
-  Pool preparedBatch(String sql, List<Tuple> batch, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  @Override
-  @GenIgnore
-  <R> Pool preparedBatch(String sql, List<Tuple> batch, Collector<Row, ?, R> collector, Handler<AsyncResult<SqlResult<R>>> handler);
-
   /**
    * Get a connection from the pool.
    *
@@ -69,10 +37,26 @@ public interface Pool extends SqlClient {
   void getConnection(Handler<AsyncResult<SqlConnection>> handler);
 
   /**
+   * {@inheritDoc}
+   *
+   * A connection is borrowed from the connection pool when the query is executed and then immediately returned
+   * to the pool after it completes.
+   */
+  @Override
+  Query<RowSet<Row>> query(String sql);
+
+  /**
+   * {@inheritDoc}
+   *
+   * A connection is borrowed from the connection pool when the query is executed and then immediately returned
+   * to the pool after it completes.
+   */
+  @Override
+  PreparedQuery<RowSet<Row>> preparedQuery(String sql);
+
+  /**
    * Borrow a connection from the pool and begin a transaction, the underlying connection will be returned
    * to the pool when the transaction ends.
-   *
-   * @return the transaction
    */
   void begin(Handler<AsyncResult<Transaction>> handler);
 

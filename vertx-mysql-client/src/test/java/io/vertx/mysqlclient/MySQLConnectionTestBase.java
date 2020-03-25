@@ -35,10 +35,10 @@ public class MySQLConnectionTestBase extends MySQLTestBase {
   public void testTx(TestContext ctx) {
     Async async = ctx.async();
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("BEGIN", ctx.asyncAssertSuccess(result1 -> {
+      conn.query("BEGIN").execute(ctx.asyncAssertSuccess(result1 -> {
         ctx.assertEquals(0, result1.size());
         ctx.assertNotNull(result1.iterator());
-        conn.query("COMMIT", ctx.asyncAssertSuccess(result2 -> {
+        conn.query("COMMIT").execute(ctx.asyncAssertSuccess(result2 -> {
           ctx.assertEquals(0, result2.size());
           async.complete();
         }));
@@ -64,16 +64,16 @@ public class MySQLConnectionTestBase extends MySQLTestBase {
           Transaction tx = conn.begin();
           AtomicInteger u1 = new AtomicInteger();
           AtomicInteger u2 = new AtomicInteger();
-          conn.query("INSERT INTO mutable (id, val) VALUES (1, 'val-1')", ctx.asyncAssertSuccess(res1 -> {
+          conn.query("INSERT INTO mutable (id, val) VALUES (1, 'val-1')").execute(ctx.asyncAssertSuccess(res1 -> {
             u1.addAndGet(res1.rowCount());
             exec.execute(() -> {
-              conn.query("INSERT INTO mutable (id, val) VALUES (2, 'val-2')", ctx.asyncAssertSuccess(res2 -> {
+              conn.query("INSERT INTO mutable (id, val) VALUES (2, 'val-2')").execute(ctx.asyncAssertSuccess(res2 -> {
                 u2.addAndGet(res2.rowCount());
                 exec.execute(() -> {
                   tx.commit(ctx.asyncAssertSuccess(v -> {
                     ctx.assertEquals(1, u1.get());
                     ctx.assertEquals(1, u2.get());
-                    conn.query("SELECT id FROM mutable WHERE id=1 OR id=2", ctx.asyncAssertSuccess(result -> {
+                    conn.query("SELECT id FROM mutable WHERE id=1 OR id=2").execute(ctx.asyncAssertSuccess(result -> {
                       ctx.assertEquals(2, result.size());
                       done.complete();
                     }));
@@ -105,18 +105,18 @@ public class MySQLConnectionTestBase extends MySQLTestBase {
           Transaction tx = conn.begin();
           AtomicInteger u1 = new AtomicInteger();
           AtomicInteger u2 = new AtomicInteger();
-          conn.query("INSERT INTO mutable (id, val) VALUES (1, 'val-1')", ctx.asyncAssertSuccess(res1 -> {
+          conn.query("INSERT INTO mutable (id, val) VALUES (1, 'val-1')").execute(ctx.asyncAssertSuccess(res1 -> {
             u1.addAndGet(res1.rowCount());
             exec.execute(() -> {
 
             });
-            conn.query("INSERT INTO mutable (id, val) VALUES (2, 'val-2')", ctx.asyncAssertSuccess(res2 -> {
+            conn.query("INSERT INTO mutable (id, val) VALUES (2, 'val-2')").execute(ctx.asyncAssertSuccess(res2 -> {
               u2.addAndGet(res2.rowCount());
               exec.execute(() -> {
                 tx.rollback(ctx.asyncAssertSuccess(v -> {
                   ctx.assertEquals(1, u1.get());
                   ctx.assertEquals(1, u2.get());
-                  conn.query("SELECT id FROM mutable WHERE id=1 OR id=2", ctx.asyncAssertSuccess(result -> {
+                  conn.query("SELECT id FROM mutable WHERE id=1 OR id=2").execute(ctx.asyncAssertSuccess(result -> {
                     ctx.assertEquals(0, result.size());
                     done.complete();
                   }));
@@ -139,8 +139,8 @@ public class MySQLConnectionTestBase extends MySQLTestBase {
         tx.abortHandler(v -> ctx.assertEquals(0, failures.getAndIncrement()));
         AtomicReference<Boolean> queryAfterFailed = new AtomicReference<>();
         AtomicReference<Boolean> commit = new AtomicReference<>();
-        conn.query("INSERT INTO mutable (id, val) VALUES (1, 'val-1')", ar1 -> { });
-        conn.query("INSERT INTO mutable (id, val) VALUES (1, 'val-2')", ar2 -> {
+        conn.query("INSERT INTO mutable (id, val) VALUES (1, 'val-1')").execute( ar1 -> { });
+        conn.query("INSERT INTO mutable (id, val) VALUES (1, 'val-2')").execute(ar2 -> {
           ctx.assertNotNull(queryAfterFailed.get());
           ctx.assertTrue(queryAfterFailed.get());
           ctx.assertNotNull(commit.get());
@@ -148,12 +148,12 @@ public class MySQLConnectionTestBase extends MySQLTestBase {
           ctx.assertTrue(ar2.failed());
           ctx.assertEquals(1, failures.get());
           // This query won't be made in the same TX
-          conn.query("SELECT id FROM mutable WHERE id=1", ctx.asyncAssertSuccess(result -> {
+          conn.query("SELECT id FROM mutable WHERE id=1").execute(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(0, result.size());
             done.complete();
           }));
         });
-        conn.query("SELECT id FROM mutable", result -> queryAfterFailed.set(result.failed()));
+        conn.query("SELECT id FROM mutable").execute(result -> queryAfterFailed.set(result.failed()));
         tx.commit(result -> commit.set(result.failed()));
       });
     }));

@@ -62,7 +62,9 @@ public class PgClientExamples {
     PgPool client = PgPool.pool(connectOptions, poolOptions);
 
     // A simple query
-    client.query("SELECT * FROM users WHERE id='julien'", ar -> {
+    client
+      .query("SELECT * FROM users WHERE id='julien'")
+      .execute(ar -> {
       if (ar.succeeded()) {
         RowSet<Row> result = ar.result();
         System.out.println("Got " + result.size() + " rows ");
@@ -198,9 +200,13 @@ public class PgClientExamples {
         SqlConnection conn = ar1.result();
 
         // All operations execute on the same connection
-        conn.query("SELECT * FROM users WHERE id='julien'", ar2 -> {
+        conn
+          .query("SELECT * FROM users WHERE id='julien'")
+          .execute(ar2 -> {
           if (ar2.succeeded()) {
-            conn.query("SELECT * FROM users WHERE id='emad'", ar3 -> {
+            conn
+              .query("SELECT * FROM users WHERE id='emad'")
+              .execute(ar3 -> {
               // Release the connection to the pool
               conn.close();
             });
@@ -235,9 +241,13 @@ public class PgClientExamples {
         PgConnection conn = res.result();
 
         // All operations execute on the same connection
-        conn.query("SELECT * FROM users WHERE id='julien'", ar2 -> {
+        conn
+          .query("SELECT * FROM users WHERE id='julien'")
+          .execute(ar2 -> {
           if (ar2.succeeded()) {
-            conn.query("SELECT * FROM users WHERE id='emad'", ar3 -> {
+            conn
+              .query("SELECT * FROM users WHERE id='emad'")
+              .execute(ar3 -> {
               // Close the connection
               conn.close();
             });
@@ -274,7 +284,9 @@ public class PgClientExamples {
   }
 
   public void typeMapping01(Pool pool) {
-    pool.query("SELECT 1::BIGINT \"VAL\"", ar -> {
+    pool
+      .query("SELECT 1::BIGINT \"VAL\"")
+      .execute(ar -> {
       RowSet<Row> rowSet = ar.result();
       Row row = rowSet.iterator().next();
 
@@ -287,7 +299,9 @@ public class PgClientExamples {
   }
 
   public void typeMapping02(Pool pool) {
-    pool.query("SELECT 1::BIGINT \"VAL\"", ar -> {
+    pool
+      .query("SELECT 1::BIGINT \"VAL\"")
+      .execute(ar -> {
       RowSet<Row> rowSet = ar.result();
       Row row = rowSet.iterator().next();
 
@@ -305,7 +319,9 @@ public class PgClientExamples {
       System.out.println("Received " + notification.getPayload() + " on channel " + notification.getChannel());
     });
 
-    connection.query("LISTEN some-channel", ar -> {
+    connection
+      .query("LISTEN some-channel")
+      .execute(ar -> {
       System.out.println("Subscribed to channel");
     });
   }
@@ -353,10 +369,11 @@ public class PgClientExamples {
             System.out.println("Received " + payload);
           });
           subscriber.channel("Complex.Channel.Name").subscribeHandler(subscribed -> {
-        	  subscriber.actualConnection().query(
-        			  "NOTIFY \"Complex.Channel.Name\", 'msg'", notified -> {
-        		  System.out.println("Notified \"Complex.Channel.Name\"");
-        	  });
+            subscriber.actualConnection()
+              .query("NOTIFY \"Complex.Channel.Name\", 'msg'")
+              .execute(notified -> {
+                System.out.println("Notified \"Complex.Channel.Name\"");
+              });
           });
 
           // PostgreSQL simple ID's are forced lower-case
@@ -364,19 +381,19 @@ public class PgClientExamples {
               System.out.println("Received " + payload);
           });
           subscriber.channel("simple_channel").subscribeHandler(subscribed -> {
-        	  // The following simple channel identifier is forced to lower case
-              subscriber.actualConnection().query(
-            		"NOTIFY Simple_CHANNEL, 'msg'", notified -> {
-          		  System.out.println("Notified simple_channel");
-          	  });
+            // The following simple channel identifier is forced to lower case
+            subscriber.actualConnection()
+              .query("NOTIFY Simple_CHANNEL, 'msg'")
+              .execute(notified -> {
+                System.out.println("Notified simple_channel");
+              });
           });
 
           // The following channel name is longer than the current
           // (NAMEDATALEN = 64) - 1 == 63 character limit and will be truncated
-          subscriber.channel(
-        		  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbb"
-        		  ).handler(payload -> {
-              System.out.println("Received " + payload);
+          subscriber.channel("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbb")
+            .handler(payload -> {
+            System.out.println("Received " + payload);
           });
         }
       });
@@ -462,7 +479,9 @@ public class PgClientExamples {
   }
 
   public void customType01Example(SqlClient client) {
-    client.preparedQuery("SELECT address, (address).city FROM address_book WHERE id=$1", Tuple.of(3),  ar -> {
+    client
+      .preparedQuery("SELECT address, (address).city FROM address_book WHERE id=$1")
+      .execute(Tuple.of(3),  ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rows = ar.result();
         for (Row row : rows) {
@@ -475,7 +494,9 @@ public class PgClientExamples {
   }
 
   public void customType02Example(SqlClient client) {
-    client.preparedQuery("INSERT INTO address_book (id, address) VALUES ($1, $2)", Tuple.of(3, "('Anytown', 'Second Ave', false)"),  ar -> {
+    client
+      .preparedQuery("INSERT INTO address_book (id, address) VALUES ($1, $2)")
+      .execute(Tuple.of(3, "('Anytown', 'Second Ave', false)"),  ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rows = ar.result();
         System.out.println(rows.rowCount());
@@ -487,7 +508,9 @@ public class PgClientExamples {
 
 
   public void tsQuery01Example(SqlClient client) {
-    client.preparedQuery("SELECT to_tsvector( $1 ) @@ to_tsquery( $2 )", Tuple.of("fat cats ate fat rats", "fat & rat"),  ar -> {
+    client
+      .preparedQuery("SELECT to_tsvector( $1 ) @@ to_tsquery( $2 )")
+      .execute(Tuple.of("fat cats ate fat rats", "fat & rat"),  ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rows = ar.result();
         for (Row row : rows) {
@@ -500,7 +523,9 @@ public class PgClientExamples {
   }
 
   public void tsQuery02Example(SqlClient client) {
-    client.preparedQuery("SELECT to_tsvector( $1 ), to_tsquery( $2 )", Tuple.of("fat cats ate fat rats", "fat & rat"),  ar -> {
+    client
+      .preparedQuery("SELECT to_tsvector( $1 ), to_tsquery( $2 )")
+      .execute(Tuple.of("fat cats ate fat rats", "fat & rat"),  ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rows = ar.result();
         for (Row row : rows) {
@@ -520,9 +545,9 @@ public class PgClientExamples {
       row -> row.getString("last_name"));
 
     // Run the query with the collector
-    client.query("SELECT * FROM users",
-      collector,
-      ar -> {
+    client.query("SELECT * FROM users")
+      .collecting(collector)
+      .execute(ar -> {
       if (ar.succeeded()) {
         SqlResult<Map<Long, String>> result = ar.result();
 
@@ -544,9 +569,7 @@ public class PgClientExamples {
     );
 
     // Run the query with the collector
-    client.query("SELECT * FROM users",
-      collector,
-      ar -> {
+    client.query("SELECT * FROM users").collecting(collector).execute(ar -> {
         if (ar.succeeded()) {
           SqlResult<String> result = ar.result();
 
@@ -560,7 +583,9 @@ public class PgClientExamples {
   }
 
   public void cancelRequest(PgConnection connection) {
-    connection.query("SELECT pg_sleep(20)", ar -> {
+    connection
+      .query("SELECT pg_sleep(20)")
+      .execute(ar -> {
       if (ar.succeeded()) {
         // imagine this is a long query and is still running
         System.out.println("Query success");
@@ -579,7 +604,9 @@ public class PgClientExamples {
   }
 
   public void returning(SqlClient client) {
-    client.preparedQuery("INSERT INTO color (color_name) VALUES ($1), ($2), ($3) RETURNING color_id", Tuple.of("white", "red", "blue"), ar -> {
+    client
+      .preparedQuery("INSERT INTO color (color_name) VALUES ($1), ($2), ($3) RETURNING color_id")
+      .execute(Tuple.of("white", "red", "blue"), ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rows = ar.result();
         System.out.println(rows.rowCount());

@@ -17,13 +17,22 @@
 
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.Handler;
 import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.impl.command.CommandResponse;
+import io.vertx.sqlclient.impl.command.CommandScheduler;
 
-public interface Connection {
+public interface Connection extends CommandScheduler {
 
   void init(Holder holder);
 
   boolean isSsl();
+
+  @Override
+  default <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
+    cmd.handler = handler;
+    schedule(cmd);
+  }
 
   void schedule(CommandBase<?> cmd);
 

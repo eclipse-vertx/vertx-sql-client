@@ -184,7 +184,7 @@ public class PgSubscriberImpl implements PgSubscriber {
             return channel.quotedName;
           })
           .collect(Collectors.joining(";LISTEN ", "LISTEN ", ""));
-        conn.query(sql, ar2 -> {
+        conn.query(sql).execute(ar2 -> {
           if (ar2.failed()) {
             log.error("Cannot LISTEN to channels", ar2.cause());
             conn.close();
@@ -217,7 +217,7 @@ public class PgSubscriberImpl implements PgSubscriber {
         if (conn != null) {
           subscribed = true;
           String sql = "LISTEN " + quotedName;
-          conn.query(sql, ar -> {
+          conn.query(sql).execute(ar -> {
             if (ar.succeeded()) {
               Handler<Void> handler = sub.subscribeHandler;
               if (handler != null) {
@@ -236,7 +236,7 @@ public class PgSubscriberImpl implements PgSubscriber {
       if (subs.isEmpty()) {
         channels.remove(name, this);
         if (conn != null) {
-          conn.query("UNLISTEN " + quotedName, ar -> {
+          conn.query("UNLISTEN " + quotedName).execute(ar -> {
             if (ar.failed()) {
               log.error("Cannot UNLISTEN channel " + name, ar.cause());
             }

@@ -58,7 +58,7 @@ public class TLSTest {
       .setPemTrustOptions(new PemTrustOptions().addCertPath("tls/server.crt"));
     PgConnection.connect(vertx, options.setSslMode(SslMode.REQUIRE).setTrustAll(true), ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
-      conn.query("SELECT * FROM Fortune WHERE id=1", ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT * FROM Fortune WHERE id=1").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Tuple row = result.iterator().next();
         ctx.assertEquals(1, row.getInteger(0));
