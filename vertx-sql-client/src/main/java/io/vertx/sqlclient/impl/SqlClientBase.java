@@ -55,31 +55,6 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
     return new PreparedQueryImpl<>(autoCommit(), false, sql, builder);
   }
 
-  private <R1, R2 extends SqlResultBase<R1>, R3 extends SqlResult<R1>> C preparedBatch(
-    String sql,
-    List<Tuple> batch,
-    Function<R1, R2> factory,
-    Collector<Row, ?, R1> collector,
-    Promise<R3> handler) {
-    SqlResultHandler<R1, R2, R3> builder = new SqlResultHandler<>(factory, handler);
-    BiCommand<PreparedStatement, Boolean> abc = new BiCommand<>(new PrepareStatementCommand(sql), ps -> {
-      for  (Tuple args : batch) {
-        String msg = ps.prepare((TupleInternal) args);
-        if (msg != null) {
-          return Future.failedFuture(msg);
-        }
-      }
-      return Future.succeededFuture(new ExtendedBatchQueryCommand<>(
-        ps,
-        batch,
-        autoCommit(),
-        collector,
-        builder));
-    });
-    schedule(abc, builder);
-    return (C) this;
-  }
-
   boolean autoCommit() {
     return true;
   }

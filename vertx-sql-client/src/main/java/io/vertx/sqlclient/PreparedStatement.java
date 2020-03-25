@@ -24,9 +24,16 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
 /**
- * A prepared statement, the statement is pre-compiled and
- * it's more efficient to execute the statement for multiple times.
+ * A prepared statement, the statement is pre-compiled and it's more efficient to execute the statement for multiple times.
  * In addition, this kind of statement provides protection against SQL injection attacks.
+ *
+ * <p>From a prepared statement you can
+ *
+ * <ul>
+ *   <li>use {@link #query()} to create and execute a {@link PreparedQuery}</li>
+ *   <li>use {@link #cursor()} to create a {@link Cursor}</li>
+ *   <li>use {@link #createStream} to create a {@link RowStream}</li>
+ * </ul>
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
