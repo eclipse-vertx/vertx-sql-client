@@ -33,7 +33,7 @@ public abstract class PreparedQueryCachedTestBase extends PreparedQueryTestBase 
       for (int i = 0; i < 10; i++) {
         Async async = asyncs[i];
         conn.prepare(statement("SELECT * FROM Fortune WHERE id=", ""), ctx.asyncAssertSuccess(ps -> {
-          ps.execute(Tuple.of(1), ctx.asyncAssertSuccess(results -> {
+          ps.query().execute(Tuple.of(1), ctx.asyncAssertSuccess(results -> {
             ctx.assertEquals(1, results.size());
             Tuple row = results.iterator().next();
             ctx.assertEquals(1, row.getInteger(0));

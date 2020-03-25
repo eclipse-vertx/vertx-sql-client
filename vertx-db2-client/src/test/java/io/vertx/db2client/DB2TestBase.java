@@ -41,7 +41,7 @@ public abstract class DB2TestBase {
 	protected Vertx vertx;
 	protected Connector<SqlConnection> connector;
 	protected DB2ConnectOptions options;
-	
+
 	@Rule
 	public TestName testName = new TestName();
 
@@ -71,12 +71,12 @@ public abstract class DB2TestBase {
 
 	protected void cleanTestTable(TestContext ctx, String table) {
 		connect(ctx.asyncAssertSuccess(conn -> {
-			conn.query("DELETE FROM " + table, ctx.asyncAssertSuccess(result -> {
+			conn.query("DELETE FROM " + table).execute(ctx.asyncAssertSuccess(result -> {
 				conn.close();
 			}));
 		}));
 	}
-	
+
 	protected List<String> tablesToClean() {
 		return Collections.emptyList();
 	}

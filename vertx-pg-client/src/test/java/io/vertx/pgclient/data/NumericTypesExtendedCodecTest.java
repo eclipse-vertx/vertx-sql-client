@@ -17,7 +17,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT $1 :: INT2 \"Short\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addShort((short) 32767), ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.tuple().addShort((short) 32767), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -43,7 +43,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"NumericDataType\" SET \"Short\" = $1 WHERE \"id\" = $2 RETURNING \"Short\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.of(Short.MIN_VALUE, 2), ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.of(Short.MIN_VALUE, 2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -69,7 +69,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT $1 :: INT4 \"Integer\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addInteger(Integer.MAX_VALUE), ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.tuple().addInteger(Integer.MAX_VALUE), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -95,7 +95,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"NumericDataType\" SET \"Integer\" = $1 WHERE \"id\" = $2 RETURNING \"Integer\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addInteger(Integer.MIN_VALUE)
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -124,7 +124,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT $1 :: INT8 \"Long\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addLong(Long.MAX_VALUE), ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.tuple().addLong(Long.MAX_VALUE), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -150,7 +150,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"NumericDataType\" SET \"Long\" = $1 WHERE \"id\" = $2 RETURNING \"Long\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addLong(Long.MIN_VALUE)
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -179,7 +179,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT $1 :: FLOAT4\"Float\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addFloat(Float.MAX_VALUE), ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.tuple().addFloat(Float.MAX_VALUE), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -205,7 +205,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"NumericDataType\" SET \"Float\" = $1 WHERE \"id\" = $2 RETURNING \"Float\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addFloat(Float.MIN_VALUE)
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -234,7 +234,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT $1 :: FLOAT8\"Double\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addDouble(Double.MAX_VALUE), ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.tuple().addDouble(Double.MAX_VALUE), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -260,7 +260,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"NumericDataType\" SET \"Double\" = $1 WHERE \"id\" = $2 RETURNING \"Double\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addDouble(Double.MIN_VALUE)
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -289,7 +289,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"SmallSerial\" FROM \"NumericDataType\" WHERE \"id\" = $1",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.of(1), ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.of(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -315,7 +315,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"NumericDataType\" SET \"SmallSerial\" = $1 WHERE \"id\" = $2 RETURNING \"SmallSerial\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.of(Short.MIN_VALUE, 2), ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.of(Short.MIN_VALUE, 2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -341,7 +341,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Serial\" FROM \"NumericDataType\" WHERE \"id\" = $1",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -367,7 +367,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"NumericDataType\" SET \"Serial\" = $1 WHERE \"id\" = $2 RETURNING \"Serial\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addInteger(Integer.MIN_VALUE)
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -396,7 +396,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"BigSerial\" FROM \"NumericDataType\" WHERE \"id\" = $1",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -422,7 +422,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"NumericDataType\" SET \"BigSerial\" = $1 WHERE \"id\" = $2 RETURNING \"BigSerial\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addLong(Long.MIN_VALUE)
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -503,7 +503,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Short\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Short")
               .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new short[]{1}))
@@ -525,7 +525,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Short\" = $1  WHERE \"id\" = $2 RETURNING \"Short\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addShortArray(new Short[]{2, 3, 4})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -549,7 +549,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Integer\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Integer")
               .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new int[]{2}))
@@ -571,7 +571,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Integer\" = $1  WHERE \"id\" = $2 RETURNING \"Integer\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addIntegerArray(new Integer[]{3, 4, 5, 6})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -595,7 +595,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Long\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Long")
               .returns(Tuple::getValue, Row::getValue, new Long[]{3L})
@@ -617,7 +617,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Long\" = $1  WHERE \"id\" = $2 RETURNING \"Long\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addLongArray(new Long[]{4L, 5L, 6L, 7L, 8L})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -641,7 +641,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Float\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Float")
               .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new float[]{4.1f}))
@@ -663,7 +663,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Float\" = $1  WHERE \"id\" = $2 RETURNING \"Float\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addFloatArray(new Float[]{5.2f, 5.3f, 5.4f})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -687,7 +687,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Double\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Double")
               .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new double[]{5.2}))
@@ -709,7 +709,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Double\" = $1  WHERE \"id\" = $2 RETURNING \"Double\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addDoubleArray(new Double[]{6.3})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -733,7 +733,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Double\" = $1  WHERE \"id\" = $2 RETURNING \"Double\"",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addDoubleArray(new Double[]{})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
@@ -757,7 +757,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Numeric\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
         ctx.asyncAssertSuccess(p -> {
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
             Numeric[] expected = {
               Numeric.create(0),
@@ -790,7 +790,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
             Numeric.create(0),
             Numeric.create(10000),
           };
-          p.execute(Tuple.tuple()
+          p.query().execute(Tuple.tuple()
               .addValues(expected)
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {

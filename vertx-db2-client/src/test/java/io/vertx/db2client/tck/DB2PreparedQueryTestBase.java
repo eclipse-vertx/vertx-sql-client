@@ -9,15 +9,15 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.tck.PreparedQueryTestBase;
 
 public abstract class DB2PreparedQueryTestBase extends PreparedQueryTestBase {
-	
+
 	@ClassRule
 	public static DB2Resource rule = DB2Resource.SHARED_INSTANCE;
-	
+
 	@Override
 	protected void cleanTestTable(TestContext ctx) {
 		// use DELETE FROM because DB2 does not support TRUNCATE TABLE
 		connect(ctx.asyncAssertSuccess(conn -> {
-			conn.query("DELETE FROM mutable", ctx.asyncAssertSuccess(result -> {
+			conn.query("DELETE FROM mutable").execute(ctx.asyncAssertSuccess(result -> {
 				conn.close();
 			}));
 		}));
@@ -27,7 +27,7 @@ public abstract class DB2PreparedQueryTestBase extends PreparedQueryTestBase {
 	protected String statement(String... parts) {
 		return String.join("?", parts);
 	}
-	
+
 	@Override
 	protected boolean cursorRequiresTx() {
 	    return false;

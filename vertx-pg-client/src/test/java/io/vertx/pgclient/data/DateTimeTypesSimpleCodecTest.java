@@ -20,7 +20,7 @@ public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBa
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("SELECT '1981-05-30'::DATE \"LocalDate\"", ctx.asyncAssertSuccess(result -> {
+        .query("SELECT '1981-05-30'::DATE \"LocalDate\"").execute(ctx.asyncAssertSuccess(result -> {
           LocalDate ld = LocalDate.parse("1981-05-30");
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
@@ -39,7 +39,7 @@ public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBa
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("SELECT '17:55:04.905120'::TIME \"LocalTime\"", ctx.asyncAssertSuccess(result -> {
+        .query("SELECT '17:55:04.905120'::TIME \"LocalTime\"").execute(ctx.asyncAssertSuccess(result -> {
           LocalTime lt = LocalTime.parse("17:55:04.905120");
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
@@ -58,7 +58,7 @@ public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBa
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("SELECT '17:55:04.90512+03:07'::TIMETZ \"OffsetTime\"", ctx.asyncAssertSuccess(result -> {
+        .query("SELECT '17:55:04.90512+03:07'::TIMETZ \"OffsetTime\"").execute(ctx.asyncAssertSuccess(result -> {
           OffsetTime ot = OffsetTime.parse("17:55:04.905120+03:07");
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
@@ -77,7 +77,7 @@ public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBa
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("SELECT '2017-05-14 19:35:58.237666'::TIMESTAMP \"LocalDateTime\"", ctx.asyncAssertSuccess(result -> {
+        .query("SELECT '2017-05-14 19:35:58.237666'::TIMESTAMP \"LocalDateTime\"").execute(ctx.asyncAssertSuccess(result -> {
           LocalDateTime ldt = LocalDateTime.parse("2017-05-14T19:35:58.237666");
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
@@ -97,8 +97,8 @@ public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBa
   public void testTimestampTz(TestContext ctx) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SET TIME ZONE 'UTC'", ctx.asyncAssertSuccess(v -> {
-        conn.query("SELECT '2017-05-14 22:35:58.237666-03'::TIMESTAMPTZ \"OffsetDateTime\"", ctx.asyncAssertSuccess(result -> {
+      conn.query("SET TIME ZONE 'UTC'").execute(ctx.asyncAssertSuccess(v -> {
+        conn.query("SELECT '2017-05-14 22:35:58.237666-03'::TIMESTAMPTZ \"OffsetDateTime\"").execute(ctx.asyncAssertSuccess(result -> {
           OffsetDateTime odt = OffsetDateTime.parse("2017-05-15T01:35:58.237666Z");
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
@@ -118,8 +118,8 @@ public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBa
   public void testInterval(TestContext ctx) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT '10 years 3 months 332 days 20 hours 20 minutes 20.999991 seconds'::INTERVAL \"Interval\"",
-        ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT '10 years 3 months 332 days 20 hours 20 minutes 20.999991 seconds'::INTERVAL \"Interval\"")
+        .execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           Interval interval = Interval.of()

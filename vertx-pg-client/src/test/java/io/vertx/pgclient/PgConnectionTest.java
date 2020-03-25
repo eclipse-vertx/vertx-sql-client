@@ -41,7 +41,7 @@ public class PgConnectionTest extends PgConnectionTestBase {
   public void testSettingSchema(TestContext ctx) {
     options.addProperty("search_path", "myschema");
     connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SHOW search_path;", ctx.asyncAssertSuccess(pgRowSet -> {
+      conn.query("SHOW search_path;").execute(ctx.asyncAssertSuccess(pgRowSet -> {
         ctx.assertEquals("myschema", pgRowSet.iterator().next().getString("search_path"));
       }));
     }));
@@ -57,7 +57,7 @@ public class PgConnectionTest extends PgConnectionTestBase {
             List<Tuple> batch = new ArrayList<>();
             batch.add(Tuple.of("val0", 0));
             batch.add(Tuple.of("val1", 1));
-            ps.batch(batch, ctx.asyncAssertSuccess(result -> {
+            ps.query().executeBatch(batch, ctx.asyncAssertSuccess(result -> {
               for (int i = 0;i < 2;i++) {
                 ctx.assertEquals(1, result.rowCount());
                 result = result.next();
@@ -79,7 +79,9 @@ public class PgConnectionTest extends PgConnectionTestBase {
     Async async = ctx.async(num + 1);
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       for (int i = 0;i < num;i++) {
-        conn.query("SELECT id, randomnumber from WORLD", ar -> {
+        conn
+          .query("SELECT id, randomnumber from WORLD")
+          .execute(ar -> {
           if (ar.succeeded()) {
             SqlResult result = ar.result();
             ctx.assertEquals(10000, result.size());
@@ -101,7 +103,9 @@ public class PgConnectionTest extends PgConnectionTestBase {
   public void testCancelRequest(TestContext ctx) {
     Async async = ctx.async(2);
     connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT pg_sleep(10)", ctx.asyncAssertFailure(error -> {
+      conn
+        .query("SELECT pg_sleep(10)")
+        .execute(ctx.asyncAssertFailure(error -> {
         ctx.assertEquals("canceling statement due to user request", error.getMessage());
         async.countDown();
       }));

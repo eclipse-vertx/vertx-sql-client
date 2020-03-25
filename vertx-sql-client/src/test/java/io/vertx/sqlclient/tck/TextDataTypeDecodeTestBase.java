@@ -87,7 +87,7 @@ public abstract class TextDataTypeDecodeTestBase extends DataTypeTestBase {
                                        T expected) {
     Async async = ctx.async();
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT " + columnName + " FROM basicdatatype WHERE id = 1", ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT " + columnName + " FROM basicdatatype WHERE id = 1").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         ctx.assertEquals(expected, row.getValue(0));

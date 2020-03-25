@@ -24,7 +24,7 @@ public abstract class MSSQLPreparedQueryTestBase extends PreparedQueryTestBase {
 
   protected void cleanTestTable(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("TRUNCATE TABLE mutable;", ctx.asyncAssertSuccess(result -> {
+      conn.query("TRUNCATE TABLE mutable;").execute(ctx.asyncAssertSuccess(result -> {
         conn.close();
       }));
     }));

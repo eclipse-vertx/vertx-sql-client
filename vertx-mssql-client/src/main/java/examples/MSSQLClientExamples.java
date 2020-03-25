@@ -41,7 +41,9 @@ public class MSSQLClientExamples {
     MSSQLPool client = MSSQLPool.pool(connectOptions, poolOptions);
 
     // A simple query
-    client.query("SELECT * FROM users WHERE id='julien'", ar -> {
+    client
+      .query("SELECT * FROM users WHERE id='julien'")
+      .execute(ar -> {
       if (ar.succeeded()) {
         RowSet result = ar.result();
         System.out.println("Got " + result.size() + " rows ");
@@ -145,9 +147,13 @@ public class MSSQLClientExamples {
         SqlConnection conn = ar1.result();
 
         // All operations execute on the same connection
-        conn.query("SELECT * FROM users WHERE id='julien'", ar2 -> {
+        conn
+          .query("SELECT * FROM users WHERE id='julien'")
+          .execute(ar2 -> {
           if (ar2.succeeded()) {
-            conn.query("SELECT * FROM users WHERE id='emad'", ar3 -> {
+            conn
+              .query("SELECT * FROM users WHERE id='emad'")
+              .execute(ar3 -> {
               // Release the connection to the pool
               conn.close();
             });
@@ -170,9 +176,9 @@ public class MSSQLClientExamples {
       row -> row.getString("last_name"));
 
     // Run the query with the collector
-    client.query("SELECT * FROM users",
-      collector,
-      ar -> {
+    client.query("SELECT * FROM users")
+      .collecting(collector)
+      .execute(ar -> {
         if (ar.succeeded()) {
           SqlResult<Map<Long, String>> result = ar.result();
 
@@ -194,9 +200,9 @@ public class MSSQLClientExamples {
     );
 
     // Run the query with the collector
-    client.query("SELECT * FROM users",
-      collector,
-      ar -> {
+    client.query("SELECT * FROM users")
+      .collecting(collector)
+      .execute(ar -> {
         if (ar.succeeded()) {
           SqlResult<String> result = ar.result();
 

@@ -131,7 +131,7 @@ public class JsonBinaryCodecTest extends JsonDataTypeTest {
   @Override
   protected void testDecodeJson(TestContext ctx, String script, Object expected, Consumer<Row> checker) {
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery(script, ctx.asyncAssertSuccess(result -> {
+      conn.preparedQuery(script).execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         ctx.assertEquals(expected, row.getValue(0));
@@ -150,9 +150,9 @@ public class JsonBinaryCodecTest extends JsonDataTypeTest {
 
   private void testEncodeJson(TestContext ctx, Tuple params, Object expected, Consumer<Row> checker, String insertScript) {
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery(CREATE_TABLE, ctx.asyncAssertSuccess(createTable -> {
-        conn.preparedQuery(insertScript, params, ctx.asyncAssertSuccess(insert -> {
-          conn.preparedQuery(QUERY_JSON, ctx.asyncAssertSuccess(result -> {
+      conn.preparedQuery(CREATE_TABLE).execute(ctx.asyncAssertSuccess(createTable -> {
+        conn.preparedQuery(insertScript).execute(params, ctx.asyncAssertSuccess(insert -> {
+          conn.preparedQuery(QUERY_JSON).execute(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             Row row = result.iterator().next();
             ctx.assertEquals(expected, row.getValue(0));

@@ -38,7 +38,9 @@ public abstract class SimpleQueryTestBase {
   private static void insertIntoTestTable(TestContext ctx, SqlClient client, int amount, Runnable completionHandler) {
     AtomicInteger count = new AtomicInteger();
     for (int i = 0; i < 10; i++) {
-      client.query("INSERT INTO mutable (id, val) VALUES (" + i + ", 'Whatever-" + i + "')", ctx.asyncAssertSuccess(r1 -> {
+      client
+        .query("INSERT INTO mutable (id, val) VALUES (" + i + ", 'Whatever-" + i + "')")
+        .execute(ctx.asyncAssertSuccess(r1 -> {
         ctx.assertEquals(1, r1.rowCount());
         if (count.incrementAndGet() == amount) {
           completionHandler.run();
@@ -69,7 +71,9 @@ public abstract class SimpleQueryTestBase {
   @Test
   public void testQuery(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT id, message from immutable", ctx.asyncAssertSuccess(result -> {
+      conn
+        .query("SELECT id, message from immutable")
+        .execute(ctx.asyncAssertSuccess(result -> {
         //TODO we need to figure how to handle PgResult#rowCount() method in common API,
         // MySQL returns affected rows as 0 for SELECT query but Postgres returns queried amount
         // ctx.assertEquals(12, result.rowCount()); this line does not pass in MySQL but passes in PG
@@ -84,7 +88,7 @@ public abstract class SimpleQueryTestBase {
   @Test
   public void testQueryError(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(err -> {
+      conn.query("SELECT whatever from DOES_NOT_EXIST").execute(ctx.asyncAssertFailure(err -> {
       }));
     }));
   }
@@ -93,9 +97,9 @@ public abstract class SimpleQueryTestBase {
   public void testUpdate(TestContext ctx) {
     Async async = ctx.async();
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("INSERT INTO mutable (id, val) VALUES (1, 'Whatever')", ctx.asyncAssertSuccess(r1 -> {
+      conn.query("INSERT INTO mutable (id, val) VALUES (1, 'Whatever')").execute(ctx.asyncAssertSuccess(r1 -> {
         ctx.assertEquals(1, r1.rowCount());
-        conn.query("UPDATE mutable SET val = 'newValue' WHERE id = 1", ctx.asyncAssertSuccess(r2 -> {
+        conn.query("UPDATE mutable SET val = 'newValue' WHERE id = 1").execute(ctx.asyncAssertSuccess(r2 -> {
           ctx.assertEquals(1, r2.rowCount());
           async.complete();
         }));
@@ -107,7 +111,7 @@ public abstract class SimpleQueryTestBase {
   public void testInsert(TestContext ctx) {
     Async async = ctx.async();
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("INSERT INTO mutable (id, val) VALUES (1, 'Whatever');", ctx.asyncAssertSuccess(r1 -> {
+      conn.query("INSERT INTO mutable (id, val) VALUES (1, 'Whatever');").execute(ctx.asyncAssertSuccess(r1 -> {
         ctx.assertEquals(1, r1.rowCount());
         async.complete();
       }));
@@ -120,7 +124,7 @@ public abstract class SimpleQueryTestBase {
     Async async = ctx.async();
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       insertIntoTestTable(ctx, conn, 10, () -> {
-        conn.query("DELETE FROM mutable where id = 6", ctx.asyncAssertSuccess(result -> {
+        conn.query("DELETE FROM mutable where id = 6").execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.rowCount());
           async.complete();
         }));
@@ -130,7 +134,7 @@ public abstract class SimpleQueryTestBase {
 
   protected void cleanTestTable(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("TRUNCATE TABLE mutable;", ctx.asyncAssertSuccess(result -> {
+      conn.query("TRUNCATE TABLE mutable;").execute(ctx.asyncAssertSuccess(result -> {
         conn.close();
       }));
     }));
