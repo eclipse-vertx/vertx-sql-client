@@ -23,6 +23,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Connection;
+import io.vertx.db2client.impl.command.PingCommand;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 
@@ -56,16 +57,18 @@ public class DB2ConnectionImpl extends SqlConnectionImpl<DB2ConnectionImpl> impl
 
     @Override
     public DB2Connection ping(Handler<AsyncResult<Void>> handler) {
-        throw new UnsupportedOperationException("Ping command not implemented");
-//        PingCommand cmd = new PingCommand();
-//        cmd.handler = handler;
-//        schedule(cmd);
-//        return this;
+        Future<Void> fut = ping();
+        if (handler != null) {
+          fut.onComplete(handler);
+        }
+        return this;
     }
 
     @Override
     public Future<Void> ping() {
-        throw new UnsupportedOperationException("Ping command not implemented");
+    	Promise<Void> promise = promise();
+    	schedule(new PingCommand(), promise);
+        return promise.future();      
     }
 
     @Override

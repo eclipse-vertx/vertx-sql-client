@@ -169,7 +169,7 @@ public interface Tuple {
    * @return the tuple
    */
   static Tuple of(Object elt1, Object elt2, Object elt3, Object elt4, Object elt5, Object elt6) {
-    ArrayTuple tuple = new ArrayTuple(5);
+    ArrayTuple tuple = new ArrayTuple(6);
     tuple.addValue(elt1);
     tuple.addValue(elt2);
     tuple.addValue(elt3);
