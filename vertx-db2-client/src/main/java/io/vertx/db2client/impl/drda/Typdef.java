@@ -113,9 +113,9 @@ import java.sql.Types;
 public class Typdef implements Cloneable {
     
     // @AGG making this static instead of on an Agent class
-    public static Typdef typdef = new Typdef(1208, "QTDSQLASC", 1200, 1208);
-    public static Typdef targetTypdef = new Typdef();
-    public static Typdef originalTargetTypdef_ = targetTypdef;
+    public static final Typdef typdef = new Typdef(1208, "QTDSQLASC", 1200, 1208);
+    public static final Typdef targetTypdef = new Typdef();
+    public static final Typdef originalTargetTypdef_ = targetTypdef;
     
     // double byte character set
     private static final short CCSIDDBC = 1;
@@ -1025,6 +1025,7 @@ public class Typdef implements Cloneable {
 
     // Populates netCursor descriptors, rename this populateCursorDescriptors()
     void updateColumn(Cursor netCursor,
+                      DatabaseMetaData metadata,
                       int columnIndex,
                       int protocolLid,
                       int protocolLength) {
@@ -1083,7 +1084,7 @@ public class Typdef implements Cloneable {
             // otherwise the sda.ccsid_ is a placeholder:
             //  CCSIDMBC, CCSIDDDBC, CCSIDSBC to indicate that
             // the actual ccsid is the connection's ccsid (in protocol lingo the connection's typdef ccsid).
-            netCursor.charset_[columnIndex] = CCSIDConstants.UTF8;
+            netCursor.charset_[columnIndex] = metadata.isZos() ? CCSIDConstants.EBCDIC : CCSIDConstants.UTF8;
             netCursor.ccsid_[columnIndex] = sda.ccsid_;
             break;
         }

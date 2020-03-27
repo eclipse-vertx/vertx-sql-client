@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 IBM Corporation
+ * Copyright (C) 2020 IBM Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,31 @@
 package io.vertx.db2client.impl.drda;
 
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 
-public class CCSIDConstants {
-    
-    public static final int CCSID_EBCDIC = 500; // 0x01F4
-    public static final int CCSID_UTF8 = 1208; // 0x04B8
-    public static final int TARGET_UNICODE_MGR = CCSID_UTF8;
-    
-    public static final Charset EBCDIC = Charset.forName("CP1047");
-    public static final Charset UTF8 = StandardCharsets.UTF_8;
-    
-    private CCSIDConstants() {}
-    
+public class DatabaseMetaData {
+  
+  private boolean isZos;
+  
+  public String databaseName;
+  
+  private Charset currentCCSID = CCSIDConstants.EBCDIC;
+  
+  public void setZos(boolean isZos) {
+    this.isZos = isZos;
+    if (isZos && currentCCSID != CCSIDConstants.UTF8) {
+      currentCCSID = CCSIDConstants.UTF8;
+      
+      // DB2 on Z doesn't have small packages by default -- remove them
+      SectionManager.INSTANCE.removeSmallPackages();
+    }
+  }
+  
+  public boolean isZos() {
+    return isZos;
+  }
+  
+  public Charset getCCSID() {
+    return currentCCSID;
+  }
+
 }

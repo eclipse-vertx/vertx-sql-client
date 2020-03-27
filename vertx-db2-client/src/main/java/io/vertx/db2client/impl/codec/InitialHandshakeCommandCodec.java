@@ -23,6 +23,7 @@ import io.vertx.db2client.impl.drda.DRDAConnectRequest;
 import io.vertx.db2client.impl.drda.DRDAConnectResponse;
 import io.vertx.db2client.impl.drda.DRDAConnectResponse.RDBAccessData;
 import io.vertx.db2client.impl.drda.DRDAConstants;
+import io.vertx.db2client.impl.drda.DRDARequest;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
@@ -61,7 +62,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
 
     @Override
     void decodePayload(ByteBuf payload, int payloadLength) {
-        DRDAConnectResponse response = new DRDAConnectResponse(payload);
+        DRDAConnectResponse response = new DRDAConnectResponse(payload, encoder.socketConnection.dbMetadata);
         switch (status) {
             case ST_CONNECTING:
                 response.readExchangeServerAttributes();
@@ -69,7 +70,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
                 status = ST_AUTHENTICATING;
                 ByteBuf packet = allocateBuffer();
                 int packetStartIdx = packet.writerIndex();
-                DRDAConnectRequest securityCheck = new DRDAConnectRequest(packet);
+                DRDAConnectRequest securityCheck = new DRDAConnectRequest(packet, encoder.socketConnection.dbMetadata);
                 correlationToken = securityCheck.getCorrelationToken(encoder.socketConnection.socket().localAddress().port());
                 securityCheck.buildSECCHK(TARGET_SECURITY_MEASURE,
                         cmd.database(),
@@ -101,12 +102,12 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     private void sendInitialHandshake() {
         ByteBuf packet = allocateBuffer();
         int packetStartIdx = packet.writerIndex();
-        DRDAConnectRequest cmd = new DRDAConnectRequest(packet);
+        DRDAConnectRequest cmd = new DRDAConnectRequest(packet, encoder.socketConnection.dbMetadata);
         cmd.buildEXCSAT(DRDAConstants.EXTNAM, // externalName,
-                0x07, // 0x0A, // targetAgent,
+                0x0A, // targetAgent,
                 DRDAConstants.TARGET_SQL_AM, // targetSqlam,
                 0x0C, // targetRdb,
-                TARGET_SECURITY_MEASURE, //targetSecmgr,
+                0x0A, // TARGET_SECURITY_MEASURE, //targetSecmgr,
                 0, // targetCmntcpip,
                 0, // targetCmnappc, (not used)
                 0, // targetXamgr,

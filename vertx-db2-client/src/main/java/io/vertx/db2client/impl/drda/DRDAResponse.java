@@ -24,6 +24,7 @@ import io.netty.buffer.ByteBuf;
 public abstract class DRDAResponse {
     
     final ByteBuf buffer;
+    final DatabaseMetaData metadata;
 
     Deque<Integer> ddmCollectionLenStack = new ArrayDeque<>(4);
     int ddmScalarLen_ = 0; // a value of -1 -> streamed ddm -> length unknown
@@ -39,9 +40,11 @@ public abstract class DRDAResponse {
 
     final static int END_OF_COLLECTION = -1;
     final static int END_OF_SAME_ID_CHAIN = -2;
+    final static int END_OF_BUFFER = -3;
 
-    public DRDAResponse(ByteBuf buffer) {
+    public DRDAResponse(ByteBuf buffer, DatabaseMetaData metadata) {
         this.buffer = buffer;
+        this.metadata = metadata;
     }
     
     protected final void startSameIdChainParse() {
@@ -113,6 +116,12 @@ public abstract class DRDAResponse {
                 rdbnam = parseRDBNAM(true);
                 peekCP = peekCodePoint();
             }
+            
+            if (peekCP == CodePoint.RLSCONV) {
+              foundInPass = true;
+              parseRLSCONV();
+              peekCP = peekCodePoint();
+            }
 
 
             if (!foundInPass) {
@@ -134,6 +143,17 @@ public abstract class DRDAResponse {
         if (uowdsp == CodePoint.UOWDSP_COMMIT) {
             //System.out.println("@AGG commit completed normally");
         }
+    }
+    
+    private int parseRLSCONV() {
+      parseLengthAndMatchCodePoint(CodePoint.RLSCONV);
+      int i = readUnsignedByte();
+      if (i != 0xF0 && // NO_TERM
+          i != 0xF1 && // TERM
+          i != 0xF2) { // REUSE
+        throw new IllegalStateException("Unknown value for RLSCONV: " + Integer.toHexString(i));
+      }
+      return i;
     }
     
     // Relational Database Name specifies the name of a relational
@@ -858,7 +878,7 @@ public abstract class DRDAResponse {
         ensureALayerDataInBuffer(6);
 
         // read out the dss length
-        dssLength_ = buffer.readShort();
+        dssLength_ = buffer.readUnsignedShort();
 
         // Remember the old dss length for decryption only.
         int oldDssLength = dssLength_;
@@ -948,7 +968,7 @@ public abstract class DRDAResponse {
     void readDSSContinuationHeader() {
         ensureALayerDataInBuffer(2);
 
-        dssLength_ = buffer.readShort();
+        dssLength_ = buffer.readUnsignedShort();
 //                ((buffer_[pos_++] & 0xFF) << 8) +
 //                ((buffer_[pos_++] & 0xFF) << 0);
 
@@ -971,7 +991,7 @@ public abstract class DRDAResponse {
         int len = ddmScalarLen_;
         ensureBLayerDataInBuffer(len);
         adjustLengths(len);
-        String result = buffer.readCharSequence(len, CCSIDConstants.getCCSID()).toString();
+        String result = buffer.readCharSequence(len, metadata.getCCSID()).toString();
 //        String result = currentCCSID.decode(buffer); 
 //                netAgent_.getCurrentCcsidManager()
 //                            .convertToJavaString(buffer_, pos_, len);
@@ -995,7 +1015,10 @@ public abstract class DRDAResponse {
 //        short s = SignedBinary.getShort(buffer_, pos_);
 
         //pos_ += 2;
-        return buffer.readShortLE();
+        if (metadata.isZos())
+          return buffer.readShort();
+        else
+          return buffer.readShortLE();
     }
 
     boolean checkAndGetReceivedFlag(boolean receivedFlag){
@@ -1038,7 +1061,7 @@ public abstract class DRDAResponse {
     }
     
     protected final int peekFastLength() {
-        return buffer.getShort(buffer.readerIndex());
+        return buffer.getUnsignedShort(buffer.readerIndex());
 //        return (((buffer_[pos_] & 0xff) << 8) +
 //                ((buffer_[pos_ + 1] & 0xff) << 0));
     }
@@ -1067,8 +1090,8 @@ public abstract class DRDAResponse {
         // {
         // ensureBLayerDataInBuffer(4);
         // }
-        peekedLength_ = buffer.getShort(buffer.readerIndex()); //buffer.readShort();// ((buffer_[pos_] & 0xff) << 8) + ((buffer_[pos_ + 1] & 0xff) << 0);
-        peekedCodePoint_ = buffer.getShort(buffer.readerIndex() + 2); //buffer.readShort(); // ((buffer_[pos_ + 2] & 0xff) << 8) + ((buffer_[pos_ + 3] & 0xff) << 0);
+        peekedLength_ = buffer.getUnsignedShort(buffer.readerIndex()); //buffer.readShort();// ((buffer_[pos_] & 0xff) << 8) + ((buffer_[pos_ + 1] & 0xff) << 0);
+        peekedCodePoint_ = buffer.getUnsignedShort(buffer.readerIndex() + 2); //buffer.readShort(); // ((buffer_[pos_ + 2] & 0xff) << 8) + ((buffer_[pos_ + 3] & 0xff) << 0);
 
         // check for extended length
         if ((peekedLength_ & 0x8000) == 0x8000) {
@@ -1130,10 +1153,10 @@ public abstract class DRDAResponse {
         }
 
         ensureBLayerDataInBuffer(4);
-        ddmScalarLen_ = buffer.readShort();
+        ddmScalarLen_ = buffer.readUnsignedShort();
 //                ((buffer_[pos_++] & 0xff) << 8) +
 //                ((buffer_[pos_++] & 0xff) << 0);
-        int codePoint = buffer.readShort();
+        int codePoint = buffer.readUnsignedShort();
 //                ((buffer_[pos_++] & 0xff) << 8) +
 //                ((buffer_[pos_++] & 0xff) << 0);
         adjustLengths(4);
@@ -1151,7 +1174,7 @@ public abstract class DRDAResponse {
         switch (numberOfExtendedLenBytes) {
         case 4:
             ensureBLayerDataInBuffer(4);
-            ddmScalarLen_ = buffer.readInt();
+            ddmScalarLen_ = (int) buffer.readUnsignedInt();
 //                    ((buffer_[pos_++] & 0xff) << 24) +
 //                    ((buffer_[pos_++] & 0xff) << 16) +
 //                    ((buffer_[pos_++] & 0xff) << 8) +
@@ -1179,11 +1202,15 @@ public abstract class DRDAResponse {
             ddmCollectionLenStack.add(original.pop() - length);
         }
         dssLength_ -= length;
+        if (dssLength_ < 0)
+          throw new IllegalStateException("DSS length has gone negative: " + dssLength_);
 //        System.out.println("@AGG reduced len by " + length + " stack is now: " + ddmCollectionLenStack);
     }
     
     protected final void adjustLengths(int length) {
         ddmScalarLen_ -= length;
+        if (ddmScalarLen_ < 0)
+          throw new IllegalStateException("DDM scalar length has gone negative: " + ddmScalarLen_);
         adjustCollectionAndDssLengths(length);
     }
 
@@ -1205,10 +1232,8 @@ public abstract class DRDAResponse {
         case 4:
             // L L C P Extended Length
             // -->2-bytes<-- --->4-bytes<---
-            // We are only peeking the length here, the actual pos_ is still before LLCP. We
-            // ensured
-            // 4-bytes in peedCodePoint() for the LLCP, and we need to ensure 4-bytes(of
-            // LLCP) + the
+            // We are only peeking the length here, the actual pos_ is still before LLCP. We ensured
+            // 4-bytes in peedCodePoint() for the LLCP, and we need to ensure 4-bytes(of LLCP) + the
             // extended length bytes here.
             // if (longBufferForDecryption_ == null) //we ddon't need to do this if it's
             // data stream encryption
@@ -1222,7 +1247,7 @@ public abstract class DRDAResponse {
             // correctly in parseLengthAndMatchCodePoint(). (since the adjustLengths()
             // method will
             // subtract the length from ddmScalarLen_)
-            peekedLength_ = buffer.getInt(4);
+            peekedLength_ = (int) buffer.getUnsignedInt(buffer.readerIndex() + 4);
             // ((buffer_[pos_ + 4] & 0xff) << 24) +
             // ((buffer_[pos_ + 5] & 0xff) << 16) +
             // ((buffer_[pos_ + 6] & 0xff) << 8) +
@@ -1343,6 +1368,9 @@ public abstract class DRDAResponse {
     
     final void readFastIntArray(int[] array) {
         for (int i = 0; i < array.length; i++) {
+          if (metadata.isZos())
+            array[i] = buffer.readInt();
+          else
             array[i] = buffer.readIntLE(); //SignedBinary.getInt(buffer_, pos_);
             //pos_ += 4;
         }
@@ -1356,6 +1384,9 @@ public abstract class DRDAResponse {
 
     final short readFastShort() {
         //pos_ += 2;
+      if (metadata.isZos())
+        return buffer.readShort();
+      else
         return buffer.readShortLE();
 //        short s = SignedBinary.getShort(buffer_, pos_);
 //        return s;
@@ -1364,12 +1395,15 @@ public abstract class DRDAResponse {
     final long readFastLong() {
 //        long l = SignedBinary.getLong(buffer_, pos_);
         //pos_ += 8;
-        return buffer.readLongLE();
+        if (metadata.isZos())
+          return buffer.readLong();
+        else
+          return buffer.readLongLE();
     }
 
     final int readFastUnsignedShort() {
         //pos_ += 2;
-        return buffer.readUnsignedShort();
+      return buffer.readUnsignedShort();
 //        return ((buffer_[pos_++] & 0xff) << 8) +
 //                ((buffer_[pos_++] & 0xff) << 0);
     }
@@ -1377,11 +1411,14 @@ public abstract class DRDAResponse {
     final int readFastInt() {
 //        int i = SignedBinary.getInt(buffer_, pos_);
         //pos_ += 4;
-        return buffer.readIntLE();
+        if (metadata.isZos())
+          return buffer.readInt();
+        else
+          return buffer.readIntLE();
     }
 
     final String readFastString(int length) {
-        String result = buffer.readCharSequence(length, CCSIDConstants.getCCSID()).toString();
+        String result = buffer.readCharSequence(length, metadata.getCCSID()).toString();
 //                            .convertToJavaString(buffer_, pos_, length);
         //pos_ += length;
         return result;

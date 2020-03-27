@@ -16,13 +16,15 @@
 package io.vertx.db2client.impl.drda;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 
 import io.netty.buffer.ByteBuf;
 
 public class DRDAConnectResponse extends DRDAResponse {
-    
-    public DRDAConnectResponse(ByteBuf buffer) {
-        super(buffer);
+  
+    public DRDAConnectResponse(ByteBuf buffer, DatabaseMetaData metadata) {
+      super(buffer, metadata);
     }
     
     public void readAccessSecurity(int securityMechanism) {
@@ -460,10 +462,21 @@ public class DRDAConnectResponse extends DRDAResponse {
                 crrtkn = parseCRRTKN(false);
                 peekCP = peekCodePoint();
             }
-
+            
+            if (peekCP == CodePoint.SRVLST) {
+              foundInPass = true;
+              parseSRVLST();
+              peekCP = peekCodePoint();
+            }
+            
+            if (peekCP == CodePoint.IPADDR) {
+              foundInPass = true;
+              parseIPADDR();
+              peekCP = peekCodePoint();
+            }
 
             if (!foundInPass) {
-                throw new IllegalStateException("Found unknown codepoint: " + Integer.toHexString(peekCP));
+                throwUnknownCodepoint(peekCP);
                 //doPrmnsprmSemantics(peekCP);
             }
         }
@@ -520,6 +533,97 @@ public class DRDAConnectResponse extends DRDAResponse {
         return readBytes();
     }
     
+    private void parseSRVLST() {
+      parseLengthAndMatchCodePoint(CodePoint.SRVLST);
+      
+      pushLengthOnCollectionStack();
+      boolean foundInPass = false;
+      boolean foundServerListCount = false;
+      boolean foundServerList = false;
+      int serverListCount = 0;
+      int peekCP = peekCodePoint();
+      while (peekCP != END_OF_COLLECTION) {
+        if (peekCP == CodePoint.SRVLSTCNT) {
+          foundInPass = true;
+          foundServerListCount = true;
+          serverListCount = parseSRVLSTCNT();
+          peekCP = peekCodePoint();
+        }
+        if (peekCP == CodePoint.SRVLSRV) {
+          foundInPass = true;
+          foundServerList = true;
+          // TODO: utilize returned server list for failover/client reroute feature
+          parseSRVLSRV(serverListCount);
+          peekCP = peekCodePoint();
+        }
+        
+        if (!foundInPass)
+          throwUnknownCodepoint(peekCP);
+      }
+      popCollectionStack();
+      
+      if (!foundServerListCount)
+        throwMissingRequiredCodepoint("SRVLSTCNT", CodePoint.SRVLSTCNT);
+      if (!foundServerList)
+        throwMissingRequiredCodepoint("SRVLSRV", CodePoint.SRVLSRV);
+          
+    }
+    
+    private int parseSRVLSTCNT() {
+      parseLengthAndMatchCodePoint(CodePoint.SRVLSTCNT);
+      return readUnsignedShort();
+    }
+    
+    private List<String> parseSRVLSRV(int serverListCount) {
+      parseLengthAndMatchCodePoint(CodePoint.SRVLSRV);
+      
+      List<String> serverList = new ArrayList<>(serverListCount);
+      for (int i = 0; i < serverListCount; i++) {
+        int priority = 0;
+        boolean foundServerPriority = false;
+        int peekCP = peekCodePoint();
+        if (peekCP == CodePoint.SRVPRTY) {
+          foundServerPriority = true;
+          priority = parseSRVPRTY();
+          peekCP = peekCodePoint();
+        }
+        
+        if (peekCP == CodePoint.TCPPORTHOST) {
+          parseTCPPORTHOST(false);
+        } else if (peekCP == CodePoint.IPADDR) {
+          parseIPADDR();
+        } else {
+          throwUnknownCodepoint(peekCP);
+        }
+        
+        if (!foundServerPriority)
+          throwMissingRequiredCodepoint("SRVPRTY", CodePoint.SRVPRTY);
+      }
+      return serverList;
+    }
+    
+    private byte[] parseIPADDR() {
+      parseLengthAndMatchCodePoint(CodePoint.IPADDR);
+      return readBytes();
+    }
+    
+    private Object[] parseTCPPORTHOST(boolean skip) {
+      parseLengthAndMatchCodePoint(CodePoint.TCPPORTHOST);
+      if (skip) {
+        skipBytes();
+        return null;
+      }
+      Object[] hostPort = new Object[2];
+      hostPort[0] = readUnsignedShort();
+      hostPort[1] = readString();
+      return hostPort;
+    }
+    
+    private int parseSRVPRTY() {
+      parseLengthAndMatchCodePoint(CodePoint.SRVPRTY);
+      return readUnsignedShort();
+    }
+    
     // The User Id specifies an end-user name.
     private String parseUSRID(boolean skip) {
         parseLengthAndMatchCodePoint(CodePoint.USRID);
@@ -547,8 +651,9 @@ public class DRDAConnectResponse extends DRDAResponse {
     // This method handles the parsing of all command replies and reply data
     // for the secchk command.
     private void parseSECCHKreply() {
-        if (peekCodePoint() != CodePoint.SECCHKRM) {
-            throw new IllegalStateException("Expected CodePoint.SECCHKRM");
+        int peekCP = peekCodePoint();
+        if (peekCP != CodePoint.SECCHKRM) {
+            throwUnknownCodepoint(peekCP);
         }
 
         parseSECCHKRM();
@@ -983,16 +1088,10 @@ public class DRDAConnectResponse extends DRDAResponse {
         boolean srvnamReceived = false;
         boolean srvrlslvReceived = false;
         String srvrlslv = null;
-
+        
         parseLengthAndMatchCodePoint(CodePoint.EXCSATRD);
         pushLengthOnCollectionStack();
         int peekCP = peekCodePoint();
-        // EXTNAM = 71
-        // MGRLVL = 28
-        // SRVCLS = 19
-        // SRVNAM = 9
-        // SRVREL = 12
-        // total = 139
         while (peekCP != END_OF_COLLECTION) {
             
             boolean foundInPass = false;
@@ -1057,6 +1156,13 @@ public class DRDAConnectResponse extends DRDAResponse {
                 srvrlslvReceived = checkAndGetReceivedFlag(srvrlslvReceived);
                 parseLengthAndMatchCodePoint(CodePoint.SRVRLSLV);
                 srvrlslv = readString(); // parseSRVRLSLV();
+                if (srvrlslv != null && srvrlslv.startsWith("SQL")) {
+                  metadata.setZos(false);
+                } else if (srvrlslv != null && srvrlslv.startsWith("DSN")) {
+                  metadata.setZos(true);
+                } else {
+                  throw new IllegalStateException("Received unknown server product release level: " + srvrlslv);
+                }
                 peekCP = peekCodePoint();
             }
 
@@ -1064,6 +1170,9 @@ public class DRDAConnectResponse extends DRDAResponse {
                 throw new IllegalStateException(String.format("Did not find a codepoint in this pass: %02x", peekCP));
                 //doPrmnsprmSemantics(peekCP);
             }
+            
+            if (!srvrlslvReceived)
+              throwMissingRequiredCodepoint("SRVRLSLV", CodePoint.SRVRLSLV);
 
         }
         

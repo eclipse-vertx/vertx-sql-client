@@ -42,8 +42,8 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
     // is still needed for non-promoted LOBs
     private final HashMap<Integer, Object> promototedParameters_ = new HashMap<>();
     
-    public DRDAQueryRequest(ByteBuf buffer) {
-        super(buffer);
+    public DRDAQueryRequest(ByteBuf buffer, DatabaseMetaData metadata) {
+        super(buffer, metadata);
     }
     
     /**
@@ -1861,15 +1861,15 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
         int maxIdentifierLength = DRDAConstants.PKG_IDENTIFIER_MAX_LEN;
 //        CcsidManager ccsidMgr = netAgent_.getCurrentCcsidManager();
 
-        byte[] dbnameBytes = CCSIDConstants.getCCSID().encode(dbName).array(); 
+        byte[] dbnameBytes = metadata.getCCSID().encode(dbName).array(); 
 //                ccsidMgr.convertFromJavaString(
 //                netAgent_.netConnection_.databaseName_, netAgent_);
 
-        byte[] collectionToFlowBytes = CCSIDConstants.getCCSID().encode(collectionToFlow).array(); 
+        byte[] collectionToFlowBytes = metadata.getCCSID().encode(collectionToFlow).array(); 
 //        ccsidMgr.convertFromJavaString(
 //                collectionToFlow, netAgent_);
 
-        byte[] pkgNameBytes = CCSIDConstants.getCCSID().encode(section.pkg.name).array(); 
+        byte[] pkgNameBytes = metadata.getCCSID().encode(section.pkg.name).array(); 
 //                ccsidMgr.convertFromJavaString(
 //                section.getPackageName(), netAgent_);
         
@@ -1902,7 +1902,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
 
         // the format is different depending on if an SCLDTALEN is required.
         if (!scldtalenRequired) {
-            byte padByte = CCSIDConstants.getCCSID().encode(" ").get();
+            byte padByte = metadata.getCCSID().encode(" ").get();
             writeScalarPaddedBytes(dbnameBytes,
                     DRDAConstants.PKG_IDENTIFIER_FIXED_LEN, padByte);
             writeScalarPaddedBytes(collectionToFlowBytes,
@@ -1921,7 +1921,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
         buffer.writeShort(length);
         //write2Bytes(length);
         //byte padByte = netAgent_.getCurrentCcsidManager().space_;
-        byte padByte = CCSIDConstants.getCCSID().encode(" ").get();
+        byte padByte = metadata.getCCSID().encode(" ").get();
         writeScalarPaddedBytes(identifier, length, padByte);
     }
     

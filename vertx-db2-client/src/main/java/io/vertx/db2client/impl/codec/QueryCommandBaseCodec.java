@@ -46,7 +46,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
         
         ByteBuf packet = allocateBuffer();
         int packetStartIdx = packet.writerIndex();
-        DRDAQueryRequest req = new DRDAQueryRequest(packet);
+        DRDAQueryRequest req = new DRDAQueryRequest(packet, encoder.socketConnection.dbMetadata);
         if (isQuery) {
         	encodeQuery(req);
         } else {

@@ -619,6 +619,48 @@ public class CodePoint {
      * Server Product Release Level codepoint constant.
      */
     public static final int SRVRLSLV = 0x115A;
+    
+    /**
+     * Server List
+     * See DRDA Arch Vol 3 pg. 892
+     */
+    public static final int SRVLST = 0x244E; // 9294
+    
+    /**
+     * Server List Count
+     * See DRDA Arch Vol 3 pg 875
+     */
+    public static final int SRVLSTCNT = 0x244C; // 9292
+    
+    /**
+     * Server List Entries
+     * See DRDA Arch Vol 3 pg 876
+     */
+    public static final int SRVLSRV = 0x244D; //9293
+    
+    /**
+     * Server Priority
+     * See DRDA Arch Vol 3 pg 883
+     */
+    public static final int SRVPRTY = 0x244F; //9295
+    
+    /**
+     * TCP/IP port number and domain-qualified hostname
+     * See DRDA Arch Vol 3 pg 1006
+     */
+    public static final int TCPPORTHOST = 0x1912; // 6418
+    
+    /**
+     * TCP/IP Address
+     * See DRDA Arch Vol 3 pg 450
+     */
+    public static final int IPADDR = 0x11E8; // 4584
+    
+    /**
+     * SNA Address
+     * See DRDA Arch VOl 3 pg 827
+     */
+    public static final int SNAADDR = 0x11E9; // 4585
 
     /**
      *  Severity Code codepoint constant.
@@ -714,6 +756,12 @@ public class CodePoint {
      * End Unit of Work Condition codepoint constant.
      */
     public static final int ENDUOWRM = 0x220C;
+    
+    /**
+     * Release Conversation
+     * See DRDA Arch Vol 3 pg. 765
+     */
+    public static final int RLSCONV = 0x119F; // 4511
 
     /** 
      * Object Not Supported codepoint constant.
