@@ -63,7 +63,7 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
             row.addValue(o);
         }
         if (LOG.isDebugEnabled()) {
-        	LOG.debug("decoded row values: " + row);
+        	LOG.debug("decoded row values: " + row.deepToString());
         }
         return row;
     }
