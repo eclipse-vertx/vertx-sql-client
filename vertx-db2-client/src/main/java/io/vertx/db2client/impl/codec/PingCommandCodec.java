@@ -21,11 +21,13 @@ import io.vertx.db2client.impl.drda.CCSIDConstants;
 import io.vertx.db2client.impl.drda.DRDAConnectRequest;
 import io.vertx.db2client.impl.drda.DRDAConnectResponse;
 import io.vertx.db2client.impl.drda.DRDAConstants;
+import io.vertx.db2client.impl.drda.DatabaseMetaData;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
 class PingCommandCodec extends CommandCodec<Void, PingCommand> {
-
-	private static final int TARGET_SECURITY_MEASURE = DRDAConstants.SECMEC_USRIDPWD;
+  
+    // Use an isolated metadata instance since we will flow a new EXCSAT
+    private final DatabaseMetaData md = new DatabaseMetaData();
 
 	PingCommandCodec(PingCommand cmd) {
 		super(cmd);
@@ -39,7 +41,7 @@ class PingCommandCodec extends CommandCodec<Void, PingCommand> {
 
 	@Override
 	void decodePayload(ByteBuf payload, int payloadLength) {
-		DRDAConnectResponse response = new DRDAConnectResponse(payload, encoder.socketConnection.dbMetadata);
+		DRDAConnectResponse response = new DRDAConnectResponse(payload, md);
 		response.readExchangeServerAttributes();
 		completionHandler.handle(CommandResponse.success(null));
 		return;
@@ -48,19 +50,19 @@ class PingCommandCodec extends CommandCodec<Void, PingCommand> {
 	private void sendPingRequest() {
 		ByteBuf packet = allocateBuffer();
 		int packetStartIdx = packet.writerIndex();
-		DRDAConnectRequest cmd = new DRDAConnectRequest(packet, encoder.socketConnection.dbMetadata);
-		cmd.buildEXCSAT(DRDAConstants.EXTNAM, // externalName,
-				0x07, // 0x0A, // targetAgent,
-				DRDAConstants.TARGET_SQL_AM, // targetSqlam,
-				0x0C, // targetRdb,
-				TARGET_SECURITY_MEASURE, //targetSecmgr,
-				0, // targetCmntcpip,
-				0, // targetCmnappc, (not used)
-				0, // targetXamgr,
-				0, // targetSyncptmgr,
-				0, // targetRsyncmgr,
-				CCSIDConstants.TARGET_UNICODE_MGR // targetUnicodemgr
-				);
+		DRDAConnectRequest cmd = new DRDAConnectRequest(packet, md);
+        cmd.buildEXCSAT(DRDAConstants.EXTNAM, // externalName,
+            0x0A, // targetAgent,
+            DRDAConstants.TARGET_SQL_AM, // targetSqlam,
+            0x0C, // targetRdb,
+            0x0A, // TARGET_SECURITY_MEASURE, //targetSecmgr,
+            0, // targetCmntcpip,
+            0, // targetCmnappc, (not used)
+            0, // targetXamgr,
+            0, // targetSyncptmgr,
+            0, // targetRsyncmgr,
+            CCSIDConstants.TARGET_UNICODE_MGR // targetUnicodemgr
+    );
 		cmd.completeCommand();
 
 		int lenOfPayload = packet.writerIndex() - packetStartIdx;

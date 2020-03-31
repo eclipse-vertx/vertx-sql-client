@@ -1,10 +1,13 @@
 package io.vertx.db2client;
 
+import static org.junit.Assume.assumeFalse;
+
 import java.util.Arrays;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import io.vertx.db2client.junit.DB2Resource;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Row;
@@ -76,6 +79,7 @@ public class TableJoinTest extends DB2TestBase {
 
 	@Test
 	public void testFullOuterJoin(TestContext ctx) {
+	    assumeFalse("DB2 on Z does not support operations within ON clause for FULL OUTER JOIN", rule.isZOS());
 		testJoin(ctx, "FULL OUTER JOIN");
 	}
 

@@ -3,6 +3,7 @@ package io.vertx.db2client.impl.codec;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.core.impl.logging.Logger;
@@ -68,11 +69,6 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
         QueryInstance queryInstance = queryInstances.get(i);
         RowResultDecoder<?, R> decoder = decodePreparedQuery(payload, resp, queryInstance);
         boolean queryComplete = decoder.isQueryComplete();
-        if (queryComplete) {
-          resp.readEndOpenQuery();
-          statement.closeQuery(queryInstance);
-        }
-        
         hasMoreResults &= !queryComplete;
         handleQueryResult(decoder);
       }
@@ -94,7 +90,11 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
 	public String toString() {
 		StringBuilder sb = new StringBuilder(super.toString());
 		sb.append(", params=");
-		sb.append(cmd.params());
+		sb.append("[");
+		sb.append(cmd.params().stream()
+		    .map(Tuple::deepToString)
+		    .collect(Collectors.joining(",")));
+		sb.append("]");
 		return sb.toString();
 	}
 

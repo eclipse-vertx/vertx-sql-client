@@ -98,6 +98,18 @@ public class DB2RowImpl extends ArrayTuple implements Row {
         int pos = getColumnIndex(name);
         return pos == -1 ? null : getValue(pos);
     }
+    
+    @Override
+    public Boolean getBoolean(int pos) {
+      // DB2 stores booleans as TINYINT
+      Object val = getValue(pos);
+      if (val instanceof Boolean) {
+        return (Boolean) val;
+      } else if (val instanceof Short) {
+        return (Short) val != 0;
+      }
+      return null;
+    }
 
     @Override
     public Boolean getBoolean(String name) {

@@ -26,9 +26,7 @@ import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.sql.Blob;
 import java.sql.Clob;
-import java.sql.Date;
 import java.sql.SQLException;
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.LocalDate;
@@ -39,7 +37,6 @@ import java.util.Calendar;
 import java.util.HashMap;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufUtil;
 
 public class Cursor {
 
@@ -113,8 +110,6 @@ public class Cursor {
 
     final static Boolean ROW_IS_NULL = Boolean.TRUE;
     private final static Boolean ROW_IS_NOT_NULL = Boolean.FALSE;
-
-    private Calendar recyclableCalendar_ = null;
 
     // For the net, this data comes from the query descriptor.
 
@@ -381,25 +376,32 @@ public class Cursor {
     // Build a Java float from a 4-byte floating point representation.
     private final float get_FLOAT(int column) {
         // @AGG force Little Endian
-      if (metadata.isZos())
-        return dataBuffer_.getFloat(columnDataPosition_[column - 1]);
-      else
+      if (metadata.isZos()) {
+        byte[] bytes = new byte[4];
+        dataBuffer_.getBytes(columnDataPosition_[column - 1], bytes);
+        return FloatingPoint.getFloat_hex(bytes, 0);
+//        return dataBuffer_.getFloat(columnDataPosition_[column - 1]);
+      } else {
         return dataBuffer_.getFloatLE(columnDataPosition_[column - 1]);
 //        return FloatingPoint.getFloat(dataBuffer_,
 //                columnDataPosition_[column - 1]);
+      }
     }
 
     // Build a Java double from an 8-byte floating point representation.
     private final double get_DOUBLE(int column) {
-        // @AGG force Little Endian
-      if (metadata.isZos())
-        return dataBuffer_.getDouble(columnDataPosition_[column - 1]);
-      else
+      if (metadata.isZos()) {
+        byte[] bytes = new byte[8];
+        dataBuffer_.getBytes(columnDataPosition_[column - 1], bytes);
+        return FloatingPoint.getDouble_hex(bytes, 0);
+        //return dataBuffer_.getDouble(columnDataPosition_[column - 1]);
+      } else {
         return dataBuffer_.getDoubleLE(columnDataPosition_[column - 1]);
 //        return FloatingPoint.getDouble(dataBuffer_,
 //                columnDataPosition_[column - 1]);
+      }
     }
-
+    
     // Build a java.math.BigDecimal from a fixed point decimal byte representation.
     private final BigDecimal get_DECIMAL(int column) {
         return Decimal.getBigDecimal(dataBuffer_,

@@ -81,6 +81,10 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
 		while (decoder.next()) {
 			decoder.handleRow(columnDefinitions.columns_, payload);
 		}
+        if (decoder.isQueryComplete()) {
+          resp.readEndOpenQuery();
+          statement.closeQuery(queryInstance);
+        }
 		return decoder;
 	}
 
@@ -105,6 +109,14 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
 			inputs[i] = val;
 		}
 		return inputs;
+	}
+	
+	@Override
+	public String toString() {
+	  if (isQuery)
+	    return super.toString() + ", fetch=" + cmd.fetch();
+	  else
+	    return super.toString();
 	}
 	
 }

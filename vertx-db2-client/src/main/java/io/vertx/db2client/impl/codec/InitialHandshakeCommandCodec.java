@@ -23,7 +23,6 @@ import io.vertx.db2client.impl.drda.DRDAConnectRequest;
 import io.vertx.db2client.impl.drda.DRDAConnectResponse;
 import io.vertx.db2client.impl.drda.DRDAConnectResponse.RDBAccessData;
 import io.vertx.db2client.impl.drda.DRDAConstants;
-import io.vertx.db2client.impl.drda.DRDARequest;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 

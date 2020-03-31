@@ -15,7 +15,10 @@
  */
 package io.vertx.db2client.tck;
 
+import static org.junit.Assume.assumeFalse;
+
 import org.junit.ClassRule;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.vertx.db2client.DB2ConnectOptions;
@@ -61,6 +64,12 @@ public class DB2TransactionTest extends TransactionTestBase {
   @Override
   protected String statement(String... parts) {
     return String.join("?", parts);
+  }
+  
+  @Test
+  public void testDelayedCommit(TestContext ctx) {
+    assumeFalse("DB2 on Z holds write locks on inserted columns with isolation level = 2", rule.isZOS());
+    super.testDelayedCommit(ctx);
   }
 
 }

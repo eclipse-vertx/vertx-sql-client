@@ -1082,6 +1082,9 @@ public abstract class DRDAResponse {
             if (!dssIsChainedWithSameID_) {
                 return END_OF_SAME_ID_CHAIN;
             }
+            if (!buffer.isReadable()) {
+              return END_OF_BUFFER;
+            }
             readDssHeader();
         }
 
