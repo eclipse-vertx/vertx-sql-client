@@ -1,7 +1,6 @@
 package io.vertx.db2client.tck;
 
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -27,11 +26,11 @@ public class DB2BinaryDataTypeEncodeTest extends BinaryDataTypeEncodeTestBase {
     return String.join("?", parts);
   }
 
-  @Test // @AGG TODO
-  @Ignore("Works in JDBC but fails with Vertx, we get sqlCode=-302 sqlState=22003 which means value is too large")
+  @Test
   @Override
   public void testDouble(TestContext ctx) {
-    super.testDouble(ctx);
+    // The smallest positive value supported by the DOUBLE column type in DB2 is 5.4E-079
+    testEncodeGeneric(ctx, "test_float_8", Double.class, Double.valueOf("5.4E-079"));
   }
   
   @Override
