@@ -39,6 +39,8 @@ public class DB2Resource extends ExternalResource {
      */
     public static final DB2Resource SHARED_INSTANCE = new DB2Resource();
     
+    private boolean started = false;
+    private boolean isDb2OnZ = false;
     private DB2ConnectOptions options;
     private final Db2Container instance = new Db2Container()
             .acceptLicense()
@@ -47,6 +49,9 @@ public class DB2Resource extends ExternalResource {
     
     @Override
     protected void before() throws Throwable {
+        if (started)
+          return;
+
     	if (!CUSTOM_DB2) {
     		instance.start();
 	        options = new DB2ConnectOptions()
@@ -72,18 +77,23 @@ public class DB2Resource extends ExternalResource {
     	try (Connection con = DriverManager.getConnection(jdbcUrl, options.getUser(), options.getPassword())) {
     	  runInitSql(con);
     	}
+    	started = true;
     }
     
 	public DB2ConnectOptions options() {
 		return new DB2ConnectOptions(options);
 	}
 	
+	public boolean isZOS() {
+	  return isDb2OnZ;
+	}
+	
 	private static String get(String name) {
 		return System.getProperty(name, System.getenv(name));
 	}
 	
-    private static void runInitSql(Connection con) throws Exception {
-      boolean isDb2OnZ = con.getMetaData().getDatabaseProductVersion().startsWith("DSN");
+    private void runInitSql(Connection con) throws Exception {
+      isDb2OnZ = con.getMetaData().getDatabaseProductVersion().startsWith("DSN");
       String currentLine = "";
       Path initScript = Paths.get("src", "test", "resources", isDb2OnZ ? "init.zos.sql" : "init.sql");
       System.out.println("Running init script at: " + initScript);

@@ -15,8 +15,6 @@
  */
 package io.vertx.db2client.impl.codec;
 
-import java.math.BigDecimal;
-
 import io.vertx.db2client.impl.drda.ClientTypes;
 import io.vertx.db2client.impl.drda.ColumnMetaData;
 import io.vertx.sqlclient.data.Numeric;

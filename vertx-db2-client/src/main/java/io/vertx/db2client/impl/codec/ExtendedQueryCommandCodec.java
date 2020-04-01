@@ -65,7 +65,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
 	public String toString() {
 		StringBuilder sb = new StringBuilder(super.toString());
 		sb.append(", params=");
-		sb.append(cmd.params());
+		sb.append(cmd.params().deepToString());
 		return sb.toString();
 	}
 }

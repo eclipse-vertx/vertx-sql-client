@@ -1421,5 +1421,22 @@ public interface Tuple {
   int size();
 
   void clear();
+  
+  /**
+   * @return A String containing the {@link Object#toString} value of each element,
+   * separated by a comma (,) character
+   */
+  default String deepToString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("[");
+    final int size = size();
+    for (int i = 0; i < size; i++) {
+      sb.append(getValue(i));
+      if (i + 1 < size)
+        sb.append(",");
+    }
+    sb.append("]");
+    return sb.toString();
+  }
 
 }

@@ -55,8 +55,4 @@ public class ListTuple implements TupleInternal {
     list.clear();
   }
   
-  @Override
-  public String toString() {
-	  return list == null ? null : list.toString();
-  }
 }

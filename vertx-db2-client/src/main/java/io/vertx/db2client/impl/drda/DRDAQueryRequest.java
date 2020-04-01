@@ -314,10 +314,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
     }
     
     public void writeFetch(Section section, String dbName, int fetchSize, long queryId) {
-        // - for forward-only cursors we do not send qryrowset on OPNQRY, fetchSize is ignored.
-        // but qryrowset is sent on EXCSQLSTT for a stored procedure call.
-        boolean sendQryrowset = false; // ((NetStatement) resultSet.statement_.getMaterialStatement()).qryrowsetSentOnOpnqry_;
-
+        boolean sendQryrowset = true; // ((NetStatement) resultSet.statement_.getMaterialStatement()).qryrowsetSentOnOpnqry_;
         boolean sendRtnextdta = false;
 
         if (sendQryrowset 
@@ -325,7 +322,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                 //&& ((NetCursor) resultSet.cursor_).hasLobs_) { TODO: support for LOBs
                 ) {
 
-            fetchSize = 1;
+            //fetchSize = 1;
 //            resultSet.fetchSize_ = 1;
             sendRtnextdta = true;
 //            ((NetCursor) resultSet.cursor_).rtnextrow_ = false;
@@ -710,7 +707,11 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                         buffer.writeInt(((Integer) inputs[i]).intValue());
                         break;
                     case DRDAConstants.DRDA_TYPE_NSMALL:
-                        buffer.writeShort(((Short) inputs[i]).shortValue());
+                        if (inputs[i] instanceof Boolean) {
+                          buffer.writeShort(((boolean) inputs[i]) ? 1 : 0);
+                        } else {
+                          buffer.writeShort(((Short) inputs[i]).shortValue());
+                        }
                         break;
                     case DRDAConstants.DRDA_TYPE_NFLOAT4:
                         buffer.writeFloat(((Float) inputs[i]).floatValue());
@@ -1554,7 +1555,6 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
 //        }
         
         if (fetchSize != 0) {
-            System.out.println("@AGG writing fetchSize=" + fetchSize);
             buildQRYROWSET(fetchSize);            
         }
 
