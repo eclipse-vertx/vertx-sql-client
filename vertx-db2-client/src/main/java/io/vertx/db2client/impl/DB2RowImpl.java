@@ -16,6 +16,7 @@
 package io.vertx.db2client.impl;
 
 import java.math.BigDecimal;
+import java.sql.RowId;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.UUID;
 
 import io.vertx.core.buffer.Buffer;
+import io.vertx.db2client.impl.drda.DB2RowId;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.ArrayTuple;
@@ -69,6 +71,8 @@ public class DB2RowImpl extends ArrayTuple implements Row {
             return type.cast(getLocalDateTime(pos));
         } else if (type == Duration.class) {
             return type.cast(getDuration(pos));
+        } else if (type == RowId.class || type == DB2RowId.class) {
+            return type.cast(getRowId(pos));
         } else {
             throw new UnsupportedOperationException("Unsupported type " + type.getName());
         }
@@ -162,6 +166,20 @@ public class DB2RowImpl extends ArrayTuple implements Row {
     public Buffer getBuffer(String name) {
         int pos = getColumnIndex(name);
         return pos == -1 ? null : getBuffer(pos);
+    }
+    
+    public RowId getRowId(int pos) {
+      Object val = getValue(pos);
+      if (val instanceof RowId) {
+        return (RowId) val;
+      } else {
+        return null;
+      }
+    }
+    
+    public RowId getRowId(String name) {
+      int pos = getColumnIndex(name);
+      return pos == -1 ? null : getRowId(pos);
     }
 
     @Override
@@ -275,7 +293,7 @@ public class DB2RowImpl extends ArrayTuple implements Row {
     public UUID[] getUUIDArray(String name) {
         throw new UnsupportedOperationException();
     }
-
+    
     public Numeric getNumeric(int pos) {
         Object val = getValue(pos);
         if (val instanceof Numeric) {

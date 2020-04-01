@@ -138,8 +138,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //            parseOpenQuery(); // @AGG removed callback statementI);
 //            peekCP = peekCodePoint();
         } else if (peekCP == CodePoint.OPNQFLRM) {
-            // parseOpenQueryFailure(); // @AGG removed callback statementI);
-            throw new UnsupportedOperationException("OPNQFLRM");
+            parseOpenQueryFailure(); // @AGG removed callback statementI);
             //peekCP = peekCodePoint();
         } else {
         	throwUnknownCodepoint(peekCP);
@@ -1243,8 +1242,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             parseOpenQuery(); // @AGG removed callback statementI);
             peekCP = peekCodePoint();
         } else if (peekCP == CodePoint.OPNQFLRM) {
-            // parseOpenQueryFailure(); // @AGG removed callback statementI);
-            throw new UnsupportedOperationException("OPNQFLRM");
+            parseOpenQueryFailure(); // @AGG removed callback statementI);
             //peekCP = peekCodePoint();
         } else {
             // parseOpenQueryError(); // @AGG removed callback statementI);
@@ -1399,6 +1397,70 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         }
 
         completeOpenQuery(sqlca);
+    }
+    
+    private void parseOpenQueryFailure() {
+      parseOPNQFLRM();
+      parseTypdefsOrMgrlvlovrs();
+      NetSqlca netSqlca = parseSQLCARD(null);
+      NetSqlca.complete(netSqlca);
+    }
+    
+    // Open Query Failure (OPNQFLRM) Reply Message indicates that the
+    // OPNQRY command failed to open the query.  The reason that the
+    // target relational database was unable to open the query is reported in an
+    // SQLCARD reply data object.
+    // Whenever an OPNQFLRM is returned, an SQLCARD object must also be returned
+    // following the OPNQFLRM.
+    //
+    // Returned from Server:
+    //   SVRCOD - required (8 - ERROR)
+    //   RDBNAM - required
+    //   SRVDGN - optional
+    private void parseOPNQFLRM() {
+        boolean svrcodReceived = false;
+        int svrcod = CodePoint.SVRCOD_INFO;
+        boolean rdbnamReceived = false;
+        String rdbnam = null;
+
+        parseLengthAndMatchCodePoint(CodePoint.OPNQFLRM);
+        pushLengthOnCollectionStack();
+        int peekCP = peekCodePoint();
+
+        while (peekCP != END_OF_COLLECTION) {
+
+            boolean foundInPass = false;
+
+            if (peekCP == CodePoint.SVRCOD) {
+                foundInPass = true;
+                svrcodReceived = checkAndGetReceivedFlag(svrcodReceived);
+                svrcod = parseSVRCOD(CodePoint.SVRCOD_ERROR, CodePoint.SVRCOD_ERROR);
+                peekCP = peekCodePoint();
+            }
+
+            if (peekCP == CodePoint.RDBNAM) {
+                // skip the rdbnam since it doesn't tell us anything new.
+                // there is no way to return it to the application anyway.
+                // not having to convert this to a string is a time saver also.
+                foundInPass = true;
+                rdbnamReceived = checkAndGetReceivedFlag(rdbnamReceived);
+                rdbnam = parseRDBNAM(true);
+                peekCP = peekCodePoint();
+            }
+            if (!foundInPass) {
+                throwUnknownCodepoint(peekCP);
+            }
+
+        }
+        popCollectionStack();
+        if (!svrcodReceived)
+          throwMissingRequiredCodepoint("SVRCOD", CodePoint.SVRCOD);
+        if (!rdbnamReceived)
+          throwMissingRequiredCodepoint("RDBNAM", CodePoint.RDBNAM);
+
+        // @AGG removed netAgent_.setSvrcod(svrcod);
+
+        // get SQLSTATE from SQLCARD...
     }
     
     public void completeOpenQuery(NetSqlca sqlca/*, ClientResultSet resultSet*/) {

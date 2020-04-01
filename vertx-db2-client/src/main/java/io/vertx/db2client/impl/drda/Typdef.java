@@ -700,8 +700,8 @@ public class Typdef implements Cloneable {
         0x00,
         0x00,
         0x00,
-        0x00,
-        0x00,
+        Types.ROWID, // 0x1E Row ID
+        Types.ROWID, // 0x1F null Row ID
         Types.DATE, // 0x20 Date
         Types.DATE, // 0x21 null Date
         Types.TIME, // 0x22 Time
@@ -1110,6 +1110,10 @@ public class Typdef implements Cloneable {
 
         // 6. Set jdbc type.
         netCursor.jdbcTypes_[columnIndex] = protocolToJdbcTypes_[sda.protocolType_];
+        if (netCursor.jdbcTypes_[columnIndex] == 0x00) {
+          // TODO: Set up logging framework for DRDA codebase
+//          System.out.println("WARN: Found unknown protocol type: " + sda.protocolType_);
+        }
 
         // 7. Get the number of bytes to read for variable length data.
         netCursor.typeToUseForComputingDataLength_[columnIndex] = sda.typeToUseForComputingDataLength_;
