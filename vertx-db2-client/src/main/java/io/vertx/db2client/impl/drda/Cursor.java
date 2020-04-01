@@ -619,6 +619,15 @@ public class Cursor {
             throw new IllegalStateException("SQLState.NET_MARSHALLING_UDT_ERROR", e);
         }
     }
+    
+    private DB2RowId get_ROWID(int column) {
+      int columnLength = maxFieldSize_ == 0
+          ? columnDataComputedLength_[column - 1] - 2
+          : Math.min(maxFieldSize_, columnDataComputedLength_[column - 1] - 2);
+      byte[] bytes = new byte[columnLength];
+      dataBuffer_.getBytes(columnDataPosition_[column - 1] + 2, bytes);
+      return new DB2RowId(bytes);
+    }
 
 //    /**
 //     * Instantiate an instance of Calendar that can be re-used for getting
@@ -1034,6 +1043,15 @@ public class Cursor {
                 throw coercionError( "byte[]", column );
             }
     }
+    
+    public final DB2RowId getRowID(int column) {
+      switch (jdbcTypes_[column - 1]) {
+      case Types.ROWID:
+        return get_ROWID(column);
+      default:
+        throw coercionError("RowId", column);
+      }
+    }
 
     final InputStream getBinaryStream(int column)
     {
@@ -1209,6 +1227,8 @@ public class Cursor {
             return get_VARCHAR_FOR_BIT_DATA(column);
         case Types.JAVA_OBJECT:
             return get_UDT( column );
+        case Types.ROWID:
+            return get_ROWID(column);
 //        case Types.BLOB:
 //            return getBlobColumn_(column, agent_, true);
 //        case Types.CLOB:

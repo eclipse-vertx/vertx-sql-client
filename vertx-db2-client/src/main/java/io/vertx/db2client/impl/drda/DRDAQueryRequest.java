@@ -17,6 +17,7 @@ package io.vertx.db2client.impl.drda;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.sql.RowId;
 import java.sql.Types;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -756,6 +757,10 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                     case DRDAConstants.DRDA_TYPE_NINTEGER8:
                         buffer.writeLong(((Long) inputs[i]).longValue());
                         break;
+                    case DRDAConstants.DRDA_TYPE_NROWID:
+                        RowId rowId = (RowId) inputs[i];
+                        writeLDBytes(rowId.getBytes());
+                        break;
                     case DRDAConstants.DRDA_TYPE_NVARBYTE:
                     case DRDAConstants.DRDA_TYPE_NLONGVARBYTE:
                         o = retrievePromotedParameterIfExists(i);
@@ -1179,6 +1184,10 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
 //                        lidAndLengths[i][0] = DRDAConstants.DRDA_TYPE_NLOBCMIXED;
 //                        lidAndLengths[i][1] = buildPlaceholderLength(c.length());
                     }
+                    break;
+                case Types.ROWID:
+                    lidAndLengths[i][0] = DRDAConstants.DRDA_TYPE_NROWID;
+                    lidAndLengths[i][1] = 40;
                     break;
                 case Types.BINARY:
                 case Types.VARBINARY:

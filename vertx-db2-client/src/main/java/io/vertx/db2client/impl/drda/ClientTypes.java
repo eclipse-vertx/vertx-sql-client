@@ -16,6 +16,7 @@
 package io.vertx.db2client.impl.drda;
 
 import java.math.BigDecimal;
+import java.sql.RowId;
 import java.sql.Types;
 
 // This enumeration of types represents the typing scheme used by our jdbc driver.
@@ -76,6 +77,8 @@ public class ClientTypes {
     public final static int CLOB = Types.CLOB; // 2005;
 
     public final static int JAVA_OBJECT = Types.JAVA_OBJECT; // 2000;
+    
+    public final static int ROWID = Types.ROWID; // -8
 
     // hide the default constructor
     private ClientTypes() {
@@ -120,6 +123,8 @@ public class ClientTypes {
             return "VARBINARY";
         case VARCHAR:
             return "VARCHAR";
+        case ROWID:
+            return "ROWID";
         // Types we don't support:
         case Types.ARRAY:
             return "ARRAY";
@@ -127,8 +132,6 @@ public class ClientTypes {
             return "DATALINK";
         case Types.REF:
             return "REF";
-        case Types.ROWID:
-            return "ROWID";
         case Types.SQLXML:
             return "SQLXML";
         case Types.STRUCT:
@@ -198,7 +201,11 @@ public class ClientTypes {
             return Types.BLOB;
         case DRDAConstants.DB2_SQLTYPE_FAKE_UDT: // user defined types
             return Types.JAVA_OBJECT;
+        case DRDAConstants.DB2_SQLTYPE_ROWID:
+            return ROWID;
         default:
+            // TODO: log a warning here
+            // System.out.println("WARN: Unknown DB2 type encountered: " + sqlType);
             return 0;
         }
     }
@@ -252,6 +259,9 @@ public class ClientTypes {
         	return clazz == byte[].class;
         case ClientTypes.VARCHAR:
         	return clazz == char[].class;
+        case ClientTypes.ROWID:
+            return clazz == RowId.class ||
+                   clazz == DB2RowId.class;
     	}
     	return false;
     }
