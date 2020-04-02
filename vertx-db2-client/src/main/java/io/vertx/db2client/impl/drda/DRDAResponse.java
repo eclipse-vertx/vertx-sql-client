@@ -24,7 +24,7 @@ import io.netty.buffer.ByteBuf;
 public abstract class DRDAResponse {
     
     final ByteBuf buffer;
-    final DatabaseMetaData metadata;
+    final ConnectionMetaData metadata;
 
     Deque<Integer> ddmCollectionLenStack = new ArrayDeque<>(4);
     int ddmScalarLen_ = 0; // a value of -1 -> streamed ddm -> length unknown
@@ -42,7 +42,7 @@ public abstract class DRDAResponse {
     final static int END_OF_SAME_ID_CHAIN = -2;
     final static int END_OF_BUFFER = -3;
 
-    public DRDAResponse(ByteBuf buffer, DatabaseMetaData metadata) {
+    public DRDAResponse(ByteBuf buffer, ConnectionMetaData metadata) {
         this.buffer = buffer;
         this.metadata = metadata;
     }

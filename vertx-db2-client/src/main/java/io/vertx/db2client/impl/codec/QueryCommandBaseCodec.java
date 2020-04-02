@@ -33,7 +33,9 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
 
     @Override
     public String toString() {
-    	StringBuilder sb = new StringBuilder(super.toString());
+    	StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+    	sb.append("@");
+    	sb.append(Integer.toHexString(hashCode()));
         sb.append(" sql=" + cmd.sql());
         if (!isQuery)
           sb.append(", autoCommit=" + cmd.autoCommit());
@@ -46,7 +48,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
         
         ByteBuf packet = allocateBuffer();
         int packetStartIdx = packet.writerIndex();
-        DRDAQueryRequest req = new DRDAQueryRequest(packet, encoder.socketConnection.dbMetadata);
+        DRDAQueryRequest req = new DRDAQueryRequest(packet, encoder.connMetadata);
         if (isQuery) {
         	encodeQuery(req);
         } else {

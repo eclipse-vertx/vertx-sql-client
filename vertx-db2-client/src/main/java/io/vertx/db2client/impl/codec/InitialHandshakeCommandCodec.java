@@ -48,6 +48,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     @Override
     void encode(DB2Encoder encoder) {
         super.encode(encoder);
+        encoder.connMetadata.databaseName = cmd.database();
         encoder.socketConnection.closeHandler(h -> {
           if (status == ST_CONNECTING) {
             //Sometimes DB2 closes the connection when sending an invalid Database name.
@@ -61,7 +62,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
 
     @Override
     void decodePayload(ByteBuf payload, int payloadLength) {
-        DRDAConnectResponse response = new DRDAConnectResponse(payload, encoder.socketConnection.dbMetadata);
+        DRDAConnectResponse response = new DRDAConnectResponse(payload, encoder.connMetadata);
         switch (status) {
             case ST_CONNECTING:
                 response.readExchangeServerAttributes();
@@ -69,7 +70,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
                 status = ST_AUTHENTICATING;
                 ByteBuf packet = allocateBuffer();
                 int packetStartIdx = packet.writerIndex();
-                DRDAConnectRequest securityCheck = new DRDAConnectRequest(packet, encoder.socketConnection.dbMetadata);
+                DRDAConnectRequest securityCheck = new DRDAConnectRequest(packet, encoder.connMetadata);
                 correlationToken = securityCheck.getCorrelationToken(encoder.socketConnection.socket().localAddress().port());
                 securityCheck.buildSECCHK(TARGET_SECURITY_MEASURE,
                         cmd.database(),
@@ -101,7 +102,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     private void sendInitialHandshake() {
         ByteBuf packet = allocateBuffer();
         int packetStartIdx = packet.writerIndex();
-        DRDAConnectRequest cmd = new DRDAConnectRequest(packet, encoder.socketConnection.dbMetadata);
+        DRDAConnectRequest cmd = new DRDAConnectRequest(packet, encoder.connMetadata);
         cmd.buildEXCSAT(DRDAConstants.EXTNAM, // externalName,
                 0x0A, // targetAgent,
                 DRDAConstants.TARGET_SQL_AM, // targetSqlam,

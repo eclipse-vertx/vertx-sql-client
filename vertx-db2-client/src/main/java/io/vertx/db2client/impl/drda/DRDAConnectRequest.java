@@ -24,7 +24,7 @@ import io.netty.buffer.ByteBuf;
 
 public class DRDAConnectRequest extends DRDARequest {
   
-    public DRDAConnectRequest(ByteBuf buffer, DatabaseMetaData metadata) {
+    public DRDAConnectRequest(ByteBuf buffer, ConnectionMetaData metadata) {
         super(buffer, metadata);
     }
     
@@ -172,6 +172,7 @@ public class DRDAConnectRequest extends DRDARequest {
     // If the first character of the <IP address> or <port number>
     // starts with '0' thru '9', it will be mapped to 'G' thru 'P'.
     // Reason for mapping the IP address is in order to use the crrtkn as the LUWID when using SNA in a hop site.
+    // TODO @AGG move this to some static method
     public byte[] getCorrelationToken(int port) {
         byte[] crrtkn_ = new byte[19];
 

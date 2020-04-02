@@ -17,7 +17,7 @@ package io.vertx.db2client.impl.drda;
 
 import java.nio.charset.Charset;
 
-public class DatabaseMetaData {
+public class ConnectionMetaData {
   
   private boolean isZos;
   

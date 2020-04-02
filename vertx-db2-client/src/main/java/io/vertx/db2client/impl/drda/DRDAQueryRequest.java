@@ -43,7 +43,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
     // is still needed for non-promoted LOBs
     private final HashMap<Integer, Object> promototedParameters_ = new HashMap<>();
     
-    public DRDAQueryRequest(ByteBuf buffer, DatabaseMetaData metadata) {
+    public DRDAQueryRequest(ByteBuf buffer, ConnectionMetaData metadata) {
         super(buffer, metadata);
     }
     

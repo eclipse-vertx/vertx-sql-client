@@ -23,7 +23,7 @@ import io.netty.buffer.ByteBuf;
 
 public class DRDAConnectResponse extends DRDAResponse {
   
-    public DRDAConnectResponse(ByteBuf buffer, DatabaseMetaData metadata) {
+    public DRDAConnectResponse(ByteBuf buffer, ConnectionMetaData metadata) {
       super(buffer, metadata);
     }
     

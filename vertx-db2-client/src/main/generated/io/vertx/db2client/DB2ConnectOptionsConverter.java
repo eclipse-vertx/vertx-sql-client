@@ -15,6 +15,11 @@ public class DB2ConnectOptionsConverter {
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, DB2ConnectOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
+        case "pipeliningLimit":
+          if (member.getValue() instanceof Number) {
+            obj.setPipeliningLimit(((Number)member.getValue()).intValue());
+          }
+          break;
       }
     }
   }
@@ -24,5 +29,6 @@ public class DB2ConnectOptionsConverter {
   }
 
   public static void toJson(DB2ConnectOptions obj, java.util.Map<String, Object> json) {
+    json.put("pipeliningLimit", obj.getPipeliningLimit());
   }
 }

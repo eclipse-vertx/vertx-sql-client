@@ -38,7 +38,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
     
     private long queryInstanceId = 0;
     
-    public DRDAQueryResponse(ByteBuf buffer, DatabaseMetaData metadata) {
+    public DRDAQueryResponse(ByteBuf buffer, ConnectionMetaData metadata) {
         super(buffer, metadata);
     }
     

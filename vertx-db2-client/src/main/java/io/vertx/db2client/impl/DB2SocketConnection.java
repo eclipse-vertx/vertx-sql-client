@@ -25,7 +25,7 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.db2client.impl.codec.DB2Codec;
 import io.vertx.db2client.impl.command.InitialHandshakeCommand;
-import io.vertx.db2client.impl.drda.DatabaseMetaData;
+import io.vertx.db2client.impl.drda.ConnectionMetaData;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
@@ -38,12 +38,15 @@ import io.vertx.sqlclient.impl.command.TxCommand;
 public class DB2SocketConnection extends SocketConnectionBase {
 
     private DB2Codec codec;
-    public final DatabaseMetaData dbMetadata = new DatabaseMetaData();
     private Handler<Void> closeHandler;
 
-    public DB2SocketConnection(NetSocketInternal socket, boolean cachePreparedStatements,
-            int preparedStatementCacheSize, int preparedStatementCacheSqlLimit, ContextInternal context) {
-        super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, 1, context);
+    public DB2SocketConnection(NetSocketInternal socket, 
+    		boolean cachePreparedStatements,
+            int preparedStatementCacheSize, 
+            int preparedStatementCacheSqlLimit,
+            int pipeliningLimit,
+            ContextInternal context) {
+        super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, pipeliningLimit, context);
     }
 
     void sendStartupMessage(String username,
@@ -51,15 +54,10 @@ public class DB2SocketConnection extends SocketConnectionBase {
             String database,
             Map<String, String> properties,
             Promise<Connection> completionHandler) {
-        dbMetadata.databaseName = database;
         InitialHandshakeCommand cmd = new InitialHandshakeCommand(this, username, password, database, properties);
         schedule(cmd, completionHandler);
     }
 
-    public String database() {
-        return dbMetadata.databaseName;
-    }
-    
     @Override
     public void init() {
         codec = new DB2Codec(this);

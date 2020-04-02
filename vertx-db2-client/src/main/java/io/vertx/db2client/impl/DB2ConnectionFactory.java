@@ -42,6 +42,7 @@ public class DB2ConnectionFactory implements ConnectionFactory {
     private final boolean cachePreparedStatements;
     private final int preparedStatementCacheSize;
     private final int preparedStatementCacheSqlLimit;
+    private final int pipeliningLimit;
 
     public DB2ConnectionFactory(Vertx vertx, ContextInternal context, DB2ConnectOptions options) {
         NetClientOptions netClientOptions = new NetClientOptions(options);
@@ -57,6 +58,7 @@ public class DB2ConnectionFactory implements ConnectionFactory {
         this.cachePreparedStatements = options.getCachePreparedStatements();
         this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
         this.preparedStatementCacheSqlLimit = options.getPreparedStatementCacheSqlLimit();
+        this.pipeliningLimit = options.getPipeliningLimit();
 
         this.netClient = vertx.createNetClient(netClientOptions);
       }
@@ -77,7 +79,7 @@ public class DB2ConnectionFactory implements ConnectionFactory {
     fut.onComplete(ar -> {
       if (ar.succeeded()) {
         NetSocket so = ar.result();
-        DB2SocketConnection conn = new DB2SocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, context);
+        DB2SocketConnection conn = new DB2SocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, pipeliningLimit, context);
         conn.init();
         conn.sendStartupMessage(username, password, database, connectionAttributes, promise);
       } else {

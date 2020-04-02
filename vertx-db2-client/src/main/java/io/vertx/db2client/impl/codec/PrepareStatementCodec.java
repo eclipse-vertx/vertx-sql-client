@@ -58,9 +58,9 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
         ByteBuf packet = allocateBuffer();
         // encode packet header
         int packetStartIdx = packet.writerIndex();
-        DRDAQueryRequest prepareCommand = new DRDAQueryRequest(packet, encoder.socketConnection.dbMetadata);
+        DRDAQueryRequest prepareCommand = new DRDAQueryRequest(packet, encoder.connMetadata);
         section = SectionManager.INSTANCE.getDynamicSection();
-        String dbName = encoder.socketConnection.database();
+        String dbName = encoder.connMetadata.databaseName;
         prepareCommand.writePrepareDescribeOutput(cmd.sql(), dbName, section);
         prepareCommand.writeDescribeInput(section, dbName);
         prepareCommand.completeCommand();
@@ -74,7 +74,7 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
     void decodePayload(ByteBuf payload, int payloadLength) {
         switch (commandHandlerState) {
         case INIT:
-            DRDAQueryResponse response = new DRDAQueryResponse(payload, encoder.socketConnection.dbMetadata);
+            DRDAQueryResponse response = new DRDAQueryResponse(payload, encoder.connMetadata);
             response.readPrepareDescribeInputOutput();
             rowDesc = response.getOutputColumnMetaData();
             paramDesc = response.getInputColumnMetaData();

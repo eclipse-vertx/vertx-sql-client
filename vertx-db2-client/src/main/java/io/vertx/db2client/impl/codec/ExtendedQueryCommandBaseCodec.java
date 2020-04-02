@@ -22,6 +22,8 @@ import io.netty.buffer.ByteBuf;
 import io.vertx.db2client.impl.codec.DB2PreparedStatement.QueryInstance;
 import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
+import io.vertx.db2client.impl.drda.Section;
+import io.vertx.db2client.impl.drda.SectionManager;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
@@ -49,10 +51,10 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
 	    
 		Object[] inputs = sanitize(params);
 		if (queryInstance.cursor == null) {
-			queryRequest.writeOpenQuery(statement.section, encoder.socketConnection.database(), cmd.fetch(),
+			queryRequest.writeOpenQuery(statement.section, encoder.connMetadata.databaseName, cmd.fetch(),
 					ResultSet.TYPE_FORWARD_ONLY, statement.paramDesc.paramDefinitions(), inputs);
 		} else {
-			queryRequest.writeFetch(statement.section, encoder.socketConnection.database(), cmd.fetch(),
+			queryRequest.writeFetch(statement.section, encoder.connMetadata.databaseName, cmd.fetch(),
 					queryInstance.queryInstanceId);
 		}
 	}
@@ -61,7 +63,7 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
 		Object[] inputs = sanitize(params);
 		boolean outputExpected = false; // TODO @AGG implement later, is true if result set metadata num columns > 0
 		boolean chainAutoCommit = true;
-		queryRequest.writeExecute(statement.section, encoder.socketConnection.database(),
+		queryRequest.writeExecute(statement.section, encoder.connMetadata.databaseName,
 				statement.paramDesc.paramDefinitions(), inputs, outputExpected, chainAutoCommit);
 		// TODO: for auto generated keys we also need to flow a writeOpenQuery
 	}
