@@ -51,7 +51,7 @@ public class DB2ConnectOptions extends SqlConnectOptions {
     public static final String DEFAULT_SCHEMA = "";
     public static final String DEFAULT_CHARSET = "utf8";
     public static final boolean DEFAULT_USE_AFFECTED_ROWS = false;
-    public static final int DEFAULT_PIPELINING_LIMIT = 1;//256;
+    public static final int DEFAULT_PIPELINING_LIMIT = 1;//256; // TODO default to 256 once implemented properly
     public static final Map<String, String> DEFAULT_CONNECTION_ATTRIBUTES;
 
     static {
@@ -125,6 +125,15 @@ public class DB2ConnectOptions extends SqlConnectOptions {
 		return pipeliningLimit;
 	}
 
+	/**
+	 * @deprecated UNSTABLE FEATURE: Current default value is 1, anything higher than 1 will
+	 * result in errors currently.
+	 * @param pipeliningLimit the number of commands that can simultaneously use the same
+     * physical socket connection. 
+	 * @return A reference to this, so the API can be used fluently
+	 */
+	@GenIgnore
+	@Deprecated // TODO: Get pipelining working properly, or remove this as API
 	public DB2ConnectOptions setPipeliningLimit(int pipeliningLimit) {
 		if (pipeliningLimit < 1) {
 			throw new IllegalArgumentException();

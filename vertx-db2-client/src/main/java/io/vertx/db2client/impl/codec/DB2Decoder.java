@@ -45,21 +45,23 @@ class DB2Decoder extends ByteToMessageDecoder {
             throw new IllegalStateException("Illegal payload length: " + payloadLength);
         if (payloadLength > in.readableBytes()) {
             // wait until we have more bytes to read
+            LOG.debug("Waiting for more bytes to be available. payload=" + payloadLength + " > readable=" + in.readableBytes());
             return;
         }
         decodePayload(in.readRetainedSlice(payloadLength), payloadLength);
     }
     
     private int computeLength(ByteBuf in) {
+        int ridx = in.readerIndex();
         int index = 0;
         final int readableBytes = in.readableBytes();
         boolean dssContinues = true;
         while (dssContinues && index < readableBytes) {
             if (readableBytes >= index + 3)
-                dssContinues &= (in.getByte(index + 3) & 0x40) == 0x40;
+                dssContinues &= (in.getByte(ridx + index + 3) & 0x40) == 0x40;
             else
                 dssContinues = false;
-            short dssLen = in.getShort(index);
+            short dssLen = in.getShort(ridx + index);
             index += dssLen;
         }
         return index;

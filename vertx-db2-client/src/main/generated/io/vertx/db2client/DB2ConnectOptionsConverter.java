@@ -16,9 +16,6 @@ public class DB2ConnectOptionsConverter {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
         case "pipeliningLimit":
-          if (member.getValue() instanceof Number) {
-            obj.setPipeliningLimit(((Number)member.getValue()).intValue());
-          }
           break;
       }
     }
