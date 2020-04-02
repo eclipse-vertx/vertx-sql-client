@@ -37,7 +37,7 @@ public abstract class DRDARequest {
     
     final ByteBuf buffer;
     
-    protected final DatabaseMetaData metadata;
+    protected final ConnectionMetaData metadata;
     
     Deque<Integer> markStack = new ArrayDeque<>(4);
 
@@ -53,7 +53,7 @@ public abstract class DRDARequest {
 
     private boolean simpleDssFinalize = false;
     
-    public DRDARequest(ByteBuf buffer, DatabaseMetaData metadata) {
+    public DRDARequest(ByteBuf buffer, ConnectionMetaData metadata) {
         this.buffer = buffer;
         this.metadata = metadata;
     }

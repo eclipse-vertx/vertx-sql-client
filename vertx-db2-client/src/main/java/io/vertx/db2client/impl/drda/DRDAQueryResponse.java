@@ -38,7 +38,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
     
     private long queryInstanceId = 0;
     
-    public DRDAQueryResponse(ByteBuf buffer, DatabaseMetaData metadata) {
+    public DRDAQueryResponse(ByteBuf buffer, ConnectionMetaData metadata) {
         super(buffer, metadata);
     }
     
@@ -141,9 +141,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             parseOpenQueryFailure(); // @AGG removed callback statementI);
             //peekCP = peekCodePoint();
         } else {
-        	throwUnknownCodepoint(peekCP);
-            // parseOpenQueryError(); // @AGG removed callback statementI);
-            throw new UnsupportedOperationException("parseOpenQueryError");
+            parseOpenQueryError(); // @AGG removed callback statementI);
             //peekCP = peekCodePoint();
         }
 
@@ -1245,14 +1243,161 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             parseOpenQueryFailure(); // @AGG removed callback statementI);
             //peekCP = peekCodePoint();
         } else {
-            // parseOpenQueryError(); // @AGG removed callback statementI);
-            throw new UnsupportedOperationException("parseOpenQueryError");
+            parseOpenQueryError(); // @AGG removed callback statementI);
             //peekCP = peekCodePoint();
         }
 
         if (peekCP == CodePoint.PBSD) {
             parsePBSD();
         }
+    }
+    
+    private void parseOpenQueryError() {
+        int peekCP = peekCodePoint();
+        switch (peekCP) {
+        case CodePoint.ABNUOWRM:
+            {
+                //passing the StatementCallbackInterface implementation will
+                //help in retrieving the the UnitOfWorkListener that needs to
+                //be rolled back
+                NetSqlca sqlca = parseAbnormalEndUow();
+                NetSqlca.complete(sqlca);
+//                statementI.completeSqlca(sqlca);
+                break;
+            }
+        case CodePoint.CMDCHKRM:
+            parseCMDCHKRM();
+            break;
+        case CodePoint.DTAMCHRM:
+            parseDTAMCHRM();
+            break;
+        case CodePoint.OBJNSPRM:
+            parseOBJNSPRM();
+            break;
+        case CodePoint.QRYPOPRM:
+            parseQRYPOPRM();
+            break;
+        case CodePoint.RDBNACRM:
+            parseRDBNACRM();
+            break;
+        default:
+            parseCommonError(peekCP);
+        }
+    }
+    
+    /**
+     * Perform necessary actions for parsing of a ABNUOWRM message.
+     *
+     * @param connection an implementation of the ConnectionCallbackInterface
+     *
+     * @return an NetSqlca object obtained from parsing the ABNUOWRM
+     */
+    private NetSqlca parseAbnormalEndUow() {
+        parseABNUOWRM();
+        if (peekCodePoint() != CodePoint.SQLCARD) {
+            parseTypdefsOrMgrlvlovrs();
+        }
+
+        NetSqlca netSqlca = parseSQLCARD(null);
+        
+//        if(ExceptionUtil.getSeverityFromIdentifier(netSqlca.getSqlState()) > 
+//            ExceptionSeverity.STATEMENT_SEVERITY || uwl == null)
+//            connection.completeAbnormalUnitOfWork();
+//        else
+//            connection.completeAbnormalUnitOfWork(uwl);
+        
+        return netSqlca;
+    }
+    
+    // Query Previously Opened Reply Message is issued when an
+    // OPNQRY command is issued for a query that is already open.
+    // A previous OPNQRY command might have opened the query
+    // which may not be closed.
+    // PROTOCOL Architects an SQLSTATE of 58008 or 58009.
+    //
+    // Messages
+    // SQLSTATE : 58009
+    //     Execution failed due to a distribution protocol error that caused deallocation of the conversation.
+    //     SQLCODE : -30020
+    //     Execution failed because of a Distributed Protocol
+    //         Error that will affect the successful execution of subsequent
+    //         commands and SQL statements: Reason Code <reason-code>.
+    //      Some possible reason codes include:
+    //      121C Indicates that the user is not authorized to perform the requested command.
+    //      1232 The command could not be completed because of a permanent error.
+    //          In most cases, the server will be in the process of an abend.
+    //      220A The target server has received an invalid data description.
+    //          If a user SQLDA is specified, ensure that the fields are
+    //          initialized correctly. Also, ensure that the length does not
+    //          exceed the maximum allowed length for the data type being used.
+    //
+    //      The command or statement cannot be processed.  The current
+    //      transaction is rolled back and the application is disconnected
+    //      from the remote database.
+    //
+    //
+    // Returned from Server:
+    // SVRCOD - required  (8 - ERROR)
+    // RDBNAM - required
+    // PKGNAMCSN - required
+    // SRVDGN - optional
+    //
+    private void parseQRYPOPRM() {
+        boolean svrcodReceived = false;
+        int svrcod = CodePoint.SVRCOD_INFO;
+        boolean rdbnamReceived = false;
+        String rdbnam = null;
+        boolean pkgnamcsnReceived = false;
+        Object pkgnamcsn = null;
+
+        parseLengthAndMatchCodePoint(CodePoint.QRYPOPRM);
+        pushLengthOnCollectionStack();
+        int peekCP = peekCodePoint();
+
+        while (peekCP != END_OF_COLLECTION) {
+
+            boolean foundInPass = false;
+
+            if (peekCP == CodePoint.SVRCOD) {
+                foundInPass = true;
+                svrcodReceived = checkAndGetReceivedFlag(svrcodReceived);
+                svrcod = parseSVRCOD(CodePoint.SVRCOD_ERROR, CodePoint.SVRCOD_ERROR);
+                peekCP = peekCodePoint();
+            }
+
+            if (peekCP == CodePoint.RDBNAM) {
+                foundInPass = true;
+                rdbnamReceived = checkAndGetReceivedFlag(rdbnamReceived);
+                rdbnam = parseRDBNAM(true);
+                peekCP = peekCodePoint();
+            }
+            if (peekCP == CodePoint.PKGNAMCSN) {
+                foundInPass = true;
+                pkgnamcsnReceived = checkAndGetReceivedFlag(pkgnamcsnReceived);
+                pkgnamcsn = parsePKGNAMCSN(true);
+                peekCP = peekCodePoint();
+            }
+
+            if (!foundInPass) {
+                throwUnknownCodepoint(peekCP);
+            }
+
+        }
+        popCollectionStack();
+        if (!svrcodReceived)
+          throwMissingRequiredCodepoint("SVRCOD", CodePoint.SVRCOD);
+        if (!rdbnamReceived)
+          throwMissingRequiredCodepoint("RDBNAM", CodePoint.RDBNAM);
+        if (!pkgnamcsnReceived)
+          throwMissingRequiredCodepoint("PKGNAMCSN", CodePoint.PKGNAMCSN);
+
+//        netAgent_.setSvrcod(svrcod); // @AGG removed
+        throw new IllegalStateException("DRDA_CONNECTION_TERMINATED CONN_DRDA_QRYOPEN");
+//        agent_.accumulateChainBreakingReadExceptionAndThrow(new DisconnectException(agent_,
+//            new ClientMessageId(SQLState.DRDA_CONNECTION_TERMINATED),
+//            MessageUtil.getCompleteMessage(MessageId.CONN_DRDA_QRYOPEN,
+//                SqlException.CLIENT_MESSAGE_RESOURCE_NAME,
+//                (Object [])null)));
     }
     
     /**
@@ -2387,8 +2532,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             
             if (peekCP == CodePoint.SRVDGN) {
             	foundInPass = true;
-            	parseLengthAndMatchCodePoint(CodePoint.SRVDGN);
-            	serverDiagnostics = readString();
+            	serverDiagnostics = parseSRVDGN();
             	peekCP = peekCodePoint();
             }
 
@@ -2772,21 +2916,18 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             }
 
             if (!foundInPass) {
-                //doPrmnsprmSemantics(peekCP);
-                throw new IllegalStateException("SQLState.DRDA_DDM_PARAM_NOT_SUPPORTED: " + Integer.toHexString(peekCP));
+                throwUnknownCodepoint(peekCP);
             }
         }
 
         popCollectionStack();
         if (!svrcodReceived)
-            throw new IllegalStateException("Did not receive SVRCOD codepoint");
+            throwMissingRequiredCodepoint("SVRCOD", CodePoint.SVRCOD);
         if (!rdbnamReceived)
-            throw new IllegalStateException("Did not receive RDBNAM codepoint");
-//        checkRequiredObjects(svrcodReceived, rdbnamReceived);
+            throwMissingRequiredCodepoint("RDBNAM", CodePoint.RDBNAM);
 
         // the abnuowrm has been received, do whatever state changes are necessary
         //netAgent_.setSvrcod(svrcod);
-        throw new IllegalStateException("Svrcod " + svrcod);
     }
     
     // Relational Database Name specifies the name of a relational

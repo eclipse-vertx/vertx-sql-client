@@ -24,7 +24,7 @@ import io.netty.buffer.ByteBuf;
 public abstract class DRDAResponse {
     
     final ByteBuf buffer;
-    final DatabaseMetaData metadata;
+    final ConnectionMetaData metadata;
 
     Deque<Integer> ddmCollectionLenStack = new ArrayDeque<>(4);
     int ddmScalarLen_ = 0; // a value of -1 -> streamed ddm -> length unknown
@@ -42,7 +42,7 @@ public abstract class DRDAResponse {
     final static int END_OF_SAME_ID_CHAIN = -2;
     final static int END_OF_BUFFER = -3;
 
-    public DRDAResponse(ByteBuf buffer, DatabaseMetaData metadata) {
+    public DRDAResponse(ByteBuf buffer, ConnectionMetaData metadata) {
         this.buffer = buffer;
         this.metadata = metadata;
     }
@@ -478,7 +478,7 @@ public abstract class DRDAResponse {
         doValnsprmSemantics(codePoint, Integer.toString(value));
     }
 
-    private void doValnsprmSemantics(int codePoint, String value) {
+    void doValnsprmSemantics(int codePoint, String value) {
 
         // special case the FDODTA codepoint not to disconnect.
         if (codePoint == CodePoint.FDODTA) {
@@ -844,7 +844,7 @@ public abstract class DRDAResponse {
     }
     
     static void throwUnknownCodepoint(int codepoint) {
-        throw new IllegalStateException("Found unknown codepoint: 0x" + Integer.toHexString(codepoint));
+        throw new IllegalStateException("Found unknown codepoint: 0x" + Integer.toHexString(codepoint) + " / " + codepoint);
     }
     
     static void throwMissingRequiredCodepoint(String codepointStr, int expectedCodepoint) {
@@ -940,9 +940,8 @@ public abstract class DRDAResponse {
 
         correlationID = buffer.readShort();
 
-        // corrid must be the one expected or a -1 which gets returned in some error
-        // cases.
-        if ((correlationID != dssCorrelationID_) && (correlationID != 0xFFFF)) {
+        // corrid must be the one expected or a -1 which gets returned in some error cases.
+        if ((correlationID != dssCorrelationID_) && (correlationID != -1)) {
             // doSyntaxrmSemantics(CodePoint.SYNERRCD_INVALID_CORRELATOR);
             throw new IllegalStateException(
                     "Invalid correlator ID. Got " + correlationID + " expected " + dssCorrelationID_);
@@ -988,15 +987,16 @@ public abstract class DRDAResponse {
     }
     
     final String readString() {
-        int len = ddmScalarLen_;
-        ensureBLayerDataInBuffer(len);
-        adjustLengths(len);
-        String result = buffer.readCharSequence(len, metadata.getCCSID()).toString();
+        return readString(metadata.getCCSID());
 //        String result = currentCCSID.decode(buffer); 
 //                netAgent_.getCurrentCcsidManager()
 //                            .convertToJavaString(buffer_, pos_, len);
 //        pos_ += len;
-        return result;
+//        return result;
+    }
+    
+    final String readString(Charset encoding) {
+        return readString(ddmScalarLen_, encoding);
     }
     
     final String readString(int length, Charset encoding) {

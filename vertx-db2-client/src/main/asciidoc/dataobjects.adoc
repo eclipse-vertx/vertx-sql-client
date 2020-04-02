@@ -27,6 +27,7 @@
 |[[logActivity]]`@logActivity`|`Boolean`|-
 |[[metricsName]]`@metricsName`|`String`|-
 |[[password]]`@password`|`String`|-
+|[[pipeliningLimit]]`@pipeliningLimit`|`Number (int)`|-
 |[[port]]`@port`|`Number (int)`|-
 |[[preparedStatementCacheMaxSize]]`@preparedStatementCacheMaxSize`|`Number (int)`|-
 |[[preparedStatementCacheSqlLimit]]`@preparedStatementCacheSqlLimit`|`Number (int)`|-

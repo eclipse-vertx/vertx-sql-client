@@ -30,7 +30,7 @@ class CloseConnectionCommandCodec extends CommandCodec<Void, CloseConnectionComm
   void encode(DB2Encoder encoder) {
     super.encode(encoder);
     ByteBuf packet = allocateBuffer();
-    DRDAQueryRequest closeCursor = new DRDAQueryRequest(packet, encoder.socketConnection.dbMetadata);
+    DRDAQueryRequest closeCursor = new DRDAQueryRequest(packet, encoder.connMetadata);
     closeCursor.buildRDBCMM();
     closeCursor.completeCommand();
     sendNonSplitPacket(packet);
@@ -38,7 +38,7 @@ class CloseConnectionCommandCodec extends CommandCodec<Void, CloseConnectionComm
 
   @Override
   void decodePayload(ByteBuf payload, int payloadLength) {
-      DRDAQueryResponse closeCursor = new DRDAQueryResponse(payload, encoder.socketConnection.dbMetadata);
+      DRDAQueryResponse closeCursor = new DRDAQueryResponse(payload, encoder.connMetadata);
       closeCursor.readLocalCommit();
       encoder.chctx.channel().close();
   }

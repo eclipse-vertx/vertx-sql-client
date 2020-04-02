@@ -15,6 +15,7 @@
  */
 package io.vertx.db2client.impl.drda;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,7 @@ import io.netty.buffer.ByteBuf;
 
 public class DRDAConnectResponse extends DRDAResponse {
   
-    public DRDAConnectResponse(ByteBuf buffer, DatabaseMetaData metadata) {
+    public DRDAConnectResponse(ByteBuf buffer, ConnectionMetaData metadata) {
       super(buffer, metadata);
     }
     
@@ -101,23 +102,410 @@ public class DRDAConnectResponse extends DRDAResponse {
     }
     
     void parseCommonError(int peekCP) {
-        throw new IllegalStateException("Common error: " + Integer.toHexString(peekCP));
-//        switch (peekCP) {
-//        case CodePoint.CMDNSPRM:
-//            parseCMDNSPRM();
-//            break;
-//        case CodePoint.PRCCNVRM:
-//            parsePRCCNVRM();
-//            break;
-//        case CodePoint.SYNTAXRM:
-//            parseSYNTAXRM();
-//            break;
-//        case CodePoint.VALNSPRM:
-//            parseVALNSPRM();
-//            break;
-//        default:
-//            doObjnsprmSemantics(peekCP);
-//        }
+        switch (peekCP) {
+        case CodePoint.CMDNSPRM:
+            parseCMDNSPRM();
+            break;
+        case CodePoint.PRCCNVRM:
+            parsePRCCNVRM();
+            break;
+        case CodePoint.SYNTAXRM:
+            parseSYNTAXRM();
+            break;
+        case CodePoint.VALNSPRM:
+            parseVALNSPRM();
+            break;
+        default:
+            throwUnknownCodepoint(peekCP);
+        }
+    }
+    
+    // Parameter Value Not Supported Reply Message indicates
+    // that the parameter value specified is either not recognized
+    // or not supported for the specified parameter.
+    // The VALNSPRM can only be specified in accordance with
+    // the rules specified for DDM subsetting.
+    // The code point of the command parameter in error is
+    // returned as a parameter in this message.
+    // PROTOCOL Architects an SQLSTATE of 58017.
+    //
+    // if codepoint is 0x119C,0x119D, or 0x119E then SQLSTATE 58017, SQLCODE -332
+    // else SQLSTATE 58017, SQLCODE -30073
+    //
+    // Messages
+    // SQLSTATE : 58017
+    //     The DDM parameter value is not supported.
+    //     SQLCODE : -332
+    //     There is no available conversion for the source code page
+    //         <code page> to the target code page <code page>.
+    //         Reason code <reason-code>.
+    //     The reason codes are as follows:
+    //     1 source and target code page combination is not supported
+    //         by the database manager.
+    //     2 source and target code page combination is either not
+    //         supported by the database manager or by the operating
+    //         system character conversion utility on the client node.
+    //     3 source and target code page combination is either not
+    //         supported by the database manager or by the operating
+    //         system character conversion utility on the server node.
+    //
+    // SQLSTATE : 58017
+    //     The DDM parameter value is not supported.
+    //     SQLCODE : -30073
+    //     <parameter-identifier> Parameter value <value> is not supported.
+    //     Some possible parameter identifiers include:
+    //     002F  The target server does not support the data type
+    //         requested by the application requester.
+    //         The target server does not support the CCSID
+    //         requested by the application requester. Ensure the CCSID
+    //         used by the requester is supported by the server.
+    //         119C - Verify the single-byte CCSID.
+    //         119D - Verify the double-byte CCSID.
+    //         119E - Verify the mixed-byte CCSID.
+    //
+    //     The current environment command or SQL statement
+    //         cannot be processed successfully, nor can any subsequent
+    //         commands or SQL statements.  The current transaction is
+    //         rolled back and the application is disconnected
+    //         from the remote database. The command cannot be processed.
+    //
+    // Returned from Server:
+    // SVRCOD - required  (8 - ERROR)
+    // CODPNT - required
+    // RECCNT - optional (MINLVL 3, MINVAL 0) (will not be returned - should be ignored)
+    // RDBNAM - optional (MINLVL 3)
+    //
+    private void parseVALNSPRM() {
+        boolean svrcodReceived = false;
+        int svrcod = CodePoint.SVRCOD_INFO;
+        boolean rdbnamReceived = false;
+        String rdbnam = null;
+        boolean codpntReceived = false;
+        int codpnt = 0;
+
+        parseLengthAndMatchCodePoint(CodePoint.VALNSPRM);
+        pushLengthOnCollectionStack();
+        int peekCP = peekCodePoint();
+
+        while (peekCP != END_OF_COLLECTION) {
+
+            boolean foundInPass = false;
+
+            if (peekCP == CodePoint.SVRCOD) {
+                foundInPass = true;
+                svrcodReceived = checkAndGetReceivedFlag(svrcodReceived);
+                svrcod = parseSVRCOD(CodePoint.SVRCOD_ERROR, CodePoint.SVRCOD_ERROR);
+                peekCP = peekCodePoint();
+            }
+
+            if (peekCP == CodePoint.RDBNAM) {
+                foundInPass = true;
+                rdbnamReceived = checkAndGetReceivedFlag(rdbnamReceived);
+                rdbnam = parseRDBNAM(true);
+                peekCP = peekCodePoint();
+            }
+
+            if (peekCP == CodePoint.CODPNT) {
+                foundInPass = true;
+                codpntReceived = checkAndGetReceivedFlag(codpntReceived);
+                codpnt = parseCODPNT();
+                peekCP = peekCodePoint();
+            }
+
+            // RECCNT will be skipped
+
+            if (!foundInPass) {
+                throwUnknownCodepoint(peekCP);
+            }
+
+        }
+        popCollectionStack();
+        if (!svrcodReceived)
+          throwMissingRequiredCodepoint("SVRCOD", CodePoint.SVRCOD);
+        if (!codpntReceived)
+          throwMissingRequiredCodepoint("CODPNT", CodePoint.CODPNT);
+
+//        netAgent_.setSvrcod(svrcod);
+        doValnsprmSemantics(codpnt, "\"\"");
+    }
+    
+    // Data Stream Syntax Error Reply Message indicates that the data
+    // sent to the target agent does not structurally conform to the requirements
+    // of the DDM architecture.  The target agent terminated paring of the DSS
+    // when the condition SYNERRCD specified was detected.
+    // PROTOCOL architects an SQLSTATE of 58008 or 58009.
+    //
+    // Messages
+    // SQLSTATE : 58009
+    //     Execution failed due to a distribution protocol error that caused deallocation of the conversation.
+    //     SQLCODE : -30020
+    //     Execution failed because of a Distributed Protocol
+    //         Error that will affect the successful execution of subsequent
+    //         commands and SQL statements: Reason Code <reason-code>.
+    //      Some possible reason codes include:
+    //      121C Indicates that the user is not authorized to perform the requested command.
+    //      1232 The command could not be completed because of a permanent error.
+    //          In most cases, the server will be in the process of an abend.
+    //      220A The target server has received an invalid data description.
+    //          If a user SQLDA is specified, ensure that the fields are
+    //          initialized correctly. Also, ensure that the length does not
+    //          exceed the maximum allowed length for the data type being used.
+    //
+    //      The command or statement cannot be processed.  The current
+    //          transaction is rolled back and the application is disconnected
+    //          from the remote database.
+    //
+    //
+    // Returned from Server:
+    // SVRCOD - required  (8 - ERROR)
+    // SYNERRCD - required
+    // RECCNT - optional (MINVAL 0, MINLVL 3) (will not be returned - should be ignored)
+    // CODPNT - optional (MINLVL 3)
+    // RDBNAM - optional (MINLVL 3)
+    //
+    private void parseSYNTAXRM() {
+        boolean svrcodReceived = false;
+        int svrcod = CodePoint.SVRCOD_INFO;
+        boolean synerrcdReceived = false;
+        int synerrcd = 0;
+        boolean rdbnamReceived = false;
+        String rdbnam = null;
+        boolean codpntReceived = false;
+        int codpnt = 0;
+
+        parseLengthAndMatchCodePoint(CodePoint.SYNTAXRM);
+        pushLengthOnCollectionStack();
+        int peekCP = peekCodePoint();
+
+        while (peekCP != END_OF_COLLECTION) {
+
+            boolean foundInPass = false;
+
+            if (peekCP == CodePoint.SVRCOD) {
+                foundInPass = true;
+                svrcodReceived = checkAndGetReceivedFlag(svrcodReceived);
+                svrcod = parseSVRCOD(CodePoint.SVRCOD_ERROR, CodePoint.SVRCOD_ERROR);
+                peekCP = peekCodePoint();
+            }
+
+            if (peekCP == CodePoint.SYNERRCD) {
+                foundInPass = true;
+                synerrcdReceived = checkAndGetReceivedFlag(synerrcdReceived);
+                synerrcd = parseSYNERRCD();
+                peekCP = peekCodePoint();
+            }
+            
+            if (peekCP == CodePoint.SRVDGN) {
+                foundInPass = true;
+                String serverDiagnostics = parseSRVDGN();
+                // TODO: Log this as a warning
+                System.out.println("Server diagnostics: " + serverDiagnostics);
+                peekCP = peekCodePoint();
+            }
+
+            if (peekCP == CodePoint.RDBNAM) {
+                foundInPass = true;
+                rdbnamReceived = checkAndGetReceivedFlag(rdbnamReceived);
+                rdbnam = parseRDBNAM(true);
+                peekCP = peekCodePoint();
+            }
+
+            if (peekCP == CodePoint.CODPNT) {
+                foundInPass = true;
+                codpntReceived = checkAndGetReceivedFlag(codpntReceived);
+                codpnt = parseCODPNT();
+                peekCP = peekCodePoint();
+            }
+
+            // RECCNT will be skipped.
+
+            if (!foundInPass) {
+                throwUnknownCodepoint(peekCP);
+            }
+        }
+        popCollectionStack();
+        if (!svrcodReceived)
+          throwMissingRequiredCodepoint("SVRCOD", CodePoint.SVRCOD);
+        if (!synerrcdReceived)
+          throwMissingRequiredCodepoint("SYNERRCD", CodePoint.SYNERRCD);
+
+//        netAgent_.setSvrcod(svrcod);
+        doSyntaxrmSemantics(synerrcd);
+    }
+    
+    String parseSRVDGN() {
+        parseLengthAndMatchCodePoint(CodePoint.SRVDGN);
+        if (metadata.isZos())
+          return readString(CCSIDConstants.EBCDIC);
+        else
+          return readString();
+    }
+    
+    // Syntax Error Code String specifies the condition that caused termination
+    // of data stream parsing.
+    private int parseSYNERRCD() {
+        parseLengthAndMatchCodePoint(CodePoint.SYNERRCD);
+        int synerrcd = readUnsignedByte();
+        if ((synerrcd < 0x01) || (synerrcd > 0x1D)) {
+            doValnsprmSemantics(CodePoint.SYNERRCD, synerrcd);
+        }
+        return synerrcd;
+    }
+    
+    // Conversational Protocol Error Reply Message
+    // indicates that a conversational protocol error occurred.
+    // PROTOCOL architects the SQLSTATE value depending on SVRCOD
+    // SVRCOD 8 -> SQLSTATE of 58008 or 58009
+    // SVRCOD 16,128 -> SQLSTATE of 58009
+    //
+    // Messages
+    // SQLSTATE : 58009
+    //     Execution failed due to a distribution protocol error that caused deallocation of the conversation.
+    //     SQLCODE : -30020
+    //     Execution failed because of a Distributed Protocol
+    //         Error that will affect the successful execution of subsequent
+    //         commands and SQL statements: Reason Code <reason-code>.
+    //      Some possible reason codes include:
+    //      121C Indicates that the user is not authorized to perform the requested command.
+    //      1232 The command could not be completed because of a permanent error.
+    //          In most cases, the server will be in the process of an abend.
+    //      220A The target server has received an invalid data description.
+    //          If a user SQLDA is specified, ensure that the fields are
+    //          initialized correctly. Also, ensure that the length does not
+    //          exceed the maximum allowed length for the data type being used.
+    //
+    //      The command or statement cannot be processed.  The current
+    //      transaction is rolled back and the application is disconnected
+    //      from the remote database.
+    //
+    //
+    // Returned from Server:
+    // SVRCOD - required  (8 - ERROR, 16 - SEVERE, 128 - SESDMG)
+    // PRCCNVCD - required
+    // RECCNT - optional (MINVAL 0, MINLVL 3)
+    // RDBNAM - optional (NINLVL 3)
+    //
+    private void parsePRCCNVRM() {
+        boolean svrcodReceived = false;
+        int svrcod = CodePoint.SVRCOD_INFO;
+        boolean rdbnamReceived = false;
+        String rdbnam = null;
+        boolean prccnvcdReceived = false;
+        int prccnvcd = 0;
+
+        parseLengthAndMatchCodePoint(CodePoint.PRCCNVRM);
+        pushLengthOnCollectionStack();
+        int peekCP = peekCodePoint();
+
+        while (peekCP != END_OF_COLLECTION) {
+
+            boolean foundInPass = false;
+
+            if (peekCP == CodePoint.SVRCOD) {
+                foundInPass = true;
+                svrcodReceived = checkAndGetReceivedFlag(svrcodReceived);
+                svrcod = parseSVRCOD(CodePoint.SVRCOD_ERROR, CodePoint.SVRCOD_SESDMG);
+                peekCP = peekCodePoint();
+            }
+
+            if (peekCP == CodePoint.RDBNAM) {
+                foundInPass = true;
+                rdbnamReceived = checkAndGetReceivedFlag(rdbnamReceived);
+                rdbnam = parseRDBNAM(true);
+                peekCP = peekCodePoint();
+            }
+
+            if (peekCP == CodePoint.PRCCNVCD) {
+                foundInPass = true;
+                prccnvcdReceived = checkAndGetReceivedFlag(prccnvcdReceived);
+                prccnvcd = parsePRCCNVCD();
+                peekCP = peekCodePoint();
+            }
+
+            if (!foundInPass) {
+                throwUnknownCodepoint(peekCP);
+            }
+
+        }
+        popCollectionStack();
+        if (!svrcodReceived)
+          throwMissingRequiredCodepoint("SVRCOD", CodePoint.SVRCOD);
+        if (!prccnvcdReceived)
+          throwMissingRequiredCodepoint("PRCCNVCD", CodePoint.PRCCNVCD);
+
+//        netAgent_.setSvrcod(svrcod);
+        doPrccnvrmSemantics(CodePoint.PRCCNVRM);
+    }
+    
+    // The client can detect that a conversational protocol error has occurred.
+    // This can also be detected at the server in which case a PRCCNVRM is returned.
+    // The Conversation Protocol Error Code, PRCCNVRM, describes the various errors.
+    //
+    // Note: Not all of these may be valid at the client.  See descriptions for
+    // which ones make sense for client side errors/checks.
+    // Conversation Error Code                  Description of Error
+    // -----------------------                  --------------------
+    // 0x01                                     RPYDSS received by target communications manager.
+    // 0x02                                     Multiple DSSs sent without chaining or multiple
+    //                                          DSS chains sent.
+    // 0x03                                     OBJDSS sent when not allowed.
+    // 0x04                                     Request correlation identifier of an RQSDSS
+    //                                          is less than or equal to the previous
+    //                                          RQSDSS's request correlatio identifier in the chain.
+    // 0x05                                     Request correlation identifier of an OBJDSS
+    //                                          does not equal the request correlation identifier
+    //                                          of the preceding RQSDSS.
+    // 0x06                                     EXCSAT was not the first command after the connection
+    //                                          was established.
+    // 0x10                                     ACCSEC or SECCHK command sent in wrong state.
+    // 0x11                                     SYNCCTL or SYNCRSY command is used incorrectly.
+    // 0x12                                     RDBNAM mismatch between ACCSEC, SECCHK, and ACCRDB.
+    // 0x13                                     A command follows one that returned EXTDTAs as reply object.
+    //
+    // When the client detects these errors, it will be handled as if a PRCCNVRM is returned
+    // from the server.  In this PRCCNVRM case, PROTOCOL architects an SQLSTATE of 58008 or 58009
+    // depening of the SVRCOD.  In this case, a 58009 will always be returned.
+    // Messages
+    // SQLSTATE : 58009
+    //     Execution failed due to a distribution protocol error that caused deallocation of the conversation.
+    //     SQLCODE : -30020
+    //     Execution failed because of a Distributed Protocol
+    //         Error that will affect the successful execution of subsequent
+    //         commands and SQL statements: Reason Code <reason-code>.
+    //      Some possible reason codes include:
+    //      121C Indicates that the user is not authorized to perform the requested command.
+    //      1232 The command could not be completed because of a permanent error.
+    //          In most cases, the server will be in the process of an abend.
+    //      220A The target server has received an invalid data description.
+    //          If a user SQLDA is specified, ensure that the fields are
+    //          initialized correctly. Also, ensure that the length does not
+    //          exceed the maximum allowed length for the data type being used.
+    //
+    //      The command or statement cannot be processed.  The current
+    //          transaction is rolled back and the application is disconnected
+    //          from the remote database.
+    private void doPrccnvrmSemantics(int conversationProtocolErrorCode) {
+        throw new IllegalStateException("DRDA_CONNECTION_TERMINATED CONN_DRDA_PRCCNVRM " + Integer.toHexString(conversationProtocolErrorCode));
+        // we may need to map the conversation protocol error code, prccnvcd, to some kind
+        // of reason code.  For now just return the prccnvcd as the reason code
+//        agent_.accumulateChainBreakingReadExceptionAndThrow(new DisconnectException(agent_,
+//            new ClientMessageId(SQLState.DRDA_CONNECTION_TERMINATED),
+//                msgutil_.getTextMessage(MessageId.CONN_DRDA_PRCCNVRM, 
+//                    Integer.toHexString(conversationProtocolErrorCode))));
+    }
+    
+    // Conversational Protocol Error Code specifies the condition
+    // for which the PRCCNVRm was returned.
+    private int parsePRCCNVCD() {
+        parseLengthAndMatchCodePoint(CodePoint.PRCCNVCD);
+        int prccnvcd = readUnsignedByte();
+        if ((prccnvcd != 0x01) && (prccnvcd != 0x02) && (prccnvcd != 0x03) &&
+                (prccnvcd != 0x04) && (prccnvcd != 0x05) && (prccnvcd != 0x06) &&
+                (prccnvcd != 0x10) && (prccnvcd != 0x11) && (prccnvcd != 0x12) &&
+                (prccnvcd != 0x13) && (prccnvcd != 0x15)) {
+            doValnsprmSemantics(CodePoint.PRCCNVCD, prccnvcd);
+        }
+        return prccnvcd;
     }
     
     // RDB Not Accessed Reply Message indicates that the access relational

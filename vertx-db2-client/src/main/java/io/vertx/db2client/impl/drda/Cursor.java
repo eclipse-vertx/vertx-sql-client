@@ -153,13 +153,13 @@ public class Cursor {
      * implicitly closed when end-of-data is received. */
     private boolean qryclsimpEnabled_;
     
-    private final DatabaseMetaData metadata;
+    private final ConnectionMetaData metadata;
 
     //-----------------------------constants--------------------------------------
 
     //---------------------constructors/finalizer---------------------------------
 
-    Cursor(DatabaseMetaData metadata) {
+    Cursor(ConnectionMetaData metadata) {
       this.metadata = metadata;
     }
 

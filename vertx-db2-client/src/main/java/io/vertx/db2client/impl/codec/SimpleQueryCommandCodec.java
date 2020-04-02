@@ -38,29 +38,29 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
 	@Override
 	void encodeQuery(DRDAQueryRequest queryCommand) {
 		querySection = SectionManager.INSTANCE.getDynamicSection();
-		queryCommand.writePrepareDescribeOutput(cmd.sql(), encoder.socketConnection.database(), querySection);
+		queryCommand.writePrepareDescribeOutput(cmd.sql(), encoder.connMetadata.databaseName, querySection);
 		// fetchSize=0 triggers default fetch size (64) to be used (TODO @AGG this should be configurable)
 		// @AGG hard coded to TYPE_FORWARD_ONLY
-		queryCommand.writeOpenQuery(querySection, encoder.socketConnection.database(), 0, ResultSet.TYPE_FORWARD_ONLY);
+		queryCommand.writeOpenQuery(querySection, encoder.connMetadata.databaseName, 0, ResultSet.TYPE_FORWARD_ONLY);
 	}
 
 	@Override
 	void encodeUpdate(DRDAQueryRequest updateCommand) {
 		querySection = SectionManager.INSTANCE.getDynamicSection();
-		updateCommand.writeExecuteImmediate(cmd.sql(), querySection, encoder.socketConnection.database());
+		updateCommand.writeExecuteImmediate(cmd.sql(), querySection, encoder.connMetadata.databaseName);
 		if (cmd.autoCommit()) {
 			updateCommand.buildRDBCMM();
 		}
 
 		// @AGG TODO: auto-generated keys chain an OPNQRY command
 		// updateCommand.writeOpenQuery(s,
-		// encoder.socketConnection.database(),
+		// encoder.dbMetadata.databaseName,
 		// 0, // triggers default fetch size (64) to be used @AGG this should be configurable
 		// ResultSet.TYPE_FORWARD_ONLY); // @AGG hard code to TYPE_FORWARD_ONLY
 	}
 
 	void decodeUpdate(ByteBuf payload) {
-		DRDAQueryResponse updateResponse = new DRDAQueryResponse(payload, encoder.socketConnection.dbMetadata);
+		DRDAQueryResponse updateResponse = new DRDAQueryResponse(payload, encoder.connMetadata);
 		querySection.release();
 
 		int updatedCount = (int) updateResponse.readExecuteImmediate();
@@ -82,7 +82,7 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
 	void decodeQuery(ByteBuf payload) {
 		querySection.release();
 		
-		DRDAQueryResponse resp = new DRDAQueryResponse(payload, encoder.socketConnection.dbMetadata);
+		DRDAQueryResponse resp = new DRDAQueryResponse(payload, encoder.connMetadata);
 		resp.readPrepareDescribeOutput();
 		resp.readBeginOpenQuery();
 		columnDefinitions = resp.getOutputColumnMetaData();

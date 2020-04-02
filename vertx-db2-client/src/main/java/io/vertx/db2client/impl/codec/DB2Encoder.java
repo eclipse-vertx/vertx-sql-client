@@ -25,6 +25,7 @@ import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.db2client.impl.DB2SocketConnection;
 import io.vertx.db2client.impl.command.InitialHandshakeCommand;
 import io.vertx.db2client.impl.command.PingCommand;
+import io.vertx.db2client.impl.drda.ConnectionMetaData;
 import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
 import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
@@ -39,6 +40,7 @@ class DB2Encoder extends ChannelOutboundHandlerAdapter {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(DB2Encoder.class);
 
+	public final ConnectionMetaData connMetadata = new ConnectionMetaData();
     private final ArrayDeque<CommandCodec<?, ?>> inflight;
     ChannelHandlerContext chctx;
 

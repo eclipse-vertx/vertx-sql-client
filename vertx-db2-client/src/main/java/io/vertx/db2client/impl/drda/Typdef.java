@@ -1025,7 +1025,7 @@ public class Typdef implements Cloneable {
 
     // Populates netCursor descriptors, rename this populateCursorDescriptors()
     void updateColumn(Cursor netCursor,
-                      DatabaseMetaData metadata,
+                      ConnectionMetaData metadata,
                       int columnIndex,
                       int protocolLid,
                       int protocolLength) {
