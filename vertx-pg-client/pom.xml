@@ -142,6 +142,24 @@
         </executions>
       </plugin>
       <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <!-- Override sources to use custom descriptor to have all adoc files -->
+          <execution>
+            <id>package-sources</id>
+            <configuration>
+              <descriptors>
+                <descriptor>${project.basedir}/../assembly/sources.xml</descriptor>
+              </descriptors>
+              <descriptorRefs>
+                <descriptorRef>none</descriptorRef>
+              </descriptorRefs>
+              <ignoreMissingDescriptor>true</ignoreMissingDescriptor>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>2.21.0</version>
         <executions>
