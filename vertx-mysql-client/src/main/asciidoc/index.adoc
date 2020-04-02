@@ -532,11 +532,11 @@ In this way the chances of reaching the limit could be greatly reduced though it
 
 Note using `SqlClient#preparedQuery` without prepared statement caching enabled will not close the prepared statement after executing!
 
-You can also manage the lifecycle of prepared statements manually by creating a `PreparedQuery` object via `SqlConnection#prepare` interface, or even use the https://dev.mysql.com/doc/refman/8.0/en/sql-prepared-statements.html[SQL syntax prepared statement].
+You can also manage the lifecycle of prepared statements manually by creating a `PreparedStatement` object via `SqlConnection#prepare` interface, or even use the https://dev.mysql.com/doc/refman/8.0/en/sql-prepared-statements.html[SQL syntax prepared statement].
 
 === demystifying prepared batch
 
-There is time when you want to batch insert data into the database, you can use `SqlClient#preparedBatch` which provides a simple API to handle this.
+There is time when you want to batch insert data into the database, you can use `PreparedQuery#executeBatch` which provides a simple API to handle this.
 Keep in mind that MySQL does not natively support batching protocol so the API is only a sugar by executing the prepared statement one after another, which means more network round trips are required comparing to inserting multiple rows by executing one prepared statement with a list of values.
 
 === tricky DATE & TIME data types
