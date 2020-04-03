@@ -37,7 +37,7 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
 
 	@Override
 	void encodeQuery(DRDAQueryRequest queryCommand) {
-		querySection = SectionManager.INSTANCE.getDynamicSection();
+		querySection = SectionManager.INSTANCE.getSection(cmd.sql());
 		queryCommand.writePrepareDescribeOutput(cmd.sql(), encoder.connMetadata.databaseName, querySection);
 		// fetchSize=0 triggers default fetch size (64) to be used (TODO @AGG this should be configurable)
 		// @AGG hard coded to TYPE_FORWARD_ONLY
@@ -46,7 +46,7 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
 
 	@Override
 	void encodeUpdate(DRDAQueryRequest updateCommand) {
-		querySection = SectionManager.INSTANCE.getDynamicSection();
+		querySection = SectionManager.INSTANCE.getSection(cmd.sql());
 		updateCommand.writeExecuteImmediate(cmd.sql(), querySection, encoder.connMetadata.databaseName);
 		if (cmd.autoCommit()) {
 			updateCommand.buildRDBCMM();
@@ -99,6 +99,11 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
 
 		handleQueryResult(decoder);
 		completionHandler.handle(CommandResponse.success(true));
+	}
+	
+	@Override
+	public String toString() {
+	  return super.toString() + ", section=" + querySection;
 	}
 
 }

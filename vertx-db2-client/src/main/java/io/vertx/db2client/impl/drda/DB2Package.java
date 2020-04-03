@@ -44,12 +44,12 @@ public class DB2Package {
 	
 	private static final Logger LOG = Logger.getLogger(DB2Package.class.getName());
 	
-    private static final int MAX_SECTIONS_SMALL_PKG = 65;
-    private static final int MAX_SECTIONS_LARGE_PKG = 385;
+    private static final int MAX_SECTIONS_SMALL_PKG = 64;
+    private static final int MAX_SECTIONS_LARGE_PKG = 384;
     
     final String name; // ex: SYSSH200
     final String cursorNamePrefix; // ex: SQL_CURSH200C 
-    private final int maxSections;
+    final int maxSections;
     
     byte[] pkgNameConsistencyBytes;
     final ConcurrentLinkedDeque<Section> freeSections = new ConcurrentLinkedDeque<>();

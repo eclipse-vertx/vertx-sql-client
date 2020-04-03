@@ -59,7 +59,7 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
         // encode packet header
         int packetStartIdx = packet.writerIndex();
         DRDAQueryRequest prepareCommand = new DRDAQueryRequest(packet, encoder.connMetadata);
-        section = SectionManager.INSTANCE.getDynamicSection();
+        section = SectionManager.INSTANCE.getSection(cmd.sql());
         String dbName = encoder.connMetadata.databaseName;
         prepareCommand.writePrepareDescribeOutput(cmd.sql(), dbName, section);
         prepareCommand.writeDescribeInput(section, dbName);
@@ -104,6 +104,18 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
     private void handleColumnDefinitionsDecodingCompleted() {
         handleReadyForQuery();
         resetIntermediaryResult();
+    }
+    
+    @Override
+    public String toString() {
+        return new StringBuilder(getClass().getSimpleName())
+          .append("@")
+          .append(Integer.toHexString(hashCode()))
+          .append(" sql=")
+          .append(cmd.sql())
+          .append(", section=")
+          .append(section)
+          .toString();
     }
 
 }
