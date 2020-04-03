@@ -22,7 +22,6 @@ import io.vertx.db2client.impl.drda.ColumnMetaData;
 import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
 import io.vertx.db2client.impl.drda.Section;
-import io.vertx.db2client.impl.drda.SectionManager;
 import io.vertx.sqlclient.impl.PreparedStatement;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
@@ -59,7 +58,7 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
         // encode packet header
         int packetStartIdx = packet.writerIndex();
         DRDAQueryRequest prepareCommand = new DRDAQueryRequest(packet, encoder.connMetadata);
-        section = SectionManager.INSTANCE.getSection(cmd.sql());
+        section = encoder.connMetadata.sectionManager.getSection(cmd.sql());
         String dbName = encoder.connMetadata.databaseName;
         prepareCommand.writePrepareDescribeOutput(cmd.sql(), dbName, section);
         prepareCommand.writeDescribeInput(section, dbName);

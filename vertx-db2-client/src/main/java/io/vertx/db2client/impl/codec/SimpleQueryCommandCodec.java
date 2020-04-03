@@ -22,7 +22,6 @@ import io.netty.buffer.ByteBuf;
 import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
 import io.vertx.db2client.impl.drda.Section;
-import io.vertx.db2client.impl.drda.SectionManager;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
@@ -37,7 +36,7 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
 
 	@Override
 	void encodeQuery(DRDAQueryRequest queryCommand) {
-		querySection = SectionManager.INSTANCE.getSection(cmd.sql());
+		querySection = encoder.connMetadata.sectionManager.getSection(cmd.sql());
 		queryCommand.writePrepareDescribeOutput(cmd.sql(), encoder.connMetadata.databaseName, querySection);
 		// fetchSize=0 triggers default fetch size (64) to be used (TODO @AGG this should be configurable)
 		// @AGG hard coded to TYPE_FORWARD_ONLY
@@ -46,7 +45,7 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
 
 	@Override
 	void encodeUpdate(DRDAQueryRequest updateCommand) {
-		querySection = SectionManager.INSTANCE.getSection(cmd.sql());
+		querySection = encoder.connMetadata.sectionManager.getSection(cmd.sql());
 		updateCommand.writeExecuteImmediate(cmd.sql(), querySection, encoder.connMetadata.databaseName);
 		if (cmd.autoCommit()) {
 			updateCommand.buildRDBCMM();

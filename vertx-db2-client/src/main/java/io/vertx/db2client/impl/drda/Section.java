@@ -88,5 +88,4 @@ public class Section {
         // No-op: Static section can be used by multiple statements at once
       }
     }
-    
 }

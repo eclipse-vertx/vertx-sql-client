@@ -20,12 +20,10 @@ import java.util.List;
 
 public class SectionManager {
     
-    public static final SectionManager INSTANCE = new SectionManager();
-    
     private final List<DB2Package> pkgs = new ArrayList<>(6);
     private final Section staticSection;
     
-    private SectionManager() {
+    SectionManager() {
     	// by default there are 3 small and 3 large packages
         for (int i = 0; i < 3; i++)
           pkgs.add(new DB2Package(true, i));
@@ -34,7 +32,8 @@ public class SectionManager {
         staticSection = new Section.ImmediateSection(pkgs.get(3));
     }
     
-    void removeSmallPackages() {
+    void configureForZOS() {
+      // DB2/Z doesn't have small packages by default -- remove them
       pkgs.removeIf(DB2Package::isSmallPackage);
     }
     
