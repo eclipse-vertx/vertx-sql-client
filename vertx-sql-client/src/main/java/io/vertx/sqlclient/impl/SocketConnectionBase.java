@@ -163,27 +163,41 @@ public abstract class SocketConnectionBase implements Connection {
 
     // Special handling for cache
     PreparedStatementCache psCache = this.psCache;
-    if (psCache != null && cmd instanceof PrepareStatementCommand) {
-      PrepareStatementCommand psCmd = (PrepareStatementCommand) cmd;
-      if (psCmd.sql().length() > preparedStatementCacheSqlLimit) {
-        // do not cache the statements
-        return;
-      }
-      CachedPreparedStatement cached = psCache.get(psCmd.sql());
-      Handler<AsyncResult<PreparedStatement>> orig = (Handler) handler;
-      if (cached != null) {
-        psCmd.handler = orig;
-        cached.get(psCmd::complete);
-        return;
-      } else {
-        if (psCache.size() >= psCache.getCapacity() && !psCache.isReady()) {
-          // only if the prepared statement is ready then it can be evicted
+    if (psCache != null) {
+      if (cmd instanceof PrepareStatementCommand) {
+        PrepareStatementCommand psCmd = (PrepareStatementCommand) cmd;
+        if (psCmd.sql().length() > preparedStatementCacheSqlLimit) {
+          // do not cache the statements
+          return;
+        }
+        CachedPreparedStatement cached = psCache.get(psCmd.sql());
+        Handler<AsyncResult<PreparedStatement>> orig = (Handler) handler;
+        if (cached != null) {
+          psCmd.handler = orig;
+          cached.get(psCmd::complete);
+          return;
         } else {
-          cached = new CachedPreparedStatement();
-          psCmd.statement = psSeq.next();
-          cached.get(orig);
-          psCache.put(psCmd.sql(), cached);
-          handler = (Handler) cached;
+          if (psCache.size() >= psCache.getCapacity() && !psCache.isReady()) {
+            // only if the prepared statement is ready then it can be evicted
+          } else {
+            cached = new CachedPreparedStatement();
+            psCmd.statement = psSeq.next();
+            cached.get(orig);
+            psCache.put(psCmd.sql(), cached);
+            handler = (Handler) cached;
+          }
+        }
+      } else if (cmd instanceof CloseStatementCommand) {
+        CloseStatementCommand closeStmtCommand = (CloseStatementCommand) cmd;
+
+        CachedPreparedStatement cached = psCache.get(closeStmtCommand.statement().sql());
+        // evict from the cache, we notify all the waiters or rather schedule a new prepare cmd?
+        // how do we handle all the stmt_exec commands, should we let them go and fail by server if stmt has been closed?
+        if (cached != null) {
+          psCache.remove(closeStmtCommand.statement().sql());
+          for (Handler<AsyncResult<PreparedStatement>> waiter : cached.waiters) {
+            waiter.handle(Future.failedFuture("The prepared statement has been closed."));
+          }
         }
       }
     }

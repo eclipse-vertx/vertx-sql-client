@@ -13,6 +13,7 @@ package io.vertx.mysqlclient;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.After;
@@ -68,5 +69,32 @@ public class MySQLConnectionTest extends MySQLTestBase {
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.close();
     }));
+  }
+
+  @Test
+  public void testClosedPreparedStatementEvictedFromCache(TestContext ctx) {
+    Async async = ctx.async();
+    options.setCachePreparedStatements(true);
+    options.setPreparedStatementCacheMaxSize(1024);
+
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(preparedStatement1 -> {
+        preparedStatement1.query().execute(ctx.asyncAssertSuccess(res1 -> {
+          ctx.assertEquals(12, res1.size());
+          preparedStatement1.close(); // no response from server, we need to wait for some time here
+          vertx.setTimer(2000, id -> {
+            conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(preparedStatement2 -> {
+              preparedStatement2.query().execute(ctx.asyncAssertSuccess(res2 -> {
+                System.out.println(res2.size());
+                ctx.assertEquals(12, res2.size());
+                conn.close();
+                async.complete();
+              }));
+            }));
+          });
+        }));
+      }));
+    }));
+    async.await();
   }
 }
