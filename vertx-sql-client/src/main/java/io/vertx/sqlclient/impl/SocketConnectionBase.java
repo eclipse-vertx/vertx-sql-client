@@ -30,10 +30,11 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.sqlclient.impl.cache.CachedPreparedStatement;
+import io.vertx.sqlclient.impl.cache.PreparedStatementCache;
 import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
-import java.util.Deque;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -195,7 +196,7 @@ public abstract class SocketConnectionBase implements Connection {
         // how do we handle all the stmt_exec commands, should we let them go and fail by server if stmt has been closed?
         if (cached != null) {
           psCache.remove(closeStmtCommand.statement().sql());
-          for (Handler<AsyncResult<PreparedStatement>> waiter : cached.waiters) {
+          for (Handler<AsyncResult<PreparedStatement>> waiter : cached.waiters()) {
             waiter.handle(Future.failedFuture("The prepared statement has been closed."));
           }
         }
@@ -211,29 +212,6 @@ public abstract class SocketConnectionBase implements Connection {
       checkPending();
     } else {
       cmd.fail(new VertxException("Connection not open " + status));
-    }
-  }
-
-  static class CachedPreparedStatement implements Handler<AsyncResult<PreparedStatement>> {
-
-    private final Deque<Handler<AsyncResult<PreparedStatement>>> waiters = new ArrayDeque<>();
-    AsyncResult<PreparedStatement> resp;
-
-    void get(Handler<AsyncResult<PreparedStatement>> handler) {
-      if (resp != null) {
-        handler.handle(resp);
-      } else {
-        waiters.add(handler);
-      }
-    }
-
-    @Override
-    public void handle(AsyncResult<PreparedStatement> event) {
-      resp = event;
-      Handler<AsyncResult<PreparedStatement>> waiter;
-      while ((waiter = waiters.poll()) != null) {
-        waiter.handle(resp);
-      }
     }
   }
 

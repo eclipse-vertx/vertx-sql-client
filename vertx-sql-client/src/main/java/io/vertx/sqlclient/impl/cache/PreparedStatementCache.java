@@ -9,10 +9,11 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 
-package io.vertx.sqlclient.impl;
+package io.vertx.sqlclient.impl.cache;
 
 import io.vertx.core.Promise;
-import io.vertx.sqlclient.impl.SocketConnectionBase.CachedPreparedStatement;
+import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.PreparedStatement;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
 
 import java.util.LinkedHashMap;
@@ -21,11 +22,11 @@ import java.util.Map;
 /**
  * A LRU replacement strategy cache based on {@link java.util.LinkedHashMap} for prepared statements.
  */
-class PreparedStatementCache extends LinkedHashMap<String, CachedPreparedStatement> {
+public class PreparedStatementCache extends LinkedHashMap<String, CachedPreparedStatement> {
   private final int capacity;
   private final Connection conn;
 
-  PreparedStatementCache(int capacity, Connection conn) {
+  public PreparedStatementCache(int capacity, Connection conn) {
     super(capacity, 0.75f, true);
     this.capacity = capacity;
     this.conn = conn;
