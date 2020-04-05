@@ -17,6 +17,7 @@ package io.vertx.sqlclient.tck;
 
 import java.util.function.Consumer;
 
+import io.vertx.sqlclient.TransactionRollbackException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,10 +83,11 @@ public abstract class TransactionTestBase {
   @Test
   public void testReleaseConnectionOnRollback(TestContext ctx) {
     Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9").execute(ctx.asyncAssertSuccess(result -> {
+    connector.accept(ctx.asyncAssertSuccess(tx -> {
+      tx.result().onComplete(ctx.asyncAssertFailure(err -> ctx.assertEquals(TransactionRollbackException.INSTANCE, err)));
+      tx.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
-        conn.rollback(ctx.asyncAssertSuccess(v1 -> {
+        tx.rollback(ctx.asyncAssertSuccess(v1 -> {
           // Try acquire a connection
           pool.getConnection(ctx.asyncAssertSuccess(v2 -> {
             async.complete();
@@ -98,15 +100,16 @@ public abstract class TransactionTestBase {
   @Test
   public void testReleaseConnectionOnSetRollback(TestContext ctx) {
     Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.abortHandler(v -> {
+    connector.accept(ctx.asyncAssertSuccess(tx -> {
+      tx.abortHandler(v -> {
         // Try acquire the same connection on rollback
         pool.getConnection(ctx.asyncAssertSuccess(v2 -> {
           async.complete();
         }));
       });
+      tx.result().onComplete(ctx.asyncAssertFailure(err -> ctx.assertEquals(TransactionRollbackException.INSTANCE, err)));
       // Failure will abort
-      conn.query("SELECT whatever from DOES_NOT_EXIST").execute(ctx.asyncAssertFailure(result -> { }));
+      tx.query("SELECT whatever from DOES_NOT_EXIST").execute(ctx.asyncAssertFailure(result -> { }));
     }));
   }
 

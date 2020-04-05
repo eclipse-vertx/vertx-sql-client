@@ -74,4 +74,17 @@ public interface Transaction extends SqlClient {
    * Rollback the transaction and release the associated resources.
    */
   void close();
+
+  /**
+   * Return the transaction result, the returned future
+   *
+   * <ul>
+   *   <li>succeeds when the transaction commits</li>
+   *   <li>fails with {@link TransactionRollbackException} when the transaction rollbacks</li>
+   * </ul>
+   *
+   * @return the transaction result
+   */
+  Future<Void> result();
+
 }

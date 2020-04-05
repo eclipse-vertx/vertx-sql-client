@@ -21,6 +21,7 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Transaction;
+import io.vertx.sqlclient.TransactionRollbackException;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
@@ -346,6 +347,9 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
           Transaction tx = conn.begin();
           AtomicInteger u1 = new AtomicInteger();
           AtomicInteger u2 = new AtomicInteger();
+          tx.result().onComplete(ctx.asyncAssertSuccess(v -> {
+            //
+          }));
           conn
             .query("INSERT INTO Test (id, val) VALUES (1, 'val-1')")
             .execute(ctx.asyncAssertSuccess(res1 -> {
@@ -393,6 +397,9 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
           Transaction tx = conn.begin();
           AtomicInteger u1 = new AtomicInteger();
           AtomicInteger u2 = new AtomicInteger();
+          tx.result().onComplete(ctx.asyncAssertFailure(err -> {
+            ctx.assertEquals(TransactionRollbackException.INSTANCE, err);
+          }));
           conn
             .query("INSERT INTO Test (id, val) VALUES (1, 'val-1')")
             .execute(ctx.asyncAssertSuccess(res1 -> {
@@ -425,12 +432,16 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
 
   @Test
   public void testTransactionAbort(TestContext ctx) {
-    Async done = ctx.async();
+    Async done = ctx.async(2);
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       deleteFromTestTable(ctx, conn, () -> {
         Transaction tx = conn.begin();
         AtomicInteger failures = new AtomicInteger();
         tx.abortHandler(v -> ctx.assertEquals(0, failures.getAndIncrement()));
+        tx.result().onComplete(ctx.asyncAssertFailure(err -> {
+          ctx.assertEquals(TransactionRollbackException.INSTANCE, err);
+          done.countDown();
+        }));
         AtomicReference<AsyncResult<RowSet<Row>>> queryAfterFailed = new AtomicReference<>();
         AtomicReference<AsyncResult<Void>> commit = new AtomicReference<>();
         conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-1')").execute(ar1 -> { });
@@ -444,7 +455,7 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
           // This query won't be made in the same TX
           conn.query("SELECT id FROM Test WHERE id=1").execute(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(0, result.size());
-            done.complete();
+            done.countDown();
           }));
         });
         conn.query("SELECT id FROM Test").execute(queryAfterFailed::set);
