@@ -17,12 +17,12 @@ public class LineSegmentConverter {
       switch (member.getKey()) {
         case "p1":
           if (member.getValue() instanceof JsonObject) {
-            obj.setP1(new io.vertx.pgclient.data.Point((JsonObject)member.getValue()));
+            obj.setP1(new io.vertx.pgclient.data.Point((io.vertx.core.json.JsonObject)member.getValue()));
           }
           break;
         case "p2":
           if (member.getValue() instanceof JsonObject) {
-            obj.setP2(new io.vertx.pgclient.data.Point((JsonObject)member.getValue()));
+            obj.setP2(new io.vertx.pgclient.data.Point((io.vertx.core.json.JsonObject)member.getValue()));
           }
           break;
       }

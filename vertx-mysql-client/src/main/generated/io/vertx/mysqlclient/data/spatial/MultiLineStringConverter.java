@@ -20,7 +20,7 @@ public class MultiLineStringConverter {
             java.util.ArrayList<io.vertx.mysqlclient.data.spatial.LineString> list =  new java.util.ArrayList<>();
             ((Iterable<Object>)member.getValue()).forEach( item -> {
               if (item instanceof JsonObject)
-                list.add(new io.vertx.mysqlclient.data.spatial.LineString((JsonObject)item));
+                list.add(new io.vertx.mysqlclient.data.spatial.LineString((io.vertx.core.json.JsonObject)item));
             });
             obj.setLineStrings(list);
           }

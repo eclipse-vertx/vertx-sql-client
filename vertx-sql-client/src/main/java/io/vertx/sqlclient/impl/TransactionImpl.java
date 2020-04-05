@@ -81,10 +81,10 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
     checkPending();
   }
 
-  private boolean isComplete(CommandBase<?> cmd) {
-    if (cmd instanceof QueryCommandBase<?>) {
-      String sql = ((QueryCommandBase) cmd).sql().trim();
-      return sql.equalsIgnoreCase("COMMIT") || sql.equalsIgnoreCase("ROLLBACK");
+  private static boolean isComplete(CommandBase<?> cmd) {
+    if (cmd instanceof TxCommand) {
+      TxCommand txCmd = (TxCommand) cmd;
+      return txCmd == TxCommand.COMMIT || txCmd == TxCommand.ROLLBACK;
     }
     return false;
   }
@@ -223,10 +223,10 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   private ScheduledCommand<Void> doQuery(TxCommand cmd, Promise<Void> handler) {
     return new ScheduledCommand<>(cmd, handler);
   }
-  
+
   @Override
   boolean autoCommit() {
     return false;
   }
-  
+
 }

@@ -25,7 +25,7 @@ public class PathConverter {
             java.util.ArrayList<io.vertx.pgclient.data.Point> list =  new java.util.ArrayList<>();
             ((Iterable<Object>)member.getValue()).forEach( item -> {
               if (item instanceof JsonObject)
-                list.add(new io.vertx.pgclient.data.Point((JsonObject)item));
+                list.add(new io.vertx.pgclient.data.Point((io.vertx.core.json.JsonObject)item));
             });
             obj.setPoints(list);
           }

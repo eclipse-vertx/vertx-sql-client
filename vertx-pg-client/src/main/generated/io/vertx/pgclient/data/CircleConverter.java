@@ -17,7 +17,7 @@ public class CircleConverter {
       switch (member.getKey()) {
         case "centerPoint":
           if (member.getValue() instanceof JsonObject) {
-            obj.setCenterPoint(new io.vertx.pgclient.data.Point((JsonObject)member.getValue()));
+            obj.setCenterPoint(new io.vertx.pgclient.data.Point((io.vertx.core.json.JsonObject)member.getValue()));
           }
           break;
         case "radius":
