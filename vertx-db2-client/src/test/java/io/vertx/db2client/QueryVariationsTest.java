@@ -86,5 +86,40 @@ public class QueryVariationsTest extends DB2TestBase {
 			}));
 		}));
 	}
+	
+	/**
+	 * Verify that the same connection issuing multiple different prepared statements
+	 * has isolated result sections on the DB2 side. If the same section is reused for
+	 * both statements, then query 1 might get the results from query 2 or vice versa
+	 */
+	@Test
+	public void testSectionReuse(TestContext ctx) {
+	  connect(ctx.asyncAssertSuccess(con -> {
+        con.prepare("SELECT * FROM Fortune WHERE id=1")
+          .flatMap(ps -> ps.query().execute())
+          .onComplete(ctx.asyncAssertSuccess(rowSet -> {
+            ctx.assertEquals(1, rowSet.size());
+            ctx.assertEquals(Arrays.asList("ID", "MESSAGE"), rowSet.columnsNames());
+            RowIterator<Row> rows = rowSet.iterator();
+            ctx.assertTrue(rows.hasNext());
+            Row row = rows.next();
+            ctx.assertEquals(1, row.getInteger(0));
+            ctx.assertEquals("fortune: No such file or directory", row.getString(1));
+            ctx.assertFalse(rows.hasNext());
+          }));
+        con.prepare("SELECT * FROM immutable WHERE id=2")
+          .flatMap(ps -> ps.query().execute())
+          .onComplete(ctx.asyncAssertSuccess(rowSet -> {
+            ctx.assertEquals(1, rowSet.size());
+            ctx.assertEquals(Arrays.asList("ID", "MESSAGE"), rowSet.columnsNames());
+            RowIterator<Row> rows = rowSet.iterator();
+            ctx.assertTrue(rows.hasNext());
+            Row row = rows.next();
+            ctx.assertEquals(2, row.getInteger(0));
+            ctx.assertEquals("A computer scientist is someone who fixes things that aren't broken.", row.getString(1));
+            ctx.assertFalse(rows.hasNext());
+          }));
+	  }));
+	}
 
 }

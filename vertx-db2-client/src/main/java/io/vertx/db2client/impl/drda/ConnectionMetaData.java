@@ -19,19 +19,17 @@ import java.nio.charset.Charset;
 
 public class ConnectionMetaData {
   
-  private boolean isZos;
-  
   public String databaseName;
+  public final SectionManager sectionManager = new SectionManager();
   
+  private boolean isZos;
   private Charset currentCCSID = CCSIDConstants.EBCDIC;
   
   public void setZos(boolean isZos) {
     this.isZos = isZos;
     if (isZos && currentCCSID != CCSIDConstants.UTF8) {
       currentCCSID = CCSIDConstants.UTF8;
-      
-      // DB2 on Z doesn't have small packages by default -- remove them
-      SectionManager.INSTANCE.removeSmallPackages();
+      sectionManager.configureForZOS();
     }
   }
   
