@@ -28,25 +28,20 @@ import io.vertx.sqlclient.tck.TransactionTestBase;
 
 @RunWith(VertxUnitRunner.class)
 public class PgTransactionTest extends TransactionTestBase {
-  
+
   @ClassRule
   public static ContainerPgRule rule = new ContainerPgRule();
-  
+
   @Override
-  protected void initConnector() {
-    connector = handler -> {
-      if (pool == null) {
-        pool = PgPool.pool(vertx, new PgConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
-      }
-      pool.begin(handler);
-    };
+  protected Pool createPool() {
+    return PgPool.pool(vertx, new PgConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
   }
-  
+
   @Override
   protected Pool nonTxPool() {
     return PgPool.pool(vertx, new PgConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
   }
-  
+
   @Override
   protected String statement(String... parts) {
     StringBuilder sb = new StringBuilder();
@@ -58,5 +53,5 @@ public class PgTransactionTest extends TransactionTestBase {
     }
     return sb.toString();
   }
-  
+
 }

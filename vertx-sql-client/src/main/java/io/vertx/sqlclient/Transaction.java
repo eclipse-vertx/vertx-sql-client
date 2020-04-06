@@ -26,7 +26,7 @@ import io.vertx.core.Handler;
  * A transaction that allows to control the transaction and receive events.
  */
 @VertxGen
-public interface Transaction extends SqlClient {
+public interface Transaction {
 
   /**
    * Create a prepared query.

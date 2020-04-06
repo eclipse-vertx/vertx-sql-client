@@ -154,7 +154,13 @@ public class ConnectionPool {
     @Override
     public void close(Holder holder) {
       if (holder != this.holder) {
-        throw new IllegalStateException();
+        String msg;
+        if (this.holder == null) {
+          msg = "Connection released twice";
+        } else {
+          msg = "Connection released by " + holder + " owned by " + this.holder;
+        }
+        throw new IllegalStateException(msg);
       }
       this.holder = null;
       release(this);

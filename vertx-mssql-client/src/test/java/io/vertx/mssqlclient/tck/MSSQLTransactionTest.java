@@ -35,13 +35,8 @@ public class MSSQLTransactionTest extends TransactionTestBase {
   public static MSSQLRule rule = MSSQLRule.SHARED_INSTANCE;
 
   @Override
-  protected void initConnector() {
-    connector = handler -> {
-      if (pool == null) {
-        pool = MSSQLPool.pool(vertx, new MSSQLConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
-      }
-      pool.begin(handler);
-    };
+  protected Pool createPool() {
+    return MSSQLPool.pool(vertx, new MSSQLConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
   }
 
   @Override

@@ -21,12 +21,15 @@ import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+
+import java.util.function.Function;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -82,29 +85,28 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
   }
 
   @Override
-  public Future<Transaction> begin() {
-    return getConnection().flatMap(conn -> {
-      Future<Transaction> fut = conn.begin();
-      fut.onComplete(ar1 -> {
-        if (ar1.succeeded()) {
-          Transaction tx = ar1.result();
-          tx.result().onComplete(ar2 -> {
-            conn.close();
-          });
-        } else {
-          conn.close();
-        }
-      });
-      return fut;
-    });
+  public <T> void withTransaction(Function<SqlClient, Future<T>> function, Handler<AsyncResult<T>> handler) {
+    Future<T> res = withTransaction(function);
+    if (handler != null) {
+      res.onComplete(handler);
+    }
   }
 
   @Override
-  public void begin(Handler<AsyncResult<Transaction>> handler) {
-    Future<Transaction> fut = begin();
-    if (handler != null) {
-      fut.onComplete(handler);
-    }
+  public <T> Future<T> withTransaction(Function<SqlClient, Future<T>> function) {
+    return getConnection()
+      .flatMap(conn -> conn
+        .begin()
+        .flatMap(tx -> function
+          .apply(conn)
+          .compose(
+            res -> tx
+              .commit()
+              .flatMap(v -> Future.succeededFuture(res)),
+            err -> tx
+              .rollback()
+              .flatMap(v -> Future.failedFuture(err))))
+        .onComplete(ar -> conn.close()));
   }
 
   @Override

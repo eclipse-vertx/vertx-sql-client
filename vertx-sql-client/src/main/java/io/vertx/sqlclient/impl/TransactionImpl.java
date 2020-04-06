@@ -41,16 +41,14 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   private static final int ST_PROCESSING = 2;
   private static final int ST_COMPLETED = 3;
 
-  private final Handler<Void> disposeHandler;
   private Deque<ScheduledCommand<?>> pending = new ArrayDeque<>();
   private Handler<Void> failedHandler;
   private int status = ST_BEGIN;
   private final Promise<Void> promise;
   private final Future<Void> future;
 
-  TransactionImpl(ContextInternal context, Connection conn, Handler<Void> disposeHandler) {
+  TransactionImpl(ContextInternal context, Connection conn) {
     super(context, conn);
-    this.disposeHandler = disposeHandler;
     this.promise = context.promise();
     this.future = promise.future();
   }
@@ -122,7 +120,6 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
             context.runOnContext(h);
           }
           schedule__(doQuery(ROLLBACK, context.promise(ar2 -> {
-            disposeHandler.handle(null);
             handler.handle(ar);
           })));
         } else {
@@ -201,9 +198,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
       case ST_PROCESSING:
         Promise<Void> promise = context.promise();
         schedule__(doQuery(COMMIT, promise));
-        Future<Void> fut = promise.future();
-        fut.onComplete(ar -> disposeHandler.handle(null));
-        return fut.mapEmpty();
+        return promise.future();
       case ST_COMPLETED:
         return context.failedFuture("Transaction already completed");
       default:
@@ -225,9 +220,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
     } else {
       Promise<Void> promise = context.promise();
       schedule__(doQuery(ROLLBACK, promise));
-      Future<Void> fut = promise.future().mapEmpty();
-      fut.onComplete(ar -> disposeHandler.handle(null));
-      return fut;
+      return promise.future();
     }
   }
 

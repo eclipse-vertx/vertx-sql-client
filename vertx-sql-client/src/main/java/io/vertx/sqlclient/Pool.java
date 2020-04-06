@@ -22,6 +22,8 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
+import java.util.function.Function;
+
 /**
  * A connection pool which reuses a number of SQL connections.
  *
@@ -61,15 +63,27 @@ public interface Pool extends SqlClient {
   PreparedQuery<RowSet<Row>> preparedQuery(String sql);
 
   /**
-   * Borrow a connection from the pool and begin a transaction, the underlying connection will be returned
-   * to the pool when the transaction ends.
+   * Execute the given {@code function} within a transaction.
+   *
+   * <p>The {@code function} is passed a client executing all operations within a transaction.
+   * When the future returned by the function
+   * <ul>
+   *   <li>succeeds the transaction commits</li>
+   *   <li>fails the transaction rollbacks</li>
+   * </ul>
+   *
+   * <p>The {@code handler} is given a success result when the function returns a succeeded futures and the transaction commits.
+   * Otherwise it is given a failure result.
+   *
+   * @param function the code to execute
+   * @param handler the result handler
    */
-  void begin(Handler<AsyncResult<Transaction>> handler);
+  <T> void withTransaction(Function<SqlClient, Future<T>> function, Handler<AsyncResult<T>> handler);
 
   /**
-   * Like {@link #begin(Handler)} but returns a {@code Future} of the asynchronous result
+   * Like {@link #withTransaction(Function, Handler)} but returns a {@code Future} of the asynchronous result
    */
-  Future<Transaction> begin();
+  <T> Future<T> withTransaction(Function<SqlClient, Future<T>> function);
 
   /**
    * Close the pool and release the associated resources.

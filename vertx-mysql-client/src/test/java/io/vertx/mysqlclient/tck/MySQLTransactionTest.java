@@ -32,13 +32,8 @@ public class MySQLTransactionTest extends TransactionTestBase {
   public static MySQLRule rule = MySQLRule.SHARED_INSTANCE;
 
   @Override
-  protected void initConnector() {
-    connector = handler -> {
-      if (pool == null) {
-        pool = MySQLPool.pool(vertx, new MySQLConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
-      }
-      pool.begin(handler);
-    };
+  protected Pool createPool() {
+    return MySQLPool.pool(vertx, new MySQLConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
   }
 
   @Override
