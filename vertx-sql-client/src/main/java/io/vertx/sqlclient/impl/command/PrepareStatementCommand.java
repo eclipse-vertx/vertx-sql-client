@@ -22,7 +22,6 @@ import io.vertx.sqlclient.impl.PreparedStatement;
 public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
 
   private final String sql;
-  public long statement; // 0 means unamed statement otherwise CString
 
   public PrepareStatementCommand(String sql) {
     this.sql = sql;
@@ -30,10 +29,6 @@ public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
 
   public String sql() {
     return sql;
-  }
-
-  public long statement() {
-    return statement;
   }
 
 }

@@ -24,6 +24,7 @@ import io.vertx.sqlclient.Tuple;
 import io.vertx.pgclient.impl.util.Util;
 import io.vertx.sqlclient.impl.ParamDesc;
 import io.vertx.sqlclient.impl.RowDesc;
+import io.vertx.sqlclient.impl.StringLongSequence;
 import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
 import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
@@ -62,6 +63,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
   private ChannelHandlerContext ctx;
   private ByteBuf out;
   private PgDecoder dec;
+  private final StringLongSequence psSeq = new StringLongSequence(); // used for generating named prepared statement name
 
   PgEncoder(PgDecoder dec, ArrayDeque<PgCommandCodec<?, ?>> inflight) {
     this.inflight = inflight;
@@ -179,6 +181,20 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     out.setInt(pos + 1, out.writerIndex() - pos - 1);
   }
 
+  void writeClosePreparedStatement(long statementName) {
+    ensureBuffer();
+    int pos = out.writerIndex();
+    out.writeByte(CLOSE);
+    out.writeInt(0);
+    out.writeByte('S'); // 'S' to close a prepared statement or 'P' to close a portal
+    if (statementName == 0) {
+      out.writeByte(0);
+    } else {
+      out.writeLong(statementName);
+    }
+    out.setInt(pos + 1, out.writerIndex() - pos - 1);
+  }
+
   void writeStartupMessage(StartupMessage msg) {
     ensureBuffer();
 
@@ -233,7 +249,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     int totalLengthPosition = out.writerIndex();
     out.writeInt(0); // message length -> will be set later
     out.writeCharSequence(msg.message, UTF_8);
-      
+
     // rewind to set the message length
     out.setInt(totalLengthPosition, out.writerIndex() - totalLengthPosition);
   }
@@ -413,6 +429,10 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
       out.writeShort(1);
     }
     out.setInt(pos + 1, out.writerIndex() - pos - 1);
+  }
+
+  long nextStatementName() {
+    return psSeq.next();
   }
 
   private void ensureBuffer() {

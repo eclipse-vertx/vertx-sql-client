@@ -51,7 +51,6 @@ public abstract class SocketConnectionBase implements Connection {
 
   protected final PreparedStatementCache psCache;
   private final int preparedStatementCacheSqlLimit;
-  private final StringLongSequence psSeq = new StringLongSequence();
   private final ArrayDeque<CommandBase<?>> pending = new ArrayDeque<>();
   private final ContextInternal context;
   private int inflight;
@@ -182,7 +181,6 @@ public abstract class SocketConnectionBase implements Connection {
             // only if the prepared statement is ready then it can be evicted
           } else {
             cached = new CachedPreparedStatement();
-            psCmd.statement = psSeq.next();
             cached.get(orig);
             psCache.put(psCmd.sql(), cached);
             handler = (Handler) cached;

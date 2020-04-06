@@ -30,8 +30,8 @@ class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, Pre
 
   @Override
   void encode(PgEncoder encoder) {
-    encoder.writeParse(new Parse(cmd.sql(), cmd.statement()));
-    encoder.writeDescribe(new Describe(cmd.statement(), null));
+    encoder.writeParse(new Parse(cmd.sql(), 0L));
+    encoder.writeDescribe(new Describe(0L, null));
     encoder.writeSync();
   }
 
@@ -64,7 +64,7 @@ class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, Pre
 
   @Override
   public void handleReadyForQuery() {
-    result = new PgPreparedStatement(cmd.sql(), cmd.statement(), this.parameterDesc, this.rowDesc);
+    result = new PgPreparedStatement(cmd.sql(), 0L, this.parameterDesc, this.rowDesc);
     super.handleReadyForQuery();
   }
 }
