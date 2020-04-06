@@ -32,6 +32,10 @@ import io.vertx.sqlclient.impl.command.TxCommand;
 
 public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implements Transaction {
 
+  private static final TxCommand BEGIN = new TxCommand(TxCommand.Kind.BEGIN);
+  private static final TxCommand ROLLBACK = new TxCommand(TxCommand.Kind.ROLLBACK);
+  private static final TxCommand COMMIT = new TxCommand(TxCommand.Kind.COMMIT);
+
   private static final int ST_BEGIN = 0;
   private static final int ST_PENDING = 1;
   private static final int ST_PROCESSING = 2;
@@ -49,7 +53,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
     this.disposeHandler = disposeHandler;
     this.promise = context.promise();
     this.future = promise.future();
-    ScheduledCommand<Void> b = doQuery(TxCommand.BEGIN, context.promise(this::afterBegin));
+    ScheduledCommand<Void> b = doQuery(BEGIN, context.promise(this::afterBegin));
     doSchedule(b.cmd, b.handler);
   }
 
@@ -82,7 +86,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
       status = ST_COMPLETED;
       doSchedule(cmd, ar -> {
         if (ar.succeeded()) {
-          if (cmd == TxCommand.COMMIT) {
+          if (cmd == COMMIT) {
             promise.tryComplete();
           } else {
             promise.tryFail(TransactionRollbackException.INSTANCE);
@@ -112,7 +116,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
           if (h != null) {
             context.runOnContext(h);
           }
-          schedule__(doQuery(TxCommand.ROLLBACK, context.promise(ar2 -> {
+          schedule__(doQuery(ROLLBACK, context.promise(ar2 -> {
             disposeHandler.handle(null);
             handler.handle(ar);
           })));
@@ -136,7 +140,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   private static boolean isComplete(CommandBase<?> cmd) {
     if (cmd instanceof TxCommand) {
       TxCommand txCmd = (TxCommand) cmd;
-      return txCmd == TxCommand.COMMIT || txCmd == TxCommand.ROLLBACK;
+      return txCmd.kind == TxCommand.Kind.COMMIT || txCmd.kind == TxCommand.Kind.ROLLBACK;
     }
     return false;
   }
@@ -191,7 +195,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
       case ST_PENDING:
       case ST_PROCESSING:
         Promise<Void> promise = context.promise();
-        schedule__(doQuery(TxCommand.COMMIT, promise));
+        schedule__(doQuery(COMMIT, promise));
         Future<Void> fut = promise.future();
         fut.onComplete(ar -> disposeHandler.handle(null));
         return fut.mapEmpty();
@@ -215,7 +219,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
       return context.failedFuture("Transaction already completed");
     } else {
       Promise<Void> promise = context.promise();
-      schedule__(doQuery(TxCommand.ROLLBACK, promise));
+      schedule__(doQuery(ROLLBACK, promise));
       Future<Void> fut = promise.future().mapEmpty();
       fut.onComplete(ar -> disposeHandler.handle(null));
       return fut;

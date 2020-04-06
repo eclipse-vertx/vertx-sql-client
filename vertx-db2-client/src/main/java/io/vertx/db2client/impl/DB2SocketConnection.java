@@ -40,9 +40,9 @@ public class DB2SocketConnection extends SocketConnectionBase {
     private DB2Codec codec;
     private Handler<Void> closeHandler;
 
-    public DB2SocketConnection(NetSocketInternal socket, 
+    public DB2SocketConnection(NetSocketInternal socket,
     		boolean cachePreparedStatements,
-            int preparedStatementCacheSize, 
+            int preparedStatementCacheSize,
             int preparedStatementCacheSqlLimit,
             int pipeliningLimit,
             ContextInternal context) {
@@ -65,37 +65,37 @@ public class DB2SocketConnection extends SocketConnectionBase {
         pipeline.addBefore("handler", "codec", codec);
         super.init();
     }
-    
+
     @Override
     protected <R> void doSchedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
       if (cmd instanceof TxCommand) {
         TxCommand txCmd = (TxCommand) cmd;
-        if (TxCommand.BEGIN.sql.equals(txCmd.sql)) {
+        if (txCmd.kind == TxCommand.Kind.BEGIN) {
           // DB2 always implicitly starts a transaction with each query, and does
           // not support the 'BEGIN' keyword. Instead we can no-op BEGIN commands
           cmd.handler = handler;
           cmd.complete(CommandResponse.success((R) null).toAsyncResult());
         } else {
           SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(
-              txCmd.sql,
+              txCmd.kind.sql,
               false,
               false,
               QueryCommandBase.NULL_COLLECTOR,
               QueryResultHandler.NOOP_HANDLER);
             super.doSchedule(cmd2, ar -> handler.handle(ar.mapEmpty()));
-          
+
         }
       } else {
         super.doSchedule(cmd, handler);
       }
     }
-    
+
     @Override
     public void handleClose(Throwable t) {
       super.handleClose(t);
       context().runOnContext(closeHandler);
     }
-    
+
     public DB2SocketConnection closeHandler(Handler<Void> handler) {
       closeHandler = handler;
       return this;
