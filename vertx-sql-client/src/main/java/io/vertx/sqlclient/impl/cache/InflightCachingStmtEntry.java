@@ -18,29 +18,27 @@ import io.vertx.sqlclient.impl.PreparedStatement;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-public class CachedPreparedStatement implements Handler<AsyncResult<PreparedStatement>> {
-
+class InflightCachingStmtEntry implements Handler<AsyncResult<PreparedStatement>> {
   private final Deque<Handler<AsyncResult<PreparedStatement>>> waiters = new ArrayDeque<>();
-  AsyncResult<PreparedStatement> resp;
+  private final String sql;
+  private final PreparedStatementCacheManager cacheManager;
 
-  public void get(Handler<AsyncResult<PreparedStatement>> handler) {
-    if (resp != null) {
-      handler.handle(resp);
-    } else {
-      waiters.add(handler);
-    }
+  InflightCachingStmtEntry(String sql, PreparedStatementCacheManager cacheManager) {
+    this.sql = sql;
+    this.cacheManager = cacheManager;
+  }
+
+  void addWaiter(Handler<AsyncResult<PreparedStatement>> handler) {
+    waiters.add(handler);
   }
 
   @Override
-  public void handle(AsyncResult<PreparedStatement> event) {
-    resp = event;
+  public void handle(AsyncResult<PreparedStatement> preparedStatementResult) {
+    cacheManager.psCache().put(sql, preparedStatementResult); // put it in the cache since the response is ready
+    cacheManager.inflight().remove(sql);
     Handler<AsyncResult<PreparedStatement>> waiter;
     while ((waiter = waiters.poll()) != null) {
-      waiter.handle(resp);
+      waiter.handle(preparedStatementResult);
     }
-  }
-
-  public Deque<Handler<AsyncResult<PreparedStatement>>> waiters() {
-    return waiters;
   }
 }

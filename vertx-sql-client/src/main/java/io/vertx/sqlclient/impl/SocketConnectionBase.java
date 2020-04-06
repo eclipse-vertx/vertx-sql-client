@@ -30,8 +30,7 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.sqlclient.impl.cache.CachedPreparedStatement;
-import io.vertx.sqlclient.impl.cache.PreparedStatementCache;
+import io.vertx.sqlclient.impl.cache.PreparedStatementCacheManager;
 import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
@@ -49,7 +48,7 @@ public abstract class SocketConnectionBase implements Connection {
 
   }
 
-  protected final PreparedStatementCache psCache;
+  protected final PreparedStatementCacheManager psCacheManager;
   private final int preparedStatementCacheSqlLimit;
   private final ArrayDeque<CommandBase<?>> pending = new ArrayDeque<>();
   private final ContextInternal context;
@@ -69,7 +68,7 @@ public abstract class SocketConnectionBase implements Connection {
     this.socket = socket;
     this.context = context;
     this.pipeliningLimit = pipeliningLimit;
-    this.psCache = cachePreparedStatements ? new PreparedStatementCache(preparedStatementCacheSize, this) : null;
+    this.psCacheManager = cachePreparedStatements ? new PreparedStatementCacheManager(this, preparedStatementCacheSize) : null;
     this.preparedStatementCacheSqlLimit = preparedStatementCacheSqlLimit;
   }
 
@@ -162,42 +161,26 @@ public abstract class SocketConnectionBase implements Connection {
     }
 
     // Special handling for cache
-    PreparedStatementCache psCache = this.psCache;
-    if (psCache != null) {
+    PreparedStatementCacheManager cmdCacheManager = this.psCacheManager;
+    if (cmdCacheManager != null) {
+      // cache is enabled
       if (cmd instanceof PrepareStatementCommand) {
         PrepareStatementCommand psCmd = (PrepareStatementCommand) cmd;
         if (psCmd.sql().length() > preparedStatementCacheSqlLimit) {
-          // do not cache the statements
+          // do not cache the statements if it exceeds the sql length limit
         } else {
-          CachedPreparedStatement cached = psCache.get(psCmd.sql());
-          Handler<AsyncResult<PreparedStatement>> orig = (Handler) handler;
-          if (cached != null) {
-            psCmd.handler = orig;
-            cached.get(psCmd::complete);
+          Handler<AsyncResult<PreparedStatement>> originalHandler = (Handler) handler;
+          Handler<AsyncResult<PreparedStatement>> newHandler = cmdCacheManager.appendStmtReq(psCmd.sql(), originalHandler);
+          if (newHandler == null) {
+            // we don't need to schedule it if the result is cached or the request has been sent
             return;
           } else {
-            if (psCache.size() >= psCache.getCapacity() && !psCache.isReady()) {
-              // only if the prepared statement is ready then it can be evicted
-            } else {
-              cached = new CachedPreparedStatement();
-              cached.get(orig);
-              psCache.put(psCmd.sql(), cached);
-              handler = (Handler) cached;
-            }
+            handler = (Handler) newHandler;
           }
         }
       } else if (cmd instanceof CloseStatementCommand) {
         CloseStatementCommand closeStmtCommand = (CloseStatementCommand) cmd;
-
-        CachedPreparedStatement cached = psCache.get(closeStmtCommand.statement().sql());
-        // evict from the cache, we notify all the waiters or rather schedule a new prepare cmd?
-        // how do we handle all the stmt_exec commands, should we let them go and fail by server if stmt has been closed?
-        if (cached != null) {
-          psCache.remove(closeStmtCommand.statement().sql());
-          for (Handler<AsyncResult<PreparedStatement>> waiter : cached.waiters()) {
-            waiter.handle(Future.failedFuture("The prepared statement has been closed."));
-          }
-        }
+        psCacheManager.closeStmt(closeStmtCommand.statement());
       }
     }
 
