@@ -168,22 +168,22 @@ public abstract class SocketConnectionBase implements Connection {
         PrepareStatementCommand psCmd = (PrepareStatementCommand) cmd;
         if (psCmd.sql().length() > preparedStatementCacheSqlLimit) {
           // do not cache the statements
-          return;
-        }
-        CachedPreparedStatement cached = psCache.get(psCmd.sql());
-        Handler<AsyncResult<PreparedStatement>> orig = (Handler) handler;
-        if (cached != null) {
-          psCmd.handler = orig;
-          cached.get(psCmd::complete);
-          return;
         } else {
-          if (psCache.size() >= psCache.getCapacity() && !psCache.isReady()) {
-            // only if the prepared statement is ready then it can be evicted
+          CachedPreparedStatement cached = psCache.get(psCmd.sql());
+          Handler<AsyncResult<PreparedStatement>> orig = (Handler) handler;
+          if (cached != null) {
+            psCmd.handler = orig;
+            cached.get(psCmd::complete);
+            return;
           } else {
-            cached = new CachedPreparedStatement();
-            cached.get(orig);
-            psCache.put(psCmd.sql(), cached);
-            handler = (Handler) cached;
+            if (psCache.size() >= psCache.getCapacity() && !psCache.isReady()) {
+              // only if the prepared statement is ready then it can be evicted
+            } else {
+              cached = new CachedPreparedStatement();
+              cached.get(orig);
+              psCache.put(psCmd.sql(), cached);
+              handler = (Handler) cached;
+            }
           }
         }
       } else if (cmd instanceof CloseStatementCommand) {
