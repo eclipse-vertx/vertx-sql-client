@@ -32,9 +32,8 @@ import io.vertx.sqlclient.impl.command.TxCommand;
 
 public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implements Transaction {
 
-  private static final TxCommand BEGIN = new TxCommand(TxCommand.Kind.BEGIN);
-  private static final TxCommand ROLLBACK = new TxCommand(TxCommand.Kind.ROLLBACK);
-  private static final TxCommand COMMIT = new TxCommand(TxCommand.Kind.COMMIT);
+  private static final TxCommand<Void> ROLLBACK = new TxCommand<>(TxCommand.Kind.ROLLBACK, null);
+  private static final TxCommand<Void> COMMIT = new TxCommand<>(TxCommand.Kind.COMMIT, null);
 
   private static final int ST_BEGIN = 0;
   private static final int ST_PENDING = 1;
@@ -53,7 +52,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
     this.disposeHandler = disposeHandler;
     this.promise = context.promise();
     this.future = promise.future();
-    ScheduledCommand<Void> b = doQuery(BEGIN, context.promise(this::afterBegin));
+    ScheduledCommand<Transaction> b = doQuery(new TxCommand<>(TxCommand.Kind.BEGIN, this), context.promise(this::afterBegin));
     doSchedule(b.cmd, b.handler);
   }
 
@@ -128,7 +127,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
     };
   }
 
-  private synchronized void afterBegin(AsyncResult<?> ar) {
+  private synchronized void afterBegin(AsyncResult<Transaction> ar) {
     if (ar.succeeded()) {
       status = ST_PENDING;
     } else {
@@ -244,7 +243,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
     return this;
   }
 
-  private ScheduledCommand<Void> doQuery(TxCommand cmd, Promise<Void> handler) {
+  private <R> ScheduledCommand<R> doQuery(TxCommand<R> cmd, Promise<R> handler) {
     return new ScheduledCommand<>(cmd, handler);
   }
 

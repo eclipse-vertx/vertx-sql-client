@@ -11,7 +11,7 @@
 
 package io.vertx.sqlclient.impl.command;
 
-public class TxCommand extends CommandBase<Void> {
+public class TxCommand<R> extends CommandBase<R> {
 
   public enum Kind {
 
@@ -24,9 +24,11 @@ public class TxCommand extends CommandBase<Void> {
     }
   }
 
+  public final R result;
   public final Kind kind;
 
-  public TxCommand(Kind kind) {
+  public TxCommand(Kind kind, R result) {
     this.kind = kind;
+    this.result = result;
   }
 }
