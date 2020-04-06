@@ -15,7 +15,6 @@ import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.sqlclient.Transaction;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -72,26 +71,27 @@ public class MySQLConnectionTestBase extends MySQLTestBase {
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       deleteFromMutableTable(ctx, conn, () -> {
         exec.execute(() -> {
-          Transaction tx = conn.begin();
-          AtomicInteger u1 = new AtomicInteger();
-          AtomicInteger u2 = new AtomicInteger();
-          conn.query("INSERT INTO mutable (id, val) VALUES (1, 'val-1')").execute(ctx.asyncAssertSuccess(res1 -> {
-            u1.addAndGet(res1.rowCount());
-            exec.execute(() -> {
-              conn.query("INSERT INTO mutable (id, val) VALUES (2, 'val-2')").execute(ctx.asyncAssertSuccess(res2 -> {
-                u2.addAndGet(res2.rowCount());
-                exec.execute(() -> {
-                  tx.commit(ctx.asyncAssertSuccess(v -> {
-                    ctx.assertEquals(1, u1.get());
-                    ctx.assertEquals(1, u2.get());
-                    conn.query("SELECT id FROM mutable WHERE id=1 OR id=2").execute(ctx.asyncAssertSuccess(result -> {
-                      ctx.assertEquals(2, result.size());
-                      done.complete();
+          conn.begin().onComplete(ctx.asyncAssertSuccess(tx -> {
+            AtomicInteger u1 = new AtomicInteger();
+            AtomicInteger u2 = new AtomicInteger();
+            conn.query("INSERT INTO mutable (id, val) VALUES (1, 'val-1')").execute(ctx.asyncAssertSuccess(res1 -> {
+              u1.addAndGet(res1.rowCount());
+              exec.execute(() -> {
+                conn.query("INSERT INTO mutable (id, val) VALUES (2, 'val-2')").execute(ctx.asyncAssertSuccess(res2 -> {
+                  u2.addAndGet(res2.rowCount());
+                  exec.execute(() -> {
+                    tx.commit(ctx.asyncAssertSuccess(v -> {
+                      ctx.assertEquals(1, u1.get());
+                      ctx.assertEquals(1, u2.get());
+                      conn.query("SELECT id FROM mutable WHERE id=1 OR id=2").execute(ctx.asyncAssertSuccess(result -> {
+                        ctx.assertEquals(2, result.size());
+                        done.complete();
+                      }));
                     }));
-                  }));
-                });
-              }));
-            });
+                  });
+                }));
+              });
+            }));
           }));
         });
       });
@@ -113,26 +113,27 @@ public class MySQLConnectionTestBase extends MySQLTestBase {
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       deleteFromMutableTable(ctx, conn, () -> {
         exec.execute(() -> {
-          Transaction tx = conn.begin();
-          AtomicInteger u1 = new AtomicInteger();
-          AtomicInteger u2 = new AtomicInteger();
-          conn.query("INSERT INTO mutable (id, val) VALUES (1, 'val-1')").execute(ctx.asyncAssertSuccess(res1 -> {
-            u1.addAndGet(res1.rowCount());
-            exec.execute(() -> {
-
-            });
-            conn.query("INSERT INTO mutable (id, val) VALUES (2, 'val-2')").execute(ctx.asyncAssertSuccess(res2 -> {
-              u2.addAndGet(res2.rowCount());
+          conn.begin().onComplete(ctx.asyncAssertSuccess(tx -> {
+            AtomicInteger u1 = new AtomicInteger();
+            AtomicInteger u2 = new AtomicInteger();
+            conn.query("INSERT INTO mutable (id, val) VALUES (1, 'val-1')").execute(ctx.asyncAssertSuccess(res1 -> {
+              u1.addAndGet(res1.rowCount());
               exec.execute(() -> {
-                tx.rollback(ctx.asyncAssertSuccess(v -> {
-                  ctx.assertEquals(1, u1.get());
-                  ctx.assertEquals(1, u2.get());
-                  conn.query("SELECT id FROM mutable WHERE id=1 OR id=2").execute(ctx.asyncAssertSuccess(result -> {
-                    ctx.assertEquals(0, result.size());
-                    done.complete();
-                  }));
-                }));
+
               });
+              conn.query("INSERT INTO mutable (id, val) VALUES (2, 'val-2')").execute(ctx.asyncAssertSuccess(res2 -> {
+                u2.addAndGet(res2.rowCount());
+                exec.execute(() -> {
+                  tx.rollback(ctx.asyncAssertSuccess(v -> {
+                    ctx.assertEquals(1, u1.get());
+                    ctx.assertEquals(1, u2.get());
+                    conn.query("SELECT id FROM mutable WHERE id=1 OR id=2").execute(ctx.asyncAssertSuccess(result -> {
+                      ctx.assertEquals(0, result.size());
+                      done.complete();
+                    }));
+                  }));
+                });
+              }));
             }));
           }));
         });
@@ -145,27 +146,28 @@ public class MySQLConnectionTestBase extends MySQLTestBase {
     Async done = ctx.async();
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       deleteFromMutableTable(ctx, conn, () -> {
-        Transaction tx = conn.begin();
-        AtomicInteger failures = new AtomicInteger();
-        tx.abortHandler(v -> ctx.assertEquals(0, failures.getAndIncrement()));
-        AtomicReference<Boolean> queryAfterFailed = new AtomicReference<>();
-        AtomicReference<Boolean> commit = new AtomicReference<>();
-        conn.query("INSERT INTO mutable (id, val) VALUES (1, 'val-1')").execute(ar1 -> { });
-        conn.query("INSERT INTO mutable (id, val) VALUES (1, 'val-2')").execute(ar2 -> {
-          ctx.assertNotNull(queryAfterFailed.get());
-          ctx.assertTrue(queryAfterFailed.get());
-          ctx.assertNotNull(commit.get());
-          ctx.assertTrue(commit.get());
-          ctx.assertTrue(ar2.failed());
-          ctx.assertEquals(1, failures.get());
-          // This query won't be made in the same TX
-          conn.query("SELECT id FROM mutable WHERE id=1").execute(ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(0, result.size());
-            done.complete();
-          }));
-        });
-        conn.query("SELECT id FROM mutable").execute(result -> queryAfterFailed.set(result.failed()));
-        tx.commit(result -> commit.set(result.failed()));
+        conn.begin().onComplete(ctx.asyncAssertSuccess(tx -> {
+          AtomicInteger failures = new AtomicInteger();
+          tx.abortHandler(v -> ctx.assertEquals(0, failures.getAndIncrement()));
+          AtomicReference<Boolean> queryAfterFailed = new AtomicReference<>();
+          AtomicReference<Boolean> commit = new AtomicReference<>();
+          conn.query("INSERT INTO mutable (id, val) VALUES (1, 'val-1')").execute(ar1 -> { });
+          conn.query("INSERT INTO mutable (id, val) VALUES (1, 'val-2')").execute(ar2 -> {
+            ctx.assertNotNull(queryAfterFailed.get());
+            ctx.assertTrue(queryAfterFailed.get());
+            ctx.assertNotNull(commit.get());
+            ctx.assertTrue(commit.get());
+            ctx.assertTrue(ar2.failed());
+            ctx.assertEquals(1, failures.get());
+            // This query won't be made in the same TX
+            conn.query("SELECT id FROM mutable WHERE id=1").execute(ctx.asyncAssertSuccess(result -> {
+              ctx.assertEquals(0, result.size());
+              done.complete();
+            }));
+          });
+          conn.query("SELECT id FROM mutable").execute(result -> queryAfterFailed.set(result.failed()));
+          tx.commit(result -> commit.set(result.failed()));
+        }));
       });
     }));
   }

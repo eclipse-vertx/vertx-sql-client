@@ -198,35 +198,39 @@ public class SqlClientExamples {
         SqlConnection conn = res.result();
 
         // Begin the transaction
-        Transaction tx = conn.begin();
+        conn.begin(ar0 -> {
+          if (ar0.succeeded()) {
+            Transaction tx = ar0.result();
 
-        // Various statements
-        conn
-          .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
-          .execute(ar1 -> {
-          if (ar1.succeeded()) {
+            // Various statements
             conn
-              .query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')")
-              .execute(ar2 -> {
-              if (ar2.succeeded()) {
-                // Commit the transaction
-                tx.commit(ar3 -> {
-                  if (ar3.succeeded()) {
-                    System.out.println("Transaction succeeded");
-                  } else {
-                    System.out.println("Transaction failed " + ar3.cause().getMessage());
-                  }
+              .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
+              .execute(ar1 -> {
+                if (ar1.succeeded()) {
+                  conn
+                    .query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')")
+                    .execute(ar2 -> {
+                      if (ar2.succeeded()) {
+                        // Commit the transaction
+                        tx.commit(ar3 -> {
+                          if (ar3.succeeded()) {
+                            System.out.println("Transaction succeeded");
+                          } else {
+                            System.out.println("Transaction failed " + ar3.cause().getMessage());
+                          }
+                          // Return the connection to the pool
+                          conn.close();
+                        });
+                      } else {
+                        // Return the connection to the pool
+                        conn.close();
+                      }
+                    });
+                } else {
                   // Return the connection to the pool
                   conn.close();
-                });
-              } else {
-                // Return the connection to the pool
-                conn.close();
-              }
-            });
-          } else {
-            // Return the connection to the pool
-            conn.close();
+                }
+              });
           }
         });
       }

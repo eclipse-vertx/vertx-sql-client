@@ -65,7 +65,7 @@ public class DB2TransactionTest extends TransactionTestBase {
   protected String statement(String... parts) {
     return String.join("?", parts);
   }
-  
+
   @Test
   public void testDelayedCommit(TestContext ctx) {
     assumeFalse("DB2 on Z holds write locks on inserted columns with isolation level = 2", rule.isZOS());

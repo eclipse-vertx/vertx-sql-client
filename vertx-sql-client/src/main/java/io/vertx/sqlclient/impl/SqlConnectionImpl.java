@@ -93,21 +93,20 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
   }
 
   @Override
-  public Transaction begin() {
-    return begin(false);
-  }
-
-  public Transaction begin(boolean closeOnEnd) {
+  public Future<Transaction> begin() {
     if (tx != null) {
       throw new IllegalStateException();
     }
     tx = new TransactionImpl(context, conn, v -> {
       tx = null;
-      if (closeOnEnd) {
-        close();
-      }
     });
-    return tx;
+    return tx.begin();
+  }
+
+  @Override
+  public void begin(Handler<AsyncResult<Transaction>> handler) {
+    Future<Transaction> fut = begin();
+    fut.onComplete(handler);
   }
 
   public void handleEvent(Object event) {

@@ -83,10 +83,19 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
 
   @Override
   public Future<Transaction> begin() {
-    Future<SqlConnection> fut = getConnection();
-    return fut.map(c -> {
-      SqlConnectionImpl conn = (SqlConnectionImpl) c;
-      return conn.begin(true);
+    return getConnection().flatMap(conn -> {
+      Future<Transaction> fut = conn.begin();
+      fut.onComplete(ar1 -> {
+        if (ar1.succeeded()) {
+          Transaction tx = ar1.result();
+          tx.result().onComplete(ar2 -> {
+            conn.close();
+          });
+        } else {
+          conn.close();
+        }
+      });
+      return fut;
     });
   }
 

@@ -344,35 +344,36 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       deleteFromTestTable(ctx, conn, () -> {
         exec.execute(() -> {
-          Transaction tx = conn.begin();
-          AtomicInteger u1 = new AtomicInteger();
-          AtomicInteger u2 = new AtomicInteger();
-          tx.result().onComplete(ctx.asyncAssertSuccess(v -> {
-            //
-          }));
-          conn
-            .query("INSERT INTO Test (id, val) VALUES (1, 'val-1')")
-            .execute(ctx.asyncAssertSuccess(res1 -> {
-            u1.addAndGet(res1.rowCount());
-            exec.execute(() -> {
-              conn
-                .query("INSERT INTO Test (id, val) VALUES (2, 'val-2')")
-                .execute(ctx.asyncAssertSuccess(res2 -> {
-                u2.addAndGet(res2.rowCount());
+          conn.begin().onComplete(ctx.asyncAssertSuccess(tx -> {
+            AtomicInteger u1 = new AtomicInteger();
+            AtomicInteger u2 = new AtomicInteger();
+            tx.result().onComplete(ctx.asyncAssertSuccess(v -> {
+              //
+            }));
+            conn
+              .query("INSERT INTO Test (id, val) VALUES (1, 'val-1')")
+              .execute(ctx.asyncAssertSuccess(res1 -> {
+                u1.addAndGet(res1.rowCount());
                 exec.execute(() -> {
-                  tx.commit(ctx.asyncAssertSuccess(v -> {
-                    ctx.assertEquals(1, u1.get());
-                    ctx.assertEquals(1, u2.get());
-                    conn
-                      .query("SELECT id FROM Test WHERE id=1 OR id=2")
-                      .execute(ctx.asyncAssertSuccess(result -> {
-                      ctx.assertEquals(2, result.size());
-                      done.complete();
+                  conn
+                    .query("INSERT INTO Test (id, val) VALUES (2, 'val-2')")
+                    .execute(ctx.asyncAssertSuccess(res2 -> {
+                      u2.addAndGet(res2.rowCount());
+                      exec.execute(() -> {
+                        tx.commit(ctx.asyncAssertSuccess(v -> {
+                          ctx.assertEquals(1, u1.get());
+                          ctx.assertEquals(1, u2.get());
+                          conn
+                            .query("SELECT id FROM Test WHERE id=1 OR id=2")
+                            .execute(ctx.asyncAssertSuccess(result -> {
+                              ctx.assertEquals(2, result.size());
+                              done.complete();
+                            }));
+                        }));
+                      });
                     }));
-                  }));
                 });
               }));
-            });
           }));
         });
       });
@@ -394,36 +395,37 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       deleteFromTestTable(ctx, conn, () -> {
         exec.execute(() -> {
-          Transaction tx = conn.begin();
-          AtomicInteger u1 = new AtomicInteger();
-          AtomicInteger u2 = new AtomicInteger();
-          tx.result().onComplete(ctx.asyncAssertFailure(err -> {
-            ctx.assertEquals(TransactionRollbackException.INSTANCE, err);
-          }));
-          conn
-            .query("INSERT INTO Test (id, val) VALUES (1, 'val-1')")
-            .execute(ctx.asyncAssertSuccess(res1 -> {
-            u1.addAndGet(res1.rowCount());
-            exec.execute(() -> {
-
-            });
-            conn
-              .query("INSERT INTO Test (id, val) VALUES (2, 'val-2')")
-              .execute(ctx.asyncAssertSuccess(res2 -> {
-              u2.addAndGet(res2.rowCount());
-              exec.execute(() -> {
-                tx.rollback(ctx.asyncAssertSuccess(v -> {
-                  ctx.assertEquals(1, u1.get());
-                  ctx.assertEquals(1, u2.get());
-                  conn
-                    .query("SELECT id FROM Test WHERE id=1 OR id=2")
-                    .execute(ctx.asyncAssertSuccess(result -> {
-                    ctx.assertEquals(0, result.size());
-                    done.complete();
-                  }));
-                }));
-              });
+          conn.begin().onComplete(ctx.asyncAssertSuccess(tx -> {
+            AtomicInteger u1 = new AtomicInteger();
+            AtomicInteger u2 = new AtomicInteger();
+            tx.result().onComplete(ctx.asyncAssertFailure(err -> {
+              ctx.assertEquals(TransactionRollbackException.INSTANCE, err);
             }));
+            conn
+              .query("INSERT INTO Test (id, val) VALUES (1, 'val-1')")
+              .execute(ctx.asyncAssertSuccess(res1 -> {
+                u1.addAndGet(res1.rowCount());
+                exec.execute(() -> {
+
+                });
+                conn
+                  .query("INSERT INTO Test (id, val) VALUES (2, 'val-2')")
+                  .execute(ctx.asyncAssertSuccess(res2 -> {
+                    u2.addAndGet(res2.rowCount());
+                    exec.execute(() -> {
+                      tx.rollback(ctx.asyncAssertSuccess(v -> {
+                        ctx.assertEquals(1, u1.get());
+                        ctx.assertEquals(1, u2.get());
+                        conn
+                          .query("SELECT id FROM Test WHERE id=1 OR id=2")
+                          .execute(ctx.asyncAssertSuccess(result -> {
+                            ctx.assertEquals(0, result.size());
+                            done.complete();
+                          }));
+                      }));
+                    });
+                  }));
+              }));
           }));
         });
       });
@@ -435,31 +437,32 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
     Async done = ctx.async(2);
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       deleteFromTestTable(ctx, conn, () -> {
-        Transaction tx = conn.begin();
-        AtomicInteger failures = new AtomicInteger();
-        tx.abortHandler(v -> ctx.assertEquals(0, failures.getAndIncrement()));
-        tx.result().onComplete(ctx.asyncAssertFailure(err -> {
-          ctx.assertEquals(TransactionRollbackException.INSTANCE, err);
-          done.countDown();
-        }));
-        AtomicReference<AsyncResult<RowSet<Row>>> queryAfterFailed = new AtomicReference<>();
-        AtomicReference<AsyncResult<Void>> commit = new AtomicReference<>();
-        conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-1')").execute(ar1 -> { });
-        conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-2')").execute(ar2 -> {
-          ctx.assertNotNull(queryAfterFailed.get());
-          ctx.assertTrue(queryAfterFailed.get().failed());
-          ctx.assertNotNull(commit.get());
-          ctx.assertTrue(commit.get().failed());
-          ctx.assertTrue(ar2.failed());
-          ctx.assertEquals(1, failures.get());
-          // This query won't be made in the same TX
-          conn.query("SELECT id FROM Test WHERE id=1").execute(ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(0, result.size());
+        conn.begin().onComplete(ctx.asyncAssertSuccess(tx -> {
+          AtomicInteger failures = new AtomicInteger();
+          tx.abortHandler(v -> ctx.assertEquals(0, failures.getAndIncrement()));
+          tx.result().onComplete(ctx.asyncAssertFailure(err -> {
+            ctx.assertEquals(TransactionRollbackException.INSTANCE, err);
             done.countDown();
           }));
-        });
-        conn.query("SELECT id FROM Test").execute(queryAfterFailed::set);
-        tx.commit(commit::set);
+          AtomicReference<AsyncResult<RowSet<Row>>> queryAfterFailed = new AtomicReference<>();
+          AtomicReference<AsyncResult<Void>> commit = new AtomicReference<>();
+          conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-1')").execute(ar1 -> { });
+          conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-2')").execute(ar2 -> {
+            ctx.assertNotNull(queryAfterFailed.get());
+            ctx.assertTrue(queryAfterFailed.get().failed());
+            ctx.assertNotNull(commit.get());
+            ctx.assertTrue(commit.get().failed());
+            ctx.assertTrue(ar2.failed());
+            ctx.assertEquals(1, failures.get());
+            // This query won't be made in the same TX
+            conn.query("SELECT id FROM Test WHERE id=1").execute(ctx.asyncAssertSuccess(result -> {
+              ctx.assertEquals(0, result.size());
+              done.countDown();
+            }));
+          });
+          conn.query("SELECT id FROM Test").execute(queryAfterFailed::set);
+          tx.commit(commit::set);
+        }));
       });
     }));
   }

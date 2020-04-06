@@ -25,6 +25,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.VertxException;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.PromiseInternal;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.TransactionRollbackException;
 import io.vertx.sqlclient.impl.command.CommandBase;
@@ -52,8 +53,6 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
     this.disposeHandler = disposeHandler;
     this.promise = context.promise();
     this.future = promise.future();
-    ScheduledCommand<Transaction> b = doQuery(new TxCommand<>(TxCommand.Kind.BEGIN, this), context.promise(this::afterBegin));
-    doSchedule(b.cmd, b.handler);
   }
 
   static class ScheduledCommand<R> {
@@ -63,6 +62,13 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
       this.cmd = cmd;
       this.handler = handler;
     }
+  }
+
+  Future<Transaction> begin() {
+    PromiseInternal<Transaction> promise = context.promise(this::afterBegin);
+    ScheduledCommand<Transaction> b = doQuery(new TxCommand<>(TxCommand.Kind.BEGIN, this), promise);
+    doSchedule(b.cmd, b.handler);
+    return promise.future();
   }
 
   @Override
