@@ -181,20 +181,6 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     out.setInt(pos + 1, out.writerIndex() - pos - 1);
   }
 
-  void writeClosePreparedStatement(long statementName) {
-    ensureBuffer();
-    int pos = out.writerIndex();
-    out.writeByte(CLOSE);
-    out.writeInt(0);
-    out.writeByte('S'); // 'S' to close a prepared statement or 'P' to close a portal
-    if (statementName == 0) {
-      out.writeByte(0);
-    } else {
-      out.writeLong(statementName);
-    }
-    out.setInt(pos + 1, out.writerIndex() - pos - 1);
-  }
-
   void writeStartupMessage(StartupMessage msg) {
     ensureBuffer();
 
