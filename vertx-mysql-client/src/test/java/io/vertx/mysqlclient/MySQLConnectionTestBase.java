@@ -148,7 +148,7 @@ public class MySQLConnectionTestBase extends MySQLTestBase {
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       deleteFromMutableTable(ctx, conn, () -> {
         conn.begin().onComplete(ctx.asyncAssertSuccess(tx -> {
-          tx.result().onComplete(ctx.asyncAssertFailure(err -> {
+          tx.completion().onComplete(ctx.asyncAssertFailure(err -> {
             ctx.assertEquals(TransactionRollbackException.INSTANCE, err);
             done.countDown();
           }));

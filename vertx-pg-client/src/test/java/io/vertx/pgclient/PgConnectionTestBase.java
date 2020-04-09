@@ -20,7 +20,6 @@ package io.vertx.pgclient;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.TransactionRollbackException;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.core.*;
@@ -347,7 +346,7 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
           conn.begin().onComplete(ctx.asyncAssertSuccess(tx -> {
             AtomicInteger u1 = new AtomicInteger();
             AtomicInteger u2 = new AtomicInteger();
-            tx.result().onComplete(ctx.asyncAssertSuccess(v -> {
+            tx.completion().onComplete(ctx.asyncAssertSuccess(v -> {
               //
             }));
             conn
@@ -398,7 +397,7 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
           conn.begin().onComplete(ctx.asyncAssertSuccess(tx -> {
             AtomicInteger u1 = new AtomicInteger();
             AtomicInteger u2 = new AtomicInteger();
-            tx.result().onComplete(ctx.asyncAssertFailure(err -> {
+            tx.completion().onComplete(ctx.asyncAssertFailure(err -> {
               ctx.assertEquals(TransactionRollbackException.INSTANCE, err);
             }));
             conn
@@ -438,7 +437,7 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       deleteFromTestTable(ctx, conn, () -> {
         conn.begin().onComplete(ctx.asyncAssertSuccess(tx -> {
-          tx.result().onComplete(ctx.asyncAssertFailure(err -> {
+          tx.completion().onComplete(ctx.asyncAssertFailure(err -> {
             ctx.assertEquals(TransactionRollbackException.INSTANCE, err);
             done.countDown();
           }));

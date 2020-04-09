@@ -45,14 +45,14 @@ class TransactionImpl implements Transaction {
   private final Connection connection;
   private Deque<ScheduledCommand<?>> pending = new ArrayDeque<>();
   private int status = ST_BEGIN;
-  private final Promise<Void> promise;
-  private final Future<Void> future;
+  private final Promise<Void> completionPromise;
+  private final Future<Void> completionFuture;
 
   TransactionImpl(ContextInternal context, Connection connection) {
     this.context = context;
     this.connection = connection;
-    this.promise = context.promise();
-    this.future = promise.future();
+    this.completionPromise = context.promise();
+    this.completionFuture = completionPromise.future();
   }
 
   static class ScheduledCommand<R> {
@@ -82,12 +82,12 @@ class TransactionImpl implements Transaction {
       doSchedule(cmd, ar -> {
         if (ar.succeeded()) {
           if (cmd == COMMIT) {
-            promise.tryComplete();
+            completionPromise.tryComplete();
           } else {
-            promise.tryFail(TransactionRollbackException.INSTANCE);
+            completionPromise.tryFail(TransactionRollbackException.INSTANCE);
           }
         } else {
-          promise.tryFail(ar.cause());
+          completionPromise.tryFail(ar.cause());
         }
         scheduled.handler.handle(ar);
       });
@@ -228,7 +228,7 @@ class TransactionImpl implements Transaction {
   }
 
   @Override
-  public Future<Void> result() {
-    return future;
+  public Future<Void> completion() {
+    return completionFuture;
   }
 }

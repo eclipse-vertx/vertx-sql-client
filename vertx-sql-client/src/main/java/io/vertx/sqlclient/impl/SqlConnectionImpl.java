@@ -98,7 +98,7 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
       throw new IllegalStateException();
     }
     tx = new TransactionImpl(context, conn);
-    tx.result().onComplete(ar -> {
+    tx.completion().onComplete(ar -> {
       tx = null;
     });
     return tx.begin();

@@ -68,7 +68,7 @@ public abstract class TransactionTestBase {
           conn.begin(ar2 -> {
             if (ar2.succeeded()) {
               Transaction tx = ar2.result();
-              tx.result().onComplete(ar3 -> {
+              tx.completion().onComplete(ar3 -> {
                 conn.close();
               });
               handler.handle(Future.succeededFuture(new Result(conn, tx)));
@@ -127,7 +127,7 @@ public abstract class TransactionTestBase {
   public void testReleaseConnectionOnRollback(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(res -> {
-      res.tx.result().onComplete(ctx.asyncAssertFailure(err -> ctx.assertEquals(TransactionRollbackException.INSTANCE, err)));
+      res.tx.completion().onComplete(ctx.asyncAssertFailure(err -> ctx.assertEquals(TransactionRollbackException.INSTANCE, err)));
       res.client.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
         res.tx.rollback(ctx.asyncAssertSuccess(v1 -> {
@@ -144,7 +144,7 @@ public abstract class TransactionTestBase {
   public void testReleaseConnectionOnSetRollback(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(res -> {
-      res.tx.result().onComplete(ctx.asyncAssertFailure(err -> {
+      res.tx.completion().onComplete(ctx.asyncAssertFailure(err -> {
         ctx.assertEquals(TransactionRollbackException.INSTANCE, err);
         async.complete();
       }));

@@ -22,7 +22,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 /**
- * A transaction that allows to control the transaction and receive events.
+ * A transaction.
  */
 @VertxGen
 public interface Transaction {
@@ -53,7 +53,7 @@ public interface Transaction {
   void close();
 
   /**
-   * Return the transaction result, the returned future
+   * Return the transaction completion {@code Future} that
    *
    * <ul>
    *   <li>succeeds when the transaction commits</li>
@@ -62,6 +62,6 @@ public interface Transaction {
    *
    * @return the transaction result
    */
-  Future<Void> result();
+  Future<Void> completion();
 
 }
