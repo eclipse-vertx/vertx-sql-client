@@ -22,13 +22,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Cache manager which manages the lifecycle of all cached prepared statements .
+ * Cache which manages the lifecycle of all cached prepared statements .
  */
-public class PreparedStatementCacheManager {
+public class PreparedStatementCache {
   private final Map<String, InflightCachingStmtEntry> inflight;
-  private final PreparedStatementResultLruCache psCache;
+  private final LruCache cache;
 
-  public PreparedStatementCacheManager(SocketConnectionBase conn, int cacheCapacity) {
+  public PreparedStatementCache(SocketConnectionBase conn, int cacheCapacity) {
     this.inflight = new HashMap<>();
 
     final Handler<AsyncResult<PreparedStatement>> onEvictedHandler = stmtAr -> {
@@ -40,11 +40,11 @@ public class PreparedStatementCacheManager {
         // no need to close a failure stmt
       }
     };
-    this.psCache = new PreparedStatementResultLruCache(cacheCapacity, onEvictedHandler);
+    this.cache = new LruCache(cacheCapacity, onEvictedHandler);
   }
 
   /**
-   * Append a new prepared statement request to this cache manager.
+   * Append a new prepared statement request to this cache.
    *
    * @param sql the sql string to be prepare
    * @param originalHandler the original prepare command handler
@@ -52,7 +52,7 @@ public class PreparedStatementCacheManager {
    * or a new {@code Handler} which represents the handler of all appending req waiters so it can be called when the command response is ready.
    */
   public Handler<AsyncResult<PreparedStatement>> appendStmtReq(String sql, Handler<AsyncResult<PreparedStatement>> originalHandler) {
-    AsyncResult<PreparedStatement> preparedStmtCachedResult = psCache.get(sql);
+    AsyncResult<PreparedStatement> preparedStmtCachedResult = cache.get(sql);
     if (preparedStmtCachedResult != null) {
       // result is cached, just return it directly
       originalHandler.handle(preparedStmtCachedResult);
@@ -79,11 +79,11 @@ public class PreparedStatementCacheManager {
    */
   public void closeStmt(PreparedStatement preparedStatement) {
     this.inflight.remove(preparedStatement.sql());
-    this.psCache.remove(preparedStatement.sql());
+    this.cache.remove(preparedStatement.sql());
   }
 
-  PreparedStatementResultLruCache psCache() {
-    return psCache;
+  LruCache cache() {
+    return cache;
   }
 
   Map<String, InflightCachingStmtEntry> inflight() {

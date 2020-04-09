@@ -30,7 +30,7 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.sqlclient.impl.cache.PreparedStatementCacheManager;
+import io.vertx.sqlclient.impl.cache.PreparedStatementCache;
 import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
@@ -48,7 +48,7 @@ public abstract class SocketConnectionBase implements Connection {
 
   }
 
-  protected final PreparedStatementCacheManager psCacheManager;
+  protected final PreparedStatementCache psCache;
   private final int preparedStatementCacheSqlLimit;
   private final ArrayDeque<CommandBase<?>> pending = new ArrayDeque<>();
   private final ContextInternal context;
@@ -68,7 +68,7 @@ public abstract class SocketConnectionBase implements Connection {
     this.socket = socket;
     this.context = context;
     this.pipeliningLimit = pipeliningLimit;
-    this.psCacheManager = cachePreparedStatements ? new PreparedStatementCacheManager(this, preparedStatementCacheSize) : null;
+    this.psCache = cachePreparedStatements ? new PreparedStatementCache(this, preparedStatementCacheSize) : null;
     this.preparedStatementCacheSqlLimit = preparedStatementCacheSqlLimit;
   }
 
@@ -161,8 +161,8 @@ public abstract class SocketConnectionBase implements Connection {
     }
 
     // Special handling for cache
-    PreparedStatementCacheManager cmdCacheManager = this.psCacheManager;
-    if (cmdCacheManager != null) {
+    PreparedStatementCache psCache = this.psCache;
+    if (psCache != null) {
       // cache is enabled
       if (cmd instanceof PrepareStatementCommand) {
         PrepareStatementCommand psCmd = (PrepareStatementCommand) cmd;
@@ -170,7 +170,7 @@ public abstract class SocketConnectionBase implements Connection {
           // do not cache the statements if it exceeds the sql length limit
         } else {
           Handler<AsyncResult<PreparedStatement>> originalHandler = (Handler) handler;
-          Handler<AsyncResult<PreparedStatement>> newHandler = cmdCacheManager.appendStmtReq(psCmd.sql(), originalHandler);
+          Handler<AsyncResult<PreparedStatement>> newHandler = psCache.appendStmtReq(psCmd.sql(), originalHandler);
           if (newHandler == null) {
             // we don't need to schedule it if the result is cached or the request has been sent
             return;
@@ -180,7 +180,7 @@ public abstract class SocketConnectionBase implements Connection {
         }
       } else if (cmd instanceof CloseStatementCommand) {
         CloseStatementCommand closeStmtCommand = (CloseStatementCommand) cmd;
-        psCacheManager.closeStmt(closeStmtCommand.statement());
+        psCache.closeStmt(closeStmtCommand.statement());
       }
     }
 

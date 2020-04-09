@@ -21,11 +21,11 @@ import java.util.Map;
 /**
  * A LRU replacement strategy cache based on {@link java.util.LinkedHashMap} for prepared statements.
  */
-class PreparedStatementResultLruCache extends LinkedHashMap<String, AsyncResult<PreparedStatement>> {
+class LruCache extends LinkedHashMap<String, AsyncResult<PreparedStatement>> {
   private final int capacity;
   private final Handler<AsyncResult<PreparedStatement>> onEvictedHandler;
 
-  PreparedStatementResultLruCache(int capacity, Handler<AsyncResult<PreparedStatement>> onEvictedHandler) {
+  LruCache(int capacity, Handler<AsyncResult<PreparedStatement>> onEvictedHandler) {
     super(capacity, 0.75f, true);
     this.capacity = capacity;
     this.onEvictedHandler = onEvictedHandler;

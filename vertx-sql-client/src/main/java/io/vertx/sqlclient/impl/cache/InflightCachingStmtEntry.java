@@ -21,11 +21,11 @@ import java.util.Deque;
 class InflightCachingStmtEntry implements Handler<AsyncResult<PreparedStatement>> {
   private final Deque<Handler<AsyncResult<PreparedStatement>>> waiters = new ArrayDeque<>();
   private final String sql;
-  private final PreparedStatementCacheManager cacheManager;
+  private final PreparedStatementCache psCache;
 
-  InflightCachingStmtEntry(String sql, PreparedStatementCacheManager cacheManager) {
+  InflightCachingStmtEntry(String sql, PreparedStatementCache psCache) {
     this.sql = sql;
-    this.cacheManager = cacheManager;
+    this.psCache = psCache;
   }
 
   void addWaiter(Handler<AsyncResult<PreparedStatement>> handler) {
@@ -34,8 +34,8 @@ class InflightCachingStmtEntry implements Handler<AsyncResult<PreparedStatement>
 
   @Override
   public void handle(AsyncResult<PreparedStatement> preparedStatementResult) {
-    cacheManager.psCache().put(sql, preparedStatementResult); // put it in the cache since the response is ready
-    cacheManager.inflight().remove(sql);
+    psCache.cache().put(sql, preparedStatementResult); // put it in the cache since the response is ready
+    psCache.inflight().remove(sql);
     Handler<AsyncResult<PreparedStatement>> waiter;
     while ((waiter = waiters.poll()) != null) {
       waiter.handle(preparedStatementResult);
