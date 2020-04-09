@@ -31,7 +31,7 @@ import io.vertx.sqlclient.TransactionRollbackException;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.TxCommand;
 
-public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implements Transaction {
+class TransactionImpl implements Transaction {
 
   private static final TxCommand<Void> ROLLBACK = new TxCommand<>(TxCommand.Kind.ROLLBACK, null);
   private static final TxCommand<Void> COMMIT = new TxCommand<>(TxCommand.Kind.COMMIT, null);
@@ -41,14 +41,17 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   private static final int ST_PROCESSING = 2;
   private static final int ST_COMPLETED = 3;
 
+  private final ContextInternal context;
+  private final Connection connection;
   private Deque<ScheduledCommand<?>> pending = new ArrayDeque<>();
   private Handler<Void> failedHandler;
   private int status = ST_BEGIN;
   private final Promise<Void> promise;
   private final Future<Void> future;
 
-  TransactionImpl(ContextInternal context, Connection conn) {
-    super(context, conn);
+  TransactionImpl(ContextInternal context, Connection connection) {
+    this.context = context;
+    this.connection = connection;
     this.promise = context.promise();
     this.future = promise.future();
   }
@@ -69,18 +72,8 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
     return promise.future();
   }
 
-  @Override
-  protected <T> Promise<T> promise() {
-    return context.promise();
-  }
-
-  @Override
-  protected <T> Promise<T> promise(Handler<AsyncResult<T>> handler) {
-    return context.promise(handler);
-  }
-
   private <R> void doSchedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
-    conn.schedule(cmd, context.promise(handler));
+    connection.schedule(cmd, context.promise(handler));
   }
 
   private <R> void wrapAndSchedule(ScheduledCommand<R> scheduled) {
@@ -174,7 +167,6 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
     }
   }
 
-  @Override
   public <R> void schedule(CommandBase<R> cmd, Promise<R> handler) {
     schedule__(cmd, handler);
   }
@@ -244,11 +236,6 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
 
   private <R> ScheduledCommand<R> doQuery(TxCommand<R> cmd, Promise<R> handler) {
     return new ScheduledCommand<>(cmd, handler);
-  }
-
-  @Override
-  boolean autoCommit() {
-    return false;
   }
 
   @Override

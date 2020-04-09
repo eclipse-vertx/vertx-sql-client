@@ -29,20 +29,6 @@ import io.vertx.core.Handler;
 public interface Transaction {
 
   /**
-   * Create a prepared query.
-   *
-   * @param sql the sql
-   * @param handler the handler notified with the prepared query asynchronously
-   */
-  @Fluent
-  Transaction prepare(String sql, Handler<AsyncResult<PreparedStatement>> handler);
-
-  /**
-   * Like {@link #prepare(String, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  Future<PreparedStatement> prepare(String sql);
-
-  /**
    * Commit the current transaction.
    */
   Future<Void> commit();
