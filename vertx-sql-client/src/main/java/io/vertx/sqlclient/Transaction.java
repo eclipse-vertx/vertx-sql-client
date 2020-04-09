@@ -38,7 +38,7 @@ public interface Transaction {
   void commit(Handler<AsyncResult<Void>> handler);
 
   /**
-   * Rollback the current transaction.
+   * Rollback the transaction and release the associated resources.
    */
   Future<Void> rollback();
 
@@ -46,11 +46,6 @@ public interface Transaction {
    * Like {@link #rollback} with an handler to be notified when the transaction rollback has completed
    */
   void rollback(Handler<AsyncResult<Void>> handler);
-
-  /**
-   * Rollback the transaction and release the associated resources.
-   */
-  void close();
 
   /**
    * Return the transaction completion {@code Future} that

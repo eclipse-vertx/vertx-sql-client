@@ -218,11 +218,6 @@ class TransactionImpl implements Transaction {
     }
   }
 
-  @Override
-  public void close() {
-    rollback();
-  }
-
   private <R> ScheduledCommand<R> doQuery(TxCommand<R> cmd, Promise<R> handler) {
     return new ScheduledCommand<>(cmd, handler);
   }
