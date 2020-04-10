@@ -161,7 +161,7 @@ public abstract class TransactionTestBase {
         .execute(Tuple.of(13, "test message1"), ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
           res.tx.commit(ctx.asyncAssertSuccess(v1 -> {
-          pool.query("SELECT id, val from mutable where id = 13").execute(ctx.asyncAssertSuccess(rowSet -> {
+            res.client.query("SELECT id, val from mutable where id = 13").execute(ctx.asyncAssertSuccess(rowSet -> {
             ctx.assertEquals(1, rowSet.size());
             Row row = rowSet.iterator().next();
             ctx.assertEquals(13, row.getInteger("id"));
@@ -181,7 +181,7 @@ public abstract class TransactionTestBase {
         .execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
           res.tx.commit(ctx.asyncAssertSuccess(v1 -> {
-          pool.query("SELECT id, val from mutable where id = 14")
+          res.client.query("SELECT id, val from mutable where id = 14")
             .execute(ctx.asyncAssertSuccess(rowSet -> {
             ctx.assertEquals(1, rowSet.size());
             Row row = rowSet.iterator().next();
@@ -202,7 +202,7 @@ public abstract class TransactionTestBase {
         .execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
           res.tx.rollback(ctx.asyncAssertSuccess(v1 -> {
-          pool.query("SELECT id, message from immutable where id = 7")
+          res.client.query("SELECT id, message from immutable where id = 7")
             .execute(ctx.asyncAssertSuccess(rowSet -> {
             ctx.assertEquals(1, rowSet.size());
             Row row = rowSet.iterator().next();
