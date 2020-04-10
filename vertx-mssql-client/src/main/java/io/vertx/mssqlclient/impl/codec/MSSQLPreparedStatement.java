@@ -19,12 +19,12 @@ import io.vertx.sqlclient.impl.TupleInternal;
 public class MSSQLPreparedStatement implements PreparedStatement {
   final String sql;
   final MSSQLParamDesc paramDesc;
-  final boolean auto;
+  final boolean cacheable;
 
-  public MSSQLPreparedStatement(String sql, MSSQLParamDesc paramDesc, boolean auto) {
+  public MSSQLPreparedStatement(String sql, MSSQLParamDesc paramDesc, boolean cacheable) {
     this.sql = sql;
     this.paramDesc = paramDesc;
-    this.auto = auto;
+    this.cacheable = cacheable;
   }
 
   @Override
@@ -49,7 +49,7 @@ public class MSSQLPreparedStatement implements PreparedStatement {
   }
 
   @Override
-  public boolean auto() {
-    return auto;
+  public boolean cacheable() {
+    return cacheable;
   }
 }

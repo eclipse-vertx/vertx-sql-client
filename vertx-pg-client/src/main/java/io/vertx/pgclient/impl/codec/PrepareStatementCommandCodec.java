@@ -32,7 +32,7 @@ class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, Pre
 
   @Override
   void encode(PgEncoder encoder) {
-    if (!cmd.auto()) {
+    if (!cmd.cacheable()) {
       statement = encoder.nextStatementName();
     } else {
       statement = 0L;
@@ -72,7 +72,7 @@ class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, Pre
 
   @Override
   public void handleReadyForQuery() {
-    result = new PgPreparedStatement(cmd.sql(), statement, this.parameterDesc, this.rowDesc, cmd.auto());
+    result = new PgPreparedStatement(cmd.sql(), statement, this.parameterDesc, this.rowDesc, cmd.cacheable());
     super.handleReadyForQuery();
   }
 }

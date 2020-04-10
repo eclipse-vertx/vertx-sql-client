@@ -164,7 +164,7 @@ public abstract class SocketConnectionBase implements Connection {
     PreparedStatementCache psCache = this.psCache;
     if (psCache != null && cmd instanceof PrepareStatementCommand) {
       PrepareStatementCommand psCmd = (PrepareStatementCommand) cmd;
-      if (!psCmd.auto()) {
+      if (!psCmd.cacheable()) {
         // we don't cache non one-shot preparedQuery
       } else if (psCmd.sql().length() > preparedStatementCacheSqlLimit) {
         // do not cache the statements

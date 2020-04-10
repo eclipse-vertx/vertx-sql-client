@@ -31,9 +31,9 @@ class PgPreparedStatement implements PreparedStatement {
   final Bind bind;
   final PgParamDesc paramDesc;
   final PgRowDesc rowDesc;
-  final boolean auto;
+  final boolean cacheable;
 
-  PgPreparedStatement(String sql, long statement, PgParamDesc paramDesc, PgRowDesc rowDesc, boolean auto) {
+  PgPreparedStatement(String sql, long statement, PgParamDesc paramDesc, PgRowDesc rowDesc, boolean cacheable) {
 
     // Fix to use binary when possible
     if (rowDesc != null) {
@@ -53,7 +53,7 @@ class PgPreparedStatement implements PreparedStatement {
     this.rowDesc = rowDesc;
     this.sql = sql;
     this.bind = new Bind(statement, paramDesc != null ? paramDesc.paramDataTypes() : null, rowDesc != null ? rowDesc.columns : EMPTY_COLUMNS);
-    this.auto = auto;
+    this.cacheable = cacheable;
   }
 
   @Override
@@ -80,7 +80,7 @@ class PgPreparedStatement implements PreparedStatement {
    * @return true if the statement is a unnamed prepared statement
    */
   @Override
-  public boolean auto() {
-    return auto;
+  public boolean cacheable() {
+    return cacheable;
   }
 }

@@ -22,11 +22,11 @@ import io.vertx.sqlclient.impl.PreparedStatement;
 public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
 
   private final String sql;
-  private final boolean auto;
+  private final boolean cacheable;
 
-  public PrepareStatementCommand(String sql, boolean auto) {
+  public PrepareStatementCommand(String sql, boolean cacheable) {
     this.sql = sql;
-    this.auto = auto;
+    this.cacheable = cacheable;
   }
 
   public String sql() {
@@ -34,13 +34,16 @@ public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
   }
 
   /**
-   * Indicate whether this command is scheduled from {@link io.vertx.sqlclient.SqlClient#preparedQuery(String) one-shot preparedQuery} or {@link io.vertx.sqlclient.SqlConnection#prepare(String)}.
-   * This flag will tell if lifecycle of the statement will be controlled by the client or not.
+   * Indicate whether the prepared statement will be cached or not.
    *
-   * @return true if the command is a one-shot prepared query.
+   * The prepared statement won't be cached if the command is scheduled from {@link io.vertx.sqlclient.SqlConnection#prepare(String)}
+   * since the lifecycle of those statements should not be managed by this client.
+   *
+   * @return true if the command is scheduled from {@link io.vertx.sqlclient.SqlClient#preparedQuery(String) one-shot preparedQuery.
+   *
    */
-  public boolean auto() {
-    return auto;
+  public boolean cacheable() {
+    return cacheable;
   }
 
 }

@@ -27,5 +27,5 @@ public interface PreparedStatement {
 
   String prepare(TupleInternal values);
 
-  boolean auto();
+  boolean cacheable();
 }

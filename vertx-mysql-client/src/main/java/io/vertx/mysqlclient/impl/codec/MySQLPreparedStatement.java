@@ -30,16 +30,16 @@ class MySQLPreparedStatement implements PreparedStatement {
   final String sql;
   final MySQLParamDesc paramDesc;
   final MySQLRowDesc rowDesc;
-  final boolean auto;
+  final boolean cacheable;
 
   boolean isCursorOpen;
 
-  MySQLPreparedStatement(String sql, long statementId, MySQLParamDesc paramDesc, MySQLRowDesc rowDesc, boolean auto) {
+  MySQLPreparedStatement(String sql, long statementId, MySQLParamDesc paramDesc, MySQLRowDesc rowDesc, boolean cacheable) {
     this.statementId = statementId;
     this.paramDesc = paramDesc;
     this.rowDesc = rowDesc;
     this.sql = sql;
-    this.auto = auto;
+    this.cacheable = cacheable;
   }
 
   @Override
@@ -63,7 +63,7 @@ class MySQLPreparedStatement implements PreparedStatement {
   }
 
   @Override
-  public boolean auto() {
-    return auto;
+  public boolean cacheable() {
+    return cacheable;
   }
 }

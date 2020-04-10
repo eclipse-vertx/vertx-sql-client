@@ -90,7 +90,7 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
 
     private void handleReadyForQuery() {
         completionHandler.handle(CommandResponse.success(new DB2PreparedStatement(cmd.sql(),
-                new DB2ParamDesc(paramDesc), new DB2RowDesc(rowDesc), section, cmd.auto())));
+                new DB2ParamDesc(paramDesc), new DB2RowDesc(rowDesc), section, cmd.cacheable())));
     }
 
     private void resetIntermediaryResult() {

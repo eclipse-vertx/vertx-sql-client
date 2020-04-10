@@ -136,7 +136,7 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
       this.statementId,
       new MySQLParamDesc(paramDescs),
       new MySQLRowDesc(columnDescs, DataFormat.BINARY),
-      cmd.auto())));
+      cmd.cacheable())));
   }
 
   private void resetIntermediaryResult() {
