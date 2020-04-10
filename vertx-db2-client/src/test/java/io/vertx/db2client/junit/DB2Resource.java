@@ -106,7 +106,7 @@ public class DB2Resource extends ExternalResource {
               try {
                 con.createStatement().execute(currentLine);
               } catch (SQLSyntaxErrorException e) {
-                if (sql.startsWith("DROP TABLE ") && e.getErrorCode() == -204) {
+                if (sql.startsWith("DROP ") && e.getErrorCode() == -204) {
                   System.out.println("  ignoring syntax exception: " + e.getMessage());
                 } else {
                   throw e;
@@ -114,6 +114,9 @@ public class DB2Resource extends ExternalResource {
               }
               currentLine = "";
           }
+      }
+      if (!currentLine.isEmpty()) {
+    	  throw new IllegalStateException("Dangling SQL on init script. Ensure all statements are terminated with ';' char. SQL: " + currentLine);
       }
   }
     
