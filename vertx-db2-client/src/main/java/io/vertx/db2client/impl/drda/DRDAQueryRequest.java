@@ -48,13 +48,15 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
     }
     
     /**
-     * @return True if the SQL is a query (i.e. SELECT or WITH), false otherwise
-     *         IllegalArgumentException thrown if the passed in SQL value is null
+     * @return True if the SQL is a query (e.g. SELECT or WITH), false otherwise
+     * @throws IllegalArgumentException if the passed in SQL value is null
      */
     public static boolean isQuery(String sql) {
     	if (sql != null) {
-    		return sql.trim().toLowerCase().startsWith("select") 
-                || sql.trim().toLowerCase().startsWith("with");
+    		String trimmedLower = sql.trim().toLowerCase();
+    		return trimmedLower.startsWith("select") 
+                || trimmedLower.startsWith("with")
+                || trimmedLower.startsWith("values");
     	} else {
     		throw new IllegalArgumentException("SQLState.NULL_SQL_TEXT");
     	}

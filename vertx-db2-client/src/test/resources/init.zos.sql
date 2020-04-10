@@ -114,3 +114,7 @@ CREATE TABLE ROWTEST(
     id      ROWID NOT NULL GENERATED ALWAYS,
     message varchar(1024)
 );
+
+-- Sequence used by QueryVariationsTest
+DROP SEQUENCE my_seq;
+CREATE SEQUENCE my_seq INCREMENT BY 1 START WITH 1;

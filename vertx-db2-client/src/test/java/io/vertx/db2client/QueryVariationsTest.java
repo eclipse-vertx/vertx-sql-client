@@ -1,6 +1,8 @@
 package io.vertx.db2client;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,6 +11,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowIterator;
+import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 
 /**
@@ -120,6 +123,69 @@ public class QueryVariationsTest extends DB2TestBase {
             ctx.assertFalse(rows.hasNext());
           }));
 	  }));
+	}
+	
+	/**
+	 * Test that queries starting with the "VALUES" keyword work properly
+	 */
+	@Test
+	public void testSequenceQuery(TestContext ctx) {
+		connect(ctx.asyncAssertSuccess(con -> {
+			con.query("values nextval for my_seq")
+			.execute(ctx.asyncAssertSuccess(rowSet1 -> {
+				// Initially the sequence should be N (where N >= 1)
+				int startingSeq = assertSequenceResult(ctx, rowSet1, seqVal -> {
+					ctx.assertTrue(seqVal >= 1, "Sequence value was not >= 1. Value: " + seqVal);
+				});
+				con.query("VALUES nextval for my_seq")
+				.execute(ctx.asyncAssertSuccess(rowSet2 -> {
+					// Next the sequence should be N+1
+					assertSequenceResult(ctx, rowSet2, seqVal -> ctx.assertEquals(startingSeq + 1, seqVal));
+					con.query("VALUES nextval for my_seq")
+					.execute(ctx.asyncAssertSuccess(rowSet3 -> {
+						// Finally, the sequence should be N+2
+						assertSequenceResult(ctx, rowSet3, seqVal -> ctx.assertEquals(startingSeq + 2, seqVal));
+					}));
+				}));
+			}));
+		}));
+	}
+	
+	/**
+	 * Like testSequenceQuery but with prepared statements
+	 */
+	@Test
+	public void testSequenceQueryPrepared(TestContext ctx) {
+		connect(ctx.asyncAssertSuccess(con -> {
+			con.preparedQuery("VALUES nextval for my_seq")
+			.execute(ctx.asyncAssertSuccess(rowSet1 -> {
+				// Initially the sequence should be N (where N >= 1)
+				int startingSeq = assertSequenceResult(ctx, rowSet1, seqVal -> {
+					ctx.assertTrue(seqVal >= 1, "Sequence value was not >= 1. Value: " + seqVal);
+				});
+				con.preparedQuery("values nextval for my_seq")
+				.execute(ctx.asyncAssertSuccess(rowSet2 -> {
+					// Next the sequence should be N+1
+					assertSequenceResult(ctx, rowSet2, seqVal -> ctx.assertEquals(startingSeq + 1, seqVal));
+					con.preparedQuery("values nextval for my_seq")
+					.execute(ctx.asyncAssertSuccess(rowSet3 -> {
+						// Finally, the sequence should be N+2
+						assertSequenceResult(ctx, rowSet3, seqVal -> ctx.assertEquals(startingSeq + 2, seqVal));
+					}));
+				}));
+			}));
+		}));
+	}
+	
+	private int assertSequenceResult(TestContext ctx, RowSet<Row> rowSet, Consumer<Integer> validation) {
+		ctx.assertEquals(1, rowSet.size());
+		RowIterator<Row> rows = rowSet.iterator();
+        ctx.assertTrue(rows.hasNext());
+        Row row = rows.next();
+        ctx.assertNotNull(row);
+        int seqVal = row.getInteger(0);
+        validation.accept(seqVal);
+        return seqVal;
 	}
 
 }
