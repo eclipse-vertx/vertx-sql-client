@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.db2client.DB2Exception;
 
 public class DRDAConnectResponse extends DRDAResponse {
   
@@ -1141,8 +1142,7 @@ public class DRDAConnectResponse extends DRDAResponse {
     private void parseACCSECreply(int securityMechanism) {
         int peekCP = peekCodePoint();
         if (peekCP != CodePoint.ACCSECRD) {
-            throw new IllegalStateException(String.format("Expecting ACCSECRD codepoint (0x14AC) but got %04x", peekCP));
-            //parseAccessSecurityError(netConnection);
+            parseAccessSecurityError();
         }
         parseACCSECRD(securityMechanism);
 
@@ -1152,6 +1152,191 @@ public class DRDAConnectResponse extends DRDAResponse {
 //                SanityManager.THROWASSERT("expected END_OF_SAME_ID_CHAIN");
 //            }
 //        }
+    }
+    
+    private void parseAccessSecurityError() {
+        int peekCP = peekCodePoint();
+        switch (peekCP) {
+        case CodePoint.CMDCHKRM:
+            parseCMDCHKRM();
+            break;
+        case CodePoint.RDBNFNRM:
+            parseRDBNFNRM();
+            break;
+        case CodePoint.RDBAFLRM:
+            parseRdbAccessFailed();
+            break;
+        default:
+            parseCommonError(peekCP);
+        }
+    }
+    
+    // RDB Not Found Reply Message indicates that the target
+    // server cannot find the specified relational database.
+    // PROTOCOL architects an SQLSTATE of 08004.
+    //
+    // Messages
+    // SQLSTATE : 8004
+    //     The application server rejected establishment of the connection.
+    //     SQLCODE : -30061
+    //     The database alias or database name <name> was not found at the remote node.
+    //     The statement cannot be processed.
+    //
+    //
+    // Returned from Server:
+    // SVRCOD - required  (8 - ERROR)
+    // RDBNAM - required
+    private void parseRDBNFNRM() {
+        boolean svrcodReceived = false;
+        int svrcod = CodePoint.SVRCOD_INFO;
+        boolean rdbnamReceived = false;
+        String rdbnam = null;
+
+        parseLengthAndMatchCodePoint(CodePoint.RDBNFNRM);
+        pushLengthOnCollectionStack();
+        int peekCP = peekCodePoint();
+
+        while (peekCP != END_OF_COLLECTION) {
+
+            boolean foundInPass = false;
+
+            if (peekCP == CodePoint.SVRCOD) {
+                foundInPass = true;
+                svrcodReceived = checkAndGetReceivedFlag(svrcodReceived);
+                svrcod = parseSVRCOD(CodePoint.SVRCOD_ERROR, CodePoint.SVRCOD_ERROR);
+                peekCP = peekCodePoint();
+            }
+
+            if (peekCP == CodePoint.RDBNAM) {
+                foundInPass = true;
+                rdbnamReceived = checkAndGetReceivedFlag(rdbnamReceived);
+                rdbnam = parseRDBNAM(true);
+                peekCP = peekCodePoint();
+            }
+            
+            if (peekCP == CodePoint.SRVDGN) {
+            	foundInPass = true;
+            	String serverDiagnostics = parseSRVDGN();
+            	// TODO: @AGG Log the server diagnostics here
+            	peekCP = peekCodePoint();
+            }
+
+            if (!foundInPass) {
+            	throwUnknownCodepoint(peekCP);
+            }
+
+        }
+        popCollectionStack();
+        if (!svrcodReceived)
+        	throwMissingRequiredCodepoint("SVRCOD", CodePoint.SVRCOD);
+        if (!rdbnamReceived)
+        	throwMissingRequiredCodepoint("RDBNAM", CodePoint.RDBNAM);
+
+//        netAgent_.setSvrcod(svrcod);
+        throw new DB2Exception("The requested database was not found: " + metadata.databaseName,
+        		SqlCode.RDB_NOT_FOUND, SQLState.NET_DATABASE_NOT_FOUND);
+//        agent_.accumulateChainBreakingReadExceptionAndThrow(new DisconnectException(agent_,
+//            new ClientMessageId(SQLState.NET_DATABASE_NOT_FOUND),
+//            netConnection.databaseName_));
+    }
+    
+    private void parseRdbAccessFailed() {
+        parseRDBAFLRM();
+
+        // an SQLCARD is returned if an RDBALFRM is returned.
+        // this SQLCARD always follows the RDBALFRM.
+        // TYPDEFNAM and TYPDEFOVR are MTLINC
+
+        if (peekCodePoint() == CodePoint.TYPDEFNAM) {
+            parseTYPDEFNAM();
+            parseTYPDEFOVR();
+        } else {
+            parseTYPDEFOVR();
+            parseTYPDEFNAM();
+        }
+
+        NetSqlca netSqlca = parseSQLCARD(null);
+        
+        //Check if the SQLCARD has null SQLException
+        if(netSqlca.getSqlErrmc() == null) {
+        	// netConnection.setConnectionNull(true); 
+        } else {
+        	NetSqlca.complete(netSqlca);
+        }
+    }
+    
+    // RDB Access Failed Reply Message specifies that the relational
+    // database failed the attempted connection.
+    // An SQLCARD object must also be returned, following the
+    // RDBAFLRM, to explain why the RDB failed the connection.
+    // In addition, the target SQLAM instance is destroyed.
+    // The SQLSTATE is returned in the SQLCARD.
+    //
+    // Messages
+    // SQLSTATE : 58009
+    //     Execution failed due to a distribution protocol error that caused deallocation of the conversation.
+    //     SQLCODE : -30020
+    //     Execution failed because of a Distributed Protocol
+    //         Error that will affect the successful execution of subsequent
+    //         commands and SQL statements: Reason Code <reason-code>.
+    //      Some possible reason codes include:
+    //      121C Indicates that the user is not authorized to perform the requested command.
+    //      1232 The command could not be completed because of a permanent error.
+    //          In most cases, the server will be in the process of an abend.
+    //      220A The target server has received an invalid data description.
+    //          If a user SQLDA is specified, ensure that the fields are
+    //          initialized correctly. Also, ensure that the length does not
+    //          exceed the maximum allowed length for the data type being used.
+    //
+    //      The command or statement cannot be processed.  The current
+    //      transaction is rolled back and the application is disconnected
+    //      from the remote database.
+    //
+    //
+    // Returned from Server:
+    // SVRCOD - required  (8 - ERROR)
+    // RDBNAM - required
+    //
+    private void parseRDBAFLRM() {
+        boolean svrcodReceived = false;
+        int svrcod = CodePoint.SVRCOD_INFO;
+        boolean rdbnamReceived = false;
+        String rdbnam = null;
+
+        parseLengthAndMatchCodePoint(CodePoint.RDBAFLRM);
+        pushLengthOnCollectionStack();
+        int peekCP = peekCodePoint();
+
+        while (peekCP != END_OF_COLLECTION) {
+
+            boolean foundInPass = false;
+
+            if (peekCP == CodePoint.SVRCOD) {
+                foundInPass = true;
+                svrcodReceived = checkAndGetReceivedFlag(svrcodReceived);
+                svrcod = parseSVRCOD(CodePoint.SVRCOD_ERROR, CodePoint.SVRCOD_ERROR);
+                peekCP = peekCodePoint();
+            }
+
+            if (peekCP == CodePoint.RDBNAM) {
+                foundInPass = true;
+                rdbnamReceived = checkAndGetReceivedFlag(rdbnamReceived);
+                rdbnam = parseRDBNAM(true);
+                peekCP = peekCodePoint();
+            }
+
+            if (!foundInPass) {
+            	throwUnknownCodepoint(peekCP);
+            }
+
+        }
+        popCollectionStack();
+        if (!svrcodReceived)
+        	throwMissingRequiredCodepoint("SVRCOD", CodePoint.SVRCOD);
+        if (!rdbnamReceived)
+        	throwMissingRequiredCodepoint("RDBNAM", CodePoint.RDBNAM);
+
+//        netAgent_.setSvrcod(svrcod);
     }
     
     // The Access Security Reply Data (ACSECRD) Collection Object contains
