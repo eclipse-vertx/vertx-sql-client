@@ -15,6 +15,7 @@ import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.sqlclient.TransactionRollbackException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -143,12 +144,14 @@ public class MySQLConnectionTestBase extends MySQLTestBase {
 
   @Test
   public void testTransactionAbort(TestContext ctx) {
-    Async done = ctx.async();
+    Async done = ctx.async(2);
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       deleteFromMutableTable(ctx, conn, () -> {
         conn.begin().onComplete(ctx.asyncAssertSuccess(tx -> {
-          AtomicInteger failures = new AtomicInteger();
-          tx.abortHandler(v -> ctx.assertEquals(0, failures.getAndIncrement()));
+          tx.result().onComplete(ctx.asyncAssertFailure(err -> {
+            ctx.assertEquals(TransactionRollbackException.INSTANCE, err);
+            done.countDown();
+          }));
           AtomicReference<Boolean> queryAfterFailed = new AtomicReference<>();
           AtomicReference<Boolean> commit = new AtomicReference<>();
           conn.query("INSERT INTO mutable (id, val) VALUES (1, 'val-1')").execute(ar1 -> { });
@@ -158,7 +161,6 @@ public class MySQLConnectionTestBase extends MySQLTestBase {
             ctx.assertNotNull(commit.get());
             ctx.assertTrue(commit.get());
             ctx.assertTrue(ar2.failed());
-            ctx.assertEquals(1, failures.get());
             // This query won't be made in the same TX
             conn.query("SELECT id FROM mutable WHERE id=1").execute(ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(0, result.size());

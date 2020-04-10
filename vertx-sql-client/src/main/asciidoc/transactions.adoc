@@ -13,8 +13,8 @@ Or you can use the transaction API of {@link io.vertx.sqlclient.SqlConnection}:
 ----
 
 When the database server reports the current transaction is failed (e.g the infamous _current transaction is aborted, commands ignored until
-end of transaction block_), the transaction is rollbacked and the {@link io.vertx.sqlclient.Transaction#abortHandler(io.vertx.core.Handler)}
-is called:
+end of transaction block_), the transaction is rollbacked and the {@link io.vertx.sqlclient.Transaction#result()} future
+is failed with a {@link io.vertx.sqlclient.TransactionRollbackException}:
 
 [source,$lang]
 ----

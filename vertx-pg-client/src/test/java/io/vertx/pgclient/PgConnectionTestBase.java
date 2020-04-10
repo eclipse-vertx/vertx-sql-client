@@ -438,8 +438,6 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       deleteFromTestTable(ctx, conn, () -> {
         conn.begin().onComplete(ctx.asyncAssertSuccess(tx -> {
-          AtomicInteger failures = new AtomicInteger();
-          tx.abortHandler(v -> ctx.assertEquals(0, failures.getAndIncrement()));
           tx.result().onComplete(ctx.asyncAssertFailure(err -> {
             ctx.assertEquals(TransactionRollbackException.INSTANCE, err);
             done.countDown();
@@ -453,7 +451,6 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
             ctx.assertNotNull(commit.get());
             ctx.assertTrue(commit.get().failed());
             ctx.assertTrue(ar2.failed());
-            ctx.assertEquals(1, failures.get());
             // This query won't be made in the same TX
             conn.query("SELECT id FROM Test WHERE id=1").execute(ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(0, result.size());

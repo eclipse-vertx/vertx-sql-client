@@ -16,7 +16,6 @@
  */
 package io.vertx.sqlclient;
 
-import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -47,14 +46,6 @@ public interface Transaction {
    * Like {@link #rollback} with an handler to be notified when the transaction rollback has completed
    */
   void rollback(Handler<AsyncResult<Void>> handler);
-
-  /**
-   * Set an handler to be called when the transaction is aborted.
-   *
-   * @param handler the handler
-   */
-  @Fluent
-  Transaction abortHandler(Handler<Void> handler);
 
   /**
    * Rollback the transaction and release the associated resources.

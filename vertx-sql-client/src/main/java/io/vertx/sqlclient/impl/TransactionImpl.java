@@ -44,7 +44,6 @@ class TransactionImpl implements Transaction {
   private final ContextInternal context;
   private final Connection connection;
   private Deque<ScheduledCommand<?>> pending = new ArrayDeque<>();
-  private Handler<Void> failedHandler;
   private int status = ST_BEGIN;
   private final Promise<Void> promise;
   private final Future<Void> future;
@@ -107,10 +106,6 @@ class TransactionImpl implements Transaction {
           ScheduledCommand<?> c;
           while ((c = pending.poll()) != null) {
             c.handler.handle(Future.failedFuture("Rollback exception"));
-          }
-          Handler<Void> h = failedHandler;
-          if (h != null) {
-            context.runOnContext(h);
           }
           schedule__(doQuery(ROLLBACK, context.promise(ar2 -> {
             handler.handle(ar);
@@ -226,12 +221,6 @@ class TransactionImpl implements Transaction {
   @Override
   public void close() {
     rollback();
-  }
-
-  @Override
-  public io.vertx.sqlclient.Transaction abortHandler(Handler<Void> handler) {
-    failedHandler = handler;
-    return this;
   }
 
   private <R> ScheduledCommand<R> doQuery(TxCommand<R> cmd, Promise<R> handler) {

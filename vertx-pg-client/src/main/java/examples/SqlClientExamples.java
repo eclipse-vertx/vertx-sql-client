@@ -252,7 +252,7 @@ public class SqlClientExamples {
   }
 
   public void transaction02(Transaction tx) {
-    tx.abortHandler(v -> {
+    tx.result().onFailure(err -> {
       System.out.println("Transaction failed => rollbacked");
     });
   }

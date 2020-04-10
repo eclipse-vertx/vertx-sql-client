@@ -144,13 +144,10 @@ public abstract class TransactionTestBase {
   public void testReleaseConnectionOnSetRollback(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(res -> {
-      res.tx.abortHandler(v -> {
-        // Try acquire the same connection on rollback
-        pool.getConnection(ctx.asyncAssertSuccess(v2 -> {
-          async.complete();
-        }));
-      });
-      res.tx.result().onComplete(ctx.asyncAssertFailure(err -> ctx.assertEquals(TransactionRollbackException.INSTANCE, err)));
+      res.tx.result().onComplete(ctx.asyncAssertFailure(err -> {
+        ctx.assertEquals(TransactionRollbackException.INSTANCE, err);
+        async.complete();
+      }));
       // Failure will abort
       res.client.query("SELECT whatever from DOES_NOT_EXIST").execute(ctx.asyncAssertFailure(result -> { }));
     }));
