@@ -31,8 +31,9 @@ class PgPreparedStatement implements PreparedStatement {
   final Bind bind;
   final PgParamDesc paramDesc;
   final PgRowDesc rowDesc;
+  final boolean auto;
 
-  PgPreparedStatement(String sql, long statement, PgParamDesc paramDesc, PgRowDesc rowDesc) {
+  PgPreparedStatement(String sql, long statement, PgParamDesc paramDesc, PgRowDesc rowDesc, boolean auto) {
 
     // Fix to use binary when possible
     if (rowDesc != null) {
@@ -52,6 +53,7 @@ class PgPreparedStatement implements PreparedStatement {
     this.rowDesc = rowDesc;
     this.sql = sql;
     this.bind = new Bind(statement, paramDesc != null ? paramDesc.paramDataTypes() : null, rowDesc != null ? rowDesc.columns : EMPTY_COLUMNS);
+    this.auto = auto;
   }
 
   @Override
@@ -72,5 +74,13 @@ class PgPreparedStatement implements PreparedStatement {
   @Override
   public String prepare(TupleInternal values) {
     return paramDesc.prepare(values);
+  }
+
+  /**
+   * @return true if the statement is a unnamed prepared statement
+   */
+  @Override
+  public boolean auto() {
+    return auto;
   }
 }

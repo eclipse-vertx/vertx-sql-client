@@ -30,14 +30,16 @@ class MySQLPreparedStatement implements PreparedStatement {
   final String sql;
   final MySQLParamDesc paramDesc;
   final MySQLRowDesc rowDesc;
+  final boolean auto;
 
   boolean isCursorOpen;
 
-  MySQLPreparedStatement(String sql, long statementId, MySQLParamDesc paramDesc, MySQLRowDesc rowDesc) {
+  MySQLPreparedStatement(String sql, long statementId, MySQLParamDesc paramDesc, MySQLRowDesc rowDesc, boolean auto) {
     this.statementId = statementId;
     this.paramDesc = paramDesc;
     this.rowDesc = rowDesc;
     this.sql = sql;
+    this.auto = auto;
   }
 
   @Override
@@ -58,5 +60,10 @@ class MySQLPreparedStatement implements PreparedStatement {
   @Override
   public String prepare(TupleInternal values) {
     return paramDesc.prepare(values);
+  }
+
+  @Override
+  public boolean auto() {
+    return auto;
   }
 }

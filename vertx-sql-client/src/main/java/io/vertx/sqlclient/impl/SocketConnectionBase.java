@@ -50,7 +50,6 @@ public abstract class SocketConnectionBase implements Connection {
 
   protected final PreparedStatementCache psCache;
   private final int preparedStatementCacheSqlLimit;
-  private final StringLongSequence psSeq = new StringLongSequence();
   private final ArrayDeque<CommandBase<?>> pending = new ArrayDeque<>();
   private final ContextInternal context;
   private int inflight;
@@ -165,25 +164,27 @@ public abstract class SocketConnectionBase implements Connection {
     PreparedStatementCache psCache = this.psCache;
     if (psCache != null && cmd instanceof PrepareStatementCommand) {
       PrepareStatementCommand psCmd = (PrepareStatementCommand) cmd;
-      if (psCmd.sql().length() > preparedStatementCacheSqlLimit) {
+      if (!psCmd.auto()) {
+        // we don't cache non one-shot preparedQuery
+      } else if (psCmd.sql().length() > preparedStatementCacheSqlLimit) {
         // do not cache the statements
-        return;
-      }
-      CachedPreparedStatement cached = psCache.get(psCmd.sql());
-      Handler<AsyncResult<PreparedStatement>> orig = (Handler) handler;
-      if (cached != null) {
-        psCmd.handler = orig;
-        cached.get(psCmd::complete);
-        return;
       } else {
-        if (psCache.size() >= psCache.getCapacity() && !psCache.isReady()) {
-          // only if the prepared statement is ready then it can be evicted
+        // TODO fix the auto-closing logic
+        CachedPreparedStatement cached = psCache.get(psCmd.sql());
+        Handler<AsyncResult<PreparedStatement>> orig = (Handler) handler;
+        if (cached != null) {
+          psCmd.handler = orig;
+          cached.get(psCmd::complete);
+          return;
         } else {
-          cached = new CachedPreparedStatement();
-          psCmd.statement = psSeq.next();
-          cached.get(orig);
-          psCache.put(psCmd.sql(), cached);
-          handler = (Handler) cached;
+          if (psCache.size() >= psCache.getCapacity() && !psCache.isReady()) {
+            // only if the prepared statement is ready then it can be evicted
+          } else {
+            cached = new CachedPreparedStatement();
+            cached.get(orig);
+            psCache.put(psCmd.sql(), cached);
+            handler = (Handler) cached;
+          }
         }
       }
     }

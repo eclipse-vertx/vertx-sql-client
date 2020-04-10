@@ -19,10 +19,12 @@ import io.vertx.sqlclient.impl.TupleInternal;
 public class MSSQLPreparedStatement implements PreparedStatement {
   final String sql;
   final MSSQLParamDesc paramDesc;
+  final boolean auto;
 
-  public MSSQLPreparedStatement(String sql, MSSQLParamDesc paramDesc) {
+  public MSSQLPreparedStatement(String sql, MSSQLParamDesc paramDesc, boolean auto) {
     this.sql = sql;
     this.paramDesc = paramDesc;
+    this.auto = auto;
   }
 
   @Override
@@ -44,5 +46,10 @@ public class MSSQLPreparedStatement implements PreparedStatement {
   public String prepare(TupleInternal values) {
 //    return paramDesc.prepare(values);
     return null;
+  }
+
+  @Override
+  public boolean auto() {
+    return auto;
   }
 }

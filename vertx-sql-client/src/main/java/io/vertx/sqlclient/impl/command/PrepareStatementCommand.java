@@ -22,18 +22,25 @@ import io.vertx.sqlclient.impl.PreparedStatement;
 public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
 
   private final String sql;
-  public long statement; // 0 means unamed statement otherwise CString
+  private final boolean auto;
 
-  public PrepareStatementCommand(String sql) {
+  public PrepareStatementCommand(String sql, boolean auto) {
     this.sql = sql;
+    this.auto = auto;
   }
 
   public String sql() {
     return sql;
   }
 
-  public long statement() {
-    return statement;
+  /**
+   * Indicate whether this command is scheduled from {@link io.vertx.sqlclient.SqlClient#preparedQuery(String) one-shot preparedQuery} or {@link io.vertx.sqlclient.SqlConnection#prepare(String)}.
+   * This flag will tell if lifecycle of the statement will be controlled by the client or not.
+   *
+   * @return true if the command is a one-shot prepared query.
+   */
+  public boolean auto() {
+    return auto;
   }
 
 }
