@@ -25,6 +25,8 @@ import java.util.Arrays;
  * If the code is == 0, nothing is wrong
  */
 public class NetSqlca {
+	
+	private static final String SQLERRMC_MESSAGE_DELIMITER = new String(new char[] {(char)20,(char)20,(char)20,(char)20});
 
     // Indexes into sqlErrd_
     private  static  final   int HIGH_ORDER_ROW_COUNT = 0;
@@ -171,46 +173,46 @@ public class NetSqlca {
 //        return errorCode;
 //    }
 
-//    synchronized public String getSqlErrmc() {
-//        if (sqlErrmc_ != null) {
-//            return sqlErrmc_;
-//        }
-//
-//        // sqlErrmc string is dependent on sqlErrmcMessages_ array having
-//        // been built
-//        initSqlErrmcMessages();
-//
-//        // sqlErrmc will be built only if sqlErrmcMessages_ has been built.
-//        // Otherwise, a null string will be returned.
-//        if (sqlErrmcMessages_ == null) {
-//            return null;
-//        }
-//
-//        // create 0-length String if no tokens
-//        if (sqlErrmcMessages_.length == 0) {
-//            sqlErrmc_ = "";
-//            return sqlErrmc_;
-//        }
-//
-//        // concatenate tokens with sqlErrmcDelimiter delimiters into one String
-//        StringBuffer buffer = new StringBuffer();
-//        int indx;
-//        for (indx = 0; indx < sqlErrmcMessages_.length - 1; indx++) {
-//            buffer.append(sqlErrmcMessages_[indx]);
-//            buffer.append(MessageUtils.SQLERRMC_MESSAGE_DELIMITER);
-//            // all but the first message should be preceded by the SQL state
-//            // and a colon (see DRDAConnThread.buildTokenizedSqlerrmc() on the
-//            // server)
-//            buffer.append(sqlStates_[indx+1]);
-//            buffer.append(":");
-//        }
-//        // add the last token
-//        buffer.append(sqlErrmcMessages_[indx]);
-//
-//        // save as a string
-//        sqlErrmc_ = buffer.toString();
-//        return sqlErrmc_;
-//    }
+    synchronized public String getSqlErrmc() {
+        if (sqlErrmc_ != null) {
+            return sqlErrmc_;
+        }
+
+        // sqlErrmc string is dependent on sqlErrmcMessages_ array having
+        // been built
+        initSqlErrmcMessages();
+
+        // sqlErrmc will be built only if sqlErrmcMessages_ has been built.
+        // Otherwise, a null string will be returned.
+        if (sqlErrmcMessages_ == null) {
+            return null;
+        }
+
+        // create 0-length String if no tokens
+        if (sqlErrmcMessages_.length == 0) {
+            sqlErrmc_ = "";
+            return sqlErrmc_;
+        }
+
+        // concatenate tokens with sqlErrmcDelimiter delimiters into one String
+        StringBuffer buffer = new StringBuffer();
+        int indx;
+        for (indx = 0; indx < sqlErrmcMessages_.length - 1; indx++) {
+            buffer.append(sqlErrmcMessages_[indx]);
+            buffer.append(SQLERRMC_MESSAGE_DELIMITER);
+            // all but the first message should be preceded by the SQL state
+            // and a colon (see DRDAConnThread.buildTokenizedSqlerrmc() on the
+            // server)
+            buffer.append(sqlStates_[indx+1]);
+            buffer.append(":");
+        }
+        // add the last token
+        buffer.append(sqlErrmcMessages_[indx]);
+
+        // save as a string
+        sqlErrmc_ = buffer.toString();
+        return sqlErrmc_;
+    }
 
     /**
      * Initialize and build the arrays <code>sqlErrmcMessages_</code> and
@@ -539,7 +541,7 @@ public class NetSqlca {
                 "  sqlCode=" + sqlCode_ +
                 "  sqlState=" + sqlState_ + 
                 "  sqlErrd=" + Arrays.toString(sqlErrd_) + 
-                "  sqlErrmc="  + bytes2String(sqlErrmcBytes_) + 
+                "  sqlErrmc="  + getSqlErrmc() + 
                 "  sqlErrp=" + bytes2String(sqlErrpBytes_) + 
                 "  sqlStates=" + Arrays.deepToString(sqlStates_) +
                 "  sqlWarn=" + bytes2String(sqlWarnBytes_);

@@ -21,6 +21,12 @@ package io.vertx.db2client.impl.drda;
  * DB2 SQL Codes</a>
  */
 public class SqlCode {
+	
+	// TODO: @AGG Convert this class to an interface with constants
+	
+	public static final int CONNECTION_REFUSED = -4499;
+	public static final int RDB_NOT_FOUND = -30061;
+	
     private int code_;
 
     SqlCode(int code) {
@@ -38,7 +44,7 @@ public class SqlCode {
 
     public final static SqlCode queuedXAError = new SqlCode(-4203);
 
-    final static SqlCode disconnectError = new SqlCode(40000);
+    public final static SqlCode disconnectError = new SqlCode(40000);
 
     /** SQL code for SQL state 02000 (end of data). DRDA does not
      * specify the SQL code for this SQL state, but Derby/DB2 uses 100. */

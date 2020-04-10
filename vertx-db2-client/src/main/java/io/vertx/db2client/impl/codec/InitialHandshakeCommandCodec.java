@@ -23,6 +23,8 @@ import io.vertx.db2client.impl.drda.DRDAConnectRequest;
 import io.vertx.db2client.impl.drda.DRDAConnectResponse;
 import io.vertx.db2client.impl.drda.DRDAConnectResponse.RDBAccessData;
 import io.vertx.db2client.impl.drda.DRDAConstants;
+import io.vertx.db2client.impl.drda.SQLState;
+import io.vertx.db2client.impl.drda.SqlCode;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
@@ -54,7 +56,8 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
             //Sometimes DB2 closes the connection when sending an invalid Database name.
             //-4499 = A fatal error occurred that resulted in a disconnect from the data source.
             //08001 = "The connection was unable to be established"
-            cmd.fail(new DB2Exception("Socket closed during connection", -4499,"08001"));           
+            cmd.fail(new DB2Exception("The connection was closed by the database server.", 
+            		SqlCode.CONNECTION_REFUSED, SQLState.AUTH_DATABASE_CONNECTION_REFUSED));           
           }
         });
         sendInitialHandshake();
