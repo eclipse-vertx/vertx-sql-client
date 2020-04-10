@@ -105,6 +105,11 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
   }
 
   @Override
+  boolean autoCommit() {
+    return tx == null;
+  }
+
+  @Override
   public void begin(Handler<AsyncResult<Transaction>> handler) {
     Future<Transaction> fut = begin();
     fut.onComplete(handler);
