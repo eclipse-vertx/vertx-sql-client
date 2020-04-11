@@ -37,13 +37,8 @@ public class DB2TransactionTest extends TransactionTestBase {
   public static DB2Resource rule = DB2Resource.SHARED_INSTANCE;
 
   @Override
-  protected void initConnector() {
-    connector = handler -> {
-      if (pool == null) {
-        pool = DB2Pool.pool(vertx, new DB2ConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
-      }
-      pool.begin(handler);
-    };
+  protected Pool createPool() {
+    return DB2Pool.pool(vertx, new DB2ConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
   }
 
   @Override
@@ -54,18 +49,14 @@ public class DB2TransactionTest extends TransactionTestBase {
   @Override
   protected void cleanTestTable(TestContext ctx) {
     // use DELETE FROM because DB2 does not support TRUNCATE TABLE
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("DELETE FROM mutable").execute(ctx.asyncAssertSuccess(result -> {
-        conn.close();
-      }));
-    }));
+    getPool().query("DELETE FROM mutable").execute(ctx.asyncAssertSuccess());
   }
 
   @Override
   protected String statement(String... parts) {
     return String.join("?", parts);
   }
-  
+
   @Test
   public void testDelayedCommit(TestContext ctx) {
     assumeFalse("DB2 on Z holds write locks on inserted columns with isolation level = 2", rule.isZOS());

@@ -18,11 +18,14 @@ import io.vertx.mssqlclient.MSSQLPool;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.pool.ConnectionPool;
+
+import java.util.function.Function;
 
 public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool {
   private final MSSQLConnectionFactory connectionFactory;
@@ -50,7 +53,7 @@ public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool 
   }
 
   @Override
-  public Future<Transaction> begin() {
+  public <T> Future<T> withTransaction(Function<SqlClient, Future<T>> function) {
     return Future.failedFuture("Transaction is not supported for now");
   }
 

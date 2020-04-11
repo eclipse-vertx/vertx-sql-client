@@ -20,7 +20,7 @@ public class MultiPolygonConverter {
             java.util.ArrayList<io.vertx.mysqlclient.data.spatial.Polygon> list =  new java.util.ArrayList<>();
             ((Iterable<Object>)member.getValue()).forEach( item -> {
               if (item instanceof JsonObject)
-                list.add(new io.vertx.mysqlclient.data.spatial.Polygon((JsonObject)item));
+                list.add(new io.vertx.mysqlclient.data.spatial.Polygon((io.vertx.core.json.JsonObject)item));
             });
             obj.setPolygons(list);
           }

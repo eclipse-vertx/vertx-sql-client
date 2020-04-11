@@ -20,7 +20,7 @@ public class LineStringConverter {
             java.util.ArrayList<io.vertx.mysqlclient.data.spatial.Point> list =  new java.util.ArrayList<>();
             ((Iterable<Object>)member.getValue()).forEach( item -> {
               if (item instanceof JsonObject)
-                list.add(new io.vertx.mysqlclient.data.spatial.Point((JsonObject)item));
+                list.add(new io.vertx.mysqlclient.data.spatial.Point((io.vertx.core.json.JsonObject)item));
             });
             obj.setPoints(list);
           }

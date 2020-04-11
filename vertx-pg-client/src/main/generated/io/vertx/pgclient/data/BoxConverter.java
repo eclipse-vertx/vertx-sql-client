@@ -17,12 +17,12 @@ public class BoxConverter {
       switch (member.getKey()) {
         case "lowerLeftCorner":
           if (member.getValue() instanceof JsonObject) {
-            obj.setLowerLeftCorner(new io.vertx.pgclient.data.Point((JsonObject)member.getValue()));
+            obj.setLowerLeftCorner(new io.vertx.pgclient.data.Point((io.vertx.core.json.JsonObject)member.getValue()));
           }
           break;
         case "upperRightCorner":
           if (member.getValue() instanceof JsonObject) {
-            obj.setUpperRightCorner(new io.vertx.pgclient.data.Point((JsonObject)member.getValue()));
+            obj.setUpperRightCorner(new io.vertx.pgclient.data.Point((io.vertx.core.json.JsonObject)member.getValue()));
           }
           break;
       }

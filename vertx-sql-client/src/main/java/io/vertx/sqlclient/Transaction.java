@@ -16,31 +16,16 @@
  */
 package io.vertx.sqlclient;
 
-import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 /**
- * A transaction that allows to control the transaction and receive events.
+ * A transaction.
  */
 @VertxGen
-public interface Transaction extends SqlClient {
-
-  /**
-   * Create a prepared query.
-   *
-   * @param sql the sql
-   * @param handler the handler notified with the prepared query asynchronously
-   */
-  @Fluent
-  Transaction prepare(String sql, Handler<AsyncResult<PreparedStatement>> handler);
-
-  /**
-   * Like {@link #prepare(String, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  Future<PreparedStatement> prepare(String sql);
+public interface Transaction {
 
   /**
    * Commit the current transaction.
@@ -53,7 +38,7 @@ public interface Transaction extends SqlClient {
   void commit(Handler<AsyncResult<Void>> handler);
 
   /**
-   * Rollback the current transaction.
+   * Rollback the transaction and release the associated resources.
    */
   Future<Void> rollback();
 
@@ -63,15 +48,15 @@ public interface Transaction extends SqlClient {
   void rollback(Handler<AsyncResult<Void>> handler);
 
   /**
-   * Set an handler to be called when the transaction is aborted.
+   * Return the transaction completion {@code Future} that
    *
-   * @param handler the handler
+   * <ul>
+   *   <li>succeeds when the transaction commits</li>
+   *   <li>fails with {@link TransactionRollbackException} when the transaction rollbacks</li>
+   * </ul>
+   *
+   * @return the transaction result
    */
-  @Fluent
-  Transaction abortHandler(Handler<Void> handler);
+  Future<Void> completion();
 
-  /**
-   * Rollback the transaction and release the associated resources.
-   */
-  void close();
 }

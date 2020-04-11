@@ -13,8 +13,8 @@ Or you can use the transaction API of {@link io.vertx.sqlclient.SqlConnection}:
 ----
 
 When the database server reports the current transaction is failed (e.g the infamous _current transaction is aborted, commands ignored until
-end of transaction block_), the transaction is rollbacked and the {@link io.vertx.sqlclient.Transaction#abortHandler(io.vertx.core.Handler)}
-is called:
+end of transaction block_), the transaction is rollbacked and the {@link io.vertx.sqlclient.Transaction#completion()} future
+is failed with a {@link io.vertx.sqlclient.TransactionRollbackException}:
 
 [source,$lang]
 ----
@@ -23,13 +23,20 @@ is called:
 
 === Simplified transaction API
 
-When you use a pool, you can start a transaction directly on the pool.
+When you use a pool, you can call {@link io.vertx.sqlclient.Pool#withTransaction} to pass it a function executed
+within a transaction.
 
-It borrows a connection from the pool, begins the transaction and releases the connection to the pool when the transaction ends.
+It borrows a connection from the pool, begins the transaction and calls the function with a client executing all
+operations in the scope of this transaction.
+
+The function must return a future of an arbitrary result:
+
+- when the future succeeds the client will commit the transaction
+- when the future fails the client will rollback the transaction
+
+After the transaction completes, the connection is returned to the pool and the overall result is provided.
 
 [source,$lang]
 ----
 {@link examples.SqlClientExamples#transaction03(io.vertx.sqlclient.Pool)}
 ----
-
-NOTE: this code will not close the connection because it will always be released back to the pool when the transaction

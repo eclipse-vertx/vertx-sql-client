@@ -135,14 +135,14 @@ public class PgSocketConnection extends SocketConnectionBase {
   @Override
   protected <R> void doSchedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
     if (cmd instanceof TxCommand) {
-      TxCommand tx = (TxCommand) cmd;
+      TxCommand<R> tx = (TxCommand<R>) cmd;
       SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(
-        tx.sql,
+        tx.kind.sql,
         false,
         false,
         QueryCommandBase.NULL_COLLECTOR,
         QueryResultHandler.NOOP_HANDLER);
-      super.doSchedule(cmd2, ar -> handler.handle(ar.mapEmpty()));
+      super.doSchedule(cmd2, ar -> handler.handle(ar.map(tx.result)));
     } else {
       super.doSchedule(cmd, handler);
     }

@@ -209,32 +209,38 @@ public class SqlClientExamples {
         SqlConnection conn = res.result();
 
         // Begin the transaction
-        Transaction tx = conn.begin();
-
-        // Various statements
-        conn
-          .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
-          .execute(ar1 -> {
-          if (ar1.succeeded()) {
+        conn.begin(ar0 -> {
+          if (ar0.succeeded()) {
+            Transaction tx = ar0.result();
+            // Various statements
             conn
-              .query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')")
-              .execute(ar2 -> {
-              if (ar2.succeeded()) {
-                // Commit the transaction
-                tx.commit(ar3 -> {
-                  if (ar3.succeeded()) {
-                    System.out.println("Transaction succeeded");
-                  } else {
-                    System.out.println("Transaction failed " + ar3.cause().getMessage());
-                  }
+              .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
+              .execute(ar1 -> {
+                if (ar1.succeeded()) {
+                  conn
+                    .query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')")
+                    .execute(ar2 -> {
+                      if (ar2.succeeded()) {
+                        // Commit the transaction
+                        tx.commit(ar3 -> {
+                          if (ar3.succeeded()) {
+                            System.out.println("Transaction succeeded");
+                          } else {
+                            System.out.println("Transaction failed " + ar3.cause().getMessage());
+                          }
+                          // Return the connection to the pool
+                          conn.close();
+                        });
+                      } else {
+                        // Return the connection to the pool
+                        conn.close();
+                      }
+                    });
+                } else {
                   // Return the connection to the pool
                   conn.close();
-                });
-              } else {
-                // Return the connection to the pool
-                conn.close();
-              }
-            });
+                }
+              });
           } else {
             // Return the connection to the pool
             conn.close();
@@ -245,7 +251,7 @@ public class SqlClientExamples {
   }
 
   public void transaction02(Transaction tx) {
-    tx.abortHandler(v -> {
+    tx.completion().onFailure(err -> {
       System.out.println("Transaction failed => rollbacked");
     });
   }
@@ -253,34 +259,23 @@ public class SqlClientExamples {
   public void transaction03(Pool pool) {
 
     // Acquire a transaction and begin the transaction
-    pool.begin(res -> {
-      if (res.succeeded()) {
-
-        // Get the transaction
-        Transaction tx = res.result();
-
-        // Various statements
-        tx.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
-          .execute(ar1 -> {
-          if (ar1.succeeded()) {
-            tx.query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')")
-              .execute(ar2 -> {
-              if (ar2.succeeded()) {
-                // Commit the transaction
-                // the connection will automatically return to the pool
-                tx.commit(ar3 -> {
-                  if (ar3.succeeded()) {
-                    System.out.println("Transaction succeeded");
-                  } else {
-                    System.out.println("Transaction failed " + ar3.cause().getMessage());
-                  }
-                });
-              }
-            });
-          } else {
-            // No need to close connection as transaction will abort and be returned to the pool
-          }
-        });
+    pool.withTransaction(client -> client
+      .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
+      .execute()
+      .flatMap(res -> client
+        .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
+        .execute()
+        // Map to a message result
+        .map("Users inserted"))
+    ).onComplete(ar -> {
+      // The connection was automatically return to the pool
+      if (ar.succeeded()) {
+        // Transaction was committed
+        String message = ar.result();
+        System.out.println("Transaction succeeded: " + message);
+      } else {
+        // Transaction was rolled back
+        System.out.println("Transaction failed " + ar.cause().getMessage());
       }
     });
   }
