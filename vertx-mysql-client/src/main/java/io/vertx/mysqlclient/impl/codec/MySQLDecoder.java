@@ -15,6 +15,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import io.netty.util.ReferenceCountUtil;
 
 import java.util.ArrayDeque;
 import java.util.List;
@@ -49,17 +50,19 @@ class MySQLDecoder extends ByteToMessageDecoder {
         if (aggregatedPacketPayload != null) {
           // read a split packet
           aggregatedPacketPayload.addComponent(true, in.readRetainedSlice(payloadLength));
-          sequenceId++;
 
           if (payloadLength < PACKET_PAYLOAD_LENGTH_LIMIT) {
             // we have just read the last split packet and there will be no more split packet
-            decodePayload(aggregatedPacketPayload, aggregatedPacketPayload.readableBytes(), sequenceId);
-            aggregatedPacketPayload.release();
-            aggregatedPacketPayload = null;
+            try {
+              decodePacket(aggregatedPacketPayload, aggregatedPacketPayload.readableBytes(), sequenceId);
+            } finally {
+              ReferenceCountUtil.release(aggregatedPacketPayload);
+              aggregatedPacketPayload = null;
+            }
           }
         } else {
           // read a non-split packet
-          decodePayload(in.readSlice(payloadLength), payloadLength, sequenceId);
+          decodePacket(in.readSlice(payloadLength), payloadLength, sequenceId);
         }
       } else {
         in.readerIndex(packetStartIdx);
@@ -67,10 +70,9 @@ class MySQLDecoder extends ByteToMessageDecoder {
     }
   }
 
-  private void decodePayload(ByteBuf payload, int payloadLength, int sequenceId) {
+  private void decodePacket(ByteBuf payload, int payloadLength, int sequenceId) {
     CommandCodec<?, ?> ctx = inflight.peek();
     encoder.sequenceId = sequenceId + 1;
     ctx.decodePayload(payload, payloadLength);
-    payload.clear();
   }
 }
