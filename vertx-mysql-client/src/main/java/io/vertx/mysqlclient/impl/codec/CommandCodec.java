@@ -123,11 +123,9 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
   void handleErrorPacketPayload(ByteBuf payload) {
     payload.skipBytes(1); // skip ERR packet header
     int errorCode = payload.readUnsignedShortLE();
-    String sqlState = null;
-    if ((encoder.clientCapabilitiesFlag & CapabilitiesFlag.CLIENT_PROTOCOL_41) != 0) {
-      payload.skipBytes(1); // SQL state marker will always be #
-      sqlState = BufferUtils.readFixedLengthString(payload, 5, StandardCharsets.UTF_8);
-    }
+    // CLIENT_PROTOCOL_41 capability flag will always be set
+    payload.skipBytes(1); // SQL state marker will always be #
+    String sqlState = BufferUtils.readFixedLengthString(payload, 5, StandardCharsets.UTF_8);
     String errorMessage = readRestOfPacketString(payload, StandardCharsets.UTF_8);
     completionHandler.handle(CommandResponse.failure(new MySQLException(errorMessage, errorCode, sqlState)));
   }
