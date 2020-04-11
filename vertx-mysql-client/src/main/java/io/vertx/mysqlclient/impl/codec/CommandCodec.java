@@ -132,32 +132,27 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     completionHandler.handle(CommandResponse.failure(new MySQLException(errorMessage, errorCode, sqlState)));
   }
 
-  OkPacket decodeOkPacketPayload(ByteBuf payload, Charset charset) {
+  // simplify the ok packet as those properties are actually not used for now
+  OkPacket decodeOkPacketPayload(ByteBuf payload) {
     payload.skipBytes(1); // skip OK packet header
     long affectedRows = BufferUtils.readLengthEncodedInteger(payload);
     long lastInsertId = BufferUtils.readLengthEncodedInteger(payload);
-    int serverStatusFlags = 0;
-    int numberOfWarnings = 0;
-    if ((encoder.clientCapabilitiesFlag & CapabilitiesFlag.CLIENT_PROTOCOL_41) != 0) {
-      serverStatusFlags = payload.readUnsignedShortLE();
-      numberOfWarnings = payload.readUnsignedShortLE();
-    } else if ((encoder.clientCapabilitiesFlag & CapabilitiesFlag.CLIENT_TRANSACTIONS) != 0) {
-      serverStatusFlags = payload.readUnsignedShortLE();
-    }
-    String statusInfo;
+    int serverStatusFlags = payload.readUnsignedShortLE();
+//    int numberOfWarnings = payload.readUnsignedShortLE();
+    String statusInfo = null;
     String sessionStateInfo = null;
-    if (payload.readableBytes() == 0) {
-      // handle when OK packet does not contain server status info
-      statusInfo = null;
-    } else if ((encoder.clientCapabilitiesFlag & CapabilitiesFlag.CLIENT_SESSION_TRACK) != 0) {
-      statusInfo = BufferUtils.readLengthEncodedString(payload, charset);
-      if ((serverStatusFlags & ServerStatusFlags.SERVER_SESSION_STATE_CHANGED) != 0) {
-        sessionStateInfo = BufferUtils.readLengthEncodedString(payload, charset);
-      }
-    } else {
-      statusInfo = readRestOfPacketString(payload, charset);
-    }
-    return new OkPacket(affectedRows, lastInsertId, serverStatusFlags, numberOfWarnings, statusInfo, sessionStateInfo);
+//    if (payload.readableBytes() == 0) {
+//      // handle when OK packet does not contain server status info
+//      statusInfo = null;
+//    } else if ((encoder.clientCapabilitiesFlag & CapabilitiesFlag.CLIENT_SESSION_TRACK) != 0) {
+//      statusInfo = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
+//      if ((serverStatusFlags & ServerStatusFlags.SERVER_SESSION_STATE_CHANGED) != 0) {
+//        sessionStateInfo = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
+//      }
+//    } else {
+//      statusInfo = readRestOfPacketString(payload, charset);
+//    }
+    return new OkPacket(affectedRows, lastInsertId, serverStatusFlags, 0, statusInfo, sessionStateInfo);
   }
 
   EofPacket decodeEofPacketPayload(ByteBuf payload) {

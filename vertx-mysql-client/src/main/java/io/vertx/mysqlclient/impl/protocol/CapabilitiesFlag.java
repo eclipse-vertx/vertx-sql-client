@@ -65,6 +65,6 @@ public final class CapabilitiesFlag {
     | CLIENT_MULTI_STATEMENTS
     | CLIENT_MULTI_RESULTS
     | CLIENT_PS_MULTI_RESULTS
-    | CLIENT_SESSION_TRACK
+//    | CLIENT_SESSION_TRACK disable this it's not really used for now
     | CLIENT_LOCAL_FILES);
 }
