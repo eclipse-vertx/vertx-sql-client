@@ -44,7 +44,7 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
         if (nullByte == 0) {
           // non-null
           ColumnDefinition columnDef = rowDesc.columnDefinitions()[c];
-          DataType dataType = columnDef.getType();
+          DataType dataType = columnDef.type();
           int collationId = rowDesc.columnDefinitions()[c].characterSet();
           int columnDefinitionFlags = columnDef.flags();
           decoded = DataTypeCodec.decodeBinary(dataType, collationId, columnDefinitionFlags, in);
@@ -58,7 +58,7 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
         if (in.getUnsignedByte(in.readerIndex()) == NULL) {
           in.skipBytes(1);
         } else {
-          DataType dataType = rowDesc.columnDefinitions()[c].getType();
+          DataType dataType = rowDesc.columnDefinitions()[c].type();
           int columnDefinitionFlags = rowDesc.columnDefinitions()[c].flags();
           int collationId = rowDesc.columnDefinitions()[c].characterSet();
           decoded = DataTypeCodec.decodeText(dataType, collationId, columnDefinitionFlags, in);
