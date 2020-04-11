@@ -14,7 +14,6 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.datatype.DataType;
 import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
-import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.command.CommandResponse;
@@ -78,8 +77,10 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
     // iteration count, always 1
     packet.writeIntLE(1);
 
-    ColumnDefinition[] paramsColumnDefinitions = statement.paramDesc.paramDefinitions();
-    int numOfParams = paramsColumnDefinitions.length;
+    /*
+     * Null-bit map and type should always be reconstructed for every batch of parameters here
+     */
+    int numOfParams = statement.bindingTypes().length;
     int bitmapLength = (numOfParams + 7) / 8;
     byte[] nullBitmap = new byte[bitmapLength];
 

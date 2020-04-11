@@ -25,7 +25,7 @@ public final class ColumnDefinition {
   private final String orgName;
   private final int characterSet;
   private final long columnLength;
-  private DataType type;
+  private final DataType type;
   private final int flags;
   private final byte decimals;
 
@@ -85,12 +85,8 @@ public final class ColumnDefinition {
     return columnLength;
   }
 
-  public DataType getType() {
+  public DataType type() {
     return type;
-  }
-
-  public void setType(DataType type) {
-    this.type = type;
   }
 
   public int flags() {

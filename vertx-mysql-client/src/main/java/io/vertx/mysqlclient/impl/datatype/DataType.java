@@ -47,7 +47,8 @@ public enum DataType {
   BIT(ColumnDefinition.ColumnType.MYSQL_TYPE_BIT, Long.class, Long.class),
   JSON(ColumnDefinition.ColumnType.MYSQL_TYPE_JSON, Object.class, Object.class),
   GEOMETRY(ColumnDefinition.ColumnType.MYSQL_TYPE_GEOMETRY, Geometry.class, Geometry.class),
-  NULL(ColumnDefinition.ColumnType.MYSQL_TYPE_NULL, Object.class, Object.class); // useful for mariadb prepare statement response
+  NULL(ColumnDefinition.ColumnType.MYSQL_TYPE_NULL, Object.class, Object.class), // useful for mariadb prepare statement response
+  UNBIND(-1, Object.class, Object.class); // useful for binding param values
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DataType.class);
 
