@@ -61,7 +61,9 @@ class DB2Decoder extends ByteToMessageDecoder {
                 dssContinues &= (in.getByte(ridx + index + 3) & 0x40) == 0x40;
             else
                 dssContinues = false;
-            short dssLen = in.getShort(ridx + index);
+            short dssLen = 11; // minimum length of DRDA message
+            if (readableBytes >= index + 2)
+            	dssLen = in.getShort(ridx + index);
             index += dssLen;
         }
         return index;

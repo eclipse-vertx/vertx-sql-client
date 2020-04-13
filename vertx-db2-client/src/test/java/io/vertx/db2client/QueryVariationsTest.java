@@ -20,6 +20,29 @@ import io.vertx.sqlclient.Tuple;
  */
 @RunWith(VertxUnitRunner.class)
 public class QueryVariationsTest extends DB2TestBase {
+	
+	@Test
+	public void testRenamedColumns(TestContext ctx) {
+		connect(ctx.asyncAssertSuccess(conn -> {
+			conn.query("SELECT id AS THE_ID," + 
+		               "message AS \"the message\"" + 
+					"FROM immutable " +
+					"WHERE id = 10").execute(
+					ctx.asyncAssertSuccess(rowSet -> {
+				ctx.assertEquals(1, rowSet.size());
+				ctx.assertEquals(Arrays.asList("THE_ID", "the message"), rowSet.columnsNames());
+				RowIterator<Row> rows = rowSet.iterator();
+				ctx.assertTrue(rows.hasNext());
+				Row row = rows.next();
+				ctx.assertEquals(10, row.getInteger(0));
+				ctx.assertEquals(10, row.getInteger("THE_ID"));
+				ctx.assertEquals("Computers make very fast, very accurate mistakes.", row.getString(1));
+				ctx.assertEquals("Computers make very fast, very accurate mistakes.", row.getString("the message"));
+				ctx.assertFalse(rows.hasNext());
+				conn.close();
+			}));
+		}));
+	}
 
 	@Test
 	public void testSubquery(TestContext ctx) {

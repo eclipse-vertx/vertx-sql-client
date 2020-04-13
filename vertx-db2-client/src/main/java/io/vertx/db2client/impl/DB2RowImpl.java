@@ -94,7 +94,12 @@ public class DB2RowImpl extends ArrayTuple implements Row {
         if (name == null) {
             throw new NullPointerException();
         }
-        return rowDesc.columnNames().indexOf(name.toUpperCase()); // DB2 column names are always in uppercase
+        int idx = rowDesc.columnIndex(name);
+        if (idx >= 0) {
+        	return idx;
+        }
+        // Unless the column is renamed in the SQL query, the column name will be uppercase
+        return rowDesc.columnIndex(name.toUpperCase());
     }
 
     @Override

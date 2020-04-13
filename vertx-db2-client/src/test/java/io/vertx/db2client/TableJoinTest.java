@@ -25,19 +25,21 @@ public class TableJoinTest extends DB2TestBase {
 			conn.query("SELECT immutable.id AS \"IMM ID\"," +
 		                      "immutable.message AS IMM_MSG," +
 					          "Fortune.id AS FORT_ID," +
-		                      "Fortune.message AS \"FORT ID\" FROM immutable " +
+		                      "Fortune.message AS \"fortune msg\" FROM immutable " +
             		"INNER JOIN Fortune ON (immutable.id + 1) = Fortune.id " +
 					"WHERE immutable.id=1").execute(
 					ctx.asyncAssertSuccess(rowSet -> {
 				ctx.assertEquals(1, rowSet.size());
-				// TODO This is consistent with how JDBC behaves, but we may want to add an API
-				// to retrieve column labels like JDBC has
-				ctx.assertEquals(Arrays.asList("ID", "MESSAGE", "ID", "MESSAGE"), rowSet.columnsNames());
+				ctx.assertEquals(Arrays.asList("IMM ID", "IMM_MSG", "FORT_ID", "fortune msg"), rowSet.columnsNames());
 				Row row = rowSet.iterator().next();
 				ctx.assertEquals(1, row.getInteger(0));
+				ctx.assertEquals(1, row.getInteger("IMM ID"));
 				ctx.assertEquals("fortune: No such file or directory", row.getString(1));
+				ctx.assertEquals("fortune: No such file or directory", row.getString("IMM_MSG"));
 				ctx.assertEquals(2, row.getInteger(2));
+				ctx.assertEquals(2, row.getInteger("FORT_ID"));
 				ctx.assertEquals("A computer scientist is someone who fixes things that aren't broken.", row.getString(3));
+				ctx.assertEquals("A computer scientist is someone who fixes things that aren't broken.", row.getString("fortune msg"));
 				conn.close();
 			}));
 		}));

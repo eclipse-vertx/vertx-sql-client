@@ -117,12 +117,12 @@ public class ColumnMetaData {
     public String getColumnName(int i) {
     	if (i < 0)
     		throw new IllegalArgumentException("Requested column name for negative index: " + i);
-    	// Prefer column names from SQLDXGRP if set
-    	if (sqlxName_ != null && i < sqlxName_.length && sqlxName_[i] != null)
-    		return sqlxName_[i];
-    	// Otherwise use column names from SQLDOPTGRP
-    	if (sqlName_ != null && i < sqlName_.length)
+    	// Prefer column names from SQLDOPTGRP if set
+    	if (sqlName_ != null && i < sqlName_.length && sqlName_[i] != null)
     		return sqlName_[i];
+    	// Otherwise use column names from SQLDXGRP
+    	if (sqlxName_ != null && i < sqlxName_.length)
+    		return sqlxName_[i];
     	return null;
     }
     
