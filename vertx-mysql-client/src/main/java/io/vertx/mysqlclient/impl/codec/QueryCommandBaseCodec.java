@@ -115,7 +115,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
       long affectedRows = -1;
       long lastInsertId = -1;
       if (isDeprecatingEofFlagEnabled()) {
-        OkPacket okPacket = decodeOkPacketPayload(payload, StandardCharsets.UTF_8);
+        OkPacket okPacket = decodeOkPacketPayload(payload);
         serverStatusFlags = okPacket.serverStatusFlags();
         affectedRows = okPacket.affectedRows();
         lastInsertId = okPacket.lastInsertId();
