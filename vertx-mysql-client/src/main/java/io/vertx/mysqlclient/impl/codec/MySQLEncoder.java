@@ -28,6 +28,7 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
   ChannelHandlerContext chctx;
 
   int clientCapabilitiesFlag;
+  int sequenceId;
   Charset charset;
   Charset encodingCharset;
   MySQLSocketConnection socketConnection;
@@ -56,7 +57,7 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
   void write(CommandBase<?> cmd) {
     CommandCodec<?, ?> codec = wrap(cmd);
     codec.completionHandler = resp -> {
-      CommandCodec c = inflight.poll();
+      CommandCodec<?, ?> c = inflight.poll();
       resp.cmd = (CommandBase) c.cmd;
       chctx.fireChannelRead(resp);
     };
@@ -68,9 +69,9 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
     if (cmd instanceof InitialHandshakeCommand) {
       return new InitialHandshakeCommandCodec((InitialHandshakeCommand) cmd);
     } else if (cmd instanceof SimpleQueryCommand) {
-      return new SimpleQueryCommandCodec((SimpleQueryCommand) cmd);
+      return new SimpleQueryCommandCodec<>((SimpleQueryCommand<?>) cmd);
     } else if (cmd instanceof ExtendedQueryCommand) {
-      return new ExtendedQueryCommandCodec((ExtendedQueryCommand) cmd);
+      return new ExtendedQueryCommandCodec<>((ExtendedQueryCommand<?>) cmd);
     } else if (cmd instanceof ExtendedBatchQueryCommand<?>) {
       return new ExtendedBatchQueryCommandCodec<>((ExtendedBatchQueryCommand<?>) cmd);
     } else if (cmd instanceof CloseConnectionCommand) {
