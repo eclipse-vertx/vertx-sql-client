@@ -50,6 +50,8 @@ class DB2ParamDesc extends ParamDesc {
     }
     
     private static boolean canConvert(Object val, int type) {
+    	if (val == null)
+    		return true;
     	if (ClientTypes.canConvert(val, type))
     		return true;
     	Class<?> clazz = val.getClass();

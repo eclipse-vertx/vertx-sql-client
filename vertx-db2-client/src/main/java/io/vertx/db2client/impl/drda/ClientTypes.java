@@ -211,6 +211,9 @@ public class ClientTypes {
     }
     
     public static boolean canConvert(Object value, int toType) {
+    	if (value == null)
+    		return true;
+    	
     	Class<?> clazz = value.getClass();
     	// Everything can convert to String
     	if (clazz == String.class)
