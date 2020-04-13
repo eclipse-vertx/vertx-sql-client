@@ -115,6 +115,14 @@ CREATE TABLE ROWTEST(
     message varchar(1024)
 );
 
+-- used by DB2DataTypeTest
+DROP TABLE IF EXISTS db2_types;
+CREATE TABLE db2_types
+(
+    id           INT,
+    test_float   FLOAT
+);
+
 -- Sequence used by QueryVariationsTest
 DROP SEQUENCE my_seq;
 CREATE SEQUENCE my_seq INCREMENT BY 1 START WITH 1;

@@ -31,6 +31,28 @@ import io.vertx.sqlclient.Tuple;
 @RunWith(VertxUnitRunner.class)
 public class DB2DataTypeTest extends DB2TestBase {
 	
+	/**
+	 * In DB2 the FLOAT and DOUBLE column types both map to an 8-byte 
+	 * double-precision column (i.e. Java double). Ensure that a Java
+	 * float can still be inserted and selected from such a column
+	 */
+	@Test
+	public void testInsertFloatColumn(TestContext ctx) {
+		  connect(ctx.asyncAssertSuccess(conn -> {
+			    // Insert some data
+			    conn.preparedQuery("INSERT INTO db2_types (id,test_float) VALUES (?, ?)")
+			      .execute(Tuple.of(1, 5.0f), ctx.asyncAssertSuccess(insertResult -> {
+			         conn.query("SELECT * FROM db2_types WHERE id = 1")
+			           .execute(ctx.asyncAssertSuccess(rows -> {
+			        	   ctx.assertEquals(1, rows.size());
+			        	   Row row = rows.iterator().next();
+			        	   ctx.assertEquals(1, row.getInteger(0));
+			        	   ctx.assertEquals(5.0f, row.getFloat(1));
+			           }));
+			      }));
+			  }));
+	}
+	
 	@Test
 	public void testRowId(TestContext ctx) {
 	  assumeTrue("Only DB2/Z supports the ROWID column type", rule.isZOS());

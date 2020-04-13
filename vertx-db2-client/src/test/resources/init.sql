@@ -108,3 +108,11 @@ INSERT INTO collector_test VALUES (2, 32767, 2147483647, 9223372036854775807, 12
 -- Sequence used by QueryVariationsTest
 DROP SEQUENCE my_seq;
 CREATE SEQUENCE my_seq INCREMENT BY 1 START WITH 1;
+
+-- used by DB2DataTypeTest
+DROP TABLE IF EXISTS db2_types;
+CREATE TABLE db2_types
+(
+    id           INT,
+    test_float   FLOAT
+);

@@ -707,20 +707,20 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                         buffer.writeBoolean(((Boolean) inputs[i]).booleanValue());
                         break;
                     case DRDAConstants.DRDA_TYPE_NINTEGER:
-                        buffer.writeInt(((Integer) inputs[i]).intValue());
+                        buffer.writeInt(((Number) inputs[i]).intValue());
                         break;
                     case DRDAConstants.DRDA_TYPE_NSMALL:
                         if (inputs[i] instanceof Boolean) {
                           buffer.writeShort(((boolean) inputs[i]) ? 1 : 0);
                         } else {
-                          buffer.writeShort(((Short) inputs[i]).shortValue());
+                          buffer.writeShort(((Number) inputs[i]).shortValue());
                         }
                         break;
                     case DRDAConstants.DRDA_TYPE_NFLOAT4:
-                        buffer.writeFloat(((Float) inputs[i]).floatValue());
+                        buffer.writeFloat(((Number) inputs[i]).floatValue());
                         break;
                     case DRDAConstants.DRDA_TYPE_NFLOAT8:
-                        buffer.writeDouble(((Double) inputs[i]).doubleValue());
+                        buffer.writeDouble(((Number) inputs[i]).doubleValue());
                         break;
                     case DRDAConstants.DRDA_TYPE_NDECIMAL:
                         writeBigDecimal((BigDecimal) inputs[i], (protocolTypesAndLengths[i][1] >> 8) & 0xff, // described precision not actual
