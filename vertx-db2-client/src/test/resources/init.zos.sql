@@ -116,11 +116,13 @@ CREATE TABLE ROWTEST(
 );
 
 -- used by DB2DataTypeTest
-DROP TABLE IF EXISTS db2_types;
+DROP TABLE db2_types;
 CREATE TABLE db2_types
 (
     id           INT,
-    test_float   FLOAT
+    test_byte    SMALLINT,
+    test_float   FLOAT,
+    test_bytes   VARCHAR(255) for bit data
 );
 
 -- Sequence used by QueryVariationsTest
