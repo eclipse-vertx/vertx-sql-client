@@ -219,16 +219,9 @@ public class ClientTypes {
     	if (clazz == String.class)
     		return true; 
     	switch (toType) {
-        case ClientTypes.BIGINT:
-        case ClientTypes.BIT:
-        case ClientTypes.BOOLEAN:
-        case ClientTypes.CHAR:
-        case ClientTypes.DECIMAL:
-        case ClientTypes.DOUBLE:
         case ClientTypes.INTEGER:
+        case ClientTypes.BIGINT:
         case ClientTypes.LONGVARCHAR:
-        case ClientTypes.REAL:
-        case ClientTypes.SMALLINT:
         	return clazz == boolean.class ||
         		   clazz == Boolean.class ||
         		   clazz == double.class ||
@@ -242,6 +235,30 @@ public class ClientTypes {
         		   clazz == short.class ||
         		   clazz == Short.class ||
         		   clazz == BigDecimal.class;
+        case ClientTypes.DOUBLE:
+        case ClientTypes.REAL:
+        case ClientTypes.DECIMAL:
+		 	return clazz == double.class ||
+		 		   clazz == Double.class ||
+		 		   clazz == float.class ||
+		 		   clazz == Float.class;
+        case ClientTypes.BIT:
+        case ClientTypes.BOOLEAN:
+        case ClientTypes.CHAR:
+        case ClientTypes.SMALLINT:
+        	return clazz == boolean.class ||
+		 		   clazz == Boolean.class ||
+		 		   clazz == char.class || 
+		 		   clazz == Character.class ||
+		 		   clazz == int.class ||
+		 		   clazz == Integer.class ||
+		 		   clazz == long.class ||
+		 		   clazz == Long.class ||
+		 		   clazz == short.class ||
+		 		   clazz == Short.class ||
+		 		   clazz == byte.class ||
+		 		   clazz == Byte.class ||
+		 		   clazz == BigDecimal.class;
         case ClientTypes.BINARY:
         case ClientTypes.BLOB:
         	return clazz == boolean.class ||

@@ -114,5 +114,6 @@ DROP TABLE IF EXISTS db2_types;
 CREATE TABLE db2_types
 (
     id           INT,
+    test_byte    SMALLINT,
     test_float   FLOAT
 );

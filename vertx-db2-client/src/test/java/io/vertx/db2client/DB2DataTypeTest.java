@@ -37,17 +37,39 @@ public class DB2DataTypeTest extends DB2TestBase {
 	 * float can still be inserted and selected from such a column
 	 */
 	@Test
-	public void testInsertFloatColumn(TestContext ctx) {
+	public void testFloatIntoFloatColumn(TestContext ctx) {
 		  connect(ctx.asyncAssertSuccess(conn -> {
 			    // Insert some data
 			    conn.preparedQuery("INSERT INTO db2_types (id,test_float) VALUES (?, ?)")
 			      .execute(Tuple.of(1, 5.0f), ctx.asyncAssertSuccess(insertResult -> {
-			         conn.query("SELECT * FROM db2_types WHERE id = 1")
+			         conn.query("SELECT id,test_float FROM db2_types WHERE id = 1")
 			           .execute(ctx.asyncAssertSuccess(rows -> {
 			        	   ctx.assertEquals(1, rows.size());
 			        	   Row row = rows.iterator().next();
 			        	   ctx.assertEquals(1, row.getInteger(0));
 			        	   ctx.assertEquals(5.0f, row.getFloat(1));
+			           }));
+			      }));
+			  }));
+	}
+	
+	/**
+	 * DB2 has no BYTE or BOOLEAN column type, and instead maps it to a
+	 * 2-byte SMALLINT column type. This means Java byte types must be
+	 * converted into SMALLINT formats
+	 */
+	@Test
+	public void testByteIntoSmallIntColumn(TestContext ctx) {
+		  connect(ctx.asyncAssertSuccess(conn -> {
+			    // Insert some data
+			    conn.preparedQuery("INSERT INTO db2_types (id,test_byte) VALUES (?, ?)")
+			      .execute(Tuple.of(2, (byte) 0xCA), ctx.asyncAssertSuccess(insertResult -> {
+			         conn.query("SELECT id,test_byte FROM db2_types WHERE id = 2")
+			           .execute(ctx.asyncAssertSuccess(rows -> {
+			        	   ctx.assertEquals(1, rows.size());
+			        	   Row row = rows.iterator().next();
+			        	   ctx.assertEquals(2, row.getInteger(0));
+			        	   ctx.assertEquals((byte) 0xCA, row.get(Byte.class, 1));
 			           }));
 			      }));
 			  }));
