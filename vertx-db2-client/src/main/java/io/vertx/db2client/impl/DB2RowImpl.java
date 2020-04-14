@@ -299,7 +299,7 @@ public class DB2RowImpl extends ArrayTuple implements Row {
         throw new UnsupportedOperationException();
     }
     
-    public Numeric getNumeric(int pos) {
+    private Numeric getNumeric(int pos) {
         Object val = getValue(pos);
         if (val instanceof Numeric) {
             return (Numeric) val;

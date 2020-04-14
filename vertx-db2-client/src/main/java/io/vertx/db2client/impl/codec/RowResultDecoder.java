@@ -56,7 +56,15 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
     protected Row decodeRow(int len, ByteBuf in) {
         Row row = new DB2RowImpl(rowDesc);
         for (int i = 1; i < rowDesc.columnDefinitions().columns_ + 1; i++) {
+        	int startingIdx = cursor.dataBuffer_.readerIndex();
             Object o = cursor.getObject(i);
+            int endingIdx = cursor.dataBuffer_.readerIndex();
+            // TODO: Remove this once all getObject paths are implemented safely
+            // or add unit tests for this in the DRDA project
+            if (startingIdx != endingIdx) {
+            	System.out.println("WARN: Reader index changed while getting data. Changed from " + 
+            			startingIdx + " to " + endingIdx + " while obtaining object " + o);
+            }
             if (o instanceof BigDecimal) {
                 o = Numeric.create((BigDecimal) o);
             }

@@ -1824,7 +1824,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             // read the segment
             ensureALayerDataInBuffer(copySize);
             adjustLengths(copySize);
-            baos = buffer.readRetainedSlice(copySize);
+            baos = buffer.readRetainedSlice(copySize).asReadOnly();
 //            baos.write(buffer_, pos_, copySize);
 //            pos_ += copySize;
 

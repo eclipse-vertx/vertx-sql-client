@@ -20,6 +20,7 @@ package io.vertx.sqlclient;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.impl.ArrayTuple;
+import io.netty.buffer.ByteBuf;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
@@ -467,6 +468,12 @@ public interface Tuple {
     Object val = getValue(pos);
     if (val instanceof Buffer) {
       return (Buffer) val;
+    }
+    if (val instanceof ByteBuf) {
+      return Buffer.buffer((ByteBuf) val);
+    }
+    if (val instanceof byte[]) {
+      return Buffer.buffer((byte[]) val);
     }
     return null;
   }

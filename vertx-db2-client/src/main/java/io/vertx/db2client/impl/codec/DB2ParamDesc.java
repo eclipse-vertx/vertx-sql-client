@@ -15,6 +15,7 @@
  */
 package io.vertx.db2client.impl.codec;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.db2client.impl.drda.ClientTypes;
 import io.vertx.db2client.impl.drda.ColumnMetaData;
 import io.vertx.sqlclient.data.Numeric;
@@ -64,6 +65,9 @@ class DB2ParamDesc extends ParamDesc {
         case ClientTypes.REAL:
         case ClientTypes.SMALLINT:
         	return clazz == Numeric.class;
+        case ClientTypes.VARCHAR:
+        case ClientTypes.VARBINARY:
+        	return Buffer.class.isAssignableFrom(clazz);
     	}
     	return false;
     }

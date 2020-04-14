@@ -19,6 +19,8 @@ import java.math.BigDecimal;
 import java.sql.RowId;
 import java.sql.Types;
 
+import io.netty.buffer.ByteBuf;
+
 // This enumeration of types represents the typing scheme used by our jdbc driver.
 // Once this is finished, we need to review our switches to make sure they are exhaustive
 /**
@@ -276,9 +278,10 @@ public class ClientTypes {
         	return clazz == java.time.LocalDateTime.class ||
         	       clazz == java.sql.Timestamp.class;
         case ClientTypes.VARBINARY:
-        	return clazz == byte[].class;
         case ClientTypes.VARCHAR:
-        	return clazz == char[].class;
+        	return clazz == char[].class ||
+        	       clazz == byte[].class ||
+        	       ByteBuf.class.isAssignableFrom(clazz);
         case ClientTypes.ROWID:
             return clazz == RowId.class ||
                    clazz == DB2RowId.class;
