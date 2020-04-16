@@ -105,6 +105,16 @@ CREATE TABLE collector_test
 INSERT INTO collector_test VALUES (1, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'HELLO,WORLD');
 INSERT INTO collector_test VALUES (2, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'hello,world');
 
+-- used by DB2DataTypeTest
+DROP TABLE IF EXISTS db2_types;
+CREATE TABLE db2_types
+(
+    id           INT,
+    test_byte    SMALLINT,
+    test_float   FLOAT,
+    test_bytes   VARCHAR(255) for bit data
+);
+
 -- Sequence used by QueryVariationsTest
 DROP SEQUENCE my_seq;
 CREATE SEQUENCE my_seq INCREMENT BY 1 START WITH 1;

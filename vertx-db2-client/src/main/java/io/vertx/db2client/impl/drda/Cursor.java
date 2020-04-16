@@ -37,6 +37,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 
 public class Cursor {
 
@@ -65,6 +66,7 @@ public class Cursor {
     //-----------------------------internal state---------------------------------
 
     //-------------Structures for holding and scrolling the data -----------------
+    // TODO: Encapsulate this field
     public ByteBuf dataBuffer_;
 //    public byte[] dataBuffer_;
 //    public ByteArrayOutputStream dataBufferStream_ = new ByteArrayOutputStream();
@@ -452,15 +454,17 @@ public class Cursor {
             throw new IllegalStateException("SQLState.CHARACTER_CONVERTER_NOT_AVAILABLE");
         }
 
-        dataBuffer_.readerIndex(columnDataPosition_[column - 1] + 2);
-        String tempString = dataBuffer_.readCharSequence(columnDataComputedLength_[column - 1] - 2, charset_[column - 1]).toString();
+        int dataLength = columnDataComputedLength_[column - 1] - 2;
+        if (maxFieldSize_ != 0 && maxFieldSize_ < dataLength)
+        	dataLength = maxFieldSize_;
+        return dataBuffer_.getCharSequence(columnDataPosition_[column - 1] + 2, 
+        		dataLength, charset_[column - 1]).toString();
 //        String tempString = new String(dataBuffer_,
 //                columnDataPosition_[column - 1] + 2,
 //                columnDataComputedLength_[column - 1] - 2,
 //                charset_[column - 1]);
-        return (maxFieldSize_ == 0) ? tempString :
-                tempString.substring(0, Math.min(maxFieldSize_,
-                                                 tempString.length()));
+//        return (maxFieldSize_ == 0) ? tempString :
+//                tempString.substring(0, Math.min(maxFieldSize_, tempString.length()));
     }
 
     // Build a Java String from a database CHAR field.
@@ -478,22 +482,25 @@ public class Cursor {
             throw new IllegalStateException("SQLState.CHARACTER_CONVERTER_NOT_AVAILABLE");
         }
 
-        dataBuffer_.readerIndex(columnDataPosition_[column - 1]);
-        String tempString = dataBuffer_.readCharSequence(columnDataComputedLength_[column - 1], charset_[column - 1]).toString();
+        int dataLength = columnDataComputedLength_[column - 1];
+        if (maxFieldSize_ != 0 && maxFieldSize_ < dataLength)
+        	dataLength = maxFieldSize_;
+        return dataBuffer_.getCharSequence(columnDataPosition_[column - 1], 
+        		dataLength, charset_[column - 1]).toString();
 //        String tempString = new String(dataBuffer_,
 //                columnDataPosition_[column - 1],
 //                columnDataComputedLength_[column - 1],
 //                charset_[column - 1]);
-        return (maxFieldSize_ == 0) ? tempString :
-                tempString.substring(0, Math.min(maxFieldSize_,
-                                                 tempString.length()));
+//        return (maxFieldSize_ == 0) ? tempString :
+//                tempString.substring(0, Math.min(maxFieldSize_,
+//                                                 tempString.length()));
     }
 
     // Build a JDBC Date object from the ISO DATE field.
     private LocalDate get_DATE(int column) {
-        dataBuffer_.readerIndex(columnDataPosition_[column - 1]);
         // DATE column is always 10 chars long
-        String dateString = dataBuffer_.readCharSequence(10, charset_[column - 1]).toString();
+        String dateString = dataBuffer_.getCharSequence(columnDataPosition_[column - 1], 
+        		10, charset_[column - 1]).toString();
         return LocalDate.parse(dateString);
 //        return DateTime.dateBytesToDate(dataBuffer_,
 //            columnDataPosition_[column - 1],
@@ -503,9 +510,9 @@ public class Cursor {
 
     // Build a JDBC Time object from the ISO TIME field.
     private LocalTime get_TIME(int column) {
-        dataBuffer_.readerIndex(columnDataPosition_[column - 1]);
         // Time column is always 8 chars long
-        String timeString = dataBuffer_.readCharSequence(8, charset_[column - 1]).toString();
+        String timeString = dataBuffer_.getCharSequence(columnDataPosition_[column - 1], 
+        		8, charset_[column - 1]).toString();
         return LocalTime.parse(timeString, db2TimeFormat);
 //        return DateTime.timeBytesToTime(dataBuffer_,
 //                columnDataPosition_[column - 1],
@@ -583,7 +590,8 @@ public class Cursor {
                 Math.min(maxFieldSize_, columnDataComputedLength_[column - 1]);
 
         byte[] bytes = new byte[columnLength];
-        System.arraycopy(dataBuffer_, columnDataPosition_[column - 1], bytes, 0, columnLength);
+        //System.arraycopy(dataBuffer_, columnDataPosition_[column - 1], bytes, 0, columnLength);
+        dataBuffer_.getBytes(columnDataPosition_[column - 1], bytes);
         return bytes;
     }
 
@@ -597,7 +605,8 @@ public class Cursor {
             (maxFieldSize_ == 0) ? columnDataComputedLength_[column - 1] - 2 :
             Math.min(maxFieldSize_, columnDataComputedLength_[column - 1] - 2);
         bytes = new byte[columnLength];
-        System.arraycopy(dataBuffer_, columnDataPosition_[column - 1] + 2, bytes, 0, bytes.length);
+//        System.arraycopy(dataBuffer_, columnDataPosition_[column - 1] + 2, bytes, 0, bytes.length);
+        dataBuffer_.getBytes(columnDataPosition_[column - 1] + 2, bytes);
         return bytes;
     }
 
@@ -609,7 +618,8 @@ public class Cursor {
             (maxFieldSize_ == 0) ? columnDataComputedLength_[column - 1] - 2 :
             Math.min(maxFieldSize_, columnDataComputedLength_[column - 1] - 2);
         bytes = new byte[columnLength];
-        System.arraycopy(dataBuffer_, columnDataPosition_[column - 1] + 2, bytes, 0, bytes.length);
+        //System.arraycopy(dataBuffer_, columnDataPosition_[column - 1] + 2, bytes, 0, bytes.length);
+        dataBuffer_.getBytes(columnDataPosition_[column - 1] + 2, bytes);
 
         try {
             ByteArrayInputStream bais = new ByteArrayInputStream( bytes );
@@ -1738,11 +1748,8 @@ public class Cursor {
             byte[] lengthBytes = new byte[columnDataComputedLength_[index]];
             byte[] longBytes = new byte[8];
 
-            System.arraycopy(dataBuffer_,
-                    position,
-                    lengthBytes,
-                    0,
-                    columnDataComputedLength_[index]);
+//            System.arraycopy(dataBuffer_, position, lengthBytes, 0, columnDataComputedLength_[index]);
+            dataBuffer_.getBytes(position, lengthBytes, 0, columnDataComputedLength_[index]);
 
             // right-justify for BIG ENDIAN
             int j = 0;

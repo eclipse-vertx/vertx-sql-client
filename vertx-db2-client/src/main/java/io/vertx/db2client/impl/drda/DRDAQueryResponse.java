@@ -1139,7 +1139,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         if (peekCP == CodePoint.ENDQRYRM) {
             parseEndQuery(/*netResultSet*/);
         }
-
+        
         completeOpenQuery(sqlca);
         
         endOfSameIdChainData();
@@ -1654,6 +1654,11 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         parseTypdefsOrMgrlvlovrs();
         NetSqlca netSqlca = parseSQLCARD(null);
         cursor.setAllRowsReceivedFromServer(true);
+        
+        int peekCP = peekCodePoint();
+		if (peekCP == CodePoint.RDBUPDRM) {
+			parseRDBUPDRM();
+		}
     }
     
     // Also called by NetResultSetReply subclass.
@@ -1819,7 +1824,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             // read the segment
             ensureALayerDataInBuffer(copySize);
             adjustLengths(copySize);
-            baos = buffer.readRetainedSlice(copySize);
+            baos = buffer.readRetainedSlice(copySize).asReadOnly();
 //            baos.write(buffer_, pos_, copySize);
 //            pos_ += copySize;
 

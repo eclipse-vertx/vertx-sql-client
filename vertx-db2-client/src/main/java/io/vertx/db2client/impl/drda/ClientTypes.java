@@ -19,6 +19,8 @@ import java.math.BigDecimal;
 import java.sql.RowId;
 import java.sql.Types;
 
+import io.netty.buffer.ByteBuf;
+
 // This enumeration of types represents the typing scheme used by our jdbc driver.
 // Once this is finished, we need to review our switches to make sure they are exhaustive
 /**
@@ -211,21 +213,17 @@ public class ClientTypes {
     }
     
     public static boolean canConvert(Object value, int toType) {
+    	if (value == null)
+    		return true;
+    	
     	Class<?> clazz = value.getClass();
     	// Everything can convert to String
     	if (clazz == String.class)
     		return true; 
     	switch (toType) {
-        case ClientTypes.BIGINT:
-        case ClientTypes.BIT:
-        case ClientTypes.BOOLEAN:
-        case ClientTypes.CHAR:
-        case ClientTypes.DECIMAL:
-        case ClientTypes.DOUBLE:
         case ClientTypes.INTEGER:
+        case ClientTypes.BIGINT:
         case ClientTypes.LONGVARCHAR:
-        case ClientTypes.REAL:
-        case ClientTypes.SMALLINT:
         	return clazz == boolean.class ||
         		   clazz == Boolean.class ||
         		   clazz == double.class ||
@@ -239,6 +237,30 @@ public class ClientTypes {
         		   clazz == short.class ||
         		   clazz == Short.class ||
         		   clazz == BigDecimal.class;
+        case ClientTypes.DOUBLE:
+        case ClientTypes.REAL:
+        case ClientTypes.DECIMAL:
+		 	return clazz == double.class ||
+		 		   clazz == Double.class ||
+		 		   clazz == float.class ||
+		 		   clazz == Float.class;
+        case ClientTypes.BIT:
+        case ClientTypes.BOOLEAN:
+        case ClientTypes.CHAR:
+        case ClientTypes.SMALLINT:
+        	return clazz == boolean.class ||
+		 		   clazz == Boolean.class ||
+		 		   clazz == char.class || 
+		 		   clazz == Character.class ||
+		 		   clazz == int.class ||
+		 		   clazz == Integer.class ||
+		 		   clazz == long.class ||
+		 		   clazz == Long.class ||
+		 		   clazz == short.class ||
+		 		   clazz == Short.class ||
+		 		   clazz == byte.class ||
+		 		   clazz == Byte.class ||
+		 		   clazz == BigDecimal.class;
         case ClientTypes.BINARY:
         case ClientTypes.BLOB:
         	return clazz == boolean.class ||
@@ -256,9 +278,10 @@ public class ClientTypes {
         	return clazz == java.time.LocalDateTime.class ||
         	       clazz == java.sql.Timestamp.class;
         case ClientTypes.VARBINARY:
-        	return clazz == byte[].class;
         case ClientTypes.VARCHAR:
-        	return clazz == char[].class;
+        	return clazz == char[].class ||
+        	       clazz == byte[].class ||
+        	       ByteBuf.class.isAssignableFrom(clazz);
         case ClientTypes.ROWID:
             return clazz == RowId.class ||
                    clazz == DB2RowId.class;

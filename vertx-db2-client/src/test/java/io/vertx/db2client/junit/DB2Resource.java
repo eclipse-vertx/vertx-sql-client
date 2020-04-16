@@ -74,6 +74,7 @@ public class DB2Resource extends ExternalResource {
 	                .setPassword(get("DB2_PASS"));
     	}
     	String jdbcUrl = "jdbc:db2://" + options.getHost() + ":" + options.getPort() + "/" + options.getDatabase();
+    	System.out.println("Initializing DB2 database at: " + jdbcUrl);
     	try (Connection con = DriverManager.getConnection(jdbcUrl, options.getUser(), options.getPassword())) {
     	  runInitSql(con);
     	}

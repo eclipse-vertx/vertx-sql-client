@@ -707,20 +707,20 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                         buffer.writeBoolean(((Boolean) inputs[i]).booleanValue());
                         break;
                     case DRDAConstants.DRDA_TYPE_NINTEGER:
-                        buffer.writeInt(((Integer) inputs[i]).intValue());
+                        buffer.writeInt(((Number) inputs[i]).intValue());
                         break;
                     case DRDAConstants.DRDA_TYPE_NSMALL:
                         if (inputs[i] instanceof Boolean) {
                           buffer.writeShort(((boolean) inputs[i]) ? 1 : 0);
                         } else {
-                          buffer.writeShort(((Short) inputs[i]).shortValue());
+                          buffer.writeShort(((Number) inputs[i]).shortValue());
                         }
                         break;
                     case DRDAConstants.DRDA_TYPE_NFLOAT4:
-                        buffer.writeFloat(((Float) inputs[i]).floatValue());
+                        buffer.writeFloat(((Number) inputs[i]).floatValue());
                         break;
                     case DRDAConstants.DRDA_TYPE_NFLOAT8:
-                        buffer.writeDouble(((Double) inputs[i]).doubleValue());
+                        buffer.writeDouble(((Number) inputs[i]).doubleValue());
                         break;
                     case DRDAConstants.DRDA_TYPE_NDECIMAL:
                         writeBigDecimal((BigDecimal) inputs[i], (protocolTypesAndLengths[i][1] >> 8) & 0xff, // described precision not actual
@@ -767,7 +767,13 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                     case DRDAConstants.DRDA_TYPE_NLONGVARBYTE:
                         o = retrievePromotedParameterIfExists(i);
                         if (o == null) {
-                            writeLDBytes((byte[]) inputs[i]);
+                        	if (inputs[i] instanceof byte[]) {
+                        		writeLDBytes((byte[]) inputs[i]);
+                        	} else if (inputs[i] instanceof ByteBuf) {
+                        		writeLDBytes((ByteBuf) inputs[i]);
+                        	} else {
+                        		throw new UnsupportedOperationException("Cannot write " + inputs[i].getClass() + " as VARBYTE/LONGVARBYTE");
+                        	}
                         } else { // use the promoted object instead
                             throw new UnsupportedOperationException("CLOB");
 //                            setFDODTALob(netAgent_.netConnection_.getSecurityMechanism(), (ClientClob) o,
@@ -1193,11 +1199,17 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                     break;
                 case Types.BINARY:
                 case Types.VARBINARY:
-                    byte[] ba = (byte[]) inputRow[i];
-                    if (ba == null) {
+//                    byte[] ba = (byte[]) inputRow[i];
+                	int length = -1;
+                	if (inputRow[i] instanceof byte[]) {
+                		length = ((byte[]) inputRow[i]).length;
+                	} else if (inputRow[i] instanceof ByteBuf) {
+                		length = ((ByteBuf) inputRow[i]).readableBytes();
+                	}
+                    if (inputRow[i] == null) {
                         lidAndLengths[i][0] = DRDAConstants.DRDA_TYPE_NVARBYTE;
                         lidAndLengths[i][1] = 32767;
-                    } else if (ba.length <= 32767) {
+                    } else if (length <= 32767) {
                         lidAndLengths[i][0] = DRDAConstants.DRDA_TYPE_NVARBYTE;
                         lidAndLengths[i][1] = 32767;
                     } else {
@@ -1215,11 +1227,17 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                     }
                     break;
                 case Types.LONGVARBINARY:
-                    ba = (byte[]) inputRow[i];
-                    if (ba == null) {
+//                    ba = (byte[]) inputRow[i];
+                	length = -1;
+                	if (inputRow[i] instanceof byte[]) {
+                		length = ((byte[]) inputRow[i]).length;
+                	} else if (inputRow[i] instanceof ByteBuf) {
+                		length = ((ByteBuf) inputRow[i]).readableBytes();
+                	}
+                    if (inputRow[i] == null) {
                         lidAndLengths[i][0] = DRDAConstants.DRDA_TYPE_NLONGVARBYTE;
                         lidAndLengths[i][1] = 32767;
-                    } else if (ba.length <= 32767) {
+                    } else if (length <= 32767) {
                         lidAndLengths[i][0] = DRDAConstants.DRDA_TYPE_NLONGVARBYTE;
                         lidAndLengths[i][1] = 32767;
                     } else {

@@ -537,6 +537,11 @@ public abstract class DRDARequest {
 //        writeLDBytesX(bytes.length, bytes);
     }
     
+    final void writeLDBytes(ByteBuf bytes) {
+    	buffer.writeShort(bytes.readableBytes());
+    	buffer.writeBytes(bytes, bytes.readerIndex(), bytes.readableBytes());
+    }
+    
     // insert a 4 byte length/codepoint pair and a 1 byte unsigned value into the buffer.
     // total of 5 bytes inserted in buffer.
     final void writeScalar1Byte(int codePoint, int value) {

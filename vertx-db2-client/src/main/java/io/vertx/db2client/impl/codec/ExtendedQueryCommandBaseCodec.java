@@ -19,6 +19,7 @@ import java.sql.ResultSet;
 import java.util.stream.Collector;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.db2client.impl.codec.DB2PreparedStatement.QueryInstance;
 import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
@@ -106,6 +107,8 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
 			Object val = params.getValue(i);
 			if (val instanceof Numeric)
 				val = ((Numeric) val).bigDecimalValue();
+			if (val instanceof Buffer)
+				val = ((Buffer) val).getByteBuf();
 			inputs[i] = val;
 		}
 		return inputs;

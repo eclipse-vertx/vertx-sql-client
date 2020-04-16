@@ -115,6 +115,16 @@ CREATE TABLE ROWTEST(
     message varchar(1024)
 );
 
+-- used by DB2DataTypeTest
+DROP TABLE db2_types;
+CREATE TABLE db2_types
+(
+    id           INT,
+    test_byte    SMALLINT,
+    test_float   FLOAT,
+    test_bytes   VARCHAR(255) for bit data
+);
+
 -- Sequence used by QueryVariationsTest
 DROP SEQUENCE my_seq;
 CREATE SEQUENCE my_seq INCREMENT BY 1 START WITH 1;
