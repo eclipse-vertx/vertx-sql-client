@@ -24,6 +24,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.db2client.DB2Exception;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
 class DB2Decoder extends ByteToMessageDecoder {
@@ -74,6 +75,9 @@ class DB2Decoder extends ByteToMessageDecoder {
             if (LOG.isDebugEnabled())
                 LOG.debug("<<< DECODE " + ctx + " (" + payloadLength + " bytes)");
             ctx.decodePayload(payload, payloadLength);
+        } catch (DB2Exception connex) {
+        	// A common connection error occurred, so don't bother with a hex dump and generic error message 
+        	ctx.completionHandler.handle(CommandResponse.failure(connex));
         } catch (Throwable t) {
             int i = payload.readerIndex();
             payload.readerIndex(startIndex);

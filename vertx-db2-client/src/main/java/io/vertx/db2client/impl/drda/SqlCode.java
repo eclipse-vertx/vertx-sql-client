@@ -26,6 +26,8 @@ public class SqlCode {
 	
 	public static final int CONNECTION_REFUSED = -4499;
 	public static final int RDB_NOT_FOUND = -30061;
+	public static final int INVALID_CREDENTIALS = -4214;
+	public static final int MISSING_CREDENTIALS = -4461;
 	
     private int code_;
 
