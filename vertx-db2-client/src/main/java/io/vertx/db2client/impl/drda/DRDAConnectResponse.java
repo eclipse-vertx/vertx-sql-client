@@ -15,7 +15,6 @@
  */
 package io.vertx.db2client.impl.drda;
 
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
@@ -1057,13 +1056,13 @@ public class DRDAConnectResponse extends DRDAResponse {
             // 0x03 - OBJDSS sent when not allowed.
             //parseSECTKN (true);
             parseSECTKN(false);
-        }
+        } 
     }
     
     // The Security Check (SECCHKRM) Reply Message indicates the acceptability
     // of the security information.
-    // this method returns the security check code. it is up to the caller to check
-    // the value of this return code and take the appropriate action.
+    // This method throws an exception if the connection was not established
+    // It is up to the caller to catch this exception and take the appropriate action.
     //
     // Returned from Server:
     // SVRCOD - required  (0 - INFO, 8 - ERROR, 16 -SEVERE)
@@ -1132,10 +1131,30 @@ public class DRDAConnectResponse extends DRDAResponse {
         if (!secchkcdReceived)
             throw new IllegalStateException("Did not receive SECCHKCD codepoint");
 //        checkRequiredObjects(svrcodReceived, secchkcdReceived);
-
 //        netConnection.securityCheckComplete(svrcod, secchkcd);
-        if (secchkcd != CodePoint.SECCHKCD_00) {
-            throw new IllegalArgumentException("Authentication failed");
+        
+        switch (secchkcd) {
+        // Security information accepted
+        case CodePoint.SECCHKCD_00:		
+            break;
+        // Missing userid - TODO  We should catch and handle this issue *before* the call to the DB2 server
+        case CodePoint.SECCHKCD_12:
+            // Using SQL error code and state values from JDBC
+            throw new DB2Exception("Missing userid, verify a user value was supplied", SqlCode.MISSING_CREDENTIALS, SQLState.CONNECT_USERID_ISNULL);
+        // Missing password - TODO  We should catch and handle this issue *before* the call to the DB2 server
+        case CodePoint.SECCHKCD_10:
+            // Using SQL error code and state values from similar JDBC reponse
+        	throw new DB2Exception("Missing password, verify a password value was supplied", SqlCode.MISSING_CREDENTIALS, SQLState.CONNECT_PASSWORD_ISNULL);
+        // Invalid credentials
+        case CodePoint.SECCHKCD_0E:
+        case CodePoint.SECCHKCD_0F:
+        case CodePoint.SECCHKCD_13:
+        case CodePoint.SECCHKCD_14:
+        case CodePoint.SECCHKCD_15:
+            // Using SQL error code and state values from similar JDBC response for consistency
+            throw new DB2Exception("Invalid credentials, verify the user and password values supplied are correct", SqlCode.INVALID_CREDENTIALS, SQLState.NET_CONNECT_AUTH_FAILED);
+        default:
+        	throw new IllegalArgumentException("Authentication failed");
         }
     }
     
