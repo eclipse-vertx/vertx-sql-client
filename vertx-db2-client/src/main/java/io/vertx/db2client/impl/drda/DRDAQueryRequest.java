@@ -20,6 +20,7 @@ import java.sql.ResultSet;
 import java.sql.RowId;
 import java.sql.Types;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -745,17 +746,14 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                         }
                     	break;
                     case DRDAConstants.DRDA_TYPE_NTIMESTAMP:
-                        throw new UnsupportedOperationException("DRDA_TYPE_NTIMESTAMP");
-//                        // The value may be a Timestamp if it comes from one of
-//                        // the methods that don't specify the calendar, or a
-//                        // DateTimeValue if it comes from a method that does
-//                        // specify the calendar. Convert to DateTimeValue if
-//                        // needed.
-//                        DateTimeValue tsVal = (inputs[i] instanceof Timestamp)
-//                                ? new DateTimeValue((Timestamp) inputs[i])
-//                                : (DateTimeValue) inputs[i];
-//                        writeTimestamp(tsVal);
-//                        break;
+                    	if (inputs[i] instanceof LocalDateTime) {
+                        	writeTimestamp((LocalDateTime) inputs[i]);
+                        } else if (inputs[i] instanceof java.sql.Timestamp) {
+                        	writeTimestamp((java.sql.Timestamp) inputs[i]);
+                        } else {
+                        	throw new UnsupportedOperationException("Unsupported input type for TIMESTAMP column: " + inputs[i].getClass());
+                        }
+                        break;
                     case DRDAConstants.DRDA_TYPE_NINTEGER8:
                         buffer.writeLong(((Long) inputs[i]).longValue());
                         break;
@@ -1156,13 +1154,14 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                     lidAndLengths[i][1] = 8;
                     break;
                 case Types.TIMESTAMP:
-                    throw new UnsupportedOperationException("Types.TIMESTAMP");
-//                    // for input, output, and inout parameters
-//                    // lid: PROTOCOL_TYPE_NTIMESTAMP, length overrid: 26 or 29
-//                    // dataFormat: java.sql.Timestamp
-//                    lidAndLengths[i][0] = DRDAConstants.DRDA_TYPE_NTIMESTAMP;
-//                    lidAndLengths[i][1] = DateTime.getTimestampLength( netAgent_.netConnection_.serverSupportsTimestampNanoseconds() );
-//                    break;
+                    // for input, output, and inout parameters
+                    // lid: PROTOCOL_TYPE_NTIMESTAMP, length overrid: 26 or 29
+                    // dataFormat: java.sql.Timestamp
+                    lidAndLengths[i][0] = DRDAConstants.DRDA_TYPE_NTIMESTAMP;
+                    // @AGG assuming the server supports nanoseconds, otherwise use DRDAConstants.DRDA_OLD_TIMESTAMP_LENGTH
+                    lidAndLengths[i][1] = DRDAConstants.JDBC_TIMESTAMP_LENGTH; 
+                    // DateTime.getTimestampLength( netAgent_.netConnection_.serverSupportsTimestampNanoseconds() );
+                    break;
                 case Types.BIGINT:
                     // if SQLAM < 6 this should be mapped to decimal (19,0) in common layer
                     // if SQLAM >=6, lid: PROTOCOL_TYPE_NINTEGER8, length override: 8

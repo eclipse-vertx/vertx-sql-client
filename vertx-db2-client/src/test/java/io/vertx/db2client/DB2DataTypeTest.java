@@ -18,6 +18,7 @@ package io.vertx.db2client;
 import static org.junit.Assume.assumeTrue;
 
 import java.sql.RowId;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 
 import org.junit.Test;
@@ -111,6 +112,23 @@ public class DB2DataTypeTest extends DB2TestBase {
 								}));
 					}));
 		}));
+	}
+	
+	@Test
+	public void testTimestamp(TestContext ctx) {
+	  LocalDateTime now = LocalDateTime.now();
+	  connect(ctx.asyncAssertSuccess(conn -> {
+	    conn.preparedQuery("INSERT INTO db2_types (id,test_tstamp) VALUES (?,?)")
+	      .execute(Tuple.of(5, now), ctx.asyncAssertSuccess(insertResult -> {
+	         conn.preparedQuery("SELECT id,test_tstamp FROM db2_types WHERE id = ?")
+	           .execute(Tuple.of(5), ctx.asyncAssertSuccess(rows -> {
+					ctx.assertEquals(1, rows.size());
+					Row row = rows.iterator().next();
+					ctx.assertEquals(5, row.getInteger(0));
+					ctx.assertEquals(now, row.getLocalDateTime(1));
+	           }));
+	      }));
+	  }));
 	}
 	
 	@Test

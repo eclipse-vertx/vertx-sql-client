@@ -22,7 +22,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Hashtable;
@@ -480,12 +482,11 @@ public abstract class DRDARequest {
     }
     
     /**
-     * Writes a LocalDate to the buffer in the standard SQL format
-     * of <code>YYYY-MM-DD</code> using UTF8 encoding
+     * Writes a LocalDate to the buffer in the standard SQL format using UTF8 encoding
      */
     final void writeDate(LocalDate date) {
     	ensureLength(10);
-    	String d = String.format("%04d-%02d-%02d", date.getYear(), date.getMonthValue(), date.getDayOfMonth());
+    	String d = date.format(DRDAConstants.DB2_DATE_FORMAT);
     	buffer.writeCharSequence(d, StandardCharsets.UTF_8);
     }
     
@@ -494,17 +495,29 @@ public abstract class DRDARequest {
     }
     
     /**
-     * Writes a LocalTime to the buffer in the standard SQL format
-     * of <code>hh:mm:ss</code> using UTF8 encoding
+     * Writes a LocalTime to the buffer in the standard SQL format using UTF8 encoding
      */
     final void writeTime(LocalTime time) {
     	ensureLength(8);
-    	String d = String.format("%02d:%02d:%02d", time.getHour(), time.getMinute(), time.getSecond());
-    	buffer.writeCharSequence(d, StandardCharsets.UTF_8);
+    	String t = time.format(DRDAConstants.DB2_TIME_FORMAT);
+    	buffer.writeCharSequence(t, StandardCharsets.UTF_8);
     }
     
     final void writeTime(java.sql.Time time) {
     	writeTime(time.toLocalTime());
+    }
+    
+    /**
+     * Writes a LocalTime to the buffer in the standard SQL format using UTF8 encoding
+     */
+    final void writeTimestamp(LocalDateTime ts) {
+    	ensureLength(26);
+    	String t = ts.format(DRDAConstants.DB2_TIMESTAMP_FORMAT);
+    	buffer.writeCharSequence(t, StandardCharsets.UTF_8);
+    }
+    
+    final void writeTimestamp(java.sql.Timestamp timestamp) {
+    	writeTimestamp(timestamp.toLocalDateTime());
     }
     
     // insert a java.math.BigDecimal into the buffer.

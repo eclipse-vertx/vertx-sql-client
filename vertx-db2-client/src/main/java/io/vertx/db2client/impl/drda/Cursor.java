@@ -30,6 +30,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -58,8 +59,6 @@ public class Cursor {
     static final Charset UTF_8 = Charset.forName("UTF-8");
     static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
     
-    private static final DateTimeFormatter db2TimeFormat = DateTimeFormatter.ofPattern("HH.mm.ss");
-
     // unused protocol element: SBCS_CLOB = 8;
     // unused protocol element: MBCS_CLOB = 9;
     // unused protocol element: DBCS_CLOB = 10;
@@ -501,7 +500,7 @@ public class Cursor {
         // DATE column is always 10 chars long
         String dateString = dataBuffer_.getCharSequence(columnDataPosition_[column - 1], 
         		10, charset_[column - 1]).toString();
-        return LocalDate.parse(dateString);
+        return LocalDate.parse(dateString, DRDAConstants.DB2_DATE_FORMAT);
 //        return DateTime.dateBytesToDate(dataBuffer_,
 //            columnDataPosition_[column - 1],
 //            cal,
@@ -513,23 +512,25 @@ public class Cursor {
         // Time column is always 8 chars long
         String timeString = dataBuffer_.getCharSequence(columnDataPosition_[column - 1], 
         		8, charset_[column - 1]).toString();
-        return LocalTime.parse(timeString, db2TimeFormat);
+        return LocalTime.parse(timeString, DRDAConstants.DB2_TIME_FORMAT);
 //        return DateTime.timeBytesToTime(dataBuffer_,
 //                columnDataPosition_[column - 1],
 //                cal,
 //                charset_[column - 1]);
     }
 
-//    // Build a JDBC Timestamp object from the ISO TIMESTAMP field.
-//    private final Timestamp getTIMESTAMP(int column, Calendar cal)
-//            throws SQLException {
+    // Build a JDBC Timestamp object from the ISO TIMESTAMP field.
+    private final LocalDateTime get_TIMESTAMP(int column) {
+        String timeString = dataBuffer_.getCharSequence(columnDataPosition_[column - 1], 
+        		26, charset_[column - 1]).toString();
+        return LocalDateTime.parse(timeString, DRDAConstants.DB2_TIMESTAMP_FORMAT);
 //        return DateTime.timestampBytesToTimestamp(
 //            dataBuffer_,
 //            columnDataPosition_[column - 1],
 //            cal,
 //            charset_[column - 1],
 //            agent_.connection_.serverSupportsTimestampNanoseconds());
-//    }
+    }
 //
 //    // Build a JDBC Timestamp object from the ISO DATE field.
 //    private final Timestamp getTimestampFromDATE(
@@ -1223,8 +1224,8 @@ public class Cursor {
             return get_DATE(column);
         case Types.TIME:
             return get_TIME(column);
-//        case Types.TIMESTAMP:
-//            return getTIMESTAMP(column, getRecyclableCalendar());
+        case Types.TIMESTAMP:
+            return get_TIMESTAMP(column);
         case Types.CHAR:
             return get_CHAR(column);
         case Types.VARCHAR:
