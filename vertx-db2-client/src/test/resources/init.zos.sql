@@ -122,7 +122,8 @@ CREATE TABLE db2_types
     id           INT,
     test_byte    SMALLINT,
     test_float   FLOAT,
-    test_bytes   VARCHAR(255) for bit data
+    test_bytes   VARCHAR(255) for bit data,
+    test_tstamp  TIMESTAMP
 );
 
 -- Sequence used by QueryVariationsTest

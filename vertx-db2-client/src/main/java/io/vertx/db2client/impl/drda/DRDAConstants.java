@@ -15,6 +15,10 @@
  */
 package io.vertx.db2client.impl.drda;
 
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
+
 public class DRDAConstants {
     // Value to use when padding non-character data in ddm objects.
     public static final byte NON_CHAR_DDM_DATA_PAD_BYTE = 0x00;
@@ -323,10 +327,9 @@ public class DRDAConstants {
     // DB2 and DRDA support timestamps with microseconds precision, but not
     // nanoseconds precision: yyyy-mm-dd-hh.mm.ss.ffffff
     // In contrast, JDBC supports full nanoseconds precision: yyyy-mm-dd-hh.mm.ss.fffffffff
-    //
     public   static final int DRDA_OLD_TIMESTAMP_LENGTH = 26;
-    public   static final int DRDA_TIMESTAMP_LENGTH = 29;
-    public   static final int JDBC_TIMESTAMP_LENGTH = 29;
+    public   static final int DRDA_TIMESTAMP_LENGTH = 26;
+    public   static final int JDBC_TIMESTAMP_LENGTH = 26;
 
     // Values for the EXTDTA stream status byte.
     // The use of this status byte is a product specific extension. The same
@@ -348,6 +351,14 @@ public class DRDAConstants {
     public static final String PRDID = "JCC04250";
     
     public static final String EXTNAM = "db2jcc_application  " + PRDID + "300";
+    
+    static final DateTimeFormatter DB2_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy'-'MM'-'dd");
+    static final DateTimeFormatter DB2_TIME_FORMAT = DateTimeFormatter.ofPattern("HH'.'mm'.'ss");
+	static final DateTimeFormatter DB2_TIMESTAMP_FORMAT = new DateTimeFormatterBuilder()
+			.append(DateTimeFormatter.ofPattern("yyyy'-'MM'-'dd'-'HH'.'mm'.'ss"))
+			.appendFraction(ChronoField.NANO_OF_SECOND, 6, 9, true)
+			.toFormatter();
+    
     //
     // // The server release level of this product.
     // // It will be prefixed with PRDID
