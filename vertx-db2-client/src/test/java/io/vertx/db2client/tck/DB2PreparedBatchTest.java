@@ -5,13 +5,24 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.tck.PreparedBatchTestBase;
 
+import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
 public class DB2PreparedBatchTest extends PreparedBatchTestBase {
   @ClassRule
   public static DB2Resource rule = DB2Resource.SHARED_INSTANCE;
+  
+	@Rule
+	public TestName testName = new TestName();
+
+	@Before
+	public void printTestName(TestContext ctx) throws Exception {
+		System.out.println(">>> BEGIN " + getClass().getSimpleName() + "." + testName.getMethodName());
+	}
 
   @Override
   protected void initConnector() {
