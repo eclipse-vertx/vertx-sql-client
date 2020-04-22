@@ -30,10 +30,10 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.sqlclient.impl.cache.PreparedStatementCache;
 import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
-import java.util.Deque;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -68,7 +68,7 @@ public abstract class SocketConnectionBase implements Connection {
     this.socket = socket;
     this.context = context;
     this.pipeliningLimit = pipeliningLimit;
-    this.psCache = cachePreparedStatements ? new PreparedStatementCache(preparedStatementCacheSize, this) : null;
+    this.psCache = cachePreparedStatements ? new PreparedStatementCache(this, preparedStatementCacheSize) : null;
     this.preparedStatementCacheSqlLimit = preparedStatementCacheSqlLimit;
   }
 
@@ -162,29 +162,32 @@ public abstract class SocketConnectionBase implements Connection {
 
     // Special handling for cache
     PreparedStatementCache psCache = this.psCache;
-    if (psCache != null && cmd instanceof PrepareStatementCommand) {
-      PrepareStatementCommand psCmd = (PrepareStatementCommand) cmd;
-      if (!psCmd.cacheable()) {
-        // we don't cache non one-shot preparedQuery
-      } else if (psCmd.sql().length() > preparedStatementCacheSqlLimit) {
-        // do not cache the statements
-      } else {
-        // TODO fix the auto-closing logic
-        CachedPreparedStatement cached = psCache.get(psCmd.sql());
-        Handler<AsyncResult<PreparedStatement>> orig = (Handler) handler;
-        if (cached != null) {
-          psCmd.handler = orig;
-          cached.get(psCmd::complete);
-          return;
+    if (psCache != null) {
+      // cache is enabled
+      if (cmd instanceof PrepareStatementCommand) {
+        PrepareStatementCommand psCmd = (PrepareStatementCommand) cmd;
+        if (!psCmd.cacheable()) {
+          // we don't cache non one-shot preparedQuery
+        } else if (psCmd.sql().length() > preparedStatementCacheSqlLimit) {
+          // do not cache the statements if it exceeds the sql length limit
         } else {
-          if (psCache.size() >= psCache.getCapacity() && !psCache.isReady()) {
-            // only if the prepared statement is ready then it can be evicted
+          Handler<AsyncResult<PreparedStatement>> originalHandler = (Handler) handler;
+          Handler<AsyncResult<PreparedStatement>> newHandler = psCache.appendStmtReq(psCmd.sql(), originalHandler);
+          if (newHandler == null) {
+            // we don't need to schedule it if the result is cached or the request has been sent
+            return;
           } else {
-            cached = new CachedPreparedStatement();
-            cached.get(orig);
-            psCache.put(psCmd.sql(), cached);
-            handler = (Handler) cached;
+            handler = (Handler) newHandler;
           }
+        }
+      } else if (cmd instanceof CloseStatementCommand) {
+        CloseStatementCommand closeStmtCommand = (CloseStatementCommand) cmd;
+        /*
+         * We need to know how we handle the close statement command, this cmd might origin from PreparedStatement#close
+         * or it's automatically sent by the cache once the stmt is evicted, we should clean up the cache for those closing cached prepared statements.
+         */
+        if (closeStmtCommand.statement().cacheable()) {
+          psCache.remove(closeStmtCommand.statement());
         }
       }
     }
@@ -198,29 +201,6 @@ public abstract class SocketConnectionBase implements Connection {
       checkPending();
     } else {
       cmd.fail(new VertxException("Connection not open " + status));
-    }
-  }
-
-  static class CachedPreparedStatement implements Handler<AsyncResult<PreparedStatement>> {
-
-    private final Deque<Handler<AsyncResult<PreparedStatement>>> waiters = new ArrayDeque<>();
-    AsyncResult<PreparedStatement> resp;
-
-    void get(Handler<AsyncResult<PreparedStatement>> handler) {
-      if (resp != null) {
-        handler.handle(resp);
-      } else {
-        waiters.add(handler);
-      }
-    }
-
-    @Override
-    public void handle(AsyncResult<PreparedStatement> event) {
-      resp = event;
-      Handler<AsyncResult<PreparedStatement>> waiter;
-      while ((waiter = waiters.poll()) != null) {
-        waiter.handle(resp);
-      }
     }
   }
 

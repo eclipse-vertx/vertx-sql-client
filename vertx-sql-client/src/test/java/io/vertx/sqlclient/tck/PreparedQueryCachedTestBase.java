@@ -44,4 +44,79 @@ public abstract class PreparedQueryCachedTestBase extends PreparedQueryTestBase 
       }
     }));
   }
+
+  @Test
+  public void testClosedPreparedStatementEvictedFromCache(TestContext ctx) {
+    Async async = ctx.async();
+    options.setCachePreparedStatements(true);
+    options.setPreparedStatementCacheMaxSize(1024);
+
+    connector.connect(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(preparedStatement1 -> {
+        preparedStatement1.query().execute(ctx.asyncAssertSuccess(res1 -> {
+          ctx.assertEquals(12, res1.size());
+          preparedStatement1.close(); // no response from server, we need to wait for some time here
+          vertx.setTimer(2000, id -> {
+            conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(preparedStatement2 -> {
+              preparedStatement2.query().execute(ctx.asyncAssertSuccess(res2 -> {
+                ctx.assertEquals(12, res2.size());
+                conn.close();
+                async.complete();
+              }));
+            }));
+          });
+        }));
+      }));
+    }));
+    async.await();
+  }
+
+  @Test
+  public void testConcurrentClose(TestContext ctx) {
+    connector.connect(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(preparedStatement1 -> {
+        preparedStatement1.query().execute(ctx.asyncAssertSuccess(res1 -> {
+          ctx.assertEquals(12, res1.size());
+          preparedStatement1.close();
+          // send another prepare command directly
+          conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(preparedStatement2 -> {
+            preparedStatement2.query().execute(ctx.asyncAssertSuccess(res2 -> {
+              ctx.assertEquals(12, res2.size());
+              conn.close();
+            }));
+          }));
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testSqlLimitDoesNotAffectQuery(TestContext ctx) {
+    options.setPreparedStatementCacheSqlLimit(1);
+    connector.connect(ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("SELECT * FROM immutable").execute(ctx.asyncAssertSuccess(res -> {
+        ctx.assertEquals(12, res.size());
+        conn.close();
+      }));
+    }));
+  }
+
+  @Test
+  public void testEvictedStmtClosing(TestContext ctx) {
+    options.setCachePreparedStatements(true);
+    options.setPreparedStatementCacheMaxSize(1);
+
+    connector.connect(ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("SELECT * FROM immutable").execute(ctx.asyncAssertSuccess(res1 -> {
+        ctx.assertEquals(12, res1.size());
+        conn.preparedQuery("SELECT * FROM mutable").execute(ctx.asyncAssertSuccess(res2 -> {
+          // the first stmt should be evicted, query again to check if it's ok
+          conn.preparedQuery("SELECT * FROM immutable").execute(ctx.asyncAssertSuccess(res3 -> {
+            ctx.assertEquals(12, res1.size());
+            conn.close();
+          }));
+        }));
+      }));
+    }));
+  }
 }
