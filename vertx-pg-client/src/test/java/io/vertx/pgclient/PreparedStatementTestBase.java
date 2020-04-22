@@ -264,4 +264,35 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     }));
   }
   */
+
+  @Test
+  public void testCloseStatement(TestContext ctx) {
+    PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
+        conn.query("SELECT * FROM pg_prepared_statements").execute(ctx.asyncAssertSuccess(res1 -> {
+          boolean isStatementPrepared = false;
+          for (Row row : res1) {
+            String statement = row.getString("statement");
+            if (statement.equals("SELECT * FROM Fortune WHERE id=$1")) {
+              isStatementPrepared = true;
+            }
+          }
+          if (!isStatementPrepared) {
+            ctx.fail("Statement is not prepared");
+          }
+          ps.close(ctx.asyncAssertSuccess(v -> {
+            conn.query("SELECT * FROM pg_prepared_statements").execute(ctx.asyncAssertSuccess(res2 -> {
+              for (Row row : res2) {
+                String statement = row.getString("statement");
+                if (statement.equals("SELECT * FROM Fortune WHERE id=$1")) {
+                  ctx.fail("Statement is not closed");
+                }
+              }
+              conn.close();
+            }));
+          }));
+        }));
+      }));
+    }));
+  }
 }
