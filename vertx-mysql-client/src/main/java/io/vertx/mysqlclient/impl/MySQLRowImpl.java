@@ -322,7 +322,7 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
   public LocalTime getLocalTime(int pos) {
     ColumnDefinition columnDefinition = rowDesc.columnDefinitions()[pos];
     Object val = getValue(pos);
-    if (columnDefinition.getType() == DataType.TIME && val instanceof Duration) {
+    if (columnDefinition.type() == DataType.TIME && val instanceof Duration) {
       // map MySQL TIME data type to java.time.LocalTime
       Duration duration = (Duration) val;
       return LocalTime.ofNanoOfDay(duration.toNanos());

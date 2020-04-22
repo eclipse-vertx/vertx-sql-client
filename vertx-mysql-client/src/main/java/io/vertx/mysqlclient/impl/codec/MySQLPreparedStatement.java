@@ -19,10 +19,11 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.vertx.mysqlclient.impl.MySQLParamDesc;
 import io.vertx.mysqlclient.impl.MySQLRowDesc;
-import io.vertx.sqlclient.impl.ParamDesc;
-import io.vertx.sqlclient.impl.PreparedStatement;
-import io.vertx.sqlclient.impl.RowDesc;
-import io.vertx.sqlclient.impl.TupleInternal;
+import io.vertx.mysqlclient.impl.datatype.DataType;
+import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
+import io.vertx.sqlclient.impl.*;
+
+import java.util.Arrays;
 
 class MySQLPreparedStatement implements PreparedStatement {
 
@@ -32,6 +33,9 @@ class MySQLPreparedStatement implements PreparedStatement {
   final MySQLRowDesc rowDesc;
   final boolean cacheable;
 
+  private boolean sendTypesToServer;
+  private final DataType[] bindingTypes;
+
   boolean isCursorOpen;
 
   MySQLPreparedStatement(String sql, long statementId, MySQLParamDesc paramDesc, MySQLRowDesc rowDesc, boolean cacheable) {
@@ -40,6 +44,10 @@ class MySQLPreparedStatement implements PreparedStatement {
     this.rowDesc = rowDesc;
     this.sql = sql;
     this.cacheable = cacheable;
+
+    this.bindingTypes = new DataType[paramDesc.paramDefinitions().length];
+    // init param bindings
+    cleanBindings();
   }
 
   @Override
@@ -59,7 +67,42 @@ class MySQLPreparedStatement implements PreparedStatement {
 
   @Override
   public String prepare(TupleInternal values) {
-    return paramDesc.prepare(values);
+    return bindParameters(paramDesc, values);
+  }
+
+  boolean sendTypesToServer() {
+    return sendTypesToServer;
+  }
+
+  DataType[] bindingTypes() {
+    return bindingTypes;
+  }
+
+  void cleanBindings() {
+    this.sendTypesToServer = true;
+    Arrays.fill(bindingTypes, DataType.UNBIND);
+  }
+
+  private String bindParameters(MySQLParamDesc paramDesc, TupleInternal params) {
+    int numberOfParameters = params.size();
+    int paramDescLength = paramDesc.paramDefinitions().length;
+    if (numberOfParameters != paramDescLength) {
+      return ErrorMessageFactory.buildWhenArgumentsLengthNotMatched(paramDescLength, numberOfParameters);
+    }
+
+    // binding the parameters
+    boolean reboundParameters = false;
+    for (int i = 0; i < params.size(); i++) {
+      Object value = params.getValue(i);
+      DataType dataType = DataTypeCodec.inferDataTypeByEncodingValue(value);
+      DataType paramDataType = bindingTypes[i];
+      if (paramDataType != dataType) {
+        bindingTypes[i] = dataType;
+        reboundParameters = true;
+      }
+    }
+    sendTypesToServer = reboundParameters; // parameter must be re-bound
+    return null;
   }
 
   @Override
