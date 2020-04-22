@@ -72,7 +72,7 @@ class ChangeUserCommandCodec extends AuthenticationCommandBaseCodec<Void, Change
     // encode packet header
     int packetStartIdx = packet.writerIndex();
     packet.writeMediumLE(0); // will set payload length later by calculation
-    packet.writeByte(sequenceId);
+    packet.writeByte(encoder.sequenceId);
 
     // encode packet payload
     packet.writeByte(CommandType.COM_CHANGE_USER);

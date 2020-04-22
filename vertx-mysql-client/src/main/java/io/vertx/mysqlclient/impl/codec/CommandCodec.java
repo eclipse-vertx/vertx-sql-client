@@ -38,7 +38,6 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
   public Throwable failure;
   public R result;
   final C cmd;
-  int sequenceId;
   MySQLEncoder encoder;
 
   CommandCodec(C cmd) {
@@ -49,6 +48,7 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
 
   void encode(MySQLEncoder encoder) {
     this.encoder = encoder;
+    this.encoder.sequenceId = 0;
   }
 
   ByteBuf allocateBuffer() {
@@ -77,7 +77,7 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
       // send a packet with 0xFFFFFF length payload
       ByteBuf packetHeader = allocateBuffer(4);
       packetHeader.writeMediumLE(PACKET_PAYLOAD_LENGTH_LIMIT);
-      packetHeader.writeByte(sequenceId++);
+      packetHeader.writeByte(encoder.sequenceId++);
       encoder.chctx.write(packetHeader);
       encoder.chctx.write(payload.readRetainedSlice(PACKET_PAYLOAD_LENGTH_LIMIT));
     }
@@ -85,13 +85,13 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     // send a packet with last part of the payload
     ByteBuf packetHeader = allocateBuffer(4);
     packetHeader.writeMediumLE(payload.readableBytes());
-    packetHeader.writeByte(sequenceId++);
+    packetHeader.writeByte(encoder.sequenceId++);
     encoder.chctx.write(packetHeader);
     encoder.chctx.writeAndFlush(payload);
   }
 
   void sendNonSplitPacket(ByteBuf packet) {
-    sequenceId++;
+    encoder.sequenceId++;
     encoder.chctx.writeAndFlush(packet);
   }
 
@@ -100,7 +100,7 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     ByteBuf packet = allocateBuffer(payloadLength + 4);
     // encode packet header
     packet.writeMediumLE(payloadLength);
-    packet.writeByte(sequenceId);
+    packet.writeByte(encoder.sequenceId);
 
     // encode packet payload
     packet.writeBytes(payload);
@@ -124,41 +124,34 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
   void handleErrorPacketPayload(ByteBuf payload) {
     payload.skipBytes(1); // skip ERR packet header
     int errorCode = payload.readUnsignedShortLE();
-    String sqlState = null;
-    if ((encoder.clientCapabilitiesFlag & CapabilitiesFlag.CLIENT_PROTOCOL_41) != 0) {
-      payload.skipBytes(1); // SQL state marker will always be #
-      sqlState = BufferUtils.readFixedLengthString(payload, 5, StandardCharsets.UTF_8);
-    }
+    // CLIENT_PROTOCOL_41 capability flag will always be set
+    payload.skipBytes(1); // SQL state marker will always be #
+    String sqlState = BufferUtils.readFixedLengthString(payload, 5, StandardCharsets.UTF_8);
     String errorMessage = readRestOfPacketString(payload, StandardCharsets.UTF_8);
     completionHandler.handle(CommandResponse.failure(new MySQLException(errorMessage, errorCode, sqlState), TxStatus.FAILED));
   }
 
-  OkPacket decodeOkPacketPayload(ByteBuf payload, Charset charset) {
+  // simplify the ok packet as those properties are actually not used for now
+  OkPacket decodeOkPacketPayload(ByteBuf payload) {
     payload.skipBytes(1); // skip OK packet header
     long affectedRows = BufferUtils.readLengthEncodedInteger(payload);
     long lastInsertId = BufferUtils.readLengthEncodedInteger(payload);
-    int serverStatusFlags = 0;
-    int numberOfWarnings = 0;
-    if ((encoder.clientCapabilitiesFlag & CapabilitiesFlag.CLIENT_PROTOCOL_41) != 0) {
-      serverStatusFlags = payload.readUnsignedShortLE();
-      numberOfWarnings = payload.readUnsignedShortLE();
-    } else if ((encoder.clientCapabilitiesFlag & CapabilitiesFlag.CLIENT_TRANSACTIONS) != 0) {
-      serverStatusFlags = payload.readUnsignedShortLE();
-    }
-    String statusInfo;
+    int serverStatusFlags = payload.readUnsignedShortLE();
+//    int numberOfWarnings = payload.readUnsignedShortLE();
+    String statusInfo = null;
     String sessionStateInfo = null;
-    if (payload.readableBytes() == 0) {
-      // handle when OK packet does not contain server status info
-      statusInfo = null;
-    } else if ((encoder.clientCapabilitiesFlag & CapabilitiesFlag.CLIENT_SESSION_TRACK) != 0) {
-      statusInfo = BufferUtils.readLengthEncodedString(payload, charset);
-      if ((serverStatusFlags & ServerStatusFlags.SERVER_SESSION_STATE_CHANGED) != 0) {
-        sessionStateInfo = BufferUtils.readLengthEncodedString(payload, charset);
-      }
-    } else {
-      statusInfo = readRestOfPacketString(payload, charset);
-    }
-    return new OkPacket(affectedRows, lastInsertId, serverStatusFlags, numberOfWarnings, statusInfo, sessionStateInfo);
+//    if (payload.readableBytes() == 0) {
+//      // handle when OK packet does not contain server status info
+//      statusInfo = null;
+//    } else if ((encoder.clientCapabilitiesFlag & CapabilitiesFlag.CLIENT_SESSION_TRACK) != 0) {
+//      statusInfo = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
+//      if ((serverStatusFlags & ServerStatusFlags.SERVER_SESSION_STATE_CHANGED) != 0) {
+//        sessionStateInfo = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
+//      }
+//    } else {
+//      statusInfo = readRestOfPacketString(payload, charset);
+//    }
+    return new OkPacket(affectedRows, lastInsertId, serverStatusFlags, 0, statusInfo, sessionStateInfo);
   }
 
   EofPacket decodeEofPacketPayload(ByteBuf payload) {

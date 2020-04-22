@@ -41,7 +41,7 @@ abstract class AuthenticationCommandBaseCodec<R, C extends AuthenticationCommand
           int nonScrambledPasswordPacketLength = password.length + 1;
           ByteBuf nonScrambledPasswordPacket = allocateBuffer(nonScrambledPasswordPacketLength + 4);
           nonScrambledPasswordPacket.writeMediumLE(nonScrambledPasswordPacketLength);
-          nonScrambledPasswordPacket.writeByte(sequenceId);
+          nonScrambledPasswordPacket.writeByte(encoder.sequenceId);
           nonScrambledPasswordPacket.writeBytes(password);
           nonScrambledPasswordPacket.writeByte(0x00); // end with a 0x00
           sendNonSplitPacket(nonScrambledPasswordPacket);
@@ -53,7 +53,7 @@ abstract class AuthenticationCommandBaseCodec<R, C extends AuthenticationCommand
             isWaitingForRsaPublicKey = true;
             ByteBuf rsaPublicKeyRequest = allocateBuffer(5);
             rsaPublicKeyRequest.writeMediumLE(1);
-            rsaPublicKeyRequest.writeByte(sequenceId);
+            rsaPublicKeyRequest.writeByte(encoder.sequenceId);
             rsaPublicKeyRequest.writeByte(AUTH_PUBLIC_KEY_REQUEST_FLAG);
             sendNonSplitPacket(rsaPublicKeyRequest);
           } else {

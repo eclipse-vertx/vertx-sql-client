@@ -219,7 +219,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     ByteBuf packet = allocateBuffer(36);
     // encode packet header
     packet.writeMediumLE(32);
-    packet.writeByte(sequenceId);
+    packet.writeByte(encoder.sequenceId);
 
     // encode SSLRequest payload
     packet.writeIntLE(encoder.clientCapabilitiesFlag);
@@ -236,7 +236,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     // encode packet header
     int packetStartIdx = packet.writerIndex();
     packet.writeMediumLE(0); // will set payload length later by calculation
-    packet.writeByte(sequenceId);
+    packet.writeByte(encoder.sequenceId);
 
     // encode packet payload
     int clientCapabilitiesFlags = encoder.clientCapabilitiesFlag;
