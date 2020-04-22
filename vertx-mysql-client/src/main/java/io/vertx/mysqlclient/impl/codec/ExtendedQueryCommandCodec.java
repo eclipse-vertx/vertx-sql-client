@@ -17,8 +17,8 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.mysqlclient.impl.datatype.DataType;
 import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
-import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
@@ -48,7 +48,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
         sendStatementExecuteCommand(statement, true, cmd.params(), CURSOR_TYPE_READ_ONLY);
       } else {
         // CURSOR_TYPE_NO_CURSOR
-        sendStatementExecuteCommand(statement, statement.paramDesc.sendTypesToServer(), cmd.params(), CURSOR_TYPE_NO_CURSOR);
+        sendStatementExecuteCommand(statement, statement.sendTypesToServer(), cmd.params(), CURSOR_TYPE_NO_CURSOR);
       }
     }
   }
@@ -116,8 +116,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
     // iteration count, always 1
     packet.writeIntLE(1);
 
-    ColumnDefinition[] paramsColumnDefinitions = statement.paramDesc.paramDefinitions();
-    int numOfParams = paramsColumnDefinitions.length;
+    int numOfParams = statement.bindingTypes().length;
     int bitmapLength = (numOfParams + 7) / 8;
     byte[] nullBitmap = new byte[bitmapLength];
 
@@ -129,8 +128,8 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
       packet.writeBoolean(sendTypesToServer);
 
       if (sendTypesToServer) {
-        for (ColumnDefinition paramsColumnDefinition : paramsColumnDefinitions) {
-          packet.writeByte(paramsColumnDefinition.getType().id);
+        for (DataType bindingType : statement.bindingTypes()) {
+          packet.writeByte(bindingType.id);
           packet.writeByte(0); // parameter flag: signed
         }
       }
@@ -138,7 +137,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
       for (int i = 0; i < numOfParams; i++) {
         Object value = params.getValue(i);
         if (value != null) {
-          DataTypeCodec.encodeBinary(paramsColumnDefinitions[i].getType(), value, encoder.encodingCharset, packet);
+          DataTypeCodec.encodeBinary(statement.bindingTypes()[i], value, encoder.encodingCharset, packet);
         } else {
           nullBitmap[i / 8] |= (1 << (i & 7));
         }
