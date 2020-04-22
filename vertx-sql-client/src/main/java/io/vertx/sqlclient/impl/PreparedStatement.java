@@ -26,4 +26,6 @@ public interface PreparedStatement {
   String sql();
 
   String prepare(TupleInternal values);
+
+  boolean cacheable();
 }

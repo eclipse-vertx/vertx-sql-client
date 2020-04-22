@@ -131,10 +131,41 @@ public class SqlClientExamples {
     });
   }
 
-  public void queries09(Vertx vertx, SqlConnectOptions connectOptions, PoolOptions poolOptions) {
+  public void queries09(SqlClient client, SqlConnectOptions connectOptions) {
 
     // Enable prepare statements caching
     connectOptions.setCachePreparedStatements(true);
+    client
+      .preparedQuery("SELECT * FROM users WHERE id = ?")
+      .execute(Tuple.of("julien"), ar -> {
+        if (ar.succeeded()) {
+          RowSet<Row> rows = ar.result();
+          System.out.println("Got " + rows.size() + " rows ");
+        } else {
+          System.out.println("Failure: " + ar.cause().getMessage());
+        }
+      });
+  }
+
+  public void queries10(SqlConnection sqlConnection) {
+    sqlConnection
+      .prepare("SELECT * FROM users WHERE id= ?", ar -> {
+        if (ar.succeeded()) {
+          PreparedStatement preparedStatement = ar.result();
+          preparedStatement.query()
+            .execute(Tuple.of("julien"), ar2 -> {
+              if (ar2.succeeded()) {
+                RowSet<Row> rows = ar2.result();
+                System.out.println("Got " + rows.size() + " rows ");
+                preparedStatement.close();
+              } else {
+                System.out.println("Failure: " + ar2.cause().getMessage());
+              }
+            });
+        } else {
+          System.out.println("Failure: " + ar.cause().getMessage());
+        }
+      });
   }
 
   public void usingConnections01(Vertx vertx, Pool pool) {

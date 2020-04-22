@@ -123,7 +123,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
 
     private void execute(Tuple arguments, Promise<R> promise) {
       SqlResultHandler handler = builder.createHandler(promise);
-      BiCommand<PreparedStatement, Boolean> abc = new BiCommand<>(new PrepareStatementCommand(sql), ps -> {
+      BiCommand<PreparedStatement, Boolean> abc = new BiCommand<>(new PrepareStatementCommand(sql, true), ps -> {
         String msg = ps.prepare((TupleInternal) arguments);
         if (msg != null) {
           return Future.failedFuture(msg);
@@ -159,7 +159,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
 
     private void executeBatch(List<Tuple> batch, Promise<R> promise) {
       SqlResultHandler handler = builder.createHandler(promise);
-      BiCommand<PreparedStatement, Boolean> abc = new BiCommand<>(new PrepareStatementCommand(sql), ps -> {
+      BiCommand<PreparedStatement, Boolean> abc = new BiCommand<>(new PrepareStatementCommand(sql, true), ps -> {
         for  (Tuple args : batch) {
           String msg = ps.prepare((TupleInternal) args);
           if (msg != null) {

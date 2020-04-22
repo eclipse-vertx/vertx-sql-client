@@ -58,11 +58,18 @@ You can access a wide variety of of types
 {@link examples.SqlClientExamples#queries07(io.vertx.sqlclient.Row)}
 ----
 
-You can cache prepared queries:
+You can use cached prepared statements to execute one-shot prepared queries:
 
 [source,$lang]
 ----
-{@link examples.SqlClientExamples#queries09(io.vertx.core.Vertx, SqlConnectOptions, PoolOptions)}
+{@link examples.SqlClientExamples#queries09(io.vertx.sqlclient.SqlClient, SqlConnectOptions)}
+----
+
+You can create a `PreparedStatement` and manage the lifecycle by yourself.
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#queries10(io.vertx.sqlclient.SqlConnection)}
 ----
 
 === Batches

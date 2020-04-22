@@ -24,14 +24,22 @@ class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, Pre
   private PgParamDesc parameterDesc;
   private PgRowDesc rowDesc;
 
+  private long statement;
+
   PrepareStatementCommandCodec(PrepareStatementCommand cmd) {
     super(cmd);
   }
 
   @Override
   void encode(PgEncoder encoder) {
-    encoder.writeParse(new Parse(cmd.sql(), cmd.statement()));
-    encoder.writeDescribe(new Describe(cmd.statement(), null));
+    if (!cmd.cacheable()) {
+      statement = encoder.nextStatementName();
+    } else {
+      statement = 0L;
+    }
+
+    encoder.writeParse(new Parse(cmd.sql(), statement));
+    encoder.writeDescribe(new Describe(statement, null));
     encoder.writeSync();
   }
 
@@ -64,7 +72,7 @@ class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, Pre
 
   @Override
   public void handleReadyForQuery() {
-    result = new PgPreparedStatement(cmd.sql(), cmd.statement(), this.parameterDesc, this.rowDesc);
+    result = new PgPreparedStatement(cmd.sql(), statement, this.parameterDesc, this.rowDesc, cmd.cacheable());
     super.handleReadyForQuery();
   }
 }
