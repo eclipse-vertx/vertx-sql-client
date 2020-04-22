@@ -19,10 +19,7 @@ package io.vertx.sqlclient.impl;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderException;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxException;
+import io.vertx.core.*;
 import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -46,7 +43,6 @@ public abstract class SocketConnectionBase implements Connection {
 
   protected final PreparedStatementCache psCache;
   private final int preparedStatementCacheSqlLimit;
-  private final StringLongSequence psSeq = new StringLongSequence();
   private final ArrayDeque<CommandBase<?>> pending = new ArrayDeque<>();
   private final Context context;
   private int inflight;
@@ -134,26 +130,27 @@ public abstract class SocketConnectionBase implements Connection {
     PreparedStatementCache psCache = this.psCache;
     if (psCache != null && cmd instanceof PrepareStatementCommand) {
       PrepareStatementCommand psCmd = (PrepareStatementCommand) cmd;
-      if (psCmd.sql().length() > preparedStatementCacheSqlLimit) {
+      if (!psCmd.cacheable()) {
+        // we don't cache non one-shot preparedQuery
+      } else if (psCmd.sql().length() > preparedStatementCacheSqlLimit) {
         // do not cache the statements
-        return;
-      }
-      CachedPreparedStatement cached = psCache.get(psCmd.sql());
-      if (cached != null) {
-        psCmd.cached = cached;
-        Handler<? super CommandResponse<PreparedStatement>> handler = psCmd.handler;
-        cached.get(handler);
-        return;
       } else {
-        if (psCache.size() >= psCache.getCapacity() && !psCache.isReady()) {
-          // only if the prepared statement is ready then it can be evicted
+        // TODO fix the auto-closing logic
+        CachedPreparedStatement cached = psCache.get(psCmd.sql());
+        if (cached != null) {
+          Handler<? super CommandResponse<PreparedStatement>> handler = psCmd.handler;
+          cached.get(handler);
+          return;
         } else {
-          psCmd.statement = psSeq.next();
-          psCmd.cached = cached = new CachedPreparedStatement();
-          psCache.put(psCmd.sql(), cached);
-          Handler<? super CommandResponse<PreparedStatement>> a = psCmd.handler;
-          ((CachedPreparedStatement) psCmd.cached).get(a);
-          psCmd.handler = (Handler<? super CommandResponse<PreparedStatement>>) psCmd.cached;
+          if (psCache.size() >= psCache.getCapacity() && !psCache.isReady()) {
+            // only if the prepared statement is ready then it can be evicted
+          } else {
+            cached = new CachedPreparedStatement();
+            psCache.put(psCmd.sql(), cached);
+            Handler<? super CommandResponse<PreparedStatement>> a = psCmd.handler;
+            cached.get(a);
+            psCmd.handler = cached;
+          }
         }
       }
     }

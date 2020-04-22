@@ -100,7 +100,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
     @Override
     public void execute(Tuple arguments, Handler<AsyncResult<R>> handler) {
       SqlResultHandler resultHandler = builder.createHandler(handler);
-      schedule(new PrepareStatementCommand(sql), cr -> {
+      schedule(new PrepareStatementCommand(sql, true), cr -> {
         if (cr.succeeded()) {
           PreparedStatement ps = cr.result();
           String msg = ps.prepare((TupleInternal) arguments);
@@ -118,7 +118,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
     @Override
     public void executeBatch(List<Tuple> batch, Handler<AsyncResult<R>> handler) {
       SqlResultHandler resultHandler = builder.createHandler(handler);
-      schedule(new PrepareStatementCommand(sql), cr -> {
+      schedule(new PrepareStatementCommand(sql, true), cr -> {
         if (cr.succeeded()) {
           PreparedStatement ps = cr.result();
           for  (Tuple args : batch) {
