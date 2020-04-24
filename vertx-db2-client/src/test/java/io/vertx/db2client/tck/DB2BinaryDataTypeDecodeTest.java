@@ -36,12 +36,8 @@ public class DB2BinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase {
   @Test
   @Override
   public void testBoolean(TestContext ctx) {
-    if (!rule.isZOS()) {
-      super.testBoolean(ctx);
-      return;
-    }
-    
     // DB2/Z does not support BOOLEAN column type, use TINYINT instead
+    // DB2/LUW has a BOOLEAN column type but it is just an alias for TINYINT
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       conn
         .preparedQuery("SELECT test_boolean FROM basicdatatype WHERE id = 1")
