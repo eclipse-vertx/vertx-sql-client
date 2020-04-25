@@ -550,11 +550,10 @@ public class DataTypeCodec {
   private static Buffer binaryDecodeBlob(ByteBuf buffer) {
     int len = (int) BufferUtils.readLengthEncodedInteger(buffer);
 
-    Buffer target = Buffer.buffer(len);
-    target.appendBuffer(Buffer.buffer(buffer.slice(buffer.readerIndex(), len)));
-    buffer.skipBytes(len);
+    ByteBuf copy = Unpooled.buffer(len);
+    copy.writeBytes(buffer, len);
 
-    return target;
+    return Buffer.buffer(copy);
   }
 
   private static String binaryDecodeText(Charset charset, ByteBuf buffer) {
