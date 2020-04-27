@@ -18,7 +18,6 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.SslMode;
-import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.impl.command.InitialHandshakeCommand;
 import io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
@@ -27,7 +26,6 @@ import io.vertx.mysqlclient.impl.util.Native41Authenticator;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
@@ -43,8 +41,6 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
   private static final int ST_CONNECTED = 2;
 
   private int status = ST_CONNECTING;
-
-  private MySQLCollation collation;
 
   InitialHandshakeCommandCodec(InitialHandshakeCommand cmd) {
     super(cmd);
@@ -166,8 +162,6 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
   }
 
   private void doSendHandshakeResponseMessage(String authMethodName, byte[] nonce, int serverCapabilitiesFlags) {
-    checkCollation();
-    encoder.charset = Charset.forName(collation.mappedJavaCharsetName());
     Map<String, String> clientConnectionAttributes = cmd.connectionAttributes();
     encoder.clientCapabilitiesFlag &= serverCapabilitiesFlags;
     sendHandshakeResponseMessage(cmd.username(), cmd.password(), cmd.database(), nonce, authMethodName, clientConnectionAttributes);
@@ -224,8 +218,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     // encode SSLRequest payload
     packet.writeIntLE(encoder.clientCapabilitiesFlag);
     packet.writeIntLE(PACKET_PAYLOAD_LENGTH_LIMIT);
-    checkCollation();
-    packet.writeByte(collation.collationId());
+    packet.writeByte(cmd.collation().collationId());
     packet.writeZero(23); // filler
 
     sendNonSplitPacket(packet);
@@ -242,7 +235,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     int clientCapabilitiesFlags = encoder.clientCapabilitiesFlag;
     packet.writeIntLE(clientCapabilitiesFlags);
     packet.writeIntLE(PACKET_PAYLOAD_LENGTH_LIMIT);
-    packet.writeByte(collation.collationId());
+    packet.writeByte(cmd.collation().collationId());
     packet.writeZero(23); // filler
     BufferUtils.writeNullTerminatedString(packet, username, StandardCharsets.UTF_8);
     if (password.isEmpty()) {
@@ -289,11 +282,5 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
 
   private boolean isTlsSupportedByServer(int serverCapabilitiesFlags) {
     return (serverCapabilitiesFlags & CLIENT_SSL) != 0;
-  }
-
-  private void checkCollation() {
-    if (this.collation == null) {
-      collation = MySQLCollation.valueOfName(cmd.collation());
-    }
   }
 }
