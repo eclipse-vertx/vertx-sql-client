@@ -93,7 +93,7 @@ abstract class AuthenticationCommandBaseCodec<R, C extends AuthenticationCommand
   }
 
   protected final void encodeConnectionAttributes(Map<String, String> clientConnectionAttributes, ByteBuf packet) {
-    ByteBuf kv = encoder.chctx.alloc().ioBuffer();
+    ByteBuf kv = allocateBuffer();
     for (Map.Entry<String, String> attribute : clientConnectionAttributes.entrySet()) {
       BufferUtils.writeLengthEncodedString(kv, attribute.getKey(), StandardCharsets.UTF_8);
       BufferUtils.writeLengthEncodedString(kv, attribute.getValue(), StandardCharsets.UTF_8);
