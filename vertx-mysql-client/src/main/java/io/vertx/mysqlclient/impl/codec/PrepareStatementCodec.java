@@ -117,7 +117,7 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
     // encode packet header
     int packetStartIdx = packet.writerIndex();
     packet.writeMediumLE(0); // will set payload length later by calculation
-    packet.writeByte(encoder.sequenceId);
+    packet.writeByte(sequenceId);
 
     // encode packet payload
     packet.writeByte(CommandType.COM_STMT_PREPARE);
