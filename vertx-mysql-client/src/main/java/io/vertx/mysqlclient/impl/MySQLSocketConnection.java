@@ -88,4 +88,8 @@ public class MySQLSocketConnection extends SocketConnectionBase {
       super.doSchedule(cmd, handler);
     }
   }
+
+  public void upgradeToSsl(Handler<AsyncResult<Void>> completionHandler) {
+    socket.upgradeToSsl(completionHandler);
+  }
 }

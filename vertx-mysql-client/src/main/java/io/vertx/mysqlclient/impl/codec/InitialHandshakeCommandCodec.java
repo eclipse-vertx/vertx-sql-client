@@ -153,7 +153,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
       encoder.clientCapabilitiesFlag |= CLIENT_SSL;
       sendSslRequest();
 
-      encoder.socketConnection.socket().upgradeToSsl(upgrade -> {
+      encoder.socketConnection.upgradeToSsl(upgrade -> {
         if (upgrade.succeeded()) {
           doSendHandshakeResponseMessage(authPluginName, authPluginData, serverCapabilitiesFlags);
         } else {
