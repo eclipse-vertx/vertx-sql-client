@@ -17,6 +17,8 @@ package io.vertx.db2client.impl.drda;
 
 import java.util.Arrays;
 
+import io.vertx.db2client.DB2Exception;
+
 /**
  * A SQLCA stands for "SQL Communication Area"
  * The primary purpose is for tracking the SQLCode.
@@ -92,9 +94,9 @@ public class NetSqlca {
            return 0;
        boolean allowed = Arrays.stream(allowedCodes).anyMatch(code -> code == sqlca.sqlCode_);
        if (!allowed && sqlca.sqlCode_ < 0) {
+    	   throwSqlError(sqlca);
     	   // TODO: May want to go through the DB2 SQL error code doc above and provide English 
-    	   // messages to go along with the corresponding SQLcode to save users needing to look them up
-           throw new IllegalStateException("ERROR sqlcode=" + sqlca.sqlCode_ + "  Full Sqlca: " + sqlca.toString());
+    	   // messages to go along with the corresponding SQLcode to save users needing to look them up           
        }
        if (!allowed && sqlca.sqlCode_ > 0) {
            System.out.println("WARNING sqlcode=" + sqlca.sqlCode_);
@@ -102,6 +104,42 @@ public class NetSqlca {
        return sqlca.sqlCode_;
    }
 
+   /**
+    * Throws a specific error message based on the passed in SQL error code
+    * @param sqlca
+    */
+   public static void throwSqlError(NetSqlca sqlca) {
+	   if (sqlca == null || sqlca.sqlCode_ == 0) {
+           return;
+	   }
+	   // Add additional error messages to this list
+	   switch(sqlca.sqlCode_) {
+            // The SQL syntax is invalid
+  	        case SqlCode.INVALID_SQL_STATEMENT:
+       	        throw new DB2Exception("The SQL syntax provided was invalid", SqlCode.INVALID_SQL_STATEMENT, sqlca.sqlState_);
+       	    // The object (table?) is not defined/available
+  	        case SqlCode.OBJECT_NOT_DEFINED:
+  	        	if (sqlca.sqlErrmc_ != null && sqlca.sqlErrmc_.trim().length() > 0)
+  	        		throw new DB2Exception("The object " + sqlca.sqlErrmc_ + " provided is not defined", SqlCode.OBJECT_NOT_DEFINED, sqlca.sqlState_);
+  	        	else
+  	        		throw new DB2Exception("An object provided is not defined", SqlCode.OBJECT_NOT_DEFINED, sqlca.sqlState_);
+       	    // The object (table?) is not defined/available
+  	        case SqlCode.COLUMN_DOES_NOT_EXIST:
+  	        	if (sqlca.sqlErrmc_ != null && sqlca.sqlErrmc_.trim().length() > 0)
+  	        		throw new DB2Exception("The column " + sqlca.sqlErrmc_ + " provided does not exist", SqlCode.COLUMN_DOES_NOT_EXIST, sqlca.sqlState_);
+  	        	else
+  	        		throw new DB2Exception("A column provided does not exist", SqlCode.COLUMN_DOES_NOT_EXIST, sqlca.sqlState_);
+	        // Invalid database specified
+	   	    case SqlCode.DATABASE_NOT_FOUND:
+	   	    	if (sqlca.sqlErrmc_ != null && sqlca.sqlErrmc_.trim().length() > 0)
+	   	    		throw new DB2Exception("The database " + sqlca.sqlErrmc_ + " provided was not found", SqlCode.DATABASE_NOT_FOUND, sqlca.sqlState_);
+	   	    	else
+	   	    		throw new DB2Exception("The database provided was not found", SqlCode.DATABASE_NOT_FOUND, sqlca.sqlState_);
+            default:
+                throw new IllegalStateException("ERROR sqlcode=" + sqlca.sqlCode_ + "  Full Sqlca: " + sqlca.toString());
+	   }
+   }
+   
    void setSqlerrd(int[] sqlErrd) {
        sqlErrd_ = sqlErrd;
    }

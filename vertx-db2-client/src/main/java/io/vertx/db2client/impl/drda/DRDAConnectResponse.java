@@ -1041,7 +1041,8 @@ public class DRDAConnectResponse extends DRDAResponse {
     private void parseSECCHKreply() {
         int peekCP = peekCodePoint();
         if (peekCP != CodePoint.SECCHKRM) {
-            throwUnknownCodepoint(peekCP);
+//            throwUnknownCodepoint(peekCP);
+        	parseCommonError(peekCP);
         }
 
         parseSECCHKRM();
@@ -1058,7 +1059,7 @@ public class DRDAConnectResponse extends DRDAResponse {
             parseSECTKN(false);
         } 
     }
-    
+        
     // The Security Check (SECCHKRM) Reply Message indicates the acceptability
     // of the security information.
     // This method throws an exception if the connection was not established
@@ -1143,7 +1144,7 @@ public class DRDAConnectResponse extends DRDAResponse {
             throw new DB2Exception("Missing userid, verify a user value was supplied", SqlCode.MISSING_CREDENTIALS, SQLState.CONNECT_USERID_ISNULL);
         // Missing password - TODO  We should catch and handle this issue *before* the call to the DB2 server
         case CodePoint.SECCHKCD_10:
-            // Using SQL error code and state values from similar JDBC reponse
+            // Using SQL error code and state values from similar JDBC response
         	throw new DB2Exception("Missing password, verify a password value was supplied", SqlCode.MISSING_CREDENTIALS, SQLState.CONNECT_PASSWORD_ISNULL);
         // Invalid credentials
         case CodePoint.SECCHKCD_0E:
@@ -1315,12 +1316,15 @@ public class DRDAConnectResponse extends DRDAResponse {
     // Returned from Server:
     // SVRCOD - required  (8 - ERROR)
     // RDBNAM - required
+    // SRVDGN - optional
     //
     private void parseRDBAFLRM() {
         boolean svrcodReceived = false;
         int svrcod = CodePoint.SVRCOD_INFO;
         boolean rdbnamReceived = false;
+        boolean srvdgnReceived = false;
         String rdbnam = null;
+        String serverDiagnostics = null;
 
         parseLengthAndMatchCodePoint(CodePoint.RDBAFLRM);
         pushLengthOnCollectionStack();
@@ -1341,6 +1345,14 @@ public class DRDAConnectResponse extends DRDAResponse {
                 foundInPass = true;
                 rdbnamReceived = checkAndGetReceivedFlag(rdbnamReceived);
                 rdbnam = parseRDBNAM(true);
+                peekCP = peekCodePoint();
+            }
+            
+            // Optional code point
+            if (peekCP == CodePoint.SRVDGN) {
+                foundInPass = true;
+                srvdgnReceived = checkAndGetReceivedFlag(srvdgnReceived);
+                serverDiagnostics = parseSRVDGN();
                 peekCP = peekCodePoint();
             }
 
