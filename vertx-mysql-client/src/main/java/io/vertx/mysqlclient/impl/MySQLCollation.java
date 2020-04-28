@@ -299,6 +299,8 @@ public enum MySQLCollation {
     }
   }
 
+  public static final MySQLCollation DEFAULT_COLLATION = utf8mb4_general_ci;
+
   private final String mysqlCharsetName;
   private final String mappedJavaCharsetName;
   private final int collationId;

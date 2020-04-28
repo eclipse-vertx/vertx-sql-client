@@ -1,6 +1,7 @@
 package io.vertx.mysqlclient.impl.command;
 
 import io.vertx.core.buffer.Buffer;
+import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.sqlclient.impl.command.CommandBase;
 
 import java.util.Map;
@@ -9,11 +10,11 @@ public class AuthenticationCommandBase<R> extends CommandBase<R> {
   private final String username;
   private final String password;
   private final String database;
-  private final String collation;
+  private final MySQLCollation collation;
   private final Buffer serverRsaPublicKey;
   private final Map<String, String> connectionAttributes;
 
-  public AuthenticationCommandBase(String username, String password, String database, String collation, Buffer serverRsaPublicKey, Map<String, String> connectionAttributes) {
+  public AuthenticationCommandBase(String username, String password, String database, MySQLCollation collation, Buffer serverRsaPublicKey, Map<String, String> connectionAttributes) {
     this.username = username;
     this.password = password;
     this.database = database;
@@ -34,7 +35,7 @@ public class AuthenticationCommandBase<R> extends CommandBase<R> {
     return database;
   }
 
-  public String collation() {
+  public MySQLCollation collation() {
     return collation;
   }
 

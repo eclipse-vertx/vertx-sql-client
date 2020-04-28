@@ -113,13 +113,17 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
 
   @Override
   public MySQLConnection changeUser(MySQLAuthOptions options, Handler<AsyncResult<Void>> handler) {
-    String collation;
+    MySQLCollation collation;
     if (options.getCollation() != null) {
       // override the collation if configured
-      collation = options.getCollation();
+      collation = MySQLCollation.valueOfName(options.getCollation());
     } else {
       String charset = options.getCharset();
-      collation = MySQLCollation.getDefaultCollationFromCharsetName(charset);
+      if (charset == null) {
+        collation = MySQLCollation.DEFAULT_COLLATION;
+      } else {
+        collation = MySQLCollation.valueOfName(MySQLCollation.getDefaultCollationFromCharsetName(charset));
+      }
     }
     Buffer serverRsaPublicKey = null;
     if (options.getServerRsaPublicKeyValue() != null) {

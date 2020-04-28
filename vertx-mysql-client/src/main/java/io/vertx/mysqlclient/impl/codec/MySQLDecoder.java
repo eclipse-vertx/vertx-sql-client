@@ -5,6 +5,7 @@ import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.util.ReferenceCountUtil;
+import io.vertx.mysqlclient.impl.MySQLSocketConnection;
 
 import java.util.ArrayDeque;
 import java.util.List;
@@ -14,13 +15,13 @@ import static io.vertx.mysqlclient.impl.protocol.Packets.*;
 class MySQLDecoder extends ByteToMessageDecoder {
 
   private final ArrayDeque<CommandCodec<?, ?>> inflight;
-  private final MySQLEncoder encoder;
+  private final MySQLSocketConnection socketConnection;
 
   private CompositeByteBuf aggregatedPacketPayload = null;
 
-  MySQLDecoder(ArrayDeque<CommandCodec<?, ?>> inflight, MySQLEncoder encoder) {
+  MySQLDecoder(ArrayDeque<CommandCodec<?, ?>> inflight, MySQLSocketConnection socketConnection) {
     this.inflight = inflight;
-    this.encoder = encoder;
+    this.socketConnection = socketConnection;
   }
 
   @Override
@@ -61,7 +62,7 @@ class MySQLDecoder extends ByteToMessageDecoder {
 
   private void decodePacket(ByteBuf payload, int payloadLength, int sequenceId) {
     CommandCodec<?, ?> ctx = inflight.peek();
-    encoder.sequenceId = sequenceId + 1;
+    ctx.sequenceId = sequenceId + 1;
     ctx.decodePayload(payload, payloadLength);
   }
 }

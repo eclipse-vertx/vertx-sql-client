@@ -41,7 +41,7 @@ abstract class AuthenticationCommandBaseCodec<R, C extends AuthenticationCommand
           int nonScrambledPasswordPacketLength = password.length + 1;
           ByteBuf nonScrambledPasswordPacket = allocateBuffer(nonScrambledPasswordPacketLength + 4);
           nonScrambledPasswordPacket.writeMediumLE(nonScrambledPasswordPacketLength);
-          nonScrambledPasswordPacket.writeByte(encoder.sequenceId);
+          nonScrambledPasswordPacket.writeByte(sequenceId);
           nonScrambledPasswordPacket.writeBytes(password);
           nonScrambledPasswordPacket.writeByte(0x00); // end with a 0x00
           sendNonSplitPacket(nonScrambledPasswordPacket);
@@ -53,7 +53,7 @@ abstract class AuthenticationCommandBaseCodec<R, C extends AuthenticationCommand
             isWaitingForRsaPublicKey = true;
             ByteBuf rsaPublicKeyRequest = allocateBuffer(5);
             rsaPublicKeyRequest.writeMediumLE(1);
-            rsaPublicKeyRequest.writeByte(encoder.sequenceId);
+            rsaPublicKeyRequest.writeByte(sequenceId);
             rsaPublicKeyRequest.writeByte(AUTH_PUBLIC_KEY_REQUEST_FLAG);
             sendNonSplitPacket(rsaPublicKeyRequest);
           } else {
@@ -82,7 +82,7 @@ abstract class AuthenticationCommandBaseCodec<R, C extends AuthenticationCommand
   }
 
   protected final void encodeConnectionAttributes(Map<String, String> clientConnectionAttributes, ByteBuf packet) {
-    ByteBuf kv = encoder.chctx.alloc().ioBuffer();
+    ByteBuf kv = allocateBuffer();
     for (Map.Entry<String, String> attribute : clientConnectionAttributes.entrySet()) {
       BufferUtils.writeLengthEncodedString(kv, attribute.getKey(), StandardCharsets.UTF_8);
       BufferUtils.writeLengthEncodedString(kv, attribute.getValue(), StandardCharsets.UTF_8);

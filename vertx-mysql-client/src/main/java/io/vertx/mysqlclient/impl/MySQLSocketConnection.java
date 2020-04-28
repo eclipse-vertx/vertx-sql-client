@@ -50,7 +50,7 @@ public class MySQLSocketConnection extends SocketConnectionBase {
   void sendStartupMessage(String username,
                           String password,
                           String database,
-                          String collation,
+                          MySQLCollation collation,
                           Buffer serverRsaPublicKey,
                           Map<String, String> properties,
                           SslMode sslMode,
