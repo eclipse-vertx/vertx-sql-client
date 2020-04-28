@@ -23,11 +23,10 @@ import java.util.ArrayDeque;
 
 public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQLEncoder> {
 
-  private final ArrayDeque<CommandCodec<?, ?>> inflight = new ArrayDeque<>();
-
   public MySQLCodec(MySQLSocketConnection mySQLSocketConnection) {
+    ArrayDeque<CommandCodec<?, ?>> inflight = new ArrayDeque<>();
     MySQLEncoder encoder = new MySQLEncoder(inflight, mySQLSocketConnection);
-    MySQLDecoder decoder = new MySQLDecoder(inflight, encoder);
+    MySQLDecoder decoder = new MySQLDecoder(inflight, mySQLSocketConnection);
     init(decoder, encoder);
   }
 }

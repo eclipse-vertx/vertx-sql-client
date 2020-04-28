@@ -28,15 +28,12 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
   ChannelHandlerContext chctx;
 
   int clientCapabilitiesFlag;
-  int sequenceId;
-  Charset charset;
   Charset encodingCharset;
   MySQLSocketConnection socketConnection;
 
   MySQLEncoder(ArrayDeque<CommandCodec<?, ?>> inflight, MySQLSocketConnection mySQLSocketConnection) {
     this.inflight = inflight;
     this.socketConnection = mySQLSocketConnection;
-    this.charset = StandardCharsets.UTF_8;
   }
 
   @Override

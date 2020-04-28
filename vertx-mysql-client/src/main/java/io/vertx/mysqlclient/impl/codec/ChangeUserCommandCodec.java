@@ -20,7 +20,6 @@ import io.vertx.mysqlclient.impl.util.CachingSha2Authenticator;
 import io.vertx.mysqlclient.impl.util.Native41Authenticator;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
@@ -83,7 +82,7 @@ class ChangeUserCommandCodec extends AuthenticationCommandBaseCodec<Void, Change
     // encode packet header
     int packetStartIdx = packet.writerIndex();
     packet.writeMediumLE(0); // will set payload length later by calculation
-    packet.writeByte(encoder.sequenceId);
+    packet.writeByte(sequenceId);
 
     // encode packet payload
     packet.writeByte(CommandType.COM_CHANGE_USER);
@@ -96,9 +95,8 @@ class ChangeUserCommandCodec extends AuthenticationCommandBaseCodec<Void, Change
       packet.writeCharSequence(password, StandardCharsets.UTF_8);
     }
     BufferUtils.writeNullTerminatedString(packet, cmd.database(), StandardCharsets.UTF_8);
-    MySQLCollation collation = MySQLCollation.valueOfName(cmd.collation());
+    MySQLCollation collation = cmd.collation();
     int collationId = collation.collationId();
-    encoder.charset = Charset.forName(collation.mappedJavaCharsetName());
     packet.writeShortLE(collationId);
 
     if ((encoder.clientCapabilitiesFlag & CLIENT_PLUGIN_AUTH) != 0) {
