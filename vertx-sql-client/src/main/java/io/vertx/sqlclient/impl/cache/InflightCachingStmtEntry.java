@@ -34,7 +34,11 @@ class InflightCachingStmtEntry implements Handler<AsyncResult<PreparedStatement>
 
   @Override
   public void handle(AsyncResult<PreparedStatement> preparedStatementResult) {
-    psCache.cache().put(sql, preparedStatementResult); // put it in the cache since the response is ready
+    if (preparedStatementResult.succeeded()) {
+      // put it in the cache since the response is ready
+      // we only need to cache successful responses here
+      psCache.cache().put(sql, preparedStatementResult);
+    }
     psCache.inflight().remove(sql);
     Handler<AsyncResult<PreparedStatement>> waiter;
     while ((waiter = waiters.poll()) != null) {
