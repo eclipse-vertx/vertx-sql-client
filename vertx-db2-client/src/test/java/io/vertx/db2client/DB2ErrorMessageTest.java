@@ -38,11 +38,10 @@ public class DB2ErrorMessageTest extends DB2TestBase {
 					"The SQL error message returned is not correct.  It should have contained \"provided was not found\" or \"The connection was closed by the database server\", but instead it said \"" + ex.getMessage() + "\"");
 			ctx.assertTrue(ex.getErrorCode() == SqlCode.DATABASE_NOT_FOUND ||
 					ex.getErrorCode() == SqlCode.CONNECTION_REFUSED, 
-					"Wrong SQL code received");
+					"Wrong SQL code received.  Expecting " + SqlCode.DATABASE_NOT_FOUND + " or " + SqlCode.CONNECTION_REFUSED + ", but received " + ex.getErrorCode());
 			ctx.assertTrue(ex.getSqlState().equalsIgnoreCase("2E000") ||
 					ex.getSqlState() == SQLState.AUTH_DATABASE_CONNECTION_REFUSED,
-					"Wrong SQL state received");
-//			System.out.println(ex.getMessage());
+					"Wrong SQL state received.  Expecting 2E000 or " + SQLState.AUTH_DATABASE_CONNECTION_REFUSED + ", but received " + ex.getSqlState());
 		}));
 	}
 
@@ -55,7 +54,6 @@ public class DB2ErrorMessageTest extends DB2TestBase {
 			ctx.assertTrue(ex.getMessage().contains("Invalid credentials"), "The SQL error message returned is not correct.  It should have contained \"Invalid credentials\", but instead it said \"" + ex.getMessage() + "\"");
 			ctx.assertEquals(SqlCode.INVALID_CREDENTIALS, ex.getErrorCode());
 			ctx.assertEquals(SQLState.NET_CONNECT_AUTH_FAILED, ex.getSqlState());
-//			System.out.println(ex.getMessage());
 		}));
 	}
 
@@ -68,23 +66,18 @@ public class DB2ErrorMessageTest extends DB2TestBase {
 			ctx.assertTrue(ex.getMessage().contains("Invalid credentials"), "The SQL error message returned is not correct.  It should have contained \"Invalid credentials\", but instead it said \"" + ex.getMessage() + "\"");
 			ctx.assertEquals(SqlCode.INVALID_CREDENTIALS, ex.getErrorCode());
 			ctx.assertEquals(SQLState.NET_CONNECT_AUTH_FAILED, ex.getSqlState());
-//			System.out.println(ex.getMessage());
 		}));
 	}
 
 	@Test
-	@Ignore
 	public void testQueryBlankDatabase(TestContext ctx) {
 		try {
 			options.setDatabase("");
 			ctx.fail("Expected a DB2Exception to be thrown");
-		} catch (Exception e) {
-			ctx.assertTrue(e instanceof DB2Exception, "Expected a DB2Exception to be thrown");
-			DB2Exception ex = (DB2Exception) e;
+		} catch (DB2Exception ex) {
 			ctx.assertTrue(ex.getMessage().contains("The database name cannot be blank or null"), "The SQL error message returned is not correct.  It should have contained \"The database name cannot be blank or null\", but instead it said \"" + ex.getMessage() + "\"");
 			ctx.assertEquals(SqlCode.DATABASE_NOT_FOUND, ex.getErrorCode());
 			ctx.assertEquals(SQLState.DATABASE_NOT_FOUND, ex.getSqlState());
-//			System.out.println(ex.getMessage());
 		}
 	}
 
@@ -93,13 +86,10 @@ public class DB2ErrorMessageTest extends DB2TestBase {
 		try {
 			options.setUser("");
 			ctx.fail("Expected a DB2Exception to be thrown");
-		} catch (Exception e) {
-			ctx.assertTrue(e instanceof DB2Exception, "Expected a DB2Exception to be thrown");
-			DB2Exception ex = (DB2Exception) e;
+		} catch (DB2Exception ex) {
 			ctx.assertTrue(ex.getMessage().contains("The user cannot be blank or null"), "The SQL error message returned is not correct.  It should have contained \"The user cannot be blank or null\", but instead it said \"" + ex.getMessage() + "\"");
 			ctx.assertEquals(SqlCode.MISSING_CREDENTIALS, ex.getErrorCode());
 			ctx.assertEquals(SQLState.CONNECT_USERID_ISNULL, ex.getSqlState());
-//			System.out.println(ex.getMessage());
 		}
 	}
 
@@ -108,13 +98,10 @@ public class DB2ErrorMessageTest extends DB2TestBase {
 		try {
 			options.setPassword("");
 			ctx.fail("Expected a DB2Exception to be thrown");
-		} catch (Exception e) {
-			ctx.assertTrue(e instanceof DB2Exception, "Expected a DB2Exception to be thrown");
-			DB2Exception ex = (DB2Exception) e;
+		} catch (DB2Exception ex) {
 			ctx.assertTrue(ex.getMessage().contains("The password cannot be blank or null"), "The SQL error message returned is not correct.  It should have contained \"The password cannot be blank or null\", but instead it said \"" + ex.getMessage() + "\"");
 			ctx.assertEquals(SqlCode.MISSING_CREDENTIALS, ex.getErrorCode());
 			ctx.assertEquals(SQLState.CONNECT_PASSWORD_ISNULL, ex.getSqlState());
-//			System.out.println(ex.getMessage());
 		}
 	}
 
@@ -128,7 +115,6 @@ public class DB2ErrorMessageTest extends DB2TestBase {
 				ctx.assertTrue(ex.getMessage().contains("The SQL syntax provided was invalid"), "The SQL error message returned is not correct.  It should have contained \"The SQL syntax provided was invalid\", but instead it said \"" + ex.getMessage() + "\"");
 				ctx.assertEquals(SqlCode.INVALID_SQL_STATEMENT, ex.getErrorCode());
 				ctx.assertEquals("42601", ex.getSqlState());
-//				System.out.println(ex.getMessage());
 			}));
 		}));
 	}
@@ -143,7 +129,6 @@ public class DB2ErrorMessageTest extends DB2TestBase {
 				ctx.assertTrue(ex.getMessage().contains("provided is not defined"), "The SQL error message returned is not correct.  It should have contained \"provided is not defined\", but instead it said \"" + ex.getMessage() + "\"");
 				ctx.assertEquals(SqlCode.OBJECT_NOT_DEFINED, ex.getErrorCode());
 				ctx.assertEquals("42704", ex.getSqlState());
-//				System.out.println(ex.getMessage());
 			}));
 		}));
 	}
@@ -158,7 +143,6 @@ public class DB2ErrorMessageTest extends DB2TestBase {
 				ctx.assertTrue(ex.getMessage().contains("provided does not exist"), "The SQL error message returned is not correct.  It should have contained \"provided does not exist\", but instead it said \"" + ex.getMessage() + "\"");
 				ctx.assertEquals(SqlCode.COLUMN_DOES_NOT_EXIST, ex.getErrorCode());
 				ctx.assertEquals("42703", ex.getSqlState());
-//				System.out.println(ex.getMessage());
 			}));
 		}));
 	}
@@ -173,7 +157,6 @@ public class DB2ErrorMessageTest extends DB2TestBase {
 				ctx.assertTrue(ex.getMessage().contains("The SQL syntax provided was invalid"), "The SQL error message returned is not correct.  It should have contained \"The SQL syntax provided was invalid\", but instead it said \"" + ex.getMessage() + "\"");
 				ctx.assertEquals(SqlCode.INVALID_SQL_STATEMENT, ex.getErrorCode());
 				ctx.assertEquals("42601", ex.getSqlState());
-//				System.out.println(ex.getMessage());
 			}));
 		}));
 	}

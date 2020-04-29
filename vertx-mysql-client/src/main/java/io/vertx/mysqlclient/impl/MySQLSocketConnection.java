@@ -54,7 +54,7 @@ public class MySQLSocketConnection extends SocketConnectionBase {
   void sendStartupMessage(String username,
                           String password,
                           String database,
-                          String collation,
+                          MySQLCollation collation,
                           Buffer serverRsaPublicKey,
                           Map<String, String> properties,
                           SslMode sslMode,
@@ -87,5 +87,9 @@ public class MySQLSocketConnection extends SocketConnectionBase {
     } else {
       super.doSchedule(cmd, handler);
     }
+  }
+
+  public void upgradeToSsl(Handler<AsyncResult<Void>> completionHandler) {
+    socket.upgradeToSsl(completionHandler);
   }
 }

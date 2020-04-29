@@ -39,7 +39,7 @@ public class MySQLConnectionFactory implements ConnectionFactory {
   private final String password;
   private final String database;
   private final Map<String, String> connectionAttributes;
-  private final String collation;
+  private final MySQLCollation collation;
   private final Charset charsetEncoding;
   private final boolean useAffectedRows;
   private final SslMode sslMode;
@@ -59,15 +59,18 @@ public class MySQLConnectionFactory implements ConnectionFactory {
     this.password = options.getPassword();
     this.database = options.getDatabase();
     this.connectionAttributes = options.getProperties() == null ? null : Collections.unmodifiableMap(options.getProperties());
-    String collation;
+    MySQLCollation collation;
     if (options.getCollation() != null) {
       // override the collation if configured
-      collation = options.getCollation();
-      MySQLCollation mySQLCollation = MySQLCollation.valueOfName(collation);
-      charsetEncoding = Charset.forName(mySQLCollation.mappedJavaCharsetName());
+      collation = MySQLCollation.valueOfName(options.getCollation());
+      charsetEncoding = Charset.forName(collation.mappedJavaCharsetName());
     } else {
       String charset = options.getCharset();
-      collation = MySQLCollation.getDefaultCollationFromCharsetName(charset);
+      if (charset == null) {
+        collation = MySQLCollation.DEFAULT_COLLATION;
+      } else {
+        collation = MySQLCollation.valueOfName(MySQLCollation.getDefaultCollationFromCharsetName(charset));
+      }
       String characterEncoding = options.getCharacterEncoding();
       if (characterEncoding == null) {
         charsetEncoding = Charset.defaultCharset();

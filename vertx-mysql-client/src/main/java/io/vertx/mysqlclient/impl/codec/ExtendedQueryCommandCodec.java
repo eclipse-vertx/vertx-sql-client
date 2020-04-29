@@ -85,7 +85,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
           case HANDLING_ROW_DATA_OR_END_PACKET:
             handleResultsetColumnDefinitionsDecodingCompleted();
             // need to reset packet number so that we can send a fetch request
-            encoder.sequenceId = 0;
+            sequenceId = 0;
             // send fetch after cursor opened
             decoder = new RowResultDecoder<>(cmd.collector(), statement.rowDesc);
 
@@ -107,7 +107,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
     // encode packet header
     int packetStartIdx = packet.writerIndex();
     packet.writeMediumLE(0); // will set payload length later by calculation
-    packet.writeByte(encoder.sequenceId);
+    packet.writeByte(sequenceId);
 
     // encode packet payload
     packet.writeByte(CommandType.COM_STMT_EXECUTE);
@@ -159,7 +159,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
     // encode packet header
     int packetStartIdx = packet.writerIndex();
     packet.writeMediumLE(0); // will set payload length later by calculation
-    packet.writeByte(encoder.sequenceId);
+    packet.writeByte(sequenceId);
 
     // encode packet payload
     packet.writeByte(CommandType.COM_STMT_FETCH);
