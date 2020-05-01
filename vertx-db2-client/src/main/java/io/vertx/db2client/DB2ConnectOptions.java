@@ -24,6 +24,8 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.json.JsonObject;
 import io.vertx.db2client.impl.DB2ConnectionUriParser;
+import io.vertx.db2client.impl.drda.SQLState;
+import io.vertx.db2client.impl.drda.SqlCode;
 import io.vertx.sqlclient.SqlConnectOptions;
 
 /**
@@ -46,12 +48,9 @@ public class DB2ConnectOptions extends SqlConnectOptions {
 
     public static final String DEFAULT_HOST = "localhost";
     public static final int DEFAULT_PORT = 50000;
-    public static final String DEFAULT_USER = "root";
-    public static final String DEFAULT_PASSWORD = "";
-    public static final String DEFAULT_SCHEMA = "";
     public static final String DEFAULT_CHARSET = "utf8";
     public static final boolean DEFAULT_USE_AFFECTED_ROWS = false;
-    public static final int DEFAULT_PIPELINING_LIMIT = 1;//256; // TODO default to 256 once implemented properly
+    public static final int DEFAULT_PIPELINING_LIMIT = 1;         //256; // TODO default to 256 once implemented properly
     public static final Map<String, String> DEFAULT_CONNECTION_ATTRIBUTES;
 
     static {
@@ -93,17 +92,29 @@ public class DB2ConnectOptions extends SqlConnectOptions {
 
     @Override
     public DB2ConnectOptions setUser(String user) {
-        return (DB2ConnectOptions) super.setUser(user);
+    	if (user == null || user.length() < 1) {
+    		throw new DB2Exception("The user cannot be blank or null", SqlCode.MISSING_CREDENTIALS, SQLState.CONNECT_USERID_ISNULL);
+    	} else {
+    		return (DB2ConnectOptions) super.setUser(user);
+    	}
     }
 
     @Override
     public DB2ConnectOptions setPassword(String password) {
-        return (DB2ConnectOptions) super.setPassword(password);
+    	if (password == null || password.length() < 1) {
+    		throw new DB2Exception("The password cannot be blank or null", SqlCode.MISSING_CREDENTIALS, SQLState.CONNECT_PASSWORD_ISNULL);
+     	} else {
+     		return (DB2ConnectOptions) super.setPassword(password);
+     	}
     }
 
     @Override
     public DB2ConnectOptions setDatabase(String database) {
-        return (DB2ConnectOptions) super.setDatabase(database);
+    	if (database == null || database.length() < 1) {
+    		throw new DB2Exception("The database name cannot be blank or null", SqlCode.DATABASE_NOT_FOUND, SQLState.DATABASE_NOT_FOUND);
+     	} else {
+            return (DB2ConnectOptions) super.setDatabase(database);
+     	}
     }
     
     @Override
@@ -159,9 +170,6 @@ public class DB2ConnectOptions extends SqlConnectOptions {
     protected void init() {
         this.setHost(DEFAULT_HOST);
         this.setPort(DEFAULT_PORT);
-        this.setUser(DEFAULT_USER);
-        this.setPassword(DEFAULT_PASSWORD);
-        this.setDatabase(DEFAULT_SCHEMA);
         this.setPipeliningLimit(DEFAULT_PIPELINING_LIMIT);
         this.setProperties(new HashMap<>(DEFAULT_CONNECTION_ATTRIBUTES));
     }

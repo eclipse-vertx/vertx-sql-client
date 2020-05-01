@@ -2730,6 +2730,8 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
     void parseDTAMCHRM() {
         boolean svrcodReceived = false;
         int svrcod = CodePoint.SVRCOD_INFO;
+        boolean srvdgnReceived = false;
+        String serverDiagnostics = null;
         boolean rdbnamReceived = false;
         String rdbnam = null;
 
@@ -2747,11 +2749,19 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
                 svrcod = parseSVRCOD(CodePoint.SVRCOD_ERROR, CodePoint.SVRCOD_ERROR);
                 peekCP = peekCodePoint();
             }
-
+            
             if (peekCP == CodePoint.RDBNAM) {
                 foundInPass = true;
                 rdbnamReceived = checkAndGetReceivedFlag(rdbnamReceived);
                 rdbnam = parseRDBNAM(true);
+                peekCP = peekCodePoint();
+            }
+            
+            // Optional code point
+            if (peekCP == CodePoint.SRVDGN) {
+                foundInPass = true;
+                srvdgnReceived = checkAndGetReceivedFlag(srvdgnReceived);
+                serverDiagnostics = parseSRVDGN();
                 peekCP = peekCodePoint();
             }
 

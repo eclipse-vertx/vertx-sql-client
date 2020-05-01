@@ -28,6 +28,17 @@ public class SqlCode {
 	public static final int RDB_NOT_FOUND = -30061;
 	public static final int INVALID_CREDENTIALS = -4214;
 	public static final int MISSING_CREDENTIALS = -4461;
+	public static final int DATABASE_NOT_FOUND = -1001;
+	
+	// -104 is a broad error message (illegal symbol encountered in SQL statement) 
+	// and could be further broken down by adding more specific SQL error codes and handling them separately 
+	public static final int INVALID_SQL_STATEMENT = -104;
+	
+	// The error message for this says "Object not defined in DB2" in Wikipedia and 
+	// "<name> is an undefined name" in the IBM zOS DB2 Knowledge Center
+	// But I see it with invalid table names specified in a query
+	public static final int OBJECT_NOT_DEFINED = -204;
+	public static final int COLUMN_DOES_NOT_EXIST = -206;
 	
     private int code_;
 

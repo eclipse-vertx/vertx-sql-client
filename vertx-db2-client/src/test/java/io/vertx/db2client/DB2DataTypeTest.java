@@ -19,6 +19,7 @@ import static org.junit.Assume.assumeTrue;
 
 import java.sql.RowId;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoField;
 import java.util.Arrays;
 
 import org.junit.Test;
@@ -124,8 +125,10 @@ public class DB2DataTypeTest extends DB2TestBase {
 	           .execute(Tuple.of(5), ctx.asyncAssertSuccess(rows -> {
 					ctx.assertEquals(1, rows.size());
 					Row row = rows.iterator().next();
+					int nowNanos = now.getNano() - (1000 * now.get(ChronoField.MICRO_OF_SECOND));
+					int dbNanos = row.getLocalDateTime(1).getNano() - (1000 * row.getLocalDateTime(1).get(ChronoField.MICRO_OF_SECOND));
 					ctx.assertEquals(5, row.getInteger(0));
-					ctx.assertEquals(now, row.getLocalDateTime(1));
+					ctx.assertEquals(dbNanos > 0 ? now : now.minusNanos(nowNanos), row.getLocalDateTime(1));
 	           }));
 	      }));
 	  }));

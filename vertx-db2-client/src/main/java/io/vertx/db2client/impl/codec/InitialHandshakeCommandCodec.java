@@ -33,6 +33,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     private static final int ST_CONNECTING = 0;
     private static final int ST_AUTHENTICATING = 1;
     private static final int ST_CONNECTED = 2;
+    private static final int ST_CONNECT_FAILED = 3;
     
     private static final int TARGET_SECURITY_MEASURE = DRDAConstants.SECMEC_USRIDPWD;
     
@@ -69,7 +70,14 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
         switch (status) {
             case ST_CONNECTING:
                 response.readExchangeServerAttributes();
-                response.readAccessSecurity(TARGET_SECURITY_MEASURE);
+                // readAccessSecurity can throw a DB2Exception if there are problems connecting.  In that case, we want to catch that exception and 
+                // make sure to set the status to something other than ST_CONNECTING so we don't try to complete the result twice (when we hit encode)
+                try {
+                    response.readAccessSecurity(TARGET_SECURITY_MEASURE);
+                } catch (DB2Exception de) {
+                	status = ST_CONNECT_FAILED;
+                	throw de;
+                }
                 status = ST_AUTHENTICATING;
                 ByteBuf packet = allocateBuffer();
                 int packetStartIdx = packet.writerIndex();
