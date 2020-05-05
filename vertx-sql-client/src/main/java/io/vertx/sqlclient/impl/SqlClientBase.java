@@ -39,6 +39,10 @@ import java.util.stream.Collector;
 
 public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, CommandScheduler {
 
+  protected void appendQueryPlaceHolder(StringBuilder builder, int index) {
+    throw new UnsupportedOperationException();
+  }
+
   protected abstract <T> Promise<T> promise();
 
   protected abstract <T> Promise<T> promise(Handler<AsyncResult<T>> handler);

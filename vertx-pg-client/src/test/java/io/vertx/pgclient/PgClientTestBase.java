@@ -39,8 +39,8 @@ import java.util.function.Consumer;
 
 public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
 
-  Vertx vertx;
-  Consumer<Handler<AsyncResult<C>>> connector;
+  protected Vertx vertx;
+  protected Consumer<Handler<AsyncResult<C>>> connector;
 
   @Before
   public void setup() throws Exception {

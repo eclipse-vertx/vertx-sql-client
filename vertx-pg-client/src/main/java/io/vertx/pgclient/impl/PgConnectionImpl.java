@@ -55,6 +55,11 @@ public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implem
   }
 
   @Override
+  protected void appendQueryPlaceHolder(StringBuilder builder, int index) {
+    builder.append('?').append(index);
+  }
+
+  @Override
   public PgConnection notificationHandler(Handler<PgNotification> handler) {
     notificationHandler = handler;
     return this;
