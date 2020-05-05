@@ -61,8 +61,9 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
   }
 
   @Override
-  protected void appendQueryPlaceHolder(StringBuilder builder, int index) {
-    builder.append('?').append(index);
+  public int appendQueryPlaceHolder(StringBuilder queryBuilder, int index, int current) {
+    queryBuilder.append('$').append(1 + index);
+    return index;
   }
 
   @Override

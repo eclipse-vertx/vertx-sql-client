@@ -77,20 +77,20 @@ public class SqlTemplateImpl<T, R> implements SqlTemplate<T, R> {
   public void execute(T parameters, Handler<AsyncResult<R>> handler) {
 
     queryMapper
-      .apply(client.preparedQuery(sqlTemplate.sql))
+      .apply(client.preparedQuery(sqlTemplate.getSql()))
       .execute(toTuple(parameters), handler);
   }
 
   @Override
   public Future<R> execute(T params) {
     return queryMapper
-      .apply(client.preparedQuery(sqlTemplate.sql))
+      .apply(client.preparedQuery(sqlTemplate.getSql()))
       .execute(toTuple(params));
   }
 
   @Override
   public void executeBatch(List<T> batch, Handler<AsyncResult<R>> handler) {
-    queryMapper.apply(client.preparedQuery(sqlTemplate.sql))
+    queryMapper.apply(client.preparedQuery(sqlTemplate.getSql()))
       .executeBatch(batch
         .stream()
         .map(this::toTuple)
@@ -99,7 +99,7 @@ public class SqlTemplateImpl<T, R> implements SqlTemplate<T, R> {
 
   @Override
   public Future<R> executeBatch(List<T> batch) {
-    return queryMapper.apply(client.preparedQuery(sqlTemplate.sql))
+    return queryMapper.apply(client.preparedQuery(sqlTemplate.getSql()))
       .executeBatch(batch
         .stream()
         .map(this::toTuple)
