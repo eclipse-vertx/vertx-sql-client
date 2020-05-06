@@ -106,6 +106,7 @@
     <module>vertx-sql-client</module>
     <module>vertx-pg-client</module>
     <module>vertx-mysql-client</module>
+    <module>vertx-mssql-client</module>
   </modules>
 
 

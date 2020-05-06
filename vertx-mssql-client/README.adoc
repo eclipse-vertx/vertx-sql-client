@@ -1,0 +1,11 @@
+= The Reactive MSSQL Client
+
+TODO
+
+== Features TODO
+
+* Cursor support
+* Row streaming
+* RxJava 1 and RxJava 2
+* Polyglot support
+* TLS support
