@@ -40,7 +40,7 @@ public interface SqlTemplate<I, R> {
    * @return the template
    */
   static SqlTemplate<Map<String, Object>, RowSet<Row>> forQuery(SqlClient client, String template) {
-    io.vertx.sqlclient.template.impl.SqlTemplate sqlTemplate = new io.vertx.sqlclient.template.impl.SqlTemplate((SqlClientInternal) client, template);
+    io.vertx.sqlclient.template.impl.SqlTemplate sqlTemplate = io.vertx.sqlclient.template.impl.SqlTemplate.create((SqlClientInternal) client, template);
     return new SqlTemplateImpl<>(client, sqlTemplate, Function.identity(), Function.identity());
   }
 
@@ -52,7 +52,7 @@ public interface SqlTemplate<I, R> {
    * @return the template
    */
   static SqlTemplate<Map<String, Object>, SqlResult<Void>> forUpdate(SqlClient client, String template) {
-    io.vertx.sqlclient.template.impl.SqlTemplate sqlTemplate = new io.vertx.sqlclient.template.impl.SqlTemplate((SqlClientInternal) client, template);
+    io.vertx.sqlclient.template.impl.SqlTemplate sqlTemplate = io.vertx.sqlclient.template.impl.SqlTemplate.create((SqlClientInternal) client, template);
     return new SqlTemplateImpl<>(client, sqlTemplate, query -> query.collecting(SqlTemplateImpl.NULL_COLLECTOR), Function.identity());
   }
 

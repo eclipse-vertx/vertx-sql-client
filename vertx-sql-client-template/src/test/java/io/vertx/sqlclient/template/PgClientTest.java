@@ -60,7 +60,7 @@ public class PgClientTest extends TemplateTestBase {
   @Test
   public void testQuery(TestContext ctx) {
     SqlTemplate<Map<String, Object>, RowSet<Row>> template = SqlTemplate
-      .forQuery(pool, "SELECT :id :: INT4 \"id\", :randomnumber :: INT4 \"randomnumber\"");
+      .forQuery(pool, "SELECT ${id} :: INT4 \"id\", ${randomnumber} :: INT4 \"randomnumber\"");
     Map<String, Object> params = new HashMap<>();
     params.put("id", 1);
     params.put("randomnumber", 10);
@@ -75,7 +75,7 @@ public class PgClientTest extends TemplateTestBase {
   @Test
   public void testBatch(TestContext ctx) {
     SqlTemplate<Map<String, Object>, RowSet<Row>> template = SqlTemplate
-      .forQuery(pool, "SELECT :id :: INT4 \"id\", :randomnumber :: INT4 \"randomnumber\"");
+      .forQuery(pool, "SELECT ${id} :: INT4 \"id\", ${randomnumber} :: INT4 \"randomnumber\"");
     Map<String, Object> params1 = new HashMap<>();
     params1.put("id", 1);
     params1.put("randomnumber", 10);
@@ -102,7 +102,7 @@ public class PgClientTest extends TemplateTestBase {
     w.id = 1;
     w.randomnumber = 10;
     SqlTemplate<World, RowSet<World>> template = SqlTemplate
-     .<World>forQuery(pool, "SELECT :id :: INT4 \"id\", :randomnumber :: INT4 \"randomnumber\"")
+     .<World>forQuery(pool, "SELECT ${id} :: INT4 \"id\", ${randomnumber} :: INT4 \"randomnumber\"")
       .mapFrom(World.class)
      .mapTo(World.class);
    template.execute(w, ctx.asyncAssertSuccess(res -> {
@@ -117,7 +117,7 @@ public class PgClientTest extends TemplateTestBase {
   public void testLocalDateTimeWithJackson(TestContext ctx) {
     DatabindCodec.mapper().registerModule(new JavaTimeModule());
     SqlTemplate<Map<String, Object>, RowSet<LocalDateTimePojo>> template = SqlTemplate
-      .forQuery(pool, "SELECT :value :: TIMESTAMP WITHOUT TIME ZONE \"localDateTime\"")
+      .forQuery(pool, "SELECT ${value} :: TIMESTAMP WITHOUT TIME ZONE \"localDateTime\"")
       .mapTo(LocalDateTimePojo.class);
     LocalDateTime ldt = LocalDateTime.parse("2017-05-14T19:35:58.237666");
     template.execute(Collections.singletonMap("value", ldt), ctx.asyncAssertSuccess(result -> {
@@ -129,7 +129,7 @@ public class PgClientTest extends TemplateTestBase {
   @Test
   public void testLocalDateTimeWithCodegen(TestContext ctx) {
     SqlTemplate<Map<String, Object>, RowSet<LocalDateTimeDataObject>> template = SqlTemplate
-      .forQuery(pool, "SELECT :value :: TIMESTAMP WITHOUT TIME ZONE \"localDateTime\"")
+      .forQuery(pool, "SELECT ${value} :: TIMESTAMP WITHOUT TIME ZONE \"localDateTime\"")
       .mapTo(LocalDateTimeDataObjectRowMapper.INSTANCE);
     LocalDateTime ldt = LocalDateTime.parse("2017-05-14T19:35:58.237666");
     template.execute(Collections.singletonMap("value", ldt), ctx.asyncAssertSuccess(result -> {
@@ -141,7 +141,7 @@ public class PgClientTest extends TemplateTestBase {
   @Test
   public void testLocalDateTimeWithCodegenCollector(TestContext ctx) {
     SqlTemplate<Map<String, Object>, SqlResult<List<LocalDateTimeDataObject>>> template = SqlTemplate
-      .forQuery(pool, "SELECT :value :: TIMESTAMP WITHOUT TIME ZONE \"localDateTime\"")
+      .forQuery(pool, "SELECT ${value} :: TIMESTAMP WITHOUT TIME ZONE \"localDateTime\"")
       .collecting(LocalDateTimeDataObjectRowMapper.COLLECTOR);
     LocalDateTime ldt = LocalDateTime.parse("2017-05-14T19:35:58.237666");
     template.execute(Collections.singletonMap("value", ldt), ctx.asyncAssertSuccess(result -> {

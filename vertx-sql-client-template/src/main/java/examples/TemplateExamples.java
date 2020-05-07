@@ -32,7 +32,7 @@ public class TemplateExamples {
     Map<String, Object> params = Collections.singletonMap("id", 1);
 
     SqlTemplate
-      .forQuery(client, "SELECT * FROM users WHERE id=:id")
+      .forQuery(client, "SELECT * FROM users WHERE id=${id}")
       .execute(params)
       .onSuccess(users -> {
         users.forEach(row -> {
@@ -48,7 +48,7 @@ public class TemplateExamples {
     params.put("lastName", "Cooper");
 
     SqlTemplate
-      .forUpdate(client, "INSERT INTO users VALUES (:id,:firstName,:lastName)")
+      .forUpdate(client, "INSERT INTO users VALUES (${id},${firstName},${lastName})")
       .execute(params)
       .onSuccess(v -> {
         System.out.println("Successful update");
@@ -75,7 +75,7 @@ public class TemplateExamples {
 
   public void bindingRowWithCustomFunction(SqlClient client) {
     SqlTemplate
-      .forQuery(client, "SELECT * FROM users WHERE id=:id")
+      .forQuery(client, "SELECT * FROM users WHERE id=${id}")
       .mapTo(ROW_USER_MAPPER)
       .execute(Collections.singletonMap("id", 1))
       .onSuccess(users -> {
@@ -110,7 +110,7 @@ public class TemplateExamples {
     user.firstName = "Cooper";
 
     SqlTemplate
-      .forUpdate(client, "INSERT INTO users VALUES (:id,:firstName,:lastName)")
+      .forUpdate(client, "INSERT INTO users VALUES (${id},${firstName},${lastName})")
       .mapFrom(PARAMS_USER_MAPPER)
       .execute(user)
       .onSuccess(res -> {
@@ -120,7 +120,7 @@ public class TemplateExamples {
 
   public void batchBindingParamsWithCustomFunction(SqlClient client, List<User> users) {
     SqlTemplate
-      .forUpdate(client, "INSERT INTO users VALUES (:id,:firstName,:lastName)")
+      .forUpdate(client, "INSERT INTO users VALUES (${id},${firstName},${lastName})")
       .mapFrom(PARAMS_USER_MAPPER)
       .executeBatch(users)
       .onSuccess(res -> {
@@ -130,7 +130,7 @@ public class TemplateExamples {
 
   public void bindingRowWithJacksonDatabind(SqlClient client) {
     SqlTemplate
-      .forQuery(client, "SELECT * FROM users WHERE id=:id")
+      .forQuery(client, "SELECT * FROM users WHERE id=${id}")
       .mapTo(User.class)
       .execute(Collections.singletonMap("id", 1))
       .onSuccess(users -> {
@@ -145,7 +145,7 @@ public class TemplateExamples {
     u.id = 1;
 
     SqlTemplate
-      .forUpdate(client, "INSERT INTO users VALUES (:id,:firstName,:lastName)")
+      .forUpdate(client, "INSERT INTO users VALUES (${id},${firstName},${lastName})")
       .mapFrom(User.class)
       .execute(u)
       .onSuccess(res -> {
@@ -261,7 +261,7 @@ public class TemplateExamples {
 
   public void bindingRowWithRowMapper(SqlClient client) {
     SqlTemplate
-      .forQuery(client, "SELECT * FROM users WHERE id=:id")
+      .forQuery(client, "SELECT * FROM users WHERE id=${id}")
       .mapTo(UserDataObjectRowMapper.INSTANCE)
       .execute(Collections.singletonMap("id", 1))
       .onSuccess(users -> {
@@ -347,7 +347,7 @@ public class TemplateExamples {
     UserDataObject user = new UserDataObject().setId(1);
 
     SqlTemplate
-      .forQuery(client, "SELECT * FROM users WHERE id=:id")
+      .forQuery(client, "SELECT * FROM users WHERE id=${id}")
       .mapFrom(UserDataObjectParamMapper.INSTANCE)
       .execute(user)
       .onSuccess(users -> {

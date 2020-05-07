@@ -9,8 +9,12 @@ import io.vertx.sqlclient.impl.SqlClientInternal;
 import io.vertx.sqlclient.template.impl.SqlTemplate;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 
@@ -33,10 +37,10 @@ public class TemplateBuilderTest {
 
   @Test
   public void testPostgresSql() {
-    assertPgSql(":foo :bar", "$1 $2");
-    assertPgSql(":foo :foo", "$1 $1");
-    assertPgSql(":foo :bar :foo", "$1 $2 $1");
-    assertPgSql(":foo :bar :foo :bar", "$1 $2 $1 $2");
+    assertPgSql("${foo} ${bar}", "$1 $2");
+    assertPgSql("${foo} ${foo}", "$1 $1");
+    assertPgSql("${foo} ${bar} ${foo}", "$1 $2 $1");
+    assertPgSql("${foo} ${bar} ${foo} ${bar}", "$1 $2 $1 $2");
   }
 
   @Test
@@ -44,18 +48,18 @@ public class TemplateBuilderTest {
     Map<String, Object> params = new HashMap<>();
     params.put("foo", "foo_value");
     params.put("bar", "bar_value");
-    assertPgTuple(":foo :bar", params, Tuple.of("foo_value", "bar_value"));
-    assertPgTuple(":foo :foo", params, Tuple.of("foo_value"));
-    assertPgTuple(":foo :bar :foo", params, Tuple.of("foo_value", "bar_value"));
-    assertPgTuple(":foo :bar :foo :bar", params, Tuple.of("foo_value", "bar_value"));
+    assertPgTuple("${foo} ${bar}", params, Tuple.of("foo_value", "bar_value"));
+    assertPgTuple("${foo} ${foo}", params, Tuple.of("foo_value"));
+    assertPgTuple("${foo} ${bar} ${foo}", params, Tuple.of("foo_value", "bar_value"));
+    assertPgTuple("${foo} ${bar} ${foo} ${bar}", params, Tuple.of("foo_value", "bar_value"));
   }
 
   @Test
   public void testOtherSql() {
-    assertOtherSql(":foo :bar", "? ?");
-    assertOtherSql(":foo :foo", "? ?");
-    assertOtherSql(":foo :bar :foo", "? ? ?");
-    assertOtherSql(":foo :bar :foo :bar", "? ? ? ?");
+    assertOtherSql("${foo} ${bar}", "? ?");
+    assertOtherSql("${foo} ${foo}", "? ?");
+    assertOtherSql("${foo} ${bar} ${foo}", "? ? ?");
+    assertOtherSql("${foo} ${bar} ${foo} ${bar}", "? ? ? ?");
   }
 
   @Test
@@ -63,10 +67,17 @@ public class TemplateBuilderTest {
     Map<String, Object> params = new HashMap<>();
     params.put("foo", "foo_value");
     params.put("bar", "bar_value");
-    assertOtherTuple(":foo :bar", params, Tuple.of("foo_value", "bar_value"));
-    assertOtherTuple(":foo :foo", params, Tuple.of("foo_value", "foo_value"));
-    assertOtherTuple(":foo :bar :foo", params, Tuple.of("foo_value", "bar_value", "foo_value"));
-    assertOtherTuple(":foo :bar :foo :bar", params, Tuple.of("foo_value", "bar_value", "foo_value", "bar_value"));
+    assertOtherTuple("${foo} ${bar}", params, Tuple.of("foo_value", "bar_value"));
+    assertOtherTuple("${foo} ${foo}", params, Tuple.of("foo_value", "foo_value"));
+    assertOtherTuple("${foo} ${bar} ${foo}", params, Tuple.of("foo_value", "bar_value", "foo_value"));
+    assertOtherTuple("${foo} ${bar} ${foo} ${bar}", params, Tuple.of("foo_value", "bar_value", "foo_value", "bar_value"));
+  }
+
+  @Test
+  public void testSpecialCases() {
+    assertOtherSql("\\${foo}", "${foo}");
+    assertOtherSql("before\\${foo}after", "before${foo}after");
+    assertOtherSql("${begin", "${begin");
   }
 
   private void assertPgSql(String template, String expectedSql) {
@@ -80,7 +91,7 @@ public class TemplateBuilderTest {
   }
 
   private SqlTemplate pgTemplate(String template) {
-    return new SqlTemplate(new FakeClient() {
+    return SqlTemplate.create(new FakeClient() {
       @Override
       public int appendQueryPlaceHolder(StringBuilder queryBuilder, int index, int current) {
         queryBuilder.append('$').append(1 + index);
@@ -100,7 +111,7 @@ public class TemplateBuilderTest {
   }
 
   private SqlTemplate otherTemplate(String template) {
-    return new SqlTemplate(new FakeClient() {
+    return SqlTemplate.create(new FakeClient() {
       @Override
       public int appendQueryPlaceHolder(StringBuilder queryBuilder, int index, int current) {
         queryBuilder.append("?");

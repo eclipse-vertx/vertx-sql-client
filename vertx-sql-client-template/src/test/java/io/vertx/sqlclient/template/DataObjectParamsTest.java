@@ -90,7 +90,7 @@ public class DataObjectParamsTest extends TemplateTestBase {
 
   private void testGet(TestContext ctx, String sqlType, String paramName, TestDataObject obj, Consumer<Row> checker) {
     Async async = ctx.async();
-    SqlTemplate<Map<String, Object>, RowSet<Row>> template = SqlTemplate.forQuery(connection, "SELECT :" + paramName + " :: " + sqlType + " \"value\"");
+    SqlTemplate<Map<String, Object>, RowSet<Row>> template = SqlTemplate.forQuery(connection, "SELECT ${" + paramName + "} :: " + sqlType + " \"value\"");
     template.execute(TestDataObjectParamMapper.INSTANCE.apply(obj), ctx.asyncAssertSuccess(result -> {
       ctx.assertEquals(1, result.size());
       Row row = result.iterator().next();
