@@ -6,8 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotate a Vert.x data object property for custom configuration of this property
- * when it is mapped to a column.
+ * Annotate a Vert.x data object property for custom configuration when it is mapped to a column.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.FIELD})
