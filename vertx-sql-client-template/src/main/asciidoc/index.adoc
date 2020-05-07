@@ -22,7 +22,7 @@ To use client SQL templates add the following dependency to the _dependencies_ s
 [source,groovy]
 ----
 dependencies {
-  compile '${maven.groupId}:${maven.artifactId}:${maven.version}'
+  implementation '${maven.groupId}:${maven.artifactId}:${maven.version}'
 }
 ----
 
@@ -40,7 +40,7 @@ wrapper for a `PreparedQuery`.
 {@link examples.TemplateExamples#queryExample}
 ----
 
-When you need to perform an insert or update operation and you do not care of the result, you can use instead {@link io.vertx.sqlclient.template.SqlTemplate#forUpdate}:
+When you need to perform an insert or update operation and you do not care of the result, you can use {@link io.vertx.sqlclient.template.SqlTemplate#forUpdate} instead:
 
 [source,$lang]
 ----
@@ -56,9 +56,9 @@ You can use the backslash char `\` to escape  any `$` character, i.e `\${foo}` w
 
 == Row mapping
 
-Templates produces {@link io.vertx.sqlclient.Row} as default result.
+By default templates produce {@link io.vertx.sqlclient.Row} as result type.
 
-You can provide a function:
+You can provide a function to achieve row level mapping instead:
 
 [source,$lang]
 ----
@@ -229,11 +229,11 @@ This feature can also be used in Gradle:
 
 [source]
 ----
-compile "io.vertx:vertx-codegen:${maven.version}:processor"
+annotationProcessor "io.vertx:vertx-codegen:${maven.version}:processor"
 compile "io.vertx:vertx-sql-client-template:${maven.version}"
 ----
 
-IDE provides usually support for annotation processors.
+IDE usually provide usually support for annotation processors.
 
 The codegen `processor` classifier adds to the jar the automatic configuration of the service proxy annotation processor
 via the `META-INF/services` plugin mechanism.
