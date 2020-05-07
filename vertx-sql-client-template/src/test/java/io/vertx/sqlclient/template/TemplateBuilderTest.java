@@ -93,7 +93,7 @@ public class TemplateBuilderTest {
   private SqlTemplate pgTemplate(String template) {
     return SqlTemplate.create(new FakeClient() {
       @Override
-      public int appendQueryPlaceHolder(StringBuilder queryBuilder, int index, int current) {
+      public int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current) {
         queryBuilder.append('$').append(1 + index);
         return index;
       }
@@ -113,7 +113,7 @@ public class TemplateBuilderTest {
   private SqlTemplate otherTemplate(String template) {
     return SqlTemplate.create(new FakeClient() {
       @Override
-      public int appendQueryPlaceHolder(StringBuilder queryBuilder, int index, int current) {
+      public int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current) {
         queryBuilder.append("?");
         return current;
       }

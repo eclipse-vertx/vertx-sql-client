@@ -28,7 +28,7 @@ public class SqlTemplate {
       if (it.hasNext()) {
         String val = it.next();
         int idx = mapping.indexOf(val);
-        int actual = client.appendQueryPlaceHolder(builder, idx == -1 ? mapping.size() : idx, mapping.size());
+        int actual = client.appendQueryPlaceholder(builder, idx == -1 ? mapping.size() : idx, mapping.size());
         if (idx == -1 || actual != idx) {
           mapping.add(val);
         }

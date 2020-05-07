@@ -55,7 +55,7 @@ public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implem
   }
 
   @Override
-  public int appendQueryPlaceHolder(StringBuilder queryBuilder, int index, int current) {
+  public int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current) {
     queryBuilder.append('$').append(1 + index);
     return index;
   }
