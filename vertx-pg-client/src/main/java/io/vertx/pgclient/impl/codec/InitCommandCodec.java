@@ -16,7 +16,6 @@
  */
 package io.vertx.pgclient.impl.codec;
 
-import io.vertx.sqlclient.impl.TxStatus;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.command.InitCommand;
@@ -100,7 +99,7 @@ class InitCommandCodec extends PgCommandCodec<Connection, InitCommand> {
   }
 
   @Override
-  public void handleReadyForQuery(TxStatus txStatus) {
+  public void handleReadyForQuery() {
     // The final phase before returning the connection
     // We should make sure we are supporting only UTF8
     // https://www.postgresql.org/docs/9.5/static/multibyte.html#MULTIBYTE-CHARSET-SUPPORTED

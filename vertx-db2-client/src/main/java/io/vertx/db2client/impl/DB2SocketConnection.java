@@ -25,7 +25,6 @@ import io.vertx.db2client.impl.codec.DB2Codec;
 import io.vertx.db2client.impl.command.InitialHandshakeCommand;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.sqlclient.impl.TxStatus;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
@@ -66,7 +65,7 @@ public class DB2SocketConnection extends SocketConnectionBase {
     	if (cmd instanceof SimpleQueryCommand && "BEGIN".equals(((SimpleQueryCommand) cmd).sql())) {
             // DB2 always implicitly starts a transaction with each query, and does
             // not support the 'BEGIN' keyword. Instead we can no-op BEGIN commands
-			cmd.handler.handle(CommandResponse.success(null, TxStatus.ACTIVE));
+			cmd.handler.handle(CommandResponse.success(null));
 			return;
     	}
     	super.schedule(cmd);

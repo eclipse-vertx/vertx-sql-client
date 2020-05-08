@@ -124,7 +124,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
     cmd.handler = ar -> {
       synchronized (TransactionImpl.this) {
         status = ST_PENDING;
-        if (ar.txStatus() == TxStatus.FAILED) {
+        if (ar.failed()) {
           // We won't recover from this so rollback
           CommandBase<?> c;
           while ((c = pending.poll()) != null) {
@@ -207,9 +207,6 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   }
 
   private CommandBase<?> doQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler) {
-	  
-//    SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> b = new SqlResultBuilder<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
-    //SqlResultHandler<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> resultHandler = b.createHandler(handler);
     SimpleQueryCommand<Void> cmd = new SimpleQueryCommand<>(sql, false, autoCommit(),
     		QueryCommandBase.NULL_COLLECTOR,
     		QueryResultHandler.NOOP_HANDLER);

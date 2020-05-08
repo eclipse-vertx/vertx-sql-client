@@ -24,7 +24,6 @@ import io.vertx.sqlclient.Tuple;
 import io.vertx.pgclient.impl.util.Util;
 import io.vertx.sqlclient.impl.ParamDesc;
 import io.vertx.sqlclient.impl.RowDesc;
-import io.vertx.sqlclient.impl.TxStatus;
 import io.vertx.sqlclient.impl.StringLongSequence;
 import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
 import io.vertx.sqlclient.impl.command.CloseCursorCommand;
