@@ -347,10 +347,9 @@ public class DRDAConstants {
     /** Constant indicating that the user stream was too long. */
     public static final byte STREAM_TOO_LONG = 0x04;
 
-    // // Product id of the ClientDNC.
-    public static final String PRDID = "JCC04250";
-    
-    public static final String EXTNAM = "db2jcc_application  " + PRDID + "300";
+    // Product id
+    public static final String PRDID = "JNT00001";
+    public static final String EXTNAM = "db2jnt_application  " + PRDID + "300";
     
     static final DateTimeFormatter DB2_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy'-'MM'-'dd");
     static final DateTimeFormatter DB2_TIME_FORMAT = DateTimeFormatter.ofPattern("HH'.'mm'.'ss");

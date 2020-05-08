@@ -2,8 +2,11 @@ package io.vertx.db2client.tck;
 
 import static org.junit.Assume.assumeFalse;
 
+import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 
 import io.vertx.db2client.junit.DB2Resource;
@@ -16,6 +19,14 @@ import io.vertx.sqlclient.tck.BinaryDataTypeDecodeTestBase;
 public class DB2BinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase {
   @ClassRule
   public static DB2Resource rule = DB2Resource.SHARED_INSTANCE;
+  
+	@Rule
+	public TestName testName = new TestName();
+
+	@Before
+	public void printTestName(TestContext ctx) throws Exception {
+		System.out.println(">>> BEGIN " + getClass().getSimpleName() + "." + testName.getMethodName());
+	}
 
   @Override
   protected void initConnector() {
@@ -25,12 +36,8 @@ public class DB2BinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase {
   @Test
   @Override
   public void testBoolean(TestContext ctx) {
-    if (!rule.isZOS()) {
-      super.testBoolean(ctx);
-      return;
-    }
-    
     // DB2/Z does not support BOOLEAN column type, use TINYINT instead
+    // DB2/LUW has a BOOLEAN column type but it is just an alias for TINYINT
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       conn
         .preparedQuery("SELECT test_boolean FROM basicdatatype WHERE id = 1")

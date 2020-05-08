@@ -1,9 +1,13 @@
 package io.vertx.db2client.tck;
 
+import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 
+import io.vertx.core.Vertx;
 import io.vertx.db2client.junit.DB2Resource;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -15,6 +19,14 @@ import io.vertx.sqlclient.tck.TextDataTypeDecodeTestBase;
 public class DB2TextDataTypeDecodeTest extends TextDataTypeDecodeTestBase {
     @ClassRule
     public static DB2Resource rule = DB2Resource.SHARED_INSTANCE;
+    
+	@Rule
+	public TestName testName = new TestName();
+
+	@Before
+	public void printTestName(TestContext ctx) throws Exception {
+		System.out.println(">>> BEGIN " + getClass().getSimpleName() + "." + testName.getMethodName());
+	}
 
     @Override
     protected void initConnector() {
@@ -24,12 +36,8 @@ public class DB2TextDataTypeDecodeTest extends TextDataTypeDecodeTestBase {
     @Test
     @Override
     public void testBoolean(TestContext ctx) {
-      if (!rule.isZOS()) {
-        super.testBoolean(ctx);
-        return;
-      }
-      
       // DB2/z does not have a BOOLEAN column type and instead must use TINYINT
+      // DB2/LUW has a BOOLEAN column type but it is an alias for TINYINT
       Async async = ctx.async();
       connector.connect(ctx.asyncAssertSuccess(conn -> {
         conn.query("SELECT test_boolean FROM basicdatatype WHERE id = 1").execute(ctx.asyncAssertSuccess(result -> {

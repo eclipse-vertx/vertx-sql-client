@@ -1771,8 +1771,7 @@ public class DRDAConnectResponse extends DRDAResponse {
             }
 
             if (!foundInPass) {
-                throw new IllegalStateException(String.format("Did not find a codepoint in this pass: %02x", peekCP));
-                //doPrmnsprmSemantics(peekCP);
+            	throwUnknownCodepoint(peekCP);
             }
             
             if (!srvrlslvReceived)

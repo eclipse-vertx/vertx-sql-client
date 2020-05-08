@@ -3311,12 +3311,6 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         //   SQLXNAME_s; PROTOCOL TYPE VCS; ENVLID 0x32; Length Override 255
         String sqlxname = parseFastVCMorVCS(); // ID
         
-        // @AGG manually skip 1 unknown byte
-        if (!metadata.isZos()) {
-          if (readUnsignedByte() != CodePoint.NULLDATA)
-              throw new IllegalStateException("@AGG expecting 0xFF here");
-        }
-
         if (columnMetaData.sqlxKeymem_ == null) {
             columnMetaData.sqlxKeymem_ = new short[columnMetaData.columns_];
         }
