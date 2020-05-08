@@ -33,40 +33,25 @@ import static io.vertx.db2client.DB2ConnectOptions.fromUri;
  */
 @VertxGen
 public interface DB2Connection extends SqlConnection {
-    /**
-     * Create a connection to DB2 server with the given {@code connectOptions}.
-     *
-     * @param vertx the vertx instance
-     * @param connectOptions the options for the connection
-     * @param handler the handler called with the connection or the failure
-     */
-    static void connect(Vertx vertx, DB2ConnectOptions connectOptions, Handler<AsyncResult<DB2Connection>> handler) {
-      Future<DB2Connection> fut = connect(vertx, connectOptions);
-      if (handler != null) {
-        fut.onComplete(handler);
-      }
-    }
+	
+	/**
+	 * Create a connection to DB2 server with the given {@code connectOptions}.
+	 *
+	 * @param vertx          the vertx instance
+	 * @param connectOptions the options for the connection
+	 * @param handler        the handler called with the connection or the failure
+	 */
+	static void connect(Vertx vertx, DB2ConnectOptions connectOptions, Handler<AsyncResult<DB2Connection>> handler) {
+		DB2ConnectionImpl.connect(vertx, connectOptions, handler);
+	}
 
-    /**
-     * Like {@link #connect(Vertx, DB2ConnectOptions, Handler)} but returns a {@code Future} of the asynchronous result
-     */
-    static Future<DB2Connection> connect(Vertx vertx, DB2ConnectOptions connectOptions) {
-      return DB2ConnectionImpl.connect(vertx, connectOptions);
-    }
-
-    /**
-     * Like {@link #connect(Vertx, DB2ConnectOptions, Handler)} with options build from {@code connectionUri}.
-     */
-    static void connect(Vertx vertx, String connectionUri, Handler<AsyncResult<DB2Connection>> handler) {
-      connect(vertx, fromUri(connectionUri), handler);
-    }
-
-    /**
-     * Like {@link #connect(Vertx, String, Handler)} but returns a {@code Future} of the asynchronous result
-     */
-    static Future<DB2Connection> connect(Vertx vertx, String connectionUri) {
-      return connect(vertx, fromUri(connectionUri));
-    }
+	/**
+	 * Like {@link #connect(Vertx, DB2ConnectOptions, Handler)} with options build
+	 * from {@code connectionUri}.
+	 */
+	static void connect(Vertx vertx, String connectionUri, Handler<AsyncResult<DB2Connection>> handler) {
+		connect(vertx, fromUri(connectionUri), handler);
+	}
 
     @Override
     DB2Connection prepare(String sql, Handler<AsyncResult<PreparedStatement>> handler);
@@ -87,11 +72,6 @@ public interface DB2Connection extends SqlConnection {
     DB2Connection ping(Handler<AsyncResult<Void>> handler);
 
     /**
-     * Like {@link #ping(Handler)} but returns a {@code Future} of the asynchronous result
-     */
-    Future<Void> ping();
-
-    /**
      * Send a DEBUG command to dump debug information to the server's stdout.
      *
      * @param handler the handler notified with the execution result
@@ -99,10 +79,5 @@ public interface DB2Connection extends SqlConnection {
      */
     @Fluent
     DB2Connection debug(Handler<AsyncResult<Void>> handler);
-
-    /**
-     * Like {@link #debug(Handler)} but returns a {@code Future} of the asynchronous result
-     */
-    Future<Void> debug();
 
 }

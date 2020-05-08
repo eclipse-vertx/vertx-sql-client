@@ -128,7 +128,7 @@ public abstract class SimpleQueryTestBase {
     }));
   }
 
-  private void cleanTestTable(TestContext ctx) {
+  protected void cleanTestTable(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("TRUNCATE TABLE mutable;").execute(ctx.asyncAssertSuccess(result -> {
         conn.close();

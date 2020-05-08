@@ -17,11 +17,8 @@ package io.vertx.db2client.tck;
 
 import static org.junit.Assume.assumeFalse;
 
-import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 
 import io.vertx.db2client.DB2ConnectOptions;
@@ -38,18 +35,15 @@ public class DB2TransactionTest extends TransactionTestBase {
 
   @ClassRule
   public static DB2Resource rule = DB2Resource.SHARED_INSTANCE;
-  
-	@Rule
-	public TestName testName = new TestName();
-
-	@Before
-	public void printTestName(TestContext ctx) throws Exception {
-		System.out.println(">>> BEGIN " + getClass().getSimpleName() + "." + testName.getMethodName());
-	}
 
   @Override
-  protected Pool createPool() {
-    return DB2Pool.pool(vertx, new DB2ConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
+  protected void initConnector() {
+    connector = handler -> {
+      if (pool == null) {
+        pool = DB2Pool.pool(vertx, new DB2ConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
+      }
+      pool.begin(handler);
+    };
   }
 
   @Override
@@ -60,7 +54,11 @@ public class DB2TransactionTest extends TransactionTestBase {
   @Override
   protected void cleanTestTable(TestContext ctx) {
     // use DELETE FROM because DB2 does not support TRUNCATE TABLE
-    getPool().query("DELETE FROM mutable").execute(ctx.asyncAssertSuccess());
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      conn.query("DELETE FROM mutable").execute(ctx.asyncAssertSuccess(result -> {
+        conn.close();
+      }));
+    }));
   }
 
   @Override

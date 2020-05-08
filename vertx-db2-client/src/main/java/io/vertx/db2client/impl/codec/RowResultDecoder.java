@@ -19,8 +19,8 @@ import java.math.BigDecimal;
 import java.util.stream.Collector;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.db2client.impl.DB2RowImpl;
 import io.vertx.db2client.impl.drda.Cursor;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;

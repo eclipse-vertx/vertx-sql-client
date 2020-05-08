@@ -67,7 +67,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
     @Override
     public void execute(Handler<AsyncResult<R>> handler) {
       SqlResultHandler resultHandler = builder.createHandler(handler);
-      schedule(builder.createSimpleQuery(sql, singleton, resultHandler), resultHandler);
+      schedule(builder.createSimpleQuery(sql, singleton, autoCommit(), resultHandler), resultHandler);
     }
   }
 
@@ -107,7 +107,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
           if (msg != null) {
             handler.handle(Future.failedFuture(msg));
           } else {
-            cr.scheduler.schedule(builder.createExtendedQuery(ps, arguments, resultHandler), resultHandler);
+            cr.scheduler.schedule(builder.createExtendedQuery(ps, arguments, autoCommit(), resultHandler), resultHandler);
           }
         } else {
           handler.handle(Future.failedFuture(cr.cause()));
@@ -128,11 +128,15 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
               return;
             }
           }
-          cr.scheduler.schedule(builder.createBatchCommand(ps, batch, resultHandler), resultHandler);
+          cr.scheduler.schedule(builder.createBatchCommand(ps, batch, autoCommit(), resultHandler), resultHandler);
         } else {
           handler.handle(Future.failedFuture(cr.cause()));
         }
       });
     }
+  }
+  
+  boolean autoCommit() {
+	return true;
   }
 }

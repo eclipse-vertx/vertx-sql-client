@@ -47,12 +47,14 @@ class PreparedStatementImpl implements PreparedStatement {
   final Connection conn;
   final Context context;
   final io.vertx.sqlclient.impl.PreparedStatement ps;
+  final boolean autoCommit;
   private final AtomicBoolean closed = new AtomicBoolean();
 
-  PreparedStatementImpl(Connection conn, Context context, io.vertx.sqlclient.impl.PreparedStatement ps) {
+  PreparedStatementImpl(Connection conn, Context context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
     this.conn = conn;
     this.context = context;
     this.ps = ps;
+    this.autoCommit = autoCommit;
   }
 
   @Override
@@ -74,7 +76,7 @@ class PreparedStatementImpl implements PreparedStatement {
         handler.handle(Future.failedFuture(msg));
       } else {
         SqlResultHandler<R1, R2, R3> resultHandler = resultBuilder.createHandler(handler);
-        conn.schedule(resultBuilder.createExtendedQuery(ps, args, fetch, cursorId, suspended, resultHandler), resultHandler);
+        conn.schedule(resultBuilder.createExtendedQuery(ps, args, fetch, cursorId, suspended, autoCommit, resultHandler), resultHandler);
       }
     } else {
       context.runOnContext(v -> execute(args, fetch, cursorId, suspended, resultBuilder, handler));
@@ -112,7 +114,7 @@ class PreparedStatementImpl implements PreparedStatement {
       }
     }
     SqlResultHandler resultHandler = builder.createHandler(handler);
-    conn.schedule(builder.createBatchCommand(ps, argsList, resultHandler), resultHandler);
+    conn.schedule(builder.createBatchCommand(ps, argsList, autoCommit, resultHandler), resultHandler);
   }
 
   @Override

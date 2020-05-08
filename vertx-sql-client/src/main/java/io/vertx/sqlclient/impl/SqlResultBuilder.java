@@ -50,16 +50,19 @@ class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlResult<T>>
 
   SimpleQueryCommand<T> createSimpleQuery(String sql,
                                           boolean singleton,
+                                          boolean autoCommit,
                                           SqlResultHandler<T, R, L> handler) {
-    return new SimpleQueryCommand<>(sql, singleton, collector, handler);
+    return new SimpleQueryCommand<>(sql, singleton, autoCommit, collector, handler);
   }
 
   ExtendedQueryCommand<T> createExtendedQuery(PreparedStatement preparedStatement,
                                               Tuple args,
+                                              boolean autoCommit,
                                               SqlResultHandler<T, R, L> handler) {
     return new ExtendedQueryCommand<>(
       preparedStatement,
       args,
+      autoCommit,
       collector,
       handler);
   }
@@ -69,6 +72,7 @@ class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlResult<T>>
                                               int fetch,
                                               String cursorId,
                                               boolean suspended,
+                                              boolean autoCommit,
                                               SqlResultHandler<T, R, L> handler) {
     return new ExtendedQueryCommand<>(
       preparedStatement,
@@ -76,13 +80,15 @@ class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlResult<T>>
       fetch,
       cursorId,
       suspended,
+      autoCommit,
       collector,
       handler);
   }
 
   ExtendedBatchQueryCommand<T> createBatchCommand(PreparedStatement preparedStatement,
                                                   List<Tuple> argsList,
+                                                  boolean autoCommit,
                                                   SqlResultHandler<T, R, L> handler) {
-    return new ExtendedBatchQueryCommand<>(preparedStatement, argsList, collector, handler);
+    return new ExtendedBatchQueryCommand<>(preparedStatement, argsList, autoCommit, collector, handler);
   }
 }

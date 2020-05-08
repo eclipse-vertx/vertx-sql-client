@@ -18,21 +18,23 @@ package io.vertx.db2client.impl;
 import java.util.Collections;
 import java.util.Map;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Closeable;
+import io.vertx.core.Context;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
-import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.ConnectionFactory;
 
-public class DB2ConnectionFactory implements ConnectionFactory {
+public class DB2ConnectionFactory {
     private final NetClient netClient;
-    private final ContextInternal context;
+    private final Context context;
+    private final boolean registerCloseHook;
     private final String host;
     private final int port;
     private final String username;
@@ -43,11 +45,18 @@ public class DB2ConnectionFactory implements ConnectionFactory {
     private final int preparedStatementCacheSize;
     private final int preparedStatementCacheSqlLimit;
     private final int pipeliningLimit;
+    private final Closeable hook;
 
-    public DB2ConnectionFactory(Vertx vertx, ContextInternal context, DB2ConnectOptions options) {
+    public DB2ConnectionFactory(Context context, boolean registerCloseHook, DB2ConnectOptions options) {
         NetClientOptions netClientOptions = new NetClientOptions(options);
 
         this.context = context;
+        this.registerCloseHook = registerCloseHook;
+        this.hook = this::close;
+        if (registerCloseHook) {
+          context.addCloseHook(hook);
+        }
+        
         this.host = options.getHost();
         this.port = options.getPort();
         this.username = options.getUser();
@@ -60,31 +69,34 @@ public class DB2ConnectionFactory implements ConnectionFactory {
         this.preparedStatementCacheSqlLimit = options.getPreparedStatementCacheSqlLimit();
         this.pipeliningLimit = options.getPipeliningLimit();
 
-        this.netClient = vertx.createNetClient(netClientOptions);
+        this.netClient = context.owner().createNetClient(netClientOptions);
       }
 
-    void close() {
+    // Called by hook
+    private void close(Handler<AsyncResult<Void>> completionHandler) {
       netClient.close();
+      completionHandler.handle(Future.succeededFuture());
     }
 
-  @Override
-  public Future<Connection> connect() {
-    Promise<Connection> promise = context.promise();
-    context.dispatch(null, v -> doConnect(promise));
-    return promise.future();
-  }
-
-  public void doConnect(Promise<Connection> promise) {
-    Future<NetSocket> fut = netClient.connect(port, host);
-    fut.onComplete(ar -> {
-      if (ar.succeeded()) {
-        NetSocket so = ar.result();
-        DB2SocketConnection conn = new DB2SocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, pipeliningLimit, context);
-        conn.init();
-        conn.sendStartupMessage(username, password, database, connectionAttributes, promise);
-      } else {
-        promise.fail(ar.cause());
+    void close() {
+      if (registerCloseHook) {
+        context.removeCloseHook(hook);
       }
-    });
-  }
+      netClient.close();
+    }
+    
+    public void connect(Handler<AsyncResult<Connection>> handler) {
+        Promise<NetSocket> promise = Promise.promise();
+        promise.future().setHandler(ar1 -> {
+          if (ar1.succeeded()) {
+            NetSocketInternal socket = (NetSocketInternal) ar1.result();
+            DB2SocketConnection conn = new DB2SocketConnection(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, pipeliningLimit, context);
+            conn.init();
+            conn.sendStartupMessage(username, password, database, connectionAttributes, handler);
+          } else {
+            handler.handle(Future.failedFuture(ar1.cause()));
+          }
+        });
+        netClient.connect(port, host, promise);
+      }
 }

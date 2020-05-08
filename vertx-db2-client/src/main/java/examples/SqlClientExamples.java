@@ -234,116 +234,114 @@ public class SqlClientExamples {
   }
 
   public void transaction01(Pool pool) {
-    pool.getConnection(res -> {
-      if (res.succeeded()) {
+	    pool.getConnection(res -> {
+	      if (res.succeeded()) {
 
-        // Transaction must use a connection
-        SqlConnection conn = res.result();
+	        // Transaction must use a connection
+	        SqlConnection conn = res.result();
 
-        // Begin the transaction
-        conn.begin(ar0 -> {
-          if (ar0.succeeded()) {
-            Transaction tx = ar0.result();
-            // Various statements
-            conn
-              .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
-              .execute(ar1 -> {
-                if (ar1.succeeded()) {
-                  conn
-                    .query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')")
-                    .execute(ar2 -> {
-                      if (ar2.succeeded()) {
-                        // Commit the transaction
-                        tx.commit(ar3 -> {
-                          if (ar3.succeeded()) {
-                            System.out.println("Transaction succeeded");
-                          } else {
-                            System.out.println("Transaction failed " + ar3.cause().getMessage());
-                          }
-                          // Return the connection to the pool
-                          conn.close();
-                        });
-                      } else {
-                        // Return the connection to the pool
-                        conn.close();
-                      }
-                    });
-                } else {
-                  // Return the connection to the pool
-                  conn.close();
-                }
-              });
-          } else {
-            // Return the connection to the pool
-            conn.close();
-          }
-        });
-      }
-    });
-  }
+	        // Begin the transaction
+	        Transaction tx = conn.begin();
+
+	        // Various statements
+	        conn
+	          .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
+	          .execute(ar1 -> {
+	          if (ar1.succeeded()) {
+	            conn
+	              .query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')")
+	              .execute(ar2 -> {
+	              if (ar2.succeeded()) {
+	                // Commit the transaction
+	                tx.commit(ar3 -> {
+	                  if (ar3.succeeded()) {
+	                    System.out.println("Transaction succeeded");
+	                  } else {
+	                    System.out.println("Transaction failed " + ar3.cause().getMessage());
+	                  }
+	                  // Return the connection to the pool
+	                  conn.close();
+	                });
+	              } else {
+	                // Return the connection to the pool
+	                conn.close();
+	              }
+	            });
+	          } else {
+	            // Return the connection to the pool
+	            conn.close();
+	          }
+	        });
+	      }
+	    });
+	  }
 
   public void transaction02(Transaction tx) {
-    tx.completion().onFailure(err -> {
-      System.out.println("Transaction failed => rollbacked");
-    });
-  }
+	    tx.abortHandler(v -> {
+	      System.out.println("Transaction failed => rollbacked");
+	    });
+	  }
 
-  public void transaction03(Pool pool) {
+	  public void transaction03(Pool pool) {
 
-    // Acquire a transaction and begin the transaction
-    pool.withTransaction(client -> client
-      .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
-      .execute()
-      .flatMap(res -> client
-        .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
-        .execute()
-        // Map to a message result
-        .map("Users inserted"))
-    ).onComplete(ar -> {
-      // The connection was automatically return to the pool
-      if (ar.succeeded()) {
-        // Transaction was committed
-        String message = ar.result();
-        System.out.println("Transaction succeeded: " + message);
-      } else {
-        // Transaction was rolled back
-        System.out.println("Transaction failed " + ar.cause().getMessage());
-      }
-    });
-  }
+	    // Acquire a transaction and begin the transaction
+	    pool.begin(res -> {
+	      if (res.succeeded()) {
 
-  public void usingCursors01(SqlConnection connection) {
-    connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar0 -> {
-      if (ar0.succeeded()) {
-        PreparedStatement pq = ar0.result();
+	        // Get the transaction
+	        Transaction tx = res.result();
 
-        // Cursors require to run within a transaction
-        connection.begin(ar1 -> {
-          if (ar1.succeeded()) {
-            Transaction tx = ar1.result();
+	        // Various statements
+	        tx.query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
+	          .execute(ar1 -> {
+	          if (ar1.succeeded()) {
+	            tx.query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')")
+	              .execute(ar2 -> {
+	              if (ar2.succeeded()) {
+	                // Commit the transaction
+	                // the connection will automatically return to the pool
+	                tx.commit(ar3 -> {
+	                  if (ar3.succeeded()) {
+	                    System.out.println("Transaction succeeded");
+	                  } else {
+	                    System.out.println("Transaction failed " + ar3.cause().getMessage());
+	                  }
+	                });
+	              }
+	            });
+	          } else {
+	            // No need to close connection as transaction will abort and be returned to the pool
+	          }
+	        });
+	      }
+	    });
+	  }
 
-            // Create a cursor
-            Cursor cursor = pq.cursor(Tuple.of("julien"));
+	  public void usingCursors01(SqlConnection connection) {
+		    connection.prepare("SELECT * FROM users WHERE age > ?", ar1 -> {
+		      if (ar1.succeeded()) {
+		        PreparedStatement pq = ar1.result();
 
-            // Read 50 rows
-            cursor.read(50, ar2 -> {
-              if (ar2.succeeded()) {
-                RowSet<Row> rows = ar2.result();
+		        // Create a cursor
+		        Cursor cursor = pq.cursor(Tuple.of(18));
 
-                // Check for more ?
-                if (cursor.hasMore()) {
-                  // Repeat the process...
-                } else {
-                  // No more rows - commit the transaction
-                  tx.commit();
-                }
-              }
-            });
-          }
-        });
-      }
-    });
-  }
+		        // Read 50 rows
+		        cursor.read(50, ar2 -> {
+		          if (ar2.succeeded()) {
+		            RowSet<Row> rows = ar2.result();
+
+		            // Check for more ?
+		            if (cursor.hasMore()) {
+		              // Repeat the process...
+		            } else {
+		              // No more rows - close the cursor
+		              cursor.close();
+		            }
+		          }
+		        });
+		      }
+		    });
+		  }
 
   public void usingCursors02(Cursor cursor) {
     cursor.read(50, ar2 -> {
@@ -355,32 +353,24 @@ public class SqlClientExamples {
   }
 
   public void usingCursors03(SqlConnection connection) {
-    connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar0 -> {
-      if (ar0.succeeded()) {
-        PreparedStatement pq = ar0.result();
+	    connection.prepare("SELECT * FROM users WHERE age > ?", ar1 -> {
+	      if (ar1.succeeded()) {
+	        PreparedStatement pq = ar1.result();
 
-        // Streams require to run within a transaction
-        connection.begin(ar1 -> {
-          if (ar1.succeeded()) {
-            Transaction tx = ar1.result();
+	        // Fetch 50 rows at a time
+	        RowStream<Row> stream = pq.createStream(50, Tuple.of(18));
 
-            // Fetch 50 rows at a time
-            RowStream<Row> stream = pq.createStream(50, Tuple.of("julien"));
-
-            // Use the stream
-            stream.exceptionHandler(err -> {
-              System.out.println("Error: " + err.getMessage());
-            });
-            stream.endHandler(v -> {
-              tx.commit();
-              System.out.println("End of stream");
-            });
-            stream.handler(row -> {
-              System.out.println("User: " + row.getString("last_name"));
-            });
-          }
-        });
-      }
-    });
-  }
+	        // Use the stream
+	        stream.exceptionHandler(err -> {
+	          System.out.println("Error: " + err.getMessage());
+	        });
+	        stream.endHandler(v -> {
+	          System.out.println("End of stream");
+	        });
+	        stream.handler(row -> {
+	          System.out.println("User: " + row.getString("last_name"));
+	        });
+	      }
+	    });
+	  }
 }

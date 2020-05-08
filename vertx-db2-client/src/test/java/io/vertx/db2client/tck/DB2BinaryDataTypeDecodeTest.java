@@ -64,11 +64,11 @@ public class DB2BinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase {
     testDecodeGeneric(ctx, "test_float_8", Double.class, (double) 7.2E75);
   }
   
-  @Test
-  @Override
-  public void testSelectAll(TestContext ctx) {
-    assumeFalse(rule.isZOS());
-    super.testSelectAll(ctx);
-  }
+//  @Test
+//  @Override
+//  public void testSelectAll(TestContext ctx) {
+//    assumeFalse(rule.isZOS());
+//    super.testSelectAll(ctx);
+//  }
 
 }
