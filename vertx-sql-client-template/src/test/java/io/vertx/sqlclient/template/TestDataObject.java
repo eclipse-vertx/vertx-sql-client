@@ -4,7 +4,6 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.sqlclient.template.annotations.Column;
 import io.vertx.sqlclient.template.annotations.ParamsMapped;
 import io.vertx.sqlclient.template.annotations.RowMapped;
 import io.vertx.sqlclient.template.annotations.TemplateParam;
@@ -853,7 +852,6 @@ public class TestDataObject {
     addedBooleans.add(value);
   }
 
-  @Column
   public List<Boolean> getAddedBooleans() {
     return addedBooleans;
   }
@@ -862,7 +860,6 @@ public class TestDataObject {
     addedShorts.add(value);
   }
 
-  @Column
   public List<Short> getAddedShorts() {
     return addedShorts;
   }
@@ -871,7 +868,6 @@ public class TestDataObject {
     addedIntegers.add(value);
   }
 
-  @Column
   public List<Integer> getAddedIntegers() {
     return addedIntegers;
   }
@@ -880,7 +876,6 @@ public class TestDataObject {
     addedLongs.add(value);
   }
 
-  @Column
   public List<Long> getAddedLongs() {
     return addedLongs;
   }
@@ -889,7 +884,6 @@ public class TestDataObject {
     addedFloats.add(value);
   }
 
-  @Column
   public List<Float> getAddedFloats() {
     return addedFloats;
   }
@@ -898,7 +892,6 @@ public class TestDataObject {
     addedDoubles.add(value);
   }
 
-  @Column
   public List<Double> getAddedDoubles() {
     return addedDoubles;
   }
@@ -907,7 +900,6 @@ public class TestDataObject {
     addedStrings.add(value);
   }
 
-  @Column
   public List<String> getAddedStrings() {
     return addedStrings;
   }
@@ -916,7 +908,6 @@ public class TestDataObject {
     addedJsonObjects.add(value);
   }
 
-  @Column
   public List<JsonObject> getAddedJsonObjects() {
     return addedJsonObjects;
   }
@@ -925,7 +916,6 @@ public class TestDataObject {
     addedJsonArrays.add(value);
   }
 
-  @Column
   public List<JsonArray> getAddedJsonArrays() {
     return addedJsonArrays;
   }
@@ -934,7 +924,6 @@ public class TestDataObject {
     addedBuffers.add(value);
   }
 
-  @Column
   public List<Buffer> getAddedBuffers() {
     return addedBuffers;
   }
@@ -943,7 +932,6 @@ public class TestDataObject {
     addedUUIDs.add(value);
   }
 
-  @Column
   public List<UUID> getAddedUUIDs() {
     return addedUUIDs;
   }
@@ -952,7 +940,6 @@ public class TestDataObject {
     addedLocalDateTimes.add(value);
   }
 
-  @Column
   public List<LocalDateTime> getAddedLocalDateTimes() {
     return addedLocalDateTimes;
   }
@@ -961,7 +948,6 @@ public class TestDataObject {
     addedLocalDates.add(value);
   }
 
-  @Column
   public List<LocalDate> getAddedLocalDates() {
     return addedLocalDates;
   }
@@ -970,7 +956,6 @@ public class TestDataObject {
     addedLocalTimes.add(value);
   }
 
-  @Column
   public List<LocalTime> getAddedLocalTimes() {
     return addedLocalTimes;
   }
@@ -979,7 +964,6 @@ public class TestDataObject {
     addedOffsetTimes.add(value);
   }
 
-  @Column
   public List<OffsetTime> getAddedOffsetTimes() {
     return addedOffsetTimes;
   }
@@ -988,7 +972,6 @@ public class TestDataObject {
     addedOffsetDateTimes.add(value);
   }
 
-  @Column
   public List<OffsetDateTime> getAddedOffsetDateTimes() {
     return addedOffsetDateTimes;
   }
@@ -997,7 +980,6 @@ public class TestDataObject {
     addedTemporals.add(value);
   }
 
-  @Column
   public List<Temporal> getAddedTemporals() {
     return addedTemporals;
   }
@@ -1006,7 +988,6 @@ public class TestDataObject {
     addedJsonObjectDataObjects.add(value);
   }
 
-  @Column
   public List<JsonObjectDataObject> getAddedJsonObjectDataObjects() {
     return addedJsonObjectDataObjects;
   }
@@ -1015,7 +996,6 @@ public class TestDataObject {
     booleanAddedMethodMappedDataObjects.add(value);
   }
 
-  @Column
   public List<BooleanWrapper> getAddedBooleanMethodMappedDataObjects() {
     return booleanAddedMethodMappedDataObjects;
   }
@@ -1024,7 +1004,6 @@ public class TestDataObject {
     shortAddedMethodMappedDataObjects.add(value);
   }
 
-  @Column
   public List<ShortWrapper> getAddedShortMethodMappedDataObjects() {
     return shortAddedMethodMappedDataObjects;
   }
@@ -1033,7 +1012,6 @@ public class TestDataObject {
     integerAddedMethodMappedDataObjects.add(value);
   }
 
-  @Column
   public List<IntegerWrapper> getAddedIntegerMethodMappedDataObjects() {
     return integerAddedMethodMappedDataObjects;
   }
@@ -1042,7 +1020,6 @@ public class TestDataObject {
     longAddedMethodMappedDataObjects.add(value);
   }
 
-  @Column
   public List<LongWrapper> getAddedLongMethodMappedDataObjects() {
     return longAddedMethodMappedDataObjects;
   }
@@ -1051,7 +1028,6 @@ public class TestDataObject {
     floatAddedMethodMappedDataObjects.add(value);
   }
 
-  @Column
   public List<FloatWrapper> getAddedFloatMethodMappedDataObjects() {
     return floatAddedMethodMappedDataObjects;
   }
@@ -1060,7 +1036,6 @@ public class TestDataObject {
     doubleAddedMethodMappedDataObjects.add(value);
   }
 
-  @Column
   public List<DoubleWrapper> getAddedDoubleMethodMappedDataObjects() {
     return doubleAddedMethodMappedDataObjects;
   }
@@ -1069,7 +1044,6 @@ public class TestDataObject {
     stringAddedMethodMappedDataObjects.add(value);
   }
 
-  @Column
   public List<StringWrapper> getAddedStringMethodMappedDataObjects() {
     return stringAddedMethodMappedDataObjects;
   }
@@ -1078,7 +1052,6 @@ public class TestDataObject {
     jsonObjectAddedMethodMappedDataObjects.add(value);
   }
 
-  @Column
   public List<JsonObjectWrapper> getAddedJsonObjectMethodMappedDataObjects() {
     return jsonObjectAddedMethodMappedDataObjects;
   }
@@ -1087,7 +1060,6 @@ public class TestDataObject {
     jsonArrayAddedMethodMappedDataObjects.add(value);
   }
 
-  @Column
   public List<JsonArrayWrapper> getAddedJsonArrayMethodMappedDataObjects() {
     return jsonArrayAddedMethodMappedDataObjects;
   }
