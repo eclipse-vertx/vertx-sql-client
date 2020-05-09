@@ -28,6 +28,12 @@ public class MSSQLConnectionImpl extends SqlConnectionImpl<MSSQLConnectionImpl> 
     this.factory = factory;
   }
 
+  @Override
+  public int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current) {
+    queryBuilder.append('@').append(1 + index);
+    return index;
+  }
+
   public static Future<MSSQLConnection> connect(Vertx vertx, MSSQLConnectOptions options) {
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
     PromiseInternal<MSSQLConnection> promise = ctx.promise();
