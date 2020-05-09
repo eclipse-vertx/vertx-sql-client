@@ -1388,20 +1388,10 @@ public interface Tuple {
       throw new IllegalArgumentException("Accessor type can not be null");
     }
     Object value = getValue(pos);
-    if (value.getClass() == type) {
+    if (value != null && type.isAssignableFrom(value.getClass())) {
       return type.cast(value);
-    } else {
-      try {
-        if (value instanceof Buffer) {
-          return type.cast(value);
-        } else if (value instanceof Temporal) {
-          return type.cast(value);
-        }
-      } catch (ClassCastException e) {
-        throw new IllegalArgumentException("mismatched type [" + type.getName() + "] for the value of type [" + value.getClass().getName() + "]");
-      }
-      throw new IllegalArgumentException("mismatched type [" + type.getName() + "] for the value of type [" + value.getClass().getName() + "]");
     }
+    return null;
   }
 
   @GenIgnore
@@ -1410,11 +1400,10 @@ public interface Tuple {
       throw new IllegalArgumentException("Accessor type can not be null");
     }
     Object value = getValue(pos);
-    if (value.getClass().isArray() && value.getClass().getComponentType() == type) {
+    if (value != null && value.getClass().isArray() && type.isAssignableFrom(value.getClass().getComponentType())) {
       return (T[]) value;
-    } else {
-      throw new IllegalArgumentException("mismatched array element type [" + type.getName() + "] for the value of type [" + value.getClass().getName() + "]");
     }
+    return null;
   }
 
   @GenIgnore
@@ -1428,7 +1417,7 @@ public interface Tuple {
   int size();
 
   void clear();
-  
+
   /**
    * @return A String containing the {@link Object#toString} value of each element,
    * separated by a comma (,) character
