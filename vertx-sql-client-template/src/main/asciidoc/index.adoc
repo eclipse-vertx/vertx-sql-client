@@ -1,7 +1,7 @@
 = Client SQL templates
 :toc:
 
-SQL client templates is a small library design to facilitate the execution of SQL queries.
+SQL client templates is a small library designed to facilitate the execution of SQL queries.
 
 == Usage
 
@@ -233,7 +233,7 @@ annotationProcessor "io.vertx:vertx-codegen:${maven.version}:processor"
 compile "io.vertx:vertx-sql-client-template:${maven.version}"
 ----
 
-IDE usually provide usually support for annotation processors.
+IDEs usually provide usually support for annotation processors.
 
 The codegen `processor` classifier adds to the jar the automatic configuration of the service proxy annotation processor
 via the `META-INF/services` plugin mechanism.

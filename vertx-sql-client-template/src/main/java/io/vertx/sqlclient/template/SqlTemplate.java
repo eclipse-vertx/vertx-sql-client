@@ -18,7 +18,7 @@ import java.util.function.Function;
 import java.util.stream.Collector;
 
 /**
- * A SQL template.
+ * An SQL template.
  *
  * <p>SQL templates are useful for interacting with a relational database.
  *
@@ -33,7 +33,7 @@ import java.util.stream.Collector;
 public interface SqlTemplate<I, R> {
 
   /**
-   * Create a SQL template for query purpose consuming map parameters and returning {@link Row}.
+   * Create an SQL template for query purpose consuming map parameters and returning {@link Row}.
    *
    * @param client the wrapped SQL client
    * @param template the template query string
@@ -45,7 +45,7 @@ public interface SqlTemplate<I, R> {
   }
 
   /**
-   * Create a SQL template for query purpose consuming map parameters and returning void.
+   * Create an SQL template for query purpose consuming map parameters and returning void.
    *
    * @param client the wrapped SQL client
    * @param template the template update string

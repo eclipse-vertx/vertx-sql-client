@@ -30,11 +30,12 @@ public class SqlTemplateImpl<T, R> implements SqlTemplate<T, R> {
 
   public SqlTemplateImpl(SqlClient client,
                          io.vertx.sqlclient.template.impl.SqlTemplate sqlTemplate,
-                         Function<PreparedQuery<RowSet<Row>>, PreparedQuery<R>> foobar,
+                         Function<PreparedQuery<RowSet<Row>>,
+                         PreparedQuery<R>> queryMapper,
                          Function<T, Map<String, Object>> paramsMapper) {
     this.client = client;
     this.sqlTemplate = sqlTemplate;
-    this.queryMapper = foobar;
+    this.queryMapper = queryMapper;
     this.paramsMapper = paramsMapper;
   }
 
