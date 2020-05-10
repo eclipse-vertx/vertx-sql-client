@@ -18,16 +18,13 @@
 package io.vertx.sqlclient.template;
 
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.pgclient.PgPool;
-import io.vertx.sqlclient.PoolOptions;
+import io.vertx.pgclient.data.Path;
+import io.vertx.pgclient.data.Point;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlResult;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
@@ -36,31 +33,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class PgClientTest extends TemplateTestBase {
-
-  protected Vertx vertx;
-  protected PgPool pool;
-
-  @Before
-  public void setup() throws Exception {
-    vertx = Vertx.vertx();
-    pool = PgPool.pool(vertx, connectOptions(), new PoolOptions());
-  }
-
-  @After
-  public void teardown(TestContext ctx) {
-    pool.close();
-    vertx.close(ctx.asyncAssertSuccess());
-  }
+public class PgClientTest extends PgTemplateTestBase {
 
   @Test
   public void testQuery(TestContext ctx) {
     SqlTemplate<Map<String, Object>, RowSet<Row>> template = SqlTemplate
-      .forQuery(pool, "SELECT ${id} :: INT4 \"id\", ${randomnumber} :: INT4 \"randomnumber\"");
+      .forQuery(connection, "SELECT ${id} :: INT4 \"id\", ${randomnumber} :: INT4 \"randomnumber\"");
     Map<String, Object> params = new HashMap<>();
     params.put("id", 1);
     params.put("randomnumber", 10);
@@ -75,7 +58,7 @@ public class PgClientTest extends TemplateTestBase {
   @Test
   public void testBatch(TestContext ctx) {
     SqlTemplate<Map<String, Object>, RowSet<Row>> template = SqlTemplate
-      .forQuery(pool, "SELECT ${id} :: INT4 \"id\", ${randomnumber} :: INT4 \"randomnumber\"");
+      .forQuery(connection, "SELECT ${id} :: INT4 \"id\", ${randomnumber} :: INT4 \"randomnumber\"");
     Map<String, Object> params1 = new HashMap<>();
     params1.put("id", 1);
     params1.put("randomnumber", 10);
@@ -102,7 +85,7 @@ public class PgClientTest extends TemplateTestBase {
     w.id = 1;
     w.randomnumber = 10;
     SqlTemplate<World, RowSet<World>> template = SqlTemplate
-     .<World>forQuery(pool, "SELECT ${id} :: INT4 \"id\", ${randomnumber} :: INT4 \"randomnumber\"")
+     .<World>forQuery(connection, "SELECT ${id} :: INT4 \"id\", ${randomnumber} :: INT4 \"randomnumber\"")
       .mapFrom(World.class)
      .mapTo(World.class);
    template.execute(w, ctx.asyncAssertSuccess(res -> {
@@ -117,7 +100,7 @@ public class PgClientTest extends TemplateTestBase {
   public void testLocalDateTimeWithJackson(TestContext ctx) {
     DatabindCodec.mapper().registerModule(new JavaTimeModule());
     SqlTemplate<Map<String, Object>, RowSet<LocalDateTimePojo>> template = SqlTemplate
-      .forQuery(pool, "SELECT ${value} :: TIMESTAMP WITHOUT TIME ZONE \"localDateTime\"")
+      .forQuery(connection, "SELECT ${value} :: TIMESTAMP WITHOUT TIME ZONE \"localDateTime\"")
       .mapTo(LocalDateTimePojo.class);
     LocalDateTime ldt = LocalDateTime.parse("2017-05-14T19:35:58.237666");
     template.execute(Collections.singletonMap("value", ldt), ctx.asyncAssertSuccess(result -> {
@@ -129,7 +112,7 @@ public class PgClientTest extends TemplateTestBase {
   @Test
   public void testLocalDateTimeWithCodegen(TestContext ctx) {
     SqlTemplate<Map<String, Object>, RowSet<LocalDateTimeDataObject>> template = SqlTemplate
-      .forQuery(pool, "SELECT ${value} :: TIMESTAMP WITHOUT TIME ZONE \"localDateTime\"")
+      .forQuery(connection, "SELECT ${value} :: TIMESTAMP WITHOUT TIME ZONE \"localDateTime\"")
       .mapTo(LocalDateTimeDataObjectRowMapper.INSTANCE);
     LocalDateTime ldt = LocalDateTime.parse("2017-05-14T19:35:58.237666");
     template.execute(Collections.singletonMap("value", ldt), ctx.asyncAssertSuccess(result -> {
@@ -141,7 +124,7 @@ public class PgClientTest extends TemplateTestBase {
   @Test
   public void testLocalDateTimeWithCodegenCollector(TestContext ctx) {
     SqlTemplate<Map<String, Object>, SqlResult<List<LocalDateTimeDataObject>>> template = SqlTemplate
-      .forQuery(pool, "SELECT ${value} :: TIMESTAMP WITHOUT TIME ZONE \"localDateTime\"")
+      .forQuery(connection, "SELECT ${value} :: TIMESTAMP WITHOUT TIME ZONE \"localDateTime\"")
       .collecting(LocalDateTimeDataObjectRowMapper.COLLECTOR);
     LocalDateTime ldt = LocalDateTime.parse("2017-05-14T19:35:58.237666");
     template.execute(Collections.singletonMap("value", ldt), ctx.asyncAssertSuccess(result -> {
@@ -150,22 +133,24 @@ public class PgClientTest extends TemplateTestBase {
     }));
   }
 
-  /*
   @Test
-  public void testBatchUpdate(TestContext ctx) {
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      BatchTemplate<World> template = BatchTemplate.create(conn, World.class, "INSERT INTO World (id, randomnumber) VALUES (:id, :randomnumber)");
-      template.batch(Arrays.asList(
-        new World(20_000, 0),
-        new World(20_001, 1),
-        new World(20_002, 2),
-        new World(20_003, 3)
-      ), ctx.asyncAssertSuccess(v -> {
-        conn.query("SELECT id, randomnumber from WORLD WHERE id=20000", ctx.asyncAssertSuccess(rowset -> {
-          ctx.assertEquals(1, rowset.size());
-          ctx.assertEquals(0, rowset.iterator().next().getInteger(1));
-        }));
-      }));
-    }));
-  }*/
+  public void testDataTypes(TestContext ctx) {
+    Point point = new Point().setX(4).setY(7);
+    Path path = new Path().addPoint(point);
+    testGet(ctx, "POINT", point, PostgreSQLDataObject::getPoint, "point");
+    testGet(ctx, "PATH", path, PostgreSQLDataObject::getPath, "path");
+  }
+
+  private <V> void testGet(TestContext ctx, String sqlType, V value, Function<PostgreSQLDataObject, V> extractor, String column) {
+    super.testGet(
+      ctx,
+      sqlType,
+      PostgreSQLDataObjectRowMapper.INSTANCE,
+      Function.identity(),
+      "value",
+      Collections.singletonMap("value", value),
+      value,
+      extractor,
+      column);
+  }
 }

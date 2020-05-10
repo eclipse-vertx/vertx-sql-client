@@ -17,14 +17,11 @@
 
 package io.vertx.sqlclient.template;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.pgclient.PgConnectOptions;
-import io.vertx.pgclient.PgConnection;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.template.wrappers.BooleanWrapper;
 import io.vertx.sqlclient.template.wrappers.DoubleWrapper;
@@ -35,8 +32,6 @@ import io.vertx.sqlclient.template.wrappers.JsonObjectWrapper;
 import io.vertx.sqlclient.template.wrappers.LongWrapper;
 import io.vertx.sqlclient.template.wrappers.ShortWrapper;
 import io.vertx.sqlclient.template.wrappers.StringWrapper;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.time.LocalDate;
@@ -56,7 +51,7 @@ import java.util.function.Function;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class DataObjectTypesTest extends TemplateTestBase {
+public class DataObjectTypesTest extends PgTemplateTestBase {
 
   private final LocalTime localTime = LocalTime.parse("19:35:58.237666");
   private final OffsetTime offsetTime = OffsetTime.of(localTime, ZoneOffset.UTC);
@@ -68,28 +63,6 @@ public class DataObjectTypesTest extends TemplateTestBase {
   private final Buffer buffer = Buffer.buffer(string);
   private final JsonObject jsonObject = new JsonObject().put("string", "str-value").put("number", 1234);
   private final JsonArray jsonArray = new JsonArray().add(1).add(2).add(3);
-  protected Vertx vertx;
-  protected PgConnection connection;
-
-  @Before
-  public void setup(TestContext ctx) {
-    PgConnectOptions options = connectOptions();
-    vertx = Vertx.vertx();
-    Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      connection = conn;
-      async.complete();
-    }));
-    async.await(10000);
-  }
-
-  @After
-  public void teardown(TestContext ctx) {
-    if (connection != null) {
-      connection.close();
-    }
-    vertx.close(ctx.asyncAssertSuccess());
-  }
 
   @Test
   public void testBoolean(TestContext ctx) {
@@ -381,16 +354,16 @@ public class DataObjectTypesTest extends TemplateTestBase {
     testGet(ctx, "JSON[]", new Object[] {jsonArray}, Collections.singletonList(new JsonArrayWrapper(jsonArray)), "addedJsonArrayMethodMappedDataObjects", TestDataObject::getAddedJsonArrayMethodMappedDataObjects);
   }
 
-  private <I, O> void testGet(TestContext ctx, String sqlType, I value, O expected, String column, Function<TestDataObject, O> getter) {
-    Async async = ctx.async();
-    SqlTemplate<Map<String, Object>, RowSet<TestDataObject>> template = SqlTemplate
-      .forQuery(connection, "SELECT ${value} :: " + sqlType + " \"" + column + "\"")
-      .mapTo(TestDataObjectRowMapper.INSTANCE);
-    template.execute(Collections.singletonMap("value", value), ctx.asyncAssertSuccess(result -> {
-      ctx.assertEquals(1, result.size());
-      ctx.assertEquals(expected, getter.apply(result.iterator().next()));
-      async.complete();
-    }));
-    async.await(10000);
+  private <P, V> void testGet(TestContext ctx, String sqlType, P param, V value, String column, Function<TestDataObject, V> getter) {
+    super.testGet(
+      ctx,
+      sqlType,
+      TestDataObjectRowMapper.INSTANCE,
+      Function.identity(),
+      "value",
+      Collections.singletonMap("value", param),
+      value,
+      getter,
+      column);
   }
 }

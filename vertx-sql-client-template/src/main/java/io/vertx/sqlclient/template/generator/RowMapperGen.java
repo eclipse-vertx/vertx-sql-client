@@ -168,16 +168,16 @@ public class RowMapperGen extends MapperGenBase {
   }
 
   private static Function<String, String> getter_(TypeInfo type, boolean isArray) {
-    if (type.getKind() == ClassKind.ENUM) {
+    String getter = getter(type);
+    if (getter != null) {
+      return col -> "row." + getter + (isArray ? "Array" : "") + "(\"" + col + "\")";
+    }
+    if (type.getKind() == ClassKind.ENUM || type instanceof ClassTypeInfo) {
       if (isArray) {
         return col -> "row.get(" + type.getName() + "[].class, \"" + col + "\")";
       } else {
         return col -> "row.get(" + type.getName() + ".class, \"" + col + "\")";
       }
-    }
-    String getter = getter(type);
-    if (getter != null) {
-      return col -> "row." + getter + (isArray ? "Array" : "") + "(\"" + col + "\")";
     }
     return null;
   }
@@ -197,6 +197,10 @@ public class RowMapperGen extends MapperGenBase {
         return "getJsonArray";
     }
     if (type instanceof ClassTypeInfo) {
+      DataObjectInfo dataObject = type.getDataObject();
+      if (dataObject != null) {
+        return getter(dataObject.getJsonType());
+      }
       ClassTypeInfo ct = (ClassTypeInfo) type;
       switch (ct.getName()) {
         case "java.time.LocalDateTime":
@@ -215,10 +219,6 @@ public class RowMapperGen extends MapperGenBase {
           return "getUUID";
         case "io.vertx.core.buffer.Buffer":
           return "getBuffer";
-      }
-      DataObjectInfo dataObject = type.getDataObject();
-      if (dataObject != null) {
-        return getter(dataObject.getJsonType());
       }
     }
     return null;

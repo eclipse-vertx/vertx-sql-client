@@ -17,17 +17,11 @@
 
 package io.vertx.sqlclient.template;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.pgclient.PgConnection;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.time.LocalDate;
@@ -36,17 +30,14 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-
-import static org.junit.Assert.assertEquals;
+import java.util.function.Function;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class DataObjectParamsTest extends TemplateTestBase {
+public class DataObjectParamsTest extends PgTemplateTestBase {
 
   private final LocalTime localTime = LocalTime.parse("19:35:58.237666");
   private final OffsetTime offsetTime = OffsetTime.of(localTime, ZoneOffset.UTC);
@@ -58,60 +49,31 @@ public class DataObjectParamsTest extends TemplateTestBase {
   private final Buffer buffer = Buffer.buffer(string);
   private final JsonObject jsonObject = new JsonObject().put("string", "str-value").put("number", 1234);
   private final JsonArray jsonArray = new JsonArray().add(1).add(2).add(3);
-  protected Vertx vertx;
-  protected PgConnection connection;
-
-  @Before
-  public void setup(TestContext ctx) throws Exception {
-    vertx = Vertx.vertx();
-    Async async = ctx.async();
-    PgConnection.connect(vertx, connectOptions(), ctx.asyncAssertSuccess(conn -> {
-      connection = conn;
-      async.complete();
-    }));
-    async.await(10000);
-  }
-
-  @After
-  public void teardown(TestContext ctx) {
-    if (connection != null) {
-      connection.close();
-    }
-    vertx.close(ctx.asyncAssertSuccess());
-  }
 
   @Test
   public void testString(TestContext ctx) {
     TestDataObject obj = new TestDataObject();
     obj.setString("the_string");;
-    testGet(ctx, "VARCHAR", "the_string", obj, row -> {
-      assertEquals("the_string", row.getValue("value"));
-    });
+    testGet(ctx, "VARCHAR", "the_string", obj, "the_string");
   }
 
   @Test
   public void testEnum(TestContext ctx) {
     TestDataObject obj = new TestDataObject();
     obj.setTimeUnit(TimeUnit.MICROSECONDS);;
-    testGet(ctx, "VARCHAR", "timeUnit", obj, row -> {
-      assertEquals("MICROSECONDS", row.getValue("value"));
-    });
+    testGet(ctx, "VARCHAR", "timeUnit", obj, "MICROSECONDS");
   }
 
-  private void testGet(TestContext ctx, String sqlType, String paramName, TestDataObject obj, Consumer<Row> checker) {
-    Async async = ctx.async();
-    SqlTemplate<Map<String, Object>, RowSet<Row>> template = SqlTemplate.forQuery(connection, "SELECT ${" + paramName + "} :: " + sqlType + " \"value\"");
-    template.execute(TestDataObjectParamMapper.INSTANCE.apply(obj), ctx.asyncAssertSuccess(result -> {
-      ctx.assertEquals(1, result.size());
-      Row row = result.iterator().next();
-      try {
-        checker.accept(row);
-      } catch (Throwable t) {
-        ctx.fail(t);
-        return;
-      }
-      async.complete();
-    }));
-    async.await(10000);
+  private void testGet(TestContext ctx, String sqlType, String paramName, TestDataObject obj, Object expected) {
+    super.<TestDataObject, Row, Object>testGet(
+      ctx,
+      sqlType,
+      Function.identity(),
+      TestDataObjectParamMapper.INSTANCE,
+      paramName,
+      obj,
+      expected,
+      row -> row.getValue("value"),
+      "value");
   }
 }
