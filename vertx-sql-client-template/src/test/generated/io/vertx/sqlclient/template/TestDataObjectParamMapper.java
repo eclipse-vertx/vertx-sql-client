@@ -36,6 +36,7 @@ public class TestDataObjectParamMapper implements java.util.function.Function<Te
     params.put("addedStringMethodMappedDataObjects", obj.getAddedStringMethodMappedDataObjects());
     params.put("addedStrings", obj.getAddedStrings());
     params.put("addedTemporals", obj.getAddedTemporals());
+    params.put("addedTimeUnits", obj.getAddedTimeUnits());
     params.put("addedUUIDs", obj.getAddedUUIDs());
     params.put("booleanList", obj.getBooleanList());
     params.put("booleanMethodMappedDataObject", obj.getBooleanMethodMappedDataObject());
@@ -121,6 +122,9 @@ public class TestDataObjectParamMapper implements java.util.function.Function<Te
     params.put("temporal", obj.getTemporal());
     params.put("temporalList", obj.getTemporalList());
     params.put("temporalSet", obj.getTemporalSet());
+    params.put("timeUnit", obj.getTimeUnit());
+    params.put("timeUnitList", obj.getTimeUnitList());
+    params.put("timeUnitSet", obj.getTimeUnitSet());
     params.put("uuid", obj.getUUID());
     params.put("uuidList", obj.getUUIDList());
     params.put("uuidSet", obj.getUUIDSet());

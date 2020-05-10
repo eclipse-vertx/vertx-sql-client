@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 /**
@@ -180,6 +181,14 @@ public class DataObjectTypesTest extends TemplateTestBase {
     testGet(ctx, "VARCHAR[]", new String[]{string}, Collections.singletonList(string), "stringList", TestDataObject::getStringList);
     testGet(ctx, "VARCHAR[]", new String[]{string}, Collections.singleton(string), "stringSet", TestDataObject::getStringSet);
     testGet(ctx, "VARCHAR[]", new String[]{string}, Collections.singletonList(string), "addedStrings", TestDataObject::getAddedStrings);
+  }
+
+  @Test
+  public void testEnum(TestContext ctx) {
+    testGet(ctx, "VARCHAR", TimeUnit.MILLISECONDS.name(), TimeUnit.MILLISECONDS, "timeUnit", TestDataObject::getTimeUnit);
+    testGet(ctx, "VARCHAR[]", new String[]{TimeUnit.MILLISECONDS.name()}, Collections.singletonList(TimeUnit.MILLISECONDS), "timeUnitList", TestDataObject::getTimeUnitList);
+    testGet(ctx, "VARCHAR[]", new String[]{TimeUnit.MILLISECONDS.name()}, Collections.singleton(TimeUnit.MILLISECONDS), "timeUnitSet", TestDataObject::getTimeUnitSet);
+    testGet(ctx, "VARCHAR[]", new String[]{TimeUnit.MILLISECONDS.name()}, Collections.singletonList(TimeUnit.MILLISECONDS), "addedTimeUnits", TestDataObject::getAddedTimeUnits);
   }
 
   @Test

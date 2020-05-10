@@ -349,6 +349,18 @@ public class TestDataObjectRowMapper implements java.util.function.Function<io.v
     if (val != null) {
       obj.setTemporalSet(java.util.Arrays.stream((java.time.temporal.Temporal[])val).map(elt -> elt).collect(java.util.stream.Collectors.toCollection(java.util.HashSet::new)));
     }
+    val = row.get(java.util.concurrent.TimeUnit.class, "timeUnit");
+    if (val != null) {
+      obj.setTimeUnit((java.util.concurrent.TimeUnit)val);
+    }
+    val = row.get(java.util.concurrent.TimeUnit[].class, "timeUnitList");
+    if (val != null) {
+      obj.setTimeUnitList(java.util.Arrays.stream((java.util.concurrent.TimeUnit[])val).map(elt -> elt).collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new)));
+    }
+    val = row.get(java.util.concurrent.TimeUnit[].class, "timeUnitSet");
+    if (val != null) {
+      obj.setTimeUnitSet(java.util.Arrays.stream((java.util.concurrent.TimeUnit[])val).map(elt -> elt).collect(java.util.stream.Collectors.toCollection(java.util.HashSet::new)));
+    }
     val = row.getUUID("uuid");
     if (val != null) {
       obj.setUUID((java.util.UUID)val);
@@ -515,6 +527,12 @@ public class TestDataObjectRowMapper implements java.util.function.Function<io.v
     if (val != null) {
       for (java.time.temporal.Temporal elt : (java.time.temporal.Temporal[])val) {
         obj.addAddedTemporal(elt);
+      }
+    }
+    val = row.get(java.util.concurrent.TimeUnit[].class, "addedTimeUnits");
+    if (val != null) {
+      for (java.util.concurrent.TimeUnit elt : (java.util.concurrent.TimeUnit[])val) {
+        obj.addAddedTimeUnit(elt);
       }
     }
     val = row.getUUIDArray("addedUUIDs");

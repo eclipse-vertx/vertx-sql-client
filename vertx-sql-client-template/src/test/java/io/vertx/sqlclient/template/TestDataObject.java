@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @DataObject
 @RowMapped
@@ -67,6 +68,7 @@ public class TestDataObject {
   private StringWrapper stringMethodMappedDataObject;
   private JsonObjectWrapper jsonObjectMethodMappedDataObject;
   private JsonArrayWrapper jsonArrayMethodMappedDataObject;
+  private TimeUnit timeUnit;
 
   private List<Boolean> booleanList;
   private List<Short> shortList;
@@ -95,6 +97,7 @@ public class TestDataObject {
   private List<StringWrapper> stringMethodMappedDataObjectList;
   private List<JsonObjectWrapper> jsonObjectMethodMappedDataObjectList;
   private List<JsonArrayWrapper> jsonArrayMethodMappedDataObjectList;
+  private List<TimeUnit> timeUnitList;
 
   private Set<Boolean> booleanSet;
   private Set<Short> shortSet;
@@ -123,6 +126,7 @@ public class TestDataObject {
   private Set<StringWrapper> stringMethodMappedDataObjectSet;
   private Set<JsonObjectWrapper> jsonObjectMethodMappedDataObjectSet;
   private Set<JsonArrayWrapper> jsonArrayMethodMappedDataObjectSet;
+  private Set<TimeUnit> timeUnitSet;
 
   private List<Boolean> addedBooleans = new ArrayList<>();
   private List<Short> addedShorts = new ArrayList<>();
@@ -151,6 +155,7 @@ public class TestDataObject {
   private List<StringWrapper> stringAddedMethodMappedDataObjects = new ArrayList<>();
   private List<JsonObjectWrapper> jsonObjectAddedMethodMappedDataObjects = new ArrayList<>();
   private List<JsonArrayWrapper> jsonArrayAddedMethodMappedDataObjects = new ArrayList<>();
+  private List<TimeUnit> addedTimeUnits = new ArrayList<>();
 
   public boolean isPrimitiveBoolean() {
     return primitiveBoolean;
@@ -416,6 +421,14 @@ public class TestDataObject {
     this.jsonArrayMethodMappedDataObject = jsonArrayMethodMappedDataObject;
   }
 
+  public TimeUnit getTimeUnit() {
+    return timeUnit;
+  }
+
+  public void setTimeUnit(TimeUnit timeUnit) {
+    this.timeUnit = timeUnit;
+  }
+
   public List<Boolean> getBooleanList() {
     return booleanList;
   }
@@ -630,6 +643,14 @@ public class TestDataObject {
 
   public void setJsonArrayMethodMappedDataObjectList(List<JsonArrayWrapper> jsonArrayMethodMappedDataObjectList) {
     this.jsonArrayMethodMappedDataObjectList = jsonArrayMethodMappedDataObjectList;
+  }
+
+  public List<TimeUnit> getTimeUnitList() {
+    return timeUnitList;
+  }
+
+  public void setTimeUnitList(List<TimeUnit> timeUnitList) {
+    this.timeUnitList = timeUnitList;
   }
 
   public Set<Boolean> getBooleanSet() {
@@ -848,6 +869,14 @@ public class TestDataObject {
     this.jsonArrayMethodMappedDataObjectSet = jsonArrayMethodMappedDataObjectSet;
   }
 
+  public Set<TimeUnit> getTimeUnitSet() {
+    return timeUnitSet;
+  }
+
+  public void setTimeUnitSet(Set<TimeUnit> timeUnitSet) {
+    this.timeUnitSet = timeUnitSet;
+  }
+
   public void addAddedBoolean(Boolean value) {
     addedBooleans.add(value);
   }
@@ -1062,5 +1091,13 @@ public class TestDataObject {
 
   public List<JsonArrayWrapper> getAddedJsonArrayMethodMappedDataObjects() {
     return jsonArrayAddedMethodMappedDataObjects;
+  }
+
+  public void addAddedTimeUnit(TimeUnit value) {
+    addedTimeUnits.add(value);
+  }
+
+  public List<TimeUnit> getAddedTimeUnits() {
+    return addedTimeUnits;
   }
 }

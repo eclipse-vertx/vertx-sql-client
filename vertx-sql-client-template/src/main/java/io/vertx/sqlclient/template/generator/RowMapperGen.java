@@ -5,11 +5,14 @@ import io.vertx.codegen.MapperKind;
 import io.vertx.codegen.PropertyInfo;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.type.AnnotationValueInfo;
+import io.vertx.codegen.type.ClassKind;
 import io.vertx.codegen.type.ClassTypeInfo;
 import io.vertx.codegen.type.DataObjectInfo;
+import io.vertx.codegen.type.EnumTypeInfo;
 import io.vertx.codegen.type.MapperInfo;
 import io.vertx.codegen.type.PrimitiveTypeInfo;
 import io.vertx.codegen.type.TypeInfo;
+import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.template.annotations.Column;
 import io.vertx.sqlclient.template.annotations.RowMapped;
 
@@ -18,6 +21,7 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -82,21 +86,21 @@ public class RowMapperGen extends MapperGenBase {
         String rowType = rowType(prop.getType());
         switch (prop.getKind()) {
           case VALUE: {
-            String meth = getter(prop.getType());
+            Function<String, String> meth = getter_(prop.getType(), false);
             if (meth != null) {
               bilto4(writer, meth, prop, wrapExpr(prop.getType(), "(" + rowType + ")val"));
             }
             break;
           }
           case LIST: {
-            String meth = getArrayType(prop.getType());
+            Function<String, String> meth = getter_(prop.getType(), true);
             if (meth != null) {
               bilto4(writer, meth, prop, "java.util.Arrays.stream((" + rowType + "[])val).map(elt -> " + wrapExpr(prop.getType(), "elt") + ").collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new))");
             }
             break;
           }
           case SET: {
-            String meth = getArrayType(prop.getType());
+            Function<String, String> meth = getter_(prop.getType(), true);
             if (meth != null) {
               bilto4(writer, meth, prop, "java.util.Arrays.stream((" + rowType + "[])val).map(elt -> " + wrapExpr(prop.getType(), "elt") + ").collect(java.util.stream.Collectors.toCollection(java.util.HashSet::new))");
             }
@@ -111,12 +115,12 @@ public class RowMapperGen extends MapperGenBase {
       .filter(prop -> PK.contains(prop.getKind()))
       .filter(prop -> prop.isAdder() && !prop.isSetter())
       .forEach(prop -> {
-        String meth = getArrayType(prop.getType());
-        String rowType = rowType(prop.getType());
+        Function<String, String> meth = getter_(prop.getType(), true);
         if (meth != null) {
           String columnName = getMappingName(prop, Column.class.getName());
           if (columnName != null) {
-            writer.print("    val = row." + meth + "(\"" + columnName + "\");\n");
+            String rowType = rowType(prop.getType());
+            writer.print("    val = " + meth.apply(columnName) + ";\n");
             writer.print("    if (val != null) {\n");
             writer.print("      for (" + rowType + " elt : (" + rowType + "[])val) {\n");
             writer.print("        obj." + prop.getAdderMethod() + "(" + wrapExpr(prop.getType(), "elt") + ");\n");
@@ -127,10 +131,10 @@ public class RowMapperGen extends MapperGenBase {
       });
   }
 
-  private void bilto4(PrintWriter writer, String meth, PropertyInfo prop, String converter) {
+  private void bilto4(PrintWriter writer, Function<String, String> getter, PropertyInfo prop, String converter) {
     String columnName = getMappingName(prop, Column.class.getName());
     if (columnName != null) {
-      writer.print("    val = row." + meth + "(\"" + columnName + "\");\n");
+      writer.print("    val = " + getter.apply(columnName) + ";\n");
       writer.print("    if (val != null) {\n");
       writer.print("      obj." + prop.getSetterMethod() + "(" + converter +  ");\n");
       writer.print("    }\n");
@@ -161,6 +165,21 @@ public class RowMapperGen extends MapperGenBase {
       return rowType(dataObject.getJsonType());
     }
     return type.getName();
+  }
+
+  private static Function<String, String> getter_(TypeInfo type, boolean isArray) {
+    if (type.getKind() == ClassKind.ENUM) {
+      if (isArray) {
+        return col -> "row.get(" + type.getName() + "[].class, \"" + col + "\")";
+      } else {
+        return col -> "row.get(" + type.getName() + ".class, \"" + col + "\")";
+      }
+    }
+    String getter = getter(type);
+    if (getter != null) {
+      return col -> "row." + getter + (isArray ? "Array" : "") + "(\"" + col + "\")";
+    }
+    return null;
   }
 
   private static String getter(TypeInfo type) {
@@ -203,13 +222,5 @@ public class RowMapperGen extends MapperGenBase {
       }
     }
     return null;
-  }
-
-  private static String getArrayType(TypeInfo type) {
-    String s = getter(type);
-    if (s != null) {
-      s += "Array";
-    }
-    return s;
   }
 }

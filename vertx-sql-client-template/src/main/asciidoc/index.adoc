@@ -311,6 +311,12 @@ The generated mapper can be used to perform param mapping like explained in <<pa
 {@link examples.TemplateExamples#bindingParamsWithParamsMapper}
 ----
 
+=== Java enum types mapping
+
+You can map Java enum types when the client supports it (e.g the Reactive PostgreSQL client).
+
+Usually Java enum types are mapped to string / numbers and possibly custom database enumerated types.
+
 === Naming format
 
 The default template use the same case for parameters and columns. You can override the default names in the `Column`

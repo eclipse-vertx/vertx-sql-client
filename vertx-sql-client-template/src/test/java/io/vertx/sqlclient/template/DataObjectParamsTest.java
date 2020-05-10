@@ -38,6 +38,7 @@ import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
@@ -85,6 +86,15 @@ public class DataObjectParamsTest extends TemplateTestBase {
     obj.setString("the_string");;
     testGet(ctx, "VARCHAR", "the_string", obj, row -> {
       assertEquals("the_string", row.getValue("value"));
+    });
+  }
+
+  @Test
+  public void testEnum(TestContext ctx) {
+    TestDataObject obj = new TestDataObject();
+    obj.setTimeUnit(TimeUnit.MICROSECONDS);;
+    testGet(ctx, "VARCHAR", "timeUnit", obj, row -> {
+      assertEquals("MICROSECONDS", row.getValue("value"));
     });
   }
 
