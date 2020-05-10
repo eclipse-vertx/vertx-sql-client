@@ -67,223 +67,219 @@ public class RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public <T> T get(Class<T> type, int pos) {
-    if (type == Boolean.class) {
-      return type.cast(getBoolean(pos));
-    } else if (type == Short.class) {
-      return type.cast(getShort(pos));
-    } else if (type == Integer.class) {
-      return type.cast(getInteger(pos));
-    } else if (type == Long.class) {
-      return type.cast(getLong(pos));
-    } else if (type == Float.class) {
-      return type.cast(getFloat(pos));
-    } else if (type == Double.class) {
-      return type.cast(getDouble(pos));
-    } else if (type == Character.class) {
-      return type.cast(getChar(pos));
-    } else if (type == Numeric.class) {
-      return type.cast(getNumeric(pos));
-    } else if (type == String.class) {
-      return type.cast(getString(pos));
-    } else if (type == Buffer.class) {
-      return type.cast(getBuffer(pos));
-    } else if (type == UUID.class) {
-      return type.cast(getUUID(pos));
-    } else if (type == LocalDate.class) {
-      return type.cast(getLocalDate(pos));
-    } else if (type == LocalTime.class) {
-      return type.cast(getLocalTime(pos));
-    } else if (type == OffsetTime.class) {
-      return type.cast(getOffsetTime(pos));
-    } else if (type == LocalDateTime.class) {
-      return type.cast(getLocalDateTime(pos));
-    } else if (type == OffsetDateTime.class) {
-      return type.cast(getOffsetDateTime(pos));
-    } else if (type == Interval.class) {
-      return type.cast(getInterval(pos));
-    } else if (type == Point.class) {
-      return type.cast(getPoint(pos));
-    } else if (type == Line.class) {
-      return type.cast(getLine(pos));
-    } else if (type == LineSegment.class) {
-      return type.cast(getLineSegment(pos));
-    } else if (type == Path.class) {
-      return type.cast(getPath(pos));
-    } else if (type == Polygon.class) {
-      return type.cast(getPolygon(pos));
-    } else if (type == Circle.class) {
-      return type.cast(getCircle(pos));
-    } else if (type == Box.class) {
-      return type.cast(getBox(pos));
-    } else if (type == JsonObject.class) {
-      return type.cast(getJson(pos));
-    } else if (type == JsonArray.class) {
-      return type.cast(getJson(pos));
-    } else if (type == Object.class) {
-      return type.cast(getValue(pos));
-    } else if (type.isEnum()) {
-      return type.cast(getEnum(type, pos));
+  public <T> T get(Class<T> type, int position) {
+    if (type.isArray()) {
+      Class<?> componentType = type.getComponentType();
+      if (componentType == Boolean.class) {
+        return type.cast(getBooleanArray(position));
+      } else if (componentType == Short.class) {
+        return type.cast(getShortArray(position));
+      } else if (componentType == Integer.class) {
+        return type.cast(getIntegerArray(position));
+      } else if (componentType == Long.class) {
+        return type.cast(getLongArray(position));
+      } else if (componentType == Float.class) {
+        return type.cast(getFloatArray(position));
+      } else if (componentType == Double.class) {
+        return type.cast(getDoubleArray(position));
+      } else if (componentType == String.class) {
+        return type.cast(getStringArray(position));
+      } else if (componentType == Buffer.class) {
+        return type.cast(getBufferArray(position));
+      } else if (componentType == UUID.class) {
+        return type.cast(getUUIDArray(position));
+      } else if (componentType == LocalDate.class) {
+        return type.cast(getLocalDateArray(position));
+      } else if (componentType == LocalTime.class) {
+        return type.cast(getLocalTimeArray(position));
+      } else if (componentType == OffsetTime.class) {
+        return type.cast(getOffsetTimeArray(position));
+      } else if (componentType == LocalDateTime.class) {
+        return type.cast(getLocalDateTimeArray(position));
+      } else if (componentType == OffsetDateTime.class) {
+        return type.cast(getOffsetDateTimeArray(position));
+      } else if (componentType == Interval.class) {
+        return type.cast(getIntervalArray(position));
+      } else if (componentType == Numeric.class) {
+        return type.cast(getNumericArray(position));
+      } else if (componentType == Point.class) {
+        return type.cast(getPointArray(position));
+      } else if (componentType == Line.class) {
+        return type.cast(getLineArray(position));
+      } else if (componentType == LineSegment.class) {
+        return type.cast(getLineSegmentArray(position));
+      } else if (componentType == Path.class) {
+        return type.cast(getPathArray(position));
+      } else if (componentType == Polygon.class) {
+        return type.cast(getPolygonArray(position));
+      } else if (componentType == Circle.class) {
+        return type.cast(getCircleArray(position));
+      } else if (componentType == Interval.class) {
+        return type.cast(getIntervalArray(position));
+      } else if (componentType == Box.class) {
+        return type.cast(getBoxArray(position));
+      } else if (componentType == Object.class) {
+        return type.cast(getJsonArray_(position));
+      } else if (componentType.isEnum()) {
+        return type.cast(getEnumArray(componentType, position));
+      }
+    } else {
+      if (type == Boolean.class) {
+        return type.cast(getBoolean(position));
+      } else if (type == Short.class) {
+        return type.cast(getShort(position));
+      } else if (type == Integer.class) {
+        return type.cast(getInteger(position));
+      } else if (type == Long.class) {
+        return type.cast(getLong(position));
+      } else if (type == Float.class) {
+        return type.cast(getFloat(position));
+      } else if (type == Double.class) {
+        return type.cast(getDouble(position));
+      } else if (type == Numeric.class) {
+        return type.cast(getNumeric(position));
+      } else if (type == String.class) {
+        return type.cast(getString(position));
+      } else if (type == Buffer.class) {
+        return type.cast(getBuffer(position));
+      } else if (type == UUID.class) {
+        return type.cast(getUUID(position));
+      } else if (type == LocalDate.class) {
+        return type.cast(getLocalDate(position));
+      } else if (type == LocalTime.class) {
+        return type.cast(getLocalTime(position));
+      } else if (type == OffsetTime.class) {
+        return type.cast(getOffsetTime(position));
+      } else if (type == LocalDateTime.class) {
+        return type.cast(getLocalDateTime(position));
+      } else if (type == OffsetDateTime.class) {
+        return type.cast(getOffsetDateTime(position));
+      } else if (type == Interval.class) {
+        return type.cast(getInterval(position));
+      } else if (type == Point.class) {
+        return type.cast(getPoint(position));
+      } else if (type == Line.class) {
+        return type.cast(getLine(position));
+      } else if (type == LineSegment.class) {
+        return type.cast(getLineSegment(position));
+      } else if (type == Path.class) {
+        return type.cast(getPath(position));
+      } else if (type == Polygon.class) {
+        return type.cast(getPolygon(position));
+      } else if (type == Circle.class) {
+        return type.cast(getCircle(position));
+      } else if (type == Box.class) {
+        return type.cast(getBox(position));
+      } else if (type == JsonObject.class) {
+        return type.cast(getJsonElement(position));
+      } else if (type == JsonArray.class) {
+        return type.cast(getJsonElement(position));
+      } else if (type == Object.class) {
+        return type.cast(getValue(position));
+      } else if (type.isEnum()) {
+        return type.cast(getEnum(type, position));
+      }
     }
     throw new UnsupportedOperationException("Unsupported type " + type.getName());
   }
 
-  @Override
-  public <T> T[] getValues(Class<T> type, int pos) {
-    if (type == Boolean.class) {
-      return (T[]) getBooleanArray(pos);
-    } else if (type == Short.class) {
-      return (T[]) getShortArray(pos);
-    } else if (type == Integer.class) {
-      return (T[]) getIntegerArray(pos);
-    } else if (type == Long.class) {
-      return (T[]) getLongArray(pos);
-    } else if (type == Float.class) {
-      return (T[]) getFloatArray(pos);
-    } else if (type == Double.class) {
-      return (T[]) getDoubleArray(pos);
-    } else if (type == Character.class) {
-      return (T[]) getCharArray(pos);
-    } else if (type == String.class) {
-      return (T[]) getStringArray(pos);
-    } else if (type == Buffer.class) {
-      return (T[]) getBufferArray(pos);
-    } else if (type == UUID.class) {
-      return (T[]) getUUIDArray(pos);
-    } else if (type == LocalDate.class) {
-      return (T[]) getLocalDateArray(pos);
-    } else if (type == LocalTime.class) {
-      return (T[]) getLocalTimeArray(pos);
-    } else if (type == OffsetTime.class) {
-      return (T[]) getOffsetTimeArray(pos);
-    } else if (type == LocalDateTime.class) {
-      return (T[]) getLocalDateTimeArray(pos);
-    } else if (type == OffsetDateTime.class) {
-      return (T[]) getOffsetDateTimeArray(pos);
-    } else if (type == Interval.class) {
-      return (T[]) getIntervalArray(pos);
-    } else if (type == Numeric.class) {
-      return (T[]) getNumericArray(pos);
-    } else if (type == Point.class) {
-      return (T[]) getPointArray(pos);
-    } else if (type == Line.class) {
-      return (T[]) getLineArray(pos);
-    } else if (type == LineSegment.class) {
-      return (T[]) getLineSegmentArray(pos);
-    } else if (type == Path.class) {
-      return (T[]) getPathArray(pos);
-    } else if (type == Polygon.class) {
-      return (T[]) getPolygonArray(pos);
-    } else if (type == Circle.class) {
-      return (T[]) getCircleArray(pos);
-    } else if (type == Interval.class) {
-      return (T[]) getIntervalArray(pos);
-    } else if (type == Box.class) {
-      return (T[]) getBoxArray(pos);
-    } else if (type == Object.class) {
-      return (T[]) getJsonArray_(pos);
-    } else if (type.isEnum()) {
-      return (T[]) getEnumArray(type, pos);
+  private Numeric getNumeric(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Numeric) {
+      return (Numeric) val;
+    } else if (val instanceof Number) {
+      return Numeric.parse(val.toString());
     }
-    throw new UnsupportedOperationException("Unsupported type " + type.getName());
+    return null;
   }
 
-  public Numeric getNumeric(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getNumeric(pos);
+  /**
+   * Get a {@link io.vertx.core.json.JsonObject} or {@link io.vertx.core.json.JsonArray} value.
+   */
+  private Object getJsonElement(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof JsonObject) {
+      return val;
+    } else if (val instanceof JsonArray) {
+      return val;
+    } else {
+      return null;
+    }
   }
 
-  public Point getPoint(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getPoint(pos);
+  private Point getPoint(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Point) {
+      return (Point) val;
+    } else {
+      return null;
+    }
   }
 
-  public Line getLine(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getLine(pos);
+  private Line getLine(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Line) {
+      return (Line) val;
+    } else {
+      return null;
+    }
   }
 
-  public LineSegment getLineSegment(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getLineSegment(pos);
+  private LineSegment getLineSegment(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof LineSegment) {
+      return (LineSegment) val;
+    } else {
+      return null;
+    }
   }
 
-  public Box getBox(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getBox(pos);
+  private Box getBox(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Box) {
+      return (Box) val;
+    } else {
+      return null;
+    }
   }
 
-  public Path getPath(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getPath(pos);
+  private Path getPath(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Path) {
+      return (Path) val;
+    } else {
+      return null;
+    }
   }
 
-  public Polygon getPolygon(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getPolygon(pos);
+  private Polygon getPolygon(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Polygon) {
+      return (Polygon) val;
+    } else {
+      return null;
+    }
   }
 
-  public Circle getCircle(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getCircle(pos);
+  private Circle getCircle(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Circle) {
+      return (Circle) val;
+    } else {
+      return null;
+    }
   }
 
-  public Interval getInterval(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getInterval(pos);
+  private Interval getInterval(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Interval) {
+      return (Interval) val;
+    } else {
+      return null;
+    }
   }
 
-  public Numeric[] getNumericArray(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getNumericArray(pos);
-  }
-
-  public Point[] getPointArray(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getPointArray(pos);
-  }
-
-  public Line[] getLineArray(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getLineArray(pos);
-  }
-
-  public LineSegment[] getLineSegmentArray(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getLineSegmentArray(pos);
-  }
-
-  public Box[] getBoxArray(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getBoxArray(pos);
-  }
-
-  public Path[] getPathArray(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getPathArray(pos);
-  }
-
-  public Polygon[] getPolygonArray(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getPolygonArray(pos);
-  }
-
-  public Circle[] getCircleArray(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getCircleArray(pos);
-  }
-
-  public Interval[] getIntervalArray(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getIntervalArray(pos);
-  }
-
-  public Character[] getCharArray(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getCharArray(pos);
-  }
-
-  public Object getEnum(Class enumType, int pos) {
+  private Object getEnum(Class enumType, int pos) {
     Object val = getValue(pos);
     if (val instanceof String) {
       return Enum.valueOf(enumType, (String) val);
@@ -299,7 +295,100 @@ public class RowImpl extends ArrayTuple implements Row {
     return null;
   }
 
-  public Object[] getEnumArray(Class enumType, int pos) {
+  /**
+   * Get a {@code Json} array value, the {@code Json} value may be a string, number, JSON object, array, boolean or null.
+   */
+  private Object[] getJsonArray_(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Object[]) {
+      return (Object[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  private Numeric[] getNumericArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Numeric[]) {
+      return (Numeric[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  private Point[] getPointArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Point[]) {
+      return (Point[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  private Line[] getLineArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Line[]) {
+      return (Line[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  private LineSegment[] getLineSegmentArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof LineSegment[]) {
+      return (LineSegment[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  private Box[] getBoxArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Box[]) {
+      return (Box[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  private Path[] getPathArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Path[]) {
+      return (Path[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  private Polygon[] getPolygonArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Polygon[]) {
+      return (Polygon[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  private Circle[] getCircleArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Circle[]) {
+      return (Circle[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  private Interval[] getIntervalArray(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Interval[]) {
+      return (Interval[]) val;
+    } else {
+      return null;
+    }
+  }
+
+  private Object[] getEnumArray(Class enumType, int pos) {
     Object val = getValue(pos);
     if (val instanceof String[]) {
       String[] array = (String[]) val;
@@ -327,212 +416,4 @@ public class RowImpl extends ArrayTuple implements Row {
       return ret;
     }
     return null;
-  }
-
-  public Character getChar(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Character) {
-      return (Character) val;
-    } else {
-      return null;
-    }
-  }
-
-  public Numeric getNumeric(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Numeric) {
-      return (Numeric) val;
-    } else if (val instanceof Number) {
-      return Numeric.parse(val.toString());
-    }
-    return null;
-  }
-
-  /**
-   * Get a {@link io.vertx.core.json.JsonObject} or {@link io.vertx.core.json.JsonArray} value.
-   */
-  public Object getJson(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof JsonObject) {
-      return val;
-    } else if (val instanceof JsonArray) {
-      return val;
-    } else {
-      return null;
-    }
-  }
-
-  public Point getPoint(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Point) {
-      return (Point) val;
-    } else {
-      return null;
-    }
-  }
-
-  public Line getLine(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Line) {
-      return (Line) val;
-    } else {
-      return null;
-    }
-  }
-
-  public LineSegment getLineSegment(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof LineSegment) {
-      return (LineSegment) val;
-    } else {
-      return null;
-    }
-  }
-
-  public Box getBox(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Box) {
-      return (Box) val;
-    } else {
-      return null;
-    }
-  }
-
-  public Path getPath(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Path) {
-      return (Path) val;
-    } else {
-      return null;
-    }
-  }
-
-  public Polygon getPolygon(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Polygon) {
-      return (Polygon) val;
-    } else {
-      return null;
-    }
-  }
-
-  public Circle getCircle(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Circle) {
-      return (Circle) val;
-    } else {
-      return null;
-    }
-  }
-
-  public Interval getInterval(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Interval) {
-      return (Interval) val;
-    } else {
-      return null;
-    }
-  }
-
-  public Character[] getCharArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Character[]) {
-      return (Character[]) val;
-    } else {
-      return null;
-    }
-  }
-
-  /**
-   * Get a {@code Json} array value, the {@code Json} value may be a string, number, JSON object, array, boolean or null.
-   */
-  private Object[] getJsonArray_(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Object[]) {
-      return (Object[]) val;
-    } else {
-      return null;
-    }
-  }
-
-  public Numeric[] getNumericArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Numeric[]) {
-      return (Numeric[]) val;
-    } else {
-      return null;
-    }
-  }
-
-  public Point[] getPointArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Point[]) {
-      return (Point[]) val;
-    } else {
-      return null;
-    }
-  }
-
-  public Line[] getLineArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Line[]) {
-      return (Line[]) val;
-    } else {
-      return null;
-    }
-  }
-
-  public LineSegment[] getLineSegmentArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof LineSegment[]) {
-      return (LineSegment[]) val;
-    } else {
-      return null;
-    }
-  }
-
-  public Box[] getBoxArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Box[]) {
-      return (Box[]) val;
-    } else {
-      return null;
-    }
-  }
-
-  public Path[] getPathArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Path[]) {
-      return (Path[]) val;
-    } else {
-      return null;
-    }
-  }
-
-  public Polygon[] getPolygonArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Polygon[]) {
-      return (Polygon[]) val;
-    } else {
-      return null;
-    }
-  }
-
-  public Circle[] getCircleArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Circle[]) {
-      return (Circle[]) val;
-    } else {
-      return null;
-    }
-  }
-
-  public Interval[] getIntervalArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Interval[]) {
-      return (Interval[]) val;
-    } else {
-      return null;
-    }
-  }
-}
+  }}

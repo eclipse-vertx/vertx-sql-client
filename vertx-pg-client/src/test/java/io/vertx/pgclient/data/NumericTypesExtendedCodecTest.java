@@ -791,7 +791,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
             Numeric.create(10000),
           };
           p.query().execute(Tuple.tuple()
-              .addValues(expected)
+              .addValue(expected)
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Numeric")

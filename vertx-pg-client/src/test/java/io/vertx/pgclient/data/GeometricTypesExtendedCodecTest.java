@@ -204,14 +204,14 @@ public class GeometricTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
           Circle[] circles = {new Circle(new Point(1.0, 1.0), 3.0), new Circle(new Point(2.0, 2.0), 2.0)};
           int id = 2;
           p.query().execute(Tuple.tuple()
-            .addValues(points)
-            .addValues(lines)
-            .addValues(lineSegments)
-            .addValues(boxes)
-            .addValues(openPaths)
-            .addValues(closedPaths)
-            .addValues(polygons)
-            .addValues(circles)
+            .addValue(points)
+            .addValue(lines)
+            .addValue(lineSegments)
+            .addValue(boxes)
+            .addValue(openPaths)
+            .addValue(closedPaths)
+            .addValue(polygons)
+            .addValue(circles)
             .addInteger(id), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());

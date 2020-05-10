@@ -499,7 +499,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
             Interval.of()
           };
           p.query().execute(Tuple.tuple()
-              .addValues(intervals)
+              .addValue(intervals)
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Interval")

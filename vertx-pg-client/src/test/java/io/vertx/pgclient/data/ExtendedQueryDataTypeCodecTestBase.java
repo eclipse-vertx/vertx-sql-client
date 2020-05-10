@@ -6,6 +6,7 @@ import io.vertx.sqlclient.Tuple;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -40,7 +41,7 @@ public abstract class ExtendedQueryDataTypeCodecTestBase extends DataTypeTestBas
   }
 
   protected <T> void testGenericArray(TestContext ctx, String sql, T[][] expected, Class<T> type) {
-    testGeneric(ctx, sql, expected, (row, idx) -> row.getValues(type, idx));
+    testGeneric(ctx, sql, expected, (row, idx) -> row.get(Array.newInstance(type, 0).getClass(), idx));
   }
 
   protected <T> void testGeneric(TestContext ctx, String sql, T[] expected, BiFunction<Row, Integer, T> getter) {

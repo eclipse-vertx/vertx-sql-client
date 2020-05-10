@@ -45,11 +45,6 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public <T> T[] getValues(Class<T> type, int idx) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public Buffer getBuffer(String columnName) {
     throw new UnsupportedOperationException();
   }

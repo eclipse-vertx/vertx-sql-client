@@ -13,10 +13,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 import static org.junit.Assert.*;
 
@@ -37,13 +35,13 @@ public class ColumnChecker {
   }
 
   static SerializableBiFunction<Tuple, Integer, Object> getValuesByIndex(Class<?> type) {
-    return (tuple, index) -> tuple.getValues(type, index);
+    return (tuple, index) -> tuple.get(Array.newInstance(type, 0).getClass(), index);
   }
 
   static SerializableBiFunction<Row, String, Object> getValuesByName(Class<?> type) {
     return (row, index) -> {
       int idx = row.getColumnIndex(index);
-      return idx == -1 ? null : row.getValues(type, idx);
+      return idx == -1 ? null : row.get(Array.newInstance(type, 0).getClass(), idx);
     };
   }
 

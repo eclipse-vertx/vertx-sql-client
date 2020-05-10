@@ -41,61 +41,56 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public <T> T get(Class<T> type, int pos) {
+  public <T> T get(Class<T> type, int position) {
     if (type == Boolean.class) {
-      return type.cast(getBoolean(pos));
+      return type.cast(getBoolean(position));
     } else if (type == Byte.class) {
-      return type.cast(getByte(pos));
+      return type.cast(getByte(position));
     } else if (type == Short.class) {
-      return type.cast(getShort(pos));
+      return type.cast(getShort(position));
     } else if (type == Integer.class) {
-      return type.cast(getInteger(pos));
+      return type.cast(getInteger(position));
     } else if (type == Long.class) {
-      return type.cast(getLong(pos));
+      return type.cast(getLong(position));
     } else if (type == Float.class) {
-      return type.cast(getFloat(pos));
+      return type.cast(getFloat(position));
     } else if (type == Double.class) {
-      return type.cast(getDouble(pos));
+      return type.cast(getDouble(position));
     } else if (type == Numeric.class) {
-      return type.cast(getNumeric(pos));
+      return type.cast(getNumeric(position));
     } else if (type == String.class) {
-      return type.cast(getString(pos));
+      return type.cast(getString(position));
     } else if (type == Buffer.class) {
-      return type.cast(getBuffer(pos));
+      return type.cast(getBuffer(position));
     } else if (type == LocalDate.class) {
-      return type.cast(getLocalDate(pos));
+      return type.cast(getLocalDate(position));
     } else if (type == LocalDateTime.class) {
-      return type.cast(getLocalDateTime(pos));
+      return type.cast(getLocalDateTime(position));
     } else if (type == Duration.class) {
-      return type.cast(getDuration(pos));
+      return type.cast(getDuration(position));
     } else if (type == JsonObject.class) {
-      return type.cast(getJsonObject(pos));
+      return type.cast(getJsonObject(position));
     } else if (type == JsonArray.class) {
-      return type.cast(getJsonArray(pos));
+      return type.cast(getJsonArray(position));
     } else if (type == Geometry.class) {
-      return type.cast(getGeometry(pos));
+      return type.cast(getGeometry(position));
     } else if (type == Point.class) {
-      return type.cast(getPoint(pos));
+      return type.cast(getPoint(position));
     } else if (type == LineString.class) {
-      return type.cast(getLineString(pos));
+      return type.cast(getLineString(position));
     } else if (type == Polygon.class) {
-      return type.cast(getPolygon(pos));
+      return type.cast(getPolygon(position));
     } else if (type == MultiPoint.class) {
-      return type.cast(getMultiPoint(pos));
+      return type.cast(getMultiPoint(position));
     } else if (type == MultiLineString.class) {
-      return type.cast(getMultiLineString(pos));
+      return type.cast(getMultiLineString(position));
     } else if (type == MultiPolygon.class) {
-      return type.cast(getMultiPolygon(pos));
+      return type.cast(getMultiPolygon(position));
     } else if (type == GeometryCollection.class) {
-      return type.cast(getGeometryCollection(pos));
+      return type.cast(getGeometryCollection(position));
     } else {
       throw new UnsupportedOperationException("Unsupported type " + type.getName());
     }
-  }
-
-  @Override
-  public <T> T[] getValues(Class<T> type, int idx) {
-    throw new UnsupportedOperationException("MySQL Array data type is not supported");
   }
 
   @Override

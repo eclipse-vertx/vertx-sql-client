@@ -301,53 +301,53 @@ public class TupleTest {
 
     assertArrayEquals(booleanArray, tuple.getBooleanArray(0));
     assertArrayEquals(booleanArray, (Boolean[]) tuple.getValue(0));
-    assertArrayEquals(booleanArray, tuple.getValues(Boolean.class, 0));
+    assertArrayEquals(booleanArray, tuple.get(Boolean[].class, 0));
     assertArrayEquals(shortArray, tuple.getShortArray(1));
     assertArrayEquals(shortArray, (Short[]) tuple.getValue(1));
-    assertArrayEquals(shortArray, tuple.getValues(Short.class, 1));
+    assertArrayEquals(shortArray, tuple.get(Short[].class, 1));
     assertArrayEquals(integerArray, tuple.getIntegerArray(2));
     assertArrayEquals(integerArray, (Integer[]) tuple.getValue(2));
-    assertArrayEquals(integerArray, tuple.getValues(Integer.class, 2));
+    assertArrayEquals(integerArray, tuple.get(Integer[].class, 2));
     assertArrayEquals(longArray, tuple.getLongArray(3));
     assertArrayEquals(longArray, (Long[]) tuple.getValue(3));
-    assertArrayEquals(longArray, (Long[]) tuple.getValues(Long.class, 3));
+    assertArrayEquals(longArray, (Long[]) tuple.get(Long[].class, 3));
     assertArrayEquals(floatArray, tuple.getFloatArray(4));
     assertArrayEquals(floatArray, (Float[]) tuple.getValue(4));
-    assertArrayEquals(floatArray, tuple.getValues(Float.class, 4));
+    assertArrayEquals(floatArray, tuple.get(Float[].class, 4));
     assertArrayEquals(doubleArray, tuple.getDoubleArray(5));
     assertArrayEquals(doubleArray, (Double[]) tuple.getValue(5));
-    assertArrayEquals(doubleArray, tuple.getValues(Double.class, 5));
+    assertArrayEquals(doubleArray, tuple.get(Double[].class, 5));
     assertArrayEquals(stringArray, tuple.getStringArray(6));
     assertArrayEquals(stringArray, (String[]) tuple.getValue(6));
-    assertArrayEquals(stringArray, tuple.getValues(String.class, 6));
+    assertArrayEquals(stringArray, tuple.get(String[].class, 6));
     assertArrayEquals(bufferArray, tuple.getBufferArray(7));
     assertArrayEquals(bufferArray, (Buffer[]) tuple.getValue(7));
-    assertArrayEquals(bufferArray, tuple.getValues(Buffer.class, 7));
+    assertArrayEquals(bufferArray, tuple.get(Buffer[].class, 7));
     assertArrayEquals(localDateArray, tuple.getLocalDateArray(8));
     assertArrayEquals(localDateArray, (LocalDate[]) tuple.getValue(8));
-    assertArrayEquals(localDateArray, tuple.getValues(LocalDate.class, 8));
+    assertArrayEquals(localDateArray, tuple.get(LocalDate[].class, 8));
     assertArrayEquals(localTimeArray, tuple.getLocalTimeArray(9));
     assertArrayEquals(localTimeArray, (LocalTime[]) tuple.getValue(9));
-    assertArrayEquals(localTimeArray, tuple.getValues(LocalTime.class, 9));
+    assertArrayEquals(localTimeArray, tuple.get(LocalTime[].class, 9));
     assertArrayEquals(localDateTimeArray, tuple.getLocalDateTimeArray(10));
     assertArrayEquals(localDateTimeArray, (LocalDateTime[]) tuple.getValue(10));
-    assertArrayEquals(localDateTimeArray, tuple.getValues(LocalDateTime.class, 10));
+    assertArrayEquals(localDateTimeArray, tuple.get(LocalDateTime[].class, 10));
     assertArrayEquals(offsetTimeArray, tuple.getOffsetTimeArray(11));
     assertArrayEquals(offsetTimeArray, (Object[]) tuple.getValue(11));
-    assertArrayEquals(offsetTimeArray, tuple.getValues(OffsetTime.class, 11));
+    assertArrayEquals(offsetTimeArray, tuple.get(OffsetTime[].class, 11));
     assertArrayEquals(offsetDateTimeArray, tuple.getOffsetDateTimeArray(12));
     assertArrayEquals(offsetDateTimeArray, (OffsetDateTime[]) tuple.getValue(12));
-    assertArrayEquals(offsetDateTimeArray, tuple.getValues(OffsetDateTime.class, 12));
+    assertArrayEquals(offsetDateTimeArray, tuple.get(OffsetDateTime[].class, 12));
     assertArrayEquals(uuidArray, tuple.getUUIDArray(13));
     assertArrayEquals(uuidArray, (UUID[]) tuple.getValue(13));
-    assertArrayEquals(uuidArray, tuple.getValues(UUID.class, 13));
+    assertArrayEquals(uuidArray, tuple.get(UUID[].class, 13));
     try {
-      tuple.getValues(Buffer.class, 10);
+      tuple.get(Buffer[].class, 10);
     } catch (IllegalArgumentException e) {
       assertEquals("mismatched array element type [io.vertx.core.buffer.Buffer] for the value of type [[Ljava.time.LocalDateTime;]", e.getMessage());
     }
     try {
-      tuple.getValues(null, 1);
+      tuple.get(null, 1);
     } catch (IllegalArgumentException e) {
       assertEquals("Accessor type can not be null", e.getMessage());
     }

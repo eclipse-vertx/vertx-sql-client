@@ -1383,32 +1383,25 @@ public interface Tuple {
     return addValue(value);
   }
 
-  default <T> T get(Class<T> type, int pos) {
+  /**
+   * Get the the at the specified {@code position} and the specified {@code type}.
+   *
+   * <p>The type can be one of the types returned by the row (e.g {@code String.class}) or an array
+   * of the type (e.g {@code String[].class})).
+   *
+   * @param type the expected value type
+   * @param position the value position
+   * @return the value or {@code null} if the value is not found or null.
+   */
+  default <T> T get(Class<T> type, int position) {
     if (type == null) {
       throw new IllegalArgumentException("Accessor type can not be null");
     }
-    Object value = getValue(pos);
+    Object value = getValue(position);
     if (value != null && type.isAssignableFrom(value.getClass())) {
       return type.cast(value);
     }
     return null;
-  }
-
-  @GenIgnore
-  default <T> T[] getValues(Class<T> type, int pos) {
-    if (type == null) {
-      throw new IllegalArgumentException("Accessor type can not be null");
-    }
-    Object value = getValue(pos);
-    if (value != null && value.getClass().isArray() && type.isAssignableFrom(value.getClass().getComponentType())) {
-      return (T[]) value;
-    }
-    return null;
-  }
-
-  @GenIgnore
-  default <T> Tuple addValues(T[] value) {
-    return addValue(value);
   }
 
   /**

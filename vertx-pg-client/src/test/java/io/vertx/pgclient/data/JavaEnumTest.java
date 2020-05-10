@@ -74,7 +74,7 @@ public class JavaEnumTest extends ExtendedQueryDataTypeCodecTestBase {
           RowIterator<Row> it = v.iterator();
           ctx.assertTrue(it.hasNext());
           Row row = it.next();
-          Mood[] result = row.getArray(Mood.class, "c");
+          Mood[] result = row.get(Mood[].class, "c");
           ctx.assertEquals(1, result.length);
           ctx.assertEquals(Mood.unhappy, result[0]);
         }));

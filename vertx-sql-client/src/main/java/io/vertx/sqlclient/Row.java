@@ -484,15 +484,9 @@ public interface Row extends Tuple {
     return pos == -1 ? null : getBigDecimalArray(pos);
   }
 
-  @GenIgnore
-  <T> T[] getValues(Class<T> type, int idx);
-
-  @GenIgnore
-  default <T> T[] getArray(Class<T> type, String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getValues(type, pos);
-  }
-
+  /**
+   * Like {@link #get(Class, int)} but specifying the column {@code name} instead of the position.
+   */
   default <T> T get(Class<T> type, String name) {
     int pos = getColumnIndex(name);
     return pos == -1 ? null : get(type, pos);

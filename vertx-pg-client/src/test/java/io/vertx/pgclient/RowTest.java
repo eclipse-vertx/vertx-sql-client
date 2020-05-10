@@ -33,6 +33,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
@@ -62,7 +63,7 @@ public class RowTest extends PgTestBase {
   private static <T> Function<String, T[]> arrayAccessor(Row row, Class<T> type) {
     return name -> {
       int idx = row.getColumnIndex(name);
-      return idx == -1 ? null : row.getValues(type, idx);
+      return idx == -1 ? null : (T[]) row.get(Array.newInstance(type, 0).getClass(), idx);
     };
   }
 
