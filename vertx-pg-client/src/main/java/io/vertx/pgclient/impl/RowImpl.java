@@ -33,6 +33,7 @@ import io.vertx.sqlclient.impl.ArrayTuple;
 import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.core.buffer.Buffer;
 
+import java.lang.reflect.Array;
 import java.time.*;
 import java.util.List;
 import java.util.UUID;
@@ -121,6 +122,8 @@ public class RowImpl extends ArrayTuple implements Row {
       return type.cast(getJson(pos));
     } else if (type == Object.class) {
       return type.cast(getValue(pos));
+    } else if (type.isEnum()) {
+      return type.cast(getEnum(type, pos));
     }
     throw new UnsupportedOperationException("Unsupported type " + type.getName());
   }
@@ -179,6 +182,8 @@ public class RowImpl extends ArrayTuple implements Row {
       return (T[]) getBoxArray(pos);
     } else if (type == Object.class) {
       return (T[]) getJsonArray_(pos);
+    } else if (type.isEnum()) {
+      return (T[]) getEnumArray(type, pos);
     }
     throw new UnsupportedOperationException("Unsupported type " + type.getName());
   }
@@ -276,6 +281,52 @@ public class RowImpl extends ArrayTuple implements Row {
   public Character[] getCharArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getCharArray(pos);
+  }
+
+  public Object getEnum(Class enumType, int pos) {
+    Object val = getValue(pos);
+    if (val instanceof String) {
+      return Enum.valueOf(enumType, (String) val);
+    } else if (val instanceof Number) {
+      int ordinal = ((Number) val).intValue();
+      if (ordinal >= 0) {
+        Object[] constants = enumType.getEnumConstants();
+        if (ordinal < constants.length) {
+          return constants[ordinal];
+        }
+      }
+    }
+    return null;
+  }
+
+  public Object[] getEnumArray(Class enumType, int pos) {
+    Object val = getValue(pos);
+    if (val instanceof String[]) {
+      String[] array = (String[]) val;
+      Object[] ret = (Object[]) Array.newInstance(enumType, array.length);
+      for (int i = 0;i < array.length;i++) {
+        String string = array[i];
+        if (string != null) {
+          ret[i] = Enum.valueOf(enumType, string);
+        }
+      }
+      return ret;
+    } else if (val instanceof Number[]) {
+      Number[] array = (Number[]) val;
+      Object[] ret = (Object[]) Array.newInstance(enumType, array.length);
+      Object[] constants = enumType.getEnumConstants();
+      for (int i = 0;i < array.length;i++) {
+        Number number = array[i];
+        int ordinal = number.intValue();
+        if (ordinal >= 0) {
+          if (ordinal < constants.length) {
+            ret[i] = constants[ordinal];
+          }
+        }
+      }
+      return ret;
+    }
+    return null;
   }
 
   public Character getChar(int pos) {

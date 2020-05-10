@@ -348,6 +348,33 @@ Text search is handling using java `String`
 {@link examples.PgClientExamples#tsQuery02Example}
 ----
 
+== Handling enumerated types
+
+PostgreSQL https://www.postgresql.org/docs/9.1/datatype-enum.html[enumerated types] are mapped to java strings.
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#enumeratedType01Example}
+----
+
+== Using Java enum types
+
+You can map Java https://docs.oracle.com/javase/tutorial/java/javaOO/enum.html[enum types] to these column
+types:
+
+- Strings (VARCHAR, TEXT)
+- PosgreSQL enumerated types
+- Numbers (INT2, INT4, INT8)
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#enumType01Example}
+----
+
+String and PostgreSQL enumerated types are matched with the Java enum's name returned by the `name()` method.
+
+Numbers types are matched with the Java enum's ordinal returned by the `ordinal()` method.
+
 == Collector queries
 
 You can use Java collectors with the query API:

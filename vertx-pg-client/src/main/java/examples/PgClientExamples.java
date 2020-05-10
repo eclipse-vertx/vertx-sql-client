@@ -537,6 +537,36 @@ public class PgClientExamples {
     });
   }
 
+  public void enumeratedType01Example(SqlClient client) {
+    client
+      .preparedQuery("INSERT INTO colors VALUES ($2)")
+      .execute(Tuple.of("red"),  res -> {
+        // ...
+      });
+  }
+
+  enum Color {
+    red
+  }
+
+  public void enumType01Example(SqlClient client) {
+    client
+      .preparedQuery("INSERT INTO colors VALUES ($1)")
+      .execute(Tuple.of(Color.red))
+      .flatMap(res ->
+        client
+          .preparedQuery("SELECT color FROM colors")
+          .execute()
+      ).onComplete(res -> {
+        if (res.succeeded()) {
+          RowSet<Row> rows = res.result();
+          for (Row row : rows) {
+            System.out.println(row.get(Color.class, "color"));
+          }
+        }
+    });
+  }
+
   public void collector01Example(SqlClient client) {
 
     // Create a collector projecting a row set to a map

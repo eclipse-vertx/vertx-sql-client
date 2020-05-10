@@ -487,4 +487,14 @@ public interface Row extends Tuple {
   @GenIgnore
   <T> T[] getValues(Class<T> type, int idx);
 
+  @GenIgnore
+  default <T> T[] getArray(Class<T> type, String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getValues(type, pos);
+  }
+
+  default <T> T get(Class<T> type, String name) {
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : get(type, pos);
+  }
 }
