@@ -49,39 +49,37 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   }
 
   private String collation;
-  private String charset;
-  private Boolean useAffectedRows;
-  private SslMode sslMode;
+  private String charset = DEFAULT_CHARSET;
+  private Boolean useAffectedRows = DEFAULT_USE_AFFECTED_ROWS;
+  private SslMode sslMode = DEFAULT_SSL_MODE;
   private String serverRsaPublicKeyPath;
   private Buffer serverRsaPublicKeyValue;
-  private String characterEncoding;
+  private String characterEncoding = DEFAULT_CHARACTER_ENCODING;
 
   public MySQLConnectOptions() {
     super();
-    this.charset = DEFAULT_CHARSET;
-    this.sslMode = DEFAULT_SSL_MODE;
-    this.useAffectedRows = DEFAULT_USE_AFFECTED_ROWS;
-    this.characterEncoding = DEFAULT_CHARACTER_ENCODING;
   }
 
   public MySQLConnectOptions(JsonObject json) {
     super(json);
-    this.charset = DEFAULT_CHARSET;
-    this.sslMode = DEFAULT_SSL_MODE;
-    this.useAffectedRows = DEFAULT_USE_AFFECTED_ROWS;
-    this.characterEncoding = DEFAULT_CHARACTER_ENCODING;
     MySQLConnectOptionsConverter.fromJson(json, this);
+  }
+  
+  public MySQLConnectOptions(SqlConnectOptions other) {
+    super(other);
+    if (other instanceof MySQLConnectOptions) {
+      MySQLConnectOptions opts = (MySQLConnectOptions) other;
+      this.collation = opts.collation;
+      this.serverRsaPublicKeyPath = opts.serverRsaPublicKeyPath;
+      this.serverRsaPublicKeyValue = opts.serverRsaPublicKeyValue != null ? opts.serverRsaPublicKeyValue.copy() : null;
+    }
   }
 
   public MySQLConnectOptions(MySQLConnectOptions other) {
     super(other);
     this.collation = other.collation;
-    this.charset = other.charset;
-    this.useAffectedRows = other.useAffectedRows;
-    this.sslMode = other.sslMode;
     this.serverRsaPublicKeyPath = other.serverRsaPublicKeyPath;
     this.serverRsaPublicKeyValue = other.serverRsaPublicKeyValue != null ? other.serverRsaPublicKeyValue.copy() : null;
-    this.characterEncoding = other.characterEncoding;
   }
 
   /**
