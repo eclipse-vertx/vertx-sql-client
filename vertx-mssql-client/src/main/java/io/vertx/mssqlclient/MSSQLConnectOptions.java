@@ -58,6 +58,10 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
     super(json);
     MSSQLConnectOptionsConverter.fromJson(json, this);
   }
+  
+  public MSSQLConnectOptions(SqlConnectOptions other) {
+    super(other);
+  }
 
   public MSSQLConnectOptions(MSSQLConnectOptions other) {
     super(other);
