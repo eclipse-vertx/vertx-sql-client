@@ -104,13 +104,11 @@
 
   <modules>
     <module>vertx-sql-client</module>
-    <module>vertx-sql-client-template</module>
     <module>vertx-pg-client</module>
     <module>vertx-mysql-client</module>
     <module>vertx-mssql-client</module>
     <module>vertx-db2-client</module>
+    <module>vertx-sql-templates</module>
   </modules>
-
-
 
 </project>
