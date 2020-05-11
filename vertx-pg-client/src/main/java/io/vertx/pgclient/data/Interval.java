@@ -10,7 +10,6 @@ import io.vertx.core.json.JsonObject;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-@DataObject(generateConverter = true)
 public class Interval {
 
   private int years, months, days, hours, minutes, seconds, microseconds;
@@ -51,10 +50,6 @@ public class Interval {
 
   public Interval(int years) {
     this(years, 0);
-  }
-
-  public Interval(JsonObject json) {
-    IntervalConverter.fromJson(json, this);
   }
 
   public static Interval of() {
@@ -210,11 +205,5 @@ public class Interval {
   public String toString() {
     return "Interval( " + years + " years " + months + " months " + days + " days " + hours + " hours " +
       minutes + " minutes " + seconds + (microseconds == 0 ? "" : "." + Math.abs(microseconds)) + " seconds )";
-  }
-
-  public JsonObject toJson() {
-    JsonObject json = new JsonObject();
-    IntervalConverter.toJson(this, json);
-    return json;
   }
 }

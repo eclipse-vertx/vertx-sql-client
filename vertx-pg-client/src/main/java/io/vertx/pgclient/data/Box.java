@@ -6,7 +6,6 @@ import io.vertx.core.json.JsonObject;
 /**
  * Rectangular box data type in Postgres represented by pairs of {@link Point}s that are opposite corners of the box.
  */
-@DataObject(generateConverter = true)
 public class Box {
   private Point upperRightCorner, lowerLeftCorner;
 
@@ -17,10 +16,6 @@ public class Box {
   public Box(Point upperRightCorner, Point lowerLeftCorner) {
     this.upperRightCorner = upperRightCorner;
     this.lowerLeftCorner = lowerLeftCorner;
-  }
-
-  public Box(JsonObject json) {
-    BoxConverter.fromJson(json, this);
   }
 
   public Point getUpperRightCorner() {
@@ -62,11 +57,5 @@ public class Box {
   @Override
   public String toString() {
     return "Box(" + upperRightCorner.toString() + "," + lowerLeftCorner.toString() + ")";
-  }
-
-  public JsonObject toJson() {
-    JsonObject json = new JsonObject();
-    BoxConverter.toJson(this, json);
-    return json;
   }
 }

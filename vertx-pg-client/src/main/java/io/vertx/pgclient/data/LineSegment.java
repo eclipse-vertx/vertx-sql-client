@@ -6,7 +6,6 @@ import io.vertx.core.json.JsonObject;
 /**
  * Finite line segment data type in Postgres represented by pairs of {@link Point}s that are the endpoints of the segment.
  */
-@DataObject(generateConverter = true)
 public class LineSegment {
   private Point p1, p2;
 
@@ -17,10 +16,6 @@ public class LineSegment {
   public LineSegment(Point p1, Point p2) {
     this.p1 = p1;
     this.p2 = p2;
-  }
-
-  public LineSegment(JsonObject json) {
-    LineSegmentConverter.fromJson(json, this);
   }
 
   public Point getP1() {
@@ -62,11 +57,5 @@ public class LineSegment {
   @Override
   public String toString() {
     return "LineSegment[" + p1.toString() + "," + p2.toString() + "]";
-  }
-
-  public JsonObject toJson() {
-    JsonObject json = new JsonObject();
-    LineSegmentConverter.toJson(this, json);
-    return json;
   }
 }

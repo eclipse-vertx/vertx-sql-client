@@ -6,7 +6,6 @@ import io.vertx.core.json.JsonObject;
 /**
  * Circle data type in Postgres represented by a center {@link Point} and radius.
  */
-@DataObject(generateConverter = true)
 public class Circle {
   private Point centerPoint;
   private double radius;
@@ -18,10 +17,6 @@ public class Circle {
   public Circle(Point centerPoint, double radius) {
     this.centerPoint = centerPoint;
     this.radius = radius;
-  }
-
-  public Circle(JsonObject json) {
-    CircleConverter.fromJson(json, this);
   }
 
   public Point getCenterPoint() {
@@ -66,11 +61,5 @@ public class Circle {
   @Override
   public String toString() {
     return "Circle<" + centerPoint.toString() + "," + radius + ">";
-  }
-
-  public JsonObject toJson() {
-    JsonObject json = new JsonObject();
-    CircleConverter.toJson(this, json);
-    return json;
   }
 }

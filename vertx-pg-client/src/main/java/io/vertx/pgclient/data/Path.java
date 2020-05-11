@@ -11,7 +11,6 @@ import java.util.List;
  * Paths can be open, where the first and last points in the list are considered not connected,
  * or closed, where the first and last points are considered connected.
  */
-@DataObject(generateConverter = true)
 public class Path {
   private boolean isOpen;
   private List<Point> points;
@@ -23,11 +22,6 @@ public class Path {
   public Path(boolean isOpen, List<Point> points) {
     this.isOpen = isOpen;
     this.points = points;
-  }
-
-
-  public Path(JsonObject json) {
-    PathConverter.fromJson(json, this);
   }
 
   public boolean isOpen() {
@@ -44,6 +38,14 @@ public class Path {
 
   public void setPoints(List<Point> points) {
     this.points = points;
+  }
+
+  public Path addPoint(Point point) {
+    if (points == null ) {
+      points = new ArrayList<>();
+    }
+    points.add(point);
+    return this;
   }
 
   @Override
@@ -88,11 +90,5 @@ public class Path {
     }
     stringBuilder.append(right);
     return stringBuilder.toString();
-  }
-
-  public JsonObject toJson() {
-    JsonObject json = new JsonObject();
-    PathConverter.toJson(this, json);
-    return json;
   }
 }

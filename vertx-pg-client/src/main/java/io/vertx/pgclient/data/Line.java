@@ -6,7 +6,6 @@ import io.vertx.core.json.JsonObject;
 /**
  * Line data type in Postgres represented by the linear equation Ax + By + C = 0, where A and B are not both zero.
  */
-@DataObject(generateConverter = true)
 public class Line {
   private double a;
   private double b;
@@ -20,10 +19,6 @@ public class Line {
     this.a = a;
     this.b = b;
     this.c = c;
-  }
-
-  public Line(JsonObject json) {
-    LineConverter.fromJson(json, this);
   }
 
   public double getA() {
@@ -80,11 +75,5 @@ public class Line {
   @Override
   public String toString() {
     return "Line{" + a + "," + b + "," + c + "}";
-  }
-
-  public JsonObject toJson() {
-    JsonObject json = new JsonObject();
-    LineConverter.toJson(this, json);
-    return json;
   }
 }

@@ -22,7 +22,6 @@ import io.vertx.core.json.JsonObject;
 /**
  * A Postgresql point.
  */
-@DataObject(generateConverter = true)
 public class Point {
 
   public double x, y;
@@ -34,10 +33,6 @@ public class Point {
   public Point(double x, double y) {
     this.x = x;
     this.y = y;
-  }
-
-  public Point(JsonObject json) {
-    PointConverter.fromJson(json, this);
   }
 
   public double getX() {
@@ -70,11 +65,5 @@ public class Point {
   @Override
   public String toString() {
     return "Point(" + x + "," + y + ")";
-  }
-
-  public JsonObject toJson() {
-    JsonObject json = new JsonObject();
-    PointConverter.toJson(this, json);
-    return json;
   }
 }
