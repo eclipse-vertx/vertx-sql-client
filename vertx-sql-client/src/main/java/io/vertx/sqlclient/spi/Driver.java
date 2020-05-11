@@ -14,9 +14,12 @@
  * limitations under the License.
  *
  */
-package io.vertx.sqlclient;
+package io.vertx.sqlclient.spi;
 
 import io.vertx.core.Vertx;
+import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlConnectOptions;
 
 /**
  * An entry point to the Vertx Reactive SQL Client

@@ -27,6 +27,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.sqlclient.spi.Driver;
 
 import java.util.function.Function;
 
@@ -43,6 +44,7 @@ public interface Pool extends SqlClient {
    *
    * @param connectOptions the options used to create the connection pool, such as database hostname
    * @return the connection pool
+   * @throws ServiceConfigurationError if no compatible drivers are found, or if multiple compatible drivers are found
    */
   static Pool pool(SqlConnectOptions connectOptions) {
     return pool(connectOptions, new PoolOptions());
@@ -54,6 +56,7 @@ public interface Pool extends SqlClient {
    * @param connectOptions the options used to create the connection pool, such as database hostname
    * @param poolOptions the options for creating the pool
    * @return the connection pool
+   * @throws ServiceConfigurationError if no compatible drivers are found, or if multiple compatible drivers are found
    */
   static Pool pool(SqlConnectOptions connectOptions, PoolOptions poolOptions) {
     List<Driver> candidates = new ArrayList<>(1);
@@ -78,6 +81,7 @@ public interface Pool extends SqlClient {
    * @param connectOptions the options used to create the connection pool, such as database hostname
    * @param poolOptions the options for creating the pool
    * @return the connection pool
+   * @throws ServiceConfigurationError if no compatible drivers are found, or if multiple compatible drivers are found
    */
   static Pool pool(Vertx vertx, SqlConnectOptions connectOptions, PoolOptions poolOptions) {
     List<Driver> candidates = new ArrayList<>(1);

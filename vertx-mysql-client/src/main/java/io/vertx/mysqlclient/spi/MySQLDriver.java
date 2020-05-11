@@ -13,29 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.vertx.db2client;
+package io.vertx.mysqlclient.spi;
 
 import io.vertx.core.Vertx;
-import io.vertx.sqlclient.Driver;
+import io.vertx.mysqlclient.MySQLConnectOptions;
+import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.spi.Driver;
 
-public class DB2Driver implements Driver {
+public class MySQLDriver implements Driver {
 
   @Override
   public Pool createPool(SqlConnectOptions options, PoolOptions poolOptions) {
-    return DB2Pool.pool(new DB2ConnectOptions(options), poolOptions);
+    return MySQLPool.pool(wrap(options), poolOptions);
   }
 
   @Override
   public Pool createPool(Vertx vertx, SqlConnectOptions options, PoolOptions poolOptions) {
-    return DB2Pool.pool(vertx, new DB2ConnectOptions(options), poolOptions);
+    return MySQLPool.pool(vertx, wrap(options), poolOptions);
   }
 
   @Override
   public boolean acceptsOptions(SqlConnectOptions options) {
-    return options instanceof DB2ConnectOptions || SqlConnectOptions.class.equals(options.getClass());
+    return options instanceof MySQLConnectOptions || SqlConnectOptions.class.equals(options.getClass());
+  }
+  
+  private static MySQLConnectOptions wrap(SqlConnectOptions options) {
+    if (options instanceof MySQLConnectOptions) {
+      return (MySQLConnectOptions) options; 
+    } else {
+      return new MySQLConnectOptions(options);
+    }
   }
 
 }

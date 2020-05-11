@@ -13,10 +13,10 @@ import org.junit.Test;
 
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.sqlclient.Driver;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.spi.Driver;
 
 public abstract class DriverTestBase {
   
