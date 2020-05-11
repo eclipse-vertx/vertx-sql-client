@@ -1,4 +1,4 @@
-#forUpdat= SQL Client Templates
+= SQL Client Templates
 :toc:
 
 SQL Client Templates is a small library designed to facilitate the execution of SQL queries.
