@@ -4,9 +4,9 @@ package io.vertx.sqlclient.template;
  * Mapper for {@link TestDataObject}.
  * NOTE: This class has been automatically generated from the {@link TestDataObject} original class using Vert.x codegen.
  */
-public class TestDataObjectParamMapper implements java.util.function.Function<TestDataObject, java.util.Map<String, Object>> {
+public class TestDataObjectParametersMapper implements java.util.function.Function<TestDataObject, java.util.Map<String, Object>> {
 
-  public static final java.util.function.Function<TestDataObject, java.util.Map<String, Object>> INSTANCE = new TestDataObjectParamMapper();
+  public static final java.util.function.Function<TestDataObject, java.util.Map<String, Object>> INSTANCE = new TestDataObjectParametersMapper();
 
   public java.util.Map<String, Object> apply(TestDataObject obj) {
     java.util.Map<String, Object> params = new java.util.HashMap<>();

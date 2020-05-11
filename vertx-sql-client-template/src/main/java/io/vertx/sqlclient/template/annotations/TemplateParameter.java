@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.FIELD})
-public @interface TemplateParam {
+public @interface TemplateParameter {
 
   /**
    * @return the template parameter name

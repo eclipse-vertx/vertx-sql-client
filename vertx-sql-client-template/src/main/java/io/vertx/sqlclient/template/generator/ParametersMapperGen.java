@@ -3,9 +3,8 @@ package io.vertx.sqlclient.template.generator;
 import io.vertx.codegen.DataObjectModel;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.type.AnnotationValueInfo;
-import io.vertx.sqlclient.template.annotations.ParamsMapped;
-import io.vertx.sqlclient.template.annotations.RowMapped;
-import io.vertx.sqlclient.template.annotations.TemplateParam;
+import io.vertx.sqlclient.template.annotations.ParametersMapped;
+import io.vertx.sqlclient.template.annotations.TemplateParameter;
 
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
@@ -16,9 +15,9 @@ import java.util.Optional;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class ParamMapperGen extends MapperGenBase {
+public class ParametersMapperGen extends MapperGenBase {
 
-  public ParamMapperGen() {
+  public ParametersMapperGen() {
     kinds = Collections.singleton("dataObject");
     name = "data_object_mappers";
   }
@@ -35,14 +34,14 @@ public class ParamMapperGen extends MapperGenBase {
 
   @Override
   protected String genSimpleName(DataObjectModel model) {
-    return model.getType().getSimpleName() + "ParamMapper";
+    return model.getType().getSimpleName() + "ParametersMapper";
   }
 
   @Override
   protected Optional<AnnotationValueInfo> getAnnotation(DataObjectModel model) {
     return model
       .getAnnotations()
-      .stream().filter(ann -> ann.getName().equals(ParamsMapped.class.getName()))
+      .stream().filter(ann -> ann.getName().equals(ParametersMapped.class.getName()))
       .findFirst();
   }
 
@@ -64,7 +63,7 @@ public class ParamMapperGen extends MapperGenBase {
       .stream()
       .filter(prop -> PK.contains(prop.getKind()))
       .forEach(pi -> {
-        String templateParamName = getMappingName(pi, TemplateParam.class.getName());
+        String templateParamName = getMappingName(pi, TemplateParameter.class.getName());
         if (templateParamName != null) {
           writer.print("    params.put(\"" + templateParamName + "\", obj." + pi.getGetterMethod() + "());\n");
         }

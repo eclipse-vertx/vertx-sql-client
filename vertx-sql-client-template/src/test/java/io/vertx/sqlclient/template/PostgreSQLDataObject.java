@@ -9,14 +9,12 @@ import io.vertx.pgclient.data.LineSegment;
 import io.vertx.pgclient.data.Path;
 import io.vertx.pgclient.data.Point;
 import io.vertx.pgclient.data.Polygon;
-import io.vertx.sqlclient.template.annotations.ParamsMapped;
+import io.vertx.sqlclient.template.annotations.ParametersMapped;
 import io.vertx.sqlclient.template.annotations.RowMapped;
-
-import java.time.Duration;
 
 @DataObject
 @RowMapped
-@ParamsMapped
+@ParametersMapped
 public class PostgreSQLDataObject {
 
   private Box box;

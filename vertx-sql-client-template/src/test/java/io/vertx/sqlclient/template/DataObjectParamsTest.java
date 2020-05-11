@@ -69,7 +69,7 @@ public class DataObjectParamsTest extends PgTemplateTestBase {
       ctx,
       sqlType,
       Function.identity(),
-      TestDataObjectParamMapper.INSTANCE,
+      TestDataObjectParametersMapper.INSTANCE,
       paramName,
       obj,
       expected,

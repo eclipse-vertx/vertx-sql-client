@@ -199,7 +199,7 @@ A Vert.x data object is a simple Java bean class annotated with the `@DataObject
 
 === Code generation
 
-Any data object annotated by {@link io.vertx.sqlclient.template.annotations.RowMapped} or {@link io.vertx.sqlclient.template.annotations.ParamsMapped}
+Any data object annotated by {@link io.vertx.sqlclient.template.annotations.RowMapped} or {@link io.vertx.sqlclient.template.annotations.ParametersMapped}
 will trigger  the generation of a corresponding mapper class.
 
 The _codegen_ annotation processor generates these classes at compilation time. It is a feature of the Java
@@ -284,7 +284,7 @@ The generated mapper can be used to perform row mapping like explained in <<row_
 
 === Parameters mapping
 
-You can generate a parameters mapper by annotating your data object by {@link io.vertx.sqlclient.template.annotations.ParamsMapped}.
+You can generate a parameters mapper by annotating your data object by {@link io.vertx.sqlclient.template.annotations.ParametersMapped}.
 
 [source,$lang]
 ----
@@ -294,7 +294,7 @@ You can generate a parameters mapper by annotating your data object by {@link io
 By default each parameter is bound after the data object properties, e.g the `userName` property binds to
 the `userName` parameter.
 
-You can use custom names thanks to the {@link io.vertx.sqlclient.template.annotations.TemplateParam}
+You can use custom names thanks to the {@link io.vertx.sqlclient.template.annotations.TemplateParameter}
 annotation.
 
 [source,$lang]
@@ -320,9 +320,9 @@ Usually Java enum types are mapped to string / numbers and possibly custom datab
 === Naming format
 
 The default template use the same case for parameters and columns. You can override the default names in the `Column`
-and `TemplateParam` annotations and use the formatting you like.
+and `TemplateParameter` annotations and use the formatting you like.
 
-You can also configure a specific formatting case of a mapper in the `RowMapped` and `ParamsMapped` annotations:
+You can also configure a specific formatting case of a mapper in the `RowMapped` and `ParametersMapped` annotations:
 
 [source,$lang]
 ----

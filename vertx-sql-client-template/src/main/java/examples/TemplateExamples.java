@@ -8,11 +8,10 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.template.SqlTemplate;
 import io.vertx.sqlclient.template.annotations.Column;
-import io.vertx.sqlclient.template.annotations.ParamsMapped;
+import io.vertx.sqlclient.template.annotations.ParametersMapped;
 import io.vertx.sqlclient.template.annotations.RowMapped;
-import io.vertx.sqlclient.template.annotations.TemplateParam;
+import io.vertx.sqlclient.template.annotations.TemplateParameter;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -29,11 +28,11 @@ public class TemplateExamples {
   }
 
   public void queryExample(SqlClient client) {
-    Map<String, Object> params = Collections.singletonMap("id", 1);
+    Map<String, Object> parameters = Collections.singletonMap("id", 1);
 
     SqlTemplate
       .forQuery(client, "SELECT * FROM users WHERE id=${id}")
-      .execute(params)
+      .execute(parameters)
       .onSuccess(users -> {
         users.forEach(row -> {
           System.out.println(row.getString("first_name") + " " + row.getString("last_name"));
@@ -42,14 +41,14 @@ public class TemplateExamples {
   }
 
   public void insertExample(SqlClient client) {
-    Map<String, Object> params = new HashMap<>();
-    params.put("id", 1);
-    params.put("firstName", "Dale");
-    params.put("lastName", "Cooper");
+    Map<String, Object> parameters = new HashMap<>();
+    parameters.put("id", 1);
+    parameters.put("firstName", "Dale");
+    parameters.put("lastName", "Cooper");
 
     SqlTemplate
       .forUpdate(client, "INSERT INTO users VALUES (${id},${firstName},${lastName})")
-      .execute(params)
+      .execute(parameters)
       .onSuccess(v -> {
         System.out.println("Successful update");
       });
@@ -85,21 +84,21 @@ public class TemplateExamples {
       });
   }
 
-  private static final Function<User, Map<String, Object>> PARAMS_USER_MAPPER = user -> {
-    Map<String, Object> params = new HashMap<>();
-    params.put("id", user.id);
-    params.put("firstName", user.firstName);
-    params.put("lastName", user.lastName);
-    return params;
+  private static final Function<User, Map<String, Object>> PARAMETERS_USER_MAPPER = user -> {
+    Map<String, Object> parameters = new HashMap<>();
+    parameters.put("id", user.id);
+    parameters.put("firstName", user.firstName);
+    parameters.put("lastName", user.lastName);
+    return parameters;
   };
 
   public void paramsUserMapper() {
-    Function<User, Map<String, Object>> PARAMS_USER_MAPPER = user -> {
-      Map<String, Object> params = new HashMap<>();
-      params.put("id", user.id);
-      params.put("firstName", user.firstName);
-      params.put("lastName", user.lastName);
-      return params;
+    Function<User, Map<String, Object>> PARAMETERS_USER_MAPPER = user -> {
+      Map<String, Object> parameters = new HashMap<>();
+      parameters.put("id", user.id);
+      parameters.put("firstName", user.firstName);
+      parameters.put("lastName", user.lastName);
+      return parameters;
     };
   }
 
@@ -111,7 +110,7 @@ public class TemplateExamples {
 
     SqlTemplate
       .forUpdate(client, "INSERT INTO users VALUES (${id},${firstName},${lastName})")
-      .mapFrom(PARAMS_USER_MAPPER)
+      .mapFrom(PARAMETERS_USER_MAPPER)
       .execute(user)
       .onSuccess(res -> {
         System.out.println("User inserted");
@@ -121,7 +120,7 @@ public class TemplateExamples {
   public void batchBindingParamsWithCustomFunction(SqlClient client, List<User> users) {
     SqlTemplate
       .forUpdate(client, "INSERT INTO users VALUES (${id},${firstName},${lastName})")
-      .mapFrom(PARAMS_USER_MAPPER)
+      .mapFrom(PARAMETERS_USER_MAPPER)
       .executeBatch(users)
       .onSuccess(res -> {
         System.out.println("Users inserted");
@@ -273,7 +272,7 @@ public class TemplateExamples {
 
   public void paramsMappedDataObject() {
     @DataObject
-    @ParamsMapped
+    @ParametersMapped
     class UserDataObject {
 
       private long id;
@@ -308,13 +307,13 @@ public class TemplateExamples {
 
   public void paramsMappedDataObjectOverrideName() {
     @DataObject
-    @ParamsMapped
+    @ParametersMapped
     class UserDataObject {
 
       private long id;
-      @TemplateParam(name = "first_name")
+      @TemplateParameter(name = "first_name")
       private String firstName;
-      @TemplateParam(name = "last_name")
+      @TemplateParameter(name = "last_name")
       private String lastName;
 
       public long getId() {
@@ -360,7 +359,7 @@ public class TemplateExamples {
   public void customFormatter() {
     @DataObject
     @RowMapped(formatter = SnakeCase.class)
-    @ParamsMapped(formatter = QualifiedCase.class)
+    @ParametersMapped(formatter = QualifiedCase.class)
     class UserDataObject {
       // ...
     }

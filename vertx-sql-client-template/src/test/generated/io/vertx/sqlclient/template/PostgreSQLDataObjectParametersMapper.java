@@ -4,9 +4,9 @@ package io.vertx.sqlclient.template;
  * Mapper for {@link PostgreSQLDataObject}.
  * NOTE: This class has been automatically generated from the {@link PostgreSQLDataObject} original class using Vert.x codegen.
  */
-public class PostgreSQLDataObjectParamMapper implements java.util.function.Function<PostgreSQLDataObject, java.util.Map<String, Object>> {
+public class PostgreSQLDataObjectParametersMapper implements java.util.function.Function<PostgreSQLDataObject, java.util.Map<String, Object>> {
 
-  public static final java.util.function.Function<PostgreSQLDataObject, java.util.Map<String, Object>> INSTANCE = new PostgreSQLDataObjectParamMapper();
+  public static final java.util.function.Function<PostgreSQLDataObject, java.util.Map<String, Object>> INSTANCE = new PostgreSQLDataObjectParametersMapper();
 
   public java.util.Map<String, Object> apply(PostgreSQLDataObject obj) {
     java.util.Map<String, Object> params = new java.util.HashMap<>();

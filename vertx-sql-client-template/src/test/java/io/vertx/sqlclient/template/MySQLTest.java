@@ -66,7 +66,7 @@ public class MySQLTest {
     Duration duration = Duration.ofHours(11);
     SqlTemplate
       .forQuery(pool, "SELECT CAST(${duration} AS TIME) AS duration")
-      .mapFrom(MySQLDataObjectParamMapper.INSTANCE)
+      .mapFrom(MySQLDataObjectParametersMapper.INSTANCE)
       .mapTo(MySQLDataObjectRowMapper.INSTANCE)
       .execute(new MySQLDataObject().setDuration(duration))
       .onComplete(ctx.asyncAssertSuccess(rows -> {

@@ -4,9 +4,9 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.sqlclient.template.annotations.ParamsMapped;
+import io.vertx.sqlclient.template.annotations.ParametersMapped;
 import io.vertx.sqlclient.template.annotations.RowMapped;
-import io.vertx.sqlclient.template.annotations.TemplateParam;
+import io.vertx.sqlclient.template.annotations.TemplateParameter;
 import io.vertx.sqlclient.template.wrappers.BooleanWrapper;
 import io.vertx.sqlclient.template.wrappers.DoubleWrapper;
 import io.vertx.sqlclient.template.wrappers.FloatWrapper;
@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 @DataObject
 @RowMapped
-@ParamsMapped
+@ParametersMapped
 public class TestDataObject {
 
   private boolean primitiveBoolean;
@@ -47,7 +47,7 @@ public class TestDataObject {
   private long boxedLong;
   private float boxedFloat;
   private double boxedDouble;
-  @TemplateParam(name = "the_string") private String string;
+  @TemplateParameter(name = "the_string") private String string;
   private JsonObject jsonObject;
   private JsonArray jsonArray;
   private Buffer buffer;

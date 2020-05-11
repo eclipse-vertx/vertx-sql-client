@@ -4,7 +4,7 @@ import io.vertx.codegen.SnakeCase;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.sqlclient.template.annotations.Column;
 import io.vertx.sqlclient.template.annotations.RowMapped;
-import io.vertx.sqlclient.template.annotations.TemplateParam;
+import io.vertx.sqlclient.template.annotations.TemplateParameter;
 
 @DataObject
 @RowMapped(formatter = SnakeCase.class)
@@ -26,7 +26,7 @@ public class UserDataObject {
     return firstName;
   }
 
-  @TemplateParam(name = "first_name")
+  @TemplateParameter(name = "first_name")
   @Column(name = "first_name")
   public void setFirstName(String firstName) {
     this.firstName = firstName;
@@ -36,7 +36,7 @@ public class UserDataObject {
     return lastName;
   }
 
-  @TemplateParam(name = "last_name")
+  @TemplateParameter(name = "last_name")
   @Column(name = "last_name")
   public void setLastName(String lastName) {
     this.lastName = lastName;

@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
-public @interface ParamsMapped {
+public @interface ParametersMapped {
 
   /**
    * @return the parameter name formatter, default maps to lower camel case.
