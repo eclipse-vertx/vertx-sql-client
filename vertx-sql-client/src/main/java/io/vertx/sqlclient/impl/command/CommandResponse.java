@@ -1,6 +1,7 @@
 package io.vertx.sqlclient.impl.command;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.impl.NoStackTraceThrowable;
 
 public abstract class CommandResponse<R> implements AsyncResult<R> {
@@ -10,7 +11,7 @@ public abstract class CommandResponse<R> implements AsyncResult<R> {
   }
 
   public static <R> CommandResponse<R> failure(Throwable cause) {
-    return new CommandResponse<R>() {
+    return new CommandResponse<R>(Future.failedFuture(cause)) {
       @Override
       public R result() {
         return null;
@@ -31,7 +32,7 @@ public abstract class CommandResponse<R> implements AsyncResult<R> {
   }
 
   public static <R> CommandResponse<R> success(R result) {
-    return new CommandResponse<R>() {
+    return new CommandResponse<R>(Future.succeededFuture(result)) {
       @Override
       public R result() {
         return result;
@@ -54,8 +55,14 @@ public abstract class CommandResponse<R> implements AsyncResult<R> {
   // The connection that executed the command
   public CommandScheduler scheduler;
   public CommandBase<R> cmd;
+  private final AsyncResult<R> res;
 
-  public CommandResponse() {
+  public CommandResponse(AsyncResult<R> res) {
+	this.res = res;
+  }
+  
+  public AsyncResult<R> toAsyncResult() {
+    return res;
   }
 
 }

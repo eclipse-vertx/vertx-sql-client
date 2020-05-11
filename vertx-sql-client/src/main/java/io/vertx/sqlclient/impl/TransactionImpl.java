@@ -124,7 +124,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
     cmd.handler = ar -> {
       synchronized (TransactionImpl.this) {
         status = ST_PENDING;
-        if (ar.failed()) {
+        if (ar.toAsyncResult().failed()) {
           // We won't recover from this so rollback
           CommandBase<?> c;
           while ((c = pending.poll()) != null) {
@@ -211,7 +211,11 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
     		QueryCommandBase.NULL_COLLECTOR,
     		QueryResultHandler.NOOP_HANDLER);
     cmd.handler = h -> {
-    	handler.handle(Future.succeededFuture());
+        if (h.succeeded()) {
+          handler.handle(Future.succeededFuture());
+        } else {
+          handler.handle(Future.failedFuture(h.cause()));
+        }
     };
     return cmd;
   }
