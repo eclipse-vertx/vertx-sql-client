@@ -120,6 +120,12 @@ public class PgConnectOptions extends SqlConnectOptions {
     super(json);
     PgConnectOptionsConverter.fromJson(json, this);
   }
+  
+  public PgConnectOptions(SqlConnectOptions other) {
+    super(other);
+    pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
+    sslMode = DEFAULT_SSLMODE;
+  }
 
   public PgConnectOptions(PgConnectOptions other) {
     super(other);

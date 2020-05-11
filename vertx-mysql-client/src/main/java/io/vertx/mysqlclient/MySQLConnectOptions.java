@@ -72,6 +72,14 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     this.characterEncoding = DEFAULT_CHARACTER_ENCODING;
     MySQLConnectOptionsConverter.fromJson(json, this);
   }
+  
+  public MySQLConnectOptions(SqlConnectOptions other) {
+    super(other);
+    this.charset = DEFAULT_CHARSET;
+    this.sslMode = DEFAULT_SSL_MODE;
+    this.useAffectedRows = DEFAULT_USE_AFFECTED_ROWS;
+    this.characterEncoding = DEFAULT_CHARACTER_ENCODING;
+  }
 
   public MySQLConnectOptions(MySQLConnectOptions other) {
     super(other);
