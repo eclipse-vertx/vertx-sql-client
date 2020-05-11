@@ -24,7 +24,7 @@ import java.util.Objects;
  * Connect options for configuring {@link SqlConnection} or {@link Pool}.
  */
 @DataObject(generateConverter = true)
-public abstract class SqlConnectOptions extends NetClientOptions {
+public class SqlConnectOptions extends NetClientOptions {
   public static final boolean DEFAULT_CACHE_PREPARED_STATEMENTS = false;
   public static final int DEFAULT_PREPARED_STATEMENT_CACHE_MAX_SIZE = 256;
   public static final int DEFAULT_PREPARED_STATEMENT_CACHE_SQL_LIMIT = 2048;
@@ -275,5 +275,6 @@ public abstract class SqlConnectOptions extends NetClientOptions {
   /**
    * Initialize with the default options.
    */
-  abstract protected void init();
+  protected void init() {
+  }
 }
