@@ -347,6 +347,24 @@ The {@link io.vertx.sqlclient.data.Numeric} Java type is used to represent the M
 {@link examples.MySQLClientExamples#numericExample(io.vertx.sqlclient.Row)}
 ----
 
+=== Handling ENUM
+
+MySQL supports ENUM data type and the client retrieves these types as String data type.
+
+You can encode Java enums as String like this:
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#enumeratedType01Example}
+----
+
+You can retrieve the ENUM column as Java enums like this:
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#enumeratedType02Example}
+----
+
 === Handling GEOMETRY
 
 MYSQL `GEOMETRY` data type is also supported, Here are some examples showing that you can handle the geometry data in Well-Known Text (WKT) format or Well-Known Binary (WKB) format, the data are decoded as MySQL TEXT OR BLOB data type. There are many great third-party libraries for handling data in this format.

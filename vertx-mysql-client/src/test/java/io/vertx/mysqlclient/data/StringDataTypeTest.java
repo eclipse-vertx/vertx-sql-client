@@ -21,6 +21,10 @@ import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
 public class StringDataTypeTest extends MySQLDataTypeTestBase {
+  private enum Size {
+    x_small, small, medium, large, x_large;
+  }
+
   @Test
   public void testBinaryDecodeAll(TestContext ctx) {
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
@@ -212,18 +216,42 @@ public class StringDataTypeTest extends MySQLDataTypeTestBase {
   }
 
   @Test
-  public void testBinaryEncodeEnum(TestContext ctx) {
+  public void testBinaryEncodeEnumWithString(TestContext ctx) {
     testBinaryEncodeGeneric(ctx, "test_enum", "medium");
   }
 
   @Test
-  public void testTextDecodeEnum(TestContext ctx) {
+  public void testTextDecodeEnumToString(TestContext ctx) {
     testTextDecodeGenericWithTable(ctx, "test_enum", "small");
   }
 
   @Test
-  public void testBinaryDecodeEnum(TestContext ctx) {
+  public void testBinaryDecodeEnumToString(TestContext ctx) {
     testBinaryDecodeGenericWithTable(ctx, "test_enum", "small");
+  }
+
+  @Test
+  public void testBinaryEncodeEnumWithJavaEnum(TestContext ctx) {
+    testBinaryEncodeGeneric(ctx, "test_enum", Size.medium, ((row, colName) -> {
+      ctx.assertEquals(Size.medium, row.get(Size.class, colName));
+      ctx.assertEquals(Size.medium, row.get(Size.class, 0));
+    }));
+  }
+
+  @Test
+  public void testTextDecodeEnumToJavaEnum(TestContext ctx) {
+    testTextDecodeGenericWithTable(ctx, "test_enum", ((row, colName) -> {
+      ctx.assertEquals(Size.small, row.get(Size.class, colName));
+      ctx.assertEquals(Size.small, row.get(Size.class, 0));
+    }));
+  }
+
+  @Test
+  public void testBinaryDecodeEnumToJavaEnum(TestContext ctx) {
+    testBinaryDecodeGenericWithTable(ctx, "test_enum", ((row, colName) -> {
+      ctx.assertEquals(Size.small, row.get(Size.class, colName));
+      ctx.assertEquals(Size.small, row.get(Size.class, 0));
+    }));
   }
 
   @Test

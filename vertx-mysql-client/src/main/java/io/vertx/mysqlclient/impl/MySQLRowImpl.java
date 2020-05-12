@@ -88,6 +88,8 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
       return type.cast(getMultiPolygon(position));
     } else if (type == GeometryCollection.class) {
       return type.cast(getGeometryCollection(position));
+    } else if (type.isEnum()) {
+      return type.cast(getEnum(type, position));
     } else {
       throw new UnsupportedOperationException("Unsupported type " + type.getName());
     }
@@ -324,6 +326,22 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
     } else {
       return super.getLocalTime(pos);
     }
+  }
+
+  private Object getEnum(Class enumType, int position) {
+    Object val = getValue(position);
+    if (val instanceof String) {
+      return Enum.valueOf(enumType, (String) val);
+    } else if (val instanceof Number) {
+      int ordinal = ((Number) val).intValue();
+      if (ordinal >= 0) {
+        Object[] constants = enumType.getEnumConstants();
+        if (ordinal < constants.length) {
+          return constants[ordinal];
+        }
+      }
+    }
+    return null;
   }
 
   private <T> String buildIllegalAccessMessage(Object value, String columnName, Class<T> clazz) {
