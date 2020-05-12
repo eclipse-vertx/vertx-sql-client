@@ -18,7 +18,6 @@
 package io.vertx.pgclient;
 
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.Tuple;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
@@ -129,25 +128,6 @@ public class PgPoolTest extends PgPoolTestBase {
       async.await(4000000);
     } finally {
       pool.close();
-    }
-  }
-
-  // This test check that when using pooled connections, the preparedQuery pool operation
-  // will actually use the same connection for the prepare and the query commands
-  @Test
-  public void testConcurrentMultipleConnection(TestContext ctx) {
-    PoolOptions poolOptions = new PoolOptions().setMaxSize(2);
-    PgPool pool = PgPool.pool(vertx, new PgConnectOptions(this.options).setCachePreparedStatements(true), poolOptions);
-    int numRequests = 2;
-    Async async = ctx.async(numRequests);
-    for (int i = 0;i < numRequests;i++) {
-      pool.preparedQuery("SELECT * FROM Fortune WHERE id=$1").execute(Tuple.of(1), ctx.asyncAssertSuccess(results -> {
-        ctx.assertEquals(1, results.size());
-        Tuple row = results.iterator().next();
-        ctx.assertEquals(1, row.getInteger(0));
-        ctx.assertEquals("fortune: No such file or directory", row.getString(1));
-        async.countDown();
-      }));
     }
   }
 }

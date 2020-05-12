@@ -5,6 +5,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.Tuple;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,5 +55,29 @@ public class MySQLPoolTest extends MySQLTestBase {
       async.countDown();
     }));
     async.await();
+  }
+
+  // This test check that when using pooled connections, the preparedQuery pool operation
+  // will actually use the same connection for the prepare and the query commands
+  @Test
+  public void testConcurrentMultipleConnection(TestContext ctx) {
+    PoolOptions poolOptions = new PoolOptions().setMaxSize(2);
+    MySQLPool pool = MySQLPool.pool(vertx, new MySQLConnectOptions(this.options).setCachePreparedStatements(false), poolOptions);
+    try {
+      int numRequests = 1500;
+      Async async = ctx.async(numRequests);
+      for (int i = 0;i < numRequests;i++) {
+        pool.preparedQuery("SELECT * FROM Fortune WHERE id=?").execute(Tuple.of(1), ctx.asyncAssertSuccess(results -> {
+          ctx.assertEquals(1, results.size());
+          Tuple row = results.iterator().next();
+          ctx.assertEquals(1, row.getInteger(0));
+          ctx.assertEquals("fortune: No such file or directory", row.getString(1));
+          async.countDown();
+        }));
+      }
+      async.awaitSuccess(10_000);
+    } finally {
+      pool.close();
+    }
   }
 }

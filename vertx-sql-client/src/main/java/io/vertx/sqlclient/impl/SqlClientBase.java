@@ -107,7 +107,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
           if (msg != null) {
             handler.handle(Future.failedFuture(msg));
           } else {
-            schedule(builder.createExtendedQuery(ps, arguments, resultHandler), resultHandler);
+            cr.scheduler.schedule(builder.createExtendedQuery(ps, arguments, resultHandler), resultHandler);
           }
         } else {
           handler.handle(Future.failedFuture(cr.cause()));
@@ -128,7 +128,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
               return;
             }
           }
-          schedule(builder.createBatchCommand(ps, batch, resultHandler), resultHandler);
+          cr.scheduler.schedule(builder.createBatchCommand(ps, batch, resultHandler), resultHandler);
         } else {
           handler.handle(Future.failedFuture(cr.cause()));
         }
