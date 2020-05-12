@@ -440,4 +440,8 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
   long nextStatementName() {
     return psSeq.next();
   }
+
+  public ChannelHandlerContext channelHandlerContext() {
+    return ctx;
+  }
 }

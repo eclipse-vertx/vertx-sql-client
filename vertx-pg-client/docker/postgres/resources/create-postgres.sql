@@ -347,6 +347,19 @@ CREATE TABLE mutable
 );
 -- mutable for insert,update,delete query testing
 
+-- unstable table for table schema changing testing
+DROP TABLE IF EXISTS unstable;
+CREATE TABLE unstable
+(
+  id      integer       NOT NULL,
+  message varchar(2048) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+INSERT INTO unstable (id, message)
+VALUES (1, 'fortune: No such file or directory');
+-- unstable table for table schema changing testing
+
 -- table for test ANSI SQL data type codecs
 DROP TABLE IF EXISTS basicdatatype;
 CREATE TABLE basicdatatype
