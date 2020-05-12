@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 
-import io.vertx.core.Vertx;
 import io.vertx.db2client.junit.DB2Resource;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;

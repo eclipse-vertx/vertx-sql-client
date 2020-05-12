@@ -28,81 +28,83 @@ import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
 class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>> {
 
-	private Section querySection;
+  private Section querySection;
 
-	SimpleQueryCommandCodec(SimpleQueryCommand<T> cmd) {
-		super(cmd);
-	}
+  SimpleQueryCommandCodec(SimpleQueryCommand<T> cmd) {
+    super(cmd);
+  }
 
-	@Override
-	void encodeQuery(DRDAQueryRequest queryCommand) {
-		querySection = encoder.connMetadata.sectionManager.getSection(cmd.sql());
-		queryCommand.writePrepareDescribeOutput(cmd.sql(), encoder.connMetadata.databaseName, querySection);
-		// fetchSize=0 triggers default fetch size (64) to be used (TODO @AGG this should be configurable)
-		// @AGG hard coded to TYPE_FORWARD_ONLY
-		queryCommand.writeOpenQuery(querySection, encoder.connMetadata.databaseName, 0, ResultSet.TYPE_FORWARD_ONLY);
-	}
+  @Override
+  void encodeQuery(DRDAQueryRequest queryCommand) {
+    querySection = encoder.connMetadata.sectionManager.getSection(cmd.sql());
+    queryCommand.writePrepareDescribeOutput(cmd.sql(), encoder.connMetadata.databaseName, querySection);
+    // fetchSize=0 triggers default fetch size (64) to be used (TODO @AGG this
+    // should be configurable)
+    // @AGG hard coded to TYPE_FORWARD_ONLY
+    queryCommand.writeOpenQuery(querySection, encoder.connMetadata.databaseName, 0, ResultSet.TYPE_FORWARD_ONLY);
+  }
 
-	@Override
-	void encodeUpdate(DRDAQueryRequest updateCommand) {
-		querySection = encoder.connMetadata.sectionManager.getSection(cmd.sql());
-		updateCommand.writeExecuteImmediate(cmd.sql(), querySection, encoder.connMetadata.databaseName);
-		if (cmd.autoCommit()) {
-			updateCommand.buildRDBCMM();
-		}
+  @Override
+  void encodeUpdate(DRDAQueryRequest updateCommand) {
+    querySection = encoder.connMetadata.sectionManager.getSection(cmd.sql());
+    updateCommand.writeExecuteImmediate(cmd.sql(), querySection, encoder.connMetadata.databaseName);
+    if (cmd.autoCommit()) {
+      updateCommand.buildRDBCMM();
+    }
 
-		// @AGG TODO: auto-generated keys chain an OPNQRY command
-		// updateCommand.writeOpenQuery(s,
-		// encoder.dbMetadata.databaseName,
-		// 0, // triggers default fetch size (64) to be used @AGG this should be configurable
-		// ResultSet.TYPE_FORWARD_ONLY); // @AGG hard code to TYPE_FORWARD_ONLY
-	}
+    // @AGG TODO: auto-generated keys chain an OPNQRY command
+    // updateCommand.writeOpenQuery(s,
+    // encoder.dbMetadata.databaseName,
+    // 0, // triggers default fetch size (64) to be used @AGG this should be
+    // configurable
+    // ResultSet.TYPE_FORWARD_ONLY); // @AGG hard code to TYPE_FORWARD_ONLY
+  }
 
-	void decodeUpdate(ByteBuf payload) {
-		DRDAQueryResponse updateResponse = new DRDAQueryResponse(payload, encoder.connMetadata);
-		querySection.release();
+  void decodeUpdate(ByteBuf payload) {
+    DRDAQueryResponse updateResponse = new DRDAQueryResponse(payload, encoder.connMetadata);
+    querySection.release();
 
-		int updatedCount = (int) updateResponse.readExecuteImmediate();
-		// TODO: If auto-generated keys, read an OPNQRY here
-		// readOpenQuery()
-		T result = emptyResult(cmd.collector());
-		cmd.resultHandler().handleResult(updatedCount, 0, null, result, null);
+    int updatedCount = (int) updateResponse.readExecuteImmediate();
+    // TODO: If auto-generated keys, read an OPNQRY here
+    // readOpenQuery()
+    T result = emptyResult(cmd.collector());
+    cmd.resultHandler().handleResult(updatedCount, 0, null, result, null);
 
-		if (cmd.autoCommit()) {
-			updateResponse.readLocalCommit();
-		}
-		completionHandler.handle(CommandResponse.success(true));
-	}
+    if (cmd.autoCommit()) {
+      updateResponse.readLocalCommit();
+    }
+    completionHandler.handle(CommandResponse.success(true));
+  }
 
-	static <A, T> T emptyResult(Collector<Row, A, T> collector) {
-		return collector.finisher().apply(collector.supplier().get());
-	}
+  static <A, T> T emptyResult(Collector<Row, A, T> collector) {
+    return collector.finisher().apply(collector.supplier().get());
+  }
 
-	void decodeQuery(ByteBuf payload) {
-		querySection.release();
-		
-		DRDAQueryResponse resp = new DRDAQueryResponse(payload, encoder.connMetadata);
-		resp.readPrepareDescribeOutput();
-		resp.readBeginOpenQuery();
-		columnDefinitions = resp.getOutputColumnMetaData();
-		RowResultDecoder<?, T> decoder = new RowResultDecoder<>(cmd.collector(), new DB2RowDesc(columnDefinitions), resp.getCursor(), resp);
+  void decodeQuery(ByteBuf payload) {
+    querySection.release();
 
-		while (decoder.next()) {
-			decoder.handleRow(columnDefinitions.columns_, payload);
-		}
-		if (decoder.isQueryComplete()) {
-			decoder.cursor.setAllRowsReceivedFromServer(true);
-		} else {
-			throw new UnsupportedOperationException("Need to fetch more data from DB");
-		}
+    DRDAQueryResponse resp = new DRDAQueryResponse(payload, encoder.connMetadata);
+    resp.readPrepareDescribeOutput();
+    resp.readBeginOpenQuery();
+    columnDefinitions = resp.getOutputColumnMetaData();
+    RowResultDecoder<?, T> decoder = new RowResultDecoder<>(cmd.collector(), new DB2RowDesc(columnDefinitions), resp.getCursor(), resp);
 
-		handleQueryResult(decoder);
-		completionHandler.handle(CommandResponse.success(true));
-	}
-	
-	@Override
-	public String toString() {
-	  return super.toString() + ", section=" + querySection;
-	}
+    while (decoder.next()) {
+      decoder.handleRow(columnDefinitions.columns_, payload);
+    }
+    if (decoder.isQueryComplete()) {
+      decoder.cursor.setAllRowsReceivedFromServer(true);
+    } else {
+      throw new UnsupportedOperationException("Need to fetch more data from DB");
+    }
+
+    handleQueryResult(decoder);
+    completionHandler.handle(CommandResponse.success(true));
+  }
+
+  @Override
+  public String toString() {
+    return super.toString() + ", section=" + querySection;
+  }
 
 }

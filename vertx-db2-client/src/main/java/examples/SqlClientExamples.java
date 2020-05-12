@@ -15,11 +15,13 @@
  */
 package examples;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import io.vertx.core.Vertx;
 import io.vertx.docgen.Source;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
@@ -29,9 +31,6 @@ import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.Tuple;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Source
 public class SqlClientExamples {

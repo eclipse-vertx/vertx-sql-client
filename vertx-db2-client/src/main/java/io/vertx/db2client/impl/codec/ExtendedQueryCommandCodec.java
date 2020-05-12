@@ -23,49 +23,49 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
 class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
-  
-    final QueryInstance queryInstance;
-	
-    ExtendedQueryCommandCodec(ExtendedQueryCommand<R> cmd) {
-        super(cmd);
-        queryInstance = statement.getQueryInstance(cmd.cursorId());
-    }
-    
-    @Override
-    void encodeQuery(DRDAQueryRequest req) {
-    	encodePreparedQuery(req, queryInstance, cmd.params());
-    }
-    
-    @Override
-    void encodeUpdate(DRDAQueryRequest req) {
-    	encodePreparedUpdate(req, cmd.params());
-    	if (cmd.autoCommit()) {
-      	  req.buildRDBCMM();
-      	}
-    }
 
-    void decodeQuery(ByteBuf payload) {
-        DRDAQueryResponse resp = new DRDAQueryResponse(payload, encoder.connMetadata);
-        RowResultDecoder<?, R> decoder = decodePreparedQuery(payload, resp, queryInstance);
-        boolean hasMoreResults = !decoder.isQueryComplete();
-        handleQueryResult(decoder);
-        completionHandler.handle(CommandResponse.success(hasMoreResults));
+  final QueryInstance queryInstance;
+
+  ExtendedQueryCommandCodec(ExtendedQueryCommand<R> cmd) {
+    super(cmd);
+    queryInstance = statement.getQueryInstance(cmd.cursorId());
+  }
+
+  @Override
+  void encodeQuery(DRDAQueryRequest req) {
+    encodePreparedQuery(req, queryInstance, cmd.params());
+  }
+
+  @Override
+  void encodeUpdate(DRDAQueryRequest req) {
+    encodePreparedUpdate(req, cmd.params());
+    if (cmd.autoCommit()) {
+      req.buildRDBCMM();
     }
-    
-    void decodeUpdate(ByteBuf payload) {
-        DRDAQueryResponse updateResponse = new DRDAQueryResponse(payload, encoder.connMetadata);
-        handleUpdateResult(updateResponse);
-        if (cmd.autoCommit()) {
-          updateResponse.readLocalCommit();
-        }
-        completionHandler.handle(CommandResponse.success(true));
+  }
+
+  void decodeQuery(ByteBuf payload) {
+    DRDAQueryResponse resp = new DRDAQueryResponse(payload, encoder.connMetadata);
+    RowResultDecoder<?, R> decoder = decodePreparedQuery(payload, resp, queryInstance);
+    boolean hasMoreResults = !decoder.isQueryComplete();
+    handleQueryResult(decoder);
+    completionHandler.handle(CommandResponse.success(hasMoreResults));
+  }
+
+  void decodeUpdate(ByteBuf payload) {
+    DRDAQueryResponse updateResponse = new DRDAQueryResponse(payload, encoder.connMetadata);
+    handleUpdateResult(updateResponse);
+    if (cmd.autoCommit()) {
+      updateResponse.readLocalCommit();
     }
-    
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder(super.toString());
-		sb.append(", params=");
-		sb.append(cmd.params().deepToString());
-		return sb.toString();
-	}
+    completionHandler.handle(CommandResponse.success(true));
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder(super.toString());
+    sb.append(", params=");
+    sb.append(cmd.params().deepToString());
+    return sb.toString();
+  }
 }

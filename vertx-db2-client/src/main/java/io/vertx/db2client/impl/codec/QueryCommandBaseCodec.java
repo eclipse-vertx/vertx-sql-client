@@ -23,67 +23,67 @@ import io.vertx.sqlclient.impl.command.QueryCommandBase;
 
 abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends CommandCodec<Boolean, C> {
 
-    protected ColumnMetaData columnDefinitions;
-    protected final boolean isQuery;
+  protected ColumnMetaData columnDefinitions;
+  protected final boolean isQuery;
 
-    QueryCommandBaseCodec(C cmd) {
-        super(cmd);
-        this.isQuery = DRDAQueryRequest.isQuery(cmd.sql());
-    }
+  QueryCommandBaseCodec(C cmd) {
+    super(cmd);
+    this.isQuery = DRDAQueryRequest.isQuery(cmd.sql());
+  }
 
-    @Override
-    public String toString() {
-    	StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-    	sb.append("@");
-    	sb.append(Integer.toHexString(hashCode()));
-        sb.append(" sql=" + cmd.sql());
-        if (!isQuery)
-          sb.append(", autoCommit=" + cmd.autoCommit());
-        return sb.toString();
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+    sb.append("@");
+    sb.append(Integer.toHexString(hashCode()));
+    sb.append(" sql=" + cmd.sql());
+    if (!isQuery)
+      sb.append(", autoCommit=" + cmd.autoCommit());
+    return sb.toString();
+  }
+
+  @Override
+  void encode(DB2Encoder encoder) {
+    super.encode(encoder);
+
+    ByteBuf packet = allocateBuffer();
+    int packetStartIdx = packet.writerIndex();
+    DRDAQueryRequest req = new DRDAQueryRequest(packet, encoder.connMetadata);
+    if (isQuery) {
+      encodeQuery(req);
+    } else {
+      encodeUpdate(req);
     }
-    
-    @Override
-    void encode(DB2Encoder encoder) {
-        super.encode(encoder);
-        
-        ByteBuf packet = allocateBuffer();
-        int packetStartIdx = packet.writerIndex();
-        DRDAQueryRequest req = new DRDAQueryRequest(packet, encoder.connMetadata);
-        if (isQuery) {
-        	encodeQuery(req);
-        } else {
-        	encodeUpdate(req);
-        }
-        req.completeCommand();
-        
-        sendPacket(packet, packet.writerIndex() - packetStartIdx);
+    req.completeCommand();
+
+    sendPacket(packet, packet.writerIndex() - packetStartIdx);
+  }
+
+  abstract void encodeQuery(DRDAQueryRequest req);
+
+  abstract void encodeUpdate(DRDAQueryRequest req);
+
+  @Override
+  void decodePayload(ByteBuf payload, int payloadLength) {
+    if (isQuery) {
+      decodeQuery(payload);
+    } else {
+      decodeUpdate(payload);
     }
-    
-    abstract void encodeQuery(DRDAQueryRequest req);
-    
-    abstract void encodeUpdate(DRDAQueryRequest req);
-    
-    @Override
-    void decodePayload(ByteBuf payload, int payloadLength) {
-        if (isQuery) {
-            decodeQuery(payload);
-        } else {
-            decodeUpdate(payload);
-        }
-    }
-    
-    abstract void decodeQuery(ByteBuf payload);
-    
-    abstract void decodeUpdate(ByteBuf payload);
-    
-    void handleQueryResult(RowResultDecoder<?, T> decoder) {
-        Throwable failure = decoder.complete();
-        T result = decoder.result();
-        RowDesc rowDesc = decoder.rowDesc;
-        int size = decoder.size();
-        int updatedCount = decoder.size();
-        decoder.reset();
-        cmd.resultHandler().handleResult(updatedCount, size, rowDesc, result, failure);
-    }
-    
+  }
+
+  abstract void decodeQuery(ByteBuf payload);
+
+  abstract void decodeUpdate(ByteBuf payload);
+
+  void handleQueryResult(RowResultDecoder<?, T> decoder) {
+    Throwable failure = decoder.complete();
+    T result = decoder.result();
+    RowDesc rowDesc = decoder.rowDesc;
+    int size = decoder.size();
+    int updatedCount = decoder.size();
+    decoder.reset();
+    cmd.resultHandler().handleResult(updatedCount, size, rowDesc, result, failure);
+  }
+
 }

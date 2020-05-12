@@ -21,46 +21,46 @@ import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
 abstract class CommandCodec<R, C extends CommandBase<R>> {
-	
-    Handler<? super CommandResponse<R>> completionHandler;
-    public Throwable failure;
-    public R result;
-    final C cmd;
-    DB2Encoder encoder;
 
-    CommandCodec(C cmd) {
-        this.cmd = cmd;
-    }
+  Handler<? super CommandResponse<R>> completionHandler;
+  public Throwable failure;
+  public R result;
+  final C cmd;
+  DB2Encoder encoder;
 
-    abstract void decodePayload(ByteBuf payload, int payloadLength);
+  CommandCodec(C cmd) {
+    this.cmd = cmd;
+  }
 
-    void encode(DB2Encoder encoder) {
-        this.encoder = encoder;
-    }
+  abstract void decodePayload(ByteBuf payload, int payloadLength);
 
-    ByteBuf allocateBuffer() {
-        return encoder.chctx.alloc().ioBuffer();
-    }
+  void encode(DB2Encoder encoder) {
+    this.encoder = encoder;
+  }
 
-    ByteBuf allocateBuffer(int capacity) {
-        return encoder.chctx.alloc().ioBuffer(capacity);
-    }
+  ByteBuf allocateBuffer() {
+    return encoder.chctx.alloc().ioBuffer();
+  }
 
-    void sendPacket(ByteBuf packet, int payloadLength) {
-        if (payloadLength >= DB2Codec.PACKET_PAYLOAD_LENGTH_LIMIT) {
-            /*
-             * The original packet exceeds the limit of packet length, split the packet
-             * here. if payload length is exactly 16MBytes-1byte(0xFFFFFF), an empty packet
-             * is needed to indicate the termination.
-             */
-            throw new UnsupportedOperationException("Sending split packets not implemented");
+  ByteBuf allocateBuffer(int capacity) {
+    return encoder.chctx.alloc().ioBuffer(capacity);
+  }
+
+  void sendPacket(ByteBuf packet, int payloadLength) {
+    if (payloadLength >= DB2Codec.PACKET_PAYLOAD_LENGTH_LIMIT) {
+      /*
+       * The original packet exceeds the limit of packet length, split the packet
+       * here. if payload length is exactly 16MBytes-1byte(0xFFFFFF), an empty packet
+       * is needed to indicate the termination.
+       */
+      throw new UnsupportedOperationException("Sending split packets not implemented");
 //            sendSplitPacket(packet);
-        } else {
-            sendNonSplitPacket(packet);
-        }
+    } else {
+      sendNonSplitPacket(packet);
     }
+  }
 
-    void sendNonSplitPacket(ByteBuf packet) {
-        encoder.chctx.writeAndFlush(packet);
-    }
+  void sendNonSplitPacket(ByteBuf packet) {
+    encoder.chctx.writeAndFlush(packet);
+  }
 }

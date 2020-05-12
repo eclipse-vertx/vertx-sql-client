@@ -20,15 +20,15 @@ import io.vertx.sqlclient.impl.RowDesc;
 
 class DB2RowDesc extends RowDesc {
 
-    private final ColumnMetaData columnDefinitions;
+  private final ColumnMetaData columnDefinitions;
 
-    DB2RowDesc(ColumnMetaData columnDefinitions) {
-        super(columnDefinitions.getColumnNames());
-        this.columnDefinitions = columnDefinitions;
-    }
+  DB2RowDesc(ColumnMetaData columnDefinitions) {
+    super(columnDefinitions.getColumnNames());
+    this.columnDefinitions = columnDefinitions;
+  }
 
-    ColumnMetaData columnDefinitions() {
-        return columnDefinitions;
-    }
-    
+  ColumnMetaData columnDefinitions() {
+    return columnDefinitions;
+  }
+
 }

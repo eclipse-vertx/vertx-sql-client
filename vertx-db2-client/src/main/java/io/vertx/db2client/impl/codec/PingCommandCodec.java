@@ -25,47 +25,47 @@ import io.vertx.db2client.impl.drda.ConnectionMetaData;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
 class PingCommandCodec extends CommandCodec<Void, PingCommand> {
-  
-    // Use an isolated metadata instance since we will flow a new EXCSAT
-    private final ConnectionMetaData md = new ConnectionMetaData();
 
-	PingCommandCodec(PingCommand cmd) {
-		super(cmd);
-	}
+  // Use an isolated metadata instance since we will flow a new EXCSAT
+  private final ConnectionMetaData md = new ConnectionMetaData();
 
-	@Override
-	void encode(DB2Encoder encoder) {
-		super.encode(encoder);
-		sendPingRequest();
-	}
+  PingCommandCodec(PingCommand cmd) {
+    super(cmd);
+  }
 
-	@Override
-	void decodePayload(ByteBuf payload, int payloadLength) {
-		DRDAConnectResponse response = new DRDAConnectResponse(payload, md);
-		response.readExchangeServerAttributes();
-		completionHandler.handle(CommandResponse.success(null));
-		return;
-	}
+  @Override
+  void encode(DB2Encoder encoder) {
+    super.encode(encoder);
+    sendPingRequest();
+  }
 
-	private void sendPingRequest() {
-		ByteBuf packet = allocateBuffer();
-		int packetStartIdx = packet.writerIndex();
-		DRDAConnectRequest cmd = new DRDAConnectRequest(packet, md);
-        cmd.buildEXCSAT(DRDAConstants.EXTNAM, // externalName,
-            0x0A, // targetAgent,
-            DRDAConstants.TARGET_SQL_AM, // targetSqlam,
-            0x0C, // targetRdb,
-            0x0A, // TARGET_SECURITY_MEASURE, //targetSecmgr,
-            0, // targetCmntcpip,
-            0, // targetCmnappc, (not used)
-            0, // targetXamgr,
-            0, // targetSyncptmgr,
-            0, // targetRsyncmgr,
-            CCSIDConstants.TARGET_UNICODE_MGR // targetUnicodemgr
+  @Override
+  void decodePayload(ByteBuf payload, int payloadLength) {
+    DRDAConnectResponse response = new DRDAConnectResponse(payload, md);
+    response.readExchangeServerAttributes();
+    completionHandler.handle(CommandResponse.success(null));
+    return;
+  }
+
+  private void sendPingRequest() {
+    ByteBuf packet = allocateBuffer();
+    int packetStartIdx = packet.writerIndex();
+    DRDAConnectRequest cmd = new DRDAConnectRequest(packet, md);
+    cmd.buildEXCSAT(DRDAConstants.EXTNAM, // externalName,
+        0x0A, // targetAgent,
+        DRDAConstants.TARGET_SQL_AM, // targetSqlam,
+        0x0C, // targetRdb,
+        0x0A, // TARGET_SECURITY_MEASURE, //targetSecmgr,
+        0, // targetCmntcpip,
+        0, // targetCmnappc, (not used)
+        0, // targetXamgr,
+        0, // targetSyncptmgr,
+        0, // targetRsyncmgr,
+        CCSIDConstants.TARGET_UNICODE_MGR // targetUnicodemgr
     );
-		cmd.completeCommand();
+    cmd.completeCommand();
 
-		int lenOfPayload = packet.writerIndex() - packetStartIdx;
-		sendPacket(packet, lenOfPayload);
-	}
+    int lenOfPayload = packet.writerIndex() - packetStartIdx;
+    sendPacket(packet, lenOfPayload);
+  }
 }

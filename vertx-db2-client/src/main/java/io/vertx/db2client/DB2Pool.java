@@ -31,54 +31,60 @@ import static io.vertx.db2client.DB2ConnectOptions.fromUri;
 @VertxGen
 public interface DB2Pool extends Pool {
 
-    /**
-     * Like {@link #pool(String, PoolOptions)} with a default {@code poolOptions}.
-     */
-    static DB2Pool pool(String connectionUri) {
-      return pool(connectionUri, new PoolOptions());
-    }
+  /**
+   * Like {@link #pool(String, PoolOptions)} with a default {@code poolOptions}.
+   */
+  static DB2Pool pool(String connectionUri) {
+    return pool(connectionUri, new PoolOptions());
+  }
 
-    /**
-     * Like {@link #pool(DB2ConnectOptions, PoolOptions)} with {@code connectOptions} build from {@code connectionUri}.
-     */
-    static DB2Pool pool(String connectionUri, PoolOptions poolOptions) {
-      return pool(fromUri(connectionUri), poolOptions);
-    }
+  /**
+   * Like {@link #pool(DB2ConnectOptions, PoolOptions)} with
+   * {@code connectOptions} build from {@code connectionUri}.
+   */
+  static DB2Pool pool(String connectionUri, PoolOptions poolOptions) {
+    return pool(fromUri(connectionUri), poolOptions);
+  }
 
-    /**
-     * Like {@link #pool(Vertx, String,PoolOptions)} with a default {@code poolOptions}..
-     */
-    static DB2Pool pool(Vertx vertx, String connectionUri) {
-      return pool(vertx, fromUri(connectionUri), new PoolOptions());
-    }
+  /**
+   * Like {@link #pool(Vertx, String,PoolOptions)} with a default
+   * {@code poolOptions}..
+   */
+  static DB2Pool pool(Vertx vertx, String connectionUri) {
+    return pool(vertx, fromUri(connectionUri), new PoolOptions());
+  }
 
-    /**
-     * Like {@link #pool(Vertx, DB2ConnectOptions, PoolOptions)} with {@code connectOptions} build from {@code connectionUri}.
-     */
-    static DB2Pool pool(Vertx vertx, String connectionUri, PoolOptions poolOptions) {
-      return pool(vertx, fromUri(connectionUri), poolOptions);
-    }
+  /**
+   * Like {@link #pool(Vertx, DB2ConnectOptions, PoolOptions)} with
+   * {@code connectOptions} build from {@code connectionUri}.
+   */
+  static DB2Pool pool(Vertx vertx, String connectionUri, PoolOptions poolOptions) {
+    return pool(vertx, fromUri(connectionUri), poolOptions);
+  }
 
-    /**
-     * Create a connection pool to the DB2 server configured with the given {@code connectOptions} and {@code poolOptions}.
-     *
-     * @param connectOptions the options for the connection
-     * @param poolOptions the options for creating the pool
-     * @return the connection pool
-     */
-    static DB2Pool pool(DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
-      if (Vertx.currentContext() != null) {
-        throw new IllegalStateException("Running in a Vertx context => use DB2Pool#pool(Vertx, DB2ConnectOptions, PoolOptions) instead");
-      }
-      VertxOptions vertxOptions = new VertxOptions();
-      Vertx vertx = Vertx.vertx(vertxOptions);
-      return new DB2PoolImpl((ContextInternal) vertx.getOrCreateContext(), true, connectOptions, poolOptions);
+  /**
+   * Create a connection pool to the DB2 server configured with the given
+   * {@code connectOptions} and {@code poolOptions}.
+   *
+   * @param connectOptions the options for the connection
+   * @param poolOptions    the options for creating the pool
+   * @return the connection pool
+   */
+  static DB2Pool pool(DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
+    if (Vertx.currentContext() != null) {
+      throw new IllegalStateException(
+          "Running in a Vertx context => use DB2Pool#pool(Vertx, DB2ConnectOptions, PoolOptions) instead");
     }
+    VertxOptions vertxOptions = new VertxOptions();
+    Vertx vertx = Vertx.vertx(vertxOptions);
+    return new DB2PoolImpl((ContextInternal) vertx.getOrCreateContext(), true, connectOptions, poolOptions);
+  }
 
-    /**
-     * Like {@link #pool(DB2ConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
-     */
-    static DB2Pool pool(Vertx vertx, DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
-      return new DB2PoolImpl((ContextInternal) vertx.getOrCreateContext(), false, connectOptions, poolOptions);
-    }
+  /**
+   * Like {@link #pool(DB2ConnectOptions, PoolOptions)} with a specific
+   * {@link Vertx} instance.
+   */
+  static DB2Pool pool(Vertx vertx, DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
+    return new DB2PoolImpl((ContextInternal) vertx.getOrCreateContext(), false, connectOptions, poolOptions);
+  }
 }

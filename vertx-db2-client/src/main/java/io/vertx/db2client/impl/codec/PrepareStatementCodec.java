@@ -28,93 +28,86 @@ import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 
 class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareStatementCommand> {
 
-	private static final Logger LOG = LoggerFactory.getLogger(PrepareStatementCodec.class);
+  private static final Logger LOG = LoggerFactory.getLogger(PrepareStatementCodec.class);
 
-    private static enum CommandHandlerState {
-        INIT,
-        HANDLING_PARAM_COLUMN_DEFINITION,
-        PARAM_DEFINITIONS_DECODING_COMPLETED,
-        HANDLING_COLUMN_COLUMN_DEFINITION,
-        COLUMN_DEFINITIONS_DECODING_COMPLETED
+  private static enum CommandHandlerState {
+    INIT, HANDLING_PARAM_COLUMN_DEFINITION, 
+    PARAM_DEFINITIONS_DECODING_COMPLETED, 
+    HANDLING_COLUMN_COLUMN_DEFINITION,
+    COLUMN_DEFINITIONS_DECODING_COMPLETED
+  }
+
+  private CommandHandlerState commandHandlerState = CommandHandlerState.INIT;
+  private ColumnMetaData paramDesc;
+  private ColumnMetaData rowDesc;
+  private Section section;
+
+  PrepareStatementCodec(PrepareStatementCommand cmd) {
+    super(cmd);
+  }
+
+  @Override
+  void encode(DB2Encoder encoder) {
+    super.encode(encoder);
+    sendStatementPrepareCommand();
+  }
+
+  private void sendStatementPrepareCommand() {
+    ByteBuf packet = allocateBuffer();
+    // encode packet header
+    int packetStartIdx = packet.writerIndex();
+    DRDAQueryRequest prepareCommand = new DRDAQueryRequest(packet, encoder.connMetadata);
+    section = encoder.connMetadata.sectionManager.getSection(cmd.sql());
+    String dbName = encoder.connMetadata.databaseName;
+    prepareCommand.writePrepareDescribeOutput(cmd.sql(), dbName, section);
+    prepareCommand.writeDescribeInput(section, dbName);
+    prepareCommand.completeCommand();
+
+    // set payload length
+    int payloadLength = packet.writerIndex() - packetStartIdx;
+    sendPacket(packet, payloadLength);
+  }
+
+  @Override
+  void decodePayload(ByteBuf payload, int payloadLength) {
+    switch (commandHandlerState) {
+    case INIT:
+      DRDAQueryResponse response = new DRDAQueryResponse(payload, encoder.connMetadata);
+      response.readPrepareDescribeInputOutput();
+      rowDesc = response.getOutputColumnMetaData();
+      paramDesc = response.getInputColumnMetaData();
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Prepared parameters: " + paramDesc);
+      }
+      handleColumnDefinitionsDecodingCompleted();
+      commandHandlerState = CommandHandlerState.COLUMN_DEFINITIONS_DECODING_COMPLETED;
+      break;
+    default:
+      throw new IllegalStateException("Unknown state: " + commandHandlerState);
     }
+  }
 
-    private CommandHandlerState commandHandlerState = CommandHandlerState.INIT;
-    private ColumnMetaData paramDesc;
-    private ColumnMetaData rowDesc;
-    private Section section;
+  private void handleReadyForQuery() {
+    completionHandler.handle(CommandResponse.success(new DB2PreparedStatement(cmd.sql(), new DB2ParamDesc(paramDesc),
+        new DB2RowDesc(rowDesc), section, cmd.cacheable())));
+  }
 
-    PrepareStatementCodec(PrepareStatementCommand cmd) {
-        super(cmd);
-    }
+  private void resetIntermediaryResult() {
+    commandHandlerState = CommandHandlerState.INIT;
+    rowDesc = null;
+    paramDesc = null;
+    section = null;
+  }
 
-    @Override
-    void encode(DB2Encoder encoder) {
-        super.encode(encoder);
-        sendStatementPrepareCommand();
-    }
+  private void handleColumnDefinitionsDecodingCompleted() {
+    handleReadyForQuery();
+    resetIntermediaryResult();
+  }
 
-    private void sendStatementPrepareCommand() {
-        ByteBuf packet = allocateBuffer();
-        // encode packet header
-        int packetStartIdx = packet.writerIndex();
-        DRDAQueryRequest prepareCommand = new DRDAQueryRequest(packet, encoder.connMetadata);
-        section = encoder.connMetadata.sectionManager.getSection(cmd.sql());
-        String dbName = encoder.connMetadata.databaseName;
-        prepareCommand.writePrepareDescribeOutput(cmd.sql(), dbName, section);
-        prepareCommand.writeDescribeInput(section, dbName);
-        prepareCommand.completeCommand();
-
-        // set payload length
-        int payloadLength = packet.writerIndex() - packetStartIdx;
-        sendPacket(packet, payloadLength);
-    }
-
-    @Override
-    void decodePayload(ByteBuf payload, int payloadLength) {
-        switch (commandHandlerState) {
-        case INIT:
-            DRDAQueryResponse response = new DRDAQueryResponse(payload, encoder.connMetadata);
-            response.readPrepareDescribeInputOutput();
-            rowDesc = response.getOutputColumnMetaData();
-            paramDesc = response.getInputColumnMetaData();
-            if (LOG.isDebugEnabled()) {
-            	LOG.debug("Prepared parameters: " + paramDesc);
-            }
-            handleColumnDefinitionsDecodingCompleted();
-            commandHandlerState = CommandHandlerState.COLUMN_DEFINITIONS_DECODING_COMPLETED;
-            break;
-        default:
-            throw new IllegalStateException("Unknown state: " + commandHandlerState);
-        }
-    }
-
-    private void handleReadyForQuery() {
-        completionHandler.handle(CommandResponse.success(new DB2PreparedStatement(cmd.sql(),
-                new DB2ParamDesc(paramDesc), new DB2RowDesc(rowDesc), section, cmd.cacheable())));
-    }
-
-    private void resetIntermediaryResult() {
-        commandHandlerState = CommandHandlerState.INIT;
-        rowDesc = null;
-        paramDesc = null;
-        section = null;
-    }
-
-    private void handleColumnDefinitionsDecodingCompleted() {
-        handleReadyForQuery();
-        resetIntermediaryResult();
-    }
-
-    @Override
-    public String toString() {
-        return new StringBuilder(getClass().getSimpleName())
-          .append("@")
-          .append(Integer.toHexString(hashCode()))
-          .append(" sql=")
-          .append(cmd.sql())
-          .append(", section=")
-          .append(section)
-          .toString();
-    }
+  @Override
+  public String toString() {
+    return new StringBuilder(getClass().getSimpleName()).append("@").append(Integer.toHexString(hashCode()))
+        .append(" sql=").append(cmd.sql()).append(", section=").append(section).toString();
+  }
 
 }
