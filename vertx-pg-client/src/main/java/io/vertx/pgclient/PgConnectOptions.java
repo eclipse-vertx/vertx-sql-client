@@ -109,8 +109,8 @@ public class PgConnectOptions extends SqlConnectOptions {
     DEFAULT_PROPERTIES = Collections.unmodifiableMap(defaultProperties);
   }
 
-  private int pipeliningLimit;
-  private SslMode sslMode;
+  private int pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
+  private SslMode sslMode = DEFAULT_SSLMODE;
 
   public PgConnectOptions() {
     super();
@@ -119,6 +119,15 @@ public class PgConnectOptions extends SqlConnectOptions {
   public PgConnectOptions(JsonObject json) {
     super(json);
     PgConnectOptionsConverter.fromJson(json, this);
+  }
+  
+  public PgConnectOptions(SqlConnectOptions other) {
+    super(other);
+    if (other instanceof PgConnectOptions) {
+      PgConnectOptions opts = (PgConnectOptions) other;
+      pipeliningLimit = opts.pipeliningLimit;
+      sslMode = opts.sslMode;
+    }
   }
 
   public PgConnectOptions(PgConnectOptions other) {
@@ -431,8 +440,6 @@ public class PgConnectOptions extends SqlConnectOptions {
     this.setUser(DEFAULT_USER);
     this.setPassword(DEFAULT_PASSWORD);
     this.setDatabase(DEFAULT_DATABASE);
-    pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
-    sslMode = DEFAULT_SSLMODE;
     this.setProperties(new HashMap<>(DEFAULT_PROPERTIES));
   }
 
