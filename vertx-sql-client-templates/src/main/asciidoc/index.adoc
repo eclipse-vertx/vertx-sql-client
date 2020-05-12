@@ -205,7 +205,7 @@ will trigger  the generation of a corresponding mapper class.
 The _codegen_ annotation processor generates these classes at compilation time. It is a feature of the Java
 compiler so _no extra step_ is required, it is just a matter of configuring correctly your build:
 
-Just add the `io.vertx:vertx-codegen:processor` and `io.vertx:vertx-sql-client-template`
+Just add the `io.vertx:vertx-codegen:processor` and `io.vertx:${maven.artifactId}`
 dependencies to your build.
 
 Here a configuration example for Maven:
@@ -220,7 +220,7 @@ Here a configuration example for Maven:
 </dependency>
 <dependency>
   <groupId>io.vertx</groupId>
-  <artifactId>vertx-sql-client-template</artifactId>
+  <artifactId>${maven.artifactId}</artifactId>
   <version>${maven.version}</version>
 </dependency>
 ----
@@ -230,7 +230,7 @@ This feature can also be used in Gradle:
 [source]
 ----
 annotationProcessor "io.vertx:vertx-codegen:${maven.version}:processor"
-compile "io.vertx:vertx-sql-client-template:${maven.version}"
+compile "io.vertx:${maven.artifactId}:${maven.version}"
 ----
 
 IDEs usually provide usually support for annotation processors.
