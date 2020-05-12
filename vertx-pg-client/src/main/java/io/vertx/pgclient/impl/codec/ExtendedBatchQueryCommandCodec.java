@@ -29,6 +29,7 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
 
   @Override
   void encode(PgEncoder encoder) {
+    super.encode(encoder);
     if (cmd.isSuspended()) {
       encoder.writeExecute(cmd.cursorId(), cmd.fetch());
       encoder.writeSync();
