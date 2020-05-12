@@ -68,7 +68,5 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
       encoder.channelHandlerContext().fireChannelRead(new InvalidCachedStatementExecutionEvent(cmd.preparedStatement()));
     }
     super.handleErrorResponse(errorResponse);
-
-
   }
 }
