@@ -17,11 +17,45 @@
 
 package io.vertx.pgclient;
 
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.sqlclient.Tuple;
+import org.junit.Test;
+
 public class PreparedStatementCachedTest extends PreparedStatementTestBase {
 
   @Override
   protected PgConnectOptions options() {
     return new PgConnectOptions(options).setCachePreparedStatements(true);
+  }
+
+  @Test
+  public void testOneShotPreparedQueryCacheRefreshOnTableSchemaChange(TestContext ctx) {
+    Async async = ctx.async();
+    PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("SELECT * FROM unstable WHERE id=$1").execute(Tuple.of(1), ctx.asyncAssertSuccess(res1 -> {
+        ctx.assertEquals(1, res1.size());
+        Tuple row1 = res1.iterator().next();
+        ctx.assertEquals(1, row1.getInteger(0));
+        ctx.assertEquals("fortune: No such file or directory", row1.getString(1));
+
+        // change table schema
+        conn.query("ALTER TABLE unstable DROP COLUMN message").execute(ctx.asyncAssertSuccess(dropColumn -> {
+          // failure due to schema change
+          conn.preparedQuery("SELECT * FROM unstable WHERE id=$1").execute(Tuple.of(1), ctx.asyncAssertFailure(failure -> {
+            // recover because the cache is refreshed
+            conn.preparedQuery("SELECT * FROM unstable WHERE id=$1").execute(Tuple.of(1), ctx.asyncAssertSuccess(res2 -> {
+              ctx.assertEquals(1, res2.size());
+              Tuple row2 = res2.iterator().next();
+              ctx.assertEquals(1, row2.getInteger(0));
+              ctx.assertEquals(null, row2.getString(1)); // the message column is removed
+              conn.close();
+              async.complete();
+            }));
+          }));
+        }));
+      }));
+    }));
   }
 
 }

@@ -222,12 +222,21 @@ public abstract class SocketConnectionBase implements Connection {
       checkPending();
       CommandResponse resp =(CommandResponse) msg;
       resp.fire();
+    } else if (msg instanceof InvalidCachedStatementExecutionEvent) {
+      InvalidCachedStatementExecutionEvent event = (InvalidCachedStatementExecutionEvent) msg;
+      removePreparedStatement(event.preparedStatement());
     }
   }
 
   protected void handleEvent(Object event) {
     if (holder != null) {
       holder.handleEvent(event);
+    }
+  }
+
+  private void removePreparedStatement(PreparedStatement preparedStatement) {
+    if (this.psCache != null) {
+      this.psCache.remove(preparedStatement);
     }
   }
 

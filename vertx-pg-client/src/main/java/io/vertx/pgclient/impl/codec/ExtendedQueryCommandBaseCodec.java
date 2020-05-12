@@ -16,14 +16,24 @@
  */
 package io.vertx.pgclient.impl.codec;
 
+import io.vertx.sqlclient.impl.InvalidCachedStatementExecutionEvent;
 import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommandBase;
 
 abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBase<R>> extends QueryCommandBaseCodec<R, C> {
 
+  private PgEncoder encoder;
+
+  private static final String TABLE_SCHEMA_CHANGE_ERROR_MESSAGE_PATTERN = "bind message has \\d result formats but query has \\d columns";
+
   ExtendedQueryCommandBaseCodec(C cmd) {
     super(cmd);
     decoder = new RowResultDecoder<>(cmd.collector(), ((PgPreparedStatement)cmd.preparedStatement()).rowDesc());
+  }
+
+  @Override
+  void encode(PgEncoder encoder) {
+    this.encoder = encoder;
   }
 
   @Override
@@ -50,5 +60,15 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
   @Override
   void handleBindComplete() {
     // Response to Bind
+  }
+
+  @Override
+  public void handleErrorResponse(ErrorResponse errorResponse) {
+    if (cmd.preparedStatement().cacheable() && errorResponse.getMessage().matches(TABLE_SCHEMA_CHANGE_ERROR_MESSAGE_PATTERN)) {
+      encoder.channelHandlerContext().fireChannelRead(new InvalidCachedStatementExecutionEvent(cmd.preparedStatement()));
+    }
+    super.handleErrorResponse(errorResponse);
+
+
   }
 }
