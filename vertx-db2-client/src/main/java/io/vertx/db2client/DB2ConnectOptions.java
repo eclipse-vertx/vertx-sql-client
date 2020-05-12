@@ -60,7 +60,7 @@ public class DB2ConnectOptions extends SqlConnectOptions {
     DEFAULT_CONNECTION_ATTRIBUTES = Collections.unmodifiableMap(defaultAttributes);
   }
 
-  private int pipeliningLimit;
+  private int pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
 
   public DB2ConnectOptions() {
     super();
@@ -74,6 +74,14 @@ public class DB2ConnectOptions extends SqlConnectOptions {
   public DB2ConnectOptions(JsonObject json) {
     super(json);
     DB2ConnectOptionsConverter.fromJson(json, this);
+  }
+
+  public DB2ConnectOptions(SqlConnectOptions other) {
+    super(other);
+    if (other instanceof DB2ConnectOptions) {
+      DB2ConnectOptions opts = (DB2ConnectOptions) other;
+      this.pipeliningLimit = opts.pipeliningLimit;
+    }
   }
 
   public DB2ConnectOptions(DB2ConnectOptions other) {
@@ -174,7 +182,6 @@ public class DB2ConnectOptions extends SqlConnectOptions {
   protected void init() {
     this.setHost(DEFAULT_HOST);
     this.setPort(DEFAULT_PORT);
-    this.setPipeliningLimit(DEFAULT_PIPELINING_LIMIT);
     this.setProperties(new HashMap<>(DEFAULT_CONNECTION_ATTRIBUTES));
   }
 
