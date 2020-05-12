@@ -16,7 +16,7 @@
  */
 package io.vertx.pgclient.impl.codec;
 
-import io.vertx.sqlclient.impl.InvalidCachedStatementExecutionEvent;
+import io.vertx.sqlclient.impl.codec.InvalidCachedStatementEvent;
 import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommandBase;
 
@@ -65,7 +65,7 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
   @Override
   public void handleErrorResponse(ErrorResponse errorResponse) {
     if (cmd.preparedStatement().cacheable() && errorResponse.getMessage().matches(TABLE_SCHEMA_CHANGE_ERROR_MESSAGE_PATTERN)) {
-      encoder.channelHandlerContext().fireChannelRead(new InvalidCachedStatementExecutionEvent(cmd.preparedStatement()));
+      encoder.channelHandlerContext().fireChannelRead(new InvalidCachedStatementEvent(cmd.preparedStatement().sql()));
     }
     super.handleErrorResponse(errorResponse);
   }

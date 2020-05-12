@@ -76,11 +76,11 @@ public class PreparedStatementCache {
   /**
    * Remove the cached entry when the cached statement is closing so that pending requests will not use a closed prepared statement.
    *
-   * @param preparedStatement the cached statement which will be closed
+   * @param sql the identified sql of the cached statement
    */
-  public void remove(PreparedStatement preparedStatement) {
-    this.inflight.remove(preparedStatement.sql());
-    this.cache.remove(preparedStatement.sql());
+  public void remove(String sql) {
+    this.inflight.remove(sql);
+    this.cache.remove(sql);
   }
 
   LruCache cache() {

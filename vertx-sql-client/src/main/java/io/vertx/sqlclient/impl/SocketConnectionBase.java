@@ -31,6 +31,7 @@ import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.impl.cache.PreparedStatementCache;
+import io.vertx.sqlclient.impl.codec.InvalidCachedStatementEvent;
 import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
@@ -187,7 +188,7 @@ public abstract class SocketConnectionBase implements Connection {
          * or it's automatically sent by the cache once the stmt is evicted, we should clean up the cache for those closing cached prepared statements.
          */
         if (closeStmtCommand.statement().cacheable()) {
-          psCache.remove(closeStmtCommand.statement());
+          psCache.remove(closeStmtCommand.statement().sql());
         }
       }
     }
@@ -222,9 +223,9 @@ public abstract class SocketConnectionBase implements Connection {
       checkPending();
       CommandResponse resp =(CommandResponse) msg;
       resp.fire();
-    } else if (msg instanceof InvalidCachedStatementExecutionEvent) {
-      InvalidCachedStatementExecutionEvent event = (InvalidCachedStatementExecutionEvent) msg;
-      removePreparedStatement(event.preparedStatement());
+    } else if (msg instanceof InvalidCachedStatementEvent) {
+      InvalidCachedStatementEvent event = (InvalidCachedStatementEvent) msg;
+      removeCachedStatement(event.sql());
     }
   }
 
@@ -234,9 +235,9 @@ public abstract class SocketConnectionBase implements Connection {
     }
   }
 
-  private void removePreparedStatement(PreparedStatement preparedStatement) {
+  private void removeCachedStatement(String sql) {
     if (this.psCache != null) {
-      this.psCache.remove(preparedStatement);
+      this.psCache.remove(sql);
     }
   }
 
