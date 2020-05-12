@@ -11,22 +11,13 @@
 
 package io.vertx.mysqlclient.data.spatial;
 
-import io.vertx.codegen.annotations.DataObject;
-import io.vertx.core.json.JsonObject;
-
 /**
  * A Point is a geometry that represents a single location in coordinate space.
  */
-@DataObject(generateConverter = true)
 public class Point extends Geometry {
   private double x, y;
 
   public Point() {
-  }
-
-  public Point(JsonObject json) {
-    super(json);
-    PointConverter.fromJson(json, this);
   }
 
   public Point(Point other) {
@@ -57,11 +48,5 @@ public class Point extends Geometry {
 
   public double getY() {
     return y;
-  }
-
-  public JsonObject toJson() {
-    JsonObject json = super.toJson();
-    PointConverter.toJson(this, json);
-    return json;
   }
 }
