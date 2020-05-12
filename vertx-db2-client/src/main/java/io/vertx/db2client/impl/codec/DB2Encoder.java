@@ -37,93 +37,93 @@ import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
 class DB2Encoder extends ChannelOutboundHandlerAdapter {
-	
-	private static final Logger LOG = LoggerFactory.getLogger(DB2Encoder.class);
 
-	public final ConnectionMetaData connMetadata = new ConnectionMetaData();
-    private final ArrayDeque<CommandCodec<?, ?>> inflight;
-    ChannelHandlerContext chctx;
+  private static final Logger LOG = LoggerFactory.getLogger(DB2Encoder.class);
 
-    DB2SocketConnection socketConnection;
+  public final ConnectionMetaData connMetadata = new ConnectionMetaData();
+  private final ArrayDeque<CommandCodec<?, ?>> inflight;
+  ChannelHandlerContext chctx;
 
-    DB2Encoder(ArrayDeque<CommandCodec<?, ?>> inflight, DB2SocketConnection db2SocketConnection) {
-        this.inflight = inflight;
-        this.socketConnection = db2SocketConnection;
+  DB2SocketConnection socketConnection;
+
+  DB2Encoder(ArrayDeque<CommandCodec<?, ?>> inflight, DB2SocketConnection db2SocketConnection) {
+    this.inflight = inflight;
+    this.socketConnection = db2SocketConnection;
+  }
+
+  @Override
+  public void handlerAdded(ChannelHandlerContext ctx) {
+    chctx = ctx;
+  }
+
+  @Override
+  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+    if (msg instanceof CommandBase<?>) {
+      CommandBase<?> cmd = (CommandBase<?>) msg;
+      write(cmd);
+    } else {
+      super.write(ctx, msg, promise);
     }
+  }
 
-    @Override
-    public void handlerAdded(ChannelHandlerContext ctx) {
-        chctx = ctx;
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  void write(CommandBase<?> cmd) {
+    CommandCodec<?, ?> codec = wrap(cmd);
+    codec.completionHandler = resp -> {
+      CommandCodec<?, ?> c = inflight.poll();
+      resp.cmd = (CommandBase) c.cmd;
+      chctx.fireChannelRead(resp);
+    };
+    inflight.add(codec);
+    try {
+      codec.encode(this);
+    } catch (Throwable e) {
+      LOG.error("FATAL: Unable to encode command: " + cmd, e);
+      codec.completionHandler.handle(CommandResponse.failure(e));
     }
+  }
 
-    @Override
-    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        if (msg instanceof CommandBase<?>) {
-            CommandBase<?> cmd = (CommandBase<?>) msg;
-            write(cmd);
-        } else {
-            super.write(ctx, msg, promise);
-        }
-    }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    void write(CommandBase<?> cmd) {
-        CommandCodec<?, ?> codec = wrap(cmd);
-        codec.completionHandler = resp -> {
-            CommandCodec<?, ?> c = inflight.poll();
-            resp.cmd = (CommandBase) c.cmd;
-            chctx.fireChannelRead(resp);
-        };
-        inflight.add(codec);
-        try {
-            codec.encode(this);
-        } catch (Throwable e) {
-            LOG.error("FATAL: Unable to encode command: " + cmd, e);
-            codec.completionHandler.handle(CommandResponse.failure(e));
-        }
-    }
-
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    private CommandCodec<?, ?> wrap(CommandBase<?> cmd) {
-    	CommandCodec<?,?> codec = null;
-        if (cmd instanceof InitialHandshakeCommand) {
-            codec = new InitialHandshakeCommandCodec((InitialHandshakeCommand) cmd);
-        } else if (cmd instanceof SimpleQueryCommand) {
-            codec = new SimpleQueryCommandCodec((SimpleQueryCommand) cmd);
-        } else if (cmd instanceof ExtendedQueryCommand) {
-            codec = new ExtendedQueryCommandCodec((ExtendedQueryCommand) cmd);
-        } else if (cmd instanceof ExtendedBatchQueryCommand<?>) {
-          codec = new ExtendedBatchQueryCommandCodec<>((ExtendedBatchQueryCommand<?>) cmd);
-        } else if (cmd instanceof CloseConnectionCommand) {
-            codec = new CloseConnectionCommandCodec((CloseConnectionCommand) cmd);
-        } else if (cmd instanceof PrepareStatementCommand) {
-       		codec = new PrepareStatementCodec((PrepareStatementCommand) cmd);
-        } else if (cmd instanceof CloseStatementCommand) {
-            codec = new CloseStatementCommandCodec((CloseStatementCommand) cmd);
-        } else if (cmd instanceof CloseCursorCommand) {
-            codec = new CloseCursorCommandCodec((CloseCursorCommand) cmd);
-        } else if (cmd instanceof PingCommand) {
-            codec = new PingCommandCodec((PingCommand) cmd);
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  private CommandCodec<?, ?> wrap(CommandBase<?> cmd) {
+    CommandCodec<?, ?> codec = null;
+    if (cmd instanceof InitialHandshakeCommand) {
+      codec = new InitialHandshakeCommandCodec((InitialHandshakeCommand) cmd);
+    } else if (cmd instanceof SimpleQueryCommand) {
+      codec = new SimpleQueryCommandCodec((SimpleQueryCommand) cmd);
+    } else if (cmd instanceof ExtendedQueryCommand) {
+      codec = new ExtendedQueryCommandCodec((ExtendedQueryCommand) cmd);
+    } else if (cmd instanceof ExtendedBatchQueryCommand<?>) {
+      codec = new ExtendedBatchQueryCommandCodec<>((ExtendedBatchQueryCommand<?>) cmd);
+    } else if (cmd instanceof CloseConnectionCommand) {
+      codec = new CloseConnectionCommandCodec((CloseConnectionCommand) cmd);
+    } else if (cmd instanceof PrepareStatementCommand) {
+      codec = new PrepareStatementCodec((PrepareStatementCommand) cmd);
+    } else if (cmd instanceof CloseStatementCommand) {
+      codec = new CloseStatementCommandCodec((CloseStatementCommand) cmd);
+    } else if (cmd instanceof CloseCursorCommand) {
+      codec = new CloseCursorCommandCodec((CloseCursorCommand) cmd);
+    } else if (cmd instanceof PingCommand) {
+      codec = new PingCommandCodec((PingCommand) cmd);
 //        } else if (cmd instanceof InitDbCommand) {
 //            codec = new InitDbCommandCodec((InitDbCommand) cmd);
-            // } else if (cmd instanceof StatisticsCommand) {
-            // codec = new StatisticsCommandCodec((StatisticsCommand) cmd);
-            // } else if (cmd instanceof SetOptionCommand) {
-            // codec = new SetOptionCommandCodec((SetOptionCommand) cmd);
-            // } else if (cmd instanceof ResetConnectionCommand) {
-            // codec = new ResetConnectionCommandCodec((ResetConnectionCommand) cmd);
-            // } else if (cmd instanceof DebugCommand) {
-            // codec = new DebugCommandCodec((DebugCommand) cmd);
-            // } else if (cmd instanceof ChangeUserCommand) {
-            // codec = new ChangeUserCommandCodec((ChangeUserCommand) cmd);
-        } else {
-            UnsupportedOperationException uoe = new UnsupportedOperationException("Unsupported command type: " + cmd);
-            LOG.error(uoe);
-            throw uoe;
-        }
-        if (LOG.isDebugEnabled())
-    		LOG.debug(">>> ENCODE " + codec);
-        return codec;
+      // } else if (cmd instanceof StatisticsCommand) {
+      // codec = new StatisticsCommandCodec((StatisticsCommand) cmd);
+      // } else if (cmd instanceof SetOptionCommand) {
+      // codec = new SetOptionCommandCodec((SetOptionCommand) cmd);
+      // } else if (cmd instanceof ResetConnectionCommand) {
+      // codec = new ResetConnectionCommandCodec((ResetConnectionCommand) cmd);
+      // } else if (cmd instanceof DebugCommand) {
+      // codec = new DebugCommandCodec((DebugCommand) cmd);
+      // } else if (cmd instanceof ChangeUserCommand) {
+      // codec = new ChangeUserCommandCodec((ChangeUserCommand) cmd);
+    } else {
+      UnsupportedOperationException uoe = new UnsupportedOperationException("Unsupported command type: " + cmd);
+      LOG.error(uoe);
+      throw uoe;
     }
-    
+    if (LOG.isDebugEnabled())
+      LOG.debug(">>> ENCODE " + codec);
+    return codec;
+  }
+
 }

@@ -30,75 +30,75 @@ import io.vertx.sqlclient.impl.TupleInternal;
 
 class DB2PreparedStatement implements PreparedStatement {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DB2PreparedStatement.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DB2PreparedStatement.class);
 
-    final String sql;
-    final DB2ParamDesc paramDesc;
-    final DB2RowDesc rowDesc;
-    final Section section;
-    final boolean cacheable;
+  final String sql;
+  final DB2ParamDesc paramDesc;
+  final DB2RowDesc rowDesc;
+  final Section section;
+  final boolean cacheable;
 
-    private final Map<String, QueryInstance> activeQueries = new HashMap<>(4);
+  private final Map<String, QueryInstance> activeQueries = new HashMap<>(4);
 
-    public static class QueryInstance {
-        final String cursorId;
-        long queryInstanceId;
-        Cursor cursor;
+  public static class QueryInstance {
+    final String cursorId;
+    long queryInstanceId;
+    Cursor cursor;
 
-        QueryInstance(String cursorId) {
-            if (LOG.isDebugEnabled())
-                LOG.debug("Creating new queryInstance with id=" + cursorId);
-            this.cursorId = cursorId;
-        }
+    QueryInstance(String cursorId) {
+      if (LOG.isDebugEnabled())
+        LOG.debug("Creating new queryInstance with id=" + cursorId);
+      this.cursorId = cursorId;
     }
+  }
 
-    DB2PreparedStatement(String sql, DB2ParamDesc paramDesc, DB2RowDesc rowDesc, Section section, boolean cacheable) {
-        this.paramDesc = paramDesc;
-        this.rowDesc = rowDesc;
-        this.sql = sql;
-        this.section = section;
-        this.cacheable = cacheable;
-    }
+  DB2PreparedStatement(String sql, DB2ParamDesc paramDesc, DB2RowDesc rowDesc, Section section, boolean cacheable) {
+    this.paramDesc = paramDesc;
+    this.rowDesc = rowDesc;
+    this.sql = sql;
+    this.section = section;
+    this.cacheable = cacheable;
+  }
 
-    @Override
-    public ParamDesc paramDesc() {
-        return paramDesc;
-    }
+  @Override
+  public ParamDesc paramDesc() {
+    return paramDesc;
+  }
 
-    @Override
-    public RowDesc rowDesc() {
-        return rowDesc;
-    }
+  @Override
+  public RowDesc rowDesc() {
+    return rowDesc;
+  }
 
-    @Override
-    public String sql() {
-        return sql;
-    }
+  @Override
+  public String sql() {
+    return sql;
+  }
 
-    @Override
-    public String prepare(TupleInternal values) {
-        return paramDesc.prepare(values);
-    }
+  @Override
+  public String prepare(TupleInternal values) {
+    return paramDesc.prepare(values);
+  }
 
-    @Override
-    public boolean cacheable() {
-      return cacheable;
-    }
+  @Override
+  public boolean cacheable() {
+    return cacheable;
+  }
 
-    QueryInstance getQueryInstance(String cursorId) {
-        cursorId = cursorId == null ? UUID.randomUUID().toString() : cursorId;
-        return activeQueries.computeIfAbsent(cursorId, c -> {
-            return new QueryInstance(c);
-        });
-    }
+  QueryInstance getQueryInstance(String cursorId) {
+    cursorId = cursorId == null ? UUID.randomUUID().toString() : cursorId;
+    return activeQueries.computeIfAbsent(cursorId, c -> {
+      return new QueryInstance(c);
+    });
+  }
 
-    void closeQuery(QueryInstance query) {
-        LOG.debug("Closing queryInstance " + query.cursorId);
-        activeQueries.remove(query.cursorId);
-    }
+  void closeQuery(QueryInstance query) {
+    LOG.debug("Closing queryInstance " + query.cursorId);
+    activeQueries.remove(query.cursorId);
+  }
 
-    void close() {
-        activeQueries.values().stream().forEach(this::closeQuery);
-        section.release();
-    }
+  void close() {
+    activeQueries.values().stream().forEach(this::closeQuery);
+    section.release();
+  }
 }

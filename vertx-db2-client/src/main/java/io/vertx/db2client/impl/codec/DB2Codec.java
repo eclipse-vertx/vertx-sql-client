@@ -21,16 +21,16 @@ import io.netty.channel.CombinedChannelDuplexHandler;
 import io.vertx.db2client.impl.DB2SocketConnection;
 
 public class DB2Codec extends CombinedChannelDuplexHandler<DB2Decoder, DB2Encoder> {
-    
-    // TODO @AGG check what packet length limit actually is for DB2
-    static final int PACKET_PAYLOAD_LENGTH_LIMIT = 0xFFFFFF;
+
+  // TODO @AGG check what packet length limit actually is for DB2
+  static final int PACKET_PAYLOAD_LENGTH_LIMIT = 0xFFFFFF;
 
   private final ArrayDeque<CommandCodec<?, ?>> inflight = new ArrayDeque<>();
-  
+
   public DB2Codec(DB2SocketConnection db2SocketConnection) {
     DB2Encoder encoder = new DB2Encoder(inflight, db2SocketConnection);
     DB2Decoder decoder = new DB2Decoder(inflight);
     init(decoder, encoder);
   }
-  
+
 }

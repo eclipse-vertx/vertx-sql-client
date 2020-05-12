@@ -29,28 +29,28 @@ import io.vertx.core.json.JsonObject;
 
 /**
  * This is a parser for parsing connection URIs of DB2.
- * @see <a href="https://www.ibm.com/support/knowledgecenter/SSEPGG_9.7.0/com.ibm.db2.luw.apdv.java.doc/src/tpc/imjcc_r0052342.html">DB2 official doc</a> 
+ * 
+ * @see <a href=
+ *      "https://www.ibm.com/support/knowledgecenter/SSEPGG_9.7.0/com.ibm.db2.luw.apdv.java.doc/src/tpc/imjcc_r0052342.html">DB2
+ *      official doc</a>
  */
 public class DB2ConnectionUriParser {
-    // TODO @AGG implement URI parsing
+
+  // TODO @AGG implement URI parsing
   private static final String SCHEME_DESIGNATOR_REGEX = "(db2)://"; // URI scheme designator
-  private static final String USER_INFO_REGEX = "((?<userinfo>[a-zA-Z0-9\\-._~%!]+(:[a-zA-Z0-9\\-._~%!]*)?)@)?"; // user name and password
-  private static final String NET_LOCATION_REGEX = "(?<host>[0-9.]+|\\[[a-zA-Z0-9:]+]|[a-zA-Z0-9\\-._~%]+)"; // ip v4/v6 address or host name
+  private static final String USER_INFO_REGEX = "((?<userinfo>[a-zA-Z0-9\\-._~%!]+(:[a-zA-Z0-9\\-._~%!]*)?)@)?"; // username and password
+  private static final String NET_LOCATION_REGEX = "(?<host>[0-9.]+|\\[[a-zA-Z0-9:]+]|[a-zA-Z0-9\\-._~%]+)"; // ip v4/v6 address or hostname
   private static final String PORT_REGEX = "(:(?<port>\\d+))?"; // port
   private static final String SCHEMA_REGEX = "(/(?<schema>[a-zA-Z0-9\\-._~%!]+))?"; // schema name
   private static final String ATTRIBUTES_REGEX = "(\\?(?<attributes>.*))?"; // attributes
 
   private static final String FULL_URI_REGEX = "^" // regex start
-    + SCHEME_DESIGNATOR_REGEX
-    + USER_INFO_REGEX
-    + NET_LOCATION_REGEX
-    + PORT_REGEX
-    + SCHEMA_REGEX
-    + ATTRIBUTES_REGEX
-    + "$"; // regex end
+      + SCHEME_DESIGNATOR_REGEX + USER_INFO_REGEX + NET_LOCATION_REGEX + PORT_REGEX + SCHEMA_REGEX + ATTRIBUTES_REGEX
+      + "$"; // regex end
 
   public static JsonObject parse(String connectionUri) {
-    // if we get any exception during the parsing, then we throw an IllegalArgumentException.
+    // if we get any exception during the parsing, then we throw an
+    // IllegalArgumentException.
     try {
       JsonObject configuration = new JsonObject();
       doParse(connectionUri, configuration);
@@ -147,33 +147,34 @@ public class DB2ConnectionUriParser {
       }
       int indexOfDelimiter = parameterPair.indexOf("=");
       if (indexOfDelimiter < 0) {
-        throw new IllegalArgumentException(format("Missing delimiter '=' of parameters \"%s\" in the part \"%s\"", attributesInfo, parameterPair));
+        throw new IllegalArgumentException(
+            format("Missing delimiter '=' of parameters \"%s\" in the part \"%s\"", attributesInfo, parameterPair));
       } else {
         String key = parameterPair.substring(0, indexOfDelimiter).toLowerCase();
         String value = decodeUrl(parameterPair.substring(indexOfDelimiter + 1).trim());
         switch (key) {
-          // Base Connection Parameters
-          case "user":
-            configuration.put("user", value);
-            break;
-          case "password":
-            configuration.put("password", value);
-            break;
-          case "host":
-            parseHostValue(value, configuration);
-            break;
-          case "port":
-            parsePort(value, configuration);
-            break;
-          case "socket":
-            configuration.put("socket", value);
-            break;
-          case "schema":
-            configuration.put("database", value);
-            break;
-          default:
-            configuration.put(key, value);
-            break;
+        // Base Connection Parameters
+        case "user":
+          configuration.put("user", value);
+          break;
+        case "password":
+          configuration.put("password", value);
+          break;
+        case "host":
+          parseHostValue(value, configuration);
+          break;
+        case "port":
+          parsePort(value, configuration);
+          break;
+        case "socket":
+          configuration.put("socket", value);
+          break;
+        case "schema":
+          configuration.put("database", value);
+          break;
+        default:
+          configuration.put(key, value);
+          break;
         }
       }
     }

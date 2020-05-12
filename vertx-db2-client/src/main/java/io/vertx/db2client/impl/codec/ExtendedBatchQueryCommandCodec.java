@@ -31,7 +31,7 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
 
 class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedBatchQueryCommand<R>> {
-  
+
   private static final Logger LOG = LoggerFactory.getLogger(ExtendedBatchQueryCommandCodec.class);
 
   private final List<Tuple> params;
@@ -51,66 +51,64 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
       completionHandler.handle(CommandResponse.failure("Can not execute batch query with 0 sets of batch parameters."));
       return;
     }
-    
+
     super.encode(encoder);
   }
-  
-	@Override
-	void encodeQuery(DRDAQueryRequest req) {
-		for (int i = 0; i < params.size(); i++) {
-		      Tuple params = this.params.get(i);
-		      QueryInstance queryInstance = statement.getQueryInstance(baseCursorId + i);
-		      queryInstances.add(i, queryInstance);
-		      encodePreparedQuery(req, queryInstance, params);
-		}
-	}
 
-	@Override
-	void encodeUpdate(DRDAQueryRequest req) {
-		for (Tuple params : this.params) {
-			encodePreparedUpdate(req, params);
-		}
-	    if (cmd.autoCommit()) {
-	        req.buildRDBCMM();
-	    }
-	}
-  
+  @Override
+  void encodeQuery(DRDAQueryRequest req) {
+    for (int i = 0; i < params.size(); i++) {
+      Tuple params = this.params.get(i);
+      QueryInstance queryInstance = statement.getQueryInstance(baseCursorId + i);
+      queryInstances.add(i, queryInstance);
+      encodePreparedQuery(req, queryInstance, params);
+    }
+  }
+
+  @Override
+  void encodeUpdate(DRDAQueryRequest req) {
+    for (Tuple params : this.params) {
+      encodePreparedUpdate(req, params);
+    }
+    if (cmd.autoCommit()) {
+      req.buildRDBCMM();
+    }
+  }
+
   void decodeQuery(ByteBuf payload) {
-      boolean hasMoreResults = true;
-      DRDAQueryResponse resp = new DRDAQueryResponse(payload, encoder.connMetadata);
-      for (int i = 0; i < params.size(); i++) {
-        if (LOG.isDebugEnabled())
-          LOG.debug("Decode query " + i);
-        QueryInstance queryInstance = queryInstances.get(i);
-        RowResultDecoder<?, R> decoder = decodePreparedQuery(payload, resp, queryInstance);
-        boolean queryComplete = decoder.isQueryComplete();
-        hasMoreResults &= !queryComplete;
-        handleQueryResult(decoder);
-      }
-      completionHandler.handle(CommandResponse.success(hasMoreResults));
+    boolean hasMoreResults = true;
+    DRDAQueryResponse resp = new DRDAQueryResponse(payload, encoder.connMetadata);
+    for (int i = 0; i < params.size(); i++) {
+      if (LOG.isDebugEnabled())
+        LOG.debug("Decode query " + i);
+      QueryInstance queryInstance = queryInstances.get(i);
+      RowResultDecoder<?, R> decoder = decodePreparedQuery(payload, resp, queryInstance);
+      boolean queryComplete = decoder.isQueryComplete();
+      hasMoreResults &= !queryComplete;
+      handleQueryResult(decoder);
+    }
+    completionHandler.handle(CommandResponse.success(hasMoreResults));
   }
-  
+
   void decodeUpdate(ByteBuf payload) {
-      DRDAQueryResponse updateResponse = new DRDAQueryResponse(payload, encoder.connMetadata);
-      for (int i = 0; i < params.size(); i++) {
-    	  handleUpdateResult(updateResponse);
-      }
-      if (cmd.autoCommit()) {
-        updateResponse.readLocalCommit();
-      }
-      completionHandler.handle(CommandResponse.success(true));
+    DRDAQueryResponse updateResponse = new DRDAQueryResponse(payload, encoder.connMetadata);
+    for (int i = 0; i < params.size(); i++) {
+      handleUpdateResult(updateResponse);
+    }
+    if (cmd.autoCommit()) {
+      updateResponse.readLocalCommit();
+    }
+    completionHandler.handle(CommandResponse.success(true));
   }
-  
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder(super.toString());
-		sb.append(", params=");
-		sb.append("[");
-		sb.append(cmd.params().stream()
-		    .map(Tuple::deepToString)
-		    .collect(Collectors.joining(",")));
-		sb.append("]");
-		return sb.toString();
-	}
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder(super.toString());
+    sb.append(", params=");
+    sb.append("[");
+    sb.append(cmd.params().stream().map(Tuple::deepToString).collect(Collectors.joining(",")));
+    sb.append("]");
+    return sb.toString();
+  }
 
 }

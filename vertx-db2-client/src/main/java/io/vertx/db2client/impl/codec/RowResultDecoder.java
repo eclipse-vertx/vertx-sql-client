@@ -29,50 +29,50 @@ import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.RowDecoder;
 
 class RowResultDecoder<C, R> extends RowDecoder<C, R> {
-	
-	private static final Logger LOG = LoggerFactory.getLogger(RowResultDecoder.class);
 
-    final DB2RowDesc rowDesc;
-    final Cursor cursor;
-    final DRDAQueryResponse response;
+  private static final Logger LOG = LoggerFactory.getLogger(RowResultDecoder.class);
 
-    RowResultDecoder(Collector<Row, C, R> collector, DB2RowDesc rowDesc, Cursor cursor, DRDAQueryResponse resp) {
-        super(collector);
-        this.rowDesc = rowDesc;
-        this.cursor = cursor;
-        this.response = resp;
+  final DB2RowDesc rowDesc;
+  final Cursor cursor;
+  final DRDAQueryResponse response;
+
+  RowResultDecoder(Collector<Row, C, R> collector, DB2RowDesc rowDesc, Cursor cursor, DRDAQueryResponse resp) {
+    super(collector);
+    this.rowDesc = rowDesc;
+    this.cursor = cursor;
+    this.response = resp;
+  }
+
+  public boolean isQueryComplete() {
+    return response.isQueryComplete();
+  }
+
+  public boolean next() {
+    response.readOpenQueryData();
+    return cursor.next();
+  }
+
+  @Override
+  protected Row decodeRow(int len, ByteBuf in) {
+    Row row = new DB2RowImpl(rowDesc);
+    for (int i = 1; i < rowDesc.columnDefinitions().columns_ + 1; i++) {
+      int startingIdx = cursor.dataBuffer_.readerIndex();
+      Object o = cursor.getObject(i);
+      int endingIdx = cursor.dataBuffer_.readerIndex();
+      // TODO: Remove this once all getObject paths are implemented safely
+      // or add unit tests for this in the DRDA project
+      if (startingIdx != endingIdx) {
+        System.out.println("WARN: Reader index changed while getting data. Changed from " + startingIdx + " to "
+            + endingIdx + " while obtaining object " + o);
+      }
+      if (o instanceof BigDecimal) {
+        o = Numeric.create((BigDecimal) o);
+      }
+      row.addValue(o);
     }
-
-    public boolean isQueryComplete() {
-        return response.isQueryComplete();
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("decoded row values: " + row.deepToString());
     }
-
-    public boolean next() {
-        response.readOpenQueryData();
-        return cursor.next();
-    }
-
-    @Override
-    protected Row decodeRow(int len, ByteBuf in) {
-        Row row = new DB2RowImpl(rowDesc);
-        for (int i = 1; i < rowDesc.columnDefinitions().columns_ + 1; i++) {
-        	int startingIdx = cursor.dataBuffer_.readerIndex();
-            Object o = cursor.getObject(i);
-            int endingIdx = cursor.dataBuffer_.readerIndex();
-            // TODO: Remove this once all getObject paths are implemented safely
-            // or add unit tests for this in the DRDA project
-            if (startingIdx != endingIdx) {
-            	System.out.println("WARN: Reader index changed while getting data. Changed from " + 
-            			startingIdx + " to " + endingIdx + " while obtaining object " + o);
-            }
-            if (o instanceof BigDecimal) {
-                o = Numeric.create((BigDecimal) o);
-            }
-            row.addValue(o);
-        }
-        if (LOG.isDebugEnabled()) {
-        	LOG.debug("decoded row values: " + row.deepToString());
-        }
-        return row;
-    }
+    return row;
+  }
 }

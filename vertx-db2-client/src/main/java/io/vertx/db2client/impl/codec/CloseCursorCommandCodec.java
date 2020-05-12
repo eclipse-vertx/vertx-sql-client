@@ -25,33 +25,33 @@ import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
 class CloseCursorCommandCodec extends CommandCodec<Void, CloseCursorCommand> {
-    
-    private static final Logger LOG = LoggerFactory.getLogger(CloseCursorCommandCodec.class);
 
-    CloseCursorCommandCodec(CloseCursorCommand cmd) {
-        super(cmd);
-    }
+  private static final Logger LOG = LoggerFactory.getLogger(CloseCursorCommandCodec.class);
 
-    @Override
-    void encode(DB2Encoder encoder) {
-        super.encode(encoder);
-        DB2PreparedStatement statement = (DB2PreparedStatement) cmd.statement();
-        if (LOG.isDebugEnabled())
-            LOG.debug("Close cursor with id=" + cmd.id());
-        QueryInstance query = statement.getQueryInstance(cmd.id());
-        statement.closeQuery(query);
+  CloseCursorCommandCodec(CloseCursorCommand cmd) {
+    super(cmd);
+  }
 
-        ByteBuf packet = allocateBuffer();
-        DRDAQueryRequest closeCursor = new DRDAQueryRequest(packet, encoder.connMetadata);
-        closeCursor.buildCLSQRY(statement.section, encoder.connMetadata.databaseName, query.queryInstanceId);
-        closeCursor.completeCommand();
-        sendNonSplitPacket(packet);
-    }
+  @Override
+  void encode(DB2Encoder encoder) {
+    super.encode(encoder);
+    DB2PreparedStatement statement = (DB2PreparedStatement) cmd.statement();
+    if (LOG.isDebugEnabled())
+      LOG.debug("Close cursor with id=" + cmd.id());
+    QueryInstance query = statement.getQueryInstance(cmd.id());
+    statement.closeQuery(query);
 
-    @Override
-    void decodePayload(ByteBuf payload, int payloadLength) {
-        DRDAQueryResponse closeCursor = new DRDAQueryResponse(payload, encoder.connMetadata);
-        closeCursor.readCursorClose();
-        completionHandler.handle(CommandResponse.success(null));
-    }
+    ByteBuf packet = allocateBuffer();
+    DRDAQueryRequest closeCursor = new DRDAQueryRequest(packet, encoder.connMetadata);
+    closeCursor.buildCLSQRY(statement.section, encoder.connMetadata.databaseName, query.queryInstanceId);
+    closeCursor.completeCommand();
+    sendNonSplitPacket(packet);
+  }
+
+  @Override
+  void decodePayload(ByteBuf payload, int payloadLength) {
+    DRDAQueryResponse closeCursor = new DRDAQueryResponse(payload, encoder.connMetadata);
+    closeCursor.readCursorClose();
+    completionHandler.handle(CommandResponse.success(null));
+  }
 }
