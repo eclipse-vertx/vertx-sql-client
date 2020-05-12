@@ -3,7 +3,6 @@ package io.vertx.db2client;
 import static org.junit.Assume.assumeFalse;
 
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import org.junit.Test;

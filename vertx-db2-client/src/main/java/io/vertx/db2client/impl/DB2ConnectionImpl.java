@@ -29,55 +29,54 @@ import io.vertx.sqlclient.impl.SqlConnectionImpl;
 
 public class DB2ConnectionImpl extends SqlConnectionImpl<DB2ConnectionImpl> implements DB2Connection {
 
-    public static Future<DB2Connection> connect(Vertx vertx, DB2ConnectOptions options) {
-        ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
-        DB2ConnectionFactory client;
-        try {
-          client = new DB2ConnectionFactory(vertx, ctx, options);
-        } catch (Exception e) {
-          return ctx.failedFuture(e);
-        }
-        Promise<DB2Connection> promise = ctx.promise();
-        ctx.dispatch(null, v -> connect(client, ctx, promise));
-        return promise.future();
-      }
-
-      private static void connect(DB2ConnectionFactory client, ContextInternal ctx, Promise<DB2Connection> promise) {
-        client.connect()
-          .map(conn -> {
-            DB2ConnectionImpl db2Connection = new DB2ConnectionImpl(client, ctx, conn);
-            conn.init(db2Connection);
-            return (DB2Connection) db2Connection;
-          }).onComplete(promise);
-      }
-
-    public DB2ConnectionImpl(DB2ConnectionFactory factory, ContextInternal context, Connection conn) {
-        super(context, conn);
+  public static Future<DB2Connection> connect(Vertx vertx, DB2ConnectOptions options) {
+    ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
+    DB2ConnectionFactory client;
+    try {
+      client = new DB2ConnectionFactory(vertx, ctx, options);
+    } catch (Exception e) {
+      return ctx.failedFuture(e);
     }
+    Promise<DB2Connection> promise = ctx.promise();
+    ctx.dispatch(null, v -> connect(client, ctx, promise));
+    return promise.future();
+  }
 
-    @Override
-    public DB2Connection ping(Handler<AsyncResult<Void>> handler) {
-        Future<Void> fut = ping();
-        if (handler != null) {
-          fut.onComplete(handler);
-        }
-        return this;
-    }
+  private static void connect(DB2ConnectionFactory client, ContextInternal ctx, Promise<DB2Connection> promise) {
+    client.connect().map(conn -> {
+      DB2ConnectionImpl db2Connection = new DB2ConnectionImpl(client, ctx, conn);
+      conn.init(db2Connection);
+      return (DB2Connection) db2Connection;
+    }).onComplete(promise);
+  }
 
-    @Override
-    public Future<Void> ping() {
-    	Promise<Void> promise = promise();
-    	schedule(new PingCommand(), promise);
-        return promise.future();      
-    }
+  public DB2ConnectionImpl(DB2ConnectionFactory factory, ContextInternal context, Connection conn) {
+    super(context, conn);
+  }
 
-    @Override
-    public DB2Connection debug(Handler<AsyncResult<Void>> handler) {
-        throw new UnsupportedOperationException("Debug command not implemented");
+  @Override
+  public DB2Connection ping(Handler<AsyncResult<Void>> handler) {
+    Future<Void> fut = ping();
+    if (handler != null) {
+      fut.onComplete(handler);
     }
+    return this;
+  }
 
-    @Override
-    public Future<Void> debug() {
-        throw new UnsupportedOperationException("Debug command not implemented");
-    }
+  @Override
+  public Future<Void> ping() {
+    Promise<Void> promise = promise();
+    schedule(new PingCommand(), promise);
+    return promise.future();
+  }
+
+  @Override
+  public DB2Connection debug(Handler<AsyncResult<Void>> handler) {
+    throw new UnsupportedOperationException("Debug command not implemented");
+  }
+
+  @Override
+  public Future<Void> debug() {
+    throw new UnsupportedOperationException("Debug command not implemented");
+  }
 }

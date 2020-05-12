@@ -20,7 +20,7 @@ package io.vertx.db2client;
  */
 public class DB2Exception extends RuntimeException {
   private static final long serialVersionUID = 4249056398546361175L;
-  
+
   private final int errorCode;
   private final String sqlState;
 

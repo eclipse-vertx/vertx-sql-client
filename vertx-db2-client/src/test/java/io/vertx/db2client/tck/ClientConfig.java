@@ -29,6 +29,7 @@ import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.tck.Connector;
 
+@SuppressWarnings("unchecked")
 public enum ClientConfig {
 
   CONNECT() {

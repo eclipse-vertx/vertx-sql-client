@@ -31,41 +31,43 @@ import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactory;
 
 public class DB2ConnectionFactory implements ConnectionFactory {
-    private final NetClient netClient;
-    private final ContextInternal context;
-    private final String host;
-    private final int port;
-    private final String username;
-    private final String password;
-    private final String database;
-    private final Map<String, String> connectionAttributes;
-    private final boolean cachePreparedStatements;
-    private final int preparedStatementCacheSize;
-    private final int preparedStatementCacheSqlLimit;
-    private final int pipeliningLimit;
 
-    public DB2ConnectionFactory(Vertx vertx, ContextInternal context, DB2ConnectOptions options) {
-        NetClientOptions netClientOptions = new NetClientOptions(options);
+  private final NetClient netClient;
+  private final ContextInternal context;
+  private final String host;
+  private final int port;
+  private final String username;
+  private final String password;
+  private final String database;
+  private final Map<String, String> connectionAttributes;
+  private final boolean cachePreparedStatements;
+  private final int preparedStatementCacheSize;
+  private final int preparedStatementCacheSqlLimit;
+  private final int pipeliningLimit;
 
-        this.context = context;
-        this.host = options.getHost();
-        this.port = options.getPort();
-        this.username = options.getUser();
-        this.password = options.getPassword();
-        this.database = options.getDatabase();
-        this.connectionAttributes = options.getProperties() == null ? null : Collections.unmodifiableMap(options.getProperties());
+  public DB2ConnectionFactory(Vertx vertx, ContextInternal context, DB2ConnectOptions options) {
+    NetClientOptions netClientOptions = new NetClientOptions(options);
 
-        this.cachePreparedStatements = options.getCachePreparedStatements();
-        this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
-        this.preparedStatementCacheSqlLimit = options.getPreparedStatementCacheSqlLimit();
-        this.pipeliningLimit = options.getPipeliningLimit();
+    this.context = context;
+    this.host = options.getHost();
+    this.port = options.getPort();
+    this.username = options.getUser();
+    this.password = options.getPassword();
+    this.database = options.getDatabase();
+    this.connectionAttributes = options.getProperties() == null ? null
+        : Collections.unmodifiableMap(options.getProperties());
 
-        this.netClient = vertx.createNetClient(netClientOptions);
-      }
+    this.cachePreparedStatements = options.getCachePreparedStatements();
+    this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
+    this.preparedStatementCacheSqlLimit = options.getPreparedStatementCacheSqlLimit();
+    this.pipeliningLimit = options.getPipeliningLimit();
 
-    void close() {
-      netClient.close();
-    }
+    this.netClient = vertx.createNetClient(netClientOptions);
+  }
+
+  void close() {
+    netClient.close();
+  }
 
   @Override
   public Future<Connection> connect() {
@@ -79,7 +81,8 @@ public class DB2ConnectionFactory implements ConnectionFactory {
     fut.onComplete(ar -> {
       if (ar.succeeded()) {
         NetSocket so = ar.result();
-        DB2SocketConnection conn = new DB2SocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, pipeliningLimit, context);
+        DB2SocketConnection conn = new DB2SocketConnection((NetSocketInternal) so, cachePreparedStatements,
+            preparedStatementCacheSize, preparedStatementCacheSqlLimit, pipeliningLimit, context);
         conn.init();
         conn.sendStartupMessage(username, password, database, connectionAttributes, promise);
       } else {
