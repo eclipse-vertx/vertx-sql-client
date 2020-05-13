@@ -17,14 +17,9 @@
 
 package io.vertx.sqlclient.impl.pool;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.command.CommandResponse;
-
-import java.util.function.Function;
 
 class SimpleConnection implements Connection {
 
@@ -42,8 +37,9 @@ class SimpleConnection implements Connection {
   }
 
   @Override
-  public void close(Holder holder) {
+  public void close(Holder holder, Promise<Void> promise) {
     closed++;
+    promise.complete();
   }
 
   void close() {

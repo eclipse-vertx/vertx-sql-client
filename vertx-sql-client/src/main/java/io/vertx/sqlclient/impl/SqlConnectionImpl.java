@@ -119,13 +119,24 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
   }
 
   @Override
-  public void close() {
+  public Future<Void> close() {
+    Promise<Void> promise = promise();
+    close(promise);
+    return promise.future();
+  }
+
+  @Override
+  public void close(Handler<AsyncResult<Void>> handler) {
+    close(promise(handler));
+  }
+
+  private void close(Promise<Void> promise) {
     if (context == Vertx.currentContext()) {
       if (tx != null) {
-        tx.rollback(ar -> conn.close(this));
+        tx.rollback(ar -> conn.close(this, promise));
         tx = null;
       } else {
-        conn.close(this);
+        conn.close(this, promise);
       }
     } else {
       context.runOnContext(v -> close());

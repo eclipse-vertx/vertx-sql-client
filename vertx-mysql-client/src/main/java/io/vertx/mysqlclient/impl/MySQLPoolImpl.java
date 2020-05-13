@@ -13,6 +13,7 @@ package io.vertx.mysqlclient.impl;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
@@ -24,13 +25,20 @@ import io.vertx.sqlclient.impl.SqlConnectionImpl;
 public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool {
 
   public static MySQLPoolImpl create(ContextInternal context, boolean closeVertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    return new MySQLPoolImpl(context, closeVertx, new MySQLConnectionFactory(context.owner(), context, connectOptions), poolOptions);
+    MySQLPoolImpl pool = new MySQLPoolImpl(context, new MySQLConnectionFactory(context, connectOptions), poolOptions);
+    CloseFuture closeFuture = pool.closeFuture();
+    if (closeVertx) {
+      closeFuture.onComplete(ar -> context.owner().close());
+    } else {
+      context.addCloseHook(closeFuture);
+    }
+    return pool;
   }
 
   private final MySQLConnectionFactory factory;
 
-  private MySQLPoolImpl(ContextInternal context, boolean closeVertx, MySQLConnectionFactory factory, PoolOptions poolOptions) {
-    super(context, factory, poolOptions, closeVertx);
+  private MySQLPoolImpl(ContextInternal context, MySQLConnectionFactory factory, PoolOptions poolOptions) {
+    super(context, factory, poolOptions);
     this.factory = factory;
   }
 

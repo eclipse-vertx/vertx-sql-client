@@ -49,7 +49,7 @@ public class MySQLConnectionFactory implements ConnectionFactory {
   private final int preparedStatementCacheSqlLimit;
   private final int initialCapabilitiesFlags;
 
-  public MySQLConnectionFactory(Vertx vertx, ContextInternal context, MySQLConnectOptions options) {
+  public MySQLConnectionFactory(ContextInternal context, MySQLConnectOptions options) {
     NetClientOptions netClientOptions = new NetClientOptions(options);
 
     this.context = context;
@@ -88,7 +88,7 @@ public class MySQLConnectionFactory implements ConnectionFactory {
       serverRsaPublicKey = options.getServerRsaPublicKeyValue();
     } else {
       if (options.getServerRsaPublicKeyPath() != null) {
-        serverRsaPublicKey = vertx.fileSystem().readFileBlocking(options.getServerRsaPublicKeyPath());
+        serverRsaPublicKey = context.owner().fileSystem().readFileBlocking(options.getServerRsaPublicKeyPath());
       }
     }
     this.serverRsaPublicKey = serverRsaPublicKey;
@@ -113,7 +113,7 @@ public class MySQLConnectionFactory implements ConnectionFactory {
     this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
     this.preparedStatementCacheSqlLimit = options.getPreparedStatementCacheSqlLimit();
 
-    this.netClient = vertx.createNetClient(netClientOptions);
+    this.netClient = context.owner().createNetClient(netClientOptions);
   }
 
   // Called by hook
@@ -122,8 +122,8 @@ public class MySQLConnectionFactory implements ConnectionFactory {
     completionHandler.handle(Future.succeededFuture());
   }
 
-  public void close() {
-    netClient.close();
+  public Future<Void> close() {
+    return netClient.close();
   }
 
   @Override

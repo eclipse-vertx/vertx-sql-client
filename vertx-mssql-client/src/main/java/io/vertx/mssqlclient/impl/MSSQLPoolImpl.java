@@ -12,6 +12,7 @@
 package io.vertx.mssqlclient.impl;
 
 import io.vertx.core.Future;
+import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLPool;
@@ -19,24 +20,29 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
-import io.vertx.sqlclient.impl.pool.ConnectionPool;
 
 import java.util.function.Function;
 
 public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool {
 
   public static MSSQLPoolImpl create(ContextInternal context, boolean closeVertx, MSSQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    return new MSSQLPoolImpl(context, closeVertx, new MSSQLConnectionFactory(context.owner(), context, connectOptions), poolOptions);
+    MSSQLPoolImpl pool = new MSSQLPoolImpl(context, new MSSQLConnectionFactory(context, connectOptions), poolOptions);
+    CloseFuture closeFuture = pool.closeFuture();
+    if (closeVertx) {
+      closeFuture.onComplete(ar -> context.owner().close());
+    } else {
+      context.addCloseHook(closeFuture);
+    }
+    return pool;
   }
 
   private final MSSQLConnectionFactory connectionFactory;
 
-  private MSSQLPoolImpl(ContextInternal context, boolean closeVertx, MSSQLConnectionFactory factory, PoolOptions poolOptions) {
-    super(context, factory, poolOptions, closeVertx);
+  private MSSQLPoolImpl(ContextInternal context, MSSQLConnectionFactory factory, PoolOptions poolOptions) {
+    super(context, factory, poolOptions);
     this.connectionFactory = factory;
   }
 

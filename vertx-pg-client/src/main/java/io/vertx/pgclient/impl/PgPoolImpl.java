@@ -17,6 +17,7 @@
 
 package io.vertx.pgclient.impl;
 
+import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.pgclient.*;
 import io.vertx.sqlclient.PoolOptions;
@@ -37,13 +38,20 @@ import io.vertx.core.*;
 public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
 
   public static PgPoolImpl create(ContextInternal context, boolean closeVertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    return new PgPoolImpl(context, closeVertx, new PgConnectionFactory(context.owner(), context, connectOptions), poolOptions);
+    PgPoolImpl pool = new PgPoolImpl(context, new PgConnectionFactory(context.owner(), context, connectOptions), poolOptions);
+    CloseFuture closeFuture = pool.closeFuture();
+    if (closeVertx) {
+      closeFuture.onComplete(ar -> context.owner().close());
+    } else {
+      context.addCloseHook(closeFuture);
+    }
+    return pool;
   }
 
   private final PgConnectionFactory factory;
 
-  private PgPoolImpl(ContextInternal context, boolean closeVertx, PgConnectionFactory factory, PoolOptions poolOptions) {
-    super(context, factory, poolOptions, closeVertx);
+  private PgPoolImpl(ContextInternal context, PgConnectionFactory factory, PoolOptions poolOptions) {
+    super(context, factory, poolOptions);
     this.factory = factory;
   }
 

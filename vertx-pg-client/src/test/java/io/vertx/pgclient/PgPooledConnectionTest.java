@@ -39,15 +39,17 @@ public class PgPooledConnectionTest extends PgConnectionTestBase {
   }
 
   @Override
-  public void teardown(TestContext ctx) {
+  public void tearDown(TestContext ctx) {
     if (pool != null) {
+      PgPool p = pool;
+      pool = null;
       try {
-        pool.close();
+        p.close();
       } catch (IllegalStateException e) {
         // Might be already closed because of testCloseOnUndeploy
       }
     }
-    super.teardown(ctx);
+    super.tearDown(ctx);
   }
 
   @Test

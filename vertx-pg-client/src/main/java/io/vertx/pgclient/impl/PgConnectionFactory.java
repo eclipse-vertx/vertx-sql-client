@@ -77,8 +77,8 @@ class PgConnectionFactory implements ConnectionFactory {
     this.client = vertx.createNetClient(netClientOptions);
   }
 
-  public void close() {
-    client.close();
+  public Future<Void> close() {
+    return client.close();
   }
 
   public void cancelRequest(int processId, int secretKey, Handler<AsyncResult<Void>> handler) {

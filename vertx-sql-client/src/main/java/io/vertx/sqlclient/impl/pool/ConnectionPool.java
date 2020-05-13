@@ -18,6 +18,7 @@
 package io.vertx.sqlclient.impl.pool;
 
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.PromiseInternal;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactory;
@@ -27,6 +28,7 @@ import io.vertx.core.*;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -100,14 +102,18 @@ public class ConnectionPool {
     check();
   }
 
-  public void close() {
+  public Future<Void> close() {
+    PromiseInternal<Void> promise = context.promise();
+    context.dispatch(promise, this::close);
+    return promise.future();
+  }
+
+  public void close(Promise<Void> promise) {
     if (closed) {
-      throw new IllegalStateException("Connection pool already closed");
+      promise.fail("Connection pool already closed");
+      return;
     }
     closed = true;
-    for (PooledConnection pooled : new ArrayList<>(all)) {
-      pooled.close();
-    }
     Future<Connection> failure = Future.failedFuture("Connection pool closed");
     for (Handler<AsyncResult<Connection>> pending : waiters) {
       try {
@@ -115,6 +121,16 @@ public class ConnectionPool {
       } catch (Exception ignore) {
       }
     }
+    List<Future> futures = new ArrayList<>();
+    for (PooledConnection pooled : new ArrayList<>(all)) {
+      Promise<Void> p = Promise.promise();
+      pooled.close(p);
+      futures.add(p.future());
+    }
+    CompositeFuture
+      .join(futures)
+      .<Void>mapEmpty()
+      .onComplete(promise);
   }
 
   private class PooledConnection implements Connection, Connection.Holder  {
@@ -139,8 +155,8 @@ public class ConnectionPool {
     /**
      * Close the underlying connection
      */
-    private void close() {
-      conn.close(this);
+    private void close(Promise<Void> promise) {
+      conn.close(this, promise);
     }
 
     @Override
@@ -152,7 +168,7 @@ public class ConnectionPool {
     }
 
     @Override
-    public void close(Holder holder) {
+    public void close(Holder holder, Promise<Void> promise) {
       if (holder != this.holder) {
         String msg;
         if (this.holder == null) {
@@ -160,10 +176,13 @@ public class ConnectionPool {
         } else {
           msg = "Connection released by " + holder + " owned by " + this.holder;
         }
-        throw new IllegalStateException(msg);
+        // Log it ?
+        promise.fail(msg);
+        return;
       }
       this.holder = null;
       release(this);
+      promise.complete();
     }
 
     @Override

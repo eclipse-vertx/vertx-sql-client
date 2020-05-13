@@ -17,6 +17,7 @@
 
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.Promise;
 import io.vertx.sqlclient.impl.command.CommandScheduler;
 
 public interface Connection extends CommandScheduler  {
@@ -25,7 +26,7 @@ public interface Connection extends CommandScheduler  {
 
   boolean isSsl();
 
-  void close(Holder holder);
+  void close(Holder holder, Promise<Void> promise);
 
   int getProcessId();
 

@@ -35,7 +35,7 @@ class MSSQLConnectionFactory implements ConnectionFactory {
   private final String database;
   private final Map<String, String> properties;
 
-  MSSQLConnectionFactory(Vertx vertx, ContextInternal context, MSSQLConnectOptions options) {
+  MSSQLConnectionFactory(ContextInternal context, MSSQLConnectOptions options) {
     NetClientOptions netClientOptions = new NetClientOptions(options);
 
     this.context = context;
@@ -45,7 +45,7 @@ class MSSQLConnectionFactory implements ConnectionFactory {
     this.password = options.getPassword();
     this.database = options.getDatabase();
     this.properties = new HashMap<>(options.getProperties());
-    this.netClient = vertx.createNetClient(netClientOptions);
+    this.netClient = context.owner().createNetClient(netClientOptions);
   }
 
   @Override
@@ -81,7 +81,7 @@ class MSSQLConnectionFactory implements ConnectionFactory {
     completionHandler.handle(Future.succeededFuture());
   }
 
-  public void close() {
-    netClient.close();
+  public Future<Void> close() {
+    return netClient.close();
   }
 }

@@ -17,6 +17,8 @@
 
 package io.vertx.sqlclient.impl.pool;
 
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -80,7 +82,9 @@ class SimpleHolder implements Connection.Holder, Handler<AsyncResult<Connection>
   public void handleEvent(Object event) {
   }
 
-  void close() {
-    conn.close(this);
+  Future<Void> close() {
+    Promise<Void> promise = Promise.promise();
+    conn.close(this, promise);
+    return promise.future();
   }
 }

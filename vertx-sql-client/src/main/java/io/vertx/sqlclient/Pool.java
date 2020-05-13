@@ -38,7 +38,7 @@ import java.util.function.Function;
  */
 @VertxGen
 public interface Pool extends SqlClient {
-  
+
   /**
    * Create a connection pool to the database configured with the given {@code connectOptions} and default {@link PoolOptions}
    *
@@ -49,7 +49,7 @@ public interface Pool extends SqlClient {
   static Pool pool(SqlConnectOptions connectOptions) {
     return pool(connectOptions, new PoolOptions());
   }
-  
+
   /**
    * Create a connection pool to the database configured with the given {@code connectOptions} and {@code poolOptions}.
    *
@@ -154,7 +154,9 @@ public interface Pool extends SqlClient {
 
   /**
    * Close the pool and release the associated resources.
+   *
+   * @param handler the completion handler
    */
-  void close();
+  void close(Handler<AsyncResult<Void>> handler);
 
 }

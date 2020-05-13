@@ -17,6 +17,7 @@
 
 package io.vertx.sqlclient.impl;
 
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.AsyncResult;
@@ -113,16 +114,20 @@ public abstract class SocketConnectionBase implements Connection {
   }
 
   @Override
-  public void close(Holder holder) {
+  public void close(Holder holder, Promise<Void> promise) {
     if (Vertx.currentContext() == context) {
       if (status == Status.CONNECTED) {
         status = Status.CLOSING;
         // Append directly since schedule checks the status and won't enqueue the command
+        socket.channelHandlerContext()
+          .channel()
+          .closeFuture()
+          .addListener((ChannelFutureListener) channelFuture -> promise.complete());
         pending.add(CloseConnectionCommand.INSTANCE);
         checkPending();
       }
     } else {
-      context.runOnContext(v -> close(holder));
+      context.runOnContext(v -> close(holder, promise));
     }
   }
 

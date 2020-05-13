@@ -138,12 +138,10 @@ public class ConnectionPoolTest {
     SimpleConnection conn = new SimpleConnection();
     queue.connect(conn);
     holder.init();
-    holder.close();
-    try {
-      holder.close();
-      fail();
-    } catch (IllegalStateException ignore) {
-    }
+    Future<Void> fut = holder.close();
+    assertTrue(fut.succeeded());
+    fut = holder.close();
+    assertTrue(fut.failed());
   }
 
   @Test

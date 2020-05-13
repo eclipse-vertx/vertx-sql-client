@@ -17,6 +17,7 @@
 
 package io.vertx.pgclient;
 
+import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.core.Vertx;
@@ -42,11 +43,15 @@ public abstract class PgPoolTestBase extends PgTestBase {
   }
 
   @After
-  public void teardown(TestContext ctx) {
+  public void tearDown(TestContext ctx) {
     vertx.close(ctx.asyncAssertSuccess());
   }
 
-  protected abstract PgPool createPool(PgConnectOptions options, int size);
+  protected PgPool createPool(PgConnectOptions connectOptions, int size) {
+    return createPool(connectOptions, new PoolOptions().setMaxSize(size));
+  }
+
+  protected abstract PgPool createPool(PgConnectOptions connectOptions, PoolOptions poolOptions);
 
   @Test
   public void testPool(TestContext ctx) {

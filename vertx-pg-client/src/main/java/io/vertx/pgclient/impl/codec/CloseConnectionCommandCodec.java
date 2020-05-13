@@ -29,6 +29,7 @@ class CloseConnectionCommandCodec extends PgCommandCodec<Void, CloseConnectionCo
   @Override
   void encode(PgEncoder encoder) {
     encoder.writeTerminate();
+    encoder.close();
   }
 
 }

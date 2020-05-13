@@ -84,7 +84,9 @@ public interface SqlConnection extends SqlClient {
 
   /**
    * Close the current connection after all the pending commands have been processed.
+   *
+   * @param handler the completion handler
    */
-  void close();
+  void close(Handler<AsyncResult<Void>> handler);
 
 }

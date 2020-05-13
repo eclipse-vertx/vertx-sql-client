@@ -17,9 +17,11 @@
 package io.vertx.pgclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
+import io.netty.channel.socket.SocketChannel;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.pgclient.impl.util.Util;
 import io.vertx.sqlclient.impl.ParamDesc;
@@ -119,8 +121,20 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
   }
 
   @Override
-  public void flush(ChannelHandlerContext ctx) throws Exception {
+  public void flush(ChannelHandlerContext ctx) {
     flush();
+  }
+
+  void close() {
+    ByteBuf buff;
+    if (out != null) {
+      buff = out;
+      out = null;
+    } else {
+      buff = Unpooled.EMPTY_BUFFER;
+    }
+    SocketChannel channel = (SocketChannel) channelHandlerContext().channel();
+    ctx.writeAndFlush(buff).addListener(v -> channel.shutdownOutput());
   }
 
   void flush() {

@@ -27,8 +27,7 @@ public interface ConnectionFactory {
    */
   Future<Connection> connect();
 
-  default void close() {
-
+  default Future<Void> close() {
+    return Future.succeededFuture();
   }
-
 }

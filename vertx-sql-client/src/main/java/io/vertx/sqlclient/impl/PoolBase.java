@@ -19,6 +19,7 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Closeable;
 import io.vertx.core.Promise;
+import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.sqlclient.Pool;
@@ -37,32 +38,22 @@ import java.util.function.Function;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implements Pool {
+public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implements Pool, Closeable {
 
   private final VertxInternal vertx;
   private final ConnectionFactory factory;
-  private final boolean closeVertx;
   private final ConnectionPool pool;
-  private final ContextInternal contextHook;
-  private final Closeable hook;
+  private final CloseFuture closeFuture;
 
-  public PoolBase(ContextInternal context, ConnectionFactory factory, PoolOptions poolOptions, boolean closeVertx) {
+  public PoolBase(ContextInternal context, ConnectionFactory factory, PoolOptions poolOptions) {
     this.vertx = context.owner();
-    this.closeVertx = closeVertx;
     this.factory = factory;
     this.pool = new ConnectionPool(factory, context, poolOptions.getMaxSize(), poolOptions.getMaxWaitQueueSize());
+    this.closeFuture = new CloseFuture(this);
+  }
 
-    if (context.deploymentID() != null) {
-      contextHook = context;
-      hook = completion -> {
-        doClose();
-        completion.complete();
-      };
-      context.addCloseHook(hook);
-    } else {
-      contextHook = null;
-      hook = null;
-    }
+  public CloseFuture closeFuture() {
+    return closeFuture;
   }
 
   @Override
@@ -138,7 +129,8 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
       @Override
       protected void onSuccess(Connection conn) {
         conn.schedule(cmd, promise);
-        conn.close(this);
+        // Use null promise instead
+        conn.close(this, Promise.promise());
       }
       @Override
       protected void onFailure(Throwable cause) {
@@ -181,18 +173,23 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
   protected abstract SqlConnectionImpl wrap(ContextInternal context, Connection conn);
 
   @Override
-  public void close() {
-    if (hook != null) {
-      contextHook.removeCloseHook(hook);
-    }
-    doClose();
+  public void close(Promise<Void> completion) {
+    doClose().onComplete(completion);
   }
 
-  private void doClose() {
-    factory.close();
-    pool.close();
-    if (closeVertx) {
-      vertx.close();
-    }
+  @Override
+  public Future<Void> close() {
+    Promise<Void> promise = vertx.promise();
+    closeFuture.close(promise);
+    return promise.future();
+  }
+
+  @Override
+  public void close(Handler<AsyncResult<Void>> handler) {
+    closeFuture.close(vertx.promise(handler));
+  }
+
+  private Future<Void> doClose() {
+    return pool.close().flatMap(v -> factory.close());
   }
 }

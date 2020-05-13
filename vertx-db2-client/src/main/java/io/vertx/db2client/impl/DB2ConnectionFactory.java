@@ -20,7 +20,6 @@ import java.util.Map;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
@@ -45,7 +44,7 @@ public class DB2ConnectionFactory implements ConnectionFactory {
   private final int preparedStatementCacheSqlLimit;
   private final int pipeliningLimit;
 
-  public DB2ConnectionFactory(Vertx vertx, ContextInternal context, DB2ConnectOptions options) {
+  public DB2ConnectionFactory(ContextInternal context, DB2ConnectOptions options) {
     NetClientOptions netClientOptions = new NetClientOptions(options);
 
     this.context = context;
@@ -62,11 +61,11 @@ public class DB2ConnectionFactory implements ConnectionFactory {
     this.preparedStatementCacheSqlLimit = options.getPreparedStatementCacheSqlLimit();
     this.pipeliningLimit = options.getPipeliningLimit();
 
-    this.netClient = vertx.createNetClient(netClientOptions);
+    this.netClient = context.owner().createNetClient(netClientOptions);
   }
 
-  public void close() {
-    netClient.close();
+  public Future<Void> close() {
+    return netClient.close();
   }
 
   @Override

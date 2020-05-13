@@ -71,14 +71,15 @@ public abstract class ConnectionTestBase {
 
   @Test
   public void testClose(TestContext ctx) {
-    Async async = ctx.async();
+    Async closedAsync = ctx.async();
+    Async closeAsync = ctx.async();
     connect(ctx.asyncAssertSuccess(conn -> {
       conn.closeHandler(v -> {
-        async.complete();
+        closedAsync.complete();
       });
-      conn.close();
+      conn.close(ctx.asyncAssertSuccess(v -> closeAsync.complete()));
     }));
-    async.await();
+    closedAsync.await();
   }
 
 

@@ -49,7 +49,7 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
   }
 
   @After
-  public void teardown(TestContext ctx) {
+  public void tearDown(TestContext ctx) {
     vertx.close(ctx.asyncAssertSuccess());
   }
 
