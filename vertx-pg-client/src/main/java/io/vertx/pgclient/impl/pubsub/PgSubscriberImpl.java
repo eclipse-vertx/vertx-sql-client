@@ -16,12 +16,12 @@
  */
 package io.vertx.pgclient.impl.pubsub;
 
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.pgclient.*;
 import io.vertx.pgclient.pubsub.PgSubscriber;
 import io.vertx.pgclient.pubsub.PgChannel;
 import io.vertx.core.*;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.streams.ReadStream;
 
 import java.util.*;

@@ -17,8 +17,8 @@
 
 package io.vertx.pgclient.impl.codec;
 
+import io.vertx.core.impl.logging.Logger;
 import io.vertx.sqlclient.impl.Notice;
-import io.vertx.core.logging.Logger;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>

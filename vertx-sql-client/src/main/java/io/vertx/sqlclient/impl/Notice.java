@@ -16,7 +16,7 @@
  */
 package io.vertx.sqlclient.impl;
 
-import io.vertx.core.logging.Logger;
+import io.vertx.core.impl.logging.Logger;
 
 public interface Notice {
 

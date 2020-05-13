@@ -18,6 +18,8 @@ package io.vertx.pgclient.impl.codec;
 
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.pgclient.data.Box;
 import io.vertx.pgclient.data.Circle;
 import io.vertx.pgclient.data.Line;
@@ -28,8 +30,6 @@ import io.vertx.pgclient.data.Path;
 import io.vertx.pgclient.data.Point;
 import io.vertx.pgclient.data.Polygon;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 import java.time.*;
 import java.util.UUID;

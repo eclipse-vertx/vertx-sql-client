@@ -20,6 +20,8 @@ package io.vertx.pgclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.Json;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
@@ -28,8 +30,6 @@ import io.vertx.pgclient.impl.util.UTF8StringEndDetector;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.impl.codec.CommonCodec;
 
 import java.nio.charset.StandardCharsets;

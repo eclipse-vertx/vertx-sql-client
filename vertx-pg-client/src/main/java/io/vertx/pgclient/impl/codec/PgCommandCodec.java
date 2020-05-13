@@ -16,13 +16,13 @@
  */
 package io.vertx.pgclient.impl.codec;
 
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.pgclient.PgException;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.netty.buffer.ByteBuf;
 import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 abstract class PgCommandCodec<R, C extends CommandBase<R>> {
 
@@ -91,11 +91,11 @@ abstract class PgCommandCodec<R, C extends CommandBase<R>> {
   void handleAuthenticationMD5Password(byte[] salt) {
     logger.warn(getClass().getSimpleName() + " should handle message AuthenticationMD5Password");
   }
-  
+
   void handleAuthenticationSasl(ByteBuf in) {
     logger.warn(getClass().getSimpleName() + " should handle message AuthenticationSasl");
   }
-  
+
   void handleAuthenticationSaslContinue(ByteBuf in) {
     logger.warn(getClass().getSimpleName() + " should handle message AuthenticationSaslContinue");
   }
