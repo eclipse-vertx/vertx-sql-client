@@ -48,4 +48,5 @@ class ConnectionQueue extends ArrayDeque<Handler<AsyncResult<Connection>>> imple
   void fail(Throwable cause) {
     poll().handle(Future.failedFuture(cause));
   }
+
 }

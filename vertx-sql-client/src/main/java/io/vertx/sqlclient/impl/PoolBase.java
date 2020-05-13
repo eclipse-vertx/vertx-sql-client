@@ -17,17 +17,19 @@
 
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.Closeable;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.sqlclient.impl.pool.ConnectionPool;
 
 import java.util.function.Function;
 
@@ -38,11 +40,29 @@ import java.util.function.Function;
 public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implements Pool {
 
   private final VertxInternal vertx;
+  private final ConnectionFactory factory;
   private final boolean closeVertx;
+  private final ConnectionPool pool;
+  private final ContextInternal contextHook;
+  private final Closeable hook;
 
-  public PoolBase(VertxInternal vertx, boolean closeVertx) {
-    this.vertx = vertx;
+  public PoolBase(ContextInternal context, ConnectionFactory factory, PoolOptions poolOptions, boolean closeVertx) {
+    this.vertx = context.owner();
     this.closeVertx = closeVertx;
+    this.factory = factory;
+    this.pool = new ConnectionPool(factory, context, poolOptions.getMaxSize(), poolOptions.getMaxWaitQueueSize());
+
+    if (context.deploymentID() != null) {
+      contextHook = context;
+      hook = completion -> {
+        doClose();
+        completion.complete();
+      };
+      context.addCloseHook(hook);
+    } else {
+      contextHook = null;
+      hook = null;
+    }
   }
 
   @Override
@@ -62,7 +82,10 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
    */
   public abstract void connect(Handler<AsyncResult<Connection>> completionHandler);
 
-  public abstract void acquire(Handler<AsyncResult<Connection>> completionHandler);
+  private void acquire(Handler<AsyncResult<Connection>> completionHandler) {
+    pool.acquire(completionHandler);
+  }
+
 
   @Override
   public void getConnection(Handler<AsyncResult<SqlConnection>> handler) {
@@ -157,14 +180,19 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
 
   protected abstract SqlConnectionImpl wrap(ContextInternal context, Connection conn);
 
-  protected void doClose() {
+  @Override
+  public void close() {
+    if (hook != null) {
+      contextHook.removeCloseHook(hook);
+    }
+    doClose();
+  }
+
+  private void doClose() {
+    factory.close();
+    pool.close();
     if (closeVertx) {
       vertx.close();
     }
-  }
-
-  @Override
-  public void close() {
-    doClose();
   }
 }

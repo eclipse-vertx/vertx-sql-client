@@ -81,7 +81,7 @@ class MSSQLConnectionFactory implements ConnectionFactory {
     completionHandler.handle(Future.succeededFuture());
   }
 
-  void close() {
+  public void close() {
     netClient.close();
   }
 }

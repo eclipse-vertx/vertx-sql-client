@@ -77,7 +77,7 @@ public interface DB2Pool extends Pool {
     }
     VertxOptions vertxOptions = new VertxOptions();
     Vertx vertx = Vertx.vertx(vertxOptions);
-    return new DB2PoolImpl((ContextInternal) vertx.getOrCreateContext(), true, connectOptions, poolOptions);
+    return DB2PoolImpl.create((ContextInternal) vertx.getOrCreateContext(), true, connectOptions, poolOptions);
   }
 
   /**
@@ -85,6 +85,6 @@ public interface DB2Pool extends Pool {
    * {@link Vertx} instance.
    */
   static DB2Pool pool(Vertx vertx, DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
-    return new DB2PoolImpl((ContextInternal) vertx.getOrCreateContext(), false, connectOptions, poolOptions);
+    return DB2PoolImpl.create((ContextInternal) vertx.getOrCreateContext(), false, connectOptions, poolOptions);
   }
 }

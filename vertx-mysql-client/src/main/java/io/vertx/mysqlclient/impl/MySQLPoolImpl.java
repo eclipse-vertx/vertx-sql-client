@@ -20,16 +20,18 @@ import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
-import io.vertx.sqlclient.impl.pool.ConnectionPool;
 
 public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool {
-  private final MySQLConnectionFactory factory;
-  private final ConnectionPool pool;
 
-  public MySQLPoolImpl(ContextInternal context, boolean closeVertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    super(context.owner(), closeVertx);
-    this.factory = new MySQLConnectionFactory(context.owner(), context, connectOptions);
-    this.pool = new ConnectionPool(factory, context, poolOptions.getMaxSize(), poolOptions.getMaxWaitQueueSize());
+  public static MySQLPoolImpl create(ContextInternal context, boolean closeVertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
+    return new MySQLPoolImpl(context, closeVertx, new MySQLConnectionFactory(context.owner(), context, connectOptions), poolOptions);
+  }
+
+  private final MySQLConnectionFactory factory;
+
+  private MySQLPoolImpl(ContextInternal context, boolean closeVertx, MySQLConnectionFactory factory, PoolOptions poolOptions) {
+    super(context, factory, poolOptions, closeVertx);
+    this.factory = factory;
   }
 
   @Override
@@ -38,19 +40,7 @@ public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool 
   }
 
   @Override
-  public void acquire(Handler<AsyncResult<Connection>> completionHandler) {
-    pool.acquire(completionHandler);
-  }
-
-  @Override
   protected SqlConnectionImpl wrap(ContextInternal context, Connection conn) {
     return new MySQLConnectionImpl(factory, context, conn);
-  }
-
-  @Override
-  protected void doClose() {
-    pool.close();
-    factory.close();
-    super.doClose();
   }
 }

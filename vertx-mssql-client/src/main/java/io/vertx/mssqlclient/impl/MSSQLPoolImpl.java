@@ -28,13 +28,16 @@ import io.vertx.sqlclient.impl.pool.ConnectionPool;
 import java.util.function.Function;
 
 public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool {
-  private final MSSQLConnectionFactory connectionFactory;
-  private final ConnectionPool pool;
 
-  public MSSQLPoolImpl(ContextInternal context, boolean closeVertx, MSSQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    super(context.owner(), closeVertx);
-    this.connectionFactory = new MSSQLConnectionFactory(context.owner(), context, connectOptions);
-    this.pool = new ConnectionPool(connectionFactory, context, poolOptions.getMaxSize(), poolOptions.getMaxWaitQueueSize());
+  public static MSSQLPoolImpl create(ContextInternal context, boolean closeVertx, MSSQLConnectOptions connectOptions, PoolOptions poolOptions) {
+    return new MSSQLPoolImpl(context, closeVertx, new MSSQLConnectionFactory(context.owner(), context, connectOptions), poolOptions);
+  }
+
+  private final MSSQLConnectionFactory connectionFactory;
+
+  private MSSQLPoolImpl(ContextInternal context, boolean closeVertx, MSSQLConnectionFactory factory, PoolOptions poolOptions) {
+    super(context, factory, poolOptions, closeVertx);
+    this.connectionFactory = factory;
   }
 
   @Override
@@ -49,11 +52,6 @@ public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool 
   }
 
   @Override
-  public void acquire(Handler<AsyncResult<Connection>> completionHandler) {
-    pool.acquire(completionHandler);
-  }
-
-  @Override
   protected SqlConnectionImpl wrap(ContextInternal context, Connection connection) {
     return new MSSQLConnectionImpl(connectionFactory, context, connection);
   }
@@ -61,12 +59,5 @@ public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool 
   @Override
   public <T> Future<T> withTransaction(Function<SqlClient, Future<T>> function) {
     return Future.failedFuture("Transaction is not supported for now");
-  }
-
-  @Override
-  protected void doClose() {
-    pool.close();
-    connectionFactory.close();
-    super.doClose();
   }
 }

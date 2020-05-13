@@ -68,14 +68,14 @@ public interface MySQLPool extends Pool {
     }
     VertxOptions vertxOptions = new VertxOptions();
     Vertx vertx = Vertx.vertx(vertxOptions);
-    return new MySQLPoolImpl((ContextInternal) vertx.getOrCreateContext(), true, connectOptions, poolOptions);
+    return MySQLPoolImpl.create((ContextInternal) vertx.getOrCreateContext(), true, connectOptions, poolOptions);
   }
 
   /**
    * Like {@link #pool(MySQLConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static MySQLPool pool(Vertx vertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    return new MySQLPoolImpl((ContextInternal) vertx.getOrCreateContext(), false, connectOptions, poolOptions);
+    return MySQLPoolImpl.create((ContextInternal) vertx.getOrCreateContext(), false, connectOptions, poolOptions);
   }
 
 }

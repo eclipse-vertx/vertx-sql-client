@@ -65,7 +65,7 @@ public class DB2ConnectionFactory implements ConnectionFactory {
     this.netClient = vertx.createNetClient(netClientOptions);
   }
 
-  void close() {
+  public void close() {
     netClient.close();
   }
 

@@ -97,14 +97,14 @@ public interface PgPool extends Pool {
       vertxOptions.setPreferNativeTransport(true);
     }
     VertxInternal vertx = (VertxInternal) Vertx.vertx(vertxOptions);
-    return new PgPoolImpl(vertx.getOrCreateContext(), true, connectOptions, poolOptions);
+    return PgPoolImpl.create(vertx.getOrCreateContext(), true, connectOptions, poolOptions);
   }
 
   /**
    * Like {@link #pool(PgConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static PgPool pool(Vertx vertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    return new PgPoolImpl(((VertxInternal)vertx).getOrCreateContext(), false, connectOptions, poolOptions);
+    return PgPoolImpl.create(((VertxInternal)vertx).getOrCreateContext(), false, connectOptions, poolOptions);
   }
 
 }

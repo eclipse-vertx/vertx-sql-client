@@ -24,18 +24,19 @@ import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
-import io.vertx.sqlclient.impl.pool.ConnectionPool;
 
 public class DB2PoolImpl extends PoolBase<DB2PoolImpl> implements DB2Pool {
 
-  private final DB2ConnectionFactory factory;
-  private final ConnectionPool pool;
+  public static DB2PoolImpl create(ContextInternal context, boolean closeVertx, DB2ConnectOptions connectOptions,
+                                   PoolOptions poolOptions) {
+    return new DB2PoolImpl(context, closeVertx, poolOptions, new DB2ConnectionFactory(context.owner(), context, connectOptions));
+  }
 
-  public DB2PoolImpl(ContextInternal context, boolean closeVertx, DB2ConnectOptions connectOptions,
-      PoolOptions poolOptions) {
-    super(context.owner(), closeVertx);
-    this.factory = new DB2ConnectionFactory(context.owner(), context, connectOptions);
-    this.pool = new ConnectionPool(factory, context, poolOptions.getMaxSize(), poolOptions.getMaxWaitQueueSize());
+  private final DB2ConnectionFactory factory;
+
+  private DB2PoolImpl(ContextInternal context, boolean closeVertx, PoolOptions poolOptions, DB2ConnectionFactory factory) {
+    super(context, factory, poolOptions, closeVertx);
+    this.factory = factory;
   }
 
   @Override
@@ -43,21 +44,9 @@ public class DB2PoolImpl extends PoolBase<DB2PoolImpl> implements DB2Pool {
     factory.connect().onComplete(completionHandler);
   }
 
-  @Override
-  public void acquire(Handler<AsyncResult<Connection>> completionHandler) {
-    pool.acquire(completionHandler);
-  }
-
   @SuppressWarnings("rawtypes")
   @Override
   protected SqlConnectionImpl wrap(ContextInternal context, Connection conn) {
     return new DB2ConnectionImpl(factory, context, conn);
-  }
-
-  @Override
-  protected void doClose() {
-    pool.close();
-    factory.close();
-    super.doClose();
   }
 }

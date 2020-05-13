@@ -24,7 +24,6 @@ import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.core.*;
-import io.vertx.sqlclient.impl.pool.ConnectionPool;
 
 /**
  * Todo :
@@ -37,27 +36,15 @@ import io.vertx.sqlclient.impl.pool.ConnectionPool;
  */
 public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
 
+  public static PgPoolImpl create(ContextInternal context, boolean closeVertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
+    return new PgPoolImpl(context, closeVertx, new PgConnectionFactory(context.owner(), context, connectOptions), poolOptions);
+  }
+
   private final PgConnectionFactory factory;
-  private final ConnectionPool pool;
-  private final ContextInternal contextHook;
-  private final Closeable hook;
 
-  public PgPoolImpl(ContextInternal context, boolean closeVertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    super(context.owner(), closeVertx);
-    this.factory = new PgConnectionFactory(context.owner(), context, connectOptions);
-    this.pool = new ConnectionPool(factory, context, poolOptions.getMaxSize(), poolOptions.getMaxWaitQueueSize());
-
-    if (context.deploymentID() != null) {
-      contextHook = context;
-      hook = completion -> {
-        closeInternal();
-        completion.complete();
-      };
-      context.addCloseHook(hook);
-    } else {
-      contextHook = null;
-      hook = null;
-    }
+  private PgPoolImpl(ContextInternal context, boolean closeVertx, PgConnectionFactory factory, PoolOptions poolOptions) {
+    super(context, factory, poolOptions, closeVertx);
+    this.factory = factory;
   }
 
   @Override
@@ -72,26 +59,7 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
   }
 
   @Override
-  public void acquire(Handler<AsyncResult<Connection>> completionHandler) {
-    pool.acquire(completionHandler);
-  }
-
-  @Override
   protected SqlConnectionImpl wrap(ContextInternal context, Connection conn) {
     return new PgConnectionImpl(factory, context, conn);
-  }
-
-  @Override
-  protected void doClose() {
-    if (hook != null) {
-      contextHook.removeCloseHook(hook);
-    }
-    closeInternal();
-  }
-
-  private void closeInternal() {
-    pool.close();
-    factory.close();
-    super.doClose();
   }
 }
