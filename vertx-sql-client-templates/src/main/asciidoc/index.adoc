@@ -1,0 +1,338 @@
+= SQL Client Templates
+:toc:
+
+SQL Client Templates is a small library designed to facilitate the execution of SQL queries.
+
+== Usage
+
+To use SQL Client Templates add the following dependency to the _dependencies_ section of your build descriptor:
+
+* Maven (in your `pom.xml`):
+
+[source,xml]
+----
+<dependency>
+  <groupId>${maven.groupId}</groupId>
+  <artifactId>${maven.artifactId}</artifactId>
+  <version>${maven.version}</version>
+</dependency>
+----
+* Gradle (in your `build.gradle` file):
+
+[source,groovy]
+----
+dependencies {
+  implementation '${maven.groupId}:${maven.artifactId}:${maven.version}'
+}
+----
+
+== Getting started
+
+Here is the simplest way to use an SQL template.
+
+A SQL template consumes _named_ parameters and thus takes (by default) a map as parameters sources instead of a tuple.
+
+A SQL template produces (by default) a `RowSet<Row>` like a client `PreparedQuery`. In fact the template is a thin
+wrapper for a `PreparedQuery`.
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#queryExample}
+----
+
+When you need to perform an insert or update operation and you do not care of the result, you can use {@link io.vertx.sqlclient.templates.SqlTemplate#forUpdate} instead:
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#insertExample}
+----
+
+== Template syntax
+
+The template syntax uses `${XXX}` syntax where `XXX` is a valid https://docs.oracle.com/javase/specs/jls/se8/html/jls-3.html#jls-3.8[java identifier] string
+(without the keyword restriction).
+
+You can use the backslash char `\` to escape  any `$` character, i.e `\${foo}` will be interpreted as `${foo}` string without a `foo` parameter.
+
+== Row mapping
+
+By default templates produce {@link io.vertx.sqlclient.Row} as result type.
+
+You can provide a function to achieve row level mapping instead:
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#rowUserMapper}
+----
+
+[[row_mapping_with_custom_function]]
+to achieve row level mapping instead:
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#bindingRowWithCustomFunction}
+----
+
+== Parameters mapping
+
+Templates consume `Map<String, Object>` as default input.
+
+You can provide a function:
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#paramsUserMapper}
+----
+
+[[params_mapping_with_custom_function]]
+to achieve parameter mapping instead:
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#bindingParamsWithCustomFunction}
+----
+
+You can also perform batching easily:
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#batchBindingParamsWithCustomFunction}
+----
+
+== Mapping with Jackson databind
+
+You can do mapping using Jackson databind capabilities.
+
+You need to add the Jackson databind dependency to the _dependencies_ section of your build descriptor:
+
+* Maven (in your `pom.xml`):
+
+[source,xml]
+----
+<dependency>
+  <groupId>com.fasterxml.jackson.core</groupId>
+  <artifactId>jackson-databind</artifactId>
+  <version>${jackson.version}</version>
+</dependency>
+----
+* Gradle (in your `build.gradle` file):
+
+[source,groovy]
+----
+dependencies {
+  compile 'com.fasterxml.jackson.core:jackson-databind:${jackson.version}'
+}
+----
+
+Row mapping is achieved by creating a `JsonObject` using the row key/value pairs and then calling
+{@link io.vertx.core.json.JsonObject#mapTo} to map it to any Java class with Jackson databind.
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#bindingRowWithJacksonDatabind}
+----
+
+Likewise parameters mapping is achieved by mapping the object to a `JsonObject` using  {@link io.vertx.core.json.JsonObject#mapFrom}
+and then using the key/value pairs to produce template parameters.
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#bindingParamsWithJacksonDatabind}
+----
+
+=== Java Date/Time API mapping
+
+You can map `java.time` types with the _jackson-modules-java8_ Jackson extension.
+
+You need to add the Jackson JSR 310 datatype dependency to the _dependencies_ section of your build descriptor:
+
+
+* Maven (in your `pom.xml`):
+
+[source,xml]
+----
+<dependency>
+  <groupId>com.fasterxml.jackson.datatype</groupId>
+  <artifactId>jackson-datatype-jsr310</artifactId>
+  <version>${jackson.version}</version>
+</dependency>
+----
+* Gradle (in your `build.gradle` file):
+
+[source,groovy]
+----
+dependencies {
+  compile 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jackson.version}'
+}
+----
+
+Then you need to register the time module to the Jackson `ObjectMapper`:
+
+[source,java]
+----
+ObjectMapper mapper = io.vertx.core.json.jackson.DatabindCodec.mapper();
+
+mapper.registerModule(new JavaTimeModule());
+----
+
+You can now use `java.time` types such as `LocalDateTime`:
+
+[source,java]
+----
+public class LocalDateTimePojo {
+
+  public LocalDateTime localDateTime;
+
+}
+----
+
+== Mapping with Vert.x data objects
+
+The SQL Client Templates component can generate mapping function for Vert.x data objects.
+
+A Vert.x data object is a simple Java bean class annotated with the `@DataObject` annotation.
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#baseDataObject}
+----
+
+=== Code generation
+
+Any data object annotated by {@link io.vertx.sqlclient.templates.annotations.RowMapped} or {@link io.vertx.sqlclient.templates.annotations.ParametersMapped}
+will trigger  the generation of a corresponding mapper class.
+
+The _codegen_ annotation processor generates these classes at compilation time. It is a feature of the Java
+compiler so _no extra step_ is required, it is just a matter of configuring correctly your build:
+
+Just add the `io.vertx:vertx-codegen:processor` and `io.vertx:${maven.artifactId}`
+dependencies to your build.
+
+Here a configuration example for Maven:
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.vertx</groupId>
+  <artifactId>vertx-codegen</artifactId>
+  <version>${maven.version}</version>
+  <classifier>processor</classifier>
+</dependency>
+<dependency>
+  <groupId>io.vertx</groupId>
+  <artifactId>${maven.artifactId}</artifactId>
+  <version>${maven.version}</version>
+</dependency>
+----
+
+This feature can also be used in Gradle:
+
+[source]
+----
+annotationProcessor "io.vertx:vertx-codegen:${maven.version}:processor"
+compile "io.vertx:${maven.artifactId}:${maven.version}"
+----
+
+IDEs usually provide usually support for annotation processors.
+
+The codegen `processor` classifier adds to the jar the automatic configuration of the service proxy annotation processor
+via the `META-INF/services` plugin mechanism.
+
+If you want you can use it too with the regular jar but you need then to declare the annotation processor
+explicitly, for instance in Maven:
+
+[source,xml]
+----
+<plugin>
+  <artifactId>maven-compiler-plugin</artifactId>
+  <configuration>
+    <annotationProcessors>
+      <annotationProcessor>io.vertx.codegen.CodeGenProcessor</annotationProcessor>
+    </annotationProcessors>
+  </configuration>
+</plugin>
+----
+
+=== Row mapping
+
+You can generate a row mapper by annotating your data object by {@link io.vertx.sqlclient.templates.annotations.RowMapped}.
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#rowMappedDataObject}
+----
+
+By default each column name is bound after the data object properties, e.g the `userName` property binds to
+the `userName` column.
+
+You can use custom names thanks to the {@link io.vertx.sqlclient.templates.annotations.Column}
+annotation.
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#rowMappedDataObjectOverrideName}
+----
+
+You can annotate the field, the getter or the setter.
+
+The generated mapper can be used to perform row mapping like explained in <<row_mapping_with_custom_function,row mapping chapter>>.
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#bindingRowWithRowMapper}
+----
+
+=== Parameters mapping
+
+You can generate a parameters mapper by annotating your data object by {@link io.vertx.sqlclient.templates.annotations.ParametersMapped}.
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#paramsMappedDataObject}
+----
+
+By default each parameter is bound after the data object properties, e.g the `userName` property binds to
+the `userName` parameter.
+
+You can use custom names thanks to the {@link io.vertx.sqlclient.templates.annotations.TemplateParameter}
+annotation.
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#paramsMappedDataObjectOverrideName}
+----
+
+You can annotate the field, the getter or the setter.
+
+The generated mapper can be used to perform param mapping like explained in <<params_mapping_with_custom_function,parameter mapping chapter>>.
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#bindingParamsWithParamsMapper}
+----
+
+=== Java enum types mapping
+
+You can map Java enum types when the client supports it (e.g the Reactive PostgreSQL client).
+
+Usually Java enum types are mapped to string / numbers and possibly custom database enumerated types.
+
+=== Naming format
+
+The default template use the same case for parameters and columns. You can override the default names in the `Column`
+and `TemplateParameter` annotations and use the formatting you like.
+
+You can also configure a specific formatting case of a mapper in the `RowMapped` and `ParametersMapped` annotations:
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#customFormatter}
+----
+
+The following cases can be used:
+
+- {@link io.vertx.codegen.CamelCase} : `FirstName`
+- {@link io.vertx.codegen.LowerCamelCase} : `firstName` - like camel case but starts with a lower case, this is the default case
+- {@link io.vertx.codegen.SnakeCase} : `first_name`
+- {@link io.vertx.codegen.KebabCase} : `first-name`
+- {@link io.vertx.codegen.QualifiedCase} : `first.name`

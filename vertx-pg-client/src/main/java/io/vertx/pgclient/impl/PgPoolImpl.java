@@ -61,6 +61,12 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
   }
 
   @Override
+  public int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current) {
+    queryBuilder.append('$').append(1 + index);
+    return index;
+  }
+
+  @Override
   public void connect(Handler<AsyncResult<Connection>> completionHandler) {
     factory.connect().onComplete(completionHandler);
   }

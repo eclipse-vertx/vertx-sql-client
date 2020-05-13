@@ -37,7 +37,13 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
-public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, CommandScheduler {
+public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInternal, CommandScheduler {
+
+  @Override
+  public int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current) {
+    queryBuilder.append("?");
+    return current;
+  }
 
   protected abstract <T> Promise<T> promise();
 
