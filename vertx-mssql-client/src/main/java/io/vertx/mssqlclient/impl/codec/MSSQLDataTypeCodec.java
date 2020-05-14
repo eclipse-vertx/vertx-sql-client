@@ -11,10 +11,7 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
-import io.vertx.mssqlclient.impl.protocol.datatype.MSSQLDataType;
-import io.vertx.mssqlclient.impl.protocol.datatype.MSSQLDataTypeId;
-import io.vertx.mssqlclient.impl.protocol.datatype.NumericDataType;
-import io.vertx.mssqlclient.impl.protocol.datatype.TimeNDataType;
+import io.vertx.mssqlclient.impl.protocol.datatype.*;
 import io.netty.buffer.ByteBuf;
 import io.vertx.sqlclient.data.Numeric;
 
@@ -73,6 +70,8 @@ class MSSQLDataTypeCodec {
       case MSSQLDataTypeId.NUMERICNTYPE_ID:
       case MSSQLDataTypeId.DECIMALNTYPE_ID:
         return decodeNumeric((NumericDataType) dataType, in);
+      case MSSQLDataTypeId.INTNTYPE_ID:
+        return decodeIntN(in);
       case MSSQLDataTypeId.FLT4TYPE_ID:
         return decodeFloat4(in);
       case MSSQLDataTypeId.FLT8TYPE_ID:
@@ -216,5 +215,24 @@ class MSSQLDataTypeCodec {
     }
     buffer.skipBytes(16);
     return new BigInteger(result);
+  }
+
+  private static Object decodeIntN(ByteBuf buffer) {
+    int intNDataTypeLength = buffer.readByte();
+    switch (intNDataTypeLength) {
+      case 0:
+        // this means we read a NULL value(nullable data type).
+        return null;
+      case 1:
+        return buffer.readByte();
+      case 2:
+        return buffer.readShortLE();
+      case 4:
+        return buffer.readIntLE();
+      case 8:
+        return buffer.readLongLE();
+      default:
+        throw new UnsupportedOperationException(String.format("SEVERE: Unsupported length=[%d] for decoding IntNDataType row value.", intNDataTypeLength));
+    }
   }
 }

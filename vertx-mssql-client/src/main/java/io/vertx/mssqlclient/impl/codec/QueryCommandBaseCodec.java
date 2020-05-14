@@ -60,6 +60,10 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
     rowResultDecoder.handleRow(rowResultDecoder.desc.columnDatas.length, payload);
   }
 
+  protected void handleNbcRow(ByteBuf payload) {
+    rowResultDecoder.handleNbcRow(rowResultDecoder.desc.columnDatas.length, payload);
+  }
+
   protected void handleResultSetDone(int affectedRows) {
     this.result = false;
     T result;
@@ -110,6 +114,9 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
         byte numericPrecision = payload.readByte();
         byte numericScale = payload.readByte();
         return new NumericDataType(NUMERICNTYPE_ID, Numeric.class, numericPrecision, numericScale);
+      case INTNTYPE_ID:
+        byte intNTypeLength = payload.readByte();
+        return IntNDataType.valueOf(intNTypeLength);
       case DATENTYPE_ID:
         return FixedLenDataType.DATENTYPE;
       case TIMENTYPE_ID:

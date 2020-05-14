@@ -11,14 +11,17 @@
 
 package io.vertx.mssqlclient.data;
 
+import io.vertx.core.Vertx;
+import io.vertx.ext.unit.TestContext;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLConnection;
 import io.vertx.mssqlclient.MSSQLTestBase;
-import io.vertx.core.Vertx;
-import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.Tuple;
 import org.junit.After;
 import org.junit.Before;
+
+import java.util.function.Consumer;
 
 public abstract class MSSQLDataTypeTestBase extends MSSQLTestBase {
   Vertx vertx;
@@ -44,12 +47,12 @@ public abstract class MSSQLDataTypeTestBase extends MSSQLTestBase {
       conn
         .query("SELECT CAST(" + value + " AS " + type + ") AS " + columnName)
         .execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.size());
-        Row row = result.iterator().next();
-        ctx.assertEquals(expected, row.getValue(0));
-        ctx.assertEquals(expected, row.getValue(columnName));
-        conn.close();
-      }));
+          ctx.assertEquals(1, result.size());
+          Row row = result.iterator().next();
+          ctx.assertEquals(expected, row.getValue(0));
+          ctx.assertEquals(expected, row.getValue(columnName));
+          conn.close();
+        }));
     }));
   }
 
@@ -62,12 +65,67 @@ public abstract class MSSQLDataTypeTestBase extends MSSQLTestBase {
       conn
         .preparedQuery("SELECT CAST(" + value + " AS " + type + ") AS " + columnName)
         .execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.size());
-        Row row = result.iterator().next();
-        ctx.assertEquals(expected, row.getValue(0));
-        ctx.assertEquals(expected, row.getValue(columnName));
-        conn.close();
-      }));
+          ctx.assertEquals(1, result.size());
+          Row row = result.iterator().next();
+          ctx.assertEquals(expected, row.getValue(0));
+          ctx.assertEquals(expected, row.getValue(columnName));
+          conn.close();
+        }));
+    }));
+  }
+
+  protected <T> void testQueryDecodeGeneric(TestContext ctx,
+                                            String tableName,
+                                            String columnName,
+                                            String rowIdentifier,
+                                            Consumer<Row> checker) {
+    MSSQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query(String.format("SELECT %s FROM %s WHERE id = %s", columnName, tableName, rowIdentifier))
+        .execute(ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.size());
+          Row row = result.iterator().next();
+          checker.accept(row);
+          conn.close();
+        }));
+    }));
+  }
+
+
+  protected <T> void testPreparedQueryDecodeGeneric(TestContext ctx,
+                                                    String tableName,
+                                                    String columnName,
+                                                    String rowIdentifier,
+                                                    Consumer<Row> checker) {
+    MSSQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery(String.format("SELECT %s FROM %s WHERE id = %s", columnName, tableName, rowIdentifier))
+        .execute(ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.size());
+          Row row = result.iterator().next();
+          checker.accept(row);
+          conn.close();
+        }));
+    }));
+  }
+
+  protected <T> void testPreparedQueryEncodeGeneric(TestContext ctx,
+                                                    String tableName,
+                                                    String columnName,
+                                                    T param,
+                                                    Consumer<Row> checker) {
+    MSSQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery(String.format("UPDATE %s SET %s = @p1 WHERE id = 2", tableName, columnName))
+        .execute(Tuple.of(param), ctx.asyncAssertSuccess(updateRes -> {
+          conn.preparedQuery(String.format("SELECT %s FROM %s WHERE id = 2", columnName, tableName))
+            .execute(ctx.asyncAssertSuccess(result -> {
+              ctx.assertEquals(1, result.size());
+              Row row = result.iterator().next();
+              checker.accept(row);
+              conn.close();
+            }));
+          }));
     }));
   }
 }

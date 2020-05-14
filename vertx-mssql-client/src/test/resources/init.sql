@@ -71,3 +71,25 @@ INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, 
 VALUES ('2', '32767', '2147483647', '9223372036854775807', '3.40282E38', '1.7976931348623157E308', '999.99',
         '12345', 0, 'testchar', 'testvarchar', '2019-01-01', '18:45:02');
 -- table for test ANSI SQL data type codecs
+
+-- table for testing nullable data types
+DROP TABLE IF EXISTS nullable_datatype;
+CREATE TABLE nullable_datatype
+(
+    id            INT,
+    test_tinyint  TINYINT,
+    test_smallint SMALLINT,
+    test_int      INT,
+    test_bigint   BIGINT
+);
+
+INSERT INTO nullable_datatype
+VALUES (1, 127, 32767, 2147483647, 9223372036854775807);
+
+INSERT INTO nullable_datatype
+VALUES (2, 127, 32767, 2147483647, 9223372036854775807);
+
+INSERT INTO nullable_datatype
+VALUES (3, NULL, NULL, NULL, NULL);
+-- table for testing nullable data types
+
