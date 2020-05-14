@@ -61,9 +61,9 @@ public class CursorImpl implements Cursor {
       ExtendedQueryCommand<RowSet<Row>> cmd;
       if (id == null) {
         id = UUID.randomUUID().toString();
-        cmd = builder.createExtendedQuery(ps.ps, params, count, id, false, resultHandler);
+        cmd = builder.createExtendedQuery(ps.ps, params, count, id, false, ps.autoCommit, resultHandler);
       } else if (result.isSuspended()) {
-        cmd = builder.createExtendedQuery(ps.ps, params, count, id, true, resultHandler);
+        cmd = builder.createExtendedQuery(ps.ps, params, count, id, true, ps.autoCommit, resultHandler);
       } else {
         throw new IllegalStateException();
       }

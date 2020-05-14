@@ -1,0 +1,145 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright (C) 2019 IBM Corporation
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.vertx</groupId>
+    <artifactId>vertx-sql-client-parent</artifactId>
+    <version>3.9.1-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>vertx-db2-client</artifactId>
+
+  <name>Vertx DB2 Client</name>
+  <url>https://github.com/eclipse-vertx/vertx-sql-client</url>
+  <description>The Reactive DB2 client</description>
+
+  <properties>
+    <doc.skip>false</doc.skip>
+    <docs.dir>${project.basedir}/src/main/docs</docs.dir>
+  </properties>
+
+
+  <dependencies>
+
+    <!-- Vert.x dependencies -->
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-codegen</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-docgen</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-sql-client</artifactId>
+    </dependency>
+
+    <!-- Testing purposes -->
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>db2</artifactId>
+      <version>${testcontainers.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>com.ibm.db2</groupId>
+        <artifactId>jcc</artifactId>
+        <version>11.1.4.4</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+	    <groupId>org.slf4j</groupId>
+	    <artifactId>slf4j-log4j12</artifactId>
+	    <version>1.7.26</version>
+	    <scope>test</scope>
+	</dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-sql-client</artifactId>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <argLine>-Xmx1024M</argLine>
+            <failIfNoTests>true</failIfNoTests>
+            <trimStackTrace>false</trimStackTrace>
+            <systemPropertyVariables>
+              <target.dir>${project.build.directory}</target.dir>
+            </systemPropertyVariables>
+            <excludes>
+              <exclude>io/vertx/db2client/it/**</exclude>
+            </excludes>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.bsc.maven</groupId>
+        <artifactId>maven-processor-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-sources</id>
+            <configuration>
+              <optionMap>
+                <docgen.source>${project.basedir}/../vertx-sql-client/src/main/asciidoc/*.adoc,${asciidoc.dir}/*.adoc</docgen.source>
+              </optionMap>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <!-- Override sources to use custom descriptor to have all adoc files -->
+          <execution>
+            <id>package-sources</id>
+            <configuration>
+              <descriptors>
+                <descriptor>${project.basedir}/../assembly/sources.xml</descriptor>
+              </descriptors>
+              <descriptorRefs>
+                <descriptorRef>none</descriptorRef>
+              </descriptorRefs>
+              <ignoreMissingDescriptor>true</ignoreMissingDescriptor>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

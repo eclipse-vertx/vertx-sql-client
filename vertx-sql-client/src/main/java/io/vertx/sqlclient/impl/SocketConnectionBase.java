@@ -118,7 +118,7 @@ public abstract class SocketConnectionBase implements Connection {
       context.runOnContext(v -> close(holder));
     }
   }
-
+  
   public void schedule(CommandBase<?> cmd) {
     if (cmd.handler == null) {
       throw new IllegalArgumentException();
@@ -224,7 +224,7 @@ public abstract class SocketConnectionBase implements Connection {
     handleClose(t);
   }
 
-  private void handleClose(Throwable t) {
+  protected void handleClose(Throwable t) {
     if (status != Status.CLOSED) {
       status = Status.CLOSED;
       if (t != null) {

@@ -79,7 +79,7 @@ public abstract class PreparedBatchTestBase {
     }));
   }
 
-  private void cleanTestTable(TestContext ctx) {
+  protected void cleanTestTable(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("TRUNCATE TABLE mutable;").execute(ctx.asyncAssertSuccess(result -> {
         conn.close();

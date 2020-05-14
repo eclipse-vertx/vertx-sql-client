@@ -18,6 +18,7 @@
 package io.vertx.sqlclient;
 
 import io.vertx.sqlclient.impl.ArrayTuple;
+import io.netty.buffer.ByteBuf;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
@@ -423,9 +424,15 @@ public interface Tuple {
     if (val instanceof Buffer) {
       return (Buffer) val;
     }
+    if (val instanceof ByteBuf) {
+      return Buffer.buffer((ByteBuf) val);
+    }
+    if (val instanceof byte[]) {
+      return Buffer.buffer((byte[]) val);
+    }
     return null;
   }
-
+  
   /**
    * Get {@link java.util.UUID} value at {@code pos}.
    *
@@ -1120,5 +1127,22 @@ public interface Tuple {
   int size();
 
   void clear();
+  
+  /**
+   * @return A String containing the {@link Object#toString} value of each element,
+   * separated by a comma (,) character
+   */
+  default String deepToString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("[");
+    final int size = size();
+    for (int i = 0; i < size; i++) {
+      sb.append(getValue(i));
+      if (i + 1 < size)
+        sb.append(",");
+    }
+    sb.append("]");
+    return sb.toString();
+  }
 
 }

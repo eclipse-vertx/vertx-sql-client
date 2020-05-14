@@ -16,7 +16,6 @@
  */
 package io.vertx.pgclient.impl.codec;
 
-import io.vertx.sqlclient.impl.TxStatus;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.sqlclient.impl.PreparedStatement;
 
@@ -72,8 +71,8 @@ class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, Pre
   }
 
   @Override
-  public void handleReadyForQuery(TxStatus txStatus) {
+  public void handleReadyForQuery() {
     result = new PgPreparedStatement(cmd.sql(), statement, this.parameterDesc, this.rowDesc, cmd.cacheable());
-    super.handleReadyForQuery(txStatus);
+    super.handleReadyForQuery();
   }
 }

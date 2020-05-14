@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Julien Viet
+ * Copyright (C) 2019,2020 IBM Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,20 +12,23 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
+package io.vertx.db2client.impl.codec;
 
-package io.vertx.sqlclient.impl;
+import io.vertx.db2client.impl.drda.ColumnMetaData;
+import io.vertx.sqlclient.impl.RowDesc;
 
-/**
- *
- * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
- *
- */
-public enum TxStatus {
+class DB2RowDesc extends RowDesc {
 
-  IDLE,
-  ACTIVE,
-  FAILED;
+  private final ColumnMetaData columnDefinitions;
+
+  DB2RowDesc(ColumnMetaData columnDefinitions) {
+    super(columnDefinitions.getColumnNames());
+    this.columnDefinitions = columnDefinitions;
+  }
+
+  ColumnMetaData columnDefinitions() {
+    return columnDefinitions;
+  }
 
 }

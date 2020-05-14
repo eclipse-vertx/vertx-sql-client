@@ -33,9 +33,10 @@ public class SimpleQueryCommand<T> extends QueryCommandBase<T> {
 
   public SimpleQueryCommand(String sql,
                      boolean singleton,
+                     boolean autoCommit,
                      Collector<Row, ?, T> collector,
                      QueryResultHandler<T> resultHandler) {
-    super(collector, resultHandler);
+    super(autoCommit, collector, resultHandler);
     this.sql = sql;
     this.singleton = singleton;
   }

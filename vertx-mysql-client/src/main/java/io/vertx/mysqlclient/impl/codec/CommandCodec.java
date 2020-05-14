@@ -23,7 +23,6 @@ import io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag;
 import io.vertx.mysqlclient.impl.datatype.DataType;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
-import io.vertx.sqlclient.impl.TxStatus;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
@@ -129,7 +128,7 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     payload.skipBytes(1); // SQL state marker will always be #
     String sqlState = BufferUtils.readFixedLengthString(payload, 5, StandardCharsets.UTF_8);
     String errorMessage = readRestOfPacketString(payload, StandardCharsets.UTF_8);
-    completionHandler.handle(CommandResponse.failure(new MySQLException(errorMessage, errorCode, sqlState), TxStatus.FAILED));
+    completionHandler.handle(CommandResponse.failure(new MySQLException(errorMessage, errorCode, sqlState)));
   }
 
   // simplify the ok packet as those properties are actually not used for now
