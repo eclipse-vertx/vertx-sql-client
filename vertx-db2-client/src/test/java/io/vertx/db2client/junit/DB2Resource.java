@@ -44,8 +44,8 @@ public class DB2Resource extends ExternalResource {
     private DB2ConnectOptions options;
     private final Db2Container instance = new Db2Container()
             .acceptLicense()
-            .withLogConsumer(out -> System.out.print("[DB2] " + out.getUtf8String()))
-            .withReuse(true);
+            .withLogConsumer(out -> System.out.print("[DB2] " + out.getUtf8String()));
+            //.withReuse(true); // Cannot use this feature until Testcontainers 1.12.4
     
     @Override
     protected void before() throws Throwable {
