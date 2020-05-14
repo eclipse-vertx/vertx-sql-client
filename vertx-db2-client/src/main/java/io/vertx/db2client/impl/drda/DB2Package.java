@@ -63,8 +63,6 @@ public class DB2Package {
     	String pkgNumStr = pkgNum < 16 ? "0" + Integer.toHexString(pkgNum) : Integer.toHexString(pkgNum);
     	name = "SYS" + config + pkgNumStr;
     	cursorNamePrefix = "SQL_CUR" + config + pkgNumStr + 'C';
-    	if (LOG.isLoggable(Level.FINE))
-    		LOG.fine("<init> " + this);
 	}
 	
 	boolean isSmallPackage() {
