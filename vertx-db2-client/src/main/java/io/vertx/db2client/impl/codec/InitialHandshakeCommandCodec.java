@@ -30,10 +30,9 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 
 class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitialHandshakeCommand> {
 
-  private static final int ST_CONNECTING = 0;
-  private static final int ST_AUTHENTICATING = 1;
-  private static final int ST_CONNECTED = 2;
-  private static final int ST_CONNECT_FAILED = 3;
+  private static enum ConnectionState {
+    CONNECTING, AUTHENTICATING, CONNECTED, CONNECT_FAILED
+  }
 
   private static final int TARGET_SECURITY_MEASURE = DRDAConstants.SECMEC_USRIDPWD;
 
@@ -42,7 +41,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
   // It is saved like the prddta in case it is needed for a connect reflow.
   private byte[] correlationToken;
 
-  private int status = ST_CONNECTING;
+  private ConnectionState status = ConnectionState.CONNECTING;
 
   InitialHandshakeCommandCodec(InitialHandshakeCommand cmd) {
     super(cmd);
@@ -53,66 +52,20 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     super.encode(encoder);
     encoder.connMetadata.databaseName = cmd.database();
     encoder.socketConnection.closeHandler(h -> {
-      if (status == ST_CONNECTING) {
+      if (status == ConnectionState.CONNECTING) {
         // Sometimes DB2 closes the connection when sending an invalid Database name.
         // -4499 = A fatal error occurred that resulted in a disconnect from the data
         // source.
         // 08001 = "The connection was unable to be established"
-        cmd.fail(new DB2Exception("The connection was closed by the database server.", 
-            SqlCode.CONNECTION_REFUSED,
+        cmd.fail(new DB2Exception("The connection was closed by the database server.", SqlCode.CONNECTION_REFUSED,
             SQLState.AUTH_DATABASE_CONNECTION_REFUSED));
       }
     });
-    sendInitialHandshake();
-  }
 
-  @Override
-  void decodePayload(ByteBuf payload, int payloadLength) {
-    DRDAConnectResponse response = new DRDAConnectResponse(payload, encoder.connMetadata);
-    switch (status) {
-    case ST_CONNECTING:
-      response.readExchangeServerAttributes();
-      // readAccessSecurity can throw a DB2Exception if there are problems connecting.
-      // In that case, we want to catch that exception and
-      // make sure to set the status to something other than ST_CONNECTING so we don't
-      // try to complete the result twice (when we hit encode)
-      try {
-        response.readAccessSecurity(TARGET_SECURITY_MEASURE);
-      } catch (DB2Exception de) {
-        status = ST_CONNECT_FAILED;
-        throw de;
-      }
-      status = ST_AUTHENTICATING;
-      ByteBuf packet = allocateBuffer();
-      int packetStartIdx = packet.writerIndex();
-      DRDAConnectRequest securityCheck = new DRDAConnectRequest(packet, encoder.connMetadata);
-      correlationToken = securityCheck.getCorrelationToken(encoder.socketConnection.socket().localAddress().port());
-      securityCheck.buildSECCHK(TARGET_SECURITY_MEASURE, cmd.database(), cmd.username(), cmd.password(), null, // sectkn,
-          null); // sectkn2
-      securityCheck.buildACCRDB(cmd.database(), false, // readOnly,
-          correlationToken, DRDAConstants.SYSTEM_ASC);
-      securityCheck.completeCommand();
-      int lenOfPayload = packet.writerIndex() - packetStartIdx;
-      sendPacket(packet, lenOfPayload);
-      return;
-    case ST_AUTHENTICATING:
-      response.readSecurityCheck();
-      RDBAccessData accData = response.readAccessDatabase();
-      if (accData.correlationToken != null)
-        correlationToken = accData.correlationToken;
-      status = ST_CONNECTED;
-      completionHandler.handle(CommandResponse.success(cmd.connection()));
-      return;
-    default:
-      throw new IllegalStateException("Unknown state: " + status);
-    }
-  }
-
-  private void sendInitialHandshake() {
     ByteBuf packet = allocateBuffer();
     int packetStartIdx = packet.writerIndex();
-    DRDAConnectRequest cmd = new DRDAConnectRequest(packet, encoder.connMetadata);
-    cmd.buildEXCSAT(DRDAConstants.EXTNAM, // externalName,
+    DRDAConnectRequest connectRequest = new DRDAConnectRequest(packet, encoder.connMetadata);
+    connectRequest.buildEXCSAT(DRDAConstants.EXTNAM, // externalName,
         0x0A, // targetAgent,
         DRDAConstants.TARGET_SQL_AM, // targetSqlam,
         0x0C, // targetRdb,
@@ -124,11 +77,40 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
         0, // targetRsyncmgr,
         CCSIDConstants.TARGET_UNICODE_MGR // targetUnicodemgr
     );
-    cmd.buildACCSEC(TARGET_SECURITY_MEASURE, this.cmd.database(), null);
-    cmd.completeCommand();
+    connectRequest.buildACCSEC(TARGET_SECURITY_MEASURE, this.cmd.database(), null);
+    correlationToken = connectRequest.getCorrelationToken(encoder.socketConnection.socket().localAddress().port());
+    connectRequest.buildSECCHK(TARGET_SECURITY_MEASURE, cmd.database(), cmd.username(), cmd.password(), null, // sectkn,
+        null); // sectkn2
+    connectRequest.buildACCRDB(cmd.database(), false, // readOnly,
+        correlationToken, DRDAConstants.SYSTEM_ASC);
+    connectRequest.completeCommand();
 
     int lenOfPayload = packet.writerIndex() - packetStartIdx;
     sendPacket(packet, lenOfPayload);
+  }
+
+  @Override
+  void decodePayload(ByteBuf payload, int payloadLength) {
+    DRDAConnectResponse response = new DRDAConnectResponse(payload, encoder.connMetadata);
+    response.readExchangeServerAttributes();
+    // readAccessSecurity can throw a DB2Exception if there are problems connecting.
+    // In that case, we want to catch that exception and
+    // make sure to set the status to something other than ST_CONNECTING so we don't
+    // try to complete the result twice (when we hit encode)
+    try {
+      response.readAccessSecurity(TARGET_SECURITY_MEASURE);
+    } catch (DB2Exception de) {
+      status = ConnectionState.CONNECT_FAILED;
+      throw de;
+    }
+    status = ConnectionState.AUTHENTICATING;
+    response.readSecurityCheck();
+    RDBAccessData accData = response.readAccessDatabase();
+    if (accData.correlationToken != null) {
+      correlationToken = accData.correlationToken;
+    }
+    status = ConnectionState.CONNECTED;
+    completionHandler.handle(CommandResponse.success(cmd.connection()));
   }
 
 }
