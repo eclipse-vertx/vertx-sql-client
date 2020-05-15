@@ -76,8 +76,12 @@ class MSSQLDataTypeCodec {
         return decodeFloat4(in);
       case MSSQLDataTypeId.FLT8TYPE_ID:
         return decodeFloat8(in);
+      case MSSQLDataTypeId.FLTNTYPE_ID:
+        return decodeFltN(in);
       case MSSQLDataTypeId.BITTYPE_ID:
         return decodeBit(in);
+      case MSSQLDataTypeId.BITNTYPE_ID:
+        return decodeBitN(in);
       case MSSQLDataTypeId.DATENTYPE_ID:
         return decodeDateN(in);
       case MSSQLDataTypeId.TIMENTYPE_ID:
@@ -233,6 +237,34 @@ class MSSQLDataTypeCodec {
         return buffer.readLongLE();
       default:
         throw new UnsupportedOperationException(String.format("SEVERE: Unsupported length=[%d] for decoding IntNDataType row value.", intNDataTypeLength));
+    }
+  }
+
+  private static Object decodeFltN(ByteBuf buffer) {
+    int fltNDataTypeLength = buffer.readByte();
+    switch (fltNDataTypeLength) {
+      case 0:
+        // this means we read a NULL value(nullable data type).
+        return null;
+      case 4:
+        return buffer.readFloatLE();
+      case 8:
+        return buffer.readDoubleLE();
+      default:
+        throw new UnsupportedOperationException(String.format("SEVERE: Unsupported length=[%d] for decoding FLTNTYPE row value.", fltNDataTypeLength));
+    }
+  }
+
+  private static Object decodeBitN(ByteBuf buffer) {
+    int bitNDataTypeLength = buffer.readByte();
+    switch (bitNDataTypeLength) {
+      case 0:
+        // this means we read a NULL value(nullable data type).
+        return null;
+      case 1:
+        return buffer.readBoolean();
+      default:
+        throw new UnsupportedOperationException(String.format("SEVERE: Unsupported length=[%d] for decoding BITNTYPE row value.", bitNDataTypeLength));
     }
   }
 }
