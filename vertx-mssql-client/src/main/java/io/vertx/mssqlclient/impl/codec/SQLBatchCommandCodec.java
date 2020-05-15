@@ -45,6 +45,9 @@ class SQLBatchCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryComman
         case DataPacketStreamTokenType.ROW_TOKEN:
           handleRow(messageBody);
           break;
+        case DataPacketStreamTokenType.NBCROW_TOKEN:
+          handleNbcRow(messageBody);
+          break;
         case DataPacketStreamTokenType.DONE_TOKEN:
           short status = messageBody.readShortLE();
           short curCmd = messageBody.readShortLE();

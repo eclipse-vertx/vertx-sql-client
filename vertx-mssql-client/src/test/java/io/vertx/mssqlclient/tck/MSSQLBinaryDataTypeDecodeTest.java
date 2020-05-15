@@ -29,12 +29,4 @@ public class MSSQLBinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase 
   protected void initConnector() {
     connector = ClientConfig.CONNECT.connect(vertx, rule.options());
   }
-
-  @Test
-  @Ignore
-  @Override
-  public void testNullValues(TestContext ctx) {
-    //TODO need to improve TCK a bit
-    super.testNullValues(ctx);
-  }
 }

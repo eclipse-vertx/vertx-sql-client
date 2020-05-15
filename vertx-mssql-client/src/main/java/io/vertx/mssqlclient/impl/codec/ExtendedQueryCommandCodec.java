@@ -54,6 +54,9 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
         case DataPacketStreamTokenType.ROW_TOKEN:
           handleRow(messageBody);
           break;
+        case DataPacketStreamTokenType.NBCROW_TOKEN:
+          handleNbcRow(messageBody);
+          break;
         case DataPacketStreamTokenType.DONE_TOKEN:
           messageBody.skipBytes(12); // this should only be after ERROR_TOKEN?
           handleDoneToken();
@@ -203,14 +206,7 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
   private void encodeNullParameter(ByteBuf payload) {
     payload.writeByte(0x00);
     payload.writeByte(0x00);
-    payload.writeByte(MSSQLDataTypeId.NVARCHARTYPE_ID);
-    payload.writeShortLE(8000); // maximal length
-    payload.writeByte(0x09);
-    payload.writeByte(0x04);
-    payload.writeByte(0xd0);
-    payload.writeByte(0x00);
-    payload.writeByte(0x34); // Collation for param definitions TODO always this value?
-    payload.writeShortLE(0xFFFF);
+    payload.writeByte(MSSQLDataTypeId.NULLTYPE_ID);
   }
 
   private void encodeIntNParameter(ByteBuf payload, int n, Object value) {

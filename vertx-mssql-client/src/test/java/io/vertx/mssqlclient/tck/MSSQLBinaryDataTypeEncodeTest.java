@@ -57,13 +57,4 @@ public class MSSQLBinaryDataTypeEncodeTest extends BinaryDataTypeEncodeTestBase 
     //TODO do we need wrapped type?
     super.testDecimal(ctx);
   }
-  
-  @Test
-  @Ignore // TODO: Investigate this issue and enable the test 
-  // (unfortunately it wasn't as simple as removing the NOT NULL constraints in init.sql)
-  @Override
-  public void testNullValues(TestContext ctx) {
-    super.testNullValues(ctx);
-  }  
-
 }

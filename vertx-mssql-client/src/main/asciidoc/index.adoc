@@ -98,7 +98,7 @@ include::queries.adoc[]
 
 Currently the client supports the following SQL Server types
 
-* TINYINT(`java.lang.Byte`)
+* TINYINT(`java.lang.Short`)
 * SMALLINT(`java.lang.Short`)
 * INT(`java.lang.Integer`)
 * BIGINT(`java.lang.Long`)
