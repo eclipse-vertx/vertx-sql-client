@@ -311,6 +311,32 @@ public class MySQLClientExamples {
     }
   }
 
+  enum Color {
+    red
+  }
+
+  public void enumeratedType01Example(SqlClient client) {
+    client
+      .preparedQuery("INSERT INTO colors VALUES (?)")
+      .execute(Tuple.of(Color.red),  res -> {
+        // ...
+      });
+  }
+
+  public void enumeratedType02Example(SqlClient client) {
+    client
+      .preparedQuery("SELECT color FROM colors")
+      .execute()
+      .onComplete(res -> {
+      if (res.succeeded()) {
+        RowSet<Row> rows = res.result();
+        for (Row row : rows) {
+          System.out.println(row.get(Color.class, "color"));
+        }
+      }
+    });
+  }
+
   public void geometryExample01(SqlClient client) {
     client
       .query("SELECT ST_AsText(g) FROM geom;")

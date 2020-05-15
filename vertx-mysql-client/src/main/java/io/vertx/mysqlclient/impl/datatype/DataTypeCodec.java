@@ -183,6 +183,8 @@ public class DataTypeCodec {
         } else if (value == Tuple.JSON_NULL) {
           // we have to make JSON literal null send as a STRING data type
           BufferUtils.writeLengthEncodedString(buffer, "null", charset);
+        } else if (value instanceof Enum) {
+          binaryEncodeText(((Enum<?>)value).name(), buffer, charset);
         } else {
           binaryEncodeText(String.valueOf(value), buffer, charset);
         }
