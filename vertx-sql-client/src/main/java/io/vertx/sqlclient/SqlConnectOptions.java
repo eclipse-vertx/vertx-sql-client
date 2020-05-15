@@ -26,7 +26,7 @@ public class SqlConnectOptions extends NetClientOptions {
   private boolean cachePreparedStatements = DEFAULT_CACHE_PREPARED_STATEMENTS;
   private int preparedStatementCacheMaxSize = DEFAULT_PREPARED_STATEMENT_CACHE_MAX_SIZE;
   private int preparedStatementCacheSqlLimit = DEFAULT_PREPARED_STATEMENT_CACHE_SQL_LIMIT;
-  private Map<String, String> properties;
+  private Map<String, String> properties = new HashMap<>(4);
 
   public SqlConnectOptions() {
     super();
@@ -49,7 +49,9 @@ public class SqlConnectOptions extends NetClientOptions {
     this.cachePreparedStatements = other.cachePreparedStatements;
     this.preparedStatementCacheMaxSize = other.preparedStatementCacheMaxSize;
     this.preparedStatementCacheSqlLimit = other.preparedStatementCacheSqlLimit;
-    this.properties = new HashMap<>(other.properties);
+    if (other.properties != null) {
+      this.properties = new HashMap<>(other.properties);
+    }
   }
 
   /**
