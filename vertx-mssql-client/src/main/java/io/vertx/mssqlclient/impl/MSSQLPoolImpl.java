@@ -42,7 +42,7 @@ public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool 
 
   @Override
   public int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current) {
-    queryBuilder.append('@').append(1 + index);
+    queryBuilder.append('@').append('P').append(1 + index);
     return index;
   }
 
