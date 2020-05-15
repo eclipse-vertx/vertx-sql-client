@@ -16,6 +16,7 @@
 package io.vertx.db2client.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.core.Future;
 import io.vertx.db2client.DB2Exception;
 import io.vertx.db2client.impl.command.InitialHandshakeCommand;
 import io.vertx.db2client.impl.drda.CCSIDConstants;
@@ -57,14 +58,13 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
         // -4499 = A fatal error occurred that resulted in a disconnect from the data
         // source.
         // 08001 = "The connection was unable to be established"
-        cmd.fail(new DB2Exception("The connection was closed by the database server.", SqlCode.CONNECTION_REFUSED,
-            SQLState.AUTH_DATABASE_CONNECTION_REFUSED));
+        System.out.println("@AGG error?");
+//        cmd.fail(new DB2Exception("The connection was closed by the database server.", SqlCode.CONNECTION_REFUSED,
+//            SQLState.AUTH_DATABASE_CONNECTION_REFUSED));
       }
     });
 
-    ByteBuf packet = allocateBuffer();
-    int packetStartIdx = packet.writerIndex();
-    DRDAConnectRequest connectRequest = new DRDAConnectRequest(packet, encoder.connMetadata);
+    DRDAConnectRequest connectRequest = encoder.getOrCreateRequest();
     connectRequest.buildEXCSAT(DRDAConstants.EXTNAM, // externalName,
         0x0A, // targetAgent,
         DRDAConstants.TARGET_SQL_AM, // targetSqlam,
@@ -85,12 +85,17 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
         correlationToken, DRDAConstants.SYSTEM_ASC);
     connectRequest.completeCommand();
 
-    int lenOfPayload = packet.writerIndex() - packetStartIdx;
-    sendPacket(packet, lenOfPayload);
+//    encoder.writePacket();
+    //encoder.sendPacket();
+    //sendPacket(packet, lenOfPayload);
+    System.out.println("@AGG encode complete");
+    cmd.handler.handle(Future.succeededFuture(cmd.connection()));
+//    completionHandler.handle(CommandResponse.success(cmd.connection()));
   }
 
   @Override
   void decodePayload(ByteBuf payload, int payloadLength) {
+    System.out.println("@AGG decode handshake");
     DRDAConnectResponse response = new DRDAConnectResponse(payload, encoder.connMetadata);
     response.readExchangeServerAttributes();
     // readAccessSecurity can throw a DB2Exception if there are problems connecting.

@@ -29,11 +29,10 @@ class CloseConnectionCommandCodec extends CommandCodec<Void, CloseConnectionComm
   @Override
   void encode(DB2Encoder encoder) {
     super.encode(encoder);
-    ByteBuf packet = allocateBuffer();
-    DRDAQueryRequest closeCursor = new DRDAQueryRequest(packet, encoder.connMetadata);
+    DRDAQueryRequest closeCursor = encoder.getOrCreateRequest();
     closeCursor.buildRDBCMM();
     closeCursor.completeCommand();
-    sendNonSplitPacket(packet);
+    encoder.sendPacket();
   }
 
   @Override

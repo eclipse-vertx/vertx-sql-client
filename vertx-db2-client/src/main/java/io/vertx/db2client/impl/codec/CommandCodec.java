@@ -38,29 +38,33 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     this.encoder = encoder;
   }
 
-  ByteBuf allocateBuffer() {
-    return encoder.chctx.alloc().ioBuffer();
-  }
-
-  ByteBuf allocateBuffer(int capacity) {
-    return encoder.chctx.alloc().ioBuffer(capacity);
-  }
-
-  void sendPacket(ByteBuf packet, int payloadLength) {
-    if (payloadLength >= DB2Codec.PACKET_PAYLOAD_LENGTH_LIMIT) {
-      /*
-       * The original packet exceeds the limit of packet length, split the packet
-       * here. if payload length is exactly 16MBytes-1byte(0xFFFFFF), an empty packet
-       * is needed to indicate the termination.
-       */
-      throw new UnsupportedOperationException("Sending split packets not implemented");
-//            sendSplitPacket(packet);
-    } else {
-      sendNonSplitPacket(packet);
-    }
-  }
-
-  void sendNonSplitPacket(ByteBuf packet) {
-    encoder.chctx.writeAndFlush(packet);
-  }
+//  ByteBuf allocateBuffer() {
+//    return encoder.chctx.alloc().ioBuffer();
+//  }
+//
+//  ByteBuf allocateBuffer(int capacity) {
+//    return encoder.chctx.alloc().ioBuffer(capacity);
+//  }
+//  
+//  void writePacket(ByteBuf packet, int payloadLength) {
+//    encoder.chctx.write(packet);
+//  }
+//
+//  void sendPacket(ByteBuf packet, int payloadLength) {
+//    if (payloadLength >= DB2Codec.PACKET_PAYLOAD_LENGTH_LIMIT) {
+//      /*
+//       * The original packet exceeds the limit of packet length, split the packet
+//       * here. if payload length is exactly 16MBytes-1byte(0xFFFFFF), an empty packet
+//       * is needed to indicate the termination.
+//       */
+//      throw new UnsupportedOperationException("Sending split packets not implemented");
+////            sendSplitPacket(packet);
+//    } else {
+//      sendNonSplitPacket(packet);
+//    }
+//  }
+//
+//  void sendNonSplitPacket(ByteBuf packet) {
+//    encoder.chctx.writeAndFlush(packet);
+//  }
 }

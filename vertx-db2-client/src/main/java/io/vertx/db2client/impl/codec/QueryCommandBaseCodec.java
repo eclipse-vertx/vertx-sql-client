@@ -46,9 +46,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
   void encode(DB2Encoder encoder) {
     super.encode(encoder);
 
-    ByteBuf packet = allocateBuffer();
-    int packetStartIdx = packet.writerIndex();
-    DRDAQueryRequest req = new DRDAQueryRequest(packet, encoder.connMetadata);
+    DRDAQueryRequest req = encoder.getOrCreateRequest();
     if (isQuery) {
       encodeQuery(req);
     } else {
@@ -56,7 +54,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     }
     req.completeCommand();
 
-    sendPacket(packet, packet.writerIndex() - packetStartIdx);
+    encoder.sendPacket();
   }
 
   abstract void encodeQuery(DRDAQueryRequest req);

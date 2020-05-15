@@ -44,13 +44,10 @@ class PingCommandCodec extends CommandCodec<Void, PingCommand> {
     DRDAConnectResponse response = new DRDAConnectResponse(payload, md);
     response.readExchangeServerAttributes();
     completionHandler.handle(CommandResponse.success(null));
-    return;
   }
 
   private void sendPingRequest() {
-    ByteBuf packet = allocateBuffer();
-    int packetStartIdx = packet.writerIndex();
-    DRDAConnectRequest cmd = new DRDAConnectRequest(packet, md);
+    DRDAConnectRequest cmd = encoder.getOrCreateRequest();
     cmd.buildEXCSAT(DRDAConstants.EXTNAM, // externalName,
         0x0A, // targetAgent,
         DRDAConstants.TARGET_SQL_AM, // targetSqlam,
@@ -64,8 +61,6 @@ class PingCommandCodec extends CommandCodec<Void, PingCommand> {
         CCSIDConstants.TARGET_UNICODE_MGR // targetUnicodemgr
     );
     cmd.completeCommand();
-
-    int lenOfPayload = packet.writerIndex() - packetStartIdx;
-    sendPacket(packet, lenOfPayload);
+    encoder.sendPacket();
   }
 }

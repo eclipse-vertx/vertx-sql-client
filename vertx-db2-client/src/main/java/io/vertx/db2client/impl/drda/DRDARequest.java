@@ -51,7 +51,7 @@ public abstract class DRDARequest {
 
     // tracks the request correlation ID to use for commands and command objects.
     // this is automatically updated as commands are built and sent to the server.
-    private int correlationID_ = 0;
+    public int correlationID_ = 0;
 
     private boolean simpleDssFinalize = false;
     

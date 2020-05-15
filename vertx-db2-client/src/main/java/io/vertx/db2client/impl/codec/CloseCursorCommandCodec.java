@@ -41,11 +41,10 @@ class CloseCursorCommandCodec extends CommandCodec<Void, CloseCursorCommand> {
     QueryInstance query = statement.getQueryInstance(cmd.id());
     statement.closeQuery(query);
 
-    ByteBuf packet = allocateBuffer();
-    DRDAQueryRequest closeCursor = new DRDAQueryRequest(packet, encoder.connMetadata);
+    DRDAQueryRequest closeCursor = encoder.getOrCreateRequest();
     closeCursor.buildCLSQRY(statement.section, encoder.connMetadata.databaseName, query.queryInstanceId);
     closeCursor.completeCommand();
-    sendNonSplitPacket(packet);
+    encoder.sendPacket();
   }
 
   @Override

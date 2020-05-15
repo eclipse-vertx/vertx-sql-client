@@ -17,6 +17,7 @@ package io.vertx.db2client.impl.codec;
 
 import java.util.ArrayDeque;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
@@ -26,6 +27,7 @@ import io.vertx.db2client.impl.DB2SocketConnection;
 import io.vertx.db2client.impl.command.InitialHandshakeCommand;
 import io.vertx.db2client.impl.command.PingCommand;
 import io.vertx.db2client.impl.drda.ConnectionMetaData;
+import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
 import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
@@ -43,12 +45,37 @@ class DB2Encoder extends ChannelOutboundHandlerAdapter {
   public final ConnectionMetaData connMetadata = new ConnectionMetaData();
   private final ArrayDeque<CommandCodec<?, ?>> inflight;
   ChannelHandlerContext chctx;
-
   DB2SocketConnection socketConnection;
+  
+  private DRDAQueryRequest pendingRequest;
+  private ByteBuf pendingBuffer;
 
   DB2Encoder(ArrayDeque<CommandCodec<?, ?>> inflight, DB2SocketConnection db2SocketConnection) {
     this.inflight = inflight;
     this.socketConnection = db2SocketConnection;
+  }
+  
+  DRDAQueryRequest getOrCreateRequest() {
+    if (pendingRequest == null) {
+      pendingBuffer = chctx.alloc().ioBuffer();
+      pendingRequest = new DRDAQueryRequest(pendingBuffer, connMetadata);
+    }
+    return pendingRequest;
+  }
+  
+  void writePacket() {
+    if (pendingRequest == null) {
+      throw new IllegalStateException("No pending request");
+    }
+    chctx.write(pendingBuffer);
+  }
+  
+  void sendPacket() {
+    writePacket();
+    chctx.flush();
+    pendingRequest = null;
+//    pendingBuffer.release();
+    pendingBuffer = null;
   }
 
   @Override
