@@ -47,6 +47,8 @@ class MSSQLDataTypeCodec {
     } else if (value instanceof Numeric) {
       //TODO we may need some changes in Numeric to make this work
       throw new UnsupportedOperationException();
+    } else if (value.getClass().isEnum()) {
+      return parameterDefinitionsMapping.get(String.class);
     } else {
       String paramDefinition = parameterDefinitionsMapping.get(value.getClass());
       if (paramDefinition != null) {

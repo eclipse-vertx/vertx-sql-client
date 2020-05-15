@@ -112,6 +112,24 @@ Currently the client supports the following SQL Server types
 
 Tuple decoding uses the above types when storing values
 
+=== Handling ENUM
+
+SQL Server does not have ENUM data type but the client can map the retrieved string/numeric data type to enum.
+
+You can encode Java enums as String like this:
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#enumeratedType01Example}
+----
+
+You can retrieve the ENUM column as Java enums like this:
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#enumeratedType02Example}
+----
+
 == Collector queries
 
 You can use Java collectors with the query API:

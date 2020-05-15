@@ -190,6 +190,8 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
       encodeFloat8Parameter(payload, (Double) value);
     } else if (value instanceof String) {
       encodeNVarcharParameter(payload, (String) value);
+    } else if (value instanceof Enum){
+      encodeNVarcharParameter(payload, ((Enum<?>)value).name());
     } else if (value instanceof Boolean) {
       encodeBitNParameter(payload, (Boolean) value);
     } else if (value instanceof LocalDate) {
