@@ -108,3 +108,34 @@ INSERT INTO nullable_datatype(id, test_tinyint, test_smallint, test_int, test_bi
 VALUES (3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 -- table for testing nullable data types
 
+-- table for testing NOT NULL data types
+DROP TABLE IF EXISTS not_nullable_datatype;
+CREATE TABLE not_nullable_datatype
+(
+    id            INT              NOT NULL,
+    test_tinyint  TINYINT          NOT NULL,
+    test_smallint SMALLINT         NOT NULL,
+    test_int      INT              NOT NULL,
+    test_bigint   BIGINT           NOT NULL,
+    test_float_4  REAL             NOT NULL,
+    test_float_8  DOUBLE PRECISION NOT NULL,
+    test_numeric  NUMERIC(5, 2)    NOT NULL,
+    test_decimal  DECIMAL          NOT NULL,
+    test_boolean  BIT              NOT NULL,
+    test_char     CHAR(8)          NOT NULL,
+    test_varchar  VARCHAR(20)      NOT NULL,
+    test_date     DATE             NOT NULL,
+    test_time     TIME(6)          NOT NULL
+);
+
+INSERT INTO not_nullable_datatype(id, test_tinyint, test_smallint, test_int, test_bigint, test_float_4, test_float_8,
+                                  test_numeric, test_decimal, test_boolean, test_char, test_varchar, test_date,
+                                  test_time)
+VALUES (1, 127, 32767, 2147483647, 9223372036854775807, 3.40282E38, 1.7976931348623157E308, 999.99,
+        12345, 1, 'testchar', 'testvarchar', '2019-01-01', '18:45:02');
+INSERT INTO not_nullable_datatype(id, test_tinyint, test_smallint, test_int, test_bigint, test_float_4, test_float_8,
+                                  test_numeric, test_decimal, test_boolean, test_char, test_varchar, test_date,
+                                  test_time)
+VALUES (2, 127, 32767, 2147483647, 9223372036854775807, 3.40282E38, 1.7976931348623157E308, 999.99,
+        12345, 1, 'testchar', 'testvarchar', '2019-01-01', '18:45:02');
+-- table for testing NOT NULL data types

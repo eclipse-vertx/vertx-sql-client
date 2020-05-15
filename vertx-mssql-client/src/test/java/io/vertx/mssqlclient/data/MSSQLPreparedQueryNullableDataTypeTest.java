@@ -24,11 +24,11 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
 
   @Test
   public void testEncodeTinyInt(TestContext ctx) {
-    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_tinyint", (byte) 255, row -> {
-      ctx.assertEquals((byte) 255, row.getValue("test_tinyint"));
-      ctx.assertEquals((byte) 255, row.getValue(0));
-      ctx.assertEquals((byte) 255, row.get(Byte.class, "test_tinyint"));
-      ctx.assertEquals((byte) 255, row.get(Byte.class, 0));
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_tinyint", (short) 255, row -> {
+      ctx.assertEquals((short) 255, row.getValue("test_tinyint"));
+      ctx.assertEquals((short) 255, row.getValue(0));
+      ctx.assertEquals((short) 255, row.get(Short.class, "test_tinyint"));
+      ctx.assertEquals((short) 255, row.get(Short.class, 0));
     });
   }
 
@@ -37,8 +37,8 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
     testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_tinyint", null, row -> {
       ctx.assertEquals(null, row.getValue("test_tinyint"));
       ctx.assertEquals(null, row.getValue(0));
-      ctx.assertEquals(null, row.get(Byte.class, "test_tinyint"));
-      ctx.assertEquals(null, row.get(Byte.class, 0));
+      ctx.assertEquals(null, row.get(Short.class, "test_tinyint"));
+      ctx.assertEquals(null, row.get(Short.class, 0));
     });
   }
 

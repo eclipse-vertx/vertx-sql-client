@@ -228,7 +228,7 @@ class MSSQLDataTypeCodec {
         // this means we read a NULL value(nullable data type).
         return null;
       case 1:
-        return buffer.readByte();
+        return buffer.readUnsignedByte();
       case 2:
         return buffer.readShortLE();
       case 4:
