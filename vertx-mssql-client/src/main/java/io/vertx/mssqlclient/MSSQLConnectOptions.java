@@ -41,12 +41,14 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_USER = "sa";
   public static final String DEFAULT_PASSWORD = "";
   public static final String DEFAULT_SCHEMA = "";
+  public static final String DEFAULT_APP_NAME = "vertx-mssql-client";
+  public static final String DEFAULT_CLIENT_INTERFACE_NAME = "Vert.x";
   public static final Map<String, String> DEFAULT_PROPERTIES;
 
   static {
     Map<String, String> defaultProperties = new HashMap<>();
-    defaultProperties.put("appName", "vertx-mssql-client");
-    defaultProperties.put("clientInterfaceName", "Vert.x");
+    defaultProperties.put("appName", DEFAULT_APP_NAME);
+    defaultProperties.put("clientInterfaceName", DEFAULT_CLIENT_INTERFACE_NAME);
     DEFAULT_PROPERTIES = defaultProperties;
   }
 
@@ -58,7 +60,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
     super(json);
     MSSQLConnectOptionsConverter.fromJson(json, this);
   }
-  
+
   public MSSQLConnectOptions(SqlConnectOptions other) {
     super(other);
   }

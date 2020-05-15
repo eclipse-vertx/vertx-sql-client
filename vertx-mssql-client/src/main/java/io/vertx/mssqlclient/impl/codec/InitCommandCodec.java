@@ -13,6 +13,7 @@ package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.impl.protocol.MessageStatus;
 import io.vertx.mssqlclient.impl.protocol.MessageType;
 import io.vertx.mssqlclient.impl.protocol.TdsMessage;
@@ -116,6 +117,9 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
 
     // AppName
     CharSequence appName = properties.get("appName");
+    if (appName == null || appName.length() == 0) {
+      appName = MSSQLConnectOptions.DEFAULT_APP_NAME;
+    }
     int appNameOffsetLengthIdx = packet.writerIndex();
     packet.writeShortLE(0x00); // offset
     packet.writeShortLE(appName.length());
@@ -133,6 +137,9 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
 
     // CltIntName
     CharSequence interfaceLibraryName = properties.get("clientInterfaceName");
+    if (interfaceLibraryName == null || interfaceLibraryName.length() == 0) {
+      interfaceLibraryName = MSSQLConnectOptions.DEFAULT_CLIENT_INTERFACE_NAME;
+    }
     int cltIntNameOffsetLengthIdx = packet.writerIndex();
     packet.writeShortLE(0x00); // offset
     packet.writeShortLE(interfaceLibraryName.length());
