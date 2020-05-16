@@ -13,6 +13,9 @@ package io.vertx.mssqlclient.data;
 
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.sqlclient.ColumnChecker;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.Tuple;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -21,36 +24,36 @@ public class MSSQLEnumDataTypeTest extends MSSQLDataTypeTestBase {
   @Test
   public void testQueryDecodeStringToJavaEnum(TestContext ctx) {
     testQueryDecodeGenericWithoutTable(ctx, "test_enum", "varchar", "'large'", row -> {
-      ctx.assertEquals(Size.large, row.get(Size.class, 0));
-      ctx.assertEquals(Size.large, row.get(Size.class, "test_enum"));
-      ctx.assertEquals("large", row.get(String.class, 0));
-      ctx.assertEquals("large", row.get(String.class, "test_enum"));
-      ctx.assertEquals("large", row.getString(0));
-      ctx.assertEquals("large", row.getString("test_enum"));
+      ColumnChecker.checkColumn(0, "test_enum")
+        .returns(Tuple::getValue, Row::getValue, "large")
+        .returns(Tuple::getString, Row::getString, "large")
+        .returns(String.class, "large")
+        .returns(Size.class, Size.large)
+        .forRow(row);
     });
   }
 
   @Test
   public void testPreparedQueryDecodeStringToJavaEnum(TestContext ctx) {
     testPreparedQueryDecodeGenericWithoutTable(ctx, "test_enum", "varchar", "'large'", row -> {
-      ctx.assertEquals(Size.large, row.get(Size.class, 0));
-      ctx.assertEquals(Size.large, row.get(Size.class, "test_enum"));
-      ctx.assertEquals("large", row.get(String.class, 0));
-      ctx.assertEquals("large", row.get(String.class, "test_enum"));
-      ctx.assertEquals("large", row.getString(0));
-      ctx.assertEquals("large", row.getString("test_enum"));
+      ColumnChecker.checkColumn(0, "test_enum")
+        .returns(Tuple::getValue, Row::getValue, "large")
+        .returns(Tuple::getString, Row::getString, "large")
+        .returns(String.class, "large")
+        .returns(Size.class, Size.large)
+        .forRow(row);
     });
   }
 
   @Test
   public void testPreparedQueryEncodeJavaEnumToString(TestContext ctx) {
     testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_varchar", Size.medium, row -> {
-      ctx.assertEquals(Size.medium, row.get(Size.class, 0));
-      ctx.assertEquals(Size.medium, row.get(Size.class, "test_varchar"));
-      ctx.assertEquals("medium", row.get(String.class, 0));
-      ctx.assertEquals("medium", row.get(String.class, "test_varchar"));
-      ctx.assertEquals("medium", row.getString(0));
-      ctx.assertEquals("medium", row.getString("test_varchar"));
+      ColumnChecker.checkColumn(0, "test_varchar")
+        .returns(Tuple::getValue, Row::getValue, "medium")
+        .returns(Tuple::getString, Row::getString, "medium")
+        .returns(String.class, "medium")
+        .returns(Size.class, Size.medium)
+        .forRow(row);
     });
   }
 
