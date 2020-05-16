@@ -214,4 +214,30 @@ public class MSSQLClientExamples {
         }
       });
   }
+
+  enum Color {
+    red, green, blue
+  }
+
+  public void enumeratedType01Example(SqlClient client) {
+    client
+      .preparedQuery("INSERT INTO colors VALUES (@p1)")
+      .execute(Tuple.of(Color.red),  res -> {
+        // ...
+      });
+  }
+
+  public void enumeratedType02Example(SqlClient client) {
+    client
+      .preparedQuery("SELECT color FROM colors")
+      .execute()
+      .onComplete(res -> {
+        if (res.succeeded()) {
+          RowSet<Row> rows = res.result();
+          for (Row row : rows) {
+            System.out.println(row.get(Color.class, "color"));
+          }
+        }
+      });
+  }
 }

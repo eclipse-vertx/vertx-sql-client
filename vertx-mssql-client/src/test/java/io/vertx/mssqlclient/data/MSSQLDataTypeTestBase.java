@@ -42,15 +42,42 @@ public abstract class MSSQLDataTypeTestBase extends MSSQLTestBase {
                                                         String columnName,
                                                         String type,
                                                         String value,
-                                                        T expected) {
+                                                        Consumer<Row> checker) {
     MSSQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
         .query("SELECT CAST(" + value + " AS " + type + ") AS " + columnName)
         .execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
-          ctx.assertEquals(expected, row.getValue(0));
-          ctx.assertEquals(expected, row.getValue(columnName));
+          checker.accept(row);
+          conn.close();
+        }));
+    }));
+  }
+
+  protected <T> void testQueryDecodeGenericWithoutTable(TestContext ctx,
+                                                        String columnName,
+                                                        String type,
+                                                        String value,
+                                                        T expected) {
+    testQueryDecodeGenericWithoutTable(ctx, columnName, type, value, row -> {
+      ctx.assertEquals(expected, row.getValue(0));
+      ctx.assertEquals(expected, row.getValue(columnName));
+    });
+  }
+
+  protected <T> void testPreparedQueryDecodeGenericWithoutTable(TestContext ctx,
+                                                                String columnName,
+                                                                String type,
+                                                                String value,
+                                                                Consumer<Row> checker) {
+    MSSQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery("SELECT CAST(" + value + " AS " + type + ") AS " + columnName)
+        .execute(ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.size());
+          Row row = result.iterator().next();
+          checker.accept(row);
           conn.close();
         }));
     }));
@@ -61,17 +88,10 @@ public abstract class MSSQLDataTypeTestBase extends MSSQLTestBase {
                                                                 String type,
                                                                 String value,
                                                                 T expected) {
-    MSSQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn
-        .preparedQuery("SELECT CAST(" + value + " AS " + type + ") AS " + columnName)
-        .execute(ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.size());
-          Row row = result.iterator().next();
-          ctx.assertEquals(expected, row.getValue(0));
-          ctx.assertEquals(expected, row.getValue(columnName));
-          conn.close();
-        }));
-    }));
+    testPreparedQueryDecodeGenericWithoutTable(ctx, columnName, type, value, row -> {
+      ctx.assertEquals(expected, row.getValue(0));
+      ctx.assertEquals(expected, row.getValue(columnName));
+    });
   }
 
   protected <T> void testQueryDecodeGeneric(TestContext ctx,

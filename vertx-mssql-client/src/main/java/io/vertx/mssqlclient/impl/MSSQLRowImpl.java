@@ -45,6 +45,15 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
   }
 
   @Override
+  public <T> T get(Class<T> type, int position) {
+    if (type.isEnum()) {
+      return type.cast(getEnum(type, position));
+    } else {
+      return super.get(type, position);
+    }
+  }
+
+  @Override
   public Buffer getBuffer(String columnName) {
     throw new UnsupportedOperationException();
   }
@@ -147,5 +156,21 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
   @Override
   public UUID[] getUUIDArray(String columnName) {
     throw new UnsupportedOperationException();
+  }
+
+  private Object getEnum(Class enumType, int position) {
+    Object val = getValue(position);
+    if (val instanceof String) {
+      return Enum.valueOf(enumType, (String) val);
+    } else if (val instanceof Number) {
+      int ordinal = ((Number) val).intValue();
+      if (ordinal >= 0) {
+        Object[] constants = enumType.getEnumConstants();
+        if (ordinal < constants.length) {
+          return constants[ordinal];
+        }
+      }
+    }
+    return null;
   }
 }
