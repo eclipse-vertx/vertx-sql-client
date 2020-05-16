@@ -107,6 +107,22 @@ public abstract class DriverTestBase {
     }));
   }
   
+  @Test
+  public void testCreatePool05(TestContext ctx) {
+    // The default options will be an instanceof the driver-specific class, so manually copy
+    // each option over onto a fresh generic options object to force the generic constructor path
+    SqlConnectOptions defaults = defaultOptions();
+    SqlConnectOptions opts = new SqlConnectOptions()
+          .setHost(defaults.getHost())
+          .setPort(defaults.getPort())
+          .setDatabase(defaults.getDatabase())
+          .setUser(defaults.getUser())
+          .setPassword(defaults.getPassword());
+    Pool.pool(opts).getConnection(ctx.asyncAssertSuccess(ar -> {
+      ar.close();
+    }));
+  }
+  
   @Test(expected = ServiceConfigurationError.class)
   public void testRejectCreatePool01(TestContext ctx) {
     Pool.pool(new BogusOptions());
