@@ -1,8 +1,5 @@
-package io.vertx.pgclient.data;
+package io.vertx.sqlclient;
 
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.data.Numeric;
 import junit.framework.AssertionFailedError;
 
 import java.io.Serializable;
@@ -15,6 +12,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static org.junit.Assert.*;
 
@@ -23,130 +21,32 @@ public class ColumnChecker {
   private static List<SerializableBiFunction<Tuple, Integer, ?>> tupleMethods = new ArrayList<>();
   private static List<SerializableBiFunction<Row, String, ?>> rowMethods = new ArrayList<>();
 
-  static SerializableBiFunction<Tuple, Integer, Object> getByIndex(Class<?> type) {
+  public static SerializableBiFunction<Tuple, Integer, Object> getByIndex(Class<?> type) {
     return (tuple, index) -> tuple.get(type, index);
   }
 
-  static SerializableBiFunction<Row, String, Object> getByName(Class<?> type) {
+  public static SerializableBiFunction<Row, String, Object> getByName(Class<?> type) {
     return (row, index) -> {
       int idx = row.getColumnIndex(index);
       return idx == -1 ? null : row.get(type, idx);
     };
   }
 
-  static SerializableBiFunction<Tuple, Integer, Object> getValuesByIndex(Class<?> type) {
+  public static SerializableBiFunction<Tuple, Integer, Object> getValuesByIndex(Class<?> type) {
     return (tuple, index) -> tuple.get(Array.newInstance(type, 0).getClass(), index);
   }
 
-  static SerializableBiFunction<Row, String, Object> getValuesByName(Class<?> type) {
+  public static SerializableBiFunction<Row, String, Object> getValuesByName(Class<?> type) {
     return (row, index) -> {
       int idx = row.getColumnIndex(index);
       return idx == -1 ? null : row.get(Array.newInstance(type, 0).getClass(), idx);
     };
   }
 
-  static {
-    tupleMethods.add(Tuple::getValue);
-    rowMethods.add(Row::getValue);
-
-    tupleMethods.add(Tuple::getShort);
-    rowMethods.add(Row::getShort);
-    tupleMethods.add(Tuple::getInteger);
-    rowMethods.add(Row::getInteger);
-    tupleMethods.add(Tuple::getLong);
-    rowMethods.add(Row::getLong);
-    tupleMethods.add(Tuple::getFloat);
-    rowMethods.add(Row::getFloat);
-    tupleMethods.add(Tuple::getDouble);
-    rowMethods.add(Row::getDouble);
-    tupleMethods.add(Tuple::getBigDecimal);
-    rowMethods.add(Row::getBigDecimal);
-    tupleMethods.add(Tuple::getString);
-    rowMethods.add(Row::getString);
-    tupleMethods.add(Tuple::getBoolean);
-    rowMethods.add(Row::getBoolean);
-    tupleMethods.add(Tuple::getJsonObject);
-    rowMethods.add(Row::getJsonObject);
-    tupleMethods.add(Tuple::getJsonArray);
-    rowMethods.add(Row::getJsonArray);
-    tupleMethods.add(Tuple::getBuffer);
-    rowMethods.add(Row::getBuffer);
-    tupleMethods.add(Tuple::getBuffer);
-    rowMethods.add(Row::getBuffer);
-    tupleMethods.add(Tuple::getTemporal);
-    rowMethods.add(Row::getTemporal);
-    tupleMethods.add(Tuple::getLocalDate);
-    rowMethods.add(Row::getLocalDate);
-    tupleMethods.add(Tuple::getLocalTime);
-    rowMethods.add(Row::getLocalTime);
-    tupleMethods.add(Tuple::getOffsetTime);
-    rowMethods.add(Row::getOffsetTime);
-    tupleMethods.add(Tuple::getLocalDateTime);
-    rowMethods.add(Row::getLocalDateTime);
-    tupleMethods.add(Tuple::getOffsetDateTime);
-    rowMethods.add(Row::getOffsetDateTime);
-    tupleMethods.add(Tuple::getBooleanArray);
-    rowMethods.add(Row::getBooleanArray);
-    tupleMethods.add(Tuple::getJsonObjectArray);
-    rowMethods.add(Row::getJsonObjectArray);
-    tupleMethods.add(Tuple::getJsonArrayArray);
-    rowMethods.add(Row::getJsonArrayArray);
-    tupleMethods.add(Tuple::getShortArray);
-    rowMethods.add(Row::getShortArray);
-    tupleMethods.add(Tuple::getIntegerArray);
-    rowMethods.add(Row::getIntegerArray);
-    tupleMethods.add(Tuple::getLongArray);
-    rowMethods.add(Row::getLongArray);
-    tupleMethods.add(Tuple::getFloatArray);
-    rowMethods.add(Row::getFloatArray);
-    tupleMethods.add(Tuple::getDoubleArray);
-    rowMethods.add(Row::getDoubleArray);
-    tupleMethods.add(Tuple::getStringArray);
-    rowMethods.add(Row::getStringArray);
-    tupleMethods.add(Tuple::getLocalDateArray);
-    rowMethods.add(Row::getLocalDateArray);
-    tupleMethods.add(Tuple::getLocalTimeArray);
-    rowMethods.add(Row::getLocalTimeArray);
-    tupleMethods.add(Tuple::getOffsetTimeArray);
-    rowMethods.add(Row::getOffsetTimeArray);
-    tupleMethods.add(Tuple::getLocalDateTimeArray);
-    rowMethods.add(Row::getLocalDateTimeArray);
-    tupleMethods.add(Tuple::getBufferArray);
-    rowMethods.add(Row::getBufferArray);
-    tupleMethods.add(Tuple::getUUIDArray);
-    rowMethods.add(Row::getUUIDArray);
-    tupleMethods.add(getByIndex(Numeric.class));
-    rowMethods.add(getByName(Numeric.class));
-    tupleMethods.add(getValuesByIndex(Numeric.class));
-    rowMethods.add(getValuesByName(Numeric.class));
-    tupleMethods.add(getByIndex(Point.class));
-    rowMethods.add(getByName(Point.class));
-    tupleMethods.add(getValuesByIndex(Point.class));
-    rowMethods.add(getValuesByName(Point.class));
-    tupleMethods.add(getValuesByIndex(Line.class));
-    rowMethods.add(getValuesByName(Line.class));
-    tupleMethods.add(getByIndex(Line.class));
-    rowMethods.add(getByName(Line.class));
-    tupleMethods.add(getByIndex(LineSegment.class));
-    rowMethods.add(getByName(LineSegment.class));
-    tupleMethods.add(getValuesByIndex(LineSegment.class));
-    rowMethods.add(getValuesByName(LineSegment.class));
-    tupleMethods.add(getByIndex(LineSegment.class));
-    rowMethods.add(getByName(LineSegment.class));
-    tupleMethods.add(getValuesByIndex(LineSegment.class));
-    rowMethods.add(getValuesByName(LineSegment.class));
-    tupleMethods.add(getByIndex(Path.class));
-    rowMethods.add(getByName(Path.class));
-    tupleMethods.add(getValuesByIndex(Path.class));
-    rowMethods.add(getValuesByName(Path.class));
-    tupleMethods.add(getByIndex(Polygon.class));
-    rowMethods.add(getByName(Polygon.class));
-    tupleMethods.add(getValuesByIndex(Polygon.class));
-    rowMethods.add(getValuesByName(Polygon.class));
-    tupleMethods.add(getByIndex(Circle.class));
-    rowMethods.add(getByName(Circle.class));
-    tupleMethods.add(getValuesByIndex(Circle.class));
-    rowMethods.add(getValuesByName(Circle.class));
+  public static void load(Supplier<List<SerializableBiFunction<Tuple, Integer, ?>>> tupleMethodsFactory,
+                                    Supplier<List<SerializableBiFunction<Row, String, ?>>> rowMethodsFactory) {
+    tupleMethods = tupleMethodsFactory.get();
+    rowMethods = rowMethodsFactory.get();
   }
 
   public static ColumnChecker checkColumn(int index, String name) {
