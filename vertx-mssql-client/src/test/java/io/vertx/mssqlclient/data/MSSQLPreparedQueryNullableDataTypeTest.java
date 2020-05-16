@@ -13,10 +13,17 @@ package io.vertx.mssqlclient.data;
 
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.data.Numeric;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.function.Consumer;
 
 @RunWith(VertxUnitRunner.class)
@@ -24,93 +31,235 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
 
   @Test
   public void testEncodeTinyInt(TestContext ctx) {
-    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_tinyint", (short) 255, row -> {
-      ctx.assertEquals((short) 255, row.getValue("test_tinyint"));
-      ctx.assertEquals((short) 255, row.getValue(0));
-      ctx.assertEquals((short) 255, row.get(Short.class, "test_tinyint"));
-      ctx.assertEquals((short) 255, row.get(Short.class, 0));
-    });
+    testEncodeNumber(ctx, "test_tinyint", (short) 255);
   }
 
   @Test
   public void testEncodeNullTinyInt(TestContext ctx) {
-    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_tinyint", null, row -> {
-      ctx.assertEquals(null, row.getValue("test_tinyint"));
-      ctx.assertEquals(null, row.getValue(0));
-      ctx.assertEquals(null, row.get(Short.class, "test_tinyint"));
-      ctx.assertEquals(null, row.get(Short.class, 0));
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_tinyint", SHORT_NULL_VALUE, row -> {
+      ColumnChecker.checkColumn(0, "test_tinyint")
+        .returns(Tuple::getValue, Row::getValue, SHORT_NULL_VALUE)
+        .returns(Tuple::getShort, Row::getShort, SHORT_NULL_VALUE)
+        .returns(Short.class, SHORT_NULL_VALUE)
+        .forRow(row);
     });
   }
 
   @Test
   public void testEncodeSmallInt(TestContext ctx) {
-    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_smallint", (short) -32768, row -> {
-      ctx.assertEquals((short) -32768, row.getValue("test_smallint"));
-      ctx.assertEquals((short) -32768, row.getValue(0));
-      ctx.assertEquals((short) -32768, row.getShort("test_smallint"));
-      ctx.assertEquals((short) -32768, row.getShort(0));
-      ctx.assertEquals((short) -32768, row.get(Short.class, "test_smallint"));
-      ctx.assertEquals((short) -32768, row.get(Short.class, 0));
-    });
+    testEncodeNumber(ctx, "test_smallint", (short) -32768);
   }
 
   @Test
   public void testEncodeNullSmallInt(TestContext ctx) {
-    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_smallint", null, row -> {
-      ctx.assertEquals(null, row.getValue("test_smallint"));
-      ctx.assertEquals(null, row.getValue(0));
-      ctx.assertEquals(null, row.getShort("test_smallint"));
-      ctx.assertEquals(null, row.getShort(0));
-      ctx.assertEquals(null, row.get(Short.class, "test_smallint"));
-      ctx.assertEquals(null, row.get(Short.class, 0));
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_smallint", SHORT_NULL_VALUE, row -> {
+      ColumnChecker.checkColumn(0, "test_smallint")
+        .returns(Tuple::getValue, Row::getValue, SHORT_NULL_VALUE)
+        .returns(Tuple::getShort, Row::getShort, SHORT_NULL_VALUE)
+        .returns(Short.class, SHORT_NULL_VALUE)
+        .forRow(row);
     });
   }
 
   @Test
   public void testEncodeInt(TestContext ctx) {
-    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_int", -2147483648, row -> {
-      ctx.assertEquals(-2147483648, row.getValue("test_int"));
-      ctx.assertEquals(-2147483648, row.getValue(0));
-      ctx.assertEquals(-2147483648, row.getInteger("test_int"));
-      ctx.assertEquals(-2147483648, row.getInteger(0));
-      ctx.assertEquals(-2147483648, row.get(Integer.class, "test_int"));
-      ctx.assertEquals(-2147483648, row.get(Integer.class, 0));
-    });
+    testEncodeNumber(ctx, "test_int", -2147483648);
   }
 
   @Test
   public void testEncodeNullInt(TestContext ctx) {
-    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_int", null, row -> {
-      ctx.assertEquals(null, row.getValue("test_int"));
-      ctx.assertEquals(null, row.getValue(0));
-      ctx.assertEquals(null, row.getInteger("test_int"));
-      ctx.assertEquals(null, row.getInteger(0));
-      ctx.assertEquals(null, row.get(Integer.class, "test_int"));
-      ctx.assertEquals(null, row.get(Integer.class, 0));
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_int", INT_NULL_VALUE, row -> {
+      ColumnChecker.checkColumn(0, "test_int")
+        .returns(Tuple::getValue, Row::getValue, INT_NULL_VALUE)
+        .returns(Tuple::getInteger, Row::getInteger, INT_NULL_VALUE)
+        .returns(Integer.class, INT_NULL_VALUE)
+        .forRow(row);
     });
   }
 
   @Test
   public void testEncodeBigInt(TestContext ctx) {
-    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_bigint", -9223372036854775808L, row -> {
-      ctx.assertEquals(-9223372036854775808L, row.getValue("test_bigint"));
-      ctx.assertEquals(-9223372036854775808L, row.getValue(0));
-      ctx.assertEquals(-9223372036854775808L, row.getLong("test_bigint"));
-      ctx.assertEquals(-9223372036854775808L, row.getLong(0));
-      ctx.assertEquals(-9223372036854775808L, row.get(Long.class, "test_bigint"));
-      ctx.assertEquals(-9223372036854775808L, row.get(Long.class, 0));
-    });
+    testEncodeNumber(ctx, "test_bigint", -9223372036854775808L);
   }
 
   @Test
   public void testEncodeNullBigInt(TestContext ctx) {
-    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_bigint", null, row -> {
-      ctx.assertEquals(null, row.getValue("test_bigint"));
-      ctx.assertEquals(null, row.getValue(0));
-      ctx.assertEquals(null, row.getLong("test_bigint"));
-      ctx.assertEquals(null, row.getLong(0));
-      ctx.assertEquals(null, row.get(Long.class, "test_bigint"));
-      ctx.assertEquals(null, row.get(Long.class, 0));
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_bigint", LONG_NULL_VALUE, row -> {
+      ColumnChecker.checkColumn(0, "test_bigint")
+        .returns(Tuple::getValue, Row::getValue, LONG_NULL_VALUE)
+        .returns(Tuple::getLong, Row::getLong, LONG_NULL_VALUE)
+        .returns(Long.class, LONG_NULL_VALUE)
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testEncodeFloat4(TestContext ctx) {
+    testEncodeNumber(ctx, "test_float_4", (float) -3.40282E38);
+  }
+
+  @Test
+  public void testEncodeNullFloat4(TestContext ctx) {
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_float_4", FLOAT_NULL_VALUE, row -> {
+      ColumnChecker.checkColumn(0, "test_float_4")
+        .returns(Tuple::getValue, Row::getValue, FLOAT_NULL_VALUE)
+        .returns(Tuple::getFloat, Row::getFloat, FLOAT_NULL_VALUE)
+        .returns(Float.class, FLOAT_NULL_VALUE)
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testEncodeFloat8(TestContext ctx) {
+    testEncodeNumber(ctx, "test_float_8", -1.7976931348623157E308);
+  }
+
+  @Test
+  public void testEncodeNullFloat8(TestContext ctx) {
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_float_8", DOUBLE_NULL_VALUE, row -> {
+      ColumnChecker.checkColumn(0, "test_float_8")
+        .returns(Tuple::getValue, Row::getValue, DOUBLE_NULL_VALUE)
+        .returns(Tuple::getDouble, Row::getDouble, DOUBLE_NULL_VALUE)
+        .returns(Double.class, DOUBLE_NULL_VALUE)
+        .forRow(row);
+    });
+  }
+
+  @Test
+  @Ignore //FIXME
+  public void testEncodeNumeric(TestContext ctx) {
+    testEncodeNumber(ctx, "test_numeric", Numeric.create(123456789.13));
+  }
+
+  @Test
+  public void testEncodeNullNumeric(TestContext ctx) {
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_numeric", NUMERIC_NULL_VALUE, row -> {
+      ColumnChecker.checkColumn(0, "test_numeric")
+        .returns(Tuple::getValue, Row::getValue, NUMERIC_NULL_VALUE)
+        .returns(Numeric.class, NUMERIC_NULL_VALUE)
+        .forRow(row);
+    });
+  }
+
+  @Test
+  @Ignore //FIXME
+  public void testEncodeDecimal(TestContext ctx) {
+    testEncodeNumber(ctx, "test_decimal", Numeric.create(123456789));
+  }
+
+  @Test
+  public void testEncodeNullDecimal(TestContext ctx) {
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_decimal", NUMERIC_NULL_VALUE, row -> {
+      ColumnChecker.checkColumn(0, "test_decimal")
+        .returns(Tuple::getValue, Row::getValue, NUMERIC_NULL_VALUE)
+        .returns(Numeric.class, NUMERIC_NULL_VALUE)
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testEncodeBit(TestContext ctx) {
+    testEncodeBitValue(ctx, false);
+  }
+
+  @Test
+  public void testEncodeNullBit(TestContext ctx) {
+    testEncodeBitValue(ctx, BOOLEAN_NULL_VALUE);
+  }
+
+  private void testEncodeBitValue(TestContext ctx, Boolean value) {
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_boolean", value, row -> {
+      ColumnChecker.checkColumn(0, "test_boolean")
+        .returns(Tuple::getValue, Row::getValue, value)
+        .returns(Tuple::getBoolean, Row::getBoolean, value)
+        .returns(Boolean.class, value)
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testEncodeChar(TestContext ctx) {
+    testEncodeCharValue(ctx, "chartest");
+  }
+
+  @Test
+  public void testEncodeNullChar(TestContext ctx) {
+    testEncodeCharValue(ctx, STRING_NULL_VALUE);
+  }
+
+  private void testEncodeCharValue(TestContext ctx, String value) {
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_char", value, row -> {
+      ColumnChecker.checkColumn(0, "test_char")
+        .returns(Tuple::getValue, Row::getValue, value)
+        .returns(Tuple::getString, Row::getString, value)
+        .returns(String.class, value)
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testEncodeVarChar(TestContext ctx) {
+    testEncodeVarCharValue(ctx, "testedvarchar");
+  }
+
+  @Test
+  public void testEncodeNullVarChar(TestContext ctx) {
+    testEncodeVarCharValue(ctx, STRING_NULL_VALUE);
+  }
+
+  private void testEncodeVarCharValue(TestContext ctx, String value) {
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_varchar", value, row -> {
+      ColumnChecker.checkColumn(0, "test_varchar")
+        .returns(Tuple::getValue, Row::getValue, value)
+        .returns(Tuple::getString, Row::getString, value)
+        .returns(String.class, value)
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testEncodeDate(TestContext ctx) {
+    testEncodeDateValue(ctx, LocalDate.of(1999, 12, 31));
+  }
+
+  @Test
+  public void testEncodeNullDate(TestContext ctx) {
+    testEncodeDateValue(ctx, LOCALDATE_NULL_VALUE);
+  }
+
+  private void testEncodeDateValue(TestContext ctx, LocalDate value) {
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_date", value, row -> {
+      ColumnChecker.checkColumn(0, "test_date")
+        .returns(Tuple::getValue, Row::getValue, value)
+        .returns(Tuple::getLocalDate, Row::getLocalDate, value)
+        .returns(LocalDate.class, value)
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testEncodeTime(TestContext ctx) {
+    testEncodeTimeValue(ctx, LocalTime.of(23, 10, 45));
+  }
+
+  @Test
+  public void testEncodeNullTime(TestContext ctx) {
+    testEncodeTimeValue(ctx, LOCALTIME_NULL_VALUE);
+  }
+
+  private void testEncodeTimeValue(TestContext ctx, LocalTime value) {
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_time", value, row -> {
+      ColumnChecker.checkColumn(0, "test_time")
+        .returns(Tuple::getValue, Row::getValue, value)
+        .returns(Tuple::getLocalTime, Row::getLocalTime, value)
+        .returns(LocalTime.class, value)
+        .forRow(row);
+    });
+  }
+
+  private void testEncodeNumber(TestContext ctx, String columnName, Number value) {
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", columnName, value, row -> {
+      checkNumber(row, columnName, value);
     });
   }
 

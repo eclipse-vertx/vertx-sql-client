@@ -12,13 +12,28 @@
 package io.vertx.mssqlclient.data;
 
 import io.vertx.ext.unit.TestContext;
+import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.function.Consumer;
 
 public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTestBase {
+
+  protected static final Short SHORT_NULL_VALUE = null;
+  protected static final Integer INT_NULL_VALUE = null;
+  protected static final Long LONG_NULL_VALUE = null;
+  protected static final Float FLOAT_NULL_VALUE = null;
+  protected static final Double DOUBLE_NULL_VALUE = null;
+  protected static final Numeric NUMERIC_NULL_VALUE = null;
+  protected static final Boolean BOOLEAN_NULL_VALUE = null;
+  protected static final String STRING_NULL_VALUE = null;
+  protected static final LocalDate LOCALDATE_NULL_VALUE = null;
+  protected static final LocalTime LOCALTIME_NULL_VALUE = null;
 
   @Test
   public void testDecodeNullAllColumns(TestContext ctx) {
@@ -42,102 +57,142 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   @Test
   public void testDecodeNullTinyInt(TestContext ctx) {
     testDecodeNullValue(ctx, "test_tinyint", row -> {
-      ctx.assertEquals(null, row.getValue("test_tinyint"));
-      ctx.assertEquals(null, row.getValue(0));
-      ctx.assertEquals(null, row.get(Short.class, "test_tinyint"));
-      ctx.assertEquals(null, row.get(Short.class, 0));
+      ColumnChecker.checkColumn(0, "test_tinyint")
+        .returns(Tuple::getValue, Row::getValue, SHORT_NULL_VALUE)
+        .returns(Tuple::getShort, Row::getShort, SHORT_NULL_VALUE)
+        .returns(Short.class, SHORT_NULL_VALUE)
+        .forRow(row);
     });
   }
 
   @Test
   public void testDecodeNullSmallIntInt(TestContext ctx) {
     testDecodeNullValue(ctx, "test_smallint", row -> {
-      ctx.assertEquals(null, row.getValue("test_smallint"));
-      ctx.assertEquals(null, row.getValue(0));
-      ctx.assertEquals(null, row.getShort("test_smallint"));
-      ctx.assertEquals(null, row.getShort(0));
-      ctx.assertEquals(null, row.get(Short.class, "test_smallint"));
-      ctx.assertEquals(null, row.get(Short.class, 0));
+      ColumnChecker.checkColumn(0, "test_smallint")
+        .returns(Tuple::getValue, Row::getValue, SHORT_NULL_VALUE)
+        .returns(Tuple::getShort, Row::getShort, SHORT_NULL_VALUE)
+        .returns(Short.class, SHORT_NULL_VALUE)
+        .forRow(row);
     });
   }
 
   @Test
   public void testDecodeNullInt(TestContext ctx) {
     testDecodeNullValue(ctx, "test_int", row -> {
-      ctx.assertEquals(null, row.getValue("test_int"));
-      ctx.assertEquals(null, row.getValue(0));
-      ctx.assertEquals(null, row.getInteger("test_int"));
-      ctx.assertEquals(null, row.getInteger(0));
-      ctx.assertEquals(null, row.get(Integer.class, "test_int"));
-      ctx.assertEquals(null, row.get(Integer.class, 0));
+      ColumnChecker.checkColumn(0, "test_int")
+        .returns(Tuple::getValue, Row::getValue, INT_NULL_VALUE)
+        .returns(Tuple::getInteger, Row::getInteger, INT_NULL_VALUE)
+        .returns(Integer.class, INT_NULL_VALUE)
+        .forRow(row);
     });
   }
 
   @Test
   public void testDecodeNullBigInt(TestContext ctx) {
     testDecodeNullValue(ctx, "test_bigint", row -> {
-      ctx.assertEquals(null, row.getValue("test_bigint"));
-      ctx.assertEquals(null, row.getValue(0));
-      ctx.assertEquals(null, row.getLong("test_bigint"));
-      ctx.assertEquals(null, row.getLong(0));
-      ctx.assertEquals(null, row.get(Long.class, "test_bigint"));
-      ctx.assertEquals(null, row.get(Long.class, 0));
+      ColumnChecker.checkColumn(0, "test_bigint")
+        .returns(Tuple::getValue, Row::getValue, LONG_NULL_VALUE)
+        .returns(Tuple::getLong, Row::getLong, LONG_NULL_VALUE)
+        .returns(Long.class, LONG_NULL_VALUE)
+        .forRow(row);
     });
   }
 
   @Test
   public void testDecodeNullFloat4(TestContext ctx) {
     testDecodeNullValue(ctx, "test_float_4", row -> {
-      ctx.assertEquals(null, row.getValue("test_float_4"));
-      ctx.assertEquals(null, row.getValue(0));
-      ctx.assertEquals(null, row.getFloat("test_float_4"));
-      ctx.assertEquals(null, row.getFloat(0));
-      ctx.assertEquals(null, row.get(Float.class, "test_float_4"));
-      ctx.assertEquals(null, row.get(Float.class, 0));
+      ColumnChecker.checkColumn(0, "test_float_4")
+        .returns(Tuple::getValue, Row::getValue, FLOAT_NULL_VALUE)
+        .returns(Tuple::getFloat, Row::getFloat, FLOAT_NULL_VALUE)
+        .returns(Float.class, FLOAT_NULL_VALUE)
+        .forRow(row);
     });
   }
 
   @Test
   public void testDecodeNullFloat8(TestContext ctx) {
     testDecodeNullValue(ctx, "test_float_8", row -> {
-      ctx.assertEquals(null, row.getValue("test_float_8"));
-      ctx.assertEquals(null, row.getValue(0));
-      ctx.assertEquals(null, row.getFloat("test_float_8"));
-      ctx.assertEquals(null, row.getFloat(0));
-      ctx.assertEquals(null, row.get(Float.class, "test_float_8"));
-      ctx.assertEquals(null, row.get(Float.class, 0));
+      ColumnChecker.checkColumn(0, "test_float_8")
+        .returns(Tuple::getValue, Row::getValue, DOUBLE_NULL_VALUE)
+        .returns(Tuple::getDouble, Row::getDouble, DOUBLE_NULL_VALUE)
+        .returns(Double.class, DOUBLE_NULL_VALUE)
+        .forRow(row);
     });
   }
 
   @Test
   public void testDecodeNullNumeric(TestContext ctx) {
     testDecodeNullValue(ctx, "test_numeric", row -> {
-      ctx.assertEquals(null, row.getValue("test_numeric"));
-      ctx.assertEquals(null, row.getValue(0));
-      ctx.assertEquals(null, row.get(Numeric.class, "test_numeric"));
-      ctx.assertEquals(null, row.get(Numeric.class, 0));
+      ColumnChecker.checkColumn(0, "test_numeric")
+        .returns(Tuple::getValue, Row::getValue, NUMERIC_NULL_VALUE)
+        .returns(Numeric.class, NUMERIC_NULL_VALUE)
+        .forRow(row);
     });
   }
 
   @Test
   public void testDecodeNullDecimal(TestContext ctx) {
     testDecodeNullValue(ctx, "test_decimal", row -> {
-      ctx.assertEquals(null, row.getValue("test_decimal"));
-      ctx.assertEquals(null, row.getValue(0));
-      ctx.assertEquals(null, row.get(Numeric.class, "test_decimal"));
-      ctx.assertEquals(null, row.get(Numeric.class, 0));
+      ColumnChecker.checkColumn(0, "test_decimal")
+        .returns(Tuple::getValue, Row::getValue, NUMERIC_NULL_VALUE)
+        .returns(Numeric.class, NUMERIC_NULL_VALUE)
+        .forRow(row);
     });
   }
 
   @Test
   public void testDecodeNullBit(TestContext ctx) {
     testDecodeNullValue(ctx, "test_boolean", row -> {
-      ctx.assertEquals(null, row.getValue("test_boolean"));
-      ctx.assertEquals(null, row.getValue(0));
-      ctx.assertEquals(null, row.getBoolean("test_boolean"));
-      ctx.assertEquals(null, row.getBoolean(0));
-      ctx.assertEquals(null, row.get(Boolean.class, "test_boolean"));
-      ctx.assertEquals(null, row.get(Boolean.class, 0));
+      ColumnChecker.checkColumn(0, "test_boolean")
+        .returns(Tuple::getValue, Row::getValue, BOOLEAN_NULL_VALUE)
+        .returns(Tuple::getBoolean, Row::getBoolean, BOOLEAN_NULL_VALUE)
+        .returns(Boolean.class, BOOLEAN_NULL_VALUE)
+        .forRow(row);
+    });
+  }
+
+
+  @Test
+  public void testDecodeNullChar(TestContext ctx) {
+    testDecodeNullValue(ctx, "test_char", row -> {
+      ColumnChecker.checkColumn(0, "test_char")
+        .returns(Tuple::getValue, Row::getValue, STRING_NULL_VALUE)
+        .returns(Tuple::getString, Row::getString, STRING_NULL_VALUE)
+        .returns(String.class, STRING_NULL_VALUE)
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testDecodeNullVarChar(TestContext ctx) {
+    testDecodeNullValue(ctx, "test_varchar", row -> {
+      ColumnChecker.checkColumn(0, "test_varchar")
+        .returns(Tuple::getValue, Row::getValue, STRING_NULL_VALUE)
+        .returns(Tuple::getString, Row::getString, STRING_NULL_VALUE)
+        .returns(String.class, STRING_NULL_VALUE)
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testDecodeNullDate(TestContext ctx) {
+    testDecodeNullValue(ctx, "test_varchar", row -> {
+      ColumnChecker.checkColumn(0, "test_varchar")
+        .returns(Tuple::getValue, Row::getValue, LOCALDATE_NULL_VALUE)
+        .returns(Tuple::getLocalDate, Row::getLocalDate, LOCALDATE_NULL_VALUE)
+        .returns(LocalDate.class, LOCALDATE_NULL_VALUE)
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testDecodeNullTime(TestContext ctx) {
+    testDecodeNullValue(ctx, "test_time", row -> {
+      ColumnChecker.checkColumn(0, "test_time")
+        .returns(Tuple::getValue, Row::getValue, LOCALTIME_NULL_VALUE)
+        .returns(Tuple::getLocalTime, Row::getLocalTime, LOCALTIME_NULL_VALUE)
+        .returns(LocalTime.class, LOCALTIME_NULL_VALUE)
+        .forRow(row);
     });
   }
 

@@ -1,6 +1,7 @@
 package io.vertx.pgclient.data;
 
 import io.vertx.pgclient.PgConnection;
+import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.core.json.JsonArray;

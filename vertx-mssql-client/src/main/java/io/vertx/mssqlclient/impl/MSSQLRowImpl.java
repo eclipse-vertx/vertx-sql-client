@@ -13,10 +13,10 @@ package io.vertx.mssqlclient.impl;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.ArrayTuple;
 import io.vertx.sqlclient.impl.RowDesc;
 
-import java.math.BigDecimal;
 import java.time.*;
 import java.time.temporal.Temporal;
 import java.util.List;
@@ -46,10 +46,34 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
 
   @Override
   public <T> T get(Class<T> type, int position) {
-    if (type.isEnum()) {
+    if (type == Boolean.class) {
+      return type.cast(getBoolean(position));
+    } else if (type == Byte.class) {
+      return type.cast(getByte(position));
+    } else if (type == Short.class) {
+      return type.cast(getShort(position));
+    } else if (type == Integer.class) {
+      return type.cast(getInteger(position));
+    } else if (type == Long.class) {
+      return type.cast(getLong(position));
+    } else if (type == Float.class) {
+      return type.cast(getFloat(position));
+    } else if (type == Double.class) {
+      return type.cast(getDouble(position));
+    } else if (type == Numeric.class) {
+      return type.cast(getNumeric(position));
+    } else if (type == String.class) {
+      return type.cast(getString(position));
+    } else if (type == LocalDate.class) {
+      return type.cast(getLocalDate(position));
+    } else if (type == LocalTime.class) {
+      return type.cast(getLocalTime(position));
+    }else if (type == Object.class) {
+      return type.cast(getValue(position));
+    } else if (type.isEnum()) {
       return type.cast(getEnum(type, position));
     } else {
-      return super.get(type, position);
+      throw new UnsupportedOperationException("Unsupported type " + type.getName());
     }
   }
 
@@ -80,11 +104,6 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
 
   @Override
   public UUID getUUID(String columnName) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public BigDecimal getBigDecimal(String columnName) {
     throw new UnsupportedOperationException();
   }
 
@@ -156,6 +175,26 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
   @Override
   public UUID[] getUUIDArray(String columnName) {
     throw new UnsupportedOperationException();
+  }
+
+  private Byte getByte(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Byte) {
+      return (Byte) val;
+    } else if (val instanceof Number) {
+      return ((Number) val).byteValue();
+    }
+    return null;
+  }
+
+  private Numeric getNumeric(int pos) {
+    Object val = getValue(pos);
+    if (val instanceof Numeric) {
+      return (Numeric) val;
+    } else if (val instanceof Number) {
+      return Numeric.parse(val.toString());
+    }
+    return null;
   }
 
   private Object getEnum(Class enumType, int position) {

@@ -16,16 +16,62 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLConnection;
 import io.vertx.mssqlclient.MSSQLTestBase;
+import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.data.Numeric;
 import org.junit.After;
 import org.junit.Before;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
+
+import static io.vertx.sqlclient.ColumnChecker.*;
 
 public abstract class MSSQLDataTypeTestBase extends MSSQLTestBase {
   Vertx vertx;
   MSSQLConnectOptions options;
+
+  static {
+    ColumnChecker.load(() -> {
+      List<ColumnChecker.SerializableBiFunction<Tuple, Integer, ?>> tupleMethods = new ArrayList<>();
+      tupleMethods.add(Tuple::getValue);
+
+      tupleMethods.add(Tuple::getShort);
+      tupleMethods.add(Tuple::getInteger);
+      tupleMethods.add(Tuple::getLong);
+      tupleMethods.add(Tuple::getFloat);
+      tupleMethods.add(Tuple::getDouble);
+      tupleMethods.add(Tuple::getBigDecimal);
+      tupleMethods.add(Tuple::getString);
+      tupleMethods.add(Tuple::getBoolean);
+      tupleMethods.add(Tuple::getLocalDate);
+      tupleMethods.add(Tuple::getLocalTime);
+
+      tupleMethods.add(getByIndex(Numeric.class));
+      return tupleMethods;
+    }, () -> {
+      List<ColumnChecker.SerializableBiFunction<Row, String, ?>> rowMethods = new ArrayList<>();
+      rowMethods.add(Row::getValue);
+
+      rowMethods.add(Row::getShort);
+      rowMethods.add(Row::getInteger);
+      rowMethods.add(Row::getLong);
+      rowMethods.add(Row::getFloat);
+      rowMethods.add(Row::getDouble);
+      rowMethods.add(Row::getBigDecimal);
+      rowMethods.add(Row::getString);
+      rowMethods.add(Row::getBoolean);
+      rowMethods.add(Row::getLocalDate);
+      rowMethods.add(Row::getLocalTime);
+
+
+      rowMethods.add(getByName(Numeric.class));
+
+      return rowMethods;
+    });
+  }
 
   @Before
   public void setup() {
