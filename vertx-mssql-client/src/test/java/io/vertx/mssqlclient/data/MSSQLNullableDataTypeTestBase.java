@@ -16,6 +16,8 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.function.Consumer;
 
 public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTestBase {
@@ -138,6 +140,55 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
       ctx.assertEquals(null, row.getBoolean(0));
       ctx.assertEquals(null, row.get(Boolean.class, "test_boolean"));
       ctx.assertEquals(null, row.get(Boolean.class, 0));
+    });
+  }
+
+
+  @Test
+  public void testDecodeNullChar(TestContext ctx) {
+    testDecodeNullValue(ctx, "test_char", row -> {
+      ctx.assertEquals(null, row.getValue("test_char"));
+      ctx.assertEquals(null, row.getValue(0));
+      ctx.assertEquals(null, row.getString("test_char"));
+      ctx.assertEquals(null, row.getString(0));
+      ctx.assertEquals(null, row.get(String.class, "test_char"));
+      ctx.assertEquals(null, row.get(String.class, 0));
+    });
+  }
+
+  @Test
+  public void testDecodeNullVarChar(TestContext ctx) {
+    testDecodeNullValue(ctx, "test_char", row -> {
+      ctx.assertEquals(null, row.getValue("test_varchar"));
+      ctx.assertEquals(null, row.getValue(0));
+      ctx.assertEquals(null, row.getString("test_varchar"));
+      ctx.assertEquals(null, row.getString(0));
+      ctx.assertEquals(null, row.get(String.class, "test_varchar"));
+      ctx.assertEquals(null, row.get(String.class, 0));
+    });
+  }
+
+  @Test
+  public void testDecodeNullDate(TestContext ctx) {
+    testDecodeNullValue(ctx, "test_date", row -> {
+      ctx.assertEquals(null, row.getValue("test_date"));
+      ctx.assertEquals(null, row.getValue(0));
+      ctx.assertEquals(null, row.getLocalDate("test_date"));
+      ctx.assertEquals(null, row.getLocalDate(0));
+      ctx.assertEquals(null, row.get(LocalDate.class, "test_date"));
+      ctx.assertEquals(null, row.get(LocalDate.class, 0));
+    });
+  }
+
+  @Test
+  public void testDecodeNullTime(TestContext ctx) {
+    testDecodeNullValue(ctx, "test_time", row -> {
+      ctx.assertEquals(null, row.getValue("test_time"));
+      ctx.assertEquals(null, row.getValue(0));
+      ctx.assertEquals(null, row.getLocalTime("test_time"));
+      ctx.assertEquals(null, row.getLocalTime(0));
+      ctx.assertEquals(null, row.get(LocalTime.class, "test_time"));
+      ctx.assertEquals(null, row.get(LocalTime.class, 0));
     });
   }
 

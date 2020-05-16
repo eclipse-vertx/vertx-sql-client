@@ -134,6 +134,54 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase{
     });
   }
 
+  @Test
+  public void testDecodeChar(TestContext ctx) {
+    testDecodeNotNullValue(ctx, "test_char", row -> {
+      ctx.assertEquals("testchar", row.getValue("test_char"));
+      ctx.assertEquals("testchar", row.getValue(0));
+      ctx.assertEquals("testchar", row.getString("test_char"));
+      ctx.assertEquals("testchar", row.getString(0));
+      ctx.assertEquals("testchar", row.get(String.class, "test_char"));
+      ctx.assertEquals("testchar", row.get(String.class, 0));
+    });
+  }
+
+  @Test
+  public void testDecodeVarChar(TestContext ctx) {
+    testDecodeNotNullValue(ctx, "test_varchar", row -> {
+      ctx.assertEquals("testvarchar", row.getValue("test_varchar"));
+      ctx.assertEquals("testvarchar", row.getValue(0));
+      ctx.assertEquals("testvarchar", row.getString("test_varchar"));
+      ctx.assertEquals("testvarchar", row.getString(0));
+      ctx.assertEquals("testvarchar", row.get(String.class, "test_varchar"));
+      ctx.assertEquals("testvarchar", row.get(String.class, 0));
+    });
+  }
+
+  @Test
+  public void testDecodeDate(TestContext ctx) {
+    testDecodeNotNullValue(ctx, "test_date", row -> {
+      ctx.assertEquals(LocalDate.of(2019, 1, 1), row.getValue("test_date"));
+      ctx.assertEquals(LocalDate.of(2019, 1, 1), row.getValue(0));
+      ctx.assertEquals(LocalDate.of(2019, 1, 1), row.getLocalDate("test_date"));
+      ctx.assertEquals(LocalDate.of(2019, 1, 1), row.getLocalDate(0));
+      ctx.assertEquals(LocalDate.of(2019, 1, 1), row.get(LocalDate.class, "test_date"));
+      ctx.assertEquals(LocalDate.of(2019, 1, 1), row.get(LocalDate.class, 0));
+    });
+  }
+
+  @Test
+  public void testDecodeTime(TestContext ctx) {
+    testDecodeNotNullValue(ctx, "test_time", row -> {
+      ctx.assertEquals(LocalTime.of(18, 45, 2), row.getValue("test_time"));
+      ctx.assertEquals(LocalTime.of(18, 45, 2), row.getValue(0));
+      ctx.assertEquals(LocalTime.of(18, 45, 2), row.getLocalTime("test_time"));
+      ctx.assertEquals(LocalTime.of(18, 45, 2), row.getLocalTime(0));
+      ctx.assertEquals(LocalTime.of(18, 45, 2), row.get(LocalTime.class, "test_time"));
+      ctx.assertEquals(LocalTime.of(18, 45, 2), row.get(LocalTime.class, 0));
+    });
+  }
+
   protected abstract void testDecodeValue(TestContext ctx, boolean isNull, String columnName, Consumer<Row> checker);
 
   private void testDecodeNotNullValue(TestContext ctx, String columnName, Consumer<Row> checker) {
