@@ -39,18 +39,18 @@ public class DB2SocketConnection extends SocketConnectionBase {
   private DB2Codec codec;
   private Handler<Void> closeHandler;
 
-  public DB2SocketConnection(NetSocketInternal socket, 
-      boolean cachePreparedStatements, 
+  public DB2SocketConnection(NetSocketInternal socket,
+      boolean cachePreparedStatements,
       int preparedStatementCacheSize,
-      int preparedStatementCacheSqlLimit, 
-      int pipeliningLimit, 
+      int preparedStatementCacheSqlLimit,
+      int pipeliningLimit,
       ContextInternal context) {
     super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, pipeliningLimit, context);
   }
 
-  void sendStartupMessage(String username, 
-      String password, 
-      String database, 
+  void sendStartupMessage(String username,
+      String password,
+      String database,
       Map<String, String> properties,
       Promise<Connection> completionHandler) {
     InitialHandshakeCommand cmd = new InitialHandshakeCommand(this, username, password, database, properties);
@@ -75,7 +75,7 @@ public class DB2SocketConnection extends SocketConnectionBase {
         cmd.handler = handler;
         cmd.complete(CommandResponse.success(txCmd.result).toAsyncResult());
       } else {
-        SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(txCmd.kind.sql, false, false,
+        SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(txCmd.sql, false, false,
             QueryCommandBase.NULL_COLLECTOR, QueryResultHandler.NOOP_HANDLER);
         super.doSchedule(cmd2, ar -> handler.handle(ar.map(txCmd.result)));
 

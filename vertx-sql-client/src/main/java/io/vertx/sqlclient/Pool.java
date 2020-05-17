@@ -38,7 +38,7 @@ import java.util.function.Function;
  */
 @VertxGen
 public interface Pool extends SqlClient {
-  
+
   /**
    * Create a connection pool to the database configured with the given {@code connectOptions} and default {@link PoolOptions}
    *
@@ -49,7 +49,7 @@ public interface Pool extends SqlClient {
   static Pool pool(SqlConnectOptions connectOptions) {
     return pool(connectOptions, new PoolOptions());
   }
-  
+
   /**
    * Create a connection pool to the database configured with the given {@code connectOptions} and {@code poolOptions}.
    *
@@ -151,6 +151,19 @@ public interface Pool extends SqlClient {
    * Like {@link #withTransaction(Function, Handler)} but returns a {@code Future} of the asynchronous result
    */
   <T> Future<T> withTransaction(Function<SqlClient, Future<T>> function);
+
+  /**
+   * Like {@link #withTransaction(Function, Handler)} but provides a customized way to start the transaction
+   * so that you could configure the transaction such as isolation levels or transaction characteristics at the start.
+   *
+   * @param startTransactionSql specify the SQL which is used to start the transaction
+   */
+  <T> void withTransaction(String startTransactionSql, Function<SqlClient, Future<T>> function, Handler<AsyncResult<T>> handler);
+
+  /**
+   * Like {@link #withTransaction(String, Function, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  <T> Future<T> withTransaction(String startTransactionSql, Function<SqlClient, Future<T>> function);
 
   /**
    * Close the pool and release the associated resources.

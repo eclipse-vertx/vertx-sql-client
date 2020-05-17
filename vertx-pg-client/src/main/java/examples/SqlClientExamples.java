@@ -311,6 +311,29 @@ public class SqlClientExamples {
       }
     });  }
 
+  public void transaction04(SqlConnection sqlConnection) {
+
+    sqlConnection.begin("START TRANSACTION READ ONLY", ar -> {
+      if (ar.succeeded()) {
+        // start a transaction which is read-only
+        Transaction tx = ar.result();
+      } else {
+        // Failed to start a transaction
+        System.out.println("Transaction failed " + ar.cause().getMessage());
+      }
+    });
+  }
+
+  public void transaction05(Pool pool) {
+    pool.withTransaction("START TRANSACTION READ ONLY", client -> client
+      .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
+      .execute()
+    ).onFailure(error -> {
+      // Failed to insert the record because the transaction is read-only
+      System.out.println("Transaction failed " + error.getMessage());
+    });
+  }
+
   public void usingCursors01(SqlConnection connection) {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar0 -> {
       if (ar0.succeeded()) {

@@ -13,22 +13,20 @@ package io.vertx.sqlclient.impl.command;
 
 public class TxCommand<R> extends CommandBase<R> {
 
+  public static final String DEFAULT_START_TX_SQL = "BEGIN";
+
   public enum Kind {
-
-    BEGIN(), ROLLBACK(), COMMIT();
-
-    public final String sql;
-
-    Kind() {
-      this.sql = name();
-    }
+    BEGIN, ROLLBACK, COMMIT
   }
+
+  public final String sql;
 
   public final R result;
   public final Kind kind;
 
-  public TxCommand(Kind kind, R result) {
+  public TxCommand(Kind kind, String sql, R result) {
     this.kind = kind;
+    this.sql = sql;
     this.result = result;
   }
 }

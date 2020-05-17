@@ -29,6 +29,7 @@ import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.sqlclient.impl.command.TxCommand;
 import io.vertx.sqlclient.impl.pool.ConnectionPool;
 
 import java.util.function.Function;
@@ -109,17 +110,27 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
 
   @Override
   public <T> void withTransaction(Function<SqlClient, Future<T>> function, Handler<AsyncResult<T>> handler) {
-    Future<T> res = withTransaction(function);
+    withTransaction(TxCommand.DEFAULT_START_TX_SQL, function, handler);
+  }
+
+  @Override
+  public <T> Future<T> withTransaction(Function<SqlClient, Future<T>> function) {
+    return withTransaction(TxCommand.DEFAULT_START_TX_SQL, function);
+  }
+
+  @Override
+  public <T> void withTransaction(String startTransactionSql, Function<SqlClient, Future<T>> function, Handler<AsyncResult<T>> handler) {
+    Future<T> res = withTransaction(startTransactionSql, function);
     if (handler != null) {
       res.onComplete(handler);
     }
   }
 
   @Override
-  public <T> Future<T> withTransaction(Function<SqlClient, Future<T>> function) {
+  public <T> Future<T> withTransaction(String startTransactionSql, Function<SqlClient, Future<T>> function) {
     return getConnection()
       .flatMap(conn -> conn
-        .begin()
+        .begin(startTransactionSql)
         .flatMap(tx -> function
           .apply(conn)
           .compose(

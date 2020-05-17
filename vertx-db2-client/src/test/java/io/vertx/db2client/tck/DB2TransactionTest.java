@@ -17,10 +17,7 @@ package io.vertx.db2client.tck;
 
 import static org.junit.Assume.assumeFalse;
 
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 
@@ -38,7 +35,7 @@ public class DB2TransactionTest extends TransactionTestBase {
 
   @ClassRule
   public static DB2Resource rule = DB2Resource.SHARED_INSTANCE;
-  
+
 	@Rule
 	public TestName testName = new TestName();
 
@@ -74,4 +71,19 @@ public class DB2TransactionTest extends TransactionTestBase {
     super.testDelayedCommit(ctx);
   }
 
+  @Override
+  @Ignore
+  @Test
+  public void testStartReadOnlyTransaction(TestContext ctx) {
+	  // DB2 does not support start transaction explicitly
+    super.testStartReadOnlyTransaction(ctx);
+  }
+
+  @Override
+  @Ignore
+  @Test
+  public void testWithReadOnlyTransactionStart(TestContext ctx) {
+    // DB2 does not support start transaction explicitly
+    super.testWithReadOnlyTransactionStart(ctx);
+  }
 }

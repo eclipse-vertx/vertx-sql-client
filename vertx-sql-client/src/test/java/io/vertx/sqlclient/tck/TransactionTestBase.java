@@ -314,4 +314,33 @@ public abstract class TransactionTestBase {
           }));
       })));
   }
+
+
+  @Test
+  public void testStartReadOnlyTransaction(TestContext ctx) {
+    Async async = ctx.async();
+    getPool().getConnection(ctx.asyncAssertSuccess(conn -> {
+      conn.begin("START TRANSACTION READ ONLY", ctx.asyncAssertSuccess(transaction -> {
+        conn.query("INSERT INTO mutable (id, val) VALUES (1, 'hello-1')")
+          .execute(ctx.asyncAssertFailure(error -> {
+            // read-only transactions
+            transaction.rollback();
+            conn.close();
+            async.complete();
+          }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testWithReadOnlyTransactionStart(TestContext ctx) {
+    Async async = ctx.async();
+    getPool().withTransaction("START TRANSACTION READ ONLY", client -> client
+    .query("INSERT INTO mutable (id, val) VALUES (1, 'hello-1')")
+    .execute()
+    .onComplete(ctx.asyncAssertFailure(error -> {
+      // read-only transactions
+      async.complete();
+    })));
+  }
 }

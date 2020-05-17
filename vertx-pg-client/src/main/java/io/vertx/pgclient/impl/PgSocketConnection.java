@@ -137,7 +137,7 @@ public class PgSocketConnection extends SocketConnectionBase {
     if (cmd instanceof TxCommand) {
       TxCommand<R> tx = (TxCommand<R>) cmd;
       SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(
-        tx.kind.sql,
+        tx.sql,
         false,
         false,
         QueryCommandBase.NULL_COLLECTOR,

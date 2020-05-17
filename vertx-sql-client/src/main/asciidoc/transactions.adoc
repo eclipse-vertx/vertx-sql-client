@@ -21,6 +21,13 @@ is failed with a {@link io.vertx.sqlclient.TransactionRollbackException}:
 {@link examples.SqlClientExamples#transaction02(io.vertx.sqlclient.Transaction)}
 ----
 
+You can also start the transaction in a customized way like this so that you can configure transaction isolation levels or characteristics at the transaction start:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#transaction04(io.vertx.sqlclient.SqlConnection)}
+----
+
 === Simplified transaction API
 
 When you use a pool, you can call {@link io.vertx.sqlclient.Pool#withTransaction} to pass it a function executed
@@ -40,3 +47,11 @@ After the transaction completes, the connection is returned to the pool and the 
 ----
 {@link examples.SqlClientExamples#transaction03(io.vertx.sqlclient.Pool)}
 ----
+
+You can also start the transaction in a customized way like this so that you can configure transaction isolation levels or characteristics at the transaction start:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#transaction05(io.vertx.sqlclient.Pool)}
+----
+

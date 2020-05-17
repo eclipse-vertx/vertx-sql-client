@@ -18,6 +18,7 @@ package io.vertx.sqlclient.impl;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.function.Supplier;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -33,8 +34,8 @@ import io.vertx.sqlclient.impl.command.TxCommand;
 
 class TransactionImpl implements Transaction {
 
-  private static final TxCommand<Void> ROLLBACK = new TxCommand<>(TxCommand.Kind.ROLLBACK, null);
-  private static final TxCommand<Void> COMMIT = new TxCommand<>(TxCommand.Kind.COMMIT, null);
+  private static final TxCommand<Void> ROLLBACK = new TxCommand<>(TxCommand.Kind.ROLLBACK, "ROLLBACK", null);
+  private static final TxCommand<Void> COMMIT = new TxCommand<>(TxCommand.Kind.COMMIT, "COMMIT", null);
 
   private static final int ST_BEGIN = 0;
   private static final int ST_PENDING = 1;
@@ -62,9 +63,9 @@ class TransactionImpl implements Transaction {
     }
   }
 
-  Future<Transaction> begin() {
+  Future<Transaction> begin(String startTxSql) {
     PromiseInternal<Transaction> promise = context.promise(this::afterBegin);
-    ScheduledCommand<Transaction> b = doQuery(new TxCommand<>(TxCommand.Kind.BEGIN, this), promise);
+    ScheduledCommand<Transaction> b = doQuery(new TxCommand<>(TxCommand.Kind.BEGIN, startTxSql, this), promise);
     doSchedule(b.cmd, b.handler);
     return promise.future();
   }
