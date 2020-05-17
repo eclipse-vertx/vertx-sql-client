@@ -17,11 +17,7 @@
 
 package io.vertx.pgclient;
 
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.TransactionRollbackException;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.Async;
@@ -460,6 +456,28 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
           tx.commit(commit::set);
         }));
       });
+    }));
+  }
+
+  @Test
+  public void testTxOptions(TestContext ctx) {
+    Async async = ctx.async();
+    TransactionOptions txOptions = new TransactionOptions();
+    txOptions.setTransactionAccessMode(TransactionAccessMode.READ_ONLY);
+    txOptions.setTransactionIsolationLevel(TransactionIsolationLevel.REPEATABLE_READ);
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      conn.begin(txOptions, ctx.asyncAssertSuccess(tx -> {
+        conn.query("SHOW TRANSACTION ISOLATION LEVEL;")
+          .execute(ctx.asyncAssertSuccess(res -> {
+            ctx.assertEquals("repeatable read", res.iterator().next().getString(0));
+            conn.query("INSERT INTO mutable (id, val) VALUES (1, 'hello-1')")
+              .execute(ctx.asyncAssertFailure(error -> {
+                tx.rollback();
+                conn.close();
+                async.complete();
+              }));
+          }));
+      }));
     }));
   }
 }

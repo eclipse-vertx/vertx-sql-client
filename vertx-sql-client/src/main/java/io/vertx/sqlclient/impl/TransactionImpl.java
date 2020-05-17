@@ -28,14 +28,16 @@ import io.vertx.core.VertxException;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.PromiseInternal;
 import io.vertx.sqlclient.Transaction;
+import io.vertx.sqlclient.TransactionOptions;
 import io.vertx.sqlclient.TransactionRollbackException;
 import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.impl.command.StartTxCommand;
 import io.vertx.sqlclient.impl.command.TxCommand;
 
 class TransactionImpl implements Transaction {
 
-  private static final TxCommand<Void> ROLLBACK = new TxCommand<>(TxCommand.Kind.ROLLBACK, "ROLLBACK", null);
-  private static final TxCommand<Void> COMMIT = new TxCommand<>(TxCommand.Kind.COMMIT, "COMMIT", null);
+  private static final TxCommand<Void> ROLLBACK = new TxCommand<>(TxCommand.Kind.ROLLBACK, null);
+  private static final TxCommand<Void> COMMIT = new TxCommand<>(TxCommand.Kind.COMMIT, null);
 
   private static final int ST_BEGIN = 0;
   private static final int ST_PENDING = 1;
@@ -63,9 +65,9 @@ class TransactionImpl implements Transaction {
     }
   }
 
-  Future<Transaction> begin(String startTxSql) {
+  Future<Transaction> begin(TransactionOptions transactionOptions) {
     PromiseInternal<Transaction> promise = context.promise(this::afterBegin);
-    ScheduledCommand<Transaction> b = doQuery(new TxCommand<>(TxCommand.Kind.BEGIN, startTxSql, this), promise);
+    ScheduledCommand<Transaction> b = doQuery(new StartTxCommand<>(TxCommand.Kind.BEGIN, this, transactionOptions), promise);
     doSchedule(b.cmd, b.handler);
     return promise.future();
   }

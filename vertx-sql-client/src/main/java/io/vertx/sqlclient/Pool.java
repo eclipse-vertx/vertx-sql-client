@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -152,18 +153,13 @@ public interface Pool extends SqlClient {
    */
   <T> Future<T> withTransaction(Function<SqlClient, Future<T>> function);
 
-  /**
-   * Like {@link #withTransaction(Function, Handler)} but provides a customized way to start the transaction
-   * so that you could configure the transaction such as isolation levels or transaction characteristics at the start.
-   *
-   * @param startTransactionSql specify the SQL which is used to start the transaction
-   */
-  <T> void withTransaction(String startTransactionSql, Function<SqlClient, Future<T>> function, Handler<AsyncResult<T>> handler);
+  @GenIgnore
+  // FIXME codegen
+  <T> void withTransaction(TransactionOptions txOptions, Function<SqlClient, Future<T>> function, Handler<AsyncResult<T>> handler);
 
-  /**
-   * Like {@link #withTransaction(String, Function, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  <T> Future<T> withTransaction(String startTransactionSql, Function<SqlClient, Future<T>> function);
+  @GenIgnore
+  // FIXME codegen
+  <T> Future<T> withTransaction(TransactionOptions txOptions, Function<SqlClient, Future<T>> function);
 
   /**
    * Close the pool and release the associated resources.

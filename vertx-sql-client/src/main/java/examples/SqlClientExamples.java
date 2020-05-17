@@ -17,18 +17,7 @@
 package examples;
 
 import io.vertx.core.Vertx;
-import io.vertx.sqlclient.Cursor;
-import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.PreparedStatement;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.RowStream;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.Transaction;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -311,8 +300,10 @@ public class SqlClientExamples {
   }
 
   public void transaction04(SqlConnection sqlConnection) {
-
-    sqlConnection.begin("START TRANSACTION READ ONLY", ar -> {
+    TransactionOptions txOptions = new TransactionOptions();
+    txOptions.setTransactionIsolationLevel(TransactionIsolationLevel.REPEATABLE_READ);
+    txOptions.setTransactionAccessMode(TransactionAccessMode.READ_ONLY);
+    sqlConnection.begin(txOptions, ar -> {
       if (ar.succeeded()) {
         // start a transaction which is read-only
         Transaction tx = ar.result();
@@ -324,7 +315,10 @@ public class SqlClientExamples {
   }
 
   public void transaction05(Pool pool) {
-    pool.withTransaction("START TRANSACTION READ ONLY", client -> client
+    TransactionOptions txOptions = new TransactionOptions();
+    txOptions.setTransactionIsolationLevel(TransactionIsolationLevel.REPEATABLE_READ);
+    txOptions.setTransactionAccessMode(TransactionAccessMode.READ_ONLY);
+    pool.withTransaction(txOptions, client -> client
       .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
       .execute()
     ).onFailure(error -> {

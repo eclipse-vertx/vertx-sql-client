@@ -25,13 +25,12 @@ import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.mysqlclient.impl.codec.MySQLCodec;
 import io.vertx.mysqlclient.impl.command.InitialHandshakeCommand;
+import io.vertx.mysqlclient.impl.util.TransactionSqlBuilder;
+import io.vertx.sqlclient.TransactionOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.QueryCommandBase;
-import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
-import io.vertx.sqlclient.impl.command.TxCommand;
+import io.vertx.sqlclient.impl.command.*;
 
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -76,14 +75,26 @@ public class MySQLSocketConnection extends SocketConnectionBase {
   @Override
   protected <R> void doSchedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
     if (cmd instanceof TxCommand) {
-      TxCommand<R> tx = (TxCommand<R>) cmd;
-      SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(
-        tx.sql,
-        false,
-        false,
-        QueryCommandBase.NULL_COLLECTOR,
-        QueryResultHandler.NOOP_HANDLER);
-      super.doSchedule(cmd2, ar -> handler.handle(ar.map(tx.result)));
+      TxCommand<R> txCmd = (TxCommand<R>) cmd;
+      String txSql;
+      if (txCmd.kind == TxCommand.Kind.BEGIN) {
+        StartTxCommand<R> startTxCommand = (StartTxCommand<R>) txCmd;
+        TransactionOptions transactionOptions = startTxCommand.transactionOptions;
+        if (transactionOptions != TransactionOptions.DEFAULT_TX_OPTIONS) {
+          txSql = TransactionSqlBuilder.buildStartTxSql(startTxCommand.transactionOptions);
+          if (transactionOptions.getTransactionIsolationLevel() != null) {
+            // MySQL could not set transaction level at the transaction start
+            SimpleQueryCommand<Void> setTxIsolationLevelCmd = buildNoOpQueryCommand("SET TRANSACTION ISOLATION LEVEL " + transactionOptions.getTransactionIsolationLevel().literal());
+            super.doSchedule(new BiCommand<>(setTxIsolationLevelCmd, v -> Future.succeededFuture(buildNoOpQueryCommand(txSql))), ar -> handler.handle(ar.map(txCmd.result)));
+            return;
+          }
+        } else {
+          txSql = txCmd.kind.name();
+        }
+      } else {
+        txSql = txCmd.kind.name();
+      }
+      super.doSchedule(buildNoOpQueryCommand(txSql), ar -> handler.handle(ar.map(txCmd.result)));
     } else {
       super.doSchedule(cmd, handler);
     }
@@ -91,5 +102,14 @@ public class MySQLSocketConnection extends SocketConnectionBase {
 
   public void upgradeToSsl(Handler<AsyncResult<Void>> completionHandler) {
     socket.upgradeToSsl(completionHandler);
+  }
+
+  private SimpleQueryCommand<Void> buildNoOpQueryCommand(String sql) {
+    return new SimpleQueryCommand<>(
+      sql,
+      false,
+      false,
+      QueryCommandBase.NULL_COLLECTOR,
+      QueryResultHandler.NOOP_HANDLER);
   }
 }

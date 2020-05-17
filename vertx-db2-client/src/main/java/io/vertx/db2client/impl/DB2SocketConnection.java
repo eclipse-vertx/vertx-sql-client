@@ -75,7 +75,7 @@ public class DB2SocketConnection extends SocketConnectionBase {
         cmd.handler = handler;
         cmd.complete(CommandResponse.success(txCmd.result).toAsyncResult());
       } else {
-        SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(txCmd.sql, false, false,
+        SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(txCmd.kind.name(), false, false,
             QueryCommandBase.NULL_COLLECTOR, QueryResultHandler.NOOP_HANDLER);
         super.doSchedule(cmd2, ar -> handler.handle(ar.map(txCmd.result)));
 

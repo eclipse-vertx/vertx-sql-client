@@ -21,19 +21,17 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.pgclient.impl.codec.PgCodec;
+import io.vertx.pgclient.impl.util.TransactionSqlBuilder;
+import io.vertx.sqlclient.TransactionOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.Notice;
 import io.vertx.sqlclient.impl.Notification;
 import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.InitCommand;
+import io.vertx.sqlclient.impl.command.*;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.impl.NetSocketInternal;
-import io.vertx.sqlclient.impl.command.QueryCommandBase;
-import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
-import io.vertx.sqlclient.impl.command.TxCommand;
 
 import java.util.Map;
 
@@ -135,14 +133,26 @@ public class PgSocketConnection extends SocketConnectionBase {
   @Override
   protected <R> void doSchedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
     if (cmd instanceof TxCommand) {
-      TxCommand<R> tx = (TxCommand<R>) cmd;
+      String txSql;
+      TxCommand<R> txCmd = (TxCommand<R>) cmd;
+      if (txCmd.kind == TxCommand.Kind.BEGIN) {
+        StartTxCommand<R> startTxCommand = (StartTxCommand<R>) txCmd;
+        TransactionOptions transactionOptions = startTxCommand.transactionOptions;
+        if (transactionOptions != TransactionOptions.DEFAULT_TX_OPTIONS) {
+          txSql = TransactionSqlBuilder.buildStartTxSql(startTxCommand.transactionOptions);
+        } else {
+          txSql = txCmd.kind.name();
+        }
+      } else {
+        txSql = txCmd.kind.name();
+      }
       SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(
-        tx.sql,
+        txSql,
         false,
         false,
         QueryCommandBase.NULL_COLLECTOR,
         QueryResultHandler.NOOP_HANDLER);
-      super.doSchedule(cmd2, ar -> handler.handle(ar.map(tx.result)));
+      super.doSchedule(cmd2, ar -> handler.handle(ar.map(txCmd.result)));
     } else {
       super.doSchedule(cmd, handler);
     }

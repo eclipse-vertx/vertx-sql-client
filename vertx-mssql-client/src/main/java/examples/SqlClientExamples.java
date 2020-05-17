@@ -299,8 +299,10 @@ public class SqlClientExamples {
   }
 
   public void transaction04(SqlConnection sqlConnection) {
-
-    sqlConnection.begin("START TRANSACTION READ ONLY", ar -> {
+    TransactionOptions txOptions = new TransactionOptions();
+    txOptions.setTransactionIsolationLevel(TransactionIsolationLevel.REPEATABLE_READ);
+    txOptions.setTransactionAccessMode(TransactionAccessMode.READ_ONLY);
+    sqlConnection.begin(txOptions, ar -> {
       if (ar.succeeded()) {
         // start a transaction which is read-only
         Transaction tx = ar.result();
@@ -312,7 +314,10 @@ public class SqlClientExamples {
   }
 
   public void transaction05(Pool pool) {
-    pool.withTransaction("START TRANSACTION READ ONLY", client -> client
+    TransactionOptions txOptions = new TransactionOptions();
+    txOptions.setTransactionIsolationLevel(TransactionIsolationLevel.REPEATABLE_READ);
+    txOptions.setTransactionAccessMode(TransactionAccessMode.READ_ONLY);
+    pool.withTransaction(txOptions, client -> client
       .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
       .execute()
     ).onFailure(error -> {
