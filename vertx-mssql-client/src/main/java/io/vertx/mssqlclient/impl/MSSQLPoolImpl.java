@@ -19,11 +19,9 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
-import io.vertx.sqlclient.impl.pool.ConnectionPool;
 
 import java.util.function.Function;
 

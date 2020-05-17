@@ -91,3 +91,23 @@ Specify the user account to be used for the authentication.
 +++
 |===
 
+[[TransactionOptions]]
+== TransactionOptions
+
+++++
+ Transaction options which could be used to control the characteristics at the start of transaction.
+++++
+'''
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[accessMode]]`@accessMode`|`link:enums.html#TransactionAccessMode[TransactionAccessMode]`|+++
+Set the link in the options.
++++
+|[[isolationLevel]]`@isolationLevel`|`link:enums.html#TransactionIsolationLevel[TransactionIsolationLevel]`|+++
+Set the link in the options.
++++
+|===
+

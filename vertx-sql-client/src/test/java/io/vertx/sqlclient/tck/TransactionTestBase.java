@@ -18,9 +18,8 @@ package io.vertx.sqlclient.tck;
 import java.util.function.Consumer;
 
 import io.vertx.core.Future;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.TransactionRollbackException;
+import io.vertx.sqlclient.*;
+import io.vertx.sqlclient.transaction.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,10 +29,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.Transaction;
-import io.vertx.sqlclient.Tuple;
 
 public abstract class TransactionTestBase {
 
@@ -313,5 +308,34 @@ public abstract class TransactionTestBase {
             async.complete();
           }));
       })));
+  }
+
+
+  @Test
+  public void testStartReadOnlyTransaction(TestContext ctx) {
+    Async async = ctx.async();
+    getPool().getConnection(ctx.asyncAssertSuccess(conn -> {
+      conn.begin(new TransactionOptions().setAccessMode(TransactionAccessMode.READ_ONLY), ctx.asyncAssertSuccess(transaction -> {
+        conn.query("INSERT INTO mutable (id, val) VALUES (1, 'hello-1')")
+          .execute(ctx.asyncAssertFailure(error -> {
+            // read-only transactions
+            transaction.rollback();
+            conn.close();
+            async.complete();
+          }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testWithReadOnlyTransactionStart(TestContext ctx) {
+    Async async = ctx.async();
+    getPool().withTransaction(new TransactionOptions().setAccessMode(TransactionAccessMode.READ_ONLY), client -> client
+    .query("INSERT INTO mutable (id, val) VALUES (1, 'hello-1')")
+    .execute()
+    .onComplete(ctx.asyncAssertFailure(error -> {
+      // read-only transactions
+      async.complete();
+    })));
   }
 }

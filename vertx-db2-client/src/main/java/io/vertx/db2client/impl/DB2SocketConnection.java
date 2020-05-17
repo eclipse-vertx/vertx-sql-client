@@ -28,29 +28,26 @@ import io.vertx.db2client.impl.command.InitialHandshakeCommand;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.CommandResponse;
-import io.vertx.sqlclient.impl.command.QueryCommandBase;
-import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
-import io.vertx.sqlclient.impl.command.TxCommand;
+import io.vertx.sqlclient.impl.command.*;
+import io.vertx.db2client.impl.util.TransactionSqlBuilder;
 
 public class DB2SocketConnection extends SocketConnectionBase {
 
   private DB2Codec codec;
   private Handler<Void> closeHandler;
 
-  public DB2SocketConnection(NetSocketInternal socket, 
-      boolean cachePreparedStatements, 
+  public DB2SocketConnection(NetSocketInternal socket,
+      boolean cachePreparedStatements,
       int preparedStatementCacheSize,
-      int preparedStatementCacheSqlLimit, 
-      int pipeliningLimit, 
+      int preparedStatementCacheSqlLimit,
+      int pipeliningLimit,
       ContextInternal context) {
     super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, pipeliningLimit, context);
   }
 
-  void sendStartupMessage(String username, 
-      String password, 
-      String database, 
+  void sendStartupMessage(String username,
+      String password,
+      String database,
       Map<String, String> properties,
       Promise<Connection> completionHandler) {
     InitialHandshakeCommand cmd = new InitialHandshakeCommand(this, username, password, database, properties);
@@ -70,12 +67,22 @@ public class DB2SocketConnection extends SocketConnectionBase {
     if (cmd instanceof TxCommand) {
       TxCommand<R> txCmd = (TxCommand<R>) cmd;
       if (txCmd.kind == TxCommand.Kind.BEGIN) {
-        // DB2 always implicitly starts a transaction with each query, and does
-        // not support the 'BEGIN' keyword. Instead we can no-op BEGIN commands
-        cmd.handler = handler;
-        cmd.complete(CommandResponse.success(txCmd.result).toAsyncResult());
+        StartTxCommand<R> startTxCommand = (StartTxCommand<R>) txCmd;
+        if (startTxCommand.isolationLevel != null || startTxCommand.accessMode != null) {
+          // customized transaction
+          String sql = TransactionSqlBuilder.buildSetTxIsolationLevelSql(startTxCommand.isolationLevel, startTxCommand.accessMode);
+          SimpleQueryCommand<Void> setTxCmd = new SimpleQueryCommand<>(sql, false, false,
+            QueryCommandBase.NULL_COLLECTOR, QueryResultHandler.NOOP_HANDLER);
+
+          super.doSchedule(setTxCmd, ar -> handler.handle(ar.map(txCmd.result)));
+        } else {
+          // DB2 always implicitly starts a transaction with each query, and does
+          // not support the 'BEGIN' keyword. Instead we can no-op BEGIN commands
+          cmd.handler = handler;
+          cmd.complete(CommandResponse.success(txCmd.result).toAsyncResult());
+        }
       } else {
-        SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(txCmd.kind.sql, false, false,
+        SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(txCmd.kind.name(), false, false,
             QueryCommandBase.NULL_COLLECTOR, QueryResultHandler.NOOP_HANDLER);
         super.doSchedule(cmd2, ar -> handler.handle(ar.map(txCmd.result)));
 

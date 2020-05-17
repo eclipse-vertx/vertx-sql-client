@@ -26,9 +26,11 @@ import io.vertx.core.Promise;
 import io.vertx.core.VertxException;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.PromiseInternal;
-import io.vertx.sqlclient.Transaction;
-import io.vertx.sqlclient.TransactionRollbackException;
+import io.vertx.sqlclient.transaction.Transaction;
+import io.vertx.sqlclient.transaction.TransactionOptions;
+import io.vertx.sqlclient.transaction.TransactionRollbackException;
 import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.impl.command.StartTxCommand;
 import io.vertx.sqlclient.impl.command.TxCommand;
 
 class TransactionImpl implements Transaction {
@@ -62,9 +64,9 @@ class TransactionImpl implements Transaction {
     }
   }
 
-  Future<Transaction> begin() {
+  Future<Transaction> begin(TransactionOptions transactionOptions) {
     PromiseInternal<Transaction> promise = context.promise(this::afterBegin);
-    ScheduledCommand<Transaction> b = doQuery(new TxCommand<>(TxCommand.Kind.BEGIN, this), promise);
+    ScheduledCommand<Transaction> b = doQuery(new StartTxCommand<>(TxCommand.Kind.BEGIN, this, transactionOptions), promise);
     doSchedule(b.cmd, b.handler);
     return promise.future();
   }

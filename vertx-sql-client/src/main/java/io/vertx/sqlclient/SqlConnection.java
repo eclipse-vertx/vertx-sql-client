@@ -18,10 +18,13 @@
 package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.Fluent;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.sqlclient.transaction.Transaction;
+import io.vertx.sqlclient.transaction.TransactionOptions;
 
 /**
  * A connection to the database server.
@@ -76,6 +79,20 @@ public interface SqlConnection extends SqlClient {
    * Like {@link #begin(Handler)} but returns a {@code Future} of the asynchronous result
    */
   Future<Transaction> begin();
+
+  /**
+   * Like {@link #begin(Handler)} but provides a customized way to start the transaction
+   * so that you could configure the transaction such as isolation level or access mode at the start.
+   *
+   * @param txOptions the transaction options
+   * @param handler the handler notified with the transaction asynchronously
+   */
+  void begin(TransactionOptions txOptions, Handler<AsyncResult<Transaction>> handler);
+
+  /**
+   * Like {@link #begin(TransactionOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<Transaction> begin(TransactionOptions txOptions);
 
   /**
    * @return whether the connection uses SSL
