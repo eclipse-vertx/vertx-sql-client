@@ -239,7 +239,7 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
     inflight.peek().handleNoticeResponse(response);
   }
 
-  private void decodeErrorOrNotice(Response response, ByteBuf in) {
+  private void decodeErrorOrNotice(ResponseImpl response, ByteBuf in) {
 
     byte type;
 

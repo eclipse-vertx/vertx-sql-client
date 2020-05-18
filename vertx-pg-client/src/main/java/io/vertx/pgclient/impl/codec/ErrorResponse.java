@@ -23,10 +23,10 @@ import io.vertx.pgclient.PgException;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-class ErrorResponse extends Response {
+class ErrorResponse extends ResponseImpl {
 
   PgException toException() {
-    return new PgException(getMessage(), getSeverity(), getCode(), getDetail());
+    return new PgException(this);
   }
 
   @Override
