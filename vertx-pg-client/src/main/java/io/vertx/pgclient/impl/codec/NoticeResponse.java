@@ -24,7 +24,7 @@ import io.vertx.sqlclient.impl.Notice;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-class NoticeResponse extends ResponseImpl implements Notice {
+class NoticeResponse extends Response implements Notice {
 
   @Override
   public void log(Logger logger) {

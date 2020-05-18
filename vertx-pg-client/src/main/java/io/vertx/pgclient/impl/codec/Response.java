@@ -1,58 +1,209 @@
 /*
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (C) 2017 Julien Viet
  *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
- * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 
 package io.vertx.pgclient.impl.codec;
-
-import io.vertx.codegen.annotations.VertxGen;
 
 /**
  *
  * <p>
  * A common response message for PostgreSQL
  * <a href="https://www.postgresql.org/docs/9.5/static/protocol-error-fields.html">Error and Notice Message Fields</a>
+ *
+ * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-@VertxGen
-public interface Response {
 
-  public String getSeverity();
+abstract class Response {
 
-  public String getCode();
+  private String severity;
+  private String code;
+  private String message;
+  private String detail;
+  private String hint;
+  private String position;
+  private String internalPosition;
+  private String internalQuery;
+  private String where;
+  private String file;
+  private String line;
+  private String routine;
+  private String schema;
+  private String table;
+  private String column;
+  private String dataType;
+  private String constraint;
 
-  public String getMessage();
+  String getSeverity() {
+    return severity;
+  }
 
-  public String getDetail();
+  void setSeverity(String severity) {
+    this.severity = severity;
+  }
 
-  public String getHint();
+  String getCode() {
+    return code;
+  }
 
-  public String getPosition();
+  void setCode(String code) {
+    this.code = code;
+  }
 
-  public String getWhere();
+  String getMessage() {
+    return message;
+  }
 
-  public String getFile();
+  void setMessage(String message) {
+    this.message = message;
+  }
 
-  public String getLine();
+  String getDetail() {
+    return detail;
+  }
 
-  public String getRoutine();
+  void setDetail(String detail) {
+    this.detail = detail;
+  }
 
-  public String getSchema();
+  String getHint() {
+    return hint;
+  }
 
-  public String getTable();
+  void setHint(String hint) {
+    this.hint = hint;
+  }
 
-  public String getColumn();
+  String getPosition() {
+    return position;
+  }
 
-  public String getDataType();
+  void setPosition(String position) {
+    this.position = position;
+  }
 
-  public String getConstraint();
+  String getWhere() {
+    return where;
+  }
 
-  public String getInternalPosition();
+  void setWhere(String where) {
+    this.where = where;
+  }
 
-  public String getInternalQuery();
+  String getFile() {
+    return file;
+  }
+
+  void setFile(String file) {
+    this.file = file;
+  }
+
+  String getLine() {
+    return line;
+  }
+
+  void setLine(String line) {
+    this.line = line;
+  }
+
+  String getRoutine() {
+    return routine;
+  }
+
+  void setRoutine(String routine) {
+    this.routine = routine;
+  }
+
+  String getSchema() {
+    return schema;
+  }
+
+  void setSchema(String schema) {
+    this.schema = schema;
+  }
+
+  String getTable() {
+    return table;
+  }
+
+  void setTable(String table) {
+    this.table = table;
+  }
+
+  String getColumn() {
+    return column;
+  }
+
+  void setColumn(String column) {
+    this.column = column;
+  }
+
+  String getDataType() {
+    return dataType;
+  }
+
+  void setDataType(String dataType) {
+    this.dataType = dataType;
+  }
+
+  String getConstraint() {
+    return constraint;
+  }
+
+  void setConstraint(String constraint) {
+    this.constraint = constraint;
+  }
+
+
+  String getInternalPosition() {
+    return internalPosition;
+  }
+
+  void setInternalPosition(String internalPosition) {
+    this.internalPosition = internalPosition;
+  }
+
+  String getInternalQuery() {
+    return internalQuery;
+  }
+
+  void setInternalQuery(String internalQuery) {
+    this.internalQuery = internalQuery;
+  }
+
+
+  @Override
+  public String toString() {
+    return "Response{" +
+      "severity='" + severity + '\'' +
+      ", code='" + code + '\'' +
+      ", message='" + message + '\'' +
+      ", detail='" + detail + '\'' +
+      ", hint='" + hint + '\'' +
+      ", position='" + position + '\'' +
+      ", internalPosition='" + internalPosition + '\'' +
+      ", internalQuery='" + internalQuery + '\'' +
+      ", where='" + where + '\'' +
+      ", file='" + file + '\'' +
+      ", line='" + line + '\'' +
+      ", routine='" + routine + '\'' +
+      ", schema='" + schema + '\'' +
+      ", table='" + table + '\'' +
+      ", column='" + column + '\'' +
+      ", dataType='" + dataType + '\'' +
+      ", constraint='" + constraint + '\'' +
+      '}';
+  }
 }

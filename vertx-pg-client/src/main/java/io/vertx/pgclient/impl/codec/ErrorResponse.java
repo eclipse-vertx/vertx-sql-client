@@ -23,10 +23,12 @@ import io.vertx.pgclient.PgException;
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-class ErrorResponse extends ResponseImpl {
+class ErrorResponse extends Response {
 
   PgException toException() {
-    return new PgException(this);
+    return new PgException(getMessage(), getSeverity(), getCode(), getDetail(), getHint(),
+        getPosition(), getInternalPosition(), getInternalQuery(), getWhere(), getFile(), getLine(), getRoutine(),
+        getSchema(), getTable(), getColumn(), getDataType(), getConstraint());
   }
 
   @Override
