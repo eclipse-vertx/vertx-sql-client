@@ -24,7 +24,7 @@ import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.spi.Driver;
 
 public class MSSQLDriver implements Driver {
-
+  
   @Override
   public Pool createPool(SqlConnectOptions options, PoolOptions poolOptions) {
     return MSSQLPool.pool(wrap(options), poolOptions);
@@ -35,17 +35,24 @@ public class MSSQLDriver implements Driver {
     return MSSQLPool.pool(vertx, wrap(options), poolOptions);
   }
 
-  @Override
-  public boolean acceptsOptions(SqlConnectOptions options) {
-    return options instanceof MSSQLConnectOptions || SqlConnectOptions.class.equals(options.getClass());
-  }
-  
   private static MSSQLConnectOptions wrap(SqlConnectOptions options) {
     if (options instanceof MSSQLConnectOptions) {
       return (MSSQLConnectOptions) options; 
-    } else {
+    } else if (SqlConnectOptions.class.equals(options.getClass())) {
       return new MSSQLConnectOptions(options);
+    } else {
+      throw new IllegalArgumentException("Unsupported option type: " + options.getClass());
     }
+  }
+
+  @Override
+  public SqlConnectOptions createConnectOptions() {
+    return new MSSQLConnectOptions();
+  }
+
+  @Override
+  public String name() {
+    return KnownDrivers.SQLSERVER.name();
   }
 
 }

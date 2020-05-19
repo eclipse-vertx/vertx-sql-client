@@ -92,7 +92,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     this.serverRsaPublicKeyPath = other.serverRsaPublicKeyPath;
     this.serverRsaPublicKeyValue = other.serverRsaPublicKeyValue != null ? other.serverRsaPublicKeyValue.copy() : null;
   }
-
+  
   /**
    * Get the collation for the connection.
    *

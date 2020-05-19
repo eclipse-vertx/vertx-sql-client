@@ -55,6 +55,6 @@ public class DB2Exception extends RuntimeException {
    */
   @Override
   public String getMessage() {
-    return super.getMessage();
+    return super.getMessage() + "; errorCode=" + errorCode + "; sqlState=" + sqlState;
   }
 }

@@ -16,6 +16,14 @@
  */
 package io.vertx.sqlclient.spi;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.ServiceConfigurationError;
+import java.util.ServiceLoader;
+import java.util.stream.Collectors;
+
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
@@ -26,6 +34,71 @@ import io.vertx.sqlclient.SqlConnectOptions;
  * Every driver must implement this interface.
  */
 public interface Driver {
+  
+  public static enum KnownDrivers {
+    ANY_DRIVER,
+    DB2,
+    SQLSERVER,
+    MYSQL,
+    POSTGRESQL
+  }
+  
+  /**
+   * Creates an instance of {@link SqlConnectOptions} that corresponds to the provided <code>driverName</code>
+   * @param driverName  The name of the Driver (as returned by {@link #name()}) to create connect options for.
+   * Known values can be found in {@link KnownDrivers}
+   * @return the new connect options
+   * @throws ServiceConfigurationError If 0 or >1 matching drivers are found
+   * @throws NullPointerException If <code>driverName</code> is null
+   */
+  static SqlConnectOptions createConnectOptions(String driverName) {
+    Objects.requireNonNull(driverName, "Must provide a valid driverName. Some known values are: " + Arrays.toString(KnownDrivers.values()));
+    
+    boolean anyDriver = KnownDrivers.ANY_DRIVER.name().equalsIgnoreCase(driverName);
+    List<String> discoverdDrivers = new ArrayList<>();
+    List<Driver> candidates = new ArrayList<>(1);
+    for (Driver d : ServiceLoader.load(Driver.class)) {
+      discoverdDrivers.add(d.name());
+      if (d.name().equalsIgnoreCase(driverName) || anyDriver) {
+        candidates.add(d);
+      }
+    }
+    
+    if (candidates.size() == 0) {
+      if (anyDriver) {
+        throw new ServiceConfigurationError("No implementations of " + Driver.class.getCanonicalName() + " were found");
+      } else {
+        throw new ServiceConfigurationError("No implementations of " + Driver.class.getCanonicalName() + " were found with a name of '" + driverName + "'");
+      }
+    } else if (candidates.size() > 1) {
+      if (anyDriver) {
+        throw new ServiceConfigurationError("Multiple implementations of " + Driver.class.getCanonicalName() + " were found: " + 
+            candidates.stream().map(Driver::name).collect(Collectors.toList()));        
+      } else {
+        throw new ServiceConfigurationError("Multiple implementations of " + Driver.class.getCanonicalName() + " were found with a name of '" + 
+            driverName + "': " + candidates);
+      }
+    }
+    
+    return candidates.get(0).createConnectOptions();
+  }
+  
+  /**
+   * Creates an instance of {@link SqlConnectOptions} that corresponds to the provided <code>driverName</code>
+   * @param driverName The name of the Driver (as returned by {@link #name()}) to create connect options for
+   * @return the new connect options
+   * @throws ServiceConfigurationError If 0 or >1 matching drivers are found
+   * @throws NullPointerException If <code>driverName</code> is null
+   */
+  static SqlConnectOptions createConnectOptions(KnownDrivers driverName) {
+    Objects.requireNonNull(driverName, "Must provide a valid driverName. Some known values are: " + Arrays.toString(KnownDrivers.values()));
+    return createConnectOptions(driverName.name());
+  }
+  
+  /**
+   * @return Creates a new set of {@link SqlConnectOptions}
+   */
+  SqlConnectOptions createConnectOptions();
   
   /**
    * Create a connection pool to the database configured with the given {@code connectOptions} and default {@link PoolOptions}
@@ -59,6 +132,14 @@ public interface Driver {
   /**
    * @return true if the driver accepts the {@code connectOptions}, false otherwise
    */
-  boolean acceptsOptions(SqlConnectOptions connectOptions);
+  default boolean acceptsOptions(SqlConnectOptions connectOptions) {
+    return createConnectOptions().getClass().isAssignableFrom(connectOptions.getClass()) ||
+        SqlConnectOptions.class.equals(connectOptions.getClass());
+  }
+  
+  /**
+   * @return The name of the driver. Names for known drivers are enumerated in {@link KnownDrivers}
+   */
+  String name();
   
 }

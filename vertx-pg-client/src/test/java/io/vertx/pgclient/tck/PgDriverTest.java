@@ -34,4 +34,9 @@ public class PgDriverTest extends DriverTestBase {
     return rule.options();
   }
 
+  @Override
+  protected String getDriverName() {
+    return "POSTGRESQL";
+  }
+  
 }

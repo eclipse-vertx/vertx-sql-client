@@ -46,4 +46,9 @@ public class DB2DriverTest extends DriverTestBase {
     return rule.options();
   }
 
+  @Override
+  protected String getDriverName() {
+    return "DB2";
+  }
+  
 }

@@ -9,7 +9,7 @@ import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.spi.Driver;
 
 public class PgDriver implements Driver {
-
+  
   @Override
   public Pool createPool(SqlConnectOptions options, PoolOptions poolOptions) {
     return PgPool.pool(wrap(options), poolOptions);
@@ -20,17 +20,24 @@ public class PgDriver implements Driver {
     return PgPool.pool(vertx, wrap(options), poolOptions);
   }
 
-  @Override
-  public boolean acceptsOptions(SqlConnectOptions options) {
-    return options instanceof PgConnectOptions || SqlConnectOptions.class.equals(options.getClass());
-  }
-  
   private static PgConnectOptions wrap(SqlConnectOptions options) {
     if (options instanceof PgConnectOptions) {
-      return (PgConnectOptions) options; 
-    } else {
+      return (PgConnectOptions) options;
+    } else if (options.getClass().equals(SqlConnectOptions.class)) {
       return new PgConnectOptions(options);
+    } else {
+      throw new IllegalArgumentException("Unsupported option type: " + options.getClass());
     }
+  }
+  
+  @Override
+  public SqlConnectOptions createConnectOptions() {
+    return new PgConnectOptions();
+  }
+
+  @Override
+  public String name() {
+    return KnownDrivers.POSTGRESQL.name();
   }
 
 }

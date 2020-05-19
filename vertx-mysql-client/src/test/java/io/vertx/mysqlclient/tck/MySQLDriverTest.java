@@ -35,4 +35,9 @@ public class MySQLDriverTest extends DriverTestBase {
     return rule.options();
   }
 
+  @Override
+  protected String getDriverName() {
+    return "MYSQL";
+  }
+
 }

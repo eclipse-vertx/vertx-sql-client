@@ -88,7 +88,7 @@ public class DB2ConnectOptions extends SqlConnectOptions {
     super(other);
     this.pipeliningLimit = other.pipeliningLimit;
   }
-
+  
   @Override
   public DB2ConnectOptions setHost(String host) {
     return (DB2ConnectOptions) super.setHost(host);
@@ -210,6 +210,6 @@ public class DB2ConnectOptions extends SqlConnectOptions {
 
   @Override
   public int hashCode() {
-    return Objects.hash(pipeliningLimit);
+    return Objects.hash(super.hashCode(), pipeliningLimit);
   }
 }

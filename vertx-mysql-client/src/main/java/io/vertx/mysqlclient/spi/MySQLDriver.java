@@ -24,7 +24,7 @@ import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.spi.Driver;
 
 public class MySQLDriver implements Driver {
-
+  
   @Override
   public Pool createPool(SqlConnectOptions options, PoolOptions poolOptions) {
     return MySQLPool.pool(wrap(options), poolOptions);
@@ -35,17 +35,24 @@ public class MySQLDriver implements Driver {
     return MySQLPool.pool(vertx, wrap(options), poolOptions);
   }
 
-  @Override
-  public boolean acceptsOptions(SqlConnectOptions options) {
-    return options instanceof MySQLConnectOptions || SqlConnectOptions.class.equals(options.getClass());
-  }
-  
   private static MySQLConnectOptions wrap(SqlConnectOptions options) {
     if (options instanceof MySQLConnectOptions) {
-      return (MySQLConnectOptions) options; 
-    } else {
+      return (MySQLConnectOptions) options;
+    } else if (options.getClass().equals(SqlConnectOptions.class)) {
       return new MySQLConnectOptions(options);
+    } else {
+      throw new IllegalArgumentException("Unsupported option type: " + options.getClass());
     }
+  }
+  
+  @Override
+  public SqlConnectOptions createConnectOptions() {
+    return new MySQLConnectOptions();
+  }
+  
+  @Override
+  public String name() {
+    return "MYSQL";
   }
 
 }

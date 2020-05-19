@@ -135,7 +135,7 @@ public class PgConnectOptions extends SqlConnectOptions {
     pipeliningLimit = other.pipeliningLimit;
     sslMode = other.sslMode;
   }
-
+  
   @Override
   public PgConnectOptions setHost(String host) {
     return (PgConnectOptions) super.setHost(host);

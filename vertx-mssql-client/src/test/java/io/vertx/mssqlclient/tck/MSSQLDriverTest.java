@@ -33,5 +33,10 @@ public class MSSQLDriverTest extends DriverTestBase {
   protected SqlConnectOptions defaultOptions() {
     return rule.options();
   }
-
+  
+  @Override
+  protected String getDriverName() {
+    return "SQLSERVER";
+  }
+  
 }

@@ -15,6 +15,7 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClientOptions;
+import io.vertx.sqlclient.spi.Driver;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,6 +26,7 @@ import java.util.Objects;
  */
 @DataObject(generateConverter = true)
 public class SqlConnectOptions extends NetClientOptions {
+  
   public static final boolean DEFAULT_CACHE_PREPARED_STATEMENTS = false;
   public static final int DEFAULT_PREPARED_STATEMENT_CACHE_MAX_SIZE = 256;
   public static final int DEFAULT_PREPARED_STATEMENT_CACHE_SQL_LIMIT = 2048;
@@ -39,17 +41,32 @@ public class SqlConnectOptions extends NetClientOptions {
   private int preparedStatementCacheSqlLimit = DEFAULT_PREPARED_STATEMENT_CACHE_SQL_LIMIT;
   private Map<String, String> properties = new HashMap<>(4);
 
+  /**
+   * @deprecated This constructor will be removed in the next release.
+   * Instead, use {@link Driver#createConnectOptions()}
+   */
+  @Deprecated
   public SqlConnectOptions() {
     super();
     init();
   }
 
+  /**
+   * @deprecated This constructor will be removed in the next release.
+   * Instead, use {@link Driver#createConnectOptions()}
+   */
+  @Deprecated
   public SqlConnectOptions(JsonObject json) {
     super(json);
     init();
     SqlConnectOptionsConverter.fromJson(json, this);
   }
 
+  /**
+   * @deprecated This constructor will be removed in the next release.
+   * Instead, use {@link Driver#createConnectOptions()}
+   */
+  @Deprecated
   public SqlConnectOptions(SqlConnectOptions other) {
     super(other);
     this.host = other.host;
@@ -64,7 +81,7 @@ public class SqlConnectOptions extends NetClientOptions {
       this.properties = new HashMap<>(other.properties);
     }
   }
-
+  
   /**
    * Get the host for connecting to the server.
    *
@@ -278,5 +295,29 @@ public class SqlConnectOptions extends NetClientOptions {
    * Initialize with the default options.
    */
   protected void init() {
+  }
+  
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (!(obj instanceof SqlConnectOptions))
+      return false;
+    SqlConnectOptions that = (SqlConnectOptions) obj;
+    return Objects.equals(host, that.host) &&
+        Objects.equals(port, that.port) &&
+        Objects.equals(database, that.database) &&
+        Objects.equals(user, that.user) &&
+        Objects.equals(password, that.password) &&
+        Objects.equals(properties, that.properties) &&
+        Objects.equals(cachePreparedStatements, that.cachePreparedStatements) &&
+        Objects.equals(preparedStatementCacheMaxSize, that.preparedStatementCacheMaxSize) &&
+        Objects.equals(preparedStatementCacheSqlLimit, that.preparedStatementCacheSqlLimit);
+  }
+  
+  @Override
+  public int hashCode() {
+    return Objects.hash(host, port, database, user, password, properties, cachePreparedStatements, 
+        preparedStatementCacheMaxSize, preparedStatementCacheSqlLimit);
   }
 }
