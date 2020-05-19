@@ -106,7 +106,7 @@ public class PgConnectionTest extends PgConnectionTestBase {
       conn
         .query("SELECT pg_sleep(10)")
         .execute(ctx.asyncAssertFailure(error -> {
-        ctx.assertTrue(PgErrorCodes.hasCode(error, PgErrorCodes.ERRCODE_QUERY_CANCELED), error.getMessage());
+        ctx.assertTrue(hasSqlstateCode(error, ERRCODE_QUERY_CANCELED), error.getMessage());
         async.countDown();
       }));
       ((PgConnection)conn).cancelRequest(ctx.asyncAssertSuccess());
