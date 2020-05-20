@@ -548,7 +548,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 
             //statementI.completeExecute(netSqlca);
             NetSqlca.complete(netSqlca);
-            updateCount = netSqlca.getUpdateCount();
+            updateCount = netSqlca == null ? 0 : netSqlca.getUpdateCount();
             peekCP = peekCodePoint();
         } else if (peekCP == CodePoint.SQLDTARD) {
             throw new UnsupportedOperationException("stored procedure");
