@@ -34,6 +34,8 @@ import io.vertx.sqlclient.SqlClient;
 @RunWith(VertxUnitRunner.class)
 public abstract class PgTestBase {
 
+  protected static final String ERRCODE_QUERY_CANCELED = "57014";
+
   @ClassRule
   public static ContainerPgRule rule = new ContainerPgRule();
 
@@ -61,5 +63,11 @@ public abstract class PgTestBase {
     }
   }
 
-
+  /**
+   * @return whether throwable is a PgException with the SQLSTATE code
+   */
+  static boolean hasSqlstateCode(Throwable throwable, String code) {
+    return throwable instanceof PgException &&
+        code.equals(((PgException) throwable).getCode());
+  }
 }

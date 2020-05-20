@@ -174,7 +174,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     PgPool pool = createPool(options, 4);
     pool.getConnection(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT pg_sleep(10)").execute(ctx.asyncAssertFailure(error -> {
-        ctx.assertEquals("canceling statement due to user request", error.getMessage());
+        ctx.assertTrue(hasSqlstateCode(error, ERRCODE_QUERY_CANCELED), error.getMessage());
         conn.close();
         async.complete();
       }));
