@@ -38,7 +38,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
     MySQLConnectionFactory client;
     try {
-      client = new MySQLConnectionFactory(vertx, ctx, options);
+      client = new MySQLConnectionFactory(ctx, options);
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }

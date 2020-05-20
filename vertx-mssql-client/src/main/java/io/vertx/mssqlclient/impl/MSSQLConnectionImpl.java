@@ -37,7 +37,7 @@ public class MSSQLConnectionImpl extends SqlConnectionImpl<MSSQLConnectionImpl> 
   public static Future<MSSQLConnection> connect(Vertx vertx, MSSQLConnectOptions options) {
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
     PromiseInternal<MSSQLConnection> promise = ctx.promise();
-    MSSQLConnectionFactory client = new MSSQLConnectionFactory(vertx, ctx, options);
+    MSSQLConnectionFactory client = new MSSQLConnectionFactory(ctx, options);
     ctx.dispatch(null, v -> {
       client.connect()
         .<MSSQLConnection>map(conn -> {
