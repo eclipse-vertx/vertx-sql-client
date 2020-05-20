@@ -18,9 +18,7 @@ package io.vertx.db2client.tck;
 
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 
@@ -56,12 +54,5 @@ public class DB2SimpleQueryTest extends SimpleQueryTestBase {
                 conn.close();
             }));
         }));
-    }
-
-    @Override
-    @Test
-    @Ignore // TODO implement error path handling properly
-    public void testQueryError(TestContext ctx) {
-        super.testQueryError(ctx);
     }
 }

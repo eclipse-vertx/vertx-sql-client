@@ -112,6 +112,13 @@ public class NetSqlca {
 	   if (sqlca == null || sqlca.sqlCode_ == 0) {
            return;
 	   }
+	   
+	   // Force population of the sqlErrmc
+	   String sqlErrmc = sqlca.getSqlErrmc();
+	   if (sqlErrmc == null || sqlErrmc.trim().length() == 0) {
+	     sqlErrmc = "";
+	   }
+	   
 	   // Add additional error messages to this list
 	   switch(sqlca.sqlCode_) {
             // The SQL syntax is invalid
@@ -119,24 +126,24 @@ public class NetSqlca {
        	        throw new DB2Exception("The SQL syntax provided was invalid", SqlCode.INVALID_SQL_STATEMENT, sqlca.sqlState_);
        	    // The object (table?) is not defined/available
   	        case SqlCode.OBJECT_NOT_DEFINED:
-  	        	if (sqlca.sqlErrmc_ != null && sqlca.sqlErrmc_.trim().length() > 0)
-  	        		throw new DB2Exception("The object " + sqlca.sqlErrmc_ + " provided is not defined", SqlCode.OBJECT_NOT_DEFINED, sqlca.sqlState_);
+  	        	if (sqlErrmc.length() > 0)
+  	        		throw new DB2Exception("The object '" + sqlErrmc + "' provided is not defined", SqlCode.OBJECT_NOT_DEFINED, sqlca.sqlState_);
   	        	else
   	        		throw new DB2Exception("An object provided is not defined", SqlCode.OBJECT_NOT_DEFINED, sqlca.sqlState_);
        	    // The object (table?) is not defined/available
   	        case SqlCode.COLUMN_DOES_NOT_EXIST:
-  	        	if (sqlca.sqlErrmc_ != null && sqlca.sqlErrmc_.trim().length() > 0)
-  	        		throw new DB2Exception("The column " + sqlca.sqlErrmc_ + " provided does not exist", SqlCode.COLUMN_DOES_NOT_EXIST, sqlca.sqlState_);
+  	        	if (sqlErrmc.length() > 0)
+  	        		throw new DB2Exception("The column '" + sqlErrmc + "' provided does not exist", SqlCode.COLUMN_DOES_NOT_EXIST, sqlca.sqlState_);
   	        	else
   	        		throw new DB2Exception("A column provided does not exist", SqlCode.COLUMN_DOES_NOT_EXIST, sqlca.sqlState_);
 	        // Invalid database specified
 	   	    case SqlCode.DATABASE_NOT_FOUND:
-	   	    	if (sqlca.sqlErrmc_ != null && sqlca.sqlErrmc_.trim().length() > 0)
-	   	    		throw new DB2Exception("The database " + sqlca.sqlErrmc_ + " provided was not found", SqlCode.DATABASE_NOT_FOUND, sqlca.sqlState_);
+	   	    	if (sqlErrmc.length() > 0)
+	   	    		throw new DB2Exception("The database '" + sqlErrmc + "' provided was not found", SqlCode.DATABASE_NOT_FOUND, sqlca.sqlState_);
 	   	    	else
 	   	    		throw new DB2Exception("The database provided was not found", SqlCode.DATABASE_NOT_FOUND, sqlca.sqlState_);
             default:
-                throw new IllegalStateException("ERROR sqlcode=" + sqlca.sqlCode_ + "  Full Sqlca: " + sqlca.toString());
+                throw new IllegalStateException("ERROR: " + sqlca.toString());
 	   }
    }
    
