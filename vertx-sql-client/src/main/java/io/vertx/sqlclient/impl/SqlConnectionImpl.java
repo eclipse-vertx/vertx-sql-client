@@ -55,6 +55,11 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
   }
 
   @Override
+  public Transaction currentTransaction() {
+      return tx;
+  }
+
+  @Override
   public <R> void schedule(CommandBase<R> cmd, Promise<R> promise) {
     if (tx != null) {
       tx.schedule(cmd, promise);

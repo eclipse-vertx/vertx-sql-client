@@ -68,7 +68,7 @@ public interface SqlConnection extends SqlClient {
    * Begin a transaction and returns a {@link Transaction} for controlling and tracking
    * this transaction.
    * <p/>
-   * When the connection is explicitely closed, any inflight transaction is rollbacked.
+   * When the connection is explicitely closed, any inflight transaction is rolled back.
    */
   void begin(Handler<AsyncResult<Transaction>> handler);
 
@@ -76,6 +76,13 @@ public interface SqlConnection extends SqlClient {
    * Like {@link #begin(Handler)} but returns a {@code Future} of the asynchronous result
    */
   Future<Transaction> begin();
+
+  /**
+   * If @{link {@link #begin()} or {#link {@link #begin(Handler)} has been called, returns
+   * the associated transaction. Returns null otherwise.
+   * @return the current associated transaction, or null.
+   */
+  Transaction currentTransaction();
 
   /**
    * @return whether the connection uses SSL
