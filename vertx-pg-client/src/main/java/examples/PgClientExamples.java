@@ -26,7 +26,6 @@ import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -162,6 +161,7 @@ public class PgClientExamples {
     // Pool options
     PoolOptions poolOptions = new PoolOptions()
       .setMaxSize(5);
+
     // Create the pooled client
     PgPool client = PgPool.pool(vertx, connectOptions, poolOptions);
   }
@@ -190,33 +190,26 @@ public class PgClientExamples {
     PgPool client = PgPool.pool(vertx, connectOptions, poolOptions);
 
     // Get a connection from the pool
-    client.getConnection(ar1 -> {
+    client.getConnection().compose(conn -> {
+      System.out.println("Got a connection from the pool");
 
-      if (ar1.succeeded()) {
-
-        System.out.println("Connected");
-
-        // Obtain our connection
-        SqlConnection conn = ar1.result();
-
-        // All operations execute on the same connection
-        conn
-          .query("SELECT * FROM users WHERE id='julien'")
-          .execute(ar2 -> {
-          if (ar2.succeeded()) {
-            conn
-              .query("SELECT * FROM users WHERE id='emad'")
-              .execute(ar3 -> {
-              // Release the connection to the pool
-              conn.close();
-            });
-          } else {
-            // Release the connection to the pool
-            conn.close();
-          }
+      // All operations execute on the same connection
+      return conn
+        .query("SELECT * FROM users WHERE id='julien'")
+        .execute()
+        .compose(res -> conn
+          .query("SELECT * FROM users WHERE id='emad'")
+          .execute())
+        .onComplete(ar -> {
+          // Release the connection to the pool
+          conn.close();
         });
+    }).onComplete(ar -> {
+      if (ar.succeeded()) {
+
+        System.out.println("Done");
       } else {
-        System.out.println("Could not connect: " + ar1.cause().getMessage());
+        System.out.println("Something went wrong " + ar.cause().getMessage());
       }
     });
   }
@@ -232,30 +225,25 @@ public class PgClientExamples {
       .setPassword("secret");
 
     // Connect to Postgres
-    PgConnection.connect(vertx, options, res -> {
-      if (res.succeeded()) {
-
+    PgConnection.connect(vertx, options)
+      .compose(conn -> {
         System.out.println("Connected");
 
-        // Obtain our connection
-        PgConnection conn = res.result();
-
         // All operations execute on the same connection
-        conn
+        return conn
           .query("SELECT * FROM users WHERE id='julien'")
-          .execute(ar2 -> {
-          if (ar2.succeeded()) {
-            conn
-              .query("SELECT * FROM users WHERE id='emad'")
-              .execute(ar3 -> {
-              // Close the connection
-              conn.close();
-            });
-          } else {
-            // Close the connection
-            conn.close();
-          }
+          .execute()
+          .compose(res -> conn
+            .query("SELECT * FROM users WHERE id='emad'")
+              .execute()
+          ).onComplete(ar -> {
+          // Close the connection
+          conn.close();
         });
+    }).onComplete(res -> {
+      if (res.succeeded()) {
+
+        System.out.println("Done");
       } else {
         System.out.println("Could not connect: " + res.cause().getMessage());
       }

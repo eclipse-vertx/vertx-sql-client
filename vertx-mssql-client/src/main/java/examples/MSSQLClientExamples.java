@@ -137,33 +137,26 @@ public class MSSQLClientExamples {
     MSSQLPool client = MSSQLPool.pool(vertx, connectOptions, poolOptions);
 
     // Get a connection from the pool
-    client.getConnection(ar1 -> {
+    client.getConnection().compose(conn -> {
+      System.out.println("Got a connection from the pool");
 
-      if (ar1.succeeded()) {
-
-        System.out.println("Connected");
-
-        // Obtain our connection
-        SqlConnection conn = ar1.result();
-
-        // All operations execute on the same connection
-        conn
-          .query("SELECT * FROM users WHERE id='julien'")
-          .execute(ar2 -> {
-          if (ar2.succeeded()) {
-            conn
-              .query("SELECT * FROM users WHERE id='emad'")
-              .execute(ar3 -> {
-              // Release the connection to the pool
-              conn.close();
-            });
-          } else {
-            // Release the connection to the pool
-            conn.close();
-          }
+      // All operations execute on the same connection
+      return conn
+        .query("SELECT * FROM users WHERE id='julien'")
+        .execute()
+        .compose(res -> conn
+          .query("SELECT * FROM users WHERE id='emad'")
+          .execute())
+        .onComplete(ar -> {
+          // Release the connection to the pool
+          conn.close();
         });
+    }).onComplete(ar -> {
+      if (ar.succeeded()) {
+
+        System.out.println("Done");
       } else {
-        System.out.println("Could not connect: " + ar1.cause().getMessage());
+        System.out.println("Something went wrong " + ar.cause().getMessage());
       }
     });
   }
