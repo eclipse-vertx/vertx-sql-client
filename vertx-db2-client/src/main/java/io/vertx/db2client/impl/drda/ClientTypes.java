@@ -243,7 +243,8 @@ public class ClientTypes {
 		 	return clazz == double.class ||
 		 		   clazz == Double.class ||
 		 		   clazz == float.class ||
-		 		   clazz == Float.class;
+		 		   clazz == Float.class ||
+		 		   clazz == BigDecimal.class;
         case ClientTypes.BIT:
         case ClientTypes.BOOLEAN:
         case ClientTypes.CHAR:
