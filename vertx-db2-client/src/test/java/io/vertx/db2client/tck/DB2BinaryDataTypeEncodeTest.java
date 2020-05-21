@@ -41,7 +41,7 @@ public class DB2BinaryDataTypeEncodeTest extends BinaryDataTypeEncodeTestBase {
   @Override
   public void testDouble(TestContext ctx) {
     // The smallest positive value supported by the DOUBLE column type in DB2 is 5.4E-079
-    testEncodeGeneric(ctx, "test_float_8", Double.class, Double.valueOf("5.4E-079"));
+    testEncodeGeneric(ctx, "test_float_8", Double.class, Row::getDouble, Double.valueOf("5.4E-079"));
   }
   
   @Override

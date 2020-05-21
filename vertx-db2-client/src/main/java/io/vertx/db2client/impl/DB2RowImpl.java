@@ -69,6 +69,8 @@ public class DB2RowImpl extends ArrayTuple implements Row {
       return type.cast(getLocalDate(position));
     } else if (type == LocalDateTime.class) {
       return type.cast(getLocalDateTime(position));
+    } else if (type == LocalTime.class) {
+      return type.cast(getLocalTime(position));
     } else if (type == Duration.class) {
       return type.cast(getDuration(position));
     } else if (type == RowId.class || type == DB2RowId.class) {
@@ -195,7 +197,8 @@ public class DB2RowImpl extends ArrayTuple implements Row {
 
   @Override
   public LocalTime getLocalTime(String name) {
-    throw new UnsupportedOperationException();
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getLocalTime(pos);
   }
 
   @Override
@@ -221,7 +224,8 @@ public class DB2RowImpl extends ArrayTuple implements Row {
 
   @Override
   public BigDecimal getBigDecimal(String name) {
-    throw new UnsupportedOperationException();
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getBigDecimal(pos);
   }
 
   @Override
