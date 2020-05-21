@@ -67,12 +67,11 @@ public class CursorImpl implements Cursor {
   public synchronized Future<RowSet<Row>> read(int count) {
     Promise<RowSet<Row>> promise = context.promise();
     SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
-    SqlResultHandler<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> handler = builder.createHandler(promise);
     if (id == null) {
       id = UUID.randomUUID().toString();
-      result = builder.execute(ps.conn, ps.ps, ps.autoCommit, params, count, id, false, handler);
+      result = builder.executeExtendedQuery(ps.conn, ps.ps, ps.autoCommit, params, count, id, false, promise);
     } else if (result.isSuspended()) {
-      result = builder.execute(ps.conn, ps.ps, ps.autoCommit, params, count, id, true, handler);
+      result = builder.executeExtendedQuery(ps.conn, ps.ps, ps.autoCommit, params, count, id, true, promise);
     } else {
       throw new IllegalStateException();
     }

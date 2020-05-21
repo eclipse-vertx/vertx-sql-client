@@ -70,8 +70,7 @@ class PreparedStatementImpl implements PreparedStatement {
                                            SqlResultBuilder<R, ?, F> builder,
                                            Promise<F> p) {
     if (context == Vertx.currentContext()) {
-      SqlResultHandler handler = builder.createHandler(p);
-      builder.execute(
+      builder.executeExtendedQuery(
         conn,
         ps,
         autoCommit,
@@ -79,7 +78,7 @@ class PreparedStatementImpl implements PreparedStatement {
         fetch,
         cursorId,
         suspended,
-        handler);
+        p);
     } else {
       context.runOnContext(v -> execute(args, fetch, cursorId, suspended, builder, p));
     }
@@ -114,8 +113,7 @@ class PreparedStatementImpl implements PreparedStatement {
                                                 SqlResultBuilder<R, ?, F> builder,
                                                 Promise<F> p) {
     if (context == Vertx.currentContext()) {
-      SqlResultHandler handler = builder.createHandler(p);
-      builder.executeBatch(conn, ps, autoCommit, argsList, handler);
+      builder.executeBatchQuery(conn, ps, autoCommit, argsList, p);
     } else {
       context.runOnContext(v -> executeBatch(argsList, builder, p));
     }

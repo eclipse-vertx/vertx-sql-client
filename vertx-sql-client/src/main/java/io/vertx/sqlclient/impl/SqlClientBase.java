@@ -20,10 +20,7 @@ package io.vertx.sqlclient.impl;
 import io.vertx.core.Promise;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Query;
-import io.vertx.sqlclient.impl.command.BiCommand;
 import io.vertx.sqlclient.impl.command.CommandScheduler;
-import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
-import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Row;
@@ -96,8 +93,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
     }
 
     protected void execute(Promise<R> promise) {
-      SqlResultHandler handler = builder.createHandler(promise);
-      builder.execute(SqlClientBase.this, sql, autoCommit, singleton, handler);
+      builder.executeSimpleQuery(SqlClientBase.this, sql, autoCommit, singleton, promise);
     }
   }
 
@@ -128,15 +124,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
     }
 
     private void execute(Tuple arguments, Promise<R> promise) {
-      SqlResultHandler handler = builder.createHandler(promise);
-      BiCommand<PreparedStatement, Boolean> abc = new BiCommand<>(new PrepareStatementCommand(sql, true), ps -> {
-        String msg = ps.prepare((TupleInternal) arguments);
-        if (msg != null) {
-          return Future.failedFuture(msg);
-        }
-        return Future.succeededFuture(builder.createCommand(ps, autoCommit, arguments, handler));
-      });
-      schedule(abc, handler);
+      builder.executeExtendedQuery(SqlClientBase.this, sql, autoCommit, arguments, promise);
     }
 
     @Override
@@ -164,17 +152,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
     }
 
     private void executeBatch(List<Tuple> batch, Promise<R> promise) {
-      SqlResultHandler handler = builder.createHandler(promise);
-      BiCommand<PreparedStatement, Boolean> abc = new BiCommand<>(new PrepareStatementCommand(sql, true), ps -> {
-        for  (Tuple args : batch) {
-          String msg = ps.prepare((TupleInternal) args);
-          if (msg != null) {
-            return Future.failedFuture(msg);
-          }
-        }
-        return Future.succeededFuture(builder.createBatchCommand(ps, autoCommit, batch, handler));
-      });
-      schedule(abc, handler);
+      builder.executeBatchQuery(SqlClientBase.this, sql, autoCommit, batch, promise);
     }
   }
 }

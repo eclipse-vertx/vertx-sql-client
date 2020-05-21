@@ -17,13 +17,16 @@
 
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.impl.command.BiCommand;
 import io.vertx.sqlclient.impl.command.CommandScheduler;
 import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
 import java.util.List;
@@ -44,27 +47,28 @@ class SqlResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     this.collector = collector;
   }
 
-  SqlResultHandler<T, R, L> createHandler(Promise<L> resultHandler) {
-    return new SqlResultHandler<>(factory, resultHandler);
+  private SqlResultHandler<T, R, L> createHandler(Promise<L> promise) {
+    return new SqlResultHandler<>(factory, promise);
   }
 
-  void execute(CommandScheduler scheduler,
-               String sql,
-               boolean autoCommit,
-               boolean singleton,
-               SqlResultHandler<T, R, L> handler) {
-    SimpleQueryCommand<T> cmd = new SimpleQueryCommand<>(sql, singleton, autoCommit, collector, handler);
-    scheduler.schedule(cmd, handler);
+  void executeSimpleQuery(CommandScheduler scheduler,
+                          String sql,
+                          boolean autoCommit,
+                          boolean singleton,
+                          Promise<L> promise) {
+    SqlResultHandler handler = createHandler(promise);
+    scheduler.schedule(new SimpleQueryCommand<>(sql, singleton, autoCommit, collector, handler), handler);
   }
 
-  SqlResultHandler<T, R, L> execute(CommandScheduler scheduler,
-                                    PreparedStatement preparedStatement,
-                                    boolean autoCommit,
-                                    Tuple args,
-                                    int fetch,
-                                    String cursorId,
-                                    boolean suspended,
-                                    SqlResultHandler<T, R, L> handler) {
+  SqlResultHandler<T, R, L> executeExtendedQuery(CommandScheduler scheduler,
+                                                 PreparedStatement preparedStatement,
+                                                 boolean autoCommit,
+                                                 Tuple args,
+                                                 int fetch,
+                                                 String cursorId,
+                                                 boolean suspended,
+                                                 Promise<L> promise) {
+    SqlResultHandler handler = createHandler(promise);
     String msg = preparedStatement.prepare((TupleInternal) args);
     if (msg != null) {
       handler.fail(msg);
@@ -83,10 +87,22 @@ class SqlResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     return handler;
   }
 
-  ExtendedQueryCommand<T> createCommand(PreparedStatement preparedStatement,
-                                        boolean autoCommit,
-                                        Tuple args,
-                                        SqlResultHandler<T, R, L> handler) {
+  void executeExtendedQuery(CommandScheduler scheduler, String sql, boolean autoCommit, Tuple arguments, Promise<L> promise) {
+    SqlResultHandler handler = this.createHandler(promise);
+    BiCommand<PreparedStatement, Boolean> cmd = new BiCommand<>(new PrepareStatementCommand(sql, true), ps -> {
+      String msg = ps.prepare((TupleInternal) arguments);
+      if (msg != null) {
+        return Future.failedFuture(msg);
+      }
+      return Future.succeededFuture(createExtendedQueryCommand(ps, autoCommit, arguments, handler));
+    });
+    scheduler.schedule(cmd, handler);
+  }
+
+  private ExtendedQueryCommand<T> createExtendedQueryCommand(PreparedStatement preparedStatement,
+                                                             boolean autoCommit,
+                                                             Tuple args,
+                                                             SqlResultHandler<T, R, L> handler) {
     return new ExtendedQueryCommand<>(
       preparedStatement,
       args,
@@ -95,12 +111,12 @@ class SqlResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
       handler);
   }
 
-
-  void executeBatch(CommandScheduler scheduler,
-                    PreparedStatement preparedStatement,
-                    boolean autoCommit,
-                    List<Tuple> argsList,
-                    SqlResultHandler<T, R, L> handler) {
+  void executeBatchQuery(CommandScheduler scheduler,
+                         PreparedStatement preparedStatement,
+                         boolean autoCommit,
+                         List<Tuple> argsList,
+                         Promise<L> promise) {
+    SqlResultHandler handler = createHandler(promise);
     for  (Tuple args : argsList) {
       String msg = preparedStatement.prepare((TupleInternal)args);
       if (msg != null) {
@@ -112,10 +128,23 @@ class SqlResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     scheduler.schedule(cmd, handler);
   }
 
-  ExtendedBatchQueryCommand<T> createBatchCommand(PreparedStatement preparedStatement,
-                                                  boolean autoCommit,
-                                                  List<Tuple> argsList,
-                                                  SqlResultHandler<T, R, L> handler) {
-    return new ExtendedBatchQueryCommand<>(preparedStatement, argsList, autoCommit, collector, handler);
+  void executeBatchQuery(CommandScheduler scheduler, String sql, boolean autoCommit, List<Tuple> batch, Promise<L> promise) {
+    SqlResultHandler handler = this.createHandler(promise);
+    BiCommand<PreparedStatement, Boolean> cmd = new BiCommand<>(new PrepareStatementCommand(sql, true), ps -> {
+      for  (Tuple args : batch) {
+        String msg = ps.prepare((TupleInternal) args);
+        if (msg != null) {
+          return Future.failedFuture(msg);
+        }
+      }
+      return Future.succeededFuture(createBatchQueryCommand(ps, autoCommit, batch, handler));
+    });
+    scheduler.schedule(cmd, handler);
   }
-}
+
+  private ExtendedBatchQueryCommand<T> createBatchQueryCommand(PreparedStatement preparedStatement,
+                                                               boolean autoCommit,
+                                                               List<Tuple> argsList,
+                                                               SqlResultHandler<T, R, L> handler) {
+    return new ExtendedBatchQueryCommand<>(preparedStatement, argsList, autoCommit, collector, handler);
+  }}
