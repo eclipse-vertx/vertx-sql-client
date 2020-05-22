@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package io.vertx.sqlclient;
+package io.vertx.sqlclient.transaction;
 
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;

@@ -18,18 +18,11 @@ package examples;
 
 import io.vertx.core.Vertx;
 import io.vertx.docgen.Source;
-import io.vertx.sqlclient.Cursor;
-import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.PreparedStatement;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.RowStream;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.Transaction;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
+import io.vertx.sqlclient.transaction.Transaction;
+import io.vertx.sqlclient.transaction.TransactionAccessMode;
+import io.vertx.sqlclient.transaction.TransactionIsolationLevel;
+import io.vertx.sqlclient.transaction.TransactionOptions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -308,6 +301,34 @@ public class SqlClientExamples {
         // Transaction was rolled back
         System.out.println("Transaction failed " + ar.cause().getMessage());
       }
+    });
+  }
+
+  public void transaction04(SqlConnection sqlConnection) {
+    TransactionOptions txOptions = new TransactionOptions();
+    txOptions.setIsolationLevel(TransactionIsolationLevel.REPEATABLE_READ);
+    txOptions.setAccessMode(TransactionAccessMode.READ_ONLY);
+    sqlConnection.begin(txOptions, ar -> {
+      if (ar.succeeded()) {
+        // start a transaction which is read-only
+        Transaction tx = ar.result();
+      } else {
+        // Failed to start a transaction
+        System.out.println("Transaction failed " + ar.cause().getMessage());
+      }
+    });
+  }
+
+  public void transaction05(Pool pool) {
+    TransactionOptions txOptions = new TransactionOptions();
+    txOptions.setIsolationLevel(TransactionIsolationLevel.REPEATABLE_READ);
+    txOptions.setAccessMode(TransactionAccessMode.READ_ONLY);
+    pool.withTransaction(txOptions, client -> client
+      .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
+      .execute()
+    ).onFailure(error -> {
+      // Failed to insert the record because the transaction is read-only
+      System.out.println("Transaction failed " + error.getMessage());
     });
   }
 

@@ -14,14 +14,7 @@ package io.vertx.sqlclient.impl.command;
 public class TxCommand<R> extends CommandBase<R> {
 
   public enum Kind {
-
-    BEGIN(), ROLLBACK(), COMMIT();
-
-    public final String sql;
-
-    Kind() {
-      this.sql = name();
-    }
+    BEGIN, ROLLBACK, COMMIT
   }
 
   public final R result;

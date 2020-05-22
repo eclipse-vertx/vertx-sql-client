@@ -13,12 +13,19 @@ Or you can use the transaction API of {@link io.vertx.sqlclient.SqlConnection}:
 ----
 
 When the database server reports the current transaction is failed (e.g the infamous _current transaction is aborted, commands ignored until
-end of transaction block_), the transaction is rollbacked and the {@link io.vertx.sqlclient.Transaction#completion()} future
-is failed with a {@link io.vertx.sqlclient.TransactionRollbackException}:
+end of transaction block_), the transaction is rollbacked and the {@link io.vertx.sqlclient.transaction.Transaction#completion()} future
+is failed with a {@link io.vertx.sqlclient.transaction.TransactionRollbackException}:
 
 [source,$lang]
 ----
-{@link examples.SqlClientExamples#transaction02(io.vertx.sqlclient.Transaction)}
+{@link examples.SqlClientExamples#transaction02(io.vertx.sqlclient.transaction.Transaction)}
+----
+
+You can also start the transaction in a customized way like this so that you can configure transaction isolation level or access mode at the transaction start:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#transaction04(io.vertx.sqlclient.SqlConnection)}
 ----
 
 === Simplified transaction API
@@ -40,3 +47,11 @@ After the transaction completes, the connection is returned to the pool and the 
 ----
 {@link examples.SqlClientExamples#transaction03(io.vertx.sqlclient.Pool)}
 ----
+
+You can also start the transaction in a customized way like this so that you can configure transaction isolation level or access mode at the transaction start:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#transaction05(io.vertx.sqlclient.Pool)}
+----
+

@@ -19,8 +19,9 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.transaction.TransactionOptions;
 import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.Transaction;
+import io.vertx.sqlclient.transaction.Transaction;
 import io.vertx.core.*;
 
 /**
@@ -94,14 +95,7 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
 
   @Override
   public Future<Transaction> begin() {
-    if (tx != null) {
-      throw new IllegalStateException();
-    }
-    tx = new TransactionImpl(context, conn);
-    tx.completion().onComplete(ar -> {
-      tx = null;
-    });
-    return tx.begin();
+    return begin(TransactionOptions.DEFAULT_TX_OPTIONS);
   }
 
   @Override
@@ -113,6 +107,27 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
   public void begin(Handler<AsyncResult<Transaction>> handler) {
     Future<Transaction> fut = begin();
     fut.onComplete(handler);
+  }
+
+  @Override
+  public void begin(TransactionOptions txOptions, Handler<AsyncResult<Transaction>> handler) {
+    Future<Transaction> fut = begin(txOptions);
+    fut.onComplete(handler);
+  }
+
+  @Override
+  public Future<Transaction> begin(TransactionOptions txOptions) {
+    if (txOptions == null) {
+      return Future.failedFuture(new IllegalArgumentException("Transaction options could not be null"));
+    }
+    if (tx != null) {
+      throw new IllegalStateException();
+    }
+    tx = new TransactionImpl(context, conn);
+    tx.completion().onComplete(ar -> {
+      tx = null;
+    });
+    return tx.begin(txOptions);
   }
 
   public void handleEvent(Object event) {
