@@ -23,7 +23,7 @@ public class SqlTracer {
     SPAN_KIND("span.kind", q -> "client"),
 
     // DB
-    // See https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/semantic_conventions/database.md
+    // See https://github.com/opentracing/specification/blob/master/semantic_conventions.md
 
     DB_USER("db.user", q -> q.tracer.user),
     DB_INSTANCE("db.instance", q -> q.tracer.database),
