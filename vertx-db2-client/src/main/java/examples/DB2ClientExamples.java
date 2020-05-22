@@ -21,16 +21,15 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Connection;
 import io.vertx.db2client.DB2Pool;
 import io.vertx.docgen.Source;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
@@ -199,7 +198,7 @@ public class DB2ClientExamples {
       .setUser("user")
       .setPassword("secret");
 
-    // Connect to Postgres
+    // Connect to DB2
     DB2Connection.connect(vertx, options)
       .compose(conn -> {
         System.out.println("Connected");
@@ -224,33 +223,36 @@ public class DB2ClientExamples {
       }
     });
   }
-
-  public void jsonExample() {
-
-    // Create a tuple
-    Tuple tuple = Tuple.of(
-      Tuple.JSON_NULL,
-      new JsonObject().put("foo", "bar"),
-      3);
-
-    // Retrieving json
-    Object value = tuple.getValue(0); // Expect JSON_NULL
-
-    //
-    value = tuple.get(JsonObject.class, 1); // Expect JSON object
-
-    //
-    value = tuple.get(Integer.class, 2); // Expect 3
-    value = tuple.getInteger(2); // Expect 3
+  
+  public void generatedKeys(SqlClient client) {
+    client
+      .preparedQuery("SELECT color_id FROM FINAL TABLE ( INSERT INTO color (color_name) VALUES (?), (?), (?) )")
+      .execute(Tuple.of("white", "red", "blue"), ar -> {
+      if (ar.succeeded()) {
+        RowSet<Row> rows = ar.result();
+        System.out.println("Inserted " + rows.rowCount() + " new rows.");
+        for (Row row : rows) {
+          System.out.println("generated key: " + row.getInteger("color_id"));
+        }
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
   }
+  
+  public void typeMapping01(Pool pool) {
+    pool
+      .query("SELECT an_int_column FROM exampleTable")
+      .execute(ar -> {
+      RowSet<Row> rowSet = ar.result();
+      Row row = rowSet.iterator().next();
 
-  public void numericExample(Row row) {
-    Numeric numeric = row.get(Numeric.class, 0);
-    if (numeric.isNaN()) {
-      // Handle NaN
-    } else {
-      BigDecimal value = numeric.bigDecimalValue();
-    }
+      // Stored as INTEGER column type and represented as java.lang.Integer
+      Object value = row.getValue(0);
+
+      // Convert to java.lang.Long
+      Long longValue = row.getLong(0);
+    });
   }
 
   public void collector01Example(SqlClient client) {
