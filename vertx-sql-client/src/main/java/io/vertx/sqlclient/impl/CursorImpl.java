@@ -66,7 +66,7 @@ public class CursorImpl implements Cursor {
   @Override
   public synchronized Future<RowSet<Row>> read(int count) {
     Promise<RowSet<Row>> promise = context.promise();
-    SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
+    SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(ps.tracer, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
     if (id == null) {
       id = UUID.randomUUID().toString();
       result = builder.executeExtendedQuery(ps.conn, ps.ps, ps.autoCommit, params, count, id, false, promise);

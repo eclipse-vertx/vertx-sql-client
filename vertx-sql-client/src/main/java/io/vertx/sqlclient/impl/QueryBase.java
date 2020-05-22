@@ -42,12 +42,12 @@ abstract class QueryBase<T, R extends SqlResult<T>> implements Query<R> {
   @Override
   public <U> Query<SqlResult<U>> collecting(Collector<Row, ?, U> collector) {
     Objects.requireNonNull(collector, "Supplied collector must not be null");
-    return copy(new SqlResultBuilder<>(SqlResultImpl::new, collector));
+    return copy(new SqlResultBuilder<>(builder.tracer(), SqlResultImpl::new, collector));
   }
 
   @Override
   public <U> Query<RowSet<U>> mapping(Function<Row, U> mapper) {
     Objects.requireNonNull(mapper, "Supplied mapper must not be null");
-    return copy(new SqlResultBuilder<>(RowSetImpl.factory(), RowSetImpl.collector(mapper)));
+    return copy(new SqlResultBuilder<>(builder.tracer(), RowSetImpl.factory(), RowSetImpl.collector(mapper)));
   }
 }

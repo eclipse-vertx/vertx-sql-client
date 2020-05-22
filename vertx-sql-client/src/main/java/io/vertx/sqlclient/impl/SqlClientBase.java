@@ -29,12 +29,19 @@ import io.vertx.sqlclient.Tuple;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.sqlclient.impl.tracing.SqlTracer;
 
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
 public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInternal, CommandScheduler {
+
+  protected final SqlTracer tracer;
+
+  public SqlClientBase(SqlTracer tracer) {
+    this.tracer = tracer;
+  }
 
   @Override
   public int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current) {
@@ -48,13 +55,13 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
 
   @Override
   public Query<RowSet<Row>> query(String sql) {
-    SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
+    SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(tracer, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
     return new QueryImpl<>(autoCommit(), false, sql, builder);
   }
 
   @Override
   public PreparedQuery<RowSet<Row>> preparedQuery(String sql) {
-    SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
+    SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(tracer, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
     return new PreparedQueryImpl<>(autoCommit(), false, sql, builder);
   }
 

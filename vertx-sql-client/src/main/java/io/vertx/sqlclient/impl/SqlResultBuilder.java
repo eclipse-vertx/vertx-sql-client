@@ -19,6 +19,7 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
@@ -28,6 +29,7 @@ import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
+import io.vertx.sqlclient.impl.tracing.SqlTracer;
 
 import java.util.List;
 import java.util.function.Function;
@@ -38,17 +40,28 @@ import java.util.stream.Collector;
  */
 class SqlResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
 
+  private final SqlTracer tracer;
   private final Function<T, R> factory;
   private final Collector<Row, ?, T> collector;
 
-  public SqlResultBuilder(Function<T, R> factory,
+  public SqlResultBuilder(SqlTracer tracer,
+                          Function<T, R> factory,
                           Collector<Row, ?, T> collector) {
+    this.tracer = tracer;
     this.factory = factory;
     this.collector = collector;
   }
 
+  SqlTracer tracer() {
+    return tracer;
+  }
+
   private SqlResultHandler<T, R, L> createHandler(Promise<L> promise) {
-    return new SqlResultHandler<>(factory, promise);
+    return new SqlResultHandler<>(factory, null, null, promise);
+  }
+
+  private SqlResultHandler<T, R, L> createHandler(Promise<L> promise, Object payload) {
+    return new SqlResultHandler<>(factory, tracer, payload, promise);
   }
 
   void executeSimpleQuery(CommandScheduler scheduler,
@@ -56,27 +69,41 @@ class SqlResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
                           boolean autoCommit,
                           boolean singleton,
                           Promise<L> promise) {
-    SqlResultHandler handler = createHandler(promise);
+    ContextInternal context = (ContextInternal) promise.future().context();
+    Object payload;
+    if (tracer != null) {
+      payload = tracer.sendRequest(context, sql);
+    } else {
+      payload = null;
+    }
+    SqlResultHandler handler = createHandler(promise, payload);
     scheduler.schedule(new SimpleQueryCommand<>(sql, singleton, autoCommit, collector, handler), handler);
   }
 
   SqlResultHandler<T, R, L> executeExtendedQuery(CommandScheduler scheduler,
                                                  PreparedStatement preparedStatement,
                                                  boolean autoCommit,
-                                                 Tuple args,
+                                                 Tuple arguments,
                                                  int fetch,
                                                  String cursorId,
                                                  boolean suspended,
                                                  Promise<L> promise) {
-    SqlResultHandler handler = createHandler(promise);
-    String msg = preparedStatement.prepare((TupleInternal) args);
+    ContextInternal context = (ContextInternal) promise.future().context();
+    Object payload;
+    if (tracer != null) {
+      payload = tracer.sendRequest(context, preparedStatement.sql(), arguments);
+    } else {
+      payload = null;
+    }
+    SqlResultHandler handler = createHandler(promise, payload);
+    String msg = preparedStatement.prepare((TupleInternal) arguments);
     if (msg != null) {
       handler.fail(msg);
       return null;
     }
     ExtendedQueryCommand<T> cmd = new ExtendedQueryCommand<>(
       preparedStatement,
-      args,
+      arguments,
       fetch,
       cursorId,
       suspended,
@@ -88,7 +115,14 @@ class SqlResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
   }
 
   void executeExtendedQuery(CommandScheduler scheduler, String sql, boolean autoCommit, Tuple arguments, Promise<L> promise) {
-    SqlResultHandler handler = this.createHandler(promise);
+    ContextInternal context = (ContextInternal) promise.future().context();
+    Object payload;
+    if (tracer != null) {
+      payload = tracer.sendRequest(context, sql, arguments);
+    } else {
+      payload = null;
+    }
+    SqlResultHandler handler = this.createHandler(promise, payload);
     BiCommand<PreparedStatement, Boolean> cmd = new BiCommand<>(new PrepareStatementCommand(sql, true), ps -> {
       String msg = ps.prepare((TupleInternal) arguments);
       if (msg != null) {
@@ -114,22 +148,36 @@ class SqlResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
   void executeBatchQuery(CommandScheduler scheduler,
                          PreparedStatement preparedStatement,
                          boolean autoCommit,
-                         List<Tuple> argsList,
+                         List<Tuple> batch,
                          Promise<L> promise) {
-    SqlResultHandler handler = createHandler(promise);
-    for  (Tuple args : argsList) {
+    ContextInternal context = (ContextInternal) promise.future().context();
+    Object payload;
+    if (tracer != null) {
+      payload = tracer.sendRequest(context, preparedStatement.sql(), batch);
+    } else {
+      payload = null;
+    }
+    SqlResultHandler handler = createHandler(promise, payload);
+    for  (Tuple args : batch) {
       String msg = preparedStatement.prepare((TupleInternal)args);
       if (msg != null) {
         handler.fail(msg);
         return;
       }
     }
-    ExtendedBatchQueryCommand<T> cmd = new ExtendedBatchQueryCommand<>(preparedStatement, argsList, autoCommit, collector, handler);
+    ExtendedBatchQueryCommand<T> cmd = new ExtendedBatchQueryCommand<>(preparedStatement, batch, autoCommit, collector, handler);
     scheduler.schedule(cmd, handler);
   }
 
   void executeBatchQuery(CommandScheduler scheduler, String sql, boolean autoCommit, List<Tuple> batch, Promise<L> promise) {
-    SqlResultHandler handler = this.createHandler(promise);
+    ContextInternal context = (ContextInternal) promise.future().context();
+    Object payload;
+    if (tracer != null) {
+      payload = tracer.sendRequest(context, sql, batch);
+    } else {
+      payload = null;
+    }
+    SqlResultHandler handler = this.createHandler(promise, payload);
     BiCommand<PreparedStatement, Boolean> cmd = new BiCommand<>(new PrepareStatementCommand(sql, true), ps -> {
       for  (Tuple args : batch) {
         String msg = ps.prepare((TupleInternal) args);
