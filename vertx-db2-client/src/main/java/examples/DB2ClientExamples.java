@@ -24,12 +24,14 @@ import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Connection;
 import io.vertx.db2client.DB2Pool;
 import io.vertx.docgen.Source;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.SqlResult;
+import io.vertx.sqlclient.Tuple;
 
 @Source
 public class DB2ClientExamples {
@@ -210,10 +212,9 @@ public class DB2ClientExamples {
       .setUser("user")
       .setPassword("secret");
 
-    // Connect to Postgres
+    // Connect to DB2
     DB2Connection.connect(vertx, options, res -> {
       if (res.succeeded()) {
-
         System.out.println("Connected");
 
         // Obtain our connection
@@ -240,26 +241,36 @@ public class DB2ClientExamples {
       }
     });
   }
+  
+  public void generatedKeys(SqlClient client) {
+    client
+      .preparedQuery("SELECT color_id FROM FINAL TABLE ( INSERT INTO color (color_name) VALUES (?), (?), (?) )")
+      .execute(Tuple.of("white", "red", "blue"), ar -> {
+      if (ar.succeeded()) {
+        RowSet<Row> rows = ar.result();
+        System.out.println("Inserted " + rows.rowCount() + " new rows.");
+        for (Row row : rows) {
+          System.out.println("generated key: " + row.getInteger("color_id"));
+        }
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
+  }
+  
+  public void typeMapping01(Pool pool) {
+    pool
+      .query("SELECT an_int_column FROM exampleTable")
+      .execute(ar -> {
+      RowSet<Row> rowSet = ar.result();
+      Row row = rowSet.iterator().next();
 
-  public void connecting06(Vertx vertx) {
+      // Stored as INTEGER column type and represented as java.lang.Integer
+      Object value = row.getValue(0);
 
-    // Connect Options
-    // Socket file name will be /var/run/postgresql/.s.PGSQL.5432
-    DB2ConnectOptions connectOptions = new DB2ConnectOptions()
-      .setHost("/var/run/postgresql")
-      .setPort(5432)
-      .setDatabase("the-db");
-
-    // Pool options
-    PoolOptions poolOptions = new PoolOptions()
-      .setMaxSize(5);
-
-    // Create the pooled client
-    DB2Pool client = DB2Pool.pool(connectOptions, poolOptions);
-
-    // Create the pooled client with a vertx instance
-    // Make sure the vertx instance has enabled native transports
-    DB2Pool client2 = DB2Pool.pool(vertx, connectOptions, poolOptions);
+      // Convert to java.lang.Long
+      Long longValue = row.getLong(0);
+    });
   }
 
   public void collector01Example(SqlClient client) {

@@ -1,0 +1,223 @@
+= Reactive DB2 Client
+:PREPARED_PARAMS: `?`​
+
+The Reactive DB2 Client is a client for DB2 with a straightforward API focusing on
+scalability and low overhead.
+
+The client is reactive and non blocking, allowing to handle many database connections with a single thread.
+
+*Features*
+
+* Support for DB2 on Linux, Unix, and Windows
+* Limited support for DB2 on z/OS
+* Event driven
+* Lightweight
+* Built-in connection pooling
+* Prepared queries caching
+* Batch and cursor
+* Row streaming
+* RxJava 1 and RxJava 2
+* Direct memory to object without unnecessary copies
+* Java 8 Date and Time
+* HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy support
+
+*Current limitations*
+
+* No TLS/SSL support
+* No stored procedures support
+* Some column types (e.g. BLOB and CLOB) are not supported
+
+== Usage
+
+To use the Reactive DB2 Client add the following dependency to the _dependencies_ section of your build descriptor:
+
+* Maven (in your `pom.xml`):
+
+[source,xml]
+----
+<dependency>
+  <groupId>${maven.groupId}</groupId>
+  <artifactId>${maven.artifactId}</artifactId>
+  <version>${maven.version}</version>
+</dependency>
+----
+* Gradle (in your `build.gradle` file):
+
+[source,groovy]
+----
+dependencies {
+  compile '${maven.groupId}:${maven.artifactId}:${maven.version}'
+}
+----
+
+== Getting started
+
+Here is the simplest way to connect, query and disconnect
+
+[source,$lang]
+----
+{@link examples.DB2ClientExamples#gettingStarted()}
+----
+
+== Connecting to DB2
+
+Most of the time you will use a pool to connect to DB2:
+
+[source,$lang]
+----
+{@link examples.DB2ClientExamples#connecting01}
+----
+
+The pooled client uses a connection pool and any operation will borrow a connection from the pool
+to execute the operation and release it to the pool.
+
+If you are running with Vert.x you can pass it your Vertx instance:
+
+[source,$lang]
+----
+{@link examples.DB2ClientExamples#connecting02}
+----
+
+You need to release the pool when you don't need it anymore:
+
+[source,$lang]
+----
+{@link examples.DB2ClientExamples#connecting03}
+----
+
+When you need to execute several operations on the same connection, you need to use a client
+{@link io.vertx.db2client.DB2Connection connection}.
+
+You can easily get one from the pool:
+
+[source,$lang]
+----
+{@link examples.DB2ClientExamples#connecting04}
+----
+
+Once you are done with the connection you must close it to release it to the pool, so it can be reused.
+
+== Configuration
+
+There are several alternatives for you to configure the client.
+
+=== data object
+
+A simple way to configure the client is to specify a `DB2ConnectOptions` data object.
+
+[source,$lang]
+----
+{@link examples.DB2ClientExamples#configureFromDataObject(io.vertx.core.Vertx)}
+----
+
+You can also configure the generic properties with the `setProperties` or `addProperty` methods. Note `setProperties` will override the default client properties.
+
+=== connection uri
+
+Apart from configuring with a `DB2ConnectOptions` data object, We also provide you an alternative way to connect when you want to configure with a connection URI:
+
+[source,$lang]
+----
+{@link examples.DB2ClientExamples#configureFromUri(io.vertx.core.Vertx)}
+----
+
+The URI format for a connection string is:
+
+----
+db2://<USERNAME>:<PASSWORD>@<HOSTNAME>:<PORT>/<DBNAME>
+----
+
+Currently the client supports the following parameter key words in connection uri
+
+* host
+* port
+* user
+* password
+* dbname
+
+Note: configuring properties in connection URI will override the default properties.
+
+include::queries.adoc[]
+
+You can fetch generated keys by wrapping your query in `SELECT <COLUMNS> FROM FINAL TABLE ( <SQL> )`, for example:
+
+[source,$lang]
+----
+{@link examples.DB2ClientExamples#generatedKeys(io.vertx.sqlclient.SqlClient)}
+----
+
+include::connections.adoc[]
+
+include::transactions.adoc[]
+
+include::cursor.adoc[]
+
+== DB2 type mapping
+
+Currently the client supports the following DB2 types
+
+* BOOLEAN (`java.lang.Boolean`) (DB2 LUW only)
+* SMALLINT (`java.lang.Short`)
+* INTEGER (`java.lang.Integer`)
+* BIGINT (`java.lang.Long`)
+* REAL (`java.lang.Float`)
+* DOUBLE (`java.lang.Double`)
+* DECIMAL (`io.vertx.sqlclient.data.Numeric`)
+* CHAR (`java.lang.String`)
+* VARCHAR (`java.lang.String`)
+* DATE (`java.time.LocalDate`)
+* TIME (`java.time.LocalTime`)
+* TIMESTAMP (`java.time.LocalDateTime`)
+* BINARY (`byte[]`)
+* VARBINARY (`byte[]`)
+* ROWID (`io.vertx.db2client.impl.drda.DB2RowId` or `java.sql.RowId`) (DB2 z/OS only)
+
+Some types that are currently NOT supported are:
+
+* XML
+* BLOB
+* CLOB
+* DBCLOB
+* GRAPHIC / VARGRAPHIC
+
+For a further documentation on DB2 data types, see the following resources:
+
+* https://www.ibm.com/support/knowledgecenter/SSEPGG_11.5.0/com.ibm.db2.luw.sql.ref.doc/doc/r0008483.html[DB2 for LUW 11.5 data types]
+* https://www.ibm.com/support/knowledgecenter/SSEPEK_12.0.0/sqlref/src/tpc/db2z_datatypesintro.html[DB2 for z/OS 12.0 data types]
+
+Tuple decoding uses the above types when storing values, it also performs on the fly conversion of the actual value when possible:
+
+[source,$lang]
+----
+{@link examples.DB2ClientExamples#typeMapping01}
+----
+
+== Collector queries
+
+You can use Java collectors with the query API:
+
+[source,$lang]
+----
+{@link examples.DB2ClientExamples#collector01Example}
+----
+
+The collector processing must not keep a reference on the {@link io.vertx.sqlclient.Row} as
+there is a single row used for processing the entire set.
+
+The Java `Collectors` provides many interesting predefined collectors, for example you can
+create easily create a string directly from the row set:
+
+[source,$lang]
+----
+{@link examples.DB2ClientExamples#collector02Example}
+----
+
+== Using a proxy
+
+You can also configure the client to use an HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy.
+
+More information can be found in the http://vertx.io/docs/vertx-core/java/#_using_a_proxy_for_client_connections[Vert.x documentation].
+
+ifeval::["$lang" == "java"]
+include::override/rxjava2.adoc[]
+endif::[]
