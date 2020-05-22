@@ -40,7 +40,7 @@ public class SqlCode {
 	public static final int OBJECT_NOT_DEFINED = -204;
 	public static final int COLUMN_DOES_NOT_EXIST = -206;
 	
-    private int code_;
+    private final int code_;
 
     SqlCode(int code) {
         code_ = code;
@@ -62,4 +62,9 @@ public class SqlCode {
     /** SQL code for SQL state 02000 (end of data). DRDA does not
      * specify the SQL code for this SQL state, but Derby/DB2 uses 100. */
     public final static SqlCode END_OF_DATA = new SqlCode(100);
+    
+    @Override
+    public String toString() {
+      return "SQLCode=" + code_;
+    }
 }
