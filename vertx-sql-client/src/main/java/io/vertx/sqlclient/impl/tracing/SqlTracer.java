@@ -19,7 +19,6 @@ public class SqlTracer {
 
     // Generic
     PEER_ADDRESS("peer.address", q -> q.tracer.address),
-    PEER_SERVICE("peer.service", q -> "todo"),
     SPAN_KIND("span.kind", q -> "client"),
 
     // DB
