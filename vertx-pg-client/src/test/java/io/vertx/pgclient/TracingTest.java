@@ -88,8 +88,8 @@ public class TracingTest extends PgTestBase {
       @Override
       public <R> Object sendRequest(Context context, R request, String operation, BiConsumer<String, String> headers, TagExtractor<R> tagExtractor) {
         QueryRequest query = (QueryRequest) request;
-        ctx.assertEquals(query.sql(), expectedSql);
-        ctx.assertEquals(query.tuples(), expectedTuples);
+        ctx.assertEquals(expectedSql, query.sql());
+        ctx.assertEquals(expectedTuples, query.tuples());
         Map<String, String> tags = tagExtractor.extract(request);
         ctx.assertEquals("client", tags.get("span.kind"));
         ctx.assertEquals("sql", tags.get("db.type"));
@@ -101,7 +101,7 @@ public class TracingTest extends PgTestBase {
       public <R> void receiveResponse(Context context, R response, Object payload, Throwable failure, TagExtractor<R> tagExtractor) {
         RowSet rs = (RowSet) response;
         ctx.assertTrue(rs.iterator().hasNext());
-        ctx.assertEquals(payload, expectedPayload);
+        ctx.assertEquals(expectedPayload, payload);
         ctx.assertNull(failure);
         called.set(true);
         responseContext.set(context);
