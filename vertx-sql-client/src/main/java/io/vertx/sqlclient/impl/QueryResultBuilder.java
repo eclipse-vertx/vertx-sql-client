@@ -28,9 +28,9 @@ import java.util.HashMap;
 import java.util.function.Function;
 
 /**
- * A query result handler for building a {@link SqlResult}.
+ * A query result for building a {@link SqlResult}.
  */
-class SqlResultHandler<T, R extends SqlResultBase<T>, L extends SqlResult<T>> implements QueryResultHandler<T>, Promise<Boolean> {
+class QueryResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> implements QueryResultHandler<T>, Promise<Boolean> {
 
   private final Promise<L> handler;
   private final Function<T, R> factory;
@@ -42,7 +42,7 @@ class SqlResultHandler<T, R extends SqlResultBase<T>, L extends SqlResult<T>> im
   private Throwable failure;
   private boolean suspended;
 
-  SqlResultHandler(Function<T, R> factory, SqlTracer tracer, Object tracingPayload, Promise<L> handler) {
+  QueryResultBuilder(Function<T, R> factory, SqlTracer tracer, Object tracingPayload, Promise<L> handler) {
     this.factory = factory;
     this.context = (ContextInternal) handler.future().context();
     this.tracer = tracer;

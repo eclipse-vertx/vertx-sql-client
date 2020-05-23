@@ -62,7 +62,7 @@ class PreparedStatementImpl implements PreparedStatement {
 
   @Override
   public PreparedQuery<RowSet<Row>> query() {
-    SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(tracer, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
+    QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(tracer, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
     return new PreparedStatementQuery<>(builder);
   }
 
@@ -70,7 +70,7 @@ class PreparedStatementImpl implements PreparedStatement {
                                            int fetch,
                                            String cursorId,
                                            boolean suspended,
-                                           SqlResultBuilder<R, ?, F> builder,
+                                           QueryExecutor<R, ?, F> builder,
                                            Promise<F> p) {
     if (context == Vertx.currentContext()) {
       builder.executeExtendedQuery(
@@ -113,7 +113,7 @@ class PreparedStatementImpl implements PreparedStatement {
   }
 
   <R, F extends SqlResult<R>> void executeBatch(List<Tuple> argsList,
-                                                SqlResultBuilder<R, ?, F> builder,
+                                                QueryExecutor<R, ?, F> builder,
                                                 Promise<F> p) {
     if (context == Vertx.currentContext()) {
       builder.executeBatchQuery(conn, ps, autoCommit, argsList, p);
@@ -142,12 +142,12 @@ class PreparedStatementImpl implements PreparedStatement {
 
   private class PreparedStatementQuery<T, R extends SqlResult<T>> extends QueryBase<T, R> implements PreparedQuery<R> {
 
-    public PreparedStatementQuery(SqlResultBuilder<T, ?, R> builder) {
+    public PreparedStatementQuery(QueryExecutor<T, ?, R> builder) {
       super(builder);
     }
 
     @Override
-    protected <T2, R2 extends SqlResult<T2>> QueryBase<T2, R2> copy(SqlResultBuilder<T2, ?, R2> builder) {
+    protected <T2, R2 extends SqlResult<T2>> QueryBase<T2, R2> copy(QueryExecutor<T2, ?, R2> builder) {
       return new PreparedStatementQuery<>(builder);
     }
 

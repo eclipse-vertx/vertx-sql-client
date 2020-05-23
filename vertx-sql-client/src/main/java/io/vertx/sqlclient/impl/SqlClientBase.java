@@ -55,13 +55,13 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
 
   @Override
   public Query<RowSet<Row>> query(String sql) {
-    SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(tracer, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
+    QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(tracer, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
     return new QueryImpl<>(autoCommit(), false, sql, builder);
   }
 
   @Override
   public PreparedQuery<RowSet<Row>> preparedQuery(String sql) {
-    SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(tracer, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
+    QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(tracer, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
     return new PreparedQueryImpl<>(autoCommit(), false, sql, builder);
   }
 
@@ -75,7 +75,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
     protected final boolean singleton;
     protected final String sql;
 
-    private QueryImpl(boolean autoCommit, boolean singleton, String sql, SqlResultBuilder<T, ?, R> builder) {
+    private QueryImpl(boolean autoCommit, boolean singleton, String sql, QueryExecutor<T, ?, R> builder) {
       super(builder);
       this.autoCommit = autoCommit;
       this.singleton = singleton;
@@ -83,7 +83,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
     }
 
     @Override
-    protected <T2, R2 extends SqlResult<T2>> QueryBase<T2, R2> copy(SqlResultBuilder<T2, ?, R2> builder) {
+    protected <T2, R2 extends SqlResult<T2>> QueryBase<T2, R2> copy(QueryExecutor<T2, ?, R2> builder) {
       return new QueryImpl<>(autoCommit, singleton, sql, builder);
     }
 
@@ -106,7 +106,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
 
   private class PreparedQueryImpl<T, R extends SqlResult<T>> extends QueryImpl<T, R> implements PreparedQuery<R> {
 
-    private PreparedQueryImpl(boolean autoCommit, boolean singleton, String sql, SqlResultBuilder<T, ?, R> builder) {
+    private PreparedQueryImpl(boolean autoCommit, boolean singleton, String sql, QueryExecutor<T, ?, R> builder) {
       super(autoCommit, singleton, sql, builder);
     }
 
@@ -121,7 +121,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
     }
 
     @Override
-    protected <T2, R2 extends SqlResult<T2>> QueryBase<T2, R2> copy(SqlResultBuilder<T2, ?, R2> builder) {
+    protected <T2, R2 extends SqlResult<T2>> QueryBase<T2, R2> copy(QueryExecutor<T2, ?, R2> builder) {
       return new PreparedQueryImpl<>(autoCommit, singleton, sql, builder);
     }
 
