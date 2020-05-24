@@ -23,13 +23,15 @@ import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.function.Function;
 
 public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool {
 
   public static MSSQLPoolImpl create(ContextInternal context, boolean closeVertx, MSSQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    MSSQLPoolImpl pool = new MSSQLPoolImpl(context, new MSSQLConnectionFactory(context, connectOptions), poolOptions);
+    QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(context.tracer(), connectOptions);
+    MSSQLPoolImpl pool = new MSSQLPoolImpl(context, new MSSQLConnectionFactory(context, connectOptions), tracer, poolOptions);
     CloseFuture closeFuture = pool.closeFuture();
     if (closeVertx) {
       closeFuture.onComplete(ar -> context.owner().close());
@@ -41,8 +43,8 @@ public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool 
 
   private final MSSQLConnectionFactory connectionFactory;
 
-  private MSSQLPoolImpl(ContextInternal context, MSSQLConnectionFactory factory, PoolOptions poolOptions) {
-    super(context, factory, poolOptions);
+  private MSSQLPoolImpl(ContextInternal context, MSSQLConnectionFactory factory, QueryTracer tracer, PoolOptions poolOptions) {
+    super(context, factory, tracer, poolOptions);
     this.connectionFactory = factory;
   }
 
@@ -59,7 +61,7 @@ public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool 
 
   @Override
   protected SqlConnectionImpl wrap(ContextInternal context, Connection connection) {
-    return new MSSQLConnectionImpl(connectionFactory, context, connection);
+    return new MSSQLConnectionImpl(connectionFactory, context, connection, tracer);
   }
 
   @Override

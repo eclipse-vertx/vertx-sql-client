@@ -19,12 +19,13 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 public class MSSQLConnectionImpl extends SqlConnectionImpl<MSSQLConnectionImpl> implements MSSQLConnection {
   private final MSSQLConnectionFactory factory;
 
-  public MSSQLConnectionImpl(MSSQLConnectionFactory factory, ContextInternal context, Connection conn) {
-    super(context, conn);
+  public MSSQLConnectionImpl(MSSQLConnectionFactory factory, ContextInternal context, Connection conn, QueryTracer tracer) {
+    super(context, conn, tracer);
     this.factory = factory;
   }
 
@@ -36,12 +37,13 @@ public class MSSQLConnectionImpl extends SqlConnectionImpl<MSSQLConnectionImpl> 
 
   public static Future<MSSQLConnection> connect(Vertx vertx, MSSQLConnectOptions options) {
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
+    QueryTracer tracer = ctx.tracer() == null ? null : new QueryTracer(ctx.tracer(), options);
     PromiseInternal<MSSQLConnection> promise = ctx.promise();
     MSSQLConnectionFactory client = new MSSQLConnectionFactory(ctx, options);
     ctx.dispatch(null, v -> {
       client.connect()
         .<MSSQLConnection>map(conn -> {
-          MSSQLConnectionImpl msConn = new MSSQLConnectionImpl(client, ctx, conn);
+          MSSQLConnectionImpl msConn = new MSSQLConnectionImpl(client, ctx, conn, tracer);
           conn.init(msConn);
           return msConn;
         }).onComplete(promise);

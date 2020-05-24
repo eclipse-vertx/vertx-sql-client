@@ -31,23 +31,23 @@ import java.util.stream.Collector;
  */
 abstract class QueryBase<T, R extends SqlResult<T>> implements Query<R> {
 
-  protected final SqlResultBuilder<T, ?, R> builder;
+  protected final QueryExecutor<T, ?, R> builder;
 
-  public QueryBase(SqlResultBuilder<T, ?, R> builder) {
+  public QueryBase(QueryExecutor<T, ?, R> builder) {
     this.builder = builder;
   }
 
-  protected abstract <T2, R2  extends SqlResult<T2>> QueryBase<T2, R2> copy(SqlResultBuilder<T2, ?, R2> builder);
+  protected abstract <T2, R2  extends SqlResult<T2>> QueryBase<T2, R2> copy(QueryExecutor<T2, ?, R2> builder);
 
   @Override
   public <U> Query<SqlResult<U>> collecting(Collector<Row, ?, U> collector) {
     Objects.requireNonNull(collector, "Supplied collector must not be null");
-    return copy(new SqlResultBuilder<>(SqlResultImpl::new, collector));
+    return copy(new QueryExecutor<>(builder.tracer(), SqlResultImpl::new, collector));
   }
 
   @Override
   public <U> Query<RowSet<U>> mapping(Function<Row, U> mapper) {
     Objects.requireNonNull(mapper, "Supplied mapper must not be null");
-    return copy(new SqlResultBuilder<>(RowSetImpl.factory(), RowSetImpl.collector(mapper)));
+    return copy(new QueryExecutor<>(builder.tracer(), RowSetImpl.factory(), RowSetImpl.collector(mapper)));
   }
 }

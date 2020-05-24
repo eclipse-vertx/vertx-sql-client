@@ -29,6 +29,7 @@ import io.vertx.sqlclient.RowStream;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.core.*;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -40,18 +41,20 @@ import java.util.stream.Collector;
  */
 class PreparedStatementImpl implements PreparedStatement {
 
-  static PreparedStatement create(Connection conn, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
-    return new PreparedStatementImpl(conn, context, ps, autoCommit);
+  static PreparedStatement create(Connection conn, QueryTracer tracer, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
+    return new PreparedStatementImpl(conn, tracer, context, ps, autoCommit);
   }
 
   final Connection conn;
+  final QueryTracer tracer;
   final ContextInternal context;
   final io.vertx.sqlclient.impl.PreparedStatement ps;
   final boolean autoCommit;
   private final AtomicBoolean closed = new AtomicBoolean();
 
-  private PreparedStatementImpl(Connection conn, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
+  private PreparedStatementImpl(Connection conn, QueryTracer tracer, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
     this.conn = conn;
+    this.tracer = tracer;
     this.context = context;
     this.ps = ps;
     this.autoCommit = autoCommit;
@@ -59,7 +62,7 @@ class PreparedStatementImpl implements PreparedStatement {
 
   @Override
   public PreparedQuery<RowSet<Row>> query() {
-    SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
+    QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(tracer, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
     return new PreparedStatementQuery<>(builder);
   }
 
@@ -67,11 +70,10 @@ class PreparedStatementImpl implements PreparedStatement {
                                            int fetch,
                                            String cursorId,
                                            boolean suspended,
-                                           SqlResultBuilder<R, ?, F> builder,
+                                           QueryExecutor<R, ?, F> builder,
                                            Promise<F> p) {
     if (context == Vertx.currentContext()) {
-      SqlResultHandler handler = builder.createHandler(p);
-      builder.execute(
+      builder.executeExtendedQuery(
         conn,
         ps,
         autoCommit,
@@ -79,7 +81,7 @@ class PreparedStatementImpl implements PreparedStatement {
         fetch,
         cursorId,
         suspended,
-        handler);
+        p);
     } else {
       context.runOnContext(v -> execute(args, fetch, cursorId, suspended, builder, p));
     }
@@ -111,11 +113,10 @@ class PreparedStatementImpl implements PreparedStatement {
   }
 
   <R, F extends SqlResult<R>> void executeBatch(List<Tuple> argsList,
-                                                SqlResultBuilder<R, ?, F> builder,
+                                                QueryExecutor<R, ?, F> builder,
                                                 Promise<F> p) {
     if (context == Vertx.currentContext()) {
-      SqlResultHandler handler = builder.createHandler(p);
-      builder.executeBatch(conn, ps, autoCommit, argsList, handler);
+      builder.executeBatchQuery(conn, ps, autoCommit, argsList, p);
     } else {
       context.runOnContext(v -> executeBatch(argsList, builder, p));
     }
@@ -141,12 +142,12 @@ class PreparedStatementImpl implements PreparedStatement {
 
   private class PreparedStatementQuery<T, R extends SqlResult<T>> extends QueryBase<T, R> implements PreparedQuery<R> {
 
-    public PreparedStatementQuery(SqlResultBuilder<T, ?, R> builder) {
+    public PreparedStatementQuery(QueryExecutor<T, ?, R> builder) {
       super(builder);
     }
 
     @Override
-    protected <T2, R2 extends SqlResult<T2>> QueryBase<T2, R2> copy(SqlResultBuilder<T2, ?, R2> builder) {
+    protected <T2, R2 extends SqlResult<T2>> QueryBase<T2, R2> copy(QueryExecutor<T2, ?, R2> builder) {
       return new PreparedStatementQuery<>(builder);
     }
 

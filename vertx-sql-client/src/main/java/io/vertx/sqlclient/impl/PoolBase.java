@@ -31,6 +31,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.sqlclient.impl.pool.ConnectionPool;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.function.Function;
 
@@ -45,7 +46,8 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
   private final ConnectionPool pool;
   private final CloseFuture closeFuture;
 
-  public PoolBase(ContextInternal context, ConnectionFactory factory, PoolOptions poolOptions) {
+  public PoolBase(ContextInternal context, ConnectionFactory factory, QueryTracer tracer, PoolOptions poolOptions) {
+    super(tracer);
     this.vertx = context.owner();
     this.factory = factory;
     this.pool = new ConnectionPool(factory, context, poolOptions.getMaxSize(), poolOptions.getMaxWaitQueueSize());

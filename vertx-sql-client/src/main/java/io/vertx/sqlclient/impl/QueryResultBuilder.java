@@ -19,26 +19,34 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.PropertyKind;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.HashMap;
 import java.util.function.Function;
 
 /**
- * A query result handler for building a {@link SqlResult}.
+ * A query result for building a {@link SqlResult}.
  */
-class SqlResultHandler<T, R extends SqlResultBase<T>, L extends SqlResult<T>> implements QueryResultHandler<T>, Promise<Boolean> {
+class QueryResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> implements QueryResultHandler<T>, Promise<Boolean> {
 
   private final Promise<L> handler;
   private final Function<T, R> factory;
+  private final ContextInternal context;
+  private final QueryTracer tracer;
+  private final Object tracingPayload;
   private R first;
   private R current;
   private Throwable failure;
   private boolean suspended;
 
-  SqlResultHandler(Function<T, R> factory, Promise<L> handler) {
+  QueryResultBuilder(Function<T, R> factory, QueryTracer tracer, Object tracingPayload, Promise<L> handler) {
     this.factory = factory;
+    this.context = (ContextInternal) handler.future().context();
+    this.tracer = tracer;
+    this.tracingPayload = tracingPayload;
     this.handler = handler;
   }
 
@@ -82,15 +90,27 @@ class SqlResultHandler<T, R extends SqlResultBase<T>, L extends SqlResult<T>> im
   public boolean tryComplete(Boolean result) {
     suspended = result;
     if (failure != null) {
-      return handler.tryFail(failure);
+      return tryFail(failure);
     } else {
-      return handler.tryComplete((L) first);
+      boolean completed = handler.tryComplete((L) first);
+      if (completed) {
+        if (tracer != null) {
+          tracer.receiveResponse(context, tracingPayload, first, null);
+        }
+      }
+      return completed;
     }
   }
 
   @Override
   public boolean tryFail(Throwable cause) {
-    return handler.tryFail(cause);
+    boolean completed = handler.tryFail(cause);
+    if (completed) {
+      if (tracer != null) {
+        tracer.receiveResponse(context, tracingPayload, null, cause);
+      }
+    }
+    return completed;
   }
 
   @Override

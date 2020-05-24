@@ -21,11 +21,13 @@ import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool {
 
   public static MySQLPoolImpl create(ContextInternal context, boolean closeVertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    MySQLPoolImpl pool = new MySQLPoolImpl(context, new MySQLConnectionFactory(context, connectOptions), poolOptions);
+    QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(context.tracer(), connectOptions);
+    MySQLPoolImpl pool = new MySQLPoolImpl(context, new MySQLConnectionFactory(context, connectOptions), tracer, poolOptions);
     CloseFuture closeFuture = pool.closeFuture();
     if (closeVertx) {
       closeFuture.onComplete(ar -> context.owner().close());
@@ -37,8 +39,8 @@ public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool 
 
   private final MySQLConnectionFactory factory;
 
-  private MySQLPoolImpl(ContextInternal context, MySQLConnectionFactory factory, PoolOptions poolOptions) {
-    super(context, factory, poolOptions);
+  private MySQLPoolImpl(ContextInternal context, MySQLConnectionFactory factory, QueryTracer tracer, PoolOptions poolOptions) {
+    super(context, factory, tracer, poolOptions);
     this.factory = factory;
   }
 
@@ -49,6 +51,6 @@ public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool 
 
   @Override
   protected SqlConnectionImpl wrap(ContextInternal context, Connection conn) {
-    return new MySQLConnectionImpl(factory, context, conn);
+    return new MySQLConnectionImpl(factory, context, conn, tracer);
   }
 }

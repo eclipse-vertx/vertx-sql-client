@@ -20,10 +20,7 @@ package io.vertx.sqlclient.impl;
 import io.vertx.core.Promise;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Query;
-import io.vertx.sqlclient.impl.command.BiCommand;
 import io.vertx.sqlclient.impl.command.CommandScheduler;
-import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
-import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Row;
@@ -32,12 +29,19 @@ import io.vertx.sqlclient.Tuple;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
 public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInternal, CommandScheduler {
+
+  protected final QueryTracer tracer;
+
+  public SqlClientBase(QueryTracer tracer) {
+    this.tracer = tracer;
+  }
 
   @Override
   public int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current) {
@@ -51,13 +55,13 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
 
   @Override
   public Query<RowSet<Row>> query(String sql) {
-    SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
+    QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(tracer, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
     return new QueryImpl<>(autoCommit(), false, sql, builder);
   }
 
   @Override
   public PreparedQuery<RowSet<Row>> preparedQuery(String sql) {
-    SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
+    QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(tracer, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
     return new PreparedQueryImpl<>(autoCommit(), false, sql, builder);
   }
 
@@ -71,7 +75,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
     protected final boolean singleton;
     protected final String sql;
 
-    private QueryImpl(boolean autoCommit, boolean singleton, String sql, SqlResultBuilder<T, ?, R> builder) {
+    private QueryImpl(boolean autoCommit, boolean singleton, String sql, QueryExecutor<T, ?, R> builder) {
       super(builder);
       this.autoCommit = autoCommit;
       this.singleton = singleton;
@@ -79,7 +83,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
     }
 
     @Override
-    protected <T2, R2 extends SqlResult<T2>> QueryBase<T2, R2> copy(SqlResultBuilder<T2, ?, R2> builder) {
+    protected <T2, R2 extends SqlResult<T2>> QueryBase<T2, R2> copy(QueryExecutor<T2, ?, R2> builder) {
       return new QueryImpl<>(autoCommit, singleton, sql, builder);
     }
 
@@ -96,14 +100,13 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
     }
 
     protected void execute(Promise<R> promise) {
-      SqlResultHandler handler = builder.createHandler(promise);
-      builder.execute(SqlClientBase.this, sql, autoCommit, singleton, handler);
+      builder.executeSimpleQuery(SqlClientBase.this, sql, autoCommit, singleton, promise);
     }
   }
 
   private class PreparedQueryImpl<T, R extends SqlResult<T>> extends QueryImpl<T, R> implements PreparedQuery<R> {
 
-    private PreparedQueryImpl(boolean autoCommit, boolean singleton, String sql, SqlResultBuilder<T, ?, R> builder) {
+    private PreparedQueryImpl(boolean autoCommit, boolean singleton, String sql, QueryExecutor<T, ?, R> builder) {
       super(autoCommit, singleton, sql, builder);
     }
 
@@ -118,7 +121,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
     }
 
     @Override
-    protected <T2, R2 extends SqlResult<T2>> QueryBase<T2, R2> copy(SqlResultBuilder<T2, ?, R2> builder) {
+    protected <T2, R2 extends SqlResult<T2>> QueryBase<T2, R2> copy(QueryExecutor<T2, ?, R2> builder) {
       return new PreparedQueryImpl<>(autoCommit, singleton, sql, builder);
     }
 
@@ -128,15 +131,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
     }
 
     private void execute(Tuple arguments, Promise<R> promise) {
-      SqlResultHandler handler = builder.createHandler(promise);
-      BiCommand<PreparedStatement, Boolean> abc = new BiCommand<>(new PrepareStatementCommand(sql, true), ps -> {
-        String msg = ps.prepare((TupleInternal) arguments);
-        if (msg != null) {
-          return Future.failedFuture(msg);
-        }
-        return Future.succeededFuture(builder.createCommand(ps, autoCommit, arguments, handler));
-      });
-      schedule(abc, handler);
+      builder.executeExtendedQuery(SqlClientBase.this, sql, autoCommit, arguments, promise);
     }
 
     @Override
@@ -164,17 +159,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
     }
 
     private void executeBatch(List<Tuple> batch, Promise<R> promise) {
-      SqlResultHandler handler = builder.createHandler(promise);
-      BiCommand<PreparedStatement, Boolean> abc = new BiCommand<>(new PrepareStatementCommand(sql, true), ps -> {
-        for  (Tuple args : batch) {
-          String msg = ps.prepare((TupleInternal) args);
-          if (msg != null) {
-            return Future.failedFuture(msg);
-          }
-        }
-        return Future.succeededFuture(builder.createBatchCommand(ps, autoCommit, batch, handler));
-      });
-      schedule(abc, handler);
+      builder.executeBatchQuery(SqlClientBase.this, sql, autoCommit, batch, promise);
     }
   }
 }

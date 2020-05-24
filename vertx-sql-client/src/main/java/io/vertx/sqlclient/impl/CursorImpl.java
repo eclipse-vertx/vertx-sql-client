@@ -39,7 +39,7 @@ public class CursorImpl implements Cursor {
 
   private String id;
   private boolean closed;
-  private SqlResultHandler<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> result;
+  private QueryResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> result;
 
   CursorImpl(PreparedStatementImpl ps, ContextInternal context, TupleInternal params) {
     this.ps = ps;
@@ -66,13 +66,12 @@ public class CursorImpl implements Cursor {
   @Override
   public synchronized Future<RowSet<Row>> read(int count) {
     Promise<RowSet<Row>> promise = context.promise();
-    SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
-    SqlResultHandler<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> handler = builder.createHandler(promise);
+    QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(ps.tracer, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
     if (id == null) {
       id = UUID.randomUUID().toString();
-      result = builder.execute(ps.conn, ps.ps, ps.autoCommit, params, count, id, false, handler);
+      result = builder.executeExtendedQuery(ps.conn, ps.ps, ps.autoCommit, params, count, id, false, promise);
     } else if (result.isSuspended()) {
-      result = builder.execute(ps.conn, ps.ps, ps.autoCommit, params, count, id, true, handler);
+      result = builder.executeExtendedQuery(ps.conn, ps.ps, ps.autoCommit, params, count, id, true, promise);
     } else {
       throw new IllegalStateException();
     }

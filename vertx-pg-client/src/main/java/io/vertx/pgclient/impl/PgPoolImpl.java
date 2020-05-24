@@ -25,6 +25,7 @@ import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.core.*;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 /**
  * Todo :
@@ -38,7 +39,8 @@ import io.vertx.core.*;
 public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
 
   public static PgPoolImpl create(ContextInternal context, boolean closeVertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    PgPoolImpl pool = new PgPoolImpl(context, new PgConnectionFactory(context.owner(), context, connectOptions), poolOptions);
+    QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(context.tracer(), connectOptions);
+    PgPoolImpl pool = new PgPoolImpl(context, new PgConnectionFactory(context.owner(), context, connectOptions), tracer, poolOptions);
     CloseFuture closeFuture = pool.closeFuture();
     if (closeVertx) {
       closeFuture.onComplete(ar -> context.owner().close());
@@ -50,8 +52,8 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
 
   private final PgConnectionFactory factory;
 
-  private PgPoolImpl(ContextInternal context, PgConnectionFactory factory, PoolOptions poolOptions) {
-    super(context, factory, poolOptions);
+  private PgPoolImpl(ContextInternal context, PgConnectionFactory factory, QueryTracer tracer, PoolOptions poolOptions) {
+    super(context, factory, tracer, poolOptions);
     this.factory = factory;
   }
 
@@ -68,6 +70,6 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
 
   @Override
   protected SqlConnectionImpl wrap(ContextInternal context, Connection conn) {
-    return new PgConnectionImpl(factory, context, conn);
+    return new PgConnectionImpl(factory, context, conn, tracer);
   }
 }
