@@ -29,7 +29,7 @@ import io.vertx.sqlclient.RowStream;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.core.*;
-import io.vertx.sqlclient.impl.tracing.SqlTracer;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -41,18 +41,18 @@ import java.util.stream.Collector;
  */
 class PreparedStatementImpl implements PreparedStatement {
 
-  static PreparedStatement create(Connection conn, SqlTracer tracer, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
+  static PreparedStatement create(Connection conn, QueryTracer tracer, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
     return new PreparedStatementImpl(conn, tracer, context, ps, autoCommit);
   }
 
   final Connection conn;
-  final SqlTracer tracer;
+  final QueryTracer tracer;
   final ContextInternal context;
   final io.vertx.sqlclient.impl.PreparedStatement ps;
   final boolean autoCommit;
   private final AtomicBoolean closed = new AtomicBoolean();
 
-  private PreparedStatementImpl(Connection conn, SqlTracer tracer, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
+  private PreparedStatementImpl(Connection conn, QueryTracer tracer, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
     this.conn = conn;
     this.tracer = tracer;
     this.context = context;

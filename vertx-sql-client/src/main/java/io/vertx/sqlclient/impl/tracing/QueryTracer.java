@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.function.Function;
 
 /**
- * Tracer for SQL client, wrapping the generic tracer.
+ * Tracer for queries, wrapping the generic tracer.
  */
-public class SqlTracer {
+public class QueryTracer {
 
   enum RequestTags {
 
@@ -63,7 +63,7 @@ public class SqlTracer {
   private final String user;
   private final String database;
 
-  public SqlTracer(VertxTracer tracer, SqlConnectOptions options) {
+  public QueryTracer(VertxTracer tracer, SqlConnectOptions options) {
     this.tracer = tracer;
     this.address = options.getHost() + ":" + options.getPort();
     this.host = options.getHost();

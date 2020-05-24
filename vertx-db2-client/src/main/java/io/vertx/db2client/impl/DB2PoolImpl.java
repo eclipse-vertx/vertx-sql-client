@@ -25,13 +25,13 @@ import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
-import io.vertx.sqlclient.impl.tracing.SqlTracer;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 public class DB2PoolImpl extends PoolBase<DB2PoolImpl> implements DB2Pool {
 
   public static DB2PoolImpl create(ContextInternal context, boolean closeVertx, DB2ConnectOptions connectOptions,
                                    PoolOptions poolOptions) {
-    SqlTracer tracer = context.tracer() == null ? null : new SqlTracer(context.tracer(), connectOptions);
+    QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(context.tracer(), connectOptions);
     DB2PoolImpl pool = new DB2PoolImpl(context, poolOptions, new DB2ConnectionFactory(context, connectOptions), tracer);
     CloseFuture closeFuture = pool.closeFuture();
     if (closeVertx) {
@@ -44,7 +44,7 @@ public class DB2PoolImpl extends PoolBase<DB2PoolImpl> implements DB2Pool {
 
   private final DB2ConnectionFactory factory;
 
-  private DB2PoolImpl(ContextInternal context, PoolOptions poolOptions, DB2ConnectionFactory factory, SqlTracer tracer) {
+  private DB2PoolImpl(ContextInternal context, PoolOptions poolOptions, DB2ConnectionFactory factory, QueryTracer tracer) {
     super(context, factory, tracer, poolOptions);
     this.factory = factory;
   }

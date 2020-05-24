@@ -28,7 +28,7 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.sqlclient.impl.tracing.SqlTracer;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implements PgConnection  {
 
@@ -39,7 +39,7 @@ public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implem
       PgConnectionFactory client = new PgConnectionFactory(context.owner(), context, options);
       return client.connect()
         .map(conn -> {
-        SqlTracer tracer = context.tracer() == null ? null : new SqlTracer(context.tracer(), options);
+        QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(context.tracer(), options);
         PgConnectionImpl pgConn = new PgConnectionImpl(client, context, conn, tracer);
         conn.init(pgConn);
         return pgConn;
@@ -50,7 +50,7 @@ public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implem
   private final PgConnectionFactory factory;
   private volatile Handler<PgNotification> notificationHandler;
 
-  PgConnectionImpl(PgConnectionFactory factory, ContextInternal context, Connection conn, SqlTracer tracer) {
+  PgConnectionImpl(PgConnectionFactory factory, ContextInternal context, Connection conn, QueryTracer tracer) {
     super(context, conn, tracer);
 
     this.factory = factory;

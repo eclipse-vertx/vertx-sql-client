@@ -21,12 +21,12 @@ import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
-import io.vertx.sqlclient.impl.tracing.SqlTracer;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool {
 
   public static MySQLPoolImpl create(ContextInternal context, boolean closeVertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    SqlTracer tracer = context.tracer() == null ? null : new SqlTracer(context.tracer(), connectOptions);
+    QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(context.tracer(), connectOptions);
     MySQLPoolImpl pool = new MySQLPoolImpl(context, new MySQLConnectionFactory(context, connectOptions), tracer, poolOptions);
     CloseFuture closeFuture = pool.closeFuture();
     if (closeVertx) {
@@ -39,7 +39,7 @@ public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool 
 
   private final MySQLConnectionFactory factory;
 
-  private MySQLPoolImpl(ContextInternal context, MySQLConnectionFactory factory, SqlTracer tracer, PoolOptions poolOptions) {
+  private MySQLPoolImpl(ContextInternal context, MySQLConnectionFactory factory, QueryTracer tracer, PoolOptions poolOptions) {
     super(context, factory, tracer, poolOptions);
     this.factory = factory;
   }

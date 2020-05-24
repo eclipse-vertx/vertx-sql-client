@@ -9,11 +9,11 @@ import java.util.List;
  */
 public class QueryRequest {
 
-  final SqlTracer tracer;
+  final QueryTracer tracer;
   final String sql;
   final List<Tuple> tuples;
 
-  public QueryRequest(SqlTracer tracer, String sql, List<Tuple> tuples) {
+  public QueryRequest(QueryTracer tracer, String sql, List<Tuple> tuples) {
     this.tracer = tracer;
     this.sql = sql;
     this.tuples = tuples;

@@ -29,7 +29,7 @@ import io.vertx.sqlclient.Tuple;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.sqlclient.impl.tracing.SqlTracer;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.List;
 import java.util.function.Function;
@@ -37,9 +37,9 @@ import java.util.stream.Collector;
 
 public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInternal, CommandScheduler {
 
-  protected final SqlTracer tracer;
+  protected final QueryTracer tracer;
 
-  public SqlClientBase(SqlTracer tracer) {
+  public SqlClientBase(QueryTracer tracer) {
     this.tracer = tracer;
   }
 

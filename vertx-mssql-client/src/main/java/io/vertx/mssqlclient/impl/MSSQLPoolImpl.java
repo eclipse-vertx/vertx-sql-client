@@ -23,14 +23,14 @@ import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
-import io.vertx.sqlclient.impl.tracing.SqlTracer;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.function.Function;
 
 public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool {
 
   public static MSSQLPoolImpl create(ContextInternal context, boolean closeVertx, MSSQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    SqlTracer tracer = context.tracer() == null ? null : new SqlTracer(context.tracer(), connectOptions);
+    QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(context.tracer(), connectOptions);
     MSSQLPoolImpl pool = new MSSQLPoolImpl(context, new MSSQLConnectionFactory(context, connectOptions), tracer, poolOptions);
     CloseFuture closeFuture = pool.closeFuture();
     if (closeVertx) {
@@ -43,7 +43,7 @@ public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool 
 
   private final MSSQLConnectionFactory connectionFactory;
 
-  private MSSQLPoolImpl(ContextInternal context, MSSQLConnectionFactory factory, SqlTracer tracer, PoolOptions poolOptions) {
+  private MSSQLPoolImpl(ContextInternal context, MSSQLConnectionFactory factory, QueryTracer tracer, PoolOptions poolOptions) {
     super(context, factory, tracer, poolOptions);
     this.connectionFactory = factory;
   }

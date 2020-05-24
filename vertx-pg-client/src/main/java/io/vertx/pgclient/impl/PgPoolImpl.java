@@ -25,7 +25,7 @@ import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.core.*;
-import io.vertx.sqlclient.impl.tracing.SqlTracer;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 /**
  * Todo :
@@ -39,7 +39,7 @@ import io.vertx.sqlclient.impl.tracing.SqlTracer;
 public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
 
   public static PgPoolImpl create(ContextInternal context, boolean closeVertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    SqlTracer tracer = context.tracer() == null ? null : new SqlTracer(context.tracer(), connectOptions);
+    QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(context.tracer(), connectOptions);
     PgPoolImpl pool = new PgPoolImpl(context, new PgConnectionFactory(context.owner(), context, connectOptions), tracer, poolOptions);
     CloseFuture closeFuture = pool.closeFuture();
     if (closeVertx) {
@@ -52,7 +52,7 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
 
   private final PgConnectionFactory factory;
 
-  private PgPoolImpl(ContextInternal context, PgConnectionFactory factory, SqlTracer tracer, PoolOptions poolOptions) {
+  private PgPoolImpl(ContextInternal context, PgConnectionFactory factory, QueryTracer tracer, PoolOptions poolOptions) {
     super(context, factory, tracer, poolOptions);
     this.factory = factory;
   }

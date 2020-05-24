@@ -29,7 +29,7 @@ import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
-import io.vertx.sqlclient.impl.tracing.SqlTracer;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.List;
 import java.util.function.Function;
@@ -40,11 +40,11 @@ import java.util.stream.Collector;
  */
 class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
 
-  private final SqlTracer tracer;
+  private final QueryTracer tracer;
   private final Function<T, R> factory;
   private final Collector<Row, ?, T> collector;
 
-  public QueryExecutor(SqlTracer tracer,
+  public QueryExecutor(QueryTracer tracer,
                        Function<T, R> factory,
                        Collector<Row, ?, T> collector) {
     this.tracer = tracer;
@@ -52,7 +52,7 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     this.collector = collector;
   }
 
-  SqlTracer tracer() {
+  QueryTracer tracer() {
     return tracer;
   }
 

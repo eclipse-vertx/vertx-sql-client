@@ -22,7 +22,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.PropertyKind;
-import io.vertx.sqlclient.impl.tracing.SqlTracer;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.HashMap;
 import java.util.function.Function;
@@ -35,14 +35,14 @@ class QueryResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> 
   private final Promise<L> handler;
   private final Function<T, R> factory;
   private final ContextInternal context;
-  private final SqlTracer tracer;
+  private final QueryTracer tracer;
   private final Object tracingPayload;
   private R first;
   private R current;
   private Throwable failure;
   private boolean suspended;
 
-  QueryResultBuilder(Function<T, R> factory, SqlTracer tracer, Object tracingPayload, Promise<L> handler) {
+  QueryResultBuilder(Function<T, R> factory, QueryTracer tracer, Object tracingPayload, Promise<L> handler) {
     this.factory = factory;
     this.context = (ContextInternal) handler.future().context();
     this.tracer = tracer;

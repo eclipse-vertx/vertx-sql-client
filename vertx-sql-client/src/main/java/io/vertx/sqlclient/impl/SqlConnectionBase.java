@@ -22,7 +22,7 @@ import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.core.*;
-import io.vertx.sqlclient.impl.tracing.SqlTracer;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -32,7 +32,7 @@ public abstract class SqlConnectionBase<C extends SqlClient> extends SqlClientBa
   protected final ContextInternal context;
   protected final Connection conn;
 
-  protected SqlConnectionBase(ContextInternal context, Connection conn, SqlTracer tracer) {
+  protected SqlConnectionBase(ContextInternal context, Connection conn, QueryTracer tracer) {
     super(tracer);
     this.context = context;
     this.conn = conn;

@@ -26,7 +26,7 @@ import io.vertx.db2client.DB2Connection;
 import io.vertx.db2client.impl.command.PingCommand;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
-import io.vertx.sqlclient.impl.tracing.SqlTracer;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 public class DB2ConnectionImpl extends SqlConnectionImpl<DB2ConnectionImpl> implements DB2Connection {
 
@@ -38,13 +38,13 @@ public class DB2ConnectionImpl extends SqlConnectionImpl<DB2ConnectionImpl> impl
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }
-    SqlTracer tracer = ctx.tracer() == null ? null : new SqlTracer(ctx.tracer(), options);
+    QueryTracer tracer = ctx.tracer() == null ? null : new QueryTracer(ctx.tracer(), options);
     Promise<DB2Connection> promise = ctx.promise();
     ctx.dispatch(null, v -> connect(client, ctx, tracer, promise));
     return promise.future();
   }
 
-  private static void connect(DB2ConnectionFactory client, ContextInternal ctx, SqlTracer tracer, Promise<DB2Connection> promise) {
+  private static void connect(DB2ConnectionFactory client, ContextInternal ctx, QueryTracer tracer, Promise<DB2Connection> promise) {
     client.connect().map(conn -> {
       DB2ConnectionImpl db2Connection = new DB2ConnectionImpl(client, ctx, conn, tracer);
       conn.init(db2Connection);
@@ -52,7 +52,7 @@ public class DB2ConnectionImpl extends SqlConnectionImpl<DB2ConnectionImpl> impl
     }).onComplete(promise);
   }
 
-  public DB2ConnectionImpl(DB2ConnectionFactory factory, ContextInternal context, Connection conn, SqlTracer tracer) {
+  public DB2ConnectionImpl(DB2ConnectionFactory factory, ContextInternal context, Connection conn, QueryTracer tracer) {
     super(context, conn, tracer);
   }
 

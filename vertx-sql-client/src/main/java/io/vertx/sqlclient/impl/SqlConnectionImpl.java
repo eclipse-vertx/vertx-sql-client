@@ -22,7 +22,7 @@ import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.core.*;
-import io.vertx.sqlclient.impl.tracing.SqlTracer;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -33,7 +33,7 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
   private volatile Handler<Void> closeHandler;
   private TransactionImpl tx;
 
-  public SqlConnectionImpl(ContextInternal context, Connection conn, SqlTracer tracer) {
+  public SqlConnectionImpl(ContextInternal context, Connection conn, QueryTracer tracer) {
     super(context, conn, tracer);
   }
 
