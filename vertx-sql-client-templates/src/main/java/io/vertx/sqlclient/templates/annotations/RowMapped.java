@@ -15,6 +15,9 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 public @interface RowMapped {
 
+  /**
+   * @return the row name formatter, default maps to lower camel case.
+   */
   Class<? extends Case> formatter() default LowerCamelCase.class;
 
 }
