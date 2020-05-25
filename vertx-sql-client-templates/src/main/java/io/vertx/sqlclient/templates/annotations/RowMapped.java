@@ -1,7 +1,7 @@
 package io.vertx.sqlclient.templates.annotations;
 
-import io.vertx.codegen.Case;
-import io.vertx.codegen.LowerCamelCase;
+import io.vertx.codegen.format.Case;
+import io.vertx.codegen.format.LowerCamelCase;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

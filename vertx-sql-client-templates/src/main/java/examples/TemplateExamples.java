@@ -1,7 +1,7 @@
 package examples;
 
-import io.vertx.codegen.QualifiedCase;
-import io.vertx.codegen.SnakeCase;
+import io.vertx.codegen.format.QualifiedCase;
+import io.vertx.codegen.format.SnakeCase;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.docgen.Source;
 import io.vertx.sqlclient.Row;

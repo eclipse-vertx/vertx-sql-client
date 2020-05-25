@@ -1,6 +1,6 @@
 package io.vertx.sqlclient.templates;
 
-import io.vertx.codegen.SnakeCase;
+import io.vertx.codegen.format.SnakeCase;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.sqlclient.templates.annotations.Column;
 import io.vertx.sqlclient.templates.annotations.RowMapped;

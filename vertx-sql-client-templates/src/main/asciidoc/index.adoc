@@ -331,8 +331,8 @@ You can also configure a specific formatting case of a mapper in the `RowMapped`
 
 The following cases can be used:
 
-- {@link io.vertx.codegen.CamelCase} : `FirstName`
-- {@link io.vertx.codegen.LowerCamelCase} : `firstName` - like camel case but starts with a lower case, this is the default case
-- {@link io.vertx.codegen.SnakeCase} : `first_name`
-- {@link io.vertx.codegen.KebabCase} : `first-name`
-- {@link io.vertx.codegen.QualifiedCase} : `first.name`
+- {@link io.vertx.codegen.format.CamelCase} : `FirstName`
+- {@link io.vertx.codegen.format.LowerCamelCase} : `firstName` - like camel case but starts with a lower case, this is the default case
+- {@link io.vertx.codegen.format.SnakeCase} : `first_name`
+- {@link io.vertx.codegen.format.KebabCase} : `first-name`
+- {@link io.vertx.codegen.format.QualifiedCase} : `first.name`

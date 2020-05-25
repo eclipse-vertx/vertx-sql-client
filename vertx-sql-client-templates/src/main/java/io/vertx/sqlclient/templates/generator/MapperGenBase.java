@@ -1,11 +1,14 @@
 package io.vertx.sqlclient.templates.generator;
 
-import io.vertx.codegen.Case;
+import io.vertx.codegen.format.CamelCase;
+import io.vertx.codegen.format.Case;
 import io.vertx.codegen.DataObjectModel;
 import io.vertx.codegen.Generator;
 import io.vertx.codegen.PropertyInfo;
 import io.vertx.codegen.PropertyKind;
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.format.LowerCamelCase;
+import io.vertx.codegen.format.SnakeCase;
 import io.vertx.codegen.type.AnnotationValueInfo;
 import io.vertx.codegen.type.ClassTypeInfo;
 
@@ -51,12 +54,12 @@ public abstract class MapperGenBase extends Generator<DataObjectModel> {
     AnnotationValueInfo abc = getAnnotation(model).get();
     ClassTypeInfo cti = (ClassTypeInfo) abc.getMember(name);
     switch (cti.getName()) {
-      case "io.vertx.codegen.CamelCase":
-        return Case.CAMEL;
-      case "io.vertx.codegen.SnakeCase":
-        return Case.SNAKE;
-      case "io.vertx.codegen.LowerCamelCase":
-        return Case.LOWER_CAMEL;
+      case "io.vertx.codegen.format.CamelCase":
+        return CamelCase.INSTANCE;
+      case "io.vertx.codegen.format.SnakeCase":
+        return SnakeCase.INSTANCE;
+      case "io.vertx.codegen.format.LowerCamelCase":
+        return LowerCamelCase.INSTANCE;
       default:
         throw new UnsupportedOperationException();
     }
@@ -99,6 +102,6 @@ public abstract class MapperGenBase extends Generator<DataObjectModel> {
       }
     }
     String name = Character.toUpperCase(prop.getName().charAt(0)) + prop.getName().substring(1);
-    return Case.CAMEL.to(formatter, name);
+    return CamelCase.INSTANCE.to(formatter, name);
   }
 }
