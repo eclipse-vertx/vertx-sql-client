@@ -39,7 +39,7 @@ public class TracingTest extends PgTestBase {
   public void setup() throws Exception {
     super.setup();
     vertx = Vertx.vertx(new VertxOptions().setTracingOptions(
-      new TracingOptions().setEnabled(true).setFactory(tracingOptions -> new VertxTracer() {
+      new TracingOptions().setFactory(tracingOptions -> new VertxTracer() {
         @Override
         public Object sendRequest(Context context, Object request, String operation, BiConsumer headers, TagExtractor tagExtractor) {
           return tracer.sendRequest(context, request, operation, headers, tagExtractor);
