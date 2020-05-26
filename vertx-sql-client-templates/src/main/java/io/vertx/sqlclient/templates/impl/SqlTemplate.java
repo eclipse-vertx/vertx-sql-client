@@ -12,8 +12,8 @@ import java.util.regex.Pattern;
 
 public class SqlTemplate {
 
-  private static Pattern PARAM_PATTERN = Pattern.compile("(?<!\\\\)\\$\\{(\\p{javaUnicodeIdentifierStart}\\p{javaUnicodeIdentifierPart}*)}");
-  private static Pattern BACKSLASH_DOLLAR_PATTERN = Pattern.compile("\\\\\\$");
+  private static Pattern PARAM_PATTERN = Pattern.compile("(?<!\\\\)#\\{(\\p{javaUnicodeIdentifierStart}\\p{javaUnicodeIdentifierPart}*)}");
+  private static Pattern BACKSLASH_DOLLAR_PATTERN = Pattern.compile("\\\\#");
 
   private final String sql;
   private final String[] mapping;
@@ -40,7 +40,7 @@ public class SqlTemplate {
   }
 
   /**
-   * Sanitize a string escaped dollars, i.e {@code assertEquals(sanitize("\$"), "$")}
+   * Sanitize a string escaped dollars, i.e {@code assertEquals(sanitize("\#"), "#")}
    *
    * @param s the string to sanitize
    * @return the sanitized string
@@ -52,7 +52,7 @@ public class SqlTemplate {
     while (m.find()) {
       int start = m.start();
       sb.append(s, prev, start);
-      sb.append("$");
+      sb.append("#");
       prev = m.end();
     }
     sb.append(s, prev, s.length());

@@ -51,6 +51,10 @@ jobs:
       name: "Postgres 10"
       jdk: openjdk8
       script: mvn -q clean verify -B -Dembedded.postgres.version=10.6 --projects vertx-sql-client,vertx-pg-client
+    - stage: test
+      name: "SQL Template"
+      jdk: openjdk8
+      script: mvn -q clean verify -B --projects vertx-sql-client,vertx-sql-client-templates
     - stage: deploy
       name: "Deploy to Sonatype's snapshots repository"
       if: type != pull_request AND env(SONATYPE_NEXUS_USERNAME) IS present
