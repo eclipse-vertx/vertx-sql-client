@@ -31,13 +31,13 @@ import java.util.stream.IntStream;
 public class RowDesc {
 
   private final List<String> columnNames;
-  private final Map<String, Integer> columns; // key - column name, value - column index
+  private final Map<String, Integer> columns; // key - column name, value - column index (if multiple columns with same names then last)
 
   public RowDesc(List<String> columnNames) {
     this.columnNames = columnNames;
     this.columns = Collections.unmodifiableMap(IntStream.range(0, columnNames.size())
         .boxed()
-        .collect(Collectors.toMap(columnNames::get, Function.identity())));
+        .collect(Collectors.toMap(columnNames::get, Function.identity(), (v1, v2) -> v2)));
   }
 
   public int columnIndex(String columnName) {
