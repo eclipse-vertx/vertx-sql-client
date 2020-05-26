@@ -101,7 +101,6 @@ public abstract class MapperGenBase extends Generator<DataObjectModel> {
         return value;
       }
     }
-    String name = Character.toUpperCase(prop.getName().charAt(0)) + prop.getName().substring(1);
-    return CamelCase.INSTANCE.to(formatter, name);
+    return LowerCamelCase.INSTANCE.to(formatter, prop.getName());
   }
 }
