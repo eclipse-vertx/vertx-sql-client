@@ -63,7 +63,7 @@ public class RowImpl extends ArrayTuple implements Row {
     if (name == null) {
       throw new NullPointerException();
     }
-    return desc.columnNames().indexOf(name);
+    return desc.columnIndex(name);
   }
 
   @Override

@@ -106,7 +106,7 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
     if (name == null) {
       throw new NullPointerException();
     }
-    return rowDesc.columnNames().indexOf(name);
+    return rowDesc.columnIndex(name);
   }
 
   public Numeric getNumeric(String name) {

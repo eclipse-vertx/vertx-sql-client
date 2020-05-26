@@ -188,5 +188,17 @@ public class RowTest extends PgTestBase {
     }));
   }
 
+  @Test
+  public void testGetDataByColumnNameRows(TestContext ctx) {
+    Async async = ctx.async();
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT 2 foo").execute(
+        ctx.asyncAssertSuccess(result -> {
+          Row row = result.iterator().next();
+          ctx.assertEquals(2,row.getInteger("foo"));
+          async.complete();
+        }));
+    }));
+  }
 
 }

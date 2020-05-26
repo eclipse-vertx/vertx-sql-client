@@ -41,7 +41,7 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
     if (columnName == null) {
       throw new IllegalArgumentException("Column name can not be null");
     }
-    return rowDesc.columnNames().indexOf(columnName);
+    return rowDesc.columnIndex(columnName);
   }
 
   @Override

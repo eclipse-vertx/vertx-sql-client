@@ -17,7 +17,12 @@
 
 package io.vertx.sqlclient.impl;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
@@ -26,16 +31,20 @@ import java.util.List;
 public class RowDesc {
 
   private final List<String> columnNames;
+  private final Map<String, Integer> columns; // key - column name, value - column index
 
   public RowDesc(List<String> columnNames) {
     this.columnNames = columnNames;
+    this.columns = Collections.unmodifiableMap(IntStream.range(0, columnNames.size())
+        .boxed()
+        .collect(Collectors.toMap(columnNames::get, Function.identity())));
   }
 
   public int columnIndex(String columnName) {
     if (columnName == null) {
       throw new NullPointerException("Column name must not be null");
     }
-    return columnNames.indexOf(columnName);
+    return columns.getOrDefault(columnName, -1);
   }
 
   public List<String> columnNames() {
