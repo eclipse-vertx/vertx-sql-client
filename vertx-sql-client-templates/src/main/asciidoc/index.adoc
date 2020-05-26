@@ -49,10 +49,10 @@ When you need to perform an insert or update operation and you do not care of th
 
 == Template syntax
 
-The template syntax uses `${XXX}` syntax where `XXX` is a valid https://docs.oracle.com/javase/specs/jls/se8/html/jls-3.html#jls-3.8[java identifier] string
+The template syntax uses `#{XXX}` syntax where `XXX` is a valid https://docs.oracle.com/javase/specs/jls/se8/html/jls-3.html#jls-3.8[java identifier] string
 (without the keyword restriction).
 
-You can use the backslash char `\` to escape  any `$` character, i.e `\${foo}` will be interpreted as `${foo}` string without a `foo` parameter.
+You can use the backslash char `\` to escape  any `#` character, i.e `\#{foo}` will be interpreted as `#{foo}` string without a `foo` parameter.
 
 == Row mapping
 

@@ -85,7 +85,7 @@ public abstract class PgTemplateTestBase {
                                    String column) {
     Async async = ctx.async();
     SqlTemplate<P, RowSet<T>> template = SqlTemplate
-      .forQuery(connection, "SELECT ${" + paramName + "} :: " + sqlType + " \"" + column + "\"")
+      .forQuery(connection, "SELECT #{" + paramName + "} :: " + sqlType + " \"" + column + "\"")
       .mapFrom(paramsMapper)
       .mapTo(rowMapper);
     template.execute(params, ctx.asyncAssertSuccess(result -> {
