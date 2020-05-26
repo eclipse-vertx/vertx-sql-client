@@ -24,7 +24,6 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.core.AsyncResult;
@@ -32,8 +31,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.sqlclient.impl.pool.ConnectionPool;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
-
-import java.util.function.Function;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -75,11 +72,6 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
    */
   public abstract void connect(Handler<AsyncResult<Connection>> completionHandler);
 
-  private void acquire(Handler<AsyncResult<Connection>> completionHandler) {
-    pool.acquire(completionHandler);
-  }
-
-
   @Override
   public void getConnection(Handler<AsyncResult<SqlConnection>> handler) {
     Future<SqlConnection> fut = getConnection();
@@ -101,31 +93,6 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
   }
 
   @Override
-  public <T> void withTransaction(Function<SqlClient, Future<T>> function, Handler<AsyncResult<T>> handler) {
-    Future<T> res = withTransaction(function);
-    if (handler != null) {
-      res.onComplete(handler);
-    }
-  }
-
-  @Override
-  public <T> Future<T> withTransaction(Function<SqlClient, Future<T>> function) {
-    return getConnection()
-      .flatMap(conn -> conn
-        .begin()
-        .flatMap(tx -> function
-          .apply(conn)
-          .compose(
-            res -> tx
-              .commit()
-              .flatMap(v -> Future.succeededFuture(res)),
-            err -> tx
-              .rollback()
-              .flatMap(v -> Future.failedFuture(err))))
-        .onComplete(ar -> conn.close()));
-  }
-
-  @Override
   public <R> void schedule(CommandBase<R> cmd, Promise<R> promise) {
     acquire(new CommandWaiter() {
       @Override
@@ -141,7 +108,11 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
     });
   }
 
-  private abstract class CommandWaiter implements Connection.Holder, Handler<AsyncResult<Connection>> {
+  private void acquire(Handler<AsyncResult<Connection>> completionHandler) {
+    pool.acquire(completionHandler);
+  }
+
+  private static abstract class CommandWaiter implements Connection.Holder, Handler<AsyncResult<Connection>> {
 
     protected abstract void onSuccess(Connection conn);
 

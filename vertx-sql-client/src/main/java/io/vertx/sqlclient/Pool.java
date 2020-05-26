@@ -145,12 +145,31 @@ public interface Pool extends SqlClient {
    * @param function the code to execute
    * @param handler the result handler
    */
-  <T> void withTransaction(Function<SqlClient, Future<T>> function, Handler<AsyncResult<T>> handler);
+  default <T> void withTransaction(Function<SqlClient, Future<T>> function, Handler<AsyncResult<T>> handler) {
+    Future<T> res = withTransaction(function);
+    if (handler != null) {
+      res.onComplete(handler);
+    }
+  }
 
   /**
    * Like {@link #withTransaction(Function, Handler)} but returns a {@code Future} of the asynchronous result
    */
-  <T> Future<T> withTransaction(Function<SqlClient, Future<T>> function);
+  default <T> Future<T> withTransaction(Function<SqlClient, Future<T>> function) {
+    return getConnection()
+      .flatMap(conn -> conn
+        .begin()
+        .flatMap(tx -> function
+          .apply(conn)
+          .compose(
+            res -> tx
+              .commit()
+              .flatMap(v -> Future.succeededFuture(res)),
+            err -> tx
+              .rollback()
+              .flatMap(v -> Future.failedFuture(err))))
+        .onComplete(ar -> conn.close()));
+  }
 
   /**
    * Close the pool and release the associated resources.
