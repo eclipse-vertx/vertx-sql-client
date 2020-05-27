@@ -60,10 +60,10 @@ public abstract class PgPoolTestBase extends PgTestBase {
     PgPool pool = createPool(options, 4);
     for (int i = 0;i < num;i++) {
       pool.getConnection(ctx.asyncAssertSuccess(conn -> {
-        conn.query("SELECT id, randomnumber from WORLD").execute(ar -> {
+        conn.query("SELECT id, randomnumber from WORLD WHERE id = 1").execute(ar -> {
           if (ar.succeeded()) {
             SqlResult result = ar.result();
-            ctx.assertEquals(10000, result.size());
+            ctx.assertEquals(1, result.size());
           } else {
             ctx.assertEquals("closed", ar.cause().getMessage());
           }
@@ -80,10 +80,10 @@ public abstract class PgPoolTestBase extends PgTestBase {
     Async async = ctx.async(num);
     PgPool pool = createPool(options, 4);
     for (int i = 0;i < num;i++) {
-      pool.query("SELECT id, randomnumber from WORLD").execute(ar -> {
+      pool.query("SELECT id, randomnumber from WORLD WHERE id = 1").execute(ar -> {
         if (ar.succeeded()) {
           SqlResult result = ar.result();
-          ctx.assertEquals(10000, result.size());
+          ctx.assertEquals(1, result.size());
         } else {
           ctx.assertEquals("closed", ar.cause().getMessage());
         }
