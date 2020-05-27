@@ -83,6 +83,7 @@ public class TracingTest extends PgTestBase {
     AtomicBoolean called = new AtomicBoolean();
     AtomicReference<Context> requestContext = new AtomicReference<>();
     AtomicReference<Context> responseContext = new AtomicReference<>();
+    Async completed = ctx.async(2);
     Object expectedPayload = new Object();
     tracer = new VertxTracer<Object, Object>() {
       @Override
@@ -95,6 +96,7 @@ public class TracingTest extends PgTestBase {
         ctx.assertEquals("sql", tags.get("db.type"));
         ctx.assertEquals(expectedSql, tags.get("db.statement"));
         requestContext.set(context);
+        completed.countDown();
         return expectedPayload;
       }
       @Override
@@ -105,6 +107,7 @@ public class TracingTest extends PgTestBase {
         ctx.assertNull(failure);
         called.set(true);
         responseContext.set(context);
+        completed.countDown();
       }
     };
     Async async = ctx.async();
@@ -114,6 +117,7 @@ public class TracingTest extends PgTestBase {
         fn.apply(conn).onComplete(ctx.asyncAssertSuccess(v2 -> {
           conn.close(ctx.asyncAssertSuccess(v3 -> {
             vertx.runOnContext(v4 -> {
+              completed.await(2000);
               ctx.assertEquals(context, requestContext.get());
               ctx.assertEquals(context, responseContext.get());
               ctx.assertTrue(called.get());
@@ -128,6 +132,7 @@ public class TracingTest extends PgTestBase {
   @Test
   public void testTracingFailure(TestContext ctx) {
     AtomicBoolean called = new AtomicBoolean();
+    Async completed = ctx.async();
     tracer = new VertxTracer<Object, Object>() {
       @Override
       public <R> Object sendRequest(Context context, R request, String operation, BiConsumer<String, String> headers, TagExtractor<R> tagExtractor) {
@@ -138,12 +143,14 @@ public class TracingTest extends PgTestBase {
         ctx.assertNull(response);
         ctx.assertNotNull(failure);
         called.set(true);
+        completed.complete();
       }
     };
     pool.getConnection(ctx.asyncAssertSuccess(conn -> {
       conn
         .preparedQuery("SELECT 1 / $1")
         .execute(Tuple.of(0), ctx.asyncAssertFailure(err -> {
+          completed.await(2000);
           ctx.assertTrue(called.get());
           conn.close();
         }));
@@ -154,6 +161,7 @@ public class TracingTest extends PgTestBase {
   public void testMappingFailure(TestContext ctx) {
     RuntimeException failure = new RuntimeException();
     AtomicInteger called = new AtomicInteger();
+    Async completed = ctx.async();
     String sql = "SELECT * FROM Fortune WHERE id=$1";
     tracer = new VertxTracer<Object, Object>() {
       @Override
@@ -163,6 +171,7 @@ public class TracingTest extends PgTestBase {
       @Override
       public <R> void receiveResponse(Context context, R response, Object payload, Throwable failure, TagExtractor<R> tagExtractor) {
         ctx.assertEquals(1, called.incrementAndGet());
+        completed.complete();
       }
     };
     Async async = ctx.async();
@@ -175,6 +184,7 @@ public class TracingTest extends PgTestBase {
         .execute(Tuple.of(1), ctx.asyncAssertFailure(err -> {
           conn.close(ctx.asyncAssertSuccess(v1 -> {
             vertx.runOnContext(v2 -> {
+              completed.await(2000);
               ctx.assertEquals(1, called.get());
               async.complete();
             });
