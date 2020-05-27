@@ -17,12 +17,9 @@
 
 package io.vertx.sqlclient.impl;
 
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
@@ -35,9 +32,10 @@ public class RowDesc {
 
   public RowDesc(List<String> columnNames) {
     this.columnNames = columnNames;
-    this.columns = Collections.unmodifiableMap(IntStream.range(0, columnNames.size())
-        .boxed()
-        .collect(Collectors.toMap(columnNames::get, Function.identity(), (v1, v2) -> v2)));
+    this.columns = new HashMap<>();
+    for (int i = 0; i < columnNames.size(); i++) {
+      this.columns.put(columnNames.get(i), i);
+    }
   }
 
   public int columnIndex(String columnName) {
