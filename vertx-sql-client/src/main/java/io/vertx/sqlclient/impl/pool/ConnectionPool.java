@@ -242,6 +242,10 @@ public class ConnectionPool {
         while (waiters.size() > 0) {
           if (available.size() > 0) {
             PooledConnection proxy = available.poll();
+            if (proxy == null) {
+              // available is empty?
+              return;
+            }
             Handler<AsyncResult<Connection>> waiter = waiters.poll();
             waiter.handle(Future.succeededFuture(proxy));
           } else {
