@@ -77,7 +77,7 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
 
   void decodeQuery(ByteBuf payload) {
     boolean hasMoreResults = true;
-    DRDAQueryResponse resp = new DRDAQueryResponse(payload, encoder.connMetadata);
+    DRDAQueryResponse resp = new DRDAQueryResponse(payload, encoder.socketConnection.connMetadata);
     for (int i = 0; i < params.size(); i++) {
       if (LOG.isDebugEnabled())
         LOG.debug("Decode query " + i);
@@ -91,7 +91,7 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
   }
 
   void decodeUpdate(ByteBuf payload) {
-    DRDAQueryResponse updateResponse = new DRDAQueryResponse(payload, encoder.connMetadata);
+    DRDAQueryResponse updateResponse = new DRDAQueryResponse(payload, encoder.socketConnection.connMetadata);
     for (int i = 0; i < params.size(); i++) {
       handleUpdateResult(updateResponse);
     }

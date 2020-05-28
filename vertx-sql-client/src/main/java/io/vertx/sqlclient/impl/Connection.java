@@ -21,12 +21,15 @@ import io.vertx.core.Handler;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.CommandScheduler;
+import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 public interface Connection extends CommandScheduler {
 
   void init(Holder holder);
 
   boolean isSsl();
+  
+  DatabaseMetadata getDatabaseMetaData();
 
   @Override
   default <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {

@@ -1,6 +1,7 @@
 package io.vertx.pgclient.tck;
 
 import io.vertx.pgclient.junit.ContainerPgRule;
+import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.tck.ConnectionTestBase;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -23,5 +24,11 @@ public class PgConnectionTest extends ConnectionTestBase {
   public void tearDown(TestContext ctx) {
     connector.close();
     super.tearDown(ctx);
+  }
+  
+  @Override
+  protected void validateDatabaseMetaData(TestContext ctx, DatabaseMetadata md) {
+    ctx.assertTrue(md.majorVersion() >= 9);
+    ctx.assertTrue(md.productName().contains("PostgreSQL"));
   }
 }

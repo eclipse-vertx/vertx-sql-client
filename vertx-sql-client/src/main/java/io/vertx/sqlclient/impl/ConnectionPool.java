@@ -19,6 +19,7 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.core.*;
 import io.vertx.core.impl.NoStackTraceThrowable;
 
@@ -104,6 +105,11 @@ public class ConnectionPool {
     @Override
     public boolean isSsl() {
       return conn.isSsl();
+    }
+    
+    @Override
+    public DatabaseMetadata getDatabaseMetaData() {
+      return conn.getDatabaseMetaData();
     }
 
     @Override

@@ -76,10 +76,10 @@ public class DRDAConnectRequest extends DRDARequest {
 //            constructCrrtkn();
 //        }
 
-        if (!metadata.isZos()) {
-          Objects.requireNonNull(crrtkn);
-          buildCRRTKN(crrtkn);
-        }
+//        if (!metadata.isZos()) {
+//          Objects.requireNonNull(crrtkn);
+//          buildCRRTKN(crrtkn);
+//        }
 
         // This specifies the single-byte, double-byte
         // and mixed-byte CCSIDs of the Scalar Data Arrays (SDAs) in the identified
@@ -340,9 +340,9 @@ public class DRDAConnectRequest extends DRDARequest {
             writeScalar2Bytes(CodePoint.CCSIDMBC, ccsidMbc);
         }
         
-        if (metadata.isZos()) {
-          writeScalar2Bytes(CodePoint.CCSIDXML, ccsidMbc);
-        }
+//        if (metadata.isZos()) {
+//          writeScalar2Bytes(CodePoint.CCSIDXML, ccsidMbc);
+//        }
 
         updateLengthBytes();
 

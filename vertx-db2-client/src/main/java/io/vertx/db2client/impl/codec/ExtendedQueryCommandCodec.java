@@ -45,7 +45,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
   }
 
   void decodeQuery(ByteBuf payload) {
-    DRDAQueryResponse resp = new DRDAQueryResponse(payload, encoder.connMetadata);
+    DRDAQueryResponse resp = new DRDAQueryResponse(payload, encoder.socketConnection.connMetadata);
     RowResultDecoder<?, R> decoder = decodePreparedQuery(payload, resp, queryInstance);
     boolean hasMoreResults = !decoder.isQueryComplete();
     handleQueryResult(decoder);
@@ -53,7 +53,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
   }
 
   void decodeUpdate(ByteBuf payload) {
-    DRDAQueryResponse updateResponse = new DRDAQueryResponse(payload, encoder.connMetadata);
+    DRDAQueryResponse updateResponse = new DRDAQueryResponse(payload, encoder.socketConnection.connMetadata);
     handleUpdateResult(updateResponse);
     if (cmd.autoCommit()) {
       updateResponse.readLocalCommit();

@@ -21,7 +21,11 @@ import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.Transaction;
+
+import java.io.ObjectInputStream.GetField;
+
 import io.vertx.core.*;
+import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -85,6 +89,11 @@ public abstract class SqlConnectionImpl<C extends SqlConnectionImpl> extends Sql
     return conn.isSsl();
   }
 
+  @Override
+  public DatabaseMetadata databaseMetadata() {
+    return conn.getDatabaseMetaData();
+  }
+  
   @Override
   public C closeHandler(Handler<Void> handler) {
     closeHandler = handler;
