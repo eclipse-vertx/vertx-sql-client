@@ -16,6 +16,8 @@
 package io.vertx.db2client.impl.drda;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.sql.RowId;
 import java.sql.Types;
@@ -27,6 +29,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 
 public class DRDAQueryRequest extends DRDAConnectRequest {
     
@@ -919,7 +922,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
         }
 
         buildSQLDTAGRP(numColumns, lidAndLengthOverrides, overrideExists, overrideMap);
-
+        
         if (overrideExists) {
             buffer.writeBytes(FdocaConstants.MDD_SQLDTA_TOSEND);
         }
@@ -942,11 +945,13 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                                   Hashtable overrideMap) {
         int n = 0;
         int offset = 0;
+        
 
         n = calculateColumnsInSQLDTAGRPtriplet(numVars);
         buildTripletHeader(((3 * n) + 3),
                 FdocaConstants.NGDA_TRIPLET_TYPE,
                 FdocaConstants.SQLDTAGRP_LID);
+        
 
         do {
             writeLidAndLengths(lidAndLengthOverrides, n, offset, mddRequired, overrideMap);
@@ -954,13 +959,14 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
             if (numVars == 0) {
                 break;
             }
-
+            
             offset += n;
             n = calculateColumnsInSQLDTAGRPtriplet(numVars);
             buildTripletHeader(((3 * n) + 3),
                     FdocaConstants.CPT_TRIPLET_TYPE,
                     0x00);
         } while (true);
+        
     }
     
     private int calculateColumnsInSQLDTAGRPtriplet(int numVars) {
@@ -1123,17 +1129,21 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                     }
                     else
                     {
-                        // adjust scale if it is negative. Packed Decimal cannot handle 
-                        // negative scale. We don't want to change the original 
-                        // object so make a new one.
-                        if (bigDecimal.scale() < 0) 
-                        {
+                        if (bigDecimal.scale() < 0)  {
                             bigDecimal =  bigDecimal.setScale(0);
                             inputRow[i] = bigDecimal;
-                        }                        
+                        }
+                        if (bigDecimal.precision() > parameterMetaData.sqlPrecision_[i]) {
+                            bigDecimal = bigDecimal.round(new MathContext(parameterMetaData.sqlPrecision_[i]));
+                            inputRow[i] = bigDecimal;
+                        }
+                        if (bigDecimal.scale() > parameterMetaData.sqlScale_[i]) {
+                            bigDecimal = bigDecimal.setScale(parameterMetaData.sqlScale_[i], RoundingMode.HALF_UP);
+                            inputRow[i] = bigDecimal;
+                        }
                         scale = bigDecimal.scale();
-                        precision = Decimal.computeBigDecimalPrecision(bigDecimal);
-                    }                    
+                        precision = bigDecimal.precision();
+                    }
                     lidAndLengths[i][0] = DRDAConstants.DRDA_TYPE_NDECIMAL;
                     lidAndLengths[i][1] = (precision << 8) + // use precision above
                         (scale << 0);
@@ -1399,7 +1409,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                     lidAndLengths[i][0]--;
                 }
             }
-            return overrideMap;
+            return overrideMap; // @AGG this is never used
 //        }
 //        catch ( SQLException se )
 //        {
