@@ -29,17 +29,17 @@ public class MySQLConnectionTest extends ConnectionTestBase {
   @Override
   protected void validateDatabaseMetaData(TestContext ctx, DatabaseMetadata md) {
     if (rule.isUsingMariaDB()) {
-      ctx.assertTrue(md.getMajorVersion() >= 10);
+      ctx.assertTrue(md.majorVersion() >= 10, "Expected DB major version >= 10 but was " + md.majorVersion());
     }
     else if (rule.isUsingMySQL5_6()) {
-      ctx.assertEquals(5, md.getMajorVersion());
-      ctx.assertEquals(6, md.getMinorVersion());
+      ctx.assertEquals(5, md.majorVersion());
+      ctx.assertEquals(6, md.minorVersion());
     }
     else if (rule.isUsingMySQL8()) {
-      ctx.assertEquals(8, md.getMajorVersion());
+      ctx.assertEquals(8, md.majorVersion());
     }
     else {
-      ctx.assertTrue(md.getMajorVersion() >= 5);
+      ctx.assertTrue(md.majorVersion() >= 5, "Expected DB major version >= 5 but was " + md.majorVersion());
     }
   }
 }

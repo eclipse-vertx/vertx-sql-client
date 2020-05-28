@@ -69,8 +69,8 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     String serverVersion = BufferUtils.readNullTerminatedString(payload, StandardCharsets.US_ASCII);
     MySQLDatabaseMetadata md = new MySQLDatabaseMetadata(serverVersion);
     ((MySQLSocketConnection)cmd.connection()).metaData = md;
-    if (md.getMajorVersion() == 5 && 
-        (md.getMinorVersion() < 7 || (md.getMinorVersion() == 7 && md.getDatabasMicroVersion() < 5))) {
+    if (md.majorVersion() == 5 && 
+        (md.minorVersion() < 7 || (md.minorVersion() == 7 && md.getDatabasMicroVersion() < 5))) {
       // EOF_HEADER is enabled
     } else {
       encoder.clientCapabilitiesFlag |= CLIENT_DEPRECATE_EOF;
