@@ -169,6 +169,14 @@ public class ConnectionPool {
 
     @Override
     public void close(Holder holder, Promise<Void> promise) {
+      if (context != null) {
+        context.dispatch(v -> doClose(holder, promise));
+      } else {
+        doClose(holder, promise);
+      }
+    }
+
+    private void doClose(Holder holder, Promise<Void> promise) {
       if (holder != this.holder) {
         String msg;
         if (this.holder == null) {
@@ -242,10 +250,6 @@ public class ConnectionPool {
         while (waiters.size() > 0) {
           if (available.size() > 0) {
             PooledConnection proxy = available.poll();
-            if (proxy == null) {
-              // available is empty?
-              return;
-            }
             Handler<AsyncResult<Connection>> waiter = waiters.poll();
             waiter.handle(Future.succeededFuture(proxy));
           } else {
