@@ -22,7 +22,7 @@
   <parent>
     <groupId>io.vertx</groupId>
     <artifactId>vertx-sql-client-parent</artifactId>
-    <version>4.0.0-milestone5</version>
+    <version>4.0.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>vertx-sql-client-templates</artifactId>
@@ -75,19 +75,19 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-pg-client</artifactId>
-      <version>4.0.0-milestone5</version>
+      <version>4.0.0-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-mysql-client</artifactId>
-      <version>4.0.0-milestone5</version>
+      <version>4.0.0-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-pg-client</artifactId>
-      <version>4.0.0-milestone5</version>
+      <version>4.0.0-SNAPSHOT</version>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
