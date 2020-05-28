@@ -40,6 +40,8 @@ public class SqlCode {
 	public static final int OBJECT_NOT_DEFINED = -204;
 	public static final int COLUMN_DOES_NOT_EXIST = -206;
 	
+	public static final int DATA_TYPE_INVALID_ATTR = -604;
+	
     private final int code_;
 
     SqlCode(int code) {
