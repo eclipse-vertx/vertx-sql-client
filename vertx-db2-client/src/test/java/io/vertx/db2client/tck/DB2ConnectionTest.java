@@ -15,6 +15,7 @@
  */
 package io.vertx.db2client.tck;
 
+import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.tck.ConnectionTestBase;
 import io.vertx.db2client.DB2Exception;
 import io.vertx.db2client.impl.drda.SQLState;
@@ -72,7 +73,7 @@ public class DB2ConnectionTest extends ConnectionTestBase {
     connect(ctx.asyncAssertFailure(err -> {
     	ctx.assertTrue(err instanceof DB2Exception);
     	DB2Exception ex = (DB2Exception) err;
-    	ctx.assertTrue(ex.getMessage().contains("invalidDatabase") ||
+    	ctx.assertTrue(ex.getMessage().contains("INVALIDDATABASE") ||
     			       ex.getMessage().contains("The connection was closed by the database server."),
     			       "Unexpected message: " + ex.getMessage());
     	ctx.assertTrue(ex.getSqlState() == SQLState.NET_DATABASE_NOT_FOUND ||
@@ -82,5 +83,12 @@ public class DB2ConnectionTest extends ConnectionTestBase {
     			       ex.getErrorCode() == SqlCode.CONNECTION_REFUSED,
     			       "Unexpected error code: " + ex.getErrorCode());
     }));
+  }
+  
+  @Override
+  protected void validateDatabaseMetaData(TestContext ctx, DatabaseMetadata md) {
+    ctx.assertEquals(11, md.majorVersion());
+    ctx.assertEquals(5, md.minorVersion());
+    ctx.assertTrue(md.productName().contains("DB2"));
   }
 }

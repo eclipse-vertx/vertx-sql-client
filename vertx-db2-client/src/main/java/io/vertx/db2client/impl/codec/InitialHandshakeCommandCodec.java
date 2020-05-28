@@ -50,7 +50,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
   @Override
   void encode(DB2Encoder encoder) {
     super.encode(encoder);
-    encoder.connMetadata.databaseName = cmd.database();
+    encoder.socketConnection.connMetadata.databaseName = cmd.database();
     encoder.socketConnection.closeHandler(h -> {
       if (status == ConnectionState.CONNECTING) {
         // Sometimes DB2 closes the connection when sending an invalid Database name.
@@ -64,7 +64,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
 
     ByteBuf packet = allocateBuffer();
     int packetStartIdx = packet.writerIndex();
-    DRDAConnectRequest connectRequest = new DRDAConnectRequest(packet, encoder.connMetadata);
+    DRDAConnectRequest connectRequest = new DRDAConnectRequest(packet, encoder.socketConnection.connMetadata);
     connectRequest.buildEXCSAT(DRDAConstants.EXTNAM, // externalName,
         0x0A, // targetAgent,
         DRDAConstants.TARGET_SQL_AM, // targetSqlam,
@@ -91,7 +91,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
 
   @Override
   void decodePayload(ByteBuf payload, int payloadLength) {
-    DRDAConnectResponse response = new DRDAConnectResponse(payload, encoder.connMetadata);
+    DRDAConnectResponse response = new DRDAConnectResponse(payload, encoder.socketConnection.connMetadata);
     response.readExchangeServerAttributes();
     // readAccessSecurity can throw a DB2Exception if there are problems connecting.
     // In that case, we want to catch that exception and

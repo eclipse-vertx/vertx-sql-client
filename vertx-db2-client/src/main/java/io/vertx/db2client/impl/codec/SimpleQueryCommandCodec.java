@@ -36,18 +36,18 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
 
   @Override
   void encodeQuery(DRDAQueryRequest queryCommand) {
-    querySection = encoder.connMetadata.sectionManager.getSection(cmd.sql());
-    queryCommand.writePrepareDescribeOutput(cmd.sql(), encoder.connMetadata.databaseName, querySection);
+    querySection = encoder.socketConnection.connMetadata.sectionManager.getSection(cmd.sql());
+    queryCommand.writePrepareDescribeOutput(cmd.sql(), encoder.socketConnection.connMetadata.databaseName, querySection);
     // fetchSize=0 triggers default fetch size (64) to be used (TODO @AGG this
     // should be configurable)
     // @AGG hard coded to TYPE_FORWARD_ONLY
-    queryCommand.writeOpenQuery(querySection, encoder.connMetadata.databaseName, 0, ResultSet.TYPE_FORWARD_ONLY);
+    queryCommand.writeOpenQuery(querySection, encoder.socketConnection.connMetadata.databaseName, 0, ResultSet.TYPE_FORWARD_ONLY);
   }
 
   @Override
   void encodeUpdate(DRDAQueryRequest updateCommand) {
-    querySection = encoder.connMetadata.sectionManager.getSection(cmd.sql());
-    updateCommand.writeExecuteImmediate(cmd.sql(), querySection, encoder.connMetadata.databaseName);
+    querySection = encoder.socketConnection.connMetadata.sectionManager.getSection(cmd.sql());
+    updateCommand.writeExecuteImmediate(cmd.sql(), querySection, encoder.socketConnection.connMetadata.databaseName);
     if (cmd.autoCommit()) {
       updateCommand.buildRDBCMM();
     }
@@ -61,7 +61,7 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
   }
 
   void decodeUpdate(ByteBuf payload) {
-    DRDAQueryResponse updateResponse = new DRDAQueryResponse(payload, encoder.connMetadata);
+    DRDAQueryResponse updateResponse = new DRDAQueryResponse(payload, encoder.socketConnection.connMetadata);
     querySection.release();
 
     int updatedCount = (int) updateResponse.readExecuteImmediate();
@@ -83,7 +83,7 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
   void decodeQuery(ByteBuf payload) {
     querySection.release();
 
-    DRDAQueryResponse resp = new DRDAQueryResponse(payload, encoder.connMetadata);
+    DRDAQueryResponse resp = new DRDAQueryResponse(payload, encoder.socketConnection.connMetadata);
     resp.readPrepareDescribeOutput();
     resp.readBeginOpenQuery();
     columnDefinitions = resp.getOutputColumnMetaData();

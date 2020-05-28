@@ -32,6 +32,7 @@ import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.QueryCommandBase;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 import io.vertx.sqlclient.impl.command.TxCommand;
+import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -41,6 +42,7 @@ import java.util.Map;
  */
 public class MySQLSocketConnection extends SocketConnectionBase {
 
+  public MySQLDatabaseMetadata metaData;
   private MySQLCodec codec;
 
   public MySQLSocketConnection(NetSocketInternal socket,
@@ -91,5 +93,10 @@ public class MySQLSocketConnection extends SocketConnectionBase {
 
   public void upgradeToSsl(Handler<AsyncResult<Void>> completionHandler) {
     socket.upgradeToSsl(completionHandler);
+  }
+  
+  @Override
+  public DatabaseMetadata getDatabaseMetaData() {
+    return metaData;
   }
 }

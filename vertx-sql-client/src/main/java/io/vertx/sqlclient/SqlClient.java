@@ -21,6 +21,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 /**
  * Defines common SQL client operations with a database server.
@@ -56,5 +57,5 @@ public interface SqlClient {
    * Like {@link #close(Handler)} but returns a {@code Future} of the asynchronous result
    */
   Future<Void> close();
-
+  
 }

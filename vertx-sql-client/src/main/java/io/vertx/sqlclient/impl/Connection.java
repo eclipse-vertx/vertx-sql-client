@@ -19,12 +19,15 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Promise;
 import io.vertx.sqlclient.impl.command.CommandScheduler;
+import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 public interface Connection extends CommandScheduler  {
 
   void init(Holder holder);
 
   boolean isSsl();
+  
+  DatabaseMetadata getDatabaseMetaData();
 
   void close(Holder holder, Promise<Void> promise);
 
