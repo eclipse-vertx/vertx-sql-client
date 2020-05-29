@@ -24,10 +24,14 @@ import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.InitCommand;
+import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.util.Map;
 
 class MSSQLSocketConnection extends SocketConnectionBase {
+  
+  public MSSQLDatabaseMetadata dbMetaData;
+  
   MSSQLSocketConnection(NetSocketInternal socket,
                         boolean cachePreparedStatements,
                         int preparedStatementCacheSize,
@@ -57,5 +61,10 @@ class MSSQLSocketConnection extends SocketConnectionBase {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     MSSQLCodec.initPipeLine(pipeline);
     super.init();
+  }
+  
+  @Override
+  public DatabaseMetadata getDatabaseMetaData() {
+    return dbMetaData;
   }
 }

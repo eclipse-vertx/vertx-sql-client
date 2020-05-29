@@ -14,6 +14,7 @@ package io.vertx.mssqlclient.tck;
 import io.vertx.mssqlclient.junit.MSSQLRule;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.tck.ConnectionTestBase;
 import org.junit.ClassRule;
 import org.junit.Ignore;
@@ -52,5 +53,17 @@ public class MSSQLConnectionTest extends ConnectionTestBase {
   @Override
   public void testCloseWithQueryInProgress(TestContext ctx) {
     super.testCloseWithQueryInProgress(ctx);
+  }
+  
+  @Ignore
+  @Test
+  @Override
+  public void testDatabaseMetaData(TestContext ctx) {
+    super.testDatabaseMetaData(ctx);
+  }
+  
+  @Override
+  protected void validateDatabaseMetaData(TestContext ctx, DatabaseMetadata md) {
+    // TODO implement this along with testDatabaseMetaData
   }
 }

@@ -18,6 +18,8 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.SslMode;
+import io.vertx.mysqlclient.impl.MySQLDatabaseMetadata;
+import io.vertx.mysqlclient.impl.MySQLSocketConnection;
 import io.vertx.mysqlclient.impl.command.InitialHandshakeCommand;
 import io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
@@ -65,22 +67,10 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     short protocolVersion = payload.readUnsignedByte();
 
     String serverVersion = BufferUtils.readNullTerminatedString(payload, StandardCharsets.US_ASCII);
-    // we assume the server version follows ${major}.${minor}.${release} in https://dev.mysql.com/doc/refman/8.0/en/which-version.html
-    String[] versionNumbers = serverVersion.split("\\.");
-    int majorVersion = Integer.parseInt(versionNumbers[0]);
-    int minorVersion = Integer.parseInt(versionNumbers[1]);
-    // we should truncate the possible suffixes here
-    String releaseVersion = versionNumbers[2];
-    int releaseNumber;
-    int indexOfFirstSeparator = releaseVersion.indexOf("-");
-    if (indexOfFirstSeparator != -1) {
-      // handle unstable release suffixes
-      String releaseNumberString = releaseVersion.substring(0, indexOfFirstSeparator);
-      releaseNumber = Integer.parseInt(releaseNumberString);
-    } else {
-      releaseNumber = Integer.parseInt(versionNumbers[2]);
-    }
-    if (majorVersion == 5 && (minorVersion < 7 || (minorVersion == 7 && releaseNumber < 5))) {
+    MySQLDatabaseMetadata md = new MySQLDatabaseMetadata(serverVersion);
+    ((MySQLSocketConnection)cmd.connection()).metaData = md;
+    if (md.majorVersion() == 5 && 
+        (md.minorVersion() < 7 || (md.minorVersion() == 7 && md.getDatabasMicroVersion() < 5))) {
       // EOF_HEADER is enabled
     } else {
       encoder.clientCapabilitiesFlag |= CLIENT_DEPRECATE_EOF;

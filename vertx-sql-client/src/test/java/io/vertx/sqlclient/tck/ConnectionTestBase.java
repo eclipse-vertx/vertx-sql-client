@@ -18,6 +18,8 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.spi.DatabaseMetadata;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -117,4 +119,20 @@ public abstract class ConnectionTestBase {
     }));
     async.await();
   }
+  
+  @Test
+  public void testDatabaseMetaData(TestContext ctx) {
+    connect(ctx.asyncAssertSuccess(conn -> {
+      DatabaseMetadata md = conn.databaseMetadata();
+      ctx.assertNotNull(md, "DatabaseMetadata should not be null");
+      ctx.assertNotNull(md.productName(), "Database product name should not be null");
+      ctx.assertNotNull(md.fullVersion(), "Database full version string should not be null");
+      ctx.assertTrue(md.majorVersion() >= 1, "Expected DB major version to be >= 1 but was " + md.majorVersion());
+      ctx.assertTrue(md.minorVersion() >= 0, "Expected DB minor version to be >= 0 but was " + md.minorVersion());
+      validateDatabaseMetaData(ctx, md);
+    }));
+  }
+  
+  protected abstract void validateDatabaseMetaData(TestContext ctx, DatabaseMetadata md);
+  
 }

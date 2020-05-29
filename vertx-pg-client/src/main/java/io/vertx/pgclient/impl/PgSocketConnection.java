@@ -34,6 +34,7 @@ import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.sqlclient.impl.command.QueryCommandBase;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 import io.vertx.sqlclient.impl.command.TxCommand;
+import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.util.Map;
 
@@ -45,6 +46,7 @@ public class PgSocketConnection extends SocketConnectionBase {
   private PgCodec codec;
   public int processId;
   public int secretKey;
+  public PgDatabaseMetadata dbMetaData;
 
   public PgSocketConnection(NetSocketInternal socket,
                             boolean cachePreparedStatements,
@@ -112,6 +114,11 @@ public class PgSocketConnection extends SocketConnectionBase {
   @Override
   public int getSecretKey() {
     return secretKey;
+  }
+  
+  @Override
+  public DatabaseMetadata getDatabaseMetaData() {
+    return dbMetaData;
   }
 
   void upgradeToSSLConnection(Handler<AsyncResult<Void>> completionHandler) {

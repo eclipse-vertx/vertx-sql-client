@@ -17,28 +17,22 @@ package io.vertx.db2client.impl.drda;
 
 import java.nio.charset.Charset;
 
+import io.vertx.db2client.impl.DB2DatabaseMetadata;
+
 public class ConnectionMetaData {
   
   public String databaseName;
+  public DB2DatabaseMetadata dbMetadata;
   public final SectionManager sectionManager = new SectionManager();
   
-  private boolean isZos;
   private Charset currentCCSID = CCSIDConstants.EBCDIC;
-  
-  public void setZos(boolean isZos) {
-    this.isZos = isZos;
-    if (isZos && currentCCSID != CCSIDConstants.UTF8) {
-      currentCCSID = CCSIDConstants.UTF8;
-      sectionManager.configureForZOS();
-    }
-  }
-  
-  public boolean isZos() {
-    return isZos;
-  }
   
   public Charset getCCSID() {
     return currentCCSID;
+  }
+  
+  public boolean isZos() {
+    return dbMetadata.isZOS();
   }
 
 }

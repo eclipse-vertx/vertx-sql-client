@@ -23,6 +23,7 @@ import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactory;
 import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.core.*;
 
 import java.util.ArrayDeque;
@@ -145,6 +146,11 @@ public class ConnectionPool {
     @Override
     public boolean isSsl() {
       return conn.isSsl();
+    }
+    
+    @Override
+    public DatabaseMetadata getDatabaseMetaData() {
+      return conn.getDatabaseMetaData();
     }
 
     @Override

@@ -18,9 +18,11 @@ package io.vertx.db2client.impl.drda;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.db2client.DB2Exception;
+import io.vertx.db2client.impl.DB2DatabaseMetadata;
 
 public class DRDAConnectResponse extends DRDAResponse {
   
@@ -1691,7 +1693,6 @@ public class DRDAConnectResponse extends DRDAResponse {
         String srvclsnm = null;
         boolean srvnamReceived = false;
         boolean srvrlslvReceived = false;
-        String srvrlslv = null;
         
         parseLengthAndMatchCodePoint(CodePoint.EXCSATRD);
         pushLengthOnCollectionStack();
@@ -1753,20 +1754,11 @@ public class DRDAConnectResponse extends DRDAResponse {
             if (peekCP == CodePoint.SRVRLSLV) {
                 // Server Product Release Level
                 // specifies the procuct release level of a ddm server.
-                // the contents are unarchitected.
-                // this driver will save this information and in the future may
-                // use it for logging purposes.
                 foundInPass = true;
                 srvrlslvReceived = checkAndGetReceivedFlag(srvrlslvReceived);
                 parseLengthAndMatchCodePoint(CodePoint.SRVRLSLV);
-                srvrlslv = readString(); // parseSRVRLSLV();
-                if (srvrlslv != null && srvrlslv.startsWith("SQL")) {
-                  metadata.setZos(false);
-                } else if (srvrlslv != null && srvrlslv.startsWith("DSN")) {
-                  metadata.setZos(true);
-                } else {
-                  throw new IllegalStateException("Received unknown server product release level: " + srvrlslv);
-                }
+                String serverReleaseLevel = readString(); // parseSRVRLSLV();
+                metadata.dbMetadata = new DB2DatabaseMetadata(serverReleaseLevel);
                 peekCP = peekCodePoint();
             }
 
