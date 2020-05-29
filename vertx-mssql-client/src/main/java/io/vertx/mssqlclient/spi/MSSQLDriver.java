@@ -38,8 +38,6 @@ public class MSSQLDriver implements Driver {
   private static MSSQLConnectOptions wrap(SqlConnectOptions options) {
     if (options instanceof MSSQLConnectOptions) {
       return (MSSQLConnectOptions) options; 
-    } else if (SqlConnectOptions.class.equals(options.getClass())) {
-      return new MSSQLConnectOptions(options);
     } else {
       throw new IllegalArgumentException("Unsupported option type: " + options.getClass());
     }

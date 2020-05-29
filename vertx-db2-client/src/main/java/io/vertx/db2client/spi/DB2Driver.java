@@ -38,8 +38,6 @@ public class DB2Driver implements Driver {
   private static DB2ConnectOptions wrap(SqlConnectOptions options) {
     if (options instanceof DB2ConnectOptions) {
       return (DB2ConnectOptions) options;
-    } else if (options.getClass().equals(SqlConnectOptions.class)) {
-      return new DB2ConnectOptions(options);
     } else {
       throw new IllegalArgumentException("Unsupported option type: " + options.getClass());
     }

@@ -76,16 +76,6 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     MySQLConnectOptionsConverter.fromJson(json, this);
   }
   
-  public MySQLConnectOptions(SqlConnectOptions other) {
-    super(other);
-    if (other instanceof MySQLConnectOptions) {
-      MySQLConnectOptions opts = (MySQLConnectOptions) other;
-      this.collation = opts.collation;
-      this.serverRsaPublicKeyPath = opts.serverRsaPublicKeyPath;
-      this.serverRsaPublicKeyValue = opts.serverRsaPublicKeyValue != null ? opts.serverRsaPublicKeyValue.copy() : null;
-    }
-  }
-
   public MySQLConnectOptions(MySQLConnectOptions other) {
     super(other);
     this.collation = other.collation;

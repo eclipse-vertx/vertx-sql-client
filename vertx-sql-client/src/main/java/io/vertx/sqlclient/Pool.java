@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -46,6 +47,7 @@ public interface Pool extends SqlClient {
    * @return the connection pool
    * @throws ServiceConfigurationError if no compatible drivers are found, or if multiple compatible drivers are found
    */
+  @GenIgnore
   static Pool pool(SqlConnectOptions connectOptions) {
     return pool(connectOptions, new PoolOptions());
   }
@@ -58,6 +60,7 @@ public interface Pool extends SqlClient {
    * @return the connection pool
    * @throws ServiceConfigurationError if no compatible drivers are found, or if multiple compatible drivers are found
    */
+  @GenIgnore
   static Pool pool(SqlConnectOptions connectOptions, PoolOptions poolOptions) {
     List<Driver> candidates = new ArrayList<>(1);
     for (Driver d : ServiceLoader.load(Driver.class)) {
@@ -83,6 +86,7 @@ public interface Pool extends SqlClient {
    * @return the connection pool
    * @throws ServiceConfigurationError if no compatible drivers are found, or if multiple compatible drivers are found
    */
+  @GenIgnore
   static Pool pool(Vertx vertx, SqlConnectOptions connectOptions, PoolOptions poolOptions) {
     List<Driver> candidates = new ArrayList<>(1);
     for (Driver d : ServiceLoader.load(Driver.class)) {

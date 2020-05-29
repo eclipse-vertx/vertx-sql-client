@@ -121,15 +121,6 @@ public class PgConnectOptions extends SqlConnectOptions {
     PgConnectOptionsConverter.fromJson(json, this);
   }
   
-  public PgConnectOptions(SqlConnectOptions other) {
-    super(other);
-    if (other instanceof PgConnectOptions) {
-      PgConnectOptions opts = (PgConnectOptions) other;
-      pipeliningLimit = opts.pipeliningLimit;
-      sslMode = opts.sslMode;
-    }
-  }
-
   public PgConnectOptions(PgConnectOptions other) {
     super(other);
     pipeliningLimit = other.pipeliningLimit;

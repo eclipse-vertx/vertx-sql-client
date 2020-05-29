@@ -38,8 +38,6 @@ public class MySQLDriver implements Driver {
   private static MySQLConnectOptions wrap(SqlConnectOptions options) {
     if (options instanceof MySQLConnectOptions) {
       return (MySQLConnectOptions) options;
-    } else if (options.getClass().equals(SqlConnectOptions.class)) {
-      return new MySQLConnectOptions(options);
     } else {
       throw new IllegalArgumentException("Unsupported option type: " + options.getClass());
     }

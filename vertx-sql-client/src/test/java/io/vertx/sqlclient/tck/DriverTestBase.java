@@ -138,6 +138,9 @@ public abstract class DriverTestBase {
   }
   
   public static class BogusOptions extends SqlConnectOptions {
+    @Override
+    protected void init() {
+    }
   }
   
   private Driver getDriver() {

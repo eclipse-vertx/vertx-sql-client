@@ -23,8 +23,6 @@ public class PgDriver implements Driver {
   private static PgConnectOptions wrap(SqlConnectOptions options) {
     if (options instanceof PgConnectOptions) {
       return (PgConnectOptions) options;
-    } else if (options.getClass().equals(SqlConnectOptions.class)) {
-      return new PgConnectOptions(options);
     } else {
       throw new IllegalArgumentException("Unsupported option type: " + options.getClass());
     }

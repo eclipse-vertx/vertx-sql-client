@@ -76,14 +76,6 @@ public class DB2ConnectOptions extends SqlConnectOptions {
     DB2ConnectOptionsConverter.fromJson(json, this);
   }
 
-  public DB2ConnectOptions(SqlConnectOptions other) {
-    super(other);
-    if (other instanceof DB2ConnectOptions) {
-      DB2ConnectOptions opts = (DB2ConnectOptions) other;
-      this.pipeliningLimit = opts.pipeliningLimit;
-    }
-  }
-
   public DB2ConnectOptions(DB2ConnectOptions other) {
     super(other);
     this.pipeliningLimit = other.pipeliningLimit;

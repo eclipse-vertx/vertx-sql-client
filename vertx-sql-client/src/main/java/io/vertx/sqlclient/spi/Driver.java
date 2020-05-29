@@ -133,8 +133,7 @@ public interface Driver {
    * @return true if the driver accepts the {@code connectOptions}, false otherwise
    */
   default boolean acceptsOptions(SqlConnectOptions connectOptions) {
-    return createConnectOptions().getClass().isAssignableFrom(connectOptions.getClass()) ||
-        SqlConnectOptions.class.equals(connectOptions.getClass());
+    return createConnectOptions().getClass().isAssignableFrom(connectOptions.getClass());
   }
   
   /**

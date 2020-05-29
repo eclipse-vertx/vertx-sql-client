@@ -25,7 +25,7 @@ import java.util.Objects;
  * Connect options for configuring {@link SqlConnection} or {@link Pool}.
  */
 @DataObject(generateConverter = true)
-public class SqlConnectOptions extends NetClientOptions {
+public abstract class SqlConnectOptions extends NetClientOptions {
   
   public static final boolean DEFAULT_CACHE_PREPARED_STATEMENTS = false;
   public static final int DEFAULT_PREPARED_STATEMENT_CACHE_MAX_SIZE = 256;
@@ -41,32 +41,17 @@ public class SqlConnectOptions extends NetClientOptions {
   private int preparedStatementCacheSqlLimit = DEFAULT_PREPARED_STATEMENT_CACHE_SQL_LIMIT;
   private Map<String, String> properties = new HashMap<>(4);
 
-  /**
-   * @deprecated This constructor will be removed in the next release.
-   * Instead, use {@link Driver#createConnectOptions()}
-   */
-  @Deprecated
   public SqlConnectOptions() {
     super();
     init();
   }
 
-  /**
-   * @deprecated This constructor will be removed in the next release.
-   * Instead, use {@link Driver#createConnectOptions()}
-   */
-  @Deprecated
   public SqlConnectOptions(JsonObject json) {
     super(json);
     init();
     SqlConnectOptionsConverter.fromJson(json, this);
   }
 
-  /**
-   * @deprecated This constructor will be removed in the next release.
-   * Instead, use {@link Driver#createConnectOptions()}
-   */
-  @Deprecated
   public SqlConnectOptions(SqlConnectOptions other) {
     super(other);
     this.host = other.host;
@@ -294,8 +279,7 @@ public class SqlConnectOptions extends NetClientOptions {
   /**
    * Initialize with the default options.
    */
-  protected void init() {
-  }
+  protected abstract void init();
   
   @Override
   public boolean equals(Object obj) {
