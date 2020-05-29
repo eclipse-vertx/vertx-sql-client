@@ -169,6 +169,14 @@ public class ConnectionPool {
 
     @Override
     public void close(Holder holder, Promise<Void> promise) {
+      if (context != null) {
+        context.dispatch(v -> doClose(holder, promise));
+      } else {
+        doClose(holder, promise);
+      }
+    }
+
+    private void doClose(Holder holder, Promise<Void> promise) {
       if (holder != this.holder) {
         String msg;
         if (this.holder == null) {
