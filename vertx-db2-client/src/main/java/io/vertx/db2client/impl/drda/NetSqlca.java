@@ -123,25 +123,31 @@ public class NetSqlca {
 	   switch(sqlca.sqlCode_) {
             // The SQL syntax is invalid
   	        case SqlCode.INVALID_SQL_STATEMENT:
-       	        throw new DB2Exception("The SQL syntax provided was invalid", SqlCode.INVALID_SQL_STATEMENT, sqlca.sqlState_);
+       	        throw new DB2Exception("The SQL syntax provided was invalid", sqlca.sqlCode_, sqlca.sqlState_);
        	    // The object (table?) is not defined/available
   	        case SqlCode.OBJECT_NOT_DEFINED:
   	        	if (sqlErrmc.length() > 0)
-  	        		throw new DB2Exception("The object '" + sqlErrmc + "' provided is not defined", SqlCode.OBJECT_NOT_DEFINED, sqlca.sqlState_);
+  	        		throw new DB2Exception("The object '" + sqlErrmc + "' provided is not defined", sqlca.sqlCode_, sqlca.sqlState_);
   	        	else
-  	        		throw new DB2Exception("An object provided is not defined", SqlCode.OBJECT_NOT_DEFINED, sqlca.sqlState_);
+  	        		throw new DB2Exception("An object provided is not defined", sqlca.sqlCode_, sqlca.sqlState_);
        	    // The object (table?) is not defined/available
   	        case SqlCode.COLUMN_DOES_NOT_EXIST:
   	        	if (sqlErrmc.length() > 0)
-  	        		throw new DB2Exception("The column '" + sqlErrmc + "' provided does not exist", SqlCode.COLUMN_DOES_NOT_EXIST, sqlca.sqlState_);
+  	        		throw new DB2Exception("The column '" + sqlErrmc + "' provided does not exist", sqlca.sqlCode_, sqlca.sqlState_);
   	        	else
-  	        		throw new DB2Exception("A column provided does not exist", SqlCode.COLUMN_DOES_NOT_EXIST, sqlca.sqlState_);
+  	        		throw new DB2Exception("A column provided does not exist", sqlca.sqlCode_, sqlca.sqlState_);
 	        // Invalid database specified
 	   	    case SqlCode.DATABASE_NOT_FOUND:
 	   	    	if (sqlErrmc.length() > 0)
-	   	    		throw new DB2Exception("The database '" + sqlErrmc + "' provided was not found", SqlCode.DATABASE_NOT_FOUND, sqlca.sqlState_);
+	   	    		throw new DB2Exception("The database '" + sqlErrmc + "' provided was not found", sqlca.sqlCode_, sqlca.sqlState_);
 	   	    	else
-	   	    		throw new DB2Exception("The database provided was not found", SqlCode.DATABASE_NOT_FOUND, sqlca.sqlState_);
+	   	    		throw new DB2Exception("The database provided was not found", sqlca.sqlCode_, sqlca.sqlState_);
+	   	    case SqlCode.DATA_TYPE_INVALID_ATTR:
+	   	        if (sqlErrmc.length() > 0)
+	   	            throw new DB2Exception("The statement cannot be processed. The data type definition '" + sqlErrmc + 
+	   	                "' specifies an invalid attribute such as precision, length, or scale.", sqlca.sqlCode_, sqlca.sqlState_);
+	   	        else
+	   	            throw new DB2Exception("The statement cannot be processed. A data type definition specifies an invalid attribute such as precision, length, or scale.", sqlca.sqlCode_, sqlca.sqlState_);
             default:
                 throw new IllegalStateException("ERROR: " + sqlca.toString());
 	   }
