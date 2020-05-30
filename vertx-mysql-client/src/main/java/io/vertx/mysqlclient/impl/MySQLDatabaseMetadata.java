@@ -1,52 +1,74 @@
 package io.vertx.mysqlclient.impl;
 
-import java.util.Objects;
-
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 public class MySQLDatabaseMetadata implements DatabaseMetadata {
-  
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(MySQLDatabaseMetadata.class);
+
   private final String fullVersion;
-  private final boolean isMariaDB;
+  private final String productName;
   private final int majorVersion;
   private final int minorVersion;
   private final int microVersion;
-  
-  public MySQLDatabaseMetadata(String serverVersion) {
-    fullVersion = serverVersion;
-    isMariaDB = serverVersion.toUpperCase().contains("MARIADB");  
-    String[] versionNumbers;
-    if (!isMariaDB) {
-      // we assume the server version follows ${major}.${minor}.${micro} in https://dev.mysql.com/doc/refman/8.0/en/which-version.html
-      versionNumbers = serverVersion.split("\\.");
-    } else {
-      // server version follows ${junk}-${major}.${minor}.${micro}-MariaDB-${junk}
-      String[] parts = serverVersion.split("-");
-      versionNumbers = parts[1].split("\\.");
-    }
-    majorVersion = Integer.parseInt(versionNumbers[0]);
-    minorVersion = Integer.parseInt(versionNumbers[1]);
-    // we should truncate the possible suffixes here
-    String releaseVersion = versionNumbers[2];
-    int indexOfFirstSeparator = releaseVersion.indexOf("-");
-    if (indexOfFirstSeparator != -1) {
-      // handle unstable release suffixes
-      String releaseNumberString = releaseVersion.substring(0, indexOfFirstSeparator);
-      microVersion = Integer.parseInt(releaseNumberString);
-    } else {
-      microVersion = Integer.parseInt(versionNumbers[2]);
-    }
+
+  private MySQLDatabaseMetadata(String fullVersion,
+                                String productName,
+                                int majorVersion,
+                                int minorVersion,
+                                int microVersion) {
+    this.fullVersion = fullVersion;
+    this.productName = productName;
+    this.majorVersion = majorVersion;
+    this.minorVersion = minorVersion;
+    this.microVersion = microVersion;
   }
-  
-  public boolean isMariaDB() {
-    return isMariaDB;
+
+  public static MySQLDatabaseMetadata parse(String serverVersion) {
+    int majorVersion = 0;
+    int minorVersion = 0;
+    int microVersion = 0;
+
+    int len = serverVersion.length();
+    boolean isMariaDb = serverVersion.contains("MariaDB");
+    String productName = isMariaDb ? "MariaDB" : "MySQL";
+
+    String versionToken = null;
+    int versionTokenStartIdx = isMariaDb ? 6 : 0; // MariaDB server version is by default prefixed by "5.5.5-"
+    int versionTokenEndIdx = versionTokenStartIdx;
+    while (versionTokenEndIdx < len) {
+      if (serverVersion.charAt(versionTokenEndIdx) == '-') {
+        versionToken = serverVersion.substring(versionTokenStartIdx, versionTokenEndIdx);
+        break;
+      }
+      versionTokenEndIdx++;
+    }
+    if (versionToken == null) {
+      // if there's no '-' char
+      versionToken = serverVersion;
+    }
+
+    // we assume the server version tokens follows the syntax: ${major}.${minor}.${micro}
+    String[] versionTokens = versionToken.split("\\.");
+    try {
+      majorVersion = Integer.parseInt(versionTokens[0]);
+      minorVersion = Integer.parseInt(versionTokens[1]);
+      microVersion = Integer.parseInt(versionTokens[2]);
+    } catch (Exception ex) {
+      // make sure it does fail the connection phase
+      LOGGER.warn("Incorrect parsing server version tokens", ex);
+    }
+
+    return new MySQLDatabaseMetadata(serverVersion, productName, majorVersion, minorVersion, microVersion);
   }
 
   @Override
   public String productName() {
-    return isMariaDB ? "MariaDB" : "MySQL";
+    return productName;
   }
-  
+
   @Override
   public String fullVersion() {
     return fullVersion;
@@ -61,9 +83,8 @@ public class MySQLDatabaseMetadata implements DatabaseMetadata {
   public int minorVersion() {
     return minorVersion;
   }
-  
-  public int getDatabasMicroVersion() {
+
+  public int microVersion() {
     return microVersion;
   }
-
 }

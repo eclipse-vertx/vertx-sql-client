@@ -36,21 +36,24 @@ public class MySQLConnectionTest extends ConnectionTestBase {
     connector.close();
     super.tearDown(ctx);
   }
-  
+
   @Override
   protected void validateDatabaseMetaData(TestContext ctx, DatabaseMetadata md) {
     if (rule.isUsingMariaDB()) {
+      ctx.assertEquals("MariaDB", md.productName());
       ctx.assertTrue(md.majorVersion() >= 10, "Expected DB major version >= 10 but was " + md.majorVersion());
-    }
-    else if (rule.isUsingMySQL5_6()) {
+    } else if (rule.isUsingMySQL5_6()) {
+      ctx.assertEquals("MySQL", md.productName());
       ctx.assertEquals(5, md.majorVersion());
       ctx.assertEquals(6, md.minorVersion());
     }
     else if (rule.isUsingMySQL8()) {
+      ctx.assertEquals("MySQL", md.productName());
       ctx.assertEquals(8, md.majorVersion());
+      ctx.assertEquals(0, md.minorVersion());
     }
     else {
-      ctx.assertTrue(md.majorVersion() >= 5, "Expected DB major version >= 5 but was " + md.majorVersion());
+      ctx.assertFalse(md.fullVersion().isEmpty());
     }
   }
 }

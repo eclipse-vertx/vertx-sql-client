@@ -19,7 +19,6 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.mysqlclient.impl.MySQLDatabaseMetadata;
-import io.vertx.mysqlclient.impl.MySQLSocketConnection;
 import io.vertx.mysqlclient.impl.command.InitialHandshakeCommand;
 import io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
@@ -67,11 +66,11 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     short protocolVersion = payload.readUnsignedByte();
 
     String serverVersion = BufferUtils.readNullTerminatedString(payload, StandardCharsets.US_ASCII);
-    MySQLDatabaseMetadata md = new MySQLDatabaseMetadata(serverVersion);
-    ((MySQLSocketConnection)cmd.connection()).metaData = md;
-    if (md.majorVersion() == 5 && 
-        (md.minorVersion() < 7 || (md.minorVersion() == 7 && md.getDatabasMicroVersion() < 5))) {
-      // EOF_HEADER is enabled
+    MySQLDatabaseMetadata md = MySQLDatabaseMetadata.parse(serverVersion);
+    encoder.socketConnection.metaData = md;
+    if (md.majorVersion() == 5 &&
+        (md.minorVersion() < 7 || (md.minorVersion() == 7 && md.microVersion() < 5))) {
+      // EOF_HEADER has to be enabled for older MySQL version which does not support the CLIENT_DEPRECATE_EOF flag
     } else {
       encoder.clientCapabilitiesFlag |= CLIENT_DEPRECATE_EOF;
     }
