@@ -66,11 +66,6 @@ public class DB2ConnectOptions extends SqlConnectOptions {
     super();
   }
 
-  public DB2ConnectOptions(String uri) {
-    super();
-    throw new UnsupportedOperationException("TODO @AGG need to implement uri parsing");
-  }
-
   public DB2ConnectOptions(JsonObject json) {
     super(json);
     DB2ConnectOptionsConverter.fromJson(json, this);
