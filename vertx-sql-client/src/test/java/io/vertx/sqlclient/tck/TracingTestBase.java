@@ -142,7 +142,6 @@ public abstract class TracingTestBase {
 
   @Test
   public void testTracingFailure(TestContext ctx) {
-    AtomicBoolean called = new AtomicBoolean();
     Async completed = ctx.async();
     tracer = new VertxTracer<Object, Object>() {
       @Override
@@ -153,7 +152,6 @@ public abstract class TracingTestBase {
       public <R> void receiveResponse(Context context, R response, Object payload, Throwable failure, TagExtractor<R> tagExtractor) {
         ctx.assertNull(response);
         ctx.assertNotNull(failure);
-        called.set(true);
         completed.complete();
       }
     };
@@ -161,8 +159,6 @@ public abstract class TracingTestBase {
       conn
         .preparedQuery(statement("SELECT * FROM undefined_table WHERE id = ", ""))
         .execute(Tuple.of(0), ctx.asyncAssertFailure(err -> {
-          completed.await(2000);
-          ctx.assertTrue(called.get());
           conn.close();
         }));
     }));
