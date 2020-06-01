@@ -136,6 +136,9 @@ public class NetSqlca {
   	        		throw new DB2Exception("The column '" + sqlErrmc + "' provided does not exist", sqlca.sqlCode_, sqlca.sqlState_);
   	        	else
   	        		throw new DB2Exception("A column provided does not exist", sqlca.sqlCode_, sqlca.sqlState_);
+  	        case SqlCode.NULL_CONSTRAINT_VIOLATION:
+  	            throw new DB2Exception("An attempt was made to INSERT or UPDATE a column that was declared as not nullable with the NULL value: " + sqlErrmc, 
+  	                sqlca.sqlCode_, sqlca.sqlState_);
 	        // Invalid database specified
 	   	    case SqlCode.DATABASE_NOT_FOUND:
 	   	    	if (sqlErrmc.length() > 0)

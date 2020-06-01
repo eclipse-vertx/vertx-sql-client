@@ -32,6 +32,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public abstract class PreparedQueryTestBase {
 
@@ -39,6 +41,8 @@ public abstract class PreparedQueryTestBase {
   protected Connector<SqlConnection> connector;
 
   protected SqlConnectOptions options;
+  
+  protected Consumer<Throwable> msgVerifier;
 
   private static void insertIntoTestTable(TestContext ctx, SqlClient client, int amount, Runnable completionHandler) {
     AtomicInteger count = new AtomicInteger();
@@ -75,6 +79,7 @@ public abstract class PreparedQueryTestBase {
 
   @After
   public void tearDown(TestContext ctx) {
+    msgVerifier = null;
     connector.close();
     vertx.close(ctx.asyncAssertSuccess());
   }
@@ -92,6 +97,9 @@ public abstract class PreparedQueryTestBase {
   public void testPrepareError(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(error -> {
+        if (msgVerifier != null) {
+          msgVerifier.accept(error);
+        }
       }));
     }));
   }
@@ -131,7 +139,11 @@ public abstract class PreparedQueryTestBase {
     connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare(statement("SELECT * FROM immutable WHERE id=", ""), ctx.asyncAssertSuccess(ps -> {
         ps.query().execute(Tuple.of("1"), ctx.asyncAssertFailure(error -> {
-          ctx.assertEquals("Parameter at position[0] with class = [java.lang.String] and value = [1] can not be coerced to the expected class = [java.lang.Number] for encoding.", error.getMessage());
+          if (msgVerifier != null) {
+            msgVerifier.accept(error);
+          } else {
+            ctx.assertEquals("Parameter at position[0] with class = [java.lang.String] and value = [1] can not be coerced to the expected class = [java.lang.Number] for encoding.", error.getMessage());
+          }
         }));
       }));
     }));
@@ -142,7 +154,11 @@ public abstract class PreparedQueryTestBase {
     connect(ctx.asyncAssertSuccess(conn -> {
       conn.prepare(statement("SELECT * FROM immutable WHERE id=", ""), ctx.asyncAssertSuccess(ps -> {
         ps.query().execute(Tuple.of(1, 2), ctx.asyncAssertFailure(error -> {
-          ctx.assertEquals("The number of parameters to execute should be consistent with the expected number of parameters = [1] but the actual number is [2].", error.getMessage());
+          if (msgVerifier != null) {
+            msgVerifier.accept(error);
+          } else {
+            ctx.assertEquals("The number of parameters to execute should be consistent with the expected number of parameters = [1] but the actual number is [2].", error.getMessage());
+          }
         }));
       }));
     }));
@@ -199,6 +215,9 @@ public abstract class PreparedQueryTestBase {
         statement("INSERT INTO mutable (val, id) VALUES (", ",", ")"))
         .execute(Tuple.of(null, 1),
         ctx.asyncAssertFailure(error -> {
+          if (msgVerifier != null) {
+            msgVerifier.accept(error);
+          }
         })
       );
     }));
