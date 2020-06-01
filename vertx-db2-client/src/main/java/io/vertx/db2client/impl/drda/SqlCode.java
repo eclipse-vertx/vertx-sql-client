@@ -22,8 +22,6 @@ package io.vertx.db2client.impl.drda;
  */
 public class SqlCode {
 	
-	// TODO: @AGG Convert this class to an interface with constants
-	
 	public static final int CONNECTION_REFUSED = -4499;
 	public static final int RDB_NOT_FOUND = -30061;
 	public static final int INVALID_CREDENTIALS = -4214;
@@ -39,6 +37,8 @@ public class SqlCode {
 	// But I see it with invalid table names specified in a query
 	public static final int OBJECT_NOT_DEFINED = -204;
 	public static final int COLUMN_DOES_NOT_EXIST = -206;
+	
+	public static final int NULL_CONSTRAINT_VIOLATION = -407;
 	
 	public static final int DATA_TYPE_INVALID_ATTR = -604;
 	

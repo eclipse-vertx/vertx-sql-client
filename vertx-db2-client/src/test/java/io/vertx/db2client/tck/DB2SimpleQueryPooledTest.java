@@ -39,11 +39,4 @@ public class DB2SimpleQueryPooledTest extends SimpleQueryTestBase {
             }));
         }));
     }
-
-    @Override
-    @Test
-    @Ignore // TODO implement error path handling properly
-    public void testQueryError(TestContext ctx) {
-        super.testQueryError(ctx);
-    }
 }

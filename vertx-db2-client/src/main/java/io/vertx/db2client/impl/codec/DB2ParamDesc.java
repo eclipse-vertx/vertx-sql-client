@@ -43,8 +43,8 @@ class DB2ParamDesc extends ParamDesc {
       Object val = values.getValue(i);
       int type = paramDefinitions.types_[i];
       if (!canConvert(val, type)) {
-        return "Parameter at position [" + i + "] with class = [" + val.getClass() + "] cannot be coerced to ["
-            + ClientTypes.getTypeString(type) + "] for encoding";
+        Class<?> preferredType = ClientTypes.preferredJavaType(type);
+        return ErrorMessageFactory.buildWhenArgumentsTypeNotMatched(preferredType, i, val);
       }
     }
     return null;
