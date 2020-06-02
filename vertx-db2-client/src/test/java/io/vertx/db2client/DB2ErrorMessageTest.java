@@ -229,6 +229,22 @@ public class DB2ErrorMessageTest extends DB2TestBase {
           }));
       }));
     }
+    
+    /**
+     * Tables created with a PRIMARY KEY column must also specify NOT NULL
+     * Should force sqlcode -542
+     */
+    @Test
+    public void testCreateTableNullPrimaryKey(TestContext ctx) {
+      DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+        conn.query("CREATE TABLE fruits (id INTEGER PRIMARY KEY, name VARCHAR(50) NOT NULL)").execute(ctx.asyncAssertFailure(err -> {
+            ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
+            DB2Exception ex = (DB2Exception) err;
+            assertContains(ctx, ex.getMessage(), "The column 'ID' cannot be a column of a primary key because it can contain null values");
+            ctx.assertEquals(SqlCode.PRIMARY_KEY_CAN_BE_NULL, ex.getErrorCode());
+          }));
+      }));
+    }
 	
 	public static void assertContains(TestContext ctx, String fullString, String lookFor) {
 	  ctx.assertNotNull(fullString, "Expected to find '" + lookFor + "' in string, but was null");

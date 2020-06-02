@@ -53,6 +53,8 @@ public class SqlCode {
 	
 	public static final int NULL_CONSTRAINT_VIOLATION = -407;
 	
+	public static final int PRIMARY_KEY_CAN_BE_NULL = -542;
+	
 	public static final int DATA_TYPE_INVALID_ATTR = -604;
 	
 	public static final int DUPLICATE_KEYS_DETECTED = -803;
