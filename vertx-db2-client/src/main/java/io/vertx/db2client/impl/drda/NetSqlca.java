@@ -121,7 +121,6 @@ public class NetSqlca {
 	   
 	   switch(sqlca.sqlCode_) {
   	        case SqlCode.INVALID_SQL_STATEMENT:
-  	            System.out.println("@AGG errmc=" + errMsg);
   	            if (errMsg.length() > 0 && errMsgTokens.length > 1)
   	              throw new DB2Exception("The SQL syntax provided was invalid at or near the tokens: " + Arrays.toString(errMsgTokens), sqlca.sqlCode_, sqlca.sqlState_);
   	            else
@@ -160,6 +159,13 @@ public class NetSqlca {
   	        case SqlCode.NULL_CONSTRAINT_VIOLATION:
   	            throw new DB2Exception("An attempt was made to INSERT or UPDATE a column that was declared as not nullable with the NULL value: " + errMsg, 
   	                sqlca.sqlCode_, sqlca.sqlState_);
+  	        case SqlCode.PRIMARY_KEY_CAN_BE_NULL:
+  	            if (errMsg.length() > 0)
+    	            throw new DB2Exception("The column '" + errMsg + "' cannot be a column of a primary key because it can contain null values", 
+                      sqlca.sqlCode_, sqlca.sqlState_);
+  	            else
+  	                throw new DB2Exception("A column could not be created as a primary key column because it can contain null values", 
+  	                    sqlca.sqlCode_, sqlca.sqlState_);
 	   	    case SqlCode.DATABASE_NOT_FOUND:
 	   	    	if (errMsg.length() > 0)
 	   	    		throw new DB2Exception("The database '" + errMsg + "' provided was not found", sqlca.sqlCode_, sqlca.sqlState_);
