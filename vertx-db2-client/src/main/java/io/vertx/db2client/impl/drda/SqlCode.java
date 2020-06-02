@@ -22,8 +22,6 @@ package io.vertx.db2client.impl.drda;
  */
 public class SqlCode {
 	
-	// TODO: @AGG Convert this class to an interface with constants
-	
 	public static final int CONNECTION_REFUSED = -4499;
 	public static final int RDB_NOT_FOUND = -30061;
 	public static final int INVALID_CREDENTIALS = -4214;
@@ -34,13 +32,32 @@ public class SqlCode {
 	// and could be further broken down by adding more specific SQL error codes and handling them separately 
 	public static final int INVALID_SQL_STATEMENT = -104;
 	
+	public static final int MISMATCHING_COLUMNS_AND_VALUES = -117;
+	
+	public static final int REPEATED_COLUMN_REFERENCE = -121;
+	
+	public static final int NO_ORDER_BY_IDENTIFIER = -125;
+	
+	public static final int UPDATE_READONLY_COLUMN = -151;
+	
+	public static final int INVALID_KEYWORD = -199;
+	
+	public static final int AMBIGUOUS_COLUMN_NAME = -203;
+	
 	// The error message for this says "Object not defined in DB2" in Wikipedia and 
-	// "<name> is an undefined name" in the IBM zOS DB2 Knowledge Center
-	// But I see it with invalid table names specified in a query
-	public static final int OBJECT_NOT_DEFINED = -204;
+    // "<name> is an undefined name" in the IBM zOS DB2 Knowledge Center
+    // But I see it with invalid table names specified in a query
+    public static final int OBJECT_NOT_DEFINED = -204;
+	
 	public static final int COLUMN_DOES_NOT_EXIST = -206;
 	
+	public static final int NULL_CONSTRAINT_VIOLATION = -407;
+	
+	public static final int PRIMARY_KEY_CAN_BE_NULL = -542;
+	
 	public static final int DATA_TYPE_INVALID_ATTR = -604;
+	
+	public static final int DUPLICATE_KEYS_DETECTED = -803;
 	
     private final int code_;
 

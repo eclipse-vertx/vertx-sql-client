@@ -21,6 +21,7 @@ import io.vertx.db2client.impl.DB2DatabaseMetadata;
 
 public class ConnectionMetaData {
   
+  public byte[] correlationToken;
   public String databaseName;
   public DB2DatabaseMetadata dbMetadata;
   public final SectionManager sectionManager = new SectionManager();

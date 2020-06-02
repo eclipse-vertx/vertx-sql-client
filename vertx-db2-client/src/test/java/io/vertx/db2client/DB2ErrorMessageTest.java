@@ -159,4 +159,94 @@ public class DB2ErrorMessageTest extends DB2TestBase {
 			}));
 		}));
 	}
+
+	/**
+	 * Incorrect number of inserted columns (2) and inserted values (3)
+	 * Should force sqlcode -117
+	 */
+	@Test
+	public void testMismatchingInsertedColumns(TestContext ctx) {
+      DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+        conn.query("INSERT INTO basicdatatype (id, test_int_2) VALUES (99,24,25)").execute(ctx.asyncAssertFailure(err -> {
+            ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
+            DB2Exception ex = (DB2Exception) err;
+            assertContains(ctx, ex.getMessage(), "An INSERT statement contained a different number of insert columns from the number of insert values that were supplied");
+            ctx.assertEquals(SqlCode.MISMATCHING_COLUMNS_AND_VALUES, ex.getErrorCode());
+          }));
+      }));
+    }
+	
+	/**
+	 * Inserted column is repeated more than once
+	 * Should force sqlcode -121
+	 */
+	@Test
+    public void testRepeatedColumnReference(TestContext ctx) {
+      DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+        conn.query("INSERT INTO basicdatatype (id, test_int_2, test_int_2) VALUES (99,24,25)").execute(ctx.asyncAssertFailure(err -> {
+            ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
+            DB2Exception ex = (DB2Exception) err;
+            assertContains(ctx, ex.getMessage(), "An INSERT or UPDATE statement listed the same column name (TEST_INT_2) more than one time in its update list");
+            ctx.assertEquals(SqlCode.REPEATED_COLUMN_REFERENCE, ex.getErrorCode());
+          }));
+      }));
+	}
+	
+	/**
+	 * A query with joins from two tables that both have columns with the same name, 
+	 * but the column names are not qualified by the table prefix
+	 * Should for sqlcode -203
+	 */
+    @Test
+    public void testAmbiguousColumnName(TestContext ctx) {
+      DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+        conn.query("SELECT immutable.id AS IMM_ID," +
+            "Fortune.id AS FORT_ID," +
+            "message FROM immutable " +
+            "INNER JOIN Fortune ON immutable.id = Fortune.id " +
+            "WHERE immutable.id=1").execute(ctx.asyncAssertFailure(err -> {
+            ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
+            DB2Exception ex = (DB2Exception) err;
+            assertContains(ctx, ex.getMessage(), "A reference to the column name 'MESSAGE' is ambiguous");
+            ctx.assertEquals(SqlCode.AMBIGUOUS_COLUMN_NAME, ex.getErrorCode());
+          }));
+      }));
+    }
+    
+    /**
+     * Insert a new row that would violate a unique column constraint
+     * Should force sqlcode -803
+     */
+    @Test
+    public void testDuplicateKeys(TestContext ctx) {
+      DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+        conn.query("INSERT INTO immutable (id, message) VALUES (1, 'a duplicate key')").execute(ctx.asyncAssertFailure(err -> {
+            ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
+            DB2Exception ex = (DB2Exception) err;
+            assertContains(ctx, ex.getMessage(), "Duplicate keys were detected on table DB2INST1.IMMUTABLE");
+            ctx.assertEquals(SqlCode.DUPLICATE_KEYS_DETECTED, ex.getErrorCode());
+          }));
+      }));
+    }
+    
+    /**
+     * Tables created with a PRIMARY KEY column must also specify NOT NULL
+     * Should force sqlcode -542
+     */
+    @Test
+    public void testCreateTableNullPrimaryKey(TestContext ctx) {
+      DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+        conn.query("CREATE TABLE fruits (id INTEGER PRIMARY KEY, name VARCHAR(50) NOT NULL)").execute(ctx.asyncAssertFailure(err -> {
+            ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
+            DB2Exception ex = (DB2Exception) err;
+            assertContains(ctx, ex.getMessage(), "The column 'ID' cannot be a column of a primary key because it can contain null values");
+            ctx.assertEquals(SqlCode.PRIMARY_KEY_CAN_BE_NULL, ex.getErrorCode());
+          }));
+      }));
+    }
+	
+	public static void assertContains(TestContext ctx, String fullString, String lookFor) {
+	  ctx.assertNotNull(fullString, "Expected to find '" + lookFor + "' in string, but was null");
+	  ctx.assertTrue(fullString.contains(lookFor), "Expected to find '" + lookFor + "' in string, but was: " + fullString);
+	}
 }
