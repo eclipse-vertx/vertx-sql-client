@@ -50,7 +50,7 @@ public class DB2Driver implements Driver {
 
   @Override
   public String name() {
-    return KnownDrivers.DB2.name();
+    return "DB2";
   }
 
 }

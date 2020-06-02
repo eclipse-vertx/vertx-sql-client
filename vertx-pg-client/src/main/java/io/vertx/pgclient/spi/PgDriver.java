@@ -35,7 +35,7 @@ public class PgDriver implements Driver {
 
   @Override
   public String name() {
-    return KnownDrivers.POSTGRESQL.name();
+    return "POSTGRESQL";
   }
 
 }

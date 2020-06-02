@@ -50,7 +50,7 @@ public class MSSQLDriver implements Driver {
 
   @Override
   public String name() {
-    return KnownDrivers.SQLSERVER.name();
+    return "SQLSERVER";
   }
 
 }

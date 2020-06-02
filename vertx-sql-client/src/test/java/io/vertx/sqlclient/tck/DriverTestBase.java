@@ -15,7 +15,6 @@ import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.spi.Driver;
-import io.vertx.sqlclient.spi.Driver.KnownDrivers;
 
 public abstract class DriverTestBase {
   
@@ -37,11 +36,6 @@ public abstract class DriverTestBase {
     Driver d = getDriver();
     ctx.assertNotNull(d.name());
     ctx.assertEquals(getDriverName(), d.name());
-    try {
-      Driver.KnownDrivers.valueOf(d.name());
-    } catch (IllegalArgumentException e) {
-      ctx.fail("Driver returned a name that is not a known value: " + d.name());
-    }
   }
   
   @Test
@@ -50,11 +44,6 @@ public abstract class DriverTestBase {
     ctx.assertNotNull(opts);
     ctx.assertNotNull(opts.getHost());
     ctx.assertTrue(opts.getPort() > 1024, "Default connect options should have a valid port by default");
-    
-    KnownDrivers d = KnownDrivers.valueOf(getDriverName());
-    SqlConnectOptions opts2 = Driver.createConnectOptions(d);
-    ctx.assertNotNull(opts2);
-    ctx.assertEquals(opts, opts2, "opts=" + opts.toJson().encode() + "  opts2=" + opts2.toJson().encode());
   }
   
   @Test
