@@ -177,6 +177,11 @@ public class NetSqlca {
 	   	                "' specifies an invalid attribute such as precision, length, or scale.", sqlca.sqlCode_, sqlca.sqlState_);
 	   	        else
 	   	            throw new DB2Exception("The statement cannot be processed. A data type definition specifies an invalid attribute such as precision, length, or scale.", sqlca.sqlCode_, sqlca.sqlState_);
+	   	    case SqlCode.INSERT_INTO_GENERATED_ALWAYS:
+	   	        if (errMsg.length() > 0)
+	   	            throw new DB2Exception("A value cannot be specified for column '" + errMsg + "' which is identified as GENERATED ALWAYS", sqlca.sqlCode_, sqlca.sqlState_);
+	   	        else
+	   	            throw new DB2Exception("A value cannot be specified for a column which is identified as GENERATED ALWAYS", sqlca.sqlCode_, sqlca.sqlState_);
 	   	    case SqlCode.DUPLICATE_KEYS_DETECTED:
 	   	        if (errMsgTokens.length >= 2)
 	   	            throw new DB2Exception("Duplicate keys were detected on table " + errMsgTokens[1], sqlca.sqlCode_, sqlca.sqlState_);
