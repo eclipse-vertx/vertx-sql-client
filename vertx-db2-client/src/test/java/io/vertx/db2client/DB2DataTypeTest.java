@@ -21,6 +21,7 @@ import java.sql.RowId;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoField;
 import java.util.Arrays;
+import java.util.UUID;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -133,6 +134,25 @@ public class DB2DataTypeTest extends DB2TestBase {
 	      }));
 	  }));
 	}
+	
+  @Test
+  public void testUUID(TestContext ctx) {
+    UUID uuid = UUID.randomUUID();
+    connect(ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("INSERT INTO db2_types (id,test_vchar) VALUES (?,?)").execute(Tuple.of(6, uuid),
+          ctx.asyncAssertSuccess(insertResult -> {
+            conn.preparedQuery("SELECT id,test_vchar FROM db2_types WHERE id = ?").execute(Tuple.of(6),
+                ctx.asyncAssertSuccess(rows -> {
+                  ctx.assertEquals(1, rows.size());
+                  Row row = rows.iterator().next();
+                  ctx.assertEquals(6, row.getInteger(0));
+                  ctx.assertEquals(uuid, row.getUUID(1));
+                  ctx.assertEquals(uuid, row.getUUID("test_vchar"));
+                  ctx.assertEquals(uuid, row.get(UUID.class, 1));
+                }));
+          }));
+    }));
+  }
 	
 	@Test
 	public void testRowId(TestContext ctx) {

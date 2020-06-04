@@ -75,6 +75,8 @@ public class DB2RowImpl extends ArrayTuple implements Row {
       return type.cast(getDuration(position));
     } else if (type == RowId.class || type == DB2RowId.class) {
       return type.cast(getRowId(position));
+    } else if (type == UUID.class) {
+      return type.cast(getUUID(position));
     } else {
       throw new UnsupportedOperationException("Unsupported type " + type.getName());
     }
@@ -219,7 +221,8 @@ public class DB2RowImpl extends ArrayTuple implements Row {
 
   @Override
   public UUID getUUID(String name) {
-    throw new UnsupportedOperationException();
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getUUID(pos);
   }
 
   @Override

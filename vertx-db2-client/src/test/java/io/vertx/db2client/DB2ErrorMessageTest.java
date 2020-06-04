@@ -244,6 +244,23 @@ public class DB2ErrorMessageTest extends DB2TestBase {
           }));
       }));
     }
+    
+    // 
+    /**
+     * Try inserting a specific value into a column that is declared GENERATED ALWAYS
+     * Should force sqlcode -798
+     */
+    @Test
+    public void testInsertIntoGeneratedAlwaysColumn(TestContext ctx) {
+      DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+        conn.query("INSERT INTO Fortune (id,message) VALUES (25, 'hello world')").execute(ctx.asyncAssertFailure(err -> {
+            ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
+            DB2Exception ex = (DB2Exception) err;
+            assertContains(ctx, ex.getMessage(), "A value cannot be specified for column 'ID' which is identified as GENERATED ALWAYS");
+            ctx.assertEquals(SqlCode.INSERT_INTO_GENERATED_ALWAYS, ex.getErrorCode());
+          }));
+      }));
+    }
 	
 	public static void assertContains(TestContext ctx, String fullString, String lookFor) {
 	  ctx.assertNotNull(fullString, "Expected to find '" + lookFor + "' in string, but was null");
