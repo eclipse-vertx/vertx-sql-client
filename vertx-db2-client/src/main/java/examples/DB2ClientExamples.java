@@ -20,6 +20,8 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.net.JksOptions;
+import io.vertx.core.net.PemTrustOptions;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Connection;
 import io.vertx.db2client.DB2Pool;
@@ -238,6 +240,28 @@ public class DB2ClientExamples {
         });
       } else {
         System.out.println("Could not connect: " + res.cause().getMessage());
+      }
+    });
+  }
+  
+  public void connectSsl(Vertx vertx) {
+
+    DB2ConnectOptions options = new DB2ConnectOptions()
+      .setPort(50001)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUser("user")
+      .setPassword("secret")
+      .setSsl(true)
+      .setTrustStoreOptions(new JksOptions()
+          .setPath("/path/to/keystore.p12")
+          .setPassword("keystoreSecret"));
+
+    DB2Connection.connect(vertx, options, res -> {
+      if (res.succeeded()) {
+        // Connected with SSL
+      } else {
+        System.out.println("Could not connect " + res.cause());
       }
     });
   }
