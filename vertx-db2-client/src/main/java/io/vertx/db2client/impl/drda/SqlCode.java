@@ -57,6 +57,8 @@ public class SqlCode {
 	
 	public static final int DATA_TYPE_INVALID_ATTR = -604;
 	
+	public static final int INSERT_INTO_GENERATED_ALWAYS = -798;
+	
 	public static final int DUPLICATE_KEYS_DETECTED = -803;
 	
     private final int code_;
