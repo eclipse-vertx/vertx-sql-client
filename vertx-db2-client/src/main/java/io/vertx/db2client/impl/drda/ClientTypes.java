@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
+import java.util.UUID;
 
 import io.netty.buffer.ByteBuf;
 
@@ -329,7 +330,8 @@ public class ClientTypes {
         case ClientTypes.LONGVARCHAR:
         case ClientTypes.CLOB:
         	return clazz == String.class ||
-        	       clazz == char[].class;
+        	       clazz == char[].class ||
+        	       clazz == UUID.class;
         case ClientTypes.VARBINARY:
         case ClientTypes.LONGVARBINARY:
         case ClientTypes.BLOB:

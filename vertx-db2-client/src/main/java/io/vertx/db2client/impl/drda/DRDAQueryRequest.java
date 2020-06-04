@@ -27,6 +27,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.UUID;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
@@ -686,8 +687,8 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                         // check for a promoted type, and use that instead if it exists
                         o = retrievePromotedParameterIfExists(i);
                         if (o == null) {
-                            writeSingleorMixedCcsidLDString((String) inputs[i],
-                                    Typdef.typdef.getCcsidMbcEncoding());
+                            String strInput = inputs[i] instanceof UUID ? ((UUID)inputs[i]).toString() : (String) inputs[i];
+                            writeSingleorMixedCcsidLDString(strInput, Typdef.typdef.getCcsidMbcEncoding());
                         } else { // use the promoted object instead
                             throw new UnsupportedOperationException("CLOB");
 //                            setFDODTALob(netAgent_.netConnection_.getSecurityMechanism(), (ClientClob) o,
@@ -1033,7 +1034,13 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                     // lid: PROTOCOL_TYPE_NVARMIX, length override: 32767 (max)
                     // dataFormat: String
                     // this won't work if 1208 is not supported
-                    s = (String) inputRow[i];
+                    if (inputRow[i] == null) {
+                      s = null;
+                    } else if (inputRow[i] instanceof String) {
+                      s = (String) inputRow[i];
+                    } else if (inputRow[i] instanceof UUID) {
+                      s = ((UUID)inputRow[i]).toString();
+                    }
                     // assumes UTF-8 characters at most 3 bytes long
                     // Flow the String as a VARCHAR
                     if (s == null || s.length() <= 32767 / 3) {

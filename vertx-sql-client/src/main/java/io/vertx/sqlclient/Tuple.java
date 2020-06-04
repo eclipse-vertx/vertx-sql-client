@@ -489,6 +489,8 @@ public interface Tuple {
     Object val = getValue(pos);
     if (val instanceof UUID) {
       return (UUID) val;
+    } else if (val instanceof String) {
+      return UUID.fromString((String) val);
     }
     return null;
   }
