@@ -262,6 +262,24 @@ public class DB2ErrorMessageTest extends DB2TestBase {
           }));
       }));
     }
+    
+    @Test
+    public void testDuplicateObject(TestContext ctx) {
+      DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+        conn.query("CREATE TABLE Fortune (\n" + 
+            "  id       integer       NOT NULL GENERATED AS IDENTITY (START WITH 1, INCREMENT BY 1),\n" + 
+            "  message  varchar(2048),\n" + 
+            "  PRIMARY KEY  (id)\n" + 
+            ")").execute(ctx.asyncAssertFailure(err -> {
+            ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
+            DB2Exception ex = (DB2Exception) err;
+            assertContains(ctx, ex.getMessage(), "The object with the name '");
+            assertContains(ctx, ex.getMessage(), "FORTUNE'");
+            assertContains(ctx, ex.getMessage(), "of type 'TABLE' already exists");
+            ctx.assertEquals(SqlCode.OBJECT_ALREADY_EXISTS, ex.getErrorCode());
+          }));
+      }));
+    }
 	
 	public static void assertContains(TestContext ctx, String fullString, String lookFor) {
 	  ctx.assertNotNull(fullString, "Expected to find '" + lookFor + "' in string, but was null");
