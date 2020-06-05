@@ -55,6 +55,8 @@ public class SqlCode {
 	
 	public static final int PRIMARY_KEY_CAN_BE_NULL = -542;
 	
+	public static final int OBJECT_ALREADY_EXISTS = -601;
+	
 	public static final int DATA_TYPE_INVALID_ATTR = -604;
 	
 	public static final int INSERT_INTO_GENERATED_ALWAYS = -798;
