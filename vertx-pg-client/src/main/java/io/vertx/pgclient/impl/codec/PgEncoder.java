@@ -31,7 +31,6 @@ import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
 import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
 import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 import io.vertx.sqlclient.impl.command.InitCommand;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
@@ -91,8 +90,6 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
       return new SimpleQueryCodec<>((SimpleQueryCommand<?>) cmd);
     } else if (cmd instanceof ExtendedQueryCommand<?>) {
       return new ExtendedQueryCommandCodec<>((ExtendedQueryCommand<?>) cmd);
-    } else if (cmd instanceof ExtendedBatchQueryCommand<?>) {
-      return new ExtendedBatchQueryCommandCodec<>((ExtendedBatchQueryCommand<?>) cmd);
     } else if (cmd instanceof PrepareStatementCommand) {
       return new PrepareStatementCommandCodec((PrepareStatementCommand) cmd);
     } else if (cmd instanceof CloseConnectionCommand) {

@@ -25,7 +25,6 @@ import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.command.BiCommand;
 import io.vertx.sqlclient.impl.command.CommandScheduler;
-import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
@@ -97,7 +96,7 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
       handler.fail(msg);
       return null;
     }
-    ExtendedQueryCommand<T> cmd = new ExtendedQueryCommand<>(
+    ExtendedQueryCommand<T> cmd = ExtendedQueryCommand.createQuery(
       preparedStatement,
       arguments,
       fetch,
@@ -131,11 +130,11 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
 
   private ExtendedQueryCommand<T> createExtendedQueryCommand(PreparedStatement preparedStatement,
                                                              boolean autoCommit,
-                                                             Tuple args,
+                                                             Tuple tuple,
                                                              QueryResultBuilder<T, R, L> handler) {
-    return new ExtendedQueryCommand<>(
+    return ExtendedQueryCommand.createQuery(
       preparedStatement,
-      args,
+      tuple,
       autoCommit,
       collector,
       handler);
@@ -161,7 +160,7 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
         return;
       }
     }
-    ExtendedBatchQueryCommand<T> cmd = new ExtendedBatchQueryCommand<>(preparedStatement, batch, autoCommit, collector, handler);
+    ExtendedQueryCommand<T> cmd = ExtendedQueryCommand.createBatch(preparedStatement, batch, autoCommit, collector, handler);
     scheduler.schedule(cmd, handler);
   }
 
@@ -186,10 +185,10 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     scheduler.schedule(cmd, handler);
   }
 
-  private ExtendedBatchQueryCommand<T> createBatchQueryCommand(PreparedStatement preparedStatement,
-                                                               boolean autoCommit,
-                                                               List<Tuple> argsList,
-                                                               QueryResultBuilder<T, R, L> handler) {
-    return new ExtendedBatchQueryCommand<>(preparedStatement, argsList, autoCommit, collector, handler);
+  private ExtendedQueryCommand<T> createBatchQueryCommand(PreparedStatement preparedStatement,
+                                                          boolean autoCommit,
+                                                          List<Tuple> argsList,
+                                                          QueryResultBuilder<T, R, L> handler) {
+    return ExtendedQueryCommand.createBatch(preparedStatement, argsList, autoCommit, collector, handler);
   }
 }

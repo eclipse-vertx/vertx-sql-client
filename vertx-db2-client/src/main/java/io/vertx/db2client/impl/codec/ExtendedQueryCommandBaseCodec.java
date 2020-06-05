@@ -27,9 +27,9 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.command.CommandResponse;
-import io.vertx.sqlclient.impl.command.ExtendedQueryCommandBase;
+import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
-abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBase<R>>
+abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommand<R>>
     extends QueryCommandBaseCodec<R, C> {
 
   final DB2PreparedStatement statement;
