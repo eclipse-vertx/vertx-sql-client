@@ -166,6 +166,18 @@ public class NetSqlca {
   	            else
   	                throw new DB2Exception("A column could not be created as a primary key column because it can contain null values", 
   	                    sqlca.sqlCode_, sqlca.sqlState_);
+  	        case SqlCode.OBJECT_ALREADY_EXISTS: // -601
+  	            if (errMsg.length() > 0) {
+  	                if (errMsgTokens.length == 2) {
+  	                  String objectType = errMsgTokens[1];
+  	                  String objectName = errMsgTokens[0];
+  	                  throw new DB2Exception("The object with the name '" + objectName + "' of type '" + objectType + "' already exists", sqlca.sqlCode_, sqlca.sqlState_);
+  	                } else {
+  	                  throw new DB2Exception("The object with the name '" + errMsg + "' already exists", sqlca.sqlCode_, sqlca.sqlState_);
+  	                }
+  	            } else {
+  	                throw new DB2Exception("The name of the object to be created cannot be identical to the existing name", sqlca.sqlCode_, sqlca.sqlState_);
+  	            }
 	   	    case SqlCode.DATABASE_NOT_FOUND:
 	   	    	if (errMsg.length() > 0)
 	   	    		throw new DB2Exception("The database '" + errMsg + "' provided was not found", sqlca.sqlCode_, sqlca.sqlState_);
