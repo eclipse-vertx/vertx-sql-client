@@ -15,6 +15,8 @@
  */
 package io.vertx.db2client.tck;
 
+import static io.vertx.db2client.junit.TestUtil.assertContains;
+
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.tck.ConnectionTestBase;
 import io.vertx.db2client.DB2Exception;
@@ -69,16 +71,14 @@ public class DB2ConnectionTest extends ConnectionTestBase {
   @Test
   @Override
   public void testConnectInvalidDatabase(TestContext ctx) {
-    options.setDatabase("invalidDatabase");
+    options.setDatabase("bogusdb");
     connect(ctx.asyncAssertFailure(err -> {
     	ctx.assertTrue(err instanceof DB2Exception);
     	DB2Exception ex = (DB2Exception) err;
-    	ctx.assertTrue(ex.getMessage().contains("INVALIDDATABASE") ||
-    			       ex.getMessage().contains("The connection was closed by the database server."),
-    			       "Unexpected message: " + ex.getMessage());
-    	ctx.assertTrue(ex.getSqlState() == SQLState.NET_DATABASE_NOT_FOUND ||
-    			       ex.getSqlState() == SQLState.AUTH_DATABASE_CONNECTION_REFUSED,
-    			       "Unexpected sql state: " + ex.getSqlState());
+    	assertContains(ctx, ex.getMessage(), "bogusdb", "The connection was closed by the database server");
+    	assertContains(ctx, ex.getSqlState(), 
+    	    SQLState.NET_DATABASE_NOT_FOUND, 
+    	    SQLState.AUTH_DATABASE_CONNECTION_REFUSED);
     	ctx.assertTrue(ex.getErrorCode() == SqlCode.RDB_NOT_FOUND ||
     			       ex.getErrorCode() == SqlCode.CONNECTION_REFUSED,
     			       "Unexpected error code: " + ex.getErrorCode());

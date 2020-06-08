@@ -2,7 +2,6 @@ package io.vertx.db2client.tck;
 
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -56,7 +55,7 @@ public class DB2PreparedQueryCachedTest extends PreparedQueryCachedTestBase {
   @Override
   public void testPrepareError(TestContext ctx) {
     msgVerifier = (err) -> {
-      ctx.assertEquals("The object 'DB2INST1.DOES_NOT_EXIST' provided is not defined", err.getMessage());
+      ctx.assertEquals("The object '" + rule.options().getUser().toUpperCase() + ".DOES_NOT_EXIST' provided is not defined", err.getMessage());
     };
     super.testPrepareError(ctx);
   }

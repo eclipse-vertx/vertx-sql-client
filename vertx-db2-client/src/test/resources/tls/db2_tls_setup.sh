@@ -3,6 +3,7 @@
 echo "BEGIN SSH SETUP"
 export PATH=/opt/ibm/db2/V11.5/bin/:$PATH
 
+su - vertx -c 'db2 update dbm cfg using DIAGLEVEL 2'
 su - vertx -c 'db2 update dbm cfg using SSL_SVR_KEYDB /certs/server.kdb'
 su - vertx -c 'db2 update dbm cfg using SSL_SVR_STASH /certs/server.sth'
 su - vertx -c 'db2 update dbm cfg using SSL_SVR_LABEL mylabel'

@@ -15,6 +15,8 @@
  */
 package io.vertx.db2client;
 
+import static io.vertx.db2client.junit.TestUtil.assertContains;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -32,15 +34,11 @@ public class DB2ErrorMessageTest extends DB2TestBase {
 		DB2Connection.connect(vertx, options, ctx.asyncAssertFailure(err -> {
 			ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
 			DB2Exception ex = (DB2Exception) err;
-			ctx.assertTrue(ex.getMessage().contains("provided was not found") ||
-					ex.getMessage().contains("The connection was closed by the database server"), 
-					"The SQL error message returned is not correct.  It should have contained \"provided was not found\" or \"The connection was closed by the database server\", but instead it said \"" + ex.getMessage() + "\"");
+			assertContains(ctx, ex.getMessage(), "provided was not found", "The connection was closed by the database server");
 			ctx.assertTrue(ex.getErrorCode() == SqlCode.DATABASE_NOT_FOUND ||
 					ex.getErrorCode() == SqlCode.CONNECTION_REFUSED, 
 					"Wrong SQL code received.  Expecting " + SqlCode.DATABASE_NOT_FOUND + " or " + SqlCode.CONNECTION_REFUSED + ", but received " + ex.getErrorCode());
-			ctx.assertTrue(ex.getSqlState().equalsIgnoreCase("2E000") ||
-					ex.getSqlState() == SQLState.AUTH_DATABASE_CONNECTION_REFUSED,
-					"Wrong SQL state received.  Expecting 2E000 or " + SQLState.AUTH_DATABASE_CONNECTION_REFUSED + ", but received " + ex.getSqlState());
+			assertContains(ctx, ex.getSqlState(), "2E000", SQLState.AUTH_DATABASE_CONNECTION_REFUSED);
 		}));
 	}
 
@@ -50,7 +48,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
 		DB2Connection.connect(vertx, options, ctx.asyncAssertFailure(err -> {
 			ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
 			DB2Exception ex = (DB2Exception) err;
-			ctx.assertTrue(ex.getMessage().contains("Invalid credentials"), "The SQL error message returned is not correct.  It should have contained \"Invalid credentials\", but instead it said \"" + ex.getMessage() + "\"");
+			assertContains(ctx, ex.getMessage(), "Invalid credentials");
 			ctx.assertEquals(SqlCode.INVALID_CREDENTIALS, ex.getErrorCode());
 			ctx.assertEquals(SQLState.NET_CONNECT_AUTH_FAILED, ex.getSqlState());
 		}));
@@ -62,7 +60,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
 		DB2Connection.connect(vertx, options, ctx.asyncAssertFailure(err -> {
 			ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
 			DB2Exception ex = (DB2Exception) err;
-			ctx.assertTrue(ex.getMessage().contains("Invalid credentials"), "The SQL error message returned is not correct.  It should have contained \"Invalid credentials\", but instead it said \"" + ex.getMessage() + "\"");
+			assertContains(ctx, ex.getMessage(), "Invalid credentials");
 			ctx.assertEquals(SqlCode.INVALID_CREDENTIALS, ex.getErrorCode());
 			ctx.assertEquals(SQLState.NET_CONNECT_AUTH_FAILED, ex.getSqlState());
 		}));
@@ -74,7 +72,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
 			options.setDatabase("");
 			ctx.fail("Expected a DB2Exception to be thrown");
 		} catch (DB2Exception ex) {
-			ctx.assertTrue(ex.getMessage().contains("The database name cannot be blank or null"), "The SQL error message returned is not correct.  It should have contained \"The database name cannot be blank or null\", but instead it said \"" + ex.getMessage() + "\"");
+			assertContains(ctx, ex.getMessage(), "The database name cannot be blank or null");
 			ctx.assertEquals(SqlCode.DATABASE_NOT_FOUND, ex.getErrorCode());
 			ctx.assertEquals(SQLState.DATABASE_NOT_FOUND, ex.getSqlState());
 		}
@@ -86,7 +84,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
 			options.setUser("");
 			ctx.fail("Expected a DB2Exception to be thrown");
 		} catch (DB2Exception ex) {
-			ctx.assertTrue(ex.getMessage().contains("The user cannot be blank or null"), "The SQL error message returned is not correct.  It should have contained \"The user cannot be blank or null\", but instead it said \"" + ex.getMessage() + "\"");
+		    assertContains(ctx, ex.getMessage(), "The user cannot be blank or null");
 			ctx.assertEquals(SqlCode.MISSING_CREDENTIALS, ex.getErrorCode());
 			ctx.assertEquals(SQLState.CONNECT_USERID_ISNULL, ex.getSqlState());
 		}
@@ -98,7 +96,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
 			options.setPassword("");
 			ctx.fail("Expected a DB2Exception to be thrown");
 		} catch (DB2Exception ex) {
-			ctx.assertTrue(ex.getMessage().contains("The password cannot be blank or null"), "The SQL error message returned is not correct.  It should have contained \"The password cannot be blank or null\", but instead it said \"" + ex.getMessage() + "\"");
+		    assertContains(ctx, ex.getMessage(), "The password cannot be blank or null");
 			ctx.assertEquals(SqlCode.MISSING_CREDENTIALS, ex.getErrorCode());
 			ctx.assertEquals(SQLState.CONNECT_PASSWORD_ISNULL, ex.getSqlState());
 		}
@@ -111,7 +109,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
 			conn.query("SELECT id, message FROM ").execute(ctx.asyncAssertFailure(err -> {
 				ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
 				DB2Exception ex = (DB2Exception) err;
-				ctx.assertTrue(ex.getMessage().contains("The SQL syntax provided was invalid"), "The SQL error message returned is not correct.  It should have contained \"The SQL syntax provided was invalid\", but instead it said \"" + ex.getMessage() + "\"");
+				assertContains(ctx, ex.getMessage(), "The SQL syntax provided was invalid");
 				ctx.assertEquals(SqlCode.INVALID_SQL_STATEMENT, ex.getErrorCode());
 				ctx.assertEquals("42601", ex.getSqlState());
 			}));
@@ -125,7 +123,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
 			conn.query("SELECT id, message FROM TABLE_DOES_NOT_EXIST").execute(ctx.asyncAssertFailure(err -> {
 				ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
 				DB2Exception ex = (DB2Exception) err;
-				ctx.assertTrue(ex.getMessage().contains("provided is not defined"), "The SQL error message returned is not correct.  It should have contained \"provided is not defined\", but instead it said \"" + ex.getMessage() + "\"");
+				assertContains(ctx, ex.getMessage(), "provided is not defined");
 				ctx.assertEquals(SqlCode.OBJECT_NOT_DEFINED, ex.getErrorCode());
 				ctx.assertEquals("42704", ex.getSqlState());
 			}));
@@ -139,7 +137,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
 			conn.query("SELECT INVALID_COLUMN FROM immutable").execute(ctx.asyncAssertFailure(err -> {
 				ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
 				DB2Exception ex = (DB2Exception) err;
-				ctx.assertTrue(ex.getMessage().contains("provided does not exist"), "The SQL error message returned is not correct.  It should have contained \"provided does not exist\", but instead it said \"" + ex.getMessage() + "\"");
+				assertContains(ctx, ex.getMessage(), "provided does not exist");
 				ctx.assertEquals(SqlCode.COLUMN_DOES_NOT_EXIST, ex.getErrorCode());
 				ctx.assertEquals("42703", ex.getSqlState());
 			}));
@@ -153,7 +151,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
 			conn.query("KJHDKJAHDQWEUWHQDDA:SHDL:KASHDJ").execute(ctx.asyncAssertFailure(err -> {
 				ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
 				DB2Exception ex = (DB2Exception) err;
-				ctx.assertTrue(ex.getMessage().contains("The SQL syntax provided was invalid"), "The SQL error message returned is not correct.  It should have contained \"The SQL syntax provided was invalid\", but instead it said \"" + ex.getMessage() + "\"");
+				assertContains(ctx, ex.getMessage(), "The SQL syntax provided was invalid");
 				ctx.assertEquals(SqlCode.INVALID_SQL_STATEMENT, ex.getErrorCode());
 				ctx.assertEquals("42601", ex.getSqlState());
 			}));
@@ -223,7 +221,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
         conn.query("INSERT INTO immutable (id, message) VALUES (1, 'a duplicate key')").execute(ctx.asyncAssertFailure(err -> {
             ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
             DB2Exception ex = (DB2Exception) err;
-            assertContains(ctx, ex.getMessage(), "Duplicate keys were detected on table DB2INST1.IMMUTABLE");
+            assertContains(ctx, ex.getMessage(), "Duplicate keys were detected on table " + options.getUser().toUpperCase() + ".IMMUTABLE");
             ctx.assertEquals(SqlCode.DUPLICATE_KEYS_DETECTED, ex.getErrorCode());
           }));
       }));
@@ -279,9 +277,4 @@ public class DB2ErrorMessageTest extends DB2TestBase {
           }));
       }));
     }
-	
-	public static void assertContains(TestContext ctx, String fullString, String lookFor) {
-	  ctx.assertNotNull(fullString, "Expected to find '" + lookFor + "' in string, but was null");
-	  ctx.assertTrue(fullString.contains(lookFor), "Expected to find '" + lookFor + "' in string, but was: " + fullString);
 	}
-}
