@@ -32,6 +32,7 @@
   <description>Vert.x SQL Client Templates</description>
 
   <properties>
+    <doc.skip>false</doc.skip>
     <docs.dir>${project.basedir}/src/main/docs</docs.dir>
     <generated.dir>${project.basedir}/src/main/generated</generated.dir>
   </properties>
