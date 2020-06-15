@@ -16,6 +16,8 @@
 package io.vertx.db2client.impl.drda;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.sql.RowId;
 import java.sql.Types;
@@ -25,8 +27,10 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.UUID;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 
 public class DRDAQueryRequest extends DRDAConnectRequest {
     
@@ -683,8 +687,8 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                         // check for a promoted type, and use that instead if it exists
                         o = retrievePromotedParameterIfExists(i);
                         if (o == null) {
-                            writeSingleorMixedCcsidLDString((String) inputs[i],
-                                    Typdef.typdef.getCcsidMbcEncoding());
+                            String strInput = inputs[i] instanceof UUID ? ((UUID)inputs[i]).toString() : (String) inputs[i];
+                            writeSingleorMixedCcsidLDString(strInput, Typdef.typdef.getCcsidMbcEncoding());
                         } else { // use the promoted object instead
                             throw new UnsupportedOperationException("CLOB");
 //                            setFDODTALob(netAgent_.netConnection_.getSecurityMechanism(), (ClientClob) o,
@@ -919,7 +923,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
         }
 
         buildSQLDTAGRP(numColumns, lidAndLengthOverrides, overrideExists, overrideMap);
-
+        
         if (overrideExists) {
             buffer.writeBytes(FdocaConstants.MDD_SQLDTA_TOSEND);
         }
@@ -942,11 +946,13 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                                   Hashtable overrideMap) {
         int n = 0;
         int offset = 0;
+        
 
         n = calculateColumnsInSQLDTAGRPtriplet(numVars);
         buildTripletHeader(((3 * n) + 3),
                 FdocaConstants.NGDA_TRIPLET_TYPE,
                 FdocaConstants.SQLDTAGRP_LID);
+        
 
         do {
             writeLidAndLengths(lidAndLengthOverrides, n, offset, mddRequired, overrideMap);
@@ -954,13 +960,14 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
             if (numVars == 0) {
                 break;
             }
-
+            
             offset += n;
             n = calculateColumnsInSQLDTAGRPtriplet(numVars);
             buildTripletHeader(((3 * n) + 3),
                     FdocaConstants.CPT_TRIPLET_TYPE,
                     0x00);
         } while (true);
+        
     }
     
     private int calculateColumnsInSQLDTAGRPtriplet(int numVars) {
@@ -1027,7 +1034,13 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                     // lid: PROTOCOL_TYPE_NVARMIX, length override: 32767 (max)
                     // dataFormat: String
                     // this won't work if 1208 is not supported
-                    s = (String) inputRow[i];
+                    if (inputRow[i] == null) {
+                      s = null;
+                    } else if (inputRow[i] instanceof String) {
+                      s = (String) inputRow[i];
+                    } else if (inputRow[i] instanceof UUID) {
+                      s = ((UUID)inputRow[i]).toString();
+                    }
                     // assumes UTF-8 characters at most 3 bytes long
                     // Flow the String as a VARCHAR
                     if (s == null || s.length() <= 32767 / 3) {
@@ -1123,17 +1136,21 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                     }
                     else
                     {
-                        // adjust scale if it is negative. Packed Decimal cannot handle 
-                        // negative scale. We don't want to change the original 
-                        // object so make a new one.
-                        if (bigDecimal.scale() < 0) 
-                        {
+                        if (bigDecimal.scale() < 0)  {
                             bigDecimal =  bigDecimal.setScale(0);
                             inputRow[i] = bigDecimal;
-                        }                        
+                        }
+                        if (bigDecimal.precision() > parameterMetaData.sqlPrecision_[i]) {
+                            bigDecimal = bigDecimal.round(new MathContext(parameterMetaData.sqlPrecision_[i]));
+                            inputRow[i] = bigDecimal;
+                        }
+                        if (bigDecimal.scale() > parameterMetaData.sqlScale_[i]) {
+                            bigDecimal = bigDecimal.setScale(parameterMetaData.sqlScale_[i], RoundingMode.HALF_UP);
+                            inputRow[i] = bigDecimal;
+                        }
                         scale = bigDecimal.scale();
-                        precision = Decimal.computeBigDecimalPrecision(bigDecimal);
-                    }                    
+                        precision = bigDecimal.precision();
+                    }
                     lidAndLengths[i][0] = DRDAConstants.DRDA_TYPE_NDECIMAL;
                     lidAndLengths[i][1] = (precision << 8) + // use precision above
                         (scale << 0);
@@ -1399,7 +1416,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                     lidAndLengths[i][0]--;
                 }
             }
-            return overrideMap;
+            return overrideMap; // @AGG this is never used
 //        }
 //        catch ( SQLException se )
 //        {

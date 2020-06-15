@@ -44,37 +44,39 @@ public class DB2RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public <T> T get(Class<T> type, int pos) {
+  public <T> T get(Class<T> type, int position) {
     if (type == Boolean.class) {
-      return type.cast(getBoolean(pos));
+      return type.cast(getBoolean(position));
     } else if (type == Byte.class) {
-      return type.cast(getByte(pos));
+      return type.cast(getByte(position));
     } else if (type == Short.class) {
-      return type.cast(getShort(pos));
+      return type.cast(getShort(position));
     } else if (type == Integer.class) {
-      return type.cast(getInteger(pos));
+      return type.cast(getInteger(position));
     } else if (type == Long.class) {
-      return type.cast(getLong(pos));
+      return type.cast(getLong(position));
     } else if (type == Float.class) {
-      return type.cast(getFloat(pos));
+      return type.cast(getFloat(position));
     } else if (type == Double.class) {
-      return type.cast(getDouble(pos));
+      return type.cast(getDouble(position));
     } else if (type == Numeric.class) {
-      return type.cast(getNumeric(pos));
+      return type.cast(getNumeric(position));
     } else if (type == String.class) {
-      return type.cast(getString(pos));
+      return type.cast(getString(position));
     } else if (type == Buffer.class) {
-      return type.cast(getBuffer(pos));
+      return type.cast(getBuffer(position));
     } else if (type == LocalDate.class) {
-      return type.cast(getLocalDate(pos));
+      return type.cast(getLocalDate(position));
     } else if (type == LocalDateTime.class) {
-      return type.cast(getLocalDateTime(pos));
+      return type.cast(getLocalDateTime(position));
     } else if (type == LocalTime.class) {
-      return type.cast(getLocalTime(pos));
+      return type.cast(getLocalTime(position));
     } else if (type == Duration.class) {
-      return type.cast(getDuration(pos));
+      return type.cast(getDuration(position));
     } else if (type == RowId.class || type == DB2RowId.class) {
-      return type.cast(getRowId(pos));
+      return type.cast(getRowId(position));
+    } else if (type == UUID.class) {
+      return type.cast(getUUID(position));
     } else {
       throw new UnsupportedOperationException("Unsupported type " + type.getName());
     }
@@ -100,8 +102,7 @@ public class DB2RowImpl extends ArrayTuple implements Row {
     if (idx >= 0) {
       return idx;
     }
-    // Unless the column is renamed in the SQL query, the column name will be
-    // uppercase
+    // Unless the column is renamed in the SQL query, the column name will be uppercase
     return rowDesc.columnIndex(name.toUpperCase());
   }
 
@@ -225,7 +226,8 @@ public class DB2RowImpl extends ArrayTuple implements Row {
 
   @Override
   public UUID getUUID(String name) {
-    throw new UnsupportedOperationException();
+    int pos = getColumnIndex(name);
+    return pos == -1 ? null : getUUID(pos);
   }
 
   @Override

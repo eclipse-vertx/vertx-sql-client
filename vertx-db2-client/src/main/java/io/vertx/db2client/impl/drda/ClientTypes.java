@@ -16,8 +16,14 @@
 package io.vertx.db2client.impl.drda;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.RowId;
 import java.sql.Types;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Arrays;
+import java.util.UUID;
 
 import io.netty.buffer.ByteBuf;
 
@@ -28,19 +34,16 @@ import io.netty.buffer.ByteBuf;
  * DB2 Data Types</a>
  */
 public class ClientTypes {
-    // -------------------------------- Driver types
-    // -------------------------------------------------
-
-	public final static int BIT = Types.BIT; // -7;
-
-    // Not currently supported as a DB2 column type. Mapped to SMALLINT.
+  
+    public final static int BIT = Types.BIT; // -7
+    
     // final static int TINYINT = Types.TINYINT; // -6;
 
-    public final static int BOOLEAN = Types.BOOLEAN; // 16;
+    public final static int BOOLEAN = Types.BOOLEAN; // 16
 
-    public final static int SMALLINT = Types.SMALLINT; // 5;
+    public final static int SMALLINT = Types.SMALLINT; // 5
 
-    public final static int INTEGER = Types.INTEGER; // 4;
+    public final static int INTEGER = Types.INTEGER; // 4
 
     public final static int BIGINT = Types.BIGINT; // -5;
 
@@ -82,7 +85,6 @@ public class ClientTypes {
     
     public final static int ROWID = Types.ROWID; // -8
 
-    // hide the default constructor
     private ClientTypes() {
     }
 
@@ -140,8 +142,51 @@ public class ClientTypes {
             return "STRUCT";
         // Unknown type:
         default:
-            return "<UNKNOWN>";
+            return "UNKNOWN(" + type + ")";
         }
+    }
+    
+    public static Class<?> preferredJavaType(int clientType) {
+      switch (clientType) {
+      case BIGINT:
+        return BigInteger.class;
+      case BINARY:
+      case LONGVARBINARY:
+      case VARBINARY:
+        return ByteBuf.class;
+      case BIT:
+        return Boolean.class;
+      case BLOB:
+        return ByteBuf.class;
+      case BOOLEAN:
+        return Boolean.class;
+      case CHAR:
+      case LONGVARCHAR:
+      case VARCHAR:
+        return String.class;
+      case CLOB:
+        return String.class;
+      case DATE:
+        return LocalDate.class;
+      case DECIMAL:
+        return BigDecimal.class;
+      case DOUBLE:
+        return Double.class;
+      case INTEGER:
+        return Integer.class;
+      case REAL:
+        return Float.class;
+      case ROWID:
+        return DB2RowId.class;
+      case SMALLINT:
+        return Short.class;
+      case TIME:
+        return LocalTime.class;
+      case TIMESTAMP:
+        return LocalDateTime.class;
+      default:
+        throw new IllegalArgumentException("Unknown client type: " + clientType);
+      }
     }
 
     static public int mapDB2TypeToDriverType(boolean isDescribed, int sqlType, long length, int ccsid) {
@@ -218,12 +263,9 @@ public class ClientTypes {
     	
     	Class<?> clazz = value.getClass();
     	// Everything can convert to String
-    	if (clazz == String.class)
-    		return true; 
     	switch (toType) {
         case ClientTypes.INTEGER:
         case ClientTypes.BIGINT:
-        case ClientTypes.LONGVARCHAR:
         	return clazz == boolean.class ||
         		   clazz == Boolean.class ||
         		   clazz == double.class ||
@@ -236,7 +278,8 @@ public class ClientTypes {
         		   clazz == Long.class ||
         		   clazz == short.class ||
         		   clazz == Short.class ||
-        		   clazz == BigDecimal.class;
+        		   clazz == BigDecimal.class ||
+        		   clazz == BigInteger.class;
         case ClientTypes.DOUBLE:
         case ClientTypes.REAL:
         case ClientTypes.DECIMAL:
@@ -247,7 +290,6 @@ public class ClientTypes {
 		 		   clazz == BigDecimal.class;
         case ClientTypes.BIT:
         case ClientTypes.BOOLEAN:
-        case ClientTypes.CHAR:
         case ClientTypes.SMALLINT:
         	return clazz == boolean.class ||
 		 		   clazz == Boolean.class ||
@@ -263,7 +305,6 @@ public class ClientTypes {
 		 		   clazz == Byte.class ||
 		 		   clazz == BigDecimal.class;
         case ClientTypes.BINARY:
-        case ClientTypes.BLOB:
         	return clazz == boolean.class ||
         		   clazz == Boolean.class ||
         	       clazz == byte.class ||
@@ -271,18 +312,31 @@ public class ClientTypes {
         	       clazz == byte[].class;
         case ClientTypes.DATE:
         	return clazz == java.time.LocalDate.class ||
-        		   clazz == java.sql.Date.class;
+        		   clazz == java.sql.Date.class ||
+        		   clazz == String.class;
         case ClientTypes.TIME:
         	return clazz == java.time.LocalTime.class ||
-        	       clazz == java.sql.Time.class;
+        	       clazz == java.sql.Time.class ||
+        	       clazz == String.class;
         case ClientTypes.TIMESTAMP:
         	return clazz == java.time.LocalDateTime.class ||
-        	       clazz == java.sql.Timestamp.class;
-        case ClientTypes.VARBINARY:
+        	       clazz == java.sql.Timestamp.class ||
+        	       clazz == String.class;
+        case ClientTypes.CHAR:
+            return clazz == char.class ||
+                   clazz == Character.class ||
+                   clazz == String.class;
         case ClientTypes.VARCHAR:
-        	return clazz == char[].class ||
-        	       clazz == byte[].class ||
-        	       ByteBuf.class.isAssignableFrom(clazz);
+        case ClientTypes.LONGVARCHAR:
+        case ClientTypes.CLOB:
+        	return clazz == String.class ||
+        	       clazz == char[].class ||
+        	       clazz == UUID.class;
+        case ClientTypes.VARBINARY:
+        case ClientTypes.LONGVARBINARY:
+        case ClientTypes.BLOB:
+            return clazz == byte[].class ||
+                   ByteBuf.class.isAssignableFrom(clazz);
         case ClientTypes.ROWID:
             return clazz == RowId.class ||
                    clazz == DB2RowId.class;

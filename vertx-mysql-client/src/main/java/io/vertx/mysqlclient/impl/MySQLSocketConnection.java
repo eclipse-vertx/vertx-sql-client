@@ -28,6 +28,7 @@ import io.vertx.mysqlclient.impl.command.InitialHandshakeCommand;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
+import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -37,6 +38,7 @@ import java.util.Map;
  */
 public class MySQLSocketConnection extends SocketConnectionBase {
 
+  public MySQLDatabaseMetadata metaData;
   private MySQLCodec codec;
 
   public MySQLSocketConnection(NetSocketInternal socket,
@@ -87,5 +89,10 @@ public class MySQLSocketConnection extends SocketConnectionBase {
       }
     });
     pipeline.addFirst("initiate-ssl-handler", new InitiateSslHandler(this, upgradePromise));
+  }
+  
+  @Override
+  public DatabaseMetadata getDatabaseMetaData() {
+    return metaData;
   }
 }

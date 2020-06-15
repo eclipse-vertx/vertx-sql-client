@@ -21,11 +21,14 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLSyntaxErrorException;
+import java.time.Duration;
 import java.util.Objects;
 
 import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.Db2Container;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 
+import io.vertx.core.net.JksOptions;
 import io.vertx.db2client.DB2ConnectOptions;
 
 public class DB2Resource extends ExternalResource {
@@ -44,8 +47,17 @@ public class DB2Resource extends ExternalResource {
     private DB2ConnectOptions options;
     private final Db2Container instance = new Db2Container()
             .acceptLicense()
-            .withLogConsumer(out -> System.out.print("[DB2] " + out.getUtf8String()));
+            .withLogConsumer(out -> System.out.print("[DB2] " + out.getUtf8String()))
             //.withReuse(true); // Cannot use this feature until Testcontainers 1.12.4
+            .withUsername("vertx")
+            .withPassword("vertx")
+            .withDatabaseName("vertx")
+            .withExposedPorts(50000, 50001)
+            .withFileSystemBind("src/test/resources/tls/server/", "/certs/")
+            .withFileSystemBind("src/test/resources/tls/db2_tls_setup.sh", "/var/custom/db2_tls_setup.sh")
+            .waitingFor(new LogMessageWaitStrategy()
+                .withRegEx(".*VERTX SSH SETUP DONE.*")
+                .withStartupTimeout(Duration.ofMinutes(10)));
     
     @Override
     protected void before() throws Throwable {
@@ -56,7 +68,7 @@ public class DB2Resource extends ExternalResource {
     		instance.start();
 	        options = new DB2ConnectOptions()
 	                .setHost(instance.getContainerIpAddress())
-	                .setPort(instance.getFirstMappedPort())
+	                .setPort(instance.getMappedPort(50000))
 	                .setDatabase(instance.getDatabaseName())
 	                .setUser(instance.getUsername())
 	                .setPassword(instance.getPassword());
@@ -83,6 +95,16 @@ public class DB2Resource extends ExternalResource {
     
 	public DB2ConnectOptions options() {
 		return new DB2ConnectOptions(options);
+	}
+	
+	public DB2ConnectOptions secureOptions() {
+	  int securePort = CUSTOM_DB2 ? 50001 : instance.getMappedPort(50001);
+      return new DB2ConnectOptions(options())
+          .setPort(securePort)
+          .setSsl(true)
+          .setTrustStoreOptions(new JksOptions()
+              .setPath("src/test/resources/tls/db2-keystore.p12")
+              .setPassword("db2test"));
 	}
 	
 	public boolean isZOS() {

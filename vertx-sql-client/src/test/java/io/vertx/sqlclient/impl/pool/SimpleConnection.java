@@ -18,6 +18,7 @@
 package io.vertx.sqlclient.impl.pool;
 
 import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.impl.Connection;
 
 class SimpleConnection implements Connection {
@@ -33,6 +34,31 @@ class SimpleConnection implements Connection {
   @Override
   public boolean isSsl() {
     return false;
+  }
+  
+  @Override
+  public DatabaseMetadata getDatabaseMetaData() {
+    return new DatabaseMetadata() {
+      @Override
+      public String productName() {
+        return null;
+      }
+      
+      @Override
+      public String fullVersion() {
+        return null;
+      }
+      
+      @Override
+      public int minorVersion() {
+        return 0;
+      }
+      
+      @Override
+      public int majorVersion() {
+        return 0;
+      }
+    };
   }
 
   @Override

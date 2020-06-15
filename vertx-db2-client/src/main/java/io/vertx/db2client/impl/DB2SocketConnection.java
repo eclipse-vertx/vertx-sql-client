@@ -23,16 +23,19 @@ import io.vertx.core.Handler;
 import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.db2client.impl.codec.DB2Codec;
 import io.vertx.db2client.impl.command.InitialHandshakeCommand;
+import io.vertx.db2client.impl.drda.ConnectionMetaData;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
+import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 public class DB2SocketConnection extends SocketConnectionBase {
 
   private DB2Codec codec;
   private Handler<Void> closeHandler;
+  public final ConnectionMetaData connMetadata = new ConnectionMetaData();
 
   public DB2SocketConnection(NetSocketInternal socket, 
       boolean cachePreparedStatements, 
@@ -74,6 +77,11 @@ public class DB2SocketConnection extends SocketConnectionBase {
   public void handleClose(Throwable t) {
     super.handleClose(t);
     context().runOnContext(closeHandler);
+  }
+  
+  @Override
+  public DatabaseMetadata getDatabaseMetaData() {
+    return connMetadata.dbMetadata;
   }
 
   public DB2SocketConnection closeHandler(Handler<Void> handler) {

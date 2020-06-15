@@ -35,22 +35,20 @@ import io.vertx.core.json.JsonObject;
  *      official doc</a>
  */
 public class DB2ConnectionUriParser {
-
-  // TODO @AGG implement URI parsing
+  
   private static final String SCHEME_DESIGNATOR_REGEX = "(db2)://"; // URI scheme designator
   private static final String USER_INFO_REGEX = "((?<userinfo>[a-zA-Z0-9\\-._~%!]+(:[a-zA-Z0-9\\-._~%!]*)?)@)?"; // username and password
-  private static final String NET_LOCATION_REGEX = "(?<host>[0-9.]+|\\[[a-zA-Z0-9:]+]|[a-zA-Z0-9\\-._~%]+)"; // ip v4/v6 address or hostname
+  private static final String NET_LOCATION_REGEX = "(?<host>[0-9.]+|\\[[a-zA-Z0-9:]+]|[a-zA-Z0-9\\-._~%]+)"; // ip v4/v6 address or host name
   private static final String PORT_REGEX = "(:(?<port>\\d+))?"; // port
-  private static final String SCHEMA_REGEX = "(/(?<schema>[a-zA-Z0-9\\-._~%!]+))?"; // schema name
+  private static final String DATABASE_REGEX = "(/(?<database>[a-zA-Z0-9\\-._~%!]+))?"; // database name
   private static final String ATTRIBUTES_REGEX = "(\\?(?<attributes>.*))?"; // attributes
 
   private static final String FULL_URI_REGEX = "^" // regex start
-      + SCHEME_DESIGNATOR_REGEX + USER_INFO_REGEX + NET_LOCATION_REGEX + PORT_REGEX + SCHEMA_REGEX + ATTRIBUTES_REGEX
+      + SCHEME_DESIGNATOR_REGEX + USER_INFO_REGEX + NET_LOCATION_REGEX + PORT_REGEX + DATABASE_REGEX + ATTRIBUTES_REGEX
       + "$"; // regex end
 
   public static JsonObject parse(String connectionUri) {
-    // if we get any exception during the parsing, then we throw an
-    // IllegalArgumentException.
+    // if we get any exception during the parsing, then we throw an IllegalArgumentException.
     try {
       JsonObject configuration = new JsonObject();
       doParse(connectionUri, configuration);
@@ -75,14 +73,14 @@ public class DB2ConnectionUriParser {
       // parse the port
       parsePort(matcher.group("port"), configuration);
 
-      // parse the schema name
-      parseSchemaName(matcher.group("schema"), configuration);
+      // parse the database name
+      parseDatabaseName(matcher.group("database"), configuration);
 
       // parse the attributes
       parseAttributes(matcher.group("attributes"), configuration);
 
     } else {
-      throw new IllegalArgumentException("Wrong syntax of connection URI");
+      throw new IllegalArgumentException("Wrong syntax of connection URI. Must match pattern: " + FULL_URI_REGEX);
     }
   }
 
@@ -129,7 +127,7 @@ public class DB2ConnectionUriParser {
     configuration.put("port", port);
   }
 
-  private static void parseSchemaName(String schemaInfo, JsonObject configuration) {
+  private static void parseDatabaseName(String schemaInfo, JsonObject configuration) {
     if (schemaInfo == null || schemaInfo.isEmpty()) {
       return;
     }
@@ -169,7 +167,7 @@ public class DB2ConnectionUriParser {
         case "socket":
           configuration.put("socket", value);
           break;
-        case "schema":
+        case "database":
           configuration.put("database", value);
           break;
         default:

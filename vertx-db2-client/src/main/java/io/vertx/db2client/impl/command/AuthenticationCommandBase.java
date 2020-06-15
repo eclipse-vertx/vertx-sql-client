@@ -20,6 +20,7 @@ import java.util.Map;
 import io.vertx.sqlclient.impl.command.CommandBase;
 
 public class AuthenticationCommandBase<R> extends CommandBase<R> {
+
   private final String username;
   private final String password;
   private final String database;

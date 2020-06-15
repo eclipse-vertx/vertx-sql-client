@@ -36,11 +36,6 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
 
   private static final int TARGET_SECURITY_MEASURE = DRDAConstants.SECMEC_USRIDPWD;
 
-  // TODO: @AGG may need to move this to connection level
-  // Correlation Token of the source sent to the server in the accrdb.
-  // It is saved like the prddta in case it is needed for a connect reflow.
-  private byte[] correlationToken;
-
   private ConnectionState status = ConnectionState.CONNECTING;
 
   InitialHandshakeCommandCodec(InitialHandshakeCommand cmd) {
@@ -50,7 +45,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
   @Override
   void encode(DB2Encoder encoder) {
     super.encode(encoder);
-    encoder.connMetadata.databaseName = cmd.database();
+    encoder.socketConnection.connMetadata.databaseName = cmd.database();
     encoder.socketConnection.closeHandler(h -> {
       if (status == ConnectionState.CONNECTING) {
         // Sometimes DB2 closes the connection when sending an invalid Database name.
@@ -64,7 +59,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
 
     ByteBuf packet = allocateBuffer();
     int packetStartIdx = packet.writerIndex();
-    DRDAConnectRequest connectRequest = new DRDAConnectRequest(packet, encoder.connMetadata);
+    DRDAConnectRequest connectRequest = new DRDAConnectRequest(packet, encoder.socketConnection.connMetadata);
     connectRequest.buildEXCSAT(DRDAConstants.EXTNAM, // externalName,
         0x0A, // targetAgent,
         DRDAConstants.TARGET_SQL_AM, // targetSqlam,
@@ -78,11 +73,11 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
         CCSIDConstants.TARGET_UNICODE_MGR // targetUnicodemgr
     );
     connectRequest.buildACCSEC(TARGET_SECURITY_MEASURE, this.cmd.database(), null);
-    correlationToken = connectRequest.getCorrelationToken(encoder.socketConnection.socket().localAddress().port());
+    encoder.socketConnection.connMetadata.correlationToken = connectRequest.getCorrelationToken(encoder.socketConnection.socket().localAddress().port());
     connectRequest.buildSECCHK(TARGET_SECURITY_MEASURE, cmd.database(), cmd.username(), cmd.password(), null, // sectkn,
         null); // sectkn2
     connectRequest.buildACCRDB(cmd.database(), false, // readOnly,
-        correlationToken, DRDAConstants.SYSTEM_ASC);
+        encoder.socketConnection.connMetadata.correlationToken, DRDAConstants.SYSTEM_ASC);
     connectRequest.completeCommand();
 
     int lenOfPayload = packet.writerIndex() - packetStartIdx;
@@ -91,7 +86,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
 
   @Override
   void decodePayload(ByteBuf payload, int payloadLength) {
-    DRDAConnectResponse response = new DRDAConnectResponse(payload, encoder.connMetadata);
+    DRDAConnectResponse response = new DRDAConnectResponse(payload, encoder.socketConnection.connMetadata);
     response.readExchangeServerAttributes();
     // readAccessSecurity can throw a DB2Exception if there are problems connecting.
     // In that case, we want to catch that exception and
@@ -107,7 +102,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     response.readSecurityCheck();
     RDBAccessData accData = response.readAccessDatabase();
     if (accData.correlationToken != null) {
-      correlationToken = accData.correlationToken;
+      encoder.socketConnection.connMetadata.correlationToken = accData.correlationToken;
     }
     status = ConnectionState.CONNECTED;
     completionHandler.handle(CommandResponse.success(cmd.connection()));

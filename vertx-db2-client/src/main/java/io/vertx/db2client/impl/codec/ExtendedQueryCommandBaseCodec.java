@@ -50,21 +50,20 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
 
     Object[] inputs = sanitize(params);
     if (queryInstance.cursor == null) {
-      queryRequest.writeOpenQuery(statement.section, encoder.connMetadata.databaseName, cmd.fetch(),
+      queryRequest.writeOpenQuery(statement.section, encoder.socketConnection.connMetadata.databaseName, cmd.fetch(),
           ResultSet.TYPE_FORWARD_ONLY, statement.paramDesc.paramDefinitions(), inputs);
     } else {
-      queryRequest.writeFetch(statement.section, encoder.connMetadata.databaseName, cmd.fetch(),
+      queryRequest.writeFetch(statement.section, encoder.socketConnection.connMetadata.databaseName, cmd.fetch(),
           queryInstance.queryInstanceId);
     }
   }
 
   void encodePreparedUpdate(DRDAQueryRequest queryRequest, Tuple params) {
     Object[] inputs = sanitize(params);
-    boolean outputExpected = false; // TODO @AGG implement later, is true if result set metadata num columns > 0
+    boolean outputExpected = false;
     boolean chainAutoCommit = true;
-    queryRequest.writeExecute(statement.section, encoder.connMetadata.databaseName,
+    queryRequest.writeExecute(statement.section, encoder.socketConnection.connMetadata.databaseName,
         statement.paramDesc.paramDefinitions(), inputs, outputExpected, chainAutoCommit);
-    // TODO: for auto generated keys we also need to flow a writeOpenQuery
   }
 
   RowResultDecoder<?, R> decodePreparedQuery(ByteBuf payload, DRDAQueryResponse resp, QueryInstance queryInstance) {
@@ -91,8 +90,6 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBa
 
   void handleUpdateResult(DRDAQueryResponse updateResponse) {
     int updatedCount = (int) updateResponse.readExecute();
-    // TODO: If auto-generated keys, read an OPNQRY here
-    // readOpenQuery()
     R result = emptyResult(cmd.collector());
     cmd.resultHandler().handleResult(updatedCount, 0, null, result, null);
   }

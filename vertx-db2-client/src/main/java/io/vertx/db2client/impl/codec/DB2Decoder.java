@@ -41,7 +41,7 @@ class DB2Decoder extends ByteToMessageDecoder {
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
     int payloadLength = computeLength(in);
     if (payloadLength >= DB2Codec.PACKET_PAYLOAD_LENGTH_LIMIT)
-      throw new UnsupportedOperationException("TODO @AGG split package decoding not implemented");
+      throw new UnsupportedOperationException("split package decoding not implemented"); // TODO @AGG
     if (payloadLength <= 4)
       throw new IllegalStateException("Illegal payload length: " + payloadLength);
     if (payloadLength > in.readableBytes()) {

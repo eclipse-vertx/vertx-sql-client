@@ -25,6 +25,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.pgclient.impl.PgDatabaseMetadata;
 import io.vertx.pgclient.impl.util.ScramAuthentication;
 
 class InitCommandCodec extends PgCommandCodec<Connection, InitCommand> {
@@ -83,6 +84,9 @@ class InitCommandCodec extends PgCommandCodec<Connection, InitCommand> {
   public void handleParameterStatus(String key, String value) {
     if(key.equals("client_encoding")) {
       encoding = value;
+    }
+    if(key.equals("server_version")) {
+      ((PgSocketConnection)cmd.connection()).dbMetaData = new PgDatabaseMetadata(value);
     }
   }
 

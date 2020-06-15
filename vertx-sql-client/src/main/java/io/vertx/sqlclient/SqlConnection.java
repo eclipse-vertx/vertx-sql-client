@@ -21,6 +21,7 @@ import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 /**
  * A connection to database server.
@@ -77,5 +78,10 @@ public interface SqlConnection extends SqlClient {
    * Close the current connection after all the pending commands have been processed.
    */
   void close();
+  
+  /**
+   * @return The static metadata about the backend database server for this connection
+   */
+  DatabaseMetadata databaseMetadata();
 
 }
