@@ -35,10 +35,10 @@ import io.vertx.core.json.JsonObject;
  *      official doc</a>
  */
 public class DB2ConnectionUriParser {
-
+  
   private static final String SCHEME_DESIGNATOR_REGEX = "(db2)://"; // URI scheme designator
   private static final String USER_INFO_REGEX = "((?<userinfo>[a-zA-Z0-9\\-._~%!]+(:[a-zA-Z0-9\\-._~%!]*)?)@)?"; // username and password
-  private static final String NET_LOCATION_REGEX = "(?<host>[0-9.]+|\\[[a-zA-Z0-9:]+]|[a-zA-Z0-9\\-._~%]+)"; // ip v4/v6 address or hostname
+  private static final String NET_LOCATION_REGEX = "(?<host>[0-9.]+|\\[[a-zA-Z0-9:]+]|[a-zA-Z0-9\\-._~%]+)"; // ip v4/v6 address or host name
   private static final String PORT_REGEX = "(:(?<port>\\d+))?"; // port
   private static final String DATABASE_REGEX = "(/(?<database>[a-zA-Z0-9\\-._~%!]+))?"; // database name
   private static final String ATTRIBUTES_REGEX = "(\\?(?<attributes>.*))?"; // attributes
@@ -48,8 +48,7 @@ public class DB2ConnectionUriParser {
       + "$"; // regex end
 
   public static JsonObject parse(String connectionUri) {
-    // if we get any exception during the parsing, then we throw an
-    // IllegalArgumentException.
+    // if we get any exception during the parsing, then we throw an IllegalArgumentException.
     try {
       JsonObject configuration = new JsonObject();
       doParse(connectionUri, configuration);

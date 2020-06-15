@@ -42,7 +42,7 @@ public class DB2ClientExamples {
 
     // Connect options
     DB2ConnectOptions connectOptions = new DB2ConnectOptions()
-      .setPort(5432)
+      .setPort(50000)
       .setHost("the-host")
       .setDatabase("the-db")
       .setUser("user")
@@ -75,7 +75,7 @@ public class DB2ClientExamples {
 
     // Data object
     DB2ConnectOptions connectOptions = new DB2ConnectOptions()
-      .setPort(5432)
+      .setPort(50000)
       .setHost("the-host")
       .setDatabase("the-db")
       .setUser("user")
@@ -92,18 +92,10 @@ public class DB2ClientExamples {
     });
   }
 
-  public void configureDefaultSchema() {
-    // Data object
-    DB2ConnectOptions connectOptions = new DB2ConnectOptions();
-
-    // Set the default schema
-    connectOptions.addProperty("search_path", "myschema");
-  }
-
   public void configureFromUri(Vertx vertx) {
 
     // Connection URI
-    String connectionUri = "postgresql://dbuser:secretpassword@database.server.com:3211/mydb";
+    String connectionUri = "db2://dbuser:secretpassword@database.server.com:50000/mydb";
 
     // Create the pool from the connection URI
     DB2Pool pool = DB2Pool.pool(connectionUri);
@@ -118,7 +110,7 @@ public class DB2ClientExamples {
 
     // Connect options
     DB2ConnectOptions connectOptions = new DB2ConnectOptions()
-      .setPort(5432)
+      .setPort(50000)
       .setHost("the-host")
       .setDatabase("the-db")
       .setUser("user")
@@ -136,7 +128,7 @@ public class DB2ClientExamples {
 
     // Connect options
     DB2ConnectOptions connectOptions = new DB2ConnectOptions()
-      .setPort(5432)
+      .setPort(50000)
       .setHost("the-host")
       .setDatabase("the-db")
       .setUser("user")
@@ -159,7 +151,7 @@ public class DB2ClientExamples {
 
     // Connect options
     DB2ConnectOptions connectOptions = new DB2ConnectOptions()
-      .setPort(5432)
+      .setPort(50000)
       .setHost("the-host")
       .setDatabase("the-db")
       .setUser("user")
@@ -341,4 +333,5 @@ public class DB2ClientExamples {
         }
       });
   }
+
 }

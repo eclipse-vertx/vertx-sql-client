@@ -31,7 +31,9 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
   private static final Logger LOG = LoggerFactory.getLogger(PrepareStatementCodec.class);
 
   private static enum CommandHandlerState {
-    INIT, HANDLING_PARAM_COLUMN_DEFINITION, PARAM_DEFINITIONS_DECODING_COMPLETED, HANDLING_COLUMN_COLUMN_DEFINITION,
+    INIT, HANDLING_PARAM_COLUMN_DEFINITION, 
+    PARAM_DEFINITIONS_DECODING_COMPLETED, 
+    HANDLING_COLUMN_COLUMN_DEFINITION,
     COLUMN_DEFINITIONS_DECODING_COMPLETED
   }
 
