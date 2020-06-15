@@ -48,7 +48,7 @@ public abstract class DB2PreparedQueryTestBase extends PreparedQueryTestBase {
 	@Override
 	public void testPrepareError(TestContext ctx) {
 	  msgVerifier = (err) -> {
-	    ctx.assertEquals("The object 'DB2INST1.DOES_NOT_EXIST' provided is not defined", err.getMessage());
+	    ctx.assertEquals("The object '" + rule.options().getUser().toUpperCase() +".DOES_NOT_EXIST' provided is not defined", err.getMessage());
 	  };
 	  super.testPrepareError(ctx);
 	}

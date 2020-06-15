@@ -19,11 +19,11 @@ The client is reactive and non blocking, allowing to handle many database connec
 * RxJava 1 and RxJava 2
 * Direct memory to object without unnecessary copies
 * Java 8 Date and Time
+* SSL/TLS
 * HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy support
 
 *Current limitations*
 
-* No TLS/SSL support
 * No stored procedures support
 * Some column types (e.g. BLOB and CLOB) are not supported
 
@@ -211,6 +211,19 @@ create easily create a string directly from the row set:
 ----
 {@link examples.DB2ClientExamples#collector02Example}
 ----
+
+== Using SSL/TLS
+
+To configure the client to use SSL connection, you can configure the {@link io.vertx.db2client.DB2ConnectOptions}
+like a Vert.x `NetClient`.
+
+[source,$lang]
+----
+{@link examples.DB2ClientExamples#connectSsl}
+----
+
+More information can be found in the http://vertx.io/docs/vertx-core/java/#ssl[Vert.x documentation].
+
 
 == Using a proxy
 
