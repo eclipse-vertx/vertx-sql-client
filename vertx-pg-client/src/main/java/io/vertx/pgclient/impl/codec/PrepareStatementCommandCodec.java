@@ -32,7 +32,7 @@ class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, Pre
 
   @Override
   void encode(PgEncoder encoder) {
-    if (!cmd.isCached()) {
+    if (cmd.isCached()) {
       statement = encoder.nextStatementName();
     } else {
       // Use unnamed prepared statements that don't need to be closed

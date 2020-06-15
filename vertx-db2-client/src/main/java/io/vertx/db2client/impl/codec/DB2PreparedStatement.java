@@ -36,7 +36,6 @@ class DB2PreparedStatement implements PreparedStatement {
   final DB2ParamDesc paramDesc;
   final DB2RowDesc rowDesc;
   final Section section;
-  final boolean cacheable;
 
   private final Map<String, QueryInstance> activeQueries = new HashMap<>(4);
 
@@ -52,12 +51,11 @@ class DB2PreparedStatement implements PreparedStatement {
     }
   }
 
-  DB2PreparedStatement(String sql, DB2ParamDesc paramDesc, DB2RowDesc rowDesc, Section section, boolean cacheable) {
+  DB2PreparedStatement(String sql, DB2ParamDesc paramDesc, DB2RowDesc rowDesc, Section section) {
     this.paramDesc = paramDesc;
     this.rowDesc = rowDesc;
     this.sql = sql;
     this.section = section;
-    this.cacheable = cacheable;
   }
 
   @Override
@@ -78,11 +76,6 @@ class DB2PreparedStatement implements PreparedStatement {
   @Override
   public String prepare(TupleInternal values) {
     return paramDesc.prepare(values);
-  }
-
-  @Override
-  public boolean cacheable() {
-    return cacheable;
   }
 
   QueryInstance getQueryInstance(String cursorId) {
