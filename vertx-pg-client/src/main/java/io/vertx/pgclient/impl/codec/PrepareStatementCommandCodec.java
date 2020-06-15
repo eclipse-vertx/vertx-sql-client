@@ -32,7 +32,7 @@ class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, Pre
 
   @Override
   void encode(PgEncoder encoder) {
-    if (!cmd.isCached()) {
+    if (cmd.isManaged()) {
       statement = encoder.nextStatementName();
     } else {
       // Use unnamed prepared statements that don't need to be closed
@@ -73,7 +73,7 @@ class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, Pre
 
   @Override
   public void handleReadyForQuery() {
-    result = new PgPreparedStatement(cmd.sql(), statement, this.parameterDesc, this.rowDesc, cmd.isCached());
+    result = new PgPreparedStatement(cmd.sql(), statement, this.parameterDesc, this.rowDesc, cmd.isManaged());
     super.handleReadyForQuery();
   }
 }

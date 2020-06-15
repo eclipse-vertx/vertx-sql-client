@@ -19,9 +19,12 @@ package io.vertx.pgclient;
 
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PreparedStatementCachedTest extends PreparedStatementTestBase {
 
@@ -61,4 +64,32 @@ public class PreparedStatementCachedTest extends PreparedStatementTestBase {
     }));
   }
 
+  @Test
+  public void testMaxPreparedStatementEviction(TestContext ctx) {
+    int size = 16;
+    Async async = ctx.async();
+    PgConnection.connect(vertx, options().setPreparedStatementCacheMaxSize(size), ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT * FROM pg_prepared_statements").execute(ctx.asyncAssertSuccess(res1 -> {
+        ctx.assertEquals(0, res1.size());
+        int num = size * 8;
+        AtomicInteger count = new AtomicInteger(num);
+        for (int i = 0;i < num;i++) {
+          int val = i;
+          conn.preparedQuery("SELECT " + i).execute(Tuple.tuple(), ctx.asyncAssertSuccess(res2 -> {
+            ctx.assertEquals(1, res2.size());
+            ctx.assertEquals(val, res2.iterator().next().getInteger(0));
+            if (count.decrementAndGet() == 0) {
+              ctx.assertEquals(num - 1, val);
+              conn.query("SELECT * FROM pg_prepared_statements").execute(ctx.asyncAssertSuccess(res3 -> {
+                ctx.assertEquals(size, res3.size());
+                conn.close(ctx.asyncAssertSuccess(v -> {
+                  async.complete();
+                }));
+              }));
+            }
+          }));
+        }
+      }));
+    }));
+  }
 }

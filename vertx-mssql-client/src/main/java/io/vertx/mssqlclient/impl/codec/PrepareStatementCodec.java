@@ -25,7 +25,7 @@ class PrepareStatementCodec extends MSSQLCommandCodec<PreparedStatement, Prepare
   void encode(TdsMessageEncoder encoder) {
     super.encode(encoder);
     // we use sp_prepexec instead of sp_prepare + sp_exec
-    PreparedStatement preparedStatement = new MSSQLPreparedStatement(cmd.sql(), null, cmd.isCached());
+    PreparedStatement preparedStatement = new MSSQLPreparedStatement(cmd.sql(), null);
     completionHandler.handle(CommandResponse.success(preparedStatement));
 
   }

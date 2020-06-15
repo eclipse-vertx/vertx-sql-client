@@ -84,7 +84,7 @@ class ExtendedQueryCommandCodec<R, C extends ExtendedQueryCommand<R>> extends Qu
 
   @Override
   public void handleErrorResponse(ErrorResponse errorResponse) {
-    if (cmd.preparedStatement().cacheable() && errorResponse.getMessage().matches(TABLE_SCHEMA_CHANGE_ERROR_MESSAGE_PATTERN)) {
+    if (((PgPreparedStatement)cmd.preparedStatement()).isCached() && errorResponse.getMessage().matches(TABLE_SCHEMA_CHANGE_ERROR_MESSAGE_PATTERN)) {
       encoder.channelHandlerContext().fireChannelRead(new InvalidCachedStatementEvent(cmd.preparedStatement().sql()));
     }
     super.handleErrorResponse(errorResponse);

@@ -22,11 +22,11 @@ import io.vertx.sqlclient.impl.PreparedStatement;
 public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
 
   private final String sql;
-  private final boolean cached;
+  private final boolean managed;
 
-  public PrepareStatementCommand(String sql, boolean cached) {
+  public PrepareStatementCommand(String sql, boolean managed) {
     this.sql = sql;
-    this.cached = cached;
+    this.managed = managed;
   }
 
   public String sql() {
@@ -34,12 +34,15 @@ public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
   }
 
   /**
-   * Indicate whether the prepared statement will be cached or not.
+   * Indicate whether the prepared statement will be managed by the connection
    *
-   * When a prepared statement is not cached it will be valid only for a single execution and should
+   * <p>Managed prepared statements survive a single interactions with the database and will be closed
+   * at some time by the connection (either with a cache eviction or when the prepared statement is closed).
+   *
+   * <p>Otherwise the prepared statement is ephermal and valid only for a single execution. It should
    * be disposed after the prepared statement has been executed.
    */
-  public boolean isCached() {
-    return cached;
+  public boolean isManaged() {
+    return managed;
   }
 }

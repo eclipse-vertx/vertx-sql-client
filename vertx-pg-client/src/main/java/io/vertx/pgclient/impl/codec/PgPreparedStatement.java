@@ -27,14 +27,14 @@ class PgPreparedStatement implements PreparedStatement {
   final Bind bind;
   final PgParamDesc paramDesc;
   final PgRowDesc rowDesc;
-  final boolean cacheable;
+  final boolean cached;
 
-  PgPreparedStatement(String sql, long statement, PgParamDesc paramDesc, PgRowDesc rowDesc, boolean cacheable) {
+  PgPreparedStatement(String sql, long statement, PgParamDesc paramDesc, PgRowDesc rowDesc, boolean cached) {
     this.paramDesc = paramDesc;
     this.rowDesc = rowDesc;
     this.sql = sql;
     this.bind = new Bind(statement, paramDesc != null ? paramDesc.paramDataTypes() : null, rowDesc != null ? rowDesc.columns : PgColumnDesc.EMPTY_COLUMNS);
-    this.cacheable = cacheable;
+    this.cached = cached;
   }
 
   @Override
@@ -57,11 +57,12 @@ class PgPreparedStatement implements PreparedStatement {
     return paramDesc.prepare(values);
   }
 
-  /**
-   * @return true if the statement is a unnamed prepared statement
-   */
+  public boolean isCached() {
+    return cached;
+  }
+
   @Override
-  public boolean cacheable() {
-    return cacheable;
+  public String toString() {
+    return "PreparedStatement[" + sql + "]";
   }
 }

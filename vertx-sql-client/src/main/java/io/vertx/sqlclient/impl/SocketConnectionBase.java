@@ -31,12 +31,12 @@ import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.net.impl.NetSocketInternal;
+import io.vertx.sqlclient.impl.cache.PreparedStatementCache;
 import io.vertx.sqlclient.impl.codec.InvalidCachedStatementEvent;
 import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -51,7 +51,7 @@ public abstract class SocketConnectionBase implements Connection {
 
   }
 
-  protected final Map<String, PreparedStatement> psCache;
+  protected final PreparedStatementCache psCache;
   private final int preparedStatementCacheSqlLimit;
   private final ArrayDeque<CommandBase<?>> pending = new ArrayDeque<>();
   private final ContextInternal context;
@@ -73,7 +73,7 @@ public abstract class SocketConnectionBase implements Connection {
     this.context = context;
     this.pipeliningLimit = pipeliningLimit;
     this.paused = false;
-    this.psCache = cachePreparedStatements ? new HashMap<>() : null;
+    this.psCache = cachePreparedStatements ? new PreparedStatementCache(preparedStatementCacheSize) : null;
     this.preparedStatementCacheSqlLimit = preparedStatementCacheSqlLimit;
   }
 
@@ -171,7 +171,7 @@ public abstract class SocketConnectionBase implements Connection {
         }
         if (queryCmd.ps == null) {
           // Execute prepare
-          PrepareStatementCommand prepareCmd = new PrepareStatementCommand(queryCmd.sql(), true);
+          PrepareStatementCommand prepareCmd = new PrepareStatementCommand(queryCmd.sql(), psCache != null);
           prepareCmd.handler = ar -> {
             paused = false;
             if (ar.succeeded()) {
@@ -222,7 +222,19 @@ public abstract class SocketConnectionBase implements Connection {
 
   private void cacheStatement(PreparedStatement preparedStatement) {
     if (psCache != null) {
-      psCache.put(preparedStatement.sql(), preparedStatement);
+      List<PreparedStatement> evictedList = psCache.put(preparedStatement);
+      if (evictedList.size() > 0) {
+        ChannelHandlerContext ctx = socket.channelHandlerContext();
+        for (PreparedStatement evicted : evictedList) {
+          CloseStatementCommand closeCmd = new CloseStatementCommand(evicted);
+          closeCmd.handler = ar -> {
+            if (ar.failed()) {
+              logger.error("Error when closing cached prepared statement", ar.cause());
+            }
+          };
+          ctx.write(closeCmd);
+        }
+      }
     }
   }
 

@@ -31,19 +31,17 @@ class MySQLPreparedStatement implements PreparedStatement {
   final String sql;
   final MySQLParamDesc paramDesc;
   final MySQLRowDesc rowDesc;
-  final boolean cacheable;
 
   private boolean sendTypesToServer;
   private final DataType[] bindingTypes;
 
   boolean isCursorOpen;
 
-  MySQLPreparedStatement(String sql, long statementId, MySQLParamDesc paramDesc, MySQLRowDesc rowDesc, boolean cacheable) {
+  MySQLPreparedStatement(String sql, long statementId, MySQLParamDesc paramDesc, MySQLRowDesc rowDesc) {
     this.statementId = statementId;
     this.paramDesc = paramDesc;
     this.rowDesc = rowDesc;
     this.sql = sql;
-    this.cacheable = cacheable;
 
     this.bindingTypes = new DataType[paramDesc.paramDefinitions().length];
     // init param bindings
@@ -103,10 +101,5 @@ class MySQLPreparedStatement implements PreparedStatement {
     }
     sendTypesToServer = reboundParameters; // parameter must be re-bound
     return null;
-  }
-
-  @Override
-  public boolean cacheable() {
-    return cacheable;
   }
 }
