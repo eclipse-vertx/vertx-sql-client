@@ -31,17 +31,19 @@ class MySQLPreparedStatement implements PreparedStatement {
   final String sql;
   final MySQLParamDesc paramDesc;
   final MySQLRowDesc rowDesc;
+  final boolean closeAfterUsage;
 
   private boolean sendTypesToServer;
   private final DataType[] bindingTypes;
 
   boolean isCursorOpen;
 
-  MySQLPreparedStatement(String sql, long statementId, MySQLParamDesc paramDesc, MySQLRowDesc rowDesc) {
+  MySQLPreparedStatement(String sql, long statementId, MySQLParamDesc paramDesc, MySQLRowDesc rowDesc, boolean closeAfterUsage) {
     this.statementId = statementId;
     this.paramDesc = paramDesc;
     this.rowDesc = rowDesc;
     this.sql = sql;
+    this.closeAfterUsage = closeAfterUsage;
 
     this.bindingTypes = new DataType[paramDesc.paramDefinitions().length];
     // init param bindings

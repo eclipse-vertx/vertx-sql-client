@@ -26,7 +26,7 @@ class CloseStatementCommandCodec extends CommandCodec<Void, CloseStatementComman
     // no statement response
   }
 
-  private void sendCloseStatementCommand(MySQLPreparedStatement statement) {
+  public void sendCloseStatementCommand(MySQLPreparedStatement statement) {
     ByteBuf packet = allocateBuffer(PAYLOAD_LENGTH + 4);
     // encode packet header
     packet.writeMediumLE(PAYLOAD_LENGTH);
