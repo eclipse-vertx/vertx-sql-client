@@ -18,6 +18,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -81,6 +82,7 @@ public class MySQLPreparedStatementTest extends MySQLTestBase {
   }
 
   private void testPreparedStatements(TestContext ctx, MySQLConnectOptions options, int num, int expected) {
+    Assume.assumeFalse(MySQLTestBase.rule.isUsingMySQL5_6() || MySQLTestBase.rule.isUsingMariaDB());
     Async async = ctx.async();
     MySQLConnection.connect(vertx, options.setUser("root").setPassword("password"), ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT * FROM performance_schema.prepared_statements_instances").execute(ctx.asyncAssertSuccess(res1 -> {
