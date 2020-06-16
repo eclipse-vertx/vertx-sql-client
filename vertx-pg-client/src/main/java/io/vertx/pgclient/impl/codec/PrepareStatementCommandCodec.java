@@ -32,9 +32,10 @@ class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, Pre
 
   @Override
   void encode(PgEncoder encoder) {
-    if (!cmd.cacheable()) {
+    if (!cmd.isCached()) {
       statement = encoder.nextStatementName();
     } else {
+      // Use unnamed prepared statements that don't need to be closed
       statement = 0L;
     }
 
@@ -55,9 +56,9 @@ class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, Pre
   }
 
   @Override
-  public void handleRowDescription(PgRowDesc rowDesc) {
+  public void handleRowDescription(PgColumnDesc[] rowDesc) {
     // Response to Describe
-    this.rowDesc = rowDesc;
+    this.rowDesc = PgRowDesc.createBinary(rowDesc);
   }
 
   @Override
@@ -72,7 +73,7 @@ class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, Pre
 
   @Override
   public void handleReadyForQuery() {
-    result = new PgPreparedStatement(cmd.sql(), statement, this.parameterDesc, this.rowDesc, cmd.cacheable());
+    result = new PgPreparedStatement(cmd.sql(), statement, this.parameterDesc, this.rowDesc, cmd.isCached());
     super.handleReadyForQuery();
   }
 }

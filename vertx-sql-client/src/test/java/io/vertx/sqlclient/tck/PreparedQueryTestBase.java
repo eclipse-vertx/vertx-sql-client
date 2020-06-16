@@ -41,7 +41,7 @@ public abstract class PreparedQueryTestBase {
   protected Connector<SqlConnection> connector;
 
   protected SqlConnectOptions options;
-  
+
   protected Consumer<Throwable> msgVerifier;
 
   private static void insertIntoTestTable(TestContext ctx, SqlClient client, int amount, Runnable completionHandler) {

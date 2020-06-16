@@ -21,6 +21,7 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.PreparedStatement;
 import io.vertx.sqlclient.impl.QueryResultHandler;
+import io.vertx.sqlclient.impl.TupleInternal;
 
 import java.util.List;
 import java.util.stream.Collector;
@@ -31,15 +32,17 @@ import java.util.stream.Collector;
 public class ExtendedQueryCommand<R> extends QueryCommandBase<R> {
 
   public static <R> ExtendedQueryCommand<R> createQuery(
+    String sql,
     PreparedStatement ps,
     Tuple tuple,
     boolean autoCommit,
     Collector<Row, ?, R> collector,
     QueryResultHandler<R> resultHandler) {
-    return new ExtendedQueryCommand<>(ps, false, tuple, 0, null, false, autoCommit, collector, resultHandler);
+    return new ExtendedQueryCommand<>(sql, ps, false, tuple, 0, null, false, autoCommit, collector, resultHandler);
   }
 
   public static <R> ExtendedQueryCommand<R> createQuery(
+    String sql,
     PreparedStatement ps,
     Tuple tuple,
     int fetch,
@@ -48,26 +51,29 @@ public class ExtendedQueryCommand<R> extends QueryCommandBase<R> {
     boolean autoCommit,
     Collector<Row, ?, R> collector,
     QueryResultHandler<R> resultHandler) {
-    return new ExtendedQueryCommand<>(ps, false, tuple, fetch, cursorId, suspended, autoCommit, collector, resultHandler);
+    return new ExtendedQueryCommand<>(sql, ps, false, tuple, fetch, cursorId, suspended, autoCommit, collector, resultHandler);
   }
 
   public static <R> ExtendedQueryCommand<R> createBatch(
+    String sql,
     PreparedStatement ps,
     List<Tuple> tuples,
     boolean autoCommit,
     Collector<Row, ?, R> collector,
     QueryResultHandler<R> resultHandler) {
-    return new ExtendedQueryCommand<>(ps, true, tuples, 0, null, false, autoCommit, collector, resultHandler);
+    return new ExtendedQueryCommand<>(sql, ps, true, tuples, 0, null, false, autoCommit, collector, resultHandler);
   }
 
-  protected final PreparedStatement ps;
+  protected final String sql;
+  public PreparedStatement ps;
   protected final boolean batch;
   protected final Object tuples;
   protected final int fetch;
   protected final String cursorId;
   protected final boolean suspended;
 
-  private ExtendedQueryCommand(PreparedStatement ps,
+  private ExtendedQueryCommand(String sql,
+                               PreparedStatement ps,
                                boolean batch,
                                Object tuples,
                                int fetch,
@@ -77,12 +83,34 @@ public class ExtendedQueryCommand<R> extends QueryCommandBase<R> {
                                Collector<Row, ?, R> collector,
                                QueryResultHandler<R> resultHandler) {
     super(autoCommit, collector, resultHandler);
+    this.sql = sql;
     this.ps = ps;
     this.batch = batch;
     this.tuples = tuples;
     this.fetch = fetch;
     this.cursorId = cursorId;
     this.suspended = suspended;
+  }
+
+  /**
+   *
+   * @return
+   */
+  public String prepare() {
+    if (ps != null) {
+      if (batch) {
+        for (Tuple tuple : (List<Tuple>) tuples) {
+          String msg = ps.prepare((TupleInternal) tuple);
+          if (msg != null) {
+            return msg;
+          }
+        }
+        return null;
+      } else {
+        return ps.prepare((TupleInternal) tuples);
+      }
+    }
+    return null;
   }
 
   public boolean isBatch() {
@@ -121,6 +149,7 @@ public class ExtendedQueryCommand<R> extends QueryCommandBase<R> {
 
   @Override
   public String sql() {
-    return ps.sql();
+    return sql;
   }
+
 }

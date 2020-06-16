@@ -22,11 +22,11 @@ import io.vertx.sqlclient.impl.PreparedStatement;
 public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
 
   private final String sql;
-  private final boolean cacheable;
+  private final boolean cached;
 
-  public PrepareStatementCommand(String sql, boolean cacheable) {
+  public PrepareStatementCommand(String sql, boolean cached) {
     this.sql = sql;
-    this.cacheable = cacheable;
+    this.cached = cached;
   }
 
   public String sql() {
@@ -36,14 +36,10 @@ public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
   /**
    * Indicate whether the prepared statement will be cached or not.
    *
-   * The prepared statement won't be cached if the command is scheduled from {@link io.vertx.sqlclient.SqlConnection#prepare(String)}
-   * since the lifecycle of those statements should not be managed by this client.
-   *
-   * @return true if the command is scheduled from {@link io.vertx.sqlclient.SqlClient#preparedQuery(String) one-shot preparedQuery.
-   *
+   * When a prepared statement is not cached it will be valid only for a single execution and should
+   * be disposed after the prepared statement has been executed.
    */
-  public boolean cacheable() {
-    return cacheable;
+  public boolean isCached() {
+    return cached;
   }
-
 }

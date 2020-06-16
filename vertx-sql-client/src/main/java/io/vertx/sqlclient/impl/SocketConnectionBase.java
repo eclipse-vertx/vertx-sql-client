@@ -22,20 +22,21 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxException;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.net.impl.NetSocketInternal;
-import io.vertx.sqlclient.impl.cache.PreparedStatementCache;
 import io.vertx.sqlclient.impl.codec.InvalidCachedStatementEvent;
 import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -50,11 +51,12 @@ public abstract class SocketConnectionBase implements Connection {
 
   }
 
-  protected final PreparedStatementCache psCache;
+  protected final Map<String, PreparedStatement> psCache;
   private final int preparedStatementCacheSqlLimit;
   private final ArrayDeque<CommandBase<?>> pending = new ArrayDeque<>();
   private final ContextInternal context;
   private int inflight;
+  private boolean paused;
   private Holder holder;
   private final int pipeliningLimit;
 
@@ -70,7 +72,8 @@ public abstract class SocketConnectionBase implements Connection {
     this.socket = socket;
     this.context = context;
     this.pipeliningLimit = pipeliningLimit;
-    this.psCache = cachePreparedStatements ? new PreparedStatementCache(this, preparedStatementCacheSize) : null;
+    this.paused = false;
+    this.psCache = cachePreparedStatements ? new HashMap<>() : null;
     this.preparedStatementCacheSqlLimit = preparedStatementCacheSqlLimit;
   }
 
@@ -136,21 +139,6 @@ public abstract class SocketConnectionBase implements Connection {
     context.dispatch(null, v -> doSchedule(cmd, promise));
   }
 
-  private <R, T> void doSchedule(BiCommand<T, R> cmd, Handler<AsyncResult<R>> handler) {
-    doSchedule(cmd.first, cr -> {
-      if (cr.succeeded()) {
-        AsyncResult<CommandBase<R>> next = cmd.then.apply(cr.result());
-        if (next.succeeded()) {
-          doSchedule(next.result(), handler);
-        } else {
-          handler.handle(Future.failedFuture(next.cause()));
-        }
-      } else {
-        handler.handle(Future.failedFuture(cr.cause()));
-      }
-    });
-  }
-
   protected <R> void doSchedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
     if (handler == null) {
       throw new IllegalArgumentException();
@@ -159,49 +147,7 @@ public abstract class SocketConnectionBase implements Connection {
     if (context != this.context) {
       throw new IllegalStateException();
     }
-
-    // Special handling for bi commands
-    if (cmd instanceof BiCommand<?, ?>) {
-      doSchedule((BiCommand<? ,R>) cmd, handler);
-      return;
-    }
-
-    // Special handling for cache
-    PreparedStatementCache psCache = this.psCache;
-    if (psCache != null) {
-      // cache is enabled
-      if (cmd instanceof PrepareStatementCommand) {
-        PrepareStatementCommand psCmd = (PrepareStatementCommand) cmd;
-        if (!psCmd.cacheable()) {
-          // we don't cache non one-shot preparedQuery
-        } else if (psCmd.sql().length() > preparedStatementCacheSqlLimit) {
-          // do not cache the statements if it exceeds the sql length limit
-        } else {
-          Handler<AsyncResult<PreparedStatement>> originalHandler = (Handler) handler;
-          Handler<AsyncResult<PreparedStatement>> newHandler = psCache.appendStmtReq(psCmd.sql(), originalHandler);
-          if (newHandler == null) {
-            // we don't need to schedule it if the result is cached or the request has been sent
-            return;
-          } else {
-            handler = (Handler) newHandler;
-          }
-        }
-      } else if (cmd instanceof CloseStatementCommand) {
-        CloseStatementCommand closeStmtCommand = (CloseStatementCommand) cmd;
-        /*
-         * We need to know how we handle the close statement command, this cmd might origin from PreparedStatement#close
-         * or it's automatically sent by the cache once the stmt is evicted, we should clean up the cache for those closing cached prepared statements.
-         */
-        if (closeStmtCommand.statement().cacheable()) {
-          psCache.remove(closeStmtCommand.statement().sql());
-        }
-      }
-    }
-
-    //
     cmd.handler = handler;
-
-    //
     if (status == Status.CONNECTED) {
       pending.add(cmd);
       checkPending();
@@ -212,12 +158,50 @@ public abstract class SocketConnectionBase implements Connection {
 
   private void checkPending() {
     ChannelHandlerContext ctx = socket.channelHandlerContext();
-    if (inflight < pipeliningLimit) {
-      CommandBase<?> cmd;
-      while (inflight < pipeliningLimit && (cmd = pending.poll()) != null) {
-        inflight++;
-        ctx.write(cmd);
+    int written = 0;
+    CommandBase<?> cmd;
+    while (!paused && inflight < pipeliningLimit && (cmd = pending.poll()) != null) {
+      inflight++;
+      if (cmd instanceof ExtendedQueryCommand) {
+        ExtendedQueryCommand queryCmd = (ExtendedQueryCommand) cmd;
+        if (queryCmd.ps == null) {
+          if (psCache != null) {
+            queryCmd.ps = psCache.get(queryCmd.sql());
+          }
+        }
+        if (queryCmd.ps == null) {
+          // Execute prepare
+          PrepareStatementCommand prepareCmd = new PrepareStatementCommand(queryCmd.sql(), true);
+          prepareCmd.handler = ar -> {
+            if (ar.succeeded()) {
+              PreparedStatement ps = ar.result();
+              cacheStatement(ps);
+              queryCmd.ps = ps;
+              String msg = queryCmd.prepare();
+              if (msg != null) {
+                paused = false;
+                checkPending();
+                queryCmd.fail(new NoStackTraceThrowable(msg));
+              } else {
+                ctx.write(queryCmd);
+                ctx.flush();
+                paused = false;
+                checkPending();
+              }
+            } else {
+              paused = false;
+              checkPending();
+              queryCmd.fail(ar.cause());
+            }
+          };
+          paused = true;
+          cmd = prepareCmd;
+        }
       }
+      written++;
+      ctx.write(cmd);
+    }
+    if (written > 0) {
       ctx.flush();
     }
   }
@@ -225,9 +209,9 @@ public abstract class SocketConnectionBase implements Connection {
   protected void handleMessage(Object msg) {
     if (msg instanceof CommandResponse) {
       inflight--;
-      checkPending();
       CommandResponse resp =(CommandResponse) msg;
       resp.fire();
+      checkPending();
     } else if (msg instanceof InvalidCachedStatementEvent) {
       InvalidCachedStatementEvent event = (InvalidCachedStatementEvent) msg;
       removeCachedStatement(event.sql());
@@ -237,6 +221,12 @@ public abstract class SocketConnectionBase implements Connection {
   protected void handleEvent(Object event) {
     if (holder != null) {
       holder.handleEvent(event);
+    }
+  }
+
+  private void cacheStatement(PreparedStatement preparedStatement) {
+    if (psCache != null) {
+      psCache.put(preparedStatement.sql(), preparedStatement);
     }
   }
 

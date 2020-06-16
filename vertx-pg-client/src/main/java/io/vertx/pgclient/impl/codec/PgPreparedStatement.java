@@ -21,11 +21,7 @@ import io.vertx.sqlclient.impl.PreparedStatement;
 import io.vertx.sqlclient.impl.ParamDesc;
 import io.vertx.sqlclient.impl.TupleInternal;
 
-import java.util.Arrays;
-
 class PgPreparedStatement implements PreparedStatement {
-
-  private static final PgColumnDesc[] EMPTY_COLUMNS = new PgColumnDesc[0];
 
   final String sql;
   final Bind bind;
@@ -34,25 +30,10 @@ class PgPreparedStatement implements PreparedStatement {
   final boolean cacheable;
 
   PgPreparedStatement(String sql, long statement, PgParamDesc paramDesc, PgRowDesc rowDesc, boolean cacheable) {
-
-    // Fix to use binary when possible
-    if (rowDesc != null) {
-      rowDesc = new PgRowDesc(Arrays.stream(rowDesc.columns)
-        .map(c -> new PgColumnDesc(
-          c.name,
-          c.relationId,
-          c.relationAttributeNo,
-          c.dataType,
-          c.length,
-          c.typeModifier,
-          c.dataType.supportsBinary ? DataFormat.BINARY : DataFormat.TEXT))
-        .toArray(PgColumnDesc[]::new));
-    }
-
     this.paramDesc = paramDesc;
     this.rowDesc = rowDesc;
     this.sql = sql;
-    this.bind = new Bind(statement, paramDesc != null ? paramDesc.paramDataTypes() : null, rowDesc != null ? rowDesc.columns : EMPTY_COLUMNS);
+    this.bind = new Bind(statement, paramDesc != null ? paramDesc.paramDataTypes() : null, rowDesc != null ? rowDesc.columns : PgColumnDesc.EMPTY_COLUMNS);
     this.cacheable = cacheable;
   }
 

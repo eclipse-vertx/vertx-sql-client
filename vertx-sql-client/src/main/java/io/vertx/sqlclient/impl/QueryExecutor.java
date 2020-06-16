@@ -17,16 +17,13 @@
 
 package io.vertx.sqlclient.impl;
 
-import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.impl.command.BiCommand;
 import io.vertx.sqlclient.impl.command.CommandScheduler;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
-import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
@@ -97,6 +94,7 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
       return null;
     }
     ExtendedQueryCommand<T> cmd = ExtendedQueryCommand.createQuery(
+      preparedStatement.sql(),
       preparedStatement,
       arguments,
       fetch,
@@ -118,22 +116,17 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
       payload = null;
     }
     QueryResultBuilder handler = this.createHandler(promise, payload);
-    BiCommand<PreparedStatement, Boolean> cmd = new BiCommand<>(new PrepareStatementCommand(sql, true), ps -> {
-      String msg = ps.prepare((TupleInternal) arguments);
-      if (msg != null) {
-        return Future.failedFuture(msg);
-      }
-      return Future.succeededFuture(createExtendedQueryCommand(ps, autoCommit, arguments, handler));
-    });
+    ExtendedQueryCommand cmd = createExtendedQueryCommand(sql, autoCommit, arguments, handler);
     scheduler.schedule(cmd, handler);
   }
 
-  private ExtendedQueryCommand<T> createExtendedQueryCommand(PreparedStatement preparedStatement,
+  private ExtendedQueryCommand<T> createExtendedQueryCommand(String sql,
                                                              boolean autoCommit,
                                                              Tuple tuple,
                                                              QueryResultBuilder<T, R, L> handler) {
     return ExtendedQueryCommand.createQuery(
-      preparedStatement,
+      sql,
+      null,
       tuple,
       autoCommit,
       collector,
@@ -160,7 +153,7 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
         return;
       }
     }
-    ExtendedQueryCommand<T> cmd = ExtendedQueryCommand.createBatch(preparedStatement, batch, autoCommit, collector, handler);
+    ExtendedQueryCommand<T> cmd = ExtendedQueryCommand.createBatch(preparedStatement.sql(), preparedStatement, batch, autoCommit, collector, handler);
     scheduler.schedule(cmd, handler);
   }
 
@@ -173,22 +166,14 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
       payload = null;
     }
     QueryResultBuilder handler = createHandler(promise, payload);
-    BiCommand<PreparedStatement, Boolean> cmd = new BiCommand<>(new PrepareStatementCommand(sql, true), ps -> {
-      for  (Tuple args : batch) {
-        String msg = ps.prepare((TupleInternal) args);
-        if (msg != null) {
-          return Future.failedFuture(msg);
-        }
-      }
-      return Future.succeededFuture(createBatchQueryCommand(ps, autoCommit, batch, handler));
-    });
+    ExtendedQueryCommand<T> cmd = createBatchQueryCommand(sql, autoCommit, batch, handler);
     scheduler.schedule(cmd, handler);
   }
 
-  private ExtendedQueryCommand<T> createBatchQueryCommand(PreparedStatement preparedStatement,
+  private ExtendedQueryCommand<T> createBatchQueryCommand(String sql,
                                                           boolean autoCommit,
                                                           List<Tuple> argsList,
                                                           QueryResultBuilder<T, R, L> handler) {
-    return ExtendedQueryCommand.createBatch(preparedStatement, argsList, autoCommit, collector, handler);
+    return ExtendedQueryCommand.createBatch(sql, null, argsList, autoCommit, collector, handler);
   }
 }
