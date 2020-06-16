@@ -66,12 +66,19 @@ public class PreparedStatementCachedTest extends PreparedStatementTestBase {
 
   @Test
   public void testMaxPreparedStatementEviction(TestContext ctx) {
-    int size = 16;
+    testPreparedStatements(ctx, options().setCachePreparedStatements(true).setPreparedStatementCacheMaxSize(16), 128, 16);
+  }
+
+  @Test
+  public void testOneShotPreparedStatements(TestContext ctx) {
+    testPreparedStatements(ctx, options().setCachePreparedStatements(false), 128, 0);
+  }
+
+  private void testPreparedStatements(TestContext ctx, PgConnectOptions options, int num, int expected) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options().setPreparedStatementCacheMaxSize(size), ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT * FROM pg_prepared_statements").execute(ctx.asyncAssertSuccess(res1 -> {
         ctx.assertEquals(0, res1.size());
-        int num = size * 8;
         AtomicInteger count = new AtomicInteger(num);
         for (int i = 0;i < num;i++) {
           int val = i;
@@ -81,7 +88,7 @@ public class PreparedStatementCachedTest extends PreparedStatementTestBase {
             if (count.decrementAndGet() == 0) {
               ctx.assertEquals(num - 1, val);
               conn.query("SELECT * FROM pg_prepared_statements").execute(ctx.asyncAssertSuccess(res3 -> {
-                ctx.assertEquals(size, res3.size());
+                ctx.assertEquals(expected, res3.size());
                 conn.close();
                 async.complete();
               }));
