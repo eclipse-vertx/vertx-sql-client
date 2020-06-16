@@ -6,20 +6,20 @@ import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.command.CommandResponse;
-import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
+import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
 import java.util.List;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.EnumCursorType.CURSOR_TYPE_NO_CURSOR;
 
-class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedBatchQueryCommand<R>> {
+class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
 
   private List<Tuple> params;
   private int batchIdx = 0;
 
-  ExtendedBatchQueryCommandCodec(ExtendedBatchQueryCommand<R> cmd) {
+  ExtendedBatchQueryCommandCodec(ExtendedQueryCommand<R> cmd) {
     super(cmd);
-    params = cmd.params();
+    params = cmd.paramsList();
   }
 
   @Override

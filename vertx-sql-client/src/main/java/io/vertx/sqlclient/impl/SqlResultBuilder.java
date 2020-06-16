@@ -22,7 +22,6 @@ import io.vertx.core.Handler;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
@@ -59,7 +58,7 @@ class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlResult<T>>
                                               Tuple args,
                                               boolean autoCommit,
                                               SqlResultHandler<T, R, L> handler) {
-    return new ExtendedQueryCommand<>(
+    return ExtendedQueryCommand.createQuery(
       preparedStatement,
       args,
       autoCommit,
@@ -74,7 +73,7 @@ class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlResult<T>>
                                               boolean suspended,
                                               boolean autoCommit,
                                               SqlResultHandler<T, R, L> handler) {
-    return new ExtendedQueryCommand<>(
+    return ExtendedQueryCommand.createQuery(
       preparedStatement,
       args,
       fetch,
@@ -85,10 +84,10 @@ class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlResult<T>>
       handler);
   }
 
-  ExtendedBatchQueryCommand<T> createBatchCommand(PreparedStatement preparedStatement,
-                                                  List<Tuple> argsList,
-                                                  boolean autoCommit,
-                                                  SqlResultHandler<T, R, L> handler) {
-    return new ExtendedBatchQueryCommand<>(preparedStatement, argsList, autoCommit, collector, handler);
+  ExtendedQueryCommand<T> createBatchCommand(PreparedStatement preparedStatement,
+                                             List<Tuple> argsList,
+                                             boolean autoCommit,
+                                             SqlResultHandler<T, R, L> handler) {
+    return ExtendedQueryCommand.createBatch(preparedStatement, argsList, autoCommit, collector, handler);
   }
 }

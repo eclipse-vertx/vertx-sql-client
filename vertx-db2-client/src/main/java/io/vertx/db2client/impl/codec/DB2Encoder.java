@@ -30,7 +30,6 @@ import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
-import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
@@ -88,10 +87,13 @@ class DB2Encoder extends ChannelOutboundHandlerAdapter {
       codec = new InitialHandshakeCommandCodec((InitialHandshakeCommand) cmd);
     } else if (cmd instanceof SimpleQueryCommand) {
       codec = new SimpleQueryCommandCodec((SimpleQueryCommand) cmd);
-    } else if (cmd instanceof ExtendedQueryCommand) {
-      codec = new ExtendedQueryCommandCodec((ExtendedQueryCommand) cmd);
-    } else if (cmd instanceof ExtendedBatchQueryCommand<?>) {
-      codec = new ExtendedBatchQueryCommandCodec<>((ExtendedBatchQueryCommand<?>) cmd);
+    } else if (cmd instanceof ExtendedQueryCommand<?>) {
+      ExtendedQueryCommand<?> queryCmd = (ExtendedQueryCommand<?>) cmd;
+      if (queryCmd.isBatch()) {
+        codec = new ExtendedBatchQueryCommandCodec<>(queryCmd);
+      } else {
+        codec = new ExtendedQueryCommandCodec(queryCmd);
+      }
     } else if (cmd instanceof CloseConnectionCommand) {
       codec = new CloseConnectionCommandCodec((CloseConnectionCommand) cmd);
     } else if (cmd instanceof PrepareStatementCommand) {

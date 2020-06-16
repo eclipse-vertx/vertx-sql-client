@@ -32,7 +32,6 @@ import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
-import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;

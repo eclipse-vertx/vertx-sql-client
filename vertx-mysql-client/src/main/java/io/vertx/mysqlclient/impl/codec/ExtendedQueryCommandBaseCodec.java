@@ -2,13 +2,11 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.datatype.DataFormat;
-import io.vertx.sqlclient.impl.command.ExtendedQueryCommandBase;
-
-import java.nio.charset.StandardCharsets;
+import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.*;
 
-abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommandBase<R>> extends QueryCommandBaseCodec<R, C> {
+abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommand<R>> extends QueryCommandBaseCodec<R, C> {
 
   protected final MySQLPreparedStatement statement;
 

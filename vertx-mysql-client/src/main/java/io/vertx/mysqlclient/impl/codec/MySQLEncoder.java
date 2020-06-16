@@ -8,7 +8,6 @@ import io.vertx.mysqlclient.impl.command.*;
 import io.vertx.sqlclient.impl.command.*;
 
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 
 class MySQLEncoder extends ChannelOutboundHandlerAdapter {
@@ -64,10 +63,13 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
       return new InitialHandshakeCommandCodec((InitialHandshakeCommand) cmd);
     } else if (cmd instanceof SimpleQueryCommand) {
       return new SimpleQueryCommandCodec<>((SimpleQueryCommand<?>) cmd);
-    } else if (cmd instanceof ExtendedQueryCommand) {
-      return new ExtendedQueryCommandCodec<>((ExtendedQueryCommand<?>) cmd);
-    } else if (cmd instanceof ExtendedBatchQueryCommand<?>) {
-      return new ExtendedBatchQueryCommandCodec<>((ExtendedBatchQueryCommand<?>) cmd);
+    } else if (cmd instanceof ExtendedQueryCommand<?>) {
+      ExtendedQueryCommand<?> queryCmd = (ExtendedQueryCommand<?>) cmd;
+      if (queryCmd.isBatch()) {
+        return new ExtendedBatchQueryCommandCodec<>(queryCmd);
+      } else {
+        return new ExtendedQueryCommandCodec<>(queryCmd);
+      }
     } else if (cmd instanceof CloseConnectionCommand) {
       return new CloseConnectionCommandCodec((CloseConnectionCommand) cmd);
     } else if (cmd instanceof PrepareStatementCommand) {

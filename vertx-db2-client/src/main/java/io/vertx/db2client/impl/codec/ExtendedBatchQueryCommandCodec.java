@@ -28,9 +28,9 @@ import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.command.CommandResponse;
-import io.vertx.sqlclient.impl.command.ExtendedBatchQueryCommand;
+import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
-class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedBatchQueryCommand<R>> {
+class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
 
   private static final Logger LOG = LoggerFactory.getLogger(ExtendedBatchQueryCommandCodec.class);
 
@@ -38,9 +38,9 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
   private final List<QueryInstance> queryInstances;
   private final String baseCursorId;
 
-  ExtendedBatchQueryCommandCodec(ExtendedBatchQueryCommand<R> cmd) {
+  ExtendedBatchQueryCommandCodec(ExtendedQueryCommand<R> cmd) {
     super(cmd);
-    params = cmd.params();
+    params = cmd.paramsList();
     queryInstances = new ArrayList<>(params.size());
     baseCursorId = (cmd.cursorId() == null ? UUID.randomUUID().toString() : cmd.cursorId()) + "-";
   }
@@ -106,7 +106,7 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
     StringBuilder sb = new StringBuilder(super.toString());
     sb.append(", params=");
     sb.append("[");
-    sb.append(cmd.params().stream().map(Tuple::deepToString).collect(Collectors.joining(",")));
+    sb.append(cmd.paramsList().stream().map(Tuple::deepToString).collect(Collectors.joining(",")));
     sb.append("]");
     return sb.toString();
   }

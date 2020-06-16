@@ -16,19 +16,25 @@
  */
 package io.vertx.pgclient.impl.codec;
 
+import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.impl.codec.InvalidCachedStatementEvent;
+import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
-import java.util.List;
+class ExtendedQueryCommandCodec<R, C extends ExtendedQueryCommand<R>> extends QueryCommandBaseCodec<R, C> {
 
-class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
+  private PgEncoder encoder;
 
-  ExtendedQueryCommandCodec(ExtendedQueryCommand<R> cmd) {
+  private static final String TABLE_SCHEMA_CHANGE_ERROR_MESSAGE_PATTERN = "bind message has \\d result formats but query has \\d columns";
+
+  ExtendedQueryCommandCodec(C cmd) {
     super(cmd);
+    decoder = new RowResultDecoder<>(cmd.collector(), ((PgPreparedStatement)cmd.preparedStatement()).rowDesc());
   }
 
   @Override
   void encode(PgEncoder encoder) {
-    super.encode(encoder);
+    this.encoder = encoder;
     if (cmd.isSuspended()) {
       encoder.writeExecute(cmd.cursorId(), cmd.fetch());
       encoder.writeSync();
@@ -37,9 +43,55 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
       if (ps.bind.statement == 0) {
         encoder.writeParse(new Parse(ps.sql()));
       }
-      encoder.writeBind(ps.bind, cmd.cursorId(), cmd.params());
-      encoder.writeExecute(cmd.cursorId(), cmd.fetch());
+      if (cmd.isBatch()) {
+        if (cmd.paramsList().isEmpty()) {
+          // We set suspended to false as we won't get a command complete command back from Postgres
+          this.result = false;
+        } else {
+          for (Tuple param : cmd.paramsList()) {
+            encoder.writeBind(ps.bind, cmd.cursorId(), param);
+            encoder.writeExecute(cmd.cursorId(), cmd.fetch());
+          }
+        }
+      } else {
+        encoder.writeBind(ps.bind, cmd.cursorId(), cmd.params());
+        encoder.writeExecute(cmd.cursorId(), cmd.fetch());
+      }
       encoder.writeSync();
     }
+  }
+
+  @Override
+  void handleRowDescription(PgRowDesc rowDescription) {
+    decoder = new RowResultDecoder<>(cmd.collector(), rowDescription);
+  }
+
+  @Override
+  void handleParseComplete() {
+    // Response to Parse
+  }
+
+  @Override
+  void handlePortalSuspended() {
+    Throwable failure = decoder.complete();
+    R result = decoder.result();
+    RowDesc desc = decoder.desc;
+    int size = decoder.size();
+    decoder.reset();
+    this.result = true;
+    cmd.resultHandler().handleResult(0, size, desc, result, failure);
+  }
+
+  @Override
+  void handleBindComplete() {
+    // Response to Bind
+  }
+
+  @Override
+  public void handleErrorResponse(ErrorResponse errorResponse) {
+    if (cmd.preparedStatement().cacheable() && errorResponse.getMessage().matches(TABLE_SCHEMA_CHANGE_ERROR_MESSAGE_PATTERN)) {
+      encoder.channelHandlerContext().fireChannelRead(new InvalidCachedStatementEvent(cmd.preparedStatement().sql()));
+    }
+    super.handleErrorResponse(errorResponse);
   }
 }
