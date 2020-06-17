@@ -19,6 +19,7 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.sqlclient.Tuple;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 public class ArrayTuple implements TupleInternal {
@@ -57,7 +58,7 @@ public class ArrayTuple implements TupleInternal {
   @Override
   public Tuple addValue(Object value) {
     if (size >= values.length) {
-      Object[] copy = new Object[values.length << 1 + 1];
+      Object[] copy = new Object[(values.length << 1) + 1];
       System.arraycopy(values, 0, copy, 0, values.length);
       values = copy;
     }
@@ -72,9 +73,7 @@ public class ArrayTuple implements TupleInternal {
 
   @Override
   public void clear() {
-    for (int i = 0;i < values.length;i++) {
-      values[i] = null;
-    }
+    Arrays.fill(values, null);
     size = 0;
   }
 
@@ -88,5 +87,5 @@ public class ArrayTuple implements TupleInternal {
     }
     values[pos] = value;
   }
-  
+
 }
