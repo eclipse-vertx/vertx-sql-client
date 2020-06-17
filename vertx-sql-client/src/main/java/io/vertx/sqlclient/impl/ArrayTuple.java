@@ -24,13 +24,14 @@ import java.util.Collection;
 
 public class ArrayTuple implements TupleInternal {
 
+  private static final Object[] EMPTY_ARRAY = new Object[0];
   public static Tuple EMPTY = new ArrayTuple(0);
 
   private Object[] values;
   private int size;
 
   public ArrayTuple(int len) {
-    values = new Object[len];
+    values = len == 0 ? EMPTY_ARRAY : new Object[len];
     size = 0;
   }
 
