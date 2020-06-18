@@ -26,6 +26,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -123,6 +125,31 @@ public class MySQLQueryTest extends MySQLTestBase {
         for (int i = 0; i < 20000; i++) {
           conn.preparedQuery("SELECT 'test'").execute(ctx.asyncAssertSuccess(res2 -> {
             ctx.assertEquals("test", res2.iterator().next().getString(0));
+          }));
+        }
+      }));
+    }));
+  }
+
+  @Test
+  public void testCachePreparedStatementBatchWithSameSql(TestContext ctx) {
+    MySQLConnection.connect(vertx, options.setCachePreparedStatements(true), ctx.asyncAssertSuccess(conn -> {
+      conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'").execute(ctx.asyncAssertSuccess(res1 -> {
+        Row row = res1.iterator().next();
+        int maxPreparedStatementCount = Integer.parseInt(row.getString(1));
+        ctx.assertEquals("max_prepared_stmt_count", row.getString(0));
+        ctx.assertEquals(16382, maxPreparedStatementCount);
+
+        for (int i = 0; i < 20000; i++) {
+          int val = i * 1000;
+          List<Tuple> tuples = new ArrayList<>();
+          tuples.add(Tuple.of(val));
+          tuples.add(Tuple.of(val + 1));
+          conn.preparedQuery("Select cast(? AS CHAR)").executeBatch(tuples, ctx.asyncAssertSuccess(res2 -> {
+            String v1 = res2.iterator().next().getString(0);
+            String v2 = res2.next().iterator().next().getString(0);
+            ctx.assertEquals("" + val, v1);
+            ctx.assertEquals("" + (val + 1), v2);
           }));
         }
       }));
