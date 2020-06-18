@@ -162,8 +162,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     }));
   }
 
-  private static final String validationErrorSql = "SELECT * FROM Fortune WHERE id=$1";
-  private static final Tuple validationErrorTuple = Tuple.of("invalid-id");
+  public static final Tuple INVALID_TUPLE = Tuple.of("invalid-id");
 
   private void testValidationError(TestContext ctx, BiConsumer<PgConnection, Handler<Throwable>> test) {
     Async async = ctx.async();
@@ -172,8 +171,6 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
         ctx.assertEquals("Parameter at position[0] with class = [java.lang.String] and value = [invalid-id] can not be coerced to the expected class = [java.lang.Number] for encoding.", failure.getMessage());
         async.complete();
       });
-      conn.preparedQuery("SELECT * FROM Fortune WHERE id=$1").execute(Tuple.of("invalid-id"), ctx.asyncAssertFailure(failure -> {
-      }));
     }));
   }
 
@@ -181,7 +178,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
   public void testPrepareExecuteValidationError(TestContext ctx) {
     testValidationError(ctx, (conn, cont) -> {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
-        ps.query().execute(Tuple.of("invalid-id"), ctx.asyncAssertFailure(cont));
+        ps.query().execute(INVALID_TUPLE, ctx.asyncAssertFailure(cont));
       }));
     });
   }
@@ -191,7 +188,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     testValidationError(ctx, (conn, cont) -> {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
         try {
-          ps.cursor(Tuple.of("invalid-id"));
+          ps.cursor(INVALID_TUPLE);
         } catch (Exception e) {
           cont.handle(e);
         }
@@ -203,7 +200,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
   public void testPrepareBatchValidationError(TestContext ctx) {
     testValidationError(ctx, (conn, cont) -> {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
-        ps.query().executeBatch(Collections.singletonList(Tuple.of("invalid-id")), ctx.asyncAssertFailure(cont));
+        ps.query().executeBatch(Collections.singletonList(INVALID_TUPLE), ctx.asyncAssertFailure(cont));
       }));
     });
   }
@@ -211,14 +208,14 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
   @Test
   public void testPreparedQueryValidationError(TestContext ctx) {
     testValidationError(ctx, (conn, cont) -> {
-      conn.preparedQuery("SELECT * FROM Fortune WHERE id=$1").execute(Tuple.of("invalid-id"), ctx.asyncAssertFailure(cont));
+      conn.preparedQuery("SELECT * FROM Fortune WHERE id=$1").execute(INVALID_TUPLE, ctx.asyncAssertFailure(cont));
     });
   }
 
   @Test
   public void testPreparedBatchValidationError(TestContext ctx) {
     testValidationError(ctx, (conn, cont) -> {
-      conn.preparedQuery("SELECT * FROM Fortune WHERE id=$1").executeBatch(Collections.singletonList(Tuple.of("invalid-id")), ctx.asyncAssertFailure(cont));
+      conn.preparedQuery("SELECT * FROM Fortune WHERE id=$1").executeBatch(Collections.singletonList(INVALID_TUPLE), ctx.asyncAssertFailure(cont));
     });
   }
 
