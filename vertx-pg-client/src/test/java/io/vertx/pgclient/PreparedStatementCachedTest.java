@@ -34,7 +34,6 @@ public class PreparedStatementCachedTest extends PreparedStatementTestBase {
   }
 
   // Error seems to be different for some implementations
-  @Ignore
   @Test
   public void testOneShotPreparedQueryCacheRefreshOnTableSchemaChange(TestContext ctx) {
     Async async = ctx.async();
