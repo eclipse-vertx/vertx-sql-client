@@ -88,19 +88,7 @@ public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> i
       pool.acquire(new CommandWaiter() { // SHOULD BE IT !!!!!
         @Override
         protected void onSuccess(Connection conn) {
-          cmd.handler = ar -> {
-            ar.scheduler = new CommandScheduler() {
-              @Override
-              public <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
-                cmd.handler = cr -> {
-                  cr.scheduler = this;
-                  handler.handle(cr);
-                };
-                conn.schedule(cmd);
-              }
-            };
-            handler.handle(ar);
-          };
+          cmd.handler = handler;
           conn.schedule(cmd);
           conn.close(this);
         }

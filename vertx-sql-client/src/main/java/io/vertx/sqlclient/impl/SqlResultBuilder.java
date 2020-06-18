@@ -54,12 +54,13 @@ class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlResult<T>>
     return new SimpleQueryCommand<>(sql, singleton, autoCommit, collector, handler);
   }
 
-  ExtendedQueryCommand<T> createExtendedQuery(PreparedStatement preparedStatement,
+  ExtendedQueryCommand<T> createExtendedQuery(String sql,
                                               Tuple args,
                                               boolean autoCommit,
                                               SqlResultHandler<T, R, L> handler) {
     return ExtendedQueryCommand.createQuery(
-      preparedStatement,
+      sql,
+      null,
       args,
       autoCommit,
       collector,
@@ -74,6 +75,7 @@ class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlResult<T>>
                                               boolean autoCommit,
                                               SqlResultHandler<T, R, L> handler) {
     return ExtendedQueryCommand.createQuery(
+      preparedStatement.sql(),
       preparedStatement,
       args,
       fetch,
@@ -88,6 +90,13 @@ class SqlResultBuilder<T, R extends SqlResultBase<T, R>, L extends SqlResult<T>>
                                              List<Tuple> argsList,
                                              boolean autoCommit,
                                              SqlResultHandler<T, R, L> handler) {
-    return ExtendedQueryCommand.createBatch(preparedStatement, argsList, autoCommit, collector, handler);
+    return ExtendedQueryCommand.createBatch(preparedStatement.sql(), preparedStatement, argsList, autoCommit, collector, handler);
+  }
+
+  ExtendedQueryCommand<T> createBatchCommand(String sql,
+                                             List<Tuple> argsList,
+                                             boolean autoCommit,
+                                             SqlResultHandler<T, R, L> handler) {
+    return ExtendedQueryCommand.createBatch(sql, null, argsList, autoCommit, collector, handler);
   }
 }

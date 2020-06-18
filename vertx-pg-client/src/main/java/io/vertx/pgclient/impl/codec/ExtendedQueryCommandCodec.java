@@ -40,9 +40,6 @@ class ExtendedQueryCommandCodec<R, C extends ExtendedQueryCommand<R>> extends Qu
       encoder.writeSync();
     } else {
       PgPreparedStatement ps = (PgPreparedStatement) cmd.preparedStatement();
-      if (ps.bind.statement == 0) {
-        encoder.writeParse(new Parse(ps.sql()));
-      }
       if (cmd.isBatch()) {
         if (cmd.paramsList().isEmpty()) {
           // We set suspended to false as we won't get a command complete command back from Postgres
@@ -59,11 +56,6 @@ class ExtendedQueryCommandCodec<R, C extends ExtendedQueryCommand<R>> extends Qu
       }
       encoder.writeSync();
     }
-  }
-
-  @Override
-  void handleRowDescription(PgRowDesc rowDescription) {
-    decoder = new RowResultDecoder<>(cmd.collector(), rowDescription);
   }
 
   @Override

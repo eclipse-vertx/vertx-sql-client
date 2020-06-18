@@ -200,7 +200,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
   @Test
   public void testNullValueIsAlwaysValid(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
       conn
         .preparedQuery("SELECT 1 WHERE $1::INT4 IS NULL").execute(Tuple.tuple().addInteger(null), ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());

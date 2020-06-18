@@ -209,8 +209,7 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
       );
       columns[c] = column;
     }
-    PgRowDesc rowDesc = new PgRowDesc(columns);
-    inflight.peek().handleRowDescription(rowDesc);
+    inflight.peek().handleRowDescription(columns);
   }
 
   private static final byte I = (byte) 'I', T = (byte) 'T';
