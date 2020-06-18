@@ -86,9 +86,8 @@ public class MySQLPreparedStatementTest extends MySQLTestBase {
               ctx.assertEquals(num - 1, val);
               conn.query("SELECT * FROM performance_schema.prepared_statements_instances").execute(ctx.asyncAssertSuccess(res3 -> {
                 ctx.assertEquals(expected, res3.size());
-                conn.close(ctx.asyncAssertSuccess(v -> {
-                  async.complete();
-                }));
+                conn.close();
+                async.complete();
               }));
             }
           }));
