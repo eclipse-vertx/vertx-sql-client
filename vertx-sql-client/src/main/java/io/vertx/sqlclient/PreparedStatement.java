@@ -17,10 +17,10 @@
 
 package io.vertx.sqlclient;
 
-import io.vertx.sqlclient.impl.ArrayTuple;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.sqlclient.impl.ArrayTuple;
 
 /**
  * A prepared statement, the statement is pre-compiled and it's more efficient to execute the statement for multiple times.
@@ -47,7 +47,7 @@ public interface PreparedStatement {
   PreparedQuery<RowSet<Row>> query();
 
   /**
-   * @return create a query cursor with a {@code fetch} size and empty arguments
+   * Like {@link #cursor(Tuple)} but with empty arguments.
    */
   default Cursor cursor() {
     return cursor(ArrayTuple.EMPTY);
@@ -60,6 +60,13 @@ public interface PreparedStatement {
    * @return the query
    */
   Cursor cursor(Tuple args);
+
+  /**
+   * Like {@link #createStream(int, Tuple)} but with empty arguments.
+   */
+  default RowStream<Row> createStream(int fetch) {
+    return createStream(fetch, ArrayTuple.EMPTY);
+  }
 
   /**
    * Execute the prepared query with a cursor and createStream the result. The createStream opens a cursor
