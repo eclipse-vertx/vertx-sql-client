@@ -158,28 +158,24 @@ public abstract class SocketConnectionBase implements Connection {
           // Execute prepare
           PrepareStatementCommand prepareCmd = new PrepareStatementCommand(queryCmd.sql(), true);
           prepareCmd.handler = ar -> {
+            paused = false;
             if (ar.succeeded()) {
               PreparedStatement ps = ar.result();
               cacheStatement(ps);
               queryCmd.ps = ps;
               String msg = queryCmd.prepare();
               if (msg != null) {
-                paused = false;
-                checkPending();
                 queryCmd.fail(new NoStackTraceThrowable(msg));
               } else {
                 ctx.write(queryCmd);
                 ctx.flush();
-                paused = false;
-                checkPending();
               }
             } else {
-              paused = false;
-              checkPending();
               queryCmd.fail(ar.cause());
             }
           };
           paused = true;
+          inflight++;
           cmd = prepareCmd;
         }
       }
