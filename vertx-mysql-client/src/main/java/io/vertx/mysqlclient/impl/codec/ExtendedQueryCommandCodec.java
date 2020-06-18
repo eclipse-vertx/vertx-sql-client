@@ -21,8 +21,6 @@ import io.vertx.mysqlclient.impl.datatype.DataType;
 import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.impl.PreparedStatement;
-import io.vertx.sqlclient.impl.command.CloseStatementCommand;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.ERROR_PACKET_HEADER;
@@ -173,18 +171,5 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
     packet.setMediumLE(packetStartIdx, lenOfPayload);
 
     encoder.chctx.writeAndFlush(packet);
-  }
-
-  @Override
-  protected void handleAllResultsetDecodingCompleted() {
-    // Close prepare statement
-    MySQLPreparedStatement ps = (MySQLPreparedStatement) this.cmd.ps;
-    if (ps.closeAfterUsage) {
-      CloseStatementCommand cmd = new CloseStatementCommand(ps);
-      CloseStatementCommandCodec stmt = new CloseStatementCommandCodec(cmd);
-      stmt.completionHandler = ar -> {};
-      stmt.encode(encoder);
-    }
-    super.handleAllResultsetDecodingCompleted();
   }
 }
