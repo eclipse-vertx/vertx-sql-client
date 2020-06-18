@@ -13,7 +13,7 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.datatype.DataFormat;
-import io.vertx.sqlclient.impl.command.CloseStatementCommand;
+import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.*;
@@ -46,11 +46,21 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommand<R
     // Close prepare statement
     MySQLPreparedStatement ps = (MySQLPreparedStatement) this.cmd.ps;
     if (ps.closeAfterUsage) {
-      CloseStatementCommand cmd = new CloseStatementCommand(ps);
-      CloseStatementCommandCodec stmt = new CloseStatementCommandCodec(cmd);
-      stmt.completionHandler = ar -> {};
-      stmt.encode(encoder);
+      sendCloseStatementCommand(ps);
     }
     super.handleAllResultsetDecodingCompleted();
+  }
+
+  private void sendCloseStatementCommand(MySQLPreparedStatement statement) {
+    ByteBuf packet = allocateBuffer(9);
+    // encode packet header
+    packet.writeMediumLE(5);
+    packet.writeByte(0); // sequenceId set to zero
+
+    // encode packet payload
+    packet.writeByte(CommandType.COM_STMT_CLOSE);
+    packet.writeIntLE((int) statement.statementId);
+
+    sendNonSplitPacket(packet);
   }
 }
