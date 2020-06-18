@@ -7,6 +7,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowIterator;
+import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import org.junit.After;
 import org.junit.Assume;
@@ -16,6 +17,7 @@ import org.junit.runner.RunWith;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -139,6 +141,49 @@ public class MySQLQueryTest extends MySQLTestBase {
             String v2 = res2.next().iterator().next().getString(0);
             ctx.assertEquals("" + val, v1);
             ctx.assertEquals("" + (val + 1), v2);
+          }));
+        }
+      }));
+    }));
+  }
+
+  @Test
+  public void testAutoClosingNonCacheOneShotPreparedQueryStatement(TestContext ctx) {
+    MySQLConnection.connect(vertx, options.setCachePreparedStatements(false), ctx.asyncAssertSuccess(conn -> {
+      conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'").execute(ctx.asyncAssertSuccess(res1 -> {
+        Row row = res1.iterator().next();
+        int maxPreparedStatementCount = Integer.parseInt(row.getString(1));
+        ctx.assertEquals("max_prepared_stmt_count", row.getString(0));
+        ctx.assertEquals(16382, maxPreparedStatementCount);
+
+        for (int i = 0; i < 20000; i++) {
+          // if we don't close the statement automatically in the codec, the statement handles would leak and raise an statement limit error
+          conn.preparedQuery("SELECT 'test'").execute(ctx.asyncAssertSuccess(res2 -> {
+            ctx.assertEquals("test", res2.iterator().next().getString(0));
+          }));
+        }
+      }));
+    }));
+  }
+
+  @Test
+  public void testAutoClosingNonCacheOneShotPreparedBatchStatement(TestContext ctx) {
+    MySQLConnection.connect(vertx, options.setCachePreparedStatements(false), ctx.asyncAssertSuccess(conn -> {
+      conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'").execute(ctx.asyncAssertSuccess(res0 -> {
+        Row row = res0.iterator().next();
+        int maxPreparedStatementCount = Integer.parseInt(row.getString(1));
+        ctx.assertEquals("max_prepared_stmt_count", row.getString(0));
+        ctx.assertEquals(16382, maxPreparedStatementCount);
+
+        for (int i = 0; i < 20000; i++) {
+          // if we don't close the statement automatically in the codec, the statement handles would leak and raise an statement limit error
+          List<Tuple> params = Arrays.asList(Tuple.of(1), Tuple.of(2), Tuple.of(3));
+          conn.preparedQuery("SELECT CAST(? AS CHAR)").executeBatch(params, ctx.asyncAssertSuccess(res1 -> {
+            ctx.assertEquals("1", res1.iterator().next().getString(0));
+            RowSet<Row> res2 = res1.next();
+            ctx.assertEquals("2", res2.iterator().next().getString(0));
+            RowSet<Row> res3 = res2.next();
+            ctx.assertEquals("3", res3.iterator().next().getString(0));
           }));
         }
       }));
