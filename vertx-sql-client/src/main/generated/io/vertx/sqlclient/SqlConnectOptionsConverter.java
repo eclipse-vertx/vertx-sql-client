@@ -86,7 +86,6 @@ public class SqlConnectOptionsConverter {
     }
     json.put("port", obj.getPort());
     json.put("preparedStatementCacheMaxSize", obj.getPreparedStatementCacheMaxSize());
-    json.put("preparedStatementCacheSqlLimit", obj.getPreparedStatementCacheSqlLimit());
     if (obj.getProperties() != null) {
       JsonObject map = new JsonObject();
       obj.getProperties().forEach((key, value) -> map.put(key, value));

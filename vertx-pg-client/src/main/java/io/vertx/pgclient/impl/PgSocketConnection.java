@@ -37,6 +37,7 @@ import io.vertx.sqlclient.impl.command.TxCommand;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -51,10 +52,10 @@ public class PgSocketConnection extends SocketConnectionBase {
   public PgSocketConnection(NetSocketInternal socket,
                             boolean cachePreparedStatements,
                             int preparedStatementCacheSize,
-                            int preparedStatementCacheSqlLimit,
+                            Predicate<String> preparedStatementCacheSqlFilter,
                             int pipeliningLimit,
                             ContextInternal context) {
-    super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, pipeliningLimit, context);
+    super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
   }
 
   @Override
@@ -115,7 +116,7 @@ public class PgSocketConnection extends SocketConnectionBase {
   public int getSecretKey() {
     return secretKey;
   }
-  
+
   @Override
   public DatabaseMetadata getDatabaseMetaData() {
     return dbMetaData;

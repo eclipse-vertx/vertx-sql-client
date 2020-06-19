@@ -19,15 +19,18 @@ import io.vertx.core.net.NetClientOptions;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 /**
  * Connect options for configuring {@link SqlConnection} or {@link Pool}.
  */
 @DataObject(generateConverter = true)
 public class SqlConnectOptions extends NetClientOptions {
+
   public static final boolean DEFAULT_CACHE_PREPARED_STATEMENTS = false;
   public static final int DEFAULT_PREPARED_STATEMENT_CACHE_MAX_SIZE = 256;
   public static final int DEFAULT_PREPARED_STATEMENT_CACHE_SQL_LIMIT = 2048;
+  public static final Predicate<String> DEFAULT_PREPARED_STATEMENT_CACHE_FILTER = sql -> sql.length() < DEFAULT_PREPARED_STATEMENT_CACHE_SQL_LIMIT;
 
   private String host;
   private int port;
@@ -36,7 +39,7 @@ public class SqlConnectOptions extends NetClientOptions {
   private String database;
   private boolean cachePreparedStatements = DEFAULT_CACHE_PREPARED_STATEMENTS;
   private int preparedStatementCacheMaxSize = DEFAULT_PREPARED_STATEMENT_CACHE_MAX_SIZE;
-  private int preparedStatementCacheSqlLimit = DEFAULT_PREPARED_STATEMENT_CACHE_SQL_LIMIT;
+  private Predicate<String> preparedStatementCacheSqlFilter = DEFAULT_PREPARED_STATEMENT_CACHE_FILTER;
   private Map<String, String> properties = new HashMap<>(4);
 
   public SqlConnectOptions() {
@@ -59,7 +62,7 @@ public class SqlConnectOptions extends NetClientOptions {
     this.database = other.database;
     this.cachePreparedStatements = other.cachePreparedStatements;
     this.preparedStatementCacheMaxSize = other.preparedStatementCacheMaxSize;
-    this.preparedStatementCacheSqlLimit = other.preparedStatementCacheSqlLimit;
+    this.preparedStatementCacheSqlFilter = other.preparedStatementCacheSqlFilter;
     if (other.properties != null) {
       this.properties = new HashMap<>(other.properties);
     }
@@ -213,23 +216,36 @@ public class SqlConnectOptions extends NetClientOptions {
   }
 
   /**
-   * Get the maximum length of prepared statement SQL string that the connection will cache.
+   * Get the predicate filtering prepared statements that the connection will cache.
    *
-   * @return the limit of maximum length
+   * @return the current predicate
    */
-  public int getPreparedStatementCacheSqlLimit() {
-    return preparedStatementCacheSqlLimit;
+  public Predicate<String> getPreparedStatementCacheSqlFilter() {
+    return preparedStatementCacheSqlFilter;
+  }
+
+  /**
+   * Set a predicate filtering prepared statements that the connection will cache.
+   *
+   * <p> The default predicate accepts predicate having query length < {@link #DEFAULT_PREPARED_STATEMENT_CACHE_SQL_LIMIT}
+   *
+   * @param predicate the filter
+   */
+  public SqlConnectOptions setPreparedStatementCacheSqlFilter(Predicate<String> predicate) {
+    this.preparedStatementCacheSqlFilter = predicate;
+    return this;
   }
 
   /**
    * Set the maximum length of prepared statement SQL string that the connection will cache.
    *
+   * <p> This is an helper setting the {@link #setPreparedStatementCacheSqlFilter(Predicate)}.
+   *
    * @param preparedStatementCacheSqlLimit the maximum length limit of SQL string to set
    * @return a reference to this, so the API can be used fluently
    */
   public SqlConnectOptions setPreparedStatementCacheSqlLimit(int preparedStatementCacheSqlLimit) {
-    this.preparedStatementCacheSqlLimit = preparedStatementCacheSqlLimit;
-    return this;
+    return setPreparedStatementCacheSqlFilter(sql -> sql.length() <= preparedStatementCacheSqlLimit);
   }
 
   /**

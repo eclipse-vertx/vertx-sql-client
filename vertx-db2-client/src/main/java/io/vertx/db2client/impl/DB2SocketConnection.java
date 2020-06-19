@@ -16,6 +16,7 @@
 package io.vertx.db2client.impl;
 
 import java.util.Map;
+import java.util.function.Predicate;
 
 import io.netty.channel.ChannelPipeline;
 import io.vertx.core.AsyncResult;
@@ -42,18 +43,18 @@ public class DB2SocketConnection extends SocketConnectionBase {
   private Handler<Void> closeHandler;
   public final ConnectionMetaData connMetadata = new ConnectionMetaData();
 
-  public DB2SocketConnection(NetSocketInternal socket, 
-      boolean cachePreparedStatements, 
+  public DB2SocketConnection(NetSocketInternal socket,
+      boolean cachePreparedStatements,
       int preparedStatementCacheSize,
-      int preparedStatementCacheSqlLimit, 
-      int pipeliningLimit, 
+      Predicate<String> preparedStatementCacheSqlFilter,
+      int pipeliningLimit,
       ContextInternal context) {
-    super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, pipeliningLimit, context);
+    super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
   }
 
-  void sendStartupMessage(String username, 
-      String password, 
-      String database, 
+  void sendStartupMessage(String username,
+      String password,
+      String database,
       Map<String, String> properties,
       Promise<Connection> completionHandler) {
     InitialHandshakeCommand cmd = new InitialHandshakeCommand(this, username, password, database, properties);
@@ -93,7 +94,7 @@ public class DB2SocketConnection extends SocketConnectionBase {
     super.handleClose(t);
     context().runOnContext(closeHandler);
   }
-  
+
   @Override
   public DatabaseMetadata getDatabaseMetaData() {
     return connMetadata.dbMetadata;

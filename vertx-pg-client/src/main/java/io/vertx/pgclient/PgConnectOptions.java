@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.System.getenv;
@@ -120,7 +121,7 @@ public class PgConnectOptions extends SqlConnectOptions {
     super(json);
     PgConnectOptionsConverter.fromJson(json, this);
   }
-  
+
   public PgConnectOptions(SqlConnectOptions other) {
     super(other);
     if (other instanceof PgConnectOptions) {
@@ -180,6 +181,11 @@ public class PgConnectOptions extends SqlConnectOptions {
   @Override
   public PgConnectOptions setPreparedStatementCacheMaxSize(int preparedStatementCacheMaxSize) {
     return (PgConnectOptions) super.setPreparedStatementCacheMaxSize(preparedStatementCacheMaxSize);
+  }
+
+  @Override
+  public PgConnectOptions setPreparedStatementCacheSqlFilter(Predicate<String> predicate) {
+    return (PgConnectOptions) super.setPreparedStatementCacheSqlFilter(predicate);
   }
 
   @Override
