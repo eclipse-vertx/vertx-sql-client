@@ -18,15 +18,34 @@ package io.vertx.pgclient.impl.codec;
 
 import io.vertx.sqlclient.impl.RowDesc;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 class PgRowDesc extends RowDesc {
 
+  static PgRowDesc createBinary(PgColumnDesc[] columns) {
+    // Fix to use binary when possible
+    return new PgRowDesc(Arrays.stream(columns)
+      .map(c -> new PgColumnDesc(
+        c.name,
+        c.relationId,
+        c.relationAttributeNo,
+        c.dataType,
+        c.length,
+        c.typeModifier,
+        c.dataType.supportsBinary ? DataFormat.BINARY : DataFormat.TEXT))
+      .toArray(PgColumnDesc[]::new));
+  }
+
+  static PgRowDesc create(PgColumnDesc[] columns) {
+    return new PgRowDesc(columns);
+  }
+
   final PgColumnDesc[] columns;
 
-  PgRowDesc(PgColumnDesc[] columns) {
+  private PgRowDesc(PgColumnDesc[] columns) {
     super(Collections.unmodifiableList(Stream.of(columns)
       .map(d -> d.name)
       .collect(Collectors.toList())));

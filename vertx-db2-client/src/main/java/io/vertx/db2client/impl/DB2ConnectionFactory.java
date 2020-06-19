@@ -17,6 +17,7 @@ package io.vertx.db2client.impl;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -41,7 +42,7 @@ public class DB2ConnectionFactory implements ConnectionFactory {
   private final Map<String, String> connectionAttributes;
   private final boolean cachePreparedStatements;
   private final int preparedStatementCacheSize;
-  private final int preparedStatementCacheSqlLimit;
+  private final Predicate<String> preparedStatementCacheSqlFilter;
   private final int pipeliningLimit;
 
   public DB2ConnectionFactory(ContextInternal context, DB2ConnectOptions options) {
@@ -58,7 +59,7 @@ public class DB2ConnectionFactory implements ConnectionFactory {
 
     this.cachePreparedStatements = options.getCachePreparedStatements();
     this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
-    this.preparedStatementCacheSqlLimit = options.getPreparedStatementCacheSqlLimit();
+    this.preparedStatementCacheSqlFilter = options.getPreparedStatementCacheSqlFilter();
     this.pipeliningLimit = options.getPipeliningLimit();
 
     this.netClient = context.owner().createNetClient(netClientOptions);
@@ -81,7 +82,7 @@ public class DB2ConnectionFactory implements ConnectionFactory {
       if (ar.succeeded()) {
         NetSocket so = ar.result();
         DB2SocketConnection conn = new DB2SocketConnection((NetSocketInternal) so, cachePreparedStatements,
-            preparedStatementCacheSize, preparedStatementCacheSqlLimit, pipeliningLimit, context);
+            preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
         conn.init();
         conn.sendStartupMessage(username, password, database, connectionAttributes, promise);
       } else {

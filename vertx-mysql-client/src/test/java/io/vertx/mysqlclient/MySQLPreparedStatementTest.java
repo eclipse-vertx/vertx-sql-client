@@ -12,13 +12,18 @@
 package io.vertx.mysqlclient;
 
 import io.vertx.core.Vertx;
+import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RunWith(VertxUnitRunner.class)
 public class MySQLPreparedStatementTest extends MySQLTestBase {
@@ -62,6 +67,43 @@ public class MySQLPreparedStatementTest extends MySQLTestBase {
             conn.close();
           }));
         }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testMaxPreparedStatementEviction(TestContext ctx) {
+    testPreparedStatements(ctx, new MySQLConnectOptions(options).setCachePreparedStatements(true).setPreparedStatementCacheMaxSize(16), 128, 16);
+  }
+
+  @Test
+  public void testOneShotPreparedStatements(TestContext ctx) {
+    testPreparedStatements(ctx, new MySQLConnectOptions(options).setCachePreparedStatements(false), 128, 0);
+  }
+
+  private void testPreparedStatements(TestContext ctx, MySQLConnectOptions options, int num, int expected) {
+    Assume.assumeFalse(MySQLTestBase.rule.isUsingMySQL5_6() || MySQLTestBase.rule.isUsingMariaDB());
+    Async async = ctx.async();
+    MySQLConnection.connect(vertx, options.setUser("root").setPassword("password"), ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT * FROM performance_schema.prepared_statements_instances").execute(ctx.asyncAssertSuccess(res1 -> {
+        ctx.assertEquals(0, res1.size());
+        AtomicInteger count = new AtomicInteger(num);
+        for (int i = 0;i < num;i++) {
+          int val = i;
+          conn.preparedQuery("SELECT " + i).execute(Tuple.tuple(), ctx.asyncAssertSuccess(res2 -> {
+            ctx.assertEquals(1, res2.size());
+            ctx.assertEquals(val, res2.iterator().next().getInteger(0));
+            if (count.decrementAndGet() == 0) {
+              ctx.assertEquals(num - 1, val);
+              conn.query("SELECT * FROM performance_schema.prepared_statements_instances").execute(ctx.asyncAssertSuccess(res3 -> {
+                ctx.assertEquals(expected, res3.size());
+                conn.close(ctx.asyncAssertSuccess(v -> {
+                  async.complete();
+                }));
+              }));
+            }
+          }));
+        }
       }));
     }));
   }

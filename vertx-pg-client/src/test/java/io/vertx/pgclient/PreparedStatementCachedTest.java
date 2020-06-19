@@ -19,8 +19,12 @@ package io.vertx.pgclient;
 
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
+import org.junit.Ignore;
 import org.junit.Test;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PreparedStatementCachedTest extends PreparedStatementTestBase {
 
@@ -29,6 +33,7 @@ public class PreparedStatementCachedTest extends PreparedStatementTestBase {
     return new PgConnectOptions(options).setCachePreparedStatements(true);
   }
 
+  // Error seems to be different for some implementations
   @Test
   public void testOneShotPreparedQueryCacheRefreshOnTableSchemaChange(TestContext ctx) {
     Async async = ctx.async();
@@ -58,4 +63,47 @@ public class PreparedStatementCachedTest extends PreparedStatementTestBase {
     }));
   }
 
+  @Test
+  public void testMaxPreparedStatementEviction(TestContext ctx) {
+    testPreparedStatements(ctx, options().setCachePreparedStatements(true).setPreparedStatementCacheMaxSize(16), 128, 16);
+  }
+
+  @Test
+  public void testOneShotPreparedStatements(TestContext ctx) {
+    testPreparedStatements(ctx, options().setCachePreparedStatements(false), 128, 0);
+  }
+
+  @Test
+  public void testPreparedStatementCacheFiltering(TestContext ctx) {
+    AtomicInteger count = new AtomicInteger();
+    testPreparedStatements(ctx, options()
+      .setCachePreparedStatements(true)
+      .setPreparedStatementCacheSqlFilter(sql -> count.getAndIncrement() % 2 == 0), 128, 64);
+  }
+
+  private void testPreparedStatements(TestContext ctx, PgConnectOptions options, int num, int expected) {
+    Async async = ctx.async();
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT * FROM pg_prepared_statements").execute(ctx.asyncAssertSuccess(res1 -> {
+        ctx.assertEquals(0, res1.size());
+        AtomicInteger count = new AtomicInteger(num);
+        for (int i = 0;i < num;i++) {
+          int val = i;
+          conn.preparedQuery("SELECT " + i).execute(Tuple.tuple(), ctx.asyncAssertSuccess(res2 -> {
+            ctx.assertEquals(1, res2.size());
+            ctx.assertEquals(val, res2.iterator().next().getInteger(0));
+            if (count.decrementAndGet() == 0) {
+              ctx.assertEquals(num - 1, val);
+              conn.query("SELECT * FROM pg_prepared_statements").execute(ctx.asyncAssertSuccess(res3 -> {
+                ctx.assertEquals(expected, res3.size());
+                conn.close(ctx.asyncAssertSuccess(v -> {
+                  async.complete();
+                }));
+              }));
+            }
+          }));
+        }
+      }));
+    }));
+  }
 }

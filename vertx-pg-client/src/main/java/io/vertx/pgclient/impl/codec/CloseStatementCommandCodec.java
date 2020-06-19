@@ -27,16 +27,9 @@ class CloseStatementCommandCodec extends PgCommandCodec<Void, CloseStatementComm
 
   @Override
   public void encode(PgEncoder out) {
-    PgPreparedStatement statement = (PgPreparedStatement) cmd.statement();
-    if (statement.cacheable()) {
-      // we don't need to close unnamed prepared statements
-      CommandResponse<Void> resp = CommandResponse.success(null);
-      completionHandler.handle(resp);
-    } else {
-      // close the named prepared statement
-      out.writeClosePreparedStatement(((PgPreparedStatement) cmd.statement()).bind.statement);
-      out.writeSync();
-    }
+    // close the named prepared statement
+    out.writeClosePreparedStatement(((PgPreparedStatement) cmd.statement()).bind.statement);
+    out.writeSync();
   }
 
   @Override

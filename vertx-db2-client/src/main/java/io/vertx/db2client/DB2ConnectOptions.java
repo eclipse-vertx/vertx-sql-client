@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
@@ -146,70 +147,75 @@ public class DB2ConnectOptions extends SqlConnectOptions {
   }
 
   @Override
+  public DB2ConnectOptions setPreparedStatementCacheSqlFilter(Predicate<String> predicate) {
+    return (DB2ConnectOptions) super.setPreparedStatementCacheSqlFilter(predicate);
+  }
+
+  @Override
   public DB2ConnectOptions setPreparedStatementCacheSqlLimit(int preparedStatementCacheSqlLimit) {
     return (DB2ConnectOptions) super.setPreparedStatementCacheSqlLimit(preparedStatementCacheSqlLimit);
   }
-  
+
   @Override
   public DB2ConnectOptions setSsl(boolean ssl) {
     return (DB2ConnectOptions) super.setSsl(ssl);
   }
-  
+
   @Override
   public DB2ConnectOptions setSslHandshakeTimeout(long sslHandshakeTimeout) {
     return (DB2ConnectOptions) super.setSslHandshakeTimeout(sslHandshakeTimeout);
   }
-  
+
   @Override
   public DB2ConnectOptions setSslHandshakeTimeoutUnit(TimeUnit sslHandshakeTimeoutUnit) {
     return (DB2ConnectOptions) super.setSslHandshakeTimeoutUnit(sslHandshakeTimeoutUnit);
   }
-  
+
   @Override
   public DB2ConnectOptions setSslEngineOptions(SSLEngineOptions sslEngineOptions) {
     return (DB2ConnectOptions) super.setSslEngineOptions(sslEngineOptions);
   }
-  
+
   @Override
   public DB2ConnectOptions setJdkSslEngineOptions(JdkSSLEngineOptions sslEngineOptions) {
     return (DB2ConnectOptions) super.setJdkSslEngineOptions(sslEngineOptions);
   }
-  
+
   @Override
   public DB2ConnectOptions setKeyCertOptions(KeyCertOptions options) {
     return (DB2ConnectOptions) super.setKeyCertOptions(options);
   }
-  
+
   @Override
   public DB2ConnectOptions setKeyStoreOptions(JksOptions options) {
     return (DB2ConnectOptions) super.setKeyStoreOptions(options);
   }
-  
+
   @Override
   public DB2ConnectOptions setOpenSslEngineOptions(OpenSSLEngineOptions sslEngineOptions) {
     return (DB2ConnectOptions) super.setOpenSslEngineOptions(sslEngineOptions);
   }
-  
+
   @Override
   public DB2ConnectOptions setPemKeyCertOptions(PemKeyCertOptions options) {
     return (DB2ConnectOptions) super.setPemKeyCertOptions(options);
   }
-  
+
   @Override
   public DB2ConnectOptions setPemTrustOptions(PemTrustOptions options) {
     return (DB2ConnectOptions) super.setPemTrustOptions(options);
   }
-  
+
   @Override
   public DB2ConnectOptions setTrustAll(boolean trustAll) {
     return (DB2ConnectOptions) super.setTrustAll(trustAll);
   }
-  
+
   @Override
   public DB2ConnectOptions setTrustOptions(TrustOptions options) {
     return (DB2ConnectOptions) super.setTrustOptions(options);
   }
-  
+
   @Override
   public DB2ConnectOptions setTrustStoreOptions(JksOptions options) {
     return (DB2ConnectOptions) super.setTrustStoreOptions(options);

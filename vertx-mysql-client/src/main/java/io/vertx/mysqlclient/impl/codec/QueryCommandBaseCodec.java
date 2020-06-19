@@ -163,7 +163,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     cmd.resultHandler().addProperty(MySQLClient.LAST_INSERTED_ID, lastInsertId);
   }
 
-  private void handleAllResultsetDecodingCompleted() {
+  protected void handleAllResultsetDecodingCompleted() {
     CommandResponse<Boolean> response;
     if (this.failure != null) {
       response = CommandResponse.failure(this.failure);

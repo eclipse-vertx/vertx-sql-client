@@ -15,27 +15,32 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.sqlclient.impl.PreparedStatement;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * A LRU replacement strategy cache based on {@link java.util.LinkedHashMap} for prepared statements.
  */
-class LruCache extends LinkedHashMap<String, AsyncResult<PreparedStatement>> {
-  private final int capacity;
-  private final Handler<AsyncResult<PreparedStatement>> onEvictedHandler;
+class LruCache<K, V> extends LinkedHashMap<K, V> {
 
-  LruCache(int capacity, Handler<AsyncResult<PreparedStatement>> onEvictedHandler) {
+  List<V> removed;
+  private final int capacity;
+
+  LruCache(int capacity) {
     super(capacity, 0.75f, true);
     this.capacity = capacity;
-    this.onEvictedHandler = onEvictedHandler;
   }
 
   @Override
-  protected boolean removeEldestEntry(Map.Entry<String, AsyncResult<PreparedStatement>> eldest) {
+  protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
     boolean evict = size() > capacity;
     if (evict) {
-      onEvictedHandler.handle(eldest.getValue());
+      if (removed == null) {
+        removed = new ArrayList<>();
+      }
+      removed.add(eldest.getValue());
       return true;
     } else {
       return false;

@@ -75,7 +75,7 @@ class PreparedStatementImpl implements PreparedStatement {
     if (context == Vertx.currentContext()) {
       builder.executeExtendedQuery(
         conn,
-        ps,
+          ps,
         autoCommit,
         args,
         fetch,

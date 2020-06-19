@@ -24,6 +24,8 @@ import io.vertx.sqlclient.impl.command.CommandBase;
 import io.netty.buffer.ByteBuf;
 import io.vertx.core.Handler;
 
+import java.util.Arrays;
+
 abstract class PgCommandCodec<R, C extends CommandBase<R>> {
 
   private static final Logger logger = LoggerFactory.getLogger(PgCommandCodec.class);
@@ -60,8 +62,8 @@ abstract class PgCommandCodec<R, C extends CommandBase<R>> {
     logger.warn(getClass().getSimpleName() + " should handle message CloseComplete");
   }
 
-  void handleRowDescription(PgRowDesc rowDescription) {
-    logger.warn(getClass().getSimpleName() + " should handle message " + rowDescription);
+  void handleRowDescription(PgColumnDesc[] columnDescs) {
+    logger.warn(getClass().getSimpleName() + " should handle message " + Arrays.asList(columnDescs));
   }
 
   void handleNoData() {

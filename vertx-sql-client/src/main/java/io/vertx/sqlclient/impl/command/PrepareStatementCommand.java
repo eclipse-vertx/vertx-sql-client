@@ -22,11 +22,11 @@ import io.vertx.sqlclient.impl.PreparedStatement;
 public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
 
   private final String sql;
-  private final boolean cacheable;
+  private final boolean managed;
 
-  public PrepareStatementCommand(String sql, boolean cacheable) {
+  public PrepareStatementCommand(String sql, boolean managed) {
     this.sql = sql;
-    this.cacheable = cacheable;
+    this.managed = managed;
   }
 
   public String sql() {
@@ -34,16 +34,15 @@ public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
   }
 
   /**
-   * Indicate whether the prepared statement will be cached or not.
+   * Indicate whether the prepared statement will be managed by the connection
    *
-   * The prepared statement won't be cached if the command is scheduled from {@link io.vertx.sqlclient.SqlConnection#prepare(String)}
-   * since the lifecycle of those statements should not be managed by this client.
+   * <p>Managed prepared statements survive a single interactions with the database and will be closed
+   * at some time by the connection (either with a cache eviction or when the prepared statement is closed).
    *
-   * @return true if the command is scheduled from {@link io.vertx.sqlclient.SqlClient#preparedQuery(String) one-shot preparedQuery.
-   *
+   * <p>Otherwise the prepared statement is ephermal and valid only for a single execution. It should
+   * be disposed after the prepared statement has been executed.
    */
-  public boolean cacheable() {
-    return cacheable;
+  public boolean isManaged() {
+    return managed;
   }
-
 }

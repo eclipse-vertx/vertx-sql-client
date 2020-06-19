@@ -60,7 +60,7 @@ class MSSQLConnectionFactory implements ConnectionFactory {
     fut.onComplete(ar -> {
       if (ar.succeeded()) {
         NetSocket so = ar.result();
-        MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, false, 0, 0, 1, context);
+        MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, false, 0, sql -> true, 1, context);
         conn.init();
         conn.sendPreLoginMessage(false, preLogin -> {
           if (preLogin.succeeded()) {
