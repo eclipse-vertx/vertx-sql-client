@@ -27,6 +27,7 @@ import io.vertx.core.net.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -47,7 +48,7 @@ class PgConnectionFactory {
   private final Map<String, String> properties;
   private final boolean cachePreparedStatements;
   private final int preparedStatementCacheSize;
-  private final int preparedStatementCacheSqlLimit;
+  private final Predicate<String> preparedStatementCacheSqlFilter;
   private final int pipeliningLimit;
   private final boolean isUsingDomainSocket;
   private final Closeable hook;
@@ -81,7 +82,7 @@ class PgConnectionFactory {
     this.cachePreparedStatements = options.getCachePreparedStatements();
     this.pipeliningLimit = options.getPipeliningLimit();
     this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
-    this.preparedStatementCacheSqlLimit = options.getPreparedStatementCacheSqlLimit();
+    this.preparedStatementCacheSqlFilter = options.getPreparedStatementCacheSqlFilter();
     this.isUsingDomainSocket = options.isUsingDomainSocket();
 
     this.client = context.owner().createNetClient(netClientOptions);
@@ -196,6 +197,6 @@ class PgConnectionFactory {
   }
 
   private PgSocketConnection newSocketConnection(NetSocketInternal socket) {
-    return new PgSocketConnection(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, pipeliningLimit, ctx);
+    return new PgSocketConnection(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, ctx);
   }
 }

@@ -30,6 +30,7 @@ import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -45,7 +46,7 @@ public abstract class SocketConnectionBase implements Connection {
   }
 
   protected final PreparedStatementCache psCache;
-  private final int preparedStatementCacheSqlLimit;
+  private final Predicate<String> preparedStatementCacheSqlFilter;
   private final ArrayDeque<CommandBase<?>> pending = new ArrayDeque<>();
   private final Context context;
   private int inflight;
@@ -59,7 +60,7 @@ public abstract class SocketConnectionBase implements Connection {
   public SocketConnectionBase(NetSocketInternal socket,
                               boolean cachePreparedStatements,
                               int preparedStatementCacheSize,
-                              int preparedStatementCacheSqlLimit,
+                              Predicate<String> preparedStatementCacheSqlFilter,
                               int pipeliningLimit,
                               Context context) {
     this.socket = socket;
@@ -67,7 +68,7 @@ public abstract class SocketConnectionBase implements Connection {
     this.pipeliningLimit = pipeliningLimit;
     this.paused = false;
     this.psCache = cachePreparedStatements ? new PreparedStatementCache(preparedStatementCacheSize) : null;
-    this.preparedStatementCacheSqlLimit = preparedStatementCacheSqlLimit;
+    this.preparedStatementCacheSqlFilter = preparedStatementCacheSqlFilter;
   }
 
   public Context context() {
@@ -155,12 +156,15 @@ public abstract class SocketConnectionBase implements Connection {
         }
         if (queryCmd.ps == null) {
           // Execute prepare
-          PrepareStatementCommand prepareCmd = new PrepareStatementCommand(queryCmd.sql(), psCache != null);
+          boolean cache = psCache != null && preparedStatementCacheSqlFilter.test(queryCmd.sql());
+          PrepareStatementCommand prepareCmd = new PrepareStatementCommand(queryCmd.sql(), cache);
           prepareCmd.handler = ar -> {
             paused = false;
             if (ar.succeeded()) {
               PreparedStatement ps = ar.result();
-              cacheStatement(ps);
+              if (cache) {
+                cacheStatement(ps);
+              }
               queryCmd.ps = ps;
               String msg = queryCmd.prepare();
               if (msg != null) {

@@ -32,6 +32,7 @@ import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -44,9 +45,9 @@ public class MySQLSocketConnection extends SocketConnectionBase {
   public MySQLSocketConnection(NetSocketInternal socket,
                                boolean cachePreparedStatements,
                                int preparedStatementCacheSize,
-                               int preparedStatementCacheSqlLimit,
+                               Predicate<String> preparedStatementCacheSqlFilter,
                                Context context) {
-    super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, 1, context);
+    super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, 1, context);
   }
 
   void sendStartupMessage(String username,
@@ -90,7 +91,7 @@ public class MySQLSocketConnection extends SocketConnectionBase {
     });
     pipeline.addFirst("initiate-ssl-handler", new InitiateSslHandler(this, upgradePromise));
   }
-  
+
   @Override
   public DatabaseMetadata getDatabaseMetaData() {
     return metaData;

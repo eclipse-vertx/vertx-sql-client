@@ -73,6 +73,14 @@ public class PreparedStatementCachedTest extends PreparedStatementTestBase {
     testPreparedStatements(ctx, options().setCachePreparedStatements(false), 128, 0);
   }
 
+  @Test
+  public void testPreparedStatementCacheFiltering(TestContext ctx) {
+    AtomicInteger count = new AtomicInteger();
+    testPreparedStatements(ctx, options()
+      .setCachePreparedStatements(true)
+      .setPreparedStatementCacheSqlFilter(sql -> count.getAndIncrement() % 2 == 0), 128, 64);
+  }
+
   private void testPreparedStatements(TestContext ctx, PgConnectOptions options, int num, int expected) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {

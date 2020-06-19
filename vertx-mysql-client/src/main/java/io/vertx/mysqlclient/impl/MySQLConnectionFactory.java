@@ -14,6 +14,7 @@ import io.vertx.sqlclient.impl.Connection;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.*;
 
@@ -34,7 +35,7 @@ public class MySQLConnectionFactory {
   private final Buffer serverRsaPublicKey;
   private final boolean cachePreparedStatements;
   private final int preparedStatementCacheSize;
-  private final int preparedStatementCacheSqlLimit;
+  private final Predicate<String> preparedStatementCacheSqlFilter;
   private final int initialCapabilitiesFlags;
   private final Closeable hook;
 
@@ -106,7 +107,7 @@ public class MySQLConnectionFactory {
 
     this.cachePreparedStatements = options.getCachePreparedStatements();
     this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
-    this.preparedStatementCacheSqlLimit = options.getPreparedStatementCacheSqlLimit();
+    this.preparedStatementCacheSqlFilter = options.getPreparedStatementCacheSqlFilter();
 
     this.netClient = context.owner().createNetClient(netClientOptions);
   }
@@ -129,7 +130,7 @@ public class MySQLConnectionFactory {
     promise.future().setHandler(ar1 -> {
       if (ar1.succeeded()) {
         NetSocketInternal socket = (NetSocketInternal) ar1.result();
-        MySQLSocketConnection conn = new MySQLSocketConnection(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, context);
+        MySQLSocketConnection conn = new MySQLSocketConnection(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, context);
         conn.init();
         conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, connectionAttributes, sslMode, initialCapabilitiesFlags, charsetEncoding, handler);
       } else {

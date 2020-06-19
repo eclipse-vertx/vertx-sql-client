@@ -12,6 +12,7 @@ import io.vertx.sqlclient.SqlConnectOptions;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 /**
  * Connect options for configuring {@link MySQLConnection} or {@link MySQLPool}.
@@ -64,7 +65,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     super(json);
     MySQLConnectOptionsConverter.fromJson(json, this);
   }
-  
+
   public MySQLConnectOptions(SqlConnectOptions other) {
     super(other);
     if (other instanceof MySQLConnectOptions) {
@@ -278,6 +279,12 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   @Override
   public MySQLConnectOptions setPreparedStatementCacheMaxSize(int preparedStatementCacheMaxSize) {
     return (MySQLConnectOptions) super.setPreparedStatementCacheMaxSize(preparedStatementCacheMaxSize);
+  }
+
+  @GenIgnore
+  @Override
+  public MySQLConnectOptions setPreparedStatementCacheSqlFilter(Predicate<String> predicate) {
+    return (MySQLConnectOptions) super.setPreparedStatementCacheSqlFilter(predicate);
   }
 
   @Override

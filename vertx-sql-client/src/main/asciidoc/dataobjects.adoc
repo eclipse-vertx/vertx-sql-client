@@ -71,6 +71,8 @@ Set the maximum number of prepared statements that the connection will cache.
 +++
 |[[preparedStatementCacheSqlLimit]]`@preparedStatementCacheSqlLimit`|`Number (int)`|+++
 Set the maximum length of prepared statement SQL string that the connection will cache.
+
+ <p> This is an helper setting the link.
 +++
 |[[properties]]`@properties`|`String`|+++
 Set properties for this client, which will be sent to server at the connection start.
