@@ -27,18 +27,19 @@ import io.vertx.sqlclient.impl.command.InitCommand;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.util.Map;
+import java.util.function.Predicate;
 
 class MSSQLSocketConnection extends SocketConnectionBase {
-  
+
   public MSSQLDatabaseMetadata dbMetaData;
-  
+
   MSSQLSocketConnection(NetSocketInternal socket,
                         boolean cachePreparedStatements,
                         int preparedStatementCacheSize,
-                        int preparedStatementCacheSqlLimit,
+                        Predicate<String> preparedStatementCacheSqlFilter,
                         int pipeliningLimit,
                         ContextInternal context) {
-    super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlLimit, pipeliningLimit, context);
+    super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
   }
 
   // command response should show what capabilities server provides
@@ -62,7 +63,7 @@ class MSSQLSocketConnection extends SocketConnectionBase {
     MSSQLCodec.initPipeLine(pipeline);
     super.init();
   }
-  
+
   @Override
   public DatabaseMetadata getDatabaseMetaData() {
     return dbMetaData;
