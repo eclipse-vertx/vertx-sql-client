@@ -11,65 +11,40 @@
 
 package io.vertx.sqlclient.impl.cache;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
 import io.vertx.sqlclient.impl.PreparedStatement;
-import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.sqlclient.impl.command.CloseStatementCommand;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Cache which manages the lifecycle of all cached prepared statements .
  */
 public class PreparedStatementCache {
-  private final Map<String, InflightCachingStmtEntry> inflight;
-  private final LruCache cache;
 
-  public PreparedStatementCache(SocketConnectionBase conn, int cacheCapacity) {
-    this.inflight = new HashMap<>();
+  private final LruCache<String, PreparedStatement> cache;
 
-    final Handler<AsyncResult<PreparedStatement>> onEvictedHandler = stmtAr -> {
-      if (stmtAr.succeeded()) {
-        // the stmt is evicted from the cache, we need to close it
-        CloseStatementCommand cmd = new CloseStatementCommand(stmtAr.result());
-        conn.schedule(cmd, Promise.promise());
-      } else {
-        // no need to close a failure stmt
-      }
-    };
-    this.cache = new LruCache(cacheCapacity, onEvictedHandler);
+  public PreparedStatementCache(int cacheCapacity) {
+    this.cache = new LruCache<>(cacheCapacity);
+  }
+
+  public PreparedStatement get(String sql) {
+    return cache.get(sql);
   }
 
   /**
-   * Append a new prepared statement request to this cache.
+   * Put a statement in the cache.
    *
-   * @param sql the sql string to be prepare
-   * @param originalHandler the original prepare command handler
-   * @return {@code null} if the result has been cached or the network request is inflight,
-   * or a new {@code Handler} which represents the handler of all appending req waiters so it can be called when the command response is ready.
+   * @param preparedStatement the prepared statement to cache
+   * @return the list of prepared statement to evict and close
    */
-  public Handler<AsyncResult<PreparedStatement>> appendStmtReq(String sql, Handler<AsyncResult<PreparedStatement>> originalHandler) {
-    AsyncResult<PreparedStatement> preparedStmtCachedResult = cache.get(sql);
-    if (preparedStmtCachedResult != null) {
-      // result is cached, just return it directly
-      originalHandler.handle(preparedStmtCachedResult);
-      return null;
+  public List<PreparedStatement> put(PreparedStatement preparedStatement) {
+    cache.put(preparedStatement.sql(), preparedStatement);
+    if (cache.removed != null) {
+      List<PreparedStatement> evicted = cache.removed;
+      cache.removed = null;
+      return evicted;
     } else {
-      InflightCachingStmtEntry inflightCachingStmtEntry = inflight.get(sql);
-      if (inflightCachingStmtEntry != null) {
-        // prepare stmt req is still inflight, add this to the waiters
-        inflightCachingStmtEntry.addWaiter(originalHandler);
-        return null;
-      } else {
-        // we need to create a new entry
-        InflightCachingStmtEntry newEntry = new InflightCachingStmtEntry(sql, this);
-        newEntry.addWaiter(originalHandler);
-        inflight.put(sql, newEntry);
-        return newEntry;
-      }
+      return Collections.emptyList();
     }
   }
 
@@ -79,15 +54,6 @@ public class PreparedStatementCache {
    * @param sql the identified sql of the cached statement
    */
   public void remove(String sql) {
-    this.inflight.remove(sql);
     this.cache.remove(sql);
-  }
-
-  LruCache cache() {
-    return cache;
-  }
-
-  Map<String, InflightCachingStmtEntry> inflight() {
-    return inflight;
   }
 }

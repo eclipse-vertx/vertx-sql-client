@@ -105,10 +105,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
 
   @Override
   public <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
-    cmd.handler = cr -> {
-      cr.scheduler = this;
-      handler.handle(cr);
-    };
+    cmd.handler = handler;
     schedule(cmd);
   }
 
@@ -219,10 +216,10 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
     };
     return cmd;
   }
-  
+
   @Override
   boolean autoCommit() {
 	return false;
   }
-  
+
 }

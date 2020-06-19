@@ -22,8 +22,6 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.Transaction;
 
-import java.io.ObjectInputStream.GetField;
-
 import io.vertx.core.*;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
@@ -50,11 +48,7 @@ public abstract class SqlConnectionImpl<C extends SqlConnectionImpl> extends Sql
 
   @Override
   public <R> void schedule(CommandBase<R> cmd, Handler<? super CommandResponse<R>> handler) {
-    cmd.handler = cr -> {
-      // Tx might be gone ???
-      cr.scheduler = this;
-      handler.handle(cr);
-    };
+    cmd.handler = handler;
     schedule(cmd);
   }
 
@@ -93,7 +87,7 @@ public abstract class SqlConnectionImpl<C extends SqlConnectionImpl> extends Sql
   public DatabaseMetadata databaseMetadata() {
     return conn.getDatabaseMetaData();
   }
-  
+
   @Override
   public C closeHandler(Handler<Void> handler) {
     closeHandler = handler;

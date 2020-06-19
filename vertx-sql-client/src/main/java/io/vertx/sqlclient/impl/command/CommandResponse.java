@@ -52,15 +52,13 @@ public abstract class CommandResponse<R> implements AsyncResult<R> {
     };
   }
 
-  // The connection that executed the command
-  public CommandScheduler scheduler;
   public CommandBase<R> cmd;
   private final AsyncResult<R> res;
 
   public CommandResponse(AsyncResult<R> res) {
 	this.res = res;
   }
-  
+
   public AsyncResult<R> toAsyncResult() {
     return res;
   }

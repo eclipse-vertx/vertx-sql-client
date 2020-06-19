@@ -20,14 +20,13 @@ package io.vertx.sqlclient.impl;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Query;
 import io.vertx.sqlclient.impl.command.CommandScheduler;
-import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
+import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 import java.util.List;
@@ -100,42 +99,18 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
     @Override
     public void execute(Tuple arguments, Handler<AsyncResult<R>> handler) {
       SqlResultHandler resultHandler = builder.createHandler(handler);
-      schedule(new PrepareStatementCommand(sql, true), cr -> {
-        if (cr.succeeded()) {
-          PreparedStatement ps = cr.result();
-          String msg = ps.prepare((TupleInternal) arguments);
-          if (msg != null) {
-            handler.handle(Future.failedFuture(msg));
-          } else {
-            cr.scheduler.schedule(builder.createExtendedQuery(ps, arguments, autoCommit(), resultHandler), resultHandler);
-          }
-        } else {
-          handler.handle(Future.failedFuture(cr.cause()));
-        }
-      });
+      ExtendedQueryCommand cmd = builder.createExtendedQuery(sql, arguments, autoCommit(), resultHandler);
+      schedule(cmd, resultHandler);
     }
 
     @Override
     public void executeBatch(List<Tuple> batch, Handler<AsyncResult<R>> handler) {
       SqlResultHandler resultHandler = builder.createHandler(handler);
-      schedule(new PrepareStatementCommand(sql, true), cr -> {
-        if (cr.succeeded()) {
-          PreparedStatement ps = cr.result();
-          for  (Tuple args : batch) {
-            String msg = ps.prepare((TupleInternal) args);
-            if (msg != null) {
-              handler.handle(Future.failedFuture(msg));
-              return;
-            }
-          }
-          cr.scheduler.schedule(builder.createBatchCommand(ps, batch, autoCommit(), resultHandler), resultHandler);
-        } else {
-          handler.handle(Future.failedFuture(cr.cause()));
-        }
-      });
+      ExtendedQueryCommand cmd = builder.createBatchCommand(sql, batch, autoCommit(), resultHandler);
+      schedule(cmd, resultHandler);
     }
   }
-  
+
   boolean autoCommit() {
 	return true;
   }

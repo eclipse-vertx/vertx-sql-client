@@ -89,9 +89,18 @@ public abstract class PgPoolTestBase extends PgTestBase {
 
   @Test
   public void testQueryWithParams(TestContext ctx) {
-    int num = 1000;
+    testQueryWithParams(ctx, options);
+  }
+
+  @Test
+  public void testCachedQueryWithParams(TestContext ctx) {
+    testQueryWithParams(ctx, new PgConnectOptions(options).setCachePreparedStatements(true));
+  }
+
+  private void testQueryWithParams(TestContext ctx, PgConnectOptions options) {
+    int num = 2;
     Async async = ctx.async(num);
-    PgPool pool = createPool(options, 4);
+    PgPool pool = createPool(options, 1);
     for (int i = 0;i < num;i++) {
       pool.preparedQuery("SELECT id, randomnumber from WORLD where id=$1").execute(Tuple.of(i + 1), ar -> {
         if (ar.succeeded()) {

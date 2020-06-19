@@ -23,7 +23,8 @@ package io.vertx.pgclient.impl.codec;
 
 class PgColumnDesc {
 
-  final String name;
+    public static final PgColumnDesc[] EMPTY_COLUMNS = new PgColumnDesc[0];
+    final String name;
   final int relationId;
   final DataType dataType;
   final DataFormat dataFormat; // are we sure that ????

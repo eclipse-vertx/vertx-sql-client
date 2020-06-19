@@ -527,12 +527,10 @@ Sometimes you might meet the notorious error `Can't create more than max_prepare
 You can adjust the server system variable `max_prepared_stmt_count` but it has an upper bound value so you can't get rid of the error in this way.
 
 The best way to alleviate this is enabling prepared statement caching, so the prepared statements with the same SQL string could be reused and the client does not have to create a brand new prepared statement for every request.
-The prepared statement will be automatically closed when it's evicted from the cache.
+The prepared statement will be automatically closed after the statement is executed.
 In this way the chances of reaching the limit could be greatly reduced though it could not be totally eliminated.
 
-Note using `SqlClient#preparedQuery` without prepared statement caching enabled will not close the prepared statement after executing!
-
-You can also manage the lifecycle of prepared statements manually by creating a `PreparedStatement` object via `SqlConnection#prepare` interface, or even use the https://dev.mysql.com/doc/refman/8.0/en/sql-prepared-statements.html[SQL syntax prepared statement].
+You can also manage the lifecycle of prepared statements manually by creating a `PreparedStatement` object via `SqlConnection#prepare` interface so that you can choose when to deallocate the statement handle, or even use the https://dev.mysql.com/doc/refman/8.0/en/sql-prepared-statements.html[SQL syntax prepared statement].
 
 === demystifying prepared batch
 
