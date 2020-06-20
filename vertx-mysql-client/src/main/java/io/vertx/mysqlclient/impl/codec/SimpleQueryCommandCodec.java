@@ -50,8 +50,7 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
     } else if (firstByte == 0xFB) {
       payload.skipBytes(1);
       String filename = readRestOfPacketString(payload, StandardCharsets.UTF_8);
-      sendFileWrappedInPacket(filename);
-      sendEmptyPacket();
+      sendPackets(filename);
     } else {
       handleResultsetColumnCountPacketBody(payload);
     }
@@ -75,7 +74,7 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
     sendPacket(packet, payloadLength);
   }
 
-  private void sendFileWrappedInPacket(String filePath) {
+  private void sendPackets(String filePath) {
     /*
       We will try to use zero-copy file transfer in order to gain better performance.
       File content needs to be wrapped in MySQL packets so we calculate the length of the file and then send a pre-calculated packet header with the content.
@@ -88,7 +87,10 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
     packetHeader.writeMediumLE((int) length);
     packetHeader.writeByte(sequenceId++);
     encoder.chctx.write(packetHeader);
-    encoder.socketConnection.socket().sendFile(filePath, 0);
+    encoder.socketConnection.socket().sendFile(filePath, 0, ar -> {
+      // an empty packet needs to be sent after the file is sent in MySQL packets
+      sendEmptyPacket();
+    });
   }
 
   private void sendEmptyPacket() {
