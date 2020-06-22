@@ -220,6 +220,7 @@ public class SqlConnectOptions extends NetClientOptions {
    *
    * @return the current predicate
    */
+  @GenIgnore
   public Predicate<String> getPreparedStatementCacheSqlFilter() {
     return preparedStatementCacheSqlFilter;
   }
@@ -231,6 +232,7 @@ public class SqlConnectOptions extends NetClientOptions {
    *
    * @param predicate the filter
    */
+  @GenIgnore
   public SqlConnectOptions setPreparedStatementCacheSqlFilter(Predicate<String> predicate) {
     this.preparedStatementCacheSqlFilter = predicate;
     return this;

@@ -292,6 +292,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     return (MySQLConnectOptions) super.setPreparedStatementCacheMaxSize(preparedStatementCacheMaxSize);
   }
 
+  @GenIgnore
   @Override
   public MySQLConnectOptions setPreparedStatementCacheSqlFilter(Predicate<String> predicate) {
     return (MySQLConnectOptions) super.setPreparedStatementCacheSqlFilter(predicate);

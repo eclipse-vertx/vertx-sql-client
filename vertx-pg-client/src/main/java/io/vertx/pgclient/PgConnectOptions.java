@@ -183,6 +183,7 @@ public class PgConnectOptions extends SqlConnectOptions {
     return (PgConnectOptions) super.setPreparedStatementCacheMaxSize(preparedStatementCacheMaxSize);
   }
 
+  @GenIgnore
   @Override
   public PgConnectOptions setPreparedStatementCacheSqlFilter(Predicate<String> predicate) {
     return (PgConnectOptions) super.setPreparedStatementCacheSqlFilter(predicate);

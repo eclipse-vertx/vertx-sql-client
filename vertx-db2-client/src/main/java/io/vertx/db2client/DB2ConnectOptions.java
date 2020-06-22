@@ -146,6 +146,7 @@ public class DB2ConnectOptions extends SqlConnectOptions {
     return (DB2ConnectOptions) super.setPreparedStatementCacheMaxSize(preparedStatementCacheMaxSize);
   }
 
+  @GenIgnore
   @Override
   public DB2ConnectOptions setPreparedStatementCacheSqlFilter(Predicate<String> predicate) {
     return (DB2ConnectOptions) super.setPreparedStatementCacheSqlFilter(predicate);
