@@ -17,12 +17,17 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.mysqlclient.impl.datatype.DataFormat;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.*;
 
@@ -48,9 +53,7 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
     } else if (firstByte == ERROR_PACKET_HEADER) {
       handleErrorPacketPayload(payload);
     } else if (firstByte == 0xFB) {
-      payload.skipBytes(1);
-      String filename = readRestOfPacketString(payload, StandardCharsets.UTF_8);
-      sendPackets(filename);
+      handleLocalInfile(payload);
     } else {
       handleResultsetColumnCountPacketBody(payload);
     }
@@ -74,23 +77,52 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
     sendPacket(packet, payloadLength);
   }
 
-  private void sendPackets(String filePath) {
+  private void handleLocalInfile(ByteBuf payload) {
+    payload.skipBytes(1);
+    String filename = readRestOfPacketString(payload, StandardCharsets.UTF_8);
     /*
       We will try to use zero-copy file transfer in order to gain better performance.
       File content needs to be wrapped in MySQL packets so we calculate the length of the file and then send a pre-calculated packet header with the content.
      */
-    File file = new File(filePath);
-    long length = file.length();
-    // 16MB+ packet necessary?
+    File file = new File(filename);
+    long fileLength = file.length();
 
+    List<Supplier<Future<Void>>> sendingFileInPacketContList = new ArrayList<>();
+
+    int offset = 0;
+    int length = (int) fileLength;
+
+    while (length > PACKET_PAYLOAD_LENGTH_LIMIT) {
+      final int currentOffset = offset;
+      sendingFileInPacketContList.add(() -> sendFileInPacket(filename, currentOffset, 0xFFFFFF));
+      length -= PACKET_PAYLOAD_LENGTH_LIMIT;
+      offset += PACKET_PAYLOAD_LENGTH_LIMIT;
+    }
+
+    final int tailLength = length;
+    final int tailOffset = offset;
+    sendingFileInPacketContList.add(() -> sendFileInPacket(filename, tailOffset, tailLength));
+
+    // this can not be null
+    Future<Void> cont = sendingFileInPacketContList.get(0).get();
+
+    for (int i = 1; i < sendingFileInPacketContList.size(); i++) {
+      Supplier<Future<Void>> futureSupplier = sendingFileInPacketContList.get(i);
+      cont = cont.flatMap(v -> futureSupplier.get());
+    }
+
+    // an empty packet needs to be sent after the file is sent in MySQL packets
+    cont.onComplete(v -> sendEmptyPacket());
+  }
+
+  private Future<Void> sendFileInPacket(String filename, int offset, int length) {
+    Promise<Void> promise = Promise.promise();
     ByteBuf packetHeader = allocateBuffer(4);
-    packetHeader.writeMediumLE((int) length);
+    packetHeader.writeMediumLE(length);
     packetHeader.writeByte(sequenceId++);
     encoder.chctx.write(packetHeader);
-    encoder.socketConnection.socket().sendFile(filePath, 0, ar -> {
-      // an empty packet needs to be sent after the file is sent in MySQL packets
-      sendEmptyPacket();
-    });
+    encoder.socketConnection.socket().sendFile(filename, offset, length, promise);
+    return promise.future();
   }
 
   private void sendEmptyPacket() {

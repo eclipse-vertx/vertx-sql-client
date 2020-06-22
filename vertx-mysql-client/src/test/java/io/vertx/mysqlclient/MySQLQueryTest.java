@@ -284,4 +284,57 @@ public class MySQLQueryTest extends MySQLTestBase {
       }));
     }));
   }
+
+  @Test
+  public void testLocalInfileRequestInPackets(TestContext ctx) {
+    FileSystem fileSystem = vertx.fileSystem();
+    Buffer fileData = Buffer.buffer();
+    for (int i = 0; i < 200000; i++) {
+      fileData.appendString("Fluffy,Harold,cat,f,1993-02-04,NULL")
+        .appendString("\n")
+        .appendString("Bowser,Diane,dog,m,1979-08-31,1995-07-29")
+        .appendString("\n")
+        .appendString("Whistler,Gwen,bird,NULL,1997-12-09,NULL")
+        .appendString("\n");
+    }
+    ctx.assertTrue(fileData.length() > 0xFFFFFF);
+    fileSystem.createTempFile(null, null, ctx.asyncAssertSuccess(filename -> {
+      fileSystem.writeFile(filename, fileData, ctx.asyncAssertSuccess(write -> {
+        MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+          conn.query("TRUNCATE TABLE localinfile").execute(ctx.asyncAssertSuccess(cleanup -> {
+            conn.query("LOAD DATA LOCAL INFILE '" + filename + "' INTO TABLE localinfile FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n';").execute(ctx.asyncAssertSuccess(v -> {
+              conn.query("SELECT * FROM localinfile").execute(ctx.asyncAssertSuccess(rowSet -> {
+                ctx.assertEquals(600000, rowSet.size());
+                RowIterator<Row> iterator = rowSet.iterator();
+                for (int i = 0; i < 200000; i++) {
+                  Row row1 = iterator.next();
+                  ctx.assertEquals("Fluffy", row1.getValue(0));
+                  ctx.assertEquals("Harold", row1.getValue(1));
+                  ctx.assertEquals("cat", row1.getValue(2));
+                  ctx.assertEquals("f", row1.getValue(3));
+                  ctx.assertEquals(LocalDate.of(1993, 2, 4), row1.getValue(4));
+                  ctx.assertEquals(null, row1.getValue(5));
+                  Row row2 = iterator.next();
+                  ctx.assertEquals("Bowser", row2.getValue(0));
+                  ctx.assertEquals("Diane", row2.getValue(1));
+                  ctx.assertEquals("dog", row2.getValue(2));
+                  ctx.assertEquals("m", row2.getValue(3));
+                  ctx.assertEquals(LocalDate.of(1979, 8, 31), row2.getValue(4));
+                  ctx.assertEquals(LocalDate.of(1995, 7, 29), row2.getValue(5));
+                  Row row3 = iterator.next();
+                  ctx.assertEquals("Whistler", row3.getValue(0));
+                  ctx.assertEquals("Gwen", row3.getValue(1));
+                  ctx.assertEquals("bird", row3.getValue(2));
+                  ctx.assertEquals(null, row3.getValue(3));
+                  ctx.assertEquals(LocalDate.of(1997, 12, 9), row3.getValue(4));
+                  ctx.assertEquals(null, row3.getValue(5));
+                }
+                conn.close();
+              }));
+            }));
+          }));
+        }));
+      }));
+    }));
+  }
 }
