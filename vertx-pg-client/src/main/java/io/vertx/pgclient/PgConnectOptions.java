@@ -457,6 +457,15 @@ public class PgConnectOptions extends SqlConnectOptions {
     return json;
   }
 
+  @GenIgnore
+  public SocketAddress getSocketAddress() {
+    if (!isUsingDomainSocket()) {
+      return super.getSocketAddress();
+    } else {
+      return SocketAddress.domainSocketAddress(getHost() + "/.s.PGSQL." + getPort());
+    }
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

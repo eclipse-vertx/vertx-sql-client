@@ -15,6 +15,8 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.sqlclient.PoolOptions;
@@ -27,7 +29,9 @@ public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool 
 
   public static MySQLPoolImpl create(ContextInternal context, boolean closeVertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
     QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(context.tracer(), connectOptions);
-    MySQLPoolImpl pool = new MySQLPoolImpl(context, new MySQLConnectionFactory(context, connectOptions), tracer, poolOptions);
+    VertxMetrics vertxMetrics = context.owner().metricsSPI();
+    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(connectOptions.getSocketAddress(), "sql") : null;
+    MySQLPoolImpl pool = new MySQLPoolImpl(context, new MySQLConnectionFactory(context, connectOptions), tracer, metrics, poolOptions);
     CloseFuture closeFuture = pool.closeFuture();
     if (closeVertx) {
       closeFuture.onComplete(ar -> context.owner().close());
@@ -39,8 +43,8 @@ public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool 
 
   private final MySQLConnectionFactory factory;
 
-  private MySQLPoolImpl(ContextInternal context, MySQLConnectionFactory factory, QueryTracer tracer, PoolOptions poolOptions) {
-    super(context, factory, tracer, poolOptions);
+  private MySQLPoolImpl(ContextInternal context, MySQLConnectionFactory factory, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions) {
+    super(context, factory, tracer, metrics, poolOptions);
     this.factory = factory;
   }
 
@@ -51,6 +55,6 @@ public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool 
 
   @Override
   protected SqlConnectionImpl wrap(ContextInternal context, Connection conn) {
-    return new MySQLConnectionImpl(factory, context, conn, tracer);
+    return new MySQLConnectionImpl(factory, context, conn, tracer, metrics);
   }
 }

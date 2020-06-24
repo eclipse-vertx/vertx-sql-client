@@ -15,6 +15,7 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClientOptions;
+import io.vertx.core.net.SocketAddress;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -284,6 +285,11 @@ public class SqlConnectOptions extends NetClientOptions {
     return this;
   }
 
+
+  @GenIgnore
+  public SocketAddress getSocketAddress() {
+    return SocketAddress.inetSocketAddress(getPort(), getHost());
+  }
 
   @Override
   public JsonObject toJson() {

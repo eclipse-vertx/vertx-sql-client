@@ -21,6 +21,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Connection;
 import io.vertx.db2client.impl.command.PingCommand;
@@ -46,14 +47,14 @@ public class DB2ConnectionImpl extends SqlConnectionImpl<DB2ConnectionImpl> impl
 
   private static void connect(DB2ConnectionFactory client, ContextInternal ctx, QueryTracer tracer, Promise<DB2Connection> promise) {
     client.connect().map(conn -> {
-      DB2ConnectionImpl db2Connection = new DB2ConnectionImpl(client, ctx, conn, tracer);
+      DB2ConnectionImpl db2Connection = new DB2ConnectionImpl(client, ctx, conn, tracer, null);
       conn.init(db2Connection);
       return (DB2Connection) db2Connection;
     }).onComplete(promise);
   }
 
-  public DB2ConnectionImpl(DB2ConnectionFactory factory, ContextInternal context, Connection conn, QueryTracer tracer) {
-    super(context, conn, tracer);
+  public DB2ConnectionImpl(DB2ConnectionFactory factory, ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
+    super(context, conn, tracer, metrics);
   }
 
   @Override

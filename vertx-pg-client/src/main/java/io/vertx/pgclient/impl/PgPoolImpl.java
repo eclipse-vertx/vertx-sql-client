@@ -19,6 +19,8 @@ package io.vertx.pgclient.impl;
 
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.pgclient.*;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.impl.Connection;
@@ -40,7 +42,9 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
 
   public static PgPoolImpl create(ContextInternal context, boolean closeVertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
     QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(context.tracer(), connectOptions);
-    PgPoolImpl pool = new PgPoolImpl(context, new PgConnectionFactory(context.owner(), context, connectOptions), tracer, poolOptions);
+    VertxMetrics vertxMetrics = context.owner().metricsSPI();
+    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(connectOptions.getSocketAddress(), "sql") : null;
+    PgPoolImpl pool = new PgPoolImpl(context, new PgConnectionFactory(context.owner(), context, connectOptions), tracer, metrics, poolOptions);
     CloseFuture closeFuture = pool.closeFuture();
     if (closeVertx) {
       closeFuture.onComplete(ar -> context.owner().close());
@@ -52,8 +56,8 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
 
   private final PgConnectionFactory factory;
 
-  private PgPoolImpl(ContextInternal context, PgConnectionFactory factory, QueryTracer tracer, PoolOptions poolOptions) {
-    super(context, factory, tracer, poolOptions);
+  private PgPoolImpl(ContextInternal context, PgConnectionFactory factory, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions) {
+    super(context, factory, tracer, metrics, poolOptions);
     this.factory = factory;
   }
 
@@ -70,6 +74,6 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
 
   @Override
   protected SqlConnectionImpl wrap(ContextInternal context, Connection conn) {
-    return new PgConnectionImpl(factory, context, conn, tracer);
+    return new PgConnectionImpl(factory, context, conn, tracer, metrics);
   }
 }

@@ -20,6 +20,7 @@ package io.vertx.sqlclient.impl;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.PropertyKind;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
@@ -37,16 +38,20 @@ class QueryResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> 
   private final ContextInternal context;
   private final QueryTracer tracer;
   private final Object tracingPayload;
+  private final ClientMetrics metrics;
+  private final Object metric;
   private R first;
   private R current;
   private Throwable failure;
   private boolean suspended;
 
-  QueryResultBuilder(Function<T, R> factory, QueryTracer tracer, Object tracingPayload, Promise<L> handler) {
+  QueryResultBuilder(Function<T, R> factory, QueryTracer tracer, Object tracingPayload, ClientMetrics metrics, Object metric, Promise<L> handler) {
     this.factory = factory;
     this.context = (ContextInternal) handler.future().context();
     this.tracer = tracer;
     this.tracingPayload = tracingPayload;
+    this.metrics = metrics;
+    this.metric = metric;
     this.handler = handler;
   }
 
@@ -94,6 +99,10 @@ class QueryResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> 
     } else {
       boolean completed = handler.tryComplete((L) first);
       if (completed) {
+        if (metrics != null) {
+          metrics.responseBegin(metric, null);
+          metrics.responseEnd(metric, null);
+        }
         if (tracer != null) {
           tracer.receiveResponse(context, tracingPayload, first, null);
         }
@@ -108,6 +117,9 @@ class QueryResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> 
     if (completed) {
       if (tracer != null) {
         tracer.receiveResponse(context, tracingPayload, null, cause);
+      }
+      if (metrics != null) {
+        metrics.requestReset(metric);
       }
     }
     return completed;

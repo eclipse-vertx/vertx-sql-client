@@ -18,6 +18,7 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.Transaction;
@@ -35,8 +36,8 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
   private volatile Handler<Void> closeHandler;
   private TransactionImpl tx;
 
-  public SqlConnectionImpl(ContextInternal context, Connection conn, QueryTracer tracer) {
-    super(context, conn, tracer);
+  public SqlConnectionImpl(ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
+    super(context, conn, tracer, metrics);
   }
 
   @Override

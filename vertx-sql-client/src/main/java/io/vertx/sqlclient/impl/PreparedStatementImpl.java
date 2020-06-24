@@ -18,6 +18,7 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
@@ -41,20 +42,22 @@ import java.util.stream.Collector;
  */
 class PreparedStatementImpl implements PreparedStatement {
 
-  static PreparedStatement create(Connection conn, QueryTracer tracer, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
-    return new PreparedStatementImpl(conn, tracer, context, ps, autoCommit);
+  static PreparedStatement create(Connection conn, QueryTracer tracer, ClientMetrics metrics, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
+    return new PreparedStatementImpl(conn, tracer, metrics, context, ps, autoCommit);
   }
 
   final Connection conn;
   final QueryTracer tracer;
+  final ClientMetrics metrics;
   final ContextInternal context;
   final io.vertx.sqlclient.impl.PreparedStatement ps;
   final boolean autoCommit;
   private final AtomicBoolean closed = new AtomicBoolean();
 
-  private PreparedStatementImpl(Connection conn, QueryTracer tracer, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
+  private PreparedStatementImpl(Connection conn, QueryTracer tracer, ClientMetrics metrics, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
     this.conn = conn;
     this.tracer = tracer;
+    this.metrics = metrics;
     this.context = context;
     this.ps = ps;
     this.autoCommit = autoCommit;
@@ -62,7 +65,7 @@ class PreparedStatementImpl implements PreparedStatement {
 
   @Override
   public PreparedQuery<RowSet<Row>> query() {
-    QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(tracer, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
+    QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(tracer, metrics, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
     return new PreparedStatementQuery<>(builder);
   }
 

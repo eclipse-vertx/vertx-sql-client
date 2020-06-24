@@ -14,6 +14,8 @@ package io.vertx.mssqlclient.impl;
 import io.vertx.core.Future;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLPool;
 import io.vertx.core.AsyncResult;
@@ -31,7 +33,9 @@ public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool 
 
   public static MSSQLPoolImpl create(ContextInternal context, boolean closeVertx, MSSQLConnectOptions connectOptions, PoolOptions poolOptions) {
     QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(context.tracer(), connectOptions);
-    MSSQLPoolImpl pool = new MSSQLPoolImpl(context, new MSSQLConnectionFactory(context, connectOptions), tracer, poolOptions);
+    VertxMetrics vertxMetrics = context.owner().metricsSPI();
+    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(connectOptions.getSocketAddress(), "sql") : null;
+    MSSQLPoolImpl pool = new MSSQLPoolImpl(context, new MSSQLConnectionFactory(context, connectOptions), tracer, metrics, poolOptions);
     CloseFuture closeFuture = pool.closeFuture();
     if (closeVertx) {
       closeFuture.onComplete(ar -> context.owner().close());
@@ -43,8 +47,8 @@ public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool 
 
   private final MSSQLConnectionFactory connectionFactory;
 
-  private MSSQLPoolImpl(ContextInternal context, MSSQLConnectionFactory factory, QueryTracer tracer, PoolOptions poolOptions) {
-    super(context, factory, tracer, poolOptions);
+  private MSSQLPoolImpl(ContextInternal context, MSSQLConnectionFactory factory, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions) {
+    super(context, factory, tracer, metrics, poolOptions);
     this.connectionFactory = factory;
   }
 
@@ -61,7 +65,7 @@ public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool 
 
   @Override
   protected SqlConnectionImpl wrap(ContextInternal context, Connection connection) {
-    return new MSSQLConnectionImpl(connectionFactory, context, connection, tracer);
+    return new MSSQLConnectionImpl(connectionFactory, context, connection, tracer, metrics);
   }
 
   @Override

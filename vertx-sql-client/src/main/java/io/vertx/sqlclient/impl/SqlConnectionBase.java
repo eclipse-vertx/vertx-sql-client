@@ -18,6 +18,7 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
@@ -32,8 +33,8 @@ public abstract class SqlConnectionBase<C extends SqlClient> extends SqlClientBa
   protected final ContextInternal context;
   protected final Connection conn;
 
-  protected SqlConnectionBase(ContextInternal context, Connection conn, QueryTracer tracer) {
-    super(tracer);
+  protected SqlConnectionBase(ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
+    super(tracer, metrics);
     this.context = context;
     this.conn = conn;
   }
@@ -49,6 +50,6 @@ public abstract class SqlConnectionBase<C extends SqlClient> extends SqlClientBa
   public Future<PreparedStatement> prepare(String sql) {
     Promise<io.vertx.sqlclient.impl.PreparedStatement> promise = promise();
     schedule(new PrepareStatementCommand(sql, true), promise);
-    return promise.future().map(cr -> PreparedStatementImpl.create(conn, tracer, context, cr, autoCommit()));
+    return promise.future().map(cr -> PreparedStatementImpl.create(conn, tracer, metrics, context, cr, autoCommit()));
   }
 }

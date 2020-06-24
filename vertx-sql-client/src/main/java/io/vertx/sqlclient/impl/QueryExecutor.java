@@ -19,6 +19,7 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
@@ -36,14 +37,17 @@ import java.util.stream.Collector;
  */
 class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
 
+  private final io.vertx.core.spi.metrics.ClientMetrics metrics;
   private final QueryTracer tracer;
   private final Function<T, R> factory;
   private final Collector<Row, ?, T> collector;
 
   public QueryExecutor(QueryTracer tracer,
+                       ClientMetrics metrics,
                        Function<T, R> factory,
                        Collector<Row, ?, T> collector) {
     this.tracer = tracer;
+    this.metrics = metrics;
     this.factory = factory;
     this.collector = collector;
   }
@@ -52,8 +56,16 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     return tracer;
   }
 
+  ClientMetrics metrics() {
+    return metrics;
+  }
+
   private QueryResultBuilder<T, R, L> createHandler(Promise<L> promise, Object payload) {
-    return new QueryResultBuilder<>(factory, tracer, payload, promise);
+    return createHandler(promise, payload, null);
+  }
+
+  private QueryResultBuilder<T, R, L> createHandler(Promise<L> promise, Object payload, Object metric) {
+    return new QueryResultBuilder<>(factory, tracer, payload, metrics, metric, promise);
   }
 
   void executeSimpleQuery(CommandScheduler scheduler,
@@ -68,7 +80,13 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     } else {
       payload = null;
     }
-    QueryResultBuilder handler = createHandler(promise, payload);
+    Object metric;
+    if (metrics != null) {
+      metric = metrics.requestBegin(sql, sql);
+    } else {
+      metric = null;
+    }
+    QueryResultBuilder handler = createHandler(promise, payload, metric);
     scheduler.schedule(new SimpleQueryCommand<>(sql, singleton, autoCommit, collector, handler), handler);
   }
 
@@ -87,7 +105,13 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     } else {
       payload = null;
     }
-    QueryResultBuilder handler = createHandler(promise, payload);
+    Object metric;
+    if (metrics != null) {
+      metric = metrics.requestBegin(preparedStatement.sql(), preparedStatement.sql());
+    } else {
+      metric = null;
+    }
+    QueryResultBuilder handler = createHandler(promise, payload, metric);
     String msg = preparedStatement.prepare((TupleInternal) arguments);
     if (msg != null) {
       handler.fail(msg);
@@ -115,7 +139,13 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     } else {
       payload = null;
     }
-    QueryResultBuilder handler = this.createHandler(promise, payload);
+    Object metric;
+    if (metrics != null) {
+      metric = metrics.requestBegin(sql, sql);
+    } else {
+      metric = null;
+    }
+    QueryResultBuilder handler = this.createHandler(promise, payload, metric);
     ExtendedQueryCommand cmd = createExtendedQueryCommand(sql, autoCommit, arguments, handler);
     scheduler.schedule(cmd, handler);
   }
@@ -145,7 +175,13 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     } else {
       payload = null;
     }
-    QueryResultBuilder handler = createHandler(promise, payload);
+    Object metric;
+    if (metrics != null) {
+      metric = metrics.requestBegin(preparedStatement.sql(), preparedStatement.sql());
+    } else {
+      metric = null;
+    }
+    QueryResultBuilder handler = createHandler(promise, payload, metric);
     for  (Tuple args : batch) {
       String msg = preparedStatement.prepare((TupleInternal)args);
       if (msg != null) {
@@ -165,7 +201,13 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     } else {
       payload = null;
     }
-    QueryResultBuilder handler = createHandler(promise, payload);
+    Object metric;
+    if (metrics != null) {
+      metric = metrics.requestBegin(sql, sql);
+    } else {
+      metric = null;
+    }
+    QueryResultBuilder handler = createHandler(promise, payload, metric);
     ExtendedQueryCommand<T> cmd = createBatchQueryCommand(sql, autoCommit, batch, handler);
     scheduler.schedule(cmd, handler);
   }

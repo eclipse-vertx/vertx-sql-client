@@ -22,6 +22,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnection;
@@ -43,8 +44,8 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
   private final ConnectionPool pool;
   private final CloseFuture closeFuture;
 
-  public PoolBase(ContextInternal context, ConnectionFactory factory, QueryTracer tracer, PoolOptions poolOptions) {
-    super(tracer);
+  public PoolBase(ContextInternal context, ConnectionFactory factory, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions) {
+    super(tracer, metrics);
     this.vertx = context.owner();
     this.factory = factory;
     this.pool = new ConnectionPool(factory, context, poolOptions.getMaxSize(), poolOptions.getMaxWaitQueueSize());
@@ -83,8 +84,19 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
   @Override
   public Future<SqlConnection> getConnection() {
     ContextInternal current = vertx.getOrCreateContext();
+    Object metric;
+    if (metrics != null) {
+      metric = metrics.enqueueRequest();
+    } else {
+      metric = null;
+    }
     Promise<Connection> promise = current.promise();
     acquire(promise);
+    if (metrics != null) {
+      promise.future().onComplete(ar -> {
+        metrics.dequeueRequest(metric);
+      });
+    }
     return promise.future().map(conn -> {
       SqlConnectionImpl wrapper = wrap(current, conn);
       conn.init(wrapper);
@@ -94,15 +106,27 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
 
   @Override
   public <R> void schedule(CommandBase<R> cmd, Promise<R> promise) {
+    Object metric;
+    if (metrics != null) {
+      metric = metrics.enqueueRequest();
+    } else {
+      metric = null;
+    }
     acquire(new CommandWaiter() {
       @Override
       protected void onSuccess(Connection conn) {
+        if (metrics != null) {
+          metrics.dequeueRequest(metric);
+        }
         conn.schedule(cmd, promise);
         // Use null promise instead
         conn.close(this, Promise.promise());
       }
       @Override
       protected void onFailure(Throwable cause) {
+        if (metrics != null) {
+          metrics.dequeueRequest(metric);
+        }
         promise.fail(cause);
       }
     });
@@ -163,6 +187,11 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
   }
 
   private Future<Void> doClose() {
-    return pool.close().flatMap(v -> factory.close());
+    // TODO : flatMap -> always
+    return pool.close().flatMap(v -> factory.close()).onComplete(v -> {
+      if (metrics != null) {
+        metrics.close();
+      }
+    });
   }
 }

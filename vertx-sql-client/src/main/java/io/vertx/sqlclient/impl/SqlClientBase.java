@@ -18,6 +18,7 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Promise;
+import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Query;
 import io.vertx.sqlclient.impl.command.CommandScheduler;
@@ -38,9 +39,11 @@ import java.util.stream.Collector;
 public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInternal, CommandScheduler {
 
   protected final QueryTracer tracer;
+  protected final ClientMetrics metrics;
 
-  public SqlClientBase(QueryTracer tracer) {
+  public SqlClientBase(QueryTracer tracer, ClientMetrics metrics) {
     this.tracer = tracer;
+    this.metrics = metrics;
   }
 
   @Override
@@ -55,13 +58,13 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
 
   @Override
   public Query<RowSet<Row>> query(String sql) {
-    QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(tracer, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
+    QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(tracer, metrics, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
     return new QueryImpl<>(autoCommit(), false, sql, builder);
   }
 
   @Override
   public PreparedQuery<RowSet<Row>> preparedQuery(String sql) {
-    QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(tracer, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
+    QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(tracer, metrics, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
     return new PreparedQueryImpl<>(autoCommit(), false, sql, builder);
   }
 

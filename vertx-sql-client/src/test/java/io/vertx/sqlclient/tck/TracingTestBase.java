@@ -51,7 +51,6 @@ public abstract class TracingTestBase {
         public Object sendRequest(Context context, Object request, String operation, BiConsumer headers, TagExtractor tagExtractor) {
           return tracer.sendRequest(context, request, operation, headers, tagExtractor);
         }
-
         @Override
         public void receiveResponse(Context context, Object response, Object payload, Throwable failure, TagExtractor tagExtractor) {
           tracer.receiveResponse(context, response, payload, failure, tagExtractor);

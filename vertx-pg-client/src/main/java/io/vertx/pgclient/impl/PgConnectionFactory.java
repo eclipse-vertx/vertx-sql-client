@@ -38,8 +38,7 @@ class PgConnectionFactory implements ConnectionFactory {
 
   private final NetClient client;
   private final ContextInternal context;
-  private final String host;
-  private final int port;
+  private final SocketAddress socketAddress;
   private final SslMode sslMode;
   private final TrustOptions trustOptions;
   private final String hostnameVerificationAlgorithm;
@@ -51,7 +50,6 @@ class PgConnectionFactory implements ConnectionFactory {
   private final int preparedStatementCacheSize;
   private final Predicate<String> preparedStatementCacheSqlFilter;
   private final int pipeliningLimit;
-  private final boolean isUsingDomainSocket;
 
   PgConnectionFactory(VertxInternal vertx, ContextInternal context, PgConnectOptions options) {
 
@@ -62,10 +60,9 @@ class PgConnectionFactory implements ConnectionFactory {
 
     this.context = context;
     this.sslMode = options.getSslMode();
+    this.socketAddress = options.getSocketAddress();
     this.hostnameVerificationAlgorithm = netClientOptions.getHostnameVerificationAlgorithm();
     this.trustOptions = netClientOptions.getTrustOptions();
-    this.host = options.getHost();
-    this.port = options.getPort();
     this.database = options.getDatabase();
     this.username = options.getUser();
     this.password = options.getPassword();
@@ -74,7 +71,6 @@ class PgConnectionFactory implements ConnectionFactory {
     this.pipeliningLimit = options.getPipeliningLimit();
     this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
     this.preparedStatementCacheSqlFilter = options.getPreparedStatementCacheSqlFilter();
-    this.isUsingDomainSocket = options.isUsingDomainSocket();
     this.client = vertx.createNetClient(netClientOptions);
   }
 
@@ -134,13 +130,6 @@ class PgConnectionFactory implements ConnectionFactory {
   }
 
   private void doConnect(boolean ssl, Promise<Connection> promise) {
-    SocketAddress socketAddress;
-    if (!isUsingDomainSocket) {
-      socketAddress = SocketAddress.inetSocketAddress(port, host);
-    } else {
-      socketAddress = SocketAddress.domainSocketAddress(host + "/.s.PGSQL." + port);
-    }
-
     Future<NetSocket> soFut;
     try {
       soFut = client.connect(socketAddress, (String) null);
@@ -150,7 +139,7 @@ class PgConnectionFactory implements ConnectionFactory {
       return;
     }
     Future<Connection> connFut = soFut.map(so -> newSocketConnection((NetSocketInternal) so));
-    if (ssl && !isUsingDomainSocket) {
+    if (ssl && !socketAddress.isDomainSocket()) {
       // upgrade connection to SSL if needed
       connFut = connFut.flatMap(conn -> Future.future(p -> {
         PgSocketConnection socket = (PgSocketConnection) conn;
