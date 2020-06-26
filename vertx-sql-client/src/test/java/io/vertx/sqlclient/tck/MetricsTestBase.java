@@ -46,7 +46,7 @@ public abstract class MetricsTestBase {
     vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
       new MetricsOptions().setEnabled(true).setFactory(tracingOptions -> new VertxMetrics() {
         @Override
-        public ClientMetrics<?, ?, ?, ?> createClientMetrics(SocketAddress remoteAddress, String type) {
+        public ClientMetrics<?, ?, ?, ?> createClientMetrics(SocketAddress remoteAddress, String type, String namespace) {
           return metrics;
         }
       }))
