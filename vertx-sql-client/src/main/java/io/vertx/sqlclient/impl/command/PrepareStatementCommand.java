@@ -19,18 +19,33 @@ package io.vertx.sqlclient.impl.command;
 
 import io.vertx.sqlclient.impl.PreparedStatement;
 
+import java.util.List;
+
 public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
 
   private final String sql;
   private final boolean managed;
+  private final List<Class<?>> parameterTypes;
 
   public PrepareStatementCommand(String sql, boolean managed) {
+    this(sql, managed, null);
+  }
+
+  public PrepareStatementCommand(String sql, boolean managed, List<Class<?>> parameterTypes) {
     this.sql = sql;
     this.managed = managed;
+    this.parameterTypes = parameterTypes;
   }
 
   public String sql() {
     return sql;
+  }
+
+  /**
+   * @return the list of the prepared statement parameter types or {@code null} when they are not yet determined.
+   */
+  public List<Class<?>> parameterTypes() {
+    return parameterTypes;
   }
 
   /**

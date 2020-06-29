@@ -19,6 +19,8 @@ package io.vertx.pgclient.impl.codec;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.sqlclient.impl.PreparedStatement;
 
+import java.util.List;
+
 class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, PrepareStatementCommand> {
 
   private PgParamDesc parameterDesc;
@@ -39,9 +41,24 @@ class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, Pre
       statement = 0L;
     }
 
-    encoder.writeParse(new Parse(cmd.sql(), statement));
+    List<Class<?>> parameterTypes = cmd.parameterTypes();
+    DataType[] parameterTypes2 = parameterTypes != null ? build(parameterTypes) : null;
+    encoder.writeParse(cmd.sql(), statement, parameterTypes2);
     encoder.writeDescribe(new Describe(statement, null));
     encoder.writeSync();
+  }
+
+  private DataType[] build(List<Class<?>> parameterTypes) {
+    int len = parameterTypes.size();
+    DataType[] dataType = new DataType[len];
+    for (int i = 0;i < len;i++) {
+      DataType type = DataType.lookup(parameterTypes.get(i));
+      if (type == null) {
+        return null;
+      }
+      dataType[i] = type;
+    }
+    return dataType;
   }
 
   @Override

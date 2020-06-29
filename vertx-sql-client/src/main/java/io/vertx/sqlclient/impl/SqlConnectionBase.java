@@ -50,6 +50,14 @@ public abstract class SqlConnectionBase<C extends SqlClient> extends SqlClientBa
   public Future<PreparedStatement> prepare(String sql) {
     Promise<io.vertx.sqlclient.impl.PreparedStatement> promise = promise();
     schedule(new PrepareStatementCommand(sql, true), promise);
-    return promise.future().map(cr -> PreparedStatementImpl.create(conn, tracer, metrics, context, cr, autoCommit()));
+    return promise.future().compose(
+      cr -> Future.succeededFuture(PreparedStatementImpl.create(conn, tracer, metrics, context, cr, autoCommit())),
+      err -> {
+        if (conn.isIndeterminatePreparedStatementError(err)) {
+          return Future.succeededFuture(PreparedStatementImpl.create(conn, tracer, metrics, context, sql, autoCommit()));
+        } else {
+          return Future.failedFuture(err);
+        }
+      });
   }
 }
