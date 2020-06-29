@@ -27,8 +27,8 @@ import io.vertx.db2client.DB2Exception;
  * If the code is == 0, nothing is wrong
  */
 public class NetSqlca {
-	
-	private static final String SQLERRMC_MESSAGE_DELIMITER = new String(new char[] {(char)20,(char)20,(char)20,(char)20});
+
+  private static final String SQLERRMC_MESSAGE_DELIMITER = new String(new char[] {(char)20,(char)20,(char)20,(char)20});
 
     // Indexes into sqlErrd_
     private  static  final   int HIGH_ORDER_ROW_COUNT = 0;
@@ -56,7 +56,7 @@ public class NetSqlca {
     protected byte[] sqlErrmcBytes_; // SQL Error Message / Reason Code
     protected byte[] sqlErrpBytes_; // SQL Error Process
     protected byte[] sqlWarnBytes_;
-    
+
     private boolean containsSqlcax_ = true;
     private long rowsetRowCount_;
 
@@ -66,7 +66,7 @@ public class NetSqlca {
     /** Cached error messages (to prevent multiple invocations of the stored
      * procedure to get the same message). */
     private String[] cachedMessages;
-    
+
     NetSqlca(int sqlCode,
             String sqlState,
             byte[] sqlErrpBytes) {
@@ -82,7 +82,7 @@ public class NetSqlca {
       sqlState_ = bytes2String(sqlState,0,sqlState.length);
       sqlErrpBytes_ = sqlErrpBytes;
    }
-   
+
    /**
     * Checks the SQL code of the SQLCA. Possible values are documented at:
     * https://www.ibm.com/support/knowledgecenter/SSEPEK_11.0.0/codes/src/tpc/db2z_n.html
@@ -94,7 +94,7 @@ public class NetSqlca {
            return 0;
        boolean allowed = Arrays.stream(allowedCodes).anyMatch(code -> code == sqlca.sqlCode_);
        if (!allowed && sqlca.sqlCode_ < 0) {
-    	   throwSqlError(sqlca);
+         throwSqlError(sqlca);
        }
        if (!allowed && sqlca.sqlCode_ > 0) {
            // TODO: Logging for DRDA layer
@@ -108,102 +108,102 @@ public class NetSqlca {
     * @param sqlca
     */
    public static void throwSqlError(NetSqlca sqlca) {
-	   if (sqlca == null || sqlca.sqlCode_ == 0) {
+     if (sqlca == null || sqlca.sqlCode_ == 0) {
            return;
-	   }
-	   
-	   // Force population of the sqlErrmc
-	   String errMsg = sqlca.getSqlErrmc();
-	   if (errMsg == null || errMsg.trim().length() == 0) {
-	     errMsg = "";
-	   }
-	   String[] errMsgTokens = errMsg.split("" + ((char) 0xFFFD));
-	   
-	   switch(sqlca.sqlCode_) {
-  	        case SqlCode.INVALID_SQL_STATEMENT:
-  	            if (errMsg.length() > 0 && errMsgTokens.length > 1)
-  	              throw new DB2Exception("The SQL syntax provided was invalid at or near the tokens: " + Arrays.toString(errMsgTokens), sqlca.sqlCode_, sqlca.sqlState_);
-  	            else
-  	              throw new DB2Exception("The SQL syntax provided was invalid", sqlca.sqlCode_, sqlca.sqlState_);
-  	        case SqlCode.MISMATCHING_COLUMNS_AND_VALUES:
-  	            throw new DB2Exception("An INSERT statement contained a different number of insert columns from the number of insert values that were supplied", sqlca.sqlCode_, sqlca.sqlState_);
-  	        case SqlCode.REPEATED_COLUMN_REFERENCE:
-  	            if (errMsg.length() > 0)
-  	                throw new DB2Exception("An INSERT or UPDATE statement listed the same column name (" + errMsg + ") more than one time in its update list", sqlca.sqlCode_, sqlca.sqlState_);
-  	            else
-  	                throw new DB2Exception("An INSERT or UPDATE statement listed the same column name more than one time in its update list", sqlca.sqlCode_, sqlca.sqlState_);
-  	        case SqlCode.NO_ORDER_BY_IDENTIFIER:
-  	            throw new DB2Exception("The ORDER BY clause in the statement contains a column number that is either less than one or greater than the number of columns of the result table (the number of items in the SELECT clause)", sqlca.sqlCode_, sqlca.sqlState_);
-  	        case SqlCode.UPDATE_READONLY_COLUMN:
-  	            throw new DB2Exception("An UPDATE statement referenced a column that is marked in the catalog as non-updateable.", sqlca.sqlCode_, sqlca.sqlState_);
-  	        case SqlCode.INVALID_KEYWORD:
-  	            if (errMsg.length() > 0)
-  	              throw new DB2Exception("The keyword, '" + errMsg + "' is not valid", sqlca.sqlCode_, sqlca.sqlState_);
-  	            else
-  	              throw new DB2Exception("The keyword is not valid", sqlca.sqlCode_, sqlca.sqlState_);
-  	        case SqlCode.AMBIGUOUS_COLUMN_NAME:
-  	            if (errMsg.length() > 0)
-  	              throw new DB2Exception("A reference to the column name '" + errMsg + "' is ambiguous", sqlca.sqlCode_, sqlca.sqlState_);
-  	            else
-  	              throw new DB2Exception("A reference to a column name is ambiguous", sqlca.sqlCode_, sqlca.sqlState_);
-  	        case SqlCode.OBJECT_NOT_DEFINED:
-  	        	if (errMsg.length() > 0)
-  	        		throw new DB2Exception("The object '" + errMsg + "' provided is not defined", sqlca.sqlCode_, sqlca.sqlState_);
-  	        	else
-  	        		throw new DB2Exception("An object provided is not defined", sqlca.sqlCode_, sqlca.sqlState_);
-  	        case SqlCode.COLUMN_DOES_NOT_EXIST:
-  	        	if (errMsg.length() > 0)
-  	        		throw new DB2Exception("The column '" + errMsg + "' provided does not exist", sqlca.sqlCode_, sqlca.sqlState_);
-  	        	else
-  	        		throw new DB2Exception("A column provided does not exist", sqlca.sqlCode_, sqlca.sqlState_);
-  	        case SqlCode.NULL_CONSTRAINT_VIOLATION:
-  	            throw new DB2Exception("An attempt was made to INSERT or UPDATE a column that was declared as not nullable with the NULL value: " + errMsg, 
-  	                sqlca.sqlCode_, sqlca.sqlState_);
-  	        case SqlCode.PRIMARY_KEY_CAN_BE_NULL:
-  	            if (errMsg.length() > 0)
-    	            throw new DB2Exception("The column '" + errMsg + "' cannot be a column of a primary key because it can contain null values", 
+     }
+
+     // Force population of the sqlErrmc
+     String errMsg = sqlca.getSqlErrmc();
+     if (errMsg == null || errMsg.trim().length() == 0) {
+       errMsg = "";
+     }
+     String[] errMsgTokens = errMsg.split("" + ((char) 0xFFFD));
+
+     switch(sqlca.sqlCode_) {
+            case SqlCode.INVALID_SQL_STATEMENT:
+                if (errMsg.length() > 0 && errMsgTokens.length > 1)
+                  throw new DB2Exception("The SQL syntax provided was invalid at or near the tokens: " + Arrays.toString(errMsgTokens), sqlca.sqlCode_, sqlca.sqlState_);
+                else
+                  throw new DB2Exception("The SQL syntax provided was invalid", sqlca.sqlCode_, sqlca.sqlState_);
+            case SqlCode.MISMATCHING_COLUMNS_AND_VALUES:
+                throw new DB2Exception("An INSERT statement contained a different number of insert columns from the number of insert values that were supplied", sqlca.sqlCode_, sqlca.sqlState_);
+            case SqlCode.REPEATED_COLUMN_REFERENCE:
+                if (errMsg.length() > 0)
+                    throw new DB2Exception("An INSERT or UPDATE statement listed the same column name (" + errMsg + ") more than one time in its update list", sqlca.sqlCode_, sqlca.sqlState_);
+                else
+                    throw new DB2Exception("An INSERT or UPDATE statement listed the same column name more than one time in its update list", sqlca.sqlCode_, sqlca.sqlState_);
+            case SqlCode.NO_ORDER_BY_IDENTIFIER:
+                throw new DB2Exception("The ORDER BY clause in the statement contains a column number that is either less than one or greater than the number of columns of the result table (the number of items in the SELECT clause)", sqlca.sqlCode_, sqlca.sqlState_);
+            case SqlCode.UPDATE_READONLY_COLUMN:
+                throw new DB2Exception("An UPDATE statement referenced a column that is marked in the catalog as non-updateable.", sqlca.sqlCode_, sqlca.sqlState_);
+            case SqlCode.INVALID_KEYWORD:
+                if (errMsg.length() > 0)
+                  throw new DB2Exception("The keyword, '" + errMsg + "' is not valid", sqlca.sqlCode_, sqlca.sqlState_);
+                else
+                  throw new DB2Exception("The keyword is not valid", sqlca.sqlCode_, sqlca.sqlState_);
+            case SqlCode.AMBIGUOUS_COLUMN_NAME:
+                if (errMsg.length() > 0)
+                  throw new DB2Exception("A reference to the column name '" + errMsg + "' is ambiguous", sqlca.sqlCode_, sqlca.sqlState_);
+                else
+                  throw new DB2Exception("A reference to a column name is ambiguous", sqlca.sqlCode_, sqlca.sqlState_);
+            case SqlCode.OBJECT_NOT_DEFINED:
+              if (errMsg.length() > 0)
+                throw new DB2Exception("The object '" + errMsg + "' provided is not defined", sqlca.sqlCode_, sqlca.sqlState_);
+              else
+                throw new DB2Exception("An object provided is not defined", sqlca.sqlCode_, sqlca.sqlState_);
+            case SqlCode.COLUMN_DOES_NOT_EXIST:
+              if (errMsg.length() > 0)
+                throw new DB2Exception("The column '" + errMsg + "' provided does not exist", sqlca.sqlCode_, sqlca.sqlState_);
+              else
+                throw new DB2Exception("A column provided does not exist", sqlca.sqlCode_, sqlca.sqlState_);
+            case SqlCode.NULL_CONSTRAINT_VIOLATION:
+                throw new DB2Exception("An attempt was made to INSERT or UPDATE a column that was declared as not nullable with the NULL value: " + errMsg,
+                    sqlca.sqlCode_, sqlca.sqlState_);
+            case SqlCode.PRIMARY_KEY_CAN_BE_NULL:
+                if (errMsg.length() > 0)
+                  throw new DB2Exception("The column '" + errMsg + "' cannot be a column of a primary key because it can contain null values",
                       sqlca.sqlCode_, sqlca.sqlState_);
-  	            else
-  	                throw new DB2Exception("A column could not be created as a primary key column because it can contain null values", 
-  	                    sqlca.sqlCode_, sqlca.sqlState_);
-  	        case SqlCode.OBJECT_ALREADY_EXISTS: // -601
-  	            if (errMsg.length() > 0) {
-  	                if (errMsgTokens.length == 2) {
-  	                  String objectType = errMsgTokens[1];
-  	                  String objectName = errMsgTokens[0];
-  	                  throw new DB2Exception("The object with the name '" + objectName + "' of type '" + objectType + "' already exists", sqlca.sqlCode_, sqlca.sqlState_);
-  	                } else {
-  	                  throw new DB2Exception("The object with the name '" + errMsg + "' already exists", sqlca.sqlCode_, sqlca.sqlState_);
-  	                }
-  	            } else {
-  	                throw new DB2Exception("The name of the object to be created cannot be identical to the existing name", sqlca.sqlCode_, sqlca.sqlState_);
-  	            }
-	   	    case SqlCode.DATABASE_NOT_FOUND:
-	   	    	if (errMsg.length() > 0)
-	   	    		throw new DB2Exception("The database '" + errMsg + "' provided was not found", sqlca.sqlCode_, sqlca.sqlState_);
-	   	    	else
-	   	    		throw new DB2Exception("The database provided was not found", sqlca.sqlCode_, sqlca.sqlState_);
-	   	    case SqlCode.DATA_TYPE_INVALID_ATTR:
-	   	        if (errMsg.length() > 0)
-	   	            throw new DB2Exception("The statement cannot be processed. The data type definition '" + errMsg + 
-	   	                "' specifies an invalid attribute such as precision, length, or scale.", sqlca.sqlCode_, sqlca.sqlState_);
-	   	        else
-	   	            throw new DB2Exception("The statement cannot be processed. A data type definition specifies an invalid attribute such as precision, length, or scale.", sqlca.sqlCode_, sqlca.sqlState_);
-	   	    case SqlCode.INSERT_INTO_GENERATED_ALWAYS:
-	   	        if (errMsg.length() > 0)
-	   	            throw new DB2Exception("A value cannot be specified for column '" + errMsg + "' which is identified as GENERATED ALWAYS", sqlca.sqlCode_, sqlca.sqlState_);
-	   	        else
-	   	            throw new DB2Exception("A value cannot be specified for a column which is identified as GENERATED ALWAYS", sqlca.sqlCode_, sqlca.sqlState_);
-	   	    case SqlCode.DUPLICATE_KEYS_DETECTED:
-	   	        if (errMsgTokens.length >= 2)
-	   	            throw new DB2Exception("Duplicate keys were detected on table " + errMsgTokens[1], sqlca.sqlCode_, sqlca.sqlState_);
-	   	        else
-	   	            throw new DB2Exception("Duplicate keys were detected on the updated table", sqlca.sqlCode_, sqlca.sqlState_);
+                else
+                    throw new DB2Exception("A column could not be created as a primary key column because it can contain null values",
+                        sqlca.sqlCode_, sqlca.sqlState_);
+            case SqlCode.OBJECT_ALREADY_EXISTS: // -601
+                if (errMsg.length() > 0) {
+                    if (errMsgTokens.length == 2) {
+                      String objectType = errMsgTokens[1];
+                      String objectName = errMsgTokens[0];
+                      throw new DB2Exception("The object with the name '" + objectName + "' of type '" + objectType + "' already exists", sqlca.sqlCode_, sqlca.sqlState_);
+                    } else {
+                      throw new DB2Exception("The object with the name '" + errMsg + "' already exists", sqlca.sqlCode_, sqlca.sqlState_);
+                    }
+                } else {
+                    throw new DB2Exception("The name of the object to be created cannot be identical to the existing name", sqlca.sqlCode_, sqlca.sqlState_);
+                }
+           case SqlCode.DATABASE_NOT_FOUND:
+             if (errMsg.length() > 0)
+               throw new DB2Exception("The database '" + errMsg + "' provided was not found", sqlca.sqlCode_, sqlca.sqlState_);
+             else
+               throw new DB2Exception("The database provided was not found", sqlca.sqlCode_, sqlca.sqlState_);
+           case SqlCode.DATA_TYPE_INVALID_ATTR:
+               if (errMsg.length() > 0)
+                   throw new DB2Exception("The statement cannot be processed. The data type definition '" + errMsg +
+                       "' specifies an invalid attribute such as precision, length, or scale.", sqlca.sqlCode_, sqlca.sqlState_);
+               else
+                   throw new DB2Exception("The statement cannot be processed. A data type definition specifies an invalid attribute such as precision, length, or scale.", sqlca.sqlCode_, sqlca.sqlState_);
+           case SqlCode.INSERT_INTO_GENERATED_ALWAYS:
+               if (errMsg.length() > 0)
+                   throw new DB2Exception("A value cannot be specified for column '" + errMsg + "' which is identified as GENERATED ALWAYS", sqlca.sqlCode_, sqlca.sqlState_);
+               else
+                   throw new DB2Exception("A value cannot be specified for a column which is identified as GENERATED ALWAYS", sqlca.sqlCode_, sqlca.sqlState_);
+           case SqlCode.DUPLICATE_KEYS_DETECTED:
+               if (errMsgTokens.length >= 2)
+                   throw new DB2Exception("Duplicate keys were detected on table " + errMsgTokens[1], sqlca.sqlCode_, sqlca.sqlState_);
+               else
+                   throw new DB2Exception("Duplicate keys were detected on the updated table", sqlca.sqlCode_, sqlca.sqlState_);
             default:
                 throw new IllegalStateException("ERROR: " + sqlca.toString());
-	   }
+     }
    }
-   
+
    void setSqlerrd(int[] sqlErrd) {
        sqlErrd_ = sqlErrd;
    }
@@ -406,8 +406,8 @@ public class NetSqlca {
 //        synchronized (connection_) {
 //            try {
 //                cs = connection_.prepareMessageProc("call SYSIBM.SQLCAMESSAGE(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-//                // Cannot let this statement commit the transaction. Otherwise, 
-//                // calling getWarnings while navigating a ResultSet will 
+//                // Cannot let this statement commit the transaction. Otherwise,
+//                // calling getWarnings while navigating a ResultSet will
 //                // release and invalidate locators used by the cursor.
 //                cs.isAutoCommittableStatement_ = false;
 //                String errmc = null;
@@ -588,7 +588,7 @@ public class NetSqlca {
         sqlStates_ = states;
         sqlErrmcMessages_ = tokens;
     }
-    
+
     private String bytes2String(byte[] bytes) {
         if (bytes == null)
             return null;
@@ -636,15 +636,15 @@ public class NetSqlca {
     public long getRowsetRowCount() {
         return rowsetRowCount_;
     }
-    
+
     @Override
     public String toString() {
-        return super.toString() + 
+        return super.toString() +
                 "  sqlCode=" + sqlCode_ +
-                "  sqlState=" + sqlState_ + 
-                "  sqlErrd=" + Arrays.toString(sqlErrd_) + 
-                "  sqlErrmc="  + getSqlErrmc() + 
-                "  sqlErrp=" + bytes2String(sqlErrpBytes_) + 
+                "  sqlState=" + sqlState_ +
+                "  sqlErrd=" + Arrays.toString(sqlErrd_) +
+                "  sqlErrmc="  + getSqlErrmc() +
+                "  sqlErrp=" + bytes2String(sqlErrpBytes_) +
                 "  sqlStates=" + Arrays.deepToString(sqlStates_) +
                 "  sqlWarn=" + bytes2String(sqlWarnBytes_);
     }

@@ -35,7 +35,7 @@ import io.vertx.pgclient.impl.codec.ScramClientInitialMessage;
 public class ScramAuthentication {
 
   private static final String SCRAM_SHA_256 = "SCRAM-SHA-256";
-  
+
   private final String username;
   private final String password;
   private ScramSession scramSession;
@@ -48,53 +48,53 @@ public class ScramAuthentication {
   }
 
   /*
-   * The client selects one of the supported mechanisms from the list, 
-   *  and sends a SASLInitialResponse message to the server. 
-   * The message includes the name of the selected mechanism, and 
+   * The client selects one of the supported mechanisms from the list,
+   *  and sends a SASLInitialResponse message to the server.
+   * The message includes the name of the selected mechanism, and
    *  an optional Initial Client Response, if the selected mechanism uses that.
    */
   public ScramClientInitialMessage createInitialSaslMessage(ByteBuf in) {
     List<String> mechanisms = new ArrayList<>();
-    
+
     while (0 != in.getByte(in.readerIndex())) {
-    	 String mechanism = Util.readCStringUTF8(in);
+       String mechanism = Util.readCStringUTF8(in);
          mechanisms.add(mechanism);
     }
-    
+
     if (mechanisms.isEmpty()) {
       throw new UnsupportedOperationException("SASL Authentication : the server returned no mecanism");
     }
-    
+
     // SCRAM-SHA-256-PLUS added in postgresql 11 is not supported
     if (!mechanisms.contains(SCRAM_SHA_256)) {
         throw new UnsupportedOperationException("SASL Authentication : only SCRAM-SHA-256 is currently supported, server wants " + mechanisms);
     }
-    
+
 
     ScramClient scramClient = ScramClient
           .channelBinding(ScramClient.ChannelBinding.NO)
           .stringPreparation(StringPreparations.NO_PREPARATION)
           .selectMechanismBasedOnServerAdvertised(mechanisms.toArray(new String[0]))
           .setup();
-    
-    
+
+
     // this user name will be ignored, the user name that was already sent in the startup message is used instead
     // see https://www.postgresql.org/docs/11/sasl-authentication.html#SASL-SCRAM-SHA-256 §53.3.1
     scramSession = scramClient.scramSession(this.username);
-    
+
     return new ScramClientInitialMessage(scramSession.clientFirstMessage(), scramClient.getScramMechanism().getName());
   }
 
 
   /*
-   * One or more server-challenge and client-response message will follow. 
-   * Each server-challenge is sent in an AuthenticationSASLContinue message, 
-   *   followed by a response from client in an SASLResponse message. 
+   * One or more server-challenge and client-response message will follow.
+   * Each server-challenge is sent in an AuthenticationSASLContinue message,
+   *   followed by a response from client in an SASLResponse message.
    * The particulars of the messages are mechanism specific.
    */
   public String receiveServerFirstMessage(ByteBuf in)  {
     String serverFirstMessage = in.readCharSequence(in.readableBytes(), StandardCharsets.UTF_8).toString();
-   
+
     ScramSession.ServerFirstProcessor serverFirstProcessor = null;
     try {
       serverFirstProcessor = scramSession.receiveServerFirstMessage(serverFirstMessage);
@@ -108,11 +108,11 @@ public class ScramAuthentication {
   }
 
   /*
-   * Finally, when the authentication exchange is completed successfully, 
-   *   the server sends an AuthenticationSASLFinal message, followed immediately by an AuthenticationOk message. 
-   * The AuthenticationSASLFinal contains additional server-to-client data, 
-   *   whose content is particular to the selected authentication mechanism. 
-   * If the authentication mechanism doesn't use additional data that's sent at completion, 
+   * Finally, when the authentication exchange is completed successfully,
+   *   the server sends an AuthenticationSASLFinal message, followed immediately by an AuthenticationOk message.
+   * The AuthenticationSASLFinal contains additional server-to-client data,
+   *   whose content is particular to the selected authentication mechanism.
+   * If the authentication mechanism doesn't use additional data that's sent at completion,
    *   the AuthenticationSASLFinal message is not sent
    */
   public void checkServerFinalMessage(ByteBuf in) {
@@ -121,7 +121,7 @@ public class ScramAuthentication {
     try {
       clientFinalProcessor.receiveServerFinalMessage(serverFinalMessage);
     } catch (ScramParseException | ScramServerErrorException | ScramInvalidServerSignatureException e) {
-      throw new UnsupportedOperationException(e);	
+      throw new UnsupportedOperationException(e);
     }
   }
 }

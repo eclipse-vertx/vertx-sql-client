@@ -16,14 +16,14 @@ import io.vertx.sqlclient.tck.PreparedQueryCachedTestBase;
 public class DB2PreparedQueryCachedTest extends PreparedQueryCachedTestBase {
   @ClassRule
   public static DB2Resource rule = DB2Resource.SHARED_INSTANCE;
-  
-	@Rule
-	public TestName testName = new TestName();
 
-	@Before
-	public void printTestName(TestContext ctx) throws Exception {
-		System.out.println(">>> BEGIN " + getClass().getSimpleName() + "." + testName.getMethodName());
-	}
+  @Rule
+  public TestName testName = new TestName();
+
+  @Before
+  public void printTestName(TestContext ctx) throws Exception {
+    System.out.println(">>> BEGIN " + getClass().getSimpleName() + "." + testName.getMethodName());
+  }
 
   @Override
   protected void initConnector() {
@@ -64,7 +64,7 @@ public class DB2PreparedQueryCachedTest extends PreparedQueryCachedTestBase {
   @Override
   public void testPreparedQueryParamCoercionTypeError(TestContext ctx) {
     msgVerifier = (err) -> {
-      ctx.assertEquals("Parameter at position[0] with class = [java.lang.String] and value = [1] can not be coerced to the expected class = [java.lang.Integer] for encoding.", 
+      ctx.assertEquals("Parameter at position[0] with class = [java.lang.String] and value = [1] can not be coerced to the expected class = [java.lang.Integer] for encoding.",
           err.getMessage());
     };
     super.testPreparedQueryParamCoercionTypeError(ctx);
@@ -79,5 +79,5 @@ public class DB2PreparedQueryCachedTest extends PreparedQueryCachedTestBase {
     };
     super.testPreparedUpdateWithNullParams(ctx);
   }
-  
+
 }

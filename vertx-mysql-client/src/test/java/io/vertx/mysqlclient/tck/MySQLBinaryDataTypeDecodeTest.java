@@ -60,7 +60,7 @@ public class MySQLBinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase 
   @Test
   @Override
   public void testSelectAll(TestContext ctx) {
-	// MySQL TIME type is mapped to java.time.Duration so we need to override here
+  // MySQL TIME type is mapped to java.time.Duration so we need to override here
     connector.connect(ctx.asyncAssertSuccess(conn -> {
         conn.preparedQuery("SELECT " +
           "test_int_2," +
@@ -106,5 +106,5 @@ public class MySQLBinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase 
           conn.close();
         }));
       }));
-  	}
+    }
 }

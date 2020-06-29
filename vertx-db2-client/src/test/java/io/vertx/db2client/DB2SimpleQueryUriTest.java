@@ -30,7 +30,7 @@ import io.vertx.sqlclient.tck.Connector;
  */
 @RunWith(VertxUnitRunner.class)
 public class DB2SimpleQueryUriTest extends DB2SimpleQueryTest {
-    
+
   @Override
   protected void initConnector() {
     String uri = "db2://"+rule.options().getUser()+":"
@@ -38,7 +38,7 @@ public class DB2SimpleQueryUriTest extends DB2SimpleQueryTest {
                          +rule.options().getHost()+":"
                          +rule.options().getPort()+"/"
                          +rule.options().getDatabase();
-		
+
     connector = new Connector<SqlConnection>() {
       @Override
       public void connect(Handler<AsyncResult<SqlConnection>> handler) {
@@ -55,5 +55,5 @@ public class DB2SimpleQueryUriTest extends DB2SimpleQueryTest {
       public void close() {
       }
     };
-  }	
+  }
 }

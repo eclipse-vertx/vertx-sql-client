@@ -30,12 +30,12 @@ public abstract class BinaryDataTypeEncodeTestBase extends DataTypeTestBase {
   public void testSmallInt(TestContext ctx) {
     testEncodeGeneric(ctx, "test_int_2", Short.class, Row::getShort, (short) Short.MIN_VALUE);
   }
-  
+
   @Test
   public void testInteger(TestContext ctx) {
     testEncodeGeneric(ctx, "test_int_4", Integer.class, Row::getInteger, (int) Integer.MIN_VALUE);
   }
-  
+
   @Test
   public void testBigInt(TestContext ctx) {
     testEncodeGeneric(ctx, "test_int_8", Long.class, Row::getLong, (long) Long.MIN_VALUE);
@@ -85,55 +85,55 @@ public abstract class BinaryDataTypeEncodeTestBase extends DataTypeTestBase {
   public void testTime(TestContext ctx) {
     testEncodeGeneric(ctx, "test_time", LocalTime.class, Row::getLocalTime, LocalTime.of(12,1,30));
   }
-  
+
   @Test
   public void testNullValues(TestContext ctx) {
-	    connector.connect(ctx.asyncAssertSuccess(conn -> {
-	        conn
-	          .preparedQuery(statement("UPDATE basicdatatype SET" + 
-	        		  " test_int_2 = ", 
-	        	      ", test_int_4 = ",
-	        	      ", test_int_8 = ",
-	        	      ", test_float_4 = ",
-	        	      ", test_float_8 = ",
-	        	      ", test_numeric = ",
-	        	      ", test_decimal = ",
-	        	      ", test_boolean = ",
-	        	      ", test_char = ",
-	        	      ", test_varchar = ",
-	        	      ", test_date = ",
-	        	      ", test_time = ",
-	        		  " WHERE id = 2"))
-	          .execute(Tuple.tuple()
-	        		  .addValue(null)
-	        		  .addValue(null)
-	        		  .addValue(null)
-	        		  .addValue(null)
-	        		  .addValue(null)
-	        		  .addValue(null)
-	        		  .addValue(null)
-	        		  .addValue(null)
-	        		  .addValue(null)
-	        		  .addValue(null)
-	        		  .addValue(null)
-	        		  .addValue(null), 
-	        		  ctx.asyncAssertSuccess(updateResult -> {
-	          conn
-	            .preparedQuery("SELECT * FROM basicdatatype WHERE id = 2")
-	            .execute(ctx.asyncAssertSuccess(result -> {
-	            ctx.assertEquals(1, result.size());
-	            Row row = result.iterator().next();
-	            ctx.assertEquals(13, row.size());
-	            ctx.assertEquals(2, row.getInteger(0));
-	            for (int i = 1; i < 13; i++) {
-	              ctx.assertNull(row.getValue(i));
-	            }
-	            conn.close();
-	          }));
-	        }));
-	      }));
+      connector.connect(ctx.asyncAssertSuccess(conn -> {
+          conn
+            .preparedQuery(statement("UPDATE basicdatatype SET" +
+                " test_int_2 = ",
+                  ", test_int_4 = ",
+                  ", test_int_8 = ",
+                  ", test_float_4 = ",
+                  ", test_float_8 = ",
+                  ", test_numeric = ",
+                  ", test_decimal = ",
+                  ", test_boolean = ",
+                  ", test_char = ",
+                  ", test_varchar = ",
+                  ", test_date = ",
+                  ", test_time = ",
+                " WHERE id = 2"))
+            .execute(Tuple.tuple()
+                .addValue(null)
+                .addValue(null)
+                .addValue(null)
+                .addValue(null)
+                .addValue(null)
+                .addValue(null)
+                .addValue(null)
+                .addValue(null)
+                .addValue(null)
+                .addValue(null)
+                .addValue(null)
+                .addValue(null),
+                ctx.asyncAssertSuccess(updateResult -> {
+            conn
+              .preparedQuery("SELECT * FROM basicdatatype WHERE id = 2")
+              .execute(ctx.asyncAssertSuccess(result -> {
+              ctx.assertEquals(1, result.size());
+              Row row = result.iterator().next();
+              ctx.assertEquals(13, row.size());
+              ctx.assertEquals(2, row.getInteger(0));
+              for (int i = 1; i < 13; i++) {
+                ctx.assertNull(row.getValue(i));
+              }
+              conn.close();
+            }));
+          }));
+        }));
   }
-  
+
   protected <T> void testEncodeGeneric(TestContext ctx,
                                        String columnName,
                                        Class<T> clazz,

@@ -18,20 +18,20 @@ import io.vertx.sqlclient.tck.TextDataTypeDecodeTestBase;
 public class DB2TextDataTypeDecodeTest extends TextDataTypeDecodeTestBase {
     @ClassRule
     public static DB2Resource rule = DB2Resource.SHARED_INSTANCE;
-    
-	@Rule
-	public TestName testName = new TestName();
 
-	@Before
-	public void printTestName(TestContext ctx) throws Exception {
-		System.out.println(">>> BEGIN " + getClass().getSimpleName() + "." + testName.getMethodName());
-	}
+  @Rule
+  public TestName testName = new TestName();
+
+  @Before
+  public void printTestName(TestContext ctx) throws Exception {
+    System.out.println(">>> BEGIN " + getClass().getSimpleName() + "." + testName.getMethodName());
+  }
 
     @Override
     protected void initConnector() {
         connector = ClientConfig.CONNECT.connect(vertx, rule.options());
     }
-    
+
     @Test
     @Override
     public void testBoolean(TestContext ctx) {
@@ -49,7 +49,7 @@ public class DB2TextDataTypeDecodeTest extends TextDataTypeDecodeTestBase {
         }));
       }));
     }
-    
+
     @Test
     @Override
     public void testDouble(TestContext ctx) {
@@ -57,9 +57,9 @@ public class DB2TextDataTypeDecodeTest extends TextDataTypeDecodeTestBase {
         super.testDouble(ctx);
         return;
       }
-      
+
       // For DB2/z the largest value that can be stored in a DOUBLE column is 7.2E75
       testDecodeGeneric(ctx, "test_float_8", Double.class, (double) 7.2E75);
     }
-    
+
 }

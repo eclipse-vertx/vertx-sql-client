@@ -122,21 +122,21 @@ public abstract class PreparedBatchTestBase {
 
   @Test
   public void testEmptyBatch(TestContext ctx) {
-	  connector.connect(ctx.asyncAssertSuccess(conn -> {
-		  List<Tuple> batch = new ArrayList<>();
-		  conn.preparedQuery(statement("SELECT * FROM immutable WHERE id=", "")).executeBatch(batch, ctx.asyncAssertFailure(err -> {
-		  }));
-	  }));
+    connector.connect(ctx.asyncAssertSuccess(conn -> {
+      List<Tuple> batch = new ArrayList<>();
+      conn.preparedQuery(statement("SELECT * FROM immutable WHERE id=", "")).executeBatch(batch, ctx.asyncAssertFailure(err -> {
+      }));
+    }));
   }
 
   @Test
   public void testIncorrectNumBatchArguments(TestContext ctx) {
-	  connector.connect(ctx.asyncAssertSuccess(conn -> {
-		  List<Tuple> batch = new ArrayList<>();
-		  batch.add(Tuple.of(1, 2));
-		  conn.preparedQuery(statement("SELECT * FROM immutable WHERE id=", "")).executeBatch(batch, ctx.asyncAssertFailure(err -> {
-		  }));
-	  }));
+    connector.connect(ctx.asyncAssertSuccess(conn -> {
+      List<Tuple> batch = new ArrayList<>();
+      batch.add(Tuple.of(1, 2));
+      conn.preparedQuery(statement("SELECT * FROM immutable WHERE id=", "")).executeBatch(batch, ctx.asyncAssertFailure(err -> {
+      }));
+    }));
   }
 
   protected void cleanTestTable(TestContext ctx) {

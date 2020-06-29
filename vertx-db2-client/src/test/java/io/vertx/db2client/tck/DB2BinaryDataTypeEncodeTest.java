@@ -18,20 +18,20 @@ import io.vertx.sqlclient.tck.BinaryDataTypeEncodeTestBase;
 public class DB2BinaryDataTypeEncodeTest extends BinaryDataTypeEncodeTestBase {
   @ClassRule
   public static DB2Resource rule = DB2Resource.SHARED_INSTANCE;
-  
-	@Rule
-	public TestName testName = new TestName();
 
-	@Before
-	public void printTestName(TestContext ctx) throws Exception {
-		System.out.println(">>> BEGIN " + getClass().getSimpleName() + "." + testName.getMethodName());
-	}
+  @Rule
+  public TestName testName = new TestName();
+
+  @Before
+  public void printTestName(TestContext ctx) throws Exception {
+    System.out.println(">>> BEGIN " + getClass().getSimpleName() + "." + testName.getMethodName());
+  }
 
   @Override
   protected void initConnector() {
     connector = ClientConfig.CONNECT.connect(vertx, rule.options());
   }
-  
+
   @Override
   protected String statement(String... parts) {
     return String.join("?", parts);
@@ -43,11 +43,11 @@ public class DB2BinaryDataTypeEncodeTest extends BinaryDataTypeEncodeTestBase {
     // The smallest positive value supported by the DOUBLE column type in DB2 is 5.4E-079
     testEncodeGeneric(ctx, "test_float_8", Double.class, Row::getDouble, Double.valueOf("5.4E-079"));
   }
-  
+
   @Override
   public void testBoolean(TestContext ctx) {
     // DB2/Z doesn't have a BOOLEAN column type and uses TINYINT instead
-	// DB2/LUW has a BOOLEAN column type but it is just an alias for TINYINT
+  // DB2/LUW has a BOOLEAN column type but it is just an alias for TINYINT
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       conn
         .preparedQuery("UPDATE basicdatatype SET test_boolean = ? WHERE id = 2")

@@ -25,11 +25,11 @@ import io.vertx.db2client.DB2Exception;
 import io.vertx.db2client.impl.DB2DatabaseMetadata;
 
 public class DRDAConnectResponse extends DRDAResponse {
-  
+
     public DRDAConnectResponse(ByteBuf buffer, ConnectionMetaData metadata) {
       super(buffer, metadata);
     }
-    
+
     public void readAccessSecurity(int securityMechanism) {
         startSameIdChainParse();
         parseACCSECreply(securityMechanism);
@@ -43,14 +43,14 @@ public class DRDAConnectResponse extends DRDAResponse {
         endOfSameIdChainData();
 //        agent_.checkForChainBreakingException_();
     }
-    
+
     // NET only entry point
     public void readSecurityCheck() {
         startSameIdChainParse();
         parseSECCHKreply();
         endOfSameIdChainData();
     }
-    
+
     public RDBAccessData readAccessDatabase() {
         startSameIdChainParse();
         RDBAccessData accessData = parseACCRDBreply();
@@ -58,13 +58,13 @@ public class DRDAConnectResponse extends DRDAResponse {
         return accessData;
 //        agent_.checkForChainBreakingException_();
     }
-    
+
     public void readLocalCommit() {
         startSameIdChainParse();
         parseRDBCMMreply();
         endOfSameIdChainData();
     }
-    
+
     // Parse the reply for the RDB Commit Unit of Work Command.
     // This method handles the parsing of all command replies and reply data
     // for the rdbcmm command.
@@ -81,7 +81,7 @@ public class DRDAConnectResponse extends DRDAResponse {
             parseCommitError();
         }
     }
-    
+
     private void parseCommitError() {
         int peekCP = peekCodePoint();
         switch (peekCP) {
@@ -102,7 +102,7 @@ public class DRDAConnectResponse extends DRDAResponse {
             break;
         }
     }
-    
+
     void parseCommonError(int peekCP) {
         switch (peekCP) {
         case CodePoint.CMDNSPRM:
@@ -121,7 +121,7 @@ public class DRDAConnectResponse extends DRDAResponse {
             throwUnknownCodepoint(peekCP);
         }
     }
-    
+
     // Parameter Value Not Supported Reply Message indicates
     // that the parameter value specified is either not recognized
     // or not supported for the specified parameter.
@@ -230,7 +230,7 @@ public class DRDAConnectResponse extends DRDAResponse {
 //        netAgent_.setSvrcod(svrcod);
         doValnsprmSemantics(codpnt, "\"\"");
     }
-    
+
     // Data Stream Syntax Error Reply Message indicates that the data
     // sent to the target agent does not structurally conform to the requirements
     // of the DDM architecture.  The target agent terminated paring of the DSS
@@ -296,7 +296,7 @@ public class DRDAConnectResponse extends DRDAResponse {
                 synerrcd = parseSYNERRCD();
                 peekCP = peekCodePoint();
             }
-            
+
             if (peekCP == CodePoint.SRVDGN) {
                 foundInPass = true;
                 String serverDiagnostics = parseSRVDGN();
@@ -334,7 +334,7 @@ public class DRDAConnectResponse extends DRDAResponse {
 //        netAgent_.setSvrcod(svrcod);
         doSyntaxrmSemantics(synerrcd);
     }
-    
+
     String parseSRVDGN() {
         parseLengthAndMatchCodePoint(CodePoint.SRVDGN);
         if (metadata.isZos())
@@ -342,7 +342,7 @@ public class DRDAConnectResponse extends DRDAResponse {
         else
           return readString();
     }
-    
+
     // Syntax Error Code String specifies the condition that caused termination
     // of data stream parsing.
     private int parseSYNERRCD() {
@@ -353,7 +353,7 @@ public class DRDAConnectResponse extends DRDAResponse {
         }
         return synerrcd;
     }
-    
+
     // Conversational Protocol Error Reply Message
     // indicates that a conversational protocol error occurred.
     // PROTOCOL architects the SQLSTATE value depending on SVRCOD
@@ -438,7 +438,7 @@ public class DRDAConnectResponse extends DRDAResponse {
 //        netAgent_.setSvrcod(svrcod);
         doPrccnvrmSemantics(CodePoint.PRCCNVRM);
     }
-    
+
     // The client can detect that a conversational protocol error has occurred.
     // This can also be detected at the server in which case a PRCCNVRM is returned.
     // The Conversation Protocol Error Code, PRCCNVRM, describes the various errors.
@@ -492,10 +492,10 @@ public class DRDAConnectResponse extends DRDAResponse {
         // of reason code.  For now just return the prccnvcd as the reason code
 //        agent_.accumulateChainBreakingReadExceptionAndThrow(new DisconnectException(agent_,
 //            new ClientMessageId(SQLState.DRDA_CONNECTION_TERMINATED),
-//                msgutil_.getTextMessage(MessageId.CONN_DRDA_PRCCNVRM, 
+//                msgutil_.getTextMessage(MessageId.CONN_DRDA_PRCCNVRM,
 //                    Integer.toHexString(conversationProtocolErrorCode))));
     }
-    
+
     // Conversational Protocol Error Code specifies the condition
     // for which the PRCCNVRm was returned.
     private int parsePRCCNVCD() {
@@ -509,7 +509,7 @@ public class DRDAConnectResponse extends DRDAResponse {
         }
         return prccnvcd;
     }
-    
+
     // RDB Not Accessed Reply Message indicates that the access relational
     // database command (ACCRDB) was not issued prior to a command
     // requesting the RDB Services.
@@ -585,10 +585,10 @@ public class DRDAConnectResponse extends DRDAResponse {
 //        agent_.accumulateChainBreakingReadExceptionAndThrow(
 //            new DisconnectException(agent_,
 //                new ClientMessageId(SQLState.DRDA_CONNECTION_TERMINATED),
-//                msgutil_.getTextMessage(MessageId.CONN_DRDA_RDBNACRM)));            
+//                msgutil_.getTextMessage(MessageId.CONN_DRDA_RDBNACRM)));
     }
 
-    
+
     // Command Check Reply Message indicates that the requested
     // command encountered an unarchitected and implementation-specific
     // condition for which there is no architected message.  If the severity
@@ -675,7 +675,7 @@ public class DRDAConnectResponse extends DRDAResponse {
             throwMissingRequiredCodepoint("SVRCOD", CodePoint.SVRCOD);
 
 //        netAgent_.setSvrcod(svrcod);
-        NetSqlca netSqlca = parseSQLCARD(null); 
+        NetSqlca netSqlca = parseSQLCARD(null);
 //        netAgent_.netConnection_.completeSqlca(netSqlca);
 
         throw new IllegalStateException("SQLState.DRDA_CONNECTION_TERMINATED");
@@ -686,7 +686,7 @@ public class DRDAConnectResponse extends DRDAResponse {
 //                new SqlException(agent_.logWriter_, netSqlca),
 //                msgutil_.getTextMessage(MessageId.CONN_DRDA_CMDCHKRM)));
     }
-    
+
     // Parse the reply for the Access RDB Command.
     // This method handles the parsing of all command replies and reply data
     // for the accrdb command.
@@ -708,9 +708,9 @@ public class DRDAConnectResponse extends DRDAResponse {
         NetSqlca.complete(netSqlca);
         return accessData;
     }
-    
 
-    
+
+
     /**
     * Parse the initial PBSD - PiggyBackedSessionData code point.
     * <p>
@@ -746,7 +746,7 @@ public class DRDAConnectResponse extends DRDAResponse {
            peekCP = peekCodePoint();
        }
    }
-    
+
     // Access to RDB Completed (ACRDBRM) Reply Message specifies that an
     // instance of the SQL application manager has been created and is bound
     // to the specified relation database (RDB).
@@ -818,7 +818,7 @@ public class DRDAConnectResponse extends DRDAResponse {
                 parseTYPDEFOVR();
                 peekCP = peekCodePoint();
             }
-            
+
             if (peekCP == CodePoint.RDBINTTKN) {
                 // @AGG added manually
                 foundInPass = true;
@@ -852,13 +852,13 @@ public class DRDAConnectResponse extends DRDAResponse {
                 crrtkn = parseCRRTKN(false);
                 peekCP = peekCodePoint();
             }
-            
+
             if (peekCP == CodePoint.SRVLST) {
               foundInPass = true;
               parseSRVLST();
               peekCP = peekCodePoint();
             }
-            
+
             if (peekCP == CodePoint.IPADDR) {
               foundInPass = true;
               parseIPADDR();
@@ -891,7 +891,7 @@ public class DRDAConnectResponse extends DRDAResponse {
 //                crrtkn);
         return new RDBAccessData(svrcod, prdid, crrtknReceived, crrtkn);
     }
-    
+
     public static class RDBAccessData {
         public final int svrcod;
         public final String prdid;
@@ -902,7 +902,7 @@ public class DRDAConnectResponse extends DRDAResponse {
             correlationToken = crrtknReceived ? crrtkn : null;
         }
     }
-    
+
     private byte[] parseRDBINTTKN(boolean skip) {
         parseLengthAndMatchCodePoint(CodePoint.RDBINTTKN);
         if (skip) {
@@ -911,7 +911,7 @@ public class DRDAConnectResponse extends DRDAResponse {
         }
         return readBytes();
     }
-    
+
     // Correlation Token specifies a token that is conveyed between source
     // and target servers for correlating the processing between servers.
     private byte[] parseCRRTKN(boolean skip) {
@@ -922,10 +922,10 @@ public class DRDAConnectResponse extends DRDAResponse {
         }
         return readBytes();
     }
-    
+
     private void parseSRVLST() {
       parseLengthAndMatchCodePoint(CodePoint.SRVLST);
-      
+
       pushLengthOnCollectionStack();
       boolean foundInPass = false;
       boolean foundServerListCount = false;
@@ -946,27 +946,27 @@ public class DRDAConnectResponse extends DRDAResponse {
           parseSRVLSRV(serverListCount);
           peekCP = peekCodePoint();
         }
-        
+
         if (!foundInPass)
           throwUnknownCodepoint(peekCP);
       }
       popCollectionStack();
-      
+
       if (!foundServerListCount)
         throwMissingRequiredCodepoint("SRVLSTCNT", CodePoint.SRVLSTCNT);
       if (!foundServerList)
         throwMissingRequiredCodepoint("SRVLSRV", CodePoint.SRVLSRV);
-          
+
     }
-    
+
     private int parseSRVLSTCNT() {
       parseLengthAndMatchCodePoint(CodePoint.SRVLSTCNT);
       return readUnsignedShort();
     }
-    
+
     private List<String> parseSRVLSRV(int serverListCount) {
       parseLengthAndMatchCodePoint(CodePoint.SRVLSRV);
-      
+
       List<String> serverList = new ArrayList<>(serverListCount);
       for (int i = 0; i < serverListCount; i++) {
         int priority = 0;
@@ -977,7 +977,7 @@ public class DRDAConnectResponse extends DRDAResponse {
           priority = parseSRVPRTY();
           peekCP = peekCodePoint();
         }
-        
+
         if (peekCP == CodePoint.TCPPORTHOST) {
           parseTCPPORTHOST(false);
         } else if (peekCP == CodePoint.IPADDR) {
@@ -985,18 +985,18 @@ public class DRDAConnectResponse extends DRDAResponse {
         } else {
           throwUnknownCodepoint(peekCP);
         }
-        
+
         if (!foundServerPriority)
           throwMissingRequiredCodepoint("SRVPRTY", CodePoint.SRVPRTY);
       }
       return serverList;
     }
-    
+
     private byte[] parseIPADDR() {
       parseLengthAndMatchCodePoint(CodePoint.IPADDR);
       return readBytes();
     }
-    
+
     private Object[] parseTCPPORTHOST(boolean skip) {
       parseLengthAndMatchCodePoint(CodePoint.TCPPORTHOST);
       if (skip) {
@@ -1008,12 +1008,12 @@ public class DRDAConnectResponse extends DRDAResponse {
       hostPort[1] = readString();
       return hostPort;
     }
-    
+
     private int parseSRVPRTY() {
       parseLengthAndMatchCodePoint(CodePoint.SRVPRTY);
       return readUnsignedShort();
     }
-    
+
     // The User Id specifies an end-user name.
     private String parseUSRID(boolean skip) {
         parseLengthAndMatchCodePoint(CodePoint.USRID);
@@ -1023,8 +1023,8 @@ public class DRDAConnectResponse extends DRDAResponse {
         }
         return readString();
     };
-    
-    
+
+
     // Product specific Identifier specifies the product release level
     // of a DDM server.
     private String parsePRDID(boolean skip) {
@@ -1036,7 +1036,7 @@ public class DRDAConnectResponse extends DRDAResponse {
             return readString();
         }
     }
-    
+
     // Parse the reply for the Security Check Command.
     // This method handles the parsing of all command replies and reply data
     // for the secchk command.
@@ -1044,7 +1044,7 @@ public class DRDAConnectResponse extends DRDAResponse {
         int peekCP = peekCodePoint();
         if (peekCP != CodePoint.SECCHKRM) {
 //            throwUnknownCodepoint(peekCP);
-        	parseCommonError(peekCP);
+          parseCommonError(peekCP);
         }
 
         parseSECCHKRM();
@@ -1059,9 +1059,9 @@ public class DRDAConnectResponse extends DRDAResponse {
             // 0x03 - OBJDSS sent when not allowed.
             //parseSECTKN (true);
             parseSECTKN(false);
-        } 
+        }
     }
-        
+
     // The Security Check (SECCHKRM) Reply Message indicates the acceptability
     // of the security information.
     // This method throws an exception if the connection was not established
@@ -1083,7 +1083,7 @@ public class DRDAConnectResponse extends DRDAResponse {
         parseLengthAndMatchCodePoint(CodePoint.SECCHKRM);
         pushLengthOnCollectionStack();
         int peekCP = peekCodePoint();
-        
+
         while (peekCP != END_OF_COLLECTION) {
 
             boolean foundInPass = false;
@@ -1135,10 +1135,10 @@ public class DRDAConnectResponse extends DRDAResponse {
             throw new IllegalStateException("Did not receive SECCHKCD codepoint");
 //        checkRequiredObjects(svrcodReceived, secchkcdReceived);
 //        netConnection.securityCheckComplete(svrcod, secchkcd);
-        
+
         switch (secchkcd) {
         // Security information accepted
-        case CodePoint.SECCHKCD_00:		
+        case CodePoint.SECCHKCD_00:
             break;
         // Missing userid - TODO  We should catch and handle this issue *before* the call to the DB2 server
         case CodePoint.SECCHKCD_12:
@@ -1147,7 +1147,7 @@ public class DRDAConnectResponse extends DRDAResponse {
         // Missing password - TODO  We should catch and handle this issue *before* the call to the DB2 server
         case CodePoint.SECCHKCD_10:
             // Using SQL error code and state values from similar JDBC response
-        	throw new DB2Exception("Missing password, verify a password value was supplied", SqlCode.MISSING_CREDENTIALS, SQLState.CONNECT_PASSWORD_ISNULL);
+          throw new DB2Exception("Missing password, verify a password value was supplied", SqlCode.MISSING_CREDENTIALS, SQLState.CONNECT_PASSWORD_ISNULL);
         // Invalid credentials
         case CodePoint.SECCHKCD_0E:
         case CodePoint.SECCHKCD_0F:
@@ -1157,10 +1157,10 @@ public class DRDAConnectResponse extends DRDAResponse {
             // Using SQL error code and state values from similar JDBC response for consistency
             throw new DB2Exception("Invalid credentials, verify the user and password values supplied are correct", SqlCode.INVALID_CREDENTIALS, SQLState.NET_CONNECT_AUTH_FAILED);
         default:
-        	throw new IllegalArgumentException("Authentication failed");
+          throw new IllegalArgumentException("Authentication failed");
         }
     }
-    
+
     private void parseACCSECreply(int securityMechanism) {
         int peekCP = peekCodePoint();
         if (peekCP != CodePoint.ACCSECRD) {
@@ -1175,7 +1175,7 @@ public class DRDAConnectResponse extends DRDAResponse {
 //            }
 //        }
     }
-    
+
     private void parseAccessSecurityError() {
         int peekCP = peekCodePoint();
         switch (peekCP) {
@@ -1192,7 +1192,7 @@ public class DRDAConnectResponse extends DRDAResponse {
             parseCommonError(peekCP);
         }
     }
-    
+
     // RDB Not Found Reply Message indicates that the target
     // server cannot find the specified relational database.
     // PROTOCOL architects an SQLSTATE of 08004.
@@ -1235,33 +1235,33 @@ public class DRDAConnectResponse extends DRDAResponse {
                 rdbnam = parseRDBNAM(true);
                 peekCP = peekCodePoint();
             }
-            
+
             if (peekCP == CodePoint.SRVDGN) {
-            	foundInPass = true;
-            	String serverDiagnostics = parseSRVDGN();
-            	// TODO: @AGG Log the server diagnostics here
-            	peekCP = peekCodePoint();
+              foundInPass = true;
+              String serverDiagnostics = parseSRVDGN();
+              // TODO: @AGG Log the server diagnostics here
+              peekCP = peekCodePoint();
             }
 
             if (!foundInPass) {
-            	throwUnknownCodepoint(peekCP);
+              throwUnknownCodepoint(peekCP);
             }
 
         }
         popCollectionStack();
         if (!svrcodReceived)
-        	throwMissingRequiredCodepoint("SVRCOD", CodePoint.SVRCOD);
+          throwMissingRequiredCodepoint("SVRCOD", CodePoint.SVRCOD);
         if (!rdbnamReceived)
-        	throwMissingRequiredCodepoint("RDBNAM", CodePoint.RDBNAM);
+          throwMissingRequiredCodepoint("RDBNAM", CodePoint.RDBNAM);
 
 //        netAgent_.setSvrcod(svrcod);
         throw new DB2Exception("The requested database was not found: " + metadata.databaseName,
-        		SqlCode.RDB_NOT_FOUND, SQLState.NET_DATABASE_NOT_FOUND);
+            SqlCode.RDB_NOT_FOUND, SQLState.NET_DATABASE_NOT_FOUND);
 //        agent_.accumulateChainBreakingReadExceptionAndThrow(new DisconnectException(agent_,
 //            new ClientMessageId(SQLState.NET_DATABASE_NOT_FOUND),
 //            netConnection.databaseName_));
     }
-    
+
     private void parseRdbAccessFailed() {
         parseRDBAFLRM();
 
@@ -1278,15 +1278,15 @@ public class DRDAConnectResponse extends DRDAResponse {
         }
 
         NetSqlca netSqlca = parseSQLCARD(null);
-        
+
         //Check if the SQLCARD has null SQLException
         if(netSqlca.getSqlErrmc() == null) {
-        	// netConnection.setConnectionNull(true); 
+          // netConnection.setConnectionNull(true);
         } else {
-        	NetSqlca.complete(netSqlca);
+          NetSqlca.complete(netSqlca);
         }
     }
-    
+
     // RDB Access Failed Reply Message specifies that the relational
     // database failed the attempted connection.
     // An SQLCARD object must also be returned, following the
@@ -1349,7 +1349,7 @@ public class DRDAConnectResponse extends DRDAResponse {
                 rdbnam = parseRDBNAM(true);
                 peekCP = peekCodePoint();
             }
-            
+
             // Optional code point
             if (peekCP == CodePoint.SRVDGN) {
                 foundInPass = true;
@@ -1359,19 +1359,19 @@ public class DRDAConnectResponse extends DRDAResponse {
             }
 
             if (!foundInPass) {
-            	throwUnknownCodepoint(peekCP);
+              throwUnknownCodepoint(peekCP);
             }
 
         }
         popCollectionStack();
         if (!svrcodReceived)
-        	throwMissingRequiredCodepoint("SVRCOD", CodePoint.SVRCOD);
+          throwMissingRequiredCodepoint("SVRCOD", CodePoint.SVRCOD);
         if (!rdbnamReceived)
-        	throwMissingRequiredCodepoint("RDBNAM", CodePoint.RDBNAM);
+          throwMissingRequiredCodepoint("RDBNAM", CodePoint.RDBNAM);
 
 //        netAgent_.setSvrcod(svrcod);
     }
-    
+
     // The Access Security Reply Data (ACSECRD) Collection Object contains
     // the security information from a target server's security manager.
     // this method returns the security check code received from the server
@@ -1453,7 +1453,7 @@ public class DRDAConnectResponse extends DRDAResponse {
                 secmecList,
                 sectknReceived,
                 sectkn);
-        
+
         /* Switch to UTF-8 or EBCDIC managers depending on what's supported */
 //        if (netConnection.serverSupportsUtf8Ccsid()) {
 //            netConnection.netAgent_.switchToUtf8CcsidMgr();
@@ -1462,7 +1462,7 @@ public class DRDAConnectResponse extends DRDAResponse {
 //        }
         // ccsidManager.setCCSID(CCSIDManager.UTF8); // TODO @AGG should be switching to UTF8 here?
     }
-    
+
     // secmecList is always required and will not be null.
     // secchkcd has an implied severity of error.
     // it will be returned if an error is detected.
@@ -1473,7 +1473,7 @@ public class DRDAConnectResponse extends DRDAResponse {
                                boolean sectknReceived,
                                byte[] sectkn) {
         // @AGG this method was originally on NetConnection
-        
+
         // - if the secchkcd is not 0, then map to an exception.
         if (secchkcd != CodePoint.SECCHKCD_00) {
             // the implied severity code is error
@@ -1499,7 +1499,7 @@ public class DRDAConnectResponse extends DRDAResponse {
                     if (!sectknReceived) {
                         throw new IllegalStateException("SQLState.NET_SECTKN_NOT_RETURNED");
 //                        agent_.accumulateChainBreakingReadExceptionAndThrow(
-//                            new DisconnectException(agent_, 
+//                            new DisconnectException(agent_,
 //                                new ClientMessageId(SQLState.NET_SECTKN_NOT_RETURNED)));
                     } else {
                         throw new UnsupportedOperationException();
@@ -1521,12 +1521,12 @@ public class DRDAConnectResponse extends DRDAResponse {
                 // agent_.accumulateChainBreakingReadExceptionAndThrow (
                 //   new DisconnectException (agent_,"secmec not supported ","0000", -999));
                 throw new IllegalStateException("SQLState.NET_SECKTKN_NOT_RETURNED");
-//                agent_.accumulateReadException(new SqlException(agent_.logWriter_, 
+//                agent_.accumulateReadException(new SqlException(agent_.logWriter_,
 //                    new ClientMessageId(SQLState.NET_SECKTKN_NOT_RETURNED)));
             }
         }
     }
-    
+
     // The Security Check Code String codifies the security information
     // and condition for the SECCHKRM.
     private int parseSECCHKCD() {
@@ -1535,11 +1535,11 @@ public class DRDAConnectResponse extends DRDAResponse {
         if ((secchkcd < CodePoint.SECCHKCD_00) || (secchkcd > CodePoint.SECCHKCD_15)) {
             doValnsprmSemantics(CodePoint.SECCHKCD, secchkcd);
         }
-        // @AGG remove this after fixing PeekCP() ? 
+        // @AGG remove this after fixing PeekCP() ?
         //adjustLengths(1); // @AGG added this after some debugging
         return secchkcd;
     }
-    
+
     // The Security Token Byte String is information provided and used
     // by the various security mechanisms.
     private byte[] parseSECTKN(boolean skip) {
@@ -1550,13 +1550,13 @@ public class DRDAConnectResponse extends DRDAResponse {
         }
         return readBytes();
     }
-    
+
     // Security Mechanims.
     private int[] parseSECMEC() {
         parseLengthAndMatchCodePoint(CodePoint.SECMEC);
         return readUnsignedShortList();
     }
-    
+
     // Parse the reply for the Exchange Server Attributes Command.
     // This method handles the parsing of all command replies and reply data
     // for the excsat command.
@@ -1567,7 +1567,7 @@ public class DRDAConnectResponse extends DRDAResponse {
         }
         parseEXCSATRD();
     }
-    
+
     private void parseExchangeServerAttributesError() {
         int peekCP = peekCodePoint();
         throw new IllegalStateException(String.format("Invalid codepoint: %02x", peekCP));
@@ -1582,7 +1582,7 @@ public class DRDAConnectResponse extends DRDAResponse {
         // parseCommonError(peekCP);
         // }
     }
-    
+
     // Command Not Supported Reply Message indicates that the specified
     // command is not recognized or not supported for the
     // specified target.  The reply message can be returned
@@ -1657,20 +1657,20 @@ public class DRDAConnectResponse extends DRDAResponse {
 //                Integer.toHexString(codpnt)));
         throw new IllegalStateException("DRDA_DDM_COMMAND_NOT_SUPPORTED: " + Integer.toHexString(codpnt));
     }
-    
+
     // The Code Point Data specifies a scalar value that is an architected code point.
     private int parseCODPNT() {
         parseLengthAndMatchCodePoint(CodePoint.CODPNT);
         return parseCODPNTDR();
     }
-    
+
     // Code Point Data Representation specifies the data representation
     // of a dictionary codepoint.  Code points are hexadecimal aliases for DDM
     // named terms.
     private int parseCODPNTDR() {
         return readUnsignedShort();
     }
-    
+
     // The Server Attributes Reply Data (EXCSATRD) returns the following
     // information in response to an EXCSAT command:
     // - the target server's class name
@@ -1693,12 +1693,12 @@ public class DRDAConnectResponse extends DRDAResponse {
         String srvclsnm = null;
         boolean srvnamReceived = false;
         boolean srvrlslvReceived = false;
-        
+
         parseLengthAndMatchCodePoint(CodePoint.EXCSATRD);
         pushLengthOnCollectionStack();
         int peekCP = peekCodePoint();
         while (peekCP != END_OF_COLLECTION) {
-            
+
             boolean foundInPass = false;
 
             if (peekCP == CodePoint.EXTNAM) {
@@ -1763,19 +1763,19 @@ public class DRDAConnectResponse extends DRDAResponse {
             }
 
             if (!foundInPass) {
-            	throwUnknownCodepoint(peekCP);
+              throwUnknownCodepoint(peekCP);
             }
-            
+
             if (!srvrlslvReceived)
               throwMissingRequiredCodepoint("SRVRLSLV", CodePoint.SRVRLSLV);
 
         }
-        
+
         ddmCollectionLenStack.pop();
         // according the the DDM book, all these instance variables are optional
         //netConnection.setServerAttributeData(srvclsnm, srvrlslv);
     }
-    
+
     // Manager-Level List.
     // Specifies a list of code points and support levels for the
     // classes of managers a server supports.
@@ -1817,7 +1817,7 @@ public class DRDAConnectResponse extends DRDAResponse {
             doSyntaxrmSemantics(CodePoint.SYNERRCD_OBJ_LEN_NOT_ALLOWED);
         }
         int managerCount = managerListLength / 4;
-        
+
         // the managerCount should be equal to the same number of
         // managers sent on the excsat.
 
@@ -1828,7 +1828,7 @@ public class DRDAConnectResponse extends DRDAResponse {
             // first two byte are the manager's codepoint, next two bytes are the level.
             int managerCodePoint = readUnsignedShort(); //buffer.readUnsignedShort(); //parseCODPNTDR();
             int managerLevel = readUnsignedShort(); //buffer.readUnsignedShort(); // parseMGRLVLN();
-            
+
             // TODO @AGG: decide which manager levels we should support
             // check each manager to make sure levels are within proper limits
             // for this driver.  Also make sure unexpected managers are not returned.

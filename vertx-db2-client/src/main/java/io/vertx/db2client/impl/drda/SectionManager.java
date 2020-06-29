@@ -19,37 +19,37 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SectionManager {
-    
+
     private final List<DB2Package> pkgs = new ArrayList<>(6);
     private final Section staticSection;
-    
+
     SectionManager() {
-    	// by default there are 3 small and 3 large packages
+      // by default there are 3 small and 3 large packages
         for (int i = 0; i < 3; i++)
           pkgs.add(new DB2Package(true, i));
         for (int i = 0; i < 3; i++)
           pkgs.add(new DB2Package(false, i));
         staticSection = new Section.ImmediateSection(pkgs.get(3));
     }
-    
+
     void configureForZOS() {
       // DB2/Z doesn't have small packages by default -- remove them
       pkgs.removeIf(DB2Package::isSmallPackage);
     }
-    
+
     @Override
     public String toString() {
-    	StringBuilder sb = new StringBuilder("SectionManager info:\n");
-    	for (DB2Package p : pkgs)
-    		sb.append("  ").append(p).append("\n");
-    	sb.append(staticSection);
-    	return sb.toString();
+      StringBuilder sb = new StringBuilder("SectionManager info:\n");
+      for (DB2Package p : pkgs)
+        sb.append("  ").append(p).append("\n");
+      sb.append(staticSection);
+      return sb.toString();
     }
-    
+
     public int sectionsInUse() {
-    	return pkgs.stream().mapToInt(DB2Package::sectionsInUse).sum();
+      return pkgs.stream().mapToInt(DB2Package::sectionsInUse).sum();
     }
-    
+
     public Section getSection(String sql) {
       if (DRDAQueryRequest.isQuery(sql) ||
           "COMMIT".equalsIgnoreCase(sql) ||
@@ -59,14 +59,14 @@ public class SectionManager {
         return staticSection;
       }
     }
-    
+
     private Section getDynamicSection() {
-    	for (DB2Package p : pkgs) {
-    		Section s = p.getFreeSection();
-    		if (s != null)
-    			return s;
-    	}
-    	throw new IllegalStateException("All sections are in use: " + this);
+      for (DB2Package p : pkgs) {
+        Section s = p.getFreeSection();
+        if (s != null)
+          return s;
+      }
+      throw new IllegalStateException("All sections are in use: " + this);
     }
 
 }

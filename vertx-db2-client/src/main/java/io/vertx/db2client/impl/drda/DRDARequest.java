@@ -32,15 +32,15 @@ import java.util.Hashtable;
 import io.netty.buffer.ByteBuf;
 
 public abstract class DRDARequest {
-    
+
     // Product Identifiers as defined by the Open Group.
     public  static  final   String  DB2_DRDA_SERVER_ID = "CSS";
     public  static  final   String  DB2_DRDA_CLIENT_ID = "DNC";
-    
+
     final ByteBuf buffer;
-    
+
     protected final ConnectionMetaData metadata;
-    
+
     Deque<Integer> markStack = new ArrayDeque<>(4);
 
     //  This Object tracks the location of the current
@@ -54,12 +54,12 @@ public abstract class DRDARequest {
     private int correlationID_ = 0;
 
     private boolean simpleDssFinalize = false;
-    
+
     public DRDARequest(ByteBuf buffer, ConnectionMetaData metadata) {
         this.buffer = buffer;
         this.metadata = metadata;
     }
-    
+
     String getHostname() {
         try {
             return Inet4Address.getLocalHost().getHostAddress();
@@ -68,7 +68,7 @@ public abstract class DRDARequest {
             return "localhost";
         }
     }
-    
+
     // creates an request dss in the buffer to contain a ddm command
     // object.  calling this method means any previous dss objects in
     // the buffer are complete and their length and chaining bytes can
@@ -76,7 +76,7 @@ public abstract class DRDARequest {
     protected final void createCommand() {
         buildDss(false, false, false, DssConstants.GDSFMT_RQSDSS, ++correlationID_, false);
     }
-    
+
     private final void buildDss(boolean dssHasSameCorrelator, boolean chainedToNextStructure,
             boolean nextHasSameCorrelator, int dssType, int corrId, boolean simpleFinalizeBuildingNextDss) {
         if (doesRequestContainData()) {
@@ -116,7 +116,7 @@ public abstract class DRDARequest {
 
         simpleDssFinalize = simpleFinalizeBuildingNextDss;
     }
-    
+
     final void createEncryptedCommandData() {
         // TODO: @AGG encryption here
 //        if (netAgent_.netConnection_.getSecurityMechanism() == NetConfiguration.SECMEC_EUSRIDDTA ||
@@ -131,7 +131,7 @@ public abstract class DRDARequest {
                     false);
 //        }
     }
-    
+
     // used to finialize a dss which is already in the buffer
     // before another dss is built.  this includes updating length
     // bytes and chaining bits.
@@ -147,7 +147,7 @@ public abstract class DRDARequest {
         }
         buffer.setByte(pos, value);
     }
-    
+
     /**
      * Signal the completion of a DSS Layer A object.
      * <p>
@@ -245,7 +245,7 @@ public abstract class DRDARequest {
         // insert the length bytes in the 6 byte dss header.
         buffer.setShort(dssLengthLocation_, (short) totalSize);
     }
-    
+
     // Called to update the last ddm length bytes marked (lengths are updated
     // in the reverse order that they are marked).  It is up to the caller
     // to make sure length bytes were marked before calling this method.
@@ -301,7 +301,7 @@ public abstract class DRDARequest {
         // write the 2 byte length field (2 bytes before codepoint).
         buffer.setShort(lengthLocation, (short) length);
     }
-    
+
     // this method writes a 4 byte length/codepoint pair plus the bytes contained
     // in array buff to the buffer.
     // the 2 length bytes in the llcp will contain the length of the data plus
@@ -323,7 +323,7 @@ public abstract class DRDARequest {
         ensureLength(length);
         buffer.writeBytes(buff, start, length);
     }
-    
+
     // this method inserts binary data into the buffer and pads the
     // data with the padByte if the data length is less than the paddedLength.
     // Not: this method is not to be used for truncation and buff.length
@@ -333,26 +333,26 @@ public abstract class DRDARequest {
         buffer.writeBytes(buff);
         padBytes(padByte, paddedLength - buff.length);
     }
-    
+
     final void writeScalarString(int codePoint, String string) {
         writeScalarString(codePoint, string, 0,Integer.MAX_VALUE,null);
-    } 
-    
+    }
+
     /**
      *  insert a 4 byte length/codepoint pair plus ddm character data into
      * the buffer.  This method assumes that the String argument can be
      * converted by the ccsid manager.  This should be fine because usually
      * there are restrictions on the characters which can be used for ddm
-     * character data. 
+     * character data.
      * The two byte length field will contain the length of the character data
      * and the length of the 4 byte llcp.  This method does not handle
      * scenarios which require extended length bytes.
-     * 
-     * @param codePoint  codepoint to write 
+     *
+     * @param codePoint  codepoint to write
      * @param string     value
-     * @param byteMinLength minimum length. String will be padded with spaces 
+     * @param byteMinLength minimum length. String will be padded with spaces
      * if value is too short. Assumes space character is one byte.
-     * @param byteLengthLimit  Limit to string length. SQLException will be 
+     * @param byteLengthLimit  Limit to string length. SQLException will be
      * thrown if we exceed this limit.
      * @param sqlState  SQLState to throw with string as param if byteLengthLimit
      * is exceeded.
@@ -380,7 +380,7 @@ public abstract class DRDARequest {
         // length field itself and two bytes for the codepoint.
         buffer.setShort(lengthPos, (short) (stringByteLength + 4));
     }
-    
+
     private void writeLidAndLengths(int[][] lidAndLengthOverrides, int count, int offset) {
         ensureLength(count * 3);
         for (int i = 0; i < count; i++, offset++) {
@@ -388,7 +388,7 @@ public abstract class DRDARequest {
             buffer.writeShort((short) lidAndLengthOverrides[offset][1]);
         }
     }
-    
+
     // if mdd overrides are not required, lids and lengths are copied straight into the
     // buffer.
     // otherwise, lookup the protocolType in the map.  if an entry exists, substitute the
@@ -418,7 +418,7 @@ public abstract class DRDARequest {
             }
         }
     }
-    
+
     // helper method to calculate the minimum number of extended length bytes needed
     // for a ddm.  a return value of 0 indicates no extended length needed.
     private final int calculateExtendedLengthByteCount(long ddmSize) //throws SQLException
@@ -437,7 +437,7 @@ public abstract class DRDARequest {
             return 8;
         }
     }
-    
+
     /**
      * Encode a string and put it into the buffer. A larger buffer will be
      * allocated if the current buffer is too small to hold the entire string.
@@ -450,7 +450,7 @@ public abstract class DRDARequest {
         buffer.writeCharSequence(string, metadata.getCCSID());
         return buffer.writerIndex() - startPos;
     }
-    
+
     // insert a 4 byte length/codepoint pair into the buffer.
     // total of 4 bytes inserted in buffer.
     // Note: the length value inserted in the buffer is the same as the value
@@ -460,7 +460,7 @@ public abstract class DRDARequest {
         buffer.writeShort((short) length);
         buffer.writeShort((short) codePoint);
     }
-    
+
     // insert 3 unsigned bytes into the buffer.  this was
     // moved up from NetStatementRequest for performance
     final void buildTripletHeader(int tripletLength,
@@ -471,7 +471,7 @@ public abstract class DRDARequest {
         buffer.writeByte((byte) tripletType);
         buffer.writeByte((byte) tripletId);
     }
-    
+
     /**
      * Writes a long into the buffer, using six bytes.
      */
@@ -480,46 +480,46 @@ public abstract class DRDARequest {
         buffer.writeShort((short) (v >> 32));
         buffer.writeInt((int) v);
     }
-    
+
     /**
      * Writes a LocalDate to the buffer in the standard SQL format using UTF8 encoding
      */
     final void writeDate(LocalDate date) {
-    	ensureLength(10);
-    	String d = date.format(DRDAConstants.DB2_DATE_FORMAT);
-    	buffer.writeCharSequence(d, StandardCharsets.UTF_8);
+      ensureLength(10);
+      String d = date.format(DRDAConstants.DB2_DATE_FORMAT);
+      buffer.writeCharSequence(d, StandardCharsets.UTF_8);
     }
-    
+
     final void writeDate(java.sql.Date date) {
-    	writeDate(date.toLocalDate());
+      writeDate(date.toLocalDate());
     }
-    
+
     /**
      * Writes a LocalTime to the buffer in the standard SQL format using UTF8 encoding
      */
     final void writeTime(LocalTime time) {
-    	ensureLength(8);
-    	String t = time.format(DRDAConstants.DB2_TIME_FORMAT);
-    	buffer.writeCharSequence(t, StandardCharsets.UTF_8);
+      ensureLength(8);
+      String t = time.format(DRDAConstants.DB2_TIME_FORMAT);
+      buffer.writeCharSequence(t, StandardCharsets.UTF_8);
     }
-    
+
     final void writeTime(java.sql.Time time) {
-    	writeTime(time.toLocalTime());
+      writeTime(time.toLocalTime());
     }
-    
+
     /**
      * Writes a LocalTime to the buffer in the standard SQL format using UTF8 encoding
      */
     final void writeTimestamp(LocalDateTime ts) {
-    	ensureLength(26);
-    	String t = ts.format(DRDAConstants.DB2_TIMESTAMP_FORMAT);
-    	buffer.writeCharSequence(t, StandardCharsets.UTF_8);
+      ensureLength(26);
+      String t = ts.format(DRDAConstants.DB2_TIMESTAMP_FORMAT);
+      buffer.writeCharSequence(t, StandardCharsets.UTF_8);
     }
-    
+
     final void writeTimestamp(java.sql.Timestamp timestamp) {
-    	writeTimestamp(timestamp.toLocalDateTime());
+      writeTimestamp(timestamp.toLocalDateTime());
     }
-    
+
     // insert a java.math.BigDecimal into the buffer.
     final void writeBigDecimal(BigDecimal v,
                                int declaredPrecision,
@@ -531,7 +531,7 @@ public abstract class DRDARequest {
                 v, declaredPrecision, declaredScale);
         buffer.writerIndex(buffer.writerIndex() + length);
     }
-    
+
     // follows the TYPDEF rules (note: don't think ddm char data is ever length
     // delimited)
     // Will write a varchar mixed or single
@@ -543,18 +543,18 @@ public abstract class DRDARequest {
         }
         writeLDBytes(b);
     }
-    
+
     final void writeLDBytes(byte[] bytes) {
         buffer.writeShort(bytes.length);
         buffer.writeBytes(bytes);
 //        writeLDBytesX(bytes.length, bytes);
     }
-    
+
     final void writeLDBytes(ByteBuf bytes) {
-    	buffer.writeShort(bytes.readableBytes());
-    	buffer.writeBytes(bytes, bytes.readerIndex(), bytes.readableBytes());
+      buffer.writeShort(bytes.readableBytes());
+      buffer.writeBytes(bytes, bytes.readerIndex(), bytes.readableBytes());
     }
-    
+
     // insert a 4 byte length/codepoint pair and a 1 byte unsigned value into the buffer.
     // total of 5 bytes inserted in buffer.
     final void writeScalar1Byte(int codePoint, int value) {
@@ -564,7 +564,7 @@ public abstract class DRDARequest {
         buffer.writeShort((short) codePoint);
         buffer.writeByte((byte) value);
     }
-    
+
     final void writeScalar2Bytes(int codePoint, int value) {
         ensureLength(6);
         buffer.writeByte((byte) 0x00);
@@ -572,7 +572,7 @@ public abstract class DRDARequest {
         buffer.writeShort((short) codePoint);
         buffer.writeShort((short) value);
     }
-    
+
     // insert a 4 byte length/codepoint pair and a 4 byte unsigned value into the
     // buffer.  total of 8 bytes inserted in the buffer.
     final void writeScalar4Bytes(int codePoint, long value) {
@@ -592,7 +592,7 @@ public abstract class DRDARequest {
         buffer.writeShort((short) codePoint);
         buffer.writeLong(value);
     }
-    
+
     // mark the location of a two byte ddm length field in the buffer,
     // skip the length bytes for later update, and insert a ddm codepoint
     // into the buffer.  The value of the codepoint is not checked.
@@ -609,7 +609,7 @@ public abstract class DRDARequest {
         buffer.writerIndex(buffer.writerIndex() + 2);
         buffer.writeShort((short) codePoint);
     }
-    
+
     // insert the padByte into the buffer by length number of times.
     private final void padBytes(byte padByte, int length) {
         ensureLength(length);
@@ -617,11 +617,11 @@ public abstract class DRDARequest {
             buffer.writeByte(padByte);
         }
     }
-    
+
     void ensureLength(int length) {
         buffer.ensureWritable(length);
     }
-    
+
     // method to determine if any data is in the request.
     // this indicates there is a dss object already in the buffer.
     private final boolean doesRequestContainData() {

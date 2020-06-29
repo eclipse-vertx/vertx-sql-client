@@ -32,16 +32,16 @@ import io.vertx.core.net.JksOptions;
 import io.vertx.db2client.DB2ConnectOptions;
 
 public class DB2Resource extends ExternalResource {
-	
-	private static final boolean CUSTOM_DB2 = get("DB2_HOST") != null;
-    
+
+  private static final boolean CUSTOM_DB2 = get("DB2_HOST") != null;
+
     /**
      * In order for this container to be reused across test runs you need to add the line:
      * <code>testcontainers.reuse.enable=true</code> to your <code>~/.testcontainers.properties</code>
      * file (create it if it does not exist)
      */
     public static final DB2Resource SHARED_INSTANCE = new DB2Resource();
-    
+
     private boolean started = false;
     private boolean isDb2OnZ = false;
     private DB2ConnectOptions options;
@@ -58,63 +58,63 @@ public class DB2Resource extends ExternalResource {
                 .withRegEx(".*VERTX SSH SETUP DONE.*")
                 .withStartupTimeout(Duration.ofMinutes(10)))
             .withReuse(true);
-    
+
     @Override
     protected void before() throws Throwable {
         if (started)
           return;
 
-    	if (!CUSTOM_DB2) {
-    		instance.start();
-	        options = new DB2ConnectOptions()
-	                .setHost(instance.getContainerIpAddress())
-	                .setPort(instance.getMappedPort(50000))
-	                .setDatabase(instance.getDatabaseName())
-	                .setUser(instance.getUsername())
-	                .setPassword(instance.getPassword());
-    	} else {
-    	    System.out.println("Using custom DB2 instance as requested via DB2_HOST=" + get("DB2_HOST"));
-    	    Objects.requireNonNull(get("DB2_PORT"), "Must set DB2_PORT to a non-null value if DB2_HOST is set");
-    	    Objects.requireNonNull(get("DB2_NAME"), "Must set DB2_NAME to a non-null value if DB2_HOST is set");
-    	    Objects.requireNonNull(get("DB2_USER"), "Must set DB2_USER to a non-null value if DB2_HOST is set");
-    	    Objects.requireNonNull(get("DB2_PASS"), "Must set DB2_PASS to a non-null value if DB2_HOST is set");
-	        options = new DB2ConnectOptions()
-	                .setHost(get("DB2_HOST"))
-	                .setPort(Integer.valueOf(get("DB2_PORT")))
-	                .setDatabase(get("DB2_NAME"))
-	                .setUser(get("DB2_USER"))
-	                .setPassword(get("DB2_PASS"));
-    	}
-    	String jdbcUrl = "jdbc:db2://" + options.getHost() + ":" + options.getPort() + "/" + options.getDatabase();
-    	System.out.println("Initializing DB2 database at: " + jdbcUrl);
-    	try (Connection con = DriverManager.getConnection(jdbcUrl, options.getUser(), options.getPassword())) {
-    	  runInitSql(con);
-    	}
-    	started = true;
+      if (!CUSTOM_DB2) {
+        instance.start();
+          options = new DB2ConnectOptions()
+                  .setHost(instance.getContainerIpAddress())
+                  .setPort(instance.getMappedPort(50000))
+                  .setDatabase(instance.getDatabaseName())
+                  .setUser(instance.getUsername())
+                  .setPassword(instance.getPassword());
+      } else {
+          System.out.println("Using custom DB2 instance as requested via DB2_HOST=" + get("DB2_HOST"));
+          Objects.requireNonNull(get("DB2_PORT"), "Must set DB2_PORT to a non-null value if DB2_HOST is set");
+          Objects.requireNonNull(get("DB2_NAME"), "Must set DB2_NAME to a non-null value if DB2_HOST is set");
+          Objects.requireNonNull(get("DB2_USER"), "Must set DB2_USER to a non-null value if DB2_HOST is set");
+          Objects.requireNonNull(get("DB2_PASS"), "Must set DB2_PASS to a non-null value if DB2_HOST is set");
+          options = new DB2ConnectOptions()
+                  .setHost(get("DB2_HOST"))
+                  .setPort(Integer.valueOf(get("DB2_PORT")))
+                  .setDatabase(get("DB2_NAME"))
+                  .setUser(get("DB2_USER"))
+                  .setPassword(get("DB2_PASS"));
+      }
+      String jdbcUrl = "jdbc:db2://" + options.getHost() + ":" + options.getPort() + "/" + options.getDatabase();
+      System.out.println("Initializing DB2 database at: " + jdbcUrl);
+      try (Connection con = DriverManager.getConnection(jdbcUrl, options.getUser(), options.getPassword())) {
+        runInitSql(con);
+      }
+      started = true;
     }
-    
-	public DB2ConnectOptions options() {
-		return new DB2ConnectOptions(options);
-	}
-	
-	public DB2ConnectOptions secureOptions() {
-	  int securePort = CUSTOM_DB2 ? 50001 : instance.getMappedPort(50001);
+
+  public DB2ConnectOptions options() {
+    return new DB2ConnectOptions(options);
+  }
+
+  public DB2ConnectOptions secureOptions() {
+    int securePort = CUSTOM_DB2 ? 50001 : instance.getMappedPort(50001);
       return new DB2ConnectOptions(options())
           .setPort(securePort)
           .setSsl(true)
           .setTrustStoreOptions(new JksOptions()
               .setPath("src/test/resources/tls/db2-keystore.p12")
               .setPassword("db2test"));
-	}
-	
-	public boolean isZOS() {
-	  return isDb2OnZ;
-	}
-	
-	private static String get(String name) {
-		return System.getProperty(name, System.getenv(name));
-	}
-	
+  }
+
+  public boolean isZOS() {
+    return isDb2OnZ;
+  }
+
+  private static String get(String name) {
+    return System.getProperty(name, System.getenv(name));
+  }
+
     private void runInitSql(Connection con) throws Exception {
       isDb2OnZ = con.getMetaData().getDatabaseProductVersion().startsWith("DSN");
       String currentLine = "";
@@ -139,8 +139,8 @@ public class DB2Resource extends ExternalResource {
           }
       }
       if (!currentLine.isEmpty()) {
-    	  throw new IllegalStateException("Dangling SQL on init script. Ensure all statements are terminated with ';' char. SQL: " + currentLine);
+        throw new IllegalStateException("Dangling SQL on init script. Ensure all statements are terminated with ';' char. SQL: " + currentLine);
       }
   }
-    
+
 }

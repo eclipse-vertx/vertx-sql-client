@@ -37,14 +37,14 @@ import org.junit.runner.RunWith;
 public class DB2ConnectionTest extends ConnectionTestBase {
   @ClassRule
   public static DB2Resource rule = DB2Resource.SHARED_INSTANCE;
-  
-	@Rule
-	public TestName testName = new TestName();
 
-	@Before
-	public void printTestName(TestContext ctx) throws Exception {
-		System.out.println(">>> BEGIN " + getClass().getSimpleName() + "." + testName.getMethodName());
-	}
+  @Rule
+  public TestName testName = new TestName();
+
+  @Before
+  public void printTestName(TestContext ctx) throws Exception {
+    System.out.println(">>> BEGIN " + getClass().getSimpleName() + "." + testName.getMethodName());
+  }
 
   @Override
   public void setUp() throws Exception {
@@ -58,7 +58,7 @@ public class DB2ConnectionTest extends ConnectionTestBase {
     connector.close();
     super.tearDown(ctx);
   }
-  
+
   /**
    * Override this this test so we can test for specific parts of the exception.
    * There can be two potential error paths:
@@ -73,18 +73,18 @@ public class DB2ConnectionTest extends ConnectionTestBase {
   public void testConnectInvalidDatabase(TestContext ctx) {
     options.setDatabase("bogusdb");
     connect(ctx.asyncAssertFailure(err -> {
-    	ctx.assertTrue(err instanceof DB2Exception);
-    	DB2Exception ex = (DB2Exception) err;
-    	assertContains(ctx, ex.getMessage(), "bogusdb", "The connection was closed by the database server");
-    	assertContains(ctx, ex.getSqlState(), 
-    	    SQLState.NET_DATABASE_NOT_FOUND, 
-    	    SQLState.AUTH_DATABASE_CONNECTION_REFUSED);
-    	ctx.assertTrue(ex.getErrorCode() == SqlCode.RDB_NOT_FOUND ||
-    			       ex.getErrorCode() == SqlCode.CONNECTION_REFUSED,
-    			       "Unexpected error code: " + ex.getErrorCode());
+      ctx.assertTrue(err instanceof DB2Exception);
+      DB2Exception ex = (DB2Exception) err;
+      assertContains(ctx, ex.getMessage(), "bogusdb", "The connection was closed by the database server");
+      assertContains(ctx, ex.getSqlState(),
+          SQLState.NET_DATABASE_NOT_FOUND,
+          SQLState.AUTH_DATABASE_CONNECTION_REFUSED);
+      ctx.assertTrue(ex.getErrorCode() == SqlCode.RDB_NOT_FOUND ||
+                 ex.getErrorCode() == SqlCode.CONNECTION_REFUSED,
+                 "Unexpected error code: " + ex.getErrorCode());
     }));
   }
-  
+
   @Override
   protected void validateDatabaseMetaData(TestContext ctx, DatabaseMetadata md) {
     ctx.assertEquals(11, md.majorVersion());

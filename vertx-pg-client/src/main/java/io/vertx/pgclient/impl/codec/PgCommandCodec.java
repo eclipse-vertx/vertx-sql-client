@@ -103,7 +103,7 @@ abstract class PgCommandCodec<R, C extends CommandBase<R>> {
   }
 
   void handleAuthenticationSaslFinal(ByteBuf in) {
-	logger.warn(getClass().getSimpleName() + " should handle message AuthenticationSaslFinal");
+  logger.warn(getClass().getSimpleName() + " should handle message AuthenticationSaslFinal");
   }
 
   void handleAuthenticationClearTextPassword() {
