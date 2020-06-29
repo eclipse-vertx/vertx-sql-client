@@ -23,10 +23,17 @@ import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 public interface Connection extends CommandScheduler  {
 
+  /**
+   * @return {@code true} when {@code error} is an indeterminate data type reported when preparing a statement
+   */
+  default boolean isIndeterminatePreparedStatementError(Throwable error) {
+    return false;
+  }
+
   void init(Holder holder);
 
   boolean isSsl();
-  
+
   DatabaseMetadata getDatabaseMetaData();
 
   void close(Holder holder, Promise<Void> promise);

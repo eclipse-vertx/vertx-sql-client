@@ -37,6 +37,7 @@ import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
 import java.util.ArrayDeque;
+import java.util.List;
 import java.util.Map;
 
 import static io.vertx.pgclient.impl.util.Util.writeCString;
@@ -318,33 +319,26 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     out.setInt(pos + 1, out.writerIndex() - pos- 1);
   }
 
-  /**
-   * <p>
-   * The message contains a textual SQL query string.
-   * <p>
-   * The response is either {@link ParseComplete} or {@link ErrorResponse}
-   */
-  void writeParse(Parse parse) {
+  void writeParse(String sql, long statement, DataType[] parameterTypes) {
     ensureBuffer();
     int pos = out.writerIndex();
     out.writeByte(PARSE);
     out.writeInt(0);
-    if (parse.statement == 0) {
+    if (statement == 0) {
       out.writeByte(0);
     } else {
-      out.writeLong(parse.statement);
+      out.writeLong(statement);
     }
-    Util.writeCStringUTF8(out, parse.query);
-    // no parameter data types (OIDs)
-    // if(paramDataTypes == null) {
-    out.writeShort(0);
-    // } else {
-    //   // Parameter data types (OIDs)
-    //   out.writeShort(paramDataTypes.length);
-    //   for (int paramDataType : paramDataTypes) {
-    //     out.writeInt(paramDataType);
-    //   }
-    // }
+    Util.writeCStringUTF8(out, sql);
+    if (parameterTypes == null) {
+      // Let pg figure out
+      out.writeShort(0);
+    } else {
+      out.writeShort(parameterTypes.length);
+      for (DataType parameterType : parameterTypes) {
+        out.writeInt(parameterType.id);
+      }
+    }
     out.setInt(pos + 1, out.writerIndex() - pos - 1);
   }
 

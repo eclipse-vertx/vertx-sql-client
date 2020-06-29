@@ -19,8 +19,19 @@ package io.vertx.pgclient;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.pgclient.data.Box;
+import io.vertx.pgclient.data.Circle;
+import io.vertx.pgclient.data.Interval;
+import io.vertx.pgclient.data.Line;
+import io.vertx.pgclient.data.LineSegment;
+import io.vertx.pgclient.data.Path;
+import io.vertx.pgclient.data.Point;
+import io.vertx.pgclient.data.Polygon;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowIterator;
@@ -31,8 +42,16 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.lang.reflect.Array;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
@@ -187,11 +206,8 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
   public void testPrepareCursorValidationError(TestContext ctx) {
     testValidationError(ctx, (conn, cont) -> {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
-        try {
-          ps.cursor(INVALID_TUPLE);
-        } catch (Exception e) {
-          cont.handle(e);
-        }
+        Cursor cursor = ps.cursor(INVALID_TUPLE);
+        cursor.read(10, ctx.asyncAssertFailure(cont));
       }));
     });
   }
@@ -208,14 +224,18 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
   @Test
   public void testPreparedQueryValidationError(TestContext ctx) {
     testValidationError(ctx, (conn, cont) -> {
-      conn.preparedQuery("SELECT * FROM Fortune WHERE id=$1").execute(INVALID_TUPLE, ctx.asyncAssertFailure(cont));
+      conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> ps
+        .query()
+        .execute(INVALID_TUPLE, ctx.asyncAssertFailure(cont))));
     });
   }
 
   @Test
   public void testPreparedBatchValidationError(TestContext ctx) {
     testValidationError(ctx, (conn, cont) -> {
-      conn.preparedQuery("SELECT * FROM Fortune WHERE id=$1").executeBatch(Collections.singletonList(INVALID_TUPLE), ctx.asyncAssertFailure(cont));
+      conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> ps
+        .query()
+        .executeBatch(Collections.singletonList(INVALID_TUPLE), ctx.asyncAssertFailure(cont))));
     });
   }
 
@@ -224,11 +244,12 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     Async async = ctx.async();
     PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
       conn
-        .preparedQuery("SELECT 1 WHERE $1::INT4 IS NULL")
-        .execute(Tuple.tuple().addInteger(null), ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.size());
-          async.complete();
-        }));
+        .prepare("SELECT 1 WHERE $1::INT4 IS NULL", ctx.asyncAssertSuccess(ps ->
+          ps.query()
+            .execute(Tuple.tuple().addInteger(null), ctx.asyncAssertSuccess(result -> {
+              ctx.assertEquals(1, result.size());
+              async.complete();
+            }))));
     }));
   }
 
@@ -311,6 +332,189 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
               conn.close();
             }));
           }));
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testInferDataTypeString(TestContext ctx) {
+    testInferDataType(ctx, String.class, "WORLD", "WORLD");
+  }
+
+  @Test
+  public void testInferDataTypeBoolean(TestContext ctx) {
+    testInferDataType(ctx, Boolean.class, true, "t");
+  }
+
+  @Test
+  public void testInferDataTypeShort(TestContext ctx) {
+    testInferDataType(ctx, Short.class, (short)2, "2");
+  }
+
+  @Test
+  public void testInferDataTypeInteger(TestContext ctx) {
+    testInferDataType(ctx, Integer.class, Integer.MAX_VALUE, "" + Integer.MAX_VALUE);
+  }
+
+  @Test
+  public void testInferDataTypeLong(TestContext ctx) {
+    testInferDataType(ctx, Long.class, Long.MAX_VALUE, "" + Long.MAX_VALUE);
+  }
+
+  @Test
+  public void testInferDataTypeFloat(TestContext ctx) {
+    testInferDataType(ctx, Float.class, 0F, "0");
+  }
+
+  @Test
+  public void testInferDataTypeDouble(TestContext ctx) {
+    testInferDataType(ctx, Double.class, 0D, "0");
+  }
+
+  @Test
+  public void testInferDataTypeLocalDate(TestContext ctx) {
+    LocalDate value = LocalDate.now();
+    testInferDataType(ctx, LocalDate.class, value, value.toString());
+  }
+
+  @Test
+  public void testInferDataTypeLocalDateTime(TestContext ctx) {
+    LocalDateTime value = LocalDateTime.of(LocalDate.now(), LocalTime.NOON);
+    String suffix = value.toLocalDate() + " " + value.toLocalTime().format(DateTimeFormatter.ISO_LOCAL_TIME);
+    testInferDataType(ctx, LocalDateTime.class, value, suffix, "{\"" + suffix + "\"}");
+  }
+
+  @Test
+  public void testInferDataTypeOffsetDateTime(TestContext ctx) {
+    OffsetDateTime value = OffsetDateTime.of(LocalDateTime.of(LocalDate.now(), LocalTime.NOON), ZoneOffset.UTC);
+    String suffix = value.toLocalDate() + " " + value.toLocalTime().format(DateTimeFormatter.ISO_LOCAL_TIME) + "+00";
+    testInferDataType(ctx, OffsetDateTime.class, value, suffix, "{\"" + suffix + "\"}");
+  }
+
+  @Test
+  public void testInferDataTypeOffsetInterval(TestContext ctx) {
+    Interval value = Interval.of(1);
+    testInferDataType(ctx, Interval.class, value, "1 year", "{\"1 year\"}");
+  }
+
+  @Test
+  public void testInferDataTypeBuffer(TestContext ctx) {
+    testInferDataType(ctx, Buffer.class, Buffer.buffer("WORLD"), "\\x574f524c44", "{\"\\\\x574f524c44\"}");
+  }
+
+  @Test
+  public void testInferDataTypeUUID(TestContext ctx) {
+    UUID value = UUID.randomUUID();
+    testInferDataType(ctx, UUID.class, value, "" + value);
+  }
+
+  @Test
+  public void testInferDataTypeJsonObject(TestContext ctx) {
+    JsonObject value = new JsonObject().put("foo", "bar");
+    testInferDataType(ctx, JsonObject.class, value, "" + value, "{\"{\\\"foo\\\":\\\"bar\\\"}\"}");
+  }
+
+  @Test
+  public void testInferDataTypeJsonArray(TestContext ctx) {
+    JsonArray value = new JsonArray().add(1).add("foo").add(true);
+    testInferDataType(ctx, JsonArray.class, value, "" + value, "{\"[1,\\\"foo\\\",true]\"}");
+  }
+
+  @Test
+  public void testInferDataTypePoint(TestContext ctx) {
+    Point value = new Point();
+    testInferDataType(ctx, Point.class, value, "(0,0)", "{\"(0,0)\"}");
+  }
+
+  @Test
+  public void testInferDataTypeLine(TestContext ctx) {
+    Line value = new Line();
+    testInferDataType(ctx, Line.class, value, "{0,0,0}", "{\"{0,0,0}\"}");
+  }
+
+  @Test
+  public void testInferDataTypeLineSegment(TestContext ctx) {
+    LineSegment value = new LineSegment();
+    testInferDataType(ctx, LineSegment.class, value, "[(0,0),(0,0)]", "{\"[(0,0),(0,0)]\"}");
+  }
+
+  @Test
+  public void testInferDataTypeBox(TestContext ctx) {
+    Box value = new Box();
+    testInferDataType(ctx, Box.class, value, "(0,0),(0,0)");
+  }
+
+  @Test
+  public void testInferDataTypePath(TestContext ctx) {
+    Path value = new Path().addPoint(new Point());
+    testInferDataType(ctx, Path.class, value, "((0,0))", "{\"((0,0))\"}");
+  }
+
+  @Test
+  public void testInferDataTypePolygon(TestContext ctx) {
+    Polygon value = new Polygon().addPoint(new Point()).addPoint(new Point()).addPoint(new Point());
+    testInferDataType(ctx, Polygon.class, value, "((0,0),(0,0),(0,0))", "{\"((0,0),(0,0),(0,0))\"}");
+  }
+
+  @Test
+  public void testInferDataTypeCircle(TestContext ctx) {
+    Circle value = new Circle();
+    testInferDataType(ctx, Circle.class, value, "<(0,0),0>", "{\"<(0,0),0>\"}");
+  }
+
+  private <T> void testInferDataType(TestContext ctx, Class<T> type, T value, String suffix) {
+    testInferDataType(ctx, type, value, suffix, "{" + suffix + "}");
+  }
+
+  private <T> void testInferDataType(TestContext ctx, Class<T> type, T value, String suffix1, String suffix2) {
+    PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("SELECT CONCAT('HELLO ', $1)")
+        .execute(Tuple.of(value), ctx.asyncAssertSuccess(result1 -> {
+          Row row1 = result1.iterator().next();
+          ctx.assertEquals("HELLO " + suffix1, row1.getString(0));
+          Object array = Array.newInstance(type, 1);
+          Array.set(array, 0, value);
+          conn.preparedQuery("SELECT CONCAT('HELLO ', $1)")
+            .execute(Tuple.of(array), ctx.asyncAssertSuccess(result2 -> {
+              Row row2 = result2.iterator().next();
+              String v = row2.getString(0);
+              ctx.assertEquals("HELLO " + suffix2, row2.getString(0));
+              conn.close();
+            }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testInferDataTypeFailure(TestContext ctx) {
+    PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("SELECT CONCAT('HELLO', $1)")
+        .execute(Tuple.of(null), ctx.asyncAssertFailure(result -> {
+          conn.close();
+        }));
+    }));
+  }
+
+  @Test
+  public void testInferDataTypeLazy(TestContext ctx) {
+    PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT CONCAT('HELLO', $1)", ctx.asyncAssertSuccess(ps -> {
+        ps.query().execute(Tuple.of("__"), ctx.asyncAssertSuccess(result -> {
+          Row row = result.iterator().next();
+          ctx.assertEquals("HELLO__", row.getString(0));
+          conn.close();
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testInferDataTypeLazyFailure(TestContext ctx) {
+    PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT CONCAT('HELLO', $1)", ctx.asyncAssertSuccess(ps -> {
+        ps.query().execute(Tuple.of(null), ctx.asyncAssertFailure(result -> {
+          conn.close();
         }));
       }));
     }));

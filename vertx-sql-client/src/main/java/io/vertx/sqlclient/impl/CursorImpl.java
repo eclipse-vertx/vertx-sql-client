@@ -22,9 +22,11 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.UUID;
 
@@ -33,17 +35,25 @@ import java.util.UUID;
  */
 public class CursorImpl implements Cursor {
 
+  private final Connection conn;
+  private final QueryTracer tracer;
+  private final ClientMetrics metrics;
   private final PreparedStatementImpl ps;
   private final ContextInternal context;
+  private final boolean autoCommit;
   private final TupleInternal params;
 
   private String id;
   private boolean closed;
   private QueryResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> result;
 
-  CursorImpl(PreparedStatementImpl ps, ContextInternal context, TupleInternal params) {
+  CursorImpl(PreparedStatementImpl ps, Connection conn, QueryTracer tracer, ClientMetrics metrics, ContextInternal context, boolean autoCommit, TupleInternal params) {
     this.ps = ps;
+    this.conn = conn;
+    this.tracer = tracer;
+    this.metrics = metrics;
     this.context = context;
+    this.autoCommit = autoCommit;
     this.params = params;
   }
 
@@ -66,15 +76,22 @@ public class CursorImpl implements Cursor {
   @Override
   public synchronized Future<RowSet<Row>> read(int count) {
     Promise<RowSet<Row>> promise = context.promise();
-    QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(ps.tracer, ps.metrics, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
-    if (id == null) {
-      id = UUID.randomUUID().toString();
-      result = builder.executeExtendedQuery(ps.conn, ps.ps, ps.autoCommit, params, count, id, false, promise);
-    } else if (result.isSuspended()) {
-      result = builder.executeExtendedQuery(ps.conn, ps.ps, ps.autoCommit, params, count, id, true, promise);
-    } else {
-      throw new IllegalStateException();
-    }
+    ps.withPreparedStatement(params, ar -> {
+      if (ar.succeeded()) {
+        PreparedStatement preparedStatement = ar.result();
+        QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(tracer, metrics, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
+        if (id == null) {
+          id = UUID.randomUUID().toString();
+          this.result = builder.executeExtendedQuery(conn, preparedStatement, autoCommit, params, count, id, false, promise);
+        } else if (this.result.isSuspended()) {
+          this.result = builder.executeExtendedQuery(conn, preparedStatement, autoCommit, params, count, id, true, promise);
+        } else {
+          throw new IllegalStateException();
+        }
+      } else {
+        promise.fail(ar.cause());
+      }
+    });
     return promise.future();
   }
 

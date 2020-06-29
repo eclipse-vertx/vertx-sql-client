@@ -173,26 +173,7 @@ public abstract class SocketConnectionBase implements Connection {
         if (queryCmd.ps == null) {
           // Execute prepare
           boolean cache = psCache != null && preparedStatementCacheSqlFilter.test(queryCmd.sql());
-          PrepareStatementCommand prepareCmd = new PrepareStatementCommand(queryCmd.sql(), cache);
-          prepareCmd.handler = ar -> {
-            paused = false;
-            if (ar.succeeded()) {
-              PreparedStatement ps = ar.result();
-              if (cache) {
-                cacheStatement(ps);
-              }
-              queryCmd.ps = ps;
-              String msg = queryCmd.prepare();
-              if (msg != null) {
-                queryCmd.fail(new NoStackTraceThrowable(msg));
-              } else {
-                ctx.write(queryCmd);
-                ctx.flush();
-              }
-            } else {
-              queryCmd.fail(ar.cause());
-            }
-          };
+          PrepareStatementCommand prepareCmd = prepareCommand(queryCmd, cache, false);
           paused = true;
           inflight++;
           cmd = prepareCmd;
@@ -204,6 +185,41 @@ public abstract class SocketConnectionBase implements Connection {
     if (written > 0) {
       ctx.flush();
     }
+  }
+
+  private PrepareStatementCommand prepareCommand(ExtendedQueryCommand<?> queryCmd, boolean cache, boolean sendParameterTypes) {
+    PrepareStatementCommand prepareCmd = new PrepareStatementCommand(queryCmd.sql(), cache, sendParameterTypes ? queryCmd.parameterTypes() : null);
+    prepareCmd.handler = ar -> {
+      paused = false;
+      if (ar.succeeded()) {
+        PreparedStatement ps = ar.result();
+        if (cache) {
+          cacheStatement(ps);
+        }
+        queryCmd.ps = ps;
+        String msg = queryCmd.prepare();
+        if (msg != null) {
+          inflight--;
+          queryCmd.fail(new NoStackTraceThrowable(msg));
+        } else {
+          ChannelHandlerContext ctx = socket.channelHandlerContext();
+          ctx.write(queryCmd);
+          ctx.flush();
+        }
+      } else {
+        Throwable cause = ar.cause();
+        if (isIndeterminatePreparedStatementError(cause) && !sendParameterTypes) {
+          ChannelHandlerContext ctx = socket.channelHandlerContext();
+          // We cannot cache this prepared statement because it might be executed with another type
+          ctx.write(prepareCommand(queryCmd, false, true));
+          ctx.flush();
+        } else {
+          inflight--;
+          queryCmd.fail(cause);
+        }
+      }
+    };
+    return prepareCmd;
   }
 
   protected void handleMessage(Object msg) {

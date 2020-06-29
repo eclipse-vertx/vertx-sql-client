@@ -93,8 +93,9 @@ public class ExtendedQueryCommand<R> extends QueryCommandBase<R> {
   }
 
   /**
+   * Prepare and validate the tuple.
    *
-   * @return
+   * @return {@code null} if the tuple preparation was successfull otherwise the validation error
    */
   public String prepare() {
     if (ps != null) {
@@ -122,6 +123,23 @@ public class ExtendedQueryCommand<R> extends QueryCommandBase<R> {
    */
   public List<Tuple> paramsList() {
     return batch ? (List<Tuple>) tuples : null;
+  }
+
+  /**
+   * @return the list of parameter types built from the tuple
+   */
+  public List<Class<?>> parameterTypes() {
+    Tuple tuple;
+    if (batch) {
+      List<Tuple> list = (List<Tuple>) tuples;
+      if (list.isEmpty()) {
+        return null;
+      }
+      tuple = list.get(0);
+    } else {
+      tuple = (Tuple) tuples;
+    }
+    return tuple.types();
   }
 
   /**

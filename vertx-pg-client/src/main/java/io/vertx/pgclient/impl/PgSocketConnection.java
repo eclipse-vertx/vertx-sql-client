@@ -20,6 +20,7 @@ package io.vertx.pgclient.impl;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.pgclient.PgException;
 import io.vertx.pgclient.impl.codec.PgCodec;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.Notice;
@@ -154,5 +155,14 @@ public class PgSocketConnection extends SocketConnectionBase {
     } else {
       super.doSchedule(cmd, handler);
     }
+  }
+
+  @Override
+  public boolean isIndeterminatePreparedStatementError(Throwable error) {
+    if (error instanceof PgException) {
+      PgException e = (PgException) error;
+      return "42P18".equals(e.getCode());
+    }
+    return false;
   }
 }

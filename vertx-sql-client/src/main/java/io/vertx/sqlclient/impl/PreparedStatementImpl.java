@@ -30,6 +30,7 @@ import io.vertx.sqlclient.RowStream;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.core.*;
+import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.List;
@@ -46,12 +47,18 @@ class PreparedStatementImpl implements PreparedStatement {
     return new PreparedStatementImpl(conn, tracer, metrics, context, ps, autoCommit);
   }
 
-  final Connection conn;
-  final QueryTracer tracer;
-  final ClientMetrics metrics;
-  final ContextInternal context;
-  final io.vertx.sqlclient.impl.PreparedStatement ps;
-  final boolean autoCommit;
+  static PreparedStatement create(Connection conn, QueryTracer tracer, ClientMetrics metrics, ContextInternal context, String sql, boolean autoCommit) {
+    return new PreparedStatementImpl(conn, tracer, metrics, context, sql, autoCommit);
+  }
+
+  private final Connection conn;
+  private final QueryTracer tracer;
+  private final ClientMetrics metrics;
+  private final ContextInternal context;
+  private final String sql;
+  private Promise<io.vertx.sqlclient.impl.PreparedStatement> promise;
+  private Future<io.vertx.sqlclient.impl.PreparedStatement> future;
+  private final boolean autoCommit;
   private final AtomicBoolean closed = new AtomicBoolean();
 
   private PreparedStatementImpl(Connection conn, QueryTracer tracer, ClientMetrics metrics, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
@@ -59,14 +66,49 @@ class PreparedStatementImpl implements PreparedStatement {
     this.tracer = tracer;
     this.metrics = metrics;
     this.context = context;
-    this.ps = ps;
+    this.sql = null;
+    this.promise = null;
+    this.future = Future.succeededFuture(ps);
+    this.autoCommit = autoCommit;
+  }
+
+  private PreparedStatementImpl(Connection conn,
+                                QueryTracer tracer,
+                                ClientMetrics metrics,
+                                ContextInternal context,
+                                String sql,
+                                boolean autoCommit) {
+    this.conn = conn;
+    this.tracer = tracer;
+    this.metrics = metrics;
+    this.context = context;
+    this.sql = sql;
+    this.promise = Promise.promise();
     this.autoCommit = autoCommit;
   }
 
   @Override
   public PreparedQuery<RowSet<Row>> query() {
-    QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(tracer, metrics, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
+    QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(
+      tracer,
+      metrics,
+      RowSetImpl.FACTORY,
+      RowSetImpl.COLLECTOR);
     return new PreparedStatementQuery<>(builder);
+  }
+
+  void withPreparedStatement(Tuple args, Handler<AsyncResult<io.vertx.sqlclient.impl.PreparedStatement>> handler) {
+    if (context == Vertx.currentContext()) {
+      if (future == null) {
+        // Lazy statement;
+        PrepareStatementCommand prepare = new PrepareStatementCommand(sql, true, args.types());
+        conn.schedule(prepare, promise);
+        future = promise.future();
+      }
+      future.onComplete(handler);
+    } else {
+      context.runOnContext(v -> withPreparedStatement(args, handler));
+    }
   }
 
   <R, F extends SqlResult<R>> void execute(Tuple args,
@@ -75,19 +117,33 @@ class PreparedStatementImpl implements PreparedStatement {
                                            boolean suspended,
                                            QueryExecutor<R, ?, F> builder,
                                            Promise<F> p) {
-    if (context == Vertx.currentContext()) {
-      builder.executeExtendedQuery(
-        conn,
-          ps,
-        autoCommit,
-        args,
-        fetch,
-        cursorId,
-        suspended,
-        p);
-    } else {
-      context.runOnContext(v -> execute(args, fetch, cursorId, suspended, builder, p));
-    }
+    withPreparedStatement(args, ar -> {
+      if (ar.succeeded()) {
+        builder.executeExtendedQuery(
+          conn,
+          ar.result(),
+          autoCommit,
+          args,
+          fetch,
+          cursorId,
+          suspended,
+          p);
+      } else {
+        p.fail(ar.cause());
+      }
+    });
+  }
+
+  <R, F extends SqlResult<R>> void executeBatch(List<Tuple> argsList,
+                                                QueryExecutor<R, ?, F> builder,
+                                                Promise<F> p) {
+    withPreparedStatement(argsList.get(0), ar -> {
+      if (ar.succeeded()) {
+        builder.executeBatchQuery(conn, ar.result(), autoCommit, argsList, p);
+      } else {
+        p.fail(ar.cause());
+      }
+    });
   }
 
   @Override
@@ -96,32 +152,33 @@ class PreparedStatementImpl implements PreparedStatement {
   }
 
   private Cursor cursor(TupleInternal args) {
-    String msg = ps.prepare(args);
-    if (msg != null) {
-      throw new IllegalArgumentException(msg);
-    }
-    return new CursorImpl(this, context, args);
+    return new CursorImpl(this, conn, tracer, metrics, context, autoCommit, args);
   }
 
   @Override
   public Future<Void> close() {
     if (closed.compareAndSet(false, true)) {
       Promise<Void> promise = context.promise();
-      CloseStatementCommand cmd = new CloseStatementCommand(ps);
-      conn.schedule(cmd, promise);
+      if (this.promise == null) {
+        CloseStatementCommand cmd = new CloseStatementCommand(future.result());
+        conn.schedule(cmd, promise);
+      } else {
+        if (future == null) {
+          future = this.promise.future();
+          this.promise.fail("Closed");
+        }
+        future.onComplete(ar -> {
+          if (ar.succeeded()) {
+            CloseStatementCommand cmd = new CloseStatementCommand(ar.result());
+            conn.schedule(cmd, promise);
+          } else {
+            promise.complete();
+          }
+        });
+      }
       return promise.future();
     } else {
       return context.failedFuture("Already closed");
-    }
-  }
-
-  <R, F extends SqlResult<R>> void executeBatch(List<Tuple> argsList,
-                                                QueryExecutor<R, ?, F> builder,
-                                                Promise<F> p) {
-    if (context == Vertx.currentContext()) {
-      builder.executeBatchQuery(conn, ps, autoCommit, argsList, p);
-    } else {
-      context.runOnContext(v -> executeBatch(argsList, builder, p));
     }
   }
 
@@ -139,8 +196,14 @@ class PreparedStatementImpl implements PreparedStatement {
   }
 
   void closeCursor(String cursorId, Promise<Void> promise) {
-    CloseCursorCommand cmd = new CloseCursorCommand(cursorId, ps);
-    conn.schedule(cmd, promise);
+    future.onComplete(ar -> {
+      if (ar.succeeded()) {
+        CloseCursorCommand cmd = new CloseCursorCommand(cursorId, ar.result());
+        conn.schedule(cmd, promise);
+      } else {
+        promise.fail(ar.cause());
+      }
+    });
   }
 
   private class PreparedStatementQuery<T, R extends SqlResult<T>> extends QueryBase<T, R> implements PreparedQuery<R> {
@@ -202,7 +265,11 @@ class PreparedStatementImpl implements PreparedStatement {
     }
 
     private void executeBatch(List<Tuple> argsList, Promise<R> promise) {
-      PreparedStatementImpl.this.executeBatch(argsList, builder, promise);
+      if (argsList.isEmpty()) {
+        promise.fail("Empty batch");
+      } else {
+        PreparedStatementImpl.this.executeBatch(argsList, builder, promise);
+      }
     }
   }
 }
