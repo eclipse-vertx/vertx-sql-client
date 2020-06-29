@@ -25,10 +25,14 @@ import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 public interface Connection extends CommandScheduler {
 
+  default boolean isIndeterminatePreparedStatementError(Throwable t) {
+    return false;
+  }
+
   void init(Holder holder);
 
   boolean isSsl();
-  
+
   DatabaseMetadata getDatabaseMetaData();
 
   @Override

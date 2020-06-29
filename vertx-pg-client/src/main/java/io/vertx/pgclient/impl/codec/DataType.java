@@ -18,6 +18,8 @@ package io.vertx.pgclient.impl.codec;
 
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.data.Box;
 import io.vertx.pgclient.data.Circle;
 import io.vertx.pgclient.data.Line;
@@ -32,6 +34,8 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import java.time.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -123,6 +127,8 @@ enum DataType {
   TS_QUERY_ARRAY(3645, false,  String[].class);
 
   private static final Logger logger = LoggerFactory.getLogger(DataType.class);
+  private static final IntObjectMap<DataType> oidToDataType = new IntObjectHashMap<>();
+  private static final Map<Class<?>, DataType> encodingTypeToDataType = new HashMap<>();
 
   final int id;
   final boolean supportsBinary;
@@ -130,10 +136,7 @@ enum DataType {
   final Class<?> decodingType;
 
   DataType(int id, boolean supportsBinary, Class<?> type) {
-    this.id = id;
-    this.supportsBinary = supportsBinary;
-    this.decodingType = type;
-    this.encodingType = type;
+    this(id, supportsBinary, type, type);
   }
 
   DataType(int id, boolean supportsBinary, Class<?> encodingType, Class<?> decodingType) {
@@ -153,11 +156,63 @@ enum DataType {
     }
   }
 
-  private static IntObjectMap<DataType> oidToDataType = new IntObjectHashMap<>();
+  static DataType lookup(Class<?> type) {
+    DataType dataType = encodingTypeToDataType.get(type);
+    if (dataType == null) {
+      if (Buffer.class.isAssignableFrom(type)) {
+        return BYTEA;
+      }
+      dataType = DataType.UNKNOWN;
+    }
+    return dataType;
+  }
 
   static {
     for (DataType dataType : values()) {
       oidToDataType.put(dataType.id, dataType);
     }
+    encodingTypeToDataType.put(String.class, VARCHAR);
+    encodingTypeToDataType.put(String[].class, VARCHAR_ARRAY);
+    encodingTypeToDataType.put(Boolean.class, BOOL);
+    encodingTypeToDataType.put(Boolean[].class, BOOL_ARRAY);
+    encodingTypeToDataType.put(Short.class, INT2);
+    encodingTypeToDataType.put(Short[].class, INT2_ARRAY);
+    encodingTypeToDataType.put(Integer.class, INT4);
+    encodingTypeToDataType.put(Integer[].class, INT4_ARRAY);
+    encodingTypeToDataType.put(Long.class, INT8);
+    encodingTypeToDataType.put(Long[].class, INT8_ARRAY);
+    encodingTypeToDataType.put(Float.class, FLOAT4);
+    encodingTypeToDataType.put(Float[].class, FLOAT4_ARRAY);
+    encodingTypeToDataType.put(Double.class, FLOAT8);
+    encodingTypeToDataType.put(Double[].class, FLOAT8_ARRAY);
+    encodingTypeToDataType.put(LocalDate.class, DATE);
+    encodingTypeToDataType.put(LocalDate[].class, DATE_ARRAY);
+    encodingTypeToDataType.put(LocalDateTime.class, TIMESTAMP);
+    encodingTypeToDataType.put(LocalDateTime[].class, TIMESTAMP_ARRAY);
+    encodingTypeToDataType.put(OffsetDateTime.class, TIMESTAMPTZ);
+    encodingTypeToDataType.put(OffsetDateTime[].class, TIMESTAMPTZ_ARRAY);
+    encodingTypeToDataType.put(Interval.class, INTERVAL);
+    encodingTypeToDataType.put(Interval[].class, INTERVAL_ARRAY);
+    encodingTypeToDataType.put(Buffer[].class, BYTEA_ARRAY);
+    encodingTypeToDataType.put(UUID.class, UUID);
+    encodingTypeToDataType.put(UUID[].class, UUID_ARRAY);
+    encodingTypeToDataType.put(JsonObject.class, JSON);
+    encodingTypeToDataType.put(JsonObject[].class, JSON_ARRAY);
+    encodingTypeToDataType.put(JsonArray.class, JSON);
+    encodingTypeToDataType.put(JsonArray[].class, JSON_ARRAY);
+    encodingTypeToDataType.put(Point.class, POINT);
+    encodingTypeToDataType.put(Point[].class, POINT_ARRAY);
+    encodingTypeToDataType.put(Line.class, LINE);
+    encodingTypeToDataType.put(Line[].class, LINE_ARRAY);
+    encodingTypeToDataType.put(LineSegment.class, LSEG);
+    encodingTypeToDataType.put(LineSegment[].class, LSEG_ARRAY);
+    encodingTypeToDataType.put(Box.class, BOX);
+    encodingTypeToDataType.put(Box[].class, BOX_ARRAY);
+    encodingTypeToDataType.put(Path.class, PATH);
+    encodingTypeToDataType.put(Path[].class, PATH_ARRAY);
+    encodingTypeToDataType.put(Polygon.class, POLYGON);
+    encodingTypeToDataType.put(Polygon[].class, POLYGON_ARRAY);
+    encodingTypeToDataType.put(Circle.class, CIRCLE);
+    encodingTypeToDataType.put(Circle[].class, CIRCLE_ARRAY);
   }
 }

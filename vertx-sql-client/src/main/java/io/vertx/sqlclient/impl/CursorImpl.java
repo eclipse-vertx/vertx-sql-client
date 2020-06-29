@@ -20,7 +20,6 @@ package io.vertx.sqlclient.impl;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
@@ -34,14 +33,18 @@ import java.util.UUID;
 public class CursorImpl implements Cursor {
 
   private final PreparedStatementImpl ps;
+  private final Connection conn;
+  private final boolean autoCommit;
   private final TupleInternal params;
 
   private String id;
   private boolean closed;
   private SqlResultHandler<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> result;
 
-  CursorImpl(PreparedStatementImpl ps, TupleInternal params) {
+  CursorImpl(PreparedStatementImpl ps, Connection conn, boolean autoCommit, TupleInternal params) {
     this.ps = ps;
+    this.conn = conn;
+    this.autoCommit = autoCommit;
     this.params = params;
   }
 
@@ -55,23 +58,31 @@ public class CursorImpl implements Cursor {
 
   @Override
   public synchronized void read(int count, Handler<AsyncResult<RowSet<Row>>> handler) {
-    if (ps.context == Vertx.currentContext()) {
-      SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
-      SqlResultHandler<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> resultHandler = builder.createHandler(handler);
-      ExtendedQueryCommand<RowSet<Row>> cmd;
-      if (id == null) {
-        id = UUID.randomUUID().toString();
-        cmd = builder.createExtendedQuery(ps.ps, params, count, id, false, ps.autoCommit, resultHandler);
-      } else if (result.isSuspended()) {
-        cmd = builder.createExtendedQuery(ps.ps, params, count, id, true, ps.autoCommit, resultHandler);
+    ps.withPreparedStatement(params, ar -> {
+      if (ar.succeeded()) {
+        PreparedStatement preparedStatement = ar.result();
+        SqlResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new SqlResultBuilder<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
+        SqlResultHandler<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> resultHandler = builder.createHandler(handler);
+        ExtendedQueryCommand<RowSet<Row>> cmd;
+        if (id == null) {
+          String msg = preparedStatement.prepare(params);
+          if (msg != null) {
+            handler.handle(Future.failedFuture(msg));
+            return;
+          }
+          id = UUID.randomUUID().toString();
+          cmd = builder.createExtendedQuery(preparedStatement, params, count, id, false, autoCommit, resultHandler);
+        } else if (result.isSuspended()) {
+          cmd = builder.createExtendedQuery(preparedStatement, params, count, id, true, autoCommit, resultHandler);
+        } else {
+          throw new IllegalStateException();
+        }
+        result = resultHandler;
+        conn.schedule(cmd, resultHandler);
       } else {
-        throw new IllegalStateException();
+        handler.handle(Future.failedFuture(ar.cause()));
       }
-      result = resultHandler;
-      ps.conn.schedule(cmd, resultHandler);
-    } else {
-      ps.context.runOnContext(v -> read(count, handler));
-    }
+    });
   }
 
   @Override
