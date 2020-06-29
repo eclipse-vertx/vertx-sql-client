@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Polygon data type in Postgres represented by lists of points (the vertexes of the polygon).
@@ -33,6 +34,15 @@ public class Polygon {
 
   public void setPoints(List<Point> points) {
     this.points = points;
+  }
+
+  public Polygon addPoint(Point point) {
+    Objects.requireNonNull(point);
+    if (points == null) {
+      points = new ArrayList<>();
+    }
+    points.add(point);
+    return this;
   }
 
   @Override
