@@ -22,7 +22,7 @@ import java.time.temporal.ChronoField;
 public class DRDAConstants {
     // Value to use when padding non-character data in ddm objects.
     public static final byte NON_CHAR_DDM_DATA_PAD_BYTE = 0x00;
-    
+
     // Maximum size of External Name.
     public static final int EXTNAM_MAXSIZE = 255;
 
@@ -109,7 +109,7 @@ public class DRDAConstants {
 
     // Manager Level 7 constant.
     public static final int MGRLVL_7 = 0x07;
-    
+
     // @AGG added for default targetSqlam
     public static final int TARGET_SQL_AM = 0x07; // 0x0B;
 
@@ -141,10 +141,10 @@ public class DRDAConstants {
 
     // Maximum size of User Name.
     public static final int USRID_MAXSIZE = 255;
-    
+
     // Maximum size of a DDM block
     public static final int DATA_STREAM_STRUCTURE_MAX_LENGTH = 32767;
-    
+
     ///////////////////////
     //
     // DRDA Type constants.
@@ -234,7 +234,7 @@ public class DRDAConstants {
     // section on SQLUDTGRP
     public  static final int DRDA_TYPE_UDT = 0x50;
     public  static final int DRDA_TYPE_NUDT = 0x51;
-    
+
     public  static final int DRDA_TYPE_LOBBYTES = 0xC8;
     public  static final int DRDA_TYPE_NLOBBYTES = 0xC9;
     public  static final int DRDA_TYPE_LOBCSBCS = 0xCA;
@@ -250,7 +250,7 @@ public class DRDAConstants {
     // This is the maximum size which a udt can serialize to in order to
     // be transported across DRDA
     public static final int MAX_DRDA_UDT_SIZE = DATA_STREAM_STRUCTURE_MAX_LENGTH;
-    
+
     ///////////////////////
     //
     // DB2 datatypes
@@ -350,19 +350,19 @@ public class DRDAConstants {
     // Product id
     public static final String PRDID = "JNT00001";
     public static final String EXTNAM = "db2jnt_application  " + PRDID + "300";
-    
+
     static final DateTimeFormatter DB2_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy'-'MM'-'dd");
     static final DateTimeFormatter DB2_TIME_FORMAT = DateTimeFormatter.ofPattern("HH'.'mm'.'ss");
-	static final DateTimeFormatter DB2_TIMESTAMP_FORMAT = new DateTimeFormatterBuilder()
-			.append(DateTimeFormatter.ofPattern("yyyy'-'MM'-'dd'-'HH'.'mm'.'ss"))
-			.appendFraction(ChronoField.NANO_OF_SECOND, 6, 9, true)
-			.toFormatter();
-    
+  static final DateTimeFormatter DB2_TIMESTAMP_FORMAT = new DateTimeFormatterBuilder()
+      .append(DateTimeFormatter.ofPattern("yyyy'-'MM'-'dd'-'HH'.'mm'.'ss"))
+      .appendFraction(ChronoField.NANO_OF_SECOND, 6, 9, true)
+      .toFormatter();
+
     //
     // // The server release level of this product.
     // // It will be prefixed with PRDID
     // static final String SRVRLSLV;
-    
+
     private DRDAConstants() {
     }
 }

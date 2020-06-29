@@ -19,11 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ColumnMetaData {
-    
+
     public int columns_;
-    
+
     public boolean[] nullable_;
-    
+
     public short sqldHold_;
     public short sqldReturn_;
     public short sqldScroll_;
@@ -32,7 +32,7 @@ public class ColumnMetaData {
     public short sqldKeytype_;
     public String sqldRdbnam_; // catalog name, not used by driver, placeholder only
     public String sqldSchema_; // schema name, not used by driver, placeholder only
-    
+
     //data comes from SQLDAGRP
     public int[] sqlPrecision_; // adjusted sqllen;
     public int[] sqlScale_;
@@ -42,7 +42,7 @@ public class ColumnMetaData {
      */
     public int[] sqlType_;
     public int[] sqlCcsid_;
-    
+
     //Data from SQLDOPTGRP
     public String[] sqlName_;   // column name, pre-allocated
     public String[] sqlLabel_;  // column label
@@ -50,7 +50,7 @@ public class ColumnMetaData {
     public String[] sqlComment_;
     public String[] sqlUDTname_;
     public String[] sqlUDTclassName_;
-    
+
     //Data from SQLDXGRP
     public short[] sqlxKeymem_;
     public short[] sqlxGenerated_;
@@ -61,10 +61,10 @@ public class ColumnMetaData {
     public int[] sqlxUpdatable_;
     public String[] sqlxSchema_;    // schema name
     public String[] sqlxRdbnam_;    // catalog name
-    
+
     // For performance only, not part of logical model.
     public transient int[][] protocolTypesCache_ = null;
-    
+
     /**
      * The client side SQL type. See {@link ClientTypes} constants
      */
@@ -105,52 +105,52 @@ public class ColumnMetaData {
         this.types_ = new int[numColumns];
         this.clientParamtertype_ = new int[numColumns];
     }
-    
+
     public List<String> getColumnNames() {
-    	List<String> cols = new ArrayList<>(columns_);
-    	for (int i = 0; i < columns_; i++) {
-    		cols.add(i, getColumnName(i));
-    	}
-    	return cols;
+      List<String> cols = new ArrayList<>(columns_);
+      for (int i = 0; i < columns_; i++) {
+        cols.add(i, getColumnName(i));
+      }
+      return cols;
     }
-    
+
     public String getColumnName(int i) {
-    	if (i < 0)
-    		throw new IllegalArgumentException("Requested column name for negative index: " + i);
-    	// Prefer column names from SQLDOPTGRP if set
-    	if (sqlName_ != null && i < sqlName_.length && sqlName_[i] != null)
-    		return sqlName_[i];
-    	// Otherwise use column names from SQLDXGRP
-    	if (sqlxName_ != null && i < sqlxName_.length)
-    		return sqlxName_[i];
-    	return null;
+      if (i < 0)
+        throw new IllegalArgumentException("Requested column name for negative index: " + i);
+      // Prefer column names from SQLDOPTGRP if set
+      if (sqlName_ != null && i < sqlName_.length && sqlName_[i] != null)
+        return sqlName_[i];
+      // Otherwise use column names from SQLDXGRP
+      if (sqlxName_ != null && i < sqlxName_.length)
+        return sqlxName_[i];
+      return null;
     }
-    
+
     @Override
     public String toString() {
-    	StringBuilder sb = new StringBuilder(super.toString());
-    	sb.append("{");
-    	for (int i = 0; i < columns_; i++) {
-    		sb.append("{name=");
-    		sb.append(getColumnName(i));
-    		sb.append(", type=");
-    		if (types_ != null && i < types_.length) {
-    			sb.append(types_[i]);
-    			sb.append("/");
-    			sb.append(ClientTypes.getTypeString(types_[i]));
-    		} else {
-    			sb.append("null");
-    		}
-    		sb.append(", nullable=");
-    		if (nullable_ != null && i < nullable_.length) {
-    			sb.append(nullable_[i]);
-    		} else {
-    			sb.append("null");
-    		}
-    		sb.append("}");
-    	}
-    	sb.append("}");
-    	return sb.toString();
+      StringBuilder sb = new StringBuilder(super.toString());
+      sb.append("{");
+      for (int i = 0; i < columns_; i++) {
+        sb.append("{name=");
+        sb.append(getColumnName(i));
+        sb.append(", type=");
+        if (types_ != null && i < types_.length) {
+          sb.append(types_[i]);
+          sb.append("/");
+          sb.append(ClientTypes.getTypeString(types_[i]));
+        } else {
+          sb.append("null");
+        }
+        sb.append(", nullable=");
+        if (nullable_ != null && i < nullable_.length) {
+          sb.append(nullable_[i]);
+        } else {
+          sb.append("null");
+        }
+        sb.append("}");
+      }
+      sb.append("}");
+      return sb.toString();
     }
-    
+
 }

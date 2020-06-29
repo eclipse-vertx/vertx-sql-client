@@ -205,8 +205,8 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
 
   private CommandBase<?> doQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler) {
     SimpleQueryCommand<Void> cmd = new SimpleQueryCommand<>(sql, false, autoCommit(),
-    		QueryCommandBase.NULL_COLLECTOR,
-    		QueryResultHandler.NOOP_HANDLER);
+        QueryCommandBase.NULL_COLLECTOR,
+        QueryResultHandler.NOOP_HANDLER);
     cmd.handler = h -> {
         if (h.succeeded()) {
           handler.handle(Future.succeededFuture());
@@ -219,7 +219,7 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
 
   @Override
   boolean autoCommit() {
-	return false;
+  return false;
   }
 
 }

@@ -22,38 +22,38 @@ import java.util.Objects;
 import io.netty.buffer.ByteBuf;
 
 public class DRDAQueryResponse extends DRDAConnectResponse {
-    
+
 //    protected boolean ensuredLengthForDecryption_ = false; // A layer lengths have already been ensured in decrypt method.
 //    protected byte[] longBufferForDecryption_ = null;
 //    protected int longPosForDecryption_ = 0;
 //    protected ByteBuf longValueForDecryption_ = null;
 //    protected int longCountForDecryption_ = 0;
-    
+
     private ColumnMetaData outputColumnMetaData = null;
     private ColumnMetaData inputColumnMetaData = null;
-    
+
     private Cursor cursor;
-    
+
     private NetSqlca sqlca;
-    
+
     private long queryInstanceId = 0;
-    
+
     public DRDAQueryResponse(ByteBuf buffer, ConnectionMetaData metadata) {
         super(buffer, metadata);
     }
-    
+
     public void readPrepareDescribeOutput() { // @AGG removed callback StatementCallbackInterface statement) {
         startSameIdChainParse();
         parsePRPSQLSTTreply(); // @AGG removed callback statement);
         endOfSameIdChainData();
     }
-    
+
     public void readPrepareDescribeInputOutput() {
         readPrepareDescribeOutput();
         readDescribeInput();
         completePrepareDescribe();
     }
-    
+
     private void completePrepareDescribe() {
         if (outputColumnMetaData == null) {
             return;
@@ -63,7 +63,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //        parameterSet_ = expandBooleanArray(parameterSet_, parameterMetaData_.columns_);
 //        parameterRegistered_ = expandBooleanArray(parameterRegistered_, parameterMetaData_.columns_);
     }
-    
+
 
     public void readDescribeInput(/*PreparedStatementCallbackInterface preparedStatement*/) {
         // @AGG no encryption
@@ -82,7 +82,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         parseDSCSQLSTTreply(/*preparedStatement, */false);
         endOfSameIdChainData();
     }
-    
+
     // Parse the reply for the Describe SQL Statement Command.
     // This method handles the parsing of all command replies and reply data
     // for the dscsqlstt command.
@@ -94,7 +94,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             outputColumnMetaData = columnMetaData;
         else
             inputColumnMetaData = columnMetaData;
-        
+
         if (peekCP == CodePoint.SQLDARD) {
             // SQLDARD here means we have some data to parse
             NetSqlca netSqlca = parseSQLDARD(columnMetaData, false);  // false means do not skip SQLDARD bytes
@@ -108,24 +108,24 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             //parseDescribeError(ps);
         }
     }
-    
+
     @Deprecated // @AGG reads all data sync
     public void readOpenQuery() { // @AGG removed callback StatementCallbackInterface statement) {
         startSameIdChainParse();
         parseOPNQRYreply(); // @AGG removed callback statement);
         endOfSameIdChainData();
     }
-    
+
     /**
      * Parse the reply for the Open Query Command. This method handles the
      * parsing of all command replies and reply data for the opnqry command.
      */
     public void readBeginOpenQuery() { // @AGG removed callback StatementCallbackInterface statementI) {
-    	startSameIdChainParse();
+      startSameIdChainParse();
         int peekCP = peekCodePoint();
 
         if (peekCP == CodePoint.OPNQRYRM) {
-        	parseBeginOpenQuery();
+          parseBeginOpenQuery();
 //            parseOpenQuery(); // @AGG removed callback statementI);
 //            peekCP = peekCodePoint();
 //            if (peekCP == CodePoint.RDBUPDRM) {
@@ -149,7 +149,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //            parsePBSD();
 //        }
     }
-    
+
     /**
      * Reads the following items:
      * - Open Query Complete (OPNQRYRM)
@@ -158,7 +158,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
      */
     private void parseBeginOpenQuery() {
         int peekCP = peekCodePoint();
-        
+
         if (peekCP == CodePoint.OPNQRYRM) {
             parseOPNQRYRM(true);
 
@@ -200,10 +200,10 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             parseQRYDSC(/*netResultSet.netCursor_*/);
         }
     }
-    
+
     public void readFetch(Cursor c) {
         startSameIdChainParse();
-        
+
         // Carry over state from previous request
         cursor = c;
         cursor.resetDataBuffer();
@@ -212,34 +212,34 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //        cursor = new Cursor();
 ////        setOutputColumnMetaData(columnMetadata);
 //        cursor.initializeColumnInfoArrays(Typdef.targetTypdef, columnMetadata.columns_);
-//        
+//
 //        cursor.qrydscTypdef_.updateColumn(cursor, i, readFastUnsignedByte(), readFastUnsignedShort());
 //        Typdef.targetTypdef.updateColumn(netCursor, columnIndex, protocolLid, protocolLength);
-        
+
         parseCNTQRYreply(true); // true means we expect row data
         endOfSameIdChainData();
     }
-    
+
     public void readCursorClose() {
         startSameIdChainParse();
         parseCLSQRYreply();
         endOfSameIdChainData();
     }
-    
+
     public long readExecuteImmediate() {
         startSameIdChainParse();
         long updateCount = parseEXCSQLIMMreply();
         endOfSameIdChainData();
         return updateCount;
     }
-    
+
     public long readExecute(/*PreparedStatementCallbackInterface preparedStatement*/) {
         startSameIdChainParse();
         long updateCount = parseEXCSQLSTTreply();//preparedStatement);
         endOfSameIdChainData();
         return updateCount;
     }
-    
+
     // Parse the reply for the Continue Query Command.
     // This method handles the parsing of all command replies and reply data for the cntqry command.
     // If doCopyQrydta==false, then there is no data, and we're only parsing out the sqlca to get the row count.
@@ -363,7 +363,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //            longBufferForDecryption_ = null;
 //        }
     }
-    
+
     private void parseFetchError() {
 
         int peekCP = peekCodePoint();
@@ -372,7 +372,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             {
                 //passing the ResultSetCallbackInterface implementation will
                 //help in retrieving the the UnitOfWorkListener that needs to
-                //be rolled back 
+                //be rolled back
                 throw new IllegalStateException("Abnormal UOW end");
 //                NetSqlca sqlca = parseAbnormalEndUow(resultSetI);
 //                resultSetI.completeSqlca(sqlca);
@@ -394,7 +394,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             parseCommonError(peekCP);
         }
     }
-    
+
     // Query Not Opened Reply Message is issued if a CNTQRY or CLSQRY
     // command is issued for a query that is not open.  A previous
     // ENDQRYRM, ENDUOWRM, or ABNUOWRM reply message might have
@@ -499,7 +499,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             throw new IllegalStateException("DRDA_CURSOR_NOT_OPEN");
         }
     }
-    
+
     // Parse the reply for the Execute SQL Statement Command.
     // This method handles the parsing of all command replies and reply data
     // for the excsqlstt command.
@@ -588,7 +588,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         }
         return updateCount;
     }
-    
+
     private void parseResultSetProcedure(/*StatementCallbackInterface statementI*/) {
         // when a stored procedure is called which returns result sets,
         // the next thing to be returned after the optional transaction component
@@ -653,7 +653,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //        statementI.completeExecuteCall(netSqlca, cursor, resultSets);
         completeExecute(netSqlca);
     }
-    
+
     public void completeExecute(NetSqlca sqlca) {
         if (sqlca == null) {
             return;
@@ -682,7 +682,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             }
         }
     }
-    
+
     void copyEXTDTA() {
 //        try {
             parseLengthAndMatchCodePoint(CodePoint.EXTDTA);
@@ -702,12 +702,12 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //                new ClientMessageId(SQLState.NET_LOB_DATA_TOO_LARGE_FOR_JVM), e));
 //        }
     }
-    
+
     private int parseSQLRSLRD(List<Section> sections) {
         parseLengthAndMatchCodePoint(CodePoint.SQLRSLRD);
         return parseSQLRSLRDarray(sections);
     }
-    
+
     // SQLRSLRD : FDOCA EARLY ARRAY
     // Data Array of a Result Set
     //
@@ -725,7 +725,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         }
         return numOfResultSets;
     }
-    
+
     // SQLRSROW : FDOCA EARLY ROW
     // SQL Row Description for One Result Set Row
     //
@@ -734,7 +734,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
     private void parseSQLRSROW(Section section) {
         parseSQLRSGRP(section);
     }
-    
+
     // SQLRSGRP : EARLY FDOCA GROUP
     // SQL Result Set Group Description
     //
@@ -751,7 +751,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         // currently rsLocator and rsNumRows are not being used.
 //        section.setCursorName(rsName);
     }
-    
+
     private String parseVCMorVCS() {
         String stringToBeSet = null;
 
@@ -770,7 +770,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 
         return stringToBeSet;
     }
-    
+
     // SQL Data Reply Data consists of output data from the relational database (RDB)
     // processing of an SQL statement.  It also includes a description of the data.
     //
@@ -817,12 +817,12 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         cursor.calculateColumnOffsetsForRow();
         return netSqlca;
     }
-    
+
     private void parseFDODSC() {
         parseLengthAndMatchCodePoint(CodePoint.FDODSC);
         parseSQLDTARDarray(false); // false means don't just skip the bytes
     }
-    
+
     private NetSqlca parseFDODTA() {
         parseLengthAndMatchCodePoint(CodePoint.FDODTA);
         int ddmLength = getDdmLength();
@@ -836,7 +836,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         parseFastSQLDTARDdata();//netCursor);
         return netSqlca;
     }
-    
+
     private void parseFastSQLDTARDdata() {
         parseSQLDTARDdata();
 //        netCursor.dataBufferStream_ = getFastData(netCursor.dataBufferStream_);
@@ -844,7 +844,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //        netCursor.lastValidBytePosition_ = netCursor.dataBuffer_.length;
     }
 
-    
+
     // RDB Result Set Reply Message (RSLSETRM) indicates that an
     // EXCSQLSTT command invoked a stored procedure, that the execution
     // of the stored procedure generated one or more result sets, and
@@ -900,7 +900,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 
         return pkgsnlst;
     }
-    
+
     // RDB Package Namce, Consistency Token, and Section Number List
     // specifies a list of fully qualified names of specific sections
     // within one or more packages.
@@ -915,7 +915,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         popCollectionStack();
         return pkgsnlst;
     }
-    
+
     // RDB Package name, consistency token, and section number
     // specifies the fully qualified name of a relational
     // database package, its consistency token, and a specific
@@ -974,8 +974,8 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             // get rdbnam
             int scldtaLen = peekFastLength();
             int maxRDBlength = DRDAConstants.RDBNAM_MAX_LEN;
-//                    ((netAgent_.netConnection_.databaseMetaData_.serverSupportLongRDBNAM())? 
-//                            NetConfiguration.RDBNAM_MAX_LEN 
+//                    ((netAgent_.netConnection_.databaseMetaData_.serverSupportLongRDBNAM())?
+//                            NetConfiguration.RDBNAM_MAX_LEN
 //                            : NetConfiguration.PKG_IDENTIFIER_MAX_LEN);
             if (scldtaLen < DRDAConstants.PKG_IDENTIFIER_FIXED_LEN || scldtaLen > maxRDBlength) {
                 throw new IllegalStateException("NET_SQLCDTA_INVALID_FOR_RDBNAM " + scldtaLen);
@@ -1042,7 +1042,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         throw new UnsupportedOperationException("Server generated sections not implemented");
     }
 
-    
+
     private void parseExecuteError() {
         int peekCP = peekCodePoint();
         switch (peekCP) {
@@ -1080,7 +1080,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             break;
         }
     }
-    
+
     // Parse the reply for the Close Query Command.
     // This method handles the parsing of all command replies and reply data
     // for the clsqry command.
@@ -1097,14 +1097,14 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
                 } else {
                     NetSqlca.complete(netSqlca);
                 }
-                
+
             }
         } else {
-        	throwUnknownCodepoint(peekCP);
+          throwUnknownCodepoint(peekCP);
 //            parseCloseError(resultSet);
         }
     }
-    
+
     /**
      * Reads the bytes for the current QRYDTA into the cursor's buffer
      * @return
@@ -1117,7 +1117,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         }
         return false;
     }
-    
+
     public boolean isQueryComplete() {
         if (cursor.allRowsReceivedFromServer())
             return true;
@@ -1127,7 +1127,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             cursor.setAllRowsReceivedFromServer(true);
         return isQueryComplete;
     }
-    
+
     public void readEndOpenQuery() {
         int peekCP = peekCodePoint();
         if (peekCP == CodePoint.SQLCARD) {
@@ -1135,16 +1135,16 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             NetSqlca.complete(netSqlca);
             peekCP = peekCodePoint();
         }
-        
+
         if (peekCP == CodePoint.ENDQRYRM) {
             parseEndQuery(/*netResultSet*/);
         }
-        
+
         completeOpenQuery(sqlca);
-        
+
         endOfSameIdChainData();
     }
-    
+
     // Parse the reply for the Execute Immediate SQL Statement Command.
     // This method handles the parsing of all command replies and reply data
     // for the excsqlimm command.
@@ -1181,7 +1181,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         }
         return updateCount;
     }
-    
+
     private void parseExecuteImmediateError() {
         int peekCP = peekCodePoint();
         switch (peekCP) {
@@ -1218,7 +1218,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             break;
         }
     }
-    
+
     /**
      * Parse the reply for the Open Query Command. This method handles the
      * parsing of all command replies and reply data for the opnqry command.
@@ -1251,7 +1251,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             parsePBSD();
         }
     }
-    
+
     private void parseOpenQueryError() {
         int peekCP = peekCodePoint();
         switch (peekCP) {
@@ -1284,7 +1284,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             parseCommonError(peekCP);
         }
     }
-    
+
     /**
      * Perform necessary actions for parsing of a ABNUOWRM message.
      *
@@ -1299,16 +1299,16 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         }
 
         NetSqlca netSqlca = parseSQLCARD(null);
-        
-//        if(ExceptionUtil.getSeverityFromIdentifier(netSqlca.getSqlState()) > 
+
+//        if(ExceptionUtil.getSeverityFromIdentifier(netSqlca.getSqlState()) >
 //            ExceptionSeverity.STATEMENT_SEVERITY || uwl == null)
 //            connection.completeAbnormalUnitOfWork();
 //        else
 //            connection.completeAbnormalUnitOfWork(uwl);
-        
+
         return netSqlca;
     }
-    
+
     // Query Previously Opened Reply Message is issued when an
     // OPNQRY command is issued for a query that is already open.
     // A previous OPNQRY command might have opened the query
@@ -1399,7 +1399,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //                SqlException.CLIENT_MESSAGE_RESOURCE_NAME,
 //                (Object [])null)));
     }
-    
+
     /**
      * Parse a PBSD - PiggyBackedSessionData code point. Can contain one or
      * both of, a PBSD_ISO code point followed by a byte representing the jdbc
@@ -1428,7 +1428,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             peekCP = peekCodePoint();
         }
     }
-    
+
     // RDB Update Reply Message indicates that a DDM command resulted
     // in an update at the target relational database.  If a command
     // generated multiple reply messages including an RDBUPDRM, then
@@ -1484,7 +1484,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         // @AGG unused netAgent_.setSvrcod(svrcod);
 
     }
-    
+
     @Deprecated // @AGG splitting this out
     private void parseOpenQuery() { // @AGG removed callback StatementCallbackInterface statementI) {
         //NetResultSet netResultSet = parseOPNQRYRM(statementI, true);
@@ -1543,14 +1543,14 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 
         completeOpenQuery(sqlca);
     }
-    
+
     private void parseOpenQueryFailure() {
       parseOPNQFLRM();
       parseTypdefsOrMgrlvlovrs();
       NetSqlca netSqlca = parseSQLCARD(null);
       NetSqlca.complete(netSqlca);
     }
-    
+
     // Open Query Failure (OPNQFLRM) Reply Message indicates that the
     // OPNQRY command failed to open the query.  The reason that the
     // target relational database was unable to open the query is reported in an
@@ -1607,7 +1607,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 
         // get SQLSTATE from SQLCARD...
     }
-    
+
     public void completeOpenQuery(NetSqlca sqlca/*, ClientResultSet resultSet*/) {
         NetSqlca.complete(sqlca);
 //        resultSet_ = resultSet;
@@ -1646,21 +1646,21 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //            fetchSize = DRDAQueryRequest.defaultFetchSize;
 //        }
         // @AGG customize fetchSize here if needed
-        // @AGG assuming always TYPE_FORWARD_ONLY 
+        // @AGG assuming always TYPE_FORWARD_ONLY
     }
-    
+
     void parseEndQuery(/*ResultSetCallbackInterface resultSetI*/) {
         parseENDQRYRM(/*resultSetI*/);
         parseTypdefsOrMgrlvlovrs();
         NetSqlca netSqlca = parseSQLCARD(null);
         cursor.setAllRowsReceivedFromServer(true);
-        
+
         int peekCP = peekCodePoint();
-		if (peekCP == CodePoint.RDBUPDRM) {
-			parseRDBUPDRM();
-		}
+    if (peekCP == CodePoint.RDBUPDRM) {
+      parseRDBUPDRM();
     }
-    
+    }
+
     // Also called by NetResultSetReply subclass.
     // The End of Query Reply Message indicates that the query process has
     // terminated in such a manner that the query or result set is now closed.
@@ -1707,7 +1707,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //        netAgent_.setSvrcod(svrcod); @AGG removed
 
     }
-    
+
     void parseQRYDTA(/*NetResultSet netResultSet*/) {
         parseLengthAndMatchCodePoint(CodePoint.QRYDTA);
         // @AGG assume no encryption
@@ -1735,34 +1735,34 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //            longBufferForDecryption_ = null;
 //        }
     }
-    
+
     public Cursor getCursor() {
         if (cursor == null)
             throw new IllegalStateException("Cursor has not been created yet");
         return cursor;
     }
-    
+
     public long getQueryInstanceId() {
         return queryInstanceId;
     }
-    
+
     public ColumnMetaData getOutputColumnMetaData() {
         if (outputColumnMetaData == null)
             throw new IllegalStateException("ColumnMetaData has not been created yet");
         return outputColumnMetaData;
     }
-    
+
     public void setOutputColumnMetaData(ColumnMetaData md) {
         Objects.requireNonNull(md);
         this.outputColumnMetaData = md;
     }
-    
+
     public ColumnMetaData getInputColumnMetaData() {
         if (inputColumnMetaData == null)
             throw new IllegalStateException("ColumnMetaData has not been created yet");
         return inputColumnMetaData;
     }
-    
+
     private void parseSQLDTARDdata(/*NetCursor netCursor*/) {
 //        if (longValueForDecryption_ == null) {
 //            netCursor.dataBufferStream_ = getData(/*netCursor.dataBufferStream_*/);
@@ -1787,7 +1787,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //        netCursor.lastValidBytePosition_ = netCursor.dataBuffer_.length;
         cursor.lastValidBytePosition_ = cursor.dataBuffer_.capacity();
     }
-    
+
     // This will be the new and improved getData that handles all QRYDTA/EXTDTA
     // Returns the stream so that the caller can cache it
     final ByteBuf getData(/*ByteArrayOutputStream existingBuffer*/) {
@@ -1835,16 +1835,16 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 
             copySize = dssLength_;
         } while (readHeader == true);
-        
+
 
         return baos;
     }
-    
+
     private void parseQRYDSC() {
         parseLengthAndMatchCodePoint(CodePoint.QRYDSC);
         parseSQLDTARDarray(false); // false means don't just skip the bytes
     }
-    
+
     private void parseSQLDTARDarray(boolean skipBytes) {
         if (skipBytes) {
             skipBytes();
@@ -1995,7 +1995,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
                 previousTripletId,
                 FdocaConstants.SQLDTARD_TRIPLET_ID_END);
     }
-    
+
     private void checkFastRLO(int[][] rlo) {
         for (int i = 0; i < rlo.length; i++) {
             int lid = readFastUnsignedByte();
@@ -2012,7 +2012,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             }
         }
     }
-    
+
     private int parseSQLDTAGRPdataLabelsAndUpdateColumn(/*NetCursor cursor, */int columnIndex, int tripletLength) {
         int numColumns = (tripletLength - 3) / 3;
         for (int i = columnIndex; i < columnIndex + numColumns; i++) {
@@ -2020,7 +2020,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         }
         return numColumns;
     }
-    
+
     protected final int peekTotalColumnCount(int tripletLength) {
         int columnCount = 0;
         //int offset = 0;
@@ -2043,7 +2043,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         }
         return columnCount;
     }
-    
+
     private void checkPreviousSQLDTARDtriplet(int previousTripletType, int tripletType, int previousTripletId,
             int tripletId) {
         if (FdocaConstants.SQLDTARD_TRIPLET_TYPES[previousTripletType][tripletType] == false) {
@@ -2053,7 +2053,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             descriptorErrorDetected(); // DSCERRCD_02 move error identity into array
         }
     }
-    
+
     // Possible errors to detect include:
     // DSCERRCD_01 - FDOCA triplet is not used in PROTOCOL descriptors or type code is invalid
     // DSCERRCD_02 - FDOCA triplet sequence error
@@ -2084,7 +2084,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //                SqlException.CLIENT_MESSAGE_RESOURCE_NAME,
 //                (Object [])null)));
     }
-    
+
     /**
      * Open Query Complete Reply Message indicates to the requester
      * that an OPNQRY or EXCSQLSTT command completed normally and that
@@ -2208,7 +2208,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
                 ddmLength = adjustDdmLength(ddmLength, length);
                 peekCP = peekCodePoint();
             }
-            
+
             if (peekCP == CodePoint.QRYATTISOL) {
                 // @AGG added
                 foundInPass = true;
@@ -2248,11 +2248,11 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //                        (netAgent_,
 //                        (NetStatement) statement.getMaterialStatement(),
 //                        statement.cachedCursor_,
-//                        qryprctyp, //protocolType, CodePoint.FIXROWPRC | 
+//                        qryprctyp, //protocolType, CodePoint.FIXROWPRC |
 //                                   //              CodePoint.LMTBLKPRC
 //                        sqlcsrhld, //holdOption, 0xF0 for false (default) | 0xF1 for true.
 //                        qryattscr, //scrollOption, 0xF0 for false (default) | 0xF1 for true.
-//                        qryattsns, //sensitivity, CodePoint.QRYUNK | 
+//                        qryattsns, //sensitivity, CodePoint.QRYUNK |
 //                                   //             CodePoint.QRYINS |
 //                                   //             CodePoint.QRYSNSSTC
 //                        qryattset,
@@ -2269,7 +2269,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //                        (netAgent_,
 //                        (NetStatement) statement.getMaterialStatement(),
 //                        new NetCursor(netAgent_, qryprctyp),
-//                        qryprctyp, //protocolType, CodePoint.FIXROWPRC | 
+//                        qryprctyp, //protocolType, CodePoint.FIXROWPRC |
 //                                   //              CodePoint.LMTBLKPRC
 //                        sqlcsrhld, //holdOption, 0xF0 for false (default) | 0xF1 for true.
 //                        qryattscr, //scrollOption, 0xF0 for false (default) | 0xF1 for true.
@@ -2294,7 +2294,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //        rs.netCursor_.setQryclsimpEnabled(qryclsimp);
 //        return rs;
     }
-    
+
     private int parseFastSQLCSRHLD() {
         matchCodePoint(CodePoint.SQLCSRHLD);
         int sqlcsrhld = readFastUnsignedByte();
@@ -2322,7 +2322,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         }
         return qryattset;
     }
-    
+
     private int parseFastQRYATTISOL() {
         // @AGG added
         matchCodePoint(CodePoint.QRYATTISOL);
@@ -2364,7 +2364,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         matchCodePoint(CodePoint.QRYINSID);
         return readFastLong();
     }
-    
+
     private int parseFastQRYPRCTYP() {
         matchCodePoint(CodePoint.QRYPRCTYP);
         int qryprctyp = readFastUnsignedShort();
@@ -2373,7 +2373,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         }
         return qryprctyp;
     }
-    
+
     int parseFastSVRCOD(int minSvrcod, int maxSvrcod)  {
         matchCodePoint(CodePoint.SVRCOD);
 
@@ -2394,7 +2394,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 
         return svrcod;
     }
-    
+
     // This method is only used to match the codePoint for those class instance variables
     // that are embedded in other reply messages.
     final protected void matchCodePoint(int expectedCodePoint) {
@@ -2404,13 +2404,13 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         //pos_ += 4;
         if (actualCodePoint != expectedCodePoint) {
 //            agent_.accumulateChainBreakingReadExceptionAndThrow(
-//                new DisconnectException(agent_, 
-//                    new ClientMessageId(SQLState.NET_NOT_EXPECTED_CODEPOINT), 
+//                new DisconnectException(agent_,
+//                    new ClientMessageId(SQLState.NET_NOT_EXPECTED_CODEPOINT),
 //                    actualCodePoint, expectedCodePoint));
             throw new IllegalStateException("SQLState.NET_NOT_EXPECTED_CODEPOINT");
         }
     }
-    
+
     private void parsePRPSQLSTTreply() { // @AGG removed callback StatementCallbackInterface statement) {
         int peekCP = parseTypdefsOrMgrlvlovrs();
 
@@ -2428,7 +2428,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
                 netSqlca = parseSQLDARD(outputColumnMetaData, true); // true means to skip the rest of SQLDARD bytes
             } else {
                 //columnMetaData = ClientDriver.getFactory().newColumnMetaData(netAgent_.logWriter_);
-            	// @AGG Moved this up so we get non-null col metadata for SQLDARD AND SQLCARD scenarios
+              // @AGG Moved this up so we get non-null col metadata for SQLDARD AND SQLCARD scenarios
                 //outputColumnMetaData = new ColumnMetaData();
                 netSqlca = parseSQLDARD(outputColumnMetaData, false); // false means do not skip SQLDARD bytes.
             }
@@ -2446,7 +2446,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         }
 
     }
-    
+
     private void parsePrepareError() { // @AGG removed callback StatementCallbackInterface statement) {
         int peekCP = peekCodePoint();
         switch (peekCP) {
@@ -2477,18 +2477,18 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             break;
         }
         default:
-        	throwUnknownCodepoint(peekCP);
+          throwUnknownCodepoint(peekCP);
             // parseCommonError(peekCP);
         }
     }
-    
+
     NetSqlca parseSqlErrorCondition() {
         parseSQLERRRM();
         parseTypdefsOrMgrlvlovrs();
         NetSqlca netSqlca = parseSQLCARD(null);
         return netSqlca;
     }
-    
+
     // SQL Error Condition Reply Message indicates that an SQL error
     // has occurred.  It may be sent even though no reply message
     // precedes the SQLCARD object that is the normal
@@ -2505,8 +2505,8 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
     //
     // Also called by NetResultSetReply and NetStatementReply
     private void parseSQLERRRM() {
-    	// TODO @AGG we let this information flow up into the Sqlca so the
-    	// user is presented with as much information as possible on errors
+      // TODO @AGG we let this information flow up into the Sqlca so the
+      // user is presented with as much information as possible on errors
         boolean svrcodReceived = false;
         int svrcod = CodePoint.SVRCOD_INFO;
         boolean rdbnamReceived = false;
@@ -2534,11 +2534,11 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
                 rdbnam = parseRDBNAM(true);
                 peekCP = peekCodePoint();
             }
-            
+
             if (peekCP == CodePoint.SRVDGN) {
-            	foundInPass = true;
-            	serverDiagnostics = parseSRVDGN();
-            	peekCP = peekCodePoint();
+              foundInPass = true;
+              serverDiagnostics = parseSRVDGN();
+              peekCP = peekCodePoint();
             }
 
             if (!foundInPass) {
@@ -2555,7 +2555,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         // move into a method
         // @AGG unused netAgent_.setSvrcod(svrcod);
     }
-    
+
     // RDB Not Accessed Reply Message indicates that the access relational
     // database command (ACCRDB) was not issued prior to a command
     // requesting the RDB Services.
@@ -2629,14 +2629,14 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //        checkRequiredObjects(svrcodReceived, rdbnamReceived);
 
         // @AGG unused netAgent_.setSvrcod(svrcod);
-        
+
 //        agent_.accumulateChainBreakingReadExceptionAndThrow(
 //            new DisconnectException(agent_,
 //                new ClientMessageId(SQLState.DRDA_CONNECTION_TERMINATED),
 //                msgutil_.getTextMessage(MessageId.CONN_DRDA_RDBNACRM)));
         throw new IllegalStateException("SQLState.DRDA_CONNECTION_TERMINATED");
     }
-    
+
     // Object Not Supported Reply Message indicates that the target
     // server does not recognize or support the object
     // specified as data in an OBJDSS for the command associated
@@ -2716,17 +2716,17 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //        checkRequiredObjects(svrcodReceived, codpntReceived);
 
         // @AGG don't think this is used netAgent_.setSvrcod(svrcod);
-        
+
         //doObjnsprmSemantics(codpnt);
         throw new IllegalStateException("SQLState.DRDA_DDM_OBJECT_NOT_SUPPORTED");
     }
-    
+
     // The Code Point Data specifies a scalar value that is an architected code point.
     private int parseCODPNT() {
         parseLengthAndMatchCodePoint(CodePoint.CODPNT);
         return readUnsignedShort();
     }
-    
+
     void parseDTAMCHRM() {
         boolean svrcodReceived = false;
         int svrcod = CodePoint.SVRCOD_INFO;
@@ -2749,14 +2749,14 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
                 svrcod = parseSVRCOD(CodePoint.SVRCOD_ERROR, CodePoint.SVRCOD_ERROR);
                 peekCP = peekCodePoint();
             }
-            
+
             if (peekCP == CodePoint.RDBNAM) {
                 foundInPass = true;
                 rdbnamReceived = checkAndGetReceivedFlag(rdbnamReceived);
                 rdbnam = parseRDBNAM(true);
                 peekCP = peekCodePoint();
             }
-            
+
             // Optional code point
             if (peekCP == CodePoint.SRVDGN) {
                 foundInPass = true;
@@ -2779,12 +2779,12 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         //checkRequiredObjects(svrcodReceived, rdbnamReceived);
 
         // @AGG not used netAgent_.setSvrcod(svrcod);
-        
+
         throw new IllegalStateException("SQLState.DRDA_CONNECTION_TERMINATED");
         //doDtamchrmSemantics();
     }
 
-    
+
     // Command Check Reply Message indicates that the requested
     // command encountered an unarchitected and implementation-specific
     // condition for which there is no architected message.  If the severity
@@ -2873,7 +2873,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //        checkRequiredObjects(svrcodReceived);
 
         //netAgent_.setSvrcod(svrcod); @AGG not setting svrcod, doesn't seem to be needed
-        NetSqlca netSqlca = parseSQLCARD(null); 
+        NetSqlca netSqlca = parseSQLCARD(null);
         NetSqlca.complete(netSqlca);
 
 //        agent_.accumulateChainBreakingReadExceptionAndThrow(
@@ -2884,7 +2884,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //                msgutil_.getTextMessage(MessageId.CONN_DRDA_CMDCHKRM)));
         throw new IllegalStateException("SQLState.DRDA_CONNECTION_TERMINATED");
     }
-    
+
     // Abnormal End Unit of Work Condition Reply Message indicates
     // that the current unit of work ended abnormally because
     // of some action at the target server.  This can be caused by a
@@ -2944,7 +2944,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         // the abnuowrm has been received, do whatever state changes are necessary
         //netAgent_.setSvrcod(svrcod);
     }
-    
+
     // Relational Database Name specifies the name of a relational
     // database of the server.  A server can have more than one RDB.
     String parseRDBNAM(boolean skip) {
@@ -2955,7 +2955,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         }
         return readString();
     };
-    
+
 //    /**
 //     * Perform necessary actions for parsing of a ABNUOWRM message.
 //     *
@@ -2967,7 +2967,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //    NetSqlca parseAbnormalEndUow(StatementCallbackInterface s) {
 //        return parseAbnormalEndUow(s.getConnectionCallbackInterface(),s);
 //    }
-//    
+//
 //    /**
 //     * Perform necessary actions for parsing of a ABNUOWRM message.
 //     *
@@ -2997,21 +2997,21 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 //        }
 //
 //        NetSqlca netSqlca = parseSQLCARD(null);
-//        
-////        if(ExceptionUtil.getSeverityFromIdentifier(netSqlca.getSqlState()) > 
+//
+////        if(ExceptionUtil.getSeverityFromIdentifier(netSqlca.getSqlState()) >
 ////            ExceptionSeverity.STATEMENT_SEVERITY || uwl == null)
 //            connection.completeAbnormalUnitOfWork();
 ////        else
 ////            connection.completeAbnormalUnitOfWork(uwl);
-//        
+//
 //        return netSqlca;
 //    }
-    
+
     private NetSqlca parseSQLDARD(ColumnMetaData columnMetaData, boolean skipBytes) {
         parseLengthAndMatchCodePoint(CodePoint.SQLDARD);
         return parseSQLDARDarray(columnMetaData, skipBytes);
     }
-    
+
     // SQLDARD : FDOCA EARLY ARRAY
     // SQL Descriptor Area Row Description with SQL Communications Area
     //
@@ -3052,9 +3052,9 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         }
 
         parseSQLDHROW(columnMetaData);
-        
+
 //        buffer.skipBytes(6); // @AGG manually added 6 byte skip
-        
+
         int numColumns = parseSQLNUMROW();
         columnMetaData.setColumnCount(numColumns);
 //        if (columns > columnMetaData.columns_)  // this will only be true when columnMetaData.columns_ = 0 under deferred prepare
@@ -3086,7 +3086,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 
         return netSqlca;
     }
-    
+
     // SQLDAROW : FDOCA EARLY ROW
     // SQL Data Area Row Description
     //
@@ -3095,7 +3095,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
     private void parseSQLDAROW(ColumnMetaData columnMetaData, int columnNumber) {
         parseSQLDAGRP(columnMetaData, columnNumber);
     }
-    
+
     // SQLDAGRP : EARLY FDOCA GROUP
     // SQL Data Area Group Description
     //
@@ -3144,7 +3144,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 
         // 8 byte sqllength
         columnLength = readFastLong();
-        
+
         // create a set method after sqlType and ccsid is read
         // possibly have it set the nullable
         int sqlType = readFastShort();
@@ -3171,7 +3171,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
 
         parseSQLDOPTGRP(columnMetaData, columnNumber);
     }
-    
+
     // SQLDOPTGRP : EARLY FDOCA GROUP
     // SQL Descriptor Optional Group Description
     //
@@ -3229,7 +3229,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         parseSQLUDTGRP(columnMetaData, columnNumber);
         parseSQLDXGRP(columnMetaData, columnNumber);
     }
-    
+
     // SQLUDTGRP : EARLY FDOCA GROUP
     // SQL User-Defined Data Group Description
     //
@@ -3240,10 +3240,10 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
     {
         int jdbcType = columnMetaData.types_[columnNumber];
 
-        if (!(jdbcType == ClientTypes.JAVA_OBJECT)) { // || 
+        if (!(jdbcType == ClientTypes.JAVA_OBJECT)) { // ||
                 // !netAgent_.netConnection_.serverSupportsUDTs()) { // @AGG assume supported
-            if (readFastUnsignedByte() == CodePoint.NULLDATA) { 
-                return; 
+            if (readFastUnsignedByte() == CodePoint.NULLDATA) {
+                return;
             }
         }
         else
@@ -3255,7 +3255,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             columnMetaData.sqlUDTclassName_[columnNumber] = className;
         }
     }
-    
+
     // SQLDXGRP : EARLY FDOCA GROUP
     // SQL Descriptor Extended Group Description
     //
@@ -3277,7 +3277,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         if (readFastUnsignedByte() == CodePoint.NULLDATA) {
             return;
         }
-        
+
         //buffer.skipBytes(8); // @AGG manually skip 8 bytes
 
         //   SQLXKEYMEM; PROTOCOL TYPE I2; ENVLID 0x04; Length Override 2
@@ -3310,7 +3310,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         //   SQLXNAME_m; PROTOCOL TYPE VCM; ENVLID 0x3E; Length Override 255
         //   SQLXNAME_s; PROTOCOL TYPE VCS; ENVLID 0x32; Length Override 255
         String sqlxname = parseFastVCMorVCS(); // ID
-        
+
         if (columnMetaData.sqlxKeymem_ == null) {
             columnMetaData.sqlxKeymem_ = new short[columnMetaData.columns_];
         }
@@ -3349,7 +3349,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         columnMetaData.sqlxSchema_[column] = (sqlxschema == null) ? columnMetaData.sqldSchema_ : sqlxschema;
         columnMetaData.sqlxRdbnam_[column] = (sqlxrdbnam == null) ? columnMetaData.sqldRdbnam_ : sqlxrdbnam;
     }
-    
+
     // SQLDHROW : FDOCA EARLY ROW
     // SQL Descriptor Header Row Description
     //
@@ -3358,7 +3358,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
     private void parseSQLDHROW(ColumnMetaData columnMetaData) {
         parseSQLDHGRP(columnMetaData);
     }
-    
+
     // SQLDHGRP : EARLY FDOCA GROUP
     // SQL Descriptor Header Group Description
     // See DRDA V3 Vol 1 pg. 288
@@ -3377,7 +3377,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         if (readFastUnsignedByte() == CodePoint.NULLDATA) {
             return;
         }
-        
+
         //   SQLDHOLD; PROTOCOL TYPE I2; ENVLID 0x04; Length Override 2
         // value of 0 or 1. Value of 1 indicates WITH HOLD. Otherwise 0
         short sqldhold = readFastShort();
@@ -3424,12 +3424,12 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         columnMetaData.sqldRdbnam_ = sqldrdbnam;
         columnMetaData.sqldSchema_ = sqldschema;
     }
-    
+
 //    final int getFastSkipSQLCARDrowLength() {
 //        return pos_ - popMark();
 //    }
 
-    
+
     protected final boolean peekForNullSqlcagrp() {
         // skip the 4-byte LLCP and any extended length bytes
         int offset = (4 + peekedNumOfExtendedLenBytes_);
@@ -3437,7 +3437,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         //int nullInd = buffer_[pos_ + offset] & 0xff;
         return (nullInd == CodePoint.NULLDATA);
     }
-    
+
     protected final int peekNumOfColumns() {
         // skip the 4-byte LLCP and any extended length bytes + 1-byte null sqlcagrp null indicator
         int offset = (4 + peekedNumOfExtendedLenBytes_ + 1);
@@ -3450,7 +3450,7 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         else
           return buffer.getShortLE(buffer.readerIndex() + offset);
     }
-    
+
     private int skipSQLDHROW(int offset) {
         buffer.markReaderIndex();
         buffer.readerIndex(offset);

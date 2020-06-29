@@ -17,14 +17,14 @@ import io.vertx.sqlclient.tck.SimpleQueryTestBase;
 public class DB2SimpleQueryPooledTest extends SimpleQueryTestBase {
     @ClassRule
     public static DB2Resource rule = DB2Resource.SHARED_INSTANCE;
-    
-	@Rule
-	public TestName testName = new TestName();
 
-	@Before
-	public void printTestName(TestContext ctx) throws Exception {
-		System.out.println(">>> BEGIN " + getClass().getSimpleName() + "." + testName.getMethodName());
-	}
+  @Rule
+  public TestName testName = new TestName();
+
+  @Before
+  public void printTestName(TestContext ctx) throws Exception {
+    System.out.println(">>> BEGIN " + getClass().getSimpleName() + "." + testName.getMethodName());
+  }
 
     @Override
     protected void initConnector() {

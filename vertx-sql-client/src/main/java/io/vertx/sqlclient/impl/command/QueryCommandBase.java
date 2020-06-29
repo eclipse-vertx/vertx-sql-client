@@ -28,15 +28,15 @@ import java.util.stream.Collector;
  */
 
 public abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
-	
+
   public static final Collector<Row, Void, Void> NULL_COLLECTOR = Collector.of(() -> null, (v,row) -> {}, (v1, v2) -> null, Function.identity());
-	
+
   private final QueryResultHandler<T> resultHandler;
   private final Collector<Row, ?, T> collector;
   private final boolean autoCommit;
 
   QueryCommandBase(boolean autoCommit, Collector<Row, ?, T> collector, QueryResultHandler<T> resultHandler) {
-	this.autoCommit = autoCommit;
+  this.autoCommit = autoCommit;
     this.resultHandler = resultHandler;
     this.collector = collector;
   }
@@ -44,9 +44,9 @@ public abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
   public QueryResultHandler<T> resultHandler() {
     return resultHandler;
   }
-  
+
   public boolean autoCommit() {
-	return autoCommit;
+  return autoCommit;
   }
 
   public Collector<Row, ?, T> collector() {

@@ -21,15 +21,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Section {
-	
-	private static final Logger LOG = Logger.getLogger(Section.class.getName());
-    
-	final DB2Package pkg;
+
+  private static final Logger LOG = Logger.getLogger(Section.class.getName());
+
+  final DB2Package pkg;
     final int number;
     private final AtomicBoolean inUse = new AtomicBoolean(true);
 
     Section(DB2Package pkg, int sectionNumber) {
-    	this(pkg, sectionNumber, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+      this(pkg, sectionNumber, ResultSet.HOLD_CURSORS_OVER_COMMIT);
     }
 
     Section(DB2Package pkg, int sectionNumber, int resultSetHoldability) {
@@ -44,12 +44,12 @@ public class Section {
      * @see #release()
      */
     void use() {
-    	if (LOG.isLoggable(Level.FINE))
-    		LOG.fine("Marking section for use: " + this);
-    	
-    	if (inUse.getAndSet(true)) {
-    		throw new IllegalStateException("Attempted to use a section multiple times: " + this);
-    	}
+      if (LOG.isLoggable(Level.FINE))
+        LOG.fine("Marking section for use: " + this);
+
+      if (inUse.getAndSet(true)) {
+        throw new IllegalStateException("Attempted to use a section multiple times: " + this);
+      }
     }
 
     /**
@@ -58,31 +58,31 @@ public class Section {
      * @see #use()
      */
     public void release() {
-    	if (LOG.isLoggable(Level.FINE))
-    		LOG.fine("Releasing section: " + this);
-    	
-    	if (inUse.getAndSet(false)) {
-    		pkg.freeSections.add(this);
-    	} else {
-    		throw new IllegalStateException("Attempted to release section multiple times: " + this);
-    	}
+      if (LOG.isLoggable(Level.FINE))
+        LOG.fine("Releasing section: " + this);
+
+      if (inUse.getAndSet(false)) {
+        pkg.freeSections.add(this);
+      } else {
+        throw new IllegalStateException("Attempted to release section multiple times: " + this);
+      }
     }
-    
+
     @Override
     public String toString() {
-        return super.toString() + "{packageName=" + pkg.name + ", sectionNumber=" + number + ", cursorName=" + pkg.cursorNamePrefix + "}"; 
+        return super.toString() + "{packageName=" + pkg.name + ", sectionNumber=" + number + ", cursorName=" + pkg.cursorNamePrefix + "}";
     }
 
     static class ImmediateSection extends Section {
       public ImmediateSection(DB2Package pkg) {
         super(pkg, pkg.maxSections + 1);
       }
-      
+
       @Override
       void use() {
         // No-op: Static section can be used by multiple statements at once
       }
-      
+
       @Override
       public void release() {
         // No-op: Static section can be used by multiple statements at once

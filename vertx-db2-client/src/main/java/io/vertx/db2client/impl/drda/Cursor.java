@@ -58,7 +58,7 @@ public class Cursor {
     static final Charset UTF_16BE = Charset.forName("UTF-16BE");
     static final Charset UTF_8 = Charset.forName("UTF-8");
     static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
-    
+
     // unused protocol element: SBCS_CLOB = 8;
     // unused protocol element: MBCS_CLOB = 9;
     // unused protocol element: DBCS_CLOB = 10;
@@ -125,7 +125,7 @@ public class Cursor {
 
     public int[] ccsid_;
     private char[] charBuffer_;
-    
+
 //    NetResultSet netResultSet_;
 //    private NetAgent netAgent_;
 
@@ -153,7 +153,7 @@ public class Cursor {
     /** Flag indicating whether the result set on the server is
      * implicitly closed when end-of-data is received. */
     private boolean qryclsimpEnabled_;
-    
+
     private final ConnectionMetaData metadata;
 
     //-----------------------------constants--------------------------------------
@@ -196,7 +196,7 @@ public class Cursor {
 
         // mark the start of a new row.
         makeNextRowPositionCurrent();
-        
+
         // Moving out of the hole, set isUpdateDeleteHole to false
         isUpdateDeleteHole_ = false;
 
@@ -287,7 +287,7 @@ public class Cursor {
     }
 
     /**
-     * Get updated status for this row. 
+     * Get updated status for this row.
      * Minion of ResultSet#rowUpdated.
      *
      * @see Cursor#setIsRowUpdated
@@ -297,7 +297,7 @@ public class Cursor {
     }
 
     /**
-     * Get deleted status for this row. 
+     * Get deleted status for this row.
      * Minion of ResultSet#rowDeleted.
      *
      * @see Cursor#setIsUpdataDeleteHole
@@ -305,7 +305,7 @@ public class Cursor {
     public final boolean getIsUpdateDeleteHole() {
         return isUpdateDeleteHole_;
     }
-    
+
     //---------------------------cursor positioning-------------------------------
 
     protected final void markNextRowPosition() {
@@ -330,12 +330,12 @@ public class Cursor {
 
     // Build a Java boolean from a 1-byte signed binary representation.
     private boolean get_BOOLEAN(int column) {
-    	// @AGG force Little Endian
-    	// @AGG In DB2 BOOLEAN columns appear to be encoded as two bytes
+      // @AGG force Little Endian
+      // @AGG In DB2 BOOLEAN columns appear to be encoded as two bytes
       if (metadata.isZos())
         return dataBuffer_.getShort(columnDataPosition_[column - 1]) != 0;
       else
-    	return dataBuffer_.getShortLE(columnDataPosition_[column - 1]) != 0;
+      return dataBuffer_.getShortLE(columnDataPosition_[column - 1]) != 0;
 //        if ( SignedBinary.getByte( dataBuffer_, columnDataPosition_[column - 1] ) == 0 )
 //        { return false; }
 //        else { return true; }
@@ -402,7 +402,7 @@ public class Cursor {
 //                columnDataPosition_[column - 1]);
       }
     }
-    
+
     // Build a java.math.BigDecimal from a fixed point decimal byte representation.
     private final BigDecimal get_DECIMAL(int column) {
         return Decimal.getBigDecimal(dataBuffer_,
@@ -431,7 +431,7 @@ public class Cursor {
             throw new IllegalArgumentException("SQLState.LANG_OUTSIDE_RANGE_FOR_DATATYPE " + targetType, e);
         }
     }
-    
+
     // Build a Java String from a database VARCHAR or LONGVARCHAR field.
     //
     // Depending on the ccsid, length is the number of chars or number of bytes.
@@ -455,9 +455,9 @@ public class Cursor {
 
         int dataLength = columnDataComputedLength_[column - 1] - 2;
         if (maxFieldSize_ != 0 && maxFieldSize_ < dataLength)
-        	dataLength = maxFieldSize_;
-        return dataBuffer_.getCharSequence(columnDataPosition_[column - 1] + 2, 
-        		dataLength, charset_[column - 1]).toString();
+          dataLength = maxFieldSize_;
+        return dataBuffer_.getCharSequence(columnDataPosition_[column - 1] + 2,
+            dataLength, charset_[column - 1]).toString();
 //        String tempString = new String(dataBuffer_,
 //                columnDataPosition_[column - 1] + 2,
 //                columnDataComputedLength_[column - 1] - 2,
@@ -483,9 +483,9 @@ public class Cursor {
 
         int dataLength = columnDataComputedLength_[column - 1];
         if (maxFieldSize_ != 0 && maxFieldSize_ < dataLength)
-        	dataLength = maxFieldSize_;
-        return dataBuffer_.getCharSequence(columnDataPosition_[column - 1], 
-        		dataLength, charset_[column - 1]).toString();
+          dataLength = maxFieldSize_;
+        return dataBuffer_.getCharSequence(columnDataPosition_[column - 1],
+            dataLength, charset_[column - 1]).toString();
 //        String tempString = new String(dataBuffer_,
 //                columnDataPosition_[column - 1],
 //                columnDataComputedLength_[column - 1],
@@ -498,8 +498,8 @@ public class Cursor {
     // Build a JDBC Date object from the ISO DATE field.
     private LocalDate get_DATE(int column) {
         // DATE column is always 10 chars long
-        String dateString = dataBuffer_.getCharSequence(columnDataPosition_[column - 1], 
-        		10, charset_[column - 1]).toString();
+        String dateString = dataBuffer_.getCharSequence(columnDataPosition_[column - 1],
+            10, charset_[column - 1]).toString();
         return LocalDate.parse(dateString, DRDAConstants.DB2_DATE_FORMAT);
 //        return DateTime.dateBytesToDate(dataBuffer_,
 //            columnDataPosition_[column - 1],
@@ -510,8 +510,8 @@ public class Cursor {
     // Build a JDBC Time object from the ISO TIME field.
     private LocalTime get_TIME(int column) {
         // Time column is always 8 chars long
-        String timeString = dataBuffer_.getCharSequence(columnDataPosition_[column - 1], 
-        		8, charset_[column - 1]).toString();
+        String timeString = dataBuffer_.getCharSequence(columnDataPosition_[column - 1],
+            8, charset_[column - 1]).toString();
         return LocalTime.parse(timeString, DRDAConstants.DB2_TIME_FORMAT);
 //        return DateTime.timeBytesToTime(dataBuffer_,
 //                columnDataPosition_[column - 1],
@@ -521,8 +521,8 @@ public class Cursor {
 
     // Build a JDBC Timestamp object from the ISO TIMESTAMP field.
     private final LocalDateTime get_TIMESTAMP(int column) {
-        String timeString = dataBuffer_.getCharSequence(columnDataPosition_[column - 1], 
-        		26, charset_[column - 1]).toString();
+        String timeString = dataBuffer_.getCharSequence(columnDataPosition_[column - 1],
+            26, charset_[column - 1]).toString();
         return LocalDateTime.parse(timeString, DRDAConstants.DB2_TIMESTAMP_FORMAT);
 //        return DateTime.timestampBytesToTimestamp(
 //            dataBuffer_,
@@ -630,7 +630,7 @@ public class Cursor {
             throw new IllegalStateException("SQLState.NET_MARSHALLING_UDT_ERROR", e);
         }
     }
-    
+
     private DB2RowId get_ROWID(int column) {
       int columnLength = maxFieldSize_ == 0
           ? columnDataComputedLength_[column - 1] - 2
@@ -883,8 +883,8 @@ public class Cursor {
     }
 
     public final BigDecimal getBigDecimal(int column) throws SQLException {
-    	if (isNull(column))
-    		return null;
+      if (isNull(column))
+        return null;
         switch (jdbcTypes_[column - 1]) {
         case Types.BOOLEAN:
             return BigDecimal.valueOf(getLong(column));
@@ -914,8 +914,8 @@ public class Cursor {
     }
 
     public final LocalDate getDate(int column) {
-    	if (isNull(column))
-    		return null;
+      if (isNull(column))
+        return null;
         switch (jdbcTypes_[column - 1]) {
         case Types.DATE:
             return get_DATE(column);
@@ -933,8 +933,8 @@ public class Cursor {
     }
 
     public final LocalTime getTime(int column) {
-    	if (isNull(column))
-    		return null;
+      if (isNull(column))
+        return null;
         switch (jdbcTypes_[column - 1]) {
         case Types.TIME:
             return get_TIME(column);
@@ -952,8 +952,8 @@ public class Cursor {
     }
 
     public final Timestamp getTimestamp(int column, Calendar cal) {
-    	if (isNull(column))
-    		return null;
+      if (isNull(column))
+        return null;
         switch (jdbcTypes_[column - 1]) {
         case Types.TIMESTAMP:
 //            return getTIMESTAMP(column, cal);
@@ -973,8 +973,8 @@ public class Cursor {
     }
 
     public final String getString(int column) {
-    	if (isNull(column))
-    		return null;
+      if (isNull(column))
+        return null;
         switch (jdbcTypes_[column - 1]) {
         case Types.BOOLEAN:
             if (get_BOOLEAN(column)) {
@@ -1054,7 +1054,7 @@ public class Cursor {
                 throw coercionError( "byte[]", column );
             }
     }
-    
+
     public final DB2RowId getRowID(int column) {
       switch (jdbcTypes_[column - 1]) {
       case Types.ROWID:
@@ -1066,8 +1066,8 @@ public class Cursor {
 
     final InputStream getBinaryStream(int column)
     {
-    	if (isNull(column))
-    		return null;
+      if (isNull(column))
+        return null;
         switch (jdbcTypes_[column - 1]) {
             case Types.BINARY:
                 return new ByteArrayInputStream(get_CHAR_FOR_BIT_DATA(column));
@@ -1079,7 +1079,7 @@ public class Cursor {
                 throw new UnsupportedOperationException();
 //                ClientBlob b = getBlobColumn_(column, agent_, false);
 //                if (b.isLocator()) {
-//                    BlobLocatorInputStream is 
+//                    BlobLocatorInputStream is
 //                            = new BlobLocatorInputStream(agent_.connection_, b);
 //                    return new BufferedInputStream(is);
 //                } else {
@@ -1092,14 +1092,14 @@ public class Cursor {
 
     final InputStream getAsciiStream(int column)
     {
-    	if (isNull(column))
-    		return null;
+      if (isNull(column))
+        return null;
         switch (jdbcTypes_[column - 1]) {
             case Types.CLOB:
                 throw new UnsupportedOperationException();
 //                ClientClob c = getClobColumn_(column, agent_, false);
 //                if (c.isLocator()) {
-//                    ClobLocatorInputStream is 
+//                    ClobLocatorInputStream is
 //                            = new ClobLocatorInputStream(agent_.connection_, c);
 //                    return new BufferedInputStream(is);
 //                } else {
@@ -1124,9 +1124,9 @@ public class Cursor {
                 throw coercionError( "java.io.InputStream", column );
         }
     }
- 
+
     final Reader getCharacterStream(int column)
-            throws SQLException 
+            throws SQLException
     {
         switch (jdbcTypes_[column - 1]) {
             case Types.CLOB:
@@ -1161,8 +1161,8 @@ public class Cursor {
     }
 
     public final Blob getBlob(int column) {
-    	if (isNull(column))
-    		return null;
+      if (isNull(column))
+        return null;
         throw new UnsupportedOperationException();
 //        switch (jdbcTypes_[column - 1]) {
 //        case ClientTypes.BLOB:
@@ -1173,8 +1173,8 @@ public class Cursor {
     }
 
     public final Clob getClob(int column) {
-    	if (isNull(column))
-    		return null;
+      if (isNull(column))
+        return null;
         throw new UnsupportedOperationException();
 //        switch (jdbcTypes_[column - 1]) {
 //        case ClientTypes.CLOB:
@@ -1185,23 +1185,23 @@ public class Cursor {
     }
 
 //    final Array getArray(int column) throws SQLException {
-//        throw new SQLException(agent_.logWriter_, 
+//        throw new SQLException(agent_.logWriter_,
 //            new ClientMessageId (SQLState.NOT_IMPLEMENTED),
 //            "getArray(int)");
 //    }
 //
 //    final Ref getRef(int column) throws SQLException {
-//        throw new SQLException(agent_.logWriter_, 
+//        throw new SQLException(agent_.logWriter_,
 //            new ClientMessageId (SQLState.NOT_IMPLEMENTED), "getRef(int)");
 //    }
-    
+
     private boolean isNull(int column) {
-    	return nullable_[column - 1] && isNull_[column - 1];
+      return nullable_[column - 1] && isNull_[column - 1];
     }
 
     public final Object getObject(int column) {
-    	if (isNull(column))
-    		return null;
+      if (isNull(column))
+        return null;
         switch (jdbcTypes_[column - 1]) {
         case Types.BOOLEAN:
             return get_BOOLEAN(column);
@@ -1285,7 +1285,7 @@ public class Cursor {
     private IllegalStateException coercionError
         ( String targetType, int sourceColumn )
     {
-        return new IllegalStateException("Unknown target type for " + targetType + 
+        return new IllegalStateException("Unknown target type for " + targetType +
                 ClientTypes.getTypeString(jdbcTypes_[sourceColumn -1]) +
                 " value=" + jdbcTypes_[sourceColumn -1]);
     }
@@ -1297,9 +1297,9 @@ public class Cursor {
     private int getColumnScale(int column) {
         return (fdocaLength_[column] & 0xff);
     }
-    
+
     // @AGG following code is from NetCursor
-    
+
     //-----------------------------parsing the data buffer------------------------
 
     /**
@@ -1359,17 +1359,17 @@ public class Cursor {
         // Read the DA null indicator. Do this before we close mark the statement
         // closed on the server.
         daNullIndicator = readFdocaOneByte();
-        
+
         if (netSqlca != null) {
             for (int i=0;i<netSqlca.length; i++) {
                 int sqlcode = netSqlca[i].getSqlCode();
                 if (sqlcode < 0) {
-                    throw new IllegalStateException(//netAgent_.logWriter_, 
+                    throw new IllegalStateException(//netAgent_.logWriter_,
                             netSqlca[i].toString());
                 } else {
                     if (sqlcode == SqlCode.END_OF_DATA.getCode()) {
                         setAllRowsReceivedFromServer(true);
-                        if (//netResultSet_ != null && 
+                        if (//netResultSet_ != null &&
                                 netSqlca[i].containsSqlcax()) {
                             throw new UnsupportedOperationException();
 //                            netResultSet_.setRowCountEvent(
@@ -1377,15 +1377,15 @@ public class Cursor {
                         }
                     } else if (/*netResultSet_ != null && */ sqlcode > 0) {
                         String sqlState = netSqlca[i].getSqlState();
-                        if (!sqlState.equals(SQLState.ROW_DELETED) && 
+                        if (!sqlState.equals(SQLState.ROW_DELETED) &&
                                 !sqlState.equals(SQLState.ROW_UPDATED)) {
 //                            netResultSet_.accumulateWarning(
-//                                    new SqlWarning(agent_.logWriter_, 
+//                                    new SqlWarning(agent_.logWriter_,
 //                                        netSqlca[i]));
                         } else {
-                            receivedDeleteHoleWarning 
+                            receivedDeleteHoleWarning
                                     |= sqlState.equals(SQLState.ROW_DELETED);
-                            receivedRowUpdatedWarning 
+                            receivedRowUpdatedWarning
                                     |= sqlState.equals(SQLState.ROW_UPDATED);
                         }
                     }
@@ -1395,8 +1395,8 @@ public class Cursor {
 
         setIsUpdataDeleteHole(rowIndex, receivedDeleteHoleWarning);
         setIsRowUpdated(receivedRowUpdatedWarning);
-        
-        
+
+
 
         // In the case for held cursors, the +100 comes back as part of the QRYDTA, and as
         // we are parsing through the row that contains the SQLCA with +100, we mark the
@@ -1718,7 +1718,7 @@ public class Cursor {
         int currentPosition = 0;
 
         for (int i = 0; i < columns_; i++) {
-            if ((isNonTrivialDataLob(i)) 
+            if ((isNonTrivialDataLob(i))
                 && (locator(i + 1) == -1)) // Lob.INVALID_LOCATOR))
             // key = column position, data = index to corresponding data in extdtaData_
             // ASSERT: the server always returns the EXTDTA objects in ascending order
@@ -1762,7 +1762,7 @@ public class Cursor {
         }
         return (length != 0L) ? true : false;
     }
-    
+
     private static final long getLong(byte[] buffer, int offset) {
         return (long) (((buffer[offset + 0] & 0xffL) << 56) +
                 ((buffer[offset + 1] & 0xffL) << 48) +
@@ -1825,7 +1825,7 @@ public class Cursor {
             ret_val = new NetSqlca[1];
         }
         ret_val[0] = netSqlca;
-        
+
         return ret_val;
     }
 
@@ -1938,7 +1938,7 @@ public class Cursor {
         // The server should send NULLDATA
         throw new IllegalStateException("SQLState.DRDA_COMMAND_NOT_IMPLEMENTED parseSQLDIAGSTT");
 //        netAgent_.accumulateChainBreakingReadExceptionAndThrow(
-//                new DisconnectException(netAgent_, 
+//                new DisconnectException(netAgent_,
 //                    new ClientMessageId(SQLState.DRDA_COMMAND_NOT_IMPLEMENTED),
 //                    "parseSQLDIAGSTT"));
     }
@@ -1951,7 +1951,7 @@ public class Cursor {
         NetSqlca[] ret_val = null;
         if (num != 0) {
             ret_val = new NetSqlca[num];
-        } 
+        }
 
         for (int i = 0; i < num; i++) {
             ret_val[i] = parseSQLDCROW();
@@ -1965,11 +1965,11 @@ public class Cursor {
         if (readFdocaOneByte() == CodePoint.NULLDATA) {
             return;
         }
-        
+
         // The server should send NULLDATA
         throw new UnsupportedOperationException("SQLState.DRDA_COMMAND_NOT_IMPLEMENTED parseSQLDIAGCN");
 //        netAgent_.accumulateChainBreakingReadExceptionAndThrow(
-//                new DisconnectException(netAgent_, 
+//                new DisconnectException(netAgent_,
 //                    new ClientMessageId(SQLState.DRDA_COMMAND_NOT_IMPLEMENTED),
 //                    "parseSQLDIAGCN"));
     }
@@ -2002,9 +2002,9 @@ public class Cursor {
     // SQLDCPNAM_s; PROTOCOL TYPE NVCS; ENVLID 0x33; Length Override 255
     // SQLDCXGRP; PROTOCOL TYPE N-GDA; ENVLID 0xD3; Length Override 1
     private NetSqlca parseSQLDCGRP()  {
-        
+
         int sqldcCode = readFdocaInt(); // SQLCODE
-        String sqldcState = readFdocaString(5, 
+        String sqldcState = readFdocaString(5,
                 Typdef.targetTypdef.getCcsidSbcEncoding()); // SQLSTATE
         int sqldcReason = readFdocaInt();  // REASON_CODE
 
@@ -2036,7 +2036,7 @@ public class Cursor {
     private NetSqlca parseSQLDCROW() {
         return parseSQLDCGRP();
     }
-    
+
     // SQL Diagnostics Condition Token Array - Identity 0xF7
     // NULLDATA will be received for now
     private void parseSQLDCTOKS() {
@@ -2047,7 +2047,7 @@ public class Cursor {
         // The server should send NULLDATA
         throw new UnsupportedOperationException("SQLState.DRDA_COMMAND_NOT_IMPLEMENTED parseSQLDCTOKS");
 //        netAgent_.accumulateChainBreakingReadExceptionAndThrow(
-//                new DisconnectException(netAgent_, 
+//                new DisconnectException(netAgent_,
 //                    new ClientMessageId(SQLState.DRDA_COMMAND_NOT_IMPLEMENTED),
 //                    "parseSQLDCTOKS"));
     }
@@ -2062,7 +2062,7 @@ public class Cursor {
         // The server should send NULLDATA
         throw new UnsupportedOperationException("SQLState.DRDA_COMMAND_NOT_IMPLEMENTED parseSQLDCXGRP");
 //        netAgent_.accumulateChainBreakingReadExceptionAndThrow(
-//                new DisconnectException(netAgent_, 
+//                new DisconnectException(netAgent_,
 //                    new ClientMessageId(SQLState.DRDA_COMMAND_NOT_IMPLEMENTED),
 //                    "parseSQLDCXGRP"));
     }
@@ -2105,7 +2105,7 @@ public class Cursor {
 
         return data;
     }
-    
+
     /**
      * Get locator for LOB of the designated column
      * <p>
@@ -2119,10 +2119,10 @@ public class Cursor {
     {
         int locator = get_INTEGER(column);
         // If Lob value was sent instead of locator, the value will be
-        // 0x8000, 0x8002, 0x8004, 0x8006, 0x8008. This is not a locator 
+        // 0x8000, 0x8002, 0x8004, 0x8006, 0x8008. This is not a locator
         // but the blob has been sent by value.
         // Zero is not a valid locator, it indicates a zero length value
-        if ((locator == 0x8000) || (locator == 0x8002) || (locator == 0x8004) || 
+        if ((locator == 0x8000) || (locator == 0x8002) || (locator == 0x8004) ||
                 (locator == 0x8006) || (locator == 0x8008) ||(locator == 0)) {
             return -1; // Lob.INVALID_LOCATOR;
         } else {
@@ -2144,8 +2144,8 @@ public class Cursor {
 //        if (locator > 0) { // Create locator-based LOB object
 //            return new ClientBlob(agent, locator);
 //        }
-//        
-//        // The Blob value has been sent instead of locator 
+//
+//        // The Blob value has been sent instead of locator
 //        int index = column - 1;
 //        int dataOffset;
 //        byte[] data;
@@ -2186,8 +2186,8 @@ public class Cursor {
 //        if (locator > 0) { // Create locator-based LOB object
 //            return new ClientClob(agent, locator);
 //        }
-//        
-//        // The Clob value has been sent instead of locator 
+//
+//        // The Clob value has been sent instead of locator
 //        int index = column - 1;
 //        int dataOffset;
 //        byte[] data;
@@ -2326,7 +2326,7 @@ public class Cursor {
 //            if (sqlcode < 0) {
 //                SQLException = new SQLException(agent_.logWriter_, netResultSet_.queryTerminatingSqlca_);
 //            } else {
-//                SQLException = new SQLException(agent_.logWriter_, 
+//                SQLException = new SQLException(agent_.logWriter_,
 //                    new ClientMessageId(SQLState.NET_QUERY_PROCESSING_TERMINATED));
 //            }
 //            try {
@@ -2440,7 +2440,7 @@ public class Cursor {
     final boolean getQryclsimpEnabled() {
         return qryclsimpEnabled_;
     }
-    
+
     protected boolean calculateColumnOffsetsForRow() {
         int colNullIndicator = CodePoint.NULLDATA;
         int length;
@@ -2535,5 +2535,5 @@ public class Cursor {
         }
 
         return true; // hardwired for now, this means the current row position is a valid position
-    }    
+    }
 }

@@ -23,15 +23,15 @@ import io.vertx.sqlclient.PropertyKind;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 public interface QueryResultHandler<T> {
-	
+
   QueryResultHandler<Void> NOOP_HANDLER = new QueryResultHandler<Void>() {
-	    @Override
-	    public <V> void addProperty(PropertyKind<V> property, V value) {
-	    }
-	    @Override
-	    public void handleResult(int updatedCount, int size, RowDesc desc, Void result, Throwable failure) {
-	    }
-	  };
+      @Override
+      public <V> void addProperty(PropertyKind<V> property, V value) {
+      }
+      @Override
+      public void handleResult(int updatedCount, int size, RowDesc desc, Void result, Throwable failure) {
+      }
+    };
 
   <V> void addProperty(PropertyKind<V> property, V value);
 

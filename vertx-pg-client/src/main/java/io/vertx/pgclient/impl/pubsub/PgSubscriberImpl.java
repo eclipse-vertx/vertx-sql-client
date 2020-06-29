@@ -53,8 +53,8 @@ public class PgSubscriberImpl implements PgSubscriber {
   public static final int NAMEDATALEN = 64;
   public static final int MAX_CHANNEL_NAME_LENGTH = NAMEDATALEN - 1;
   public static String applyIdLengthLimit(String channelName) {
-  	return channelName.length() > MAX_CHANNEL_NAME_LENGTH
-  			? channelName.substring(0, MAX_CHANNEL_NAME_LENGTH) : channelName;
+    return channelName.length() > MAX_CHANNEL_NAME_LENGTH
+        ? channelName.substring(0, MAX_CHANNEL_NAME_LENGTH) : channelName;
   }
 
   private void handleNotification(PgNotification notif) {
@@ -202,13 +202,13 @@ public class PgSubscriberImpl implements PgSubscriber {
   private class ChannelList {
 
     final String name;
-	final String quotedName;
+  final String quotedName;
     final ArrayList<ChannelImpl> subs = new ArrayList<>();
     boolean subscribed;
 
     ChannelList(String name) {
       this.name = name;
-	  quotedName = "\"" + name.replace("\"", "\"\"") + "\"";
+    quotedName = "\"" + name.replace("\"", "\"\"") + "\"";
     }
 
     void add(ChannelImpl sub) {

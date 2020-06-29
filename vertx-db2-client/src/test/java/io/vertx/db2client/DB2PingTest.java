@@ -23,13 +23,13 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 @RunWith(VertxUnitRunner.class)
 public class DB2PingTest extends DB2TestBase {
-	
-	@Test
-	public void testPingCommand(TestContext ctx) {
-	  DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-	    conn.ping(ctx.asyncAssertSuccess(v -> {
-	      conn.close();
-	    }));
-	  }));
-	}
+
+  @Test
+  public void testPingCommand(TestContext ctx) {
+    DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.ping(ctx.asyncAssertSuccess(v -> {
+        conn.close();
+      }));
+    }));
+  }
 }

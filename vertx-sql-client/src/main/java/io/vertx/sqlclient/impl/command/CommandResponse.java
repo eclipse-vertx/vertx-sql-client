@@ -56,7 +56,7 @@ public abstract class CommandResponse<R> implements AsyncResult<R> {
   private final AsyncResult<R> res;
 
   public CommandResponse(AsyncResult<R> res) {
-	this.res = res;
+  this.res = res;
   }
 
   public AsyncResult<R> toAsyncResult() {

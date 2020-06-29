@@ -9,16 +9,16 @@ CREATE TYPE full_address AS (city TEXT, street TEXT, home BOOLEAN);
 
 -- scram-sha-256 is only available for versions >= 10
 DO $$ BEGIN
-	IF (select Substr(setting, 1, 1) from pg_settings where name = 'server_version_num') <> '9' THEN
-		DROP USER IF EXISTS saslscram;
-		set password_encryption = 'scram-sha-256';
-		create user saslscram with SUPERUSER encrypted password 'saslscrampwd';
-		alter role saslscram set password_encryption = 'scram-sha-256';
-		alter role saslscram with password 'saslscrampwd';
-		grant all privileges on database postgres to saslscram;
-		GRANT ALL ON ALL TABLES IN SCHEMA public TO saslscram;
-		GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO saslscram;
-	END IF;
+  IF (select Substr(setting, 1, 1) from pg_settings where name = 'server_version_num') <> '9' THEN
+    DROP USER IF EXISTS saslscram;
+    set password_encryption = 'scram-sha-256';
+    create user saslscram with SUPERUSER encrypted password 'saslscrampwd';
+    alter role saslscram set password_encryption = 'scram-sha-256';
+    alter role saslscram with password 'saslscrampwd';
+    grant all privileges on database postgres to saslscram;
+    GRANT ALL ON ALL TABLES IN SCHEMA public TO saslscram;
+    GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO saslscram;
+  END IF;
 END $$;
 
 -- World table

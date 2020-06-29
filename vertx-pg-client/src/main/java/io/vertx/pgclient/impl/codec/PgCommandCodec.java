@@ -92,17 +92,17 @@ abstract class PgCommandCodec<R, C extends CommandBase<R>> {
   void handleAuthenticationMD5Password(byte[] salt) {
     logger.warn(getClass().getSimpleName() + " should handle message AuthenticationMD5Password");
   }
-  
+
   void handleAuthenticationSasl(ByteBuf in) {
     logger.warn(getClass().getSimpleName() + " should handle message AuthenticationSasl");
   }
-  
+
   void handleAuthenticationSaslContinue(ByteBuf in) {
     logger.warn(getClass().getSimpleName() + " should handle message AuthenticationSaslContinue");
   }
 
   void handleAuthenticationSaslFinal(ByteBuf in) {
-	logger.warn(getClass().getSimpleName() + " should handle message AuthenticationSaslFinal");
+  logger.warn(getClass().getSimpleName() + " should handle message AuthenticationSaslFinal");
   }
 
   void handleAuthenticationClearTextPassword() {

@@ -112,6 +112,6 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClient, C
   }
 
   boolean autoCommit() {
-	return true;
+  return true;
   }
 }
