@@ -37,9 +37,14 @@ public abstract class SqlConnectionBase<C extends SqlConnectionBase> extends Sql
   public C prepare(String sql, Handler<AsyncResult<PreparedStatement>> handler) {
     schedule(new PrepareStatementCommand(sql, true), cr -> {
       if (cr.succeeded()) {
-        handler.handle(Future.succeededFuture(new PreparedStatementImpl(conn, context, cr.result(), autoCommit())));
+        handler.handle(Future.succeededFuture(PreparedStatementImpl.create(conn, context, cr.result(), autoCommit())));
       } else {
-        handler.handle(Future.failedFuture(cr.cause()));
+        Throwable cause = cr.cause();
+        if (conn.isLazyException(cause)) {
+          handler.handle(Future.succeededFuture(PreparedStatementImpl.create(conn, context, sql, autoCommit())));
+        } else {
+          handler.handle(Future.failedFuture(cause));
+        }
       }
     });
     return (C) this;

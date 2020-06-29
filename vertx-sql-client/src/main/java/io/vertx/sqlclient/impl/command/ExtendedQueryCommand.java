@@ -125,6 +125,23 @@ public class ExtendedQueryCommand<R> extends QueryCommandBase<R> {
   }
 
   /**
+   * @return the list of parameter types built from the tuple
+   */
+  public List<Class<?>> parameterTypes() {
+    Tuple tuple;
+    if (batch) {
+      List<Tuple> list = (List<Tuple>) tuples;
+      if (list.isEmpty()) {
+        return null;
+      }
+      tuple = list.get(0);
+    } else {
+      tuple = (Tuple) tuples;
+    }
+    return tuple.types();
+  }
+
+  /**
    * @return the parameters for query execution
    */
   public Tuple params() {

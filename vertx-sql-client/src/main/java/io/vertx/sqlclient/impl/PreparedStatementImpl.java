@@ -19,6 +19,7 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
+import io.vertx.core.Promise;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -32,6 +33,7 @@ import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
+import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -43,16 +45,36 @@ import java.util.stream.Collector;
  */
 class PreparedStatementImpl implements PreparedStatement {
 
-  final Connection conn;
-  final Context context;
-  final io.vertx.sqlclient.impl.PreparedStatement ps;
-  final boolean autoCommit;
+  static io.vertx.sqlclient.PreparedStatement create(Connection conn, Context context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
+    return new PreparedStatementImpl(conn, context, ps, autoCommit);
+  }
+
+  static io.vertx.sqlclient.PreparedStatement create(Connection conn, Context context, String sql, boolean autoCommit) {
+    return new PreparedStatementImpl(conn, context, sql, autoCommit);
+  }
+
+  private final Connection conn;
+  private final Context context;
+  private final String sql;
+  private Promise<io.vertx.sqlclient.impl.PreparedStatement> promise;
+  private Future<io.vertx.sqlclient.impl.PreparedStatement> future;
+  private final boolean autoCommit;
   private final AtomicBoolean closed = new AtomicBoolean();
 
-  PreparedStatementImpl(Connection conn, Context context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
+  private PreparedStatementImpl(Connection conn, Context context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
     this.conn = conn;
     this.context = context;
-    this.ps = ps;
+    this.sql = null;
+    this.promise = null;
+    this.future = Future.succeededFuture(ps);
+    this.autoCommit = autoCommit;
+  }
+
+  private PreparedStatementImpl(Connection conn, Context context, String sql, boolean autoCommit) {
+    this.conn = conn;
+    this.context = context;
+    this.sql = sql;
+    this.promise = Promise.promise();
     this.autoCommit = autoCommit;
   }
 
@@ -62,6 +84,21 @@ class PreparedStatementImpl implements PreparedStatement {
     return new PreparedStatementQuery<>(builder);
   }
 
+  void withPreparedStatement(Tuple args, Handler<AsyncResult<io.vertx.sqlclient.impl.PreparedStatement>> handler) {
+    if (context == Vertx.currentContext()) {
+      if (future == null) {
+        // Lazy statement;
+        Promise<io.vertx.sqlclient.impl.PreparedStatement> promise = Promise.promise();
+        PrepareStatementCommand prepare = new PrepareStatementCommand(sql, true, args.types());
+        conn.schedule(prepare, promise);
+        future = promise.future();
+      }
+      future.onComplete(handler);
+    } else {
+      context.runOnContext(v -> withPreparedStatement(args, handler));
+    }
+  }
+
   <R1, R2 extends SqlResultBase<R1, R2>, R3 extends SqlResult<R1>> void execute(
     TupleInternal args,
     int fetch,
@@ -69,17 +106,20 @@ class PreparedStatementImpl implements PreparedStatement {
     boolean suspended,
     SqlResultBuilder<R1, R2, R3> resultBuilder,
     Handler<AsyncResult<R3>> handler) {
-    if (context == Vertx.currentContext()) {
-      String msg = ps.prepare(args);
-      if (msg != null) {
-        handler.handle(Future.failedFuture(msg));
+    withPreparedStatement(args, ar -> {
+      if (ar.succeeded()) {
+        io.vertx.sqlclient.impl.PreparedStatement ps = ar.result();
+        String msg = ps.prepare(args);
+        if (msg != null) {
+          handler.handle(Future.failedFuture(msg));
+        } else {
+          SqlResultHandler<R1, R2, R3> resultHandler = resultBuilder.createHandler(handler);
+          conn.schedule(resultBuilder.createExtendedQuery(ps, args, fetch, cursorId, suspended, autoCommit, resultHandler), resultHandler);
+        }
       } else {
-        SqlResultHandler<R1, R2, R3> resultHandler = resultBuilder.createHandler(handler);
-        conn.schedule(resultBuilder.createExtendedQuery(ps, args, fetch, cursorId, suspended, autoCommit, resultHandler), resultHandler);
+        handler.handle(Future.failedFuture(ar.cause()));
       }
-    } else {
-      context.runOnContext(v -> execute(args, fetch, cursorId, suspended, resultBuilder, handler));
-    }
+    });
   }
 
   @Override
@@ -88,11 +128,7 @@ class PreparedStatementImpl implements PreparedStatement {
   }
 
   private Cursor cursor(TupleInternal args) {
-    String msg = ps.prepare(args);
-    if (msg != null) {
-      throw new IllegalArgumentException(msg);
-    }
-    return new CursorImpl(this, args);
+    return new CursorImpl(this, conn, autoCommit, args);
   }
 
   @Override
@@ -105,15 +141,26 @@ class PreparedStatementImpl implements PreparedStatement {
     List<Tuple> argsList,
     SqlResultBuilder<R1, R2, R3> builder,
     Handler<AsyncResult<R3>> handler) {
-    for  (Tuple args : argsList) {
-      String msg = ps.prepare((TupleInternal)args);
-      if (msg != null) {
-        handler.handle(Future.failedFuture(msg));
-        return;
-      }
+    if (argsList.isEmpty()) {
+      handler.handle(Future.failedFuture("Empty batch"));
+      return;
     }
-    SqlResultHandler resultHandler = builder.createHandler(handler);
-    conn.schedule(builder.createBatchCommand(ps, argsList, autoCommit, resultHandler), resultHandler);
+    withPreparedStatement(argsList.get(0), ar -> {
+      if (ar.succeeded()) {
+        io.vertx.sqlclient.impl.PreparedStatement ps = ar.result();
+        for  (Tuple args : argsList) {
+          String msg = ps.prepare((TupleInternal)args);
+          if (msg != null) {
+            handler.handle(Future.failedFuture(msg));
+            return;
+          }
+        }
+        SqlResultHandler resultHandler = builder.createHandler(handler);
+        conn.schedule(builder.createBatchCommand(ps, argsList, autoCommit, resultHandler), resultHandler);
+      } else {
+        handler.handle(Future.failedFuture(ar.cause()));
+      }
+    });
   }
 
   @Override
@@ -124,18 +171,38 @@ class PreparedStatementImpl implements PreparedStatement {
   @Override
   public void close(Handler<AsyncResult<Void>> completionHandler) {
     if (closed.compareAndSet(false, true)) {
-      CloseStatementCommand cmd = new CloseStatementCommand(ps);
-      cmd.handler = completionHandler;
-      conn.schedule(cmd);
+      if (this.promise == null) {
+        CloseStatementCommand cmd = new CloseStatementCommand(future.result());
+        conn.schedule(cmd, completionHandler);
+      } else {
+        if (future == null) {
+          future = this.promise.future();
+          this.promise.fail("Closed");
+        }
+        future.onComplete(ar -> {
+          if (ar.succeeded()) {
+            CloseStatementCommand cmd = new CloseStatementCommand(ar.result());
+            conn.schedule(cmd, completionHandler);
+          } else {
+            completionHandler.handle(Future.failedFuture(ar.cause()));
+          }
+        });
+      }
     } else {
       completionHandler.handle(Future.failedFuture("Already closed"));
     }
   }
 
   void closeCursor(String cursorId, Handler<AsyncResult<Void>> handler) {
-    CloseCursorCommand cmd = new CloseCursorCommand(cursorId, ps);
-    cmd.handler = handler;
-    conn.schedule(cmd);
+    future.onComplete(ar -> {
+      if (ar.succeeded()) {
+        CloseCursorCommand cmd = new CloseCursorCommand(cursorId, ar.result());
+        cmd.handler = handler;
+        conn.schedule(cmd);
+      } else {
+        handler.handle(Future.failedFuture(ar.cause()));
+      }
+    });
   }
 
   private class PreparedStatementQuery<T, R extends SqlResult<T>> extends QueryBase<T, R> implements PreparedQuery<R> {

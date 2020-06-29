@@ -165,11 +165,8 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
   public void testPrepareCursorValidationError(TestContext ctx) {
     testValidationError(ctx, (conn, cont) -> {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
-        try {
-          ps.cursor(INVALID_TUPLE);
-        } catch (Exception e) {
-          cont.handle(e);
-        }
+        Cursor cursor = ps.cursor(INVALID_TUPLE);
+        cursor.read(10, ctx.asyncAssertFailure(cont));
       }));
     });
   }
@@ -186,14 +183,18 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
   @Test
   public void testPreparedQueryValidationError(TestContext ctx) {
     testValidationError(ctx, (conn, cont) -> {
-      conn.preparedQuery("SELECT * FROM Fortune WHERE id=$1").execute(INVALID_TUPLE, ctx.asyncAssertFailure(cont));
+      conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> ps
+        .query()
+        .execute(INVALID_TUPLE, ctx.asyncAssertFailure(cont))));
     });
   }
 
   @Test
   public void testPreparedBatchValidationError(TestContext ctx) {
     testValidationError(ctx, (conn, cont) -> {
-      conn.preparedQuery("SELECT * FROM Fortune WHERE id=$1").executeBatch(Collections.singletonList(INVALID_TUPLE), ctx.asyncAssertFailure(cont));
+      conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> ps
+        .query()
+        .executeBatch(Collections.singletonList(INVALID_TUPLE), ctx.asyncAssertFailure(cont))));
     });
   }
 
@@ -202,10 +203,12 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     Async async = ctx.async();
     PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
       conn
-        .preparedQuery("SELECT 1 WHERE $1::INT4 IS NULL").execute(Tuple.tuple().addInteger(null), ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.size());
-          async.complete();
-        }));
+        .prepare("SELECT 1 WHERE $1::INT4 IS NULL", ctx.asyncAssertSuccess(ps ->
+          ps.query()
+            .execute(Tuple.tuple().addInteger(null), ctx.asyncAssertSuccess(result -> {
+              ctx.assertEquals(1, result.size());
+              async.complete();
+            }))));
     }));
   }
 
@@ -288,6 +291,52 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
               conn.close();
             }));
           }));
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testInferDataType(TestContext ctx) {
+    PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("SELECT CONCAT('HELLO', $1)")
+        .execute(Tuple.of("__"), ctx.asyncAssertSuccess(result -> {
+          Row row = result.iterator().next();
+          ctx.assertEquals("HELLO__", row.getString(0));
+          conn.close();
+        }));
+    }));
+  }
+
+  @Test
+  public void testInferDataTypeFailure(TestContext ctx) {
+    PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("SELECT CONCAT('HELLO', $1)")
+        .execute(Tuple.of(null), ctx.asyncAssertFailure(result -> {
+          conn.close();
+        }));
+    }));
+  }
+
+  @Test
+  public void testInferDataTypeLazy(TestContext ctx) {
+    PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT CONCAT('HELLO', $1)", ctx.asyncAssertSuccess(ps -> {
+        ps.query().execute(Tuple.of("__"), ctx.asyncAssertSuccess(result -> {
+          Row row = result.iterator().next();
+          ctx.assertEquals("HELLO__", row.getString(0));
+          conn.close();
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testInferDataTypeLazyFailure(TestContext ctx) {
+    PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT CONCAT('HELLO', $1)", ctx.asyncAssertSuccess(ps -> {
+        ps.query().execute(Tuple.of(null), ctx.asyncAssertFailure(result -> {
+          conn.close();
         }));
       }));
     }));

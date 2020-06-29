@@ -28,6 +28,7 @@ import io.vertx.sqlclient.impl.ListTuple;
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.temporal.Temporal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -1131,9 +1132,27 @@ public interface Tuple {
   void clear();
   
   /**
-   * @return A String containing the {@link Object#toString} value of each element,
-   * separated by a comma (,) character
+   * @return the list of types built from the tuple
    */
+  @GenIgnore
+  default List<Class<?>> types() {
+    int len = size();
+    List<Class<?>> types = new ArrayList<>();
+    for (int i = 0;i < len;i++) {
+      Object param = getValue(i);
+      if (param == null) {
+        types.add(Object.class);
+      } else {
+        types.add(param.getClass());
+      }
+    }
+    return types;
+  }
+
+    /**
+     * @return A String containing the {@link Object#toString} value of each element,
+     * separated by a comma (,) character
+     */
   default String deepToString() {
     StringBuilder sb = new StringBuilder();
     sb.append("[");

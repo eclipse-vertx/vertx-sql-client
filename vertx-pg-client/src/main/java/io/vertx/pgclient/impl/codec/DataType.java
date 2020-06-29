@@ -32,6 +32,8 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import java.time.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -123,6 +125,8 @@ enum DataType {
   TS_QUERY_ARRAY(3645, false,  String[].class);
 
   private static final Logger logger = LoggerFactory.getLogger(DataType.class);
+  private static final IntObjectMap<DataType> oidToDataType = new IntObjectHashMap<>();
+  private static final Map<Class<?>, DataType> encodingTypeToDataType = new HashMap<>();
 
   final int id;
   final boolean supportsBinary;
@@ -130,10 +134,7 @@ enum DataType {
   final Class<?> decodingType;
 
   DataType(int id, boolean supportsBinary, Class<?> type) {
-    this.id = id;
-    this.supportsBinary = supportsBinary;
-    this.decodingType = type;
-    this.encodingType = type;
+    this(id, supportsBinary, type, type);
   }
 
   DataType(int id, boolean supportsBinary, Class<?> encodingType, Class<?> decodingType) {
@@ -153,11 +154,19 @@ enum DataType {
     }
   }
 
-  private static IntObjectMap<DataType> oidToDataType = new IntObjectHashMap<>();
+  static DataType lookup(Class<?> type) {
+    DataType dataType = encodingTypeToDataType.get(type);
+    if (dataType == null) {
+      dataType = DataType.UNKNOWN;
+    }
+    return dataType;
+  }
 
   static {
     for (DataType dataType : values()) {
       oidToDataType.put(dataType.id, dataType);
     }
+    encodingTypeToDataType.put(String.class, VARCHAR);
+    encodingTypeToDataType.put(Integer.class, INT4);
   }
 }
