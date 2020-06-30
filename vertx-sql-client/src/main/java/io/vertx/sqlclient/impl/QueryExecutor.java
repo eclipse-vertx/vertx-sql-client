@@ -83,6 +83,7 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     Object metric;
     if (metrics != null) {
       metric = metrics.requestBegin(sql, sql);
+      metrics.requestEnd(metric);
     } else {
       metric = null;
     }
@@ -108,6 +109,7 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     Object metric;
     if (metrics != null) {
       metric = metrics.requestBegin(preparedStatement.sql(), preparedStatement.sql());
+      metrics.requestEnd(metric);
     } else {
       metric = null;
     }
@@ -142,6 +144,7 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     Object metric;
     if (metrics != null) {
       metric = metrics.requestBegin(sql, sql);
+      metrics.requestEnd(metric);
     } else {
       metric = null;
     }
@@ -178,6 +181,7 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     Object metric;
     if (metrics != null) {
       metric = metrics.requestBegin(preparedStatement.sql(), preparedStatement.sql());
+      metrics.requestEnd(metric);
     } else {
       metric = null;
     }
@@ -204,6 +208,7 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     Object metric;
     if (metrics != null) {
       metric = metrics.requestBegin(sql, sql);
+      metrics.requestEnd(metric);
     } else {
       metric = null;
     }
