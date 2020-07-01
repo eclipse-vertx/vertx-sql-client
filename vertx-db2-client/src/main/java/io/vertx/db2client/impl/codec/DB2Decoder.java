@@ -77,17 +77,22 @@ class DB2Decoder extends ByteToMessageDecoder {
       if (LOG.isDebugEnabled())
         LOG.debug("<<< DECODE " + ctx + " (" + payloadLength + " bytes)");
       ctx.decodePayload(payload, payloadLength);
-    } catch (DB2Exception connex) {
-      // A common connection error occurred, so don't bother with a hex dump and
-      // generic error message
-      ctx.completionHandler.handle(CommandResponse.failure(connex));
     } catch (Throwable t) {
-      int i = payload.readerIndex();
-      payload.readerIndex(startIndex);
-      StringBuilder sb = new StringBuilder(
-          "FATAL: Error parsing buffer at index " + i + " / 0x" + Integer.toHexString(i) + "\n");
-      ByteBufUtil.appendPrettyHexDump(sb, payload);
-      LOG.error(sb.toString(), t);
+      if (LOG.isDebugEnabled()) {
+        if (!(t instanceof DB2Exception) ||
+            (t.getMessage() != null && 
+             t.getMessage().startsWith("An error occurred with a DB2 operation."))) {
+          int i = payload.readerIndex();
+          payload.readerIndex(startIndex);
+          StringBuilder sb = new StringBuilder(
+              "FATAL: Error parsing buffer at index " + i + " / 0x" + Integer.toHexString(i) + "\n" +
+              "For command " + ctx + "\n");
+          ByteBufUtil.appendPrettyHexDump(sb, payload);
+          LOG.error(sb.toString(), t);
+        } else {
+          LOG.error("Command failed with: " + t.getMessage() + "\nCommand=" + ctx, t);
+        }
+      }
       ctx.completionHandler.handle(CommandResponse.failure(t));
     } finally {
       payload.clear();

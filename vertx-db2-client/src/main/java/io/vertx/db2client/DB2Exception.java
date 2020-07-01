@@ -23,6 +23,12 @@ public class DB2Exception extends RuntimeException {
 
   private final int errorCode;
   private final String sqlState;
+  
+  public DB2Exception(int errorCode, String sqlState) {
+    super("An error occurred with a DB2 operation. SQLCODE=" + errorCode + "  SQLSTATE=" + sqlState);
+    this.errorCode = errorCode;
+    this.sqlState = sqlState;
+  }
 
   public DB2Exception(String message, int errorCode, String sqlState) {
     super(message);
