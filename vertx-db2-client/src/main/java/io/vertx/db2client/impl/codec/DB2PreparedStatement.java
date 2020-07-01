@@ -15,9 +15,9 @@
  */
 package io.vertx.db2client.impl.codec;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -37,7 +37,7 @@ class DB2PreparedStatement implements PreparedStatement {
   final DB2RowDesc rowDesc;
   final Section section;
 
-  private final Map<String, QueryInstance> activeQueries = new HashMap<>(4);
+  private final Map<String, QueryInstance> activeQueries = new ConcurrentHashMap<>(4);
 
   public static class QueryInstance {
     final String cursorId;

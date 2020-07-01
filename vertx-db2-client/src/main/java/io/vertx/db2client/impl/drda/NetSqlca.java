@@ -156,6 +156,9 @@ public class NetSqlca {
                 throw new DB2Exception("The column '" + errMsg + "' provided does not exist", sqlca.sqlCode_, sqlca.sqlState_);
               else
                 throw new DB2Exception("A column provided does not exist", sqlca.sqlCode_, sqlca.sqlState_);
+            case SqlCode.INCORRECT_NUM_HOST_VARIABLES:
+              throw new DB2Exception("The number of variables that were passed into an OPEN or EXECUTE statement do not match " +
+                                     "the number of parameter markers that were defined in the statement.", sqlca.sqlCode_, sqlca.sqlState_);
             case SqlCode.NULL_CONSTRAINT_VIOLATION:
                 throw new DB2Exception("An attempt was made to INSERT or UPDATE a column that was declared as not nullable with the NULL value: " + errMsg,
                     sqlca.sqlCode_, sqlca.sqlState_);
@@ -200,7 +203,7 @@ public class NetSqlca {
                else
                    throw new DB2Exception("Duplicate keys were detected on the updated table", sqlca.sqlCode_, sqlca.sqlState_);
             default:
-                throw new IllegalStateException("ERROR: " + sqlca.toString());
+                throw new DB2Exception(sqlca.sqlCode_, sqlca.sqlState_);
      }
    }
 

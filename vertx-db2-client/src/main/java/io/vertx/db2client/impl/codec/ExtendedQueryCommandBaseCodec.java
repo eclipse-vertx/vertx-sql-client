@@ -114,9 +114,9 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommand<R
   @Override
   public String toString() {
     if (isQuery)
-      return super.toString() + ", fetch=" + cmd.fetch();
+      return super.toString() + ", ps=" + statement + ", fetch=" + cmd.fetch();
     else
-      return super.toString();
+      return super.toString() + ", ps=" + statement;
   }
 
 }

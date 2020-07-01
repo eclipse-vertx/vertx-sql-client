@@ -50,6 +50,8 @@ public class SqlCode {
     public static final int OBJECT_NOT_DEFINED = -204;
 
   public static final int COLUMN_DOES_NOT_EXIST = -206;
+  
+  public static final int INCORRECT_NUM_HOST_VARIABLES = -313;
 
   public static final int NULL_CONSTRAINT_VIOLATION = -407;
 
