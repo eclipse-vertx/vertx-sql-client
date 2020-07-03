@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -15,7 +15,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
@@ -23,21 +22,17 @@ import io.vertx.mysqlclient.MySQLAuthOptions;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.mysqlclient.MySQLSetOption;
-import io.vertx.mysqlclient.impl.command.ChangeUserCommand;
-import io.vertx.mysqlclient.impl.command.DebugCommand;
-import io.vertx.mysqlclient.impl.command.InitDbCommand;
-import io.vertx.mysqlclient.impl.command.PingCommand;
-import io.vertx.mysqlclient.impl.command.ResetConnectionCommand;
-import io.vertx.mysqlclient.impl.command.SetOptionCommand;
-import io.vertx.mysqlclient.impl.command.StatisticsCommand;
+import io.vertx.mysqlclient.impl.command.*;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> implements MySQLConnection {
 
-  public static Future<MySQLConnection> connect(Vertx vertx, MySQLConnectOptions options) {
-    ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
+  public static Future<MySQLConnection> connect(ContextInternal ctx, MySQLConnectOptions options) {
+    if (options.isUsingDomainSocket() && !ctx.owner().isNativeTransportEnabled()) {
+      return ctx.failedFuture("Native transport is not available");
+    }
     MySQLConnectionFactory client;
     try {
       client = new MySQLConnectionFactory(ctx, options);

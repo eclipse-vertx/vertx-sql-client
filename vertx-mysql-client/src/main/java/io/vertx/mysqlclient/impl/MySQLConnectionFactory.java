@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -11,14 +11,14 @@
 
 package io.vertx.mysqlclient.impl;
 
-import io.vertx.core.*;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.net.*;
 import io.vertx.core.net.impl.NetSocketInternal;
-import io.vertx.core.net.NetClient;
-import io.vertx.core.net.NetClientOptions;
-import io.vertx.core.net.NetSocket;
-import io.vertx.core.net.TrustOptions;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.sqlclient.impl.Connection;
@@ -34,8 +34,7 @@ import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.*;
 public class MySQLConnectionFactory implements ConnectionFactory {
   private final NetClient netClient;
   private final ContextInternal context;
-  private final String host;
-  private final int port;
+  private final SocketAddress socketAddress;
   private final String username;
   private final String password;
   private final String database;
@@ -54,8 +53,7 @@ public class MySQLConnectionFactory implements ConnectionFactory {
     NetClientOptions netClientOptions = new NetClientOptions(options);
 
     this.context = context;
-    this.host = options.getHost();
-    this.port = options.getPort();
+    this.socketAddress = options.getSocketAddress();
     this.username = options.getUser();
     this.password = options.getPassword();
     this.database = options.getDatabase();
@@ -81,7 +79,7 @@ public class MySQLConnectionFactory implements ConnectionFactory {
     }
     this.collation = collation;
     this.useAffectedRows = options.isUseAffectedRows();
-    this.sslMode = options.getSslMode();
+    this.sslMode = options.isUsingDomainSocket() ? SslMode.DISABLED : options.getSslMode();
 
     // server RSA public key
     Buffer serverRsaPublicKey = null;
@@ -135,7 +133,7 @@ public class MySQLConnectionFactory implements ConnectionFactory {
   }
 
   private void doConnect(Promise<Connection> promise) {
-    Future<NetSocket> fut = netClient.connect(port, host);
+    Future<NetSocket> fut = netClient.connect(socketAddress);
     fut.onComplete(ar -> {
       if (ar.succeeded()) {
         NetSocket so = ar.result();

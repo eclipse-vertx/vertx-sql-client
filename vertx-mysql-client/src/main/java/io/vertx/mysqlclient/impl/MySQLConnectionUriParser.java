@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -20,8 +20,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.lang.Integer.*;
-import static java.lang.String.*;
+import static java.lang.Integer.parseInt;
+import static java.lang.String.format;
 
 /**
  * This is a parser for parsing connection URIs of MySQL.
@@ -30,7 +30,7 @@ import static java.lang.String.*;
 public class MySQLConnectionUriParser {
   private static final String SCHEME_DESIGNATOR_REGEX = "(mysql|mariadb)://"; // URI scheme designator
   private static final String USER_INFO_REGEX = "((?<userinfo>[a-zA-Z0-9\\-._~%!]+(:[a-zA-Z0-9\\-._~%!]*)?)@)?"; // user name and password
-  private static final String NET_LOCATION_REGEX = "(?<host>[0-9.]+|\\[[a-zA-Z0-9:]+]|[a-zA-Z0-9\\-._~%]+)"; // ip v4/v6 address or host name
+  private static final String NET_LOCATION_REGEX = "(?<netloc>[0-9.]+|\\[[a-zA-Z0-9:]+]|[a-zA-Z0-9\\-._~%]+)?"; // ip v4/v6 address, host, domain socket address
   private static final String PORT_REGEX = "(:(?<port>\\d+))?"; // port
   private static final String SCHEMA_REGEX = "(/(?<schema>[a-zA-Z0-9\\-._~%!]+))?"; // schema name
   private static final String ATTRIBUTES_REGEX = "(\\?(?<attributes>.*))?"; // attributes
@@ -64,8 +64,8 @@ public class MySQLConnectionUriParser {
       // parse the user and password
       parseUserAndPassword(matcher.group("userinfo"), configuration);
 
-      // parse the IP address/hostname
-      parseHost(matcher.group("host"), configuration);
+      // parse the IP address/host/unix domainSocket address
+      parseNetLocation(matcher.group("netloc"), configuration);
 
       // parse the port
       parsePort(matcher.group("port"), configuration);
@@ -101,11 +101,11 @@ public class MySQLConnectionUriParser {
     }
   }
 
-  private static void parseHost(String hostInfo, JsonObject configuration) {
+  private static void parseNetLocation(String hostInfo, JsonObject configuration) {
     if (hostInfo == null || hostInfo.isEmpty()) {
       return;
     }
-    parseHostValue(decodeUrl(hostInfo), configuration);
+    parseNetLocationValue(decodeUrl(hostInfo), configuration);
   }
 
   private static void parsePort(String portInfo, JsonObject configuration) {
@@ -147,21 +147,20 @@ public class MySQLConnectionUriParser {
         String key = parameterPair.substring(0, indexOfDelimiter).toLowerCase();
         String value = decodeUrl(parameterPair.substring(indexOfDelimiter + 1).trim());
         switch (key) {
-          // Base Connection Parameters
+          case "port":
+            parsePort(value, configuration);
+            break;
+          case "host":
+            parseNetLocationValue(value, configuration);
+            break;
+          case "socket":
+            configuration.put("host", value);
+            break;
           case "user":
             configuration.put("user", value);
             break;
           case "password":
             configuration.put("password", value);
-            break;
-          case "host":
-            parseHostValue(value, configuration);
-            break;
-          case "port":
-            parsePort(value, configuration);
-            break;
-          case "socket":
-            configuration.put("socket", value);
             break;
           case "schema":
             configuration.put("database", value);
@@ -181,7 +180,7 @@ public class MySQLConnectionUriParser {
     }
   }
 
-  private static void parseHostValue(String hostValue, JsonObject configuration) {
+  private static void parseNetLocationValue(String hostValue, JsonObject configuration) {
     if (isRegardedAsIpv6Address(hostValue)) {
       configuration.put("host", hostValue.substring(1, hostValue.length() - 1));
     } else {

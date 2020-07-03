@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -17,11 +17,12 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.mysqlclient.impl.MySQLConnectionImpl;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.SqlConnection;
 
-import static io.vertx.mysqlclient.MySQLConnectOptions.*;
+import static io.vertx.mysqlclient.MySQLConnectOptions.fromUri;
 
 /**
  * An interface which represents a connection to MySQL server.
@@ -59,7 +60,7 @@ public interface MySQLConnection extends SqlConnection {
    * Like {@link #connect(Vertx, MySQLConnectOptions, Handler)} but returns a {@code Future} of the asynchronous result
    */
   static Future<MySQLConnection> connect(Vertx vertx, MySQLConnectOptions connectOptions) {
-    return MySQLConnectionImpl.connect(vertx, connectOptions);
+    return MySQLConnectionImpl.connect((ContextInternal) vertx.getOrCreateContext(), connectOptions);
   }
 
   /**
