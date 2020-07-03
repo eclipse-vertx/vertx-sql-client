@@ -15,6 +15,11 @@ public class PoolOptionsConverter {
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, PoolOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
+        case "connectionReleaseDelay":
+          if (member.getValue() instanceof Number) {
+            obj.setConnectionReleaseDelay(((Number)member.getValue()).intValue());
+          }
+          break;
         case "maxSize":
           if (member.getValue() instanceof Number) {
             obj.setMaxSize(((Number)member.getValue()).intValue());
@@ -34,6 +39,7 @@ public class PoolOptionsConverter {
   }
 
   public static void toJson(PoolOptions obj, java.util.Map<String, Object> json) {
+    json.put("connectionReleaseDelay", obj.getConnectionReleaseDelay());
     json.put("maxSize", obj.getMaxSize());
     json.put("maxWaitQueueSize", obj.getMaxWaitQueueSize());
   }

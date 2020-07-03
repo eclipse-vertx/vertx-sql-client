@@ -51,11 +51,12 @@ public class ConnectionPool {
   private final ArrayDeque<PooledConnection> available = new ArrayDeque<>();
   private int size;
   private final int maxWaitQueueSize;
+  private final int connectionReleaseDelay;
   private boolean checkInProgress;
   private boolean closed;
 
   public ConnectionPool(ConnectionFactory connector, int maxSize) {
-    this(connector, maxSize, PoolOptions.DEFAULT_MAX_WAIT_QUEUE_SIZE);
+    this(connector, null, new PoolOptions().setMaxSize(maxSize));
   }
 
   public ConnectionPool(ConnectionFactory connector, int maxSize, int maxWaitQueueSize) {
@@ -63,14 +64,26 @@ public class ConnectionPool {
   }
 
   public ConnectionPool(ConnectionFactory connector, Context context, int maxSize, int maxWaitQueueSize) {
+    this(connector, context, new PoolOptions().setMaxSize(maxSize).setMaxWaitQueueSize(maxWaitQueueSize));
+  }
+
+  public ConnectionPool(ConnectionFactory connector, Context context, PoolOptions poolOptions) {
     Objects.requireNonNull(connector, "No null connector");
+    this.maxSize = poolOptions.getMaxSize();
     if (maxSize < 1) {
       throw new IllegalArgumentException("Pool max size must be > 0");
     }
-    this.maxSize = maxSize;
     this.context = (ContextInternal) context;
-    this.maxWaitQueueSize = maxWaitQueueSize;
+    this.maxWaitQueueSize = poolOptions.getMaxWaitQueueSize();
+    this.connectionReleaseDelay = poolOptions.getConnectionReleaseDelay();
+    if (connectionReleaseDelay > 0 && context == null) {
+      throw new NullPointerException("context must not be null for connectionReleaseDelay");
+    }
     this.connector = connector;
+  }
+
+  int allSize() {
+    return all.size();
   }
 
   public int available() {
@@ -138,6 +151,7 @@ public class ConnectionPool {
 
     private final Connection conn;
     private Holder holder;
+    private Long idleTimer;
 
     PooledConnection(Connection conn) {
       this.conn = conn;
@@ -147,7 +161,7 @@ public class ConnectionPool {
     public boolean isSsl() {
       return conn.isSsl();
     }
-    
+
     @Override
     public DatabaseMetadata getDatabaseMetaData() {
       return conn.getDatabaseMetaData();
@@ -162,6 +176,7 @@ public class ConnectionPool {
      * Close the underlying connection
      */
     private void close(Promise<Void> promise) {
+      cancelIdleTimer();
       conn.close(this, promise);
     }
 
@@ -195,7 +210,7 @@ public class ConnectionPool {
         return;
       }
       this.holder = null;
-      release(this);
+      addToPool();
       promise.complete();
     }
 
@@ -237,12 +252,37 @@ public class ConnectionPool {
     public int getSecretKey() {
       return conn.getSecretKey();
     }
-  }
 
-  private void release(PooledConnection proxy) {
-    if (all.contains(proxy)) {
-      available.add(proxy);
+    private void addToPool() {
+      if (! all.contains(this)) {
+        return;
+      }
+      available.add(this);
       check();
+      if (connectionReleaseDelay <= 0 || ! this.equals(available.peekLast())) {
+        return;
+      }
+      idleTimer = context.setTimer(connectionReleaseDelay, t -> expire());
+    }
+
+    /**
+     * Remove from {@code available} and {@code all} and close connection.
+     */
+    private void expire() {
+      if (idleTimer == null) {
+        return;
+      }
+      idleTimer = null;
+      available.remove(this);
+      all.remove(this);
+      close(context.promise());
+    }
+
+    private void cancelIdleTimer() {
+      if (idleTimer != null) {
+        context.owner().cancelTimer(idleTimer);
+        idleTimer = null;
+      }
     }
   }
 
@@ -256,6 +296,7 @@ public class ConnectionPool {
         while (waiters.size() > 0) {
           if (available.size() > 0) {
             PooledConnection proxy = available.poll();
+            proxy.cancelIdleTimer();
             Handler<AsyncResult<Connection>> waiter = waiters.poll();
             waiter.handle(Future.succeededFuture(proxy));
           } else {

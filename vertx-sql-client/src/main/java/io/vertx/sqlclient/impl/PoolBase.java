@@ -48,7 +48,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
     super(tracer, metrics);
     this.vertx = context.owner();
     this.factory = factory;
-    this.pool = new ConnectionPool(factory, context, poolOptions.getMaxSize(), poolOptions.getMaxWaitQueueSize());
+    this.pool = new ConnectionPool(factory, context, poolOptions);
     this.closeFuture = new CloseFuture(this);
   }
 

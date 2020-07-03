@@ -12,6 +12,10 @@
 [frame="topbot"]
 |===
 ^|Name | Type ^| Description
+|[[connectionReleaseDelay]]`@connectionReleaseDelay`|`Number (int)`|+++
+Set the idle time in milliseconds before closing an connection waiting in the pool.
+ If 0 the connection will never be closed.
++++
 |[[maxSize]]`@maxSize`|`Number (int)`|+++
 Set the maximum pool size
 +++

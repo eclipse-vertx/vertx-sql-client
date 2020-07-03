@@ -19,6 +19,7 @@ package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
+import java.util.Objects;
 
 /**
  * The options for configuring a connection pool.
@@ -38,8 +39,14 @@ public class PoolOptions {
    */
   public static final int DEFAULT_MAX_WAIT_QUEUE_SIZE = -1;
 
+  /**
+   * Default time before closing an idle connection that waits in the pool = 0 (never close).
+   */
+  public static final int DEFAULT_CONNECTION_RELEASE_DELAY = 0;
+
   private int maxSize = DEFAULT_MAX_SIZE;
   private int maxWaitQueueSize = DEFAULT_MAX_WAIT_QUEUE_SIZE;
+  private int connectionReleaseDelay = DEFAULT_CONNECTION_RELEASE_DELAY;
 
   public PoolOptions() {
   }
@@ -51,6 +58,7 @@ public class PoolOptions {
   public PoolOptions(PoolOptions other) {
     maxSize = other.maxSize;
     maxWaitQueueSize = other.maxWaitQueueSize;
+    connectionReleaseDelay = other.connectionReleaseDelay;
   }
 
   /**
@@ -93,6 +101,26 @@ public class PoolOptions {
     return this;
   }
 
+  /**
+   * @return time in milliseconds before closing an idle connection that waits in the pool.
+   *            If 0 the connection will never be closed.
+   */
+  public int getConnectionReleaseDelay() {
+    return connectionReleaseDelay;
+  }
+
+  /**
+   * Set the idle time in milliseconds before closing a connection waiting in the pool.
+   * If 0 the connection will never be closed.
+   *
+   * @param connectionReleaseDelay  idle time in milliseconds
+   * @return a reference to this, so the API can be used fluently
+   */
+  public PoolOptions setConnectionReleaseDelay(int connectionReleaseDelay) {
+    this.connectionReleaseDelay = connectionReleaseDelay;
+    return this;
+  }
+
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
     PoolOptionsConverter.toJson(this, json);
@@ -101,21 +129,20 @@ public class PoolOptions {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof PoolOptions)) return false;
-    if (!super.equals(o)) return false;
-
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof PoolOptions)) {
+      return false;
+    }
     PoolOptions that = (PoolOptions) o;
-
-    if (maxSize != that.maxSize) return false;
-
-    return true;
+    return maxSize == that.maxSize
+        && maxWaitQueueSize == that.maxWaitQueueSize
+        && connectionReleaseDelay == that.connectionReleaseDelay;
   }
 
   @Override
   public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + maxSize;
-    return result;
+    return Objects.hash(maxSize, maxWaitQueueSize, connectionReleaseDelay);
   }
 }

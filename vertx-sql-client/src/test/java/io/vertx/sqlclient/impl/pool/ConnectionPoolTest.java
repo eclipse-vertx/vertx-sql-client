@@ -17,14 +17,22 @@
 
 package io.vertx.sqlclient.impl.pool;
 
+import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactory;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.junit.Assert.*;
 
+@RunWith(VertxUnitRunner.class)
 public class ConnectionPoolTest {
 
   @Test
@@ -264,5 +272,96 @@ public class ConnectionPoolTest {
     SimpleHolder holder1 = new SimpleHolder();
     pool.acquire(holder1);
     assertEquals(1, queue.size());
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void testConnectionReleaseDelayWithoutContext() {
+    new ConnectionPool(new ConnectionQueue(), null, new PoolOptions().setConnectionReleaseDelay(60000));
+  }
+
+  @Test
+  public void testExpire(TestContext ctx) {
+    Async async = ctx.async();
+    Vertx vertx = Vertx.vertx();
+    Context context = Vertx.vertx().getOrCreateContext();
+    context.runOnContext(run -> ctx.verify(verify -> {
+      ConnectionQueue queue = new ConnectionQueue();
+      PoolOptions poolOptions = new PoolOptions()
+          .setConnectionReleaseDelay(1);
+      ConnectionPool pool = new ConnectionPool(queue, context, poolOptions);
+      SimpleHolder holder = new SimpleHolder();
+      pool.acquire(holder);
+      SimpleConnection conn = new SimpleConnection();
+      queue.connect(conn);
+      holder.init();
+      holder.close();
+      ctx.assertEquals(1, pool.available());
+      ctx.assertEquals(1, pool.allSize());
+      ctx.assertEquals(0, conn.closed);
+      // waiting longer than connectionReleaseDelay results in expire()
+      vertx.setTimer(5, t -> {
+        ctx.assertEquals(0, pool.available());
+        ctx.assertEquals(0, pool.allSize());
+        ctx.assertEquals(1, conn.closed);
+        async.complete();
+      });
+    }));
+  }
+
+  @Test
+  public void testRecycleNoIdleTimer(TestContext ctx) {
+    Async async = ctx.async();
+    Vertx vertx = Vertx.vertx();
+    Context context = Vertx.vertx().getOrCreateContext();
+    context.runOnContext(run -> ctx.verify(verify -> {
+      ConnectionQueue queue = new ConnectionQueue();
+      PoolOptions poolOptions = new PoolOptions()
+          .setMaxSize(1)
+          .setConnectionReleaseDelay(5);
+      ConnectionPool pool = new ConnectionPool(queue, context, poolOptions);
+      SimpleHolder holder1 = new SimpleHolder();
+      pool.acquire(holder1);
+      SimpleConnection conn = new SimpleConnection();
+      queue.connect(conn);
+      holder1.init();
+
+      SimpleHolder holder2 = new SimpleHolder();
+      pool.acquire(holder2);
+      holder1.close();  // holder2 acquires conn, no idle timer
+
+      vertx.setTimer(10, t2 -> {
+        ctx.assertEquals(0, pool.available());
+        ctx.assertEquals(1, pool.allSize());
+        ctx.assertEquals(0, conn.closed);
+        async.complete();
+      });
+    }));
+  }
+
+  @Test
+  public void testCancelIdleTimer(TestContext ctx) {
+    Async async = ctx.async();
+    Vertx vertx = Vertx.vertx();
+    Context context = Vertx.vertx().getOrCreateContext();
+    context.runOnContext(run -> ctx.verify(verify -> {
+      ConnectionQueue queue = new ConnectionQueue();
+      PoolOptions poolOptions = new PoolOptions()
+          .setConnectionReleaseDelay(5);
+      ConnectionPool pool = new ConnectionPool(queue, context, poolOptions);
+      SimpleHolder holder1 = new SimpleHolder();
+      pool.acquire(holder1);
+      SimpleConnection conn = new SimpleConnection();
+      queue.connect(conn);
+      holder1.init();
+      holder1.close();
+      SimpleHolder holder2 = new SimpleHolder();
+      pool.acquire(holder2);  // this cancels the idle timer
+      vertx.setTimer(10, t2 -> {
+        ctx.assertEquals(0, pool.available());
+        ctx.assertEquals(1, pool.allSize());
+        ctx.assertEquals(0, conn.closed);
+        async.complete();
+      });
+    }));
   }
 }
