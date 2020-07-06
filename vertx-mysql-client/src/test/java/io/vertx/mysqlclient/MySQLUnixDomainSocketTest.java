@@ -29,7 +29,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assume.assumeTrue;
 
 @RunWith(VertxUnitRunner.class)
-public class MySQLUnixDomainSocketTest {
+public class MySQLUnixDomainSocketTest extends MySQLTestBase {
 
   private static final String unixSocketFile = System.getProperty("unix.socket.file");
 
@@ -37,14 +37,13 @@ public class MySQLUnixDomainSocketTest {
   private MySQLConnectOptions options;
 
   @Before
-  public void before() {
-    assumeTrue(SystemUtils.IS_OS_UNIX);
-    options = new MySQLConnectOptions()
-      .setUser("root")
-      .setPassword("password")
-      .setDatabase("mysql");
+  public void setUp() {
+    assumeTrue(SystemUtils.IS_OS_LINUX);
+    options = new MySQLConnectOptions(MySQLTestBase.options);
     if (unixSocketFile != null && !unixSocketFile.isEmpty()) {
       options.setHost(unixSocketFile);
+    } else {
+      options.setHost(rule.domainSocketPath());
     }
     assumeTrue(options.isUsingDomainSocket());
   }
@@ -59,13 +58,13 @@ public class MySQLUnixDomainSocketTest {
   @Test
   public void uriSocketHostTest(TestContext context) throws UnsupportedEncodingException {
     String path = URLEncoder.encode(options.getHost(), "UTF-8");
-    uriTest(context, "mysql://root:password@" + path);
+    uriTest(context, "mysql://" + options.getUser() + ":" + options.getPassword() + "@" + path);
   }
 
   @Test
   public void uriSocketAttributeTest(TestContext context) throws UnsupportedEncodingException {
     String path = URLEncoder.encode(options.getHost(), "UTF-8");
-    uriTest(context, "mysql://root:password@localhost?socket=" + path);
+    uriTest(context, "mysql://" + options.getUser() + ":" + options.getPassword() + "@192.168.0.67?socket=" + path);
   }
 
   private void uriTest(TestContext context, String uri) throws UnsupportedEncodingException {
