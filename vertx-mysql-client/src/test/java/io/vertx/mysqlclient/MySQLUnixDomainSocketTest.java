@@ -20,7 +20,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.testcontainers.shaded.org.apache.commons.lang.SystemUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -38,7 +37,8 @@ public class MySQLUnixDomainSocketTest extends MySQLTestBase {
 
   @Before
   public void setUp() {
-    assumeTrue(SystemUtils.IS_OS_LINUX);
+    String osName = System.getProperty("os.name");
+    assumeTrue(osName != null && (osName.startsWith("Linux") || osName.startsWith("LINUX")));
     options = new MySQLConnectOptions(MySQLTestBase.options);
     if (unixSocketFile != null && !unixSocketFile.isEmpty()) {
       options.setHost(unixSocketFile);
