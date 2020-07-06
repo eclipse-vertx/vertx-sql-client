@@ -20,6 +20,7 @@ scalability and low overhead.
 * MySQL utilities commands support
 * Working with MySQL and MariaDB
 * Rich collation and charset support
+* Unix domain socket
 
 == Usage
 
@@ -91,6 +92,45 @@ You can easily get one from the pool:
 
 Once you are done with the connection you must close it to release it to the pool, so it can be reused.
 
+=== Unix Domain Socket
+
+Sometimes for simplicity, security or performance reasons, it is required to connect via a Unix Domain Socket.
+
+Since the JVM does not support domain sockets, first you must add native transport extensions to your project.
+
+* Maven (in your `pom.xml`):
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.netty</groupId>
+  <artifactId>netty-transport-native-epoll</artifactId>
+  <version>${netty.version}</version>
+  <classifier>linux-x86_64</classifier>
+</dependency>
+----
+* Gradle (in your `build.gradle` file):
+
+[source,groovy]
+----
+dependencies {
+  compile 'io.netty:netty-transport-native-epoll:${netty.version}:linux-x86_64'
+}
+----
+
+NOTE: The native `epoll` support for ARM64 can also be added with the classifier `linux-aarch64`.
+
+NOTE: If there are Mac users in your team, add `netty-transport-native-kqueue` with the classifier `osx-x86_64`.
+
+Then set the path to the domain socket in {@link io.vertx.mysqlclient.MySQLConnectOptions#setHost MySQLConnectOptions#setHost}:
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#connectWithUnixDomainSocket}
+----
+
+More information about native transports can be found in the [Vert.x documentation](https://vertx.io/docs/vertx-core/java/#_native_transports).
+
 == Configuration
 
 There are several alternatives for you to configure the client.
@@ -159,7 +199,7 @@ Apart from configuring with a `MySQLConnectOptions` data object, We also provide
 
 More information about connection string formats can be found in the https://dev.mysql.com/doc/refman/8.0/en/connecting-using-uri-or-key-value-pairs.html#connecting-using-uri[MySQL Reference Manual].
 
-Currently the client supports the following parameter key words in connection uri(keys are case-insensitive)
+Currently, the client supports the following parameter keywords in connection uri (keys are case-insensitive):
 
 * host
 * port
