@@ -94,7 +94,7 @@ Once you are done with the connection you must close it to release it to the poo
 
 === Unix Domain Socket
 
-Sometimes for simplicity, security or performance reasons, it is required to connect via a Unix Domain Socket.
+Sometimes for simplicity, security or performance reasons, it is required to connect via a https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_socket[Unix Domain Socket].
 
 Since the JVM does not support domain sockets, first you must add native transport extensions to your project.
 
