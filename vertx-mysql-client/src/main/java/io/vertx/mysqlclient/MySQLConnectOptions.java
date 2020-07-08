@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ */
+
 package io.vertx.mysqlclient;
 
 import io.vertx.codegen.annotations.DataObject;
@@ -10,7 +21,10 @@ import io.vertx.mysqlclient.impl.MySQLConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
 
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
@@ -513,12 +527,12 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     return (MySQLConnectOptions) super.setSslHandshakeTimeoutUnit(sslHandshakeTimeoutUnit);
   }
 
-
-
   /**
    * Initialize with the default options.
    */
+  @Override
   protected void init() {
+    super.init();
     this.setHost(DEFAULT_HOST);
     this.setPort(DEFAULT_PORT);
     this.setUser(DEFAULT_USER);
@@ -532,5 +546,15 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     JsonObject json = super.toJson();
     MySQLConnectOptionsConverter.toJson(this, json);
     return json;
+  }
+
+  @GenIgnore
+  public SocketAddress getSocketAddress() {
+    return isUsingDomainSocket() ? SocketAddress.domainSocketAddress(getHost()) : SocketAddress.inetSocketAddress(getPort(), getHost());
+  }
+
+  @GenIgnore
+  public boolean isUsingDomainSocket() {
+    return this.getHost().startsWith("/");
   }
 }

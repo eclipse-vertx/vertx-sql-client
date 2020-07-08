@@ -6,14 +6,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
 import io.vertx.mysqlclient.*;
-import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.SqlResult;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.data.Numeric;
 
 import java.math.BigDecimal;
@@ -200,32 +193,52 @@ public class MySQLClientExamples {
             conn
               .query("SELECT * FROM users WHERE id='emad'")
               .execute(ar3 -> {
-              // Release the connection to the pool
-              conn.close();
-            });
+                // Release the connection to the pool
+                conn.close();
+              });
           } else {
             // Release the connection to the pool
             conn.close();
           }
-        });
+          });
       } else {
         System.out.println("Could not connect: " + ar1.cause().getMessage());
       }
     });
   }
 
+  public void connectWithUnixDomainSocket(Vertx vertx) {
+    // Connect Options
+    // Socket file name /var/run/mysqld/mysqld.sock
+    MySQLConnectOptions connectOptions = new MySQLConnectOptions()
+      .setHost("/var/run/mysqld/mysqld.sock")
+      .setDatabase("the-db");
+
+    // Pool options
+    PoolOptions poolOptions = new PoolOptions()
+      .setMaxSize(5);
+
+    // Create the pooled client
+    MySQLPool client = MySQLPool.pool(connectOptions, poolOptions);
+
+    // Create the pooled client with a vertx instance
+    // Make sure the vertx instance has enabled native transports
+    // vertxOptions.setPreferNativeTransport(true);
+    MySQLPool client2 = MySQLPool.pool(vertx, connectOptions, poolOptions);
+  }
+
   public void lastInsertId(SqlClient client) {
     client
       .query("INSERT INTO test(val) VALUES ('v1')")
       .execute(ar -> {
-      if (ar.succeeded()) {
-        RowSet<Row> rows = ar.result();
-        long lastInsertId = rows.property(MySQLClient.LAST_INSERTED_ID);
-        System.out.println("Last inserted id is: " + lastInsertId);
-      } else {
-        System.out.println("Failure: " + ar.cause().getMessage());
-      }
-    });
+        if (ar.succeeded()) {
+          RowSet<Row> rows = ar.result();
+          long lastInsertId = rows.property(MySQLClient.LAST_INSERTED_ID);
+          System.out.println("Last inserted id is: " + lastInsertId);
+        } else {
+          System.out.println("Failure: " + ar.cause().getMessage());
+        }
+      });
   }
 
   public void implicitTypeConversionExample(SqlClient client) {

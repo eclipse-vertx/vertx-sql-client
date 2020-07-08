@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ */
+
 package io.vertx.mysqlclient;
 
 import io.vertx.codegen.annotations.Fluent;
@@ -5,11 +16,12 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.mysqlclient.impl.MySQLConnectionImpl;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.SqlConnection;
 
-import static io.vertx.mysqlclient.MySQLConnectOptions.*;
+import static io.vertx.mysqlclient.MySQLConnectOptions.fromUri;
 
 /**
  * A connection to MySQL server.
@@ -24,7 +36,7 @@ public interface MySQLConnection extends SqlConnection {
    * @param handler the handler called with the connection or the failure
    */
   static void connect(Vertx vertx, MySQLConnectOptions connectOptions, Handler<AsyncResult<MySQLConnection>> handler) {
-    MySQLConnectionImpl.connect(vertx, connectOptions, handler);
+    MySQLConnectionImpl.connect((ContextInternal) vertx.getOrCreateContext(), connectOptions, handler);
   }
 
   /**

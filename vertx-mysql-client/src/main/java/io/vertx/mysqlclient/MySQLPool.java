@@ -1,13 +1,26 @@
+/*
+ * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ */
+
 package io.vertx.mysqlclient;
 
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.mysqlclient.impl.MySQLPoolImpl;
-import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.PoolOptions;
 
-import static io.vertx.mysqlclient.MySQLConnectOptions.*;
+import static io.vertx.mysqlclient.MySQLConnectOptions.fromUri;
 
 /**
  * A pool of MySQL connections.
@@ -55,7 +68,10 @@ public interface MySQLPool extends Pool {
       throw new IllegalStateException("Running in a Vertx context => use MySQLPool#pool(Vertx, MySQLConnectOptions, PoolOptions) instead");
     }
     VertxOptions vertxOptions = new VertxOptions();
-    Vertx vertx = Vertx.vertx(vertxOptions);
+    if (connectOptions.isUsingDomainSocket()) {
+      vertxOptions.setPreferNativeTransport(true);
+    }
+    VertxInternal vertx = (VertxInternal) Vertx.vertx(vertxOptions);
     return new MySQLPoolImpl(vertx.getOrCreateContext(), true, connectOptions, poolOptions);
   }
 
@@ -63,7 +79,7 @@ public interface MySQLPool extends Pool {
    * Like {@link #pool(MySQLConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static MySQLPool pool(Vertx vertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    return new MySQLPoolImpl(vertx.getOrCreateContext(), false, connectOptions, poolOptions);
+    return new MySQLPoolImpl((ContextInternal) vertx.getOrCreateContext(), false, connectOptions, poolOptions);
   }
 
 }

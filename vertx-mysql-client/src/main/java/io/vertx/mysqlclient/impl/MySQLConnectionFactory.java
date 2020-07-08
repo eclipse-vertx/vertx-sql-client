@@ -1,12 +1,21 @@
+/*
+ * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ */
+
 package io.vertx.mysqlclient.impl;
 
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.NetSocketInternal;
-import io.vertx.core.net.NetClient;
-import io.vertx.core.net.NetClientOptions;
-import io.vertx.core.net.NetSocket;
-import io.vertx.core.net.TrustOptions;
+import io.vertx.core.net.*;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.sqlclient.impl.Connection;
@@ -20,10 +29,9 @@ import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.*;
 
 public class MySQLConnectionFactory {
   private final NetClient netClient;
-  private final Context context;
+  private final ContextInternal context;
   private final boolean registerCloseHook;
-  private final String host;
-  private final int port;
+  private final SocketAddress socketAddress;
   private final String username;
   private final String password;
   private final String database;
@@ -39,7 +47,7 @@ public class MySQLConnectionFactory {
   private final int initialCapabilitiesFlags;
   private final Closeable hook;
 
-  public MySQLConnectionFactory(Context context, boolean registerCloseHook, MySQLConnectOptions options) {
+  public MySQLConnectionFactory(ContextInternal context, boolean registerCloseHook, MySQLConnectOptions options) {
     NetClientOptions netClientOptions = new NetClientOptions(options);
 
     this.context = context;
@@ -49,8 +57,7 @@ public class MySQLConnectionFactory {
       context.addCloseHook(hook);
     }
 
-    this.host = options.getHost();
-    this.port = options.getPort();
+    this.socketAddress = options.getSocketAddress();
     this.username = options.getUser();
     this.password = options.getPassword();
     this.database = options.getDatabase();
@@ -76,7 +83,7 @@ public class MySQLConnectionFactory {
     }
     this.collation = collation;
     this.useAffectedRows = options.isUseAffectedRows();
-    this.sslMode = options.getSslMode();
+    this.sslMode = options.isUsingDomainSocket() ? SslMode.DISABLED : options.getSslMode();
 
     // server RSA public key
     Buffer serverRsaPublicKey = null;
@@ -137,7 +144,7 @@ public class MySQLConnectionFactory {
         handler.handle(Future.failedFuture(ar1.cause()));
       }
     });
-    netClient.connect(port, host, promise);
+    netClient.connect(socketAddress, promise);
   }
 
   private int initCapabilitiesFlags() {

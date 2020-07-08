@@ -1,31 +1,35 @@
+/*
+ * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ */
+
 package io.vertx.mysqlclient.impl;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.mysqlclient.MySQLAuthOptions;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.mysqlclient.MySQLSetOption;
-import io.vertx.mysqlclient.impl.command.ChangeUserCommand;
-import io.vertx.mysqlclient.impl.command.DebugCommand;
-import io.vertx.mysqlclient.impl.command.InitDbCommand;
-import io.vertx.mysqlclient.impl.command.PingCommand;
-import io.vertx.mysqlclient.impl.command.ResetConnectionCommand;
-import io.vertx.mysqlclient.impl.command.SetOptionCommand;
-import io.vertx.mysqlclient.impl.command.StatisticsCommand;
-import io.vertx.sqlclient.Transaction;
+import io.vertx.mysqlclient.impl.command.*;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 
 public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> implements MySQLConnection {
 
-  public static void connect(Vertx vertx, MySQLConnectOptions options, Handler<AsyncResult<MySQLConnection>> handler) {
-    Context ctx = Vertx.currentContext();
-    if (ctx != null) {
+  public static void connect(ContextInternal ctx, MySQLConnectOptions options, Handler<AsyncResult<MySQLConnection>> handler) {
+    if (options.isUsingDomainSocket() && !ctx.owner().isNativeTransportEnabled()) {
+      handler.handle(Future.failedFuture("Native transport is not available"));
+      return;
+    }
+    if (Vertx.currentContext() == ctx) {
       MySQLConnectionFactory client;
       try {
         client = new MySQLConnectionFactory(ctx, false, options);
@@ -33,7 +37,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
         handler.handle(Future.failedFuture(e));
         return;
       }
-      client.connect(ar-> {
+      client.connect(ar -> {
         if (ar.succeeded()) {
           Connection conn = ar.result();
           MySQLConnectionImpl p = new MySQLConnectionImpl(client, ctx, conn);
@@ -44,8 +48,8 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
         }
       });
     } else {
-      vertx.runOnContext(v -> {
-        connect(vertx, options, handler);
+      ctx.runOnContext(v -> {
+        connect(ctx, options, handler);
       });
     }
   }
