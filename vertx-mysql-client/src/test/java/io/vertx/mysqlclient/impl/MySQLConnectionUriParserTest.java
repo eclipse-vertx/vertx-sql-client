@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -14,8 +14,11 @@ package io.vertx.mysqlclient.impl;
 import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
-import static io.vertx.mysqlclient.impl.MySQLConnectionUriParser.*;
-import static org.junit.Assert.*;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
+import static io.vertx.mysqlclient.impl.MySQLConnectionUriParser.parse;
+import static org.junit.Assert.assertEquals;
 
 public class MySQLConnectionUriParserTest {
   private String uri;
@@ -197,6 +200,31 @@ public class MySQLConnectionUriParserTest {
       .put("host", "198.51.100.2")
       .put("port", 3306)
       .put("database", "world_x");
+
+    assertEquals(expectedParsedResult, actualParsedResult);
+  }
+
+  @Test
+  public void testParsingHostSocket() throws UnsupportedEncodingException {
+    uri = "mysql://user_name@" + URLEncoder.encode("/var/run/mysql/mysql.sock", "UTF-8") + ":3306/world%5Fx";
+    actualParsedResult = parse(uri);
+
+    expectedParsedResult = new JsonObject()
+      .put("user", "user_name")
+      .put("host", "/var/run/mysql/mysql.sock")
+      .put("port", 3306)
+      .put("database", "world_x");
+
+    assertEquals(expectedParsedResult, actualParsedResult);
+  }
+
+  @Test
+  public void testParsingSocketAttribute() throws UnsupportedEncodingException {
+    uri = "mysql://localhost?socket=" + URLEncoder.encode("/var/run/mysql/mysql.sock", "UTF-8");
+    actualParsedResult = parse(uri);
+
+    expectedParsedResult = new JsonObject()
+      .put("host", "/var/run/mysql/mysql.sock");
 
     assertEquals(expectedParsedResult, actualParsedResult);
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -15,11 +15,12 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.mysqlclient.impl.MySQLPoolImpl;
-import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.PoolOptions;
 
-import static io.vertx.mysqlclient.MySQLConnectOptions.*;
+import static io.vertx.mysqlclient.MySQLConnectOptions.fromUri;
 
 /**
  * A {@link Pool pool} of {@link MySQLConnection MySQL Connections}.
@@ -67,8 +68,11 @@ public interface MySQLPool extends Pool {
       throw new IllegalStateException("Running in a Vertx context => use MySQLPool#pool(Vertx, MySQLConnectOptions, PoolOptions) instead");
     }
     VertxOptions vertxOptions = new VertxOptions();
-    Vertx vertx = Vertx.vertx(vertxOptions);
-    return MySQLPoolImpl.create((ContextInternal) vertx.getOrCreateContext(), true, connectOptions, poolOptions);
+    if (connectOptions.isUsingDomainSocket()) {
+      vertxOptions.setPreferNativeTransport(true);
+    }
+    VertxInternal vertx = (VertxInternal) Vertx.vertx(vertxOptions);
+    return MySQLPoolImpl.create(vertx.getOrCreateContext(), true, connectOptions, poolOptions);
   }
 
   /**

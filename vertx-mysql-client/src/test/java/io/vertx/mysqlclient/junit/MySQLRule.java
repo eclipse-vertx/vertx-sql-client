@@ -21,6 +21,10 @@ import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+
 public class MySQLRule extends ExternalResource {
   private static final String connectionUri = System.getProperty("connection.uri");
   private static final String tlsConnectionUri = System.getProperty("tls.connection.uri");
@@ -28,6 +32,7 @@ public class MySQLRule extends ExternalResource {
   private GenericContainer server;
   private MySQLConnectOptions options;
   private DatabaseServerInfo databaseServerInfo;
+  private File mysqldDir;
 
   private boolean ssl;
 
@@ -61,7 +66,7 @@ public class MySQLRule extends ExternalResource {
     }
   }
 
-  private void initServer() {
+  private void initServer() throws IOException {
     server = new GenericContainer(databaseServerInfo.getDatabaseType().toDockerImageName() + ":" + databaseServerInfo.getDockerImageTag())
       .withEnv("MYSQL_USER", "mysql")
       .withEnv("MYSQL_PASSWORD", "password")
@@ -70,6 +75,13 @@ public class MySQLRule extends ExternalResource {
       .withExposedPorts(3306)
       .withClasspathResourceMapping("init.sql", "/docker-entrypoint-initdb.d/init.sql", BindMode.READ_ONLY)
       .withReuse(true);
+
+    mysqldDir = Files.createTempDirectory("mysqld").toFile();
+    mysqldDir.deleteOnExit();
+    mysqldDir.setReadable(true, false);
+    mysqldDir.setWritable(true, false);
+    mysqldDir.setExecutable(true, false);
+    server.withFileSystemBind(mysqldDir.getAbsolutePath(), "/var/run/mysqld");
 
     if (ssl) {
       server.withClasspathResourceMapping("tls/conf", "/etc/mysql/conf.d", BindMode.READ_ONLY);
@@ -122,6 +134,10 @@ public class MySQLRule extends ExternalResource {
 
   public MySQLConnectOptions options() {
     return new MySQLConnectOptions(options);
+  }
+
+  public String domainSocketPath() {
+    return new File(mysqldDir, "mysqld.sock").getAbsolutePath();
   }
 
   @Override
