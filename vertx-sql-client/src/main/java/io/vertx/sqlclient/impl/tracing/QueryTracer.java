@@ -58,18 +58,18 @@ public class QueryTracer {
 
   private final VertxTracer tracer;
   private final String address;
-  private final String host;
-  private final int port;
   private final String user;
   private final String database;
 
-  public QueryTracer(VertxTracer tracer, SqlConnectOptions options) {
+  public QueryTracer(VertxTracer tracer, String address, String user, String database) {
     this.tracer = tracer;
-    this.address = options.getHost() + ":" + options.getPort();
-    this.host = options.getHost();
-    this.port = options.getPort();
-    this.user = options.getUser();
-    this.database = options.getDatabase();
+    this.address = address;
+    this.user = user;
+    this.database = database;
+  }
+
+  public QueryTracer(VertxTracer tracer, SqlConnectOptions options) {
+    this(tracer, options.getHost() + ":" + options.getPort(), options.getUser(), options.getDatabase());
   }
 
   public Object sendRequest(ContextInternal context, String sql) {
