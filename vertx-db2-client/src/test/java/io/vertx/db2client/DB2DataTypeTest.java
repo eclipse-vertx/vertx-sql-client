@@ -36,6 +36,13 @@ import io.vertx.sqlclient.Tuple;
 @RunWith(VertxUnitRunner.class)
 public class DB2DataTypeTest extends DB2TestBase {
 
+
+  // Enum for enum testing 
+  enum Days {
+    MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
+  }
+
+	
   /**
    * In DB2 the FLOAT and DOUBLE column types both map to an 8-byte
    * double-precision column (i.e. Java double). Ensure that a Java
@@ -176,7 +183,45 @@ public class DB2DataTypeTest extends DB2TestBase {
         }));
     }));
   }
+  
+  /**
+   * Test to support using enum string values in the Row and Tuple methods.
+   */
+  @Test
+  public void testUsingEnumNameValue(TestContext ctx) {
+    connect(ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("INSERT INTO db2_types (id,test_vchar) VALUES (?, ?)")
+       .execute(Tuple.of(10, Days.WEDNESDAY), ctx.asyncAssertSuccess(insertResult -> {
+         conn.preparedQuery("SELECT id,test_vchar FROM db2_types WHERE id = 10")
+          .execute(ctx.asyncAssertSuccess(rows -> {
+           ctx.assertEquals(1, rows.size());
+           Row row = rows.iterator().next();
+           ctx.assertEquals(10, row.getInteger(0));
+           ctx.assertEquals(Days.WEDNESDAY, row.get(Days.class, 1));
+          }));
+       }));
+     }));
+  }
 
+  /**
+   * Test to support using enum ordinal values in the Row and Tuple methods.
+   */
+  @Test
+  public void testUsingEnumOrdinalValue(TestContext ctx) {
+    connect(ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("INSERT INTO db2_types (id,test_int) VALUES (?, ?)")
+       .execute(Tuple.of(11, Days.FRIDAY.ordinal()), ctx.asyncAssertSuccess(insertResult -> {
+         conn.preparedQuery("SELECT id,test_int FROM db2_types WHERE id = 11")
+          .execute(ctx.asyncAssertSuccess(rows -> {
+           ctx.assertEquals(1, rows.size());
+           Row row = rows.iterator().next();
+           ctx.assertEquals(11, row.getInteger(0));
+           ctx.assertEquals(Days.FRIDAY, row.get(Days.class, 1));
+          }));
+       }));
+     }));
+  }
+  
   private RowId verifyRowId(TestContext ctx, RowSet<Row> rows, String msg) {
     ctx.assertEquals(1, rows.size());
     Row row = rows.iterator().next();
