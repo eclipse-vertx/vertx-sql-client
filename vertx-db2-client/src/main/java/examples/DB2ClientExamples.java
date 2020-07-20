@@ -15,14 +15,12 @@
  */
 package examples;
 
-import java.math.BigDecimal;
 import java.util.Map;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.net.JksOptions;
-import io.vertx.core.net.PemTrustOptions;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Connection;
 import io.vertx.db2client.DB2Pool;
@@ -34,7 +32,6 @@ import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.data.Numeric;
 
 @Source
 public class DB2ClientExamples {
@@ -323,5 +320,47 @@ public class DB2ClientExamples {
         }
       });
   }
+  
+  // Enum for days of the week 
+  enum Days {
+    MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
+  }
 
+  /**
+   * Using an enum as a string value in the Row and Tuple methods.
+   */  
+  public void enumStringValues(SqlClient client) {
+  	  client.preparedQuery("SELECT day_name FROM FINAL TABLE ( INSERT INTO days (day_name) VALUES (?), (?), (?) )")
+  	  .execute(Tuple.of(Days.FRIDAY, Days.SATURDAY, Days.SUNDAY), ar -> {
+  		  if (ar.succeeded()) {
+  			  RowSet<Row> rows = ar.result();
+  			  System.out.println("Inserted " + rows.rowCount() + " new rows");
+  			  for (Row row : rows) {
+  				  System.out.println("Day: " + row.get(Days.class, "day_name"));
+  			  }
+  		  } else {
+  			  System.out.println("Failure: " + ar.cause().getMessage());
+  		  }
+  	  });  	  
+  }
+
+  /**
+   * Using an enum as an int value in the Row and Tuple methods.  
+   * The row.get() method returns the corresponding enum's name() value at the ordinal position of the integer value retrieved. 
+   */  
+  public void enumIntValues(SqlClient client) {
+	  client.preparedQuery("SELECT day_num FROM FINAL TABLE ( INSERT INTO days (day_num) VALUES (?), (?), (?) )")
+      .execute(Tuple.of(Days.FRIDAY.ordinal(), Days.SATURDAY.ordinal(), Days.SUNDAY.ordinal()), ar -> {
+      	if (ar.succeeded()) {
+      		RowSet<Row> rows = ar.result();
+      		System.out.println("Inserted " + rows.rowCount() + " new rows");
+      		for (Row row : rows) {
+      			System.out.println("Day: " + row.get(Days.class, "day_num"));
+      		}
+      	} else {
+      		System.out.println("Failure: " + ar.cause().getMessage());
+      	}
+      });
+  }
+  
 }

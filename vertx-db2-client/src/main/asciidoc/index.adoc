@@ -165,6 +165,7 @@ Currently the client supports the following DB2 types
 * DECIMAL (`io.vertx.sqlclient.data.Numeric`)
 * CHAR (`java.lang.String`)
 * VARCHAR (`java.lang.String`)
+* ENUM (`java.lang.String`)
 * DATE (`java.time.LocalDate`)
 * TIME (`java.time.LocalTime`)
 * TIMESTAMP (`java.time.LocalDateTime`)
@@ -191,6 +192,24 @@ Tuple decoding uses the above types when storing values, it also performs on the
 ----
 {@link examples.DB2ClientExamples#typeMapping01}
 ----
+
+== Using Java enum types
+
+You can map Java https://docs.oracle.com/javase/tutorial/java/javaOO/enum.html[enum types] to these column
+types:
+
+- Strings (VARCHAR, TEXT)
+- Numbers (SMALLINT, INTEGER, BIGINT)
+
+[source,$lang]
+----
+{@link examples.DB2ClientExamples#enumStringValues}
+{@link examples.DB2ClientExamples#enumIntValues}
+----
+
+The String type is matched with the Java enum's name returned by the `name()` method.
+
+Number types are matched with the Java enum's ordinal returned by the `ordinal()` method and the row.get() method returns the corresponding enum's `name()` value at the ordinal position of the integer value retrieved.
 
 == Collector queries
 

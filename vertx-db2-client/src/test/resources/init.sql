@@ -114,7 +114,8 @@ CREATE TABLE db2_types
     test_float   FLOAT,
     test_bytes   VARCHAR(255) for bit data,
     test_tstamp  TIMESTAMP,
-    test_vchar   VARCHAR(255)
+    test_vchar   VARCHAR(255),
+    test_int     INT
 );
 
 -- Sequence used by QueryVariationsTest
