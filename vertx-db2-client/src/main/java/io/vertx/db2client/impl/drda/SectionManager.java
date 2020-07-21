@@ -49,15 +49,9 @@ public class SectionManager {
     public int sectionsInUse() {
       return pkgs.stream().mapToInt(DB2Package::sectionsInUse).sum();
     }
-
+    
     public Section getSection(String sql) {
-      if (DRDAQueryRequest.isQuery(sql) ||
-          "COMMIT".equalsIgnoreCase(sql) ||
-          "ROLLBACK".equalsIgnoreCase(sql)) {
-        return getDynamicSection();
-      } else {
-        return staticSection;
-      }
+      return getDynamicSection();
     }
 
     private Section getDynamicSection() {
