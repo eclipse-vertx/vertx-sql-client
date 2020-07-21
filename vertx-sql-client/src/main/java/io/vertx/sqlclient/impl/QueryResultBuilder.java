@@ -101,7 +101,7 @@ class QueryResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> 
       if (completed) {
         if (metrics != null) {
           metrics.responseBegin(metric, null);
-          metrics.responseEnd(metric, null);
+          metrics.responseEnd(metric);
         }
         if (tracer != null) {
           tracer.receiveResponse(context, tracingPayload, first, null);
