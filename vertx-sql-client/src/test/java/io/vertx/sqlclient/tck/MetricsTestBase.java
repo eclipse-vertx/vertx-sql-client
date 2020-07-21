@@ -151,7 +151,7 @@ public abstract class MetricsTestBase {
         ctx.assertEquals(metric, requestMetric);
       }
       @Override
-      public void responseEnd(Object requestMetric, Object response) {
+      public void responseEnd(Object requestMetric) {
         responseMetric.set(requestMetric);
       }
       @Override
