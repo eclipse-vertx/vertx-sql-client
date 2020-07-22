@@ -687,7 +687,14 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                         // check for a promoted type, and use that instead if it exists
                         o = retrievePromotedParameterIfExists(i);
                         if (o == null) {
-                            String strInput = inputs[i] instanceof UUID ? ((UUID)inputs[i]).toString() : (String) inputs[i];
+                            String strInput;
+                            if (inputs[i] instanceof UUID) {
+                              strInput = ((UUID)inputs[i]).toString();
+                            } else if (inputs[i] instanceof Enum) {
+                              strInput = ((Enum)inputs[i]).name();
+                            } else {
+                              strInput = (String) inputs[i];
+                            }
                             writeSingleorMixedCcsidLDString(strInput, Typdef.typdef.getCcsidMbcEncoding());
                         } else { // use the promoted object instead
                             throw new UnsupportedOperationException("CLOB");
@@ -1424,7 +1431,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
 //        }
     }
 
-    // returns the a promototedParameter object for index or null if it does not exist
+    // returns the promototedParameter object for index or null if it does not exist
     private Object retrievePromotedParameterIfExists(int index) {
         if (promototedParameters_.isEmpty()) {
             return null;
