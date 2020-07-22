@@ -66,6 +66,7 @@ class DB2ParamDesc extends ParamDesc {
     case ClientTypes.SMALLINT:
       return clazz == Numeric.class;
     case ClientTypes.VARCHAR:
+      return Enum.class.isAssignableFrom(clazz) || Buffer.class.isAssignableFrom(clazz);
     case ClientTypes.VARBINARY:
       return Buffer.class.isAssignableFrom(clazz);
     }

@@ -77,6 +77,8 @@ public class DB2RowImpl extends ArrayTuple implements Row {
       return type.cast(getRowId(position));
     } else if (type == UUID.class) {
       return type.cast(getUUID(position));
+    } else if (type.isEnum()) {
+      return type.cast(getEnum(type, position));
     } else {
       throw new UnsupportedOperationException("Unsupported type " + type.getName());
     }
@@ -330,6 +332,22 @@ public class DB2RowImpl extends ArrayTuple implements Row {
     Object val = getValue(pos);
     if (val instanceof Duration) {
       return (Duration) val;
+    }
+    return null;
+  }
+  
+  private Object getEnum(Class enumType, int position) {
+    Object val = getValue(position);
+    if (val instanceof String) {
+      return Enum.valueOf(enumType, (String) val);
+    } else if (val instanceof Number) {
+      int ordinal = ((Number) val).intValue();
+      if (ordinal >= 0) {
+        Object[] constants = enumType.getEnumConstants();
+        if (ordinal < constants.length) {
+          return constants[ordinal];
+        }
+      }
     }
     return null;
   }
