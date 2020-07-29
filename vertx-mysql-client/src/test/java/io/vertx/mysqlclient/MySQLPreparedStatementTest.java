@@ -61,6 +61,46 @@ public class MySQLPreparedStatementTest extends MySQLTestBase {
   }
 
   @Test
+  public void testContinuousOneShotPreparedQueriesWithDifferentTypeParameters(TestContext ctx) {
+    options.setCachePreparedStatements(true);
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("SELECT id, message FROM immutable WHERE id = ?")
+        .execute(Tuple.of(1), ctx.asyncAssertSuccess(res1 -> {
+          ctx.assertEquals(1, res1.size());
+          Row row = res1.iterator().next();
+          ctx.assertEquals("fortune: No such file or directory", row.getString("message"));
+
+          conn.preparedQuery("SELECT id, message FROM immutable WHERE id = ?")
+            .execute(Tuple.of("3"), ctx.asyncAssertSuccess(res2 -> {
+              ctx.assertEquals(1, res2.size());
+              Row row2 = res2.iterator().next();
+              ctx.assertEquals("After enough decimal places, nobody gives a damn.", row2.getString("message"));
+              conn.close();
+            }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testContinuousOneShotPreparedQueriesWithBindingFailure(TestContext ctx) {
+    options.setCachePreparedStatements(true);
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("SELECT id, message FROM immutable WHERE id = ?")
+        .execute(Tuple.of(1), ctx.asyncAssertSuccess(res1 -> {
+          ctx.assertEquals(1, res1.size());
+          Row row = res1.iterator().next();
+          ctx.assertEquals("fortune: No such file or directory", row.getString("message"));
+
+          conn.preparedQuery("SELECT id, message FROM immutable WHERE id = ?")
+            .execute(Tuple.of(3, "USELESS PARAM"), ctx.asyncAssertFailure(err -> {
+              ctx.assertEquals("The number of parameters to execute should be consistent with the expected number of parameters = [1] but the actual number is [2].", err.getMessage());
+              conn.close();
+            }));
+        }));
+    }));
+  }
+
+  @Test
   public void testMaxPreparedStatementEviction(TestContext ctx) {
     testPreparedStatements(ctx, new MySQLConnectOptions(options).setCachePreparedStatements(true).setPreparedStatementCacheMaxSize(16), 128, 16);
   }

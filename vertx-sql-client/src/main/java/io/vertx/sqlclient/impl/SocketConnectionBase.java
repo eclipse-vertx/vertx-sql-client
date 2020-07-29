@@ -161,6 +161,14 @@ public abstract class SocketConnectionBase implements Connection {
           paused = true;
           inflight++;
           cmd = prepareCmd;
+        } else {
+          // cached prepared statement needs to prepare the parameters before execution
+          String msg = queryCmd.prepare();
+          if (msg != null) {
+            inflight--;
+            queryCmd.fail(new NoStackTraceThrowable(msg));
+            return;
+          }
         }
       }
       written++;
