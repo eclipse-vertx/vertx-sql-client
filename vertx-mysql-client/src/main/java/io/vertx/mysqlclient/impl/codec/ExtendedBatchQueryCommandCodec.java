@@ -51,6 +51,7 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
       String bindMsg = statement.bindParameters(param);
       if (bindMsg != null) {
         completionHandler.handle(CommandResponse.failure(bindMsg));
+        return;
       }
       sendBatchStatementExecuteCommand(statement, param);
       batchIdx++;

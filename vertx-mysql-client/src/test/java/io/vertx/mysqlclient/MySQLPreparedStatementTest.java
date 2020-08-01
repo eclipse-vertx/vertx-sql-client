@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RunWith(VertxUnitRunner.class)
@@ -94,7 +95,32 @@ public class MySQLPreparedStatementTest extends MySQLTestBase {
           conn.preparedQuery("SELECT id, message FROM immutable WHERE id = ?")
             .execute(Tuple.of(3, "USELESS PARAM"), ctx.asyncAssertFailure(err -> {
               ctx.assertEquals("The number of parameters to execute should be consistent with the expected number of parameters = [1] but the actual number is [2].", err.getMessage());
-              conn.close();
+              // check the connection is not corrupt
+              conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(check -> {
+                conn.close();
+              }));
+            }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testContinuousOneShotPreparedBatchWithBindingFailure(TestContext ctx) {
+    options.setCachePreparedStatements(true);
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("SELECT id, message FROM immutable WHERE id = ?")
+        .execute(Tuple.of(1), ctx.asyncAssertSuccess(res1 -> {
+          ctx.assertEquals(1, res1.size());
+          Row row = res1.iterator().next();
+          ctx.assertEquals("fortune: No such file or directory", row.getString("message"));
+
+          conn.preparedQuery("SELECT id, message FROM immutable WHERE id = ?")
+            .executeBatch(Arrays.asList(Tuple.of(3), Tuple.of(4, "USELESS PARAM"), Tuple.of(6)), ctx.asyncAssertFailure(err -> {
+              ctx.assertEquals("The number of parameters to execute should be consistent with the expected number of parameters = [1] but the actual number is [2].", err.getMessage());
+              // check the connection is not corrupt
+              conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(check -> {
+                conn.close();
+              }));
             }));
         }));
     }));
