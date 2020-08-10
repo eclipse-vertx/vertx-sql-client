@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -162,12 +163,34 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
   public static final Tuple INVALID_TUPLE = Tuple.of("invalid-id");
 
   private void testValidationError(TestContext ctx, BiConsumer<PgConnection, Handler<Throwable>> test) {
-    Async async = ctx.async();
+    int times = 3;
+    Async async = ctx.async(times);
+    Consumer<Throwable> check = failure -> ctx.assertEquals("Parameter at position[0] with class = [java.lang.String] and value = [invalid-id] can not be coerced to the expected class = [java.lang.Number] for encoding.", failure.getMessage());
     PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
-      test.accept(conn, failure -> {
-        ctx.assertEquals("Parameter at position[0] with class = [java.lang.String] and value = [invalid-id] can not be coerced to the expected class = [java.lang.Number] for encoding.", failure.getMessage());
-        async.complete();
-      });
+      // This will test with pipelining
+      Thread th = Thread.currentThread();
+      for (int i = 0;i < times;i++) {
+        int iter = i;
+        AtomicInteger count = new AtomicInteger();
+        count.incrementAndGet();
+        test.accept(conn, failure1 -> {
+          check.accept(failure1);
+          count.incrementAndGet();
+          test.accept(conn, failure2 -> {
+            check.accept(failure2);
+            ctx.assertTrue(count.get() < 2, "Was expecting " + count.get() + " < 2");
+            count.incrementAndGet();
+            test.accept(conn, failure3 -> {
+              check.accept(failure3);
+              ctx.assertTrue(count.get() < 2, "Was expecting " + count.get() + " < 2");
+              async.countDown();
+            });
+            count.decrementAndGet();
+          });
+          count.decrementAndGet();
+        });
+        count.decrementAndGet();
+      }
     }));
   }
 
@@ -177,6 +200,24 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
         ps.query().execute(INVALID_TUPLE, ctx.asyncAssertFailure(cont));
       }));
+    });
+  }
+
+  @Test
+  public void testPreparedQueryValidationError(TestContext ctx) {
+    testValidationError(ctx, (conn, cont) -> {
+      conn
+        .preparedQuery("SELECT * FROM Fortune WHERE id=$1")
+        .execute(INVALID_TUPLE, ctx.asyncAssertFailure(cont));
+    });
+  }
+
+  @Test
+  public void testPreparedQueryValidationError_(TestContext ctx) {
+    testValidationError(ctx, (conn, cont) -> {
+      conn
+        .preparedQuery("SELECT * FROM Fortune WHERE id=$1")
+        .execute(INVALID_TUPLE, ctx.asyncAssertFailure(cont));
     });
   }
 
@@ -196,15 +237,6 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
       conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> {
         ps.query().executeBatch(Collections.singletonList(INVALID_TUPLE), ctx.asyncAssertFailure(cont));
       }));
-    });
-  }
-
-  @Test
-  public void testPreparedQueryValidationError(TestContext ctx) {
-    testValidationError(ctx, (conn, cont) -> {
-      conn.prepare("SELECT * FROM Fortune WHERE id=$1", ctx.asyncAssertSuccess(ps -> ps
-        .query()
-        .execute(INVALID_TUPLE, ctx.asyncAssertFailure(cont))));
     });
   }
 
