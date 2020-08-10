@@ -47,12 +47,15 @@ public abstract class SocketConnectionBase implements Connection {
 
   protected final PreparedStatementCache psCache;
   private final Predicate<String> preparedStatementCacheSqlFilter;
-  private final ArrayDeque<CommandBase<?>> pending = new ArrayDeque<>();
   private final Context context;
-  private int inflight;
-  private boolean paused;
   private Holder holder;
   private final int pipeliningLimit;
+
+  // Command pipeline state
+  private final ArrayDeque<CommandBase<?>> pending = new ArrayDeque<>();
+  private boolean executing;
+  private int inflight;
+  private boolean paused;
 
   protected final NetSocketInternal socket;
   protected Status status = Status.CONNECTED;
@@ -142,32 +145,47 @@ public abstract class SocketConnectionBase implements Connection {
   }
 
   private void checkPending() {
-    ChannelHandlerContext ctx = socket.channelHandlerContext();
-    int written = 0;
-    CommandBase<?> cmd;
-    while (!paused && inflight < pipeliningLimit && (cmd = pending.poll()) != null) {
-      inflight++;
-      if (cmd instanceof ExtendedQueryCommand) {
-        ExtendedQueryCommand queryCmd = (ExtendedQueryCommand) cmd;
-        if (queryCmd.ps == null) {
-          if (psCache != null) {
-            queryCmd.ps = psCache.get(queryCmd.sql());
+    if (executing) {
+      return;
+    }
+    try {
+      executing = true;
+      ChannelHandlerContext ctx = socket.channelHandlerContext();
+      int written = 0;
+      CommandBase<?> cmd;
+      while (!paused && inflight < pipeliningLimit && (cmd = pending.poll()) != null) {
+        inflight++;
+        if (cmd instanceof ExtendedQueryCommand) {
+          ExtendedQueryCommand queryCmd = (ExtendedQueryCommand) cmd;
+          if (queryCmd.ps == null) {
+            if (psCache != null) {
+              queryCmd.ps = psCache.get(queryCmd.sql());
+            }
+          }
+          if (queryCmd.ps == null) {
+            // Execute prepare
+            boolean cache = psCache != null && preparedStatementCacheSqlFilter.test(queryCmd.sql());
+            PrepareStatementCommand prepareCmd = prepareCommand(queryCmd, cache, false);
+            paused = true;
+            inflight++;
+            cmd = prepareCmd;
+          } else {
+            String msg = queryCmd.prepare();
+            if (msg != null) {
+              inflight--;
+              queryCmd.fail(new NoStackTraceThrowable(msg));
+              continue;
+            }
           }
         }
-        if (queryCmd.ps == null) {
-          // Execute prepare
-          boolean cache = psCache != null && preparedStatementCacheSqlFilter.test(queryCmd.sql());
-          PrepareStatementCommand prepareCmd = prepareCommand(queryCmd, cache, false);
-          paused = true;
-          inflight++;
-          cmd = prepareCmd;
-        }
+        written++;
+        ctx.write(cmd);
       }
-      written++;
-      ctx.write(cmd);
-    }
-    if (written > 0) {
-      ctx.flush();
+      if (written > 0) {
+        ctx.flush();
+      }
+    } finally {
+      executing = false;
     }
   }
 
