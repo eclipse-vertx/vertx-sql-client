@@ -21,6 +21,7 @@ import io.vertx.mysqlclient.impl.datatype.DataType;
 import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.ERROR_PACKET_HEADER;
@@ -44,11 +45,19 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
       decoder = new RowResultDecoder<>(cmd.collector(), statement.rowDesc);
       sendStatementFetchCommand(statement.statementId, cmd.fetch());
     } else {
+      Tuple params = cmd.params();
+      // binding parameters
+      String bindMsg = statement.bindParameters(params);
+      if (bindMsg != null) {
+        completionHandler.handle(CommandResponse.failure(bindMsg));
+        return;
+      }
+
       if (cmd.fetch() > 0) {
-        sendStatementExecuteCommand(statement, true, cmd.params(), CURSOR_TYPE_READ_ONLY);
+        sendStatementExecuteCommand(statement, true, params, CURSOR_TYPE_READ_ONLY);
       } else {
         // CURSOR_TYPE_NO_CURSOR
-        sendStatementExecuteCommand(statement, statement.sendTypesToServer(), cmd.params(), CURSOR_TYPE_NO_CURSOR);
+        sendStatementExecuteCommand(statement, statement.sendTypesToServer(), params, CURSOR_TYPE_NO_CURSOR);
       }
     }
   }
