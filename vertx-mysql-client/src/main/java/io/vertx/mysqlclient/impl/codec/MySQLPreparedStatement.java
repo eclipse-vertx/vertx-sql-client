@@ -21,6 +21,7 @@ import io.vertx.mysqlclient.impl.MySQLParamDesc;
 import io.vertx.mysqlclient.impl.MySQLRowDesc;
 import io.vertx.mysqlclient.impl.datatype.DataType;
 import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
+import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.*;
 
 import java.util.Arrays;
@@ -67,7 +68,13 @@ class MySQLPreparedStatement implements PreparedStatement {
 
   @Override
   public String prepare(TupleInternal values) {
-    return bindParameters(paramDesc, values);
+    int numberOfParameters = values.size();
+    int paramDescLength = paramDesc.paramDefinitions().length;
+    if (numberOfParameters != paramDescLength) {
+      return ErrorMessageFactory.buildWhenArgumentsLengthNotMatched(paramDescLength, numberOfParameters);
+    } else {
+      return null;
+    }
   }
 
   boolean sendTypesToServer() {
@@ -83,7 +90,7 @@ class MySQLPreparedStatement implements PreparedStatement {
     Arrays.fill(bindingTypes, DataType.UNBIND);
   }
 
-  private String bindParameters(MySQLParamDesc paramDesc, TupleInternal params) {
+  public String bindParameters(Tuple params) {
     int numberOfParameters = params.size();
     int paramDescLength = paramDesc.paramDefinitions().length;
     if (numberOfParameters != paramDescLength) {
