@@ -58,6 +58,12 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
     if (batchIdx < params.size()) {
       sequenceId = 0;
       Tuple param = params.get(batchIdx);
+      // binding parameters
+      String bindMsg = statement.bindParameters(param);
+      if (bindMsg != null) {
+        completionHandler.handle(CommandResponse.failure(bindMsg));
+        return;
+      }
       sendBatchStatementExecuteCommand(statement, param);
       batchIdx++;
     }
