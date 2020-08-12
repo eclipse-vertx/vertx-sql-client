@@ -61,4 +61,9 @@ public interface Cursor {
    */
   void close(Handler<AsyncResult<Void>> completionHandler);
 
+  /**
+   * @return whether the cursor is closed
+   */
+  boolean isClosed();
+
 }

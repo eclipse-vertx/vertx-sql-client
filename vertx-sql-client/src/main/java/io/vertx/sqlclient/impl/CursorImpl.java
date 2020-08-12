@@ -96,6 +96,11 @@ public class CursorImpl implements Cursor {
   }
 
   @Override
+  public synchronized boolean isClosed() {
+    return closed;
+  }
+
+  @Override
   public synchronized void close(Handler<AsyncResult<Void>> completionHandler) {
     close (context.promise(completionHandler));
   }

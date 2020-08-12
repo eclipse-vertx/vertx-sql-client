@@ -20,6 +20,7 @@ package io.vertx.sqlclient.impl;
 import io.vertx.core.Future;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.sqlclient.Cursor;
+import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.RowStream;
 import io.vertx.sqlclient.Row;
@@ -29,7 +30,7 @@ import io.vertx.core.Handler;
 
 import java.util.Iterator;
 
-public class RowStreamImpl implements RowStream<Row>, Handler<AsyncResult<RowSet<Row>>> {
+public class RowStreamImpl implements RowStreamInternal, Handler<AsyncResult<RowSet<Row>>> {
 
   private final PreparedStatementImpl ps;
   private final ContextInternal context;
@@ -53,6 +54,10 @@ public class RowStreamImpl implements RowStream<Row>, Handler<AsyncResult<RowSet
     this.demand = Long.MAX_VALUE;
   }
 
+  public synchronized Cursor cursor() {
+    return cursor;
+  }
+
   @Override
   public synchronized RowStream<Row> exceptionHandler(Handler<Throwable> handler) {
     exceptionHandler = handler;
@@ -72,7 +77,9 @@ public class RowStreamImpl implements RowStream<Row>, Handler<AsyncResult<RowSet
         }
       } else {
         if (cursor != null) {
+          cursor.close();
           cursor = null;
+          result = null; // Will stop the current emission if any
         } else {
           rowHandler = null;
         }
@@ -130,7 +137,11 @@ public class RowStreamImpl implements RowStream<Row>, Handler<AsyncResult<RowSet
         handler.handle(ar.cause());
       }
     } else {
-      result = ar.result().iterator();
+      RowIterator<Row> it = ar.result().iterator();
+      if (it.hasNext()) {
+        result = it;
+      }
+      // Still need to check pending to close the cursor
       checkPending();
     }
   }
@@ -139,12 +150,14 @@ public class RowStreamImpl implements RowStream<Row>, Handler<AsyncResult<RowSet
   public Future<Void> close() {
     Cursor c;
     synchronized (this) {
-      if ((c = cursor) == null) {
-        return context.succeededFuture();
-      }
+      c = cursor;
       cursor = null;
     }
-    return c.close();
+    if (c != null) {
+      return c.close();
+    } else {
+      return context.succeededFuture();
+    }
   }
 
   @Override
@@ -164,25 +177,30 @@ public class RowStreamImpl implements RowStream<Row>, Handler<AsyncResult<RowSet
     }
     while (true) {
       synchronized (RowStreamImpl.this) {
-        if (demand == 0L || result == null) {
+        if (demand == 0L) {
           emitting = false;
           break;
         }
         Handler handler;
         Object event;
-        if (result.hasNext()) {
+        if (result != null) {
           handler = rowHandler;
           event = result.next();
           if (demand != Long.MAX_VALUE) {
             demand--;
           }
+          if (!result.hasNext()) {
+            result = null;
+          }
         } else {
-          result = null;
           emitting = false;
-          if (cursor.hasMore()) {
+          if (cursor == null) {
+            break;
+          } else if (cursor.hasMore()) {
             cursor.read(fetch, this);
             break;
           } else {
+            cursor.close();
             cursor = null;
             handler = endHandler;
             event = null;
