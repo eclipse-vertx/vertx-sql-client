@@ -21,6 +21,9 @@ public class StringLongSequence {
 
   private short count;
 
+  /**
+   * @return the hex numbers 0000000 to 000FFFF, then starts from 0000000 again
+   */
   public long next() {
     short val = count++;
     long next = 0x30_30_30_00_00_00_00_00L;
