@@ -22,6 +22,7 @@ import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.*;
+import io.vertx.sqlclient.impl.RowStreamInternal;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +33,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public abstract class PreparedQueryTestBase {
@@ -204,119 +204,104 @@ public abstract class PreparedQueryTestBase {
     }));
   }
 
+  private void testCursor(TestContext ctx, Handler<SqlConnection> test) {
+    connector.connect(ctx.asyncAssertSuccess(conn -> {
+      if (cursorRequiresTx()) {
+        conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
+          test.handle(conn);
+        }));
+      } else {
+        test.handle(conn);
+      }
+    }));
+  }
+
   // Need to test partial query close or abortion ?
   @Test
   public void testQueryCursor(TestContext ctx) {
     Async async = ctx.async();
-    connector.connect(ctx.asyncAssertSuccess(conn -> {
-      Handler<AsyncResult<RowSet<Row>>> queryTest = (junk) -> {
-          conn.prepare(statement("SELECT * FROM immutable WHERE id="," OR id=", " OR id=", " OR id=", " OR id=", " OR id=",""), ctx.asyncAssertSuccess(ps -> {
-              Cursor query = ps.cursor(Tuple.of(1, 8, 4, 11, 2, 9));
-              query.read(4, ctx.asyncAssertSuccess(result -> {
-                ctx.assertNotNull(result.columnsNames());
-                ctx.assertEquals(4, result.size());
-                ctx.assertTrue(query.hasMore());
-                query.read(4, ctx.asyncAssertSuccess(result2 -> {
-                  ctx.assertNotNull(result.columnsNames());
-                  ctx.assertEquals(4, result.size());
-                  ctx.assertFalse(query.hasMore());
-                  async.complete();
-                }));
-              }));
-            }));
-      };
-      if (cursorRequiresTx()) {
-          conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
-              queryTest.handle(null);
+    testCursor(ctx, conn -> {
+      conn.prepare(statement("SELECT * FROM immutable WHERE id=", " OR id=", " OR id=", " OR id=", " OR id=", " OR id=", ""), ctx.asyncAssertSuccess(ps -> {
+        Cursor query = ps.cursor(Tuple.of(1, 8, 4, 11, 2, 9));
+        query.read(4, ctx.asyncAssertSuccess(result -> {
+          ctx.assertNotNull(result.columnsNames());
+          ctx.assertEquals(4, result.size());
+          ctx.assertTrue(query.hasMore());
+          query.read(4, ctx.asyncAssertSuccess(result2 -> {
+            ctx.assertNotNull(result.columnsNames());
+            ctx.assertEquals(4, result.size());
+            ctx.assertFalse(query.hasMore());
+            async.complete();
           }));
-      } else {
-          queryTest.handle(null);
-      }
-    }));
+        }));
+      }));
+    });
   }
 
   @Test
   public void testQueryCloseCursor(TestContext ctx) {
     Async async = ctx.async();
-    connector.connect(ctx.asyncAssertSuccess(conn -> {
-      Handler<AsyncResult<RowSet<Row>>> queryTest = (junk) -> {
-          conn.prepare(statement("SELECT * FROM immutable WHERE id="," OR id=", " OR id=", " OR id=", " OR id=", " OR id=",""), ctx.asyncAssertSuccess(ps -> {
-              Cursor query = ps.cursor(Tuple.of(1, 8, 4, 11, 2, 9));
-              query.read(4, ctx.asyncAssertSuccess(results -> {
-                ctx.assertEquals(4, results.size());
-                query.close(ctx.asyncAssertSuccess(v1 -> {
-                  ps.close(ctx.asyncAssertSuccess(v2 -> {
-                    async.complete();
-                  }));
-                }));
-              }));
+    testCursor(ctx, conn -> {
+      conn.prepare(statement("SELECT * FROM immutable WHERE id="," OR id=", " OR id=", " OR id=", " OR id=", " OR id=",""), ctx.asyncAssertSuccess(ps -> {
+        Cursor cursor = ps.cursor(Tuple.of(1, 8, 4, 11, 2, 9));
+        cursor.read(4, ctx.asyncAssertSuccess(results -> {
+          ctx.assertEquals(4, results.size());
+          cursor.close(ctx.asyncAssertSuccess(v1 -> {
+            ctx.assertTrue(cursor.isClosed());
+            ps.close(ctx.asyncAssertSuccess(v2 -> {
+              async.complete();
             }));
-      };
-      if (cursorRequiresTx()) {
-          conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
-              queryTest.handle(null);
           }));
-      } else {
-          queryTest.handle(null);
-      }
-    }));
+        }));
+      }));
+    });
   }
 
   @Test
   public void testQueryStreamCloseCursor(TestContext ctx) {
     Async async = ctx.async();
-    connector.connect(ctx.asyncAssertSuccess(conn -> {
-      Handler<AsyncResult<RowSet<Row>>> queryTest = (junk) -> {
-          conn.prepare(statement("SELECT * FROM immutable WHERE id="," OR id=", " OR id=", " OR id=", " OR id=", " OR id=",""), ctx.asyncAssertSuccess(ps -> {
-              Cursor stream = ps.cursor(Tuple.of(1, 8, 4, 11, 2, 9));
-              stream.read(4, ctx.asyncAssertSuccess(result -> {
-                ctx.assertEquals(4, result.size());
-                stream.close(ctx.asyncAssertSuccess(v1 -> {
-                  ps.close(ctx.asyncAssertSuccess(v2 -> {
-                    async.complete();
-                  }));
-                }));
+    testCursor(ctx, conn -> {
+      conn.prepare(statement("SELECT * FROM immutable WHERE id=", " OR id=", " OR id=", " OR id=", " OR id=", " OR id=", ""), ctx.asyncAssertSuccess(ps -> {
+        RowStream<Row> stream = ps.createStream(4, Tuple.of(1, 8, 4, 11, 2, 9));
+        List<Row> rows = new ArrayList<>();
+        stream.handler(row -> {
+          rows.add(row);
+          if (rows.size() == 4) {
+            Cursor cursor = ((RowStreamInternal) stream).cursor();
+            ctx.assertFalse(cursor.isClosed());
+            stream.close(ctx.asyncAssertSuccess(v1 -> {
+              ctx.assertTrue(cursor.isClosed());
+              ps.close(ctx.asyncAssertSuccess(v2 -> {
+                async.complete();
               }));
             }));
-      };
-      if (cursorRequiresTx()) {
-          conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
-              queryTest.handle(null);
-          }));
-      } else {
-          queryTest.handle(null);
-      }
-    }));
+          }
+        });
+      }));
+    });
   }
 
   @Test
   public void testStreamQuery(TestContext ctx) {
     Async async = ctx.async();
-    connector.connect(ctx.asyncAssertSuccess(conn -> {
-      Handler<AsyncResult<RowSet<Row>>> queryTest = (junk) -> {
-          conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(ps -> {
-              RowStream<Row> stream = ps.createStream(4, Tuple.tuple());
-              List<Tuple> rows = new ArrayList<>();
-              AtomicInteger ended = new AtomicInteger();
-              stream.endHandler(v -> {
-                ctx.assertEquals(0, ended.getAndIncrement());
-                ctx.assertEquals(12, rows.size());
-                async.complete();
-              });
-              stream.handler(tuple -> {
-                ctx.assertEquals(0, ended.get());
-                rows.add(tuple);
-              });
-            }));
-      };
-      if (cursorRequiresTx()) {
-          conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
-              queryTest.handle(null);
-          }));
-      } else {
-          queryTest.handle(null);
-      }
-    }));
+    testCursor(ctx, conn -> {
+      conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(ps -> {
+        RowStream<Row> stream = ps.createStream(4, Tuple.tuple());
+        List<Tuple> rows = new ArrayList<>();
+        AtomicInteger ended = new AtomicInteger();
+        stream.handler(tuple -> {
+          ctx.assertEquals(0, ended.get());
+          rows.add(tuple);
+        });
+        Cursor cursor = ((RowStreamInternal) stream).cursor();
+        stream.endHandler(v -> {
+          ctx.assertTrue(cursor.isClosed());
+          ctx.assertEquals(0, ended.getAndIncrement());
+          ctx.assertEquals(12, rows.size());
+          async.complete();
+        });
+      }));
+    });
   }
 
   @Test
@@ -330,42 +315,54 @@ public abstract class PreparedQueryTestBase {
   }
 
   private void testStreamQueryPauseInBatch(TestContext ctx, Executor executor) {
-      Async async = ctx.async();
-      connector.connect(ctx.asyncAssertSuccess(conn -> {
-        Handler<AsyncResult<RowSet>> queryTest = (junk) -> {
-            conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(ps -> {
-                RowStream<Row> stream = ps.createStream(4, Tuple.tuple());
-                List<Tuple> rows = Collections.synchronizedList(new ArrayList<>());
-                AtomicInteger ended = new AtomicInteger();
-                executor.execute(() -> {
-                  stream.endHandler(v -> {
-                    ctx.assertEquals(0, ended.getAndIncrement());
-                    ctx.assertEquals(12, rows.size());
-                    async.complete();
-                  });
-                  stream.handler(tuple -> {
-                    rows.add(tuple);
-                    if (rows.size() == 2) {
-                      stream.pause();
-                      executor.execute(() -> {
-                        vertx.setTimer(100, v -> {
-                          executor.execute(stream::resume);
-                        });
-                      });
-                    }
-                  });
+    Async async = ctx.async();
+    testCursor(ctx, conn -> {
+      conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(ps -> {
+        RowStream<Row> stream = ps.createStream(4, Tuple.tuple());
+        List<Tuple> rows = Collections.synchronizedList(new ArrayList<>());
+        AtomicInteger ended = new AtomicInteger();
+        executor.execute(() -> {
+          stream.endHandler(v -> {
+            ctx.assertEquals(0, ended.getAndIncrement());
+            ctx.assertEquals(12, rows.size());
+            async.complete();
+          });
+          stream.handler(tuple -> {
+            rows.add(tuple);
+            if (rows.size() == 2) {
+              stream.pause();
+              executor.execute(() -> {
+                vertx.setTimer(100, v -> {
+                  executor.execute(stream::resume);
                 });
-              }));
-        };
-        if (cursorRequiresTx()) {
-            conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
-                queryTest.handle(null);
-            }));
-        } else {
-            queryTest.handle(null);
-        }
+              });
+            }
+          });
+        });
       }));
-    }
+    });
+  }
+
+  @Test
+  public void testStreamQuerySetNullHandlerWhenEmitting(TestContext ctx) {
+    Async async = ctx.async();
+    testCursor(ctx, conn -> {
+      conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(ps -> {
+        RowStream<Row> stream = ps.createStream(4, Tuple.tuple());
+        stream.endHandler(v -> {
+          ctx.fail();
+        });
+        stream.handler(tuple -> {
+          RowStreamInternal internal = (RowStreamInternal) stream;
+          Cursor cursor = internal.cursor();
+          ctx.assertFalse(cursor.isClosed());
+          stream.handler(null);
+          ctx.assertTrue(cursor.isClosed());
+          async.complete();
+        });
+      }));
+    });
+  }
 
   protected void cleanTestTable(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
