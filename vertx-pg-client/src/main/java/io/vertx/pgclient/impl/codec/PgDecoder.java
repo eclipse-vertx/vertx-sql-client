@@ -229,7 +229,12 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
   private void decodeError(ByteBuf in) {
     ErrorResponse response = new ErrorResponse();
     decodeErrorOrNotice(response, in);
-    inflight.peek().handleErrorResponse(response);
+    if (response.getCode().equals("57P01")) {
+      // unsolicited admin_shutdown
+    } else {
+      PgCommandCodec<?, ?> cmd = inflight.peek();
+      cmd.handleErrorResponse(response);
+    }
   }
 
   private void decodeNotice(ByteBuf in) {
