@@ -19,7 +19,6 @@ package examples;
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
@@ -39,12 +38,12 @@ public class SqlClientExamples {
     client
       .query("SELECT * FROM users WHERE id='julien'")
       .execute(ar -> {
-      if (ar.succeeded()) {
-        RowSet<Row> result = ar.result();
-        System.out.println("Got " + result.size() + " rows ");
-      } else {
+      if (ar.failed()) {
         System.out.println("Failure: " + ar.cause().getMessage());
+        return;
       }
+      RowSet<Row> result = ar.result();
+      System.out.println("Got " + result.size() + " rows ");
     });
   }
 
@@ -53,12 +52,12 @@ public class SqlClientExamples {
     client
       .preparedQuery("SELECT * FROM users WHERE id=$1")
       .execute(Tuple.of("julien"), ar -> {
-      if (ar.succeeded()) {
-        RowSet<Row> rows = ar.result();
-        System.out.println("Got " + rows.size() + " rows ");
-      } else {
+      if (ar.failed()) {
         System.out.println("Failure: " + ar.cause().getMessage());
+        return;
       }
+      RowSet<Row> rows = ar.result();
+      System.out.println("Got " + rows.size() + " rows ");
     });
   }
 
@@ -66,13 +65,13 @@ public class SqlClientExamples {
     client
       .preparedQuery("SELECT first_name, last_name FROM users")
       .execute(ar -> {
-      if (ar.succeeded()) {
-        RowSet<Row> rows = ar.result();
-        for (Row row : rows) {
-          System.out.println("User " + row.getString(0) + " " + row.getString(1));
-        }
-      } else {
+      if (ar.failed()) {
         System.out.println("Failure: " + ar.cause().getMessage());
+        return;
+      }
+      RowSet<Row> rows = ar.result();
+      for (Row row : rows) {
+        System.out.println("User " + row.getString(0) + " " + row.getString(1));
       }
     });
   }
@@ -81,12 +80,12 @@ public class SqlClientExamples {
     client
       .preparedQuery("INSERT INTO users (first_name, last_name) VALUES ($1, $2)")
       .execute(Tuple.of("Julien", "Viet"),  ar -> {
-      if (ar.succeeded()) {
-        RowSet<Row> rows = ar.result();
-        System.out.println(rows.rowCount());
-      } else {
+      if (ar.failed()) {
         System.out.println("Failure: " + ar.cause().getMessage());
+        return;
       }
+      RowSet<Row> rows = ar.result();
+      System.out.println(rows.rowCount());
     });
   }
 
@@ -119,13 +118,13 @@ public class SqlClientExamples {
     client
       .preparedQuery("INSERT INTO USERS (id, name) VALUES ($1, $2)")
       .executeBatch(batch, res -> {
-      if (res.succeeded()) {
-
-        // Process rows
-        RowSet<Row> rows = res.result();
-      } else {
+      if (res.failed()) {
         System.out.println("Batch failed " + res.cause());
+        return;
       }
+
+      // Process rows
+      RowSet<Row> rows = res.result();
     });
   }
 
@@ -136,147 +135,157 @@ public class SqlClientExamples {
     client
       .preparedQuery("SELECT * FROM users WHERE id=$1")
       .execute(Tuple.of("julien"), ar -> {
-        if (ar.succeeded()) {
-          RowSet<Row> rows = ar.result();
-          System.out.println("Got " + rows.size() + " rows ");
-        } else {
+        if (ar.failed()) {
           System.out.println("Failure: " + ar.cause().getMessage());
+          return;
         }
+        RowSet<Row> rows = ar.result();
+        System.out.println("Got " + rows.size() + " rows ");
       });
   }
 
   public void queries10(SqlConnection sqlConnection) {
     sqlConnection
       .prepare("SELECT * FROM users WHERE id=$1", ar -> {
-        if (ar.succeeded()) {
-          PreparedStatement preparedStatement = ar.result();
-          preparedStatement.query()
-            .execute(Tuple.of("julien"), ar2 -> {
-              if (ar2.succeeded()) {
-                RowSet<Row> rows = ar2.result();
-                System.out.println("Got " + rows.size() + " rows ");
-                preparedStatement.close();
-              } else {
-                System.out.println("Failure: " + ar2.cause().getMessage());
-              }
-            });
-        } else {
+        if (ar.failed()) {
           System.out.println("Failure: " + ar.cause().getMessage());
+          return;
         }
+        PreparedStatement preparedStatement = ar.result();
+        preparedStatement.query()
+          .execute(Tuple.of("julien"), ar2 -> {
+            if (ar2.failed()) {
+              System.out.println("Failure: " + ar2.cause().getMessage());
+              return;
+            }
+            RowSet<Row> rows = ar2.result();
+            System.out.println("Got " + rows.size() + " rows ");
+            preparedStatement.close();
+          });
       });
   }
 
   public void usingConnections01(Vertx vertx, Pool pool) {
 
     pool.getConnection(ar1 -> {
-      if (ar1.succeeded()) {
-        SqlConnection connection = ar1.result();
-
-        connection
-          .query("SELECT * FROM users WHERE id='julien'")
-          .execute(ar2 -> {
-          if (ar1.succeeded()) {
-            connection
-              .query("SELECT * FROM users WHERE id='paulo'")
-              .execute(ar3 -> {
-              // Do something with rows and return the connection to the pool
-              connection.close();
-            });
-          } else {
-            // Return the connection to the pool
-            connection.close();
-          }
-        });
+      if (ar1.failed()) {
+        // error handling
+        return;
       }
+      SqlConnection connection = ar1.result();
+
+      connection
+        .query("SELECT * FROM users WHERE id='julien'")
+        .execute(ar2 -> {
+        if (ar2.failed()) {
+          // Return the connection to the pool
+          connection.close();
+          return;
+        }
+        connection
+          .query("SELECT * FROM users WHERE id='paulo'")
+          .execute(ar3 -> {
+          // Do something with rows and return the connection to the pool
+          connection.close();
+        });
+      });
     });
   }
 
   public void usingConnections02(SqlConnection connection) {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
-      if (ar1.succeeded()) {
-        PreparedStatement pq = ar1.result();
-        pq.query().execute(Tuple.of("julien"), ar2 -> {
-          if (ar2.succeeded()) {
-            // All rows
-            RowSet<Row> rows = ar2.result();
-          }
-        });
+      if (ar1.failed()) {
+        // error handling
+        return;
       }
+      PreparedStatement pq = ar1.result();
+      pq.query().execute(Tuple.of("julien"), ar2 -> {
+        if (ar2.failed()) {
+          // error handling
+          return;
+        }
+        // All rows
+        RowSet<Row> rows = ar2.result();
+      });
     });
   }
 
   public void usingConnections03(SqlConnection connection) {
     connection.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", ar1 -> {
-      if (ar1.succeeded()) {
-        PreparedStatement prepared = ar1.result();
-
-        // Create a query : bind parameters
-        List<Tuple> batch = new ArrayList();
-
-        // Add commands to the createBatch
-        batch.add(Tuple.of("julien", "Julien Viet"));
-        batch.add(Tuple.of("emad", "Emad Alblueshi"));
-
-        prepared.query().executeBatch(batch, res -> {
-          if (res.succeeded()) {
-
-            // Process rows
-            RowSet<Row> rows = res.result();
-          } else {
-            System.out.println("Batch failed " + res.cause());
-          }
-        });
+      if (ar1.failed()) {
+        // error handling
+        return;
       }
+      PreparedStatement prepared = ar1.result();
+
+      // Create a query : bind parameters
+      List<Tuple> batch = new ArrayList();
+
+      // Add commands to the createBatch
+      batch.add(Tuple.of("julien", "Julien Viet"));
+      batch.add(Tuple.of("emad", "Emad Alblueshi"));
+
+      prepared.query().executeBatch(batch, res -> {
+        if (res.failed()) {
+          System.out.println("Batch failed " + res.cause());
+          return;
+        }
+
+        // Process rows
+        RowSet<Row> rows = res.result();
+      });
     });
   }
 
   public void transaction01(Pool pool) {
     pool.getConnection(res -> {
-      if (res.succeeded()) {
+      if (res.failed()) {
+        // error handling
+        return;
+      }
 
-        // Transaction must use a connection
-        SqlConnection conn = res.result();
+      // Transaction must use a connection
+      SqlConnection conn = res.result();
 
-        // Begin the transaction
-        conn.begin(ar0 -> {
-          if (ar0.succeeded()) {
-            Transaction tx = ar0.result();
+      // Begin the transaction
+      conn.begin(ar0 -> {
+        if (ar0.failed()) {
+          // Return the connection to the pool
+          conn.close();
+          return;
+        }
+        Transaction tx = ar0.result();
 
-            // Various statements
+        // Various statements
+        conn
+          .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
+          .execute(ar1 -> {
+            if (ar1.failed()) {
+              // Return the connection to the pool
+              conn.close();
+              return;
+            }
             conn
-              .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
-              .execute(ar1 -> {
-                if (ar1.succeeded()) {
-                  conn
-                    .query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')")
-                    .execute(ar2 -> {
-                      if (ar2.succeeded()) {
-                        // Commit the transaction
-                        tx.commit(ar3 -> {
-                          if (ar3.succeeded()) {
-                            System.out.println("Transaction succeeded");
-                          } else {
-                            System.out.println("Transaction failed " + ar3.cause().getMessage());
-                          }
-                          // Return the connection to the pool
-                          conn.close();
-                        });
-                      } else {
-                        // Return the connection to the pool
-                        conn.close();
-                      }
-                    });
-                } else {
+              .query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')")
+              .execute(ar2 -> {
+                if (ar2.failed()) {
                   // Return the connection to the pool
                   conn.close();
+                  return;
                 }
+                // Commit the transaction
+                tx.commit(ar3 -> {
+                  if (ar3.succeeded()) {
+                    System.out.println("Transaction succeeded");
+                  } else {
+                    System.out.println("Transaction failed " + ar3.cause().getMessage());
+                  }
+                  // Return the connection to the pool
+                  conn.close();
+                });
               });
-          } else {
-            // Return the connection to the pool
-            conn.close();
-          }
-        });
-      }
+          });
+      });
     });
   }
 
@@ -298,7 +307,7 @@ public class SqlClientExamples {
         // Map to a message result
         .map("Users inserted"))
     ).onComplete(ar -> {
-      // The connection was automatically return to the pool
+      // The connection was automatically returned to the pool
       if (ar.succeeded()) {
         // Transaction was committed
         String message = ar.result();
@@ -312,73 +321,88 @@ public class SqlClientExamples {
 
   public void usingCursors01(SqlConnection connection) {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar0 -> {
-      if (ar0.succeeded()) {
-        PreparedStatement pq = ar0.result();
+      if (ar0.failed()) {
+        // handle error
+        return;
+      }
+      PreparedStatement pq = ar0.result();
 
-        // Cursors require to run within a transaction
-        connection.begin(ar1 -> {
-          if (ar1.succeeded()) {
-            Transaction tx = ar1.result();
+      // Cursors require to run within a transaction
+      connection.begin(ar1 -> {
+        if (ar1.failed()) {
+          pq.close();
+          // handle error
+          return;
+        }
+        Transaction tx = ar1.result();
 
-            // Create a cursor
-            Cursor cursor = pq.cursor(Tuple.of("julien"));
+        // Create a cursor
+        Cursor cursor = pq.cursor(Tuple.of("julien"));
 
-            // Read 50 rows
-            cursor.read(50, ar2 -> {
-              if (ar2.succeeded()) {
-                RowSet<Row> rows = ar2.result();
+        // Read 50 rows
+        cursor.read(50, ar2 -> {
+          if (ar2.failed()) {
+            // handle error
+            return;
+          }
+          RowSet<Row> rows = ar2.result();
 
-                // Check for more ?
-                if (cursor.hasMore()) {
-                  // Repeat the process...
-                } else {
-                  // No more rows - commit the transaction
-                  tx.commit();
-                }
-              }
-            });
+          // Check for more ?
+          if (cursor.hasMore()) {
+            // Repeat the process...
+          } else {
+            // No more rows - commit the transaction
+            tx.commit();
           }
         });
-      }
+      });
     });
   }
 
   public void usingCursors02(Cursor cursor) {
     cursor.read(50, ar2 -> {
-      if (ar2.succeeded()) {
-        // Close the cursor
-        cursor.close();
+      if (ar2.failed()) {
+        // handle error
+        return;
       }
+      // Use the cursor
+
+      // Close the cursor
+      cursor.close();
     });
   }
 
   public void usingCursors03(SqlConnection connection) {
     connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar0 -> {
-      if (ar0.succeeded()) {
-        PreparedStatement pq = ar0.result();
-
-        // Streams require to run within a transaction
-        connection.begin(ar1 -> {
-          if (ar1.succeeded()) {
-            Transaction tx = ar1.result();
-
-            // Fetch 50 rows at a time
-            RowStream<Row> stream = pq.createStream(50, Tuple.of("julien"));
-
-            // Use the stream
-            stream.exceptionHandler(err -> {
-              System.out.println("Error: " + err.getMessage());
-            });
-            stream.endHandler(v -> {
-              tx.commit();
-              System.out.println("End of stream");
-            });
-            stream.handler(row -> {
-              System.out.println("User: " + row.getString("last_name"));
-            });
-          }
-        });
+      if (ar0.failed()) {
+        // handle error
+        return;
       }
+      PreparedStatement pq = ar0.result();
+
+      // Streams require to run within a transaction
+      connection.begin(ar1 -> {
+        if (ar1.failed()) {
+          // handle error
+          return;
+        }
+        Transaction tx = ar1.result();
+
+        // Fetch 50 rows at a time
+        RowStream<Row> stream = pq.createStream(50, Tuple.of("julien"));
+
+        // Use the stream
+        stream.exceptionHandler(err -> {
+          System.out.println("Error: " + err.getMessage());
+        });
+        stream.endHandler(v -> {
+          tx.commit();
+          System.out.println("End of stream");
+        });
+        stream.handler(row -> {
+          System.out.println("User: " + row.getString("last_name"));
+        });
+      });
     });
   }
 }
