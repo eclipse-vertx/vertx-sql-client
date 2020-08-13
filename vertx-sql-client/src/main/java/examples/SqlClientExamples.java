@@ -19,7 +19,6 @@ package examples;
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
@@ -155,10 +154,10 @@ public class SqlClientExamples {
               if (ar2.succeeded()) {
                 RowSet<Row> rows = ar2.result();
                 System.out.println("Got " + rows.size() + " rows ");
-                preparedStatement.close();
               } else {
                 System.out.println("Failure: " + ar2.cause().getMessage());
               }
+              preparedStatement.close();
             });
         } else {
           System.out.println("Failure: " + ar.cause().getMessage());
@@ -200,6 +199,7 @@ public class SqlClientExamples {
             // All rows
             RowSet<Row> rows = ar2.result();
           }
+          pq.close();
         });
       }
     });
@@ -225,6 +225,7 @@ public class SqlClientExamples {
           } else {
             System.out.println("Batch failed " + res.cause());
           }
+          prepared.close();
         });
       }
     });
@@ -332,8 +333,9 @@ public class SqlClientExamples {
                 if (cursor.hasMore()) {
                   // Repeat the process...
                 } else {
-                  // No more rows - commit the transaction
-                  tx.commit();
+                  // No more rows
+                  tx.commit();  // commit transaction
+                  pq.close();   // close prepared statement
                 }
               }
             });
@@ -371,6 +373,7 @@ public class SqlClientExamples {
             });
             stream.endHandler(v -> {
               tx.commit();
+              pq.close();
               System.out.println("End of stream");
             });
             stream.handler(row -> {
