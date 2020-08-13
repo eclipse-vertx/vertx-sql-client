@@ -17,22 +17,20 @@
 
 package examples;
 
-import io.vertx.pgclient.*;
-import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.data.Numeric;
-import io.vertx.pgclient.pubsub.PgSubscriber;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.SqlResult;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.Tuple;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
+import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.pgclient.PgConnection;
+import io.vertx.pgclient.PgPool;
+import io.vertx.pgclient.SslMode;
+import io.vertx.pgclient.pubsub.PgSubscriber;
+import io.vertx.sqlclient.*;
+import io.vertx.sqlclient.data.Numeric;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -113,7 +111,9 @@ public class PgClientExamples {
     PgConnectOptions connectOptions = new PgConnectOptions();
 
     // Set the default schema
-    connectOptions.addProperty("search_path", "myschema");
+    Map<String, String> props = new HashMap<>();
+    props.put("search_path", "myschema");
+    connectOptions.setProperties(props);
   }
 
   public void configureFromUri(Vertx vertx) {
