@@ -26,7 +26,7 @@ class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, Pre
   private PgParamDesc parameterDesc;
   private PgRowDesc rowDesc;
 
-  private long statement;
+  private byte[] statement;
 
   PrepareStatementCommandCodec(PrepareStatementCommand cmd) {
     super(cmd);
@@ -38,7 +38,7 @@ class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, Pre
       statement = encoder.nextStatementName();
     } else {
       // Use unnamed prepared statements that don't need to be closed
-      statement = 0L;
+      statement = new byte[] { 0 };
     }
 
     List<Class<?>> parameterTypes = cmd.parameterTypes();
