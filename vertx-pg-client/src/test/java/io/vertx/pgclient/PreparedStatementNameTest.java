@@ -19,11 +19,13 @@ public class PreparedStatementNameTest extends PgTestBase {
   @Test
   public void testNameOverflow(TestContext ctx) {
     PgConnection.connect(Vertx.vertx(), rule.options(), ctx.asyncAssertSuccess(conn -> {
-      for (int i=0; i<=0x1FFFF; i++) {
-        conn.prepare("SELECT 1", ctx.asyncAssertSuccess(ps -> {
-          ps.query().execute(ctx.asyncAssertSuccess());
-        }));
-      }
+      conn.prepare("SELECT 1", ctx.asyncAssertSuccess(ps1 -> {
+        for (int i=1; i<=0x10000; i++) {
+          conn.prepare("SELECT 2", ctx.asyncAssertSuccess(ps2 -> {
+            ps2.query().execute(ctx.asyncAssertSuccess(done -> ps2.close()));
+          }));
+        }
+      }));
     }));
   }
 }
