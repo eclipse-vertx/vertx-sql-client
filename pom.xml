@@ -102,6 +102,28 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  
+  <profiles>
+    <profile>
+      <id>jdk9</id>
+      <activation>
+        <jdk>[1.9,)</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.1</version>
+            <!-- Must compile with -release flag on JDK 9+ to avoid bytecode incompatibilities
+                 such as: https://github.com/eclipse-vertx/vertx-sql-client/issues/736 -->
+            <configuration>
+              <release>8</release>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
   <modules>
     <module>vertx-sql-client</module>
