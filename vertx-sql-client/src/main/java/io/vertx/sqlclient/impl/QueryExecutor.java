@@ -19,6 +19,7 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlResult;
@@ -60,11 +61,11 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     return metrics;
   }
 
-  private QueryResultBuilder<T, R, L> createHandler(Promise<L> promise, Object payload) {
+  private QueryResultBuilder<T, R, L> createHandler(PromiseInternal<L> promise, Object payload) {
     return createHandler(promise, payload, null);
   }
 
-  private QueryResultBuilder<T, R, L> createHandler(Promise<L> promise, Object payload, Object metric) {
+  private QueryResultBuilder<T, R, L> createHandler(PromiseInternal<L> promise, Object payload, Object metric) {
     return new QueryResultBuilder<>(factory, tracer, payload, metrics, metric, promise);
   }
 
@@ -72,8 +73,8 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
                           String sql,
                           boolean autoCommit,
                           boolean singleton,
-                          Promise<L> promise) {
-    ContextInternal context = (ContextInternal) promise.future().context();
+                          PromiseInternal<L> promise) {
+    ContextInternal context = (ContextInternal) promise.context();
     Object payload;
     if (tracer != null) {
       payload = tracer.sendRequest(context, sql);
@@ -98,8 +99,8 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
                                                    int fetch,
                                                    String cursorId,
                                                    boolean suspended,
-                                                   Promise<L> promise) {
-    ContextInternal context = (ContextInternal) promise.future().context();
+                                                   PromiseInternal<L> promise) {
+    ContextInternal context = promise.context();
     Object payload;
     if (tracer != null) {
       payload = tracer.sendRequest(context, preparedStatement.sql(), arguments);
@@ -133,8 +134,8 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     return handler;
   }
 
-  void executeExtendedQuery(CommandScheduler scheduler, String sql, boolean autoCommit, Tuple arguments, Promise<L> promise) {
-    ContextInternal context = (ContextInternal) promise.future().context();
+  void executeExtendedQuery(CommandScheduler scheduler, String sql, boolean autoCommit, Tuple arguments, PromiseInternal<L> promise) {
+    ContextInternal context = (ContextInternal) promise.context();
     Object payload;
     if (tracer != null) {
       payload = tracer.sendRequest(context, sql, arguments);
@@ -170,8 +171,8 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
                          PreparedStatement preparedStatement,
                          boolean autoCommit,
                          List<Tuple> batch,
-                         Promise<L> promise) {
-    ContextInternal context = (ContextInternal) promise.future().context();
+                         PromiseInternal<L> promise) {
+    ContextInternal context = (ContextInternal) promise.context();
     Object payload;
     if (tracer != null) {
       payload = tracer.sendRequest(context, preparedStatement.sql(), batch);
@@ -197,8 +198,8 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     scheduler.schedule(cmd, handler);
   }
 
-  void executeBatchQuery(CommandScheduler scheduler, String sql, boolean autoCommit, List<Tuple> batch, Promise<L> promise) {
-    ContextInternal context = (ContextInternal) promise.future().context();
+  void executeBatchQuery(CommandScheduler scheduler, String sql, boolean autoCommit, List<Tuple> batch, PromiseInternal<L> promise) {
+    ContextInternal context = (ContextInternal) promise.context();
     Object payload;
     if (tracer != null) {
       payload = tracer.sendRequest(context, sql, batch);

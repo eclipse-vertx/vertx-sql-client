@@ -41,7 +41,7 @@ public class DB2ConnectionImpl extends SqlConnectionImpl<DB2ConnectionImpl> impl
     }
     QueryTracer tracer = ctx.tracer() == null ? null : new QueryTracer(ctx.tracer(), options);
     Promise<DB2Connection> promise = ctx.promise();
-    ctx.dispatch(null, v -> connect(client, ctx, tracer, promise));
+    ctx.emit(null, v -> connect(client, ctx, tracer, promise));
     return promise.future();
   }
 

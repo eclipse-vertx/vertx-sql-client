@@ -18,6 +18,7 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.impl.command.CloseCursorCommand;
@@ -116,7 +117,7 @@ class PreparedStatementImpl implements PreparedStatement {
                                            String cursorId,
                                            boolean suspended,
                                            QueryExecutor<R, ?, F> builder,
-                                           Promise<F> p) {
+                                           PromiseInternal<F> p) {
     withPreparedStatement(args, ar -> {
       if (ar.succeeded()) {
         builder.executeExtendedQuery(
@@ -136,7 +137,7 @@ class PreparedStatementImpl implements PreparedStatement {
 
   <R, F extends SqlResult<R>> void executeBatch(List<Tuple> argsList,
                                                 QueryExecutor<R, ?, F> builder,
-                                                Promise<F> p) {
+                                                PromiseInternal<F> p) {
     withPreparedStatement(argsList.get(0), ar -> {
       if (ar.succeeded()) {
         builder.executeBatchQuery(conn, ar.result(), autoCommit, argsList, p);
@@ -249,7 +250,7 @@ class PreparedStatementImpl implements PreparedStatement {
       return promise.future();
     }
 
-    private void execute(Tuple args, Promise<R> promise) {
+    private void execute(Tuple args, PromiseInternal<R> promise) {
       PreparedStatementImpl.this.execute(args, 0, null, false, builder, promise);
     }
 
@@ -264,7 +265,7 @@ class PreparedStatementImpl implements PreparedStatement {
       return promise.future();
     }
 
-    private void executeBatch(List<Tuple> argsList, Promise<R> promise) {
+    private void executeBatch(List<Tuple> argsList, PromiseInternal<R> promise) {
       if (argsList.isEmpty()) {
         promise.fail("Empty batch");
       } else {

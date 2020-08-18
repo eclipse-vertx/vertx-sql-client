@@ -25,7 +25,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.VertxException;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.PromiseInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.TransactionRollbackException;
 import io.vertx.sqlclient.impl.command.CommandBase;

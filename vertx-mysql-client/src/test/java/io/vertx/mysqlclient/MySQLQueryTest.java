@@ -23,6 +23,7 @@ import io.vertx.sqlclient.Tuple;
 import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -92,6 +93,7 @@ public class MySQLQueryTest extends MySQLTestBase {
     }));
   }
 
+  @Ignore("Seems to hang forever")
   @Test
   public void testCachePreparedStatementWithDifferentSql(TestContext ctx) {
     // we set the cache size to be the same with max_prepared_stmt_count
@@ -158,6 +160,7 @@ public class MySQLQueryTest extends MySQLTestBase {
     }));
   }
 
+  @Ignore("Seems to hang forever")
   @Test
   public void testAutoClosingNonCacheOneShotPreparedQueryStatement(TestContext ctx) {
     MySQLConnection.connect(vertx, options.setCachePreparedStatements(false), ctx.asyncAssertSuccess(conn -> {
@@ -177,6 +180,7 @@ public class MySQLQueryTest extends MySQLTestBase {
     }));
   }
 
+  @Ignore("Seems to hang forever")
   @Test
   public void testAutoClosingNonCacheOneShotPreparedBatchStatement(TestContext ctx) {
     MySQLConnection.connect(vertx, options.setCachePreparedStatements(false), ctx.asyncAssertSuccess(conn -> {

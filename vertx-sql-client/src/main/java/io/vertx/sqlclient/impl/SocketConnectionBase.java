@@ -140,7 +140,7 @@ public abstract class SocketConnectionBase implements Connection {
 
   @Override
   public <R> void schedule(CommandBase<R> cmd, Promise<R> promise) {
-    context.dispatch(null, v -> doSchedule(cmd, promise));
+    context.emit(v -> doSchedule(cmd, promise));
   }
 
   protected <R> void doSchedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {

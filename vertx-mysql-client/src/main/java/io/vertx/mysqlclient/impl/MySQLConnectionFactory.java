@@ -128,7 +128,7 @@ public class MySQLConnectionFactory implements ConnectionFactory {
   @Override
   public Future<Connection> connect() {
     Promise<Connection> promise = context.promise();
-    context.dispatch(null, v -> doConnect(promise));
+    context.emit(promise, this::doConnect);
     return promise.future();
   }
 

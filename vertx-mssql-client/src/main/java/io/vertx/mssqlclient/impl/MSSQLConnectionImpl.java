@@ -12,7 +12,7 @@
 package io.vertx.mssqlclient.impl;
 
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.PromiseInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLConnection;
@@ -41,7 +41,7 @@ public class MSSQLConnectionImpl extends SqlConnectionImpl<MSSQLConnectionImpl> 
     QueryTracer tracer = ctx.tracer() == null ? null : new QueryTracer(ctx.tracer(), options);
     PromiseInternal<MSSQLConnection> promise = ctx.promise();
     MSSQLConnectionFactory client = new MSSQLConnectionFactory(ctx, options);
-    ctx.dispatch(null, v -> {
+    ctx.emit(null, v -> {
       client.connect()
         .<MSSQLConnection>map(conn -> {
           MSSQLConnectionImpl msConn = new MSSQLConnectionImpl(client, ctx, conn, tracer, null);

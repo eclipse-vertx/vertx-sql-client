@@ -22,6 +22,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Row;
@@ -75,7 +76,7 @@ public class CursorImpl implements Cursor {
 
   @Override
   public synchronized Future<RowSet<Row>> read(int count) {
-    Promise<RowSet<Row>> promise = context.promise();
+    PromiseInternal<RowSet<Row>> promise = context.promise();
     ps.withPreparedStatement(params, ar -> {
       if (ar.succeeded()) {
         PreparedStatement preparedStatement = ar.result();

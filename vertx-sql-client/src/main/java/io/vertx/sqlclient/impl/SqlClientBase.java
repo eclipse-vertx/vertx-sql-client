@@ -18,6 +18,7 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Promise;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Query;
@@ -52,9 +53,9 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
     return current;
   }
 
-  protected abstract <T> Promise<T> promise();
+  protected abstract <T> PromiseInternal<T> promise();
 
-  protected abstract <T> Promise<T> promise(Handler<AsyncResult<T>> handler);
+  protected abstract <T> PromiseInternal<T> promise(Handler<AsyncResult<T>> handler);
 
   @Override
   public Query<RowSet<Row>> query(String sql) {
@@ -102,7 +103,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
       return promise.future();
     }
 
-    protected void execute(Promise<R> promise) {
+    protected void execute(PromiseInternal<R> promise) {
       builder.executeSimpleQuery(SqlClientBase.this, sql, autoCommit, singleton, promise);
     }
   }
@@ -129,11 +130,11 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
     }
 
     @Override
-    protected void execute(Promise<R> promise) {
+    protected void execute(PromiseInternal<R> promise) {
       execute(ArrayTuple.EMPTY, promise);
     }
 
-    private void execute(Tuple arguments, Promise<R> promise) {
+    private void execute(Tuple arguments, PromiseInternal<R> promise) {
       builder.executeExtendedQuery(SqlClientBase.this, sql, autoCommit, arguments, promise);
     }
 
@@ -161,7 +162,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
       return promise.future();
     }
 
-    private void executeBatch(List<Tuple> batch, Promise<R> promise) {
+    private void executeBatch(List<Tuple> batch, PromiseInternal<R> promise) {
       builder.executeBatchQuery(SqlClientBase.this, sql, autoCommit, batch, promise);
     }
   }

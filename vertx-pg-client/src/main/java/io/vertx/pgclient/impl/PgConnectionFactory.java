@@ -125,7 +125,7 @@ class PgConnectionFactory implements ConnectionFactory {
 
   private Future<Connection> doConnect(boolean ssl) {
     Promise<Connection> promise = context.promise();
-    context.dispatch(null, v -> doConnect(ssl, promise));
+    context.emit(v -> doConnect(ssl, promise));
     return promise.future();
   }
 
