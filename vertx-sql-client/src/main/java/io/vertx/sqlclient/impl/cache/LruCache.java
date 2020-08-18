@@ -16,6 +16,8 @@ import io.vertx.core.Handler;
 import io.vertx.sqlclient.impl.PreparedStatement;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,14 +25,41 @@ import java.util.Map;
 /**
  * A LRU replacement strategy cache based on {@link java.util.LinkedHashMap} for prepared statements.
  */
-class LruCache<K, V> extends LinkedHashMap<K, V> {
+public class LruCache<K, V> extends LinkedHashMap<K, V> {
 
   List<V> removed;
   private final int capacity;
 
-  LruCache(int capacity) {
+  public LruCache(int capacity) {
     super(capacity, 0.75f, true);
     this.capacity = capacity;
+  }
+
+  /**
+   * Evict the eldest entry from the cache
+   *
+   * @return the eldest value or {@code null}
+   */
+  public V evict() {
+    Iterator<V> it = values().iterator();
+    if (it.hasNext()) {
+      V value = it.next();
+      it.remove();
+      return value;
+    } else {
+      return null;
+    }
+  }
+
+  public List<V> cache(K key, V value) {
+    put(key, value);
+    if (removed != null) {
+      List<V> evicted = removed;
+      removed = null;
+      return evicted;
+    } else {
+      return Collections.emptyList();
+    }
   }
 
   @Override
