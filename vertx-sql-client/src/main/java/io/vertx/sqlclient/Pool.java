@@ -167,7 +167,7 @@ public interface Pool extends SqlClient {
               .flatMap(v -> Future.succeededFuture(res)),
             err -> tx
               .rollback()
-              .flatMap(v -> Future.failedFuture(err))))
+              .compose(v -> Future.failedFuture(err), failure -> Future.failedFuture(err))))
         .onComplete(ar -> conn.close()));
   }
 
