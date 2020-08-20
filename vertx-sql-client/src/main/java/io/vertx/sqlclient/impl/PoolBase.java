@@ -17,19 +17,13 @@
 
 package io.vertx.sqlclient.impl;
 
-import io.vertx.sqlclient.PoolOptions;
+import io.vertx.core.*;
 import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
-import io.vertx.sqlclient.impl.command.CommandScheduler;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxException;
 
 /**
  * Todo :
@@ -88,9 +82,11 @@ public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> i
       pool.acquire(new CommandWaiter() { // SHOULD BE IT !!!!!
         @Override
         protected void onSuccess(Connection conn) {
-          cmd.handler = handler;
+          cmd.handler = commandResponse -> {
+            conn.close(this);
+            handler.handle(commandResponse);
+          };
           conn.schedule(cmd);
-          conn.close(this);
         }
         @Override
         protected void onFailure(Throwable cause) {
