@@ -17,8 +17,7 @@
 
 package io.vertx.sqlclient.impl;
 
-import io.vertx.core.Closeable;
-import io.vertx.core.Promise;
+import io.vertx.core.*;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
@@ -28,9 +27,6 @@ import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.sqlclient.impl.pool.ConnectionPool;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
@@ -120,8 +116,10 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
           metrics.dequeueRequest(metric);
         }
         conn.schedule(cmd, promise);
-        // Use null promise instead
-        conn.close(this, Promise.promise());
+        promise.future().onComplete(ar -> {
+          // Use null promise instead
+          conn.close(this, Promise.promise());
+        });
       }
       @Override
       protected void onFailure(Throwable cause) {
