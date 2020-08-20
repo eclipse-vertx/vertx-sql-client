@@ -17,9 +17,9 @@
 
 package io.vertx.pgclient;
 
-import io.vertx.sqlclient.PoolOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.sqlclient.PoolOptions;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -127,6 +127,38 @@ public class PgPoolTest extends PgPoolTestBase {
       }));
       async.await(4000000);
     } finally {
+      pool.close();
+    }
+  }
+
+  @Test
+  public void testUseAvailableResources(TestContext ctx) {
+    int poolSize = 10;
+    Async async = ctx.async(poolSize + 1);
+    PgPool pool = PgPool.pool(options, new PoolOptions().setMaxSize(poolSize));
+    AtomicReference<PgConnection> ctrlConnRef = new AtomicReference<>();
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(ctrlConn -> {
+      ctrlConnRef.set(ctrlConn);
+      for (int i = 0; i < poolSize; i++) {
+        vertx.setTimer(10 * (i + 1), l -> {
+          pool.query("select pg_sleep(5)").execute(ctx.asyncAssertSuccess(res -> async.countDown()));
+        });
+      }
+      vertx.setTimer(10 * (poolSize + 1), event -> {
+        ctrlConn.query("select count(*) as cnt from pg_stat_activity where application_name like '%vertx%'").execute(ctx.asyncAssertSuccess(rows -> {
+          Integer count = rows.iterator().next().getInteger("cnt");
+          ctx.assertEquals(poolSize + 1, count);
+          async.countDown();
+        }));
+      });
+    }));
+    try {
+      async.await();
+    } finally {
+      PgConnection ctrlConn = ctrlConnRef.get();
+      if (ctrlConn != null) {
+        ctrlConn.close();
+      }
       pool.close();
     }
   }
