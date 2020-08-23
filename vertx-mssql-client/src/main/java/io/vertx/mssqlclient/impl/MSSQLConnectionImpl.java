@@ -41,6 +41,7 @@ public class MSSQLConnectionImpl extends SqlConnectionImpl<MSSQLConnectionImpl> 
     QueryTracer tracer = ctx.tracer() == null ? null : new QueryTracer(ctx.tracer(), options);
     PromiseInternal<MSSQLConnection> promise = ctx.promise();
     MSSQLConnectionFactory client = new MSSQLConnectionFactory(ctx, options);
+    ctx.addCloseHook(client);
     ctx.emit(null, v -> {
       client.connect()
         .<MSSQLConnection>map(conn -> {

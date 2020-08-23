@@ -16,9 +16,11 @@
  */
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.Closeable;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 
-public interface ConnectionFactory {
+public interface ConnectionFactory extends Closeable {
 
   /**
    * Connect to the database and returns a connection.
@@ -27,7 +29,7 @@ public interface ConnectionFactory {
    */
   Future<Connection> connect();
 
-  default Future<Void> close() {
-    return Future.succeededFuture();
+  default void close(Promise<Void> promise) {
+    promise.complete();
   }
 }

@@ -16,6 +16,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.net.*;
 import io.vertx.core.net.impl.NetSocketInternal;
@@ -32,6 +33,7 @@ import java.util.function.Predicate;
 import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.*;
 
 public class MySQLConnectionFactory implements ConnectionFactory {
+
   private final NetClient netClient;
   private final ContextInternal context;
   private final SocketAddress socketAddress;
@@ -48,6 +50,7 @@ public class MySQLConnectionFactory implements ConnectionFactory {
   private final int preparedStatementCacheSize;
   private final Predicate<String> preparedStatementCacheSqlFilter;
   private final int initialCapabilitiesFlags;
+  private final CloseFuture clientCloseFuture = new CloseFuture();
 
   public MySQLConnectionFactory(ContextInternal context, MySQLConnectOptions options) {
     NetClientOptions netClientOptions = new NetClientOptions(options);
@@ -112,7 +115,7 @@ public class MySQLConnectionFactory implements ConnectionFactory {
     this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
     this.preparedStatementCacheSqlFilter = options.getPreparedStatementCacheSqlFilter();
 
-    this.netClient = context.owner().createNetClient(netClientOptions);
+    this.netClient = context.owner().createNetClient(netClientOptions, clientCloseFuture);
   }
 
   // Called by hook
@@ -121,8 +124,9 @@ public class MySQLConnectionFactory implements ConnectionFactory {
     completionHandler.handle(Future.succeededFuture());
   }
 
-  public Future<Void> close() {
-    return netClient.close();
+  @Override
+  public void close(Promise<Void> promise) {
+    clientCloseFuture.close(promise);
   }
 
   @Override

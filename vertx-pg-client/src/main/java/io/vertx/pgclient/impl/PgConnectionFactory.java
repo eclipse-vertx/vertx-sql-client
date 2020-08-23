@@ -17,6 +17,7 @@
 
 package io.vertx.pgclient.impl;
 
+import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.pgclient.PgConnectOptions;
@@ -37,6 +38,7 @@ import java.util.function.Predicate;
 class PgConnectionFactory implements ConnectionFactory {
 
   private final NetClient client;
+  private final CloseFuture clientCloseFuture = new CloseFuture();
   private final ContextInternal context;
   private final SocketAddress socketAddress;
   private final SslMode sslMode;
@@ -71,11 +73,12 @@ class PgConnectionFactory implements ConnectionFactory {
     this.pipeliningLimit = options.getPipeliningLimit();
     this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
     this.preparedStatementCacheSqlFilter = options.getPreparedStatementCacheSqlFilter();
-    this.client = vertx.createNetClient(netClientOptions);
+    this.client = vertx.createNetClient(netClientOptions, clientCloseFuture);
   }
 
-  public Future<Void> close() {
-    return client.close();
+  @Override
+  public void close(Promise<Void> promise) {
+    clientCloseFuture.close(promise);
   }
 
   public void cancelRequest(int processId, int secretKey, Handler<AsyncResult<Void>> handler) {

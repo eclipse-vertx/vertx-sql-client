@@ -40,6 +40,7 @@ import io.vertx.sqlclient.impl.tracing.QueryTracer;
  */
 public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implements Pool, Closeable {
 
+  private final ContextInternal context;
   private final VertxInternal vertx;
   private final ConnectionFactory factory;
   private final ConnectionPool pool;
@@ -47,6 +48,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
 
   public PoolBase(ContextInternal context, ConnectionFactory factory, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions) {
     super(tracer, metrics);
+    this.context = context;
     this.vertx = context.owner();
     this.factory = factory;
     this.pool = new ConnectionPool(factory, context, poolOptions.getMaxSize(), poolOptions.getMaxWaitQueueSize());
@@ -189,7 +191,11 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
 
   private Future<Void> doClose() {
     // TODO : flatMap -> always
-    return pool.close().flatMap(v -> factory.close()).onComplete(v -> {
+    return pool.close().flatMap(v -> {
+      PromiseInternal<Void> promise = context.promise();
+      factory.close(promise);
+      return promise;
+    }).onComplete(v -> {
       if (metrics != null) {
         metrics.close();
       }

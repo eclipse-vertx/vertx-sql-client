@@ -39,6 +39,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }
+    ctx.addCloseHook(client);
     QueryTracer tracer = ctx.tracer() == null ? null : new QueryTracer(ctx.tracer(), options);
     Promise<MySQLConnection> promise = ctx.promise();
     ctx.emit(v -> connect(client, ctx, tracer, null, promise));

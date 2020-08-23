@@ -39,6 +39,8 @@ public class PgPoolTest extends PgPoolTestBase {
     int size = pools.size();
     if (size > 0) {
       Async async = ctx.async(size);
+      Set<PgPool> pools = this.pools;
+      this.pools = new HashSet<>();
       pools.forEach(pool -> {
         pool.close(ar -> {
           async.countDown();
@@ -127,30 +129,22 @@ public class PgPoolTest extends PgPoolTestBase {
   public void testRunStandalone(TestContext ctx) {
     Async async = ctx.async();
     PgPool pool = createPool(new PgConnectOptions(options), new PoolOptions());
-    try {
-      pool.query("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(v -> {
-        async.complete();
-      }));
-      async.await(4000);
-    } finally {
-      pool.close();
-    }
+    pool.query("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(v -> {
+      async.complete();
+    }));
+    async.await(4000);
   }
 
   @Test
   public void testMaxWaitQueueSize(TestContext ctx) {
     Async async = ctx.async();
     PgPool pool = createPool(options, new PoolOptions().setMaxSize(1).setMaxWaitQueueSize(0));
-    try {
-      pool.getConnection(ctx.asyncAssertSuccess(v -> {
-        pool.getConnection(ctx.asyncAssertFailure(err -> {
-          async.complete();
-        }));
+    pool.getConnection(ctx.asyncAssertSuccess(v -> {
+      pool.getConnection(ctx.asyncAssertFailure(err -> {
+        async.complete();
       }));
-      async.await(4000000);
-    } finally {
-      pool.close();
-    }
+    }));
+    async.await(4000000);
   }
 
   // This test check that when using pooled connections, the preparedQuery pool operation

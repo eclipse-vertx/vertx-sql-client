@@ -38,6 +38,7 @@ public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implem
       return context.failedFuture("Native transport is not available");
     } else {
       PgConnectionFactory client = new PgConnectionFactory(context.owner(), context, options);
+      context.addCloseHook(client);
       return client.connect()
         .map(conn -> {
         QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(context.tracer(), options);
