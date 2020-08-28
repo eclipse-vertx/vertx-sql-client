@@ -11,6 +11,10 @@ import java.util.Objects;
 @VertxGen
 public interface PropertyKind<T> {
 
+  /**
+   * @return a property kind matching the provided {@code name}, the {@code type} can be used to check
+   *         the property value type or cast it to the expected type
+   */
   static <T> PropertyKind<T> create(String name, Class<T> type) {
     Objects.requireNonNull(name, "No null name accepted");
     Objects.requireNonNull(type, "No null type accepted");
