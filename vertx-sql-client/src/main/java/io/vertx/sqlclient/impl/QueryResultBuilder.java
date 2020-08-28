@@ -22,8 +22,8 @@ import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
-import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.PropertyKind;
+import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.HashMap;
@@ -128,7 +128,7 @@ class QueryResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> 
 
   @Override
   public Future<Boolean> future() {
-    throw new UnsupportedOperationException();
+    return handler.future().map(l -> isSuspended());
   }
 
   public boolean isSuspended() {

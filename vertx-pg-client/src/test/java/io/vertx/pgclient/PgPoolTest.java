@@ -17,10 +17,10 @@
 
 package io.vertx.pgclient;
 
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.Tuple;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.Tuple;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -154,7 +154,7 @@ public class PgPoolTest extends PgPoolTestBase {
     PgPool pool = createPool(new PgConnectOptions(this.options).setCachePreparedStatements(true), 2);
     int numRequests = 2;
     Async async = ctx.async(numRequests);
-    for (int i = 0;i < numRequests;i++) {
+    for (int i = 0; i < numRequests; i++) {
       pool.preparedQuery("SELECT * FROM Fortune WHERE id=$1").execute(Tuple.of(1), ctx.asyncAssertSuccess(results -> {
         ctx.assertEquals(1, results.size());
         Tuple row = results.iterator().next();
@@ -162,6 +162,38 @@ public class PgPoolTest extends PgPoolTestBase {
         ctx.assertEquals("fortune: No such file or directory", row.getString(1));
         async.countDown();
       }));
+    }
+  }
+
+  @Test
+  public void testUseAvailableResources(TestContext ctx) {
+    int poolSize = 10;
+    Async async = ctx.async(poolSize + 1);
+    PgPool pool = PgPool.pool(options, new PoolOptions().setMaxSize(poolSize));
+    AtomicReference<PgConnection> ctrlConnRef = new AtomicReference<>();
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(ctrlConn -> {
+      ctrlConnRef.set(ctrlConn);
+      for (int i = 0; i < poolSize; i++) {
+        vertx.setTimer(10 * (i + 1), l -> {
+          pool.query("select pg_sleep(5)").execute(ctx.asyncAssertSuccess(res -> async.countDown()));
+        });
+      }
+      vertx.setTimer(10 * (poolSize + 1), event -> {
+        ctrlConn.query("select count(*) as cnt from pg_stat_activity where application_name like '%vertx%'").execute(ctx.asyncAssertSuccess(rows -> {
+          Integer count = rows.iterator().next().getInteger("cnt");
+          ctx.assertEquals(poolSize + 1, count);
+          async.countDown();
+        }));
+      });
+    }));
+    try {
+      async.await();
+    } finally {
+      PgConnection ctrlConn = ctrlConnRef.get();
+      if (ctrlConn != null) {
+        ctrlConn.close();
+      }
+      pool.close();
     }
   }
 }
