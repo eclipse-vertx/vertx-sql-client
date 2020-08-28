@@ -16,6 +16,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileSystem;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.sqlclient.PropertyKind;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.RowSet;
@@ -50,17 +51,20 @@ public class MySQLQueryTest extends MySQLTestBase {
     vertx.close(ctx.asyncAssertSuccess());
   }
 
+
   @Test
   public void testLastInsertIdWithDefaultValue(TestContext ctx) {
+    // Test with our own property
+    PropertyKind<Long> property = PropertyKind.create("last-inserted-id", Long.class);
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("CREATE TEMPORARY TABLE last_insert_id(id INTEGER PRIMARY KEY AUTO_INCREMENT, val VARCHAR(20));").execute(ctx.asyncAssertSuccess(createTableResult -> {
-        long lastInsertId1 = createTableResult.property(MySQLClient.LAST_INSERTED_ID);
+        long lastInsertId1 = createTableResult.property(property);
         ctx.assertEquals(0L, lastInsertId1);
         conn.query("INSERT INTO last_insert_id(val) VALUES('test')").execute(ctx.asyncAssertSuccess(insertResult1 -> {
-          long lastInsertId2 = insertResult1.property(MySQLClient.LAST_INSERTED_ID);
+          long lastInsertId2 = insertResult1.property(property);
           ctx.assertEquals(1L, lastInsertId2);
           conn.query("INSERT INTO last_insert_id(val) VALUES('test2')").execute(ctx.asyncAssertSuccess(insertResult2 -> {
-            long lastInsertId3 = insertResult2.property(MySQLClient.LAST_INSERTED_ID);
+            long lastInsertId3 = insertResult2.property(property);
             ctx.assertEquals(2L, lastInsertId3);
             conn.close();
           }));

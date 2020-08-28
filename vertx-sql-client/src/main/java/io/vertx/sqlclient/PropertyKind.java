@@ -14,15 +14,54 @@ package io.vertx.sqlclient;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 
+import java.util.Objects;
+
 /**
  * The kind of the property, this can be used to fetch some specific property of the {@link SqlResult execution result}.
  */
 @VertxGen
 public interface PropertyKind<T> {
+
+  static <T> PropertyKind<T> create(String name, Class<T> type) {
+    Objects.requireNonNull(name, "No null name accepted");
+    Objects.requireNonNull(type, "No null type accepted");
+    return new PropertyKind<T>() {
+      @Override
+      public String name() {
+        return name;
+      }
+      @Override
+      public Class<T> type() {
+        return type;
+      }
+      @Override
+      public int hashCode() {
+        return name.hashCode();
+      }
+      @Override
+      public boolean equals(Object obj) {
+        if (obj == this) {
+          return true;
+        } else if (obj instanceof PropertyKind) {
+          return name.equals(((PropertyKind)obj).name());
+        } else {
+          return false;
+        }
+      }
+      @Override
+      public String toString() {
+        return "PropertyKind[name=" + name + ",type=" + type.getName();
+      }
+    };
+  }
+
   /**
-   * Get the type of the value of this kind of property.
-   *
-   * @return the type
+   * @return the property name
+   */
+  String name();
+
+  /**
+   * @return the property type
    */
   @GenIgnore
   Class<T> type();
