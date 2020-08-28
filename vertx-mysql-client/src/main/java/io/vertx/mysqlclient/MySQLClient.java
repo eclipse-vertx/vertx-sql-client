@@ -9,7 +9,9 @@ import io.vertx.sqlclient.PropertyKind;
 @VertxGen
 public interface MySQLClient {
   /**
-   * SqlResult Property for last_insert_id
+   * SqlResult {@link PropertyKind property kind} for MySQL last_insert_id.<br>
+   * The property kind can be used to fetch the auto incremented id of the last row when executing inserting or updating operations.
+   * The property name is {@code last-inserted-id}.
    */
-  PropertyKind<Long> LAST_INSERTED_ID = () -> Long.class;
+  PropertyKind<Long> LAST_INSERTED_ID = PropertyKind.create("last-inserted-id", Long.class);
 }
