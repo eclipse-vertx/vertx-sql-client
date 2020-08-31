@@ -1,8 +1,11 @@
 package io.vertx.mysqlclient.impl.protocol;
 
 import io.vertx.mysqlclient.impl.datatype.DataType;
+import io.vertx.sqlclient.desc.ColumnDescriptor;
 
-public final class ColumnDefinition {
+import java.sql.JDBCType;
+
+public final class ColumnDefinition implements ColumnDescriptor {
   /*
     https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_com_query_response_text_resultset_column_definition.html
    */
@@ -84,6 +87,11 @@ public final class ColumnDefinition {
 
   public byte decimals() {
     return decimals;
+  }
+
+  @Override
+  public JDBCType jdbcType() {
+    return type.jdbcType;
   }
 
   @Override
