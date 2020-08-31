@@ -18,6 +18,7 @@
 package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.sqlclient.desc.ColumnDescriptor;
 
 import java.util.List;
 
@@ -41,6 +42,13 @@ public interface SqlResult<T> {
    * @return the list of names of columns.
    */
   List<String> columnsNames();
+
+  /**
+   * Get the column descriptors in the SqlResult.
+   *
+   * @return the list of column descriptors
+   */
+  List<ColumnDescriptor> columnDescriptors();
 
   /**
    * Get the number of rows retrieved in the SqlResult.
