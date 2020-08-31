@@ -11,6 +11,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.sql.JDBCType;
 import java.time.Duration;
 import java.time.LocalDate;
 
@@ -43,9 +44,9 @@ public class MySQLBinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase 
   @Override
   public void testTime(TestContext ctx) {
     // MySQL TIME type is mapped to java.time.Duration so we need to override here
-    testDecodeGeneric(ctx, "test_time", Duration.class, Duration.ofHours(18).plusMinutes(45).plusSeconds(2));
+    testDecodeGeneric(ctx, "test_time", Duration.class, JDBCType.DATE, Duration.ofHours(18).plusMinutes(45).plusSeconds(2));
   }
-  
+
   @Test
   @Override
   public void testSelectAll(TestContext ctx) {

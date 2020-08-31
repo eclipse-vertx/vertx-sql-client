@@ -48,7 +48,7 @@ class PgRowDesc extends RowDesc {
   private PgRowDesc(PgColumnDesc[] columns) {
     super(Collections.unmodifiableList(Stream.of(columns)
       .map(d -> d.name)
-      .collect(Collectors.toList())));
+      .collect(Collectors.toList())), Collections.unmodifiableList(Arrays.asList(columns)));
     this.columns = columns;
   }
 }

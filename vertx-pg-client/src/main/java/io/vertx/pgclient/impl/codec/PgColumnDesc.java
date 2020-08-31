@@ -17,14 +17,19 @@
 
 package io.vertx.pgclient.impl.codec;
 
+import io.vertx.sqlclient.desc.ColumnDescriptor;
+
+import java.sql.JDBCType;
+
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-class PgColumnDesc {
+class PgColumnDesc implements ColumnDescriptor {
 
-    public static final PgColumnDesc[] EMPTY_COLUMNS = new PgColumnDesc[0];
-    final String name;
+  public static final PgColumnDesc[] EMPTY_COLUMNS = new PgColumnDesc[0];
+
+  final String name;
   final int relationId;
   final DataType dataType;
   final DataFormat dataFormat; // are we sure that ????
@@ -40,5 +45,15 @@ class PgColumnDesc {
     this.relationId = relationId;
     this.relationAttributeNo = relationAttributeNo;
     this.typeModifier = typeModifier;
+  }
+
+  @Override
+  public String name() {
+    return name;
+  }
+
+  @Override
+  public JDBCType jdbcType() {
+    return dataType.jdbcType;
   }
 }

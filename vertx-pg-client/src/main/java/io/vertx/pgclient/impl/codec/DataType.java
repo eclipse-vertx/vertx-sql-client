@@ -32,7 +32,9 @@ import io.vertx.pgclient.data.Polygon;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import jdk.nashorn.internal.scripts.JD;
 
+import java.sql.JDBCType;
 import java.time.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,85 +48,85 @@ import java.util.UUID;
  */
 enum DataType {
 
-  BOOL(16, true, Boolean.class),
-  BOOL_ARRAY(1000, true, Boolean[].class),
-  INT2(21, true, Short.class, Number.class),
-  INT2_ARRAY(1005, true, Short[].class, Number[].class),
-  INT4(23, true, Integer.class, Number.class),
-  INT4_ARRAY(1007, true, Integer[].class, Number[].class),
-  INT8(20, true, Long.class, Number.class),
-  INT8_ARRAY(1016, true, Long[].class, Number[].class),
-  FLOAT4(700, true, Float.class, Number.class),
-  FLOAT4_ARRAY(1021, true, Float[].class, Number[].class),
-  FLOAT8(701, true, Double.class, Number.class),
-  FLOAT8_ARRAY(1022, true, Double[].class, Number[].class),
-  NUMERIC(1700, false, Numeric.class, Number.class),
-  NUMERIC_ARRAY(1231, false, Numeric[].class, Number[].class),
-  MONEY(790, true, Object.class),
-  MONEY_ARRAY(791, true, Object[].class),
-  BIT(1560, true, Object.class),
-  BIT_ARRAY(1561, true, Object[].class),
-  VARBIT(1562, true, Object.class),
-  VARBIT_ARRAY(1563, true, Object[].class),
-  CHAR(18, true, String.class),
-  CHAR_ARRAY(1002, true, String[].class),
-  VARCHAR(1043, true, String.class),
-  VARCHAR_ARRAY(1015, true, String[].class),
-  BPCHAR(1042, true, String.class),
-  BPCHAR_ARRAY(1014, true, String[].class),
-  TEXT(25, true, String.class),
-  TEXT_ARRAY(1009, true, String[].class),
-  NAME(19, true, String.class),
-  NAME_ARRAY(1003, true, String[].class),
-  DATE(1082, true, LocalDate.class),
-  DATE_ARRAY(1182, true, LocalDate[].class),
-  TIME(1083, true, LocalTime.class),
-  TIME_ARRAY(1183, true, LocalTime[].class),
-  TIMETZ(1266, true, OffsetTime.class),
-  TIMETZ_ARRAY(1270, true, OffsetTime[].class),
-  TIMESTAMP(1114, true, LocalDateTime.class),
-  TIMESTAMP_ARRAY(1115, true, LocalDateTime[].class),
-  TIMESTAMPTZ(1184, true, OffsetDateTime.class),
-  TIMESTAMPTZ_ARRAY(1185, true, OffsetDateTime[].class),
-  INTERVAL(1186, true, Interval.class),
-  INTERVAL_ARRAY(1187, true, Interval[].class),
-  BYTEA(17, true, Buffer.class),
-  BYTEA_ARRAY(1001, true, Buffer[].class),
-  MACADDR(829, true, Object.class),
-  INET(869, true, Object[].class),
-  CIDR(650, true, Object.class),
-  MACADDR8(774, true, Object[].class),
-  UUID(2950, true, UUID.class),
-  UUID_ARRAY(2951, true, UUID[].class),
-  JSON(114, true, Object.class),
-  JSON_ARRAY(199, true, Object[].class),
-  JSONB(3802, true, Object.class),
-  JSONB_ARRAY(3807, true, Object[].class),
-  XML(142, true, Object.class),
-  XML_ARRAY(143, true, Object[].class),
-  POINT(600, true, Point.class),
-  POINT_ARRAY(1017, true, Point[].class),
-  LINE(628, true, Line.class),
-  LINE_ARRAY(629, true, Line[].class),
-  LSEG(601, true, LineSegment.class),
-  LSEG_ARRAY(1018, true, LineSegment[].class),
-  BOX(603, true, Box.class),
-  BOX_ARRAY(1020, true, Box[].class),
-  PATH(602, true, Path.class),
-  PATH_ARRAY(1019, true, Path[].class),
-  POLYGON(604, true, Polygon.class),
-  POLYGON_ARRAY(1027, true, Polygon[].class),
-  CIRCLE(718, true, Circle.class),
-  CIRCLE_ARRAY(719, true, Circle[].class),
-  HSTORE(33670, true, Object.class),
-  OID(26, true, Object.class),
-  OID_ARRAY(1028, true, Object[].class),
-  VOID(2278, true, Object.class),
-  UNKNOWN(705, false, String.class),
-  TS_VECTOR(3614, false, String.class),
-  TS_VECTOR_ARRAY(3643, false, String[].class),
-  TS_QUERY(3615, false,  String.class),
-  TS_QUERY_ARRAY(3645, false,  String[].class);
+  BOOL(16, true, Boolean.class, JDBCType.BIT),
+  BOOL_ARRAY(1000, true, Boolean[].class, JDBCType.BIT),
+  INT2(21, true, Short.class, Number.class, JDBCType.SMALLINT),
+  INT2_ARRAY(1005, true, Short[].class, Number[].class, JDBCType.SMALLINT),
+  INT4(23, true, Integer.class, Number.class, JDBCType.INTEGER),
+  INT4_ARRAY(1007, true, Integer[].class, Number[].class, JDBCType.INTEGER),
+  INT8(20, true, Long.class, Number.class, JDBCType.BIGINT),
+  INT8_ARRAY(1016, true, Long[].class, Number[].class, JDBCType.BIGINT),
+  FLOAT4(700, true, Float.class, Number.class, JDBCType.REAL),
+  FLOAT4_ARRAY(1021, true, Float[].class, Number[].class, JDBCType.REAL),
+  FLOAT8(701, true, Double.class, Number.class, JDBCType.DOUBLE),
+  FLOAT8_ARRAY(1022, true, Double[].class, Number[].class, JDBCType.DOUBLE),
+  NUMERIC(1700, false, Numeric.class, Number.class, JDBCType.NUMERIC),
+  NUMERIC_ARRAY(1231, false, Numeric[].class, Number[].class, JDBCType.NUMERIC),
+  MONEY(790, true, Object.class, null),
+  MONEY_ARRAY(791, true, Object[].class, null),
+  BIT(1560, true, Object.class, JDBCType.OTHER),
+  BIT_ARRAY(1561, true, Object[].class, JDBCType.OTHER),
+  VARBIT(1562, true, Object.class, JDBCType.OTHER),
+  VARBIT_ARRAY(1563, true, Object[].class, JDBCType.OTHER),
+  CHAR(18, true, String.class, JDBCType.VARCHAR),
+  CHAR_ARRAY(1002, true, String[].class, JDBCType.VARCHAR),
+  VARCHAR(1043, true, String.class, JDBCType.VARCHAR),
+  VARCHAR_ARRAY(1015, true, String[].class, JDBCType.VARCHAR),
+  BPCHAR(1042, true, String.class, JDBCType.VARCHAR),
+  BPCHAR_ARRAY(1014, true, String[].class, JDBCType.VARCHAR),
+  TEXT(25, true, String.class, JDBCType.VARCHAR),
+  TEXT_ARRAY(1009, true, String[].class, JDBCType.VARCHAR),
+  NAME(19, true, String.class, JDBCType.VARCHAR),
+  NAME_ARRAY(1003, true, String[].class, JDBCType.VARCHAR),
+  DATE(1082, true, LocalDate.class, JDBCType.DATE),
+  DATE_ARRAY(1182, true, LocalDate[].class, JDBCType.DATE),
+  TIME(1083, true, LocalTime.class, JDBCType.DATE),
+  TIME_ARRAY(1183, true, LocalTime[].class, JDBCType.DATE),
+  TIMETZ(1266, true, OffsetTime.class, JDBCType.DATE),
+  TIMETZ_ARRAY(1270, true, OffsetTime[].class, JDBCType.DATE),
+  TIMESTAMP(1114, true, LocalDateTime.class, JDBCType.DATE),
+  TIMESTAMP_ARRAY(1115, true, LocalDateTime[].class, JDBCType.DATE),
+  TIMESTAMPTZ(1184, true, OffsetDateTime.class, JDBCType.DATE),
+  TIMESTAMPTZ_ARRAY(1185, true, OffsetDateTime[].class, JDBCType.DATE),
+  INTERVAL(1186, true, Interval.class, JDBCType.DATE),
+  INTERVAL_ARRAY(1187, true, Interval[].class, JDBCType.DATE),
+  BYTEA(17, true, Buffer.class, JDBCType.BINARY),
+  BYTEA_ARRAY(1001, true, Buffer[].class, JDBCType.BINARY),
+  MACADDR(829, true, Object.class, JDBCType.OTHER),
+  INET(869, true, Object[].class, JDBCType.OTHER),
+  CIDR(650, true, Object.class, JDBCType.OTHER),
+  MACADDR8(774, true, Object[].class, JDBCType.OTHER),
+  UUID(2950, true, UUID.class, JDBCType.OTHER),
+  UUID_ARRAY(2951, true, UUID[].class, JDBCType.OTHER),
+  JSON(114, true, Object.class, JDBCType.OTHER),
+  JSON_ARRAY(199, true, Object[].class, JDBCType.OTHER),
+  JSONB(3802, true, Object.class, JDBCType.OTHER),
+  JSONB_ARRAY(3807, true, Object[].class, JDBCType.OTHER),
+  XML(142, true, Object.class, JDBCType.OTHER),
+  XML_ARRAY(143, true, Object[].class, JDBCType.OTHER),
+  POINT(600, true, Point.class, JDBCType.OTHER),
+  POINT_ARRAY(1017, true, Point[].class, JDBCType.OTHER),
+  LINE(628, true, Line.class, JDBCType.OTHER),
+  LINE_ARRAY(629, true, Line[].class, JDBCType.OTHER),
+  LSEG(601, true, LineSegment.class, JDBCType.OTHER),
+  LSEG_ARRAY(1018, true, LineSegment[].class, JDBCType.OTHER),
+  BOX(603, true, Box.class, JDBCType.OTHER),
+  BOX_ARRAY(1020, true, Box[].class, JDBCType.OTHER),
+  PATH(602, true, Path.class, JDBCType.OTHER),
+  PATH_ARRAY(1019, true, Path[].class, JDBCType.OTHER),
+  POLYGON(604, true, Polygon.class, JDBCType.OTHER),
+  POLYGON_ARRAY(1027, true, Polygon[].class, JDBCType.OTHER),
+  CIRCLE(718, true, Circle.class, JDBCType.OTHER),
+  CIRCLE_ARRAY(719, true, Circle[].class, JDBCType.OTHER),
+  HSTORE(33670, true, Object.class, JDBCType.OTHER),
+  OID(26, true, Object.class, JDBCType.OTHER),
+  OID_ARRAY(1028, true, Object[].class, JDBCType.OTHER),
+  VOID(2278, true, Object.class, JDBCType.OTHER),
+  UNKNOWN(705, false, String.class, JDBCType.OTHER),
+  TS_VECTOR(3614, false, String.class, JDBCType.OTHER),
+  TS_VECTOR_ARRAY(3643, false, String[].class, JDBCType.OTHER),
+  TS_QUERY(3615, false,  String.class, JDBCType.OTHER),
+  TS_QUERY_ARRAY(3645, false,  String[].class, JDBCType.OTHER);
 
   private static final Logger logger = LoggerFactory.getLogger(DataType.class);
   private static final IntObjectMap<DataType> oidToDataType = new IntObjectHashMap<>();
@@ -134,16 +136,18 @@ enum DataType {
   final boolean supportsBinary;
   final Class<?> encodingType; // Not really used for now
   final Class<?> decodingType;
+  final JDBCType jdbcType;
 
-  DataType(int id, boolean supportsBinary, Class<?> type) {
-    this(id, supportsBinary, type, type);
+  DataType(int id, boolean supportsBinary, Class<?> type, JDBCType jdbcType) {
+    this(id, supportsBinary, type, type, jdbcType);
   }
 
-  DataType(int id, boolean supportsBinary, Class<?> encodingType, Class<?> decodingType) {
+  DataType(int id, boolean supportsBinary, Class<?> encodingType, Class<?> decodingType, JDBCType jdbcType) {
     this.id = id;
     this.supportsBinary = supportsBinary;
     this.encodingType = encodingType;
     this.decodingType = decodingType;
+    this.jdbcType = jdbcType;
   }
 
   static DataType valueOf(int oid) {
