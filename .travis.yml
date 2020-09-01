@@ -1,5 +1,5 @@
+dist: xenial
 language: java
-sudo: required
 services:
   - docker
 branches:
@@ -11,52 +11,104 @@ cache:
     - $HOME/.m2
 before_cache:
   - rm -rf $HOME/.m2/repository/io/vertx/
+before_install:
+  - |-
+    case $TRAVIS_OS_NAME in
+      windows)
+        wget --no-check-certificate https://download.java.net/java/GA/jdk11/9/GPL/openjdk-11.0.2_windows-x64_bin.zip
+        wget --no-check-certificate https://www-eu.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip
+        /C/Progra~1/7-Zip/7z.exe x apache-maven-3.6.3-bin.zip -o/c/mvn363
+        /C/Progra~1/7-Zip/7z.exe x openjdk-11.0.2_windows-x64_bin.zip -o/c/java
+        ;;
+    esac
 before_script:
-  - sudo /etc/init.d/mysql stop
+  - |-
+    case $TRAVIS_OS_NAME in
+      windows)
+        export "JAVA_HOME=/c/java/jdk-11.0.2"
+        export "PATH=$JAVA_HOME/bin:$PATH"
+        export "PATH=$JAVA_HOME/jre/bin:$PATH"
+        export "MAVEN_HOME=/c/mvn363/apache-maven-3.6.3"
+        export "M2_HOME=/c/mvn363/apache-maven-3.6.3"
+        export "PATH=/c/mvn363/apache-maven-3.6.3/bin:$PATH"
+        ;;
+      *)
+        sudo apt-get update -qq
+        sudo apt-get install --only-upgrade openjdk-8-jdk
+        ;;
+    esac
 jobs:
   include:
     - stage: test
       name: "MySQL 8.0"
+      os: linux
+      sudo: required
       jdk: openjdk8
       script: mvn -q clean verify -B -Dtesting.mysql.database.server=mysql -Dtesting.mysql.database.version=8.0 --projects vertx-sql-client,vertx-mysql-client
     - stage: test
       name: "Postgres 11"
+      os: linux
+      sudo: required
       jdk: openjdk8
       script: mvn -q clean verify -B -Dembedded.postgres.version=11.5 --projects vertx-sql-client,vertx-pg-client
     - stage: test
       name: "MSSQL 2017-CU12"
+      os: linux
+      sudo: required
       jdk: openjdk8
       script: mvn -q clean verify -B --projects vertx-sql-client,vertx-mssql-client
     - stage: test
       name: "DB2 11.5"
+      os: linux
+      sudo: required
       jdk: openjdk8
       script: mvn -q clean verify -B --projects vertx-sql-client,vertx-db2-client
     - stage: test
       name: "MySQL 5.6"
+      os: linux
+      sudo: required
       jdk: openjdk8
       script: mvn -q clean verify -B -Dtesting.mysql.database.server=mysql -Dtesting.mysql.database.version=5.6 --projects vertx-sql-client,vertx-mysql-client
     - stage: test
       name: "MySQL 5.7"
+      os: linux
+      sudo: required
       jdk: openjdk8
       script: mvn -q clean verify -B -Dtesting.mysql.database.server=mysql -Dtesting.mysql.database.version=5.7 --projects vertx-sql-client,vertx-mysql-client
     - stage: test
       name: "MariaDB 10.4"
+      os: linux
+      sudo: required
       jdk: openjdk8
       script: mvn -q clean verify -B -Dtesting.mysql.database.server=mariadb -Dtesting.mysql.database.version=10.4 --projects vertx-sql-client,vertx-mysql-client
     - stage: test
       name: "Postgres 9"
+      os: linux
+      sudo: required
       jdk: openjdk8
       script: mvn -q clean verify -B -Dembedded.postgres.version=9.6 --projects vertx-sql-client,vertx-pg-client
     - stage: test
       name: "Postgres 10"
+      os: linux
+      sudo: required
       jdk: openjdk8
       script: mvn -q clean verify -B -Dembedded.postgres.version=10.6 --projects vertx-sql-client,vertx-pg-client
     - stage: test
       name: "SQL Template"
+      os: linux
+      sudo: required
       jdk: openjdk8
+      script: mvn -q clean verify -B --projects vertx-sql-client,vertx-sql-client-templates
+    - stage: test
+      name: "SQL Template"
+      os: windows
+      language: shell
       script: mvn -q clean verify -B --projects vertx-sql-client,vertx-sql-client-templates
     - stage: deploy
       name: "Deploy to Sonatype's snapshots repository"
+      os: linux
+      sudo: required
+      jdk: openjdk8
       if: type != pull_request AND env(SONATYPE_NEXUS_USERNAME) IS present
       script: bash .travis.deploy.artifacts.sh
 notifications:
