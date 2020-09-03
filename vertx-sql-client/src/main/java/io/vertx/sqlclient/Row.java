@@ -21,6 +21,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.sqlclient.impl.Utils;
 
 import java.math.BigDecimal;
 import java.time.*;
@@ -491,4 +492,34 @@ public interface Row extends Tuple {
     int pos = getColumnIndex(name);
     return pos == -1 ? null : get(type, pos);
   }
+
+  /**
+   * Return a JSON object representation of the row.
+   *
+   * <p>Column names are mapped to JSON keys.
+   *
+   * <p>The following rules are applied for the column values:
+   *
+   * <ul>
+   *   <li>number, boolean and string are preserved</li>
+   *   <li>the {@code null} value is preserved</li>
+   *   <li>JSON elements are preserved</li>
+   *   <li>{@code Buffer} are converted to base64 encoded strings</li>
+   *   <li>array is mapped {@code JsonArray}</li>
+   *   <li>otherwise the type converted to a string</li>
+   * </ul>
+   *
+   * @return the json representation
+   */
+  default JsonObject toJson() {
+    JsonObject json = new JsonObject();
+    int size = size();
+    for (int pos = 0;pos < size;pos++) {
+      String name = getColumnName(pos);
+      Object value = getValue(pos);
+      json.put(name, Utils.toJson(value));
+    }
+    return json;
+  }
+
 }

@@ -11,6 +11,7 @@
 
 package io.vertx.sqlclient.tck;
 
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
@@ -179,4 +180,41 @@ public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
         }));
     }
 
+  @Test
+  public void testToJsonObject(TestContext ctx) {
+    connector.connect(ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("SELECT " +
+        "test_int_2," +
+        "test_int_4," +
+        "test_int_8," +
+        "test_float_4," +
+        "test_float_8," +
+        "test_numeric," +
+        "test_decimal," +
+        "test_boolean," +
+        "test_char," +
+        "test_varchar," +
+        "test_date " +
+        "from basicdatatype where id = 1").execute(ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.size());
+        Row row = result.iterator().next();
+        JsonObject json = row.toJson();
+
+        ctx.assertEquals(11, json.size());
+        ctx.assertEquals(Short.valueOf((short) 32767), json.getValue("test_int_2"));
+        ctx.assertEquals(2147483647, json.getValue("test_int_4"));
+        ctx.assertEquals(9223372036854775807L, json.getValue("test_int_8"));
+        ctx.assertEquals(3.40282E38F, json.getValue("test_float_4"));
+        ctx.assertEquals(1.7976931348623157E308, json.getValue("test_float_8"));
+        ctx.assertEquals(Numeric.create(999.99), json.getValue("test_numeric"));
+        ctx.assertEquals(Numeric.create(12345), json.getValue("test_decimal"));
+        Object booleanValue = json.getValue("test_boolean");
+        ctx.assertTrue(booleanValue instanceof Boolean || booleanValue instanceof Number);
+        ctx.assertEquals("testchar", json.getValue("test_char"));
+        ctx.assertEquals("testvarchar", json.getValue("test_varchar"));
+        ctx.assertEquals("2019-01-01", json.getValue("test_date"));
+        conn.close();
+      }));
+    }));
+  }
 }

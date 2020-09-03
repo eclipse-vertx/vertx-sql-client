@@ -16,6 +16,9 @@
  */
 package io.vertx.pgclient;
 
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.data.Box;
 import io.vertx.pgclient.data.Circle;
 import io.vertx.pgclient.data.Interval;
@@ -35,6 +38,7 @@ import org.junit.Test;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.function.Function;
 
@@ -188,5 +192,50 @@ public class RowTest extends PgTestBase {
     }));
   }
 
-
+  @Test
+  public void testToJsonObject(TestContext ctx) {
+    Async async = ctx.async();
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT " +
+        "2::smallint \"small_int\"," +
+        "2::integer \"integer\"," +
+        "2::bigint \"bigint\"," +
+        "2::real \"real\"," +
+        "2::double precision \"double\"," +
+        "'str' \"string\"," +
+        "true \"boolean\"," +
+        "'null'::json \"json_null\"," +
+        "'7'::json \"json_number\"," +
+        "'\"baz\"'::json \"json_string\"," +
+        "'false'::json \"json_boolean\"," +
+        "'{\"bar\": \"baz\", \"balance\": 7, \"active\": false}'::json \"json_object\"," +
+        "'[\"baz\",7,false]'::json \"json_array\"," +
+        "E'\\\\x010203'::bytea \"buffer\"," +
+        "'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid \"uuid\"," +
+        "ARRAY[1, 2, 3] \"array\""
+      ).execute(
+        ctx.asyncAssertSuccess(result -> {
+          Row row = result.iterator().next();
+          JsonObject json = row.toJson();
+          ctx.assertEquals((short)2, json.getValue("small_int"));
+          ctx.assertEquals(2, json.getValue("integer"));
+          ctx.assertEquals(2L, json.getValue("bigint"));
+          ctx.assertEquals(2F, json.getValue("real"));
+          ctx.assertEquals(2D, json.getValue("double"));
+          ctx.assertEquals("str", json.getValue("string"));
+          ctx.assertEquals(true, json.getValue("boolean"));
+          ctx.assertEquals(null, json.getValue("json_null"));
+          ctx.assertEquals(7, json.getValue("json_number"));
+          ctx.assertEquals("baz", json.getValue("json_string"));
+          ctx.assertEquals(false, json.getValue("json_boolean"));
+          ctx.assertEquals(new JsonObject().put("bar", "baz").put("balance", 7).put("active", false), json.getValue("json_object"));
+          ctx.assertEquals(new JsonArray().add("baz").add(7).add(false), json.getValue("json_array"));
+          ctx.assertEquals(Buffer.buffer().appendByte((byte)1).appendByte((byte)2).appendByte((byte)3), json.getMap().get("buffer"));
+          ctx.assertEquals(new String(Base64.getEncoder().encode(new byte[]{1,2,3})), json.getValue("buffer"));
+          ctx.assertEquals("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", json.getValue("uuid"));
+          ctx.assertEquals(new JsonArray().add(1).add(2).add(3), json.getValue("array"));
+          async.complete();
+        }));
+    }));
+  }
 }
