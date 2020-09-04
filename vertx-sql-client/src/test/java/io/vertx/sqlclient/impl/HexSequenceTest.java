@@ -16,11 +16,6 @@ import org.junit.Test;
 
 public class HexSequenceTest {
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testNegativeStartValue() {
-    new HexSequence(-1);
-  }
-
   @Test
   public void testStartValue() {
     assertEquals("0000000",   new HexSequence().next());
@@ -63,9 +58,12 @@ public class HexSequenceTest {
     assertIncrement("00010000",   0x000FFFF);
     assertIncrement("000100000",  0x000FFFFF);
     assertIncrement("0001000000", 0x000FFFFFF);
+    assertIncrement("000FFFFFFFFFFFFFFFF", 0x000FFFFFFFFFFFFFFFEL);
+    assertIncrement("0000000",             0x000FFFFFFFFFFFFFFFFL);
+    assertIncrement("0000000",             -1);
   }
 
-  private static void assertIncrement(String incremented, int start) {
+  private static void assertIncrement(String incremented, long start) {
     HexSequence hex = new HexSequence(start);
     hex.next();
     assertEquals(incremented, hex.next());
